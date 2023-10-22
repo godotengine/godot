@@ -84,6 +84,15 @@ class EditorHelpSearch : public ConfirmationDialog {
 	void _filter_combo_item_selected(int p_option);
 	void _confirmed();
 
+	bool _all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const;
+	void _match_method_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::MethodDoc> &p_methods, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const;
+	void _match_const_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::ConstantDoc> &p_constants, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const;
+	void _match_property_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::PropertyDoc> &p_properties, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const;
+	void _match_theme_property_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::ThemeItemDoc> &p_properties, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const;
+
+	Dictionary _native_search_cb(const String &p_search_string, int p_result_limit);
+	void _native_action_cb(const String &p_item_string);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

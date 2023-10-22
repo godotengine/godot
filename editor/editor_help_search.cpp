@@ -37,6 +37,101 @@
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 
+bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
+	for (int i = 0; i < p_terms.size(); i++) {
+		if (p_name.findn(p_terms[i]) < 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void EditorHelpSearch::_match_method_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::MethodDoc> &p_methods, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const {
+	// Constructors, Methods, Operators...
+	for (int i = 0; i < p_methods.size(); i++) {
+		String method_name = p_methods[i].name.to_lower();
+		if (_all_terms_in_name(p_terms, method_name) ||
+				(p_term.begins_with(".") && method_name.begins_with(p_term.substr(1))) ||
+				(p_term.ends_with("(") && method_name.ends_with(p_term.left(p_term.length() - 1).strip_edges())) ||
+				(p_term.begins_with(".") && p_term.ends_with("(") && method_name == p_term.substr(1, p_term.length() - 2).strip_edges())) {
+			r_result[vformat("class_%s:%s:%s", p_metatype, p_class_name, p_methods[i].name)] = vformat("%s > %s: %s", p_class_name, p_type, p_methods[i].name);
+		}
+	}
+}
+
+void EditorHelpSearch::_match_const_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::ConstantDoc> &p_constants, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const {
+	for (int i = 0; i < p_constants.size(); i++) {
+		String method_name = p_constants[i].name.to_lower();
+		if (_all_terms_in_name(p_terms, method_name) ||
+				(p_term.begins_with(".") && method_name.begins_with(p_term.substr(1))) ||
+				(p_term.ends_with("(") && method_name.ends_with(p_term.left(p_term.length() - 1).strip_edges())) ||
+				(p_term.begins_with(".") && p_term.ends_with("(") && method_name == p_term.substr(1, p_term.length() - 2).strip_edges())) {
+			r_result[vformat("class_%s:%s:%s", p_metatype, p_class_name, p_constants[i].name)] = vformat("%s > %s: %s", p_class_name, p_type, p_constants[i].name);
+		}
+	}
+}
+
+void EditorHelpSearch::_match_property_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::PropertyDoc> &p_properties, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const {
+	for (int i = 0; i < p_properties.size(); i++) {
+		String method_name = p_properties[i].name.to_lower();
+		if (_all_terms_in_name(p_terms, method_name) ||
+				(p_term.begins_with(".") && method_name.begins_with(p_term.substr(1))) ||
+				(p_term.ends_with("(") && method_name.ends_with(p_term.left(p_term.length() - 1).strip_edges())) ||
+				(p_term.begins_with(".") && p_term.ends_with("(") && method_name == p_term.substr(1, p_term.length() - 2).strip_edges())) {
+			r_result[vformat("class_%s:%s:%s", p_metatype, p_class_name, p_properties[i].name)] = vformat("%s > %s: %s", p_class_name, p_type, p_properties[i].name);
+		}
+	}
+}
+
+void EditorHelpSearch::_match_theme_property_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::ThemeItemDoc> &p_properties, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const {
+	for (int i = 0; i < p_properties.size(); i++) {
+		String method_name = p_properties[i].name.to_lower();
+		if (_all_terms_in_name(p_terms, method_name) ||
+				(p_term.begins_with(".") && method_name.begins_with(p_term.substr(1))) ||
+				(p_term.ends_with("(") && method_name.ends_with(p_term.left(p_term.length() - 1).strip_edges())) ||
+				(p_term.begins_with(".") && p_term.ends_with("(") && method_name == p_term.substr(1, p_term.length() - 2).strip_edges())) {
+			r_result[vformat("class_%s:%s:%s", p_metatype, p_class_name, p_properties[i].name)] = vformat("%s > %s: %s", p_class_name, p_type, p_properties[i].name);
+		}
+	}
+}
+
+Dictionary EditorHelpSearch::_native_search_cb(const String &p_search_string, int p_result_limit) {
+	Dictionary ret;
+	const String &term = p_search_string.strip_edges().to_lower();
+	Vector<String> terms = term.split_spaces();
+	if (terms.is_empty()) {
+		terms.append(term);
+	}
+
+	for (HashMap<String, DocData::ClassDoc>::Iterator iterator_doc = EditorHelp::get_doc_data()->class_list.begin(); iterator_doc; ++iterator_doc) {
+		DocData::ClassDoc &class_doc = iterator_doc->value;
+		if (class_doc.name.is_empty()) {
+			continue;
+		}
+		if (class_doc.name.findn(term) > -1) {
+			ret[vformat("class_name:%s", class_doc.name)] = class_doc.name;
+		}
+		if (term.length() > 1 || term == "@") {
+			_match_method_name_and_push_back(term, terms, class_doc.constructors, TTRC("Constructor"), "method", class_doc.name, ret);
+			_match_method_name_and_push_back(term, terms, class_doc.methods, TTRC("Method"), "method", class_doc.name, ret);
+			_match_method_name_and_push_back(term, terms, class_doc.operators, TTRC("Operator"), "method", class_doc.name, ret);
+			_match_method_name_and_push_back(term, terms, class_doc.signals, TTRC("Signal"), "signal", class_doc.name, ret);
+			_match_const_name_and_push_back(term, terms, class_doc.constants, TTRC("Constant"), "constant", class_doc.name, ret);
+			_match_property_name_and_push_back(term, terms, class_doc.properties, TTRC("Property"), "property", class_doc.name, ret);
+			_match_theme_property_name_and_push_back(term, terms, class_doc.theme_properties, TTRC("Theme Property"), "theme_item", class_doc.name, ret);
+			_match_method_name_and_push_back(term, terms, class_doc.annotations, TTRC("Annotation"), "annotation", class_doc.name, ret);
+		}
+		if (ret.size() > p_result_limit) {
+			break;
+		}
+	}
+	return ret;
+}
+
+void EditorHelpSearch::_native_action_cb(const String &p_item_string) {
+	emit_signal(SNAME("go_to_help"), p_item_string);
+}
+
 void EditorHelpSearch::_update_results() {
 	String term = search_box->get_text();
 
@@ -94,6 +189,18 @@ void EditorHelpSearch::_confirmed() {
 
 void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_HELP)) {
+				DisplayServer::get_singleton()->help_set_search_callbacks(callable_mp(this, &EditorHelpSearch::_native_search_cb), callable_mp(this, &EditorHelpSearch::_native_action_cb));
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_HELP)) {
+				DisplayServer::get_singleton()->help_set_search_callbacks();
+			}
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				tree_cache.clear();

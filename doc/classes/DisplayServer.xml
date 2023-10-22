@@ -875,6 +875,17 @@
 				Returns [code]true[/code] if the specified [param feature] is supported by the current [DisplayServer], [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="help_set_search_callbacks">
+			<return type="void" />
+			<param index="0" name="search_callback" type="Callable" />
+			<param index="1" name="action_callback" type="Callable" />
+			<description>
+				Sets native help system search callbacks.
+				[param search_callback] has the following arguments: [code]String search_string, int result_limit[/code] and return a [Dictionary] with "key, display name" pairs for the search results. Called when the user enters search terms in the [code]Help[/code] menu.
+				[param action_callback] has the following arguments: [code]String key[/code]. Called when the user selects a search result in the [code]Help[/code] menu.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="ime_get_selection" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -1790,6 +1801,9 @@
 		</constant>
 		<constant name="FEATURE_STATUS_INDICATOR" value="22" enum="Feature">
 			Display server supports application status indicators.
+		</constant>
+		<constant name="FEATURE_NATIVE_HELP" value="23" enum="Feature">
+			Display server supports native help system search callbacks. See [method help_set_search_callbacks].
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
