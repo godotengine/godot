@@ -563,7 +563,7 @@ void ColorPicker::_html_submitted(const String &p_html) {
 		color.a = previous_color.a;
 	}
 
-	if (color == previous_color) {
+	if (color.to_abgr32() == previous_color.to_abgr32()) {
 		return;
 	}
 	if (!is_inside_tree()) {
