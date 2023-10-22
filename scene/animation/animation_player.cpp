@@ -151,6 +151,7 @@ void AnimationPlayer::_notification(int p_what) {
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				set_active(true);
 				play(autoplay);
+				seek(0, true);
 			}
 		} break;
 	}
