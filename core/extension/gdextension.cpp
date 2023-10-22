@@ -959,13 +959,15 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 	// object if one has already been loaded (even if caching is disabled at the resource
 	// loader level).
 	GDExtensionManager *manager = GDExtensionManager::get_singleton();
-	Ref<GDExtension> lib = manager->get_extension(p_path);
-	if (lib.is_null()) {
-		Error err = load_gdextension_resource(p_path, lib);
-		if (err != OK && r_error) {
-			// Errors already logged in load_gdextension_resource().
-			*r_error = err;
-		}
+	if (manager->is_extension_loaded(p_path)) {
+		return manager->get_extension(p_path);
+	}
+
+	Ref<GDExtension> lib;
+	Error err = load_gdextension_resource(p_path, lib);
+	if (err != OK && r_error) {
+		// Errors already logged in load_gdextension_resource().
+		*r_error = err;
 	}
 	return lib;
 }
