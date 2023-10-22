@@ -198,7 +198,7 @@ void Node3DEditorCameraManager::set_cinematic_preview_mode(bool p_cinematic_mode
 	}
 	else {
 		if (cinematic_camera) {
-			cinematic_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previews_and_pilots));
+			cinematic_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::update_cinematic_preview));
 			cinematic_camera = nullptr;
 		}
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), editor_camera->get_camera()); //restore
@@ -424,10 +424,10 @@ void Node3DEditorCameraManager::update_cinematic_preview() {
 		if (cam != nullptr && cam != cinematic_camera) {
 			//then switch the viewport's camera to the scene's viewport camera
 			if (cinematic_camera != nullptr) {
-				cinematic_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previews_and_pilots));
+				cinematic_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::update_cinematic_preview));
 			}
 			cinematic_camera = cam;
-			cinematic_camera->connect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previews_and_pilots));
+			cinematic_camera->connect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::update_cinematic_preview));
 			RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
 		}
 	}
