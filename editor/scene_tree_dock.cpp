@@ -1550,6 +1550,14 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 }
 
 bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const {
+	// Skip if this node will be deleted.
+	for (const Node *F : p_to_delete) {
+		if (F == p_node || F->is_ancestor_of(p_node)) {
+			return false;
+		}
+	}
+
+	// This is an AnimationPlayer that survives the deletion.
 	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 	if (ap) {
 		Node *root = ap->get_node(ap->get_root_node());
@@ -1578,11 +1586,13 @@ bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delet
 		}
 	}
 
+	// Recursively check child nodes.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		if (_has_tracks_to_delete(p_node->get_child(i), p_to_delete)) {
 			return true;
 		}
 	}
+
 	return false;
 }
 
