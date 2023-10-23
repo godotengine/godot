@@ -1605,7 +1605,7 @@ void main() {
 #else
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
 #endif
-					true, shadow, f0, orms, 1.0, albedo, alpha,
+					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
