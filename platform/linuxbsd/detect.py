@@ -197,10 +197,23 @@ def configure(env: "Environment"):
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
 
-    # FIXME: Check for existence of the libs before parsing their flags with pkg-config
+    # Check for existence of the libs, and if so,
+    # parse their flags with pkg-config
+    def add_external_libs(list):
+        # Keep track of the number of libraries in the list
+        # that couldn't be found
+        not_found = 0
+        for lib in list:
+            if os.system("pkg-config --exists " + lib) == 0:  # 0 means found
+                env.ParseConfig("pkg-config --cflags --libs " + lib)
+            else:
+                not_found += 1
+        # A return value of 0 means all libs were found
+        return not_found
 
-    # freetype depends on libpng and zlib, so bundling one of them while keeping others
-    # as shared libraries leads to weird issues. And graphite and harfbuzz need freetype.
+    # freetype depends on libpng and zlib, so bundling one of them
+    # while keeping others as shared libraries leads to weird issues.
+    # And graphite and harfbuzz need freetype.
     ft_linked_deps = [
         env["builtin_freetype"],
         env["builtin_libpng"],
@@ -217,60 +230,67 @@ def configure(env: "Environment"):
         sys.exit(255)
 
     if not env["builtin_freetype"]:
-        env.ParseConfig("pkg-config freetype2 --cflags --libs")
+        add_external_libs(["freetype2"])
+
+    if not env["builtin_msdfgen"]:
+        add_external_libs(["msdfgen"])
 
     if not env["builtin_graphite"]:
-        env.ParseConfig("pkg-config graphite2 --cflags --libs")
+        add_external_libs(["graphite2"])
 
     if not env["builtin_icu4c"]:
-        env.ParseConfig("pkg-config icu-i18n icu-uc --cflags --libs")
+        add_external_libs(["icu-i18n", "icu-uc"])
 
     if not env["builtin_harfbuzz"]:
-        env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
+        add_external_libs(["harfbuzz", "harfbuzz-icu"])
 
     if not env["builtin_libpng"]:
-        env.ParseConfig("pkg-config libpng16 --cflags --libs")
+        add_external_libs(["libpng16"])
 
     if not env["builtin_enet"]:
-        env.ParseConfig("pkg-config libenet --cflags --libs")
+        add_external_libs(["libenet"])
 
     if not env["builtin_squish"]:
-        # libsquish doesn't reliably install its .pc file, so some distros lack it.
-        env.Append(LIBS=["libsquish"])
+        if add_external_libs(["libsquish"]) != 0:
+            # libsquish doesn't reliably install its .pc file,
+            # so some distros lack it.
+            env.Append(LIBS=["libsquish"])
 
     if not env["builtin_zstd"]:
-        env.ParseConfig("pkg-config libzstd --cflags --libs")
+        add_external_libs(["libzstd"])
 
     if env["brotli"] and not env["builtin_brotli"]:
-        env.ParseConfig("pkg-config libbrotlicommon libbrotlidec --cflags --libs")
+        add_external_libs(["libbrotlicommon", "libbrotlidec"])
 
     # Sound and video libraries
-    # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
+    # Keep the order as it triggers chained dependencies
+    # (ogg needed by others, etc.)
 
     if not env["builtin_libtheora"]:
         env["builtin_libogg"] = False  # Needed to link against system libtheora
         env["builtin_libvorbis"] = False  # Needed to link against system libtheora
-        env.ParseConfig("pkg-config theora theoradec --cflags --libs")
+        add_external_libs(["theora", "theoradec"])
     else:
         if env["arch"] in ["x86_64", "x86_32"]:
             env["x86_libtheora_opt_gcc"] = True
 
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
-        env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
+        add_external_libs(["vorbis", "vorbisfile"])
 
     if not env["builtin_libogg"]:
-        env.ParseConfig("pkg-config ogg --cflags --libs")
+        add_external_libs(["ogg"])
 
     if not env["builtin_libwebp"]:
-        env.ParseConfig("pkg-config libwebp --cflags --libs")
+        add_external_libs(["libwebp"])
 
     if not env["builtin_mbedtls"]:
-        # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
+        # mbedTLS does not provide a pkgconfig config yet.
+        # See https://github.com/ARMmbed/mbedtls/issues/228
         env.Append(LIBS=["mbedtls", "mbedcrypto", "mbedx509"])
 
     if not env["builtin_wslay"]:
-        env.ParseConfig("pkg-config libwslay --cflags --libs")
+        add_external_libs(["libwslay"])
 
     if not env["builtin_miniupnpc"]:
         # No pkgconfig file so far, hardcode default paths.
@@ -280,7 +300,7 @@ def configure(env: "Environment"):
     # On Linux wchar_t should be 32-bits
     # 16-bit library shouldn't be required due to compiler optimizations
     if not env["builtin_pcre2"]:
-        env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
+        add_external_libs(["libpcre2-32"])
 
     if not env["builtin_recastnavigation"]:
         # No pkgconfig file so far, hardcode default paths.
@@ -292,12 +312,11 @@ def configure(env: "Environment"):
         env.Append(LIBS=["embree3"])
 
     if not env["builtin_openxr"]:
-        env.ParseConfig("pkg-config openxr --cflags --libs")
+        add_external_libs(["openxr"])
 
     if env["fontconfig"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
-                env.ParseConfig("pkg-config fontconfig --cflags --libs")
+            if add_external_libs(["fontconfig"]) == 0:  # 0 means found
                 env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
             else:
                 print("Warning: fontconfig development libraries not found. Disabling the system fonts support.")
@@ -307,8 +326,7 @@ def configure(env: "Environment"):
 
     if env["alsa"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists alsa") == 0:  # 0 means found
-                env.ParseConfig("pkg-config alsa --cflags --libs")
+            if add_external_libs(["alsa"]) == 0:  # 0 means found
                 env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
             else:
                 print("Warning: ALSA development libraries not found. Disabling the ALSA audio driver.")
@@ -318,8 +336,7 @@ def configure(env: "Environment"):
 
     if env["pulseaudio"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
-                env.ParseConfig("pkg-config libpulse --cflags --libs")
+            if add_external_libs(["libpulse"]) == 0:  # 0 means found
                 env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
             else:
                 print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
@@ -329,8 +346,7 @@ def configure(env: "Environment"):
 
     if env["dbus"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
-                env.ParseConfig("pkg-config dbus-1 --cflags --libs")
+            if add_external_libs(["dbus-1"]) == 0:  # 0 means found
                 env.Append(CPPDEFINES=["DBUS_ENABLED"])
             else:
                 print("Warning: D-Bus development libraries not found. Disabling screensaver prevention.")
@@ -340,8 +356,7 @@ def configure(env: "Environment"):
 
     if env["speechd"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists speech-dispatcher") == 0:  # 0 means found
-                env.ParseConfig("pkg-config speech-dispatcher --cflags --libs")
+            if add_external_libs(["speech-dispatcher"]) == 0:  # 0 means found
                 env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
             else:
                 print("Warning: speech-dispatcher development libraries not found. Disabling text to speech support.")
@@ -350,12 +365,12 @@ def configure(env: "Environment"):
             env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
 
     if not env["use_sowrap"]:
-        if os.system("pkg-config --exists xkbcommon") == 0:  # 0 means found
-            env.ParseConfig("pkg-config xkbcommon --cflags --libs")
+        if add_external_libs(["xkbcommon"]) == 0:  # 0 means found
             env.Append(CPPDEFINES=["XKB_ENABLED"])
         else:
             print(
-                "Warning: libxkbcommon development libraries not found. Disabling dead key composition and key label support."
+                "Warning: libxkbcommon development libraries not found.",
+                "Disabling dead key composition and key label support.",
             )
     else:
         env.Append(CPPDEFINES=["XKB_ENABLED"])
@@ -364,8 +379,7 @@ def configure(env: "Environment"):
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
             if not env["use_sowrap"]:
-                if os.system("pkg-config --exists libudev") == 0:  # 0 means found
-                    env.ParseConfig("pkg-config libudev --cflags --libs")
+                if add_external_libs(["libudev"]) == 0:  # 0 means found
                     env.Append(CPPDEFINES=["UDEV_ENABLED"])
                 else:
                     print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
@@ -377,7 +391,7 @@ def configure(env: "Environment"):
 
     # Linkflags below this line should typically stay the last ones
     if not env["builtin_zlib"]:
-        env.ParseConfig("pkg-config zlib --cflags --libs")
+        add_external_libs(["zlib"])
 
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
     if env["use_sowrap"]:
@@ -393,42 +407,39 @@ def configure(env: "Environment"):
 
     if env["x11"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists x11"):
+            if add_external_libs(["x11"]) != 0:
                 print("Error: X11 libraries not found. Aborting.")
                 sys.exit(255)
-            env.ParseConfig("pkg-config x11 --cflags --libs")
-            if os.system("pkg-config --exists xcursor"):
+            if add_external_libs(["xcursor"]) != 0:
                 print("Error: Xcursor library not found. Aborting.")
                 sys.exit(255)
-            env.ParseConfig("pkg-config xcursor --cflags --libs")
-            if os.system("pkg-config --exists xinerama"):
+            if add_external_libs(["xinerama"]) != 0:
                 print("Error: Xinerama library not found. Aborting.")
                 sys.exit(255)
-            env.ParseConfig("pkg-config xinerama --cflags --libs")
-            if os.system("pkg-config --exists xext"):
+            if add_external_libs(["xext"]) != 0:
                 print("Error: Xext library not found. Aborting.")
                 sys.exit(255)
-            env.ParseConfig("pkg-config xext --cflags --libs")
-            if os.system("pkg-config --exists xrandr"):
+            if add_external_libs(["xrandr"]) != 0:
                 print("Error: XrandR library not found. Aborting.")
                 sys.exit(255)
-            env.ParseConfig("pkg-config xrandr --cflags --libs")
-            if os.system("pkg-config --exists xrender"):
+            if add_external_libs(["xrender"]) != 0:
                 print("Error: XRender library not found. Aborting.")
                 sys.exit(255)
-            env.ParseConfig("pkg-config xrender --cflags --libs")
-            if os.system("pkg-config --exists xi"):
+            if add_external_libs(["xi"]) != 0:
                 print("Error: Xi library not found. Aborting.")
                 sys.exit(255)
-            env.ParseConfig("pkg-config xi --cflags --libs")
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
-            env.ParseConfig("pkg-config vulkan --cflags --libs")
+            add_external_libs(["vulkan"])
         if not env["builtin_glslang"]:
             # No pkgconfig file so far, hardcode expected lib name.
+            # A patch to add a pkg-config file has been submitted
+            # upstream: https://github.com/KhronosGroup/glslang/pull/3371
+            # Once it gets added to glslang and we revbump to match
+            # that version, we can start using add_external_libs()
             env.Append(LIBS=["glslang", "SPIRV"])
 
     if env["opengl3"]:
