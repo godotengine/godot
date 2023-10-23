@@ -400,7 +400,7 @@ static void gdextension_variant_iter_get(GDExtensionConstVariantPtr p_self, GDEx
 	Variant *iter = (Variant *)r_iter;
 
 	bool valid;
-	memnew_placement(r_ret, Variant(self->iter_next(*iter, valid)));
+	memnew_placement(r_ret, Variant(self->iter_get(*iter, valid)));
 	*r_valid = valid;
 }
 

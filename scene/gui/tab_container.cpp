@@ -191,6 +191,8 @@ void TabContainer::_on_theme_changed() {
 		return;
 	}
 
+	tab_bar->begin_bulk_theme_override();
+
 	tab_bar->add_theme_style_override(SNAME("tab_unselected"), theme_cache.tab_unselected_style);
 	tab_bar->add_theme_style_override(SNAME("tab_hovered"), theme_cache.tab_hovered_style);
 	tab_bar->add_theme_style_override(SNAME("tab_selected"), theme_cache.tab_selected_style);
@@ -216,6 +218,8 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_constant_override(SNAME("h_separation"), theme_cache.icon_separation);
 	tab_bar->add_theme_constant_override(SNAME("icon_max_width"), theme_cache.icon_max_width);
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), theme_cache.outline_size);
+
+	tab_bar->end_bulk_theme_override();
 
 	_update_margins();
 	if (get_tab_count() > 0) {

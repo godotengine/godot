@@ -192,6 +192,13 @@ class LightmapperRD : public Lightmapper {
 		}
 	};
 
+	struct ClusterAABB {
+		float min_bounds[3];
+		float pad0 = 0.0f;
+		float max_bounds[3];
+		float pad1 = 0.0f;
+	};
+
 	Vector<MeshInstance> mesh_instances;
 
 	Vector<Light> lights;
@@ -199,12 +206,22 @@ class LightmapperRD : public Lightmapper {
 	struct TriangleSort {
 		uint32_t cell_index = 0;
 		uint32_t triangle_index = 0;
+		AABB triangle_aabb;
+
 		bool operator<(const TriangleSort &p_triangle_sort) const {
 			return cell_index < p_triangle_sort.cell_index; //sorting by triangle index in this case makes no sense
 		}
 	};
 
+	template <int T>
+	struct TriangleSortAxis {
+		bool operator()(const TriangleSort &p_a, const TriangleSort &p_b) const {
+			return p_a.triangle_aabb.get_center()[T] < p_b.triangle_aabb.get_center()[T];
+		}
+	};
+
 	void _plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[3], uint32_t p_triangle_index, LocalVector<TriangleSort> &triangles, uint32_t p_grid_size);
+	void _sort_triangle_clusters(uint32_t p_cluster_size, uint32_t p_cluster_index, uint32_t p_index_start, uint32_t p_count, LocalVector<TriangleSort> &p_triangle_sort, LocalVector<ClusterAABB> &p_cluster_aabb);
 
 	struct RasterPushConstant {
 		float atlas_size[2] = {};
@@ -250,7 +267,7 @@ class LightmapperRD : public Lightmapper {
 	};
 
 	BakeError _blit_meshes_into_atlas(int p_max_texture_size, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, BakeStepFunc p_step_function, void *p_bake_userdata);
-	void _create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata);
+	void _create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, uint32_t p_cluster_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &r_triangle_indices_buffer, RID &r_cluster_indices_buffer, RID &r_cluster_aabbs_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata);
 	void _raster_geometry(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, int grid_size, AABB bounds, float p_bias, Vector<int> slice_triangle_count, RID position_tex, RID unocclude_tex, RID normal_tex, RID raster_depth_buffer, RID rasterize_shader, RID raster_base_uniform);
 
 	BakeError _dilate(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices);

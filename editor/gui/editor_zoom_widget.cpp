@@ -195,38 +195,40 @@ EditorZoomWidget::EditorZoomWidget() {
 	// Zoom buttons
 	zoom_minus = memnew(Button);
 	zoom_minus->set_flat(true);
-	add_child(zoom_minus);
-	zoom_minus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
 	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTR("Zoom Out"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
 	zoom_minus->set_shortcut_context(this);
 	zoom_minus->set_focus_mode(FOCUS_NONE);
+	add_child(zoom_minus);
+	zoom_minus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
+
 	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 	zoom_reset->add_theme_style_override("normal", empty_stylebox);
 	zoom_reset->add_theme_style_override("hover", empty_stylebox);
 	zoom_reset->add_theme_style_override("focus", empty_stylebox);
 	zoom_reset->add_theme_style_override("pressed", empty_stylebox);
-	add_child(zoom_reset);
 	zoom_reset->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
 	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
-	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
+
 	zoom_reset->set_shortcut(ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent"));
 	zoom_reset->set_shortcut_context(this);
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 	zoom_reset->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	// Prevent the button's size from changing when the text size changes
 	zoom_reset->set_custom_minimum_size(Size2(56 * EDSCALE, 0));
+	add_child(zoom_reset);
+	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
 
 	zoom_plus = memnew(Button);
 	zoom_plus->set_flat(true);
-	add_child(zoom_plus);
-	zoom_plus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
 	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTR("Zoom In"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 	zoom_plus->set_shortcut_context(this);
 	zoom_plus->set_focus_mode(FOCUS_NONE);
+	add_child(zoom_plus);
+	zoom_plus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
 
 	_update_zoom_label();
 

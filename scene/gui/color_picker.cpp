@@ -77,9 +77,11 @@ void ColorPicker::_notification(int p_what) {
 			alpha_label->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 
 			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
+				mode_btns[i]->begin_bulk_theme_override();
 				mode_btns[i]->add_theme_style_override(SNAME("pressed"), theme_cache.mode_button_pressed);
 				mode_btns[i]->add_theme_style_override(SNAME("normal"), theme_cache.mode_button_normal);
 				mode_btns[i]->add_theme_style_override(SNAME("hover"), theme_cache.mode_button_hover);
+				mode_btns[i]->end_bulk_theme_override();
 			}
 
 			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_HSV_RECTANGLE), theme_cache.shape_rect);
@@ -87,10 +89,12 @@ void ColorPicker::_notification(int p_what) {
 			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_VHS_CIRCLE), theme_cache.shape_circle);
 			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_OKHSL_CIRCLE), theme_cache.shape_circle);
 
+			internal_margin->begin_bulk_theme_override();
 			internal_margin->add_theme_constant_override(SNAME("margin_bottom"), theme_cache.content_margin);
 			internal_margin->add_theme_constant_override(SNAME("margin_left"), theme_cache.content_margin);
 			internal_margin->add_theme_constant_override(SNAME("margin_right"), theme_cache.content_margin);
 			internal_margin->add_theme_constant_override(SNAME("margin_top"), theme_cache.content_margin);
+			internal_margin->end_bulk_theme_override();
 
 			_reset_sliders_theme();
 
@@ -521,20 +525,26 @@ void ColorPicker::_reset_sliders_theme() {
 	Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
 	style_box_flat->set_content_margin(SIDE_TOP, 16 * theme_cache.base_scale);
 	style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
+
 	for (int i = 0; i < SLIDER_COUNT; i++) {
+		sliders[i]->begin_bulk_theme_override();
 		sliders[i]->add_theme_icon_override("grabber", theme_cache.bar_arrow);
 		sliders[i]->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
 		sliders[i]->add_theme_constant_override("grabber_offset", 8 * theme_cache.base_scale);
 		if (!colorize_sliders) {
 			sliders[i]->add_theme_style_override("slider", style_box_flat);
 		}
+		sliders[i]->end_bulk_theme_override();
 	}
+
+	alpha_slider->begin_bulk_theme_override();
 	alpha_slider->add_theme_icon_override("grabber", theme_cache.bar_arrow);
 	alpha_slider->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
 	alpha_slider->add_theme_constant_override("grabber_offset", 8 * theme_cache.base_scale);
 	if (!colorize_sliders) {
 		alpha_slider->add_theme_style_override("slider", style_box_flat);
 	}
+	alpha_slider->end_bulk_theme_override();
 }
 
 void ColorPicker::_html_submitted(const String &p_html) {

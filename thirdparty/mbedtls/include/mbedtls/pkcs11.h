@@ -71,7 +71,7 @@ typedef struct mbedtls_pkcs11_context {
 MBEDTLS_DEPRECATED void mbedtls_pkcs11_init(mbedtls_pkcs11_context *ctx);
 
 /**
- * Fill in a mbed TLS certificate, based on the given PKCS11 helper certificate.
+ * Fill in a Mbed TLS certificate, based on the given PKCS11 helper certificate.
  *
  * \deprecated          This function is deprecated and will be removed in a
  *                      future version of the library.

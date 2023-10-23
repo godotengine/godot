@@ -759,20 +759,29 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				}
 			} else {
 				if (uv_drag && !uv_create) {
-					if (uv_edit_mode[0]->is_pressed()) { // Edit UV.
+					if (uv_edit_mode[0]->is_pressed()) {
 						undo_redo->create_action(TTR("Transform UV Map"));
 						undo_redo->add_do_method(node, "set_uv", node->get_uv());
 						undo_redo->add_undo_method(node, "set_uv", points_prev);
 						undo_redo->add_do_method(uv_edit_draw, "queue_redraw");
 						undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
 						undo_redo->commit_action();
-					} else if (uv_edit_mode[1]->is_pressed() && uv_move_current == UV_MODE_EDIT_POINT) { // Edit polygon.
-						undo_redo->create_action(TTR("Transform Polygon"));
-						undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
-						undo_redo->add_undo_method(node, "set_polygon", points_prev);
-						undo_redo->add_do_method(uv_edit_draw, "queue_redraw");
-						undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
-						undo_redo->commit_action();
+					} else if (uv_edit_mode[1]->is_pressed()) {
+						switch (uv_move_current) {
+							case UV_MODE_EDIT_POINT:
+							case UV_MODE_MOVE:
+							case UV_MODE_ROTATE:
+							case UV_MODE_SCALE: {
+								undo_redo->create_action(TTR("Transform Polygon"));
+								undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
+								undo_redo->add_undo_method(node, "set_polygon", points_prev);
+								undo_redo->add_do_method(uv_edit_draw, "queue_redraw");
+								undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
+								undo_redo->commit_action();
+							} break;
+							default: {
+							} break;
+						}
 					}
 
 					uv_drag = false;
