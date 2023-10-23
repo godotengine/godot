@@ -103,6 +103,8 @@ public:
 
 	virtual void map_force_update(RID p_map) = 0;
 
+	virtual Vector2 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
+
 	/// Creates a new region.
 	virtual RID region_create() = 0;
 
@@ -144,6 +146,8 @@ public:
 	virtual int region_get_connections_count(RID p_region) const = 0;
 	virtual Vector2 region_get_connection_pathway_start(RID p_region, int p_connection_id) const = 0;
 	virtual Vector2 region_get_connection_pathway_end(RID p_region, int p_connection_id) const = 0;
+
+	virtual Vector2 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
 
 	/// Creates a new link between positions in the nav map.
 	virtual RID link_create() = 0;
