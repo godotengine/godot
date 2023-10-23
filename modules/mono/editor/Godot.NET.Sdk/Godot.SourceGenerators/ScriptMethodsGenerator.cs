@@ -194,14 +194,18 @@ namespace Godot.SourceGenerators
                     .Append(godotClassMethods.Length)
                     .Append(");\n");
 
+                StringBuilder rpcMethods = new StringBuilder();
                 foreach (var method in godotClassMethods)
                 {
+                    GenerateRpcMethod(rpcMethods, method);
+
                     var methodInfo = DetermineMethodInfo(method);
                     AppendMethodInfo(source, methodInfo);
                 }
 
                 source.Append("        return methods;\n");
                 source.Append("    }\n");
+                source.Append(rpcMethods);
             }
 
             source.Append("#pragma warning restore CS0109\n");
@@ -476,6 +480,50 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("        }\n");
+        }
+
+        private static void GenerateRpcMethod(StringBuilder source, GodotMethodData method)
+        {
+            if (method.Method.GetAttributes().Any(a => a.AttributeClass?.IsGodotRpcAttribute() ?? false))
+            {
+                string paramsString = string.Empty;
+                string argsString = string.Empty;
+                for (int i = 0; i < method.ParamTypeSymbols.Length; i++)
+                {
+                    if (i != 0)
+                    {
+                        paramsString += ", ";
+                    }
+                    paramsString += $"{method.ParamTypeSymbols[i].FullQualifiedNameIncludeGlobal()} {method.Method.Parameters[i].Name}";
+                    argsString += $", {method.Method.Parameters[i].Name}";
+                }
+
+                source.Append($"\n    /// <inheritdoc cref=\"{method.Method.Name}\"/>\n");
+                source.Append($"    public void {method.Method.Name}Rpc(");
+                source.Append(paramsString);
+                source.Append(")\n");
+                source.Append("    {\n");
+                source.Append("        Rpc(MethodName.");
+                source.Append(method.Method.Name);
+                source.Append(argsString);
+                source.Append(");\n");
+                source.Append("    }\n");
+
+                source.Append($"\n    /// <inheritdoc cref=\"{method.Method.Name}\"/>\n");
+                source.Append($"    public void {method.Method.Name}Rpc(long peerId");
+                if (method.ParamTypeSymbols.Length > 0)
+                {
+                    source.Append($", ");
+                }
+                source.Append(paramsString);
+                source.Append(")\n");
+                source.Append("    {\n");
+                source.Append("        RpcId(peerId, MethodName.");
+                source.Append(method.Method.Name);
+                source.Append(argsString);
+                source.Append(");\n");
+                source.Append("    }\n");
+            }
         }
     }
 }
