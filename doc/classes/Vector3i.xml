@@ -59,6 +59,23 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="cross" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="with" type="Vector3i" />
+			<description>
+				Returns the cross product of this vector and [param with].
+			</description>
+		</method>
+		<method name="dot" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="with" type="Vector3i" />
+			<description>
+				Returns the dot product of this vector and [param with]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
+				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
+				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
+				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
+			</description>
+		</method>
 		<method name="length" qualifiers="const">
 			<return type="float" />
 			<description>

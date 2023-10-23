@@ -66,6 +66,8 @@ struct _NO_DISCARD_ Vector3i {
 		return coord[p_axis];
 	}
 
+	Vector3i cross(const Vector3i &p_with) const;
+	int64_t dot(const Vector3i &p_with) const;
 	Vector3i::Axis min_axis_index() const;
 	Vector3i::Axis max_axis_index() const;
 

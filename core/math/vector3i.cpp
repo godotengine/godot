@@ -33,6 +33,19 @@
 #include "core/math/vector3.h"
 #include "core/string/ustring.h"
 
+Vector3i Vector3i::cross(const Vector3i &p_with) const {
+	Vector3i ret(
+			y * p_with.z - z * p_with.y,
+			z * p_with.x - x * p_with.z,
+			x * p_with.y - y * p_with.x);
+
+	return ret;
+}
+
+int64_t Vector3i::dot(const Vector3i &p_with) const {
+	return x * p_with.x + y * p_with.y + z * p_with.z;
+}
+
 Vector3i::Axis Vector3i::min_axis_index() const {
 	return x < y ? (x < z ? Vector3i::AXIS_X : Vector3i::AXIS_Z) : (y < z ? Vector3i::AXIS_Y : Vector3i::AXIS_Z);
 }

@@ -127,6 +127,48 @@ TEST_CASE("[Vector3i] Operators") {
 			"Vector3i constructed from Vector3 should work as expected.");
 }
 
+TEST_CASE("[Vector3i] Linear algebra methods") {
+	const Vector3i vector_x = Vector3i(1, 0, 0);
+	const Vector3i vector_y = Vector3i(0, 1, 0);
+	const Vector3i vector_z = Vector3i(0, 0, 1);
+	const Vector3i a = Vector3i(35, 85, 23);
+	const Vector3i b = Vector3i(52, 46, 78);
+	CHECK_MESSAGE(
+			vector_x.cross(vector_y) == vector_z,
+			"Vector3i cross product of X and Y should give Z.");
+	CHECK_MESSAGE(
+			vector_y.cross(vector_x) == -vector_z,
+			"Vector3i cross product of Y and X should give negative Z.");
+	CHECK_MESSAGE(
+			vector_y.cross(vector_z) == vector_x,
+			"Vector3i cross product of Y and Z should give X.");
+	CHECK_MESSAGE(
+			vector_z.cross(vector_x) == vector_y,
+			"Vector3i cross product of Z and X should give Y.");
+	CHECK_MESSAGE(
+			a.cross(b) == Vector3i(5572, -1534, -2810),
+			"Vector3i cross should return expected value.");
+	CHECK_MESSAGE(
+			Vector3i(-a.x, a.y, -a.z).cross(Vector3i(b.x, -b.y, b.z)) == Vector3i(5572, 1534, -2810),
+			"Vector2 cross should return expected value.");
+
+	CHECK_MESSAGE(
+			vector_x.dot(vector_y) == 0,
+			"Vector3i dot product of perpendicular vectors should be zero.");
+	CHECK_MESSAGE(
+			vector_x.dot(vector_x) == 1,
+			"Vector3i dot product of identical unit vectors should be one.");
+	CHECK_MESSAGE(
+			(vector_x * 10).dot(vector_x * 10) == 100,
+			"Vector3i dot product of same direction vectors should behave as expected.");
+	CHECK_MESSAGE(
+			a.dot(b) == 7524,
+			"Vector3i dot should return expected value.");
+	CHECK_MESSAGE(
+			Vector3i(-a.x, a.y, -a.z).dot(Vector3i(b.x, -b.y, b.z)) == -7524,
+			"Vector3i dot should return expected value.");
+}
+
 TEST_CASE("[Vector3i] Other methods") {
 	const Vector3i vector = Vector3i(1, 3, -7);
 

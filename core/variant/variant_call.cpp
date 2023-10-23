@@ -1890,8 +1890,10 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3i, length_squared, sarray(), varray());
 	bind_method(Vector3i, sign, sarray(), varray());
 	bind_method(Vector3i, abs, sarray(), varray());
+	bind_method(Vector3i, dot, sarray("with"), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
 	bind_method(Vector3i, snapped, sarray("step"), varray());
+	bind_method(Vector3i, cross, sarray("with"), varray());
 
 	/* Vector4 */
 
