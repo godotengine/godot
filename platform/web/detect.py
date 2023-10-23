@@ -44,7 +44,7 @@ def get_opts():
         BoolVariable(
             "proxy_to_pthread",
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
-            True,
+            False,
         ),
     ]
 
