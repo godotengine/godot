@@ -2036,15 +2036,39 @@ Vector<uint8_t> _convert_surface_version_1_to_surface_version_2(uint64_t p_forma
 	return new_vertex_data;
 }
 
+#ifdef TOOLS_ENABLED
+void RenderingServer::set_surface_upgrade_callback(SurfaceUpgradeCallback p_callback) {
+	surface_upgrade_callback = p_callback;
+}
+
+void RenderingServer::set_warn_on_surface_upgrade(bool p_warn) {
+	warn_on_surface_upgrade = p_warn;
+}
+#endif
+
 #ifndef DISABLE_DEPRECATED
-void RenderingServer::_fix_surface_compatibility(SurfaceData &p_surface) {
+void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const String &p_path) {
 	uint64_t surface_version = p_surface.format & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 	ERR_FAIL_COND_MSG(surface_version > ARRAY_FLAG_FORMAT_CURRENT_VERSION, "Cannot convert surface with version provided (" + itos((surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) + ") to current version (" + itos((RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) + ")");
+
+#ifdef TOOLS_ENABLED
+	// Editor callback to ask user about re-saving all meshes.
+	if (surface_upgrade_callback && warn_on_surface_upgrade) {
+		surface_upgrade_callback();
+	}
+
+	if (warn_on_surface_upgrade) {
+		if (p_path.is_empty()) {
+			WARN_PRINT("A surface uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
+		} else {
+			WARN_PRINT("A surface of " + p_path + " uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
+		}
+	}
+#endif
 
 	if (surface_version == ARRAY_FLAG_FORMAT_VERSION_1) {
 		// The only difference for now is that Version 1 uses interleaved vertex positions while version 2 does not.
 		// I.e. PNTPNTPNT -> PPPNTNTNT.
-		WARN_PRINT_ED("Upgrading mesh from older surface format. Once saved again (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
 
 		int vertex_size = 0;
 		int normal_size = 0;

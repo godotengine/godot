@@ -1638,7 +1638,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 #ifndef DISABLE_DEPRECATED
 		uint64_t surface_version = surface.format & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 		if (surface_version != ARRAY_FLAG_FORMAT_CURRENT_VERSION) {
-			RS::_fix_surface_compatibility(surface);
+			RS::get_singleton()->fix_surface_compatibility(surface, get_path());
 		}
 #endif
 
