@@ -35,8 +35,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
-static constexpr uint32_t char_count = ('z' - 'a');
-static constexpr uint32_t base = char_count + ('9' - '0');
+static constexpr uint32_t char_count = ('z' - 'a') + 1;
+static constexpr uint32_t base = char_count + ('9' - '0') + 1;
 
 String ResourceUID::get_cache_file() {
 	return ProjectSettings::get_singleton()->get_project_data_path().path_join("uid_cache.bin");
