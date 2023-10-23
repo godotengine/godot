@@ -245,7 +245,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
 			}
-			set_stream_paused(false);
+			set_stream_paused(!can_process());
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
