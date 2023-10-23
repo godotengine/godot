@@ -480,6 +480,7 @@ void ShaderRD::_save_to_cache(Version *p_version, int p_group) {
 }
 
 void ShaderRD::_allocate_placeholders(Version *p_version, int p_group) {
+	ERR_FAIL_NULL(p_version->variants);
 	for (uint32_t i = 0; i < group_to_variant_map[p_group].size(); i++) {
 		int variant_id = group_to_variant_map[p_group][i];
 		RID shader = RD::get_singleton()->shader_create_placeholder();
