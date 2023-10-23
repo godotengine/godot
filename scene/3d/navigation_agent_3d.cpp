@@ -327,6 +327,14 @@ NavigationAgent3D::NavigationAgent3D() {
 	NavigationServer3D::get_singleton()->agent_set_radius(agent, radius);
 	NavigationServer3D::get_singleton()->agent_set_height(agent, height);
 	NavigationServer3D::get_singleton()->agent_set_max_speed(agent, max_speed);
+	NavigationServer3D::get_singleton()->agent_set_avoidance_layers(agent, avoidance_layers);
+	NavigationServer3D::get_singleton()->agent_set_avoidance_mask(agent, avoidance_mask);
+	NavigationServer3D::get_singleton()->agent_set_avoidance_priority(agent, avoidance_priority);
+	NavigationServer3D::get_singleton()->agent_set_use_3d_avoidance(agent, use_3d_avoidance);
+	NavigationServer3D::get_singleton()->agent_set_avoidance_enabled(agent, avoidance_enabled);
+	if (avoidance_enabled) {
+		NavigationServer3D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent3D::_avoidance_done));
+	}
 
 	// Preallocate query and result objects to improve performance.
 	navigation_query = Ref<NavigationPathQueryParameters3D>();
@@ -334,12 +342,6 @@ NavigationAgent3D::NavigationAgent3D() {
 
 	navigation_result = Ref<NavigationPathQueryResult3D>();
 	navigation_result.instantiate();
-
-	set_avoidance_layers(avoidance_layers);
-	set_avoidance_mask(avoidance_mask);
-	set_avoidance_priority(avoidance_priority);
-	set_use_3d_avoidance(use_3d_avoidance);
-	set_avoidance_enabled(avoidance_enabled);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationAgent3D::_navigation_debug_changed));
