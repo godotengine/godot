@@ -1,9 +1,7 @@
 // Copyright (c) 2017-2023, The Khronos Group Inc.
-// Copyright (c) 2017-2019, Valve Corporation
-// Copyright (c) 2017-2019, LunarG, Inc.
-
+// Copyright (c) 2017-2019 Valve Corporation
+// Copyright (c) 2017-2019 LunarG, Inc.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
-
 // *********** THIS FILE IS GENERATED - DO NOT EDIT ***********
 //     See utility_source_generator.py for modifications
 // ************************************************************
@@ -30,7 +28,6 @@
 //
 
 #pragma once
-
 #include "xr_dependencies.h"
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
@@ -408,9 +405,6 @@ struct XrGeneratedDispatchTable {
 
     // ---- XR_FB_haptic_pcm extension commands
     PFN_xrGetDeviceSampleRateFB GetDeviceSampleRateFB;
-
-    // ---- XR_META_passthrough_preferences extension commands
-    PFN_xrGetPassthroughPreferencesMETA GetPassthroughPreferencesMETA;
 
     // ---- XR_META_virtual_keyboard extension commands
     PFN_xrCreateVirtualKeyboardMETA CreateVirtualKeyboardMETA;
