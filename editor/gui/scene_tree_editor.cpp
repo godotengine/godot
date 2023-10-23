@@ -187,7 +187,7 @@ void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	}
 }
 
-void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
+void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, Node *p_parent_node) {
 	if (!p_node) {
 		return;
 	}
@@ -202,6 +202,13 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			part_of_subscene = true;
 			//allow
 		} else {
+			// this node itself won't show up in the scene tree. However, its children may, so we continue iterating.
+			// if this ends up taking too much time, we can store a flag in the scene node that says whether there are
+			// unowned (or forced-visible, when that feature exists) descendants.
+
+			for (int i = 0; i < p_node->get_child_count(); i++) {
+				_add_nodes(p_node->get_child(i), p_parent, p_parent_node);
+			}
 			return;
 		}
 	} else {
@@ -222,6 +229,10 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->set_collapsed(true);
 		}
 	}
+
+	bool is_indirect_child = p_parent != nullptr && p_node->get_parent() != p_parent_node;
+
+	item->set_indirect_child(is_indirect_child);
 
 	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node, "Node");
 	item->set_icon(0, icon);
@@ -387,6 +398,11 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			}
 		}
 
+		if (is_indirect_child) {
+			NodePath path;
+			tooltip += "\n" + vformat(TTR("Instantiated path: %s/%s"), p_parent_node->get_name(), p_parent_node->get_path_to(p_node).get_concatenated_names());
+		}
+
 		item->set_tooltip_text(0, tooltip);
 	}
 
@@ -488,7 +504,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_add_nodes(p_node->get_child(i), item);
+		_add_nodes(p_node->get_child(i), item, p_node);
 	}
 
 	if (valid_types.size()) {
@@ -613,7 +629,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 	updating_tree = true;
 	tree->clear();
 	if (get_scene_node()) {
-		_add_nodes(get_scene_node(), nullptr);
+		_add_nodes(get_scene_node(), nullptr, nullptr);
 		last_hash = hash_djb2_one_64(0);
 		_compute_hash(get_scene_node(), last_hash);
 	}

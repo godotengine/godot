@@ -130,6 +130,7 @@ private:
 	bool collapsed = false; // won't show children
 	bool visible = true;
 	bool disable_folding = false;
+	bool indirect_child = false; // for when there is a discontinuity in visible vs actual hierarchy
 	int custom_min_height = 0;
 
 	TreeItem *parent = nullptr; // parent item
@@ -300,6 +301,9 @@ public:
 
 	void set_custom_minimum_height(int p_height);
 	int get_custom_minimum_height() const;
+
+	void set_indirect_child(bool p_indirect_child);
+	bool is_indirect_child() const;
 
 	void set_selectable(int p_column, bool p_selectable);
 	bool is_selectable(int p_column) const;
