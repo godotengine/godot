@@ -148,10 +148,10 @@ void NavigationObstacle2D::_notification(int p_what) {
 NavigationObstacle2D::NavigationObstacle2D() {
 	obstacle = NavigationServer2D::get_singleton()->obstacle_create();
 
-	set_radius(radius);
-	set_vertices(vertices);
-	set_avoidance_layers(avoidance_layers);
-	set_avoidance_enabled(avoidance_enabled);
+	NavigationServer2D::get_singleton()->obstacle_set_radius(obstacle, radius);
+	NavigationServer2D::get_singleton()->obstacle_set_vertices(obstacle, vertices);
+	NavigationServer2D::get_singleton()->obstacle_set_avoidance_layers(obstacle, avoidance_layers);
+	NavigationServer2D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
 }
 
 NavigationObstacle2D::~NavigationObstacle2D() {
