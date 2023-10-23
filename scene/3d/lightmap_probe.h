@@ -35,7 +35,20 @@
 
 class LightmapProbe : public Node3D {
 	GDCLASS(LightmapProbe, Node3D)
+
+	Vector3 size = Vector3(1, 1, 1);
+	Vector3 cell_size = Vector3(2, 2, 2);
+
+protected:
+	static void _bind_methods();
+
 public:
+	void set_size(Vector3 p_size);
+	Vector3 get_size() const;
+
+	void set_cell_size(Vector3 p_cell_size);
+	Vector3 get_cell_size() const;
+
 	LightmapProbe();
 };
 
