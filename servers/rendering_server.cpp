@@ -441,16 +441,15 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 					const Vector3 *src = array.ptr();
 
-					// Setting vertices means regenerating the AABB.
-					AABB aabb;
+					r_aabb = AABB();
 
 					if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 						// First we need to generate the AABB for the entire surface.
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							if (i == 0) {
-								aabb = AABB(src[i], SMALL_VEC3);
+								r_aabb = AABB(src[i], SMALL_VEC3);
 							} else {
-								aabb.expand_to(src[i]);
+								r_aabb.expand_to(src[i]);
 							}
 						}
 
@@ -459,7 +458,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						if (!using_normals_tangents) {
 							// Early out if we are only setting vertex positions.
 							for (int i = 0; i < p_vertex_array_len; i++) {
-								Vector3 pos = (src[i] - aabb.position) / aabb.size;
+								Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
 								uint16_t vector[4] = {
 									(uint16_t)CLAMP(pos.x * 65535, 0, 65535),
 									(uint16_t)CLAMP(pos.y * 65535, 0, 65535),
@@ -507,7 +506,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 								// Store vertex position + angle.
 								{
-									Vector3 pos = (src[i] - aabb.position) / aabb.size;
+									Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
 									uint16_t vector[4] = {
 										(uint16_t)CLAMP(pos.x * 65535, 0, 65535),
 										(uint16_t)CLAMP(pos.y * 65535, 0, 65535),
@@ -543,7 +542,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 								// Store vertex position + angle.
 								{
-									Vector3 pos = (src[i] - aabb.position) / aabb.size;
+									Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
 									uint16_t vector[4] = {
 										(uint16_t)CLAMP(pos.x * 65535, 0, 65535),
 										(uint16_t)CLAMP(pos.y * 65535, 0, 65535),
@@ -562,14 +561,12 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 							memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 3);
 
 							if (i == 0) {
-								aabb = AABB(src[i], SMALL_VEC3);
+								r_aabb = AABB(src[i], SMALL_VEC3);
 							} else {
-								aabb.expand_to(src[i]);
+								r_aabb.expand_to(src[i]);
 							}
 						}
 					}
-
-					r_aabb = aabb;
 				}
 
 			} break;
