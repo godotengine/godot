@@ -626,6 +626,12 @@ namespace GodotTools
             _editorSettings.SettingsChanged -= OnSettingsChanged;
         }
 
+        public override void _ExitTree()
+        {
+            _errorDialog?.QueueFree();
+            _confirmCreateSlnDialog?.QueueFree();
+        }
+
         private void OnSettingsChanged()
         {
             // We want to force NoConsoleLogging to true when the VerbosityLevel is at Detailed or above.
