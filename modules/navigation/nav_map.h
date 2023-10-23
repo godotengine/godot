@@ -190,6 +190,8 @@ public:
 		return map_update_id;
 	}
 
+	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
+
 	void sync();
 	void step(real_t p_deltatime);
 	void dispatch_callbacks();
