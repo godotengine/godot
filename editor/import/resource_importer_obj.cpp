@@ -517,7 +517,7 @@ String ResourceImporterOBJ::get_importer_name() const {
 }
 
 String ResourceImporterOBJ::get_visible_name() const {
-	return "OBJ As Mesh";
+	return "OBJ as Mesh";
 }
 
 void ResourceImporterOBJ::get_recognized_extensions(List<String> *p_extensions) const {
