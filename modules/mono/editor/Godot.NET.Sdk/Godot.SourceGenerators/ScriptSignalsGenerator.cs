@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -122,6 +124,74 @@ namespace Godot.SourceGenerators
             source.Append("\n{\n");
 
             var members = symbol.GetMembers();
+
+            // Parse interfaces associated with this class and try to generate signals in the current class symbol
+            var interfaceSignalDelegateSymbols = symbol.Interfaces
+                .Where(s => s.TypeKind == TypeKind.Interface && s.Kind == SymbolKind.NamedType)
+                .Cast<INamedTypeSymbol>()
+                .Select(n => n.GetMembers()
+                    .Where(s => s.Kind == SymbolKind.NamedType)
+                    .Cast<INamedTypeSymbol>()
+                    .Where(member => member.TypeKind == TypeKind.Delegate)
+                    .Where(member => member.GetAttributes()
+                        .Any(a => a.AttributeClass?.IsGodotSignalAttribute() ?? false)
+                    )
+                )
+                .SelectMany(s => s)
+                .ToArray();
+
+            var interfaceSignalNames = interfaceSignalDelegateSymbols
+                .Select(s => s.Name)
+                .ToArray();
+
+            // Compare all signal members of implemented interfaces and check for duplicates
+            var invalidSignals = new List<INamedTypeSymbol>();
+            for (var x = 0; x < interfaceSignalNames.Length; x++)
+            {
+                var a = interfaceSignalNames[x];
+                for (var y = 0; y < interfaceSignalNames.Length; y++)
+                {
+                    var b = interfaceSignalNames[y];
+                    if (y == x) continue; // skip over self
+
+                    if (a.Equals(b, StringComparison.InvariantCulture) && !string.IsNullOrWhiteSpace(a) &&
+                        !string.IsNullOrWhiteSpace(b))
+                    {
+                        var invalidSignalName = interfaceSignalDelegateSymbols
+                            .First(s => s.Name == a);
+                        Common.ReportSignalNameIsDuplicateAcrossImplementedInterfaces(context,
+                            invalidSignalName,
+                            symbol
+                        );
+                        invalidSignals.Add(invalidSignalName);
+                    }
+                }
+
+                var existingMember = members.FirstOrDefault(member =>
+                    member.Name == a ||
+                    member.Name.Replace("EventHandler", "") == a ||
+                    a.Replace("EventHandler", "") == member.Name
+                );
+                if (existingMember is not null)
+                {
+                    var invalidSignal = interfaceSignalDelegateSymbols
+                        .First(s => s.Name == a);
+                    Common.ReportSignalNameAlreadyExistsInClass(context,
+                        symbol,
+                        existingMember,
+                        invalidSignal
+                    );
+                    invalidSignals.Add(invalidSignal);
+                }
+            }
+
+            // Add interface signals to class
+            var mem = members.ToList();
+            mem.AddRange(
+                interfaceSignalDelegateSymbols
+                    .Where(s => !invalidSignals.Contains(s))
+            );
+            members = mem.ToImmutableArray();
 
             var signalDelegateSymbols = members
                 .Where(s => s.Kind == SymbolKind.NamedType)

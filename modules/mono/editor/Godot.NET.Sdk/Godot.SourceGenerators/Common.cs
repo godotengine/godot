@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -302,6 +303,57 @@ namespace Godot.SourceGenerators
                     isEnabledByDefault: true,
                     description,
                     helpLinkUri: string.Format(_helpLinkFormat, "GD0203")),
+                location,
+                location?.SourceTree?.FilePath));
+        }
+
+        public static void ReportSignalNameIsDuplicateAcrossImplementedInterfaces(GeneratorExecutionContext context,
+                                                                                  INamedTypeSymbol interfaceMember,
+                                                                                  INamedTypeSymbol classSymbol)
+        {
+            var locations = classSymbol.Locations;
+            var location = locations.FirstOrDefault(l => l.SourceTree != null) ?? locations.FirstOrDefault();
+
+            var message =
+                $"Signal defined in {interfaceMember.Name} already exists in other interfaces that are implemented in {classSymbol.Name} class.";
+
+            var description = $"{message}. Rename the member in either of the inherited interfaces to fix this.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GD0204",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0204")),
+                location,
+                location?.SourceTree?.FilePath));
+        }
+
+        public static void ReportSignalNameAlreadyExistsInClass(GeneratorExecutionContext context,
+                                                                INamedTypeSymbol classSymbol,
+                                                                ISymbol existingMember,
+                                                                ISymbol invalidSignal)
+        {
+            var locations = classSymbol.Locations;
+            var location = locations.FirstOrDefault(l => l.SourceTree != null) ?? locations.FirstOrDefault();
+
+            var message =
+                $"Member {existingMember.Name} in {classSymbol.Name} conflicts with signal {invalidSignal.Name} from the interface(s) the class {classSymbol.Name} implements.";
+
+            var description = $"{message}. Rename the member in the interface with the signal or rename the class member.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GD0205",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0205")),
                 location,
                 location?.SourceTree?.FilePath));
         }
