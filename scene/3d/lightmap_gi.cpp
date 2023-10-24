@@ -995,6 +995,12 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 		for (int i = 0; i < lights_found.size(); i++) {
 			Light3D *light = lights_found[i].light;
+			if (light->is_editor_only()) {
+				// Don't include editor-only lights in the lightmap bake,
+				// as this results in inconsistent visuals when running the project.
+				continue;
+			}
+
 			Transform3D xf = lights_found[i].xform;
 
 			// For the lightmapper, the indirect energy represents the multiplier for the indirect bounces caused by the light, so the value is not converted when using physical units.
@@ -1008,7 +1014,9 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			if (Object::cast_to<DirectionalLight3D>(light)) {
 				DirectionalLight3D *l = Object::cast_to<DirectionalLight3D>(light);
-				lightmapper->add_directional_light(light->get_bake_mode() == Light3D::BAKE_STATIC, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
+				if (l->get_sky_mode() != DirectionalLight3D::SKY_MODE_SKY_ONLY) {
+					lightmapper->add_directional_light(light->get_bake_mode() == Light3D::BAKE_STATIC, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
+				}
 			} else if (Object::cast_to<OmniLight3D>(light)) {
 				OmniLight3D *l = Object::cast_to<OmniLight3D>(light);
 				if (use_physical_light_units) {
