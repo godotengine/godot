@@ -44,16 +44,22 @@ void AudioStreamImportSettings::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &AudioStreamImportSettings::_reimport));
 		} break;
 
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+
 			_preview->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 			color_rect->set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
+
+			_current_label->begin_bulk_theme_override();
 			_current_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 			_current_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+			_current_label->end_bulk_theme_override();
+
+			_duration_label->begin_bulk_theme_override();
 			_duration_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 			_duration_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+			_duration_label->end_bulk_theme_override();
 
 			zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 			zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));

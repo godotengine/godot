@@ -49,8 +49,6 @@
 		<theme_item name="grabber_pressed" data_type="style" type="StyleBox">
 			Used when the grabber is being dragged.
 		</theme_item>
-		<theme_item name="hscroll" data_type="style" type="StyleBox">
-		</theme_item>
 		<theme_item name="scroll" data_type="style" type="StyleBox">
 			Used as background of this [ScrollBar].
 		</theme_item>

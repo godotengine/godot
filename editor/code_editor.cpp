@@ -134,6 +134,13 @@ void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void FindReplaceBar::_focus_lost() {
+	if (Input::get_singleton()->is_action_pressed(SNAME("ui_cancel"))) {
+		// Unfocused after pressing Escape, so hide the bar.
+		_hide_bar(true);
+	}
+}
+
 bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) {
 	if (!preserve_cursor) {
 		text_editor->remove_secondary_carets();
@@ -499,8 +506,8 @@ bool FindReplaceBar::search_next() {
 	return _search(flags, line, col);
 }
 
-void FindReplaceBar::_hide_bar() {
-	if (replace_text->has_focus() || search_text->has_focus()) {
+void FindReplaceBar::_hide_bar(bool p_force_focus) {
+	if (replace_text->has_focus() || search_text->has_focus() || p_force_focus) {
 		text_editor->grab_focus();
 	}
 
@@ -698,6 +705,7 @@ FindReplaceBar::FindReplaceBar() {
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect("text_changed", callable_mp(this, &FindReplaceBar::_search_text_changed));
 	search_text->connect("text_submitted", callable_mp(this, &FindReplaceBar::_search_text_submitted));
+	search_text->connect("focus_exited", callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	matches_label = memnew(Label);
 	hbc_button_search->add_child(matches_label);
@@ -732,6 +740,7 @@ FindReplaceBar::FindReplaceBar() {
 	vbc_lineedit->add_child(replace_text);
 	replace_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	replace_text->connect("text_submitted", callable_mp(this, &FindReplaceBar::_replace_text_submitted));
+	replace_text->connect("focus_exited", callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	replace = memnew(Button);
 	hbc_button_replace->add_child(replace);
@@ -752,7 +761,7 @@ FindReplaceBar::FindReplaceBar() {
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
 	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->connect("pressed", callable_mp(this, &FindReplaceBar::_hide_bar));
+	hide_button->connect("pressed", callable_mp(this, &FindReplaceBar::_hide_bar).bind(false));
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 }
 
@@ -773,7 +782,7 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 	}
 
 	if (!text_editor->has_focus()) {
-		if ((find_replace_bar != nullptr && find_replace_bar->is_visible()) && (find_replace_bar->has_focus() || find_replace_bar->is_ancestor_of(get_viewport()->gui_get_focus_owner()))) {
+		if ((find_replace_bar != nullptr && find_replace_bar->is_visible()) && (find_replace_bar->has_focus() || (get_viewport()->gui_get_focus_owner() && find_replace_bar->is_ancestor_of(get_viewport()->gui_get_focus_owner())))) {
 			if (ED_IS_SHORTCUT("script_text_editor/find_next", key_event)) {
 				find_replace_bar->search_next();
 				accept_event();
@@ -1505,7 +1514,8 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 			// Empty lines should not be counted.
 			bool is_empty = text_editor->get_line(line).strip_edges().is_empty();
 			is_all_empty = is_all_empty && is_empty;
-			if (!is_empty && (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx) != delimiter)) {
+			// `.left(1)` here because get_delimiter_start_key will return `##` instead of `#` when there is multiple comment delimiter in a line.
+			if (!is_empty && (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx).left(1) != delimiter)) {
 				is_commented = false;
 				break;
 			}
@@ -1708,6 +1718,8 @@ void CodeTextEditor::_update_text_editor_theme() {
 	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
 	error->add_theme_font_override("font", status_bar_font);
 	error->add_theme_font_size_override("font_size", status_bar_font_size);
+	error->end_bulk_theme_override();
+
 	int count = status_bar->get_child_count();
 	for (int i = 0; i < count; i++) {
 		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
@@ -1716,7 +1728,6 @@ void CodeTextEditor::_update_text_editor_theme() {
 			n->add_theme_font_size_override("font_size", status_bar_font_size);
 		}
 	}
-	error->end_bulk_theme_override();
 }
 
 void CodeTextEditor::_on_settings_change() {
@@ -1824,25 +1835,28 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_update_status_bar_theme() {
 	error_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
+	warning_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+
+	error_button->begin_bulk_theme_override();
 	error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 	error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+	error_button->end_bulk_theme_override();
 
-	warning_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+	warning_button->begin_bulk_theme_override();
 	warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 	warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+	warning_button->end_bulk_theme_override();
 
+	line_and_col_txt->begin_bulk_theme_override();
 	line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 	line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+	line_and_col_txt->end_bulk_theme_override();
 }
 
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			_update_status_bar_theme();
-		} break;
-
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_status_bar_theme();
 			if (toggle_scripts_button->is_visible()) {

@@ -298,6 +298,8 @@ public:
 		ARRAY_FLAG_FORMAT_VERSION_MASK = 0xFF, // 8 bits version
 	};
 
+	static_assert(sizeof(ArrayFormat) == 8, "ArrayFormat should be 64 bits long.");
+
 	enum PrimitiveType {
 		PRIMITIVE_POINTS,
 		PRIMITIVE_LINES,
@@ -1630,8 +1632,14 @@ public:
 	RenderingServer();
 	virtual ~RenderingServer();
 
+#ifdef TOOLS_ENABLED
+	typedef void (*SurfaceUpgradeCallback)();
+	void set_surface_upgrade_callback(SurfaceUpgradeCallback p_callback);
+	void set_warn_on_surface_upgrade(bool p_warn);
+#endif
+
 #ifndef DISABLE_DEPRECATED
-	static void _fix_surface_compatibility(SurfaceData &p_surface);
+	void fix_surface_compatibility(SurfaceData &p_surface, const String &p_path = "");
 #endif
 
 private:
@@ -1647,6 +1655,10 @@ private:
 	TypedArray<Dictionary> _instance_geometry_get_shader_parameter_list(RID p_instance) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
+#ifdef TOOLS_ENABLED
+	SurfaceUpgradeCallback surface_upgrade_callback = nullptr;
+	bool warn_on_surface_upgrade = true;
+#endif
 };
 
 // Make variant understand the enums.

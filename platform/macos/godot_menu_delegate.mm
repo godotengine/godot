@@ -56,9 +56,16 @@
 - (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item {
 	if (item) {
 		GodotMenuItem *value = [item representedObject];
-		if (value && value->hover_callback != Callable()) {
+		if (value && value->hover_callback.is_valid()) {
 			// If custom callback is set, use it.
-			value->hover_callback.call(value->meta);
+			Variant ret;
+			Callable::CallError ce;
+			const Variant *args[1] = { &value->meta };
+
+			value->hover_callback.callp(args, 1, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat(RTR("Failed to execute menu hover callback: %s."), Variant::get_callable_error_text(value->hover_callback, args, 1, ce)));
+			}
 		}
 	}
 }
@@ -73,19 +80,28 @@
 
 			if (ev_modifiers == item_modifiers) {
 				GodotMenuItem *value = [menu_item representedObject];
-				if (value->key_callback != Callable()) {
-					// If custom callback is set, use it.
-					value->key_callback.call(value->meta);
-				} else {
-					// Otherwise redirect event to the engine.
-					if (DisplayServer::get_singleton()) {
-						[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
-					}
-				}
+				if (value) {
+					if (value->key_callback.is_valid()) {
+						// If custom callback is set, use it.
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[1] = { &value->meta };
 
-				// Suppress default menu action.
-				*target = self;
-				*action = @selector(doNothing:);
+						value->key_callback.callp(args, 1, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat(RTR("Failed to execute menu key callback: %s."), Variant::get_callable_error_text(value->key_callback, args, 1, ce)));
+						}
+					} else {
+						// Otherwise redirect event to the engine.
+						if (DisplayServer::get_singleton()) {
+							[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
+						}
+					}
+
+					// Suppress default menu action.
+					*target = self;
+					*action = @selector(doNothing:);
+				}
 				return YES;
 			}
 		}

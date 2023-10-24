@@ -278,6 +278,7 @@ struct _GDScriptMemberSort {
 void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 	placeholders.erase(p_placeholder);
 }
+
 #endif
 
 void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const {
@@ -468,7 +469,7 @@ String GDScript::get_class_icon_path() const {
 }
 #endif
 
-bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update) {
+bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update, bool p_base_exports_changed) {
 #ifdef TOOLS_ENABLED
 
 	static Vector<GDScript *> base_caches;
@@ -477,7 +478,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 	}
 	base_caches.append(this);
 
-	bool changed = false;
+	bool changed = p_base_exports_changed;
 
 	if (source_changed_cache) {
 		source_changed_cache = false;
@@ -604,9 +605,15 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 void GDScript::update_exports() {
 #ifdef TOOLS_ENABLED
+	_update_exports_down(false);
+#endif
+}
 
+#ifdef TOOLS_ENABLED
+void GDScript::_update_exports_down(bool p_base_exports_changed) {
 	bool cyclic_error = false;
-	_update_exports(&cyclic_error);
+	bool changed = _update_exports(&cyclic_error, false, nullptr, p_base_exports_changed);
+
 	if (cyclic_error) {
 		return;
 	}
@@ -616,14 +623,14 @@ void GDScript::update_exports() {
 	for (const ObjectID &E : copy) {
 		Object *id = ObjectDB::get_instance(E);
 		GDScript *s = Object::cast_to<GDScript>(id);
+
 		if (!s) {
 			continue;
 		}
-		s->update_exports();
+		s->_update_exports_down(p_base_exports_changed || changed);
 	}
-
-#endif
 }
+#endif
 
 String GDScript::_get_debug_path() const {
 	if (is_built_in() && !get_name().is_empty()) {
@@ -1379,6 +1386,36 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 }
 #endif
 
+thread_local GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_thread_local;
+
+GDScript::UpdatableFuncPtrElement GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
+	UpdatableFuncPtrElement result = {};
+
+	{
+		MutexLock lock(func_ptrs_to_update_thread_local.mutex);
+		result.element = func_ptrs_to_update_thread_local.ptrs.push_back(p_func_ptr_ptr);
+		result.mutex = &func_ptrs_to_update_thread_local.mutex;
+
+		if (likely(func_ptrs_to_update_thread_local.initialized)) {
+			return result;
+		}
+
+		func_ptrs_to_update_thread_local.initialized = true;
+	}
+
+	MutexLock lock(func_ptrs_to_update_mutex);
+	func_ptrs_to_update.push_back(&func_ptrs_to_update_thread_local);
+
+	return result;
+}
+
+void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement p_func_ptr_element) {
+	ERR_FAIL_NULL(p_func_ptr_element.element);
+	ERR_FAIL_NULL(p_func_ptr_element.mutex);
+	MutexLock lock(*p_func_ptr_element.mutex);
+	p_func_ptr_element.element->erase();
+}
+
 void GDScript::clear(ClearData *p_clear_data) {
 	if (clearing) {
 		return;
@@ -1394,6 +1431,16 @@ void GDScript::clear(ClearData *p_clear_data) {
 	if (clear_data == nullptr) {
 		clear_data = &data;
 		is_root = true;
+	}
+
+	{
+		MutexLock outer_lock(func_ptrs_to_update_mutex);
+		for (UpdatableFuncPtr *updatable : func_ptrs_to_update) {
+			MutexLock inner_lock(updatable->mutex);
+			for (GDScriptFunction **func_ptr_ptr : updatable->ptrs) {
+				*func_ptr_ptr = nullptr;
+			}
+		}
 	}
 
 	RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();

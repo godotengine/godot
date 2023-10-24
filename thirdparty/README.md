@@ -74,7 +74,7 @@ fix build with our own copy of zstd (patch in `patches`).
 ## brotli
 
 - Upstream: https://github.com/google/brotli
-- Version: git (ed1995b6bda19244070ab5d331111f16f67c8054, 2023)
+- Version: 1.1.0 (ed738e842d2fbdf2d6459e39267a633c4a9b2f5d, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -683,6 +683,7 @@ Files extracted from upstream source:
 - `src/*.{c,h}`
 - `src/external/jsoncpp/include/`
 - `src/external/jsoncpp/src/lib_json/`
+- `src/external/jsoncpp/{AUTHORS,LICENSE}`
 - `LICENSE` and `COPYING.adoc`
 
 Exclude:
@@ -804,7 +805,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.11.0 (12260198d12719ea20939b68492accfc155d9ff5, 2023)
+- Version: 0.11.2 (b01fe9bf4461146304d3520d6dc699cf580a3744, 2023)
 - License: MIT
 
 Files extracted from upstream source:

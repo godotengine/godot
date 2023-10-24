@@ -574,6 +574,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_msdf_pixel_range(cache[p_cache_index], msdf_pixel_range);
 			TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
 			TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
+			TS->font_set_fixed_size_scale_mode(cache[p_cache_index], fixed_size_scale_mode);
 			TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
 			TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
 			TS->font_set_hinting(cache[p_cache_index], hinting);
@@ -889,6 +890,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fixed_size", "fixed_size"), &FontFile::set_fixed_size);
 	ClassDB::bind_method(D_METHOD("get_fixed_size"), &FontFile::get_fixed_size);
 
+	ClassDB::bind_method(D_METHOD("set_fixed_size_scale_mode", "fixed_size_scale_mode"), &FontFile::set_fixed_size_scale_mode);
+	ClassDB::bind_method(D_METHOD("get_fixed_size_scale_mode"), &FontFile::get_fixed_size_scale_mode);
+
 	ClassDB::bind_method(D_METHOD("set_allow_system_fallback", "allow_system_fallback"), &FontFile::set_allow_system_fallback);
 	ClassDB::bind_method(D_METHOD("is_allow_system_fallback"), &FontFile::is_allow_system_fallback);
 
@@ -1015,6 +1019,7 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_STORAGE), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size", "get_fixed_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size_scale_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size_scale_mode", "get_fixed_size_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_opentype_feature_overrides", "get_opentype_feature_overrides");
 }
 
@@ -1368,6 +1373,7 @@ void FontFile::reset_state() {
 	msdf_pixel_range = 14;
 	msdf_size = 128;
 	fixed_size = 0;
+	fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
 	oversampling = 0.f;
 
 	Font::reset_state();
@@ -2142,6 +2148,21 @@ void FontFile::set_fixed_size(int p_fixed_size) {
 
 int FontFile::get_fixed_size() const {
 	return fixed_size;
+}
+
+void FontFile::set_fixed_size_scale_mode(TextServer::FixedSizeScaleMode p_fixed_size_scale_mode) {
+	if (fixed_size_scale_mode != p_fixed_size_scale_mode) {
+		fixed_size_scale_mode = p_fixed_size_scale_mode;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_fixed_size_scale_mode(cache[i], fixed_size_scale_mode);
+		}
+		emit_changed();
+	}
+}
+
+TextServer::FixedSizeScaleMode FontFile::get_fixed_size_scale_mode() const {
+	return fixed_size_scale_mode;
 }
 
 void FontFile::set_allow_system_fallback(bool p_allow_system_fallback) {

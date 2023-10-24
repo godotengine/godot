@@ -95,6 +95,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_fixed_size, "font_rid", "fixed_size");
 	GDVIRTUAL_BIND(_font_get_fixed_size, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_fixed_size_scale_mode, "font_rid", "fixed_size_scale_mode");
+	GDVIRTUAL_BIND(_font_get_fixed_size_scale_mode, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_allow_system_fallback, "font_rid", "allow_system_fallback");
 	GDVIRTUAL_BIND(_font_is_allow_system_fallback, "font_rid");
 
@@ -556,6 +559,16 @@ void TextServerExtension::font_set_fixed_size(const RID &p_font_rid, int64_t p_f
 int64_t TextServerExtension::font_get_fixed_size(const RID &p_font_rid) const {
 	int64_t ret = 0;
 	GDVIRTUAL_CALL(_font_get_fixed_size, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_fixed_size_scale_mode(const RID &p_font_rid, TextServer::FixedSizeScaleMode p_fixed_size_scale_mode) {
+	GDVIRTUAL_CALL(_font_set_fixed_size_scale_mode, p_font_rid, p_fixed_size_scale_mode);
+}
+
+TextServer::FixedSizeScaleMode TextServerExtension::font_get_fixed_size_scale_mode(const RID &p_font_rid) const {
+	FixedSizeScaleMode ret = FIXED_SIZE_SCALE_DISABLE;
+	GDVIRTUAL_CALL(_font_get_fixed_size_scale_mode, p_font_rid, ret);
 	return ret;
 }
 

@@ -572,6 +572,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			String prop_name = dp.name.strip_edges();
 			if (!prop_name.is_empty()) {
 				Label *label = memnew(Label);
+				label->set_auto_translate(false); // TODO: Implement proper translation switch.
 				label->set_text(prop_name + ":");
 				hbox->add_child(label);
 			}
@@ -843,6 +844,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					hb->add_child(remove_btn);
 				} else {
 					Label *label = memnew(Label);
+					label->set_auto_translate(false); // TODO: Implement proper translation switch.
 					label->set_text(name_left);
 					label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
 					hb->add_child(label);
@@ -892,6 +894,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_output_port_type).bind(p_id, i), CONNECT_DEFERRED);
 				} else {
 					Label *label = memnew(Label);
+					label->set_auto_translate(false); // TODO: Implement proper translation switch.
 					label->set_text(name_right);
 					label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
 					hb->add_child(label);
@@ -1092,9 +1095,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 		}
 
+		expression_box->begin_bulk_theme_override();
 		expression_box->add_theme_font_override("font", editor->get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
 		expression_box->add_theme_font_size_override("font_size", editor->get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 		expression_box->add_theme_color_override("font_color", text_color);
+		expression_box->end_bulk_theme_override();
+
 		expression_syntax_highlighter->set_number_color(number_color);
 		expression_syntax_highlighter->set_symbol_color(symbol_color);
 		expression_syntax_highlighter->set_function_color(function_color);
@@ -4194,9 +4200,12 @@ void VisualShaderEditor::_notification(int p_what) {
 					}
 				}
 
+				preview_text->begin_bulk_theme_override();
 				preview_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
 				preview_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 				preview_text->add_theme_color_override("font_color", text_color);
+				preview_text->end_bulk_theme_override();
+
 				syntax_highlighter->set_number_color(number_color);
 				syntax_highlighter->set_symbol_color(symbol_color);
 				syntax_highlighter->set_function_color(function_color);
@@ -4210,9 +4219,11 @@ void VisualShaderEditor::_notification(int p_what) {
 				preview_text->add_comment_delimiter("//", "", true);
 
 				error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+				error_label->begin_bulk_theme_override();
 				error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 				error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
 				error_label->add_theme_color_override("font_color", error_color);
+				error_label->end_bulk_theme_override();
 			}
 
 			tools->set_icon(get_editor_theme_icon(SNAME("Tools")));
@@ -6515,6 +6526,7 @@ public:
 			} else {
 				prop_name_str = prop_name_str.capitalize() + ":";
 			}
+			prop_name->set_auto_translate(false); // TODO: Implement proper translation switch.
 			prop_name->set_text(prop_name_str);
 			prop_name->set_visible(false);
 			hbox->add_child(prop_name);

@@ -564,13 +564,13 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	params.lifetime = (1.0 - lifetime_randomness * rand_from_seed(alt_seed));\n";
 	code += "	params.color = color_value;\n";
 	if (color_initial_ramp.is_valid()) {
-		code += "	params.color = texture(color_initial_ramp, vec2(rand_from_seed(alt_seed)));\n";
+		code += "	params.color *= texture(color_initial_ramp, vec2(rand_from_seed(alt_seed)));\n";
 	}
 	if (emission_color_texture.is_valid() && (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS)) {
 		code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
 		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
-		code += "	parameters.color *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
+		code += "	params.color *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
 	}
 	code += "}\n";
 
@@ -663,7 +663,7 @@ void ParticleProcessMaterial::_update_shader() {
 		// No reason to run all these expensive calculation below if we have no orbit velocity
 		// HOWEVER
 		// May be a bad idea for fps consistency?
-		code += "if(abs(param.orbit_velocity) < 0.01){ return vec3(0.0);}\n";
+		code += "if(abs(param.orbit_velocity) < 0.01 || delta < 0.001){ return vec3(0.0);}\n";
 		code += "\n";
 		code += "	vec3 displacement = vec3(0.);\n";
 		code += "	float pi = 3.14159;\n";
@@ -678,7 +678,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "       vec3 pos = transform[3].xyz;\n";
 			code += "       vec3 org = emission_transform[3].xyz;\n";
 			code += "       vec3 diff = pos - org;\n";
-			code += "	     float ang = orbit_amount * delta * pi * 2.0;\n";
+			code += "	     float ang = orbit_amount * pi * 2.0;\n";
 			code += "	     mat2 rot = mat2(vec2(cos(ang), -sin(ang)), vec2(sin(ang), cos(ang)));\n";
 			code += "	     displacement.xy -= diff.xy;\n";
 			code += "        displacement.xy += rot * diff.xy;\n";
@@ -727,7 +727,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "	displacement += new_pos - local_pos;\n";
 			code += "\n";
 		}
-		code += "	return (emission_transform * vec4(displacement, 0.0)).xyz;\n";
+		code += "       return (emission_transform * vec4(displacement/delta, 0.0)).xyz;\n";
 		code += "}\n";
 		code += "\n";
 		code += "\n";
@@ -758,7 +758,7 @@ void ParticleProcessMaterial::_update_shader() {
 
 	code += "}\n";
 
-	code += "vec3 process_radial_displacement(DynamicsParameters param, float lifetime, inout uint alt_seed, mat4 transform, mat4 emission_transform, float delta){\n";
+	code += "vec3 process_radial_displacement(DynamicsParameters param, float lifetime, inout uint alt_seed, mat4 transform, mat4 emission_transform){\n";
 	code += "	vec3 radial_displacement = vec3(0.0);\n";
 	code += "	float radial_displacement_multiplier = 1.0;\n";
 	if (tex_parameters[PARAM_RADIAL_VELOCITY].is_valid()) {
@@ -773,10 +773,10 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		radial_displacement = normalize(radial_displacement) * min(abs((radial_displacement_multiplier * param.radial_velocity)), length(transform[3].xyz - global_pivot));\n";
 	code += "		}\n";
 	code += "	\n";
-	code += "	return radial_displacement * delta;\n";
+	code += "	return radial_displacement;\n";
 	code += "}\n";
 	if (tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
-		code += "vec3 process_directional_displacement(DynamicsParameters param, float lifetime_percent,mat4 transform, mat4 emission_transform, float delta){\n";
+		code += "vec3 process_directional_displacement(DynamicsParameters param, float lifetime_percent,mat4 transform, mat4 emission_transform){\n";
 		code += "	vec3 displacement = vec3(0.);\n";
 		if (directional_velocity_global) {
 			code += "		displacement = texture(directional_velocity_curve, vec2(lifetime_percent)).xyz * param.directional_velocity;\n";
@@ -784,7 +784,7 @@ void ParticleProcessMaterial::_update_shader() {
 		} else {
 			code += "		displacement = texture(directional_velocity_curve, vec2(lifetime_percent)).xyz * param.directional_velocity;\n";
 		}
-		code += "	return displacement * delta;\n";
+		code += "	return displacement;\n";
 		code += "}\n";
 	}
 
@@ -809,9 +809,6 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "void start() {\n";
 	code += "	uint base_number = NUMBER;\n";
 	code += "	uint alt_seed = hash(base_number + uint(1) + RANDOM_SEED);\n";
-	code += "	if (rand_from_seed(alt_seed) > AMOUNT_RATIO) {\n";
-	code += "		ACTIVE = false;\n";
-	code += "	}\n";
 	code += "	DisplayParameters params;\n";
 	code += "	calculate_initial_display_params(params, alt_seed);\n";
 	code += "	// reset alt seed?\n";
@@ -821,6 +818,9 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	PhysicalParameters physics_params;\n";
 	code += "	calculate_initial_physical_params(physics_params, alt_seed);\n";
 	code += "   process_display_param(params, 0.0);\n";
+	code += "	if (rand_from_seed(alt_seed) > AMOUNT_RATIO) {\n";
+	code += "		ACTIVE = false;\n";
+	code += "	}\n";
 	code += "	\n";
 	code += "	float pi = 3.14159;\n";
 	code += "	float degree_to_rad = pi / 180.0;\n";
@@ -850,6 +850,27 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		}\n";
 	code += "	if (RESTART_VELOCITY) {\n";
 	code += "		VELOCITY = get_random_direction_from_spread(alt_seed, spread) * dynamic_params.initial_velocity_multiplier;\n";
+	if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
+		code += "		int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+		code += "		ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
+		code += "		ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
+		if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+			code += "		{\n";
+			code += "			mat2 rotm;";
+			code += "			rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
+			code += "			rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
+			code += "			VELOCITY.xy = rotm * VELOCITY.xy;\n";
+			code += "		}\n";
+		} else {
+			code += "		{\n";
+			code += "			vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xyz;\n";
+			code += "			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
+			code += "			vec3 tangent = normalize(cross(v0, normal));\n";
+			code += "			vec3 bitangent = normalize(cross(tangent, normal));\n";
+			code += "			VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
+			code += "		}\n";
+		}
+	}
 	code += "		}\n";
 	code += "	process_display_param(params, 0.);\n";
 	code += "//	process_dynamic_parameters(dynamic_params, 0., alt_seed, TRANSFORM, EMISSION_TRANSFORM, DELTA);\n";
@@ -898,10 +919,10 @@ void ParticleProcessMaterial::_update_shader() {
 	}
 	code += "	// calculate all velocity\n";
 	code += "	\n";
-	code += "	controlled_displacement += process_radial_displacement(dynamic_params, lifetime_percent, alt_seed, TRANSFORM, EMISSION_TRANSFORM, DELTA);\n";
+	code += "	controlled_displacement += process_radial_displacement(dynamic_params, lifetime_percent, alt_seed, TRANSFORM, EMISSION_TRANSFORM);\n";
 	code += "	\n";
 	if (tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
-		code += "	controlled_displacement += process_directional_displacement(dynamic_params, lifetime_percent, TRANSFORM, EMISSION_TRANSFORM, DELTA);\n";
+		code += "	controlled_displacement += process_directional_displacement(dynamic_params, lifetime_percent, TRANSFORM, EMISSION_TRANSFORM);\n";
 	}
 	code += "	\n";
 	code += "	process_physical_parameters(physics_params, lifetime_percent);\n";
@@ -939,7 +960,9 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		if (physics_params.damping > 0.0) {\n";
 	if (!particle_flags[PARTICLE_FLAG_DAMPING_AS_FRICTION]) {
 		code += "				float v = length(VELOCITY);\n";
-		code += "				v -= physics_params.damping * DELTA;\n";
+		code += "				// Realistic friction formula. We assume the mass of a particle to be 0.05kg.\n";
+		code += "				float damp = v * v * physics_params.damping * 0.05 * DELTA;\n";
+		code += "				v -= damp;\n";
 		code += "				if (v < 0.0) {\n";
 		code += "					VELOCITY = vec3(0.0);\n";
 		code += "				} else {\n";
@@ -973,7 +996,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		ACTIVE = false;\n";
 		code += "	}\n";
 	}
-	code += "	vec3 final_velocity = controlled_displacement/DELTA + VELOCITY;\n";
+	code += "	vec3 final_velocity = controlled_displacement + VELOCITY;\n";
 	code += "	\n";
 	code += "	// turbulence before limiting\n";
 	if (turbulence_enabled) {
@@ -984,12 +1007,16 @@ void ParticleProcessMaterial::_update_shader() {
 		}
 		code += "		\n";
 		code += "		vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz);\n";
-		code += "		if (!COLLIDED) {\n";
-		code += "			\n";
-		code += "			float vel_mag = length(final_velocity);\n";
-		code += "			float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0,1.0);\n";
-		code += "			final_velocity = mix(final_velocity, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
-		code += "		}\n";
+		// The following snippet causes massive performance hit. We don't need it as long as collision is disabled.
+		// Refer to GH-83744 for more info.
+		if (collision_mode != COLLISION_DISABLED) {
+			code += "		if (!COLLIDED) {\n";
+			code += "			\n";
+			code += "			float vel_mag = length(final_velocity);\n";
+			code += "			float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0,1.0);\n";
+			code += "			final_velocity = mix(final_velocity, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
+			code += "		}\n";
+		}
 	}
 	code += "	\n";
 	code += "	// limit velocity\n";

@@ -697,29 +697,28 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
 		if (InputMap::get_singleton()->event_is_action(p_event, E.key)) {
 			Action &action = action_state[E.key];
+			bool is_joypad_axis = jm.is_valid();
 			bool is_pressed = false;
-
 			if (!p_event->is_echo()) {
 				if (p_event->is_action_pressed(E.key)) {
-					if (jm.is_valid()) {
-						// If axis is already pressed, don't increase the pressed counter.
+					bool is_joypad_axis_valid_zone_enter = false;
+					if (is_joypad_axis) {
 						if (!action.axis_pressed) {
+							is_joypad_axis_valid_zone_enter = true;
 							action.pressed++;
 							action.axis_pressed = true;
 						}
 					} else {
 						action.pressed++;
 					}
-
-					is_pressed = true;
-					if (action.pressed == 1) {
+					if (action.pressed == 1 && (is_joypad_axis_valid_zone_enter || !is_joypad_axis)) {
 						action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
 						action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 					}
+					is_pressed = true;
 				} else {
 					bool is_released = true;
-					if (jm.is_valid()) {
-						// Same as above. Don't release axis when not pressed.
+					if (is_joypad_axis) {
 						if (action.axis_pressed) {
 							action.axis_pressed = false;
 						} else {
@@ -1096,7 +1095,8 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 		return;
 	}
 
-	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, p_value);
+	JoyAxisRange range;
+	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, p_value, range);
 
 	if (map.type == TYPE_BUTTON) {
 		bool pressed = map.value > 0.5;
@@ -1136,7 +1136,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	if (map.type == TYPE_AXIS) {
 		JoyAxis axis = JoyAxis(map.index);
 		float value = map.value;
-		if (axis == JoyAxis::TRIGGER_LEFT || axis == JoyAxis::TRIGGER_RIGHT) {
+		if (range == FULL_AXIS && (axis == JoyAxis::TRIGGER_LEFT || axis == JoyAxis::TRIGGER_RIGHT)) {
 			// Convert to a value between 0.0f and 1.0f.
 			value = 0.5f + value / 2.0f;
 		}
@@ -1242,7 +1242,7 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 	return event;
 }
 
-Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value) {
+Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range) {
 	JoyEvent event;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
@@ -1288,6 +1288,7 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 					case TYPE_AXIS:
 						event.index = (int)binding.output.axis.axis;
 						event.value = value;
+						r_range = binding.output.axis.range;
 						if (binding.output.axis.range != binding.input.axis.range) {
 							switch (binding.output.axis.range) {
 								case POSITIVE_HALF_AXIS:

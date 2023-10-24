@@ -1528,6 +1528,8 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			}
 		}
 	} else {
+		da->make_dir(new_path);
+
 		// Recursively duplicate all files inside the folder.
 		Ref<DirAccess> old_dir = DirAccess::open(old_path);
 		ERR_FAIL_COND(old_dir.is_null());
@@ -1776,12 +1778,12 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	// Present a more user friendly warning for name conflict.
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-#if defined(WINDOWS_ENABLED)
-	// Workaround case insensitivity on Windows.
-	if ((da->file_exists(new_path) || da->dir_exists(new_path)) && new_path.to_lower() != old_path.to_lower()) {
-#else
-	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
-#endif
+
+	bool new_exist = (da->file_exists(new_path) || da->dir_exists(new_path));
+	if (!da->is_case_sensitive(new_path.get_base_dir())) {
+		new_exist = new_exist && (new_path.to_lower() != old_path.to_lower());
+	}
+	if (new_exist) {
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
 		ti->set_text(col_index, old_name);
 		return;
@@ -1894,22 +1896,15 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		if (p_overwrite == OVERWRITE_RENAME) {
 			new_paths.write[i] = _get_unique_name(to_move[i], p_to_path);
 		} else {
-			new_paths.write[i] = p_to_path.path_join(to_move[i].path.get_file());
+			new_paths.write[i] = p_to_path.path_join(to_move[i].path.trim_suffix("/").get_file());
 		}
 	}
 
 	if (p_copy) {
 		bool is_copied = false;
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_duplicate_item(to_move[i], new_path);
+			if (to_move[i].path != new_paths[i]) {
+				_try_duplicate_item(to_move[i], new_paths[i]);
 				is_copied = true;
 			}
 		}
@@ -1934,15 +1929,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		HashMap<String, String> folder_renames;
 
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_move_item(to_move[i], new_path, file_renames, folder_renames);
+			if (to_move[i].path != new_paths[i]) {
+				_try_move_item(to_move[i], new_paths[i], file_renames, folder_renames);
 				is_moved = true;
 			}
 		}
@@ -2915,7 +2903,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("New Inherited Scene"), FILE_INHERIT);
 				if (GLOBAL_GET("application/run/main_scene") != filenames[0]) {
-					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
+					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTR("Set as Main Scene"), FILE_MAIN_SCENE);
 				}
 			} else {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scenes"), FILE_OPEN);
@@ -2975,7 +2963,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			folder_colors_menu->add_separator();
 
 			for (const KeyValue<String, Color> &E : folder_colors) {
-				folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR(E.key.capitalize()));
+				folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), E.key.capitalize());
 
 				folder_colors_menu->set_item_icon_modulate(-1, editor_is_dark_theme ? E.value : E.value * 2);
 				folder_colors_menu->set_item_metadata(-1, E.key);
@@ -3535,16 +3523,16 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTR("Open in External Program"));
 #endif
 
-	folder_colors = HashMap<String, Color>();
-	folder_colors["red"] = Color(1.0, 0.271, 0.271);
-	folder_colors["orange"] = Color(1.0, 0.561, 0.271);
-	folder_colors["yellow"] = Color(1.0, 0.890, 0.271);
-	folder_colors["green"] = Color(0.502, 1.0, 0.271);
-	folder_colors["teal"] = Color(0.271, 1.0, 0.635);
-	folder_colors["blue"] = Color(0.271, 0.843, 1.0);
-	folder_colors["purple"] = Color(0.502, 0.271, 1.0);
-	folder_colors["pink"] = Color(1.0, 0.271, 0.588);
-	folder_colors["gray"] = Color(0.616, 0.616, 0.616);
+	// Properly translating color names would require a separate HashMap, so for simplicity they are provided as comments.
+	folder_colors["red"] = Color(1.0, 0.271, 0.271); // TTR("Red")
+	folder_colors["orange"] = Color(1.0, 0.561, 0.271); // TTR("Orange")
+	folder_colors["yellow"] = Color(1.0, 0.890, 0.271); // TTR("Yellow")
+	folder_colors["green"] = Color(0.502, 1.0, 0.271); // TTR("Green")
+	folder_colors["teal"] = Color(0.271, 1.0, 0.635); // TTR("Teal")
+	folder_colors["blue"] = Color(0.271, 0.843, 1.0); // TTR("Blue")
+	folder_colors["purple"] = Color(0.502, 0.271, 1.0); // TTR("Purple")
+	folder_colors["pink"] = Color(1.0, 0.271, 0.588); // TTR("Pink")
+	folder_colors["gray"] = Color(0.616, 0.616, 0.616); // TTR("Gray")
 
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
 

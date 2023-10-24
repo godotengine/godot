@@ -4639,8 +4639,9 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 // Version 1: initial.
 // Version 2: Added shader name.
 // Version 3: Added writable.
+// Version 4: 64-bit vertex input mask.
 
-#define SHADER_BINARY_VERSION 3
+#define SHADER_BINARY_VERSION 4
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
 	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);

@@ -1156,6 +1156,11 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
+							if (dst[0] == 0 && dst[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								dst[0] = 65535;
+							}
 						}
 						src_offset += sizeof(uint8_t) * 4;
 					} else {
@@ -1167,6 +1172,11 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
+							if (dst[0] == 0 && dst[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								dst[0] = 65535;
+							}
 						}
 						src_offset += sizeof(float) * 4;
 					}
@@ -1628,7 +1638,12 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 #ifndef DISABLE_DEPRECATED
 		uint64_t surface_version = surface.format & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 		if (surface_version != ARRAY_FLAG_FORMAT_CURRENT_VERSION) {
-			RS::_fix_surface_compatibility(surface);
+			RS::get_singleton()->fix_surface_compatibility(surface, get_path());
+			surface_version = surface.format & (RS::ARRAY_FLAG_FORMAT_VERSION_MASK << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+			ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+					vformat("Surface version provided (%d) does not match current version (%d).",
+							(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
+							(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK));
 		}
 #endif
 
@@ -1998,17 +2013,19 @@ void ArrayMesh::regen_normal_maps() {
 		return;
 	}
 	Vector<Ref<SurfaceTool>> surfs;
+	Vector<uint64_t> formats;
 	for (int i = 0; i < get_surface_count(); i++) {
 		Ref<SurfaceTool> st = memnew(SurfaceTool);
 		st->create_from(Ref<ArrayMesh>(this), i);
 		surfs.push_back(st);
+		formats.push_back(surface_get_format(i));
 	}
 
 	clear_surfaces();
 
 	for (int i = 0; i < surfs.size(); i++) {
 		surfs.write[i]->generate_tangents();
-		surfs.write[i]->commit(Ref<ArrayMesh>(this));
+		surfs.write[i]->commit(Ref<ArrayMesh>(this), formats[i]);
 	}
 }
 

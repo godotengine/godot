@@ -2944,15 +2944,15 @@ TEST_CASE("[SceneTree][CodeEdit] region folding") {
 		CHECK(code_edit->is_line_code_region_end(2));
 
 		// Update code region delimiter when removing comment delimiter.
-		code_edit->set_text("//region region_name\nline2\n//endregion\n#region region_name\nline2\n#endregion");
+		code_edit->set_text("#region region_name\nline2\n#endregion\n//region region_name\nline2\n//endregion");
 		code_edit->clear_comment_delimiters();
 		code_edit->add_comment_delimiter("//", "");
-		code_edit->add_comment_delimiter("#", "");
+		code_edit->add_comment_delimiter("#", ""); // A shorter delimiter has higher priority.
 		CHECK(code_edit->is_line_code_region_start(0));
 		CHECK(code_edit->is_line_code_region_end(2));
 		CHECK_FALSE(code_edit->is_line_code_region_start(3));
 		CHECK_FALSE(code_edit->is_line_code_region_end(5));
-		code_edit->remove_comment_delimiter("//");
+		code_edit->remove_comment_delimiter("#");
 		CHECK_FALSE(code_edit->is_line_code_region_start(0));
 		CHECK_FALSE(code_edit->is_line_code_region_end(2));
 		CHECK(code_edit->is_line_code_region_start(3));

@@ -284,8 +284,12 @@ static void _applyComposition(SvgLoaderData& loaderData, Paint* paint, const Svg
 
             bool isMaskWhite = true;
             if (auto comp = _sceneBuildHelper(loaderData, compNode, vBox, svgPath, true, 0, &isMaskWhite)) {
-                Matrix finalTransform = _compositionTransform(paint, node, compNode, SvgNodeType::Mask);
-                comp->transform(finalTransform);
+                if (!compNode->node.mask.userSpace) {
+                    Matrix finalTransform = _compositionTransform(paint, node, compNode, SvgNodeType::Mask);
+                    comp->transform(finalTransform);
+                } else {
+                    if (node->transform) comp->transform(*node->transform);
+                }
 
                 if (compNode->node.mask.type == SvgMaskType::Luminance && !isMaskWhite) {
                     paint->composite(std::move(comp), CompositeMethod::LumaMask);

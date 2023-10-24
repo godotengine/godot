@@ -44,7 +44,7 @@ def get_opts():
         BoolVariable(
             "proxy_to_pthread",
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
-            True,
+            False,
         ),
     ]
 
@@ -162,7 +162,7 @@ def configure(env: "Environment"):
     env.AddMethod(create_template_zip, "CreateTemplateZip")
 
     # Closure compiler extern and support for ecmascript specs (const, let, etc).
-    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT6"
+    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT_2020"
 
     env["CC"] = "emcc"
     env["CXX"] = "em++"

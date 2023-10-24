@@ -5,8 +5,10 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Godot.SourceGenerators
 {
-    public static class Common
+    public static partial class Common
     {
+        private static readonly string _helpLinkFormat = $"{VersionDocsUrl}/tutorials/scripting/c_sharp/diagnostics/{{0}}.html";
+
         public static void ReportNonPartialGodotScriptClass(
             GeneratorExecutionContext context,
             ClassDeclarationSyntax cds, INamedTypeSymbol symbol
@@ -14,9 +16,9 @@ namespace Godot.SourceGenerators
         {
             string message =
                 "Missing partial modifier on declaration of type '" +
-                $"{symbol.FullQualifiedNameOmitGlobal()}' which is a subclass of '{GodotClasses.GodotObject}'";
+                $"{symbol.FullQualifiedNameOmitGlobal()}' that derives from '{GodotClasses.GodotObject}'";
 
-            string description = $"{message}. Subclasses of '{GodotClasses.GodotObject}' " +
+            string description = $"{message}. Classes that derive from '{GodotClasses.GodotObject}' " +
                                  "must be declared with the partial modifier.";
 
             context.ReportDiagnostic(Diagnostic.Create(
@@ -26,7 +28,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0001")),
                 cds.GetLocation(),
                 cds.SyntaxTree.FilePath));
         }
@@ -46,9 +49,9 @@ namespace Godot.SourceGenerators
 
             string message =
                 $"Missing partial modifier on declaration of type '{fullQualifiedName}', " +
-                $"which contains one or more subclasses of '{GodotClasses.GodotObject}'";
+                $"which contains nested classes that derive from '{GodotClasses.GodotObject}'";
 
-            string description = $"{message}. Subclasses of '{GodotClasses.GodotObject}' and their " +
+            string description = $"{message}. Classes that derive from '{GodotClasses.GodotObject}' and their " +
                                  "containing types must be declared with the partial modifier.";
 
             context.ReportDiagnostic(Diagnostic.Create(
@@ -58,7 +61,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0002")),
                 outerTypeDeclSyntax.GetLocation(),
                 outerTypeDeclSyntax.SyntaxTree.FilePath));
         }
@@ -85,7 +89,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0101")),
                 location,
                 location?.SourceTree?.FilePath));
         }
@@ -111,7 +116,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0102")),
                 location,
                 location?.SourceTree?.FilePath));
         }
@@ -139,7 +145,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD1003")),
                 location,
                 location?.SourceTree?.FilePath));
         }
@@ -163,7 +170,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0104")),
                 location,
                 location?.SourceTree?.FilePath));
         }
@@ -189,7 +197,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0105")),
                 location,
                 location?.SourceTree?.FilePath));
         }
@@ -215,7 +224,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0106")),
                 location,
                 location?.SourceTree?.FilePath));
         }
@@ -240,7 +250,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0201")),
                 location,
                 location?.SourceTree?.FilePath));
         }
@@ -264,7 +275,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0202")),
                 location,
                 location?.SourceTree?.FilePath));
         }
@@ -288,7 +300,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0203")),
                 location,
                 location?.SourceTree?.FilePath));
         }
@@ -300,7 +313,8 @@ namespace Godot.SourceGenerators
                 category: "Usage",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true,
-                "The generic type argument must be a Variant compatible type. Use a Variant compatible type as the generic type argument.");
+                "The generic type argument must be a Variant compatible type. Use a Variant compatible type as the generic type argument.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0301"));
 
         public static void ReportGenericTypeArgumentMustBeVariant(
             SyntaxNodeAnalysisContext context,
@@ -319,7 +333,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0301")),
                 typeArgumentSyntax.GetLocation(),
                 typeArgumentSyntax.SyntaxTree.FilePath));
         }
@@ -331,7 +346,8 @@ namespace Godot.SourceGenerators
                 category: "Usage",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true,
-                "The generic type argument must be a Variant type. Use a Variant type as the generic type argument.");
+                "The generic type argument must be a Variant type. Use a Variant type as the generic type argument.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0302"));
 
         public static void ReportGenericTypeParameterMustBeVariantAnnotated(
             SyntaxNodeAnalysisContext context,
@@ -349,7 +365,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0302")),
                 typeArgumentSyntax.GetLocation(),
                 typeArgumentSyntax.SyntaxTree.FilePath));
         }
@@ -361,7 +378,8 @@ namespace Godot.SourceGenerators
                 category: "Usage",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true,
-                "The generic type argument must be a Variant type. Use a Variant type as the generic type argument.");
+                "The generic type argument must be a Variant type. Use a Variant type as the generic type argument.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0303"));
 
         public static void ReportTypeArgumentParentSymbolUnhandled(
             SyntaxNodeAnalysisContext context,
@@ -380,7 +398,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0303")),
                 typeArgumentSyntax.GetLocation(),
                 typeArgumentSyntax.SyntaxTree.FilePath));
         }
@@ -388,11 +407,12 @@ namespace Godot.SourceGenerators
         public static readonly DiagnosticDescriptor GlobalClassMustDeriveFromGodotObjectRule =
             new DiagnosticDescriptor(id: "GD0401",
                 title: "The class must derive from GodotObject or a derived class",
-                messageFormat: "The class '{0}' must derive from GodotObject or a derived class.",
+                messageFormat: "The class '{0}' must derive from GodotObject or a derived class",
                 category: "Usage",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true,
-                "The class must derive from GodotObject or a derived class. Change the base class or remove the '[GlobalClass]' attribute.");
+                "The class must derive from GodotObject or a derived class. Change the base class or remove the '[GlobalClass]' attribute.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0401"));
 
         public static void ReportGlobalClassMustDeriveFromGodotObject(
             SyntaxNodeAnalysisContext context,
@@ -410,7 +430,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0401")),
                 classSyntax.GetLocation(),
                 classSyntax.SyntaxTree.FilePath));
         }
@@ -422,7 +443,8 @@ namespace Godot.SourceGenerators
                 category: "Usage",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true,
-                "The class must be a non-generic type. Remove the generic arguments or the '[GlobalClass]' attribute.");
+                "The class must be a non-generic type. Remove the generic arguments or the '[GlobalClass]' attribute.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0401"));
 
         public static void ReportGlobalClassMustNotBeGeneric(
             SyntaxNodeAnalysisContext context,
@@ -440,7 +462,8 @@ namespace Godot.SourceGenerators
                     category: "Usage",
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
-                    description),
+                    description,
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0402")),
                 classSyntax.GetLocation(),
                 classSyntax.SyntaxTree.FilePath));
         }

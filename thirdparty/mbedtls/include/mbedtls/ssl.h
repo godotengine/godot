@@ -193,6 +193,8 @@
 #define MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS                -0x7000
 /** Invalid value in SSL config */
 #define MBEDTLS_ERR_SSL_BAD_CONFIG                        -0x5E80
+/** Cache entry not found */
+#define MBEDTLS_ERR_SSL_CACHE_ENTRY_NOT_FOUND             -0x5E00
 
 /*
  * Various constants

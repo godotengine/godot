@@ -293,3 +293,9 @@ GDExtensionManager::GDExtensionManager() {
 	GDExtensionCompatHashes::initialize();
 #endif
 }
+
+GDExtensionManager::~GDExtensionManager() {
+#ifndef DISABLE_DEPRECATED
+	GDExtensionCompatHashes::finalize();
+#endif
+}

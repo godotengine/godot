@@ -196,7 +196,7 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] upward (towards positive infinity), returning the smallest whole number that is not less than [param x]. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] upward (towards positive infinity), returning the smallest whole number that is not less than [param x]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var i = ceil(1.45) # i is 2.0
 				i = ceil(1.001)    # i is 2.0
@@ -421,7 +421,7 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x]. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var a = floor(2.99) # a is 2.0
 				a = floor(-2.99)    # a is -3.0
@@ -1133,7 +1133,7 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				round(2.4) # Returns 2
 				round(2.5) # Returns 3

@@ -711,9 +711,9 @@ void PopupMenu::_draw_items() {
 		// Separator
 		item_ofs.x += items[i].indent * theme_cache.indent;
 		if (items[i].separator) {
-			if (!text.is_empty() || !items[i].icon.is_null()) {
+			if (!text.is_empty() || items[i].icon.is_valid()) {
 				int content_size = items[i].text_buf->get_size().width + theme_cache.h_separation * 2;
-				if (!items[i].icon.is_null()) {
+				if (items[i].icon.is_valid()) {
 					content_size += icon_size.width + theme_cache.h_separation;
 				}
 
@@ -742,7 +742,9 @@ void PopupMenu::_draw_items() {
 		icon_color *= items[i].icon_modulate;
 
 		// For non-separator items, add some padding for the content.
-		item_ofs.x += theme_cache.item_start_padding;
+		if (!items[i].separator) {
+			item_ofs.x += theme_cache.item_start_padding;
+		}
 
 		// Checkboxes
 		if (items[i].checkable_type && !items[i].separator) {
@@ -758,7 +760,7 @@ void PopupMenu::_draw_items() {
 		int separator_ofs = (display_width - items[i].text_buf->get_size().width) / 2;
 
 		// Icon
-		if (!items[i].icon.is_null()) {
+		if (items[i].icon.is_valid()) {
 			const Point2 icon_offset = Point2(0, Math::floor((h - icon_size.height) / 2.0));
 			Point2 icon_pos;
 
@@ -769,6 +771,7 @@ void PopupMenu::_draw_items() {
 					icon_pos = Size2(control->get_size().width - item_ofs.x - separator_ofs - icon_size.width, item_ofs.y);
 				} else {
 					icon_pos = item_ofs + Size2(separator_ofs, 0);
+					separator_ofs += icon_size.width + theme_cache.h_separation;
 				}
 			} else {
 				if (rtl) {
@@ -794,9 +797,6 @@ void PopupMenu::_draw_items() {
 		if (items[i].separator) {
 			if (!text.is_empty()) {
 				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
-				if (!rtl && !items[i].icon.is_null()) {
-					text_pos.x += icon_size.width + theme_cache.h_separation;
-				}
 
 				if (theme_cache.font_separator_outline_size > 0 && theme_cache.font_separator_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_separator_outline_size, theme_cache.font_separator_outline_color);
@@ -1108,10 +1108,12 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				// Set margin on the margin container
+				margin_container->begin_bulk_theme_override();
 				margin_container->add_theme_constant_override("margin_left", theme_cache.panel_style->get_margin(Side::SIDE_LEFT));
 				margin_container->add_theme_constant_override("margin_top", theme_cache.panel_style->get_margin(Side::SIDE_TOP));
 				margin_container->add_theme_constant_override("margin_right", theme_cache.panel_style->get_margin(Side::SIDE_RIGHT));
 				margin_container->add_theme_constant_override("margin_bottom", theme_cache.panel_style->get_margin(Side::SIDE_BOTTOM));
+				margin_container->end_bulk_theme_override();
 			}
 		} break;
 	}

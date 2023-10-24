@@ -351,8 +351,6 @@ private:
 		}
 	};
 
-	size_t sss = sizeof(MaterialKey);
-
 	struct ShaderData {
 		RID shader;
 		int users = 0;

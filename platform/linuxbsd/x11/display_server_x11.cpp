@@ -39,6 +39,7 @@
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
+#include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/atlas_texture.h"
 
@@ -519,7 +520,7 @@ Bool DisplayServerX11::_predicate_clipboard_selection(Display *display, XEvent *
 }
 
 Bool DisplayServerX11::_predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg) {
-	if (event->type == PropertyNotify && event->xproperty.state == PropertyNewValue) {
+	if (event->type == PropertyNotify && event->xproperty.state == PropertyNewValue && event->xproperty.atom == *(Atom *)arg) {
 		return True;
 	} else {
 		return False;
@@ -593,7 +594,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 
 				// Non-blocking wait for next event and remove it from the queue.
 				XEvent ev;
-				while (XCheckIfEvent(x11_display, &ev, _predicate_clipboard_incr, nullptr)) {
+				while (XCheckIfEvent(x11_display, &ev, _predicate_clipboard_incr, (XPointer)&selection)) {
 					result = XGetWindowProperty(x11_display, x11_window,
 							selection, // selection type
 							0, LONG_MAX, // offset - len
@@ -664,6 +665,74 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 	return ret;
 }
 
+Atom DisplayServerX11::_clipboard_get_image_target(Atom p_source, Window x11_window) const {
+	Atom target = XInternAtom(x11_display, "TARGETS", 0);
+	Atom png = XInternAtom(x11_display, "image/png", 0);
+	Atom *valid_targets = nullptr;
+	unsigned long atom_count = 0;
+
+	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
+	if (selection_owner != None) {
+		// Block events polling while processing selection events.
+		MutexLock mutex_lock(events_mutex);
+
+		Atom selection = XA_PRIMARY;
+		XConvertSelection(x11_display, p_source, target, selection, x11_window, CurrentTime);
+
+		XFlush(x11_display);
+
+		// Blocking wait for predicate to be True and remove the event from the queue.
+		XEvent event;
+		XIfEvent(x11_display, &event, _predicate_clipboard_selection, (XPointer)&x11_window);
+		// Do not get any data, see how much data is there.
+		Atom type;
+		int format, result;
+		unsigned long len, bytes_left, dummy;
+		XGetWindowProperty(x11_display, x11_window,
+				selection, // Tricky..
+				0, 0, // offset - len
+				0, // Delete 0==FALSE
+				XA_ATOM, // flag
+				&type, // return type
+				&format, // return format
+				&len, &bytes_left, // data length
+				(unsigned char **)&valid_targets);
+
+		if (valid_targets) {
+			XFree(valid_targets);
+			valid_targets = nullptr;
+		}
+
+		if (type == XA_ATOM && bytes_left > 0) {
+			// Data is ready and can be processed all at once.
+			result = XGetWindowProperty(x11_display, x11_window,
+					selection, 0, bytes_left / 4, 0,
+					XA_ATOM, &type, &format,
+					&len, &dummy, (unsigned char **)&valid_targets);
+			if (result == Success) {
+				atom_count = len;
+			} else {
+				print_verbose("Failed to get selection data.");
+				return None;
+			}
+		} else {
+			return None;
+		}
+	} else {
+		return None;
+	}
+	for (unsigned long i = 0; i < atom_count; i++) {
+		Atom atom = valid_targets[i];
+		if (atom == png) {
+			XFree(valid_targets);
+			return png;
+		}
+	}
+
+	XFree(valid_targets);
+	return None;
+}
+
 String DisplayServerX11::_clipboard_get(Atom p_source, Window x11_window) const {
 	String ret;
 	Atom utf8_atom = XInternAtom(x11_display, "UTF8_STRING", True);
@@ -700,6 +769,158 @@ String DisplayServerX11::clipboard_get_primary() const {
 	}
 
 	return ret;
+}
+
+Ref<Image> DisplayServerX11::clipboard_get_image() const {
+	_THREAD_SAFE_METHOD_
+	Atom clipboard = XInternAtom(x11_display, "CLIPBOARD", 0);
+	Window x11_window = windows[MAIN_WINDOW_ID].x11_window;
+	Ref<Image> ret;
+	Atom target = _clipboard_get_image_target(clipboard, x11_window);
+	if (target == None) {
+		return ret;
+	}
+
+	Window selection_owner = XGetSelectionOwner(x11_display, clipboard);
+
+	if (selection_owner != None) {
+		// Block events polling while processing selection events.
+		MutexLock mutex_lock(events_mutex);
+
+		// Identifier for the property the other window
+		// will send the converted data to.
+		Atom transfer_prop = XA_PRIMARY;
+		XConvertSelection(x11_display,
+				clipboard, // source selection
+				target, // format to convert to
+				transfer_prop, // output property
+				x11_window, CurrentTime);
+
+		XFlush(x11_display);
+
+		// Blocking wait for predicate to be True and remove the event from the queue.
+		XEvent event;
+		XIfEvent(x11_display, &event, _predicate_clipboard_selection, (XPointer)&x11_window);
+
+		// Do not get any data, see how much data is there.
+		Atom type;
+		int format, result;
+		unsigned long len, bytes_left, dummy;
+		unsigned char *data;
+		XGetWindowProperty(x11_display, x11_window,
+				transfer_prop, // Property data is transferred through
+				0, 1, // offset, len (4 so we can get the size if INCR is used)
+				0, // Delete 0==FALSE
+				AnyPropertyType, // flag
+				&type, // return type
+				&format, // return format
+				&len, &bytes_left, // data length
+				&data);
+
+		if (type == XInternAtom(x11_display, "INCR", 0)) {
+			ERR_FAIL_COND_V_MSG(len != 1, ret, "Incremental transfer initial value was not length.");
+
+			// Data is going to be received incrementally.
+			DEBUG_LOG_X11("INCR selection started.\n");
+
+			LocalVector<uint8_t> incr_data;
+			uint32_t data_size = 0;
+			bool success = false;
+
+			// Initial response is the lower bound of the length of the transferred data.
+			incr_data.resize(*(unsigned long *)data);
+			XFree(data);
+			data = nullptr;
+
+			// Delete INCR property to notify the owner.
+			XDeleteProperty(x11_display, x11_window, transfer_prop);
+
+			// Process events from the queue.
+			bool done = false;
+			while (!done) {
+				if (!_wait_for_events()) {
+					// Error or timeout, abort.
+					break;
+				}
+				// Non-blocking wait for next event and remove it from the queue.
+				XEvent ev;
+				while (XCheckIfEvent(x11_display, &ev, _predicate_clipboard_incr, (XPointer)&transfer_prop)) {
+					result = XGetWindowProperty(x11_display, x11_window,
+							transfer_prop, // output property
+							0, LONG_MAX, // offset - len
+							True, // delete property to notify the owner
+							AnyPropertyType, // flag
+							&type, // return type
+							&format, // return format
+							&len, &bytes_left, // data length
+							&data);
+
+					DEBUG_LOG_X11("PropertyNotify: len=%lu, format=%i\n", len, format);
+
+					if (result == Success) {
+						if (data && (len > 0)) {
+							uint32_t prev_size = incr_data.size();
+							// New chunk, resize to be safe and append data.
+							incr_data.resize(MAX(data_size + len, prev_size));
+							memcpy(incr_data.ptr() + data_size, data, len);
+							data_size += len;
+						} else if (!(format == 0 && len == 0)) {
+							// For unclear reasons the first GetWindowProperty always returns a length and format of 0.
+							// Otherwise, last chunk, process finished.
+							done = true;
+							success = true;
+						}
+					} else {
+						print_verbose("Failed to get selection data chunk.");
+						done = true;
+					}
+
+					if (data) {
+						XFree(data);
+						data = nullptr;
+					}
+
+					if (done) {
+						break;
+					}
+				}
+			}
+
+			if (success && (data_size > 0)) {
+				ret.instantiate();
+				PNGDriverCommon::png_to_image(incr_data.ptr(), incr_data.size(), false, ret);
+			}
+		} else if (bytes_left > 0) {
+			if (data) {
+				XFree(data);
+				data = nullptr;
+			}
+			// Data is ready and can be processed all at once.
+			result = XGetWindowProperty(x11_display, x11_window,
+					transfer_prop, 0, bytes_left + 4, 0,
+					AnyPropertyType, &type, &format,
+					&len, &dummy, &data);
+			if (result == Success) {
+				ret.instantiate();
+				PNGDriverCommon::png_to_image((uint8_t *)data, bytes_left, false, ret);
+			} else {
+				print_verbose("Failed to get selection data.");
+			}
+
+			if (data) {
+				XFree(data);
+			}
+		}
+	}
+
+	return ret;
+}
+
+bool DisplayServerX11::clipboard_has_image() const {
+	Atom target = _clipboard_get_image_target(
+			XInternAtom(x11_display, "CLIPBOARD", 0),
+			windows[MAIN_WINDOW_ID].x11_window);
+	return target != None;
 }
 
 Bool DisplayServerX11::_predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg) {
@@ -4085,9 +4306,6 @@ void DisplayServerX11::process_events() {
 		if (XGetEventData(x11_display, &event.xcookie)) {
 			if (event.xcookie.type == GenericEvent && event.xcookie.extension == xi.opcode) {
 				XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
-				int index = event_data->detail;
-				Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
-
 				switch (event_data->evtype) {
 					case XI_HierarchyChanged:
 					case XI_DeviceChanged: {
@@ -4204,6 +4422,9 @@ void DisplayServerX11::process_events() {
 						}
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
+						int index = event_data->detail;
+						Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
+
 						Ref<InputEventScreenTouch> st;
 						st.instantiate();
 						st->set_window_id(window_id);
@@ -4235,6 +4456,10 @@ void DisplayServerX11::process_events() {
 						if (ime_window_event || ignore_events) {
 							break;
 						}
+
+						int index = event_data->detail;
+						Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
+
 						HashMap<int, Vector2>::Iterator curr_pos_elem = xi.state.find(index);
 						if (!curr_pos_elem) { // Defensive
 							break;

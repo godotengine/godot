@@ -1409,7 +1409,7 @@ void GraphEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputE
 void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity) {
 	for (Connection &E : connections) {
 		if (E.from_node == p_from && E.from_port == p_from_port && E.to_node == p_to && E.to_port == p_to_port) {
-			if (Math::is_equal_approx(E.activity, p_activity)) {
+			if (!Math::is_equal_approx(E.activity, p_activity)) {
 				// Update only if changed.
 				top_layer->queue_redraw();
 				minimap->queue_redraw();
