@@ -6490,25 +6490,91 @@ void Node3DEditor::_init_indicators() {
 		origin_enabled = true;
 		grid_enabled = true;
 
-		indicator_mat.instantiate();
-		indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-		indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-		indicator_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-		indicator_mat->set_transparency(StandardMaterial3D::Transparency::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
+		Ref<Shader> origin_shader = memnew(Shader);
+		origin_shader->set_code(R"(
+// 3D editor origin line shader.
 
-		Vector<Color> origin_colors;
+shader_type spatial;
+render_mode blend_mix,cull_disabled,unshaded, fog_disabled;
+
+void vertex() {
+	vec3 point_a = MODEL_MATRIX[3].xyz;
+	// Encoded in scale.
+	vec3 point_b = vec3(MODEL_MATRIX[0].x, MODEL_MATRIX[1].y, MODEL_MATRIX[2].z);
+
+	// Points are already in world space, so no need for MODEL_MATRIX anymore.
+	vec4 clip_a = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(point_a, 1.0));
+	vec4 clip_b = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(point_b, 1.0));
+	
+	vec2 screen_a = VIEWPORT_SIZE * (0.5 * clip_a.xy / clip_a.w + 0.5);
+	vec2 screen_b = VIEWPORT_SIZE * (0.5 * clip_b.xy / clip_b.w + 0.5);
+	
+	vec2 x_basis = normalize(screen_b - screen_a);
+	vec2 y_basis = vec2(-x_basis.y, x_basis.x);
+	
+	float width = 3.0;
+	vec2 screen_point_a = screen_a + width * (VERTEX.x * x_basis + VERTEX.y * y_basis);
+	vec2 screen_point_b = screen_b + width * (VERTEX.x * x_basis + VERTEX.y * y_basis);
+	vec2 screen_point_final = mix(screen_point_a, screen_point_b, VERTEX.z);
+	
+	vec4 clip_final = mix(clip_a, clip_b, VERTEX.z);
+	
+	POSITION = vec4(clip_final.w * ((2.0 * screen_point_final) / VIEWPORT_SIZE - 1.0), clip_final.z, clip_final.w);
+	UV = VERTEX.yz * clip_final.w;
+
+	if (!OUTPUT_IS_SRGB) {
+		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));
+	}
+}
+
+void fragment() {
+	// Multiply by 0.5 since UV is actually UV is [-1, 1].
+	float line_width = fwidth(UV.x * 0.5);
+	float line_uv = abs(UV.x * 0.5);
+	float line = smoothstep(line_width * 1.0, line_width * 0.25, line_uv);
+
+	ALBEDO = COLOR.rgb;
+	ALPHA *= COLOR.a * line;
+}
+)");
+
+		origin_mat.instantiate();
+		origin_mat->set_shader(origin_shader);
+
 		Vector<Vector3> origin_points;
+		origin_points.resize(6);
 
-		const int count_of_elements = 3 * 6;
-		origin_colors.resize(count_of_elements);
-		origin_points.resize(count_of_elements);
+		origin_points.set(0, Vector3(0.0, -0.5, 0.0));
+		origin_points.set(1, Vector3(0.0, -0.5, 1.0));
+		origin_points.set(2, Vector3(0.0, 0.5, 1.0));
 
-		int x = 0;
+		origin_points.set(3, Vector3(0.0, -0.5, 0.0));
+		origin_points.set(4, Vector3(0.0, 0.5, 1.0));
+		origin_points.set(5, Vector3(0.0, 0.5, 0.0));
+
+		Array d;
+		d.resize(RS::ARRAY_MAX);
+		d[RenderingServer::ARRAY_VERTEX] = origin_points;
+
+		origin_mesh = RenderingServer::get_singleton()->mesh_create();
+
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin_mesh, RenderingServer::PRIMITIVE_TRIANGLES, d);
+		RenderingServer::get_singleton()->mesh_surface_set_material(origin_mesh, 0, origin_mat->get_rid());
+
+		origin_multimesh = RenderingServer::get_singleton()->multimesh_create();
+		RenderingServer::get_singleton()->multimesh_set_mesh(origin_multimesh, origin_mesh);
+		RenderingServer::get_singleton()->multimesh_allocate_data(origin_multimesh, 12, RS::MultimeshTransformFormat::MULTIMESH_TRANSFORM_3D, true, false);
+		RenderingServer::get_singleton()->multimesh_set_visible_instances(origin_multimesh, -1);
+
+		LocalVector<float> distances;
+		distances.resize(5);
+		distances[0] = -1000000.0;
+		distances[1] = -1000.0;
+		distances[2] = 0.0;
+		distances[3] = 1000.0;
+		distances[4] = 1000000.0;
 
 		for (int i = 0; i < 3; i++) {
-			Vector3 axis;
-			axis[i] = 1;
 			Color origin_color;
 			switch (i) {
 				case 0:
@@ -6525,26 +6591,25 @@ void Node3DEditor::_init_indicators() {
 					break;
 			}
 
-			grid_enable[i] = false;
-			grid_visible[i] = false;
+			Vector3 axis;
+			axis[i] = 1;
 
-			origin_colors.set(x, origin_color);
-			origin_colors.set(x + 1, origin_color);
-			origin_colors.set(x + 2, origin_color);
-			origin_colors.set(x + 3, origin_color);
-			origin_colors.set(x + 4, origin_color);
-			origin_colors.set(x + 5, origin_color);
-			// To both allow having a large origin size and avoid jitter
-			// at small scales, we should segment the line into pieces.
-			// 3 pieces seems to do the trick, and let's use powers of 2.
-			origin_points.set(x, axis * 1048576);
-			origin_points.set(x + 1, axis * 1024);
-			origin_points.set(x + 2, axis * 1024);
-			origin_points.set(x + 3, axis * -1024);
-			origin_points.set(x + 4, axis * -1024);
-			origin_points.set(x + 5, axis * -1048576);
-			x += 6;
+			for (int j = 0; j < 4; j++) {
+				Transform3D t = Transform3D();
+				t = t.scaled(axis * distances[j + 1]);
+				t = t.translated(axis * distances[j]);
+				RenderingServer::get_singleton()->multimesh_instance_set_transform(origin_multimesh, i * 4 + j, t);
+				RenderingServer::get_singleton()->multimesh_instance_set_color(origin_multimesh, i * 4 + j, origin_color);
+			}
 		}
+
+		origin_instance = RenderingServer::get_singleton()->instance_create2(origin_multimesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
+		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		RS::get_singleton()->instance_set_ignore_culling(origin_instance, true);
+
+		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RS::SHADOW_CASTING_SETTING_OFF);
 
 		Ref<Shader> grid_shader = memnew(Shader);
 		grid_shader->set_code(R"(
@@ -6594,22 +6659,6 @@ void fragment() {
 		grid_visible[2] = grid_enable[2];
 
 		_init_grid();
-
-		origin = RenderingServer::get_singleton()->mesh_create();
-		Array d;
-		d.resize(RS::ARRAY_MAX);
-		d[RenderingServer::ARRAY_VERTEX] = origin_points;
-		d[RenderingServer::ARRAY_COLOR] = origin_colors;
-
-		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin, RenderingServer::PRIMITIVE_LINES, d);
-		RenderingServer::get_singleton()->mesh_surface_set_material(origin, 0, indicator_mat->get_rid());
-
-		origin_instance = RenderingServer::get_singleton()->instance_create2(origin, get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
-		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-
-		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RS::SHADOW_CASTING_SETTING_OFF);
 	}
 
 	{
@@ -7227,7 +7276,8 @@ void Node3DEditor::_init_grid() {
 
 void Node3DEditor::_finish_indicators() {
 	RenderingServer::get_singleton()->free(origin_instance);
-	RenderingServer::get_singleton()->free(origin);
+	RenderingServer::get_singleton()->free(origin_multimesh);
+	RenderingServer::get_singleton()->free(origin_mesh);
 
 	_finish_grid();
 }
