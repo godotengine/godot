@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using Microsoft.Build.Construction;
+using Microsoft.Build.Locator;
 
 namespace GodotTools.ProjectEditor
 {
@@ -19,15 +21,18 @@ namespace GodotTools.ProjectEditor
 
     public static class ProjectUtils
     {
-        public static void MSBuildLocatorRegisterDefaults(out Version version, out string path)
+        public static void MSBuildLocatorRegisterLatest(out Version version, out string path)
         {
-            var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
+            var instance = MSBuildLocator.QueryVisualStudioInstances()
+                .OrderByDescending(x => x.Version)
+                .First();
+            MSBuildLocator.RegisterInstance(instance);
             version = instance.Version;
             path = instance.MSBuildPath;
         }
 
         public static void MSBuildLocatorRegisterMSBuildPath(string msbuildPath)
-            => Microsoft.Build.Locator.MSBuildLocator.RegisterMSBuildPath(msbuildPath);
+            => MSBuildLocator.RegisterMSBuildPath(msbuildPath);
 
         public static MSBuildProject Open(string path)
         {
