@@ -850,6 +850,27 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		}\n";
 	code += "	if (RESTART_VELOCITY) {\n";
 	code += "		VELOCITY = get_random_direction_from_spread(alt_seed, spread) * dynamic_params.initial_velocity_multiplier;\n";
+	if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
+		code += "		int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+		code += "		ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
+		code += "		ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
+		if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+			code += "		{\n";
+			code += "			mat2 rotm;";
+			code += "			rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
+			code += "			rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
+			code += "			VELOCITY.xy = rotm * VELOCITY.xy;\n";
+			code += "		}\n";
+		} else {
+			code += "		{\n";
+			code += "			vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xyz;\n";
+			code += "			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
+			code += "			vec3 tangent = normalize(cross(v0, normal));\n";
+			code += "			vec3 bitangent = normalize(cross(tangent, normal));\n";
+			code += "			VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
+			code += "		}\n";
+		}
+	}
 	code += "		}\n";
 	code += "	process_display_param(params, 0.);\n";
 	code += "//	process_dynamic_parameters(dynamic_params, 0., alt_seed, TRANSFORM, EMISSION_TRANSFORM, DELTA);\n";
@@ -939,7 +960,9 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		if (physics_params.damping > 0.0) {\n";
 	if (!particle_flags[PARTICLE_FLAG_DAMPING_AS_FRICTION]) {
 		code += "				float v = length(VELOCITY);\n";
-		code += "				v -= physics_params.damping * DELTA;\n";
+		code += "				// Realistic friction formula. We assume the mass of a particle to be 0.05kg.\n";
+		code += "				float damp = v * v * physics_params.damping * 0.05 * DELTA;\n";
+		code += "				v -= damp;\n";
 		code += "				if (v < 0.0) {\n";
 		code += "					VELOCITY = vec3(0.0);\n";
 		code += "				} else {\n";
