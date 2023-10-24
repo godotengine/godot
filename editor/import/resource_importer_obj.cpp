@@ -226,11 +226,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
 	Vector3 offset_mesh = p_offset_mesh;
-	uint64_t mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-
-	if (p_disable_compression) {
-		mesh_flags = 0;
-	}
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
@@ -374,6 +369,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				}
 			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
+			uint64_t mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+
+			if (p_disable_compression) {
+				mesh_flags = 0;
+			}
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
@@ -385,7 +385,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 					surf_tool->generate_tangents();
 				} else {
 					// We need tangents in order to compress vertex data. So disable if tangents aren't generated.
-					mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+					mesh_flags = 0;
 				}
 
 				surf_tool->index();

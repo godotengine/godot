@@ -298,6 +298,8 @@ public:
 		ARRAY_FLAG_FORMAT_VERSION_MASK = 0xFF, // 8 bits version
 	};
 
+	static_assert(sizeof(ArrayFormat) == 8, "ArrayFormat should be 64 bits long.");
+
 	enum PrimitiveType {
 		PRIMITIVE_POINTS,
 		PRIMITIVE_LINES,
