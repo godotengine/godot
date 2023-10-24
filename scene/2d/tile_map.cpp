@@ -2294,11 +2294,12 @@ void TileMapLayer::set_cells_terrain_path(TypedArray<Vector2i> p_path, int p_ter
 TypedArray<Vector2i> TileMapLayer::get_used_cells() const {
 	// Returns the cells used in the tilemap.
 	TypedArray<Vector2i> a;
-	a.resize(tile_map.size());
-	int i = 0;
 	for (const KeyValue<Vector2i, CellData> &E : tile_map) {
-		Vector2i p(E.key.x, E.key.y);
-		a[i++] = p;
+		const TileMapCell &c = E.value.cell;
+		if (c.source_id == TileSet::INVALID_SOURCE) {
+			continue;
+		}
+		a.push_back(E.key);
 	}
 
 	return a;
@@ -2308,9 +2309,13 @@ TypedArray<Vector2i> TileMapLayer::get_used_cells_by_id(int p_source_id, const V
 	// Returns the cells used in the tilemap.
 	TypedArray<Vector2i> a;
 	for (const KeyValue<Vector2i, CellData> &E : tile_map) {
-		if ((p_source_id == TileSet::INVALID_SOURCE || p_source_id == E.value.cell.source_id) &&
-				(p_atlas_coords == TileSetSource::INVALID_ATLAS_COORDS || p_atlas_coords == E.value.cell.get_atlas_coords()) &&
-				(p_alternative_tile == TileSetSource::INVALID_TILE_ALTERNATIVE || p_alternative_tile == E.value.cell.alternative_tile)) {
+		const TileMapCell &c = E.value.cell;
+		if (c.source_id == TileSet::INVALID_SOURCE) {
+			continue;
+		}
+		if ((p_source_id == TileSet::INVALID_SOURCE || p_source_id == c.source_id) &&
+				(p_atlas_coords == TileSetSource::INVALID_ATLAS_COORDS || p_atlas_coords == c.get_atlas_coords()) &&
+				(p_alternative_tile == TileSetSource::INVALID_TILE_ALTERNATIVE || p_alternative_tile == c.alternative_tile)) {
 			a.push_back(E.key);
 		}
 	}
@@ -2323,13 +2328,23 @@ Rect2i TileMapLayer::get_used_rect() const {
 	if (used_rect_cache_dirty) {
 		used_rect_cache = Rect2i();
 
-		if (tile_map.size() > 0) {
-			used_rect_cache = Rect2i(tile_map.begin()->key.x, tile_map.begin()->key.y, 0, 0);
-
-			for (const KeyValue<Vector2i, CellData> &E : tile_map) {
+		bool first = true;
+		for (const KeyValue<Vector2i, CellData> &E : tile_map) {
+			const TileMapCell &c = E.value.cell;
+			if (c.source_id == TileSet::INVALID_SOURCE) {
+				continue;
+			}
+			if (first) {
+				used_rect_cache = Rect2i(E.key.x, E.key.y, 0, 0);
+				first = false;
+			} else {
 				used_rect_cache.expand_to(E.key);
 			}
-			used_rect_cache.size += Vector2i(1, 1); // The cache expands to top-left coordinate, so we add one full tile.
+		}
+		if (!first) {
+			// Only if we have at least one cell.
+			// The cache expands to top-left coordinate, so we add one full tile.
+			used_rect_cache.size += Vector2i(1, 1);
 		}
 		used_rect_cache_dirty = false;
 	}
