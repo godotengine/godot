@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "scene_tree_dock.h"
+#include "node_dock.h"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -1081,6 +1082,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					undo_redo->add_do_method(node, "set_scene_file_path", "");
 					undo_redo->add_undo_method(node, "set_scene_file_path", node->get_scene_file_path());
 					_node_replace_owner(node, node, root);
+					_node_strip_signal_inheritance(node);
+					NodeDock::get_singleton()->set_node(node); // Refresh.
 					undo_redo->add_do_method(scene_tree, "update_tree");
 					undo_redo->add_undo_method(scene_tree, "update_tree");
 					undo_redo->commit_action();
@@ -1476,6 +1479,19 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_node_replace_owner(p_base, p_node->get_child(i), p_root, p_mode);
+	}
+}
+
+void SceneTreeDock::_node_strip_signal_inheritance(Node *p_node) {
+	List<Object::Connection> conns;
+	p_node->get_all_signal_connections(&conns);
+
+	for (Object::Connection conn : conns) {
+		conn.signal.disconnect(conn.callable);
+		conn.signal.connect(conn.callable, conn.flags & ~CONNECT_INHERITED);
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_node_strip_signal_inheritance(p_node->get_child(i));
 	}
 }
 
