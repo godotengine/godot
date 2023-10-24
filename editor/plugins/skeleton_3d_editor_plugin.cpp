@@ -91,6 +91,13 @@ void BoneTransformEditor::create_editors() {
 	scale_property->connect("property_keyed", callable_mp(this, &BoneTransformEditor::_property_keyed));
 	section->get_vbox()->add_child(scale_property);
 
+	// Inherit Scale property.
+	inherit_scale_property = memnew(EditorPropertyCheck());
+	inherit_scale_property->set_label("Inherit Scale");
+	inherit_scale_property->set_selectable(false);
+	inherit_scale_property->connect("property_changed", callable_mp(this, &BoneTransformEditor::_value_changed));
+	section->get_vbox()->add_child(inherit_scale_property);
+
 	// Transform/Matrix section.
 	rest_section = memnew(EditorInspectorSection);
 	rest_section->setup("trf_properties_transform", "Rest", this, Color(0.0f, 0.0f, 0.0f), true);
@@ -151,6 +158,9 @@ void BoneTransformEditor::set_target(const String &p_prop) {
 	scale_property->set_object_and_property(skeleton, p_prop + "scale");
 	scale_property->update_property();
 
+	inherit_scale_property->set_object_and_property(skeleton, p_prop + "inherit_scale");
+	inherit_scale_property->update_property();
+
 	rest_matrix->set_object_and_property(skeleton, p_prop + "rest");
 	rest_matrix->update_property();
 }
@@ -203,6 +213,11 @@ void BoneTransformEditor::_update_properties() {
 					rotation_property->queue_redraw();
 				}
 				if (split[2] == "scale") {
+					scale_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
+					scale_property->update_property();
+					scale_property->queue_redraw();
+				}
+				if (split[2] == "inherit_bone") {
 					scale_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					scale_property->update_property();
 					scale_property->queue_redraw();
