@@ -896,11 +896,12 @@ public:
 	Vector<uint8_t> selection_get_mime(String p_mime) const;
 
 	void selection_set_text(String p_text);
-	String selection_get_text() const;
 
-	// Optional - require wp_primary_selection_unstable_v1
+	// Optional primary support - requires wp_primary_selection_unstable_v1
+	bool primary_has_mime(String p_mime) const;
+	Vector<uint8_t> primary_get_mime(String p_mime) const;
+
 	void primary_set_text(String p_text);
-	String primary_get_text() const;
 
 	void set_frame();
 	bool get_reset_frame();

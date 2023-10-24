@@ -302,7 +302,22 @@ void DisplayServerWayland::clipboard_set(const String &p_text) {
 String DisplayServerWayland::clipboard_get() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	return wayland_thread.selection_get_text();
+	Vector<uint8_t> data;
+
+	const String text_mimes[] = {
+		"text/plain;charset=utf-8",
+		"text/plain",
+	};
+
+	for (String mime : text_mimes) {
+		if (wayland_thread.selection_has_mime(mime)) {
+			print_verbose(vformat("Selecting media type \"%s\" from offered types.", mime));
+			data = wayland_thread.selection_get_mime(mime);
+			break;
+		}
+	}
+
+	return String::utf8((const char *)data.ptr(), data.size());
 }
 
 Ref<Image> DisplayServerWayland::clipboard_get_image() const {
@@ -346,7 +361,22 @@ void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
 String DisplayServerWayland::clipboard_get_primary() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	return wayland_thread.primary_get_text();
+	Vector<uint8_t> data;
+
+	const String text_mimes[] = {
+		"text/plain;charset=utf-8",
+		"text/plain",
+	};
+
+	for (String mime : text_mimes) {
+		if (wayland_thread.primary_has_mime(mime)) {
+			print_verbose(vformat("Selecting media type \"%s\" from offered types.", mime));
+			wayland_thread.primary_get_mime(mime);
+			break;
+		}
+	}
+
+	return String::utf8((const char *)data.ptr(), data.size());
 }
 
 int DisplayServerWayland::get_screen_count() const {

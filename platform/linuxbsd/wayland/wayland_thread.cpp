@@ -3197,7 +3197,7 @@ void WaylandThread::window_set_borderless(DisplayServer::WindowID p_window_id, b
 		// possible to destroy the frame more than once, by setting the visibility
 		// to false multiple times and thus crashing.
 		if (visible_current != visible_target) {
-			print_line("Setting libdecor frame visibility to ", visible_target);
+			print_verbose(vformat("Setting libdecor frame visibility to %d", visible_target));
 			libdecor_frame_set_visibility(ws.libdecor_frame, visible_target);
 		}
 	}
@@ -3692,44 +3692,72 @@ bool WaylandThread::selection_has_mime(String p_mime) const {
 
 Vector<uint8_t> WaylandThread::selection_get_mime(String p_mime) const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
-
 	if (ss == nullptr) {
 		DEBUG_LOG_WAYLAND_THREAD("Couldn't get selection, current seat not set.");
+		return Vector<uint8_t>();
+	}
+
+	if (ss->wl_data_source_selection) {
+		// We have a source so the stuff we're pasting is ours. We'll have to pass the
+		// data directly or we'd stall waiting for Godot (ourselves) to send us the
+		// data :P
+
+		OfferState *os = wl_data_offer_get_offer_state(ss->wl_data_offer_selection);
+		ERR_FAIL_NULL_V(os, Vector<uint8_t>());
+
+		if (os->mime_types.has(p_mime)) {
+			// All righty, we're offering this type. Let's just return the data as is.
+			return ss->selection_data;
+		}
+
+		// ... we don't offer that type. Oh well.
 		return Vector<uint8_t>();
 	}
 
 	return _wl_data_offer_read(wl_display, p_mime.utf8().ptr(), ss->wl_data_offer_selection);
 }
 
-String WaylandThread::selection_get_text() const {
+bool WaylandThread::primary_has_mime(String p_mime) const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss == nullptr) {
 		DEBUG_LOG_WAYLAND_THREAD("Couldn't get selection, current seat not set.");
-		return "";
+		return false;
 	}
 
-	OfferState *os = wl_data_offer_get_offer_state(ss->wl_data_offer_selection);
+	OfferState *os = wp_primary_selection_offer_get_offer_state(ss->wp_primary_selection_offer);
 	if (!os) {
-		return "";
+		return false;
 	}
 
-	LocalVector<uint8_t> data;
+	return os->mime_types.has(p_mime);
+}
 
-	const String text_mimes[] = {
-		"text/plain;charset=utf-8",
-		"text/plain",
-	};
+Vector<uint8_t> WaylandThread::primary_get_mime(String p_mime) const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	if (ss == nullptr) {
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't get primary, current seat not set.");
+		return Vector<uint8_t>();
+	}
 
-	for (String mime : text_mimes) {
-		if (os->mime_types.has(mime)) {
-			print_verbose(vformat("Selecting media type \"%s\" from offered types.", mime));
-			data = _wl_data_offer_read(wl_display, mime.utf8().ptr(), ss->wl_data_offer_selection);
-			break;
+	if (ss->wp_primary_selection_source) {
+		// We have a source so the stuff we're pasting is ours. We'll have to pass the
+		// data directly or we'd stall waiting for Godot (ourselves) to send us the
+		// data :P
+
+		OfferState *os = wp_primary_selection_offer_get_offer_state(ss->wp_primary_selection_offer);
+		ERR_FAIL_NULL_V(os, Vector<uint8_t>());
+
+		if (os->mime_types.has(p_mime)) {
+			// All righty, we're offering this type. Let's just return the data as is.
+			return ss->selection_data;
 		}
+
+		// ... we don't offer that type. Oh well.
+		return Vector<uint8_t>();
 	}
 
-	return String::utf8((const char *)data.ptr(), data.size());
+	return _wp_primary_selection_offer_read(wl_display, p_mime.utf8().ptr(), ss->wp_primary_selection_offer);
 }
 
 void WaylandThread::primary_set_text(String p_text) {
@@ -3760,37 +3788,6 @@ void WaylandThread::primary_set_text(String p_text) {
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
 	wl_display_roundtrip(wl_display);
-}
-
-String WaylandThread::primary_get_text() const {
-	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
-
-	if (ss == nullptr) {
-		DEBUG_LOG_WAYLAND_THREAD("Couldn't get primary: no current seat set.");
-		return "";
-	}
-
-	OfferState *os = wp_primary_selection_offer_get_offer_state(ss->wp_primary_selection_offer);
-	if (!os) {
-		return "";
-	}
-
-	LocalVector<uint8_t> data;
-
-	const String text_mimes[] = {
-		"text/plain;charset=utf-8",
-		"text/plain",
-	};
-
-	for (String mime : text_mimes) {
-		if (os->mime_types.has(mime)) {
-			print_verbose(vformat("Asking for media type \"%s\".", mime));
-			data = _wp_primary_selection_offer_read(wl_display, mime.utf8().ptr(), ss->wp_primary_selection_offer);
-			break;
-		}
-	}
-
-	return String::utf8((const char *)data.ptr(), data.size());
 }
 
 void WaylandThread::set_frame() {
