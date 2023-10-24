@@ -36,6 +36,14 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 
+void Node3DEditorCameraManager::setup(Camera3D* p_editor_camera, Viewport* p_viewport, Node* p_scene_root, EditorSettings* p_editor_settings) {
+	editor_camera = p_editor_camera;
+	viewport = p_viewport;
+	scene_root = p_scene_root;
+	editor_settings = p_editor_settings;
+	cursor.set_editor_settings(editor_settings);
+}
+
 void Node3DEditorCameraManager::set_camera_settings(float p_fov, float p_z_near, float p_z_far) {
 	fov = p_fov;
 	z_near = p_z_near;
@@ -49,11 +57,6 @@ void Node3DEditorCameraManager::reset() {
 	set_cinematic_preview_mode(false);
 	set_orthogonal(false);
 	cursor = Node3DEditorCameraCursor();
-}
-
-void Node3DEditorCameraManager::setup(Camera3D* p_editor_camera, Viewport* p_viewport) {
-	editor_camera = p_editor_camera;
-	viewport = p_viewport;
 }
 
 Node3DEditorCameraCursor Node3DEditorCameraManager::get_cursor() const {
@@ -86,13 +89,6 @@ Camera3D* Node3DEditorCameraManager::get_previewing_or_cinematic_camera() const 
 	}
 	else {
 		return nullptr;
-	}
-}
-
-void Node3DEditorCameraManager::pilot_selection() {
-	Node3D* selected_node = Node3DEditor::get_singleton()->get_single_selected_node();
-	if (selected_node) {
-		pilot(selected_node);
 	}
 }
 
@@ -253,7 +249,7 @@ void Node3DEditorCameraManager::set_freelook_active(bool p_active_now) {
 }
 
 void Node3DEditorCameraManager::navigation_move(float p_right, float p_forward, float p_speed) {
-	const Node3DEditorViewport::FreelookNavigationScheme navigation_scheme = (Node3DEditorViewport::FreelookNavigationScheme)EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_navigation_scheme").operator int();
+	const Node3DEditorViewport::FreelookNavigationScheme navigation_scheme = (Node3DEditorViewport::FreelookNavigationScheme)editor_settings->get("editors/3d/freelook/freelook_navigation_scheme").operator int();
 	Vector3 forward;
 	if (navigation_scheme == Node3DEditorViewport::FreelookNavigationScheme::FREELOOK_FULLY_AXIS_LOCKED) {
 		// Forward/backward keys will always go straight forward/backward, never moving on the Y axis.
@@ -293,8 +289,8 @@ void Node3DEditorCameraManager::navigation_pan(const Vector2& p_direction, float
 	camera_transform.translate_local(cursor_values.position);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor_values.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor_values.y_rot);
-	const bool invert_x_axis = EDITOR_GET("editors/3d/navigation/invert_x_axis");
-	const bool invert_y_axis = EDITOR_GET("editors/3d/navigation/invert_y_axis");
+	const bool invert_x_axis = editor_settings->get("editors/3d/navigation/invert_x_axis");
+	const bool invert_y_axis = editor_settings->get("editors/3d/navigation/invert_y_axis");
 	Vector3 translation(
 		(invert_x_axis ? -1 : 1) * -p_direction.x * p_speed,
 		(invert_y_axis ? -1 : 1) * p_direction.y * p_speed,
@@ -419,7 +415,6 @@ void Node3DEditorCameraManager::update_camera(float p_interp_delta) {
 }
 
 void Node3DEditorCameraManager::update_cinematic_preview() {
-	Node* scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
 	if (cinematic_preview_mode && scene_root != nullptr) {
 		Camera3D* cam = scene_root->get_viewport()->get_camera_3d();
 		if (cam != nullptr && cam != cinematic_camera) {
@@ -481,6 +476,8 @@ void Node3DEditorCameraManager::_bind_methods() {
 }
 
 Node3DEditorCameraManager::Node3DEditorCameraManager() {
+	scene_root = nullptr;
+	viewport = nullptr;
 	editor_camera = nullptr;
 	previewing_camera = nullptr;
 	cinematic_camera = nullptr;
@@ -494,7 +491,6 @@ Node3DEditorCameraManager::Node3DEditorCameraManager() {
 }
 
 Node3DEditorCameraManager::~Node3DEditorCameraManager() {
-	cursor.set_editor_settings(EditorSettings::get_singleton());
 }
 
 //////

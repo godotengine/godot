@@ -320,6 +320,8 @@ TEST_CASE("[Node3DEditorCameraCursor] Move freelook") {
 			cursor.get_target_values().position == previous_target_values.position,
 			"Should not move position ", cursor.get_target_values().position, " after disable freelook mode.");
 	}
+
+	memdelete(editor_settings);
 }
 
 TEST_CASE("[Node3DEditorCameraCursor] Get camera transform") {
@@ -541,6 +543,8 @@ TEST_CASE("[Node3DEditorCameraCursor] Update interpolation") {
 		CHECK(cursor.get_current_values().eye_position.z > previous_current_values.eye_position.z);
 		CHECK(cursor.get_current_values().eye_position.z < cursor.get_target_values().eye_position.z);
 	}
+
+	memdelete(editor_settings);
 }
 
 } // namespace TestNode3DEditorCameraCursor

@@ -36,6 +36,7 @@
 
 class Camera3D;
 class Node3D;
+class EditorSettings;
 
 /**
 * Manages the camera of the 3D editor, including features like navigating, preview, cinematic preview and pilot.
@@ -44,6 +45,7 @@ class Node3DEditorCameraManager : public Node {
 	GDCLASS(Node3DEditorCameraManager, Node);
 
 private:
+	Node* scene_root = nullptr;
 	Viewport* viewport = nullptr;
 	Camera3D* editor_camera = nullptr;
 	Camera3D* previewing_camera = nullptr;
@@ -56,10 +58,11 @@ private:
 	float fov;
 	float z_near;
 	float z_far;
+	EditorSettings* editor_settings = nullptr;
 	Node3DEditorCameraCursor cursor;
 
 public:
-	void setup(Camera3D* p_editor_camera, Viewport* p_viewport);
+	void setup(Camera3D* p_editor_camera, Viewport* p_viewport, Node* p_scene_root, EditorSettings* p_editor_settings);
 	void set_camera_settings(float p_fov, float p_z_near, float p_z_far);
 	void reset();
 
@@ -69,7 +72,6 @@ public:
 	Camera3D* get_current_camera() const;
 	Camera3D* get_previewing_or_cinematic_camera() const;
 
-	void pilot_selection();
 	void pilot(Node3D* p_node);
 	void stop_piloting();
 	Node3D* get_node_being_piloted() const;

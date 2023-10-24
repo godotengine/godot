@@ -3250,7 +3250,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			}
 		} break;
 		case VIEW_PILOT: {
-			camera_manager->pilot_selection();
+			camera_manager->pilot(Node3DEditor::get_singleton()->get_single_selected_node());
 		} break;
 		case VIEW_GIZMOS: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
@@ -4895,7 +4895,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
-	camera_manager->setup(camera, viewport);
+	camera_manager->setup(camera, viewport, SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root(), EditorSettings::get_singleton());
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);
