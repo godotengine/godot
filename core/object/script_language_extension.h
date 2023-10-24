@@ -313,6 +313,9 @@ public:
 				ERR_CONTINUE(!err.has("message"));
 
 				ScriptError serr;
+				if (err.has("path")) {
+					serr.path = err["path"];
+				}
 				serr.line = err["line"];
 				serr.column = err["column"];
 				serr.message = err["message"];
