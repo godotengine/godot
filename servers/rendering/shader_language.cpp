@@ -3085,6 +3085,19 @@ const ShaderLanguage::BuiltinFuncConstArgs ShaderLanguage::builtin_func_const_ar
 	{ nullptr, 0, 0, 0 }
 };
 
+const ShaderLanguage::BuiltinFuncFragLightSky ShaderLanguage::builtin_func_fragment_light_sky_only[] = {
+	{ "dFdx" },
+	{ "dFdxCoarse" },
+	{ "dFdxFine" },
+	{ "dFdy" },
+	{ "dFdyCoarse" },
+	{ "dFdyFine" },
+	{ "fwidth" },
+	{ "fwidthCoarse" },
+	{ "fwidthFine" },
+	{ nullptr }
+};
+
 bool ShaderLanguage::is_const_suffix_lut_initialized = false;
 
 bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str, bool *r_is_custom_function) {
@@ -3138,6 +3151,9 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		// test builtins
 		int idx = 0;
 
+		bool is_non_canvas_item_or_spatial_or_sky = String(shader_type_identifier) != "canvas_item" && String(shader_type_identifier) != "spatial" && String(shader_type_identifier) != "sky";
+		bool is_non_frag_light_sky = current_function != "fragment" && current_function != "light" && current_function != "sky";
+
 		while (builtin_func_defs[idx].name) {
 			if (completion_class != builtin_func_defs[idx].tag) {
 				idx++;
@@ -3178,6 +3194,24 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				}
 
 				if (!fail) {
+					if (is_non_canvas_item_or_spatial_or_sky || is_non_frag_light_sky) {
+						int idx2 = 0;
+						while (builtin_func_fragment_light_sky_only[idx2].name) {
+							if (name == builtin_func_fragment_light_sky_only[idx2].name) {
+								if (is_non_canvas_item_or_spatial_or_sky) {
+									_set_error(vformat(RTR("No matching function found for: '%s'."), String(name)));
+									return false;
+								}
+								if (shader_type_identifier == "sky") {
+									_set_error(vformat(RTR("'%s' cannot be used outside of the '%s' processor function."), String(name), "sky"));
+								} else {
+									_set_error(vformat(RTR("'%s' cannot be used outside of the '%s' or '%s' processor functions."), String(name), "fragment", "light"));
+								}
+								return false;
+							}
+							idx2++;
+						}
+					}
 					{
 						int constarg_idx = 0;
 						while (builtin_func_const_args[constarg_idx].name) {
@@ -10318,6 +10352,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				int idx = 0;
 				bool low_end = RenderingServer::get_singleton()->is_low_end();
 
+				bool is_non_canvas_item_or_spatial_or_sky = String(shader_type_identifier) != "canvas_item" && String(shader_type_identifier) != "spatial" && String(shader_type_identifier) != "sky";
+				bool is_non_frag_light_sky = current_function != "fragment" && current_function != "light" && current_function != "sky";
+
 				if (stages && stages->has(skip_function)) {
 					for (const KeyValue<StringName, StageFunctionInfo> &E : (*stages)[skip_function].stage_functions) {
 						matches.insert(String(E.key), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
@@ -10329,6 +10366,26 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						idx++;
 						continue;
 					}
+
+					if (is_non_canvas_item_or_spatial_or_sky || is_non_frag_light_sky) {
+						bool found = false;
+						{
+							int idx2 = 0;
+							while (builtin_func_fragment_light_sky_only[idx2].name) {
+								if (String(builtin_func_fragment_light_sky_only[idx2].name) == builtin_func_defs[idx].name) {
+									found = true;
+									break;
+								}
+								idx2++;
+							}
+						}
+
+						if (found) {
+							idx++;
+							continue;
+						}
+					}
+
 					matches.insert(String(builtin_func_defs[idx].name), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 					idx++;
 				}
@@ -10498,7 +10555,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				int idx2 = 0;
 				HashSet<int> out_args;
 				while (builtin_func_out_args[idx2].name != nullptr) {
-					if (builtin_func_out_args[idx2].name == builtin_func_defs[idx].name) {
+					if (String(builtin_func_out_args[idx2].name) == builtin_func_defs[idx].name) {
 						for (int i = 0; i < BuiltinFuncOutArgs::MAX_ARGS; i++) {
 							int arg = builtin_func_out_args[idx2].arguments[i];
 							if (arg == -1) {

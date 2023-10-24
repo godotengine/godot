@@ -1059,6 +1059,10 @@ private:
 		int max;
 	};
 
+	struct BuiltinFuncFragLightSky {
+		const char *name;
+	};
+
 	CompletionType completion_type;
 	ShaderNode::Uniform::Hint current_uniform_hint = ShaderNode::Uniform::HINT_NONE;
 	TextureFilter current_uniform_filter = FILTER_DEFAULT;
@@ -1083,6 +1087,7 @@ private:
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 	static const BuiltinFuncConstArgs builtin_func_const_args[];
+	static const BuiltinFuncFragLightSky builtin_func_fragment_light_sky_only[];
 
 	static bool is_const_suffix_lut_initialized;
 
