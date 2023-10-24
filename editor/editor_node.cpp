@@ -576,6 +576,10 @@ void EditorNode::update_preview_themes(int p_mode) {
 
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			EditorHelp::generate_doc();
+		} break;
+
 		case NOTIFICATION_PROCESS: {
 			if (opening_prev && !confirmation->is_visible()) {
 				opening_prev = false;
@@ -6761,7 +6765,6 @@ EditorNode::EditorNode() {
 		DisplayServer::get_singleton()->cursor_set_custom_image(Ref<Resource>());
 	}
 
-	EditorHelp::generate_doc();
 	SceneState::set_disable_placeholders(true);
 	ResourceLoader::clear_translation_remaps(); // Using no remaps if in editor.
 	ResourceLoader::clear_path_remaps();
