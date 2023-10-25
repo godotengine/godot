@@ -440,8 +440,10 @@ void Node3DEditorCameraManager::update_pilot_transform() {
 		return;
 	}
 	Transform3D transform = editor_camera->get_global_transform();
+	Vector3 original_scale = node_being_piloted->get_scale();
 	node_being_piloted->set_global_position(transform.origin);
 	node_being_piloted->set_global_rotation(transform.basis.get_euler());
+	node_being_piloted->set_scale(original_scale); // set_global_rotation seems to be messing with the scale, so we need to set it again here...
 }
 
 void Node3DEditorCameraManager::commit_pilot_transform() {
@@ -452,10 +454,12 @@ void Node3DEditorCameraManager::commit_pilot_transform() {
 	Transform3D transform_to_commit = cursor.get_target_camera_transform();
 	if (transform_to_commit != pilot_previous_transform) {
 		EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Piloting Transform"));
-		undo_redo->add_do_method(this, "_undo_redo_pilot_transform", node_being_piloted, transform_to_commit);
-		undo_redo->add_undo_method(this, "_undo_redo_pilot_transform", node_being_piloted, pilot_previous_transform);
-		undo_redo->commit_action(true);
+		if (undo_redo != nullptr) {
+			undo_redo->create_action(TTR("Piloting Transform"));
+			undo_redo->add_do_method(this, "_undo_redo_pilot_transform", node_being_piloted, transform_to_commit);
+			undo_redo->add_undo_method(this, "_undo_redo_pilot_transform", node_being_piloted, pilot_previous_transform);
+			undo_redo->commit_action(true);
+		}
 		pilot_previous_transform = transform_to_commit;
 	}
 }
