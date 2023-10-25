@@ -231,6 +231,7 @@ class CSharpInstance : public ScriptInstance {
 	bool unsafe_referenced = false;
 	bool predelete_notified = false;
 	bool destructing_script_instance = false;
+	bool script_is_node = false;
 
 	Ref<CSharpScript> script;
 	MonoGCHandleData gchandle;

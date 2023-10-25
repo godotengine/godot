@@ -2003,6 +2003,17 @@ void CSharpInstance::notification(int p_notification, bool p_reversed) {
 
 		_call_notification(p_notification, p_reversed);
 
+		if (p_reversed && script_is_node) {
+			return;
+		}
+
+		GDMonoCache::managed_callbacks.CSharpInstanceBridge_CallDispose(
+				gchandle.get_intptr(), /* okIfNull */ false);
+
+		return;
+	} else if (predelete_notified && p_reversed) {
+		_call_notification(p_notification, p_reversed);
+
 		GDMonoCache::managed_callbacks.CSharpInstanceBridge_CallDispose(
 				gchandle.get_intptr(), /* okIfNull */ false);
 
@@ -2447,6 +2458,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 
 	CSharpInstance *instance = memnew(CSharpInstance(Ref<CSharpScript>(this)));
 	instance->base_ref_counted = p_is_ref_counted;
+	instance->script_is_node = Object::cast_to<Node>(p_owner) != nullptr;
 	instance->owner = p_owner;
 	instance->owner->set_script_instance(instance);
 
