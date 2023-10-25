@@ -159,9 +159,7 @@ public:
 		userdata = p_info->callable_userdata;
 		token = p_info->token;
 
-		if (p_info->object != nullptr) {
-			object = ((Object *)p_info->object)->get_instance_id();
-		}
+		object = p_info->object_id;
 
 		call_func = p_info->call_func;
 		is_valid_func = p_info->is_valid_func;
