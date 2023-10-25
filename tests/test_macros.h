@@ -239,6 +239,8 @@ int register_test_command(String p_command, TestFunc p_function);
 // Use SIGNAL_CHECK("signal_name"), Vector<Vector<Variant>>), to check the arguments of all fired signals.
 // The outer vector is each fired signal, the inner vector the list of arguments for that signal. Order does matter.
 //
+// Use SIGNAL_CHECK_TRUE("signal_name") to check if a signal was fired at least once, no matter the arguments.
+//
 // Use SIGNAL_CHECK_FALSE("signal_name") to check if a signal was not fired.
 //
 // Use SIGNAL_DISCARD("signal_name") to discard records all of the given signal, use only in placed you don't need to check.
@@ -364,10 +366,14 @@ public:
 		return match;
 	}
 
-	bool check_false(const String &p_name) {
+	bool check_true(const String& p_name) {
 		bool has = _signals.has(p_name);
 		discard_signal(p_name);
-		return !has;
+		return has;
+	}
+
+	bool check_false(const String &p_name) {
+		return !check_true(p_name);
 	}
 
 	void discard_signal(const String &p_name) {
@@ -393,6 +399,7 @@ public:
 #define SIGNAL_UNWATCH(m_object, m_signal) SignalWatcher::get_singleton()->unwatch_signal(m_object, m_signal);
 
 #define SIGNAL_CHECK(m_signal, m_args) CHECK(SignalWatcher::get_singleton()->check(m_signal, m_args));
+#define SIGNAL_CHECK_TRUE(m_signal) CHECK(SignalWatcher::get_singleton()->check_true(m_signal));
 #define SIGNAL_CHECK_FALSE(m_signal) CHECK(SignalWatcher::get_singleton()->check_false(m_signal));
 #define SIGNAL_DISCARD(m_signal) SignalWatcher::get_singleton()->discard_signal(m_signal);
 
