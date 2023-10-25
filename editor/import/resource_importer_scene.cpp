@@ -1471,6 +1471,9 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 		}
 	}
 	anim->set_path(p_save_to_path, true); // Set path to save externally.
+	for (int i = 0; i < anim->get_track_count(); i++) {
+		anim->track_set_imported(i, false);
+	}
 	Error err = ResourceSaver::save(anim, p_save_to_path, ResourceSaver::FLAG_CHANGE_PATH);
 	ERR_FAIL_COND_V_MSG(err != OK, anim, "Saving of animation failed: " + p_save_to_path);
 	return anim;
