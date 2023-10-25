@@ -746,16 +746,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			using_subpass_post_process = false;
 		}
 
-		// We do this last because our get_color_fbs creates and caches the framebuffer if we need it.
-		RID four_subpasses = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_FOUR_SUBPASSES);
-		if (using_subpass_post_process && four_subpasses.is_null()) {
-			// can't do blit subpass because we don't have all subpasses
-			using_subpass_post_process = false;
-		}
-
 		if (using_subpass_post_process) {
 			// all as subpasses
-			framebuffer = four_subpasses;
+			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_FOUR_SUBPASSES);
 		} else if (using_subpass_transparent) {
 			// our tonemap pass is separate
 			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_THREE_SUBPASSES);
@@ -805,24 +798,20 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				clear_color.r *= bg_energy_multiplier;
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
-				/*
-				if (p_render_data->render_buffers->has_custom_data(RB_SCOPE_FOG) || environment_get_fog_enabled(p_render_data->environment)) {
+				if (environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
-				*/
 			} break;
 			case RS::ENV_BG_COLOR: {
 				clear_color = environment_get_bg_color(p_render_data->environment);
 				clear_color.r *= bg_energy_multiplier;
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
-				/*
-				if (p_render_data->render_buffers->has_custom_data(RB_SCOPE_FOG) || environment_get_fog_enabled(p_render_data->environment)) {
+				if (environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
-				*/
 			} break;
 			case RS::ENV_BG_SKY: {
 				draw_sky = true;
@@ -2420,7 +2409,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 
 	SceneShaderForwardMobile::MaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
-	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_alpha_antialiasing) {
+	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_alpha_antialiasing && !p_material->shader_data->uses_world_coordinates) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = static_cast<SceneShaderForwardMobile::MaterialData *>(RendererRD::MaterialStorage::get_singleton()->material_get_data(scene_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
 

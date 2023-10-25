@@ -265,7 +265,7 @@ namespace Godot
             return new Vector3(
                 Mathf.BezierDerivative(X, control1.X, control2.X, end.X, t),
                 Mathf.BezierDerivative(Y, control1.Y, control2.Y, end.Y, t),
-                Mathf.BezierDerivative(Z, control1.Z, control2.Z, end.Y, t)
+                Mathf.BezierDerivative(Z, control1.Z, control2.Z, end.Z, t)
             );
         }
 

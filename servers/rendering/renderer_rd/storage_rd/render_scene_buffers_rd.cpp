@@ -532,7 +532,7 @@ void RenderSceneBuffersRD::ensure_velocity() {
 		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
-			uint32_t msaa_usage_bits = usage_bits | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+			uint32_t msaa_usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 			usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 
 			const RD::TextureSamples ts[RS::VIEWPORT_MSAA_MAX] = {

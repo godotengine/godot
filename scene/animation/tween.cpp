@@ -284,10 +284,6 @@ bool Tween::step(double p_delta) {
 		return false;
 	}
 
-	if (!running) {
-		return true;
-	}
-
 	if (is_bound) {
 		Node *node = get_bound_node();
 		if (node) {
@@ -297,6 +293,10 @@ bool Tween::step(double p_delta) {
 		} else {
 			return false;
 		}
+	}
+
+	if (!running) {
+		return true;
 	}
 
 	if (!started) {

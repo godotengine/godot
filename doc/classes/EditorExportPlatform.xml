@@ -8,5 +8,6 @@
 		Used in scripting by [EditorExportPlugin] to configure platform-specific customization of scenes and resources. See [method EditorExportPlugin._begin_customize_scenes] and [method EditorExportPlugin._begin_customize_resources] for more details.
 	</description>
 	<tutorials>
+		<link title="$DOCS_URL/tutorials/platform/consoles.html">Console support in Godot</link>
 	</tutorials>
 </class>

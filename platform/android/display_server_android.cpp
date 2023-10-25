@@ -299,9 +299,9 @@ void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Va
 		Variant ret;
 		Callable::CallError ce;
 		if (p_deferred) {
-			p_callable.callp((const Variant **)&argp, 1, ret, ce);
-		} else {
 			p_callable.call_deferredp((const Variant **)&argp, 1);
+		} else {
+			p_callable.callp((const Variant **)&argp, 1, ret, ce);
 		}
 	}
 }

@@ -1419,6 +1419,13 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 						glEnableVertexAttribArray(5);
 						glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, instance_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(instance_color_offset * sizeof(float)));
 						glVertexAttribDivisor(5, 1);
+					} else {
+						// Set all default instance color and custom data values to 1.0 or 0.0 using a compressed format.
+						uint16_t zero = Math::make_half_float(0.0f);
+						uint16_t one = Math::make_half_float(1.0f);
+						GLuint default_color = (uint32_t(one) << 16) | one;
+						GLuint default_custom = (uint32_t(zero) << 16) | zero;
+						glVertexAttribI4ui(5, default_color, default_color, default_custom, default_custom);
 					}
 				}
 
@@ -2105,7 +2112,7 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 
 	if (render_target && render_target->clear_requested) {
 		const Color &col = render_target->clear_color;
-		glClearColor(col.r, col.g, col.b, col.a);
+		glClearColor(col.r, col.g, col.b, render_target->is_transparent ? col.a : 1.0f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		render_target->clear_requested = false;

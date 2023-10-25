@@ -84,7 +84,7 @@
 		<method name="is_empty" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Check whether the current element is empty (this only works for completely empty tags, e.g. [code]&lt;element \&gt;[/code]).
+				Check whether the current element is empty (this only works for completely empty tags, e.g. [code]&lt;element /&gt;[/code]).
 			</description>
 		</method>
 		<method name="open">

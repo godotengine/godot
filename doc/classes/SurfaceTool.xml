@@ -28,6 +28,7 @@
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>
+		<link title="Using the SurfaceTool">$DOCS_URL/tutorials/3d/procedural_geometry/surfacetool.html</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>

@@ -309,8 +309,8 @@ void Bone2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p_outline_shape, Bone2D *p_other_bone) {
-	int bone_width = EDITOR_GET("editors/2d/bone_width");
-	int bone_outline_width = EDITOR_GET("editors/2d/bone_outline_size");
+	float bone_width = EDITOR_GET("editors/2d/bone_width");
+	float bone_outline_width = EDITOR_GET("editors/2d/bone_outline_size");
 
 	if (!is_inside_tree()) {
 		return false; //may have been removed

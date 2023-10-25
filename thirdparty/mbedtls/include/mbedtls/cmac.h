@@ -45,7 +45,11 @@ extern "C" {
 #define MBEDTLS_AES_BLOCK_SIZE          16
 #define MBEDTLS_DES3_BLOCK_SIZE         8
 
-#if defined(MBEDTLS_AES_C)
+
+/* Although the CMAC module does not support ARIA or CAMELLIA, we adjust the value of
+ * MBEDTLS_CIPHER_BLKSIZE_MAX to reflect these ciphers.
+ * This is done to avoid confusion, given the general-purpose name of the macro. */
+#if defined(MBEDTLS_AES_C) || defined(MBEDTLS_ARIA_C) || defined(MBEDTLS_CAMELLIA_C)
 #define MBEDTLS_CIPHER_BLKSIZE_MAX      16  /**< The longest block used by CMAC is that of AES. */
 #else
 #define MBEDTLS_CIPHER_BLKSIZE_MAX      8   /**< The longest block used by CMAC is that of 3DES. */

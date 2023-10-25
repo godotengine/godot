@@ -2954,7 +2954,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			// OrderOut prevents a lose focus bug with the window.
+			bool was_visible = false;
 			if ([wd.window_object isVisible]) {
+				was_visible = true;
 				[wd.window_object orderOut:nil];
 			}
 			wd.borderless = p_enabled;
@@ -2969,7 +2971,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				[wd.window_object setFrame:frameRect display:NO];
 			}
 			_update_window_style(wd);
-			if ([wd.window_object isVisible]) {
+			if (was_visible || [wd.window_object isVisible]) {
 				if ([wd.window_object isMiniaturized]) {
 					return;
 				} else if (wd.no_focus) {
@@ -3800,7 +3802,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 		// Find top popup to close.
 		while (E) {
 			// Popup window area.
-			Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
+			Rect2i win_rect = Rect2i(window_get_position_with_decorations(E->get()), window_get_size_with_decorations(E->get()));
 			// Area of the parent window, which responsible for opening sub-menu.
 			Rect2i safe_rect = window_get_popup_safe_rect(E->get());
 			if (win_rect.has_point(pos)) {

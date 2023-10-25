@@ -7,6 +7,7 @@
 		External XR interface plugins should inherit from this class.
 	</description>
 	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="_end_frame" qualifiers="virtual">

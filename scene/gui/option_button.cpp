@@ -78,6 +78,7 @@ void OptionButton::_update_theme_item_cache() {
 void OptionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			_refresh_size_cache();
 			if (has_theme_icon(SNAME("arrow"))) {
 				if (is_layout_rtl()) {
 					_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
@@ -446,7 +447,7 @@ void OptionButton::_refresh_size_cache() {
 	cache_refresh_pending = false;
 
 	if (fit_to_longest_item) {
-		_cached_size = Vector2();
+		_cached_size = theme_cache.normal->get_minimum_size();
 		for (int i = 0; i < get_item_count(); i++) {
 			_cached_size = _cached_size.max(get_minimum_size_for_text_and_icon(popup->get_item_xl_text(i), get_item_icon(i)));
 		}
@@ -595,7 +596,6 @@ OptionButton::OptionButton(const String &p_text) :
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed).bind(false));
-	_refresh_size_cache();
 }
 
 OptionButton::~OptionButton() {

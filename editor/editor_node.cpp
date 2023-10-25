@@ -2352,7 +2352,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 			SceneTreeDock::get_singleton()->set_selected(current_node);
 			InspectorDock::get_singleton()->update(current_node);
 			if (!inspector_only && !skip_main_plugin) {
-				skip_main_plugin = stay_in_script_editor_on_node_selected && ScriptEditor::get_singleton()->is_visible_in_tree();
+				skip_main_plugin = stay_in_script_editor_on_node_selected && !ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree();
 			}
 		} else {
 			NodeDock::get_singleton()->set_node(nullptr);
@@ -3674,16 +3674,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	Error err;
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
-	if (!sdata.is_valid()) {
-		_dialog_display_load_error(lpath, err);
-		opening_prev = false;
-
-		if (prev != -1) {
-			set_current_scene(prev);
-			editor_data.remove_scene(idx);
-		}
-		return ERR_FILE_NOT_FOUND;
-	}
 
 	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
 		current_menu_option = -1;
@@ -3699,6 +3689,17 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			editor_data.remove_scene(idx);
 		}
 		return ERR_FILE_MISSING_DEPENDENCIES;
+	}
+
+	if (!sdata.is_valid()) {
+		_dialog_display_load_error(lpath, err);
+		opening_prev = false;
+
+		if (prev != -1) {
+			set_current_scene(prev);
+			editor_data.remove_scene(idx);
+		}
+		return ERR_FILE_NOT_FOUND;
 	}
 
 	dependency_errors.erase(lpath); // At least not self path.

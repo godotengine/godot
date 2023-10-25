@@ -82,6 +82,15 @@ void Translation::_set_messages(const Dictionary &p_messages) {
 void Translation::set_locale(const String &p_locale) {
 	locale = TranslationServer::get_singleton()->standardize_locale(p_locale);
 
+	if (Thread::is_main_thread()) {
+		_notify_translation_changed_if_applies();
+	} else {
+		// Avoid calling non-thread-safe functions here.
+		callable_mp(this, &Translation::_notify_translation_changed_if_applies).call_deferred();
+	}
+}
+
+void Translation::_notify_translation_changed_if_applies() {
 	if (OS::get_singleton()->get_main_loop() && TranslationServer::get_singleton()->get_loaded_locales().has(get_locale())) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}

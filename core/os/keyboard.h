@@ -33,6 +33,8 @@
 
 #include "core/string/ustring.h"
 
+// Keep the values in this enum in sync with `_keycodes` in `keyboard.cpp`,
+// and the bindings in `core_constants.cpp`.
 enum class Key {
 	NONE = 0,
 	// Special key: The strategy here is similar to the one used by toolkits,

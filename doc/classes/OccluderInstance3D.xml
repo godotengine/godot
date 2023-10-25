@@ -12,6 +12,7 @@
 		[b]Note:[/b] Due to memory constraints, occlusion culling is not supported by default in Web export templates. It can be enabled by compiling custom Web export templates with [code]module_raycast_enabled=yes[/code].
 	</description>
 	<tutorials>
+		<link title="Occlusion culling">$DOCS_URL/tutorials/3d/occlusion_culling.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_bake_mask_value" qualifiers="const">

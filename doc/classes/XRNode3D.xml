@@ -7,6 +7,7 @@
 		This node can be bound to a specific pose of a [XRPositionalTracker] and will automatically have its [member Node3D.transform] updated by the [XRServer]. Nodes of this type must be added as children of the [XROrigin3D] node.
 	</description>
 	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_has_tracking_data" qualifiers="const">

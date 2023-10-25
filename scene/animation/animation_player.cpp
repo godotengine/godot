@@ -779,7 +779,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				List<int> indices;
 
 				if (p_seeked) {
-					int found_key = a->track_find_key(i, p_time);
+					int found_key = a->track_find_key(i, p_time, Animation::FIND_MODE_EXACT);
 					if (found_key >= 0) {
 						indices.push_back(found_key);
 					}

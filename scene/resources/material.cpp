@@ -2876,7 +2876,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("MSDF", "msdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_outline_size", PROPERTY_HINT_RANGE, "1,250,1"), "set_msdf_outline_size", "get_msdf_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_outline_size", PROPERTY_HINT_RANGE, "0,250,1"), "set_msdf_outline_size", "get_msdf_outline_size");
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
@@ -3063,6 +3063,9 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_refraction_texture_channel(TEXTURE_CHANNEL_RED);
 
 	set_grow(0.0);
+
+	set_msdf_pixel_range(4.0);
+	set_msdf_outline_size(0.0);
 
 	set_heightmap_deep_parallax_min_layers(8);
 	set_heightmap_deep_parallax_max_layers(32);
