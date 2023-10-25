@@ -569,5 +569,7 @@ PropertySelector::PropertySelector() {
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
+	help_bit->get_rich_text()->set_fit_content(false);
+	help_bit->get_rich_text()->set_custom_minimum_size(Size2(help_bit->get_rich_text()->get_minimum_size().x, 135 * EDSCALE));
 	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 }
