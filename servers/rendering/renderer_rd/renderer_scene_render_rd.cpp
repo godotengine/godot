@@ -365,6 +365,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	RID color_texture = use_upscaled_texture ? rb->get_upscaled_texture() : rb->get_internal_texture();
 	Size2i color_size = use_upscaled_texture ? target_size : rb->get_internal_size();
 
+	bool dest_is_msaa_2d = rb->get_view_count() == 1 && texture_storage->render_target_get_msaa(render_target) != RS::VIEWPORT_MSAA_DISABLED;
+
 	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes)) {
 		RENDER_TIMESTAMP("Depth of Field");
 		RD::get_singleton()->draw_command_begin_label("DOF");
@@ -581,7 +583,12 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// If we do a bilinear upscale we just render into our render target and our shader will upscale automatically.
 			// Target size in this case is lying as we never get our real target size communicated.
 			// Bit nasty but...
-			dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
+
+			if (dest_is_msaa_2d) {
+				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(texture_storage->render_target_get_rd_texture_msaa(render_target));
+			} else {
+				dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
+			}
 		}
 
 		tone_mapper->tonemapper(color_texture, dest_fb, tonemap);
@@ -597,6 +604,13 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
 
 			fsr->fsr_upscale(rb, source_texture, dest_texture);
+		}
+
+		if (dest_is_msaa_2d) {
+			// We can't upscale directly into our MSAA buffer so we need to do a copy
+			RID source_texture = texture_storage->render_target_get_rd_texture(render_target);
+			RID dest_fb = FramebufferCacheRD::get_singleton()->get_cache(texture_storage->render_target_get_rd_texture_msaa(render_target));
+			copy_effects->copy_to_fb_rect(source_texture, dest_fb, Rect2i(Point2i(), rb->get_target_size()));
 		}
 
 		RD::get_singleton()->draw_command_end_label();

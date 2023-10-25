@@ -264,7 +264,7 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			RID render_target = render_buffers->get_render_target();
 			ERR_FAIL_COND_V(render_target.is_null(), RID());
 			RID target_buffer;
-			if (texture_storage->render_target_get_msaa(render_target) == RS::VIEWPORT_MSAA_DISABLED) {
+			if (view_count > 1 || texture_storage->render_target_get_msaa(render_target) == RS::VIEWPORT_MSAA_DISABLED) {
 				target_buffer = texture_storage->render_target_get_rd_texture(render_target);
 			} else {
 				target_buffer = texture_storage->render_target_get_rd_texture_msaa(render_target);
