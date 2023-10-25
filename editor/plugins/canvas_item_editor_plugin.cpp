@@ -3638,7 +3638,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
 	}
 
-	if (ci && !ci->_edit_use_rect() && (!editor_selection->is_selected(ci) || _is_node_locked(ci))) {
+	if (show_position_gizmos && ci && !ci->_edit_use_rect() && (!editor_selection->is_selected(ci) || _is_node_locked(ci))) {
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
 		// Draw the node's position
@@ -3775,13 +3775,13 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 		real_t offset = 0;
 
 		Ref<Texture2D> lock = get_editor_theme_icon(SNAME("LockViewport"));
-		if (p_node->has_meta("_edit_lock_") && show_edit_locks) {
+		if (show_lock_gizmos && p_node->has_meta("_edit_lock_")) {
 			lock->draw(viewport_ci, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			offset += lock->get_size().x;
 		}
 
 		Ref<Texture2D> group = get_editor_theme_icon(SNAME("GroupViewport"));
-		if (ci->has_meta("_edit_group_") && show_edit_locks) {
+		if (show_group_gizmos && ci->has_meta("_edit_group_")) {
 			group->draw(viewport_ci, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			//offset += group->get_size().x;
 		}
@@ -4289,16 +4289,28 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			view_menu->get_popup()->set_item_checked(idx, show_viewport);
 			viewport->queue_redraw();
 		} break;
-		case SHOW_EDIT_LOCKS: {
-			show_edit_locks = !show_edit_locks;
-			int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
-			view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
+		case SHOW_POSITION_GIZMOS: {
+			show_position_gizmos = !show_position_gizmos;
+			int idx = gizmos_menu->get_item_index(SHOW_POSITION_GIZMOS);
+			gizmos_menu->set_item_checked(idx, show_position_gizmos);
+			viewport->queue_redraw();
+		} break;
+		case SHOW_LOCK_GIZMOS: {
+			show_lock_gizmos = !show_lock_gizmos;
+			int idx = gizmos_menu->get_item_index(SHOW_LOCK_GIZMOS);
+			gizmos_menu->set_item_checked(idx, show_lock_gizmos);
+			viewport->queue_redraw();
+		} break;
+		case SHOW_GROUP_GIZMOS: {
+			show_group_gizmos = !show_group_gizmos;
+			int idx = gizmos_menu->get_item_index(SHOW_GROUP_GIZMOS);
+			gizmos_menu->set_item_checked(idx, show_group_gizmos);
 			viewport->queue_redraw();
 		} break;
 		case SHOW_TRANSFORMATION_GIZMOS: {
 			show_transformation_gizmos = !show_transformation_gizmos;
-			int idx = view_menu->get_popup()->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
-			view_menu->get_popup()->set_item_checked(idx, show_transformation_gizmos);
+			int idx = gizmos_menu->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
+			gizmos_menu->set_item_checked(idx, show_transformation_gizmos);
 			viewport->queue_redraw();
 		} break;
 		case SNAP_USE_NODE_PARENT: {
@@ -4759,7 +4771,9 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["show_guides"] = show_guides;
 	state["show_helpers"] = show_helpers;
 	state["show_zoom_control"] = zoom_widget->is_visible();
-	state["show_edit_locks"] = show_edit_locks;
+	state["show_position_gizmos"] = show_position_gizmos;
+	state["show_lock_gizmos"] = show_lock_gizmos;
+	state["show_group_gizmos"] = show_group_gizmos;
 	state["show_transformation_gizmos"] = show_transformation_gizmos;
 	state["snap_rotation"] = snap_rotation;
 	state["snap_scale"] = snap_scale;
@@ -4896,16 +4910,28 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		view_menu->get_popup()->set_item_checked(idx, show_helpers);
 	}
 
-	if (state.has("show_edit_locks")) {
-		show_edit_locks = state["show_edit_locks"];
-		int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
-		view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
+	if (state.has("show_position_gizmos")) {
+		show_position_gizmos = state["show_position_gizmos"];
+		int idx = gizmos_menu->get_item_index(SHOW_POSITION_GIZMOS);
+		gizmos_menu->set_item_checked(idx, show_position_gizmos);
+	}
+
+	if (state.has("show_lock_gizmos")) {
+		show_lock_gizmos = state["show_lock_gizmos"];
+		int idx = gizmos_menu->get_item_index(SHOW_LOCK_GIZMOS);
+		gizmos_menu->set_item_checked(idx, show_lock_gizmos);
+	}
+
+	if (state.has("show_group_gizmos")) {
+		show_group_gizmos = state["show_group_gizmos"];
+		int idx = gizmos_menu->get_item_index(SHOW_GROUP_GIZMOS);
+		gizmos_menu->set_item_checked(idx, show_group_gizmos);
 	}
 
 	if (state.has("show_transformation_gizmos")) {
 		show_transformation_gizmos = state["show_transformation_gizmos"];
-		int idx = view_menu->get_popup()->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
-		view_menu->get_popup()->set_item_checked(idx, show_transformation_gizmos);
+		int idx = gizmos_menu->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
+		gizmos_menu->set_item_checked(idx, show_transformation_gizmos);
 	}
 
 	if (state.has("show_zoom_control")) {
@@ -5394,8 +5420,18 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTR("Show Guides"), Key::Y), SHOW_GUIDES);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_origin", TTR("Show Origin")), SHOW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_viewport", TTR("Show Viewport")), SHOW_VIEWPORT);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_edit_locks", TTR("Show Group And Lock Icons")), SHOW_EDIT_LOCKS);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_transformation_gizmos", TTR("Show Transformation Gizmos")), SHOW_TRANSFORMATION_GIZMOS);
+	p->add_separator();
+
+	gizmos_menu = memnew(PopupMenu);
+	gizmos_menu->set_name("GizmosMenu");
+	gizmos_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+	gizmos_menu->set_hide_on_checkable_item_selection(false);
+	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_position_gizmos", TTR("Position")), SHOW_POSITION_GIZMOS);
+	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_lock_gizmos", TTR("Lock")), SHOW_LOCK_GIZMOS);
+	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_group_gizmos", TTR("Group")), SHOW_GROUP_GIZMOS);
+	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_transformation_gizmos", TTR("Transformation")), SHOW_TRANSFORMATION_GIZMOS);
+	p->add_child(gizmos_menu);
+	p->add_submenu_item(TTR("Gizmos"), "GizmosMenu");
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), Key::F), VIEW_CENTER_TO_SELECTION);
