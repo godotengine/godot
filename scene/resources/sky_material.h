@@ -53,6 +53,7 @@ private:
 	float sun_angle_max = 0.0f;
 	float sun_curve = 0.0f;
 	bool use_debanding = true;
+	float global_energy_multiplier = 1.0f;
 
 	static Mutex shader_mutex;
 	static RID shader_cache[2];
@@ -103,6 +104,9 @@ public:
 	void set_use_debanding(bool p_use_debanding);
 	bool get_use_debanding() const;
 
+	void set_energy_multiplier(float p_multiplier);
+	float get_energy_multiplier() const;
+
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;
 	virtual RID get_rid() const override;
@@ -121,6 +125,7 @@ class PanoramaSkyMaterial : public Material {
 
 private:
 	Ref<Texture2D> panorama;
+	float energy_multiplier = 1.0f;
 
 	static Mutex shader_mutex;
 	static RID shader_cache[2];
