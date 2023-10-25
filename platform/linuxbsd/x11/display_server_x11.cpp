@@ -1571,7 +1571,7 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 
 	//Use xrandr to get screen refresh rate.
 	if (xrandr_ext_ok) {
-		XRRScreenResources *screen_info = XRRGetScreenResources(x11_display, windows[MAIN_WINDOW_ID].x11_window);
+		XRRScreenResources *screen_info = XRRGetScreenResourcesCurrent(x11_display, windows[MAIN_WINDOW_ID].x11_window);
 		if (screen_info) {
 			RRMode current_mode = 0;
 			xrr_monitor_info *monitors = nullptr;
