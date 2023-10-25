@@ -479,11 +479,6 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 	sources[new_source_id] = p_tile_set_source;
 	source_ids.push_back(new_source_id);
 	source_ids.sort();
-	TileSet *old_tileset = p_tile_set_source->get_tile_set();
-	if (old_tileset != this && old_tileset != nullptr) {
-		// If the source is already in a TileSet (might happen when duplicating), remove it from the other TileSet.
-		old_tileset->remove_source_ptr(p_tile_set_source.ptr());
-	}
 	p_tile_set_source->set_tile_set(this);
 	_compute_next_source_id();
 
@@ -507,16 +502,6 @@ void TileSet::remove_source(int p_source_id) {
 
 	terrains_cache_dirty = true;
 	emit_changed();
-}
-
-void TileSet::remove_source_ptr(TileSetSource *p_tile_set_source) {
-	for (const KeyValue<int, Ref<TileSetSource>> &kv : sources) {
-		if (kv.value.ptr() == p_tile_set_source) {
-			remove_source(kv.key);
-			return;
-		}
-	}
-	ERR_FAIL_MSG(vformat("Attempting to remove source from a tileset, but the tileset doesn't have it: %s", p_tile_set_source));
 }
 
 void TileSet::set_source_id(int p_source_id, int p_new_source_id) {
@@ -3159,11 +3144,9 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_int()) {
 			// Create source only if it does not exists.
 			int source_id = components[1].to_int();
-
-			if (has_source(source_id)) {
-				remove_source(source_id);
+			if (!has_source(source_id)) {
+				add_source(p_value, source_id);
 			}
-			add_source(p_value, source_id);
 			return true;
 		} else if (components.size() == 2 && components[0] == "tile_proxies") {
 			ERR_FAIL_COND_V(p_value.get_type() != Variant::ARRAY, false);
@@ -3606,10 +3589,6 @@ TileSet::~TileSet() {
 
 void TileSetSource::set_tile_set(const TileSet *p_tile_set) {
 	tile_set = p_tile_set;
-}
-
-TileSet *TileSetSource::get_tile_set() const {
-	return (TileSet *)tile_set;
 }
 
 void TileSetSource::reset_state() {

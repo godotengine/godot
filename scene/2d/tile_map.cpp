@@ -2130,7 +2130,9 @@ TileData *TileMapLayer::get_cell_tile_data(const Vector2i &p_coords, bool p_use_
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 	Ref<TileSetAtlasSource> source = tile_set->get_source(source_id);
 	if (source.is_valid()) {
-		return source->get_tile_data(get_cell_atlas_coords(p_coords, p_use_proxies), get_cell_alternative_tile(p_coords, p_use_proxies));
+		TileData *tile_data = source->get_tile_data(get_cell_atlas_coords(p_coords, p_use_proxies), get_cell_alternative_tile(p_coords, p_use_proxies));
+		tile_data->set_tile_set(*tile_set);
+		return tile_data;
 	}
 
 	return nullptr;
