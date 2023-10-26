@@ -390,7 +390,7 @@ namespace TestNode3DEditorCameraManager {
 				CHECK(some_node->get_global_rotation_degrees() == Vector3(0.0, 0.0, 0.0));
 			}
 
-			SUBCASE("Should not leave pilot mode if a previously piloted node is deleted") {
+			SUBCASE("Should not leave pilot mode if a previously piloted node is destroyed") {
 				Node3D* node_to_be_deleted = memnew(Node3D);
 				root->add_child(node_to_be_deleted);
 				camera_manager->pilot(node_to_be_deleted);
@@ -451,11 +451,13 @@ namespace TestNode3DEditorCameraManager {
 		SUBCASE("[TestNode3DEditorCameraManager] Preview camera") {
 
 			SUBCASE("Should set the camera as viewport's camera") {
-
+				
 			}
 
 			SUBCASE("Should stop pilot mode") {
-
+				camera_manager->pilot(some_node);
+				camera_manager->preview_camera(previewing_camera);
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
 			}
 
 			SUBCASE("Should pilot camera if set_allow_pilot_previewing_camera was set to true before") {
@@ -473,15 +475,54 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should keep piloting the camera if it already was before preview") {
-
+				camera_manager->pilot(previewing_camera);
+				camera_manager->preview_camera(previewing_camera);
+				CHECK(camera_manager->get_node_being_piloted() == previewing_camera);
 			}
 
-			SUBCASE("Should leave previewing mode when it is deleted") {
+			SUBCASE("Should pilot camera if it was piloting in the last time the preview stopped") {
+				camera_manager->preview_camera(previewing_camera);
+				camera_manager->pilot(previewing_camera);
+				camera_manager->stop_previewing_camera();
+				CHECK(camera_manager->get_previewing_camera() == nullptr);
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
+				camera_manager->preview_camera(previewing_camera);
+				CHECK(camera_manager->get_previewing_camera() == previewing_camera);
+				CHECK(camera_manager->get_node_being_piloted() == previewing_camera);
+			}
 
+			SUBCASE("Should not pilot camera if it was not piloting in the last time the preview stopped") {
+				camera_manager->preview_camera(previewing_camera);
+				camera_manager->pilot(previewing_camera);
+				camera_manager->stop_piloting();
+				camera_manager->stop_previewing_camera();
+				camera_manager->preview_camera(previewing_camera);
+				CHECK(camera_manager->get_previewing_camera() == previewing_camera);
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
+			}
+
+			SUBCASE("Should pilot camera if it was piloting another camera in the last time the preview stopped") {
+				Camera3D* another_camera = memnew(Camera3D);
+				root->add_child(another_camera);
+				camera_manager->preview_camera(previewing_camera);
+				camera_manager->pilot(previewing_camera);
+				camera_manager->stop_previewing_camera();
+				camera_manager->preview_camera(another_camera);
+				CHECK(camera_manager->get_previewing_camera() == another_camera);
+				CHECK(camera_manager->get_node_being_piloted() == another_camera);
+				memdelete(another_camera);
+			}
+
+			SUBCASE("Should leave previewing mode when it is destroyed") {
+				Camera3D* camera_to_be_deleted = memnew(Camera3D);
+				root->add_child(camera_to_be_deleted);
+				camera_manager->preview_camera(camera_to_be_deleted);
+				memdelete(camera_to_be_deleted);
+				CHECK(camera_manager->get_previewing_camera() == nullptr);
 			}
 
 			SUBCASE("Should do nothing if camera is null") {
-
+				
 			}
 
 			SUBCASE("Should do nothing if already previewing the same camera") {
@@ -497,7 +538,10 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should emit signal 'camera_mode_changed'") {
-
+				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+				camera_manager->preview_camera(previewing_camera);
+				SIGNAL_CHECK_TRUE("camera_mode_changed");
+				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
 			}
 		}
 
@@ -508,29 +552,62 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should stop pilot mode") {
-
+				camera_manager->preview_camera(previewing_camera);
+				camera_manager->pilot(previewing_camera);
+				camera_manager->stop_previewing_camera();
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
 			}
 
 			SUBCASE("Should not stop previewing camera if a previously previewed camera is deleted") {
-
+				Camera3D* camera_to_be_deleted = memnew(Camera3D);
+				root->add_child(camera_to_be_deleted);
+				camera_manager->preview_camera(camera_to_be_deleted);
+				camera_manager->stop_previewing_camera();
+				camera_manager->preview_camera(previewing_camera);
+				memdelete(camera_to_be_deleted);
+				CHECK(camera_manager->get_previewing_camera() == previewing_camera);
 			}
 
 			SUBCASE("Should emit signal 'camera_mode_changed'") {
-
+				camera_manager->preview_camera(previewing_camera);
+				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+				camera_manager->stop_previewing_camera();
+				SIGNAL_CHECK_TRUE("camera_mode_changed");
+				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
 			}
 
 			SUBCASE("Should do nothing if not previewing any camera") {
 
+				SUBCASE("Should not emit 'camera_mode_changed' signal") {
+					SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+					camera_manager->stop_previewing_camera();
+					SIGNAL_CHECK_FALSE("camera_mode_changed");
+					SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
+				}
+
+				SUBCASE("Should not stop piloting") {
+					camera_manager->pilot(previewing_camera);
+					camera_manager->stop_previewing_camera();
+					CHECK(camera_manager->get_node_being_piloted() == previewing_camera);
+				}
 			}
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Set cinematic preview mode") {
 
-			SUBCASE("Should stop pilot and normal camera preview modes if setting to true") {
-
+			SUBCASE("Should stop pilot mode if setting to true") {
+				camera_manager->pilot(some_node);
+				camera_manager->set_cinematic_preview_mode(true);
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
 			}
 
-			SUBCASE("Should not stop pilot and normal camera preview modes if setting to false") {
+			SUBCASE("Should stop camera preview mode if setting to true") {
+				camera_manager->preview_camera(previewing_camera);
+				camera_manager->set_cinematic_preview_mode(true);
+				CHECK(camera_manager->get_previewing_camera() == nullptr);
+			}
+
+			SUBCASE("Should set the current camera in the viewport when starting the cinematic preview mode") {
 
 			}
 
@@ -542,16 +619,27 @@ namespace TestNode3DEditorCameraManager {
 
 			}
 
-			SUBCASE("Should do nothing if set to false and it already is false") {
-
+			SUBCASE("Should emit signal 'camera_mode_changed'") {
+				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+				camera_manager->set_cinematic_preview_mode(true);
+				SIGNAL_CHECK_TRUE("camera_mode_changed");
+				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
 			}
 
-			SUBCASE("Should emit signal 'camera_mode_changed'") {
-
+			SUBCASE("Should do nothing if set to false and it already is false") {
+				camera_manager->preview_camera(previewing_camera);
+				camera_manager->pilot(previewing_camera);
+				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+				camera_manager->set_cinematic_preview_mode(false);
+				CHECK(camera_manager->get_previewing_camera() == previewing_camera);
+				CHECK(camera_manager->get_node_being_piloted() == previewing_camera);
+				SIGNAL_CHECK_FALSE("camera_mode_changed");
+				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
 			}
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Toggle orthogonal / perspective") {
+			
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Set FOV scale") {

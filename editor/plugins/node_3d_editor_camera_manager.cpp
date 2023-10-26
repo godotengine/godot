@@ -110,6 +110,9 @@ void Node3DEditorCameraManager::pilot(Node3D* p_node) {
 	else {
 		set_orthogonal(false);
 	}
+	if (p_node == previewing_camera) {
+		allow_pilot_previewing_camera = true;
+	}
 	node_being_piloted = p_node;
 	node_being_piloted->connect("tree_exited", callable_mp(this, &Node3DEditorCameraManager::stop_piloting));
 	Transform3D transform = Transform3D(Basis(), node_being_piloted->get_global_position());
@@ -125,6 +128,9 @@ void Node3DEditorCameraManager::pilot(Node3D* p_node) {
 void Node3DEditorCameraManager::stop_piloting() {
 	if (!node_being_piloted) {
 		return;
+	}
+	if (node_being_piloted == previewing_camera) {
+		allow_pilot_previewing_camera = false;
 	}
 	cursor.stop_interpolation(true);
 	commit_pilot_transform();
