@@ -713,18 +713,20 @@ void TextureStorage::texture_free(RID p_texture) {
 		memdelete(t->canvas_texture);
 	}
 
-	if (t->tex_id != 0) {
-		if (!t->is_external) {
-			GLES3::Utilities::get_singleton()->texture_free_data(t->tex_id);
+	bool must_free_data = false;
+	if (t->is_proxy) {
+		if (t->proxy_to.is_valid()) {
+			Texture *proxy_to = texture_owner.get_or_null(t->proxy_to);
+			if (proxy_to) {
+				proxy_to->proxies.erase(p_texture);
+			}
 		}
-		t->tex_id = 0;
+	} else {
+		must_free_data = t->tex_id != 0 && !t->is_external;
 	}
-
-	if (t->is_proxy && t->proxy_to.is_valid()) {
-		Texture *proxy_to = texture_owner.get_or_null(t->proxy_to);
-		if (proxy_to) {
-			proxy_to->proxies.erase(p_texture);
-		}
+	if (must_free_data) {
+		GLES3::Utilities::get_singleton()->texture_free_data(t->tex_id);
+		t->tex_id = 0;
 	}
 
 	texture_atlas_remove_texture(p_texture);
