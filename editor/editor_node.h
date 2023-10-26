@@ -912,7 +912,8 @@ public:
 	PopupMenu *get_export_as_menu();
 
 	void save_all_scenes();
-	void save_scene_list(Vector<String> p_scene_filenames);
+	void save_scene_if_open(const String &p_scene_path);
+	void save_scene_list(const HashSet<String> &p_scene_paths);
 	void save_before_run();
 	void try_autosave();
 	void restart_editor();

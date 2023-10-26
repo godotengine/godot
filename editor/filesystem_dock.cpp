@@ -1377,7 +1377,7 @@ void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Ve
 	}
 }
 
-void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const Vector<String> &p_renames, Vector<String> &r_file_owners) const {
+void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const HashSet<String> &p_renames, HashSet<String> &r_file_owners) const {
 	for (int i = 0; i < p_efsd->get_subdir_count(); i++) {
 		_find_file_owners(p_efsd->get_subdir(i), p_renames, r_file_owners);
 	}
@@ -1385,7 +1385,7 @@ void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const 
 		Vector<String> deps = p_efsd->get_file_deps(i);
 		for (int j = 0; j < deps.size(); j++) {
 			if (p_renames.has(deps[j])) {
-				r_file_owners.push_back(p_efsd->get_file_path(i));
+				r_file_owners.insert(p_efsd->get_file_path(i));
 				break;
 			}
 		}
@@ -1580,14 +1580,15 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 	}
 }
 
-void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const Vector<String> &p_file_owners) const {
+void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const {
 	// The following code assumes that the following holds:
 	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
 	// 2) ResourceLoader can use the new paths without needing to call rescan.
 	List<String> scenes_to_reload;
-	for (int i = 0; i < p_file_owners.size(); ++i) {
+	for (const String &E : p_file_owners) {
 		// Because we haven't called a rescan yet the found remap might still be an old path itself.
-		const String file = p_renames.has(p_file_owners[i]) ? p_renames[p_file_owners[i]] : p_file_owners[i];
+		const HashMap<String, String>::ConstIterator I = p_renames.find(E);
+		const String file = I ? I->value : E;
 		print_verbose("Remapping dependencies for: " + file);
 		const Error err = ResourceLoader::rename_dependencies(file, p_renames);
 		if (err == OK) {
@@ -1595,7 +1596,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 				scenes_to_reload.push_back(file);
 			}
 		} else {
-			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies for:") + "\n" + p_file_owners[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies for:") + "\n" + E + "\n");
 		}
 	}
 
@@ -1689,7 +1690,7 @@ void FileSystemDock::_make_scene_confirm() {
 	int idx = EditorNode::get_singleton()->new_scene();
 	EditorNode::get_editor_data().set_scene_path(idx, scene_path);
 	EditorNode::get_singleton()->set_edited_scene(make_scene_dialog->create_scene_root());
-	EditorNode::get_singleton()->save_scene_list({ scene_path });
+	EditorNode::get_singleton()->save_scene_if_open(scene_path);
 }
 
 void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
@@ -1792,7 +1793,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 
 	HashMap<String, ResourceUID::ID> uids;
-	Vector<String> file_owners; // The files that use these moved/renamed resource files.
+	HashSet<String> file_owners; // The files that use these moved/renamed resource files.
 	_before_move(uids, file_owners);
 
 	HashMap<String, String> file_renames;
@@ -1923,7 +1924,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		}
 
 		HashMap<String, ResourceUID::ID> uids;
-		Vector<String> file_owners; // The files that use these moved/renamed resource files.
+		HashSet<String> file_owners; // The files that use these moved/renamed resource files.
 		_before_move(uids, file_owners);
 
 		bool is_moved = false;
@@ -1955,11 +1956,11 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 }
 
-void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Vector<String> &r_file_owners) const {
-	Vector<String> renamed_files;
+void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, HashSet<String> &r_file_owners) const {
+	HashSet<String> renamed_files;
 	for (int i = 0; i < to_move.size(); i++) {
 		if (to_move[i].is_file) {
-			renamed_files.push_back(to_move[i].path);
+			renamed_files.insert(to_move[i].path);
 			ResourceUID::ID uid = ResourceLoader::get_resource_uid(to_move[i].path);
 			if (uid != ResourceUID::INVALID_ID) {
 				r_uids[to_move[i].path] = uid;
@@ -1972,7 +1973,7 @@ void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Vect
 				current_folder = folders.front()->get();
 				for (int j = 0; j < current_folder->get_file_count(); j++) {
 					const String file_path = current_folder->get_file_path(j);
-					renamed_files.push_back(file_path);
+					renamed_files.insert(file_path);
 					ResourceUID::ID uid = ResourceLoader::get_resource_uid(file_path);
 					if (uid != ResourceUID::INVALID_ID) {
 						r_uids[file_path] = uid;
