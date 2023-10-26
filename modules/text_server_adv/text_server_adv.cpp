@@ -338,6 +338,7 @@ _FORCE_INLINE_ bool is_connected_to_prev(char32_t p_chr, char32_t p_pchr) {
 /*************************************************************************/
 
 bool TextServerAdvanced::icu_data_loaded = false;
+PackedByteArray TextServerAdvanced::icu_data;
 
 bool TextServerAdvanced::_has_feature(Feature p_feature) const {
 	switch (p_feature) {
@@ -438,7 +439,7 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 			return false;
 		}
 		uint64_t len = f->get_length();
-		PackedByteArray icu_data = f->get_buffer(len);
+		icu_data = f->get_buffer(len);
 
 		UErrorCode err = U_ZERO_ERROR;
 		udata_setCommonData(icu_data.ptr(), &err);
@@ -476,10 +477,10 @@ bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
 		return false;
 	}
 
-	PackedByteArray icu_data;
-	icu_data.resize(U_ICUDATA_SIZE);
-	memcpy(icu_data.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
-	f->store_buffer(icu_data);
+	PackedByteArray icu_data_static;
+	icu_data_static.resize(U_ICUDATA_SIZE);
+	memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
+	f->store_buffer(icu_data_static);
 
 	return true;
 #else

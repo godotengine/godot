@@ -323,16 +323,18 @@ RID RenderingServer::get_white_texture() {
 }
 
 void _get_axis_angle(const Vector3 &p_normal, const Vector4 &p_tangent, float &r_angle, Vector3 &r_axis) {
-	Vector3 tangent = Vector3(p_tangent.x, p_tangent.y, p_tangent.z);
+	Vector3 normal = p_normal.normalized();
+	Vector3 tangent = Vector3(p_tangent.x, p_tangent.y, p_tangent.z).normalized();
 	float d = p_tangent.w;
-	Vector3 binormal = p_normal.cross(tangent);
+	Vector3 binormal = normal.cross(tangent).normalized();
+	real_t angle;
 
-	r_angle = Math::acos((tangent.x + binormal.y + p_normal.z - 1.0) / 2.0);
-	float denom = 2.0 * Math::sin(r_angle);
-	r_axis.x = (p_normal.y - binormal.z) / denom;
-	r_axis.y = (tangent.z - p_normal.x) / denom;
-	r_axis.z = (binormal.x - tangent.y) / denom;
-	r_axis.normalize();
+	Basis tbn = Basis();
+	tbn.rows[0] = tangent;
+	tbn.rows[1] = binormal;
+	tbn.rows[2] = normal;
+	tbn.get_axis_angle(r_axis, angle);
+	r_angle = float(angle);
 
 	if (d < 0.0) {
 		r_angle = CLAMP((1.0 - r_angle / Math_PI) * 0.5, 0.0, 0.49999);
@@ -346,13 +348,11 @@ void _get_axis_angle(const Vector3 &p_normal, const Vector4 &p_tangent, float &r
 void _get_tbn_from_axis_angle(const Vector3 &p_axis, float p_angle, Vector3 &r_normal, Vector4 &r_tangent) {
 	float binormal_sign = p_angle > 0.5 ? 1.0 : -1.0;
 	float angle = Math::abs(p_angle * 2.0 - 1.0) * Math_PI;
-	float c = cos(angle);
-	float s = sin(angle);
-	Vector3 omc_axis = (1.0 - c) * p_axis;
-	Vector3 s_axis = s * p_axis;
-	Vector3 tan = omc_axis.x * p_axis + Vector3(c, -s_axis.z, s_axis.y);
+
+	Basis tbn = Basis(p_axis, angle);
+	Vector3 tan = tbn.rows[0];
 	r_tangent = Vector4(tan.x, tan.y, tan.z, binormal_sign);
-	r_normal = omc_axis.z * p_axis + Vector3(-s_axis.y, s_axis.x, c);
+	r_normal = tbn.rows[2];
 }
 
 Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_normal_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb, Vector4 &r_uv_scale) {
@@ -1194,7 +1194,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		format |= RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY;
 	}
 
-	if (format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && ((format & RS::ARRAY_FORMAT_NORMAL) || (format & RS::ARRAY_FORMAT_TANGENT))) {
+	if ((format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && ((format & RS::ARRAY_FORMAT_NORMAL) || (format & RS::ARRAY_FORMAT_TANGENT))) {
 		// If using normals or tangents, then we need all three.
 		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_VERTEX), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using normals or tangents without vertex array.");
 		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_NORMAL), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using tangents without normal array.");
@@ -1399,7 +1399,7 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 								tangentsw[j * 4 + 3] = tan.w;
 							}
 							ret[RS::ARRAY_NORMAL] = normals;
-							ret[RS::ARRAY_FORMAT_TANGENT] = tangents;
+							ret[RS::ARRAY_TANGENT] = tangents;
 
 						} else {
 							for (int j = 0; j < p_vertex_len; j++) {
@@ -2036,15 +2036,39 @@ Vector<uint8_t> _convert_surface_version_1_to_surface_version_2(uint64_t p_forma
 	return new_vertex_data;
 }
 
+#ifdef TOOLS_ENABLED
+void RenderingServer::set_surface_upgrade_callback(SurfaceUpgradeCallback p_callback) {
+	surface_upgrade_callback = p_callback;
+}
+
+void RenderingServer::set_warn_on_surface_upgrade(bool p_warn) {
+	warn_on_surface_upgrade = p_warn;
+}
+#endif
+
 #ifndef DISABLE_DEPRECATED
-void RenderingServer::_fix_surface_compatibility(SurfaceData &p_surface) {
+void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const String &p_path) {
 	uint64_t surface_version = p_surface.format & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 	ERR_FAIL_COND_MSG(surface_version > ARRAY_FLAG_FORMAT_CURRENT_VERSION, "Cannot convert surface with version provided (" + itos((surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) + ") to current version (" + itos((RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) + ")");
+
+#ifdef TOOLS_ENABLED
+	// Editor callback to ask user about re-saving all meshes.
+	if (surface_upgrade_callback && warn_on_surface_upgrade) {
+		surface_upgrade_callback();
+	}
+
+	if (warn_on_surface_upgrade) {
+		if (p_path.is_empty()) {
+			WARN_PRINT("A surface uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
+		} else {
+			WARN_PRINT("A surface of " + p_path + " uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
+		}
+	}
+#endif
 
 	if (surface_version == ARRAY_FLAG_FORMAT_VERSION_1) {
 		// The only difference for now is that Version 1 uses interleaved vertex positions while version 2 does not.
 		// I.e. PNTPNTPNT -> PPPNTNTNT.
-		WARN_PRINT_ED("Upgrading mesh from older surface format. Once saved again (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
 
 		int vertex_size = 0;
 		int normal_size = 0;
@@ -3345,7 +3369,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
 	GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality.mobile", 0);
 
-	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/2d/shadow_atlas/size", PROPERTY_HINT_RANGE, "128,16384"), 2048);
 
 	// Number of commands that can be drawn per frame.
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/gl_compatibility/item_buffer_size", PROPERTY_HINT_RANGE, "128,1048576,1"), 16384);

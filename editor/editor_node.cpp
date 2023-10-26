@@ -68,6 +68,7 @@
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
+#include "servers/rendering_server.h"
 
 #include "editor/audio_stream_preview.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -153,6 +154,7 @@
 #include "editor/project_settings_editor.h"
 #include "editor/register_exporters.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/surface_upgrade_tool.h"
 #include "editor/window_wrapper.h"
 
 #include <stdio.h>
@@ -575,6 +577,10 @@ void EditorNode::update_preview_themes(int p_mode) {
 
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			EditorHelp::generate_doc();
+		} break;
+
 		case NOTIFICATION_PROCESS: {
 			if (opening_prev && !confirmation->is_visible()) {
 				opening_prev = false;
@@ -3572,6 +3578,9 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 	ScriptEditor::get_singleton()->set_scene_root_script(editor_data.get_scene_root_script(editor_data.get_edited_scene()));
 	editor_data.notify_edited_scene_changed();
 	emit_signal(SNAME("scene_changed"));
+
+	// Reset SDFGI after everything else so that any last-second scene modifications will be processed.
+	RenderingServer::get_singleton()->sdfgi_reset();
 }
 
 bool EditorNode::is_changing_scene() const {
@@ -4770,21 +4779,15 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 		Ref<InputEventMouseButton> mb = me;
 
 		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed() && dock_popup_selected_idx != nrect) {
-			Control *dock = dock_slot[dock_popup_selected_idx]->get_current_tab_control();
-			if (dock) {
-				dock_slot[dock_popup_selected_idx]->remove_child(dock);
-			}
+			dock_slot[nrect]->move_tab_from_tab_container(dock_slot[dock_popup_selected_idx], dock_slot[dock_popup_selected_idx]->get_current_tab(), dock_slot[nrect]->get_tab_count());
+
 			if (dock_slot[dock_popup_selected_idx]->get_tab_count() == 0) {
 				dock_slot[dock_popup_selected_idx]->hide();
-
 			} else {
 				dock_slot[dock_popup_selected_idx]->set_current_tab(0);
 			}
 
-			dock_slot[nrect]->add_child(dock);
 			dock_popup_selected_idx = nrect;
-			dock_slot[nrect]->set_current_tab(dock_slot[nrect]->get_tab_count() - 1);
-			dock_slot[nrect]->set_tab_title(dock_slot[nrect]->get_tab_count() - 1, TTRGET(dock->get_name()));
 			dock_slot[nrect]->show();
 			dock_select->queue_redraw();
 
@@ -5507,11 +5510,16 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 void EditorNode::_immediate_dialog_confirmed() {
 	immediate_dialog_confirmed = true;
 }
-bool EditorNode::immediate_confirmation_dialog(const String &p_text, const String &p_ok_text, const String &p_cancel_text) {
+bool EditorNode::immediate_confirmation_dialog(const String &p_text, const String &p_ok_text, const String &p_cancel_text, uint32_t p_wrap_width) {
 	ConfirmationDialog *cd = memnew(ConfirmationDialog);
 	cd->set_text(p_text);
 	cd->set_ok_button_text(p_ok_text);
 	cd->set_cancel_button_text(p_cancel_text);
+	if (p_wrap_width > 0) {
+		cd->set_autowrap(true);
+		cd->get_label()->set_custom_minimum_size(Size2(p_wrap_width, 0) * EDSCALE);
+	}
+
 	cd->connect("confirmed", callable_mp(singleton, &EditorNode::_immediate_dialog_confirmed));
 	singleton->gui_base->add_child(cd);
 
@@ -5856,6 +5864,14 @@ void EditorNode::add_control_to_dock(DockSlot p_slot, Control *p_control) {
 }
 
 void EditorNode::remove_control_from_dock(Control *p_control) {
+	// If the dock is floating, close it first.
+	for (WindowWrapper *wrapper : floating_docks) {
+		if (p_control == wrapper->get_wrapped_control()) {
+			wrapper->set_window_enabled(false);
+			break;
+		}
+	}
+
 	Control *dock = nullptr;
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 		if (p_control->get_parent() == dock_slot[i]) {
@@ -6720,49 +6736,46 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 }
 
 EditorNode::EditorNode() {
-	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
-	add_child(epnp);
+	DEV_ASSERT(!singleton);
+	singleton = this;
 
-	PortableCompressedTexture2D::set_keep_all_compressed_buffers(true);
-	Input::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
-	RenderingServer::get_singleton()->set_debug_generate_wireframes(true);
+	{
+		PortableCompressedTexture2D::set_keep_all_compressed_buffers(true);
+		RenderingServer::get_singleton()->set_debug_generate_wireframes(true);
 
-	AudioServer::get_singleton()->set_enable_tagging_used_audio_streams(true);
+		AudioServer::get_singleton()->set_enable_tagging_used_audio_streams(true);
 
-	// No navigation server by default if in editor.
-	if (NavigationServer3D::get_singleton()->get_debug_enabled()) {
-		NavigationServer3D::get_singleton()->set_active(true);
-	} else {
-		NavigationServer3D::get_singleton()->set_active(false);
+		// No navigation by default if in editor.
+		if (NavigationServer3D::get_singleton()->get_debug_enabled()) {
+			NavigationServer3D::get_singleton()->set_active(true);
+		} else {
+			NavigationServer3D::get_singleton()->set_active(false);
+		}
+
+		// No physics by default if in editor.
+		PhysicsServer3D::get_singleton()->set_active(false);
+		PhysicsServer2D::get_singleton()->set_active(false);
+
+		// No scripting by default if in editor (except for tool).
+		ScriptServer::set_scripting_enabled(false);
+
+		Input::get_singleton()->set_use_accumulated_input(true);
+		if (!DisplayServer::get_singleton()->is_touchscreen_available()) {
+			// Only if no touchscreen ui hint, disable emulation just in case.
+			Input::get_singleton()->set_emulate_touch_from_mouse(false);
+		}
+		DisplayServer::get_singleton()->cursor_set_custom_image(Ref<Resource>());
 	}
 
-	// No physics by default if in editor.
-	PhysicsServer3D::get_singleton()->set_active(false);
-	PhysicsServer2D::get_singleton()->set_active(false);
-
-	// No scripting by default if in editor.
-	ScriptServer::set_scripting_enabled(false);
-
-	EditorHelp::generate_doc();
 	SceneState::set_disable_placeholders(true);
 	ResourceLoader::clear_translation_remaps(); // Using no remaps if in editor.
 	ResourceLoader::clear_path_remaps();
 	ResourceLoader::set_create_missing_resources_if_class_unavailable(true);
 
-	Input *id = Input::get_singleton();
-
-	if (id) {
-		if (!DisplayServer::get_singleton()->is_touchscreen_available() && Input::get_singleton()) {
-			// Only if no touchscreen ui hint, disable emulation just in case.
-			id->set_emulate_touch_from_mouse(false);
-		}
-		DisplayServer::get_singleton()->cursor_set_custom_image(Ref<Resource>());
-	}
-
-	DEV_ASSERT(!singleton);
-	singleton = this;
+	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+	add_child(epnp);
 
 	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
@@ -8023,6 +8036,8 @@ EditorNode::EditorNode() {
 	String exec = OS::get_singleton()->get_executable_path();
 	// Save editor executable path for third-party tools.
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec);
+
+	surface_upgrade_tool = memnew(SurfaceUpgradeTool);
 }
 
 EditorNode::~EditorNode() {
@@ -8037,6 +8052,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_force_over);
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(progress_hb);
+	memdelete(surface_upgrade_tool);
 
 	EditorSettings::destroy();
 	EditorColorMap::finish();

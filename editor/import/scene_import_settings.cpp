@@ -1141,9 +1141,11 @@ void SceneImportSettings::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			action_menu->begin_bulk_theme_override();
 			action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
 			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
 			action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
+			action_menu->end_bulk_theme_override();
 
 			if (animation_player != nullptr && animation_player->is_playing()) {
 				animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));

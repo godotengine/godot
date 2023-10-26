@@ -274,45 +274,16 @@ static std::string GetXDGEnvAbsolute(const char *name, const char *fallback_path
     return fallback_paths;
 }
 
-/// @param rt_dir_prefix Directory prefix with a trailing slash
-static bool FindEitherActiveRuntimeFilename(const char *prefix_desc, const std::string &rt_dir_prefix, uint16_t major_version,
-                                            std::string &out) {
-    {
-        std::ostringstream oss;
-        oss << "Looking for active_runtime." XR_ARCH_ABI ".json or active_runtime.json in ";
-        oss << prefix_desc;
-        oss << ": ";
-        oss << rt_dir_prefix;
-
-        LoaderLogger::LogInfoMessage("", oss.str());
-    }
-    {
-        auto decorated_path = rt_dir_prefix + std::to_string(major_version) + "/active_runtime." XR_ARCH_ABI ".json";
-
-        if (FileSysUtilsPathExists(decorated_path)) {
-            out = decorated_path;
-            return true;
-        }
-    }
-    {
-        auto undecorated_path = rt_dir_prefix + std::to_string(major_version) + "/active_runtime.json";
-
-        if (FileSysUtilsPathExists(undecorated_path)) {
-            out = undecorated_path;
-            return true;
-        }
-    }
-    return false;
-}
 // Return the first instance of relative_path occurring in an XDG config dir according to standard
 // precedence order.
-static bool FindXDGConfigFile(const char *relative_dir, uint16_t major_version, std::string &out) {
-    const std::string message{"Looking for active_runtime." XR_ARCH_ABI ".json or active_runtime.json"};
-    std::string dir_prefix = GetXDGEnvHome("XDG_CONFIG_HOME", ".config");
-    if (!dir_prefix.empty()) {
-        dir_prefix += "/";
-        dir_prefix += relative_dir;
-        if (FindEitherActiveRuntimeFilename("XDG_CONFIG_HOME", dir_prefix, major_version, out)) {
+static bool FindXDGConfigFile(const std::string &relative_path, std::string &out) {
+    out = GetXDGEnvHome("XDG_CONFIG_HOME", ".config");
+    if (!out.empty()) {
+        out += "/";
+        out += relative_path;
+
+        LoaderLogger::LogInfoMessage("", "Looking for " + relative_path + " in XDG_CONFIG_HOME: " + out);
+        if (FileSysUtilsPathExists(out)) {
             return true;
         }
     }
@@ -323,26 +294,29 @@ static bool FindXDGConfigFile(const char *relative_dir, uint16_t major_version, 
         if (path.empty()) {
             continue;
         }
-        dir_prefix = std::move(path);
-        dir_prefix += "/";
-        dir_prefix += relative_dir;
-        if (FindEitherActiveRuntimeFilename("an entry of XDG_CONFIG_DIRS", dir_prefix, major_version, out)) {
+        out = path;
+        out += "/";
+        out += relative_path;
+        LoaderLogger::LogInfoMessage("", "Looking for " + relative_path + " in an entry of XDG_CONFIG_DIRS: " + out);
+        if (FileSysUtilsPathExists(out)) {
             return true;
         }
     }
 
-    dir_prefix = SYSCONFDIR;
-    dir_prefix += "/";
-    dir_prefix += relative_dir;
-    if (FindEitherActiveRuntimeFilename("compiled-in SYSCONFDIR", dir_prefix, major_version, out)) {
+    out = SYSCONFDIR;
+    out += "/";
+    out += relative_path;
+    LoaderLogger::LogInfoMessage("", "Looking for " + relative_path + " in compiled-in SYSCONFDIR: " + out);
+    if (FileSysUtilsPathExists(out)) {
         return true;
     }
 
 #if defined(EXTRASYSCONFDIR)
-    dir_prefix = EXTRASYSCONFDIR;
-    dir_prefix += "/";
-    dir_prefix += relative_dir;
-    if (FindEitherActiveRuntimeFilename("compiled-in EXTRASYSCONFDIR", dir_prefix, major_version, out)) {
+    out = EXTRASYSCONFDIR;
+    out += "/";
+    out += relative_path;
+    LoaderLogger::LogInfoMessage("", "Looking for " + relative_path + " in compiled-in EXTRASYSCONFDIR: " + out);
+    if (FileSysUtilsPathExists(out)) {
         return true;
     }
 #endif
@@ -658,8 +632,9 @@ XrResult RuntimeManifestFile::FindManifestFiles(std::vector<std::unique_ptr<Runt
         LoaderLogger::LogInfoMessage("",
                                      "RuntimeManifestFile::FindManifestFiles - using registry-specified runtime file " + filename);
 #elif defined(XR_OS_LINUX)
-
-        if (!FindXDGConfigFile("openxr/", XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), filename)) {
+        const std::string relative_path =
+            "openxr/" + std::to_string(XR_VERSION_MAJOR(XR_CURRENT_API_VERSION)) + "/active_runtime.json";
+        if (!FindXDGConfigFile(relative_path, filename)) {
             LoaderLogger::LogErrorMessage(
                 "", "RuntimeManifestFile::FindManifestFiles - failed to determine active runtime file path for this environment");
             return XR_ERROR_RUNTIME_UNAVAILABLE;

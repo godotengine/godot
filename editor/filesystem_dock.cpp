@@ -1528,6 +1528,8 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			}
 		}
 	} else {
+		da->make_dir(new_path);
+
 		// Recursively duplicate all files inside the folder.
 		Ref<DirAccess> old_dir = DirAccess::open(old_path);
 		ERR_FAIL_COND(old_dir.is_null());
@@ -1552,7 +1554,9 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const {
 	// Update the paths in ResourceUID, so that UIDs remain valid.
 	for (const KeyValue<String, ResourceUID::ID> &pair : p_uids) {
-		ResourceUID::get_singleton()->set_id(pair.value, p_renames[pair.key]);
+		if (p_renames.has(pair.key)) {
+			ResourceUID::get_singleton()->set_id(pair.value, p_renames[pair.key]);
+		}
 	}
 
 	// Rename all resources loaded, be it subresources or actual resources.
@@ -1894,22 +1898,15 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		if (p_overwrite == OVERWRITE_RENAME) {
 			new_paths.write[i] = _get_unique_name(to_move[i], p_to_path);
 		} else {
-			new_paths.write[i] = p_to_path.path_join(to_move[i].path.get_file());
+			new_paths.write[i] = p_to_path.path_join(to_move[i].path.trim_suffix("/").get_file());
 		}
 	}
 
 	if (p_copy) {
 		bool is_copied = false;
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_duplicate_item(to_move[i], new_path);
+			if (to_move[i].path != new_paths[i]) {
+				_try_duplicate_item(to_move[i], new_paths[i]);
 				is_copied = true;
 			}
 		}
@@ -1934,15 +1931,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		HashMap<String, String> folder_renames;
 
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_move_item(to_move[i], new_path, file_renames, folder_renames);
+			if (to_move[i].path != new_paths[i]) {
+				_try_move_item(to_move[i], new_paths[i], file_renames, folder_renames);
 				is_moved = true;
 			}
 		}
@@ -2915,7 +2905,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("New Inherited Scene"), FILE_INHERIT);
 				if (GLOBAL_GET("application/run/main_scene") != filenames[0]) {
-					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
+					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTR("Set as Main Scene"), FILE_MAIN_SCENE);
 				}
 			} else {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scenes"), FILE_OPEN);

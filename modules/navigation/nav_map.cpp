@@ -953,6 +953,9 @@ void NavMap::sync() {
 
 		// Search for polygons within range of a nav link.
 		for (const NavLink *link : links) {
+			if (!link->get_enabled()) {
+				continue;
+			}
 			const Vector3 start = link->get_start_position();
 			const Vector3 end = link->get_end_position();
 

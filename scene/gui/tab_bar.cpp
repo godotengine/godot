@@ -321,7 +321,6 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void TabBar::_shape(int p_tab) {
-	tabs.write[p_tab].xl_text = atr(tabs[p_tab].text);
 	tabs.write[p_tab].text_buf->clear();
 	tabs.write[p_tab].text_buf->set_width(-1);
 	if (tabs[p_tab].text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -330,7 +329,7 @@ void TabBar::_shape(int p_tab) {
 		tabs.write[p_tab].text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
 	}
 
-	tabs.write[p_tab].text_buf->add_string(tabs[p_tab].xl_text, theme_cache.font, theme_cache.font_size, tabs[p_tab].language);
+	tabs.write[p_tab].text_buf->add_string(atr(tabs[p_tab].text), theme_cache.font, theme_cache.font_size, tabs[p_tab].language);
 }
 
 void TabBar::_notification(int p_what) {
@@ -1118,7 +1117,26 @@ Variant TabBar::get_drag_data(const Point2 &p_point) {
 	if (!drag_to_rearrange_enabled) {
 		return Control::get_drag_data(p_point); // Allow stuff like TabContainer to override it.
 	}
+	return _handle_get_drag_data("tab_bar_tab", p_point);
+}
 
+bool TabBar::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	if (!drag_to_rearrange_enabled) {
+		return Control::can_drop_data(p_point, p_data); // Allow stuff like TabContainer to override it.
+	}
+	return _handle_can_drop_data("tab_bar_tab", p_point, p_data);
+}
+
+void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
+	if (!drag_to_rearrange_enabled) {
+		Control::drop_data(p_point, p_data); // Allow stuff like TabContainer to override it.
+		return;
+	}
+
+	_handle_drop_data("tab_bar_tab", p_point, p_data, callable_mp(this, &TabBar::move_tab), callable_mp(this, &TabBar::_move_tab_from));
+}
+
+Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_point) {
 	int tab_over = get_tab_idx_at_point(p_point);
 	if (tab_over < 0) {
 		return Variant();
@@ -1138,30 +1156,26 @@ Variant TabBar::get_drag_data(const Point2 &p_point) {
 		drag_preview->add_child(tf);
 	}
 
-	Label *label = memnew(Label(tabs[tab_over].xl_text));
+	Label *label = memnew(Label(get_tab_title(tab_over)));
 	drag_preview->add_child(label);
 
 	set_drag_preview(drag_preview);
 
 	Dictionary drag_data;
-	drag_data["type"] = "tab_element";
-	drag_data["tab_element"] = tab_over;
+	drag_data["type"] = p_type;
+	drag_data["tab_index"] = tab_over;
 	drag_data["from_path"] = get_path();
 
 	return drag_data;
 }
 
-bool TabBar::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (!drag_to_rearrange_enabled) {
-		return Control::can_drop_data(p_point, p_data); // Allow stuff like TabContainer to override it.
-	}
-
+bool TabBar::_handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const {
 	Dictionary d = p_data;
 	if (!d.has("type")) {
 		return false;
 	}
 
-	if (String(d["type"]) == "tab_element") {
+	if (String(d["type"]) == p_type) {
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
 		if (from_path == to_path) {
@@ -1179,19 +1193,14 @@ bool TabBar::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 	return false;
 }
 
-void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
-	if (!drag_to_rearrange_enabled) {
-		Control::drop_data(p_point, p_data); // Allow stuff like TabContainer to override it.
-		return;
-	}
-
+void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback) {
 	Dictionary d = p_data;
 	if (!d.has("type")) {
 		return;
 	}
 
-	if (String(d["type"]) == "tab_element") {
-		int tab_from_id = d["tab_element"];
+	if (String(d["type"]) == p_type) {
+		int tab_from_id = d["tab_index"];
 		int hover_now = get_tab_idx_at_point(p_point);
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
@@ -1216,7 +1225,7 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 				hover_now = is_layout_rtl() ^ (p_point.x < x) ? 0 : get_tab_count() - 1;
 			}
 
-			move_tab(tab_from_id, hover_now);
+			p_move_tab_callback.call(tab_from_id, hover_now);
 			if (!is_tab_disabled(hover_now)) {
 				emit_signal(SNAME("active_tab_rearranged"), hover_now);
 				set_current_tab(hover_now);
@@ -1242,35 +1251,42 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 					hover_now = tabs.is_empty() || (is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x)) ? 0 : get_tab_count();
 				}
 
-				Tab moving_tab = from_tabs->tabs[tab_from_id];
-				from_tabs->remove_tab(tab_from_id);
-				tabs.insert(hover_now, moving_tab);
-
-				if (tabs.size() > 1) {
-					if (current >= hover_now) {
-						current++;
-					}
-					if (previous >= hover_now) {
-						previous++;
-					}
-				}
-
-				if (!is_tab_disabled(hover_now)) {
-					set_current_tab(hover_now);
-				} else {
-					_update_cache();
-					queue_redraw();
-				}
-
-				update_minimum_size();
-
-				if (tabs.size() == 1) {
-					emit_signal(SNAME("tab_selected"), 0);
-					emit_signal(SNAME("tab_changed"), 0);
-				}
+				p_move_tab_from_other_callback.call(from_tabs, tab_from_id, hover_now);
 			}
 		}
 	}
+}
+
+void TabBar::_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index) {
+	Tab moving_tab = p_from_tabbar->tabs[p_from_index];
+	p_from_tabbar->remove_tab(p_from_index);
+	tabs.insert(p_to_index, moving_tab);
+
+	if (tabs.size() > 1) {
+		if (current >= p_to_index) {
+			current++;
+		}
+		if (previous >= p_to_index) {
+			previous++;
+		}
+	}
+
+	if (!is_tab_disabled(p_to_index)) {
+		set_current_tab(p_to_index);
+		if (tabs.size() == 1) {
+			_update_cache();
+			queue_redraw();
+			emit_signal(SNAME("tab_changed"), 0);
+		}
+	} else {
+		_update_cache();
+		queue_redraw();
+		if (tabs.size() == 1) {
+			emit_signal(SNAME("tab_changed"), 0);
+		}
+	}
+
+	update_minimum_size();
 }
 
 int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {

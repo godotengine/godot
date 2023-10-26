@@ -74,7 +74,7 @@ fix build with our own copy of zstd (patch in `patches`).
 ## brotli
 
 - Upstream: https://github.com/google/brotli
-- Version: git (ed1995b6bda19244070ab5d331111f16f67c8054, 2023)
+- Version: 1.1.0 (ed738e842d2fbdf2d6459e39267a633c4a9b2f5d, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -672,7 +672,7 @@ with the provided patch.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.30 (55224479ab13db8ebc8ab1e3d49197bce6201b0b, 2023)
+- Version: 1.0.28 (f5beb0131f1bea8701ace744d1b50df9049bf331, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -805,7 +805,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.11.1 (ca00e52125446a1a5cca20f9d8621b382cff5cb9, 2023)
+- Version: 0.11.2 (b01fe9bf4461146304d3520d6dc699cf580a3744, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -813,7 +813,6 @@ Files extracted from upstream source:
 See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
 number and run the script.
 
-Apply patches from the `patches` folder.
 
 ## vhacd
 

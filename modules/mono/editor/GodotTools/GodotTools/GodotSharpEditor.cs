@@ -456,7 +456,7 @@ namespace GodotTools
             var dotNetSdkSearchVersion = Environment.Version;
 
             // First we try to find the .NET Sdk ourselves to make sure we get the
-            // correct version first (`RegisterDefaults` always picks the latest).
+            // correct version first, otherwise pick the latest.
             if (DotNetFinder.TryFindDotNetSdk(dotNetSdkSearchVersion, out var sdkVersion, out string sdkPath))
             {
                 if (Godot.OS.IsStdOutVerbose())
@@ -468,7 +468,7 @@ namespace GodotTools
             {
                 try
                 {
-                    ProjectUtils.MSBuildLocatorRegisterDefaults(out sdkVersion, out sdkPath);
+                    ProjectUtils.MSBuildLocatorRegisterLatest(out sdkVersion, out sdkPath);
                     if (Godot.OS.IsStdOutVerbose())
                         Console.WriteLine($"Found .NET Sdk version '{sdkVersion}': {sdkPath}");
                 }

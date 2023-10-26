@@ -2104,10 +2104,12 @@ void EditorInspectorArray::_setup() {
 		ae.margin->set_mouse_filter(MOUSE_FILTER_PASS);
 		if (is_inside_tree()) {
 			Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
+			ae.margin->begin_bulk_theme_override();
 			ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 			ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 			ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
 			ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+			ae.margin->end_bulk_theme_override();
 		}
 		ae.panel->add_child(ae.margin);
 
@@ -2252,10 +2254,12 @@ void EditorInspectorArray::_notification(int p_what) {
 					ae.move_down->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
 				}
 				Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
+				ae.margin->begin_bulk_theme_override();
 				ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 				ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 				ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
 				ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+				ae.margin->end_bulk_theme_override();
 
 				if (ae.erase) {
 					ae.erase->set_icon(get_editor_theme_icon(SNAME("Remove")));

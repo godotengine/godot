@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "scene_tree_dock.h"
+#include "node_dock.h"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -680,10 +681,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (!_validate_no_foreign()) {
-				break;
-			}
-
 			List<Node *> selection = editor_selection->get_selected_node_list();
 			if (selection.size() == 0) {
 				break;
@@ -703,7 +700,15 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				Node *parent = node->get_parent();
 
 				List<Node *> owned;
-				node->get_owned_by(node->get_owner(), &owned);
+				Node *owner = node;
+				while (owner) {
+					List<Node *> cur_owned;
+					node->get_owned_by(owner, &cur_owned);
+					owner = owner->get_owner();
+					for (Node *F : cur_owned) {
+						owned.push_back(F);
+					}
+				}
 
 				HashMap<const Node *, Node *> duplimap;
 				Node *dup = node->duplicate_from_editor(duplimap);
@@ -723,9 +728,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						continue;
 					}
 					Node *d = duplimap[F];
-					undo_redo->add_do_method(d, "set_owner", node->get_owner());
+					undo_redo->add_do_method(d, "set_owner", edited_scene);
 				}
 				undo_redo->add_do_method(editor_selection, "add_node", dup);
+				undo_redo->add_do_method(dup, "set_owner", edited_scene);
 				undo_redo->add_undo_method(parent, "remove_child", dup);
 				undo_redo->add_do_reference(dup);
 
@@ -1040,7 +1046,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 					// Fire confirmation dialog when children are editable.
 					if (editable && !placeholder) {
-						placeholder_editable_instance_remove_dialog->set_text(TTR("Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
+						placeholder_editable_instance_remove_dialog->set_text(TTR("Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
 						placeholder_editable_instance_remove_dialog->popup_centered();
 						break;
 					}
@@ -1081,6 +1087,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					undo_redo->add_do_method(node, "set_scene_file_path", "");
 					undo_redo->add_undo_method(node, "set_scene_file_path", node->get_scene_file_path());
 					_node_replace_owner(node, node, root);
+					_node_strip_signal_inheritance(node);
+					NodeDock::get_singleton()->set_node(node); // Refresh.
 					undo_redo->add_do_method(scene_tree, "update_tree");
 					undo_redo->add_undo_method(scene_tree, "update_tree");
 					undo_redo->commit_action();
@@ -1479,6 +1487,19 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 	}
 }
 
+void SceneTreeDock::_node_strip_signal_inheritance(Node *p_node) {
+	List<Object::Connection> conns;
+	p_node->get_all_signal_connections(&conns);
+
+	for (Object::Connection conn : conns) {
+		conn.signal.disconnect(conn.callable);
+		conn.signal.connect(conn.callable, conn.flags & ~CONNECT_INHERITED);
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_node_strip_signal_inheritance(p_node->get_child(i));
+	}
+}
+
 void SceneTreeDock::_load_request(const String &p_path) {
 	EditorNode::get_singleton()->open_request(p_path);
 	_local_tree_selected();
@@ -1550,6 +1571,14 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 }
 
 bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const {
+	// Skip if this node will be deleted.
+	for (const Node *F : p_to_delete) {
+		if (F == p_node || F->is_ancestor_of(p_node)) {
+			return false;
+		}
+	}
+
+	// This is an AnimationPlayer that survives the deletion.
 	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 	if (ap) {
 		Node *root = ap->get_node(ap->get_root_node());
@@ -1578,11 +1607,13 @@ bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delet
 		}
 	}
 
+	// Recursively check child nodes.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		if (_has_tracks_to_delete(p_node->get_child(i), p_to_delete)) {
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -2136,8 +2167,13 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	}
 	undo_redo->commit_action();
 
+	// Avoid changing the currently edited object.
+	Object *edited_object = InspectorDock::get_inspector_singleton()->get_edited_object();
+
 	_push_item(p_script.ptr());
 	_update_script_button();
+
+	InspectorDock::get_inspector_singleton()->edit(edited_object);
 }
 
 void SceneTreeDock::_shader_created(Ref<Shader> p_shader) {
@@ -3149,13 +3185,13 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				bool placeholder = selection[0]->get_scene_instance_load_placeholder();
 				if (profile_allow_editing) {
 					menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
-					menu->add_check_item(TTR("Load As Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
+					menu->add_check_item(TTR("Load as Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
 					menu->add_item(TTR("Make Local"), TOOL_SCENE_MAKE_LOCAL);
 				}
 				menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open in Editor"), TOOL_SCENE_OPEN);
 				if (profile_allow_editing) {
 					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load As Placeholder")), placeholder);
+					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load as Placeholder")), placeholder);
 				}
 			}
 		}

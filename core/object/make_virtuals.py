@@ -47,8 +47,8 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 }\\
 _FORCE_INLINE_ bool _gdvirtual_##m_name##_overridden() const { \\
 	ScriptInstance *_script_instance = ((Object*)(this))->get_script_instance();\\
-	if (_script_instance) {\\
-	    return _script_instance->has_method(_gdvirtual_##m_name##_sn);\\
+	if (_script_instance && _script_instance->has_method(_gdvirtual_##m_name##_sn)) {\\
+		return true;\\
 	}\\
     if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
          _gdvirtual_##m_name = nullptr;\\
