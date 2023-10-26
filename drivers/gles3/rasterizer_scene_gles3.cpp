@@ -3289,6 +3289,9 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 	// Quality settings.
 	use_physical_light_units = GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units");
 
+	positional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"));
+	directional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality"));
+
 	{
 		// Setup Lights
 
