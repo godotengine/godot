@@ -330,14 +330,23 @@ Vector<Control *> TabContainer::_get_tab_controls() const {
 }
 
 Variant TabContainer::_get_drag_data_fw(const Point2 &p_point, Control *p_from_control) {
+	if (!drag_to_rearrange_enabled) {
+		return Variant();
+	}
 	return tab_bar->_handle_get_drag_data("tab_container_tab", p_point);
 }
 
 bool TabContainer::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const {
+	if (!drag_to_rearrange_enabled) {
+		return false;
+	}
 	return tab_bar->_handle_can_drop_data("tab_container_tab", p_point, p_data);
 }
 
 void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) {
+	if (!drag_to_rearrange_enabled) {
+		return;
+	}
 	return tab_bar->_handle_drop_data("tab_container_tab", p_point, p_data, callable_mp(this, &TabContainer::_drag_move_tab), callable_mp(this, &TabContainer::_drag_move_tab_from));
 }
 
@@ -815,11 +824,11 @@ Popup *TabContainer::get_popup() const {
 }
 
 void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
-	tab_bar->set_drag_to_rearrange_enabled(p_enabled);
+	drag_to_rearrange_enabled = p_enabled;
 }
 
 bool TabContainer::get_drag_to_rearrange_enabled() const {
-	return tab_bar->get_drag_to_rearrange_enabled();
+	return drag_to_rearrange_enabled;
 }
 
 void TabContainer::set_tabs_rearrange_group(int p_group_id) {
