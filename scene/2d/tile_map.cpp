@@ -472,7 +472,13 @@ void TileMapLayer::_rendering_quadrants_update_cell(CellData &r_cell_data, SelfL
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source && atlas_source->has_tile(r_cell_data.cell.get_atlas_coords()) && atlas_source->has_alternative_tile(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)) {
 			is_valid = true;
-			tile_y_sort_origin = atlas_source->get_tile_data(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)->get_y_sort_origin();
+			const TileData *tile_data;
+			if (r_cell_data.runtime_tile_data_cache) {
+				tile_data = r_cell_data.runtime_tile_data_cache;
+			} else {
+				tile_data = atlas_source->get_tile_data(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile);
+			}
+			tile_y_sort_origin = tile_data->get_y_sort_origin();
 		}
 	}
 
