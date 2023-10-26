@@ -2493,6 +2493,7 @@ Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
 		// No tooltip for directory.
 		return nullptr;
 	}
+	ERR_FAIL_COND_V(!FileAccess::exists(p_path), nullptr);
 
 	const String type = ResourceLoader::get_resource_type(p_path);
 	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
