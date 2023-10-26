@@ -1497,12 +1497,26 @@ SceneImportSettings::SceneImportSettings() {
 	vp_vb->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
 	property_split->add_child(vp_vb);
 
+	Control *vp_container_base = memnew(Control);
+	vp_container_base->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_container_base->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_container_base->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
+	vp_vb->add_child(vp_container_base);
+
 	SubViewportContainer *vp_container = memnew(SubViewportContainer);
-	vp_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vp_container->set_custom_minimum_size(Size2(10, 10));
 	vp_container->set_stretch(true);
-	vp_container->connect("gui_input", callable_mp(this, &SceneImportSettings::_viewport_input));
-	vp_vb->add_child(vp_container);
+	vp_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_container->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
+	vp_container_base->add_child(vp_container);
+
+	Control *vp_gui = memnew(Control);
+	vp_gui->connect("gui_input", callable_mp(this, &SceneImportSettings::_viewport_input));
+	vp_gui->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_gui->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_gui->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
+	vp_container_base->add_child(vp_gui);
 
 	base_viewport = memnew(SubViewport);
 	vp_container->add_child(base_viewport);
