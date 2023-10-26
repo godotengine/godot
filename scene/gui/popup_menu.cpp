@@ -2186,6 +2186,7 @@ void PopupMenu::scroll_to_item(int p_idx) {
 }
 
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
+	ERR_FAIL_COND_V(p_event.is_null(), false);
 	Key code = Key::NONE;
 	Ref<InputEventKey> k = p_event;
 
