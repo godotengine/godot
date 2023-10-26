@@ -96,9 +96,6 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
         if section_name not in (_scu_folders):
             return False
 
-        if self["verbose"]:
-            print("SCU building " + section_name)
-
         # Add all the gen.cpp files in the SCU directory
         add_source_files_orig(self, sources, subdir + "scu/scu_*.gen.cpp", True)
         return True
