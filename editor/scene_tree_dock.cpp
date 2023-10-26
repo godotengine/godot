@@ -378,6 +378,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 			if (editor_selection->get_selected_node_list().size() > 1) {
+				if (!_validate_no_foreign()) {
+					break;
+				}
 				rename_dialog->popup_centered();
 			}
 		} break;
@@ -388,6 +391,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 			Tree *tree = scene_tree->get_scene_tree();
 			if (tree->is_anything_selected()) {
+				if (!_validate_no_foreign()) {
+					break;
+				}
 				tree->grab_focus();
 				tree->edit_selected();
 			}
