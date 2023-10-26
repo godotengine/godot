@@ -2948,6 +2948,8 @@ void TextEdit::_update_placeholder() {
 		return; // Not in tree?
 	}
 
+	const String placeholder_translated = atr(placeholder_text);
+
 	// Placeholder is generally smaller then text documents, and updates less so this should be fast enough for now.
 	placeholder_data_buf->clear();
 	placeholder_data_buf->set_width(text.get_width());
@@ -2958,9 +2960,9 @@ void TextEdit::_update_placeholder() {
 		placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
 	}
 	placeholder_data_buf->set_preserve_control(draw_control_chars);
-	placeholder_data_buf->add_string(placeholder_text, theme_cache.font, theme_cache.font_size, language);
+	placeholder_data_buf->add_string(placeholder_translated, theme_cache.font, theme_cache.font_size, language);
 
-	placeholder_bidi_override = structured_text_parser(st_parser, st_args, placeholder_text);
+	placeholder_bidi_override = structured_text_parser(st_parser, st_args, placeholder_translated);
 	if (placeholder_bidi_override.is_empty()) {
 		TS->shaped_text_set_bidi_override(placeholder_data_buf->get_rid(), placeholder_bidi_override);
 	}
@@ -2985,7 +2987,7 @@ void TextEdit::_update_placeholder() {
 	placeholder_wraped_rows.clear();
 	for (int i = 0; i <= wrap_amount; i++) {
 		Vector2i line_range = placeholder_data_buf->get_line_range(i);
-		placeholder_wraped_rows.push_back(placeholder_text.substr(line_range.x, line_range.y - line_range.x));
+		placeholder_wraped_rows.push_back(placeholder_translated.substr(line_range.x, line_range.y - line_range.x));
 	}
 }
 
