@@ -85,6 +85,21 @@ Utilities::~Utilities() {
 		}
 	}
 
+	if (render_buffer_mem_cache) {
+		uint32_t leaked_data_size = 0;
+		for (const KeyValue<GLuint, ResourceAllocation> &E : render_buffer_allocs_cache) {
+#ifdef DEV_ENABLED
+			ERR_PRINT(E.value.name + ": leaked " + itos(E.value.size) + " bytes.");
+#else
+			ERR_PRINT("Render buffer with GL ID of " + itos(E.key) + ": leaked " + itos(E.value.size) + " bytes.");
+#endif
+			leaked_data_size += E.value.size;
+		}
+		if (leaked_data_size < render_buffer_mem_cache) {
+			ERR_PRINT("Render buffer cache is not empty. There may be an additional render buffer leak of " + itos(render_buffer_mem_cache - leaked_data_size) + " bytes.");
+		}
+	}
+
 	if (buffer_mem_cache) {
 		uint32_t leaked_data_size = 0;
 
@@ -362,11 +377,11 @@ void Utilities::update_memory_info() {
 
 uint64_t Utilities::get_rendering_info(RS::RenderingInfo p_info) {
 	if (p_info == RS::RENDERING_INFO_TEXTURE_MEM_USED) {
-		return texture_mem_cache;
+		return texture_mem_cache + render_buffer_mem_cache; // Add render buffer memory to our texture mem.
 	} else if (p_info == RS::RENDERING_INFO_BUFFER_MEM_USED) {
 		return buffer_mem_cache;
 	} else if (p_info == RS::RENDERING_INFO_VIDEO_MEM_USED) {
-		return texture_mem_cache + buffer_mem_cache;
+		return texture_mem_cache + buffer_mem_cache + render_buffer_mem_cache;
 	}
 	return 0;
 }

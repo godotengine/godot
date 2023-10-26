@@ -2778,9 +2778,11 @@
 		</member>
 		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
 			If true and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
+			[b]Note:[/b] Only works on compatibility renderer.
 		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
 			Applied foveation level if supported: 0 = off, 1 = low, 2 = medium, 3 = high.
+			[b]Note:[/b] Only works on compatibility renderer.
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.

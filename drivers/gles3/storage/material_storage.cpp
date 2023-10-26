@@ -3000,10 +3000,6 @@ void SceneShaderData::set_code(const String &p_code) {
 		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ rendering backend.");
 	}
 
-	if (uses_depth_texture) {
-		WARN_PRINT_ONCE_ED("Reading from the depth texture is not supported when using the GL Compatibility backend yet. Support will be added in a future release.");
-	}
-
 	if (uses_normal_texture) {
 		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile rendering backends.");
 	}

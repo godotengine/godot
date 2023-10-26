@@ -92,12 +92,47 @@ Config::Config() {
 		anisotropic_level = MIN(float(1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"))), anisotropic_level);
 	}
 
+	glGetIntegerv(GL_MAX_SAMPLES, &msaa_max_samples);
+#ifdef WEB_ENABLED
+	msaa_supported = (msaa_max_samples > 0);
+#else
+	msaa_supported = extensions.has("GL_EXT_framebuffer_multisample");
+#endif
+#ifndef IOS_ENABLED
+	msaa_multiview_supported = extensions.has("GL_EXT_multiview_texture_multisample");
 	multiview_supported = extensions.has("GL_OVR_multiview2") || extensions.has("GL_OVR_multiview");
+#endif
+
 #ifdef ANDROID_ENABLED
+	// These are GLES only
+	rt_msaa_supported = extensions.has("GL_EXT_multisampled_render_to_texture");
+	rt_msaa_multiview_supported = extensions.has("GL_OVR_multiview_multisampled_render_to_texture");
+
 	if (multiview_supported) {
 		eglFramebufferTextureMultiviewOVR = (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)eglGetProcAddress("glFramebufferTextureMultiviewOVR");
 		if (eglFramebufferTextureMultiviewOVR == nullptr) {
 			multiview_supported = false;
+		}
+	}
+
+	if (msaa_multiview_supported) {
+		eglTexStorage3DMultisample = (PFNGLTEXSTORAGE3DMULTISAMPLEPROC)eglGetProcAddress("glTexStorage3DMultisample");
+		if (eglTexStorage3DMultisample == nullptr) {
+			msaa_multiview_supported = false;
+		}
+	}
+
+	if (rt_msaa_supported) {
+		eglFramebufferTexture2DMultisampleEXT = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)eglGetProcAddress("glFramebufferTexture2DMultisampleEXT");
+		if (eglFramebufferTexture2DMultisampleEXT == nullptr) {
+			rt_msaa_supported = false;
+		}
+	}
+
+	if (rt_msaa_multiview_supported) {
+		eglFramebufferTextureMultisampleMultiviewOVR = (PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)eglGetProcAddress("glFramebufferTextureMultisampleMultiviewOVR");
+		if (eglFramebufferTextureMultisampleMultiviewOVR == nullptr) {
+			rt_msaa_multiview_supported = false;
 		}
 	}
 #endif
