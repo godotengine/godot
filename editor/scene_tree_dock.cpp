@@ -2167,8 +2167,13 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	}
 	undo_redo->commit_action();
 
+	// Avoid changing the currently edited object.
+	Object *edited_object = InspectorDock::get_inspector_singleton()->get_edited_object();
+
 	_push_item(p_script.ptr());
 	_update_script_button();
+
+	InspectorDock::get_inspector_singleton()->edit(edited_object);
 }
 
 void SceneTreeDock::_shader_created(Ref<Shader> p_shader) {
