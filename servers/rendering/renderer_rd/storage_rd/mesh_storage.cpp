@@ -591,7 +591,6 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 		sd.vertex_data = RD::get_singleton()->buffer_get_data(s.vertex_buffer);
 		// When using an uncompressed buffer with normals, but without tangents, we have to trim the padding.
 		if (!(s.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (s.format & RS::ARRAY_FORMAT_NORMAL) && !(s.format & RS::ARRAY_FORMAT_TANGENT)) {
-			Vector<uint8_t> new_vertex_data;
 			sd.vertex_data.resize(sd.vertex_data.size() - sizeof(uint16_t) * 2);
 		}
 	}
