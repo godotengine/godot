@@ -1820,10 +1820,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			f->store_line("[remap]");
 			f->store_line("");
 			f->store_line("importer=\"" + importer->get_importer_name() + "\"");
-			int version = importer->get_format_version();
-			if (version > 0) {
-				f->store_line("importer_version=" + itos(version));
-			}
+			f->store_line("importer_version=" + itos(importer->get_format_version()));
 			if (!importer->get_resource_type().is_empty()) {
 				f->store_line("type=\"" + importer->get_resource_type() + "\"");
 			}
@@ -2054,10 +2051,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		f->store_line("[remap]");
 		f->store_line("");
 		f->store_line("importer=\"" + importer->get_importer_name() + "\"");
-		int version = importer->get_format_version();
-		if (version > 0) {
-			f->store_line("importer_version=" + itos(version));
-		}
+		f->store_line("importer_version=" + itos(importer->get_format_version()));
 		if (!importer->get_resource_type().is_empty()) {
 			f->store_line("type=\"" + importer->get_resource_type() + "\"");
 		}
