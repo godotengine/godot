@@ -3439,9 +3439,7 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 		if (op_type.is_variant() || !op_type.is_hard_type()) {
 			mark_node_unsafe(p_cast);
 #ifdef DEBUG_ENABLED
-			if (op_type.is_variant() && !op_type.is_hard_type()) {
-				parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, cast_type.to_string());
-			}
+			parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, cast_type.to_string());
 #endif
 		} else {
 			bool valid = false;
