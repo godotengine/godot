@@ -1308,11 +1308,16 @@ hb_ot_layout_collect_features_map (hb_face_t      *face,
   unsigned int count = l.get_feature_indexes (0, nullptr, nullptr);
   feature_map->alloc (count);
 
-  for (unsigned int i = 0; i < count; i++)
+  /* Loop in reverse, such that earlier entries win. That emulates
+   * a linear search, which seems to be what other implementations do.
+   * We found that with arialuni_t.ttf, the "ur" language system has
+   * duplicate features, and the earlier ones work but not later ones.
+   */
+  for (unsigned int i = count; i; i--)
   {
     unsigned feature_index = 0;
     unsigned feature_count = 1;
-    l.get_feature_indexes (i, &feature_count, &feature_index);
+    l.get_feature_indexes (i - 1, &feature_count, &feature_index);
     if (!feature_count)
       break;
     hb_tag_t feature_tag = g.get_feature_tag (feature_index);
