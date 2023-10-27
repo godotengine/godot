@@ -65,7 +65,7 @@ public:
 		INFERRED_DECLARATION, // Variable/constant/parameter has an implicitly inferred static type.
 		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes).
 		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes).
-		UNSAFE_CAST, // Cast used in an unknown type.
+		UNSAFE_CAST, // Casting a `Variant` value to non-`Variant`.
 		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the required type.
 		UNSAFE_VOID_RETURN, // Function returns void but returned a call to a function that can't be type checked.
 		RETURN_VALUE_DISCARDED, // Function call returns something but the value isn't used.

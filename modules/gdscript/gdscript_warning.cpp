@@ -96,7 +96,7 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The method "%s()" is not present on the inferred type "%s" (but may be present on a subtype).)*", symbols[0], symbols[1]);
 		case UNSAFE_CAST:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(The value is cast to "%s" but has an unknown type.)", symbols[0]);
+			return vformat(R"(Casting "Variant" to "%s" is unsafe.)", symbols[0]);
 		case UNSAFE_CALL_ARGUMENT:
 			CHECK_SYMBOLS(5);
 			return vformat(R"*(The argument %s of the %s "%s()" requires the subtype "%s" but the supertype "%s" was provided.)*", symbols[0], symbols[1], symbols[2], symbols[3], symbols[4]);
