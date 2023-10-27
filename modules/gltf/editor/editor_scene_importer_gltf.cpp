@@ -51,6 +51,7 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	gltf.instantiate();
 	Ref<GLTFState> state;
 	state.instantiate();
+	gltf->set_importer_version(get_importer_version());
 	if (p_options.has("gltf/embedded_image_handling")) {
 		int32_t enum_option = p_options["gltf/embedded_image_handling"];
 		state->set_handle_binary_image(enum_option);

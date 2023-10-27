@@ -532,7 +532,7 @@ String ResourceImporterOBJ::get_resource_type() const {
 	return "Mesh";
 }
 
-int ResourceImporterOBJ::get_format_version() const {
+int ResourceImporterOBJ::get_latest_importer_version(const String &p_file_extension) const {
 	return 1;
 }
 

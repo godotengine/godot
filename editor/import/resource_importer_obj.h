@@ -53,7 +53,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
-	virtual int get_format_version() const override;
+	virtual int get_latest_importer_version(const String &p_file_extension = "") const override;
 
 	virtual int get_preset_count() const override;
 	virtual String get_preset_name(int p_idx) const override;

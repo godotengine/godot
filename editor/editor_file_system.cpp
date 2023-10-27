@@ -394,7 +394,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	String source_md5 = "";
 	Vector<String> dest_files;
 	String dest_md5 = "";
-	int version = 0;
 	bool found_uid = false;
 
 	while (true) {
@@ -418,8 +417,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 				for (int i = 0; i < fa.size(); i++) {
 					to_check.push_back(fa[i]);
 				}
-			} else if (assign == "importer_version") {
-				version = value;
 			} else if (assign == "importer") {
 				importer_name = value;
 			} else if (assign == "uid") {
@@ -449,10 +446,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	if (importer.is_null()) {
 		return true; // the importer has possibly changed, try to reimport.
-	}
-
-	if (importer->get_format_version() > version) {
-		return true; // version changed, reimport
 	}
 
 	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version
@@ -1820,10 +1813,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			f->store_line("[remap]");
 			f->store_line("");
 			f->store_line("importer=\"" + importer->get_importer_name() + "\"");
-			int version = importer->get_format_version();
-			if (version > 0) {
-				f->store_line("importer_version=" + itos(version));
-			}
+			f->store_line("importer_version=" + itos(importer->get_importer_version()));
 			if (!importer->get_resource_type().is_empty()) {
 				f->store_line("type=\"" + importer->get_resource_type() + "\"");
 			}
@@ -1946,6 +1936,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	}
 
 	ResourceUID::ID uid = ResourceUID::INVALID_ID;
+	// When a .import file exists but it has no importer version written, use version 0.
+	// This is because older Godot versions did not write the version if it was 0.
+	int importer_version = 0;
 	Variant generator_parameters;
 	if (p_generator_parameters) {
 		generator_parameters = *p_generator_parameters;
@@ -1971,6 +1964,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 				if (p_custom_importer.is_empty()) {
 					importer_name = cf->get_value("remap", "importer");
 				}
+				importer_version = cf->get_value("remap", "importer_version", 0);
 
 				if (cf->has_section_key("remap", "uid")) {
 					String uidt = cf->get_value("remap", "uid");
@@ -1984,6 +1978,10 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 				}
 			}
 		}
+	} else {
+		// When resources do not have a .import file, use the latest importer
+		// version (to be determined below after getting the importer).
+		importer_version = -1;
 	}
 
 	if (importer_name == "keep") {
@@ -2003,17 +2001,22 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 	}
 
+	const String file_extension = p_file.get_extension().to_lower();
 	if (importer.is_null()) {
 		//not found by name, find by extension
-		importer = ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_file.get_extension());
+		importer = ResourceFormatImporter::get_singleton()->get_importer_by_extension(file_extension);
 		load_default = true;
 		if (importer.is_null()) {
 			ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, "BUG: File queued for import, but can't be imported, importer for type '" + importer_name + "' not found.");
 		}
 	}
 
+	if (importer_version == -1) {
+		// When resources do not have a .import file, use the latest importer version.
+		importer_version = importer->get_latest_importer_version(file_extension);
+	}
+	importer->set_importer_version(importer_version);
 	//mix with default params, in case a parameter is missing
-
 	List<ResourceImporter::ImportOption> opts;
 	importer->get_import_options(p_file, &opts);
 	for (const ResourceImporter::ImportOption &E : opts) {
@@ -2054,10 +2057,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		f->store_line("[remap]");
 		f->store_line("");
 		f->store_line("importer=\"" + importer->get_importer_name() + "\"");
-		int version = importer->get_format_version();
-		if (version > 0) {
-			f->store_line("importer_version=" + itos(version));
-		}
+		f->store_line("importer_version=" + itos(importer->get_importer_version()));
 		if (!importer->get_resource_type().is_empty()) {
 			f->store_line("type=\"" + importer->get_resource_type() + "\"");
 		}
@@ -2217,7 +2217,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
 
-	Vector<ImportFile> reimport_files;
+	Vector<ImportFile> files_to_reimport;
 
 	HashSet<String> groups_to_reimport;
 
@@ -2248,7 +2248,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			ifile.path = file;
 			ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(file, ifile.order, ifile.threaded, ifile.importer);
 			reloads.push_back(file);
-			reimport_files.push_back(ifile);
+			files_to_reimport.push_back(ifile);
 		}
 
 		// Group may have changed, so also update group reference.
@@ -2259,24 +2259,24 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		}
 	}
 
-	reimport_files.sort();
+	files_to_reimport.sort();
 
 	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
 
 	int from = 0;
-	for (int i = 0; i < reimport_files.size(); i++) {
-		if (groups_to_reimport.has(reimport_files[i].path)) {
+	for (int i = 0; i < files_to_reimport.size(); i++) {
+		if (groups_to_reimport.has(files_to_reimport[i].path)) {
 			continue;
 		}
 
-		if (use_multiple_threads && reimport_files[i].threaded) {
-			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer) {
+		if (use_multiple_threads && files_to_reimport[i].threaded) {
+			if (i + 1 == files_to_reimport.size() || files_to_reimport[i + 1].importer != files_to_reimport[from].importer) {
 				if (from - i == 0) {
 					// Single file, do not use threads.
-					pr.step(reimport_files[i].path.get_file(), i);
-					_reimport_file(reimport_files[i].path);
+					pr.step(files_to_reimport[i].path.get_file(), i);
+					_reimport_file(files_to_reimport[i].path);
 				} else {
-					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
+					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(files_to_reimport[from].importer);
 					ERR_CONTINUE(!importer.is_valid());
 
 					importer->import_threaded_begin();
@@ -2284,14 +2284,14 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					ImportThreadData tdata;
 					tdata.max_index = from;
 					tdata.reimport_from = from;
-					tdata.reimport_files = reimport_files.ptr();
+					tdata.reimport_files = files_to_reimport.ptr();
 
-					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
+					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), files_to_reimport[from].importer));
 					int current_index = from - 1;
 					do {
 						if (current_index < tdata.max_index) {
 							current_index = tdata.max_index;
-							pr.step(reimport_files[current_index].path.get_file(), current_index);
+							pr.step(files_to_reimport[current_index].path.get_file(), current_index);
 						}
 						OS::get_singleton()->delay_usec(1);
 					} while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task));
@@ -2305,14 +2305,14 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			}
 
 		} else {
-			pr.step(reimport_files[i].path.get_file(), i);
-			_reimport_file(reimport_files[i].path);
+			pr.step(files_to_reimport[i].path.get_file(), i);
+			_reimport_file(files_to_reimport[i].path);
 		}
 	}
 
 	// Reimport groups.
 
-	from = reimport_files.size();
+	from = files_to_reimport.size();
 
 	if (groups_to_reimport.size()) {
 		HashMap<String, Vector<String>> group_files;

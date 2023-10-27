@@ -483,6 +483,14 @@ ResourceFormatImporter::ResourceFormatImporter() {
 
 //////////////
 
+int ResourceImporter::get_importer_version() const {
+	return _importer_version;
+}
+
+void ResourceImporter::set_importer_version(int p_version) {
+	_importer_version = p_version;
+}
+
 void ResourceImporter::_bind_methods() {
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);

@@ -99,6 +99,8 @@ public:
 class ResourceImporter : public RefCounted {
 	GDCLASS(ResourceImporter, RefCounted);
 
+	int _importer_version = get_latest_importer_version();
+
 protected:
 	static void _bind_methods();
 
@@ -110,7 +112,10 @@ public:
 	virtual String get_resource_type() const = 0;
 	virtual float get_priority() const { return 1.0; }
 	virtual int get_import_order() const { return IMPORT_ORDER_DEFAULT; }
-	virtual int get_format_version() const { return 0; }
+	virtual int get_latest_importer_version(const String &p_file_extension = "") const { return 0; }
+
+	int get_importer_version() const;
+	void set_importer_version(int p_version);
 
 	struct ImportOption {
 		PropertyInfo option;

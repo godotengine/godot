@@ -99,6 +99,14 @@ Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, b
 	return ret;
 }
 
+int EditorSceneFormatImporter::get_importer_version() const {
+	return _importer_version;
+}
+
+void EditorSceneFormatImporter::set_importer_version(int p_version) {
+	_importer_version = p_version;
+}
+
 void EditorSceneFormatImporter::_bind_methods() {
 	GDVIRTUAL_BIND(_get_import_flags);
 	GDVIRTUAL_BIND(_get_extensions);
@@ -263,7 +271,11 @@ String ResourceImporterScene::get_resource_type() const {
 	return animation_importer ? "AnimationLibrary" : "PackedScene";
 }
 
-int ResourceImporterScene::get_format_version() const {
+int ResourceImporterScene::get_latest_importer_version(const String &p_file_extension) const {
+	Ref<EditorSceneFormatImporter> scene_importer = get_scene_importer_for_file_extension(p_file_extension);
+	if (scene_importer.is_valid()) {
+		return scene_importer->get_importer_version();
+	}
 	return 1;
 }
 
@@ -2390,29 +2402,14 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 Error ResourceImporterScene::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	const String &src_path = p_source_file;
 
-	Ref<EditorSceneFormatImporter> importer;
 	String ext = src_path.get_extension().to_lower();
+	Ref<EditorSceneFormatImporter> importer = get_scene_importer_for_file_extension(ext);
 
 	EditorProgress progress("import", TTR("Import Scene"), 104);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
-		List<String> extensions;
-		importer_elem->get_extensions(&extensions);
-
-		for (const String &F : extensions) {
-			if (F.to_lower() == ext) {
-				importer = importer_elem;
-				break;
-			}
-		}
-
-		if (importer.is_valid()) {
-			break;
-		}
-	}
-
 	ERR_FAIL_COND_V(!importer.is_valid(), ERR_FILE_UNRECOGNIZED);
+	importer->set_importer_version(get_importer_version());
 
 	int import_flags = 0;
 
@@ -2700,6 +2697,23 @@ void ResourceImporterScene::add_importer(Ref<EditorSceneFormatImporter> p_import
 	}
 }
 
+void ResourceImporterScene::remove_importer(Ref<EditorSceneFormatImporter> p_importer) {
+	importers.erase(p_importer);
+}
+
+Ref<EditorSceneFormatImporter> ResourceImporterScene::get_scene_importer_for_file_extension(const String &p_file_extension) {
+	for (Ref<EditorSceneFormatImporter> scene_importer : importers) {
+		List<String> extensions;
+		scene_importer->get_extensions(&extensions);
+		for (const String &F : extensions) {
+			if (F.to_lower() == p_file_extension) {
+				return scene_importer;
+			}
+		}
+	}
+	return Ref<EditorSceneFormatImporter>();
+}
+
 void ResourceImporterScene::remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
 	post_importer_plugins.erase(p_plugin);
 }
@@ -2711,10 +2725,6 @@ void ResourceImporterScene::add_post_importer_plugin(const Ref<EditorScenePostIm
 	} else {
 		post_importer_plugins.push_back(p_plugin);
 	}
-}
-
-void ResourceImporterScene::remove_importer(Ref<EditorSceneFormatImporter> p_importer) {
-	importers.erase(p_importer);
 }
 
 void ResourceImporterScene::clean_up_importer_plugins() {

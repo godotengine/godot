@@ -51,6 +51,8 @@ class ImporterMesh;
 class EditorSceneFormatImporter : public RefCounted {
 	GDCLASS(EditorSceneFormatImporter, RefCounted);
 
+	int _importer_version = 1;
+
 protected:
 	static void _bind_methods();
 
@@ -79,6 +81,9 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr);
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options);
+
+	int get_importer_version() const;
+	void set_importer_version(int p_version);
 
 	EditorSceneFormatImporter() {}
 };
@@ -246,6 +251,7 @@ public:
 
 	static void add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority = false);
 	static void remove_importer(Ref<EditorSceneFormatImporter> p_importer);
+	static Ref<EditorSceneFormatImporter> get_scene_importer_for_file_extension(const String &p_file_extension);
 
 	static void clean_up_importer_plugins();
 
@@ -254,7 +260,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
-	virtual int get_format_version() const override;
+	virtual int get_latest_importer_version(const String &p_file_extension = "") const override;
 
 	virtual int get_preset_count() const override;
 	virtual String get_preset_name(int p_idx) const override;
