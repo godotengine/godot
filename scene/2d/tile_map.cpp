@@ -658,7 +658,7 @@ void TileMapLayer::_physics_update() {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
+	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid();
 	if (forced_cleanup) {
 		// Clean everything.
 		for (KeyValue<Vector2i, CellData> &kv : tile_map) {
@@ -908,7 +908,7 @@ void TileMapLayer::_navigation_update() {
 	NavigationServer2D *ns = NavigationServer2D::get_singleton();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !navigation_enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
+	bool forced_cleanup = in_destructor || !enabled || !navigation_enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid();
 
 	// ----------- Layer level processing -----------
 	if (forced_cleanup) {
