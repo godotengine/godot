@@ -170,6 +170,15 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
+                if (marshalType == MarshalType.GodotObjectOrDerived)
+                {
+                    if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
+                        propertyType.InheritsFrom("GodotSharp", "Godot.Node"))
+                    {
+                        Common.ReportOnlyNodesShouldExportNodes(context, property);
+                    }
+                }
+
                 var propertyDeclarationSyntax = property.DeclaringSyntaxReferences
                     .Select(r => r.GetSyntax() as PropertyDeclarationSyntax).FirstOrDefault();
 
@@ -263,6 +272,15 @@ namespace Godot.SourceGenerators
                 {
                     Common.ReportExportedMemberTypeNotSupported(context, field);
                     continue;
+                }
+
+                if (marshalType == MarshalType.GodotObjectOrDerived)
+                {
+                    if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
+                        fieldType.InheritsFrom("GodotSharp", "Godot.Node"))
+                    {
+                        Common.ReportOnlyNodesShouldExportNodes(context, field);
+                    }
                 }
 
                 EqualsValueClauseSyntax? initializer = field.DeclaringSyntaxReferences
