@@ -867,12 +867,152 @@ namespace TestNode3DEditorCameraManager {
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Change view") {
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+
+			camera_manager->view_top();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)1.5707963));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)0.0));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			camera_manager->view_bottom();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)-1.5707963));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)0.0));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			camera_manager->view_left();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)0.0));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)1.5707963));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			camera_manager->view_right();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)0.0));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)-1.5707963));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			camera_manager->view_front();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)0.0));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)0.0));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			camera_manager->view_rear();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)0.0));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)Math_PI));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			SUBCASE("Should stop piloting") {
+				camera_manager->pilot(some_node);
+
+				SUBCASE("Should stop piloting when set view top") {
+					camera_manager->view_top();
+				}
+
+				SUBCASE("Should stop piloting when set view bottom") {
+					camera_manager->view_bottom();
+				}
+
+				SUBCASE("Should stop piloting when set view left") {
+					camera_manager->view_left();
+				}
+
+				SUBCASE("Should stop piloting when set view right") {
+					camera_manager->view_right();
+				}
+
+				SUBCASE("Should stop piloting when set view front") {
+					camera_manager->view_front();
+				}
+
+				SUBCASE("Should stop piloting when set view rear") {
+					camera_manager->view_rear();
+				}
+
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
+			}
+
+			SUBCASE("Should stop previewing camera") {
+				camera_manager->preview_camera(previewing_camera);
+
+				SUBCASE("Should stop previewing camera when set view top") {
+					camera_manager->view_top();
+				}
+
+				SUBCASE("Should stop previewing camera when set view bottom") {
+					camera_manager->view_bottom();
+				}
+
+				SUBCASE("Should stop previewing camera when set view left") {
+					camera_manager->view_left();
+				}
+
+				SUBCASE("Should stop previewing camera when set view right") {
+					camera_manager->view_right();
+				}
+
+				SUBCASE("Should stop previewing camera when set view front") {
+					camera_manager->view_front();
+				}
+
+				SUBCASE("Should stop previewing camera when set view rear") {
+					camera_manager->view_rear();
+				}
+
+				CHECK(camera_manager->get_previewing_camera() == nullptr);
+			}
+
+			SUBCASE("Should stop cinematic preview mode") {
+				camera_manager->set_cinematic_preview_mode(true);
+
+				SUBCASE("Should stop cinematic preview mode when set view top") {
+					camera_manager->view_top();
+				}
+
+				SUBCASE("Should stop cinematic preview mode when set view bottom") {
+					camera_manager->view_bottom();
+				}
+
+				SUBCASE("Should stop cinematic preview mode when set view left") {
+					camera_manager->view_left();
+				}
+
+				SUBCASE("Should stop cinematic preview mode when set view right") {
+					camera_manager->view_right();
+				}
+
+				SUBCASE("Should stop cinematic preview mode when set view front") {
+					camera_manager->view_front();
+				}
+
+				SUBCASE("Should stop cinematic preview mode when set view rear") {
+					camera_manager->view_rear();
+				}
+
+				CHECK(!camera_manager->is_in_cinematic_preview_mode());
+			}
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Center to origin") {
+			camera_manager->navigation_pan(Vector2(100.0, 200.0), 10.0);
+			camera_manager->update(100.0); // force the interpolation to end
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+			camera_manager->center_to_origin();
+			CHECK(camera_manager->get_cursor().get_target_values().position == Vector3(0.0, 0.0, 0.0));
+			CHECK(camera_manager->get_cursor().get_target_values() != camera_manager->get_cursor().get_current_values());
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Focus selection") {
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+			camera_manager->focus_selection(Vector3(200.0, 300.0, 400.0));
+			CHECK(camera_manager->get_cursor().get_target_values().position == Vector3(200.0, 300.0, 400.0));
+			CHECK(camera_manager->get_cursor().get_target_values() != camera_manager->get_cursor().get_current_values());
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Update") {
