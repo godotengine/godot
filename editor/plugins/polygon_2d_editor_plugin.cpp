@@ -989,7 +989,10 @@ void Polygon2DEditor::_uv_draw() {
 	mtx.columns[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
-	RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx);
+	Transform2D texture_transform = Transform2D(node->get_texture_rotation(), node->get_texture_offset());
+	texture_transform.scale(node->get_texture_scale());
+	texture_transform.affine_invert();
+	RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx * texture_transform);
 	uv_edit_draw->draw_texture(base_tex, Point2());
 	RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), Transform2D());
 
