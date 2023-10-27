@@ -33,6 +33,7 @@
 
 #include "core/templates/rid.h"
 #include "core/templates/self_list.h"
+#include "scene/resources/curve_texture.h"
 #include "scene/resources/material.h"
 
 /*
@@ -125,6 +126,7 @@ private:
 		uint64_t alpha_curve : 1;
 		uint64_t emission_curve : 1;
 		uint64_t has_initial_ramp : 1;
+		uint64_t orbit_uses_curve_xyz : 1;
 
 		MaterialKey() {
 			memset(this, 0, sizeof(MaterialKey));
@@ -165,6 +167,8 @@ private:
 		mk.alpha_curve = alpha_curve.is_valid() ? 1 : 0;
 		mk.emission_curve = emission_curve.is_valid() ? 1 : 0;
 		mk.has_initial_ramp = color_initial_ramp.is_valid() ? 1 : 0;
+		CurveXYZTexture *texture = Object::cast_to<CurveXYZTexture>(tex_parameters[PARAM_ORBIT_VELOCITY].ptr());
+		mk.orbit_uses_curve_xyz = texture ? 1 : 0;
 
 		for (int i = 0; i < PARAM_MAX; i++) {
 			if (tex_parameters[i].is_valid()) {
