@@ -51,12 +51,14 @@ bool SkeletonModification2DLookAt::_set(const StringName &p_path, const Variant 
 	} else if (path.begins_with("additional_rotation")) {
 		set_additional_rotation(Math::deg_to_rad(float(p_value)));
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
+	else if (path.begins_with("editor/draw_gizmo")) {
 		set_editor_draw_gizmo(p_value);
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -77,12 +79,14 @@ bool SkeletonModification2DLookAt::_get(const StringName &p_path, Variant &r_ret
 	} else if (path.begins_with("additional_rotation")) {
 		r_ret = Math::rad_to_deg(get_additional_rotation());
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
+	else if (path.begins_with("editor/draw_gizmo")) {
 		r_ret = get_editor_draw_gizmo();
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
