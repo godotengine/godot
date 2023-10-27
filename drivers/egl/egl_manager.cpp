@@ -34,6 +34,7 @@
 
 #if defined(EGL_STATIC)
 #define KHRONOS_STATIC 1
+#define GLAD_EGL_VERSION_1_5 true
 extern "C" EGLAPI void EGLAPIENTRY eglSetBlobCacheFuncsANDROID(EGLDisplay dpy, EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get);
 #undef KHRONOS_STATIC
 #endif

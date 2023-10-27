@@ -37,6 +37,44 @@
 #include "common_config.h"
 #endif  // OPENXR_HAVE_COMMON_CONFIG
 
+#if defined(__x86_64__) && defined(__ILP32__)
+#define XR_ARCH_ABI "x32"
+#elif defined(_M_X64) || defined(__x86_64__)
+#define XR_ARCH_ABI "x86_64"
+#elif defined(_M_IX86) || defined(__i386__) || defined(_X86_)
+#define XR_ARCH_ABI "i686"
+#elif (defined(__aarch64__) && defined(__LP64__)) || defined(_M_ARM64)
+#define XR_ARCH_ABI "aarch64"
+#elif (defined(__ARM_ARCH) && __ARM_ARCH >= 7 && (defined(__ARM_PCS_VFP) || defined(__ANDROID__))) || defined(_M_ARM)
+#define XR_ARCH_ABI "armv7a-vfp"
+#elif defined(__ARM_ARCH_5TE__)
+#define XR_ARCH_ABI "armv5te"
+#elif defined(__mips64)
+#define XR_ARCH_ABI "mips64"
+#elif defined(__mips)
+#define XR_ARCH_ABI "mips"
+#elif defined(__powerpc64__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define XR_ARCH_ABI "ppc64"
+#elif defined(__powerpc__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define XR_ARCH_ABI "ppc64el"
+#elif defined(__s390x__) || defined(__zarch__)
+#define XR_ARCH_ABI "s390x"
+#elif defined(__hppa__)
+#define XR_ARCH_ABI "hppa"
+#elif defined(__alpha__)
+#define XR_ARCH_ABI "alpha"
+#elif defined(__ia64__) || defined(_M_IA64)
+#define XR_ARCH_ABI "ia64"
+#elif defined(__m68k__)
+#define XR_ARCH_ABI "m68k"
+#elif defined(__riscv_xlen) && (__riscv_xlen == 64)
+#define XR_ARCH_ABI "riscv64"
+#elif defined(__sparc__) && defined(__arch64__)
+#define XR_ARCH_ABI "sparc64"
+#else
+#error "No architecture string known!"
+#endif
+
 // Consumers of this file must ensure this function is implemented. For example, the loader will implement this function so that it
 // can route messages through the loader's logging system.
 void LogPlatformUtilsError(const std::string& message);
@@ -47,6 +85,7 @@ void LogPlatformUtilsError(const std::string& message);
 #include <unistd.h>
 #include <fcntl.h>
 #include <iostream>
+#include <sys/stat.h>
 
 namespace detail {
 
@@ -72,6 +111,31 @@ static inline char* ImplGetSecureEnv(const char* name) {
 }  // namespace detail
 
 #endif  // defined(XR_OS_LINUX) || defined(XR_OS_APPLE)
+
+#if defined(XR_OS_ANDROID) || defined(XR_OS_APPLE)
+
+#include <sys/stat.h>
+
+namespace detail {
+
+static inline bool ImplTryRuntimeFilename(const char* rt_dir_prefix, uint16_t major_version, std::string& file_name) {
+    auto decorated_path = rt_dir_prefix + std::to_string(major_version) + "/active_runtime." XR_ARCH_ABI ".json";
+    auto undecorated_path = rt_dir_prefix + std::to_string(major_version) + "/active_runtime.json";
+
+    struct stat buf {};
+    if (0 == stat(decorated_path.c_str(), &buf)) {
+        file_name = decorated_path;
+        return true;
+    }
+    if (0 == stat(undecorated_path.c_str(), &buf)) {
+        file_name = undecorated_path;
+        return true;
+    }
+    return false;
+}
+
+}  // namespace detail
+#endif  // defined(XR_OS_ANDROID) || defined(XR_OS_APPLE)
 #if defined(XR_OS_LINUX)
 
 static inline std::string PlatformUtilsGetEnv(const char* name) {
@@ -130,15 +194,8 @@ static inline bool PlatformUtilsSetEnv(const char* name, const char* value) {
     return (result == 0);
 }
 
-// Prefix for the Apple global runtime JSON file name
-static const std::string rt_dir_prefix = "/usr/local/share/openxr/";
-static const std::string rt_filename = "/active_runtime.json";
-
 static inline bool PlatformGetGlobalRuntimeFileName(uint16_t major_version, std::string& file_name) {
-    file_name = rt_dir_prefix;
-    file_name += std::to_string(major_version);
-    file_name += rt_filename;
-    return true;
+    return detail::ImplTryRuntimeFilename("/usr/local/share/openxr/", major_version, file_name);
 }
 
 #elif defined(XR_OS_WINDOWS)
@@ -155,7 +212,7 @@ inline std::wstring utf8_to_wide(const std::string& utf8Text) {
         return {};
     }
 
-    // MultiByteToWideChar returns number of chars of the input buffer, regardless of null terminitor
+    // MultiByteToWideChar returns number of chars of the input buffer, regardless of null terminator
     wideText.resize(wideLength, 0);
     wchar_t* wideString = const_cast<wchar_t*>(wideText.data());  // mutable data() only exists in c++17
     const int length = ::MultiByteToWideChar(CP_UTF8, 0, utf8Text.data(), (int)utf8Text.size(), wideString, wideLength);
@@ -179,7 +236,7 @@ inline std::string wide_to_utf8(const std::wstring& wideText) {
         return {};
     }
 
-    // WideCharToMultiByte returns number of chars of the input buffer, regardless of null terminitor
+    // WideCharToMultiByte returns number of chars of the input buffer, regardless of null terminator
     narrowText.resize(narrowLength, 0);
     char* narrowString = const_cast<char*>(narrowText.data());  // mutable data() only exists in c++17
     const int length =
@@ -311,22 +368,19 @@ static inline bool PlatformUtilsSetEnv(const char* /* name */, const char* /* va
     return false;
 }
 
-#include <sys/stat.h>
-
 // Intended to be only used as a fallback on Android, with a more open, "native" technique used in most cases
 static inline bool PlatformGetGlobalRuntimeFileName(uint16_t major_version, std::string& file_name) {
     // Prefix for the runtime JSON file name
     static const char* rt_dir_prefixes[] = {"/product", "/odm", "/oem", "/vendor", "/system"};
-    static const std::string rt_filename = "/active_runtime.json";
+
     static const std::string subdir = "/etc/openxr/";
     for (const auto prefix : rt_dir_prefixes) {
-        auto path = prefix + subdir + std::to_string(major_version) + rt_filename;
-        struct stat buf;
-        if (0 == stat(path.c_str(), &buf)) {
-            file_name = path;
+        const std::string rt_dir_prefix = prefix + subdir;
+        if (detail::ImplTryRuntimeFilename(rt_dir_prefix.c_str(), major_version, file_name)) {
             return true;
         }
     }
+
     return false;
 }
 #else  // Not Linux, Apple, nor Windows

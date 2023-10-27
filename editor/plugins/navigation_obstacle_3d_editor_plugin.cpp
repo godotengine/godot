@@ -503,7 +503,11 @@ void NavigationObstacle3DEditor::edit(Node *p_node) {
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
-		p_node->add_child(point_lines_meshinstance);
+		if (point_lines_meshinstance->get_parent()) {
+			point_lines_meshinstance->reparent(p_node, false);
+		} else {
+			p_node->add_child(point_lines_meshinstance);
+		}
 		_polygon_draw();
 
 	} else {

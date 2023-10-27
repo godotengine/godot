@@ -37,7 +37,7 @@ bool BoneMap::_set(const StringName &p_path, const Variant &p_value) {
 		set_skeleton_bone_name(which, p_value);
 		return true;
 	}
-	return true;
+	return false;
 }
 
 bool BoneMap::_get(const StringName &p_path, Variant &r_ret) const {
@@ -47,7 +47,7 @@ bool BoneMap::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = get_skeleton_bone_name(which);
 		return true;
 	}
-	return true;
+	return false;
 }
 
 void BoneMap::_get_property_list(List<PropertyInfo> *p_list) const {

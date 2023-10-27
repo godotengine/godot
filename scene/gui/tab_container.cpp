@@ -143,6 +143,13 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (setup_current_tab >= 0) {
+				set_current_tab(setup_current_tab);
+				setup_current_tab = -1;
+			}
+		} break;
+
 		case NOTIFICATION_READY:
 		case NOTIFICATION_RESIZED: {
 			_update_margins();
@@ -528,6 +535,10 @@ int TabContainer::get_tab_count() const {
 }
 
 void TabContainer::set_current_tab(int p_current) {
+	if (!is_inside_tree()) {
+		setup_current_tab = p_current;
+		return;
+	}
 	tab_bar->set_current_tab(p_current);
 }
 
@@ -912,7 +923,7 @@ void TabContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");

@@ -531,10 +531,10 @@ void ParticleProcessMaterial::_update_shader() {
 
 	code += "\n";
 	code += "void calculate_initial_physical_params(inout PhysicalParameters params, inout uint alt_seed){\n";
-	code += "	params.linear_accel = mix(linear_accel_min, linear_accel_min ,rand_from_seed(alt_seed));\n";
-	code += "	params.radial_accel = mix(radial_accel_min, radial_accel_min,rand_from_seed(alt_seed));\n";
-	code += "	params.tangent_accel = mix(tangent_accel_min, tangent_accel_max,rand_from_seed(alt_seed));\n";
-	code += "	params.damping = mix(damping_min, damping_max,rand_from_seed(alt_seed));\n";
+	code += "	params.linear_accel = mix(linear_accel_min, linear_accel_max, rand_from_seed(alt_seed));\n";
+	code += "	params.radial_accel = mix(radial_accel_min, radial_accel_max, rand_from_seed(alt_seed));\n";
+	code += "	params.tangent_accel = mix(tangent_accel_min, tangent_accel_max, rand_from_seed(alt_seed));\n";
+	code += "	params.damping = mix(damping_min, damping_max, rand_from_seed(alt_seed));\n";
 	code += "}\n";
 	code += "\n";
 	code += "void calculate_initial_dynamics_params(inout DynamicsParameters params,inout uint alt_seed){\n";

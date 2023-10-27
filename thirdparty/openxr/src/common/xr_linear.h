@@ -1,5 +1,5 @@
-// Copyright (c) 2017 The Khronos Group Inc.
-// Copyright (c) 2016 Oculus VR, LLC.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2016, Oculus VR, LLC.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -23,15 +23,17 @@
 
 #include <openxr/openxr.h>
 
+/* REUSE-IgnoreStart */
+/* The following has copyright notices that duplicate the header above */
+
 /*
 ================================================================================================
 
-Description     :       Vector, matrix and quaternion math.
-Author          :       J.M.P. van Waveren
-Date            :       12/10/2016
-Language        :       C99
-Format          :       Indent 4 spaces - no tabs.
-Copyright       :       Copyright (c) 2016 Oculus VR, LLC. All Rights reserved.
+Description  : Vector, matrix and quaternion math.
+Orig. Author : J.M.P. van Waveren
+Orig. Date   : 12/10/2016
+Language     : C99
+Copyright    : Copyright (c) 2016 Oculus VR, LLC. All Rights reserved.
 
 
 DESCRIPTION
@@ -144,6 +146,8 @@ inline static float XrRcpSqrt(const float x) {
     const float rcp = (x >= SMALLEST_NON_DENORMAL) ? 1.0f / sqrtf(x) : 1.0f;
     return rcp;
 }
+
+inline static float XrVector2f_Length(const XrVector2f* v) { return sqrtf(v->x * v->x + v->y * v->y); }
 
 inline static void XrVector3f_Set(XrVector3f* v, const float value) {
     v->x = value;
