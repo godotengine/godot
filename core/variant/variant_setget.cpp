@@ -318,7 +318,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 #ifdef DEBUG_ENABLED
 
 #define NULL_TEST(m_key) \
-	ERR_FAIL_COND(!m_key)
+	ERR_FAIL_NULL(m_key)
 
 #else
 
@@ -1068,7 +1068,7 @@ struct VariantKeyedSetGetObject {
 	}
 	static uint32_t ptr_has(const void *base, const void *key) {
 		const Object *obj = PtrToArg<Object *>::convert(base);
-		ERR_FAIL_COND_V(!obj, false);
+		ERR_FAIL_NULL_V(obj, false);
 		bool valid;
 		obj->getvar(PtrToArg<Variant>::convert(key), &valid);
 		return valid;
@@ -1245,7 +1245,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	} else if (type == OBJECT) {
 		Object *obj = get_validated_object();
-		ERR_FAIL_COND(!obj);
+		ERR_FAIL_NULL(obj);
 		obj->get_property_list(p_list);
 
 	} else {

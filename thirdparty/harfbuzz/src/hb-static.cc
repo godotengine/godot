@@ -31,6 +31,7 @@
 
 #include "hb-aat-layout-common.hh"
 #include "hb-aat-layout-feat-table.hh"
+#include "hb-cff-interp-common.hh"
 #include "hb-ot-layout-common.hh"
 #include "hb-ot-cmap-table.hh"
 #include "OT/Color/COLR/COLR.hh"
@@ -58,6 +59,8 @@ DEFINE_NULL_NAMESPACE_BYTES (AAT, Lookup) = {0xFF,0xFF};
 /* hb_map_t */
 
 const hb_codepoint_t minus_1 = -1;
+static const unsigned char static_endchar_str[] = {OpCode_endchar};
+const unsigned char *endchar_str = static_endchar_str;
 
 /* hb_face_t */
 

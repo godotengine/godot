@@ -33,6 +33,8 @@
 
 #ifdef GLES3_ENABLED
 
+#include "platform_gl.h"
+
 #include "config.h"
 #include "core/os/os.h"
 #include "core/templates/rid_owner.h"
@@ -40,14 +42,6 @@
 #include "servers/rendering/storage/texture_storage.h"
 
 #include "drivers/gles3/shaders/canvas_sdf.glsl.gen.h"
-
-// This must come first to avoid windows.h mess
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
 
 namespace GLES3 {
 
@@ -117,10 +111,6 @@ namespace GLES3 {
 #define _GL_TEXTURE_EXTERNAL_OES 0x8D65
 
 #define _EXT_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
-
-#ifndef GLES_OVER_GL
-#define glClearDepth glClearDepthf
-#endif //!GLES_OVER_GL
 
 enum DefaultGLTexture {
 	DEFAULT_GL_TEXTURE_WHITE,
@@ -252,10 +242,10 @@ struct Texture {
 		}
 		Config *config = Config::get_singleton();
 		state_filter = p_filter;
-		GLenum pmin = GL_NEAREST; // param min
-		GLenum pmag = GL_NEAREST; // param mag
-		GLint max_lod = 1000;
-		bool use_anisotropy = false;
+		GLenum pmin = GL_NEAREST;
+		GLenum pmag = GL_NEAREST;
+		GLint max_lod = 0;
+		GLfloat anisotropy = 1.0f;
 		switch (state_filter) {
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
 				pmin = GL_NEAREST;
@@ -268,7 +258,7 @@ struct Texture {
 				max_lod = 0;
 			} break;
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
-				use_anisotropy = true;
+				anisotropy = config->anisotropic_level;
 			};
 				[[fallthrough]];
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
@@ -278,12 +268,14 @@ struct Texture {
 					max_lod = 0;
 				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_NEAREST_MIPMAP_NEAREST;
+					max_lod = 1000;
 				} else {
 					pmin = GL_NEAREST_MIPMAP_LINEAR;
+					max_lod = 1000;
 				}
 			} break;
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
-				use_anisotropy = true;
+				anisotropy = config->anisotropic_level;
 			};
 				[[fallthrough]];
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
@@ -293,19 +285,22 @@ struct Texture {
 					max_lod = 0;
 				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_LINEAR_MIPMAP_NEAREST;
+					max_lod = 1000;
 				} else {
 					pmin = GL_LINEAR_MIPMAP_LINEAR;
+					max_lod = 1000;
 				}
 			} break;
 			default: {
+				return;
 			} break;
 		}
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, pmin);
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, pmag);
 		glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, max_lod);
-		if (config->support_anisotropic_filter && use_anisotropy) {
-			glTexParameterf(target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, config->anisotropic_level);
+		if (config->support_anisotropic_filter) {
+			glTexParameterf(target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
 		}
 	}
 	void gl_set_repeat(RS::CanvasItemTextureRepeat p_repeat) {
@@ -313,8 +308,11 @@ struct Texture {
 			return;
 		}
 		state_repeat = p_repeat;
-		GLenum prep = GL_CLAMP_TO_EDGE; // parameter repeat
+		GLenum prep = GL_CLAMP_TO_EDGE;
 		switch (state_repeat) {
+			case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+				prep = GL_CLAMP_TO_EDGE;
+			} break;
 			case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
 				prep = GL_REPEAT;
 			} break;
@@ -322,6 +320,7 @@ struct Texture {
 				prep = GL_MIRRORED_REPEAT;
 			} break;
 			default: {
+				return;
 			} break;
 		}
 		glTexParameteri(target, GL_TEXTURE_WRAP_T, prep);
@@ -330,8 +329,8 @@ struct Texture {
 	}
 
 private:
-	RS::CanvasItemTextureFilter state_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	RS::CanvasItemTextureRepeat state_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	RS::CanvasItemTextureFilter state_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_MAX;
+	RS::CanvasItemTextureRepeat state_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX;
 };
 
 struct RenderTarget {
@@ -496,8 +495,6 @@ public:
 
 	virtual bool can_create_resources_async() const override;
 
-	RID texture_create();
-
 	virtual RID texture_allocate() override;
 	virtual void texture_free(RID p_rid) override;
 
@@ -538,20 +535,17 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
 	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
-	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer = 0);
-	//Ref<Image> texture_get_data(RID p_texture, int p_layer = 0) const;
-	void texture_set_sampler(RID p_texture, RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat);
-	Image::Format texture_get_format(RID p_texture) const;
+	virtual Image::Format texture_get_format(RID p_texture) const override;
 	uint32_t texture_get_texid(RID p_texture) const;
 	uint32_t texture_get_width(RID p_texture) const;
 	uint32_t texture_get_height(RID p_texture) const;
 	uint32_t texture_get_depth(RID p_texture) const;
 	void texture_bind(RID p_texture, uint32_t p_texture_no);
-	RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const;
 
 	/* TEXTURE ATLAS API */
 
@@ -625,6 +619,8 @@ public:
 	void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
+	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override {}
+	virtual bool render_target_is_using_hdr(RID p_render_target) const override { return false; }
 
 	// new
 	void render_target_set_as_unused(RID p_render_target) override {
@@ -673,7 +669,7 @@ public:
 };
 
 inline String TextureStorage::get_framebuffer_error(GLenum p_status) {
-#if defined(DEBUG_ENABLED) && defined(GLES_OVER_GL)
+#if defined(DEBUG_ENABLED) && defined(GL_API_ENABLED)
 	if (p_status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
 		return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
 	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {

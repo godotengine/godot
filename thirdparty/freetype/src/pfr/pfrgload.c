@@ -560,8 +560,7 @@
                            FT_Byte*   limit )
   {
     FT_Error        error  = FT_Err_Ok;
-    FT_GlyphLoader  loader = glyph->loader;
-    FT_Memory       memory = loader->memory;
+    FT_Memory       memory = glyph->loader->memory;
     PFR_SubGlyph    subglyph;
     FT_UInt         flags, i, count, org_count;
     FT_Int          x_pos, y_pos;

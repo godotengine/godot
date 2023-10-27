@@ -34,6 +34,7 @@
 #include "core/math/geometry_3d.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/plugins/gizmos/gizmo_3d_helper.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/resources/box_shape_3d.h"
@@ -47,12 +48,16 @@
 #include "scene/resources/world_boundary_shape_3d.h"
 
 CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
+	helper.instantiate();
 	const Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
 	create_material("shape_material", gizmo_color);
 	const float gizmo_value = gizmo_color.get_v();
 	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
 	create_material("shape_material_disabled", gizmo_color_disabled);
 	create_handle_material("handles");
+}
+
+CollisionShape3DGizmoPlugin::~CollisionShape3DGizmoPlugin() {
 }
 
 bool CollisionShape3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -80,7 +85,7 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 	}
 
 	if (Object::cast_to<BoxShape3D>(*s)) {
-		return "Size";
+		return helper->box_get_handle_name(p_id);
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
@@ -134,6 +139,10 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p
 	return Variant();
 }
 
+void CollisionShape3DGizmoPlugin::begin_handle_action(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) {
+	helper->initialize_handle_action(get_handle_value(p_gizmo, p_id, p_secondary), p_gizmo->get_node_3d()->get_global_transform());
+}
+
 void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
 	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_node_3d());
 
@@ -142,13 +151,8 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 		return;
 	}
 
-	Transform3D gt = cs->get_global_transform();
-	Transform3D gi = gt.affine_inverse();
-
-	Vector3 ray_from = p_camera->project_ray_origin(p_point);
-	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
-
-	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
+	Vector3 sg[2];
+	helper->get_segment(p_camera, p_point, sg);
 
 	if (Object::cast_to<SphereShape3D>(*s)) {
 		Ref<SphereShape3D> ss = s;
@@ -183,23 +187,12 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 	}
 
 	if (Object::cast_to<BoxShape3D>(*s)) {
-		Vector3 axis;
-		axis[p_id] = 1.0;
 		Ref<BoxShape3D> bs = s;
-		Vector3 ra, rb;
-		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
-		float d = ra[p_id] * 2;
-		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
-		}
-
-		if (d < 0.001) {
-			d = 0.001;
-		}
-
-		Vector3 he = bs->get_size();
-		he[p_id] = d;
-		bs->set_size(he);
+		Vector3 size = bs->get_size();
+		Vector3 position;
+		helper->box_set_handle(sg, p_id, size, position);
+		bs->set_size(size);
+		cs->set_global_position(position);
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
@@ -271,17 +264,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 	}
 
 	if (Object::cast_to<BoxShape3D>(*s)) {
-		Ref<BoxShape3D> ss = s;
-		if (p_cancel) {
-			ss->set_size(p_restore);
-			return;
-		}
-
-		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Change Box Shape Size"));
-		ur->add_do_method(ss.ptr(), "set_size", ss->get_size());
-		ur->add_undo_method(ss.ptr(), "set_size", p_restore);
-		ur->commit_action();
+		helper->box_commit_handle(TTR("Change Box Shape Size"), p_cancel, cs, s.ptr());
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
@@ -423,13 +406,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			lines.push_back(b);
 		}
 
-		Vector<Vector3> handles;
-
-		for (int i = 0; i < 3; i++) {
-			Vector3 ax;
-			ax[i] = bs->get_size()[i] / 2;
-			handles.push_back(ax);
-		}
+		const Vector<Vector3> handles = helper->box_get_handles(bs->get_size());
 
 		p_gizmo->add_lines(lines, material);
 		p_gizmo->add_collision_segments(lines);

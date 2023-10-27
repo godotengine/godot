@@ -187,8 +187,7 @@ public:
 
 //////////////////////////////////////////
 
-// Custom Tree needed to use a RichTextLabel as tooltip control
-// when display signal documentation.
+// Custom `Tree` needed to use `EditorHelpTooltip` to display signal documentation.
 class ConnectionsDockTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };
@@ -196,17 +195,27 @@ class ConnectionsDockTree : public Tree {
 class ConnectionsDock : public VBoxContainer {
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
-	//Right-click Pop-up Menu Options.
-	enum SignalMenuOption {
-		CONNECT,
-		DISCONNECT_ALL,
-		COPY_NAME,
+	enum TreeItemType {
+		TREE_ITEM_TYPE_ROOT,
+		TREE_ITEM_TYPE_CLASS,
+		TREE_ITEM_TYPE_SIGNAL,
+		TREE_ITEM_TYPE_CONNECTION,
 	};
 
+	// Right-click context menu options.
+	enum ClassMenuOption {
+		CLASS_MENU_OPEN_DOCS,
+	};
+	enum SignalMenuOption {
+		SIGNAL_MENU_CONNECT,
+		SIGNAL_MENU_DISCONNECT_ALL,
+		SIGNAL_MENU_COPY_NAME,
+		SIGNAL_MENU_OPEN_DOCS,
+	};
 	enum SlotMenuOption {
-		EDIT,
-		GO_TO_SCRIPT,
-		DISCONNECT,
+		SLOT_MENU_EDIT,
+		SLOT_MENU_GO_TO_METHOD,
+		SLOT_MENU_DISCONNECT,
 	};
 
 	Node *selected_node = nullptr;
@@ -215,11 +224,11 @@ class ConnectionsDock : public VBoxContainer {
 	ConfirmationDialog *disconnect_all_dialog = nullptr;
 	ConnectDialog *connect_dialog = nullptr;
 	Button *connect_button = nullptr;
+	PopupMenu *class_menu = nullptr;
+	String class_menu_doc_class_name;
 	PopupMenu *signal_menu = nullptr;
 	PopupMenu *slot_menu = nullptr;
 	LineEdit *search_box = nullptr;
-
-	HashMap<StringName, HashMap<StringName, String>> descr_cache;
 
 	void _filter_changed(const String &p_text);
 
@@ -230,18 +239,20 @@ class ConnectionsDock : public VBoxContainer {
 
 	void _tree_item_selected();
 	void _tree_item_activated();
-	bool _is_item_signal(TreeItem &p_item);
+	TreeItemType _get_item_type(const TreeItem &p_item) const;
 	bool _is_connection_inherited(Connection &p_connection);
 
 	void _open_connection_dialog(TreeItem &p_item);
 	void _open_edit_connection_dialog(TreeItem &p_item);
-	void _go_to_script(TreeItem &p_item);
+	void _go_to_method(TreeItem &p_item);
 
+	void _handle_class_menu_option(int p_option);
+	void _class_menu_about_to_popup();
 	void _handle_signal_menu_option(int p_option);
 	void _signal_menu_about_to_popup();
 	void _handle_slot_menu_option(int p_option);
 	void _slot_menu_about_to_popup();
-	void _rmb_pressed(Vector2 p_position, MouseButton p_button);
+	void _rmb_pressed(const Ref<InputEvent> &p_event);
 	void _close();
 
 protected:

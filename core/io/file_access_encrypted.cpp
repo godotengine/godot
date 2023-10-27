@@ -285,13 +285,46 @@ uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
 	return 0;
 }
 
-uint32_t FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
+BitField<FileAccess::UnixPermissionFlags> FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
+	if (file.is_valid()) {
+		return file->_get_unix_permissions(p_file);
+	}
 	return 0;
 }
 
-Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
-	ERR_PRINT("Setting UNIX permissions on encrypted files is not implemented yet.");
-	return ERR_UNAVAILABLE;
+Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
+	if (file.is_valid()) {
+		return file->_set_unix_permissions(p_file, p_permissions);
+	}
+	return FAILED;
+}
+
+bool FileAccessEncrypted::_get_hidden_attribute(const String &p_file) {
+	if (file.is_valid()) {
+		return file->_get_hidden_attribute(p_file);
+	}
+	return false;
+}
+
+Error FileAccessEncrypted::_set_hidden_attribute(const String &p_file, bool p_hidden) {
+	if (file.is_valid()) {
+		return file->_set_hidden_attribute(p_file, p_hidden);
+	}
+	return FAILED;
+}
+
+bool FileAccessEncrypted::_get_read_only_attribute(const String &p_file) {
+	if (file.is_valid()) {
+		return file->_get_read_only_attribute(p_file);
+	}
+	return false;
+}
+
+Error FileAccessEncrypted::_set_read_only_attribute(const String &p_file, bool p_ro) {
+	if (file.is_valid()) {
+		return file->_set_read_only_attribute(p_file, p_ro);
+	}
+	return FAILED;
 }
 
 void FileAccessEncrypted::close() {

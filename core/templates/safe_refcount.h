@@ -182,7 +182,7 @@ class SafeRefCount {
 	SafeNumeric<uint32_t> count;
 
 #ifdef DEV_ENABLED
-	_ALWAYS_INLINE_ void _check_unref_sanity() {
+	_ALWAYS_INLINE_ void _check_unref_safety() {
 		// This won't catch every misuse, but it's better than nothing.
 		CRASH_COND_MSG(count.get() == 0,
 				"Trying to unreference a SafeRefCount which is already zero is wrong and a symptom of it being misused.\n"
@@ -202,14 +202,14 @@ public:
 
 	_ALWAYS_INLINE_ bool unref() { // true if must be disposed of
 #ifdef DEV_ENABLED
-		_check_unref_sanity();
+		_check_unref_safety();
 #endif
 		return count.decrement() == 0;
 	}
 
 	_ALWAYS_INLINE_ uint32_t unrefval() { // 0 if must be disposed of
 #ifdef DEV_ENABLED
-		_check_unref_sanity();
+		_check_unref_safety();
 #endif
 		return count.decrement();
 	}

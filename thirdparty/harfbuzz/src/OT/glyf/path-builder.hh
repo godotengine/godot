@@ -21,11 +21,11 @@ struct path_builder_t
     operator bool () const { return has_data; }
 
     bool has_data = false;
-    float x = 0.;
-    float y = 0.;
+    float x;
+    float y;
 
-    optional_point_t lerp (optional_point_t p, float t)
-    { return optional_point_t (x + t * (p.x - x), y + t * (p.y - y)); }
+    optional_point_t mid (optional_point_t p)
+    { return optional_point_t ((x + p.x) * 0.5f, (y + p.y) * 0.5f); }
   } first_oncurve, first_offcurve, first_offcurve2, last_offcurve, last_offcurve2;
 
   path_builder_t (hb_font_t *font_, hb_draw_session_t &draw_session_) :
@@ -37,6 +37,7 @@ struct path_builder_t
      * https://stackoverflow.com/a/20772557
      *
      * Cubic support added. */
+  HB_ALWAYS_INLINE
   void consume_point (const contour_point_t &point)
   {
     bool is_on_curve = point.flag & glyf_impl::SimpleGlyph::FLAG_ON_CURVE;
@@ -46,7 +47,7 @@ struct path_builder_t
     bool is_cubic = !is_on_curve && (point.flag & glyf_impl::SimpleGlyph::FLAG_CUBIC);
 #endif
     optional_point_t p (font->em_fscalef_x (point.x), font->em_fscalef_y (point.y));
-    if (!first_oncurve)
+    if (unlikely (!first_oncurve))
     {
       if (is_on_curve)
       {
@@ -62,7 +63,7 @@ struct path_builder_t
 	}
 	else if (first_offcurve)
 	{
-	  optional_point_t mid = first_offcurve.lerp (p, .5f);
+	  optional_point_t mid = first_offcurve.mid (p);
 	  first_oncurve = mid;
 	  last_offcurve = p;
 	  draw_session->move_to (mid.x, mid.y);
@@ -98,7 +99,7 @@ struct path_builder_t
 	  }
 	  else
 	  {
-	    optional_point_t mid = last_offcurve.lerp (p, .5f);
+	    optional_point_t mid = last_offcurve.mid (p);
 
 	    if (is_cubic)
 	    {
@@ -123,13 +124,13 @@ struct path_builder_t
       }
     }
 
-    if (point.is_end_point)
+    if (unlikely (point.is_end_point))
     {
       if (first_offcurve && last_offcurve)
       {
-	optional_point_t mid = last_offcurve.lerp (first_offcurve2 ?
-						   first_offcurve2 :
-						   first_offcurve, .5f);
+	optional_point_t mid = last_offcurve.mid (first_offcurve2 ?
+						  first_offcurve2 :
+						  first_offcurve);
 	if (last_offcurve2)
 	  draw_session->cubic_to (last_offcurve2.x, last_offcurve2.y,
 				  last_offcurve.x, last_offcurve.y,

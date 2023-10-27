@@ -38,6 +38,8 @@
 class TextEditor : public ScriptEditorBase {
 	GDCLASS(TextEditor, ScriptEditorBase);
 
+	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
+
 private:
 	CodeTextEditor *code_editor = nullptr;
 
@@ -69,6 +71,7 @@ private:
 		EDIT_UNINDENT,
 		EDIT_DELETE_LINE,
 		EDIT_DUPLICATE_SELECTION,
+		EDIT_DUPLICATE_LINES,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
 		EDIT_CAPITALIZE,

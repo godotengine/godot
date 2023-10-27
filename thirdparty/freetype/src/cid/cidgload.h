@@ -42,6 +42,14 @@ FT_BEGIN_HEADER
                        FT_Int32      load_flags );
 
 
+  FT_LOCAL( FT_Error )
+  cid_compute_fd_and_offsets( CID_Face   face,
+                              FT_UInt    glyph_index,
+                              FT_ULong*  fd_select_p,
+                              FT_ULong*  off1_p,
+                              FT_ULong*  off2_p );
+
+
 FT_END_HEADER
 
 #endif /* CIDGLOAD_H_ */

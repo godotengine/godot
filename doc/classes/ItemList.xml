@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ItemList" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ItemList" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A vertical list of selectable items with one or multiple columns.
 	</brief_description>
@@ -55,6 +55,12 @@
 			<return type="void" />
 			<description>
 				Ensure current selection is visible, adjusting the scroll position as necessary.
+			</description>
+		</method>
+		<method name="force_update_list_size">
+			<return type="void" />
+			<description>
+				Forces an update to the list size based on its items. This happens automatically whenever size of the items, or other relevant settings like [member auto_height], change. The method can be used to trigger the update ahead of next drawing pass.
 			</description>
 		</method>
 		<method name="get_item_at_position" qualifiers="const">

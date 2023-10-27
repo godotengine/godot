@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImmediateMesh" inherits="Mesh" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ImmediateMesh" inherits="Mesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Mesh optimized for creating geometry manually.
 	</brief_description>
@@ -15,6 +15,14 @@
 		mesh.surface_add_vertex(Vector3.ZERO)
 		mesh.surface_end()
 		[/gdscript]
+		[csharp]
+		var mesh = new ImmediateMesh();
+		mesh.SurfaceBegin(Mesh.PrimitiveType.Triangles);
+		mesh.SurfaceAddVertex(Vector3.Left);
+		mesh.SurfaceAddVertex(Vector3.Forward);
+		mesh.SurfaceAddVertex(Vector3.Zero);
+		mesh.SurfaceEnd();
+		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Generating complex geometries with [ImmediateMesh] is highly inefficient. Instead, it is designed to generate simple geometry that changes often.
 	</description>

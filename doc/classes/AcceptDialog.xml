@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AcceptDialog" inherits="Window" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AcceptDialog" inherits="Window" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A base dialog used for user notification.
 	</brief_description>
@@ -72,6 +72,7 @@
 			The text displayed by the dialog.
 		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" overrides="Window" default="true" />
+		<member name="keep_title_visible" type="bool" setter="set_keep_title_visible" getter="get_keep_title_visible" overrides="Window" default="true" />
 		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" default="&quot;OK&quot;">
 			The text displayed by the OK button (see [method get_ok_button]).
 		</member>

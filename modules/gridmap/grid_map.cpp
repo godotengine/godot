@@ -30,6 +30,7 @@
 
 #include "grid_map.h"
 
+#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/object/message_queue.h"
 #include "scene/3d/light_3d.h"
@@ -258,14 +259,15 @@ RID GridMap::get_navigation_map() const {
 
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	if (!mesh_library.is_null()) {
-		mesh_library->unregister_owner(this);
+		mesh_library->disconnect_changed(callable_mp(this, &GridMap::_recreate_octant_data));
 	}
 	mesh_library = p_mesh_library;
 	if (!mesh_library.is_null()) {
-		mesh_library->register_owner(this);
+		mesh_library->connect_changed(callable_mp(this, &GridMap::_recreate_octant_data));
 	}
 
 	_recreate_octant_data();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {
@@ -905,13 +907,14 @@ void GridMap::_notification(int p_what) {
 			}
 		} break;
 
-#ifdef DEBUG_ENABLED
 		case NOTIFICATION_ENTER_TREE: {
+#ifdef DEBUG_ENABLED
 			if (bake_navigation && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 				_update_navigation_debug_edge_connections();
 			}
-		} break;
 #endif // DEBUG_ENABLED
+			_update_visibility();
+		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D new_xform = get_global_transform();
@@ -1005,9 +1008,10 @@ void GridMap::clear() {
 	clear_baked_meshes();
 }
 
+#ifndef DISABLE_DEPRECATED
 void GridMap::resource_changed(const Ref<Resource> &p_res) {
-	_recreate_octant_data();
 }
+#endif
 
 void GridMap::_update_octants_callback() {
 	if (!awaiting_update) {
@@ -1079,7 +1083,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &GridMap::map_to_local);
 
 	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_center_x", "enable"), &GridMap::set_center_x);
 	ClassDB::bind_method(D_METHOD("get_center_x"), &GridMap::get_center_x);
@@ -1119,6 +1125,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
 }
 
 void GridMap::set_cell_scale(float p_scale) {
@@ -1336,10 +1343,6 @@ void GridMap::_navigation_map_changed(RID p_map) {
 #endif // DEBUG_ENABLED
 
 GridMap::~GridMap() {
-	if (!mesh_library.is_null()) {
-		mesh_library->unregister_owner(this);
-	}
-
 	clear();
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->disconnect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));

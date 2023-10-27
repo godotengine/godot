@@ -30,13 +30,12 @@
 
 #import "joypad_ios.h"
 
-#include "core/config/project_settings.h"
-#include "drivers/coreaudio/audio_driver_coreaudio.h"
-#include "main/main.h"
-
 #import "godot_view.h"
+#import "os_ios.h"
 
-#include "os_ios.h"
+#include "core/config/project_settings.h"
+#import "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "main/main.h"
 
 JoypadIOS::JoypadIOS() {
 	observer = [[JoypadIOSObserver alloc] init];

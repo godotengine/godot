@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorResourceTooltipPlugin" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorResourceTooltipPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A plugin that advanced tooltip for its handled resource type.
 	</brief_description>
@@ -24,7 +24,7 @@
 			<param index="2" name="base" type="Control" />
 			<description>
 				Create and return a tooltip that will be displayed when the user hovers a resource under the given [param path] in filesystem dock.
-				The [param metadata] dictionary is provided by preview generator (see method EditorResourcePreviewGenerator._generate]).
+				The [param metadata] dictionary is provided by preview generator (see [method EditorResourcePreviewGenerator._generate]).
 				[param base] is the base default tooltip, which is a [VBoxContainer] with a file name, type and size labels. If another plugin handled the same file type, [param base] will be output from the previous plugin. For best result, make sure the base tooltip is part of the returned [Control].
 				[b]Note:[/b] It's unadvised to use [method ResourceLoader.load], especially with heavy resources like models or textures, because it will make the editor unresponsive when creating the tooltip. You can use [method request_thumbnail] if you want to display a preview in your tooltip.
 				[b]Note:[/b] If you decide to discard the [param base], make sure to call [method Node.queue_free], because it's not freed automatically.

@@ -31,12 +31,12 @@
 #ifndef CSG_SHAPE_H
 #define CSG_SHAPE_H
 
-#define CSGJS_HEADER_ONLY
-
 #include "csg.h"
+
 #include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
+
 #include "thirdparty/misc/mikktspace.h"
 
 class CSGShape3D : public GeometryInstance3D {

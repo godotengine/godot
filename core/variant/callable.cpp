@@ -47,6 +47,13 @@ void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_ret
 		r_call_error.expected = 0;
 		r_return_value = Variant();
 	} else if (is_custom()) {
+		if (!is_valid()) {
+			r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			r_call_error.argument = 0;
+			r_call_error.expected = 0;
+			r_return_value = Variant();
+			return;
+		}
 		custom->call(p_arguments, p_argcount, r_return_value, r_call_error);
 	} else {
 		Object *obj = ObjectDB::get_instance(ObjectID(object));
@@ -465,20 +472,20 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 
 Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
 	Object *obj = get_object();
-	ERR_FAIL_COND_V(!obj, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(obj, ERR_UNCONFIGURED);
 
 	return obj->connect(name, p_callable, p_flags);
 }
 
 void Signal::disconnect(const Callable &p_callable) {
 	Object *obj = get_object();
-	ERR_FAIL_COND(!obj);
+	ERR_FAIL_NULL(obj);
 	obj->disconnect(name, p_callable);
 }
 
 bool Signal::is_connected(const Callable &p_callable) const {
 	Object *obj = get_object();
-	ERR_FAIL_COND_V(!obj, false);
+	ERR_FAIL_NULL_V(obj, false);
 
 	return obj->is_connected(name, p_callable);
 }
@@ -500,7 +507,7 @@ Array Signal::get_connections() const {
 }
 
 Signal::Signal(const Object *p_object, const StringName &p_name) {
-	ERR_FAIL_COND_MSG(p_object == nullptr, "Object argument to Signal constructor must be non-null");
+	ERR_FAIL_NULL_MSG(p_object, "Object argument to Signal constructor must be non-null.");
 
 	object = p_object->get_instance_id();
 	name = p_name;

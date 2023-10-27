@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Color" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Color" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A color represented in RGBA format.
 	</brief_description>
@@ -259,7 +259,7 @@
 				Color.html_is_valid("55AAFF")    # Returns true
 				Color.html_is_valid("#F2C")      # Returns true
 
-				Color.html_is_valid("#AABBC)     # Returns false
+				Color.html_is_valid("#AABBC")    # Returns false
 				Color.html_is_valid("#55aaFF5")  # Returns false
 				[/gdscript]
 				[csharp]

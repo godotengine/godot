@@ -35,7 +35,6 @@ import org.godotengine.godot.vulkan.VkRenderer;
 import org.godotengine.godot.vulkan.VkSurfaceView;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -52,14 +51,16 @@ import androidx.annotation.Keep;
 import java.io.InputStream;
 
 public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
+	private final GodotHost host;
 	private final Godot godot;
 	private final GodotInputHandler mInputHandler;
 	private final VkRenderer mRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotVulkanRenderView(Context context, Godot godot) {
-		super(context);
+	public GodotVulkanRenderView(GodotHost host, Godot godot) {
+		super(host.getActivity());
 
+		this.host = host;
 		this.godot = godot;
 		mInputHandler = new GodotInputHandler(this);
 		mRenderer = new VkRenderer();
@@ -67,6 +68,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
 		}
 		setFocusableInTouchMode(true);
+	}
+
+	@Override
+	public void startRenderer() {
 		startRenderer(mRenderer);
 	}
 
@@ -97,7 +102,7 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 
 	@Override
 	public void onBackPressed() {
-		godot.onBackPressed();
+		godot.onBackPressed(host);
 	}
 
 	@Override

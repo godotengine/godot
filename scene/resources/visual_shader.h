@@ -203,11 +203,11 @@ public: // internal methods
 	_FORCE_INLINE_ Ref<VisualShaderNode> get_node_unchecked(Type p_type, int p_id) const {
 		return graph[p_type].nodes[p_id].node;
 	}
-	_FORCE_INLINE_ void get_next_connected_nodes(Type p_type, int p_id, LocalVector<int> &r_list) const {
-		r_list = graph[p_type].nodes[p_id].next_connected_nodes;
+	_FORCE_INLINE_ const LocalVector<int> &get_next_connected_nodes(Type p_type, int p_id) const {
+		return graph[p_type].nodes[p_id].next_connected_nodes;
 	}
-	_FORCE_INLINE_ void get_prev_connected_nodes(Type p_type, int p_id, LocalVector<int> &r_list) const {
-		r_list = graph[p_type].nodes[p_id].prev_connected_nodes;
+	_FORCE_INLINE_ const LocalVector<int> &get_prev_connected_nodes(Type p_type, int p_id) const {
+		return graph[p_type].nodes[p_id].prev_connected_nodes;
 	}
 
 	Vector<int> get_node_list(Type p_type) const;
@@ -257,14 +257,15 @@ class VisualShaderNode : public Resource {
 
 	int port_preview = -1;
 
-	HashMap<int, Variant> default_input_values;
 	HashMap<int, bool> connected_input_ports;
 	HashMap<int, int> connected_output_ports;
 	HashMap<int, bool> expanded_output_ports;
 
 protected:
+	HashMap<int, Variant> default_input_values;
 	bool simple_decl = true;
 	bool disabled = false;
+	bool closable = false;
 
 	static void _bind_methods();
 
@@ -289,6 +290,7 @@ public:
 	virtual int get_input_port_count() const = 0;
 	virtual PortType get_input_port_type(int p_port) const = 0;
 	virtual String get_input_port_name(int p_port) const = 0;
+	virtual int get_default_input_port(PortType p_type) const;
 
 	virtual void set_input_port_default_value(int p_port, const Variant &p_value, const Variant &p_prev_value = Variant());
 	Variant get_input_port_default_value(int p_port) const; // if NIL (default if node does not set anything) is returned, it means no default value is wanted if disconnected, thus no input var must be supplied (empty string will be supplied)
@@ -330,6 +332,9 @@ public:
 	bool is_disabled() const;
 	void set_disabled(bool p_disabled = true);
 
+	bool is_closable() const;
+	void set_closable(bool p_closable = true);
+
 	virtual Vector<StringName> get_editable_properties() const;
 	virtual HashMap<StringName, String> get_editable_properties_names() const;
 
@@ -358,8 +363,19 @@ class VisualShaderNodeCustom : public VisualShaderNode {
 	bool is_initialized = false;
 	List<Port> input_ports;
 	List<Port> output_ports;
+	struct Property {
+		String name;
+	};
+	struct DropDownListProperty : public Property {
+		Vector<String> options;
+	};
+	HashMap<int, int> dp_selected_cache;
+	HashMap<int, int> dp_default_cache;
+	List<DropDownListProperty> dp_props;
+	String properties;
 
 	friend class VisualShaderEditor;
+	friend class VisualShaderGraphPlugin;
 
 protected:
 	virtual String get_caption() const override;
@@ -367,6 +383,7 @@ protected:
 	virtual int get_input_port_count() const override;
 	virtual PortType get_input_port_type(int p_port) const override;
 	virtual String get_input_port_name(int p_port) const override;
+	virtual int get_default_input_port(PortType p_type) const override;
 
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
@@ -384,9 +401,15 @@ protected:
 	GDVIRTUAL0RC(int, _get_input_port_count)
 	GDVIRTUAL1RC(PortType, _get_input_port_type, int)
 	GDVIRTUAL1RC(String, _get_input_port_name, int)
+	GDVIRTUAL1RC(Variant, _get_input_port_default_value, int)
+	GDVIRTUAL1RC(int, _get_default_input_port, PortType)
 	GDVIRTUAL0RC(int, _get_output_port_count)
 	GDVIRTUAL1RC(PortType, _get_output_port_type, int)
 	GDVIRTUAL1RC(String, _get_output_port_name, int)
+	GDVIRTUAL0RC(int, _get_property_count)
+	GDVIRTUAL1RC(String, _get_property_name, int)
+	GDVIRTUAL1RC(int, _get_property_default_index, int)
+	GDVIRTUAL1RC(Vector<String>, _get_property_options, int)
 	GDVIRTUAL4RC(String, _get_code, TypedArray<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
 	GDVIRTUAL2RC(String, _get_func_code, Shader::Mode, VisualShader::Type)
 	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode)
@@ -407,16 +430,24 @@ protected:
 
 public:
 	VisualShaderNodeCustom();
+	void update_property_default_values();
+	void update_input_port_default_values();
 	void update_ports();
+	void update_properties();
 
 	bool _is_initialized();
 	void _set_initialized(bool p_enabled);
+	void _set_properties(const String &p_properties);
+	String _get_properties() const;
 
 	String _get_name() const;
 	String _get_description() const;
 	String _get_category() const;
 	PortType _get_return_icon_type() const;
 	bool _is_highend() const;
+	void _set_option_index(int p_op, int p_index);
+
+	int get_option_index(int p_op) const;
 };
 
 /////

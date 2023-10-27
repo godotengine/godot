@@ -34,6 +34,7 @@
 #include "core/core_constants.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -59,11 +60,11 @@ void EditorAutoloadSettings::_notification(int p_what) {
 					get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
 				}
 			}
-			browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -424,14 +425,14 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 
 			Object *obj = ClassDB::instantiate(ibt);
 
-			ERR_FAIL_COND_V_MSG(!obj, nullptr, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
+			ERR_FAIL_NULL_V_MSG(obj, nullptr, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
 
 			n = Object::cast_to<Node>(obj);
 			n->set_script(scr);
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(!n, nullptr, vformat("Path in Autoload not a node or script: %s.", p_path));
+	ERR_FAIL_NULL_V_MSG(n, nullptr, vformat("Path in Autoload not a node or script: %s.", p_path));
 
 	return n;
 }
@@ -517,10 +518,10 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_editable(2, true);
 		item->set_text(2, TTR("Enable"));
 		item->set_checked(2, info.is_singleton);
-		item->add_button(3, get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), BUTTON_OPEN);
-		item->add_button(3, get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")), BUTTON_MOVE_UP);
-		item->add_button(3, get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")), BUTTON_MOVE_DOWN);
-		item->add_button(3, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_DELETE);
+		item->add_button(3, get_editor_theme_icon(SNAME("Load")), BUTTON_OPEN);
+		item->add_button(3, get_editor_theme_icon(SNAME("MoveUp")), BUTTON_MOVE_UP);
+		item->add_button(3, get_editor_theme_icon(SNAME("MoveDown")), BUTTON_MOVE_DOWN);
+		item->add_button(3, get_editor_theme_icon(SNAME("Remove")), BUTTON_DELETE);
 		item->set_selectable(3, false);
 	}
 
@@ -816,6 +817,8 @@ void EditorAutoloadSettings::_bind_methods() {
 }
 
 EditorAutoloadSettings::EditorAutoloadSettings() {
+	ProjectSettings::get_singleton()->add_hidden_prefix("autoload/");
+
 	// Make first cache
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
@@ -879,7 +882,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	error_message = memnew(Label);
 	error_message->hide();
 	error_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-	error_message->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	error_message->add_theme_color_override("font_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
 	add_child(error_message);
 
 	Label *l = memnew(Label);

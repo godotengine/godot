@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GPUParticlesAttractorBox3D" inherits="GPUParticlesAttractor3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GPUParticlesAttractorBox3D" inherits="GPUParticlesAttractor3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Box-shaped 3D particle attractor affecting [GPUParticles3D] nodes.
+		A box-shaped attractor that influences particles from [GPUParticles3D] nodes.
 	</brief_description>
 	<description>
-		Box-shaped 3D particle attractor affecting [GPUParticles3D] nodes.
+		A box-shaped attractor that influences particles from [GPUParticles3D] nodes. Can be used to attract particles towards its origin, or to push them away from its origin.
+		Particle attractors work in real-time and can be moved, rotated and scaled during gameplay. Unlike collision shapes, non-uniform scaling of attractors is also supported.
 		[b]Note:[/b] Particle attractors only affect [GPUParticles3D], not [CPUParticles3D].
 	</description>
 	<tutorials>

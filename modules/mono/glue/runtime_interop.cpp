@@ -30,6 +30,13 @@
 
 #include "runtime_interop.h"
 
+#include "../csharp_script.h"
+#include "../interop_types.h"
+#include "../managed_callable.h"
+#include "../mono_gd/gd_mono_cache.h"
+#include "../signal_awaiter_utils.h"
+#include "../utils/path_utils.h"
+
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -43,14 +50,6 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
 #endif
-
-#include "../interop_types.h"
-
-#include "modules/mono/csharp_script.h"
-#include "modules/mono/managed_callable.h"
-#include "modules/mono/mono_gd/gd_mono_cache.h"
-#include "modules/mono/signal_awaiter_utils.h"
-#include "modules/mono/utils/path_utils.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,6 +66,10 @@ bool godotsharp_dotnet_module_is_initialized() {
 
 MethodBind *godotsharp_method_bind_get_method(const StringName *p_classname, const StringName *p_methodname) {
 	return ClassDB::get_method(*p_classname, *p_methodname);
+}
+
+MethodBind *godotsharp_method_bind_get_method_with_compatibility(const StringName *p_classname, const StringName *p_methodname, uint64_t p_hash) {
+	return ClassDB::get_method_with_compatibility(*p_classname, *p_methodname, p_hash);
 }
 
 godotsharp_class_creation_func godotsharp_get_class_constructor(const StringName *p_classname) {
@@ -93,10 +96,10 @@ void godotsharp_stack_info_vector_destroy(
 
 void godotsharp_internal_script_debugger_send_error(const String *p_func,
 		const String *p_file, int32_t p_line, const String *p_err, const String *p_descr,
-		bool p_warning, const Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
+		ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
 	const String file = ProjectSettings::get_singleton()->localize_path(p_file->simplify_path());
 	EngineDebugger::get_script_debugger()->send_error(*p_func, file, p_line, *p_err, *p_descr,
-			true, p_warning ? ERR_HANDLER_WARNING : ERR_HANDLER_ERROR, *p_stack_info_vector);
+			true, p_type, *p_stack_info_vector);
 }
 
 bool godotsharp_internal_script_debugger_is_active() {
@@ -1321,12 +1324,14 @@ void godotsharp_printraw(const godot_string *p_what) {
 	OS::get_singleton()->print("%s", reinterpret_cast<const String *>(p_what)->utf8().get_data());
 }
 
-void godotsharp_pusherror(const godot_string *p_str) {
-	ERR_PRINT(*reinterpret_cast<const String *>(p_str));
-}
-
-void godotsharp_pushwarning(const godot_string *p_str) {
-	WARN_PRINT(*reinterpret_cast<const String *>(p_str));
+void godotsharp_err_print_error(const godot_string *p_function, const godot_string *p_file, int32_t p_line, const godot_string *p_error, const godot_string *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
+	_err_print_error(
+			reinterpret_cast<const String *>(p_function)->utf8().get_data(),
+			reinterpret_cast<const String *>(p_file)->utf8().get_data(),
+			p_line,
+			reinterpret_cast<const String *>(p_error)->utf8().get_data(),
+			reinterpret_cast<const String *>(p_message)->utf8().get_data(),
+			p_editor_notify, p_type);
 }
 
 void godotsharp_var_to_str(const godot_variant *p_var, godot_string *r_ret) {
@@ -1415,6 +1420,7 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dotnet_module_is_initialized,
 	(void *)godotsharp_method_bind_get_method,
+	(void *)godotsharp_method_bind_get_method_with_compatibility,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
 	(void *)godotsharp_stack_info_vector_resize,
@@ -1612,8 +1618,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_str_to_var,
 	(void *)godotsharp_var_to_bytes,
 	(void *)godotsharp_var_to_str,
-	(void *)godotsharp_pusherror,
-	(void *)godotsharp_pushwarning,
+	(void *)godotsharp_err_print_error,
 	(void *)godotsharp_object_to_string,
 };
 

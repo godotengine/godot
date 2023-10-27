@@ -78,6 +78,8 @@ public:
 	virtual bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const override { return false; }
 
 	virtual uint32_t voxel_gi_get_version(RID p_voxel_gi) const override { return 0; }
+
+	virtual void sdfgi_reset() override {}
 };
 
 } // namespace RendererDummy

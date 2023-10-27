@@ -32,6 +32,7 @@
 
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
 void GPUParticlesCollisionSDF3DEditorPlugin::_bake() {
@@ -93,8 +94,8 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_notification(int p_what) {
 			}
 
 			String text;
-			text += vformat(TTR("Subdivisions: %s"), vformat(String::utf8("%d × %d × %d"), size.x, size.y, size.z)) + "\n";
-			text += vformat(TTR("Cell size: %s"), vformat(String::utf8("%.3f × %.3f × %.3f"), extents.x / size.x, extents.y / size.y, extents.z / size.z)) + "\n";
+			text += vformat(TTR("Subdivisions: %s"), vformat(U"%d × %d × %d", size.x, size.y, size.z)) + "\n";
+			text += vformat(TTR("Cell size: %s"), vformat(U"%.3f × %.3f × %.3f", extents.x / size.x, extents.y / size.y, extents.z / size.z)) + "\n";
 			text += vformat(TTR("Video RAM size: %s MB (%s)"), String::num(size_mb, 2), size_quality);
 
 			// Only update the tooltip when needed to avoid constant redrawing.
@@ -126,12 +127,12 @@ void GPUParticlesCollisionSDF3DEditorPlugin::bake_func_begin(int p_steps) {
 }
 
 void GPUParticlesCollisionSDF3DEditorPlugin::bake_func_step(int p_step, const String &p_description) {
-	ERR_FAIL_COND(tmp_progress == nullptr);
+	ERR_FAIL_NULL(tmp_progress);
 	tmp_progress->step(p_description, p_step, false);
 }
 
 void GPUParticlesCollisionSDF3DEditorPlugin::bake_func_end() {
-	ERR_FAIL_COND(tmp_progress == nullptr);
+	ERR_FAIL_NULL(tmp_progress);
 	memdelete(tmp_progress);
 	tmp_progress = nullptr;
 }
@@ -182,8 +183,8 @@ GPUParticlesCollisionSDF3DEditorPlugin::GPUParticlesCollisionSDF3DEditorPlugin()
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
 	bake = memnew(Button);
-	bake->set_flat(true);
-	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_theme_type_variation("FlatButton");
+	bake->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake SDF"));
 	bake->connect("pressed", callable_mp(this, &GPUParticlesCollisionSDF3DEditorPlugin::_bake));
 	bake_hb->add_child(bake);

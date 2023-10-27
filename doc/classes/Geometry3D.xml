@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Geometry3D" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Geometry3D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides methods for some common 3D geometric operations.
 	</brief_description>
@@ -45,6 +45,13 @@
 				Clips the polygon defined by the points in [param points] against the [param plane] and returns the points of the clipped polygon.
 			</description>
 		</method>
+		<method name="compute_convex_mesh_points">
+			<return type="PackedVector3Array" />
+			<param index="0" name="planes" type="Plane[]" />
+			<description>
+				Calculates and returns all the vertex points of a convex shape defined by an array of [param planes].
+			</description>
+		</method>
 		<method name="get_closest_point_to_segment">
 			<return type="Vector3" />
 			<param index="0" name="point" type="Vector3" />
@@ -71,6 +78,17 @@
 			<param index="3" name="q2" type="Vector3" />
 			<description>
 				Given the two 3D segments ([param p1], [param p2]) and ([param q1], [param q2]), finds those two points on the two segments that are closest to each other. Returns a [PackedVector3Array] that contains this point on ([param p1], [param p2]) as well the accompanying point on ([param q1], [param q2]).
+			</description>
+		</method>
+		<method name="get_triangle_barycentric_coords">
+			<return type="Vector3" />
+			<param index="0" name="point" type="Vector3" />
+			<param index="1" name="a" type="Vector3" />
+			<param index="2" name="b" type="Vector3" />
+			<param index="3" name="c" type="Vector3" />
+			<description>
+				Returns a [Vector3] containing weights based on how close a 3D position ([param point]) is to a triangle's different vertices ([param a], [param b] and [param c]). This is useful for interpolating between the data of different vertices in a triangle. One example use case is using this to smoothly rotate over a mesh instead of relying solely on face normals.
+				[url=https://en.wikipedia.org/wiki/Barycentric_coordinate_system]Here is a more detailed explanation of barycentric coordinates.[/url]
 			</description>
 		</method>
 		<method name="ray_intersects_triangle">

@@ -33,6 +33,3 @@ Linux20d6a713,Bensussen Deutsch & Associates Inc.(BDA) NSW Wired controller,a:b1
 Linux054c05c4,Sony Computer Entertainment Wireless Controller,a:b0,b:b1,y:b2,x:b3,start:b9,back:b8,leftstick:b11,rightstick:b12,leftshoulder:b4,rightshoulder:b5,dpup:-a7,dpleft:-a6,dpdown:+a7,dpright:+a6,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,platform:Web
 Linux18d19400,18d1-9400-Google LLC Stadia Controller rev. A,a:b0,b:b1,y:b3,x:b2,start:b7,back:b6,leftstick:b9,rightstick:b10,leftshoulder:b4,rightshoulder:b5,dpup:-a7,dpleft:-a6,dpdown:+a7,dpright:+a6,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a5,righttrigger:a4,platform:Web
 Linux054c0268,054c-0268-Sony PLAYSTATION(R)3 Controller,a:b0,b:b1,y:b2,x:b3,start:b9,guide:b10,back:b8,leftstick:b11,rightstick:b12,leftshoulder:b4,rightshoulder:b5,dpup:b13,dpleft:b15,dpdown:b14,dpright:b16,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,platform:Web
-
-# UWP
-__UWP_GAMEPAD__,Xbox Controller,a:b2,b:b3,x:b4,y:b5,start:b0,back:b1,leftstick:b12,rightstick:b13,leftshoulder:b10,rightshoulder:b11,dpup:b6,dpdown:b7,dpleft:b8,dpright:b9,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,platform:UWP,

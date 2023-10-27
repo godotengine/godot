@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextEffect" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RichTextEffect" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A custom effect for a [RichTextLabel].
 	</brief_description>
@@ -7,11 +7,11 @@
 		A custom effect for a [RichTextLabel].
 		[b]Note:[/b] For a [RichTextEffect] to be usable, a BBCode tag must be defined as a member variable called [code]bbcode[/code] in the script.
 		[codeblocks]
-		[gdscript]
+		[gdscript skip-lint]
 		# The RichTextEffect will be usable like this: `[example]Some text[/example]`
 		var bbcode = "example"
 		[/gdscript]
-		[csharp]
+		[csharp skip-lint]
 		// The RichTextEffect will be usable like this: `[example]Some text[/example]`
 		string bbcode = "example";
 		[/csharp]

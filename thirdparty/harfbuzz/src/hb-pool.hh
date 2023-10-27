@@ -58,7 +58,7 @@ struct hb_pool_t
     if (unlikely (!next))
     {
       if (unlikely (!chunks.alloc (chunks.length + 1))) return nullptr;
-      chunk_t *chunk = (chunk_t *) hb_calloc (1, sizeof (chunk_t));
+      chunk_t *chunk = (chunk_t *) hb_malloc (sizeof (chunk_t));
       if (unlikely (!chunk)) return nullptr;
       chunks.push (chunk);
       next = chunk->thread ();

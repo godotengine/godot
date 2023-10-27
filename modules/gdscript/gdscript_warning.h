@@ -64,6 +64,8 @@ public:
 		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
 		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
 		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name.
+		UNTYPED_DECLARATION, // Variable/parameter/function has no static type, explicitly specified or implicitly inferred.
+		INFERRED_DECLARATION, // Variable/constant/parameter has an implicitly inferred static type.
 		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes).
 		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes).
 		UNSAFE_CAST, // Cast used in an unknown type.
@@ -83,6 +85,8 @@ public:
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced.
 		RENAMED_IN_GODOT_4_HINT, // A variable or function that could not be found has been renamed in Godot 4.
 		CONFUSABLE_IDENTIFIER, // The identifier contains misleading characters that can be confused. E.g. "usеr" (has Cyrillic "е" instead of Latin "e").
+		CONFUSABLE_LOCAL_DECLARATION, // The parent block declares an identifier with the same name below.
+		CONFUSABLE_LOCAL_USAGE, // The identifier will be shadowed below in the block.
 		INFERENCE_ON_VARIANT, // The declaration uses type inference but the value is typed as Variant.
 		NATIVE_METHOD_OVERRIDE, // The script method overrides a native one, this may not work as intended.
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
@@ -109,6 +113,8 @@ public:
 		WARN, // PROPERTY_USED_AS_FUNCTION
 		WARN, // CONSTANT_USED_AS_FUNCTION
 		WARN, // FUNCTION_USED_AS_PROPERTY
+		IGNORE, // UNTYPED_DECLARATION // Static typing is optional, we don't want to spam warnings.
+		IGNORE, // INFERRED_DECLARATION // Static typing is optional, we don't want to spam warnings.
 		IGNORE, // UNSAFE_PROPERTY_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_METHOD_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_CAST // Too common in untyped scenarios.
@@ -128,6 +134,8 @@ public:
 		WARN, // DEPRECATED_KEYWORD
 		WARN, // RENAMED_IN_GODOT_4_HINT
 		WARN, // CONFUSABLE_IDENTIFIER
+		WARN, // CONFUSABLE_LOCAL_DECLARATION
+		WARN, // CONFUSABLE_LOCAL_USAGE
 		ERROR, // INFERENCE_ON_VARIANT // Most likely done by accident, usually inference is trying for a particular type.
 		ERROR, // NATIVE_METHOD_OVERRIDE // May not work as expected.
 		ERROR, // GET_NODE_DEFAULT_WITHOUT_ONREADY // May not work as expected.

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2022 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -443,8 +443,11 @@ mcontext->offset_limit = limit;
 return 0;
 }
 
-/* This function became obsolete at release 10.30. It is kept as a synonym for
-backwards compatibility. */
+/* These functions became obsolete at release 10.30. The first is kept as a
+synonym for backwards compatibility. The second now does nothing. Exclude both
+from coverage reports. */
+
+/* LCOV_EXCL_START */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_recursion_limit(pcre2_match_context *mcontext, uint32_t limit)
@@ -463,6 +466,9 @@ pcre2_set_recursion_memory_management(pcre2_match_context *mcontext,
 (void)mydata;
 return 0;
 }
+
+/* LCOV_EXCL_STOP */
+
 
 /* ------------ Convert context ------------ */
 

@@ -33,9 +33,9 @@
 
 #include "core/object/class_db.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language_extension.h"
 #include "core/string/ustring.h"
 #include "core/variant/type_info.h"
+#include "core/variant/typed_array.h"
 
 class EditorVCSInterface : public Object {
 	GDCLASS(EditorVCSInterface, Object)

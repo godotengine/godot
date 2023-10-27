@@ -30,9 +30,12 @@
 
 #include "editor_internal_calls.h"
 
-#ifdef UNIX_ENABLED
-#include <unistd.h> // access
-#endif
+#include "../csharp_script.h"
+#include "../godotsharp_dirs.h"
+#include "../interop_types.h"
+#include "../utils/macos_utils.h"
+#include "../utils/path_utils.h"
+#include "code_completion.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
@@ -46,12 +49,9 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "main/main.h"
 
-#include "../csharp_script.h"
-#include "../godotsharp_dirs.h"
-#include "../utils/macos_utils.h"
-#include "code_completion.h"
-
-#include "../interop_types.h"
+#ifdef UNIX_ENABLED
+#include <unistd.h> // access
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,6 +79,10 @@ void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
 #else
 	return nullptr;
 #endif
+}
+
+void godot_icall_GodotSharpDirs_CSharpProjectName(godot_string *r_dest) {
+	memnew_placement(r_dest, String(path::get_csharp_project_name()));
 }
 
 void godot_icall_EditorProgress_Create(const godot_string *p_task, const godot_string *p_label, int32_t p_amount, bool p_can_cancel) {
@@ -164,6 +168,10 @@ void godot_icall_Internal_EditorRunStop() {
 	EditorRunBar::get_singleton()->stop_playing();
 }
 
+void godot_icall_Internal_EditorPlugin_AddControlToEditorRunBar(Control *p_control) {
+	EditorRunBar::get_singleton()->get_buttons_container()->add_child(p_control);
+}
+
 void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 	if (ed) {
@@ -195,10 +203,23 @@ void godot_icall_Globals_EditorDef(const godot_string *p_setting, const godot_va
 	memnew_placement(r_result, Variant(result));
 }
 
-void godot_icall_Globals_EditorShortcut(const godot_string *p_setting, godot_variant *r_result) {
+void godot_icall_Globals_EditorDefShortcut(const godot_string *p_setting, const godot_string *p_name, Key p_keycode, bool p_physical, godot_variant *r_result) {
+	String setting = *reinterpret_cast<const String *>(p_setting);
+	String name = *reinterpret_cast<const String *>(p_name);
+	Ref<Shortcut> result = ED_SHORTCUT(setting, name, p_keycode, p_physical);
+	memnew_placement(r_result, Variant(result));
+}
+
+void godot_icall_Globals_EditorGetShortcut(const godot_string *p_setting, Ref<Shortcut> *r_result) {
 	String setting = *reinterpret_cast<const String *>(p_setting);
 	Ref<Shortcut> result = ED_GET_SHORTCUT(setting);
 	memnew_placement(r_result, Variant(result));
+}
+
+void godot_icall_Globals_EditorShortcutOverride(const godot_string *p_setting, const godot_string *p_feature, Key p_keycode, bool p_physical) {
+	String setting = *reinterpret_cast<const String *>(p_setting);
+	String feature = *reinterpret_cast<const String *>(p_feature);
+	ED_SHORTCUT_OVERRIDE(setting, feature, p_keycode, p_physical);
 }
 
 void godot_icall_Globals_TTR(const godot_string *p_text, godot_string *r_dest) {
@@ -231,6 +252,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godot_icall_GodotSharpDirs_MonoUserDir,
 	(void *)godot_icall_GodotSharpDirs_BuildLogsDirs,
 	(void *)godot_icall_GodotSharpDirs_DataEditorToolsDir,
+	(void *)godot_icall_GodotSharpDirs_CSharpProjectName,
 	(void *)godot_icall_EditorProgress_Create,
 	(void *)godot_icall_EditorProgress_Dispose,
 	(void *)godot_icall_EditorProgress_Step,
@@ -246,12 +268,15 @@ static const void *unmanaged_callbacks[]{
 	(void *)godot_icall_Internal_EditorNodeShowScriptScreen,
 	(void *)godot_icall_Internal_EditorRunPlay,
 	(void *)godot_icall_Internal_EditorRunStop,
+	(void *)godot_icall_Internal_EditorPlugin_AddControlToEditorRunBar,
 	(void *)godot_icall_Internal_ScriptEditorDebugger_ReloadScripts,
 	(void *)godot_icall_Internal_CodeCompletionRequest,
 	(void *)godot_icall_Globals_EditorScale,
 	(void *)godot_icall_Globals_GlobalDef,
 	(void *)godot_icall_Globals_EditorDef,
-	(void *)godot_icall_Globals_EditorShortcut,
+	(void *)godot_icall_Globals_EditorDefShortcut,
+	(void *)godot_icall_Globals_EditorGetShortcut,
+	(void *)godot_icall_Globals_EditorShortcutOverride,
 	(void *)godot_icall_Globals_TTR,
 	(void *)godot_icall_Utils_OS_GetPlatformName,
 	(void *)godot_icall_Utils_OS_UnixFileHasExecutableAccess,

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -19,7 +19,7 @@
 #include "loader_logger.hpp"
 #include "loader_platform.hpp"
 #include "runtime_interface.hpp"
-#include "xr_generated_dispatch_table.h"
+#include "xr_generated_dispatch_table_core.h"
 #include "xr_generated_loader.hpp"
 
 #include <openxr/openxr.h>

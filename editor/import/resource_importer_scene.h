@@ -71,6 +71,7 @@ public:
 		IMPORT_GENERATE_TANGENT_ARRAYS = 8,
 		IMPORT_USE_NAMED_SKIN_BINDS = 16,
 		IMPORT_DISCARD_MESHES_AND_MATERIALS = 32, //used for optimizing animation import
+		IMPORT_FORCE_DISABLE_MESH_COMPRESSION = 64,
 	};
 
 	virtual uint32_t get_import_flags() const;
@@ -296,7 +297,8 @@ public:
 
 	virtual bool can_import_threaded() const override { return false; }
 
-	ResourceImporterScene(bool p_animation_import = false);
+	ResourceImporterScene(bool p_animation_import = false, bool p_singleton = false);
+	~ResourceImporterScene();
 
 	template <class M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);

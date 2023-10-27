@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsServer2DExtension" inherits="PhysicsServer2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsServer2DExtension" inherits="PhysicsServer2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides virtual methods that can be overridden to create custom [PhysicsServer2D] implementations.
 	</brief_description>
@@ -780,10 +780,25 @@
 			<description>
 			</description>
 		</method>
+		<method name="_pin_joint_get_flag" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
+			<description>
+			</description>
+		</method>
 		<method name="_pin_joint_get_param" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
+			<description>
+			</description>
+		</method>
+		<method name="_pin_joint_set_flag" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
+			<param index="2" name="enabled" type="bool" />
 			<description>
 			</description>
 		</method>

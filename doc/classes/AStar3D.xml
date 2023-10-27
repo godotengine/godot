@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar3D" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AStar3D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An implementation of A* for finding the shortest path between two vertices on a connected graph in 3D space.
 	</brief_description>
 	<description>
 		A* (A star) is a computer algorithm used in pathfinding and graph traversal, the process of plotting short paths among vertices (points), passing through a given set of edges (segments). It enjoys widespread use due to its performance and accuracy. Godot's A* implementation uses points in 3D space and Euclidean distances by default.
 		You must add points manually with [method add_point] and create segments manually with [method connect_points]. Once done, you can test if there is a path between two points with the [method are_points_connected] function, get a path containing indices by [method get_id_path], or one containing actual coordinates with [method get_point_path].
-		It is also possible to use non-Euclidean distances. To do so, create a class that extends [code]AStar3D[/code] and override methods [method _compute_cost] and [method _estimate_cost]. Both take two indices and return a length, as is shown in the following example.
+		It is also possible to use non-Euclidean distances. To do so, create a class that extends [AStar3D] and override methods [method _compute_cost] and [method _estimate_cost]. Both take two indices and return a length, as is shown in the following example.
 		[codeblocks]
 		[gdscript]
 		class MyAStar:
@@ -33,7 +33,7 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		[method _estimate_cost] should return a lower bound of the distance, i.e. [code]_estimate_cost(u, v) &lt;= _compute_cost(u, v)[/code]. This serves as a hint to the algorithm because the custom [code]_compute_cost[/code] might be computation-heavy. If this is not the case, make [method _estimate_cost] return the same value as [method _compute_cost] to provide the algorithm with the most accurate information.
+		[method _estimate_cost] should return a lower bound of the distance, i.e. [code]_estimate_cost(u, v) &lt;= _compute_cost(u, v)[/code]. This serves as a hint to the algorithm because the custom [method _compute_cost] might be computation-heavy. If this is not the case, make [method _estimate_cost] return the same value as [method _compute_cost] to provide the algorithm with the most accurate information.
 		If the default [method _estimate_cost] and [method _compute_cost] methods are used, or if the supplied [method _estimate_cost] method returns a lower bound of the cost, then the paths returned by A* will be the lowest-cost paths. Here, the cost of a path equals the sum of the [method _compute_cost] results of all segments in the path multiplied by the [code]weight_scale[/code]s of the endpoints of the respective segments. If the default methods are used and the [code]weight_scale[/code]s of all points are set to [code]1.0[/code], then this equals the sum of Euclidean distances of all segments in the path.
 	</description>
 	<tutorials>
@@ -45,7 +45,7 @@
 			<param index="1" name="to_id" type="int" />
 			<description>
 				Called when computing the cost between two connected points.
-				Note that this function is hidden in the default [code]AStar3D[/code] class.
+				Note that this function is hidden in the default [AStar3D] class.
 			</description>
 		</method>
 		<method name="_estimate_cost" qualifiers="virtual const">
@@ -54,7 +54,7 @@
 			<param index="1" name="to_id" type="int" />
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
-				Note that this function is hidden in the default [code]AStar3D[/code] class.
+				Note that this function is hidden in the default [AStar3D] class.
 			</description>
 		</method>
 		<method name="add_point">
@@ -204,7 +204,7 @@
 		<method name="get_point_capacity" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the capacity of the structure backing the points, useful in conjunction with [code]reserve_space[/code].
+				Returns the capacity of the structure backing the points, useful in conjunction with [method reserve_space].
 			</description>
 		</method>
 		<method name="get_point_connections">

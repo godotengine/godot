@@ -32,6 +32,7 @@
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/check_box.h"
 
 AudioStreamImportSettings *AudioStreamImportSettings::singleton = nullptr;
@@ -43,20 +44,26 @@ void AudioStreamImportSettings::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &AudioStreamImportSettings::_reimport));
 		} break;
 
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
-			_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-			_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
-			_preview->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
-			color_rect->set_color(get_theme_color(SNAME("dark_color_1"), SNAME("Editor")));
-			_current_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			_current_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-			_duration_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			_duration_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+		case NOTIFICATION_THEME_CHANGED: {
+			_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
 
-			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
-			zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
-			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
+			_preview->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
+			color_rect->set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
+
+			_current_label->begin_bulk_theme_override();
+			_current_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
+			_current_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+			_current_label->end_bulk_theme_override();
+
+			_duration_label->begin_bulk_theme_override();
+			_duration_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
+			_duration_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+			_duration_label->end_bulk_theme_override();
+
+			zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
 
 			_indicator->queue_redraw();
 			_preview->queue_redraw();
@@ -84,11 +91,11 @@ void AudioStreamImportSettings::_draw_preview() {
 	float preview_offset = zoom_bar->get_value();
 	float preview_len = zoom_bar->get_page();
 
-	Ref<Font> beat_font = get_theme_font(SNAME("main"), SNAME("EditorFonts"));
-	int main_size = get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts"));
+	Ref<Font> beat_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+	int main_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
 	Vector<Vector2> points;
 	points.resize(width * 2);
-	Color color_active = get_theme_color(SNAME("contrast_color_2"), SNAME("Editor"));
+	Color color_active = get_theme_color(SNAME("contrast_color_2"), EditorStringName(Editor));
 	Color color_inactive = color_active;
 	color_inactive.a *= 0.5;
 	Vector<Color> colors;
@@ -226,25 +233,25 @@ void AudioStreamImportSettings::_play() {
 		// '_pausing' variable indicates that we want to pause the audio player, not stop it. See '_on_finished()'.
 		_pausing = true;
 		_player->stop();
-		_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+		_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	} else {
 		_player->play(_current);
-		_play_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+		_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
 		set_process(true);
 	}
 }
 
 void AudioStreamImportSettings::_stop() {
 	_player->stop();
-	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	_current = 0;
 	_indicator->queue_redraw();
 	set_process(false);
 }
 
 void AudioStreamImportSettings::_on_finished() {
-	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	if (!_pausing) {
 		_current = 0;
 		_indicator->queue_redraw();
@@ -261,8 +268,8 @@ void AudioStreamImportSettings::_draw_indicator() {
 
 	Rect2 rect = _preview->get_rect();
 
-	Ref<Font> beat_font = get_theme_font(SNAME("main"), SNAME("EditorFonts"));
-	int main_size = get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts"));
+	Ref<Font> beat_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+	int main_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
 
 	if (stream->get_bpm() > 0) {
 		int y_ofs = beat_font->get_height(main_size) + 4 * EDSCALE;
@@ -275,11 +282,11 @@ void AudioStreamImportSettings::_draw_indicator() {
 		return;
 	}
 
-	const Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	const Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	_indicator->draw_line(Point2(ofs_x, rect.position.y), Point2(ofs_x, rect.position.y + rect.size.height), color, Math::round(2 * EDSCALE));
 	_indicator->draw_texture(
-			get_theme_icon(SNAME("TimelineIndicator"), SNAME("EditorIcons")),
-			Point2(ofs_x - get_theme_icon(SNAME("TimelineIndicator"), SNAME("EditorIcons"))->get_width() * 0.5, rect.position.y),
+			get_editor_theme_icon(SNAME("TimelineIndicator")),
+			Point2(ofs_x - get_editor_theme_icon(SNAME("TimelineIndicator"))->get_width() * 0.5, rect.position.y),
 			color);
 
 	if (stream->get_bpm() > 0 && _hovering_beat != -1) {
@@ -316,8 +323,8 @@ void AudioStreamImportSettings::_on_input_indicator(Ref<InputEvent> p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (stream->get_bpm() > 0) {
-			int main_size = get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts"));
-			Ref<Font> beat_font = get_theme_font(SNAME("main"), SNAME("EditorFonts"));
+			int main_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
+			Ref<Font> beat_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
 			int y_ofs = beat_font->get_height(main_size) + 4 * EDSCALE;
 			if ((!_dragging && mb->get_position().y < y_ofs) || _beat_len_dragging) {
 				if (mb->is_pressed()) {
@@ -345,8 +352,8 @@ void AudioStreamImportSettings::_on_input_indicator(Ref<InputEvent> p_event) {
 			_set_beat_len_to(mm->get_position().x);
 		}
 		if (stream->get_bpm() > 0) {
-			int main_size = get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts"));
-			Ref<Font> beat_font = get_theme_font(SNAME("main"), SNAME("EditorFonts"));
+			int main_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
+			Ref<Font> beat_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
 			int y_ofs = beat_font->get_height(main_size) + 4 * EDSCALE;
 			if (mm->get_position().y < y_ofs) {
 				int new_hovering_beat = _get_beat_at_pos(mm->get_position().x);
@@ -395,7 +402,7 @@ void AudioStreamImportSettings::_seek_to(real_t p_x) {
 
 void AudioStreamImportSettings::edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream) {
 	if (!stream.is_null()) {
-		stream->disconnect("changed", callable_mp(this, &AudioStreamImportSettings::_audio_changed));
+		stream->disconnect_changed(callable_mp(this, &AudioStreamImportSettings::_audio_changed));
 	}
 
 	importer = p_importer;
@@ -408,7 +415,7 @@ void AudioStreamImportSettings::edit(const String &p_path, const String &p_impor
 	_duration_label->set_text(text);
 
 	if (!stream.is_null()) {
-		stream->connect("changed", callable_mp(this, &AudioStreamImportSettings::_audio_changed));
+		stream->connect_changed(callable_mp(this, &AudioStreamImportSettings::_audio_changed));
 		_preview->queue_redraw();
 		_indicator->queue_redraw();
 		color_rect->queue_redraw();

@@ -45,6 +45,7 @@ class RayCast3D : public Node3D {
 	int against_shape = 0;
 	Vector3 collision_point;
 	Vector3 collision_normal;
+	int collision_face_index = -1;
 
 	Vector3 target_position = Vector3(0, -1, 0);
 	HashSet<RID> exclude;
@@ -69,6 +70,7 @@ class RayCast3D : public Node3D {
 	bool collide_with_bodies = true;
 
 	bool hit_from_inside = false;
+	bool hit_back_faces = true;
 
 protected:
 	void _notification(int p_what);
@@ -84,6 +86,9 @@ public:
 
 	void set_hit_from_inside(bool p_enabled);
 	bool is_hit_from_inside_enabled() const;
+
+	void set_hit_back_faces(bool p_enabled);
+	bool is_hit_back_faces_enabled() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -118,6 +123,7 @@ public:
 	int get_collider_shape() const;
 	Vector3 get_collision_point() const;
 	Vector3 get_collision_normal() const;
+	int get_collision_face_index() const;
 
 	void add_exception_rid(const RID &p_rid);
 	void add_exception(const CollisionObject3D *p_node);

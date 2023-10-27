@@ -104,6 +104,68 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) cosine of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's cosine in hyperbolic space if
+        /// <paramref name="s"/> is larger or equal to 1.
+        /// </summary>
+        /// <param name="s">The input hyperbolic cosine value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic cosine value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Acosh(float s)
+        {
+            return MathF.Acosh(s);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) cosine of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's cosine in hyperbolic space if
+        /// <paramref name="s"/> is larger or equal to 1.
+        /// </summary>
+        /// <param name="s">The input hyperbolic cosine value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic cosine value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Acosh(double s)
+        {
+            return Math.Acosh(s);
+        }
+
+        /// <summary>
+        /// Returns the difference between the two angles,
+        /// in range of -<see cref="Pi"/>, <see cref="Pi"/>.
+        /// When <paramref name="from"/> and <paramref name="to"/> are opposite,
+        /// returns -<see cref="Pi"/> if <paramref name="from"/> is smaller than <paramref name="to"/>,
+        /// or <see cref="Pi"/> otherwise.
+        /// </summary>
+        /// <param name="from">The start angle.</param>
+        /// <param name="to">The destination angle.</param>
+        /// <returns>The difference between the two angles.</returns>
+        public static float AngleDifference(float from, float to)
+        {
+            float difference = (to - from) % MathF.Tau;
+            return ((2.0f * difference) % MathF.Tau) - difference;
+        }
+
+        /// <summary>
+        /// Returns the difference between the two angles,
+        /// in range of -<see cref="Pi"/>, <see cref="Pi"/>.
+        /// When <paramref name="from"/> and <paramref name="to"/> are opposite,
+        /// returns -<see cref="Pi"/> if <paramref name="from"/> is smaller than <paramref name="to"/>,
+        /// or <see cref="Pi"/> otherwise.
+        /// </summary>
+        /// <param name="from">The start angle.</param>
+        /// <param name="to">The destination angle.</param>
+        /// <returns>The difference between the two angles.</returns>
+        public static double AngleDifference(double from, double to)
+        {
+            double difference = (to - from) % Math.Tau;
+            return ((2.0 * difference) % Math.Tau) - difference;
+        }
+
+        /// <summary>
         /// Returns the arc sine of <paramref name="s"/> in radians.
         /// Use to get the angle of sine <paramref name="s"/>.
         /// </summary>
@@ -129,6 +191,36 @@ namespace Godot
         public static double Asin(double s)
         {
             return Math.Asin(s);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's sine in hyperbolic space if
+        /// <paramref name="s"/> is larger or equal to 1.
+        /// </summary>
+        /// <param name="s">The input hyperbolic sine value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic sine value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Asinh(float s)
+        {
+            return MathF.Asinh(s);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's sine in hyperbolic space if
+        /// <paramref name="s"/> is larger or equal to 1.
+        /// </summary>
+        /// <param name="s">The input hyperbolic sine value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic sine value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Asinh(double s)
+        {
+            return Math.Asinh(s);
         }
 
         /// <summary>
@@ -199,6 +291,36 @@ namespace Godot
         public static double Atan2(double y, double x)
         {
             return Math.Atan2(y, x);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) tangent of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's tangent in hyperbolic space if
+        /// <paramref name="s"/> is between -1 and 1 (non-inclusive).
+        /// </summary>
+        /// <param name="s">The input hyperbolic tangent value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic tangent value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Atanh(float s)
+        {
+            return MathF.Atanh(s);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) tangent of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's tangent in hyperbolic space if
+        /// <paramref name="s"/> is between -1 and 1 (non-inclusive).
+        /// </summary>
+        /// <param name="s">The input hyperbolic tangent value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic tangent value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Atanh(double s)
+        {
+            return Math.Atanh(s);
         }
 
         /// <summary>
@@ -1003,9 +1125,7 @@ namespace Godot
         /// <returns>The resulting angle of the interpolation.</returns>
         public static float LerpAngle(float from, float to, float weight)
         {
-            float difference = (to - from) % MathF.Tau;
-            float distance = ((2 * difference) % MathF.Tau) - difference;
-            return from + (distance * weight);
+            return from + AngleDifference(from, to) * weight;
         }
 
         /// <summary>
@@ -1020,9 +1140,7 @@ namespace Godot
         /// <returns>The resulting angle of the interpolation.</returns>
         public static double LerpAngle(double from, double to, double weight)
         {
-            double difference = (to - from) % Math.Tau;
-            double distance = ((2 * difference) % Math.Tau) - difference;
-            return from + (distance * weight);
+            return from + AngleDifference(from, to) * weight;
         }
 
         /// <summary>
@@ -1336,6 +1454,38 @@ namespace Godot
         public static double Remap(double value, double inFrom, double inTo, double outFrom, double outTo)
         {
             return Lerp(outFrom, outTo, InverseLerp(inFrom, inTo, value));
+        }
+
+        /// <summary>
+        /// Rotates <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
+        /// Similar to <see cref="MoveToward(float, float, float)"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
+        /// If <paramref name="delta"/> is negative, this function will rotate away from <paramref name="to"/>, toward the opposite angle, and will not go past the opposite angle.
+        /// </summary>
+        /// <param name="from">The start angle.</param>
+        /// <param name="to">The angle to move towards.</param>
+        /// <param name="delta">The amount to move by.</param>
+        /// <returns>The angle after moving.</returns>
+        public static float RotateToward(float from, float to, float delta)
+        {
+            float difference = AngleDifference(from, to);
+            float absDifference = Math.Abs(difference);
+            return from + Math.Clamp(delta, absDifference - MathF.PI, absDifference) * (difference >= 0.0f ? 1.0f : -1.0f);
+        }
+
+        /// <summary>
+        /// Rotates <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
+        /// Similar to <see cref="MoveToward(double, double, double)"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
+        /// If <paramref name="delta"/> is negative, this function will rotate away from <paramref name="to"/>, toward the opposite angle, and will not go past the opposite angle.
+        /// </summary>
+        /// <param name="from">The start angle.</param>
+        /// <param name="to">The angle to move towards.</param>
+        /// <param name="delta">The amount to move by.</param>
+        /// <returns>The angle after moving.</returns>
+        public static double RotateToward(double from, double to, double delta)
+        {
+            double difference = AngleDifference(from, to);
+            double absDifference = Math.Abs(difference);
+            return from + Math.Clamp(delta, absDifference - Math.PI, absDifference) * (difference >= 0.0 ? 1.0 : -1.0);
         }
 
         /// <summary>

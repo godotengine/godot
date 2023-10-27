@@ -201,7 +201,7 @@ bool InputEventWithModifiers::is_alt_pressed() const {
 }
 
 void InputEventWithModifiers::set_ctrl_pressed(bool p_enabled) {
-	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Control directly!");
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command or Control autoremapping is enabled, cannot set Control directly!");
 	ctrl_pressed = p_enabled;
 	emit_changed();
 }
@@ -211,7 +211,7 @@ bool InputEventWithModifiers::is_ctrl_pressed() const {
 }
 
 void InputEventWithModifiers::set_meta_pressed(bool p_enabled) {
-	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Meta directly!");
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command or Control autoremapping is enabled, cannot set Meta directly!");
 	meta_pressed = p_enabled;
 	emit_changed();
 }
@@ -1109,6 +1109,15 @@ String InputEventJoypadMotion::to_string() {
 	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f", axis, axis_value);
 }
 
+Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value) {
+	Ref<InputEventJoypadMotion> ie;
+	ie.instantiate();
+	ie->set_axis(p_axis);
+	ie->set_axis_value(p_value);
+
+	return ie;
+}
+
 void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis", "axis"), &InputEventJoypadMotion::set_axis);
 	ClassDB::bind_method(D_METHOD("get_axis"), &InputEventJoypadMotion::get_axis);
@@ -1183,7 +1192,7 @@ static const char *_joy_button_descriptions[(size_t)JoyButton::SDL_MAX] = {
 	TTRC("Top Action, Sony Triangle, Xbox Y, Nintendo X"),
 	TTRC("Back, Sony Select, Xbox Back, Nintendo -"),
 	TTRC("Guide, Sony PS, Xbox Home"),
-	TTRC("Start, Nintendo +"),
+	TTRC("Start, Xbox Menu, Nintendo +"),
 	TTRC("Left Stick, Sony L3, Xbox L/LS"),
 	TTRC("Right Stick, Sony R3, Xbox R/RS"),
 	TTRC("Left Shoulder, Sony L1, Xbox LB"),
@@ -1713,7 +1722,27 @@ String InputEventMIDI::as_text() const {
 }
 
 String InputEventMIDI::to_string() {
-	return vformat("InputEventMIDI: channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d, controller_number=%d, controller_value=%d", channel, message, pitch, velocity, pressure, controller_number, controller_value);
+	String ret;
+	switch (message) {
+		case MIDIMessage::NOTE_ON:
+			ret = vformat("Note On: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
+			break;
+		case MIDIMessage::NOTE_OFF:
+			ret = vformat("Note Off: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
+			break;
+		case MIDIMessage::PITCH_BEND:
+			ret = vformat("Pitch Bend: channel=%d, pitch=%d", channel, pitch);
+			break;
+		case MIDIMessage::CHANNEL_PRESSURE:
+			ret = vformat("Channel Pressure: channel=%d, pressure=%d", channel, pressure);
+			break;
+		case MIDIMessage::CONTROL_CHANGE:
+			ret = vformat("Control Change: channel=%d, controller_number=%d, controller_value=%d", channel, controller_number, controller_value);
+			break;
+		default:
+			ret = vformat("channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d, controller_number=%d, controller_value=%d, instrument=%d", channel, message, pitch, velocity, pressure, controller_number, controller_value, instrument);
+	}
+	return "InputEventMIDI: " + ret;
 }
 
 void InputEventMIDI::_bind_methods() {
@@ -1772,4 +1801,8 @@ String InputEventShortcut::to_string() {
 	ERR_FAIL_COND_V(shortcut.is_null(), "None");
 
 	return vformat("InputEventShortcut: shortcut=%s", shortcut->get_as_text());
+}
+
+InputEventShortcut::InputEventShortcut() {
+	pressed = true;
 }

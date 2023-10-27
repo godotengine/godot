@@ -114,8 +114,8 @@ struct Glyph
 
     if (type != EMPTY)
     {
-      plan->bounds_width_map.set (new_gid, xMax - xMin);
-      plan->bounds_height_map.set (new_gid, yMax - yMin);
+      plan->bounds_width_vec[new_gid] = xMax - xMin;
+      plan->bounds_height_vec[new_gid] = yMax - yMin;
     }
 
     unsigned len = all_points.length;
@@ -124,10 +124,12 @@ struct Glyph
     float topSideY = all_points[len - 2].y;
     float bottomSideY = all_points[len - 1].y;
 
+    uint32_t hash = hb_hash (new_gid);
+
     signed hori_aw = roundf (rightSideX - leftSideX);
     if (hori_aw < 0) hori_aw = 0;
     int lsb = roundf (xMin - leftSideX);
-    plan->hmtx_map.set (new_gid, hb_pair ((unsigned) hori_aw, lsb));
+    plan->hmtx_map.set_with_hash (new_gid, hash, hb_pair ((unsigned) hori_aw, lsb));
     //flag value should be computed using non-empty glyphs
     if (type != EMPTY && lsb != xMin)
       plan->head_maxp_info.allXMinIsLsb = false;
@@ -135,7 +137,7 @@ struct Glyph
     signed vert_aw = roundf (topSideY - bottomSideY);
     if (vert_aw < 0) vert_aw = 0;
     int tsb = roundf (topSideY - yMax);
-    plan->vmtx_map.set (new_gid, hb_pair ((unsigned) vert_aw, tsb));
+    plan->vmtx_map.set_with_hash (new_gid, hash, hb_pair ((unsigned) vert_aw, tsb));
   }
 
   bool compile_header_bytes (const hb_subset_plan_t *plan,
@@ -369,9 +371,11 @@ struct Glyph
     }
 
 #ifndef HB_NO_VAR
-    glyf_accelerator.gvar->apply_deltas_to_points (gid,
-						   coords,
-						   points.as_array ().sub_array (old_length));
+    if (coords)
+      glyf_accelerator.gvar->apply_deltas_to_points (gid,
+						     coords,
+						     points.as_array ().sub_array (old_length),
+						     phantom_only && type == SIMPLE);
 #endif
 
     // mainly used by CompositeGlyph calculating new X/Y offset value so no need to extend it
@@ -379,7 +383,7 @@ struct Glyph
     if (points_with_deltas != nullptr && depth == 0 && type == COMPOSITE)
     {
       if (unlikely (!points_with_deltas->resize (points.length))) return false;
-      points_with_deltas->copy_vector (points);
+      *points_with_deltas = points;
     }
 
     switch (type) {
@@ -417,14 +421,17 @@ struct Glyph
 	  for (unsigned int i = 0; i < PHANTOM_COUNT; i++)
 	    phantoms[i] = comp_points[comp_points.length - PHANTOM_COUNT + i];
 
-	float matrix[4];
-	contour_point_t default_trans;
-	item.get_transformation (matrix, default_trans);
+	if (comp_points) // Empty in case of phantom_only
+	{
+	  float matrix[4];
+	  contour_point_t default_trans;
+	  item.get_transformation (matrix, default_trans);
 
-	/* Apply component transformation & translation (with deltas applied) */
-	item.transform_points (comp_points, matrix, points[comp_index]);
+	  /* Apply component transformation & translation (with deltas applied) */
+	  item.transform_points (comp_points, matrix, points[comp_index]);
+	}
 
-	if (item.is_anchored ())
+	if (item.is_anchored () && !phantom_only)
 	{
 	  unsigned int p1, p2;
 	  item.get_anchor_points (p1, p2);
@@ -466,7 +473,10 @@ struct Glyph
 	assert (record_points.length == item_num_points);
 
 	auto component_coords = coords;
-	if (item.is_reset_unspecified_axes ())
+	/* Copying coords is expensive; so we have put an arbitrary
+	 * limit on the max number of coords for now. */
+	if (item.is_reset_unspecified_axes () ||
+	    coords.length > HB_GLYF_VAR_COMPOSITE_MAX_AXES)
 	  component_coords = hb_array<int> ();
 
 	coord_setter_t coord_setter (component_coords);

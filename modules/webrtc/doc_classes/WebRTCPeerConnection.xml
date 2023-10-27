@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebRTCPeerConnection" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="WebRTCPeerConnection" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Interface to a WebRTC peer connection.
 	</brief_description>
 	<description>
 		A WebRTC connection between the local computer and a remote peer. Provides an interface to connect, maintain and monitor the connection.
-		Setting up a WebRTC connection between two peers from now on) may not seem a trivial task, but it can be broken down into 3 main steps:
+		Setting up a WebRTC connection between two peers may not seem a trivial task, but it can be broken down into 3 main steps:
 		- The peer that wants to initiate the connection ([code]A[/code] from now on) creates an offer and send it to the other peer ([code]B[/code] from now on).
 		- [code]B[/code] receives the offer, generate and answer, and sends it to [code]A[/code]).
 		- [code]A[/code] and [code]B[/code] then generates and exchange ICE candidates with each other.

@@ -32,6 +32,7 @@
 #define GLTF_TEXTURE_H
 
 #include "../gltf_defines.h"
+
 #include "core/io/resource.h"
 
 class GLTFTexture : public Resource {

@@ -57,6 +57,11 @@ void EditorPropertyVectorN::_value_changed(double val, const String &p_name) {
 		for (int i = 0; i < component_count - 1; i++) {
 			int slider_idx = (changed_component + 1 + i) % component_count;
 			int ratio_idx = changed_component * (component_count - 1) + i;
+
+			if (ratio[ratio_idx] == 0) {
+				continue;
+			}
+
 			spin_sliders[slider_idx]->set_value_no_signal(spin_sliders[changed_component]->get_value() * ratio[ratio_idx]);
 		}
 	}
@@ -66,7 +71,7 @@ void EditorPropertyVectorN::_value_changed(double val, const String &p_name) {
 	Variant::construct(vector_type, v, nullptr, 0, cerror);
 
 	for (int i = 0; i < component_count; i++) {
-		if (angle_in_radians) {
+		if (radians_as_degrees) {
 			v.set(i, Math::deg_to_rad(spin_sliders[i]->get_value()));
 		} else {
 			v.set(i, spin_sliders[i]->get_value());
@@ -78,34 +83,30 @@ void EditorPropertyVectorN::_value_changed(double val, const String &p_name) {
 void EditorPropertyVectorN::update_property() {
 	Variant val = get_edited_property_value();
 	for (int i = 0; i < component_count; i++) {
-		if (angle_in_radians) {
+		if (radians_as_degrees) {
 			spin_sliders[i]->set_value_no_signal(Math::rad_to_deg((real_t)val.get(i)));
 		} else {
 			spin_sliders[i]->set_value_no_signal(val.get(i));
 		}
 	}
-	_update_ratio();
+
+	if (!is_grabbed) {
+		_update_ratio();
+	}
 }
 
 void EditorPropertyVectorN::_update_ratio() {
 	linked->set_modulate(Color(1, 1, 1, linked->is_pressed() ? 1.0 : 0.5));
 
-	bool non_zero = true;
-	for (int i = 0; i < component_count; i++) {
-		if (spin_sliders[i]->get_value() == 0) {
-			non_zero = false;
-			break;
-		}
-	}
-
 	double *ratio_write = ratio.ptrw();
 	for (int i = 0; i < ratio.size(); i++) {
 		int base_slider_idx = i / (component_count - 1);
 		int secondary_slider_idx = ((base_slider_idx + 1) + i % (component_count - 1)) % component_count;
-		if (non_zero) {
+
+		if (spin_sliders[base_slider_idx]->get_value() != 0) {
 			ratio_write[i] = spin_sliders[secondary_slider_idx]->get_value() / spin_sliders[base_slider_idx]->get_value();
 		} else {
-			ratio_write[i] = 1.0;
+			ratio_write[i] = 0;
 		}
 	}
 }
@@ -118,6 +119,13 @@ void EditorPropertyVectorN::_store_link(bool p_linked) {
 	EditorSettings::get_singleton()->set_project_metadata("linked_properties", key, p_linked);
 }
 
+void EditorPropertyVectorN::_grab_changed(bool p_grab) {
+	if (p_grab) {
+		_update_ratio();
+	}
+	is_grabbed = p_grab;
+}
+
 void EditorPropertyVectorN::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -128,8 +136,8 @@ void EditorPropertyVectorN::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_editor_theme_icon(SNAME("Unlinked")));
+			linked->set_texture_pressed(get_editor_theme_icon(SNAME("Instance")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < component_count; i++) {
@@ -139,8 +147,8 @@ void EditorPropertyVectorN::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_angle_in_radians) {
-	angle_in_radians = p_angle_in_radians;
+void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_radians_as_degrees) {
+	radians_as_degrees = p_radians_as_degrees;
 
 	for (EditorSpinSlider *spin : spin_sliders) {
 		spin->set_min(p_min);
@@ -204,14 +212,16 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 
 	for (int i = 0; i < component_count; i++) {
 		spin[i] = memnew(EditorSpinSlider);
+		bc->add_child(spin[i]);
 		spin[i]->set_flat(true);
 		spin[i]->set_label(String(COMPONENT_LABELS[i]));
-		bc->add_child(spin[i]);
-		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVectorN::_value_changed).bind(String(COMPONENT_LABELS[i])));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
+		spin[i]->connect(SNAME("value_changed"), callable_mp(this, &EditorPropertyVectorN::_value_changed).bind(String(COMPONENT_LABELS[i])));
+		spin[i]->connect(SNAME("grabbed"), callable_mp(this, &EditorPropertyVectorN::_grab_changed).bind(true));
+		spin[i]->connect(SNAME("ungrabbed"), callable_mp(this, &EditorPropertyVectorN::_grab_changed).bind(false));
+		add_focusable(spin[i]);
 	}
 
 	ratio.resize(component_count * (component_count - 1));

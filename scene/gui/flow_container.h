@@ -60,8 +60,6 @@ private:
 protected:
 	bool is_fixed = false;
 
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();

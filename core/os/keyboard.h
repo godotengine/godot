@@ -33,6 +33,8 @@
 
 #include "core/string/ustring.h"
 
+// Keep the values in this enum in sync with `_keycodes` in `keyboard.cpp`,
+// and the bindings in `core_constants.cpp`.
 enum class Key {
 	NONE = 0,
 	// Special key: The strategy here is similar to the one used by toolkits,
@@ -330,7 +332,7 @@ constexpr KeyModifierMask operator|(KeyModifierMask a, KeyModifierMask b) {
 
 String keycode_get_string(Key p_code);
 bool keycode_has_unicode(Key p_keycode);
-Key find_keycode(const String &p_code);
+Key find_keycode(const String &p_codestr);
 const char *find_keycode_name(Key p_keycode);
 int keycode_get_count();
 int keycode_get_value_by_index(int p_index);

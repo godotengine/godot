@@ -34,6 +34,7 @@
 #ifdef VULKAN_ENABLED
 
 #include "drivers/vulkan/vulkan_context.h"
+
 #import <AppKit/AppKit.h>
 
 class VulkanContextMacOS : public VulkanContext {

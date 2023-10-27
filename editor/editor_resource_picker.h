@@ -32,12 +32,15 @@
 #define EDITOR_RESOURCE_PICKER_H
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/texture_rect.h"
 
+class Button;
+class ConfirmationDialog;
 class EditorFileDialog;
 class EditorQuickOpen;
+class PopupMenu;
+class TextureRect;
+class Tree;
+class TreeItem;
 
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
@@ -55,6 +58,9 @@ class EditorResourcePicker : public HBoxContainer {
 	Button *edit_button = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
 	EditorQuickOpen *quick_open = nullptr;
+
+	ConfirmationDialog *duplicate_resources_dialog = nullptr;
+	Tree *duplicate_resources_tree = nullptr;
 
 	Size2i assign_button_min_size = Size2i(1, 1);
 
@@ -99,6 +105,8 @@ class EditorResourcePicker : public HBoxContainer {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _ensure_resource_menu();
+	void _gather_resources_to_duplicate(const Ref<Resource> p_resource, TreeItem *p_item, const String &p_property_name = "") const;
+	void _duplicate_selected_resources();
 
 protected:
 	virtual void _update_resource();
@@ -107,10 +115,7 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	void set_assign_button_min_size(const Size2i &p_size) {
-		assign_button_min_size = p_size;
-		assign_button->set_custom_minimum_size(assign_button_min_size);
-	}
+	void set_assign_button_min_size(const Size2i &p_size);
 
 	GDVIRTUAL1(_set_create_options, Object *)
 	GDVIRTUAL1R(bool, _handle_menu_selected, int)

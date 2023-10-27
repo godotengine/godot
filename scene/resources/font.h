@@ -103,6 +103,11 @@ protected:
 
 	virtual void reset_state() override;
 
+#ifndef DISABLE_DEPRECATED
+	RID _find_variation_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const;
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	virtual void _invalidate_rids();
 
@@ -113,7 +118,7 @@ public:
 	virtual TypedArray<Font> get_fallbacks() const;
 
 	// Output.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const { return RID(); };
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const { return RID(); };
 	virtual RID _get_rid() const { return RID(); };
 	virtual TypedArray<RID> get_rids() const;
 
@@ -185,6 +190,7 @@ class FontFile : public Font {
 	int msdf_pixel_range = 16;
 	int msdf_size = 48;
 	int fixed_size = 0;
+	TextServer::FixedSizeScaleMode fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
 	bool force_autohinter = false;
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
@@ -200,7 +206,7 @@ class FontFile : public Font {
 	mutable Vector<RID> cache;
 
 	_FORCE_INLINE_ void _clear_cache();
-	_FORCE_INLINE_ void _ensure_rid(int p_cache_index) const;
+	_FORCE_INLINE_ void _ensure_rid(int p_cache_index, int p_make_linked_from = -1) const;
 
 	void _convert_packed_8bit(Ref<Image> &p_source, int p_page, int p_sz);
 	void _convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz);
@@ -210,6 +216,7 @@ class FontFile : public Font {
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -251,6 +258,9 @@ public:
 	virtual void set_fixed_size(int p_fixed_size);
 	virtual int get_fixed_size() const;
 
+	virtual void set_fixed_size_scale_mode(TextServer::FixedSizeScaleMode p_fixed_size_scale_mode);
+	virtual TextServer::FixedSizeScaleMode get_fixed_size_scale_mode() const;
+
 	virtual void set_allow_system_fallback(bool p_allow_system_fallback);
 	virtual bool is_allow_system_fallback() const;
 
@@ -267,7 +277,7 @@ public:
 	virtual real_t get_oversampling() const;
 
 	// Cache.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const override;
 	virtual RID _get_rid() const override;
 
 	virtual int get_cache_count() const;
@@ -286,6 +296,9 @@ public:
 
 	virtual void set_transform(int p_cache_index, Transform2D p_transform);
 	virtual Transform2D get_transform(int p_cache_index) const;
+
+	virtual void set_extra_spacing(int p_cache_index, TextServer::SpacingType p_spacing, int64_t p_value);
+	virtual int64_t get_extra_spacing(int p_cache_index, TextServer::SpacingType p_spacing) const;
 
 	virtual void set_face_index(int p_cache_index, int64_t p_index);
 	virtual int64_t get_face_index(int p_cache_index) const;
@@ -419,7 +432,7 @@ public:
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
 
 	// Output.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const override;
 	virtual RID _get_rid() const override;
 
 	FontVariation();
@@ -512,7 +525,7 @@ public:
 
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
 
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const override;
 	virtual RID _get_rid() const override;
 
 	int64_t get_face_count() const override;

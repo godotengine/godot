@@ -35,6 +35,8 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
@@ -157,6 +159,13 @@ void ImportDock::_add_keep_import_option(const String &p_importer_name) {
 }
 
 void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_config) {
+	// Set the importer class to fetch the correct class in the XML class reference.
+	// This allows tooltips to display when hovering properties.
+	if (params->importer != nullptr) {
+		// Null check to avoid crashing if the "Keep File (No Import)" mode is selected.
+		import_opts->set_object_class(params->importer->get_class_name());
+	}
+
 	List<ResourceImporter::ImportOption> options;
 
 	if (params->importer.is_valid()) {
@@ -316,6 +325,21 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	}
 }
 
+void ImportDock::reimport_resources(const Vector<String> &p_paths) {
+	switch (p_paths.size()) {
+		case 0:
+			ERR_FAIL_MSG("You need to select files to reimport them.");
+		case 1:
+			set_edit_path(p_paths[0]);
+			break;
+		default:
+			set_edit_multiple_paths(p_paths);
+			break;
+	}
+
+	_reimport_attempt();
+}
+
 void ImportDock::_update_preset_menu() {
 	preset->get_popup()->clear();
 
@@ -459,7 +483,6 @@ static bool _find_owners(EditorFileSystemDirectory *efsd, const String &p_path) 
 }
 
 void ImportDock::_reimport_attempt() {
-	bool need_restart = false;
 	bool used_in_resources = false;
 
 	String importer_name;
@@ -476,14 +499,18 @@ void ImportDock::_reimport_attempt() {
 
 		String imported_with = config->get_value("remap", "importer");
 		if (imported_with != importer_name) {
-			need_restart = true;
-			if (_find_owners(EditorFileSystem::get_singleton()->get_filesystem(), params->paths[i])) {
-				used_in_resources = true;
+			Ref<Resource> resource = ResourceLoader::load(params->paths[i]);
+			if (resource.is_valid()) {
+				need_cleanup.push_back(params->paths[i]);
+				if (_find_owners(EditorFileSystem::get_singleton()->get_filesystem(), params->paths[i])) {
+					used_in_resources = true;
+				}
 			}
 		}
 	}
 
-	if (need_restart) {
+	if (!need_cleanup.is_empty() || used_in_resources) {
+		cleanup_warning->set_visible(!need_cleanup.is_empty());
 		label_warning->set_visible(used_in_resources);
 		reimport_confirm->popup_centered();
 		return;
@@ -492,11 +519,45 @@ void ImportDock::_reimport_attempt() {
 	_reimport();
 }
 
-void ImportDock::_reimport_and_restart() {
-	EditorNode::get_singleton()->save_all_scenes();
-	EditorResourcePreview::get_singleton()->stop(); //don't try to re-create previews after import
+void ImportDock::_reimport_and_cleanup() {
+	HashMap<String, Ref<Resource>> old_resources;
+
+	for (const String &path : need_cleanup) {
+		Ref<Resource> res = ResourceLoader::load(path);
+		res->set_path("");
+		res->set_meta(SNAME("_skip_save_"), true);
+		old_resources[path] = res;
+	}
+
+	EditorResourcePreview::get_singleton()->stop(); // Don't try to re-create previews after import.
 	_reimport();
-	EditorNode::get_singleton()->restart_editor();
+
+	if (need_cleanup.is_empty()) {
+		return;
+	}
+
+	// After changing resource type we need to make sure that all old instances are unloaded or replaced.
+	EditorNode::get_singleton()->push_item(nullptr);
+	EditorUndoRedoManager::get_singleton()->clear_history();
+
+	List<Ref<Resource>> external_resources;
+	ResourceCache::get_cached_resources(&external_resources);
+
+	for (const String &path : need_cleanup) {
+		Ref<Resource> old_res = old_resources[path];
+		Ref<Resource> new_res = ResourceLoader::load(path);
+
+		for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
+			Node *edited_scene_root = EditorNode::get_editor_data().get_edited_scene_root(i);
+			if (likely(edited_scene_root)) {
+				_replace_resource_in_object(edited_scene_root, old_res, new_res);
+			}
+		}
+		for (Ref<Resource> res : external_resources) {
+			_replace_resource_in_object(res.ptr(), old_res, new_res);
+		}
+	}
+	need_cleanup.clear();
 }
 
 void ImportDock::_advanced_options() {
@@ -561,6 +622,37 @@ void ImportDock::_reimport() {
 	_set_dirty(false);
 }
 
+void ImportDock::_replace_resource_in_object(Object *p_object, const Ref<Resource> &old_resource, const Ref<Resource> &new_resource) {
+	ERR_FAIL_NULL(p_object);
+
+	List<PropertyInfo> props;
+	p_object->get_property_list(&props);
+
+	for (const PropertyInfo &p : props) {
+		if (p.type != Variant::OBJECT || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+			continue;
+		}
+
+		Ref<Resource> res = p_object->get(p.name);
+		if (res.is_null()) {
+			continue;
+		}
+
+		if (res == old_resource) {
+			p_object->set(p.name, new_resource);
+		} else {
+			_replace_resource_in_object(res.ptr(), old_resource, new_resource);
+		}
+	}
+
+	Node *n = Object::cast_to<Node>(p_object);
+	if (n) {
+		for (int i = 0; i < n->get_child_count(); i++) {
+			_replace_resource_in_object(n->get_child(i), old_resource, new_resource);
+		}
+	}
+}
+
 void ImportDock::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -569,7 +661,7 @@ void ImportDock::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			import_opts->edit(params);
-			label_warning->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			label_warning->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -582,7 +674,7 @@ void ImportDock::_set_dirty(bool p_dirty) {
 	if (p_dirty) {
 		// Add a dirty marker to notify the user that they should reimport the selected resource to see changes.
 		import->set_text(TTR("Reimport") + " (*)");
-		import->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+		import->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		import->set_tooltip_text(TTR("You have pending changes that haven't been applied yet. Click Reimport to apply changes made to the import options.\nSelecting another resource in the FileSystem dock without clicking Reimport first will discard changes made in the Import dock."));
 	} else {
 		// Remove the dirty marker on the Reimport button.
@@ -620,7 +712,7 @@ ImportDock::ImportDock() {
 	content->hide();
 
 	imported = memnew(Label);
-	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("normal"), SNAME("LineEdit")));
 	imported->set_clip_text(true);
 	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -644,6 +736,9 @@ ImportDock::ImportDock() {
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
 	import_opts->connect("property_edited", callable_mp(this, &ImportDock::_property_edited));
 	import_opts->connect("property_toggled", callable_mp(this, &ImportDock::_property_toggled));
+	// Make it possible to display tooltips stored in the XML class reference.
+	// The object name is set when the importer changes in `_update_options()`.
+	import_opts->set_use_doc_hints(true);
 
 	hb = memnew(HBoxContainer);
 	content->add_child(hb);
@@ -673,13 +768,13 @@ ImportDock::ImportDock() {
 	advanced->connect("pressed", callable_mp(this, &ImportDock::_advanced_options));
 
 	reimport_confirm = memnew(ConfirmationDialog);
-	reimport_confirm->set_ok_button_text(TTR("Save Scenes, Re-Import, and Restart"));
 	content->add_child(reimport_confirm);
-	reimport_confirm->connect("confirmed", callable_mp(this, &ImportDock::_reimport_and_restart));
+	reimport_confirm->connect("confirmed", callable_mp(this, &ImportDock::_reimport_and_cleanup));
 
 	VBoxContainer *vbc_confirm = memnew(VBoxContainer());
-	vbc_confirm->add_child(memnew(Label(TTR("Changing the type of an imported file requires editor restart."))));
-	label_warning = memnew(Label(TTR("WARNING: Assets exist that use this resource, they may stop loading properly.")));
+	cleanup_warning = memnew(Label(TTR("The imported resource is currently loaded. All instances will be replaced and undo history will be cleared.")));
+	vbc_confirm->add_child(cleanup_warning);
+	label_warning = memnew(Label(TTR("WARNING: Assets exist that use this resource. They may stop loading properly after changing type.")));
 	vbc_confirm->add_child(label_warning);
 	reimport_confirm->add_child(vbc_confirm);
 

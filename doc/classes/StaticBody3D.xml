@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StaticBody3D" inherits="PhysicsBody3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="StaticBody3D" inherits="PhysicsBody3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 3D physics body that can't be moved by external forces. When moved manually, it doesn't affect other bodies in its path.
 	</brief_description>
 	<description>
-		A static 3D physics body. It can't be moved by external forces or contacts, but can be moved manually by other means such as code, [AnimationPlayer]s (with [member AnimationPlayer.playback_process_mode] set to [code]ANIMATION_PROCESS_PHYSICS[/code]), and [RemoteTransform3D].
+		A static 3D physics body. It can't be moved by external forces or contacts, but can be moved manually by other means such as code, [AnimationMixer]s (with [member AnimationMixer.callback_mode_process] set to [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS]), and [RemoteTransform3D].
 		When [StaticBody3D] is moved, it is teleported to its new position without affecting other physics bodies in its path. If this is not desired, use [AnimatableBody3D] instead.
 		[StaticBody3D] is useful for completely static objects like floors and walls, as well as moving surfaces like conveyor belts and circular revolving platforms (by using [member constant_linear_velocity] and [member constant_angular_velocity]).
 	</description>

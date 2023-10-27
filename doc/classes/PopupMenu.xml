@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PopupMenu" inherits="Popup" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PopupMenu" inherits="Popup" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A modal window used to display a list of options.
 	</brief_description>
@@ -13,6 +13,16 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="activate_item_by_event">
+			<return type="bool" />
+			<param index="0" name="event" type="InputEvent" />
+			<param index="1" name="for_global_only" type="bool" default="false" />
+			<description>
+				Checks the provided [param event] against the [PopupMenu]'s shortcuts and accelerators, and activates the first item with matching events. If [param for_global_only] is [code]true[/code], only shortcuts and accelerators with [code]global[/code] set to [code]true[/code] will be called.
+				Returns [code]true[/code] if an item was successfully activated.
+				[b]Note:[/b] Certain [Control]s, such as [MenuButton], will call this method automatically.
+			</description>
+		</method>
 		<method name="add_check_item">
 			<return type="void" />
 			<param index="0" name="label" type="String" />
@@ -96,9 +106,11 @@
 			<param index="1" name="shortcut" type="Shortcut" />
 			<param index="2" name="id" type="int" default="-1" />
 			<param index="3" name="global" type="bool" default="false" />
+			<param index="4" name="allow_echo" type="bool" default="false" />
 			<description>
 				Adds a new item and assigns the specified [Shortcut] and icon [param texture] to it. Sets the label of the checkbox to the [Shortcut]'s name.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+				If [param allow_echo] is [code]true[/code], the shortcut can be activated with echo events.
 			</description>
 		</method>
 		<method name="add_item">
@@ -161,9 +173,11 @@
 			<param index="0" name="shortcut" type="Shortcut" />
 			<param index="1" name="id" type="int" default="-1" />
 			<param index="2" name="global" type="bool" default="false" />
+			<param index="3" name="allow_echo" type="bool" default="false" />
 			<description>
 				Adds a [Shortcut].
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+				If [param allow_echo] is [code]true[/code], the shortcut can be activated with echo events.
 			</description>
 		</method>
 		<method name="add_submenu_item">
@@ -178,8 +192,9 @@
 		</method>
 		<method name="clear">
 			<return type="void" />
+			<param index="0" name="free_submenus" type="bool" default="false" />
 			<description>
-				Removes all items from the [PopupMenu].
+				Removes all items from the [PopupMenu]. If [param free_submenus] is [code]true[/code], the submenu nodes are automatically freed.
 			</description>
 		</method>
 		<method name="get_focused_item" qualifiers="const">
@@ -675,12 +690,6 @@
 		</theme_item>
 		<theme_item name="labeled_separator_right" data_type="style" type="StyleBox">
 			[StyleBox] for the right side of labeled separator. See [method add_separator].
-		</theme_item>
-		<theme_item name="panel" data_type="style" type="StyleBox">
-			Default [StyleBox] of the [PopupMenu] items.
-		</theme_item>
-		<theme_item name="panel_disabled" data_type="style" type="StyleBox">
-			[StyleBox] used when the [PopupMenu] item is disabled.
 		</theme_item>
 		<theme_item name="separator" data_type="style" type="StyleBox">
 			[StyleBox] used for the separators. See [method add_separator].

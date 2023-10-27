@@ -1,0 +1,351 @@
+This file contains, when concatenated to the expected output since 4.1, the expected output of --validate-extension-api
+when run against the extension_api.json of the 4.0-stable tag (first part of the basename of this file).
+
+## Changes between 4.0-stable and 4.1-stable
+
+GH-78517
+--------
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_check_item/arguments/2': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_check_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_radio_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_radio_check_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_item/arguments/2': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_multistate_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_multistate_item/arguments/5': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_radio_check_item/arguments/2': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_radio_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_damped_spring/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_groove/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_groove/arguments/5': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_pin/arguments/3': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_mesh/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_multimesh/arguments/2': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_polygon/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_triangle_array/arguments/7': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances_cull_aabb/arguments/1': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances_cull_convex/arguments/1': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances_cull_ray/arguments/2': default_value changed value in new API, from "" to "RID()".
+
+The previous argument was a serialization bug, there's no actual API change.
+
+
+GH-78237
+--------
+Validate extension JSON: Error: Field 'classes/WebRTCPeerConnectionExtension/methods/_create_data_channel/return_value': type changed value in new API, from "Object" to "WebRTCDataChannel".
+
+
+GH-77757
+--------
+Validate extension JSON: Error: Field 'classes/Viewport/methods/gui_get_focus_owner': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Hash changed for 'classes/Viewport/methods/gui_get_focus_owner', from 31757941 to A5E188F5. This means that the function has changed and no compatibility function was provided.
+
+This method does not affect the state of Viewport so it should be const.
+
+
+GH-74736
+--------
+Validate extension JSON: Error: Field 'classes/MenuBar/properties/start_index': type changed value in new API, from "bool" to "int".
+
+The previous type was simply wrong and the getter and setter already used int.
+
+
+GH-74671
+--------
+Validate extension JSON: Error: Field 'native_structures/PhysicsServer3DExtensionMotionCollision': format changed value in new API, from "Vector3 position;Vector3 normal;Vector3 collider_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape" to "Vector3 position;Vector3 normal;Vector3 collider_velocity;Vector3 collider_angular_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape".
+Validate extension JSON: Error: Field 'native_structures/PhysicsServer3DExtensionMotionResult': format changed value in new API, from "Vector3 travel;Vector3 remainder;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count" to "Vector3 travel;Vector3 remainder;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count".
+
+The previous type was simply wrong and didn't match the actual C++ definition. Code targeting previous versions should use the updated definition as well.
+
+
+GH-74600
+--------
+Validate extension JSON: Error: Hash changed for 'classes/AnimatedSprite2D/methods/play', from 57037631 to 8D62DD1B. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AnimatedSprite3D/methods/play', from 57037631 to 8D62DD1B. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Animation/methods/compress', from 6B87C27F to D713F035. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AnimationPlayer/methods/play', from 846788DD to B9DCE17F. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AudioStreamPlayer/methods/play', from B54BA998 to 74B7272C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AudioStreamPlayer2D/methods/play', from B54BA998 to 74B7272C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AudioStreamPlayer3D/methods/play', from B54BA998 to 74B7272C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/CanvasItem/methods/draw_set_transform', from F93CB735 to C3BC1B8B. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve2D/methods/sample_baked', from DF8CB3E7 to CE7C60AA. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve2D/methods/sample_baked_with_rotation', from 0F34F230 to C475D415. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve2D/methods/tessellate_even_length', from FC150C61 to 8A44C0E5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve3D/methods/sample_baked', from FCBE3242 to 5078AD06. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve3D/methods/sample_baked_with_rotation', from 9431C26F to 7398459B. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve3D/methods/tessellate_even_length', from E96241BB to 07F10939. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/DisplayServer/methods/tts_speak', from DDE9B9D7 to DEFE6FA5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Font/methods/find_variation', from DCDAC3C2 to 44828B18. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/GridMap/methods/make_baked_meshes', from 43AF36C6 to D72155A9. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Image/methods/bump_map_to_normal_map', from 1412C0CC to CC0E637C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Image/methods/save_jpg_to_buffer', from 1285A12B to 234CCB09. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Image/methods/save_webp_to_buffer', from 49A857C1 to 4865C18E. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/PhysicsBody2D/methods/move_and_collide', from BE9F4C70 to 5B315D1A. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/PhysicsBody3D/methods/move_and_collide', from 44022073 to A86CD3DE. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/PhysicsBody3D/methods/test_move', from 7C246CBB to 288C8CC1. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RandomNumberGenerator/methods/randfn', from 839678C5 to 31E8912C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RenderingServer/methods/canvas_item_set_canvas_group_mode', from 5D7655F8 to 0280768A. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RenderingServer/methods/environment_set_ambient_light', from 159C6D6E to 1D4E1F3F. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RenderingServer/methods/force_draw', from 359658A7 to 40254980. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Window/methods/popup_centered_clamped', from DE3D691D to 9BCAB29D. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Window/methods/popup_centered_ratio', from 71F7FFC1 to 3C7CD915. This means that the function has changed and no compatibility function was provided.
+
+None of these methods were actually changed, the hash changes only affects GDExtensions binary compatibility.
+
+
+GH-76413
+--------
+Validate extension JSON: API was removed: classes/AnimationTrackEditPlugin
+
+This class does nothing and is not useful in any way.
+
+
+GH-69988
+--------
+Validate extension JSON: API was removed: classes/NavigationAgent2D/methods/get_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent2D/methods/set_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent2D/properties/time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/get_agent_height_offset
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/get_ignore_y
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/get_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_agent_height_offset
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_ignore_y
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/agent_height_offset
+Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/ignore_y
+Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/time_horizon
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/is_radius_estimated
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/set_estimate_radius
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/properties/estimate_radius
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/is_radius_estimated
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/set_estimate_radius
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/properties/estimate_radius
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_callback
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_target_velocity
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_time_horizon
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_callback
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_target_velocity
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_time_horizon
+
+Navigation avoidance was reworked entirely.
+Migration: TODO
+
+
+GH-76176
+--------
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_base_control', from 31757941 to A5E188F5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_edited_scene_root', from 6C6B0707 to BC5DCFF4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_editor_main_screen', from 36955D8D to 65B2D3B5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_editor_paths', from FA334A57 to 5F1D5DC4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_editor_settings', from 932B4D2E to F399A3EB. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_file_system_dock', from 217210BD to DF93E7E7. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_resource_filesystem', from 1D5C1A47 to 2E802B7E. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_resource_previewer', from 5E161783 to 383C77ED. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_script_editor', from EB48A7D4 to 056A8923. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_selection', from 0302AF0B to A05A4D13. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_base_control': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_edited_scene_root': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_editor_main_screen': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_editor_paths': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_editor_settings': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_file_system_dock': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_resource_filesystem': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_resource_previewer': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_script_editor': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_selection': is_const changed value in new API, from false to true.
+
+Functions were made `const`. No adjustments should be necessary.
+
+
+GH-76026
+--------
+Validate extension JSON: Error: Hash changed for 'classes/EditorScript/methods/get_editor_interface', from FBC1084A to 75D179CC. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorScript/methods/get_scene', from 6C6B0707 to BC5DCFF4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/EditorScript/methods/get_editor_interface': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorScript/methods/get_scene': is_const changed value in new API, from false to true.
+
+Functions were made `const`. No adjustments should be necessary.
+
+
+GH-76418
+--------
+Validate extension JSON: Error: Hash changed for 'classes/AnimationNodeStateMachinePlayback/methods/get_travel_path', from 43F252E9 to EE2D1D98. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Object/methods/get_meta_list', from 43F252E9 to EE2D1D98. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RDShaderFile/methods/get_version_list', from 43F252E9 to EE2D1D98. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RenderingServer/methods/global_shader_parameter_get_list', from 43F252E9 to EE2D1D98. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/AnimationNodeStateMachinePlayback/methods/get_travel_path/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+Validate extension JSON: Error: Field 'classes/Object/methods/get_meta_list/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+Validate extension JSON: Error: Field 'classes/RDShaderFile/methods/get_version_list/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/global_shader_parameter_get_list/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+
+Validate extension JSON: Error: Field 'classes/Geometry3D/methods/segment_intersects_convex/arguments/2': type changed value in new API, from "Array" to "typedarray::Plane".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': type changed value in new API, from "Array" to "typedarray::RID".
+Validate extension JSON: Error: Field 'classes/SurfaceTool/methods/add_triangle_fan/arguments/5': default_value changed value in new API, from "[]" to "Array[Plane]([])".
+Validate extension JSON: Error: Field 'classes/SurfaceTool/methods/add_triangle_fan/arguments/5': type changed value in new API, from "Array" to "typedarray::Plane".
+
+Return types change, fixed some internal type issues and unnecessarily changed the public type in the process.
+
+
+GH-72749
+--------
+Validate extension JSON: Error: Hash changed for 'classes/Area2D/methods/get_priority', from 67C0E66E to E8C5525A. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Area2D/methods/set_priority', from 1647D661 to 4CAD1009. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Area3D/methods/get_priority', from 67C0E66E to E8C5525A. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Area3D/methods/set_priority', from 1647D661 to 4CAD1009. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/Area2D/methods/get_priority/return_value': meta changed value in new API, from "float" to "int32".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/get_priority/return_value': type changed value in new API, from "float" to "int".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/set_priority/arguments/0': meta changed value in new API, from "float" to "int32".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/set_priority/arguments/0': type changed value in new API, from "float" to "int".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/get_priority/return_value': meta changed value in new API, from "float" to "int32".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/get_priority/return_value': type changed value in new API, from "float" to "int".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/set_priority/arguments/0': meta changed value in new API, from "float" to "int32".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/set_priority/arguments/0': type changed value in new API, from "float" to "int".
+
+Type changed from `float` to `int`. Previously the `float` values were internally converted to `int`s anyways and the type ways inconsistent with the type of the priority property, which already was `int`.
+
+
+GH-72152
+--------
+Validate extension JSON: Error: Hash changed for 'classes/MeshInstance3D/methods/create_multiple_convex_collisions', from BFDD6D64 to 257A91A5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/MeshInstance3D/methods/create_multiple_convex_collisions': arguments
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-75759
+--------
+Validate extension JSON: Error: Hash changed for 'classes/AnimationNode/methods/blend_input', from 5162412C to A178F700. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AnimationNode/methods/blend_node', from 1263CBA5 to 0FB30106. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/AnimationNode/methods/_process/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/AnimationNode/methods/blend_input/arguments': size changed value in new API, from 7 to 8.
+Validate extension JSON: Error: Field 'classes/AnimationNode/methods/blend_node/arguments': size changed value in new API, from 8 to 9.
+
+`_process`: Added a parameter to a virtual method.
+`blend_input`, `blend_node`: Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-75017
+--------
+Validate extension JSON: Error: Hash changed for 'classes/RichTextLabel/methods/push_list', from 8593DF77 to F0951C19. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_list/arguments': size changed value in new API, from 3 to 4.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-76794
+--------
+Validate extension JSON: Error: Hash changed for 'classes/Tree/methods/edit_selected', from 859196D4 to 9AB67ACD. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Tree/methods/edit_selected': arguments
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-75777
+--------
+Validate extension JSON: Error: Hash changed for 'classes/SyntaxHighlighter/methods/get_text_edit', from 8248B40D to 70D54D11. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/SyntaxHighlighter/methods/get_text_edit': is_const changed value in new API, from false to true.
+
+Function was made `const`. No adjustments should be necessary.
+
+
+GH-75250 & GH-76401
+-------------------
+Validate extension JSON: Error: Hash changed for 'classes/RichTextLabel/methods/push_paragraph', from 3DD1D1C2 to BFDC71FE. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_paragraph/arguments': size changed value in new API, from 4 to 6.
+
+Added a optional parameters with default values. No adjustments should be necessary.
+
+
+GH-77143
+--------
+Validate extension JSON: Error: Hash changed for 'classes/WorkerThreadPool/methods/wait_for_task_completion', from 4CAD1009 to 32573865. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/WorkerThreadPool/methods/wait_for_task_completion': return_value
+
+Changed the return value from `void` to `Error`. No adjustments should be necessary.
+
+
+GH-64628
+--------
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate_from_path/arguments': size changed value in new API, from 2 to 3.
+
+Added parameters to virtual method.
+
+
+GH-75746
+--------
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/add_code_completion_option/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Hash changed for 'classes/CodeEdit/methods/add_code_completion_option', from EC613224 to 611C3D20. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-74242
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3DExtension/methods/_intersect_ray/arguments': size changed value in new API, from 8 to 9.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3DExtension/methods/_intersect_ray/arguments/7': type changed value in new API, from "PhysicsServer3DExtensionRayResult*" to "bool".
+
+Added new second-to-last parameter to virtual method.
+
+
+GH-74707
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DExtension/methods/_body_test_motion/arguments': size changed value in new API, from 7 to 8.
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DExtension/methods/_body_test_motion/arguments/6': type changed value in new API, from "PhysicsServer3DExtensionMotionResult*" to "bool".
+
+Added new second-to-last parameter to virtual method.
+
+
+GH-72842
+--------
+Validate extension JSON: API was removed: classes/PathFollow2D/methods/get_lookahead
+Validate extension JSON: API was removed: classes/PathFollow2D/methods/set_lookahead
+Validate extension JSON: API was removed: classes/PathFollow2D/properties/lookahead
+
+
+GH-77413
+--------
+Validate extension JSON: Error: Field 'classes/GLTFSkin/properties/godot_skin': type changed value in new API, from "Object" to "Skin".
+
+
+GH-76082
+--------
+Validate extension JSON: Error: Hash changed for 'builtin_classes/Basis/methods/looking_at', from 19076B74 to DE3FF159. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/Transform3D/methods/looking_at', from 3018C31C to 056ADC36. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Node3D/methods/look_at', from 3BC64EA6 to BA2B4FA9. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Node3D/methods/look_at_from_position', from 2BD0F953 to F2739FA7. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'builtin_classes/Basis/methods/looking_at/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'builtin_classes/Transform3D/methods/looking_at/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Node3D/methods/look_at/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Node3D/methods/look_at_from_position/arguments': size changed value in new API, from 3 to 4.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-77411
+--------
+Validate extension JSON: Error: Field 'classes/Control/methods/_get_drag_data': is_const changed value in new API, from true to false.
+
+`const` was removed from virtual method, it may be necessary to adjust the constness of implementing methods.
+
+
+GH-75260
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/collide_shape/return_value': type changed value in new API, from "typedarray::PackedVector2Array" to "typedarray::Vector2".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/collide_shape/return_value': type changed value in new API, from "typedarray::PackedVector3Array" to "typedarray::Vector3".
+
+The previous type declaration was simply wrong and the method did actually already return objects of the new type.
+
+
+GH-76688
+--------
+Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/UndoRedo/methods/create_action/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Hash changed for 'classes/EditorUndoRedoManager/methods/create_action', from E07DA3CD to D543BA91. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/UndoRedo/methods/create_action', from 0AEC1BFC to E87757EB. This means that the function has changed and no compatibility function was provided.
+
+Added a optional parameters with default values. No adjustments should be necessary.

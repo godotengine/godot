@@ -149,6 +149,10 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
+		if (i == GDScriptWarning::UNTYPED_DECLARATION || i == GDScriptWarning::INFERRED_DECLARATION) {
+			// TODO: Add ability for test scripts to specify which warnings to enable/disable for testing.
+			continue;
+		}
 		String warning_setting = GDScriptWarning::get_settings_path_from_code((GDScriptWarning::Code)i);
 		ProjectSettings::get_singleton()->set_setting(warning_setting, (int)GDScriptWarning::WARN);
 	}
@@ -392,6 +396,9 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 
 	StringBuilder builder;
 	builder.append(">> ");
+	// Only include the function, file and line for script errors, otherwise the
+	// test outputs changes based on the platform/compiler.
+	bool include_source_info = false;
 	switch (p_type) {
 		case ERR_HANDLER_ERROR:
 			builder.append("ERROR");
@@ -401,6 +408,7 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 			break;
 		case ERR_HANDLER_SCRIPT:
 			builder.append("SCRIPT ERROR");
+			include_source_info = true;
 			break;
 		case ERR_HANDLER_SHADER:
 			builder.append("SHADER ERROR");
@@ -410,12 +418,14 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 			break;
 	}
 
-	builder.append("\n>> on function: ");
-	builder.append(String::utf8(p_function));
-	builder.append("()\n>> ");
-	builder.append(String::utf8(p_file).trim_prefix(self->base_dir));
-	builder.append("\n>> ");
-	builder.append(itos(p_line));
+	if (include_source_info) {
+		builder.append("\n>> on function: ");
+		builder.append(String::utf8(p_function));
+		builder.append("()\n>> ");
+		builder.append(String::utf8(p_file).trim_prefix(self->base_dir).replace("\\", "/"));
+		builder.append("\n>> ");
+		builder.append(itos(p_line));
+	}
 	builder.append("\n>> ");
 	builder.append(String::utf8(p_error));
 	if (strlen(p_explanation) > 0) {

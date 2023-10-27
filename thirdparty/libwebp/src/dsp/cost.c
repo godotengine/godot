@@ -374,6 +374,7 @@ static void SetResidualCoeffs_C(const int16_t* const coeffs,
 VP8GetResidualCostFunc VP8GetResidualCost;
 VP8SetResidualCoeffsFunc VP8SetResidualCoeffs;
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8EncDspCostInitMIPS32(void);
 extern void VP8EncDspCostInitMIPSdspR2(void);
 extern void VP8EncDspCostInitSSE2(void);

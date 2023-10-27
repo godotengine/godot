@@ -300,7 +300,7 @@ void CSGShape3D::_update_shape() {
 	root_mesh.unref(); //byebye root mesh
 
 	CSGBrush *n = _get_brush();
-	ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
 	OAHashMap<Vector3, Vector3> vec_map;
 
@@ -458,7 +458,7 @@ void CSGShape3D::_update_shape() {
 void CSGShape3D::_update_collision_faces() {
 	if (use_collision && is_root_shape() && root_collision_shape.is_valid()) {
 		CSGBrush *n = _get_brush();
-		ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+		ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 		Vector<Vector3> physics_faces;
 		physics_faces.resize(n->faces.size() * 3);
 		Vector3 *physicsw = physics_faces.ptrw();
@@ -953,12 +953,12 @@ void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		return;
 	}
 	if (mesh.is_valid()) {
-		mesh->disconnect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
+		mesh->disconnect_changed(callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 	mesh = p_mesh;
 
 	if (mesh.is_valid()) {
-		mesh->connect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
+		mesh->connect_changed(callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 
 	_mesh_changed();
@@ -1933,7 +1933,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				case PATH_ROTATION_PATH:
 					break;
 				case PATH_ROTATION_PATH_FOLLOW:
-					current_up = curve->sample_baked_up_vector(0);
+					current_up = curve->sample_baked_up_vector(0, true);
 					break;
 			}
 
@@ -2020,7 +2020,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						case PATH_ROTATION_PATH:
 							break;
 						case PATH_ROTATION_PATH_FOLLOW:
-							current_up = curve->sample_baked_up_vector(current_offset);
+							current_up = curve->sample_baked_up_vector(current_offset, true);
 							break;
 					}
 

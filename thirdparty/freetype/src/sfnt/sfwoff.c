@@ -426,7 +426,7 @@
 #else /* !FT_CONFIG_OPTION_USE_ZLIB */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _sfwoff_dummy;
+  typedef int  sfwoff_dummy_;
 
 #endif /* !FT_CONFIG_OPTION_USE_ZLIB */
 

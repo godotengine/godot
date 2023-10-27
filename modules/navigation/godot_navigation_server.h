@@ -31,16 +31,16 @@
 #ifndef GODOT_NAVIGATION_SERVER_H
 #define GODOT_NAVIGATION_SERVER_H
 
-#include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
-#include "core/templates/rid_owner.h"
-#include "servers/navigation_server_3d.h"
-
 #include "nav_agent.h"
 #include "nav_link.h"
 #include "nav_map.h"
 #include "nav_obstacle.h"
 #include "nav_region.h"
+
+#include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
+#include "servers/navigation_server_3d.h"
 
 /// The commands are functions executed during the `sync` phase.
 
@@ -56,6 +56,9 @@
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
 class GodotNavigationServer;
+#ifndef _3D_DISABLED
+class NavMeshGenerator3D;
+#endif // _3D_DISABLED
 
 struct SetCommand {
 	virtual ~SetCommand() {}
@@ -78,6 +81,10 @@ class GodotNavigationServer : public NavigationServer3D {
 	bool active = true;
 	LocalVector<NavMap *> active_maps;
 	LocalVector<uint32_t> active_maps_update_id;
+
+#ifndef _3D_DISABLED
+	NavMeshGenerator3D *navmesh_generator_3d = nullptr;
+#endif // _3D_DISABLED
 
 	// Performance Monitor
 	int pm_region_count = 0;
@@ -107,6 +114,9 @@ public:
 	COMMAND_2(map_set_cell_size, RID, p_map, real_t, p_cell_size);
 	virtual real_t map_get_cell_size(RID p_map) const override;
 
+	COMMAND_2(map_set_cell_height, RID, p_map, real_t, p_cell_height);
+	virtual real_t map_get_cell_height(RID p_map) const override;
+
 	COMMAND_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled);
 	virtual bool map_get_use_edge_connections(RID p_map) const override;
 
@@ -132,6 +142,9 @@ public:
 
 	virtual RID region_create() override;
 
+	COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled);
+	virtual bool region_get_enabled(RID p_region) const override;
+
 	COMMAND_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled);
 	virtual bool region_get_use_edge_connections(RID p_region) const override;
 
@@ -151,7 +164,9 @@ public:
 	virtual uint32_t region_get_navigation_layers(RID p_region) const override;
 	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
 	COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh);
+#ifndef DISABLE_DEPRECATED
 	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) override;
+#endif // DISABLE_DEPRECATED
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
@@ -159,6 +174,8 @@ public:
 	virtual RID link_create() override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
 	virtual RID link_get_map(RID p_link) const override;
+	COMMAND_2(link_set_enabled, RID, p_link, bool, p_enabled);
+	virtual bool link_get_enabled(RID p_link) const override;
 	COMMAND_2(link_set_bidirectional, RID, p_link, bool, p_bidirectional);
 	virtual bool link_is_bidirectional(RID p_link) const override;
 	COMMAND_2(link_set_navigation_layers, RID, p_link, uint32_t, p_navigation_layers);
@@ -181,6 +198,8 @@ public:
 	virtual bool agent_get_use_3d_avoidance(RID p_agent) const override;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
 	virtual RID agent_get_map(RID p_agent) const override;
+	COMMAND_2(agent_set_paused, RID, p_agent, bool, p_paused);
+	virtual bool agent_get_paused(RID p_agent) const override;
 	COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance);
 	COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count);
 	COMMAND_2(agent_set_time_horizon_agents, RID, p_agent, real_t, p_time_horizon);
@@ -198,12 +217,24 @@ public:
 	COMMAND_2(agent_set_avoidance_priority, RID, p_agent, real_t, p_priority);
 
 	virtual RID obstacle_create() override;
+	COMMAND_2(obstacle_set_avoidance_enabled, RID, p_obstacle, bool, p_enabled);
+	virtual bool obstacle_get_avoidance_enabled(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_use_3d_avoidance, RID, p_obstacle, bool, p_enabled);
+	virtual bool obstacle_get_use_3d_avoidance(RID p_obstacle) const override;
 	COMMAND_2(obstacle_set_map, RID, p_obstacle, RID, p_map);
 	virtual RID obstacle_get_map(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_paused, RID, p_obstacle, bool, p_paused);
+	virtual bool obstacle_get_paused(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_radius, RID, p_obstacle, real_t, p_radius);
+	COMMAND_2(obstacle_set_velocity, RID, p_obstacle, Vector3, p_velocity);
 	COMMAND_2(obstacle_set_position, RID, p_obstacle, Vector3, p_position);
 	COMMAND_2(obstacle_set_height, RID, p_obstacle, real_t, p_height);
 	virtual void obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) override;
 	COMMAND_2(obstacle_set_avoidance_layers, RID, p_obstacle, uint32_t, p_layers);
+
+	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override;
+	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
+	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 
 	COMMAND_1(free, RID, p_object);
 
@@ -211,10 +242,17 @@ public:
 
 	void flush_queries();
 	virtual void process(real_t p_delta_time) override;
+	virtual void init() override;
+	virtual void sync() override;
+	virtual void finish() override;
 
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override;
 
 	int get_process_info(ProcessInfo p_info) const override;
+
+private:
+	void internal_free_agent(RID p_object);
+	void internal_free_obstacle(RID p_object);
 };
 
 #undef COMMAND_1

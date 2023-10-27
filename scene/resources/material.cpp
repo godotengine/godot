@@ -310,10 +310,34 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				vgroups.push_back(Pair<String, LocalVector<String>>("<None>", { "<None>" }));
 			}
 
+			const bool is_uniform_cached = param_cache.has(E->get().name);
+			bool is_uniform_type_compatible = true;
+
+			if (is_uniform_cached) {
+				// Check if the uniform Variant type changed, for example vec3 to vec4.
+				const Variant &cached = param_cache.get(E->get().name);
+
+				if (cached.is_array()) {
+					// Allow some array conversions for backwards compatibility.
+					is_uniform_type_compatible = Variant::can_convert(E->get().type, cached.get_type());
+				} else {
+					is_uniform_type_compatible = E->get().type == cached.get_type();
+				}
+
+				if (is_uniform_type_compatible && E->get().type == Variant::OBJECT && cached.get_type() == Variant::OBJECT) {
+					// Check if the Object class (hint string) changed, for example Texture2D sampler to Texture3D.
+					// Allow inheritance, Texture2D type sampler should also accept CompressedTexture2D.
+					Object *cached_obj = cached;
+					if (!cached_obj->is_class(E->get().hint_string)) {
+						is_uniform_type_compatible = false;
+					}
+				}
+			}
+
 			PropertyInfo info = E->get();
 			info.name = "shader_parameter/" + info.name;
-			if (!param_cache.has(E->get().name)) {
-				// Property has never been edited, retrieve with default value.
+			if (!is_uniform_cached || !is_uniform_type_compatible) {
+				// Property has never been edited or its type changed, retrieve with default value.
 				Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), E->get().name);
 				param_cache.insert(E->get().name, default_value);
 				remap_cache.insert(info.name, E->get().name);
@@ -361,7 +385,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 	// This can be a slow operation, and `notify_property_list_changed()` (which is called by `_shader_changed()`)
 	// does nothing in non-editor builds anyway. See GH-34741 for details.
 	if (shader.is_valid() && Engine::get_singleton()->is_editor_hint()) {
-		shader->disconnect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
+		shader->disconnect_changed(callable_mp(this, &ShaderMaterial::_shader_changed));
 	}
 
 	shader = p_shader;
@@ -371,7 +395,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 		rid = shader->get_rid();
 
 		if (Engine::get_singleton()->is_editor_hint()) {
-			shader->connect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
+			shader->connect_changed(callable_mp(this, &ShaderMaterial::_shader_changed));
 		}
 	}
 
@@ -753,6 +777,9 @@ void BaseMaterial3D::_update_shader() {
 	if (flags[FLAG_USE_SHADOW_TO_OPACITY]) {
 		code += ",shadow_to_opacity";
 	}
+	if (flags[FLAG_DISABLE_FOG]) {
+		code += ",fog_disabled";
+	}
 
 	if (transparency == TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) {
 		code += ",depth_prepass_alpha";
@@ -1032,20 +1059,33 @@ void BaseMaterial3D::_update_shader() {
 	}
 	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
 		//generate tangent and binormal in world space
-		code += "	TANGENT = vec3(0.0,0.0,-1.0) * abs(NORMAL.x);\n";
-		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.y);\n";
-		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);\n";
-		code += "	TANGENT = normalize(TANGENT);\n";
+		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
+			code += "	vec3 normal = MODEL_NORMAL_MATRIX * NORMAL;\n";
+		} else {
+			code += "	vec3 normal = NORMAL;\n";
+		}
+		code += "	TANGENT = vec3(0.0,0.0,-1.0) * abs(normal.x);\n";
+		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(normal.y);\n";
+		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(normal.z);\n";
+		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
+			code += "	TANGENT = inverse(MODEL_NORMAL_MATRIX) * normalize(TANGENT);\n";
+		} else {
+			code += "	TANGENT = normalize(TANGENT);\n";
+		}
 
-		code += "	BINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);\n";
-		code += "	BINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);\n";
-		code += "	BINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);\n";
-		code += "	BINORMAL = normalize(BINORMAL);\n";
+		code += "	BINORMAL = vec3(0.0,1.0,0.0) * abs(normal.x);\n";
+		code += "	BINORMAL+= vec3(0.0,0.0,-1.0) * abs(normal.y);\n";
+		code += "	BINORMAL+= vec3(0.0,1.0,0.0) * abs(normal.z);\n";
+		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
+			code += "	BINORMAL = inverse(MODEL_NORMAL_MATRIX) * normalize(BINORMAL);\n";
+		} else {
+			code += "	BINORMAL = normalize(BINORMAL);\n";
+		}
 	}
 
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
-			code += "	uv1_power_normal=pow(abs(mat3(MODEL_MATRIX) * NORMAL),vec3(uv1_blend_sharpness));\n";
+			code += "	uv1_power_normal=pow(abs(normal),vec3(uv1_blend_sharpness));\n";
 			code += "	uv1_triplanar_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0f)).xyz * uv1_scale + uv1_offset;\n";
 		} else {
 			code += "	uv1_power_normal=pow(abs(NORMAL),vec3(uv1_blend_sharpness));\n";
@@ -1115,7 +1155,7 @@ void BaseMaterial3D::_update_shader() {
 
 	if (!RenderingServer::get_singleton()->is_low_end() && features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //heightmap not supported with triplanar
 		code += "	{\n";
-		code += "		vec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*heightmap_flip.x,-BINORMAL*heightmap_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
+		code += "		vec3 view_dir = normalize(normalize(-VERTEX + EYE_OFFSET) * mat3(TANGENT * heightmap_flip.x, -BINORMAL * heightmap_flip.y, NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
 
 		if (deep_parallax) {
 			code += "		float num_layers = mix(float(heightmap_max_layers),float(heightmap_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
@@ -2701,6 +2741,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Toon"), "set_diffuse_mode", "get_diffuse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_fog"), "set_flag", "get_flag", FLAG_DISABLE_FOG);
 
 	ADD_GROUP("Vertex Color", "vertex_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_use_as_albedo"), "set_flag", "get_flag", FLAG_ALBEDO_FROM_VERTEX_COLOR);
@@ -2852,7 +2893,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("MSDF", "msdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_outline_size", PROPERTY_HINT_RANGE, "1,250,1"), "set_msdf_outline_size", "get_msdf_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_outline_size", PROPERTY_HINT_RANGE, "0,250,1"), "set_msdf_outline_size", "get_msdf_outline_size");
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
@@ -2953,6 +2994,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_SUBSURFACE_MODE_SKIN);
 	BIND_ENUM_CONSTANT(FLAG_PARTICLE_TRAILS_MODE);
 	BIND_ENUM_CONSTANT(FLAG_ALBEDO_TEXTURE_MSDF);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_FOG);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
@@ -3040,12 +3082,17 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	set_grow(0.0);
 
+	set_msdf_pixel_range(4.0);
+	set_msdf_outline_size(0.0);
+
 	set_heightmap_deep_parallax_min_layers(8);
 	set_heightmap_deep_parallax_max_layers(32);
 	set_heightmap_deep_parallax_flip_tangent(false); //also sets binormal
 
 	flags[FLAG_ALBEDO_TEXTURE_MSDF] = false;
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
+
+	current_key.invalid_key = 1;
 
 	_mark_initialized(callable_mp(this, &BaseMaterial3D::_queue_shader_change));
 }

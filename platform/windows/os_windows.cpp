@@ -30,6 +30,11 @@
 
 #include "os_windows.h"
 
+#include "display_server_windows.h"
+#include "joypad_windows.h"
+#include "lang_table.h"
+#include "windows_terminal_logger.h"
+
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
@@ -37,14 +42,10 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "joypad_windows.h"
-#include "lang_table.h"
 #include "main/main.h"
-#include "platform/windows/display_server_windows.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text_server.h"
-#include "windows_terminal_logger.h"
 
 #include <avrt.h>
 #include <bcrypt.h>
@@ -388,13 +389,13 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 				}
 				missing += E;
 			}
-			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s, missing dependencies: (%s), error: \"%s\".", p_path, missing, format_error_message(err_code)));
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Missing dependencies: %s. Error: %s.", p_path, missing, format_error_message(err_code)));
 		} else {
-			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s, error: \"%s\"." + p_path, format_error_message(err_code)));
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, format_error_message(err_code)));
 		}
 	}
 #else
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s, error: \"%s\"." + p_path, format_error_message(GetLastError())));
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, format_error_message(GetLastError())));
 #endif
 
 	if (cookie) {
@@ -449,7 +450,7 @@ String OS_Windows::get_version() const {
 }
 
 Vector<String> OS_Windows::get_video_adapter_driver_info() const {
-	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+	if (RenderingServer::get_singleton() == nullptr) {
 		return Vector<String>();
 	}
 
@@ -467,7 +468,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	String driver_name;
 	String driver_version;
 
-	const String device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name();
+	const String device_name = RenderingServer::get_singleton()->get_video_adapter_name();
 	if (device_name.is_empty()) {
 		return Vector<String>();
 	}
@@ -1355,18 +1356,13 @@ Error OS_Windows::shell_open(String p_uri) {
 }
 
 Error OS_Windows::shell_show_in_file_manager(String p_path, bool p_open_folder) {
-	p_path = p_path.trim_suffix("file://");
-
 	bool open_folder = false;
 	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
 		open_folder = true;
 	}
 
-	if (p_path.begins_with("\"")) {
-		p_path = String("\"") + p_path;
-	}
-	if (p_path.ends_with("\"")) {
-		p_path = p_path + String("\"");
+	if (!p_path.is_quoted()) {
+		p_path = p_path.quote();
 	}
 	p_path = p_path.replace("/", "\\");
 
@@ -1682,7 +1678,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 
 String OS_Windows::get_system_ca_certificates() {
 	HCERTSTORE cert_store = CertOpenSystemStoreA(0, "ROOT");
-	ERR_FAIL_COND_V_MSG(!cert_store, "", "Failed to read the root certificate store.");
+	ERR_FAIL_NULL_V_MSG(cert_store, "", "Failed to read the root certificate store.");
 
 	FILETIME curr_time;
 	GetSystemTimeAsFileTime(&curr_time);
@@ -1713,7 +1709,7 @@ String OS_Windows::get_system_ca_certificates() {
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
 
-	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);

@@ -43,7 +43,7 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			load->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+			load->set_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 	}
 }
@@ -209,11 +209,11 @@ void ResourcePreloaderEditor::_update_library() {
 		ti->set_selectable(1, false);
 
 		if (type == "PackedScene") {
-			ti->add_button(1, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_OPEN_SCENE, false, TTR("Open in Editor"));
+			ti->add_button(1, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_OPEN_SCENE, false, TTR("Open in Editor"));
 		} else {
-			ti->add_button(1, get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), BUTTON_EDIT_RESOURCE, false, TTR("Open in Editor"));
+			ti->add_button(1, get_editor_theme_icon(SNAME("Load")), BUTTON_EDIT_RESOURCE, false, TTR("Open in Editor"));
 		}
-		ti->add_button(1, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE, false, TTR("Remove"));
+		ti->add_button(1, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE, false, TTR("Remove"));
 	}
 
 	//player->add_resource("default",resource);
@@ -225,7 +225,7 @@ void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column,
 	}
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 
 	if (p_id == BUTTON_OPEN_SCENE) {
 		String rpath = item->get_text(p_column);

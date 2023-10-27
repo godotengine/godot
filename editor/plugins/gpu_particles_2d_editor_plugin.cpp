@@ -39,6 +39,7 @@
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
 
 void GPUParticles2DEditorPlugin::edit(Object *p_object) {
@@ -115,11 +116,8 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Convert to CPUParticles2D"));
-			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", particles, cpu_particles, true, false);
-			ur->add_do_reference(cpu_particles);
-			ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", cpu_particles, particles, false, false);
-			ur->add_undo_reference(particles);
-			ur->commit_action();
+			SceneTreeDock::get_singleton()->replace_node(particles, cpu_particles);
+			ur->commit_action(false);
 
 		} break;
 		case MENU_RESTART: {
@@ -292,11 +290,16 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	texdata.resize(w * h * 2 * sizeof(float));
 
 	{
+		Vector2 offset;
+		if (emission_mask_centered->is_pressed()) {
+			offset = Vector2(-s.width * 0.5, -s.height * 0.5);
+		}
+
 		uint8_t *tw = texdata.ptrw();
 		float *twf = reinterpret_cast<float *>(tw);
 		for (int i = 0; i < vpc; i++) {
-			twf[i * 2 + 0] = valid_positions[i].x;
-			twf[i * 2 + 1] = valid_positions[i].y;
+			twf[i * 2 + 0] = valid_positions[i].x + offset.x;
+			twf[i * 2 + 1] = valid_positions[i].y + offset.y;
 		}
 	}
 
@@ -349,7 +352,7 @@ void GPUParticles2DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
-			menu->set_icon(menu->get_theme_icon(SNAME("GPUParticles2D"), SNAME("EditorIcons")));
+			menu->set_icon(menu->get_editor_theme_icon(SNAME("GPUParticles2D")));
 			file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
 		} break;
@@ -365,8 +368,6 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
 	toolbar->hide();
-
-	toolbar->add_child(memnew(VSeparator));
 
 	menu = memnew(MenuButton);
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
@@ -417,9 +418,14 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	emission_mask_mode->add_item(TTR("Solid Pixels"), EMISSION_MODE_SOLID);
 	emission_mask_mode->add_item(TTR("Border Pixels"), EMISSION_MODE_BORDER);
 	emission_mask_mode->add_item(TTR("Directed Border Pixels"), EMISSION_MODE_BORDER_DIRECTED);
+	VBoxContainer *optionsvb = memnew(VBoxContainer);
+	emvb->add_margin_child(TTR("Options"), optionsvb);
+	emission_mask_centered = memnew(CheckBox);
+	emission_mask_centered->set_text(TTR("Centered"));
+	optionsvb->add_child(emission_mask_centered);
 	emission_colors = memnew(CheckBox);
-	emission_colors->set_text(TTR("Capture from Pixel"));
-	emvb->add_margin_child(TTR("Emission Colors"), emission_colors);
+	emission_colors->set_text(TTR("Capture Colors from Pixel"));
+	optionsvb->add_child(emission_colors);
 
 	toolbar->add_child(emission_mask);
 

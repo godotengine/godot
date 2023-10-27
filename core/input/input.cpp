@@ -113,6 +113,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
 	ClassDB::bind_method(D_METHOD("get_joy_guid", "device"), &Input::get_joy_guid);
+	ClassDB::bind_method(D_METHOD("get_joy_info", "device"), &Input::get_joy_info);
+	ClassDB::bind_method(D_METHOD("should_ignore_device", "vendor_id", "product_id"), &Input::should_ignore_device);
 	ClassDB::bind_method(D_METHOD("get_connected_joypads"), &Input::get_connected_joypads);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
@@ -283,7 +285,7 @@ bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	return action_state.has(p_action) && action_state[p_action].pressed && (p_exact ? action_state[p_action].exact : true);
+	return action_state.has(p_action) && action_state[p_action].pressed > 0 && (p_exact ? action_state[p_action].exact : true);
 }
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
@@ -297,10 +299,13 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 		return false;
 	}
 
+	// Backward compatibility for legacy behavior, only return true if currently pressed.
+	bool pressed_requirement = legacy_just_pressed_behavior ? E->value.pressed : true;
+
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return E->value.pressed && E->value.physics_frame == Engine::get_singleton()->get_physics_frames();
+		return pressed_requirement && E->value.pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return E->value.pressed && E->value.process_frame == Engine::get_singleton()->get_process_frames();
+		return pressed_requirement && E->value.pressed_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -315,10 +320,13 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 		return false;
 	}
 
+	// Backward compatibility for legacy behavior, only return true if currently released.
+	bool released_requirement = legacy_just_pressed_behavior ? !E->value.pressed : true;
+
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return !E->value.pressed && E->value.physics_frame == Engine::get_singleton()->get_physics_frames();
+		return released_requirement && E->value.released_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return !E->value.pressed && E->value.process_frame == Engine::get_singleton()->get_process_frames();
+		return released_requirement && E->value.released_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -430,11 +438,12 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
-void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid) {
+void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid, Dictionary p_joypad_info) {
 	_THREAD_SAFE_METHOD_
 	Joypad js;
 	js.name = p_connected ? p_name : "";
 	js.uid = p_connected ? p_guid : "";
+	js.info = p_connected ? p_joypad_info : Dictionary();
 
 	if (p_connected) {
 		String uidname = p_guid;
@@ -466,7 +475,8 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 	}
 	joy_names[p_idx] = js;
 
-	emit_signal(SNAME("joy_connection_changed"), p_idx, p_connected);
+	// Ensure this signal is emitted on the main thread, as some platforms (e.g. Linux) call this from a different thread.
+	call_deferred("emit_signal", SNAME("joy_connection_changed"), p_idx, p_connected);
 }
 
 Vector3 Input::get_gravity() const {
@@ -686,19 +696,51 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
 		if (InputMap::get_singleton()->event_is_action(p_event, E.key)) {
-			// If not echo and action pressed state has changed
-			if (!p_event->is_echo() && is_action_pressed(E.key, false) != p_event->is_action_pressed(E.key)) {
-				Action action;
-				action.physics_frame = Engine::get_singleton()->get_physics_frames();
-				action.process_frame = Engine::get_singleton()->get_process_frames();
-				action.pressed = p_event->is_action_pressed(E.key);
-				action.strength = 0.0f;
-				action.raw_strength = 0.0f;
+			Action &action = action_state[E.key];
+			bool is_joypad_axis = jm.is_valid();
+			bool is_pressed = false;
+			if (!p_event->is_echo()) {
+				if (p_event->is_action_pressed(E.key)) {
+					bool is_joypad_axis_valid_zone_enter = false;
+					if (is_joypad_axis) {
+						if (!action.axis_pressed) {
+							is_joypad_axis_valid_zone_enter = true;
+							action.pressed++;
+							action.axis_pressed = true;
+						}
+					} else {
+						action.pressed++;
+					}
+					if (action.pressed == 1 && (is_joypad_axis_valid_zone_enter || !is_joypad_axis)) {
+						action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+						action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+					}
+					is_pressed = true;
+				} else {
+					bool is_released = true;
+					if (is_joypad_axis) {
+						if (action.axis_pressed) {
+							action.axis_pressed = false;
+						} else {
+							is_released = false;
+						}
+					}
+
+					if (is_released) {
+						if (action.pressed == 1) {
+							action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+							action.released_process_frame = Engine::get_singleton()->get_process_frames();
+						}
+						action.pressed = MAX(action.pressed - 1, 0);
+					}
+				}
 				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
-				action_state[E.key] = action;
 			}
-			action_state[E.key].strength = p_event->get_action_strength(E.key);
-			action_state[E.key].raw_strength = p_event->get_action_raw_strength(E.key);
+
+			if (is_pressed || action.pressed == 0) {
+				action.strength = p_event->get_action_strength(E.key);
+				action.raw_strength = p_event->get_action_raw_strength(E.key);
+			}
 		}
 	}
 
@@ -813,29 +855,31 @@ Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, con
 }
 
 void Input::action_press(const StringName &p_action, float p_strength) {
-	Action action;
+	// Create or retrieve existing action.
+	Action &action = action_state[p_action];
 
-	action.physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.process_frame = Engine::get_singleton()->get_process_frames();
-	action.pressed = true;
+	action.pressed++;
+	if (action.pressed == 1) {
+		action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+		action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+	}
 	action.strength = p_strength;
 	action.raw_strength = p_strength;
 	action.exact = true;
-
-	action_state[p_action] = action;
 }
 
 void Input::action_release(const StringName &p_action) {
-	Action action;
+	// Create or retrieve existing action.
+	Action &action = action_state[p_action];
 
-	action.physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.process_frame = Engine::get_singleton()->get_process_frames();
-	action.pressed = false;
-	action.strength = 0.f;
-	action.raw_strength = 0.f;
+	action.pressed--;
+	if (action.pressed == 0) {
+		action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+		action.released_process_frame = Engine::get_singleton()->get_process_frames();
+	}
+	action.strength = 0.0f;
+	action.raw_strength = 0.0f;
 	action.exact = true;
-
-	action_state[p_action] = action;
 }
 
 void Input::set_emulate_touch_from_mouse(bool p_emulate) {
@@ -993,8 +1037,10 @@ void Input::release_pressed_events() {
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
-	for (const KeyValue<StringName, Input::Action> &E : action_state) {
-		if (E.value.pressed) {
+	for (KeyValue<StringName, Input::Action> &E : action_state) {
+		if (E.value.pressed > 0) {
+			// Make sure the action is really released.
+			E.value.pressed = 1;
 			action_release(E.key);
 		}
 	}
@@ -1049,7 +1095,8 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 		return;
 	}
 
-	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, p_value);
+	JoyAxisRange range;
+	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, p_value, range);
 
 	if (map.type == TYPE_BUTTON) {
 		bool pressed = map.value > 0.5;
@@ -1089,7 +1136,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	if (map.type == TYPE_AXIS) {
 		JoyAxis axis = JoyAxis(map.index);
 		float value = map.value;
-		if (axis == JoyAxis::TRIGGER_LEFT || axis == JoyAxis::TRIGGER_RIGHT) {
+		if (range == FULL_AXIS && (axis == JoyAxis::TRIGGER_LEFT || axis == JoyAxis::TRIGGER_RIGHT)) {
 			// Convert to a value between 0.0f and 1.0f.
 			value = 0.5f + value / 2.0f;
 		}
@@ -1195,7 +1242,7 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 	return event;
 }
 
-Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value) {
+Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range) {
 	JoyEvent event;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
@@ -1241,6 +1288,7 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 					case TYPE_AXIS:
 						event.index = (int)binding.output.axis.axis;
 						event.value = value;
+						r_range = binding.output.axis.range;
 						if (binding.output.axis.range != binding.input.axis.range) {
 							switch (binding.output.axis.range) {
 								case POSITIVE_HALF_AXIS:
@@ -1356,8 +1404,9 @@ void Input::parse_mapping(String p_mapping) {
 
 		String output = entry[idx].get_slice(":", 0).replace(" ", "");
 		String input = entry[idx].get_slice(":", 1).replace(" ", "");
-		ERR_CONTINUE_MSG(output.length() < 1 || input.length() < 2,
-				vformat("Invalid device mapping entry \"%s\" in mapping:\n%s", entry[idx], p_mapping));
+		if (output.length() < 1 || input.length() < 2) {
+			continue;
+		}
 
 		if (output == "platform" || output == "hint") {
 			continue;
@@ -1488,6 +1537,16 @@ String Input::get_joy_guid(int p_device) const {
 	return joy_names[p_device].uid;
 }
 
+Dictionary Input::get_joy_info(int p_device) const {
+	ERR_FAIL_COND_V(!joy_names.has(p_device), Dictionary());
+	return joy_names[p_device].info;
+}
+
+bool Input::should_ignore_device(int p_vendor_id, int p_product_id) const {
+	uint32_t full_id = (((uint32_t)p_vendor_id) << 16) | ((uint16_t)p_product_id);
+	return ignored_device_ids.has(full_id);
+}
+
 TypedArray<int> Input::get_connected_joypads() {
 	TypedArray<int> ret;
 	HashMap<int, Joypad>::Iterator elem = joy_names.begin();
@@ -1530,6 +1589,33 @@ Input::Input() {
 			}
 			parse_mapping(entries[i]);
 		}
+	}
+
+	String env_ignore_devices = OS::get_singleton()->get_environment("SDL_GAMECONTROLLER_IGNORE_DEVICES");
+	if (!env_ignore_devices.is_empty()) {
+		Vector<String> entries = env_ignore_devices.split(",");
+		for (int i = 0; i < entries.size(); i++) {
+			Vector<String> vid_pid = entries[i].split("/");
+
+			if (vid_pid.size() < 2) {
+				continue;
+			}
+
+			print_verbose(vformat("Device Ignored -- Vendor: %s Product: %s", vid_pid[0], vid_pid[1]));
+			const uint16_t vid_unswapped = vid_pid[0].hex_to_int();
+			const uint16_t pid_unswapped = vid_pid[1].hex_to_int();
+			const uint16_t vid = BSWAP16(vid_unswapped);
+			const uint16_t pid = BSWAP16(pid_unswapped);
+
+			uint32_t full_id = (((uint32_t)vid) << 16) | ((uint16_t)pid);
+			ignored_device_ids.insert(full_id);
+		}
+	}
+
+	legacy_just_pressed_behavior = GLOBAL_DEF("input_devices/compatibility/legacy_just_pressed_behavior", false);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// Always use standard behavior in the editor.
+		legacy_just_pressed_behavior = false;
 	}
 }
 

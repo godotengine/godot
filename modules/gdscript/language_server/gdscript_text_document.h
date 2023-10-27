@@ -31,9 +31,10 @@
 #ifndef GDSCRIPT_TEXT_DOCUMENT_H
 #define GDSCRIPT_TEXT_DOCUMENT_H
 
+#include "godot_lsp.h"
+
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
-#include "godot_lsp.h"
 
 class GDScriptTextDocument : public RefCounted {
 	GDCLASS(GDScriptTextDocument, RefCounted)
@@ -64,6 +65,8 @@ public:
 	Array completion(const Dictionary &p_params);
 	Dictionary resolve(const Dictionary &p_params);
 	Dictionary rename(const Dictionary &p_params);
+	Variant prepareRename(const Dictionary &p_params);
+	Array references(const Dictionary &p_params);
 	Array foldingRange(const Dictionary &p_params);
 	Array codeLens(const Dictionary &p_params);
 	Array documentLink(const Dictionary &p_params);

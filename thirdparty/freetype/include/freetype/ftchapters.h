@@ -31,9 +31,28 @@
    *   Core API
    *
    * @sections:
-   *   version
    *   basic_types
-   *   base_interface
+   *   library_setup
+   *   face_creation
+   *   font_testing_macros
+   *   sizing_and_scaling
+   *   glyph_retrieval
+   *   character_mapping
+   *   information_retrieval
+   *   other_api_data
+   *
+   */
+
+
+  /**************************************************************************
+   *
+   * @chapter:
+   *   extended_api
+   *
+   * @title:
+   *   Extended API
+   *
+   * @sections:
    *   glyph_variants
    *   color_management
    *   layer_management

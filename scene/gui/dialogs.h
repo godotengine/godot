@@ -60,6 +60,7 @@ class AcceptDialog : public Window {
 	} theme_cache;
 
 	void _custom_action(const String &p_action);
+	void _custom_button_visibility_changed(Button *button);
 	void _update_child_rects();
 
 	static bool swap_cancel_ok;
@@ -69,10 +70,10 @@ class AcceptDialog : public Window {
 
 protected:
 	virtual Size2 _get_contents_minimum_size() const override;
-	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
+
 	virtual void ok_pressed() {}
 	virtual void cancel_pressed() {}
 	virtual void custom_action(const String &) {}

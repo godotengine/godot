@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "main/main.h"
-
 #include "os_macos.h"
+
+#include "main/main.h"
 
 #include <string.h>
 #include <unistd.h>

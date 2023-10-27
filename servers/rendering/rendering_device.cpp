@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_device.h"
+#include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
 
@@ -72,7 +73,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 		}
 	}
 
-	ERR_FAIL_COND_V(!compile_to_spirv_function, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(compile_to_spirv_function, Vector<uint8_t>());
 
 	return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, this);
 }
@@ -112,6 +113,14 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
 
 	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type);
+}
+
+Ref<RDTextureFormat> RenderingDevice::_texture_get_format(RID p_rd_texture) {
+	Ref<RDTextureFormat> rtf;
+	rtf.instantiate();
+	rtf->base = texture_get_format(p_rd_texture);
+
+	return rtf;
 }
 
 RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count) {
@@ -529,15 +538,15 @@ Error RenderingDevice::_reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spir
 							if (r_reflection_data.uniforms[set][k].binding == (uint32_t)info.binding) {
 								// Already exists, verify that it's the same type.
 								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].type != info.type, FAILED,
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform type.");
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform type.");
 
 								// Also, verify that it's the same size.
 								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].length != info.length, FAILED,
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
 
 								// Also, verify that it has the same writability.
 								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].writable != info.writable, FAILED,
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
 
 								// Just append stage mask and return.
 								r_reflection_data.uniforms.write[set].write[k].stages_mask.set_flag(stage_flag);
@@ -634,7 +643,7 @@ Error RenderingDevice::_reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spir
 
 					for (uint32_t j = 0; j < iv_count; j++) {
 						if (input_vars[j] && input_vars[j]->decoration_flags == 0) { // Regular input.
-							r_reflection_data.vertex_input_mask |= (1 << uint32_t(input_vars[j]->location));
+							r_reflection_data.vertex_input_mask |= (1ULL << uint32_t(input_vars[j]->location));
 						}
 					}
 				}
@@ -707,6 +716,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create", "format", "view", "data"), &RenderingDevice::_texture_create, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);
 	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "mipmaps", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(1), DEFVAL(TEXTURE_SLICE_2D));
+	ClassDB::bind_method(D_METHOD("texture_create_from_extension", "type", "format", "samples", "usage_flags", "image", "width", "height", "depth", "layers"), &RenderingDevice::texture_create_from_extension);
 
 	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data", "post_barrier"), &RenderingDevice::texture_update, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);
@@ -719,6 +729,9 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_copy", "from_texture", "to_texture", "from_pos", "to_pos", "size", "src_mipmap", "dst_mipmap", "src_layer", "dst_layer", "post_barrier"), &RenderingDevice::texture_copy, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 	ClassDB::bind_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "post_barrier"), &RenderingDevice::texture_clear, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "post_barrier"), &RenderingDevice::texture_resolve_multisample, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
+
+	ClassDB::bind_method(D_METHOD("texture_get_format", "texture"), &RenderingDevice::_texture_get_format);
+	ClassDB::bind_method(D_METHOD("texture_get_native_handle", "texture"), &RenderingDevice::texture_get_native_handle);
 
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments", "view_count"), &RenderingDevice::_framebuffer_format_create, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create_multipass", "attachments", "passes", "view_count"), &RenderingDevice::_framebuffer_format_create_multipass, DEFVAL(1));
@@ -743,7 +756,9 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_compile_binary_from_spirv, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_create_from_spirv, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::shader_create_from_bytecode);
+	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data", "placeholder_rid"), &RenderingDevice::shader_create_from_bytecode, DEFVAL(RID()));
+	ClassDB::bind_method(D_METHOD("shader_create_placeholder"), &RenderingDevice::shader_create_placeholder);
+
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
 	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data"), &RenderingDevice::uniform_buffer_create, DEFVAL(Vector<uint8_t>()));
@@ -1071,9 +1086,11 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_MAX);
 
-	BIND_BITFIELD_FLAG(BARRIER_MASK_RASTER);
+	BIND_BITFIELD_FLAG(BARRIER_MASK_VERTEX);
+	BIND_BITFIELD_FLAG(BARRIER_MASK_FRAGMENT);
 	BIND_BITFIELD_FLAG(BARRIER_MASK_COMPUTE);
 	BIND_BITFIELD_FLAG(BARRIER_MASK_TRANSFER);
+	BIND_BITFIELD_FLAG(BARRIER_MASK_RASTER);
 	BIND_BITFIELD_FLAG(BARRIER_MASK_ALL_BARRIERS);
 	BIND_BITFIELD_FLAG(BARRIER_MASK_NO_BARRIER);
 

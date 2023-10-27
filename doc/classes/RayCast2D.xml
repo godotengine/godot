@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RayCast2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RayCast2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A ray in 2D space, used to find the first [CollisionObject2D] it intersects.
 	</brief_description>
@@ -36,7 +36,7 @@
 		<method name="force_raycast_update">
 			<return type="void" />
 			<description>
-				Updates the collision information for the ray. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state.
+				Updates the collision information for the ray immediately, without waiting for the next [code]_physics_process[/code] call. Use this method, for example, when the ray or its parent has changed state.
 				[b]Note:[/b] [member enabled] does not need to be [code]true[/code] for this to work.
 			</description>
 		</method>
@@ -109,10 +109,10 @@
 	</methods>
 	<members>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
-			If [code]true[/code], collision with [Area2D]s will be reported.
+			If [code]true[/code], collisions with [Area2D]s will be reported.
 		</member>
 		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
-			If [code]true[/code], collision with [PhysicsBody2D]s will be reported.
+			If [code]true[/code], collisions with [PhysicsBody2D]s will be reported.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.

@@ -233,6 +233,8 @@ void XRNode3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_has_tracking_data"), &XRNode3D::get_has_tracking_data);
 	ClassDB::bind_method(D_METHOD("get_pose"), &XRNode3D::get_pose);
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRNode3D::trigger_haptic_pulse);
+
+	ADD_SIGNAL(MethodInfo("tracking_changed", PropertyInfo(Variant::BOOL, "tracking")));
 };
 
 void XRNode3D::_validate_property(PropertyInfo &p_property) const {
@@ -305,13 +307,7 @@ bool XRNode3D::get_is_active() const {
 }
 
 bool XRNode3D::get_has_tracking_data() const {
-	if (tracker.is_null()) {
-		return false;
-	} else if (!tracker->has_pose(pose_name)) {
-		return false;
-	} else {
-		return tracker->get_pose(pose_name)->get_has_tracking_data();
-	}
+	return has_tracking_data;
 }
 
 void XRNode3D::trigger_haptic_pulse(const String &p_action_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
@@ -346,10 +342,12 @@ void XRNode3D::_bind_tracker() {
 		}
 
 		tracker->connect("pose_changed", callable_mp(this, &XRNode3D::_pose_changed));
+		tracker->connect("pose_lost_tracking", callable_mp(this, &XRNode3D::_pose_lost_tracking));
 
 		Ref<XRPose> pose = get_pose();
 		if (pose.is_valid()) {
 			set_transform(pose->get_adjusted_transform());
+			_set_has_tracking_data(pose->get_has_tracking_data());
 		}
 	}
 }
@@ -357,8 +355,11 @@ void XRNode3D::_bind_tracker() {
 void XRNode3D::_unbind_tracker() {
 	if (tracker.is_valid()) {
 		tracker->disconnect("pose_changed", callable_mp(this, &XRNode3D::_pose_changed));
+		tracker->disconnect("pose_lost_tracking", callable_mp(this, &XRNode3D::_pose_lost_tracking));
 
 		tracker.unref();
+
+		_set_has_tracking_data(false);
 	}
 }
 
@@ -382,7 +383,25 @@ void XRNode3D::_removed_tracker(const StringName p_tracker_name, int p_tracker_t
 void XRNode3D::_pose_changed(const Ref<XRPose> &p_pose) {
 	if (p_pose.is_valid() && p_pose->get_name() == pose_name) {
 		set_transform(p_pose->get_adjusted_transform());
+		_set_has_tracking_data(p_pose->get_has_tracking_data());
 	}
+}
+
+void XRNode3D::_pose_lost_tracking(const Ref<XRPose> &p_pose) {
+	if (p_pose.is_valid() && p_pose->get_name() == pose_name) {
+		_set_has_tracking_data(false);
+	}
+}
+
+void XRNode3D::_set_has_tracking_data(bool p_has_tracking_data) {
+	// Ignore if the has_tracking_data state isn't changing.
+	if (p_has_tracking_data == has_tracking_data) {
+		return;
+	}
+
+	// Handle change of has_tracking_data.
+	has_tracking_data = p_has_tracking_data;
+	emit_signal(SNAME("tracking_changed"), has_tracking_data);
 }
 
 XRNode3D::XRNode3D() {

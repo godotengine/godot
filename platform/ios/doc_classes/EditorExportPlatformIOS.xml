@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlatformIOS" inherits="EditorExportPlatform" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlatformIOS" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exporter for iOS.
 	</brief_description>
@@ -7,6 +7,7 @@
 	</description>
 	<tutorials>
 		<link title="Exporting for iOS">$DOCS_URL/tutorials/export/exporting_for_ios.html</link>
+		<link title="iOS plugins documentation index">$DOCS_URL/tutorials/platform/ios/index.html</link>
 	</tutorials>
 	<members>
 		<member name="application/app_store_team_id" type="String" setter="" getter="">
@@ -27,6 +28,9 @@
 		<member name="application/export_method_release" type="int" setter="" getter="">
 			Application distribution target (release export).
 		</member>
+		<member name="application/export_project_only" type="bool" setter="" getter="">
+			If [code]true[/code], exports iOS project files without building an XCArchive or [code].ipa[/code] file. If [code]false[/code], exports iOS project files and builds an XCArchive and [code].ipa[/code] file at the same time. When combining Godot with Fastlane or other build pipelines, you may want to set this to [code]true[/code].
+		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
@@ -42,7 +46,7 @@
 			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_RELEASE[/code].
 		</member>
 		<member name="application/short_version" type="String" setter="" getter="">
-			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.
 		</member>
 		<member name="application/signature" type="String" setter="" getter="">
 			A four-character creator code that is specific to the bundle. Optional.
@@ -51,7 +55,7 @@
 			Supported device family.
 		</member>
 		<member name="application/version" type="String" setter="" getter="">
-			Machine-readable application version, in the [code]major.minor.patch[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+			Machine-readable application version, in the [code]major.minor.patch[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). This must be incremented on every new release pushed to the App Store.
 		</member>
 		<member name="architectures/arm64" type="bool" setter="" getter="">
 			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
@@ -69,73 +73,73 @@
 			Path to the custom export template. If left empty, default template is used.
 		</member>
 		<member name="icons/app_store_1024x1024" type="String" setter="" getter="">
-			App Store application icon file. If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			App Store application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ipad_76x76" type="String" setter="" getter="">
-			Home screen application icon file on iPad (1x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Home screen application icon file on iPad (1x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ipad_152x152" type="String" setter="" getter="">
-			Home screen application icon file on iPad (2x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Home screen application icon file on iPad (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ipad_167x167" type="String" setter="" getter="">
-			Home screen application icon file on iPad (3x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Home screen application icon file on iPad (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/iphone_120x120" type="String" setter="" getter="">
-			Home screen application icon file on iPhone (2x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Home screen application icon file on iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/iphone_180x180" type="String" setter="" getter="">
-			Home screen application icon file on iPhone (3x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Home screen application icon file on iPhone (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_40x40" type="String" setter="" getter="">
-			Notification icon file on iPad and iPhone (2x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Notification icon file on iPad and iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_60x60" type="String" setter="" getter="">
-			Notification icon file on iPhone (3x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Notification icon file on iPhone (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/settings_58x58" type="String" setter="" getter="">
-			Application settings icon file on iPad and iPhone (2x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Application settings icon file on iPad and iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/settings_87x87" type="String" setter="" getter="">
-			Application settings icon file on iPhone (3x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Application settings icon file on iPhone (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/spotlight_40x40" type="String" setter="" getter="">
-			Spotlight icon file on iPad (1x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Spotlight icon file on iPad (1x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/spotlight_80x80" type="String" setter="" getter="">
-			Spotlight icon file on iPad and iPhone (2x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Spotlight icon file on iPad and iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="landscape_launch_screens/ipad_1024x768" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="landscape_launch_screens/ipad_2048x1536" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="landscape_launch_screens/iphone_2208x1242" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="landscape_launch_screens/iphone_2436x1125" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="portrait_launch_screens/ipad_768x1024" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="portrait_launch_screens/ipad_1536x2048" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="portrait_launch_screens/iphone_640x960" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="portrait_launch_screens/iphone_640x1136" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="portrait_launch_screens/iphone_750x1334" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="portrait_launch_screens/iphone_1125x2436" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="portrait_launch_screens/iphone_1242x2208" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
+			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="privacy/camera_usage_description" type="String" setter="" getter="">
 			A message displayed when requesting access to the device's camera (in English).
@@ -159,10 +163,10 @@
 			A custom background color of the storyboard launch screen.
 		</member>
 		<member name="storyboard/custom_image@2x" type="String" setter="" getter="">
-			Application launch screen image file (2x DPI), if left empty project splash screen is used instead.
+			Application launch screen image file (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="storyboard/custom_image@3x" type="String" setter="" getter="">
-			Application launch screen image file (3x DPI), if left empty project splash screen is used instead.
+			Application launch screen image file (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="storyboard/image_scale_mode" type="int" setter="" getter="">
 			Launch screen image scaling mode.

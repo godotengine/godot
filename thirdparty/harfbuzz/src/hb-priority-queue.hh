@@ -54,6 +54,9 @@ struct hb_priority_queue_t
 
   bool in_error () const { return heap.in_error (); }
 
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   void insert (int64_t priority, unsigned value)
   {
     heap.push (item_t (priority, value));
@@ -61,6 +64,9 @@ struct hb_priority_queue_t
     bubble_up (heap.length - 1);
   }
 
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   item_t pop_minimum ()
   {
     assert (!is_empty ());
@@ -106,8 +112,10 @@ struct hb_priority_queue_t
     return 2 * index + 2;
   }
 
+  HB_ALWAYS_INLINE
   void bubble_down (unsigned index)
   {
+    repeat:
     assert (index < heap.length);
 
     unsigned left = left_child (index);
@@ -123,19 +131,21 @@ struct hb_priority_queue_t
         && (!has_right || heap.arrayZ[index].first <= heap.arrayZ[right].first))
       return;
 
+    unsigned child;
     if (!has_right || heap.arrayZ[left].first < heap.arrayZ[right].first)
-    {
-      swap (index, left);
-      bubble_down (left);
-      return;
-    }
+      child = left;
+    else
+      child = right;
 
-    swap (index, right);
-    bubble_down (right);
+    swap (index, child);
+    index = child;
+    goto repeat;
   }
 
+  HB_ALWAYS_INLINE
   void bubble_up (unsigned index)
   {
+    repeat:
     assert (index < heap.length);
 
     if (index == 0) return;
@@ -145,7 +155,8 @@ struct hb_priority_queue_t
       return;
 
     swap (index, parent_index);
-    bubble_up (parent_index);
+    index = parent_index;
+    goto repeat;
   }
 
   void swap (unsigned a, unsigned b)

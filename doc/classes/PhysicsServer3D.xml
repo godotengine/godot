@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsServer3D" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsServer3D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A server interface for low-level 3D physics access.
 	</brief_description>
 	<description>
-		PhysicsServer2D is the server responsible for all 2D physics. It can directly create and manipulate all physics objects:
+		PhysicsServer3D is the server responsible for all 3D physics. It can directly create and manipulate all physics objects:
 		- A [i]space[/i] is a self-contained world for a physics simulation. It contains bodies, areas, and joints. Its state can be queried for collision and intersection information, and several parameters of the simulation can be modified.
 		- A [i]shape[/i] is a geometric shape such as a sphere, a box, a cylinder, or a polygon. It can be used for collision detection by adding it to a body/area, possibly with an extra transformation relative to the body/area's origin. Bodies/areas can have multiple (transformed) shapes added to them, and a single shape can be added to bodies/areas multiple times with different local transformations.
 		- A [i]body[/i] is a physical object which can be in static, kinematic, or rigid mode. Its state (such as position and velocity) can be queried and updated. A force integration callback can be set to customize the body's physics.
@@ -582,10 +582,9 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="userdata" type="Variant" default="null" />
 			<description>
-				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
-				The force integration function takes 2 arguments:
-				[code]state:[/code] [PhysicsDirectBodyState3D] used to retrieve and modify the body's state.
-				[code]userdata:[/code] Optional user data, if it was passed when calling [code]body_set_force_integration_callback[/code].
+				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]). The force integration function takes 2 arguments:
+				- [code]state[/code] — [PhysicsDirectBodyState3D] used to retrieve and modify the body's state.
+				- [code skip-lint]userdata[/code] — optional user data passed to [method body_set_force_integration_callback].
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -1146,7 +1145,7 @@
 			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3" enum="SliderJointParam">
-			The amount of restitution once the limits are surpassed. The lower, the more velocityenergy gets lost.
+			The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4" enum="SliderJointParam">
 			The amount of damping once the slider limits are surpassed.

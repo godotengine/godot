@@ -956,7 +956,7 @@ hb_cairo_glyphs_from_buffer (hb_buffer_t *buffer,
 
   if (clusters && *num_clusters && utf8)
   {
-    memset ((void *) *clusters, 0, *num_clusters * sizeof ((*clusters)[0]));
+    hb_memset ((void *) *clusters, 0, *num_clusters * sizeof ((*clusters)[0]));
     hb_bool_t backward = HB_DIRECTION_IS_BACKWARD (hb_buffer_get_direction (buffer));
     *cluster_flags = backward ? CAIRO_TEXT_CLUSTER_FLAG_BACKWARD : (cairo_text_cluster_flags_t) 0;
     unsigned int cluster = 0;

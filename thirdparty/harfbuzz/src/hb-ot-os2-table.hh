@@ -249,7 +249,7 @@ struct OS2
     if (c->plan->user_axes_location.has (HB_TAG ('w','g','h','t')) &&
         !c->plan->pinned_at_default)
     {
-      float weight_class = c->plan->user_axes_location.get (HB_TAG ('w','g','h','t'));
+      float weight_class = c->plan->user_axes_location.get (HB_TAG ('w','g','h','t')).middle;
       if (!c->serializer->check_assign (os2_prime->usWeightClass,
                                         roundf (hb_clamp (weight_class, 1.0f, 1000.0f)),
                                         HB_SERIALIZE_ERROR_INT_OVERFLOW))
@@ -259,7 +259,7 @@ struct OS2
     if (c->plan->user_axes_location.has (HB_TAG ('w','d','t','h')) &&
         !c->plan->pinned_at_default)
     {
-      float width = c->plan->user_axes_location.get (HB_TAG ('w','d','t','h'));
+      float width = c->plan->user_axes_location.get (HB_TAG ('w','d','t','h')).middle;
       if (!c->serializer->check_assign (os2_prime->usWidthClass,
                                         roundf (map_wdth_to_widthclass (width)),
                                         HB_SERIALIZE_ERROR_INT_OVERFLOW))
@@ -287,8 +287,7 @@ struct OS2
     /* This block doesn't show up in profiles. If it ever did,
      * we can rewrite it to iterate over OS/2 ranges and use
      * set iteration to check if the range matches. */
-    for (hb_codepoint_t cp = HB_SET_VALUE_INVALID;
-	 codepoints->next (&cp);)
+    for (auto cp : *codepoints)
     {
       unsigned int bit = _hb_ot_os2_get_unicode_range_bit (cp);
       if (bit < 128)

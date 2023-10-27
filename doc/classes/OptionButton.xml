@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptionButton" inherits="Button" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OptionButton" inherits="Button" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A button that brings up a dropdown with selectable options when pressed.
 	</brief_description>
 	<description>
 		[OptionButton] is a type of button that brings up a dropdown with selectable items when pressed. The item selected becomes the "current" item and is displayed as the button text.
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] Properties [member Button.text] and [member Button.icon] are automatically set based on the selected item. They shouldn't be changed manually.
 		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
-		[b]Note:[/b] The ID values used for items are 32-bit, unlike [int] which is always 64-bit. They go from [code]-2147483648[/code] to [code]2147483647[/code].
 		[b]Note:[/b] The [member Button.text] and [member Button.icon] properties are set automatically based on the selected item. They shouldn't be changed manually.
 	</description>
 	<tutorials>
@@ -148,6 +146,13 @@
 				Passing [code]-1[/code] as the index deselects any currently selected item.
 			</description>
 		</method>
+		<method name="set_disable_shortcuts">
+			<return type="void" />
+			<param index="0" name="disabled" type="bool" />
+			<description>
+				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
+			</description>
+		</method>
 		<method name="set_item_disabled">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
@@ -238,75 +243,14 @@
 		</signal>
 	</signals>
 	<theme_items>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
-			Default text [Color] of the [OptionButton].
-		</theme_item>
-		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
-			Text [Color] used when the [OptionButton] is disabled.
-		</theme_item>
-		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
-			Text [Color] used when the [OptionButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
-		</theme_item>
-		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
-			Text [Color] used when the [OptionButton] is being hovered.
-		</theme_item>
-		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			Text [Color] used when the [OptionButton] is being hovered and pressed.
-		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			The tint of text outline of the [OptionButton].
-		</theme_item>
-		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			Text [Color] used when the [OptionButton] is being pressed.
-		</theme_item>
 		<theme_item name="arrow_margin" data_type="constant" type="int" default="4">
 			The horizontal space between the arrow icon and the right edge of the button.
-		</theme_item>
-		<theme_item name="h_separation" data_type="constant" type="int" default="2">
-			The horizontal space between [OptionButton]'s icon and text. Negative values will be treated as [code]0[/code] when used.
 		</theme_item>
 		<theme_item name="modulate_arrow" data_type="constant" type="int" default="0">
 			If different than [code]0[/code], the arrow icon will be modulated to the font color.
 		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
-			The size of the text outline.
-			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] of the [OptionButton]'s text.
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [OptionButton]'s text.
-		</theme_item>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">
 			The arrow icon to be drawn on the right end of the button.
-		</theme_item>
-		<theme_item name="disabled" data_type="style" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is disabled (for left-to-right layouts).
-		</theme_item>
-		<theme_item name="disabled_mirrored" data_type="style" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is disabled (for right-to-left layouts).
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
-		</theme_item>
-		<theme_item name="hover" data_type="style" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is being hovered (for left-to-right layouts).
-		</theme_item>
-		<theme_item name="hover_mirrored" data_type="style" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is being hovered (for right-to-left layouts).
-		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			Default [StyleBox] for the [OptionButton] (for left-to-right layouts).
-		</theme_item>
-		<theme_item name="normal_mirrored" data_type="style" type="StyleBox">
-			Default [StyleBox] for the [OptionButton] (for right-to-left layouts).
-		</theme_item>
-		<theme_item name="pressed" data_type="style" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is being pressed (for left-to-right layouts).
-		</theme_item>
-		<theme_item name="pressed_mirrored" data_type="style" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is being pressed (for right-to-left layouts).
 		</theme_item>
 	</theme_items>
 </class>

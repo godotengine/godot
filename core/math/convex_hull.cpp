@@ -658,7 +658,7 @@ private:
 
 	Vector3 get_gd_normal(Face *p_face);
 
-	bool shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> p_stack);
+	bool shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> &p_stack);
 
 public:
 	~ConvexHullInternal() {
@@ -1775,7 +1775,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 	return p_amount;
 }
 
-bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> p_stack) {
+bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> &p_stack) {
 	Vector3 orig_shift = get_gd_normal(p_face) * -p_amount;
 	if (scaling[0] != 0) {
 		orig_shift[0] /= scaling[0];
@@ -2278,7 +2278,7 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 
 	uint32_t edges_copied = 0;
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
-		ERR_CONTINUE(edge_faces[i] == -1); // Sanity check
+		ERR_CONTINUE(edge_faces[i] == -1); // Safety check.
 
 		uint32_t a = (&ch.edges[i])->get_source_vertex();
 		uint32_t b = (&ch.edges[i])->get_target_vertex();

@@ -28,8 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "main/main.h"
 #include "os_windows.h"
+
+#include "main/main.h"
 
 #include <locale.h>
 #include <stdio.h>

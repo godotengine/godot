@@ -37,7 +37,7 @@ extern "C" {
 // SharpYUV API version following the convention from semver.org
 #define SHARPYUV_VERSION_MAJOR 0
 #define SHARPYUV_VERSION_MINOR 2
-#define SHARPYUV_VERSION_PATCH 0
+#define SHARPYUV_VERSION_PATCH 1
 // Version as a uint32_t. The major number is the high 8 bits.
 // The minor number is the middle 8 bits. The patch number is the low 16 bits.
 #define SHARPYUV_MAKE_VERSION(MAJOR, MINOR, PATCH) \

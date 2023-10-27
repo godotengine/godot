@@ -31,11 +31,12 @@
 #ifndef GDSCRIPT_CACHE_H
 #define GDSCRIPT_CACHE_H
 
+#include "gdscript.h"
+
 #include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
-#include "gdscript.h"
 #include "scene/resources/packed_scene.h"
 
 class GDScriptAnalyzer;

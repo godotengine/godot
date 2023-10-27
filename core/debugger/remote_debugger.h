@@ -80,6 +80,17 @@ private:
 	bool flushing = false;
 	Thread::ID flush_thread = 0;
 
+	struct Message {
+		String message;
+		Array data;
+	};
+
+	HashMap<Thread::ID, List<Message>> messages;
+
+	void _poll_messages();
+	bool _has_messages();
+	Array _get_message();
+
 	PrintHandlerList phl;
 	static void _print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich);
 	ErrorHandlerList eh;

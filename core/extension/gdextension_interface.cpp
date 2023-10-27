@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
+#include "core/extension/gdextension_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/xml_parser.h"
 #include "core/object/class_db.h"
@@ -40,6 +41,150 @@
 #include "core/os/memory.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
+
+class CallableCustomExtension : public CallableCustom {
+	void *userdata;
+	void *token;
+
+	ObjectID object;
+
+	GDExtensionCallableCustomCall call_func;
+	GDExtensionCallableCustomIsValid is_valid_func;
+	GDExtensionCallableCustomFree free_func;
+
+	GDExtensionCallableCustomEqual equal_func;
+	GDExtensionCallableCustomLessThan less_than_func;
+
+	GDExtensionCallableCustomToString to_string_func;
+
+	uint32_t _hash;
+
+	static bool default_compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->call_func != b->call_func || a->userdata != b->userdata) {
+			return false;
+		}
+		return true;
+	}
+
+	static bool default_compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->call_func != b->call_func) {
+			return a->call_func < b->call_func;
+		}
+		return a->userdata < b->userdata;
+	}
+
+	static bool custom_compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->equal_func != b->equal_func) {
+			return false;
+		}
+		return a->equal_func(a->userdata, b->userdata);
+	}
+
+	static bool custom_compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->less_than_func != b->less_than_func) {
+			return default_compare_less(p_a, p_b);
+		}
+		return a->less_than_func(a->userdata, b->userdata);
+	}
+
+public:
+	uint32_t hash() const override {
+		return _hash;
+	}
+
+	String get_as_text() const override {
+		if (to_string_func != nullptr) {
+			String out;
+			GDExtensionBool is_valid = false;
+
+			to_string_func(userdata, &is_valid, (GDExtensionStringPtr)&out);
+
+			if (is_valid) {
+				return out;
+			}
+		}
+		return "<CallableCustom>";
+	}
+
+	CompareEqualFunc get_compare_equal_func() const override {
+		return (equal_func != nullptr) ? custom_compare_equal : default_compare_equal;
+	}
+
+	CompareLessFunc get_compare_less_func() const override {
+		return (less_than_func != nullptr) ? custom_compare_less : default_compare_less;
+	}
+
+	bool is_valid() const override {
+		if (is_valid_func != nullptr && !is_valid_func(userdata)) {
+			return false;
+		}
+		return call_func != nullptr;
+	}
+
+	StringName get_method() const override {
+		return StringName();
+	}
+
+	ObjectID get_object() const override {
+		return object;
+	}
+
+	void *get_userdata(void *p_token) const {
+		return (p_token == token) ? userdata : nullptr;
+	}
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+		GDExtensionCallError error;
+
+		call_func(userdata, (GDExtensionConstVariantPtr *)p_arguments, p_argcount, (GDExtensionVariantPtr)&r_return_value, &error);
+
+		r_call_error.error = (Callable::CallError::Error)error.error;
+		r_call_error.argument = error.argument;
+		r_call_error.expected = error.expected;
+	}
+
+	CallableCustomExtension(GDExtensionCallableCustomInfo *p_info) {
+		userdata = p_info->callable_userdata;
+		token = p_info->token;
+
+		object = p_info->object_id;
+
+		call_func = p_info->call_func;
+		is_valid_func = p_info->is_valid_func;
+		free_func = p_info->free_func;
+
+		equal_func = p_info->equal_func;
+		less_than_func = p_info->less_than_func;
+
+		to_string_func = p_info->to_string_func;
+
+		// Pre-calculate the hash.
+		if (p_info->hash_func != nullptr) {
+			_hash = p_info->hash_func(userdata);
+		} else {
+			_hash = hash_murmur3_one_64((uint64_t)call_func);
+			_hash = hash_murmur3_one_64((uint64_t)userdata, _hash);
+		}
+	}
+
+	~CallableCustomExtension() {
+		if (free_func != nullptr) {
+			free_func(userdata);
+		}
+	}
+};
 
 // Core interface functions.
 GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name) {
@@ -253,7 +398,7 @@ static void gdextension_variant_iter_get(GDExtensionConstVariantPtr p_self, GDEx
 	Variant *iter = (Variant *)r_iter;
 
 	bool valid;
-	memnew_placement(r_ret, Variant(self->iter_next(*iter, valid)));
+	memnew_placement(r_ret, Variant(self->iter_get(*iter, valid)));
 	*r_valid = valid;
 }
 
@@ -607,25 +752,25 @@ static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitiali
 	dest->parse_utf8(p_contents, p_size);
 }
 
-static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_size) {
+static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count) {
 	memnew_placement(r_dest, String);
 	String *dest = reinterpret_cast<String *>(r_dest);
-	dest->parse_utf16(p_contents, p_size);
+	dest->parse_utf16(p_contents, p_char_count);
 }
 
-static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_size) {
-	memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
+static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
+	memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
 }
 
-static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_size) {
+static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count) {
 	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit, parse.
 		memnew_placement(r_dest, String);
 		String *dest = reinterpret_cast<String *>(r_dest);
-		dest->parse_utf16((const char16_t *)p_contents, p_size);
+		dest->parse_utf16((const char16_t *)p_contents, p_char_count);
 	} else {
 		// wchar_t is 32 bit, copy.
-		memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
+		memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
 	}
 }
 
@@ -724,6 +869,29 @@ static void gdextension_string_operator_plus_eq_wcstr(GDExtensionStringPtr p_sel
 static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_self, const char32_t *p_b) {
 	String *self = (String *)p_self;
 	*self += p_b;
+}
+
+static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDExtensionInt p_length) {
+	String *self = (String *)p_self;
+	return (*self).resize(p_length);
+}
+
+static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
+	memnew_placement(r_dest, StringName(p_contents, static_cast<bool>(p_is_static)));
+}
+
+static void gdextension_string_name_new_with_utf8_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents) {
+	String tmp;
+	tmp.parse_utf8(p_contents);
+
+	memnew_placement(r_dest, StringName(tmp));
+}
+
+static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	String tmp;
+	tmp.parse_utf8(p_contents, p_size);
+
+	memnew_placement(r_dest, StringName(tmp));
 }
 
 static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
@@ -982,6 +1150,11 @@ static void gdextension_object_set_instance_binding(GDExtensionObjectPtr p_objec
 	o->set_instance_binding(p_token, p_binding, p_callbacks);
 }
 
+static void gdextension_object_free_instance_binding(GDExtensionObjectPtr p_object, void *p_token) {
+	Object *o = (Object *)p_object;
+	o->free_instance_binding(p_token);
+}
+
 static void gdextension_object_set_instance(GDExtensionObjectPtr p_object, GDExtensionConstStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	Object *o = (Object *)p_object;
@@ -1036,11 +1209,119 @@ static void gdextension_ref_set_object(GDExtensionRefPtr p_ref, GDExtensionObjec
 	ref->reference_ptr(o);
 }
 
+#ifndef DISABLE_DEPRECATED
 static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
+	GDExtensionScriptInstanceInfo2 *info_2 = memnew(GDExtensionScriptInstanceInfo2);
+	info_2->set_func = p_info->set_func;
+	info_2->get_func = p_info->get_func;
+	info_2->get_property_list_func = p_info->get_property_list_func;
+	info_2->free_property_list_func = p_info->free_property_list_func;
+	info_2->get_class_category_func = nullptr;
+	info_2->property_can_revert_func = p_info->property_can_revert_func;
+	info_2->property_get_revert_func = p_info->property_get_revert_func;
+	info_2->get_owner_func = p_info->get_owner_func;
+	info_2->get_property_state_func = p_info->get_property_state_func;
+	info_2->get_method_list_func = p_info->get_method_list_func;
+	info_2->free_method_list_func = p_info->free_method_list_func;
+	info_2->get_property_type_func = p_info->get_property_type_func;
+	info_2->validate_property_func = nullptr;
+	info_2->has_method_func = p_info->has_method_func;
+	info_2->call_func = p_info->call_func;
+	info_2->notification_func = nullptr;
+	info_2->to_string_func = p_info->to_string_func;
+	info_2->refcount_incremented_func = p_info->refcount_incremented_func;
+	info_2->refcount_decremented_func = p_info->refcount_decremented_func;
+	info_2->get_script_func = p_info->get_script_func;
+	info_2->is_placeholder_func = p_info->is_placeholder_func;
+	info_2->set_fallback_func = p_info->set_fallback_func;
+	info_2->get_fallback_func = p_info->get_fallback_func;
+	info_2->get_language_func = p_info->get_language_func;
+	info_2->free_func = p_info->free_func;
+
+	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
+	script_instance_extension->instance = p_instance_data;
+	script_instance_extension->native_info = info_2;
+	script_instance_extension->free_native_info = true;
+	script_instance_extension->deprecated_native_info.notification_func = p_info->notification_func;
+	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
+}
+#endif // DISABLE_DEPRECATED
+
+static GDExtensionScriptInstancePtr gdextension_script_instance_create2(const GDExtensionScriptInstanceInfo2 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
 	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
 	script_instance_extension->instance = p_instance_data;
 	script_instance_extension->native_info = p_info;
 	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
+}
+
+static GDExtensionScriptInstancePtr gdextension_placeholder_script_instance_create(GDExtensionObjectPtr p_language, GDExtensionObjectPtr p_script, GDExtensionObjectPtr p_owner) {
+	ScriptLanguage *language = (ScriptLanguage *)p_language;
+	Ref<Script> script;
+	script.reference_ptr((Script *)p_script);
+	Object *owner = (Object *)p_owner;
+
+	PlaceHolderScriptInstance *placeholder = memnew(PlaceHolderScriptInstance(language, script, owner));
+	return reinterpret_cast<GDExtensionScriptInstancePtr>(placeholder);
+}
+
+static void gdextension_placeholder_script_instance_update(GDExtensionScriptInstancePtr p_placeholder, GDExtensionConstTypePtr p_properties, GDExtensionConstTypePtr p_values) {
+	PlaceHolderScriptInstance *placeholder = dynamic_cast<PlaceHolderScriptInstance *>(reinterpret_cast<ScriptInstance *>(p_placeholder));
+	ERR_FAIL_NULL_MSG(placeholder, "Unable to update placeholder, expected a PlaceHolderScriptInstance but received an invalid type.");
+
+	const Array &properties = *reinterpret_cast<const Array *>(p_properties);
+	const Dictionary &values = *reinterpret_cast<const Dictionary *>(p_values);
+
+	List<PropertyInfo> properties_list;
+	HashMap<StringName, Variant> values_map;
+
+	for (int i = 0; i < properties.size(); i++) {
+		Dictionary d = properties[i];
+		properties_list.push_back(PropertyInfo::from_dict(d));
+	}
+
+	List<Variant> keys;
+	values.get_key_list(&keys);
+
+	for (const Variant &E : keys) {
+		values_map.insert(E, values[E]);
+	}
+
+	placeholder->update(properties_list, values_map);
+}
+
+static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExtensionConstObjectPtr p_object, GDExtensionConstObjectPtr p_language) {
+	if (!p_object || !p_language) {
+		return nullptr;
+	}
+
+	const Object *o = (const Object *)p_object;
+	ScriptInstanceExtension *script_instance_extension = reinterpret_cast<ScriptInstanceExtension *>(o->get_script_instance());
+	if (!script_instance_extension) {
+		return nullptr;
+	}
+
+	const ScriptLanguage *language = script_instance_extension->get_language();
+	if (language != p_language) {
+		return nullptr;
+	}
+
+	return script_instance_extension->instance;
+}
+
+static void gdextension_callable_custom_create(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo *p_custom_callable_info) {
+	memnew_placement(r_callable, Callable(memnew(CallableCustomExtension(p_custom_callable_info))));
+}
+
+static void *gdextension_callable_custom_get_userdata(GDExtensionTypePtr p_callable, void *p_token) {
+	const Callable &callable = *reinterpret_cast<const Callable *>(p_callable);
+	if (!callable.is_custom()) {
+		return nullptr;
+	}
+	const CallableCustomExtension *custom_callable = dynamic_cast<const CallableCustomExtension *>(callable.get_custom());
+	if (!custom_callable) {
+		return nullptr;
+	}
+	return custom_callable->get_userdata(p_token);
 }
 
 static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash) {
@@ -1048,15 +1329,22 @@ static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionC
 	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
 	bool exists = false;
 	MethodBind *mb = ClassDB::get_method_with_compatibility(classname, methodname, p_hash, &exists);
+
+#ifndef DISABLE_DEPRECATED
+	// If lookup failed, see if this is one of the broken hashes from issue #81386.
+	if (!mb && exists) {
+		uint32_t mapped_hash;
+		if (GDExtensionCompatHashes::lookup_current_hash(classname, methodname, p_hash, &mapped_hash)) {
+			mb = ClassDB::get_method_with_compatibility(classname, methodname, mapped_hash, &exists);
+		}
+	}
+#endif
+
 	if (!mb && exists) {
 		ERR_PRINT("Method '" + classname + "." + methodname + "' has changed and no compatibility fallback has been provided. Please open an issue.");
 		return nullptr;
 	}
-	ERR_FAIL_COND_V(!mb, nullptr);
-	if (mb->get_hash() != p_hash) {
-		ERR_PRINT("Hash mismatch for method '" + classname + "." + methodname + "'.");
-		return nullptr;
-	}
+	ERR_FAIL_NULL_V(mb, nullptr);
 	return (GDExtensionMethodBindPtr)mb;
 }
 
@@ -1167,6 +1455,10 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_cstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_wcstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_c32str);
+	REGISTER_INTERFACE_FUNC(string_resize);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_latin1_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(xml_parser_open_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_store_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_get_buffer);
@@ -1202,6 +1494,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(global_get_singleton);
 	REGISTER_INTERFACE_FUNC(object_get_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance_binding);
+	REGISTER_INTERFACE_FUNC(object_free_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance);
 	REGISTER_INTERFACE_FUNC(object_get_class_name);
 	REGISTER_INTERFACE_FUNC(object_cast_to);
@@ -1209,7 +1502,15 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(object_get_instance_id);
 	REGISTER_INTERFACE_FUNC(ref_get_object);
 	REGISTER_INTERFACE_FUNC(ref_set_object);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(script_instance_create);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(script_instance_create2);
+	REGISTER_INTERFACE_FUNC(placeholder_script_instance_create);
+	REGISTER_INTERFACE_FUNC(placeholder_script_instance_update);
+	REGISTER_INTERFACE_FUNC(object_get_script_instance);
+	REGISTER_INTERFACE_FUNC(callable_custom_create);
+	REGISTER_INTERFACE_FUNC(callable_custom_get_userdata);
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
 	REGISTER_INTERFACE_FUNC(classdb_get_class_tag);
@@ -1218,322 +1519,3 @@ void gdextension_setup_interface() {
 }
 
 #undef REGISTER_INTERFACE_FUNCTION
-
-/*
- * Handle legacy GDExtension interface from Godot 4.0.
- */
-
-typedef struct {
-	uint32_t version_major;
-	uint32_t version_minor;
-	uint32_t version_patch;
-	const char *version_string;
-
-	GDExtensionInterfaceMemAlloc mem_alloc;
-	GDExtensionInterfaceMemRealloc mem_realloc;
-	GDExtensionInterfaceMemFree mem_free;
-
-	GDExtensionInterfacePrintError print_error;
-	GDExtensionInterfacePrintErrorWithMessage print_error_with_message;
-	GDExtensionInterfacePrintWarning print_warning;
-	GDExtensionInterfacePrintWarningWithMessage print_warning_with_message;
-	GDExtensionInterfacePrintScriptError print_script_error;
-	GDExtensionInterfacePrintScriptErrorWithMessage print_script_error_with_message;
-
-	GDExtensionInterfaceGetNativeStructSize get_native_struct_size;
-
-	GDExtensionInterfaceVariantNewCopy variant_new_copy;
-	GDExtensionInterfaceVariantNewNil variant_new_nil;
-	GDExtensionInterfaceVariantDestroy variant_destroy;
-
-	GDExtensionInterfaceVariantCall variant_call;
-	GDExtensionInterfaceVariantCallStatic variant_call_static;
-	GDExtensionInterfaceVariantEvaluate variant_evaluate;
-	GDExtensionInterfaceVariantSet variant_set;
-	GDExtensionInterfaceVariantSetNamed variant_set_named;
-	GDExtensionInterfaceVariantSetKeyed variant_set_keyed;
-	GDExtensionInterfaceVariantSetIndexed variant_set_indexed;
-	GDExtensionInterfaceVariantGet variant_get;
-	GDExtensionInterfaceVariantGetNamed variant_get_named;
-	GDExtensionInterfaceVariantGetKeyed variant_get_keyed;
-	GDExtensionInterfaceVariantGetIndexed variant_get_indexed;
-	GDExtensionInterfaceVariantIterInit variant_iter_init;
-	GDExtensionInterfaceVariantIterNext variant_iter_next;
-	GDExtensionInterfaceVariantIterGet variant_iter_get;
-	GDExtensionInterfaceVariantHash variant_hash;
-	GDExtensionInterfaceVariantRecursiveHash variant_recursive_hash;
-	GDExtensionInterfaceVariantHashCompare variant_hash_compare;
-	GDExtensionInterfaceVariantBooleanize variant_booleanize;
-	GDExtensionInterfaceVariantDuplicate variant_duplicate;
-	GDExtensionInterfaceVariantStringify variant_stringify;
-
-	GDExtensionInterfaceVariantGetType variant_get_type;
-	GDExtensionInterfaceVariantHasMethod variant_has_method;
-	GDExtensionInterfaceVariantHasMember variant_has_member;
-	GDExtensionInterfaceVariantHasKey variant_has_key;
-	GDExtensionInterfaceVariantGetTypeName variant_get_type_name;
-	GDExtensionInterfaceVariantCanConvert variant_can_convert;
-	GDExtensionInterfaceVariantCanConvertStrict variant_can_convert_strict;
-
-	GDExtensionInterfaceGetVariantFromTypeConstructor get_variant_from_type_constructor;
-	GDExtensionInterfaceGetVariantToTypeConstructor get_variant_to_type_constructor;
-	GDExtensionInterfaceVariantGetPtrOperatorEvaluator variant_get_ptr_operator_evaluator;
-	GDExtensionInterfaceVariantGetPtrBuiltinMethod variant_get_ptr_builtin_method;
-	GDExtensionInterfaceVariantGetPtrConstructor variant_get_ptr_constructor;
-	GDExtensionInterfaceVariantGetPtrDestructor variant_get_ptr_destructor;
-	GDExtensionInterfaceVariantConstruct variant_construct;
-	GDExtensionInterfaceVariantGetPtrSetter variant_get_ptr_setter;
-	GDExtensionInterfaceVariantGetPtrGetter variant_get_ptr_getter;
-	GDExtensionInterfaceVariantGetPtrIndexedSetter variant_get_ptr_indexed_setter;
-	GDExtensionInterfaceVariantGetPtrIndexedGetter variant_get_ptr_indexed_getter;
-	GDExtensionInterfaceVariantGetPtrKeyedSetter variant_get_ptr_keyed_setter;
-	GDExtensionInterfaceVariantGetPtrKeyedGetter variant_get_ptr_keyed_getter;
-	GDExtensionInterfaceVariantGetPtrKeyedChecker variant_get_ptr_keyed_checker;
-	GDExtensionInterfaceVariantGetConstantValue variant_get_constant_value;
-	GDExtensionInterfaceVariantGetPtrUtilityFunction variant_get_ptr_utility_function;
-
-	GDExtensionInterfaceStringNewWithLatin1Chars string_new_with_latin1_chars;
-	GDExtensionInterfaceStringNewWithUtf8Chars string_new_with_utf8_chars;
-	GDExtensionInterfaceStringNewWithUtf16Chars string_new_with_utf16_chars;
-	GDExtensionInterfaceStringNewWithUtf32Chars string_new_with_utf32_chars;
-	GDExtensionInterfaceStringNewWithWideChars string_new_with_wide_chars;
-	GDExtensionInterfaceStringNewWithLatin1CharsAndLen string_new_with_latin1_chars_and_len;
-	GDExtensionInterfaceStringNewWithUtf8CharsAndLen string_new_with_utf8_chars_and_len;
-	GDExtensionInterfaceStringNewWithUtf16CharsAndLen string_new_with_utf16_chars_and_len;
-	GDExtensionInterfaceStringNewWithUtf32CharsAndLen string_new_with_utf32_chars_and_len;
-	GDExtensionInterfaceStringNewWithWideCharsAndLen string_new_with_wide_chars_and_len;
-	GDExtensionInterfaceStringToLatin1Chars string_to_latin1_chars;
-	GDExtensionInterfaceStringToUtf8Chars string_to_utf8_chars;
-	GDExtensionInterfaceStringToUtf16Chars string_to_utf16_chars;
-	GDExtensionInterfaceStringToUtf32Chars string_to_utf32_chars;
-	GDExtensionInterfaceStringToWideChars string_to_wide_chars;
-	GDExtensionInterfaceStringOperatorIndex string_operator_index;
-	GDExtensionInterfaceStringOperatorIndexConst string_operator_index_const;
-
-	GDExtensionInterfaceStringOperatorPlusEqString string_operator_plus_eq_string;
-	GDExtensionInterfaceStringOperatorPlusEqChar string_operator_plus_eq_char;
-	GDExtensionInterfaceStringOperatorPlusEqCstr string_operator_plus_eq_cstr;
-	GDExtensionInterfaceStringOperatorPlusEqWcstr string_operator_plus_eq_wcstr;
-	GDExtensionInterfaceStringOperatorPlusEqC32str string_operator_plus_eq_c32str;
-
-	GDExtensionInterfaceXmlParserOpenBuffer xml_parser_open_buffer;
-
-	GDExtensionInterfaceFileAccessStoreBuffer file_access_store_buffer;
-	GDExtensionInterfaceFileAccessGetBuffer file_access_get_buffer;
-
-	GDExtensionInterfaceWorkerThreadPoolAddNativeGroupTask worker_thread_pool_add_native_group_task;
-	GDExtensionInterfaceWorkerThreadPoolAddNativeTask worker_thread_pool_add_native_task;
-
-	GDExtensionInterfacePackedByteArrayOperatorIndex packed_byte_array_operator_index;
-	GDExtensionInterfacePackedByteArrayOperatorIndexConst packed_byte_array_operator_index_const;
-	GDExtensionInterfacePackedColorArrayOperatorIndex packed_color_array_operator_index;
-	GDExtensionInterfacePackedColorArrayOperatorIndexConst packed_color_array_operator_index_const;
-	GDExtensionInterfacePackedFloat32ArrayOperatorIndex packed_float32_array_operator_index;
-	GDExtensionInterfacePackedFloat32ArrayOperatorIndexConst packed_float32_array_operator_index_const;
-	GDExtensionInterfacePackedFloat64ArrayOperatorIndex packed_float64_array_operator_index;
-	GDExtensionInterfacePackedFloat64ArrayOperatorIndexConst packed_float64_array_operator_index_const;
-	GDExtensionInterfacePackedInt32ArrayOperatorIndex packed_int32_array_operator_index;
-	GDExtensionInterfacePackedInt32ArrayOperatorIndexConst packed_int32_array_operator_index_const;
-	GDExtensionInterfacePackedInt64ArrayOperatorIndex packed_int64_array_operator_index;
-	GDExtensionInterfacePackedInt64ArrayOperatorIndexConst packed_int64_array_operator_index_const;
-	GDExtensionInterfacePackedStringArrayOperatorIndex packed_string_array_operator_index;
-	GDExtensionInterfacePackedStringArrayOperatorIndexConst packed_string_array_operator_index_const;
-	GDExtensionInterfacePackedVector2ArrayOperatorIndex packed_vector2_array_operator_index;
-	GDExtensionInterfacePackedVector2ArrayOperatorIndexConst packed_vector2_array_operator_index_const;
-	GDExtensionInterfacePackedVector3ArrayOperatorIndex packed_vector3_array_operator_index;
-	GDExtensionInterfacePackedVector3ArrayOperatorIndexConst packed_vector3_array_operator_index_const;
-	GDExtensionInterfaceArrayOperatorIndex array_operator_index;
-	GDExtensionInterfaceArrayOperatorIndexConst array_operator_index_const;
-	GDExtensionInterfaceArrayRef array_ref;
-	GDExtensionInterfaceArraySetTyped array_set_typed;
-
-	GDExtensionInterfaceDictionaryOperatorIndex dictionary_operator_index;
-	GDExtensionInterfaceDictionaryOperatorIndexConst dictionary_operator_index_const;
-
-	GDExtensionInterfaceObjectMethodBindCall object_method_bind_call;
-	GDExtensionInterfaceObjectMethodBindPtrcall object_method_bind_ptrcall;
-	GDExtensionInterfaceObjectDestroy object_destroy;
-	GDExtensionInterfaceGlobalGetSingleton global_get_singleton;
-	GDExtensionInterfaceObjectGetInstanceBinding object_get_instance_binding;
-	GDExtensionInterfaceObjectSetInstanceBinding object_set_instance_binding;
-	GDExtensionInterfaceObjectSetInstance object_set_instance;
-	GDExtensionInterfaceObjectCastTo object_cast_to;
-	GDExtensionInterfaceObjectGetInstanceFromId object_get_instance_from_id;
-	GDExtensionInterfaceObjectGetInstanceId object_get_instance_id;
-
-	GDExtensionInterfaceRefGetObject ref_get_object;
-	GDExtensionInterfaceRefSetObject ref_set_object;
-
-	GDExtensionInterfaceScriptInstanceCreate script_instance_create;
-
-	GDExtensionInterfaceClassdbConstructObject classdb_construct_object;
-	GDExtensionInterfaceClassdbGetMethodBind classdb_get_method_bind;
-	GDExtensionInterfaceClassdbGetClassTag classdb_get_class_tag;
-
-	GDExtensionInterfaceClassdbRegisterExtensionClass classdb_register_extension_class;
-	GDExtensionInterfaceClassdbRegisterExtensionClassMethod classdb_register_extension_class_method;
-	GDExtensionInterfaceClassdbRegisterExtensionClassIntegerConstant classdb_register_extension_class_integer_constant;
-	GDExtensionInterfaceClassdbRegisterExtensionClassProperty classdb_register_extension_class_property;
-	GDExtensionInterfaceClassdbRegisterExtensionClassPropertyGroup classdb_register_extension_class_property_group;
-	GDExtensionInterfaceClassdbRegisterExtensionClassPropertySubgroup classdb_register_extension_class_property_subgroup;
-	GDExtensionInterfaceClassdbRegisterExtensionClassSignal classdb_register_extension_class_signal;
-	GDExtensionInterfaceClassdbUnregisterExtensionClass classdb_unregister_extension_class;
-
-	GDExtensionInterfaceGetLibraryPath get_library_path;
-
-} LegacyGDExtensionInterface;
-
-static LegacyGDExtensionInterface *legacy_gdextension_interface = nullptr;
-
-#define SETUP_LEGACY_FUNC(m_name, m_type) legacy_gdextension_interface->m_name = (m_type)GDExtension::get_interface_function(#m_name)
-
-void *gdextension_get_legacy_interface() {
-	if (legacy_gdextension_interface != nullptr) {
-		return legacy_gdextension_interface;
-	}
-
-	legacy_gdextension_interface = memnew(LegacyGDExtensionInterface);
-
-	// Force to 4.0.999 to make it easier to detect this structure.
-	legacy_gdextension_interface->version_major = 4;
-	legacy_gdextension_interface->version_minor = 0;
-	legacy_gdextension_interface->version_patch = 999;
-	legacy_gdextension_interface->version_string = "Godot Engine v4.0.999.stable.official [000000000]";
-
-	SETUP_LEGACY_FUNC(mem_alloc, GDExtensionInterfaceMemAlloc);
-	SETUP_LEGACY_FUNC(mem_realloc, GDExtensionInterfaceMemRealloc);
-	SETUP_LEGACY_FUNC(mem_free, GDExtensionInterfaceMemFree);
-	SETUP_LEGACY_FUNC(print_error, GDExtensionInterfacePrintError);
-	SETUP_LEGACY_FUNC(print_error_with_message, GDExtensionInterfacePrintErrorWithMessage);
-	SETUP_LEGACY_FUNC(print_warning, GDExtensionInterfacePrintWarning);
-	SETUP_LEGACY_FUNC(print_warning_with_message, GDExtensionInterfacePrintWarningWithMessage);
-	SETUP_LEGACY_FUNC(print_script_error, GDExtensionInterfacePrintScriptError);
-	SETUP_LEGACY_FUNC(print_script_error_with_message, GDExtensionInterfacePrintScriptErrorWithMessage);
-	SETUP_LEGACY_FUNC(get_native_struct_size, GDExtensionInterfaceGetNativeStructSize);
-	SETUP_LEGACY_FUNC(variant_new_copy, GDExtensionInterfaceVariantNewCopy);
-	SETUP_LEGACY_FUNC(variant_new_nil, GDExtensionInterfaceVariantNewNil);
-	SETUP_LEGACY_FUNC(variant_destroy, GDExtensionInterfaceVariantDestroy);
-	SETUP_LEGACY_FUNC(variant_call, GDExtensionInterfaceVariantCall);
-	SETUP_LEGACY_FUNC(variant_call_static, GDExtensionInterfaceVariantCallStatic);
-	SETUP_LEGACY_FUNC(variant_evaluate, GDExtensionInterfaceVariantEvaluate);
-	SETUP_LEGACY_FUNC(variant_set, GDExtensionInterfaceVariantSet);
-	SETUP_LEGACY_FUNC(variant_set_named, GDExtensionInterfaceVariantSetNamed);
-	SETUP_LEGACY_FUNC(variant_set_keyed, GDExtensionInterfaceVariantSetKeyed);
-	SETUP_LEGACY_FUNC(variant_set_indexed, GDExtensionInterfaceVariantSetIndexed);
-	SETUP_LEGACY_FUNC(variant_get, GDExtensionInterfaceVariantGet);
-	SETUP_LEGACY_FUNC(variant_get_named, GDExtensionInterfaceVariantGetNamed);
-	SETUP_LEGACY_FUNC(variant_get_keyed, GDExtensionInterfaceVariantGetKeyed);
-	SETUP_LEGACY_FUNC(variant_get_indexed, GDExtensionInterfaceVariantGetIndexed);
-	SETUP_LEGACY_FUNC(variant_iter_init, GDExtensionInterfaceVariantIterInit);
-	SETUP_LEGACY_FUNC(variant_iter_next, GDExtensionInterfaceVariantIterNext);
-	SETUP_LEGACY_FUNC(variant_iter_get, GDExtensionInterfaceVariantIterGet);
-	SETUP_LEGACY_FUNC(variant_hash, GDExtensionInterfaceVariantHash);
-	SETUP_LEGACY_FUNC(variant_recursive_hash, GDExtensionInterfaceVariantRecursiveHash);
-	SETUP_LEGACY_FUNC(variant_hash_compare, GDExtensionInterfaceVariantHashCompare);
-	SETUP_LEGACY_FUNC(variant_booleanize, GDExtensionInterfaceVariantBooleanize);
-	SETUP_LEGACY_FUNC(variant_duplicate, GDExtensionInterfaceVariantDuplicate);
-	SETUP_LEGACY_FUNC(variant_stringify, GDExtensionInterfaceVariantStringify);
-	SETUP_LEGACY_FUNC(variant_get_type, GDExtensionInterfaceVariantGetType);
-	SETUP_LEGACY_FUNC(variant_has_method, GDExtensionInterfaceVariantHasMethod);
-	SETUP_LEGACY_FUNC(variant_has_member, GDExtensionInterfaceVariantHasMember);
-	SETUP_LEGACY_FUNC(variant_has_key, GDExtensionInterfaceVariantHasKey);
-	SETUP_LEGACY_FUNC(variant_get_type_name, GDExtensionInterfaceVariantGetTypeName);
-	SETUP_LEGACY_FUNC(variant_can_convert, GDExtensionInterfaceVariantCanConvert);
-	SETUP_LEGACY_FUNC(variant_can_convert_strict, GDExtensionInterfaceVariantCanConvertStrict);
-	SETUP_LEGACY_FUNC(get_variant_from_type_constructor, GDExtensionInterfaceGetVariantFromTypeConstructor);
-	SETUP_LEGACY_FUNC(get_variant_to_type_constructor, GDExtensionInterfaceGetVariantToTypeConstructor);
-	SETUP_LEGACY_FUNC(variant_get_ptr_operator_evaluator, GDExtensionInterfaceVariantGetPtrOperatorEvaluator);
-	SETUP_LEGACY_FUNC(variant_get_ptr_builtin_method, GDExtensionInterfaceVariantGetPtrBuiltinMethod);
-	SETUP_LEGACY_FUNC(variant_get_ptr_constructor, GDExtensionInterfaceVariantGetPtrConstructor);
-	SETUP_LEGACY_FUNC(variant_get_ptr_destructor, GDExtensionInterfaceVariantGetPtrDestructor);
-	SETUP_LEGACY_FUNC(variant_construct, GDExtensionInterfaceVariantConstruct);
-	SETUP_LEGACY_FUNC(variant_get_ptr_setter, GDExtensionInterfaceVariantGetPtrSetter);
-	SETUP_LEGACY_FUNC(variant_get_ptr_getter, GDExtensionInterfaceVariantGetPtrGetter);
-	SETUP_LEGACY_FUNC(variant_get_ptr_indexed_setter, GDExtensionInterfaceVariantGetPtrIndexedSetter);
-	SETUP_LEGACY_FUNC(variant_get_ptr_indexed_getter, GDExtensionInterfaceVariantGetPtrIndexedGetter);
-	SETUP_LEGACY_FUNC(variant_get_ptr_keyed_setter, GDExtensionInterfaceVariantGetPtrKeyedSetter);
-	SETUP_LEGACY_FUNC(variant_get_ptr_keyed_getter, GDExtensionInterfaceVariantGetPtrKeyedGetter);
-	SETUP_LEGACY_FUNC(variant_get_ptr_keyed_checker, GDExtensionInterfaceVariantGetPtrKeyedChecker);
-	SETUP_LEGACY_FUNC(variant_get_constant_value, GDExtensionInterfaceVariantGetConstantValue);
-	SETUP_LEGACY_FUNC(variant_get_ptr_utility_function, GDExtensionInterfaceVariantGetPtrUtilityFunction);
-	SETUP_LEGACY_FUNC(string_new_with_latin1_chars, GDExtensionInterfaceStringNewWithLatin1Chars);
-	SETUP_LEGACY_FUNC(string_new_with_utf8_chars, GDExtensionInterfaceStringNewWithUtf8Chars);
-	SETUP_LEGACY_FUNC(string_new_with_utf16_chars, GDExtensionInterfaceStringNewWithUtf16Chars);
-	SETUP_LEGACY_FUNC(string_new_with_utf32_chars, GDExtensionInterfaceStringNewWithUtf32Chars);
-	SETUP_LEGACY_FUNC(string_new_with_wide_chars, GDExtensionInterfaceStringNewWithWideChars);
-	SETUP_LEGACY_FUNC(string_new_with_latin1_chars_and_len, GDExtensionInterfaceStringNewWithLatin1CharsAndLen);
-	SETUP_LEGACY_FUNC(string_new_with_utf8_chars_and_len, GDExtensionInterfaceStringNewWithUtf8CharsAndLen);
-	SETUP_LEGACY_FUNC(string_new_with_utf16_chars_and_len, GDExtensionInterfaceStringNewWithUtf16CharsAndLen);
-	SETUP_LEGACY_FUNC(string_new_with_utf32_chars_and_len, GDExtensionInterfaceStringNewWithUtf32CharsAndLen);
-	SETUP_LEGACY_FUNC(string_new_with_wide_chars_and_len, GDExtensionInterfaceStringNewWithWideCharsAndLen);
-	SETUP_LEGACY_FUNC(string_to_latin1_chars, GDExtensionInterfaceStringToLatin1Chars);
-	SETUP_LEGACY_FUNC(string_to_utf8_chars, GDExtensionInterfaceStringToUtf8Chars);
-	SETUP_LEGACY_FUNC(string_to_utf16_chars, GDExtensionInterfaceStringToUtf16Chars);
-	SETUP_LEGACY_FUNC(string_to_utf32_chars, GDExtensionInterfaceStringToUtf32Chars);
-	SETUP_LEGACY_FUNC(string_to_wide_chars, GDExtensionInterfaceStringToWideChars);
-	SETUP_LEGACY_FUNC(string_operator_index, GDExtensionInterfaceStringOperatorIndex);
-	SETUP_LEGACY_FUNC(string_operator_index_const, GDExtensionInterfaceStringOperatorIndexConst);
-	SETUP_LEGACY_FUNC(string_operator_plus_eq_string, GDExtensionInterfaceStringOperatorPlusEqString);
-	SETUP_LEGACY_FUNC(string_operator_plus_eq_char, GDExtensionInterfaceStringOperatorPlusEqChar);
-	SETUP_LEGACY_FUNC(string_operator_plus_eq_cstr, GDExtensionInterfaceStringOperatorPlusEqCstr);
-	SETUP_LEGACY_FUNC(string_operator_plus_eq_wcstr, GDExtensionInterfaceStringOperatorPlusEqWcstr);
-	SETUP_LEGACY_FUNC(string_operator_plus_eq_c32str, GDExtensionInterfaceStringOperatorPlusEqC32str);
-	SETUP_LEGACY_FUNC(xml_parser_open_buffer, GDExtensionInterfaceXmlParserOpenBuffer);
-	SETUP_LEGACY_FUNC(file_access_store_buffer, GDExtensionInterfaceFileAccessStoreBuffer);
-	SETUP_LEGACY_FUNC(file_access_get_buffer, GDExtensionInterfaceFileAccessGetBuffer);
-	SETUP_LEGACY_FUNC(worker_thread_pool_add_native_group_task, GDExtensionInterfaceWorkerThreadPoolAddNativeGroupTask);
-	SETUP_LEGACY_FUNC(worker_thread_pool_add_native_task, GDExtensionInterfaceWorkerThreadPoolAddNativeTask);
-	SETUP_LEGACY_FUNC(packed_byte_array_operator_index, GDExtensionInterfacePackedByteArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(packed_byte_array_operator_index_const, GDExtensionInterfacePackedByteArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(packed_color_array_operator_index, GDExtensionInterfacePackedColorArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(packed_color_array_operator_index_const, GDExtensionInterfacePackedColorArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(packed_float32_array_operator_index, GDExtensionInterfacePackedFloat32ArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(packed_float32_array_operator_index_const, GDExtensionInterfacePackedFloat32ArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(packed_float64_array_operator_index, GDExtensionInterfacePackedFloat64ArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(packed_float64_array_operator_index_const, GDExtensionInterfacePackedFloat64ArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(packed_int32_array_operator_index, GDExtensionInterfacePackedInt32ArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(packed_int32_array_operator_index_const, GDExtensionInterfacePackedInt32ArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(packed_int64_array_operator_index, GDExtensionInterfacePackedInt64ArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(packed_int64_array_operator_index_const, GDExtensionInterfacePackedInt64ArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(packed_string_array_operator_index, GDExtensionInterfacePackedStringArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(packed_string_array_operator_index_const, GDExtensionInterfacePackedStringArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(packed_vector2_array_operator_index, GDExtensionInterfacePackedVector2ArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(packed_vector2_array_operator_index_const, GDExtensionInterfacePackedVector2ArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(packed_vector3_array_operator_index, GDExtensionInterfacePackedVector3ArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(packed_vector3_array_operator_index_const, GDExtensionInterfacePackedVector3ArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(array_operator_index, GDExtensionInterfaceArrayOperatorIndex);
-	SETUP_LEGACY_FUNC(array_operator_index_const, GDExtensionInterfaceArrayOperatorIndexConst);
-	SETUP_LEGACY_FUNC(array_ref, GDExtensionInterfaceArrayRef);
-	SETUP_LEGACY_FUNC(array_set_typed, GDExtensionInterfaceArraySetTyped);
-	SETUP_LEGACY_FUNC(dictionary_operator_index, GDExtensionInterfaceDictionaryOperatorIndex);
-	SETUP_LEGACY_FUNC(dictionary_operator_index_const, GDExtensionInterfaceDictionaryOperatorIndexConst);
-	SETUP_LEGACY_FUNC(object_method_bind_call, GDExtensionInterfaceObjectMethodBindCall);
-	SETUP_LEGACY_FUNC(object_method_bind_ptrcall, GDExtensionInterfaceObjectMethodBindPtrcall);
-	SETUP_LEGACY_FUNC(object_destroy, GDExtensionInterfaceObjectDestroy);
-	SETUP_LEGACY_FUNC(global_get_singleton, GDExtensionInterfaceGlobalGetSingleton);
-	SETUP_LEGACY_FUNC(object_get_instance_binding, GDExtensionInterfaceObjectGetInstanceBinding);
-	SETUP_LEGACY_FUNC(object_set_instance_binding, GDExtensionInterfaceObjectSetInstanceBinding);
-	SETUP_LEGACY_FUNC(object_set_instance, GDExtensionInterfaceObjectSetInstance);
-	SETUP_LEGACY_FUNC(object_cast_to, GDExtensionInterfaceObjectCastTo);
-	SETUP_LEGACY_FUNC(object_get_instance_from_id, GDExtensionInterfaceObjectGetInstanceFromId);
-	SETUP_LEGACY_FUNC(object_get_instance_id, GDExtensionInterfaceObjectGetInstanceId);
-	SETUP_LEGACY_FUNC(ref_get_object, GDExtensionInterfaceRefGetObject);
-	SETUP_LEGACY_FUNC(ref_set_object, GDExtensionInterfaceRefSetObject);
-	SETUP_LEGACY_FUNC(script_instance_create, GDExtensionInterfaceScriptInstanceCreate);
-	SETUP_LEGACY_FUNC(classdb_construct_object, GDExtensionInterfaceClassdbConstructObject);
-	SETUP_LEGACY_FUNC(classdb_get_method_bind, GDExtensionInterfaceClassdbGetMethodBind);
-	SETUP_LEGACY_FUNC(classdb_get_class_tag, GDExtensionInterfaceClassdbGetClassTag);
-	SETUP_LEGACY_FUNC(classdb_register_extension_class, GDExtensionInterfaceClassdbRegisterExtensionClass);
-	SETUP_LEGACY_FUNC(classdb_register_extension_class_method, GDExtensionInterfaceClassdbRegisterExtensionClassMethod);
-	SETUP_LEGACY_FUNC(classdb_register_extension_class_integer_constant, GDExtensionInterfaceClassdbRegisterExtensionClassIntegerConstant);
-	SETUP_LEGACY_FUNC(classdb_register_extension_class_property, GDExtensionInterfaceClassdbRegisterExtensionClassProperty);
-	SETUP_LEGACY_FUNC(classdb_register_extension_class_property_group, GDExtensionInterfaceClassdbRegisterExtensionClassPropertyGroup);
-	SETUP_LEGACY_FUNC(classdb_register_extension_class_property_subgroup, GDExtensionInterfaceClassdbRegisterExtensionClassPropertySubgroup);
-	SETUP_LEGACY_FUNC(classdb_register_extension_class_signal, GDExtensionInterfaceClassdbRegisterExtensionClassSignal);
-	SETUP_LEGACY_FUNC(classdb_unregister_extension_class, GDExtensionInterfaceClassdbUnregisterExtensionClass);
-	SETUP_LEGACY_FUNC(get_library_path, GDExtensionInterfaceGetLibraryPath);
-
-	return legacy_gdextension_interface;
-}
-
-#undef SETUP_LEGACY_FUNC

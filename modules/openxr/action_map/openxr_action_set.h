@@ -31,9 +31,9 @@
 #ifndef OPENXR_ACTION_SET_H
 #define OPENXR_ACTION_SET_H
 
-#include "core/io/resource.h"
-
 #include "openxr_action.h"
+
+#include "core/io/resource.h"
 
 class OpenXRActionSet : public Resource {
 	GDCLASS(OpenXRActionSet, Resource);

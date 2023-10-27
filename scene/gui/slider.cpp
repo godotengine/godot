@@ -31,6 +31,7 @@
 #include "slider.h"
 
 #include "core/os/keyboard.h"
+#include "scene/theme/theme_db.h"
 
 Size2 Slider::get_minimum_size() const {
 	Size2i ss = theme_cache.slider_style->get_minimum_size();
@@ -67,15 +68,18 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				double grab_width = (double)grabber->get_width();
 				double grab_height = (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
+				set_block_signals(true);
 				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
 				} else {
 					set_as_ratio(((double)grab.pos - (grab_width / 2.0)) / max);
 				}
+				set_block_signals(false);
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
 
 				emit_signal(SNAME("drag_started"));
+				_notify_shared_value_changed();
 			} else {
 				grab.active = false;
 
@@ -112,10 +116,21 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	Input *input = Input::get_singleton();
+	Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
+	Ref<InputEventJoypadButton> joypadbutton_event = p_event;
+	bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
+
 	if (!mm.is_valid() && !mb.is_valid()) {
 		if (p_event->is_action_pressed("ui_left", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
+			}
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_left", true)) {
+					return;
+				}
+				set_process_internal(true);
 			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
@@ -123,18 +138,35 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_right", true)) {
+					return;
+				}
+				set_process_internal(true);
+			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
-
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_up", true)) {
+					return;
+				}
+				set_process_internal(true);
+			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_down", true)) {
 			if (orientation != VERTICAL) {
 				return;
+			}
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_down", true)) {
+					return;
+				}
+				set_process_internal(true);
 			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
@@ -148,24 +180,41 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void Slider::_update_theme_item_cache() {
-	Range::_update_theme_item_cache();
-
-	theme_cache.slider_style = get_theme_stylebox(SNAME("slider"));
-	theme_cache.grabber_area_style = get_theme_stylebox(SNAME("grabber_area"));
-	theme_cache.grabber_area_hl_style = get_theme_stylebox(SNAME("grabber_area_highlight"));
-
-	theme_cache.grabber_icon = get_theme_icon(SNAME("grabber"));
-	theme_cache.grabber_hl_icon = get_theme_icon(SNAME("grabber_highlight"));
-	theme_cache.grabber_disabled_icon = get_theme_icon(SNAME("grabber_disabled"));
-	theme_cache.tick_icon = get_theme_icon(SNAME("tick"));
-
-	theme_cache.center_grabber = get_theme_constant(SNAME("center_grabber"));
-	theme_cache.grabber_offset = get_theme_constant(SNAME("grabber_offset"));
-}
-
 void Slider::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			Input *input = Input::get_singleton();
+
+			if (input->is_action_just_released("ui_left") || input->is_action_just_released("ui_right") || input->is_action_just_released("ui_up") || input->is_action_just_released("ui_down")) {
+				gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+				set_process_internal(false);
+				return;
+			}
+
+			gamepad_event_delay_ms -= get_process_delta_time();
+			if (gamepad_event_delay_ms <= 0) {
+				gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
+				if (orientation == HORIZONTAL) {
+					if (input->is_action_pressed("ui_left")) {
+						set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+					}
+
+					if (input->is_action_pressed("ui_right")) {
+						set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+					}
+				} else if (orientation == VERTICAL) {
+					if (input->is_action_pressed("ui_down")) {
+						set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+					}
+
+					if (input->is_action_pressed("ui_up")) {
+						set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+					}
+				}
+			}
+
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 			queue_redraw();
@@ -195,7 +244,7 @@ void Slider::_notification(int p_what) {
 			Ref<StyleBox> style = theme_cache.slider_style;
 			Ref<Texture2D> tick = theme_cache.tick_icon;
 
-			bool highlighted = mouse_inside || has_focus();
+			bool highlighted = editable && (mouse_inside || has_focus());
 			Ref<Texture2D> grabber;
 			if (editable) {
 				if (highlighted) {
@@ -331,6 +380,18 @@ void Slider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_style, "slider");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_style, "grabber_area");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_hl_style, "grabber_area_highlight");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_icon, "grabber");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_hl_icon, "grabber_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_disabled_icon, "grabber_disabled");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, tick_icon, "tick");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
 }
 
 Slider::Slider(Orientation p_orientation) {

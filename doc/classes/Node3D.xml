@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node3D" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Node3D" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Most basic 3D game object, parent of all 3D-related nodes.
 	</brief_description>
 	<description>
-		Most basic 3D game object, with a [Transform3D] and visibility settings. All other 3D game objects inherit from Node3D. Use [Node3D] as a parent node to move, scale, rotate and show/hide children in a 3D project.
+		Most basic 3D game object, with a [Transform3D] and visibility settings. All other 3D game objects inherit from [Node3D]. Use [Node3D] as a parent node to move, scale, rotate and show/hide children in a 3D project.
 		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the [Node3D] object is set as top-level. Affine operations in this coordinate system correspond to direct affine operations on the [Node3D]'s transform. The word local below refers to this coordinate system. The coordinate system that is attached to the [Node3D] object itself is referred to as object-local coordinate system.
 		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GlobalScope.deg_to_rad].
 		[b]Note:[/b] Be aware that "Spatial" nodes are now called "Node3D" starting with Godot 4. Any Godot 3.x references to "Spatial" nodes refer to "Node3D" in Godot 4.
@@ -18,13 +18,14 @@
 			<return type="void" />
 			<param index="0" name="gizmo" type="Node3DGizmo" />
 			<description>
-				Attach a gizmo to this [code]Node3D[/code].
+				Attach an editor gizmo to this [Node3D].
+				[b]Note:[/b] The gizmo object would typically be an instance of [EditorNode3DGizmo], but the argument type is kept generic to avoid creating a dependency on editor classes in [Node3D].
 			</description>
 		</method>
 		<method name="clear_gizmos">
 			<return type="void" />
 			<description>
-				Clear all gizmos attached to this [code]Node3D[/code].
+				Clear all gizmos attached to this [Node3D].
 			</description>
 		</method>
 		<method name="clear_subgizmo_selection">
@@ -42,7 +43,7 @@
 		<method name="get_gizmos" qualifiers="const">
 			<return type="Node3DGizmo[]" />
 			<description>
-				Returns all the gizmos attached to this [code]Node3D[/code].
+				Returns all the gizmos attached to this [Node3D].
 			</description>
 		</method>
 		<method name="get_parent_node_3d" qualifiers="const">
@@ -223,6 +224,7 @@
 			<param index="2" name="transform" type="Transform3D" />
 			<description>
 				Set subgizmo selection for this node in the editor.
+				[b]Note:[/b] The gizmo object would typically be an instance of [EditorNode3DGizmo], but the argument type is kept generic to avoid creating a dependency on editor classes in [Node3D].
 			</description>
 		</method>
 		<method name="show">
@@ -263,13 +265,16 @@
 		<method name="update_gizmos">
 			<return type="void" />
 			<description>
-				Updates all the [Node3DGizmo]s attached to this node.
+				Updates all the [Node3D] gizmos attached to this node.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="basis" type="Basis" setter="set_basis" getter="get_basis">
-			Direct access to the 3x3 basis of the [Transform3D] property.
+			Direct access to the 3x3 basis of the [member transform] property.
+		</member>
+		<member name="global_basis" type="Basis" setter="set_global_basis" getter="get_global_basis">
+			Global basis of this node. This is equivalent to [code]global_transform.basis[/code].
 		</member>
 		<member name="global_position" type="Vector3" setter="set_global_position" getter="get_global_position">
 			Global position of this node. This is equivalent to [code]global_transform.origin[/code].
@@ -291,7 +296,7 @@
 			Access to the node rotation as a [Quaternion]. This property is ideal for tweening complex rotations.
 		</member>
 		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation" default="Vector3(0, 0, 0)">
-			Rotation part of the local transformation in radians, specified in terms of Euler angles. The angles construct a rotaton in the order specified by the [member rotation_order] property.
+			Rotation part of the local transformation in radians, specified in terms of Euler angles. The angles construct a rotation in the order specified by the [member rotation_order] property.
 			[b]Note:[/b] In the mathematical sense, rotation is a matrix and not a vector. The three Euler angles, which are the three independent parameters of the Euler-angle parametrization of the rotation matrix, are stored in a [Vector3] data structure not because the rotation is a vector, but only because [Vector3] exists as a convenient data-structure to store 3 floating-point numbers. Therefore, applying affine operations on the rotation "vector" is not meaningful.
 			[b]Note:[/b] This property is edited in the inspector in degrees. If you want to use degrees in a script, use [member rotation_degrees].
 		</member>
@@ -331,20 +336,20 @@
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
-			Node3D nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
+			[Node3D] nodes receive this notification when their global transform changes. This means that either the current or a parent node changed its transform.
 			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform]. The notification is also sent if the node is in the editor context and it has at least one valid gizmo.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
-			Node3D nodes receives this notification when they are registered to new [World3D] resource.
+			[Node3D] nodes receive this notification when they are registered to new [World3D] resource.
 		</constant>
 		<constant name="NOTIFICATION_EXIT_WORLD" value="42">
-			Node3D nodes receives this notification when they are unregistered from current [World3D] resource.
+			[Node3D] nodes receive this notification when they are unregistered from current [World3D] resource.
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43">
-			Node3D nodes receives this notification when their visibility changes.
+			[Node3D] nodes receive this notification when their visibility changes.
 		</constant>
 		<constant name="NOTIFICATION_LOCAL_TRANSFORM_CHANGED" value="44">
-			Node3D nodes receives this notification when their local transform changes. This is not received when the transform of a parent node is changed.
+			[Node3D] nodes receive this notification when their local transform changes. This is not received when the transform of a parent node is changed.
 			In order for [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_local_transform].
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_EULER" value="0" enum="RotationEditMode">

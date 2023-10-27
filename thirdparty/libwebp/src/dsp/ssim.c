@@ -137,6 +137,7 @@ VP8SSIMGetClippedFunc VP8SSIMGetClipped;
 VP8AccumulateSSEFunc VP8AccumulateSSE;
 #endif
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8SSIMDspInitSSE2(void);
 
 WEBP_DSP_INIT_FUNC(VP8SSIMDspInit) {

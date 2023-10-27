@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FontVariation" inherits="Font" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FontVariation" inherits="Font" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A variation of a font with additional settings.
 	</brief_description>
@@ -38,16 +38,13 @@
 			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<param index="1" name="value" type="int" />
 			<description>
-				Sets the spacing for [code]type[/code] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="base_font" type="Font" setter="set_base_font" getter="get_base_font">
 			Base font used to create a variation. If not set, default [Theme] font is used.
-		</member>
-		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
-			Array of fallback [Font]s to use as a substitute if a glyph is not found in this [FontVariation]. If not set, [member base_font]'s fallbacks are used instead.
 		</member>
 		<member name="opentype_features" type="Dictionary" setter="set_opentype_features" getter="get_opentype_features" default="{}">
 			A set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
@@ -73,7 +70,7 @@
 		</member>
 		<member name="variation_opentype" type="Dictionary" setter="set_variation_opentype" getter="get_variation_opentype" default="{}">
 			Font OpenType variation coordinates. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]OpenType variation tags[/url].
-			[b]Note:[/b] This [Dictionary] uses OpenType tags as keys. Variation axes can be identified both by tags([code]int[/code]) and names ([code]string[/code]). Some axes might be accessible by multiple names. For example, [code]wght[/code] refers to the same axis as [code]weight[/code]. Tags on the other hand are unique. To convert between names and tags, use [method TextServer.name_to_tag] and [method TextServer.tag_to_name].
+			[b]Note:[/b] This [Dictionary] uses OpenType tags as keys. Variation axes can be identified both by tags ([int], e.g. [code]0x77678674[/code]) and names ([String], e.g. [code]wght[/code]). Some axes might be accessible by multiple names. For example, [code]wght[/code] refers to the same axis as [code]weight[/code]. Tags on the other hand are unique. To convert between names and tags, use [method TextServer.name_to_tag] and [method TextServer.tag_to_name].
 			[b]Note:[/b] To get available variation axes of a font, use [method Font.get_supported_variation_list].
 		</member>
 		<member name="variation_transform" type="Transform2D" setter="set_variation_transform" getter="get_variation_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">

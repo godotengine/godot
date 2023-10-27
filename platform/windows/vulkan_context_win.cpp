@@ -31,6 +31,7 @@
 #if defined(WINDOWS_ENABLED) && defined(VULKAN_ENABLED)
 
 #include "vulkan_context_win.h"
+
 #ifdef USE_VOLK
 #include <volk.h>
 #else
@@ -64,4 +65,4 @@ VulkanContextWindows::VulkanContextWindows() {
 VulkanContextWindows::~VulkanContextWindows() {
 }
 
-#endif
+#endif // WINDOWS_ENABLED && VULKAN_ENABLED

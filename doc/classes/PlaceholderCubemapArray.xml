@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PlaceholderCubemapArray" inherits="PlaceholderTextureLayered" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PlaceholderCubemapArray" inherits="PlaceholderTextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Placeholder class for a cubemap texture array.
+		A [CubemapArray] without image data.
 	</brief_description>
 	<description>
-		This class is used when loading a project that uses a [CubemapArray] subclass in 2 conditions:
-		- When running the project exported in dedicated server mode, only the texture's dimensions are kept (as they may be relied upon for gameplay purposes or positioning of other elements). This allows reducing the exported PCK's size significantly.
-		- When this subclass is missing due to using a different engine version or build (e.g. modules disabled).
-		[b]Note:[/b] This is not intended to be used as an actual texture for rendering. It is not guaranteed to work like one in shaders or materials (for example when calculating UV).
+		This class replaces a [CubemapArray] or a [CubemapArray]-derived class in 2 conditions:
+		- In dedicated server mode, where the image data shouldn't affect game logic. This allows reducing the exported PCK's size significantly.
+		- When the [CubemapArray]-derived class is missing, for example when using a different engine version.
+		[b]Note:[/b] This class is not intended for rendering or for use in shaders. Operations like calculating UV are not guaranteed to work.
 	</description>
 	<tutorials>
 	</tutorials>

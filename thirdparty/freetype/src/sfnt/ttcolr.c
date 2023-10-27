@@ -229,7 +229,7 @@
 
       base_glyphs_offset_v1 = FT_NEXT_ULONG( p );
 
-      if ( base_glyphs_offset_v1 + 4 >= table_size )
+      if ( base_glyphs_offset_v1 >= table_size - 4 )
         goto InvalidTable;
 
       p1                 = (FT_Byte*)( table + base_glyphs_offset_v1 );
@@ -249,7 +249,7 @@
 
       if ( layer_offset_v1 )
       {
-        if ( layer_offset_v1 + 4 >= table_size )
+        if ( layer_offset_v1 >= table_size - 4 )
           goto InvalidTable;
 
         p1            = (FT_Byte*)( table + layer_offset_v1 );
@@ -699,7 +699,7 @@
                                              item_deltas ) )
           return 0;
 
-        apaint->u.solid.color.alpha += item_deltas[0];
+        apaint->u.solid.color.alpha += (FT_F2Dot14)item_deltas[0];
       }
 #endif
 
@@ -1646,7 +1646,7 @@
           return 0;
 
         color_stop->stop_offset += F2DOT14_TO_FIXED( item_deltas[0] );
-        color_stop->color.alpha += item_deltas[1];
+        color_stop->color.alpha += (FT_F2Dot14)item_deltas[1];
       }
 #else
       FT_UNUSED( var_index_base );
@@ -1914,7 +1914,7 @@
 #else /* !TT_CONFIG_OPTION_COLOR_LAYERS */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _tt_colr_dummy;
+  typedef int  tt_colr_dummy_;
 
 #endif /* !TT_CONFIG_OPTION_COLOR_LAYERS */
 

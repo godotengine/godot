@@ -40,6 +40,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
@@ -47,6 +48,67 @@
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>
 #endif
+
+static bool _get_blender_version(const String &p_path, int &r_major, int &r_minor, String *r_err = nullptr) {
+	String path = p_path;
+#ifdef WINDOWS_ENABLED
+	path = path.path_join("blender.exe");
+#else
+	path = path.path_join("blender");
+#endif
+
+#if defined(MACOS_ENABLED)
+	if (!FileAccess::exists(path)) {
+		path = p_path.path_join("Blender");
+	}
+#endif
+
+	if (!FileAccess::exists(path)) {
+		if (r_err) {
+			*r_err = TTR("Path does not contain a Blender installation.");
+		}
+		return false;
+	}
+	List<String> args;
+	args.push_back("--version");
+	String pipe;
+	Error err = OS::get_singleton()->execute(path, args, &pipe);
+	if (err != OK) {
+		if (r_err) {
+			*r_err = TTR("Can't execute Blender binary.");
+		}
+		return false;
+	}
+	int bl = pipe.find("Blender ");
+	if (bl == -1) {
+		if (r_err) {
+			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s."), path);
+		}
+		return false;
+	}
+	pipe = pipe.substr(bl);
+	pipe = pipe.replace_first("Blender ", "");
+	int pp = pipe.find(".");
+	if (pp == -1) {
+		if (r_err) {
+			*r_err = TTR("Path supplied lacks a Blender binary.");
+		}
+		return false;
+	}
+	String v = pipe.substr(0, pp);
+	r_major = v.to_int();
+	if (r_major < 3) {
+		if (r_err) {
+			*r_err = TTR("This Blender installation is too old for this importer (not 3.0+).");
+		}
+		return false;
+	}
+
+	int pp2 = pipe.find(".", pp + 1);
+	r_minor = pp2 > pp ? pipe.substr(pp + 1, pp2 - pp - 1).to_int() : 0;
+
+	return true;
+}
 
 uint32_t EditorSceneFormatImporterBlend::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
@@ -59,8 +121,13 @@ void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
-	// Get global paths for source and sink.
+	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
 
+	if (blender_major_version == -1 || blender_minor_version == -1) {
+		_get_blender_version(blender_path, blender_major_version, blender_minor_version, nullptr);
+	}
+
+	// Get global paths for source and sink.
 	// Escape paths to be valid Python strings to embed in the script.
 	const String source_global = ProjectSettings::get_singleton()->globalize_path(p_path).c_escape();
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(
@@ -152,9 +219,17 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		parameters_map["export_tangents"] = false;
 	}
 	if (p_options.has(SNAME("blender/animation/group_tracks")) && p_options[SNAME("blender/animation/group_tracks")]) {
-		parameters_map["export_nla_strips"] = true;
+		if (blender_major_version > 3 || (blender_major_version == 3 && blender_minor_version >= 6)) {
+			parameters_map["export_animation_mode"] = "ACTIONS";
+		} else {
+			parameters_map["export_nla_strips"] = true;
+		}
 	} else {
-		parameters_map["export_nla_strips"] = false;
+		if (blender_major_version > 3 || (blender_major_version == 3 && blender_minor_version >= 6)) {
+			parameters_map["export_animation_mode"] = "ACTIVE_ACTIONS";
+		} else {
+			parameters_map["export_nla_strips"] = false;
+		}
 	}
 	if (p_options.has(SNAME("blender/animation/limit_playback")) && p_options[SNAME("blender/animation/limit_playback")]) {
 		parameters_map["export_frame_range"] = true;
@@ -268,67 +343,8 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 ///////////////////////////
 
 static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
-	String path = p_path;
-#ifdef WINDOWS_ENABLED
-	path = path.path_join("blender.exe");
-#else
-	path = path.path_join("blender");
-#endif
-
-#if defined(MACOS_ENABLED)
-	if (!FileAccess::exists(path)) {
-		path = path.path_join("Blender");
-	}
-#endif
-
-	if (!FileAccess::exists(path)) {
-		if (r_err) {
-			*r_err = TTR("Path does not contain a Blender installation.");
-		}
-		return false;
-	}
-	List<String> args;
-	args.push_back("--version");
-	String pipe;
-	Error err = OS::get_singleton()->execute(path, args, &pipe);
-	if (err != OK) {
-		if (r_err) {
-			*r_err = TTR("Can't execute Blender binary.");
-		}
-		return false;
-	}
-	int bl = pipe.find("Blender ");
-	if (bl == -1) {
-		if (r_err) {
-			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s"), path);
-		}
-		return false;
-	}
-	pipe = pipe.substr(bl);
-	pipe = pipe.replace_first("Blender ", "");
-	int pp = pipe.find(".");
-	if (pp == -1) {
-		if (r_err) {
-			*r_err = TTR("Path supplied lacks a Blender binary.");
-		}
-		return false;
-	}
-	String v = pipe.substr(0, pp);
-	int version = v.to_int();
-	if (version < 3) {
-		if (r_err) {
-			*r_err = TTR("This Blender installation is too old for this importer (not 3.0+).");
-		}
-		return false;
-	}
-	if (version > 3) {
-		if (r_err) {
-			*r_err = TTR("This Blender installation is too new for this importer (not 3.x).");
-		}
-		return false;
-	}
-
-	return true;
+	int major, minor;
+	return _get_blender_version(p_path, major, minor, r_err);
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
@@ -366,10 +382,10 @@ void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path
 	path_status->set_text(error);
 
 	if (success) {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), SNAME("Editor")));
+		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(false);
 	} else {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(true);
 	}
 }

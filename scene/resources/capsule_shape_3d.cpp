@@ -86,7 +86,7 @@ void CapsuleShape3D::set_radius(float p_radius) {
 		height = radius * 2.0;
 	}
 	_update_shape();
-	notify_change_to_owners();
+	emit_changed();
 }
 
 float CapsuleShape3D::get_radius() const {
@@ -100,7 +100,7 @@ void CapsuleShape3D::set_height(float p_height) {
 		radius = height * 0.5;
 	}
 	_update_shape();
-	notify_change_to_owners();
+	emit_changed();
 }
 
 float CapsuleShape3D::get_height() const {

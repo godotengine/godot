@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/split_container.h"
 #include "servers/display_server.h"
@@ -67,9 +68,9 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 		Ref<Texture2D> icon;
 		if (bytecode->get_stage_compile_error(RD::ShaderStage(i)) != String()) {
-			icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
+			icon = get_editor_theme_icon(SNAME("ImportFail"));
 		} else {
-			icon = get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons"));
+			icon = get_editor_theme_icon(SNAME("ImportCheck"));
 		}
 		stages[i]->set_icon(icon);
 
@@ -96,7 +97,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 	String error = bytecode->get_stage_compile_error(stage);
 
-	error_text->push_font(get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+	error_text->push_font(get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 
 	if (error.is_empty()) {
 		error_text->add_text(TTR("Shader stage compiled without errors."));
@@ -112,7 +113,7 @@ void ShaderFileEditor::_update_options() {
 		stage_hb->hide();
 		versions->hide();
 		error_text->clear();
-		error_text->push_font(get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+		error_text->push_font(get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 		error_text->add_text(vformat(TTR("File structure for '%s' contains unrecoverable errors:\n\n"), shader_file->get_path().get_file()));
 		error_text->add_text(shader_file->get_base_error());
 		return;
@@ -155,9 +156,9 @@ void ShaderFileEditor::_update_options() {
 		}
 
 		if (failed) {
-			icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
+			icon = get_editor_theme_icon(SNAME("ImportFail"));
 		} else {
-			icon = get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons"));
+			icon = get_editor_theme_icon(SNAME("ImportCheck"));
 		}
 
 		versions->add_item(title, icon);
@@ -222,7 +223,7 @@ void ShaderFileEditor::_bind_methods() {
 void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 	if (p_shader.is_null()) {
 		if (shader_file.is_valid()) {
-			shader_file->disconnect("changed", callable_mp(this, &ShaderFileEditor::_shader_changed));
+			shader_file->disconnect_changed(callable_mp(this, &ShaderFileEditor::_shader_changed));
 		}
 		return;
 	}
@@ -234,7 +235,7 @@ void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 	shader_file = p_shader;
 
 	if (shader_file.is_valid()) {
-		shader_file->connect("changed", callable_mp(this, &ShaderFileEditor::_shader_changed));
+		shader_file->connect_changed(callable_mp(this, &ShaderFileEditor::_shader_changed));
 	}
 
 	_update_options();

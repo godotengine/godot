@@ -96,14 +96,18 @@ private:
 	Vector3 gyroscope;
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
+	bool legacy_just_pressed_behavior = false;
 
 	struct Action {
-		uint64_t physics_frame;
-		uint64_t process_frame;
-		bool pressed;
-		bool exact;
-		float strength;
-		float raw_strength;
+		uint64_t pressed_physics_frame = UINT64_MAX;
+		uint64_t pressed_process_frame = UINT64_MAX;
+		uint64_t released_physics_frame = UINT64_MAX;
+		uint64_t released_process_frame = UINT64_MAX;
+		int pressed = 0;
+		bool axis_pressed = false;
+		bool exact = true;
+		float strength = 0.0f;
+		float raw_strength = 0.0f;
 	};
 
 	HashMap<StringName, Action> action_state;
@@ -146,11 +150,15 @@ private:
 		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
 		int hat_current = 0;
+		Dictionary info;
 	};
 
 	VelocityTrack mouse_velocity_track;
 	HashMap<int, VelocityTrack> touch_velocity_track;
 	HashMap<int, Joypad> joy_names;
+
+	HashSet<uint32_t> ignored_device_ids;
+
 	int fallback_mapping = -1;
 
 	CursorShape default_shape = CURSOR_ARROW;
@@ -213,7 +221,7 @@ private:
 	Vector<JoyDeviceMapping> map_db;
 
 	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button);
-	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value);
+	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range);
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
 	JoyButton _get_output_button(String output);
 	JoyAxis _get_output_axis(String output);
@@ -270,7 +278,7 @@ public:
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);
-	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
+	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "", Dictionary p_joypad_info = Dictionary());
 
 	Vector3 get_gravity() const;
 	Vector3 get_accelerometer() const;
@@ -325,6 +333,8 @@ public:
 
 	bool is_joy_known(int p_device);
 	String get_joy_guid(int p_device) const;
+	bool should_ignore_device(int p_vendor_id, int p_product_id) const;
+	Dictionary get_joy_info(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
 	void flush_buffered_events();

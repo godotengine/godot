@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "register_types.h"
+
 #include "scene/resources/mesh.h"
+
 #include "thirdparty/vhacd/public/VHACD.h"
 
 static Vector<Vector<Vector3>> convex_decompose(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const Ref<MeshConvexDecompositionSettings> &p_settings, Vector<Vector<uint32_t>> *r_convex_indices) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Timer" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Timer" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A countdown timer.
 	</brief_description>
@@ -65,10 +65,10 @@
 	</signals>
 	<constants>
 		<constant name="TIMER_PROCESS_PHYSICS" value="0" enum="TimerProcessCallback">
-			Update the timer during the physics step at each frame (fixed framerate processing).
+			Update the timer during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
 		</constant>
 		<constant name="TIMER_PROCESS_IDLE" value="1" enum="TimerProcessCallback">
-			Update the timer during the idle time at each frame.
+			Update the timer during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
 		</constant>
 	</constants>
 </class>

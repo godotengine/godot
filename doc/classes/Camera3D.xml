@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Camera3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Camera3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Camera node, displays from a point of view.
 	</brief_description>
@@ -15,6 +15,12 @@
 			<param index="0" name="enable_next" type="bool" default="true" />
 			<description>
 				If this is the current camera, remove it from being current. If [param enable_next] is [code]true[/code], request to make the next camera current, if any.
+			</description>
+		</method>
+		<method name="get_camera_projection" qualifiers="const">
+			<return type="Projection" />
+			<description>
+				Returns the projection matrix that this camera uses to render to its associated viewport. The camera must be part of the scene tree to function.
 			</description>
 		</method>
 		<method name="get_camera_rid" qualifiers="const">
@@ -173,7 +179,7 @@
 			The distance to the far culling boundary for this camera relative to its local Z axis. Higher values allow the camera to see further away, while decreasing [member far] can improve performance if it results in objects being partially or fully culled.
 		</member>
 		<member name="fov" type="float" setter="set_fov" getter="get_fov" default="75.0">
-			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
+			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [member fov] sets the other axis' field of view angle.
 			For reference, the default vertical field of view value ([code]75.0[/code]) is equivalent to a horizontal FOV of:
 			- ~91.31 degrees in a 4:3 viewport
 			- ~101.67 degrees in a 16:10 viewport

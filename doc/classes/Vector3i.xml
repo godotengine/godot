@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector3i" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Vector3i" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 3D vector using integer coordinates.
 	</brief_description>
@@ -124,6 +124,12 @@
 		</constant>
 		<constant name="ONE" value="Vector3i(1, 1, 1)">
 			One vector, a vector with all components set to [code]1[/code].
+		</constant>
+		<constant name="MIN" value="Vector3i(-2147483648, -2147483648, -2147483648)">
+			Min vector, a vector with all components equal to [code]INT32_MIN[/code]. Can be used as a negative integer equivalent of [constant Vector3.INF].
+		</constant>
+		<constant name="MAX" value="Vector3i(2147483647, 2147483647, 2147483647)">
+			Max vector, a vector with all components equal to [code]INT32_MAX[/code]. Can be used as an integer equivalent of [constant Vector3.INF].
 		</constant>
 		<constant name="LEFT" value="Vector3i(-1, 0, 0)">
 			Left unit vector. Represents the local direction of left, and the global direction of west.

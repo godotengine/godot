@@ -38,6 +38,7 @@
 class Button;
 class ItemList;
 class Label;
+class EditorFileDialog;
 
 class TileSetScenesCollectionSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetScenesCollectionSourceEditor, HBoxContainer);
@@ -114,6 +115,7 @@ private:
 	ItemList *scene_tiles_list = nullptr;
 	Button *scene_tile_add_button = nullptr;
 	Button *scene_tile_delete_button = nullptr;
+	EditorFileDialog *scene_select_dialog = nullptr;
 
 	void _tile_set_scenes_collection_source_changed();
 	void _scenes_collection_source_proxy_object_changed(String p_what);
@@ -121,6 +123,7 @@ private:
 	void _scenes_list_item_activated(int p_index);
 
 	void _source_add_pressed();
+	void _scene_file_selected(const String &p_path);
 	void _source_delete_pressed();
 
 	// Update methods.

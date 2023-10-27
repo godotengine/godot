@@ -216,17 +216,12 @@ Ref<XRInterface> XRServer::get_interface(int p_index) const {
 };
 
 Ref<XRInterface> XRServer::find_interface(const String &p_name) const {
-	int idx = -1;
 	for (int i = 0; i < interfaces.size(); i++) {
 		if (interfaces[i]->get_name() == p_name) {
-			idx = i;
-			break;
+			return interfaces[i];
 		};
 	};
-
-	ERR_FAIL_COND_V_MSG(idx == -1, nullptr, "Interface not found.");
-
-	return interfaces[idx];
+	return Ref<XRInterface>();
 };
 
 TypedArray<Dictionary> XRServer::get_interfaces() const {

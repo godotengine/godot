@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Node" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all scene objects.
 	</brief_description>
@@ -93,17 +93,17 @@
 				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callbacks get triggered first, and the parent node will receive the ready notification afterwards.
 				Corresponds to the [constant NOTIFICATION_READY] notification in [method Object._notification]. See also the [code]@onready[/code] annotation for variables.
 				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. See also [method _enter_tree].
-				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [code]_ready[/code] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
+				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [method _ready] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
 			</description>
 		</method>
 		<method name="_shortcut_input" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
+				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. It is called before [method _unhandled_key_input] and [method _unhandled_input]. The input event propagates up through the node tree until a node consumes it.
 				It is only called if shortcut processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_shortcut_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
-				This method can be used to handle shortcuts.
+				This method can be used to handle shortcuts. For generic GUI events, use [method _input] instead. Gameplay events should usually be handled with either [method _unhandled_input] or [method _unhandled_key_input].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
@@ -111,10 +111,10 @@
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
+				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI [Control] item. It is called after [method _shortcut_input] and after [method _unhandled_key_input]. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
-				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				For gameplay input, this method is usually a better fit than [method _input], as GUI events need a higher priority. For keyboard shortcuts, consider using [method _shortcut_input] instead, as it is called before this method. Finally, to handle keyboard events, consider using [method _unhandled_key_input] for performance reasons.
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
 		</method>
@@ -122,12 +122,11 @@
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when an [InputEventKey] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
+				Called when an [InputEventKey] hasn't been consumed by [method _input] or any GUI [Control] item. It is called after [method _shortcut_input] but before [method _unhandled_input]. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				This method can be used to handle Unicode character input with [kbd]Alt[/kbd], [kbd]Alt + Ctrl[/kbd], and [kbd]Alt + Shift[/kbd] modifiers, after shortcuts were handled.
-				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
-				This method also performs better than [method _unhandled_input], since unrelated events such as [InputEventMouseMotion] are automatically filtered.
+				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input], as GUI events should be handled first. This method also performs better than [method _unhandled_input], since unrelated events such as [InputEventMouseMotion] are automatically filtered. For shortcuts, consider using [method _shortcut_input] instead.
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
 		</method>
@@ -448,6 +447,36 @@
 				Returns the [SceneTree] that contains this node.
 			</description>
 		</method>
+		<method name="get_tree_string">
+			<return type="String" />
+			<description>
+				Returns the tree as a [String]. Used mainly for debugging purposes. This version displays the path relative to the current node, and is good for copy/pasting into the [method get_node] function. It also can be used in game UI/UX.
+				[b]Example output:[/b]
+				[codeblock]
+				TheGame
+				TheGame/Menu
+				TheGame/Menu/Label
+				TheGame/Menu/Camera2D
+				TheGame/SplashScreen
+				TheGame/SplashScreen/Camera2D
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_tree_string_pretty">
+			<return type="String" />
+			<description>
+				Similar to [method get_tree_string], this returns the tree as a [String]. This version displays a more graphical representation similar to what is displayed in the Scene Dock. It is useful for inspecting larger trees.
+				[b]Example output:[/b]
+				[codeblock]
+				 ┖╴TheGame
+				    ┠╴Menu
+				    ┃  ┠╴Label
+				    ┃  ┖╴Camera2D
+				    ┖╴SplashScreen
+				       ┖╴Camera2D
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_viewport" qualifiers="const">
 			<return type="Viewport" />
 			<description>
@@ -654,7 +683,9 @@
 		<method name="queue_free">
 			<return type="void" />
 			<description>
-				Queues a node for deletion at the end of the current frame. When deleted, all of its child nodes will be deleted as well. This method ensures it's safe to delete the node, contrary to [method Object.free]. Use [method Object.is_queued_for_deletion] to check whether a node will be deleted at the end of the frame.
+				Queues a node for deletion at the end of the current frame. When deleted, all of its child nodes will be deleted as well, and all references to the node and its children will become invalid, see [method Object.free].
+				It is safe to call [method queue_free] multiple times per frame on a node, and to [method Object.free] a node that is currently queued for deletion. Use [method Object.is_queued_for_deletion] to check whether a node will be deleted at the end of the frame.
+				The node will only be freed after all other deferred calls are finished, so using [method queue_free] is not always the same as calling [method Object.free] through [method Object.call_deferred].
 			</description>
 		</method>
 		<method name="remove_child">
@@ -695,7 +726,7 @@
 		<method name="request_ready">
 			<return type="void" />
 			<description>
-				Requests that [code]_ready[/code] be called again. Note that the method won't be called immediately, but is scheduled for when the node is added to the scene tree again (see [method _ready]). [code]_ready[/code] is called only for the node which requested it, which means that you need to request ready for each child if you want them to call [code]_ready[/code] too (in which case, [code]_ready[/code] will be called in the same order as it would normally).
+				Requests that [method _ready] be called again. Note that the method won't be called immediately, but is scheduled for when the node is added to the scene tree again. [method _ready] is called only for the node which requested it, which means that you need to request ready for each child if you want them to call [method _ready] too (in which case, [method _ready] will be called in the same order as it would normally).
 			</description>
 		</method>
 		<method name="rpc" qualifiers="vararg">
@@ -715,7 +746,7 @@
 				[codeblock]
 				{
 				    rpc_mode = MultiplayerAPI.RPCMode,
-				    transfer_mode = MultiplayerPeer.TranferMode,
+				    transfer_mode = MultiplayerPeer.TransferMode,
 				    call_local = false,
 				    channel = 0,
 				}
@@ -759,7 +790,8 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="recursive" type="bool" default="true" />
 			<description>
-				Sets the node's multiplayer authority to the peer with the given peer ID. The multiplayer authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [param recursive], the given peer is recursively set as the authority for all children of this node.
+				Sets the node's multiplayer authority to the peer with the given peer ID. The multiplayer authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Defaults to peer ID 1 (the server). If [param recursive], the given peer is recursively set as the authority for all children of this node.
+				[b]Warning:[/b] This does [b]not[/b] automatically replicate the new authority to other peers. It is developer's responsibility to do so. You can propagate the information about the new authority using [member MultiplayerSpawner.spawn_function], an RPC, or using a [MultiplayerSynchronizer]. Also, the parent's authority does [b]not[/b] propagate to newly added children.
 			</description>
 		</method>
 		<method name="set_physics_process">
@@ -849,14 +881,15 @@
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. See [method SceneTree.get_multiplayer].
+			[b]Note:[/b] Renaming the node, or moving it in the tree, will not move the [MultiplayerAPI] to the new path, you will have to update this manually.
 		</member>
 		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.
 			[b]Note:[/b] Auto-generated names might include the [code]@[/code] character, which is reserved for unique names when using [method add_child]. When setting the name manually, any [code]@[/code] will be removed.
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
-			The node owner. A node can have any other node as owner (as long as it is a valid parent, grandparent, etc. ascending in the tree). When saving a node (using [PackedScene]), all the nodes it owns will be saved with it. This allows for the creation of complex [SceneTree]s, with instancing and subinstancing.
-			[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
+			The node owner. A node can have any ancestor node as owner (i.e. a parent, grandparent, etc. node ascending in the tree). This implies that [method add_child] should be called before setting the owner, so that this relationship of parenting exists. When saving a node (using [PackedScene]), all the nodes it owns will be saved with it. This allows for the creation of complex scene trees, with instancing and subinstancing.
+			[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/tutorials/plugins/editor/index.html]editor plugins[/url]. If a new node is added to the tree without setting its owner as an ancestor in that tree, it will be visible in the 2D/3D view, but not in the scene tree (and not persisted when packing or saving).
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Node.ProcessMode" default="0">
 			Can be used to pause or unpause the node, or make the node paused based on the [SceneTree], or make it inherit the process mode from its parent (default).
@@ -868,15 +901,15 @@
 			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes whose process priority value is [i]lower[/i] will have their processing callbacks executed first.
 		</member>
 		<member name="process_thread_group" type="int" setter="set_process_thread_group" getter="get_process_thread_group" enum="Node.ProcessThreadGroup" default="0">
-			Set the process thread group for this node (basically, whether it receives [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS], [method _process] or [method _physics_process] (and the internal versions) on the main thread or in a sub-thread. 
+			Set the process thread group for this node (basically, whether it receives [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS], [method _process] or [method _physics_process] (and the internal versions) on the main thread or in a sub-thread.
 			By default, the thread group is [constant PROCESS_THREAD_GROUP_INHERIT], which means that this node belongs to the same thread group as the parent node. The thread groups means that nodes in a specific thread group will process together, separate to other thread groups (depending on [member process_thread_group_order]). If the value is set is [constant PROCESS_THREAD_GROUP_SUB_THREAD], this thread group will occur on a sub thread (not the main thread), otherwise if set to [constant PROCESS_THREAD_GROUP_MAIN_THREAD] it will process on the main thread. If there is not a parent or grandparent node set to something other than inherit, the node will belong to the [i]default thread group[/i]. This default group will process on the main thread and its group order is 0.
-			During processing in a sub-thread, accessing most functions in nodes outside the thread group is forbidden (and it will result in an error in debug mode). Use [method Object.call_deferred], [method call_thread_safe], [method call_deferred_thread_group] and the likes in order to communicate from the thread groups to the main thread (or to other thread groups).			 
+			During processing in a sub-thread, accessing most functions in nodes outside the thread group is forbidden (and it will result in an error in debug mode). Use [method Object.call_deferred], [method call_thread_safe], [method call_deferred_thread_group] and the likes in order to communicate from the thread groups to the main thread (or to other thread groups).
 			To better understand process thread groups, the idea is that any node set to any other value than [constant PROCESS_THREAD_GROUP_INHERIT] will include any children (and grandchildren) nodes set to inherit into its process thread group. this means that the processing of all the nodes in the group will happen together, at the same time as the node including them.
 		</member>
 		<member name="process_thread_group_order" type="int" setter="set_process_thread_group_order" getter="get_process_thread_group_order">
 			Change the process thread group order. Groups with a lesser order will process before groups with a greater order. This is useful when a large amount of nodes process in sub thread and, afterwards, another group wants to collect their result in the main thread, as an example.
 		</member>
-		<member name="process_thread_messages" type="int" setter="set_process_thread_messages" getter="get_process_thread_messages" enum="Node.ProcessThreadMessages">
+		<member name="process_thread_messages" type="int" setter="set_process_thread_messages" getter="get_process_thread_messages" enum="Node.ProcessThreadMessages" is_bitfield="true">
 			Set whether the current thread group will process messages (calls to [method call_deferred_thread_group] on threads, and whether it wants to receive them during regular process or physics process callbacks.
 		</member>
 		<member name="scene_file_path" type="String" setter="set_scene_file_path" getter="get_scene_file_path">
@@ -917,6 +950,13 @@
 				Emitted when the node is renamed.
 			</description>
 		</signal>
+		<signal name="replacing_by">
+			<param index="0" name="node" type="Node" />
+			<description>
+				Emitted when this node is being replaced by the [param node], see [method replace_by].
+				This signal is emitted [i]after[/i] [param node] has been added as a child of the original parent node, but [i]before[/i] all original child nodes have been reparented to [param node].
+			</description>
+		</signal>
 		<signal name="tree_entered">
 			<description>
 				Emitted when the node enters the tree.
@@ -945,7 +985,7 @@
 			This notification is emitted [i]after[/i] the related [signal tree_exiting].
 		</constant>
 		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" is_deprecated="true">
-			This notification is deprecated and is no longer emitted. Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.
+			[i]Deprecated.[/i] This notification is no longer emitted. Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.
 		</constant>
 		<constant name="NOTIFICATION_READY" value="13">
 			Notification received when the node is ready. See [method _ready].
@@ -1012,18 +1052,20 @@
 			Notification received right after the scene with the node is saved in the editor. This notification is only sent in the Godot editor and will not occur in exported projects.
 		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
-			Notification received from the OS when the mouse enters the game window.
-			Implemented on desktop and web platforms.
+			Notification received when the mouse enters the window.
+			Implemented for embedded windows and on desktop and web platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="1003">
-			Notification received from the OS when the mouse leaves the game window.
-			Implemented on desktop and web platforms.
+			Notification received when the mouse leaves the window.
+			Implemented for embedded windows and on desktop and web platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_IN" value="1004">
-			Notification received from the OS when the node's parent [Window] is focused. This may be a change of focus between two windows of the same engine instance, or from the OS desktop or a third-party application to a window of the game (in which case [constant NOTIFICATION_APPLICATION_FOCUS_IN] is also emitted).
+			Notification received when the node's parent [Window] is focused. This may be a change of focus between two windows of the same engine instance, or from the OS desktop or a third-party application to a window of the game (in which case [constant NOTIFICATION_APPLICATION_FOCUS_IN] is also emitted).
+			A [Window] node receives this notification when it is focused.
 		</constant>
 		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_OUT" value="1005">
-			Notification received from the OS when the node's parent [Window] is defocused. This may be a change of focus between two windows of the same engine instance, or from a window of the game to the OS desktop or a third-party application (in which case [constant NOTIFICATION_APPLICATION_FOCUS_OUT] is also emitted).
+			Notification received when the node's parent [Window] is defocused. This may be a change of focus between two windows of the same engine instance, or from a window of the game to the OS desktop or a third-party application (in which case [constant NOTIFICATION_APPLICATION_FOCUS_OUT] is also emitted).
+			A [Window] node receives this notification when it is defocused.
 		</constant>
 		<constant name="NOTIFICATION_WM_CLOSE_REQUEST" value="1006">
 			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or [kbd]Alt + F4[/kbd]).
@@ -1040,10 +1082,10 @@
 			Notification received from the OS when the screen's DPI has been changed. Only implemented on macOS.
 		</constant>
 		<constant name="NOTIFICATION_VP_MOUSE_ENTER" value="1010">
-			Notification received when the mouse enters the viewport.
+			Notification received when the mouse cursor enters the [Viewport]'s visible area, that is not occluded behind other [Control]s or [Window]s, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 		</constant>
 		<constant name="NOTIFICATION_VP_MOUSE_EXIT" value="1011">
-			Notification received when the mouse leaves the viewport.
+			Notification received when the mouse cursor leaves the [Viewport]'s visible area, that is not occluded behind other [Control]s or [Window]s, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 		</constant>
 		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.
@@ -1107,11 +1149,11 @@
 		<constant name="PROCESS_THREAD_GROUP_SUB_THREAD" value="2" enum="ProcessThreadGroup">
 			Process this node (and children nodes set to inherit) on a sub-thread. See [member process_thread_group] for more information.
 		</constant>
-		<constant name="FLAG_PROCESS_THREAD_MESSAGES" value="1" enum="ProcessThreadMessages">
+		<constant name="FLAG_PROCESS_THREAD_MESSAGES" value="1" enum="ProcessThreadMessages" is_bitfield="true">
 		</constant>
-		<constant name="FLAG_PROCESS_THREAD_MESSAGES_PHYSICS" value="2" enum="ProcessThreadMessages">
+		<constant name="FLAG_PROCESS_THREAD_MESSAGES_PHYSICS" value="2" enum="ProcessThreadMessages" is_bitfield="true">
 		</constant>
-		<constant name="FLAG_PROCESS_THREAD_MESSAGES_ALL" value="3" enum="ProcessThreadMessages">
+		<constant name="FLAG_PROCESS_THREAD_MESSAGES_ALL" value="3" enum="ProcessThreadMessages" is_bitfield="true">
 		</constant>
 		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
 			Duplicate the node's signals.

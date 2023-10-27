@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSetAtlasSource" inherits="TileSetSource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileSetAtlasSource" inherits="TileSetSource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exposes a 2D atlas texture as a set of tiles for a [TileSet] resource.
 	</brief_description>
@@ -13,6 +13,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear_tiles_outside_texture">
+			<return type="void" />
+			<description>
+				Removes all tiles that don't fit the available texture area. This method iterates over all the source's tiles, so it's advised to use [method has_tiles_outside_texture] beforehand.
+			</description>
+		</method>
 		<method name="create_alternative_tile">
 			<return type="int" />
 			<param index="0" name="atlas_coords" type="Vector2i" />
@@ -33,7 +39,7 @@
 		<method name="get_atlas_grid_size" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
-				Returns the atlas grid size, which depends on how many tiles can fit in the texture. It thus depends on the Texture's size, the atlas [code]margins[/code] the tiles' [code]texture_region_size[/code].
+				Returns the atlas grid size, which depends on how many tiles can fit in the texture. It thus depends on the [member texture]'s size, the atlas [member margins], and the tiles' [member texture_region_size].
 			</description>
 		</method>
 		<method name="get_next_alternative_tile_id" qualifiers="const">
@@ -78,6 +84,13 @@
 			<param index="0" name="atlas_coords" type="Vector2i" />
 			<description>
 				Returns how many animation frames has the tile at coordinates [param atlas_coords].
+			</description>
+		</method>
+		<method name="get_tile_animation_mode" qualifiers="const">
+			<return type="int" enum="TileSetAtlasSource.TileAnimationMode" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the [enum TileAnimationMode] of the tile at [param atlas_coords]. See also [method set_tile_animation_mode].
 			</description>
 		</method>
 		<method name="get_tile_animation_separation" qualifiers="const">
@@ -153,6 +166,12 @@
 				Returns whether there is enough room in an atlas to create/modify a tile with the given properties. If [param ignored_tile] is provided, act as is the given tile was not present in the atlas. This may be used when you want to modify a tile's properties.
 			</description>
 		</method>
+		<method name="has_tiles_outside_texture" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Checks if the source has any tiles that don't fit the texture area (either partially or completely).
+			</description>
+		</method>
 		<method name="move_tile_in_atlas">
 			<return type="void" />
 			<param index="0" name="atlas_coords" type="Vector2i" />
@@ -215,6 +234,14 @@
 				Sets how many animation frames the tile at coordinates [param atlas_coords] has.
 			</description>
 		</method>
+		<method name="set_tile_animation_mode">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="mode" type="int" enum="TileSetAtlasSource.TileAnimationMode" />
+			<description>
+				Sets the [enum TileAnimationMode] of the tile at [param atlas_coords] to [param mode]. See also [method get_tile_animation_mode].
+			</description>
+		</method>
 		<method name="set_tile_animation_separation">
 			<return type="void" />
 			<param index="0" name="atlas_coords" type="Vector2i" />
@@ -250,4 +277,30 @@
 			Disabling this setting might lead a small performance improvement, as generating the internal texture requires both memory and processing time when the TileSetAtlasSource resource is modified.
 		</member>
 	</members>
+	<constants>
+		<constant name="TILE_ANIMATION_MODE_DEFAULT" value="0" enum="TileAnimationMode">
+			Tile animations start at same time, looking identical.
+		</constant>
+		<constant name="TILE_ANIMATION_MODE_RANDOM_START_TIMES" value="1" enum="TileAnimationMode">
+			Tile animations start at random times, looking varied.
+		</constant>
+		<constant name="TILE_ANIMATION_MODE_MAX" value="2" enum="TileAnimationMode">
+			Represents the size of the [enum TileAnimationMode] enum.
+		</constant>
+		<constant name="TRANSFORM_FLIP_H" value="4096">
+			Represents cell's horizontal flip flag. Should be used directly with [TileMap] to flip placed tiles by altering their alternative IDs.
+			[codeblock]
+			var alternate_id = $TileMap.get_cell_alternative_tile(0, Vector2i(2, 2))
+			if not alternate_id &amp; TileSetAtlasSource.TRANSFORM_FLIP_H:
+			    # If tile is not already flipped, flip it.
+			    $TileMap.set_cell(0, Vector2i(2, 2), source_id, atlas_coords, alternate_id | TileSetAtlasSource.TRANSFORM_FLIP_H)
+			[/codeblock]
+		</constant>
+		<constant name="TRANSFORM_FLIP_V" value="8192">
+			Represents cell's vertical flip flag. See [constant TRANSFORM_FLIP_H] for usage.
+		</constant>
+		<constant name="TRANSFORM_TRANSPOSE" value="16384">
+			Represents cell's transposed flag. See [constant TRANSFORM_FLIP_H] for usage.
+		</constant>
+	</constants>
 </class>

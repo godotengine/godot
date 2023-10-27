@@ -69,15 +69,6 @@ private:
 
 	void _emit_theme_changed(bool p_notify_list_changed = false);
 
-	HashMap<StringName, ThemeIconMap> icon_map;
-	HashMap<StringName, ThemeStyleMap> style_map;
-	HashMap<StringName, ThemeFontMap> font_map;
-	HashMap<StringName, ThemeFontSizeMap> font_size_map;
-	HashMap<StringName, ThemeColorMap> color_map;
-	HashMap<StringName, ThemeConstantMap> constant_map;
-	HashMap<StringName, StringName> variation_map;
-	HashMap<StringName, List<StringName>> variation_base_map;
-
 	Vector<String> _get_icon_list(const String &p_theme_type) const;
 	Vector<String> _get_icon_type_list() const;
 	Vector<String> _get_stylebox_list(const String &p_theme_type) const;
@@ -107,6 +98,15 @@ protected:
 	Ref<Font> default_font;
 	int default_font_size = -1;
 
+	HashMap<StringName, ThemeIconMap> icon_map;
+	HashMap<StringName, ThemeStyleMap> style_map;
+	HashMap<StringName, ThemeFontMap> font_map;
+	HashMap<StringName, ThemeFontSizeMap> font_size_map;
+	HashMap<StringName, ThemeColorMap> color_map;
+	HashMap<StringName, ThemeConstantMap> constant_map;
+	HashMap<StringName, StringName> variation_map;
+	HashMap<StringName, List<StringName>> variation_base_map;
+
 	static void _bind_methods();
 
 	void _freeze_change_propagation();
@@ -131,7 +131,7 @@ public:
 	bool has_default_font_size() const;
 
 	void set_icon(const StringName &p_name, const StringName &p_theme_type, const Ref<Texture2D> &p_icon);
-	Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_theme_type) const;
+	virtual Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_icon(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_icon_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_icon(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
@@ -142,7 +142,7 @@ public:
 	void get_icon_type_list(List<StringName> *p_list) const;
 
 	void set_stylebox(const StringName &p_name, const StringName &p_theme_type, const Ref<StyleBox> &p_style);
-	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_theme_type) const;
+	virtual Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_stylebox(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_stylebox_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_stylebox(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
@@ -153,7 +153,7 @@ public:
 	void get_stylebox_type_list(List<StringName> *p_list) const;
 
 	void set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<Font> &p_font);
-	Ref<Font> get_font(const StringName &p_name, const StringName &p_theme_type) const;
+	virtual Ref<Font> get_font(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_font(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
@@ -164,7 +164,7 @@ public:
 	void get_font_type_list(List<StringName> *p_list) const;
 
 	void set_font_size(const StringName &p_name, const StringName &p_theme_type, int p_font_size);
-	int get_font_size(const StringName &p_name, const StringName &p_theme_type) const;
+	virtual int get_font_size(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font_size(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font_size_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_font_size(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
@@ -175,7 +175,7 @@ public:
 	void get_font_size_type_list(List<StringName> *p_list) const;
 
 	void set_color(const StringName &p_name, const StringName &p_theme_type, const Color &p_color);
-	Color get_color(const StringName &p_name, const StringName &p_theme_type) const;
+	virtual Color get_color(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_color(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_color_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_color(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
@@ -186,7 +186,7 @@ public:
 	void get_color_type_list(List<StringName> *p_list) const;
 
 	void set_constant(const StringName &p_name, const StringName &p_theme_type, int p_constant);
-	int get_constant(const StringName &p_name, const StringName &p_theme_type) const;
+	virtual int get_constant(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_constant(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_constant_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_constant(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);

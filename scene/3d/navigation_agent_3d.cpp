@@ -57,6 +57,9 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_3d_avoidance", "enabled"), &NavigationAgent3D::set_use_3d_avoidance);
 	ClassDB::bind_method(D_METHOD("get_use_3d_avoidance"), &NavigationAgent3D::get_use_3d_avoidance);
 
+	ClassDB::bind_method(D_METHOD("set_keep_y_velocity", "enabled"), &NavigationAgent3D::set_keep_y_velocity);
+	ClassDB::bind_method(D_METHOD("get_keep_y_velocity"), &NavigationAgent3D::get_keep_y_velocity);
+
 	ClassDB::bind_method(D_METHOD("set_neighbor_distance", "neighbor_distance"), &NavigationAgent3D::set_neighbor_distance);
 	ClassDB::bind_method(D_METHOD("get_neighbor_distance"), &NavigationAgent3D::get_neighbor_distance);
 
@@ -149,6 +152,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon_obstacles", PROPERTY_HINT_RANGE, "0.0,10,0.01,or_greater,suffix:s"), "set_time_horizon_obstacles", "get_time_horizon_obstacles");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.01,10000,0.01,or_greater,suffix:m/s"), "set_max_speed", "get_max_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_3d_avoidance"), "set_use_3d_avoidance", "get_use_3d_avoidance");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_y_velocity"), "set_keep_y_velocity", "get_keep_y_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_mask", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_mask", "get_avoidance_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "avoidance_priority", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_avoidance_priority", "get_avoidance_priority");
@@ -220,7 +224,7 @@ void NavigationAgent3D::_notification(int p_what) {
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 
-			if (avoidance_enabled) {
+			if (agent_parent && avoidance_enabled) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
 			}
 
@@ -261,33 +265,29 @@ void NavigationAgent3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PAUSED: {
-			if (agent_parent && !agent_parent->can_process()) {
-				map_before_pause = NavigationServer3D::get_singleton()->agent_get_map(get_rid());
-				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
-				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
-				map_before_pause = RID();
+			if (agent_parent) {
+				NavigationServer3D::get_singleton()->agent_set_paused(get_rid(), !agent_parent->can_process());
 			}
 		} break;
 
 		case NOTIFICATION_UNPAUSED: {
-			if (agent_parent && !agent_parent->can_process()) {
-				map_before_pause = NavigationServer3D::get_singleton()->agent_get_map(get_rid());
-				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
-				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
-				map_before_pause = RID();
+			if (agent_parent) {
+				NavigationServer3D::get_singleton()->agent_set_paused(get_rid(), !agent_parent->can_process());
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (agent_parent && avoidance_enabled) {
+				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+			}
 			if (agent_parent && target_position_submitted) {
 				if (velocity_submitted) {
 					velocity_submitted = false;
 					if (avoidance_enabled) {
-						NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
 						if (!use_3d_avoidance) {
-							stored_y_velocity = velocity.y;
+							if (keep_y_velocity) {
+								stored_y_velocity = velocity.y;
+							}
 							velocity.y = 0.0;
 						}
 						NavigationServer3D::get_singleton()->agent_set_velocity(agent, velocity);
@@ -307,6 +307,13 @@ void NavigationAgent3D::_notification(int p_what) {
 			}
 #endif // DEBUG_ENABLED
 		} break;
+	}
+}
+
+void NavigationAgent3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "keep_y_velocity" && use_3d_avoidance) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+		return;
 	}
 }
 
@@ -529,6 +536,15 @@ void NavigationAgent3D::set_use_3d_avoidance(bool p_use_3d_avoidance) {
 	notify_property_list_changed();
 }
 
+void NavigationAgent3D::set_keep_y_velocity(bool p_enabled) {
+	keep_y_velocity = p_enabled;
+	stored_y_velocity = 0.0;
+}
+
+bool NavigationAgent3D::get_keep_y_velocity() const {
+	return keep_y_velocity;
+}
+
 void NavigationAgent3D::set_neighbor_distance(real_t p_distance) {
 	if (Math::is_equal_approx(neighbor_distance, p_distance)) {
 		return;
@@ -608,7 +624,7 @@ Vector3 NavigationAgent3D::get_next_path_position() {
 
 	const Vector<Vector3> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
-		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector3(), "The agent has no parent.");
+		ERR_FAIL_NULL_V_MSG(agent_parent, Vector3(), "The agent has no parent.");
 		return agent_parent->get_global_position();
 	} else {
 		return navigation_path[navigation_path_index] - Vector3(0, path_height_offset, 0);
@@ -616,7 +632,7 @@ Vector3 NavigationAgent3D::get_next_path_position() {
 }
 
 real_t NavigationAgent3D::distance_to_target() const {
-	ERR_FAIL_COND_V_MSG(agent_parent == nullptr, 0.0, "The agent has no parent.");
+	ERR_FAIL_NULL_V_MSG(agent_parent, 0.0, "The agent has no parent.");
 	return agent_parent->get_global_position().distance_to(target_position);
 }
 
@@ -809,6 +825,12 @@ void NavigationAgent3D::update_navigation() {
 				navigation_path_index -= 1;
 				navigation_finished = true;
 				target_position_submitted = false;
+				if (avoidance_enabled) {
+					NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
+					NavigationServer3D::get_singleton()->agent_set_velocity(agent, Vector3(0.0, 0.0, 0.0));
+					NavigationServer3D::get_singleton()->agent_set_velocity_forced(agent, Vector3(0.0, 0.0, 0.0));
+					stored_y_velocity = 0.0;
+				}
 				emit_signal(SNAME("navigation_finished"));
 				break;
 			}

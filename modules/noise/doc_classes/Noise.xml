@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Noise" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="Noise" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Abstract base class for noise generators.
 	</brief_description>
 	<description>
 		This class defines the interface for noise generation libraries to inherit from.
-		A default get_seamless_noise() implementation is provided for libraries that do not provide seamless noise. This function requests a larger image from get_image(), reverses the quadrants of the image, then uses the strips of extra width to blend over the seams.
+		A default [method get_seamless_image] implementation is provided for libraries that do not provide seamless noise. This function requests a larger image from the [method get_image] method, reverses the quadrants of the image, then uses the strips of extra width to blend over the seams.
 		Inheriting noise classes can optionally override this function to provide a more optimal algorithm.
 	</description>
 	<tutorials>

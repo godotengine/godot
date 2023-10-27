@@ -44,8 +44,11 @@ public:
 	struct Singleton {
 		StringName name;
 		Object *ptr = nullptr;
-		StringName class_name; //used for binding generation hinting
+		StringName class_name; // Used for binding generation hinting.
+		// Singleton scope flags.
 		bool user_created = false;
+		bool editor_only = false;
+
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
 	};
 
@@ -61,12 +64,14 @@ private:
 	double physics_jitter_fix = 0.5;
 	double _fps = 1;
 	int _max_fps = 0;
+	int _audio_output_latency = 0;
 	double _time_scale = 1.0;
 	uint64_t _physics_frames = 0;
 	int max_physics_steps_per_frame = 8;
 	double _physics_interpolation_fraction = 0.0f;
 	bool abort_on_gpu_errors = false;
 	bool use_validation_layers = false;
+	bool generate_spirv_debug_info = false;
 	int32_t gpu_idx = -1;
 
 	uint64_t _process_frames = 0;
@@ -77,6 +82,7 @@ private:
 
 	bool editor_hint = false;
 	bool project_manager_hint = false;
+	bool extension_reloading = false;
 
 	static Engine *singleton;
 
@@ -97,6 +103,9 @@ public:
 
 	virtual void set_max_fps(int p_fps);
 	virtual int get_max_fps() const;
+
+	virtual void set_audio_output_latency(int p_msec);
+	virtual int get_audio_output_latency() const;
 
 	virtual double get_frames_per_second() const { return _fps; }
 
@@ -124,6 +133,7 @@ public:
 	Object *get_singleton_object(const StringName &p_name) const;
 	void remove_singleton(const StringName &p_name);
 	bool is_singleton_user_created(const StringName &p_name) const;
+	bool is_singleton_editor_only(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
@@ -131,12 +141,18 @@ public:
 
 	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) { project_manager_hint = p_enabled; }
 	_FORCE_INLINE_ bool is_project_manager_hint() const { return project_manager_hint; }
+
+	_FORCE_INLINE_ void set_extension_reloading_enabled(bool p_enabled) { extension_reloading = p_enabled; }
+	_FORCE_INLINE_ bool is_extension_reloading_enabled() const { return extension_reloading; }
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
 
 	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_project_manager_hint() const { return false; }
+
+	_FORCE_INLINE_ void set_extension_reloading_enabled(bool p_enabled) {}
+	_FORCE_INLINE_ bool is_extension_reloading_enabled() const { return false; }
 #endif
 
 	Dictionary get_version_info() const;
@@ -156,6 +172,7 @@ public:
 
 	bool is_abort_on_gpu_errors_enabled() const;
 	bool is_validation_layers_enabled() const;
+	bool is_generate_spirv_debug_info_enabled() const;
 	int32_t get_gpu_index() const;
 
 	Engine();

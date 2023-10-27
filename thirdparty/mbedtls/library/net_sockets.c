@@ -90,6 +90,7 @@ static int wsa_init_done = 0;
 #include <errno.h>
 
 #define IS_EINTR(ret) ((ret) == EINTR)
+#define SOCKET int
 
 #endif /* ( _WIN32 || _WIN32_WCE ) && !EFIX64 && !EFI32 */
 
@@ -494,13 +495,13 @@ int mbedtls_net_poll(mbedtls_net_context *ctx, uint32_t rw, uint32_t timeout)
     FD_ZERO(&read_fds);
     if (rw & MBEDTLS_NET_POLL_READ) {
         rw &= ~MBEDTLS_NET_POLL_READ;
-        FD_SET(fd, &read_fds);
+        FD_SET((SOCKET) fd, &read_fds);
     }
 
     FD_ZERO(&write_fds);
     if (rw & MBEDTLS_NET_POLL_WRITE) {
         rw &= ~MBEDTLS_NET_POLL_WRITE;
-        FD_SET(fd, &write_fds);
+        FD_SET((SOCKET) fd, &write_fds);
     }
 
     if (rw != 0) {
@@ -608,7 +609,7 @@ int mbedtls_net_recv_timeout(void *ctx, unsigned char *buf,
     }
 
     FD_ZERO(&read_fds);
-    FD_SET(fd, &read_fds);
+    FD_SET((SOCKET) fd, &read_fds);
 
     tv.tv_sec  = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;

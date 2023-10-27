@@ -248,6 +248,21 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
       gr_fref_set_feature_value (fref, features[i].value, feats);
   }
 
+  hb_direction_t direction = buffer->props.direction;
+  hb_direction_t horiz_dir = hb_script_get_horizontal_direction (buffer->props.script);
+  /* TODO vertical:
+   * The only BTT vertical script is Ogham, but it's not clear to me whether OpenType
+   * Ogham fonts are supposed to be implemented BTT or not.  Need to research that
+   * first. */
+  if ((HB_DIRECTION_IS_HORIZONTAL (direction) &&
+       direction != horiz_dir && horiz_dir != HB_DIRECTION_INVALID) ||
+      (HB_DIRECTION_IS_VERTICAL   (direction) &&
+       direction != HB_DIRECTION_TTB))
+  {
+    hb_buffer_reverse_clusters (buffer);
+    direction = HB_DIRECTION_REVERSE (direction);
+  }
+
   gr_segment *seg = nullptr;
   const gr_slot *is;
   unsigned int ci = 0, ic = 0;
@@ -261,21 +276,11 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   for (unsigned int i = 0; i < buffer->len; ++i)
     chars[i] = buffer->info[i].codepoint;
 
-  /* TODO ensure_native_direction. */
-
-  hb_tag_t script_tag[HB_OT_MAX_TAGS_PER_SCRIPT];
-  unsigned int count = HB_OT_MAX_TAGS_PER_SCRIPT;
-  hb_ot_tags_from_script_and_language (hb_buffer_get_script (buffer),
-				       HB_LANGUAGE_INVALID,
-				       &count,
-				       script_tag,
-				       nullptr, nullptr);
-
   seg = gr_make_seg (nullptr, grface,
-		     count ? script_tag[count - 1] : HB_OT_TAG_DEFAULT_SCRIPT,
+		     HB_TAG_NONE, // https://github.com/harfbuzz/harfbuzz/issues/3439#issuecomment-1442650148
 		     feats,
 		     gr_utf32, chars, buffer->len,
-		     2 | (hb_buffer_get_direction (buffer) == HB_DIRECTION_RTL ? 1 : 0));
+		     2 | (direction == HB_DIRECTION_RTL ? 1 : 0));
 
   if (unlikely (!seg)) {
     if (feats) gr_featureval_destroy (feats);
@@ -327,7 +332,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   float yscale = (float) font->y_scale / upem;
   yscale *= yscale / xscale;
   unsigned int curradv = 0;
-  if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
+  if (HB_DIRECTION_IS_BACKWARD (direction))
   {
     curradv = gr_slot_origin_X(gr_seg_first_slot(seg)) * xscale;
     clusters[0].advance = gr_seg_advance_X(seg) * xscale - curradv;
@@ -356,16 +361,17 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
       c->num_chars = before - c->base_char;
       c->base_glyph = ic;
       c->num_glyphs = 0;
-      if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
+      if (HB_DIRECTION_IS_BACKWARD (direction))
       {
 	c->advance = curradv - gr_slot_origin_X(is) * xscale;
 	curradv -= c->advance;
       }
       else
       {
+	auto origin_X = gr_slot_origin_X (is) * xscale;
 	c->advance = 0;
-	clusters[ci].advance += gr_slot_origin_X(is) * xscale - curradv;
-	curradv += clusters[ci].advance;
+	clusters[ci].advance += origin_X - curradv;
+	curradv = origin_X;
       }
       ci++;
     }
@@ -375,7 +381,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
 	clusters[ci].num_chars = after + 1 - clusters[ci].base_char;
   }
 
-  if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
+  if (HB_DIRECTION_IS_BACKWARD (direction))
     clusters[ci].advance += curradv;
   else
     clusters[ci].advance += gr_seg_advance_X(seg) * xscale - curradv;
@@ -397,7 +403,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   unsigned int currclus = UINT_MAX;
   const hb_glyph_info_t *info = buffer->info;
   hb_glyph_position_t *pPos = hb_buffer_get_glyph_positions (buffer, nullptr);
-  if (!HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
+  if (!HB_DIRECTION_IS_BACKWARD (direction))
   {
     curradvx = 0;
     for (is = gr_seg_first_slot (seg); is; pPos++, ++info, is = gr_slot_next_in_segment (is))

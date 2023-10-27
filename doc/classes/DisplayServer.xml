@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DisplayServer" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="DisplayServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A server interface for low-level window management.
 	</brief_description>
@@ -16,6 +16,12 @@
 				Returns the user's clipboard as a string if possible.
 			</description>
 		</method>
+		<method name="clipboard_get_image" qualifiers="const">
+			<return type="Image" />
+			<description>
+				Returns the user's clipboard as an image if possible.
+			</description>
+		</method>
 		<method name="clipboard_get_primary" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -26,7 +32,13 @@
 		<method name="clipboard_has" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if there is content on the user's clipboard.
+				Returns [code]true[/code] if there is a text content on the user's clipboard.
+			</description>
+		</method>
+		<method name="clipboard_has_image" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if there is an image content on the user's clipboard.
 			</description>
 		</method>
 		<method name="clipboard_set">
@@ -96,6 +108,26 @@
 				[b]Note:[/b] This method is implemented only on Windows.
 			</description>
 		</method>
+		<method name="file_dialog_show">
+			<return type="int" enum="Error" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="current_directory" type="String" />
+			<param index="2" name="filename" type="String" />
+			<param index="3" name="show_hidden" type="bool" />
+			<param index="4" name="mode" type="int" enum="DisplayServer.FileDialogMode" />
+			<param index="5" name="filters" type="PackedStringArray" />
+			<param index="6" name="callback" type="Callable" />
+			<description>
+				Displays OS native dialog for selecting files or directories in the file system.
+				Callbacks have the following arguments: [code]bool status, PackedStringArray selected_paths, int selected_filter_index[/code].
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature.
+				[b]Note:[/b] This method is implemented on Linux, Windows and macOS.
+				[b]Note:[/b] [param current_directory] might be ignored.
+				[b]Note:[/b] On Linux, [param show_hidden] is ignored.
+				[b]Note:[/b] On macOS, native file dialogs have no title.
+				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
+			</description>
+		</method>
 		<method name="force_process_and_drop_events">
 			<return type="void" />
 			<description>
@@ -158,7 +190,7 @@
 		<method name="get_swap_cancel_ok">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if positions of [b]OK[/b] and [b]Cancel[/b] buttons are swapped in dialogs. This is enabled by default on Windows and UWP to follow interface conventions, and be toggled by changing [member ProjectSettings.gui/common/swap_cancel_ok].
+				Returns [code]true[/code] if positions of [b]OK[/b] and [b]Cancel[/b] buttons are swapped in dialogs. This is enabled by default on Windows to follow interface conventions, and be toggled by changing [member ProjectSettings.gui/common/swap_cancel_ok].
 				[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 			</description>
 		</method>
@@ -188,8 +220,8 @@
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
-			<param index="2" name="callback" type="Callable" />
-			<param index="3" name="key_callback" type="Callable" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
 			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="6" name="index" type="int" default="-1" />
@@ -211,8 +243,8 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
-			<param index="3" name="callback" type="Callable" />
-			<param index="4" name="key_callback" type="Callable" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
 			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="7" name="index" type="int" default="-1" />
@@ -234,8 +266,8 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
-			<param index="3" name="callback" type="Callable" />
-			<param index="4" name="key_callback" type="Callable" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
 			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="7" name="index" type="int" default="-1" />
@@ -257,8 +289,8 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
-			<param index="3" name="callback" type="Callable" />
-			<param index="4" name="key_callback" type="Callable" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
 			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="7" name="index" type="int" default="-1" />
@@ -280,8 +312,8 @@
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
-			<param index="2" name="callback" type="Callable" />
-			<param index="3" name="key_callback" type="Callable" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
 			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="6" name="index" type="int" default="-1" />
@@ -304,8 +336,8 @@
 			<param index="1" name="label" type="String" />
 			<param index="2" name="max_states" type="int" />
 			<param index="3" name="default_state" type="int" />
-			<param index="4" name="callback" type="Callable" />
-			<param index="5" name="key_callback" type="Callable" />
+			<param index="4" name="callback" type="Callable" default="Callable()" />
+			<param index="5" name="key_callback" type="Callable" default="Callable()" />
 			<param index="6" name="tag" type="Variant" default="null" />
 			<param index="7" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="8" name="index" type="int" default="-1" />
@@ -328,8 +360,8 @@
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
-			<param index="2" name="callback" type="Callable" />
-			<param index="3" name="key_callback" type="Callable" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
 			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="6" name="index" type="int" default="-1" />
@@ -545,6 +577,16 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="global_menu_is_item_hidden" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is hidden.
+				See [method global_menu_set_item_hidden] for more info on how to hide an item.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="global_menu_is_item_radio_checkable" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
@@ -613,6 +655,27 @@
 			<param index="2" name="disabled" type="bool" />
 			<description>
 				Enables/disables the item at index [param idx]. When it is disabled, it can't be selected and its action can't be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_hidden">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="hidden" type="bool" />
+			<description>
+				Hides/shows the item at index [param idx]. When it is hidden, an item does not appear in a menu and its action cannot be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_hover_callbacks">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Sets the callback of the item at index [param idx]. The callback is emitted when an item is hovered.
+				[b]Note:[/b] The [param callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the [code]tag[/code] parameter when the menu item was created.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
@@ -719,6 +782,15 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="global_menu_set_popup_callbacks">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="open_callback" type="Callable" />
+			<param index="2" name="close_callback" type="Callable" />
+			<description>
+				Registers callables to emit when the menu is respectively about to show or closed.
+			</description>
+		</method>
 		<method name="has_feature" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="DisplayServer.Feature" />
@@ -744,20 +816,20 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS is using dark mode.
-				[b]Note:[/b] This method is implemented on macOS, Windows and Linux (X11).
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11).
 			</description>
 		</method>
 		<method name="is_dark_mode_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS supports dark mode.
-				[b]Note:[/b] This method is implemented on macOS, Windows and Linux (X11).
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11).
 			</description>
 		</method>
 		<method name="is_touchscreen_available" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if touch events are available (Android or iOS), the capability is detected on the Webplatform or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
+				Returns [code]true[/code] if touch events are available (Android or iOS), the capability is detected on the Web platform or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
 			</description>
 		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
@@ -772,6 +844,14 @@
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Converts a physical (US QWERTY) [param keycode] to one in the active keyboard layout.
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_label_from_physical" qualifiers="const">
+			<return type="int" enum="Key" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Converts a physical (US QWERTY) [param keycode] to localized label printed on the key in the active keyboard layout.
 				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
 			</description>
 		</method>
@@ -807,7 +887,7 @@
 			</description>
 		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
-			<return type="int" enum="MouseButtonMask" />
+			<return type="int" enum="MouseButtonMask" is_bitfield="true" />
 			<description>
 				Returns the current state of mouse buttons (whether each button is pressed) as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together. Equivalent to [method Input.get_mouse_button_mask].
 			</description>
@@ -961,6 +1041,7 @@
 			<param index="1" name="screen" type="int" default="-1" />
 			<description>
 				Sets the [param screen]'s [param orientation]. See also [method screen_get_orientation].
+				[b]Note:[/b] On iOS, this method has no effect if [member ProjectSettings.display/window/handheld/orientation] is not set to [constant SCREEN_SENSOR].
 			</description>
 		</method>
 		<method name="set_icon">
@@ -1014,7 +1095,7 @@
 				Each [Dictionary] contains two [String] entries:
 				- [code]name[/code] is voice name.
 				- [code]id[/code] is voice identifier.
-				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
+				- [code]language[/code] is language code in [code]lang_Variant[/code] format. The [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. The [code skip-lint]Variant[/code] part is an engine-dependent string describing country, region or/and dialect.
 				Note that Godot depends on system libraries for text-to-speech functionality. These libraries are installed by default on Windows and macOS, but not on all Linux distributions. If they are not present, this method will return an empty list. This applies to both Godot users on Linux, as well as end-users on Linux running Godot games that use text-to-speech.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
@@ -1250,11 +1331,27 @@
 				Returns the size of the window specified by [param window_id] (in pixels), including the borders drawn by the operating system. See also [method window_get_size].
 			</description>
 		</method>
+		<method name="window_get_title_size" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Returns the estimated window title bar size (including text and window buttons) for the window specified by [param window_id] (in pixels). This method does not change the window title.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="window_get_vsync_mode" qualifiers="const">
 			<return type="int" enum="DisplayServer.VSyncMode" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Returns the V-Sync mode of the given window.
+			</description>
+		</method>
+		<method name="window_is_focused" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns [code]true[/code] if the window specified by [param window_id] is focused.
 			</description>
 		</method>
 		<method name="window_is_maximize_allowed" qualifiers="const">
@@ -1713,6 +1810,21 @@
 		<constant name="CURSOR_MAX" value="17" enum="CursorShape">
 			Represents the size of the [enum CursorShape] enum.
 		</constant>
+		<constant name="FILE_DIALOG_MODE_OPEN_FILE" value="0" enum="FileDialogMode">
+			The native file dialog allows selecting one, and only one file.
+		</constant>
+		<constant name="FILE_DIALOG_MODE_OPEN_FILES" value="1" enum="FileDialogMode">
+			The native file dialog allows selecting multiple files.
+		</constant>
+		<constant name="FILE_DIALOG_MODE_OPEN_DIR" value="2" enum="FileDialogMode">
+			The native file dialog only allows selecting a directory, disallowing the selection of any file.
+		</constant>
+		<constant name="FILE_DIALOG_MODE_OPEN_ANY" value="3" enum="FileDialogMode">
+			The native file dialog allows selecting one file or directory.
+		</constant>
+		<constant name="FILE_DIALOG_MODE_SAVE_FILE" value="4" enum="FileDialogMode">
+			The native file dialog will warn when a file exists.
+		</constant>
 		<constant name="WINDOW_MODE_WINDOWED" value="0" enum="WindowMode">
 			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
 		</constant>
@@ -1724,14 +1836,16 @@
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
 			Full screen mode with full multi-window support.
-			Full screen window cover the entire display area of a screen, have no border or decorations. Display video mode is not changed.
+			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
+			[b]On Windows:[/b] Multi-window full-screen mode has a 1px border of the [member ProjectSettings.rendering/environment/defaults/default_clear_color] color.
+			[b]On macOS:[/b] A new desktop is used to display the running project.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
 			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
-			Full screen window cover the entire display area of a screen, have no border or decorations. Display video mode is not changed.
+			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
 			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
-			[b]On macOS:[/b] Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
+			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
@@ -1795,16 +1909,16 @@
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
-			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (nonwithstanding [member Engine.max_fps]).
+			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (notwithstanding [member Engine.max_fps]).
 		</constant>
 		<constant name="VSYNC_ENABLED" value="1" enum="VSyncMode">
-			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (nonwithstanding [member Engine.max_fps]).
+			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (notwithstanding [member Engine.max_fps]).
 		</constant>
 		<constant name="VSYNC_ADAPTIVE" value="2" enum="VSyncMode">
-			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (nonwithstanding [member Engine.max_fps]). Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
+			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (notwithstanding [member Engine.max_fps]). Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
 		</constant>
 		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
-			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (nonwithstanding [member Engine.max_fps]).
+			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (notwithstanding [member Engine.max_fps]).
 			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag (also called "Fast" V-Sync mode). [constant VSYNC_MAILBOX] works best when at least twice as many frames as the display refresh rate are rendered. Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
 		</constant>
 		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
@@ -1828,9 +1942,9 @@
 		</constant>
 		<constant name="OPENGL_CONTEXT" value="3" enum="HandleType">
 			OpenGL context (only with the GL Compatibility renderer):
-			- Windows: [code]HGLRC[/code] for the window.
+			- Windows: [code]HGLRC[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Linux: [code]GLXContext*[/code] for the window.
-			- macOS: [code]NSOpenGLContext*[/code] for the window.
+			- macOS: [code]NSOpenGLContext*[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Android: [code]EGLContext[/code] for the window.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">

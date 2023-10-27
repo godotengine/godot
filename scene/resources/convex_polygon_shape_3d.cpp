@@ -71,7 +71,7 @@ void ConvexPolygonShape3D::_update_shape() {
 void ConvexPolygonShape3D::set_points(const Vector<Vector3> &p_points) {
 	points = p_points;
 	_update_shape();
-	notify_change_to_owners();
+	emit_changed();
 }
 
 Vector<Vector3> ConvexPolygonShape3D::get_points() const {

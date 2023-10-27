@@ -9,10 +9,6 @@ if TYPE_CHECKING:
     from SCons import Environment
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "Android"
 
@@ -173,10 +169,6 @@ def configure(env: "Environment"):
     env["AR"] = compiler_path + "/llvm-ar"
     env["RANLIB"] = compiler_path + "/llvm-ranlib"
     env["AS"] = compiler_path + "/clang"
-
-    # Disable exceptions on template builds
-    if not env.editor_build:
-        env.Append(CXXFLAGS=["-fno-exceptions"])
 
     env.Append(
         CCFLAGS=(

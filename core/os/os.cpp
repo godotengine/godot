@@ -295,12 +295,14 @@ Error OS::shell_open(String p_uri) {
 }
 
 Error OS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
-	if (!p_path.begins_with("file://")) {
-		p_path = String("file://") + p_path;
-	}
-	if (!p_path.ends_with("/")) {
+	p_path = p_path.trim_prefix("file://");
+
+	if (!DirAccess::dir_exists_absolute(p_path)) {
 		p_path = p_path.get_base_dir();
 	}
+
+	p_path = String("file://") + p_path;
+
 	return shell_open(p_path);
 }
 // implement these with the canvas?
@@ -353,7 +355,7 @@ void OS::set_cmdline(const char *p_execpath, const List<String> &p_args, const L
 }
 
 String OS::get_unique_id() const {
-	ERR_FAIL_V("");
+	return "";
 }
 
 int OS::get_processor_count() const {
@@ -500,6 +502,10 @@ bool OS::has_feature(const String &p_feature) {
 		return true;
 	}
 
+	return false;
+}
+
+bool OS::is_sandboxed() const {
 	return false;
 }
 

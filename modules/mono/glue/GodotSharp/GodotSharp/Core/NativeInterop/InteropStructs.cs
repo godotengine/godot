@@ -71,6 +71,7 @@ namespace Godot.NativeInterop
         GODOT_CALL_ERROR_CALL_ERROR_TOO_MANY_ARGUMENTS,
         GODOT_CALL_ERROR_CALL_ERROR_TOO_FEW_ARGUMENTS,
         GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL,
+        GODOT_CALL_ERROR_CALL_ERROR_METHOD_NOT_CONST,
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1132,5 +1133,14 @@ namespace Godot.NativeInterop
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr != null ? *((int*)_ptr - 1) : 0;
         }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public enum godot_error_handler_type
+    {
+        ERR_HANDLER_ERROR = 0,
+        ERR_HANDLER_WARNING,
+        ERR_HANDLER_SCRIPT,
+        ERR_HANDLER_SHADER,
     }
 }

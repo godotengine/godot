@@ -24,13 +24,14 @@
 # Edvard Ekrem Sæther <edvardekrem@gmail.com>, 2022.
 # Changry <c@changry.no>, 2022.
 # Karl-Robert Rønning <karlyarly@gmail.com>, 2023.
+# Simon <ratchetfan92@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-10 08:37+0000\n"
-"Last-Translator: Karl-Robert Rønning <karlyarly@gmail.com>\n"
+"PO-Revision-Date: 2023-09-26 12:03+0000\n"
+"Last-Translator: Simon <ratchetfan92@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -38,10 +39,73 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
+
+msgid "Unset"
+msgstr "Deaktiver"
+
+msgid "Physical"
+msgstr "Fysisk"
+
+msgid "Left Mouse Button"
+msgstr "Venstre museknapp"
+
+msgid "Right Mouse Button"
+msgstr "Høyre museknapp"
+
+msgid "Middle Mouse Button"
+msgstr "Midterste museknapp"
+
+msgid "Mouse Wheel Up"
+msgstr "Musehjul opp"
+
+msgid "Mouse Wheel Down"
+msgstr "Musehjul ned"
+
+msgid "Mouse Wheel Left"
+msgstr "Musehjul venstre"
+
+msgid "Mouse Wheel Right"
+msgstr "Musehjul høyre"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Museknapp tommel 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Museknapp tommel 2"
 
 msgid "Button"
 msgstr "Knapp"
+
+msgid "Double Click"
+msgstr "Dobbeltklikk"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Musebevegelse ved posisjon (%s) med hastighet (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Venstre stikke X-akse, styrespake 0 X-akse"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Venstre stikke Y-akse, styrespake 0 Y-akse"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Høyre stikke X-akse, styrespake 1 X-akse"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Høyre stikke Y-akse, styrespake 1 Y-akse"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Styrespake 2 X-akse, venstre avtrekker, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Styrespake 2 Y-akse, høyre avtrekker, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Styrespake 3 X-akse"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Styrespake 3 Y-akse"
 
 msgid "Select"
 msgstr "Velg"
@@ -317,11 +381,11 @@ msgid ""
 msgstr ""
 "Dette valget virker ikke på Bézier-redigering, da det kun er ett enkelt spor."
 
-msgid "Warning: Editing imported animation"
-msgstr "Advarsel: Redigerer importert animasjon"
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Velg en AnimationPlayer-node for å lage og redigere animasjoner."
+
+msgid "Warning: Editing imported animation"
+msgstr "Advarsel: Redigerer importert animasjon"
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Vis kun spor fra noder valgt i treet."
@@ -490,6 +554,9 @@ msgstr "Lukk"
 
 msgid "Connect"
 msgstr "Koble til"
+
+msgid "Class:"
+msgstr "Klasse:"
 
 msgid "Signal:"
 msgstr "Signal:"
@@ -666,8 +733,8 @@ msgstr "Redigeringsverktøy for avhengigheter"
 msgid "Search Replacement Resource:"
 msgstr "Søk Erstatningsressurs:"
 
-msgid "Open Scene"
-msgstr "Åpne Scene"
+msgid "Open"
+msgstr "Åpne"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "Eiere av: %s (Totalt: %d)"
@@ -701,6 +768,12 @@ msgstr "Eier"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Ressurser uten eksplisitt eierskap:"
+
+msgid "Could not create folder."
+msgstr "Kunne ikke opprette mappe."
+
+msgid "Create Folder"
+msgstr "Opprett mappe"
 
 msgid "Thanks from the Godot community!"
 msgstr "Takk fra Godot-samfunnet!"
@@ -939,21 +1012,6 @@ msgstr "[blank]"
 msgid "[unsaved]"
 msgstr "[ulagret]"
 
-msgid "Choose a Directory"
-msgstr "Velg en Mappe"
-
-msgid "Create Folder"
-msgstr "Opprett mappe"
-
-msgid "Name:"
-msgstr "Navn:"
-
-msgid "Could not create folder."
-msgstr "Kunne ikke opprette mappe."
-
-msgid "Choose"
-msgstr "Velg"
-
 msgid "3D Editor"
 msgstr "3D Redigeringsverktøy"
 
@@ -990,84 +1048,6 @@ msgstr "Importer"
 msgid "Export"
 msgstr "Eksporter"
 
-msgid "Network"
-msgstr "Nettverk"
-
-msgid "Open"
-msgstr "Åpne"
-
-msgid "Select Current Folder"
-msgstr "Velg Gjeldende Mappe"
-
-msgid "Copy Path"
-msgstr "Kopier Bane"
-
-msgid "New Folder..."
-msgstr "Ny Mappe..."
-
-msgid "All Recognized"
-msgstr "Alle gjenkjente"
-
-msgid "All Files (*)"
-msgstr "Alle filer (*)"
-
-msgid "Open a File"
-msgstr "Åpne en fil"
-
-msgid "Open File(s)"
-msgstr "Åpne fil(er)"
-
-msgid "Open a Directory"
-msgstr "Åpne ei mappe"
-
-msgid "Open a File or Directory"
-msgstr "Åpne ei fil eller mappe"
-
-msgid "Save a File"
-msgstr "Lagre ei fil"
-
-msgid "Go Back"
-msgstr "Gå tilbake"
-
-msgid "Go Forward"
-msgstr "Gå fremover"
-
-msgid "Go Up"
-msgstr "Gå Oppover"
-
-msgid "Toggle Hidden Files"
-msgstr "Veksle Visning av Skjulte Filer"
-
-msgid "Toggle Favorite"
-msgstr "Veksle Favorittmarkering"
-
-msgid "Toggle Mode"
-msgstr "Veksle Modus"
-
-msgid "Focus Path"
-msgstr "Fokuser Bane"
-
-msgid "Move Favorite Up"
-msgstr "Flytt Favoritt Oppover"
-
-msgid "Move Favorite Down"
-msgstr "Flytt Favoritt Nedover"
-
-msgid "Go to parent folder."
-msgstr "Gå til ovennevnt mappe."
-
-msgid "(Un)favorite current folder."
-msgstr "(Av)favoriser gjeldende mappe."
-
-msgid "Directories & Files:"
-msgstr "Mapper og Filer:"
-
-msgid "Preview:"
-msgstr "Forhåndsvisning:"
-
-msgid "File:"
-msgstr "Fil:"
-
 msgid "Restart"
 msgstr "Omstart"
 
@@ -1082,9 +1062,6 @@ msgstr "Eksperimentell"
 
 msgid "Top"
 msgstr "Topp"
-
-msgid "Class:"
-msgstr "Klasse:"
 
 msgid "Inherits:"
 msgstr "Arver:"
@@ -1168,8 +1145,14 @@ msgstr "Flytt ned"
 msgid "Resize Array"
 msgstr "Endre størrelsen på Array"
 
-msgid "Set Multiple:"
-msgstr "Sett mange:"
+msgid "Name:"
+msgstr "Navn:"
+
+msgid "Creating Mesh Previews"
+msgstr "Lager Forhåndsvisning av Mesh"
+
+msgid "Thumbnail..."
+msgstr "Miniatyrbilde..."
 
 msgid "Edit Filters"
 msgstr "Rediger filtere"
@@ -1179,9 +1162,6 @@ msgstr "Språk:"
 
 msgid "Clear Output"
 msgstr "Nullstill Resultat"
-
-msgid "New Window"
-msgstr "Nytt vindu"
 
 msgid "Spins when the editor window redraws."
 msgstr "Snurrer når redigeringsvinduet tegner opp på nytt."
@@ -1268,15 +1248,6 @@ msgstr ""
 msgid "Changes may be lost!"
 msgstr "Endringer kan bli tapt!"
 
-msgid "There is no defined scene to run."
-msgstr "Det er ingen definert scene å kjøre."
-
-msgid "Play the project."
-msgstr "Spill prosjektet."
-
-msgid "Play the edited scene."
-msgstr "Spill den redigerte scenen."
-
 msgid "Open Base Scene"
 msgstr "Åpne Base Scene"
 
@@ -1285,12 +1256,6 @@ msgstr "Hurtigåpne Scene..."
 
 msgid "Quick Open Script..."
 msgstr "Hurtigåpne Skript..."
-
-msgid "Save & Quit"
-msgstr "Lagre & Avslutt"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Lagre endringer til '%s' før lukking?"
 
 msgid "Save Scene As..."
 msgstr "Lagre Scene Som..."
@@ -1301,8 +1266,8 @@ msgstr "Gjeldende scene er ikke lagret. Åpne likevel?"
 msgid "Can't reload a scene that was never saved."
 msgstr "Kan ikke laste en scene som aldri ble lagret."
 
-msgid "Quick Run Scene..."
-msgstr "Hurtigkjør Scene..."
+msgid "Save & Quit"
+msgstr "Lagre & Avslutt"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Lagre endring til følgende scene(r) før avslutting?"
@@ -1347,17 +1312,20 @@ msgstr ""
 "For å gjøre endringer i den, kan du opprette en ny arvet scene."
 
 msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to "
-"open the scene, then save it inside the project path."
+"Error loading scene, it must be inside the project path. Use 'Import' to open "
+"the scene, then save it inside the project path."
 msgstr ""
-"Feil ved lasting av scene, den må være i prosjektbanen. Bruk \"Importer\" "
-"for å åpne scenen, så lagre den i prosjektbanen."
+"Feil ved lasting av scene, den må være i prosjektbanen. Bruk \"Importer\" for "
+"å åpne scenen, så lagre den i prosjektbanen."
 
 msgid "Scene '%s' has broken dependencies:"
 msgstr "Scene '%s' har ødelagte avhengigheter:"
 
 msgid "Clear Recent Scenes"
 msgstr "Fjern Nylige Scener"
+
+msgid "There is no defined scene to run."
+msgstr "Det er ingen definert scene å kjøre."
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -1389,18 +1357,6 @@ msgstr "Standard"
 msgid "Save & Close"
 msgstr "Lagre og Lukk"
 
-msgid "Close Tab"
-msgstr "Lukk fanen"
-
-msgid "Close Other Tabs"
-msgstr "Lukk Andre Faner"
-
-msgid "Close Tabs to the Right"
-msgstr "Lukk faner til høyre"
-
-msgid "Close All Tabs"
-msgstr "Lukk alle faner"
-
 msgid "%d more files or folders"
 msgstr "%d flere filer eller mapper"
 
@@ -1416,9 +1372,6 @@ msgstr "Panoreringsvisning"
 msgid "Dock Position"
 msgstr "Dock-posisjon"
 
-msgid "Add a new scene."
-msgstr "Legg til ny scene."
-
 msgid "Distraction Free Mode"
 msgstr "Distraksjonsfri Modus"
 
@@ -1430,9 +1383,6 @@ msgstr "Scene"
 
 msgid "Operations with scene files."
 msgstr "Operasjoner med scene-filer."
-
-msgid "Go to previously opened scene."
-msgstr "Gå til forrige åpne scene."
 
 msgid "New Scene"
 msgstr "Ny Scene"
@@ -1509,9 +1459,6 @@ msgstr "Hjelp"
 msgid "Community"
 msgstr "Samfunn"
 
-msgid "Run Project"
-msgstr "Kjør prosjektet"
-
 msgid "FileSystem"
 msgstr "FilSystem"
 
@@ -1578,12 +1525,6 @@ msgstr "Åpne det forrige redigeringsverktøy"
 
 msgid "Warning!"
 msgstr "Advarsel!"
-
-msgid "Creating Mesh Previews"
-msgstr "Lager Forhåndsvisning av Mesh"
-
-msgid "Thumbnail..."
-msgstr "Miniatyrbilde..."
 
 msgid "Installed Plugins:"
 msgstr "Installerte Plugins:"
@@ -1721,8 +1662,8 @@ msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
 msgstr ""
-"Ingen nedlastningslink funnet for denne versjonen. Direkte nedlastning er "
-"kun mulig for offisielle utvigelser."
+"Ingen nedlastningslink funnet for denne versjonen. Direkte nedlastning er kun "
+"mulig for offisielle utvigelser."
 
 msgid "Disconnected"
 msgstr "Koblet fra"
@@ -1818,37 +1759,8 @@ msgstr "Kan ikke flytte en mappe inn i seg selv."
 msgid "Error moving:"
 msgstr "Feil ved flytting:"
 
-msgid "Unable to update dependencies:"
-msgstr "Kan ikke oppdatere avhengigheter:"
-
 msgid "A file or folder with this name already exists."
 msgstr "En fil eller mappe med dette navnet eksisterer allerede."
-
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"Disse filene eller mappene er i konflikt med oppføringene i målstedet «%s»:\n"
-"\n"
-"%s\n"
-"\n"
-"Ønsker du å overskrive dem?"
-
-msgid "Renaming file:"
-msgstr "Endrer filnavn:"
-
-msgid "Renaming folder:"
-msgstr "Ender mappenavn:"
-
-msgid "Add to Favorites"
-msgstr "Legg til i favoritter"
-
-msgid "Remove from Favorites"
-msgstr "Fjern fra favoritter"
 
 msgid "Edit Dependencies..."
 msgstr "Endre Avhengigheter..."
@@ -1856,8 +1768,20 @@ msgstr "Endre Avhengigheter..."
 msgid "View Owners..."
 msgstr "Vis Eiere..."
 
-msgid "Move To..."
-msgstr "Flytt Til..."
+msgid "Add to Favorites"
+msgstr "Legg til i favoritter"
+
+msgid "Remove from Favorites"
+msgstr "Fjern fra favoritter"
+
+msgid "Reimport"
+msgstr "Reimporter"
+
+msgid "New Folder..."
+msgstr "Ny Mappe..."
+
+msgid "Copy Path"
+msgstr "Kopier Bane"
 
 msgid "Rename..."
 msgstr "Gi nytt navn..."
@@ -1871,9 +1795,6 @@ msgid ""
 msgstr ""
 "Gjennomgår filer,\n"
 "Vent…"
-
-msgid "Move"
-msgstr "Flytt"
 
 msgid "Overwrite"
 msgstr "Overskriv"
@@ -1923,8 +1844,113 @@ msgstr "Redigeringsverktøy for grupper"
 msgid "Manage Groups"
 msgstr "Håndter grupper"
 
-msgid "Reimport"
-msgstr "Reimporter"
+msgid "Move"
+msgstr "Flytt"
+
+msgid "Choose a Directory"
+msgstr "Velg en Mappe"
+
+msgid "Network"
+msgstr "Nettverk"
+
+msgid "Select Current Folder"
+msgstr "Velg Gjeldende Mappe"
+
+msgid "All Recognized"
+msgstr "Alle gjenkjente"
+
+msgid "All Files (*)"
+msgstr "Alle filer (*)"
+
+msgid "Open a File"
+msgstr "Åpne en fil"
+
+msgid "Open File(s)"
+msgstr "Åpne fil(er)"
+
+msgid "Open a Directory"
+msgstr "Åpne ei mappe"
+
+msgid "Open a File or Directory"
+msgstr "Åpne ei fil eller mappe"
+
+msgid "Save a File"
+msgstr "Lagre ei fil"
+
+msgid "Go Back"
+msgstr "Gå tilbake"
+
+msgid "Go Forward"
+msgstr "Gå fremover"
+
+msgid "Go Up"
+msgstr "Gå Oppover"
+
+msgid "Toggle Hidden Files"
+msgstr "Veksle Visning av Skjulte Filer"
+
+msgid "Toggle Favorite"
+msgstr "Veksle Favorittmarkering"
+
+msgid "Toggle Mode"
+msgstr "Veksle Modus"
+
+msgid "Focus Path"
+msgstr "Fokuser Bane"
+
+msgid "Move Favorite Up"
+msgstr "Flytt Favoritt Oppover"
+
+msgid "Move Favorite Down"
+msgstr "Flytt Favoritt Nedover"
+
+msgid "Go to parent folder."
+msgstr "Gå til ovennevnt mappe."
+
+msgid "(Un)favorite current folder."
+msgstr "(Av)favoriser gjeldende mappe."
+
+msgid "Directories & Files:"
+msgstr "Mapper og Filer:"
+
+msgid "Preview:"
+msgstr "Forhåndsvisning:"
+
+msgid "File:"
+msgstr "Fil:"
+
+msgid "Play the project."
+msgstr "Spill prosjektet."
+
+msgid "Play the edited scene."
+msgstr "Spill den redigerte scenen."
+
+msgid "Quick Run Scene..."
+msgstr "Hurtigkjør Scene..."
+
+msgid "Run Project"
+msgstr "Kjør prosjektet"
+
+msgid "Close Tab"
+msgstr "Lukk fanen"
+
+msgid "Close Other Tabs"
+msgstr "Lukk Andre Faner"
+
+msgid "Close Tabs to the Right"
+msgstr "Lukk faner til høyre"
+
+msgid "Close All Tabs"
+msgstr "Lukk alle faner"
+
+msgid "New Window"
+msgstr "Nytt vindu"
+
+msgid "Add a new scene."
+msgstr "Legg til ny scene."
+
+msgid "Open in Editor"
+msgstr "Åpne i Redigeringsverktøy"
 
 msgid "Offset:"
 msgstr "Avstand:"
@@ -1967,9 +1993,6 @@ msgstr "Importer Som:"
 
 msgid "Preset"
 msgstr "Forhåndsinnstilling"
-
-msgid "Changing the type of an imported file requires editor restart."
-msgstr "Å endre typen av en importert fil krever omstart av redigereren"
 
 msgid "Device:"
 msgstr "Enhet:"
@@ -2171,9 +2194,6 @@ msgstr "Blend-Tid:"
 
 msgid "Transition exists!"
 msgstr "Overgang eksisterer!"
-
-msgid "To"
-msgstr "Til"
 
 msgid "Immediate"
 msgstr "Umiddelbart"
@@ -2415,23 +2435,17 @@ msgstr "Nederst til venstre"
 msgid "Bottom Right"
 msgstr "Nederst til høyre"
 
-msgid "Smoothstep"
-msgstr "Smooth-steg"
+msgid "Remove Curve Point"
+msgstr "Fjern Kurvepunkt"
 
 msgid "Modify Curve Point"
 msgstr "Modifiser Kurvepunkt"
 
-msgid "Modify Curve Tangent"
-msgstr "Modifiser Kurvetangent"
-
-msgid "Load Preset"
-msgstr "Åpne forhåndsinnstilling"
-
-msgid "Remove Curve Point"
-msgstr "Fjern Kurvepunkt"
-
 msgid "Hold Shift to edit tangents individually"
 msgstr "Hold Shift for å endre tangenter individuelt"
+
+msgid "Smoothstep"
+msgstr "Smooth-steg"
 
 msgid "Deploy with Remote Debug"
 msgstr "Distribuer med ekstern feilsøking"
@@ -2443,8 +2457,8 @@ msgid "Visible Navigation"
 msgstr "Synlig navigasjon"
 
 msgid ""
-"When this option is enabled, any changes made to the scene in the editor "
-"will be replicated in the running project.\n"
+"When this option is enabled, any changes made to the scene in the editor will "
+"be replicated in the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
@@ -2507,6 +2521,12 @@ msgstr "Tilfeldig Skala:"
 
 msgid "Amount:"
 msgstr "Mengde:"
+
+msgid "Edit Poly"
+msgstr "Rediger Poly"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Rediger Poly (fjern punkt)"
 
 msgid "Orthogonal"
 msgstr "Ortogonal"
@@ -2631,14 +2651,8 @@ msgstr "Åpne 2D-redigeringsverktøy for polygon-UV"
 msgid "Points"
 msgstr "Poeng"
 
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Roter"
-
 msgid "Shift: Move All"
 msgstr "Shift: Flytt Alle"
-
-msgid "Shift+Ctrl: Scale"
-msgstr "Shift+Ctrl: Skaler"
 
 msgid "Move Polygon"
 msgstr "Flytt Polygon"
@@ -2664,12 +2678,6 @@ msgstr "Aktiver Snap"
 msgid "Show Grid"
 msgstr "Vis Rutenett"
 
-msgid "Edit Poly"
-msgstr "Rediger Poly"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Rediger Poly (fjern punkt)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "FEIL: Kunne ikke laste ressurs!"
 
@@ -2687,9 +2695,6 @@ msgstr "Ressurs-utklippstavle er tom!"
 
 msgid "Paste Resource"
 msgstr "Lim inn Ressurs"
-
-msgid "Open in Editor"
-msgstr "Åpne i Redigeringsverktøy"
 
 msgid "Load Resource"
 msgstr "Last Ressurs"
@@ -2885,6 +2890,9 @@ msgstr "(tom)"
 
 msgid "Zoom Reset"
 msgstr "Tilbakestill forstørring"
+
+msgid "Size"
+msgstr "Størrelse"
 
 msgid "Updating the editor"
 msgstr "Oppdaterer redigeringsverktøyet"
@@ -3138,11 +3146,11 @@ msgstr "Opprett rot-node:"
 msgid "Other Node"
 msgstr "Andre noder"
 
-msgid "This operation requires a single selected node."
-msgstr "Denne operasjonen krever én valgt node."
-
 msgid "Filters"
 msgstr "Filter"
+
+msgid "This operation requires a single selected node."
+msgstr "Denne operasjonen krever én valgt node."
 
 msgid "Remote"
 msgstr "Ekstern"
@@ -3192,21 +3200,6 @@ msgstr "%s/s"
 msgid "Config"
 msgstr "konfigurer"
 
-msgid "Size"
-msgstr "Størrelse"
-
-msgid "Calculating grid size..."
-msgstr "Regner ut rutenettstørrelse…"
-
-msgid "Partitioning..."
-msgstr "Partisjonerer..."
-
-msgid "Creating contours..."
-msgstr "Lager konturer..."
-
-msgid "Done!"
-msgstr "Ferdig"
-
 msgid "Pose"
 msgstr "Positur"
 
@@ -3215,9 +3208,6 @@ msgstr "Velg enhet fra listen"
 
 msgid "Uninstalling..."
 msgstr "Avinstallerer …"
-
-msgid "Invalid animation: '%s'."
-msgstr "Ugyldig animasjon: '%s'."
 
 msgid "(Other)"
 msgstr "(Annet)"

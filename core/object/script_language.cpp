@@ -34,7 +34,6 @@
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/variant/typed_array.h"
 
 #include <stdint.h>
 
@@ -43,7 +42,7 @@ int ScriptServer::_language_count = 0;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
-bool ScriptServer::languages_finished = false;
+SafeFlag ScriptServer::languages_finished; // Used until GH-76581 is fixed properly.
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 void Script::_notification(int p_what) {
@@ -147,6 +146,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_property_default_value", "property"), &Script::_get_property_default_value);
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
+	ClassDB::bind_method(D_METHOD("is_abstract"), &Script::is_abstract);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
@@ -229,7 +229,7 @@ void ScriptServer::finish_languages() {
 		_languages[i]->finish();
 	}
 	global_classes_clear();
-	languages_finished = true;
+	languages_finished.set();
 }
 
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
@@ -241,12 +241,18 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 }
 
 void ScriptServer::thread_enter() {
+	if (!languages_finished.is_set()) {
+		return;
+	}
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_enter();
 	}
 }
 
 void ScriptServer::thread_exit() {
+	if (!languages_finished.is_set()) {
+		return;
+	}
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_exit();
 	}
@@ -383,40 +389,6 @@ String ScriptServer::get_global_class_cache_file_path() {
 
 ////////////////////
 
-Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	return callp(p_method, p_args, p_argcount, r_error);
-}
-
-void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) {
-	List<PropertyInfo> pinfo;
-	get_property_list(&pinfo);
-	for (const PropertyInfo &E : pinfo) {
-		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			Pair<StringName, Variant> p;
-			p.first = E.name;
-			if (get(p.first, p.second)) {
-				state.push_back(p);
-			}
-		}
-	}
-}
-
-void ScriptInstance::property_set_fallback(const StringName &, const Variant &, bool *r_valid) {
-	if (r_valid) {
-		*r_valid = false;
-	}
-}
-
-Variant ScriptInstance::property_get_fallback(const StringName &, bool *r_valid) {
-	if (r_valid) {
-		*r_valid = false;
-	}
-	return Variant();
-}
-
-ScriptInstance::~ScriptInstance() {
-}
-
 ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
 ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
 	singleton = this;
@@ -459,6 +431,52 @@ void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const 
 }
 
 void ScriptLanguage::frame() {
+}
+
+TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_characteristics(const String &p_base) {
+	// Return characacteristics of the match found by order of importance.
+	// Matches will be ranked by a lexicographical order on the vector returned by this function.
+	// The lower values indicate better matches and that they should go before in the order of appearance.
+	if (last_matches == matches) {
+		return charac;
+	}
+	charac.clear();
+	// Ensure base is not empty and at the same time that matches is not empty too.
+	if (p_base.length() == 0) {
+		last_matches = matches;
+		charac.push_back(location);
+		return charac;
+	}
+	charac.push_back(matches.size());
+	charac.push_back((matches[0].first == 0) ? 0 : 1);
+	const char32_t *target_char = &p_base[0];
+	int bad_case = 0;
+	for (const Pair<int, int> &match_segment : matches) {
+		const char32_t *string_to_complete_char = &display[match_segment.first];
+		for (int j = 0; j < match_segment.second; j++, string_to_complete_char++, target_char++) {
+			if (*string_to_complete_char != *target_char) {
+				bad_case++;
+			}
+		}
+	}
+	charac.push_back(bad_case);
+	charac.push_back(location);
+	charac.push_back(matches[0].first);
+	last_matches = matches;
+	return charac;
+}
+
+void ScriptLanguage::CodeCompletionOption::clear_characteristics() {
+	charac = TypedArray<int>();
+}
+
+TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_cached_characteristics() const {
+	// Only returns the cached value and warns if it was not updated since the last change of matches.
+	if (last_matches != matches) {
+		WARN_PRINT("Characteristics are not up to date.");
+	}
+
+	return charac;
 }
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {

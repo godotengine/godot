@@ -2196,8 +2196,8 @@ bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, L
 
 			ERR_FAIL_COND_V(!state.scene_map.has(nodeid), false); //weird, it should have it...
 			NodeJoint *nj = dynamic_cast<NodeJoint *>(state.scene_map[nodeid]);
-			ERR_FAIL_COND_V(!nj, false);
-			ERR_FAIL_COND_V(!nj->owner, false); //weird, node should have a skeleton owner
+			ERR_FAIL_NULL_V(nj, false);
+			ERR_FAIL_NULL_V(nj->owner, false); // Weird, node should have a skeleton owner.
 
 			NodeSkeleton *sk = nj->owner;
 

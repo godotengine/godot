@@ -67,6 +67,7 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 	Array arr;
 	arr.push_back(name);
 	arr.push_back(type);
+	arr.push_back(value.get_type());
 
 	Variant var = value;
 	if (value.get_type() == Variant::OBJECT && value.get_validated_object() == nullptr) {
@@ -74,7 +75,7 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 	}
 
 	int len = 0;
-	Error err = encode_variant(var, nullptr, len, true);
+	Error err = encode_variant(var, nullptr, len, false);
 	if (err != OK) {
 		ERR_PRINT("Failed to encode variant.");
 	}
@@ -88,11 +89,12 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 }
 
 bool DebuggerMarshalls::ScriptStackVariable::deserialize(const Array &p_arr) {
-	CHECK_SIZE(p_arr, 3, "ScriptStackVariable");
+	CHECK_SIZE(p_arr, 4, "ScriptStackVariable");
 	name = p_arr[0];
 	type = p_arr[1];
-	value = p_arr[2];
-	CHECK_END(p_arr, 3, "ScriptStackVariable");
+	var_type = p_arr[2];
+	value = p_arr[3];
+	CHECK_END(p_arr, 4, "ScriptStackVariable");
 	return true;
 }
 

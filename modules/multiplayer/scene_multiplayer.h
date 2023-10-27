@@ -31,11 +31,11 @@
 #ifndef SCENE_MULTIPLAYER_H
 #define SCENE_MULTIPLAYER_H
 
-#include "scene/main/multiplayer_api.h"
-
 #include "scene_cache_interface.h"
 #include "scene_replication_interface.h"
 #include "scene_rpc_interface.h"
+
+#include "scene/main/multiplayer_api.h"
 
 class OfflineMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(OfflineMultiplayerPeer, MultiplayerPeer);
@@ -200,9 +200,6 @@ public:
 
 	void set_max_delta_packet_size(int p_size);
 	int get_max_delta_packet_size() const;
-
-	Ref<SceneCacheInterface> get_path_cache() { return cache; }
-	Ref<SceneReplicationInterface> get_replicator() { return replicator; }
 
 	SceneMultiplayer();
 	~SceneMultiplayer();

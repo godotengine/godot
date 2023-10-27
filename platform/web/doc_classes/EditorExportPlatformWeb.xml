@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlatformWeb" inherits="EditorExportPlatform" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlatformWeb" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exporter for the Web.
 	</brief_description>
@@ -7,6 +7,7 @@
 	</description>
 	<tutorials>
 		<link title="Exporting for the Web">$DOCS_URL/tutorials/export/exporting_for_web.html</link>
+		<link title="Web documentation index">$DOCS_URL/tutorials/platform/web/index.html</link>
 	</tutorials>
 	<members>
 		<member name="custom_template/debug" type="String" setter="" getter="">

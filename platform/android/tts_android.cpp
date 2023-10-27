@@ -54,7 +54,7 @@ void TTS_Android::setup(jobject p_tts) {
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
 		JNIEnv *env = get_jni_env();
-		ERR_FAIL_COND(env == nullptr);
+		ERR_FAIL_NULL(env);
 
 		tts = env->NewGlobalRef(p_tts);
 
@@ -103,7 +103,7 @@ bool TTS_Android::is_speaking() {
 	if (_is_speaking) {
 		JNIEnv *env = get_jni_env();
 
-		ERR_FAIL_COND_V(env == nullptr, false);
+		ERR_FAIL_NULL_V(env, false);
 		return env->CallBooleanMethod(tts, _is_speaking);
 	} else {
 		return false;
@@ -115,7 +115,7 @@ bool TTS_Android::is_paused() {
 	if (_is_paused) {
 		JNIEnv *env = get_jni_env();
 
-		ERR_FAIL_COND_V(env == nullptr, false);
+		ERR_FAIL_NULL_V(env, false);
 		return env->CallBooleanMethod(tts, _is_paused);
 	} else {
 		return false;
@@ -127,7 +127,7 @@ Array TTS_Android::get_voices() {
 	Array list;
 	if (_get_voices) {
 		JNIEnv *env = get_jni_env();
-		ERR_FAIL_COND_V(env == nullptr, list);
+		ERR_FAIL_NULL_V(env, list);
 
 		jobject voices_object = env->CallObjectMethod(tts, _get_voices);
 		jobjectArray *arr = reinterpret_cast<jobjectArray *>(&voices_object);
@@ -165,7 +165,7 @@ void TTS_Android::speak(const String &p_text, const String &p_voice, int p_volum
 
 	if (_speak) {
 		JNIEnv *env = get_jni_env();
-		ERR_FAIL_COND(env == nullptr);
+		ERR_FAIL_NULL(env);
 
 		jstring jStrT = env->NewStringUTF(p_text.utf8().get_data());
 		jstring jStrV = env->NewStringUTF(p_voice.utf8().get_data());
@@ -178,7 +178,7 @@ void TTS_Android::pause() {
 	if (_pause_speaking) {
 		JNIEnv *env = get_jni_env();
 
-		ERR_FAIL_COND(env == nullptr);
+		ERR_FAIL_NULL(env);
 		env->CallVoidMethod(tts, _pause_speaking);
 	}
 }
@@ -188,7 +188,7 @@ void TTS_Android::resume() {
 	if (_resume_speaking) {
 		JNIEnv *env = get_jni_env();
 
-		ERR_FAIL_COND(env == nullptr);
+		ERR_FAIL_NULL(env);
 		env->CallVoidMethod(tts, _resume_speaking);
 	}
 }
@@ -203,7 +203,7 @@ void TTS_Android::stop() {
 	if (_stop_speaking) {
 		JNIEnv *env = get_jni_env();
 
-		ERR_FAIL_COND(env == nullptr);
+		ERR_FAIL_NULL(env);
 		env->CallVoidMethod(tts, _stop_speaking);
 	}
 }

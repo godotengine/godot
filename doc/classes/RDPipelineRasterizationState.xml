@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDPipelineRasterizationState" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RDPipelineRasterizationState" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Pipeline rasterization state (used by [RenderingDevice]).
 	</brief_description>
@@ -29,7 +29,7 @@
 			The winding order to use to determine which face of a triangle is considered its front face.
 		</member>
 		<member name="line_width" type="float" setter="set_line_width" getter="get_line_width" default="1.0">
-			THe line width to use when drawing lines (in pixels). Thick lines may not be supported on all hardware.
+			The line width to use when drawing lines (in pixels). Thick lines may not be supported on all hardware.
 		</member>
 		<member name="patch_control_points" type="int" setter="set_patch_control_points" getter="get_patch_control_points" default="1">
 			The number of control points to use when drawing a patch with tessellation enabled. Higher values result in higher quality at the cost of performance.

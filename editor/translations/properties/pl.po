@@ -71,22 +71,30 @@
 # Jan Kurzak <Iqaz0oki@outlook.com>, 2022.
 # Wojciech Pluta <wojciech.pluta@oracle.com>, 2022.
 # Piotr Komorowski <mikolajk11@o2.pl>, 2023.
+# stereopolex <stereopolex@gmail.com>, 2023.
+# Kandif <kandif@poczta.pl>, 2023.
+# BorysBe <b.bobulski@wp.pl>, 2023.
+# Krzysztof Szot <satrix321@gmail.com>, 2023.
+# nauta-turbidus <wiktor-t@hotmail.com>, 2023.
+# Karangia23 <karangia3984@op.pl>, 2023.
+# Eryk Michalak <gnu.ewm@protonmail.com>, 2023.
+# Led Liedtke <przemekliedtke@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-30 10:49+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
-"Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
-"godot-properties/pl/>\n"
+"PO-Revision-Date: 2023-09-23 21:23+0000\n"
+"Last-Translator: Led Liedtke <przemekliedtke@gmail.com>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
+"properties/pl/>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -102,6 +110,9 @@ msgstr "Nazwa lokalizowana"
 
 msgid "Description"
 msgstr "Opis"
+
+msgid "Version"
+msgstr "Wersja"
 
 msgid "Run"
 msgstr "Uruchom"
@@ -205,6 +216,9 @@ msgstr "Domyślny układ magistrali"
 msgid "General"
 msgstr "Ogólne"
 
+msgid "Text to Speech"
+msgstr "Tekst na mowę"
+
 msgid "2D Panning Strength"
 msgstr "Siła przesuwania 2D"
 
@@ -298,6 +312,9 @@ msgstr "Pamięć"
 msgid "Limits"
 msgstr "Limity"
 
+msgid "Multithreaded Server"
+msgstr "Serwer wielowątkowy"
+
 msgid "Internationalization"
 msgstr "Internacjonalizacja"
 
@@ -343,11 +360,14 @@ msgstr "Domyślny filtr tekstur"
 msgid "Default Texture Repeat"
 msgstr "Domyślne zapętlenie tekstur"
 
+msgid "Collada"
+msgstr "Collada"
+
+msgid "Use Ambient"
+msgstr "Użyj otoczenia"
+
 msgid "Low Processor Usage Mode"
 msgstr "Tryb niskiego wykorzystania procesora"
-
-msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "Niskie zużycie procesora Tryb uśpienia (µsec)"
 
 msgid "Print Error Messages"
 msgstr "Wyświetlaj komunikaty o błędach"
@@ -377,7 +397,7 @@ msgid "Pressed"
 msgstr "Wciśnięty"
 
 msgid "Unicode"
-msgstr "Unicode"
+msgstr "Unikod"
 
 msgid "Echo"
 msgstr "Echo"
@@ -451,12 +471,6 @@ msgstr "Wartość kontrolera"
 msgid "Big Endian"
 msgstr "Big endian"
 
-msgid "Network"
-msgstr "Sieć"
-
-msgid "Page Size"
-msgstr "Rozmiar strony"
-
 msgid "Blocking Mode Enabled"
 msgstr "Tryb blokowania włączony"
 
@@ -490,6 +504,9 @@ msgstr "Tablica danych"
 msgid "Max Pending Connections"
 msgstr "Maks. liczba połączeń oczekujących"
 
+msgid "Region"
+msgstr "Obszar"
+
 msgid "Offset"
 msgstr "Przesunięcie"
 
@@ -501,6 +518,12 @@ msgstr "Ziarno"
 
 msgid "State"
 msgstr "Stan"
+
+msgid "Network"
+msgstr "Sieć"
+
+msgid "TLS"
+msgstr "TLS"
 
 msgid "Locale"
 msgstr "Ustawienia regionalne"
@@ -556,29 +579,20 @@ msgstr "Wygładzanie"
 msgid "Remote Port"
 msgstr "Zdalny port"
 
-msgid "Debugger"
-msgstr "Debugger"
+msgid "FileSystem"
+msgstr "System plików"
 
-msgid "Profiler Frame Max Functions"
-msgstr "Maksymalna ilość funkcji klatki profilera"
+msgid "File Server"
+msgstr "Serwer plików"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Password"
+msgstr "Hasło"
 
 msgid "Default Feature Profile"
 msgstr "Profil domyślnych funkcji"
-
-msgid "Access"
-msgstr "Dostęp"
-
-msgid "Display Mode"
-msgstr "Tryb wyświetlania"
-
-msgid "Filters"
-msgstr "Filtry"
-
-msgid "Show Hidden Files"
-msgstr "Pokaż ukryte pliki"
-
-msgid "Disable Overwrite Warning"
-msgstr "Wyłącz ostrzeżenie o nadpisaniu"
 
 msgid "Text Editor"
 msgstr "Edytor tekstu"
@@ -603,6 +617,9 @@ msgstr "Sprawdzone"
 
 msgid "Keying"
 msgstr "Kluczowanie"
+
+msgid "Distraction Free Mode"
+msgstr "Tryb bez rozproszeń"
 
 msgid "Interface"
 msgstr "Interfejs"
@@ -643,9 +660,6 @@ msgstr "Edycja poziomych typów wektorów"
 msgid "Default Color Picker Mode"
 msgstr "Domyślny tryb pobieracza kolorów"
 
-msgid "Distraction Free Mode"
-msgstr "Tryb bez rozproszeń"
-
 msgid "Base Type"
 msgstr "Typ bazowy"
 
@@ -684,12 +698,6 @@ msgstr "Główna czcionka pogrubiona"
 
 msgid "Code Font"
 msgstr "Czcionka kodu"
-
-msgid "Low Processor Mode Sleep (µsec)"
-msgstr "Niski tryb uśpienia procesora (µsec)"
-
-msgid "Unfocused Low Processor Mode Sleep (µsec)"
-msgstr "Nieskoncentrowany tryb uśpienia w trybie niskiego procesora (µsec)"
 
 msgid "Separate Distraction Mode"
 msgstr "Oddzielny tryb bez rozproszeń"
@@ -733,8 +741,8 @@ msgstr "Własny motyw"
 msgid "Show Script Button"
 msgstr "Pokaż przycisk skryptu"
 
-msgid "FileSystem"
-msgstr "System plików"
+msgid "Enable"
+msgstr "Włącz"
 
 msgid "Vector Image Editor"
 msgstr "Edytor obrazów wektorowych"
@@ -757,11 +765,23 @@ msgstr "Skompresuj binarne zasoby"
 msgid "File Dialog"
 msgstr "Dialog plików"
 
+msgid "Show Hidden Files"
+msgstr "Pokaż ukryte pliki"
+
+msgid "Display Mode"
+msgstr "Tryb wyświetlania"
+
 msgid "Thumbnail Size"
 msgstr "Rozmiar miniaturki"
 
+msgid "Import"
+msgstr "Zaimportuj"
+
+msgid "FBX"
+msgstr "FBX"
+
 msgid "Docks"
-msgstr "Doki"
+msgstr "Doki, Docki"
 
 msgid "Scene Tree"
 msgstr "Drzewo sceny"
@@ -802,6 +822,9 @@ msgstr "Podświetl obecną linię"
 msgid "Highlight All Occurrences"
 msgstr "Podświetl wszystkie wystąpienia"
 
+msgid "Guidelines"
+msgstr "Poradniki"
+
 msgid "Show Line Length Guidelines"
 msgstr "Pokaż wytyczne dotyczące długości linii"
 
@@ -823,11 +846,11 @@ msgstr "Numery linii wyrównane zerami"
 msgid "Highlight Type Safe Lines"
 msgstr "Wyróżnij typy bezpiecznych linii"
 
-msgid "Show Bookmark Gutter"
-msgstr "Pokaż ciek zakładek"
-
 msgid "Show Info Gutter"
 msgstr "Pokaż ciek informacji"
+
+msgid "Minimap"
+msgstr "Minimapa"
 
 msgid "Show Minimap"
 msgstr "Pokaż minimapę"
@@ -841,6 +864,9 @@ msgstr "Zwijanie kodu"
 msgid "Word Wrap"
 msgstr "Zawijanie tekstu"
 
+msgid "Whitespace"
+msgstr "Biały znak"
+
 msgid "Draw Tabs"
 msgstr "Rysuj taby"
 
@@ -849,6 +875,9 @@ msgstr "Rysuj spacje"
 
 msgid "Line Spacing"
 msgstr "Odstępy między liniami"
+
+msgid "Behavior"
+msgstr "Zachowanie"
 
 msgid "Navigation"
 msgstr "Nawigacja"
@@ -1078,9 +1107,6 @@ msgstr "Rozmiar obrysu kości"
 msgid "Viewport Border Color"
 msgstr "Kolor obwódki viewportu"
 
-msgid "Constrain Editor View"
-msgstr "Ogranicz widok edytora"
-
 msgid "Simple Panning"
 msgstr "Proste przesuwanie"
 
@@ -1092,9 +1118,6 @@ msgstr "Pokaż poprzedni obrys"
 
 msgid "Autorename Animation Tracks"
 msgstr "Automatycznie przemianuj ścieżki animacji"
-
-msgid "Confirm Insert Track"
-msgstr "Potwierdź wstawienie ścieżki"
 
 msgid "Default Create Bezier Tracks"
 msgstr "Twórz domyślnie ścieżki Beziera"
@@ -1141,17 +1164,20 @@ msgstr "Rozmiar czcionki"
 msgid "Remote Host"
 msgstr "Zdalny host"
 
+msgid "Debugger"
+msgstr "Debugger"
+
 msgid "Profiler Frame History Size"
 msgstr "Rozmiar historii klatek profilera"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Maksymalna ilość funkcji klatki profilera"
 
 msgid "HTTP Proxy"
 msgstr "Proxy HTTP"
 
 msgid "Host"
 msgstr "Host"
-
-msgid "Port"
-msgstr "Port"
 
 msgid "Project Manager"
 msgstr "Menedżer projektów"
@@ -1267,20 +1293,11 @@ msgstr "Kolor wyniku wyszukiwania"
 msgid "Search Result Border Color"
 msgstr "Kolor obramowania wyniku wyszukiwania"
 
-msgid "Flat"
-msgstr "Płaski"
-
-msgid "Hide Slider"
-msgstr "Ukryj suwak"
-
 msgid "Custom Template"
 msgstr "Własny szablon"
 
 msgid "Release"
 msgstr "Wydanie"
-
-msgid "Export Console Script"
-msgstr "Eksportuj skrypt konsoli"
 
 msgid "Binary Format"
 msgstr "Format binarny"
@@ -1309,11 +1326,20 @@ msgstr "Eksportuj"
 msgid "Export Path"
 msgstr "Ścieżka eksportu"
 
-msgid "File Server"
-msgstr "Serwer plików"
+msgid "Access"
+msgstr "Dostęp"
 
-msgid "Password"
-msgstr "Hasło"
+msgid "Filters"
+msgstr "Filtry"
+
+msgid "Disable Overwrite Warning"
+msgstr "Wyłącz ostrzeżenie o nadpisaniu"
+
+msgid "Flat"
+msgstr "Płaski"
+
+msgid "Hide Slider"
+msgstr "Ukryj suwak"
 
 msgid "Multichannel Signed Distance Field"
 msgstr "Wielokanałowe Pole Odległości ze Znakiem"
@@ -1351,12 +1377,6 @@ msgstr "Odmiana"
 msgid "Transform"
 msgstr "Przekształcanie"
 
-msgid "Collada"
-msgstr "Collada"
-
-msgid "Use Ambient"
-msgstr "Użyj otoczenia"
-
 msgid "Bone Renamer"
 msgstr "Zmieniacz nazwy kości"
 
@@ -1365,9 +1385,6 @@ msgstr "Unikalny węzeł"
 
 msgid "Make Unique"
 msgstr "Zrób unikalny"
-
-msgid "Enable"
-msgstr "Włącz"
 
 msgid "Filter"
 msgstr "Filtr"
@@ -1387,6 +1404,9 @@ msgstr "Separator"
 msgid "Character Ranges"
 msgstr "Zakresy znaków"
 
+msgid "Rows"
+msgstr "Rzędy"
+
 msgid "Character Margin"
 msgstr "Margines znaku"
 
@@ -1395,6 +1415,9 @@ msgstr "Stratna jakość"
 
 msgid "Mipmaps"
 msgstr "Mipmapy"
+
+msgid "Limit"
+msgstr "Limit"
 
 msgid "Slices"
 msgstr "Kawałki"
@@ -1420,8 +1443,11 @@ msgstr "Skaluj siatkę"
 msgid "Offset Mesh"
 msgstr "Przesuń siatkę"
 
-msgid "Import"
-msgstr "Zaimportuj"
+msgid "Layer"
+msgstr "Warstwa"
+
+msgid "Mask"
+msgstr "Maska"
 
 msgid "Advanced"
 msgstr "Zaawansowane"
@@ -1468,6 +1494,9 @@ msgstr "Maks. błąd kątowy"
 msgid "Max Precision Error"
 msgstr "Maks. błąd precyzji"
 
+msgid "Page Size"
+msgstr "Rozmiar strony"
+
 msgid "Import Tracks"
 msgstr "Importuj ścieżki"
 
@@ -1505,7 +1534,7 @@ msgid "Use Named Skins"
 msgstr "Używaj nazwanych skórek"
 
 msgid "FPS"
-msgstr "klatek na sekundę"
+msgstr "FPS"
 
 msgid "Normal Map"
 msgstr "Mapa normalnych"
@@ -1585,11 +1614,14 @@ msgstr "Wymaż"
 msgid "Error"
 msgstr "Błąd"
 
-msgid "Particles"
-msgstr "Cząsteczki"
+msgid "Camera"
+msgstr "Kamera"
 
 msgid "Decal"
 msgstr "Naklejka"
+
+msgid "Particles"
+msgstr "Cząsteczki"
 
 msgid "Manipulator Gizmo Size"
 msgstr "Regulacja wielkości uchwytu"
@@ -1633,9 +1665,6 @@ msgstr "Szkielet"
 msgid "Bone Shape"
 msgstr "Kształt kości"
 
-msgid "Warnings"
-msgstr "Ostrzeżenia"
-
 msgid "ID"
 msgstr "ID"
 
@@ -1643,7 +1672,7 @@ msgid "Texture"
 msgstr "Tekstura"
 
 msgid "Separation"
-msgstr "Separacja"
+msgstr "Odstęp"
 
 msgid "Texture Region Size"
 msgstr "Rozmiar obszaru tekstury"
@@ -1687,8 +1716,20 @@ msgstr "Nazwa wtyczki"
 msgid "Autoload on Startup"
 msgstr "Automatyczne ładowanie podczas uruchamiania"
 
+msgid "Driver"
+msgstr "Sterownik"
+
 msgid "Renderer"
 msgstr "Renderer"
+
+msgid "Allowed"
+msgstr "Zezwolono"
+
+msgid "Threads"
+msgstr "Wątki"
+
+msgid "stdout"
+msgstr "stdout"
 
 msgid "Print GPU Profile"
 msgstr "Wydrukuj profil GPU"
@@ -1834,6 +1875,12 @@ msgstr "Ścieżka dołączona"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "GDScript"
+msgstr "GDScript"
+
+msgid "Warnings"
+msgstr "Ostrzeżenia"
+
 msgid "Language Server"
 msgstr "Serwer języka"
 
@@ -1876,6 +1923,9 @@ msgstr "Zapętl"
 msgid "Perspective"
 msgstr "Perspektywa"
 
+msgid "Skin"
+msgstr "Skórka"
+
 msgid "Light"
 msgstr "Światło"
 
@@ -1908,12 +1958,6 @@ msgstr "Wyśrodkowanie Y"
 
 msgid "Center Z"
 msgstr "Wyśrodkowanie Z"
-
-msgid "Layer"
-msgstr "Warstwa"
-
-msgid "Mask"
-msgstr "Maska"
 
 msgid "Priority"
 msgstr "Priorytet"
@@ -1993,14 +2037,14 @@ msgstr "Android"
 msgid "Plugins"
 msgstr "Wtyczki"
 
-msgid "Version"
-msgstr "Wersja"
-
 msgid "Icons"
 msgstr "Ikony"
 
 msgid "Access Wi-Fi"
 msgstr "Dostęp do Wi-Fi"
+
+msgid "macOS"
+msgstr "macOS"
 
 msgid "Location"
 msgstr "Lokalizacja"
@@ -2008,20 +2052,17 @@ msgstr "Lokalizacja"
 msgid "Notarization"
 msgstr "Poświadczenie notarialne"
 
-msgid "Publisher Display Name"
-msgstr "Wyświetlana nazwa wydawcy"
-
-msgid "Product GUID"
-msgstr "GUID produktu"
-
-msgid "Tiles"
-msgstr "Kafelki"
+msgid "Web"
+msgstr "Przeglądarka (HTML5)"
 
 msgid "Variant"
 msgstr "Wariant"
 
 msgid "VRAM Texture Compression"
 msgstr "Kompresja VRAM tekstur"
+
+msgid "Windows"
+msgstr "Windows"
 
 msgid "File Version"
 msgstr "Wersja pliku"
@@ -2119,9 +2160,6 @@ msgstr "Odśwież"
 msgid "Editor Settings"
 msgstr "Ustawienia edytora"
 
-msgid "Region"
-msgstr "Obszar"
-
 msgid "Texture Normal"
 msgstr "Normalna tekstury"
 
@@ -2139,6 +2177,9 @@ msgstr "Maska usuwania"
 
 msgid "Modulate"
 msgstr "Moduluj"
+
+msgid "End"
+msgstr "Koniec"
 
 msgid "Flags"
 msgstr "Flagi"
@@ -2164,6 +2205,9 @@ msgstr "Jakość"
 msgid "Max Texture Size"
 msgstr "Maksymalny rozmiar tekstury"
 
+msgid "Bounce"
+msgstr "Odbijanie"
+
 msgid "Bones"
 msgstr "Kości"
 
@@ -2182,17 +2226,17 @@ msgstr "Przejdź"
 msgid "Ignore Occlusion Culling"
 msgstr "Ignoruj usuwanie niewidocznych powierzchni"
 
-msgid "End"
-msgstr "Koniec"
-
 msgid "Pose"
-msgstr "Pozycja"
+msgstr "Poza"
 
 msgid "Sync"
 msgstr "Synchronizuj"
 
 msgid "Request"
 msgstr "Żądanie"
+
+msgid "Root Node"
+msgstr "Węzeł główny"
 
 msgid "Reset"
 msgstr "Resetuj"
@@ -2205,9 +2249,6 @@ msgstr "Warunek"
 
 msgid "Expression"
 msgstr "Wyrażenie"
-
-msgid "Root Node"
-msgstr "Węzeł główny"
 
 msgid "Button Group"
 msgstr "Grupa przycisków"
@@ -2229,9 +2270,6 @@ msgstr "Wstecz"
 
 msgid "Default Cursor Shape"
 msgstr "Domyślny kształt kursora"
-
-msgid "Use Snap"
-msgstr "Użyj przyciągania"
 
 msgid "Select Mode"
 msgstr "Tryb zaznaczenia"
@@ -2272,6 +2310,9 @@ msgstr "Indeks Z"
 msgid "Repeat"
 msgstr "Powtórz"
 
+msgid "NormalMap"
+msgstr "NormalMap"
+
 msgid "Timeout"
 msgstr "Limit czasu"
 
@@ -2299,6 +2340,9 @@ msgstr "Fizyka 2D"
 msgid "3D Physics"
 msgstr "Fizyka 3D"
 
+msgid "Atlas"
+msgstr "Atlas"
+
 msgid "Format"
 msgstr "Format"
 
@@ -2307,39 +2351,6 @@ msgstr "Dalekie przejście"
 
 msgid "Near Transition"
 msgstr "Bliskie przejście"
-
-msgid "Clear"
-msgstr "Wyczyść"
-
-msgid "Close"
-msgstr "Zamknij"
-
-msgid "Reload"
-msgstr "Przeładuj"
-
-msgid "File"
-msgstr "Plik"
-
-msgid "Separator"
-msgstr "Separator"
-
-msgid "Submenu"
-msgstr "Podmenu"
-
-msgid "Font Separator"
-msgstr "Separator czcionki"
-
-msgid "Font Separator Size"
-msgstr "Rozmiar separatora czcionki"
-
-msgid "Font Separator Color"
-msgstr "Kolor separatora czcionki"
-
-msgid "Cursor"
-msgstr "Kursor"
-
-msgid "Node"
-msgstr "Węzeł"
 
 msgid "Sky"
 msgstr "Niebo"
@@ -2377,8 +2388,8 @@ msgstr "Tekstura gęstości"
 msgid "Features"
 msgstr "Funkcje"
 
-msgid "Interpolation Mode"
-msgstr "Sposób interpolacji"
+msgid "To"
+msgstr "Do"
 
 msgid "Shader"
 msgstr "Shader"
@@ -2413,6 +2424,12 @@ msgstr "Element"
 msgid "Preview"
 msgstr "Podgląd"
 
+msgid "Base Texture"
+msgstr "Bazowa tekstura"
+
+msgid "Image Size"
+msgstr "Rozmiar obrazu"
+
 msgid "Transform Format"
 msgstr "Format transformacji"
 
@@ -2434,9 +2451,6 @@ msgstr "B"
 msgid "Ground Color"
 msgstr "Kolor podłoża"
 
-msgid "Texture Margins"
-msgstr "Marginesy tekstury"
-
 msgid "Blend"
 msgstr "Mieszanie"
 
@@ -2452,17 +2466,8 @@ msgstr "Prawy dolny róg"
 msgid "Bottom Left"
 msgstr "Lewy dolny róg"
 
-msgid "Atlas"
-msgstr "Atlas"
-
-msgid "Base Texture"
-msgstr "Bazowa tekstura"
-
-msgid "Image Size"
-msgstr "Rozmiar obrazu"
-
-msgid "To"
-msgstr "Do"
+msgid "Texture Margins"
+msgstr "Marginesy tekstury"
 
 msgid "Terrains"
 msgstr "Tereny"
@@ -2479,8 +2484,14 @@ msgstr "Początek tekstury"
 msgid "Y Sort Origin"
 msgstr "Początek sortowania Y"
 
+msgid "Miscellaneous"
+msgstr "Różne"
+
 msgid "Probability"
 msgstr "Prawdopodobieństwo"
+
+msgid "File"
+msgstr "Plik"
 
 msgid "Constant"
 msgstr "Stała"
@@ -2509,6 +2520,39 @@ msgstr "Indeks powierzchni"
 msgid "Degrees Mode"
 msgstr "Tryb stopni"
 
+msgid "Panel"
+msgstr "Panel"
+
+msgid "Clear"
+msgstr "Wyczyść"
+
+msgid "Close"
+msgstr "Zamknij"
+
+msgid "Reload"
+msgstr "Przeładuj"
+
+msgid "Separator"
+msgstr "Separator"
+
+msgid "Submenu"
+msgstr "Podmenu"
+
+msgid "Font Separator"
+msgstr "Separator czcionki"
+
+msgid "Font Separator Size"
+msgstr "Rozmiar separatora czcionki"
+
+msgid "Font Separator Color"
+msgstr "Kolor separatora czcionki"
+
+msgid "Cursor"
+msgstr "Kursor"
+
+msgid "Node"
+msgstr "Węzeł"
+
 msgid "Custom"
 msgstr "Własny"
 
@@ -2524,6 +2568,9 @@ msgstr "Informacja zwrotna"
 msgid "Pre Gain"
 msgstr "Wstępne wzmocnienie"
 
+msgid "Drive"
+msgstr "Dysk"
+
 msgid "Resonance"
 msgstr "Rezonans"
 
@@ -2532,6 +2579,9 @@ msgstr "Sufit dB"
 
 msgid "Threshold dB"
 msgstr "Wartość progowa dB"
+
+msgid "Soft Clip dB"
+msgstr "Miękkie przesterowanie dB"
 
 msgid "Vertex"
 msgstr "Wierzchołki"
@@ -2562,6 +2612,9 @@ msgstr "Odbicie w przestrzeni ekranu"
 
 msgid "OpenGL"
 msgstr "OpenGL"
+
+msgid "Shaders"
+msgstr "Shadery"
 
 msgid "Property"
 msgstr "Właściwość"

@@ -10,10 +10,6 @@ if TYPE_CHECKING:
     from SCons import Environment
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "LinuxBSD"
 
@@ -110,7 +106,7 @@ def configure(env: "Environment"):
         print("Using linker program: " + env["linker"])
         if env["linker"] == "mold" and using_gcc(env):  # GCC < 12.1 doesn't support -fuse-ld=mold.
             cc_version = get_compiler_version(env)
-            cc_semver = (int(cc_version["major"]), int(cc_version["minor"]))
+            cc_semver = (cc_version["major"], cc_version["minor"])
             if cc_semver < (12, 1):
                 found_wrapper = False
                 for path in ["/usr/libexec", "/usr/local/libexec", "/usr/lib", "/usr/local/lib"]:
@@ -239,10 +235,14 @@ def configure(env: "Environment"):
         env.ParseConfig("pkg-config libenet --cflags --libs")
 
     if not env["builtin_squish"]:
-        env.ParseConfig("pkg-config libsquish --cflags --libs")
+        # libsquish doesn't reliably install its .pc file, so some distros lack it.
+        env.Append(LIBS=["libsquish"])
 
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
+
+    if env["brotli"] and not env["builtin_brotli"]:
+        env.ParseConfig("pkg-config libbrotlicommon libbrotlidec --cflags --libs")
 
     # Sound and video libraries
     # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
@@ -290,6 +290,9 @@ def configure(env: "Environment"):
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.
         env.Append(LIBS=["embree3"])
+
+    if not env["builtin_openxr"]:
+        env.ParseConfig("pkg-config openxr --cflags --libs")
 
     if env["fontconfig"]:
         if not env["use_sowrap"]:
@@ -452,7 +455,7 @@ def configure(env: "Environment"):
         linker_version_str = subprocess.check_output(
             [env.subst(env["LINK"]), "-Wl,--version"] + env.subst(env["LINKFLAGS"])
         ).decode("utf-8")
-        gnu_ld_version = re.search("^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
+        gnu_ld_version = re.search(r"^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
         if not gnu_ld_version:
             print(
                 "Warning: Creating export template binaries enabled for PCK embedding is currently only supported with GNU ld, not gold, LLD or mold."

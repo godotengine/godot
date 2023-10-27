@@ -62,6 +62,7 @@ static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
 const char CharString::_null = 0;
 const char16_t Char16String::_null = 0;
 const char32_t String::_null = 0;
+const char32_t String::_replacement_char = 0xfffd;
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	const String &s = p_s;
@@ -307,7 +308,7 @@ void String::copy_from(const char *p_cstr) {
 		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
 		if (c == 0 && i < len) {
 			print_unicode_error("NUL character", true);
-			dst[i] = 0x20;
+			dst[i] = _replacement_char;
 		} else {
 			dst[i] = c;
 		}
@@ -340,7 +341,7 @@ void String::copy_from(const char *p_cstr, const int p_clip_to) {
 		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
 		if (c == 0) {
 			print_unicode_error("NUL character", true);
-			dst[i] = 0x20;
+			dst[i] = _replacement_char;
 		} else {
 			dst[i] = c;
 		}
@@ -373,17 +374,21 @@ void String::copy_from(const char32_t &p_char) {
 		print_unicode_error("NUL character", true);
 		return;
 	}
-	if ((p_char & 0xfffff800) == 0xd800) {
-		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char));
-	}
-	if (p_char > 0x10ffff) {
-		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char));
-	}
 
 	resize(2);
 
 	char32_t *dst = ptrw();
-	dst[0] = p_char;
+
+	if ((p_char & 0xfffff800) == 0xd800) {
+		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char));
+		dst[0] = _replacement_char;
+	} else if (p_char > 0x10ffff) {
+		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char));
+		dst[0] = _replacement_char;
+	} else {
+		dst[0] = p_char;
+	}
+
 	dst[1] = 0;
 }
 
@@ -439,14 +444,18 @@ void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
 	for (int i = 0; i < p_length; i++) {
 		if (p_char[i] == 0) {
 			print_unicode_error("NUL character", true);
-			dst[i] = 0x20;
+			dst[i] = _replacement_char;
 			continue;
 		}
 		if ((p_char[i] & 0xfffff800) == 0xd800) {
 			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char[i]));
+			dst[i] = _replacement_char;
+			continue;
 		}
 		if (p_char[i] > 0x10ffff) {
 			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char[i]));
+			dst[i] = _replacement_char;
+			continue;
 		}
 		dst[i] = p_char[i];
 	}
@@ -538,7 +547,7 @@ String &String::operator+=(const char *p_str) {
 		uint8_t c = p_str[i] >= 0 ? p_str[i] : uint8_t(256 + p_str[i]);
 		if (c == 0 && i < rhs_len) {
 			print_unicode_error("NUL character", true);
-			dst[i] = 0x20;
+			dst[i] = _replacement_char;
 		} else {
 			dst[i] = c;
 		}
@@ -568,17 +577,21 @@ String &String::operator+=(char32_t p_char) {
 		print_unicode_error("NUL character", true);
 		return *this;
 	}
-	if ((p_char & 0xfffff800) == 0xd800) {
-		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char));
-	}
-	if (p_char > 0x10ffff) {
-		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char));
-	}
 
 	const int lhs_len = length();
 	resize(lhs_len + 2);
 	char32_t *dst = ptrw();
-	dst[lhs_len] = p_char;
+
+	if ((p_char & 0xfffff800) == 0xd800) {
+		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char));
+		dst[lhs_len] = _replacement_char;
+	} else if (p_char > 0x10ffff) {
+		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char));
+		dst[lhs_len] = _replacement_char;
+	} else {
+		dst[lhs_len] = p_char;
+	}
+
 	dst[lhs_len + 1] = 0;
 
 	return *this;
@@ -1480,9 +1493,9 @@ String String::num(double p_num, int p_decimals) {
 
 	if (p_decimals < 0) {
 		p_decimals = 14;
-		const double abs_num = ABS(p_num);
+		const double abs_num = Math::abs(p_num);
 		if (abs_num > 10) {
-			// We want to align the digits to the above sane default, so we only
+			// We want to align the digits to the above reasonable default, so we only
 			// need to subtract log10 for numbers with a positive power of ten.
 			p_decimals -= (int)floor(log10(abs_num));
 		}
@@ -1737,7 +1750,7 @@ Vector<uint8_t> String::hex_decode() const {
 
 void String::print_unicode_error(const String &p_message, bool p_critical) const {
 	if (p_critical) {
-		print_error(vformat("Unicode parsing error, some characters were replaced with spaces: %s", p_message));
+		print_error(vformat(U"Unicode parsing error, some characters were replaced with � (U+FFFD): %s", p_message));
 	} else {
 		print_error(vformat("Unicode parsing error: %s", p_message));
 	}
@@ -1757,7 +1770,7 @@ CharString String::ascii(bool p_allow_extended) const {
 			cs[i] = c;
 		} else {
 			print_unicode_error(vformat("Invalid unicode codepoint (%x), cannot represent as ASCII/Latin-1", (uint32_t)c));
-			cs[i] = 0x20;
+			cs[i] = 0x20; // ascii doesn't have a replacement character like unicode, 0x1a is sometimes used but is kinda arcane
 		}
 	}
 
@@ -1897,13 +1910,13 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 				unichar = (0xff >> 7) & c;
 				skip = 5;
 			} else {
-				*(dst++) = 0x20;
+				*(dst++) = _replacement_char;
 				unichar = 0;
 				skip = 0;
 			}
 		} else {
 			if (c < 0x80 || c > 0xbf) {
-				*(dst++) = 0x20;
+				*(dst++) = _replacement_char;
 				skip = 0;
 			} else {
 				unichar = (unichar << 6) | (c & 0x3f);
@@ -1912,15 +1925,15 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 					if (unichar == 0) {
 						print_unicode_error("NUL character", true);
 						decode_failed = true;
-						unichar = 0x20;
-					}
-					if ((unichar & 0xfffff800) == 0xd800) {
-						print_unicode_error(vformat("Unpaired surrogate (%x)", unichar));
-						decode_error = true;
-					}
-					if (unichar > 0x10ffff) {
-						print_unicode_error(vformat("Invalid unicode codepoint (%x)", unichar));
-						decode_error = true;
+						unichar = _replacement_char;
+					} else if ((unichar & 0xfffff800) == 0xd800) {
+						print_unicode_error(vformat("Unpaired surrogate (%x)", unichar), true);
+						decode_failed = true;
+						unichar = _replacement_char;
+					} else if (unichar > 0x10ffff) {
+						print_unicode_error(vformat("Invalid unicode codepoint (%x)", unichar), true);
+						decode_failed = true;
+						unichar = _replacement_char;
 					}
 					*(dst++) = unichar;
 				}
@@ -2014,7 +2027,11 @@ CharString String::utf8() const {
 			APPEND_CHAR(uint32_t(0x80 | ((c >> 6) & 0x3f))); // Lower lower middle 6 bits.
 			APPEND_CHAR(uint32_t(0x80 | (c & 0x3f))); // Bottom 6 bits.
 		} else {
-			APPEND_CHAR(0x20);
+			// the string is a valid UTF32, so it should never happen ...
+			print_unicode_error(vformat("Non scalar value (%x)", c), true);
+			APPEND_CHAR(uint32_t(0xe0 | ((_replacement_char >> 12) & 0x0f))); // Top 4 bits.
+			APPEND_CHAR(uint32_t(0x80 | ((_replacement_char >> 6) & 0x3f))); // Middle 6 bits.
+			APPEND_CHAR(uint32_t(0x80 | (_replacement_char & 0x3f))); // Bottom 6 bits.
 		}
 	}
 #undef APPEND_CHAR
@@ -2187,7 +2204,9 @@ Char16String String::utf16() const {
 			APPEND_CHAR(uint32_t((c >> 10) + 0xd7c0)); // lead surrogate.
 			APPEND_CHAR(uint32_t((c & 0x3ff) | 0xdc00)); // trail surrogate.
 		} else {
-			APPEND_CHAR(0x20);
+			// the string is a valid UTF32, so it should never happen ...
+			APPEND_CHAR(uint32_t((_replacement_char >> 10) + 0xd7c0));
+			APPEND_CHAR(uint32_t((_replacement_char & 0x3ff) | 0xdc00));
 		}
 	}
 #undef APPEND_CHAR
@@ -2744,12 +2763,13 @@ double String::to_float() const {
 }
 
 uint32_t String::hash(const char *p_cstr) {
+	// static_cast: avoid negative values on platforms where char is signed.
 	uint32_t hashv = 5381;
-	uint32_t c = *p_cstr++;
+	uint32_t c = static_cast<uint8_t>(*p_cstr++);
 
 	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
-		c = *p_cstr++;
+		c = static_cast<uint8_t>(*p_cstr++);
 	}
 
 	return hashv;
@@ -2758,28 +2778,35 @@ uint32_t String::hash(const char *p_cstr) {
 uint32_t String::hash(const char *p_cstr, int p_len) {
 	uint32_t hashv = 5381;
 	for (int i = 0; i < p_len; i++) {
-		hashv = ((hashv << 5) + hashv) + p_cstr[i]; /* hash * 33 + c */
+		// static_cast: avoid negative values on platforms where char is signed.
+		hashv = ((hashv << 5) + hashv) + static_cast<uint8_t>(p_cstr[i]); /* hash * 33 + c */
 	}
 
 	return hashv;
 }
 
 uint32_t String::hash(const wchar_t *p_cstr, int p_len) {
+	// Avoid negative values on platforms where wchar_t is signed. Account for different sizes.
+	using wide_unsigned = std::conditional<sizeof(wchar_t) == 2, uint16_t, uint32_t>::type;
+
 	uint32_t hashv = 5381;
 	for (int i = 0; i < p_len; i++) {
-		hashv = ((hashv << 5) + hashv) + p_cstr[i]; /* hash * 33 + c */
+		hashv = ((hashv << 5) + hashv) + static_cast<wide_unsigned>(p_cstr[i]); /* hash * 33 + c */
 	}
 
 	return hashv;
 }
 
 uint32_t String::hash(const wchar_t *p_cstr) {
+	// Avoid negative values on platforms where wchar_t is signed. Account for different sizes.
+	using wide_unsigned = std::conditional<sizeof(wchar_t) == 2, uint16_t, uint32_t>::type;
+
 	uint32_t hashv = 5381;
-	uint32_t c = *p_cstr++;
+	uint32_t c = static_cast<wide_unsigned>(*p_cstr++);
 
 	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
-		c = *p_cstr++;
+		c = static_cast<wide_unsigned>(*p_cstr++);
 	}
 
 	return hashv;
@@ -3616,6 +3643,23 @@ String String::repeat(int p_count) const {
 	return new_string;
 }
 
+String String::reverse() const {
+	int len = length();
+	if (len <= 1) {
+		return *this;
+	}
+	String new_string;
+	new_string.resize(len + 1);
+
+	const char32_t *src = ptr();
+	char32_t *dst = new_string.ptrw();
+	for (int i = 0; i < len; i++) {
+		dst[i] = src[len - i - 1];
+	}
+	dst[len] = _null;
+	return new_string;
+}
+
 String String::left(int p_len) const {
 	if (p_len < 0) {
 		p_len = length() + p_len;
@@ -3629,7 +3673,9 @@ String String::left(int p_len) const {
 		return *this;
 	}
 
-	return substr(0, p_len);
+	String s;
+	s.copy_from_unchecked(&get_data()[0], p_len);
+	return s;
 }
 
 String String::right(int p_len) const {
@@ -3645,7 +3691,9 @@ String String::right(int p_len) const {
 		return *this;
 	}
 
-	return substr(length() - p_len);
+	String s;
+	s.copy_from_unchecked(&get_data()[length() - p_len], p_len);
+	return s;
 }
 
 char32_t String::unicode_at(int p_idx) const {
@@ -3926,24 +3974,22 @@ bool String::is_absolute_path() const {
 	}
 }
 
-static _FORCE_INLINE_ bool _is_valid_identifier_bit(int p_index, char32_t p_char) {
-	if (p_index == 0 && is_digit(p_char)) {
-		return false; // No start with number plz.
-	}
-	return is_ascii_identifier_char(p_char);
-}
-
 String String::validate_identifier() const {
 	if (is_empty()) {
 		return "_"; // Empty string is not a valid identifier;
 	}
 
-	String result = *this;
+	String result;
+	if (is_digit(operator[](0))) {
+		result = "_" + *this;
+	} else {
+		result = *this;
+	}
+
 	int len = result.length();
 	char32_t *buffer = result.ptrw();
-
 	for (int i = 0; i < len; i++) {
-		if (!_is_valid_identifier_bit(i, buffer[i])) {
+		if (!is_ascii_identifier_char(buffer[i])) {
 			buffer[i] = '_';
 		}
 	}
@@ -3958,10 +4004,14 @@ bool String::is_valid_identifier() const {
 		return false;
 	}
 
+	if (is_digit(operator[](0))) {
+		return false;
+	}
+
 	const char32_t *str = &operator[](0);
 
 	for (int i = 0; i < len; i++) {
-		if (!_is_valid_identifier_bit(i, str[i])) {
+		if (!is_ascii_identifier_char(str[i])) {
 			return false;
 		}
 	}
@@ -4262,12 +4312,13 @@ String String::pad_zeros(int p_digits) const {
 		begin++;
 	}
 
-	if (begin >= end) {
-		return s;
-	}
-
 	int zeros_to_add = p_digits - (end - begin);
-	return s.insert(begin, String("0").repeat(zeros_to_add));
+
+	if (zeros_to_add <= 0) {
+		return s;
+	} else {
+		return s.insert(begin, String("0").repeat(zeros_to_add));
+	}
 }
 
 String String::trim_prefix(const String &p_prefix) const {
@@ -4849,8 +4900,8 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					double value = values[value_index];
-					bool is_negative = (value < 0);
-					String str = String::num(ABS(value), min_decimals);
+					bool is_negative = signbit(value);
+					String str = String::num(Math::abs(value), min_decimals);
 					const bool is_finite = Math::is_finite(value);
 
 					// Pad decimals out.
@@ -4912,7 +4963,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					String str = "(";
 					for (int i = 0; i < count; i++) {
 						double val = vec[i];
-						String number_str = String::num(ABS(val), min_decimals);
+						String number_str = String::num(Math::abs(val), min_decimals);
 						const bool is_finite = Math::is_finite(val);
 
 						// Pad decimals out.

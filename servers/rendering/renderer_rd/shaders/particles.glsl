@@ -6,24 +6,11 @@
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
-#define SAMPLER_NEAREST_CLAMP 0
-#define SAMPLER_LINEAR_CLAMP 1
-#define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2
-#define SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP 3
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP 4
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP 5
-#define SAMPLER_NEAREST_REPEAT 6
-#define SAMPLER_LINEAR_REPEAT 7
-#define SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT 8
-#define SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT 9
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
-
 #define SDF_MAX_LENGTH 16384.0
 
 /* SET 0: GLOBAL DATA */
 
-layout(set = 0, binding = 1) uniform sampler material_samplers[12];
+#include "samplers_inc.glsl"
 
 layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
@@ -80,7 +67,7 @@ struct FrameParams {
 	float delta;
 
 	uint frame;
-	uint pad0;
+	float amount_ratio;
 	uint pad1;
 	uint pad2;
 
@@ -90,6 +77,8 @@ struct FrameParams {
 	float particle_size;
 
 	mat4 emission_transform;
+	vec3 emitter_velocity;
+	float interp_to_end;
 
 	Attractor attractors[MAX_ATTRACTORS];
 	Collider colliders[MAX_COLLIDERS];
@@ -473,7 +462,7 @@ void main() {
 					if (any(lessThan(uvw_pos, vec3(0.0))) || any(greaterThan(uvw_pos, vec3(1.0)))) {
 						continue;
 					}
-					vec3 s = texture(sampler3D(sdf_vec_textures[FRAME.attractors[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos).xyz * -2.0 + 1.0;
+					vec3 s = texture(sampler3D(sdf_vec_textures[FRAME.attractors[i].texture_index], SAMPLER_LINEAR_CLAMP), uvw_pos).xyz * -2.0 + 1.0;
 					dir = mat3(FRAME.attractors[i].transform) * safe_normalize(s); //revert direction
 					amount = length(s);
 
@@ -509,15 +498,15 @@ void main() {
 				vec2 sdf_pos2 = vec2(dot(vec4(pos2, 0, 1), to_sdf_x), dot(vec4(pos2, 0, 1), to_sdf_y));
 				float sdf_particle_size = distance(sdf_pos, sdf_pos2);
 
-				float d = texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos).r * SDF_MAX_LENGTH;
+				float d = texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uv_pos).r * SDF_MAX_LENGTH;
 
 				d -= sdf_particle_size;
 
 				if (d < 0.0) {
 					const float EPSILON = 0.001;
 					vec2 n = normalize(vec2(
-							texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos + vec2(EPSILON, 0.0)).r - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos - vec2(EPSILON, 0.0)).r,
-							texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos + vec2(0.0, EPSILON)).r - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos - vec2(0.0, EPSILON)).r));
+							texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uv_pos + vec2(EPSILON, 0.0)).r - texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uv_pos - vec2(EPSILON, 0.0)).r,
+							texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uv_pos + vec2(0.0, EPSILON)).r - texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uv_pos - vec2(0.0, EPSILON)).r));
 
 					collided = true;
 					sdf_pos2 = sdf_pos + n * d;
@@ -596,7 +585,7 @@ void main() {
 						}
 
 						vec3 uvw_pos = (local_pos / FRAME.colliders[i].extents) * 0.5 + 0.5;
-						float s = texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos).r;
+						float s = texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], SAMPLER_LINEAR_CLAMP), uvw_pos).r;
 						s *= FRAME.colliders[i].scale;
 						s += extra_dist;
 						if (s < particle_size) {
@@ -606,9 +595,9 @@ void main() {
 							normal = mat3(FRAME.colliders[i].transform) *
 									normalize(
 											vec3(
-													texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos - vec3(EPSILON, 0.0, 0.0)).r,
-													texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos - vec3(0.0, EPSILON, 0.0)).r,
-													texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos - vec3(0.0, 0.0, EPSILON)).r));
+													texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], SAMPLER_LINEAR_CLAMP), uvw_pos + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], SAMPLER_LINEAR_CLAMP), uvw_pos - vec3(EPSILON, 0.0, 0.0)).r,
+													texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], SAMPLER_LINEAR_CLAMP), uvw_pos + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], SAMPLER_LINEAR_CLAMP), uvw_pos - vec3(0.0, EPSILON, 0.0)).r,
+													texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], SAMPLER_LINEAR_CLAMP), uvw_pos + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], SAMPLER_LINEAR_CLAMP), uvw_pos - vec3(0.0, 0.0, EPSILON)).r));
 						}
 
 					} break;
@@ -623,14 +612,14 @@ void main() {
 
 						vec3 uvw_pos = vec3(local_pos_bottom / FRAME.colliders[i].extents) * 0.5 + 0.5;
 
-						float y = 1.0 - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos.xz).r;
+						float y = 1.0 - texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz).r;
 
 						if (y > uvw_pos.y) {
 							//inside heightfield
 
 							vec3 pos1 = (vec3(uvw_pos.x, y, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
-							vec3 pos2 = (vec3(uvw_pos.x + DELTA, 1.0 - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
-							vec3 pos3 = (vec3(uvw_pos.x, 1.0 - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * FRAME.colliders[i].extents;
+							vec3 pos2 = (vec3(uvw_pos.x + DELTA, 1.0 - texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
+							vec3 pos3 = (vec3(uvw_pos.x, 1.0 - texture(sampler2D(height_field_texture, SAMPLER_LINEAR_CLAMP), uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * FRAME.colliders[i].extents;
 
 							normal = normalize(cross(pos1 - pos2, pos1 - pos3));
 							float local_y = (vec3(local_pos / FRAME.colliders[i].extents) * 0.5 + 0.5).y;

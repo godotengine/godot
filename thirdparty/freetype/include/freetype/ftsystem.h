@@ -229,8 +229,7 @@ FT_BEGIN_HEADER
    *     A handle to the source stream.
    *
    *   offset ::
-   *     The offset from the start of the stream to seek to if this is a seek
-   *     operation (see note).
+   *     The offset from the start of the stream to seek to.
    *
    *   buffer ::
    *     The address of the read buffer.
@@ -239,16 +238,9 @@ FT_BEGIN_HEADER
    *     The number of bytes to read from the stream.
    *
    * @return:
-   *   The number of bytes effectively read by the stream.
-   *
-   * @note:
-   *   This function performs a seek *or* a read operation depending on the
-   *   argument values.  If `count` is zero, the operation is a seek to
-   *   `offset` bytes.  If `count` is >~0, the operation is a read of `count`
-   *   bytes from the current position in the stream, and the `offset` value
-   *   should be ignored.
-   *
-   *   For seek operations, a non-zero return value indicates an error.
+   *   If count >~0, return the number of bytes effectively read by the
+   *   stream (after seeking to `offset`).  If count ==~0, return the status
+   *   of the seek operation (non-zero indicates an error).
    *
    */
   typedef unsigned long

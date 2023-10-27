@@ -42,7 +42,9 @@ struct cff_subset_accelerator_t;
 
 namespace OT {
 struct SubtableUnicodesCache;
-};
+struct cff1_subset_accelerator_t;
+struct cff2_subset_accelerator_t;
+}
 
 struct hb_subset_accelerator_t
 {
@@ -51,8 +53,8 @@ struct hb_subset_accelerator_t
     return &_hb_subset_accelerator_user_data_key;
   }
 
-  static hb_subset_accelerator_t* create(const hb_map_t& unicode_to_gid_,
-					 const hb_multimap_t gid_to_unicodes_,
+  static hb_subset_accelerator_t* create(hb_face_t *source,
+					 const hb_map_t& unicode_to_gid_,
 					 const hb_set_t& unicodes_,
 					 bool has_seac_) {
     hb_subset_accelerator_t* accel =
@@ -60,8 +62,8 @@ struct hb_subset_accelerator_t
 
     if (unlikely (!accel)) return accel;
 
-    new (accel) hb_subset_accelerator_t (unicode_to_gid_,
-					 gid_to_unicodes_,
+    new (accel) hb_subset_accelerator_t (source,
+					 unicode_to_gid_,
 					 unicodes_,
 					 has_seac_);
 
@@ -79,36 +81,36 @@ struct hb_subset_accelerator_t
     hb_free (accel);
   }
 
-  hb_subset_accelerator_t (const hb_map_t& unicode_to_gid_,
-			   const hb_multimap_t& gid_to_unicodes_,
+  hb_subset_accelerator_t (hb_face_t *source,
+			   const hb_map_t& unicode_to_gid_,
 			   const hb_set_t& unicodes_,
 			   bool has_seac_) :
     unicode_to_gid(unicode_to_gid_),
-    gid_to_unicodes (gid_to_unicodes_),
     unicodes(unicodes_),
     cmap_cache(nullptr),
     destroy_cmap_cache(nullptr),
     has_seac(has_seac_),
-    cff_accelerator(nullptr),
-    destroy_cff_accelerator(nullptr) {}
-
-  ~hb_subset_accelerator_t ()
+    source(hb_face_reference (source))
   {
-    if (cff_accelerator && destroy_cff_accelerator)
-      destroy_cff_accelerator ((void*) cff_accelerator);
-
-    if (cmap_cache && destroy_cmap_cache)
-      destroy_cmap_cache ((void*) cmap_cache);
+    gid_to_unicodes.alloc (unicode_to_gid.get_population ());
+    for (const auto &_ : unicode_to_gid)
+    {
+      auto unicode = _.first;
+      auto gid = _.second;
+      gid_to_unicodes.add (gid, unicode);
+    }
   }
+
+  HB_INTERNAL ~hb_subset_accelerator_t ();
 
   // Generic
 
   mutable hb_mutex_t sanitized_table_cache_lock;
   mutable hb_hashmap_t<hb_tag_t, hb::unique_ptr<hb_blob_t>> sanitized_table_cache;
 
-  const hb_map_t unicode_to_gid;
-  const hb_multimap_t gid_to_unicodes;
-  const hb_set_t unicodes;
+  hb_map_t unicode_to_gid;
+  hb_multimap_t gid_to_unicodes;
+  hb_set_t unicodes;
 
   // cmap
   const OT::SubtableUnicodesCache* cmap_cache;
@@ -116,8 +118,6 @@ struct hb_subset_accelerator_t
 
   // CFF
   bool has_seac;
-  const CFF::cff_subset_accelerator_t* cff_accelerator;
-  hb_destroy_func_t destroy_cff_accelerator;
 
   // TODO(garretrieger): cumulative glyf checksum map
 
@@ -128,6 +128,13 @@ struct hb_subset_accelerator_t
 	   unicodes.in_error () ||
 	   sanitized_table_cache.in_error ();
   }
+
+  hb_face_t *source;
+#ifndef HB_NO_SUBSET_CFF
+  // These have to be immediately after source:
+  mutable hb_face_lazy_loader_t<OT::cff1_subset_accelerator_t, 1> cff1_accel;
+  mutable hb_face_lazy_loader_t<OT::cff2_subset_accelerator_t, 2> cff2_accel;
+#endif
 };
 
 

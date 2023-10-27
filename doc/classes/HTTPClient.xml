@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPClient" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="HTTPClient" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Low-level hyper-text transfer protocol client.
 	</brief_description>
@@ -41,6 +41,7 @@
 			<description>
 				Returns the response's body length.
 				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
+				[b]Note:[/b] This function always returns [code]-1[/code] on the Web platform due to browsers limitations.
 			</description>
 		</method>
 		<method name="get_response_code" qualifiers="const">
@@ -321,11 +322,11 @@
 		<constant name="RESPONSE_NOT_MODIFIED" value="304" enum="ResponseCode">
 			HTTP status code [code]304 Not Modified[/code]. A conditional GET or HEAD request has been received and would have resulted in a 200 OK response if it were not for the fact that the condition evaluated to [code]false[/code].
 		</constant>
-		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode">
-			HTTP status code [code]305 Use Proxy[/code]. [i]Deprecated. Do not use.[/i]
+		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode" is_deprecated="true">
+			[i]Deprecated.[/i] HTTP status code [code]305 Use Proxy[/code].
 		</constant>
-		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode">
-			HTTP status code [code]306 Switch Proxy[/code]. [i]Deprecated. Do not use.[/i]
+		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode" is_deprecated="true">
+			[i]Deprecated.[/i] HTTP status code [code]306 Switch Proxy[/code].
 		</constant>
 		<constant name="RESPONSE_TEMPORARY_REDIRECT" value="307" enum="ResponseCode">
 			HTTP status code [code]307 Temporary Redirect[/code]. The target resource resides temporarily under a different URI and the user agent MUST NOT change the request method if it performs an automatic redirection to that URI.

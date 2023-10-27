@@ -72,9 +72,7 @@ enum TOperator {
     EOpFunctionCall,
     EOpFunction,        // For function definition
     EOpParameters,      // an aggregate listing the parameters to a function
-#ifndef GLSLANG_WEB
     EOpSpirvInst,
-#endif
 
     //
     // Unary operators
@@ -629,6 +627,9 @@ enum TOperator {
     EOpCooperativeMatrixLoad,
     EOpCooperativeMatrixStore,
     EOpCooperativeMatrixMulAdd,
+    EOpCooperativeMatrixLoadNV,
+    EOpCooperativeMatrixStoreNV,
+    EOpCooperativeMatrixMulAddNV,
 
     EOpBeginInvocationInterlock, // Fragment only
     EOpEndInvocationInterlock, // Fragment only
@@ -766,7 +767,8 @@ enum TOperator {
     EOpConstructTextureSampler,
     EOpConstructNonuniform,     // expected to be transformed away, not present in final AST
     EOpConstructReference,
-    EOpConstructCooperativeMatrix,
+    EOpConstructCooperativeMatrixNV,
+    EOpConstructCooperativeMatrixKHR,
     EOpConstructAccStruct,
     EOpConstructGuardEnd,
 
@@ -827,6 +829,7 @@ enum TOperator {
     EOpSubpassLoadMS,
     EOpSparseImageLoad,
     EOpSparseImageLoadLod,
+    EOpColorAttachmentReadEXT, // Fragment only
 
     EOpImageGuardEnd,
 
@@ -968,7 +971,42 @@ enum TOperator {
     EOpRayQueryGetIntersectionObjectToWorld,
     EOpRayQueryGetIntersectionWorldToObject,
 
+    // 
+    // GL_NV_shader_invocation_reorder
     //
+
+    EOpHitObjectTraceRayNV,
+    EOpHitObjectTraceRayMotionNV,
+    EOpHitObjectRecordHitNV,
+    EOpHitObjectRecordHitMotionNV,
+    EOpHitObjectRecordHitWithIndexNV,
+    EOpHitObjectRecordHitWithIndexMotionNV,
+    EOpHitObjectRecordMissNV,
+    EOpHitObjectRecordMissMotionNV,
+    EOpHitObjectRecordEmptyNV,
+    EOpHitObjectExecuteShaderNV,
+    EOpHitObjectIsEmptyNV,
+    EOpHitObjectIsMissNV,
+    EOpHitObjectIsHitNV,
+    EOpHitObjectGetRayTMinNV,
+    EOpHitObjectGetRayTMaxNV,
+    EOpHitObjectGetObjectRayOriginNV,
+    EOpHitObjectGetObjectRayDirectionNV,
+    EOpHitObjectGetWorldRayOriginNV,
+    EOpHitObjectGetWorldRayDirectionNV,
+    EOpHitObjectGetWorldToObjectNV,
+    EOpHitObjectGetObjectToWorldNV,
+    EOpHitObjectGetInstanceCustomIndexNV,
+    EOpHitObjectGetInstanceIdNV,
+    EOpHitObjectGetGeometryIndexNV,
+    EOpHitObjectGetPrimitiveIndexNV,
+    EOpHitObjectGetHitKindNV,
+    EOpHitObjectGetShaderBindingTableRecordIndexNV,
+    EOpHitObjectGetShaderRecordBufferHandleNV,
+    EOpHitObjectGetAttributesNV,
+    EOpHitObjectGetCurrentTimeNV,
+    EOpReorderThreadNV,
+
     // HLSL operations
     //
 
@@ -1055,6 +1093,13 @@ enum TOperator {
     // Shader Clock Ops
     EOpReadClockSubgroupKHR,
     EOpReadClockDeviceKHR,
+
+    // GL_EXT_ray_tracing_position_fetch
+    EOpRayQueryGetIntersectionTriangleVertexPositionsEXT,
+
+    // Shader tile image ops
+    EOpStencilAttachmentReadEXT, // Fragment only
+    EOpDepthAttachmentReadEXT, // Fragment only
 };
 
 class TIntermTraverser;
@@ -1086,31 +1131,31 @@ public:
     virtual const glslang::TSourceLoc& getLoc() const { return loc; }
     virtual void setLoc(const glslang::TSourceLoc& l) { loc = l; }
     virtual void traverse(glslang::TIntermTraverser*) = 0;
-    virtual       glslang::TIntermTyped*         getAsTyped()               { return 0; }
-    virtual       glslang::TIntermOperator*      getAsOperator()            { return 0; }
-    virtual       glslang::TIntermConstantUnion* getAsConstantUnion()       { return 0; }
-    virtual       glslang::TIntermAggregate*     getAsAggregate()           { return 0; }
-    virtual       glslang::TIntermUnary*         getAsUnaryNode()           { return 0; }
-    virtual       glslang::TIntermBinary*        getAsBinaryNode()          { return 0; }
-    virtual       glslang::TIntermSelection*     getAsSelectionNode()       { return 0; }
-    virtual       glslang::TIntermSwitch*        getAsSwitchNode()          { return 0; }
-    virtual       glslang::TIntermMethod*        getAsMethodNode()          { return 0; }
-    virtual       glslang::TIntermSymbol*        getAsSymbolNode()          { return 0; }
-    virtual       glslang::TIntermBranch*        getAsBranchNode()          { return 0; }
-    virtual       glslang::TIntermLoop*          getAsLoopNode()            { return 0; }
+    virtual       glslang::TIntermTyped*         getAsTyped()               { return nullptr; }
+    virtual       glslang::TIntermOperator*      getAsOperator()            { return nullptr; }
+    virtual       glslang::TIntermConstantUnion* getAsConstantUnion()       { return nullptr; }
+    virtual       glslang::TIntermAggregate*     getAsAggregate()           { return nullptr; }
+    virtual       glslang::TIntermUnary*         getAsUnaryNode()           { return nullptr; }
+    virtual       glslang::TIntermBinary*        getAsBinaryNode()          { return nullptr; }
+    virtual       glslang::TIntermSelection*     getAsSelectionNode()       { return nullptr; }
+    virtual       glslang::TIntermSwitch*        getAsSwitchNode()          { return nullptr; }
+    virtual       glslang::TIntermMethod*        getAsMethodNode()          { return nullptr; }
+    virtual       glslang::TIntermSymbol*        getAsSymbolNode()          { return nullptr; }
+    virtual       glslang::TIntermBranch*        getAsBranchNode()          { return nullptr; }
+    virtual       glslang::TIntermLoop*          getAsLoopNode()            { return nullptr; }
 
-    virtual const glslang::TIntermTyped*         getAsTyped()         const { return 0; }
-    virtual const glslang::TIntermOperator*      getAsOperator()      const { return 0; }
-    virtual const glslang::TIntermConstantUnion* getAsConstantUnion() const { return 0; }
-    virtual const glslang::TIntermAggregate*     getAsAggregate()     const { return 0; }
-    virtual const glslang::TIntermUnary*         getAsUnaryNode()     const { return 0; }
-    virtual const glslang::TIntermBinary*        getAsBinaryNode()    const { return 0; }
-    virtual const glslang::TIntermSelection*     getAsSelectionNode() const { return 0; }
-    virtual const glslang::TIntermSwitch*        getAsSwitchNode()    const { return 0; }
-    virtual const glslang::TIntermMethod*        getAsMethodNode()    const { return 0; }
-    virtual const glslang::TIntermSymbol*        getAsSymbolNode()    const { return 0; }
-    virtual const glslang::TIntermBranch*        getAsBranchNode()    const { return 0; }
-    virtual const glslang::TIntermLoop*          getAsLoopNode()      const { return 0; }
+    virtual const glslang::TIntermTyped*         getAsTyped()         const { return nullptr; }
+    virtual const glslang::TIntermOperator*      getAsOperator()      const { return nullptr; }
+    virtual const glslang::TIntermConstantUnion* getAsConstantUnion() const { return nullptr; }
+    virtual const glslang::TIntermAggregate*     getAsAggregate()     const { return nullptr; }
+    virtual const glslang::TIntermUnary*         getAsUnaryNode()     const { return nullptr; }
+    virtual const glslang::TIntermBinary*        getAsBinaryNode()    const { return nullptr; }
+    virtual const glslang::TIntermSelection*     getAsSelectionNode() const { return nullptr; }
+    virtual const glslang::TIntermSwitch*        getAsSwitchNode()    const { return nullptr; }
+    virtual const glslang::TIntermMethod*        getAsMethodNode()    const { return nullptr; }
+    virtual const glslang::TIntermSymbol*        getAsSymbolNode()    const { return nullptr; }
+    virtual const glslang::TIntermBranch*        getAsBranchNode()    const { return nullptr; }
+    virtual const glslang::TIntermLoop*          getAsLoopNode()      const { return nullptr; }
     virtual ~TIntermNode() { }
 
 protected:
@@ -1288,12 +1333,7 @@ public:
     // per process threadPoolAllocator, then it causes increased memory usage per compile
     // it is essential to use "symbol = sym" to assign to symbol
     TIntermSymbol(long long i, const TString& n, const TType& t)
-        : TIntermTyped(t), id(i),
-#ifndef GLSLANG_WEB
-        flattenSubset(-1),
-#endif
-        constSubtree(nullptr)
-          { name = n; }
+        : TIntermTyped(t), id(i), flattenSubset(-1), constSubtree(nullptr) { name = n; }
     virtual long long getId() const { return id; }
     virtual void changeId(long long i) { id = i; }
     virtual const TString& getName() const { return name; }
@@ -1304,12 +1344,10 @@ public:
     const TConstUnionArray& getConstArray() const { return constArray; }
     void setConstSubtree(TIntermTyped* subtree) { constSubtree = subtree; }
     TIntermTyped* getConstSubtree() const { return constSubtree; }
-#ifndef GLSLANG_WEB
     void setFlattenSubset(int subset) { flattenSubset = subset; }
     virtual const TString& getAccessName() const;
 
     int getFlattenSubset() const { return flattenSubset; } // -1 means full object
-#endif
 
     // This is meant for cases where a node has already been constructed, and
     // later on, it becomes necessary to switch to a different symbol.
@@ -1317,9 +1355,7 @@ public:
 
 protected:
     long long id;                // the unique id of the symbol this node represents
-#ifndef GLSLANG_WEB
     int flattenSubset;           // how deeply the flattened object rooted at id has been dereferenced
-#endif
     TString name;                // the name of the symbol this node represents
     TConstUnionArray constArray; // if the symbol is a front-end compile-time constant, this is its value
     TIntermTyped* constSubtree;
@@ -1358,6 +1394,7 @@ struct TCrackedTextureOp {
     bool subpass;
     bool lodClamp;
     bool fragMask;
+    bool attachmentEXT;
 };
 
 //
@@ -1373,19 +1410,11 @@ public:
     bool isConstructor() const;
     bool isTexture()  const { return op > EOpTextureGuardBegin  && op < EOpTextureGuardEnd; }
     bool isSampling() const { return op > EOpSamplingGuardBegin && op < EOpSamplingGuardEnd; }
-#ifdef GLSLANG_WEB
-    bool isImage()          const { return false; }
-    bool isSparseTexture()  const { return false; }
-    bool isImageFootprint() const { return false; }
-    bool isSparseImage()    const { return false; }
-    bool isSubgroup()       const { return false; }
-#else
     bool isImage()    const { return op > EOpImageGuardBegin    && op < EOpImageGuardEnd; }
     bool isSparseTexture() const { return op > EOpSparseTextureGuardBegin && op < EOpSparseTextureGuardEnd; }
     bool isImageFootprint() const { return op > EOpImageFootprintGuardBegin && op < EOpImageFootprintGuardEnd; }
     bool isSparseImage()   const { return op == EOpSparseImageLoad; }
     bool isSubgroup() const { return op > EOpSubgroupGuardStart && op < EOpSubgroupGuardStop; }
-#endif
 
     void setOperationPrecision(TPrecisionQualifier p) { operationPrecision = p; }
     TPrecisionQualifier getOperationPrecision() const { return operationPrecision != EpqNone ?
@@ -1414,6 +1443,7 @@ public:
         cracked.gather = false;
         cracked.grad = false;
         cracked.subpass = false;
+        cracked.attachmentEXT = false;
         cracked.lodClamp = false;
         cracked.fragMask = false;
 
@@ -1490,7 +1520,6 @@ public:
             cracked.offset = true;
             cracked.proj = true;
             break;
-#ifndef GLSLANG_WEB
         case EOpTextureClamp:
         case EOpSparseTextureClamp:
             cracked.lodClamp = true;
@@ -1574,7 +1603,9 @@ public:
         case EOpSubpassLoadMS:
             cracked.subpass = true;
             break;
-#endif
+        case EOpColorAttachmentReadEXT:
+            cracked.attachmentEXT = true;
+            break;
         default:
             break;
         }
@@ -1616,8 +1647,8 @@ protected:
 //
 class TIntermUnary : public TIntermOperator {
 public:
-    TIntermUnary(TOperator o, TType& t) : TIntermOperator(o, t), operand(0) {}
-    TIntermUnary(TOperator o) : TIntermOperator(o), operand(0) {}
+    TIntermUnary(TOperator o, TType& t) : TIntermOperator(o, t), operand(nullptr) {}
+    TIntermUnary(TOperator o) : TIntermOperator(o), operand(nullptr) {}
     virtual void traverse(TIntermTraverser*);
     virtual void setOperand(TIntermTyped* o) { operand = o; }
     virtual       TIntermTyped* getOperand() { return operand; }
@@ -1625,15 +1656,11 @@ public:
     virtual       TIntermUnary* getAsUnaryNode()       { return this; }
     virtual const TIntermUnary* getAsUnaryNode() const { return this; }
     virtual void updatePrecision();
-#ifndef GLSLANG_WEB
     void setSpirvInstruction(const TSpirvInstruction& inst) { spirvInst = inst; }
     const TSpirvInstruction& getSpirvInstruction() const { return spirvInst; }
-#endif
 protected:
     TIntermTyped* operand;
-#ifndef GLSLANG_WEB
     TSpirvInstruction spirvInst;
-#endif
 };
 
 typedef TVector<TIntermNode*> TIntermSequence;
@@ -1665,10 +1692,8 @@ public:
     bool getDebug() const { return debug; }
     void setPragmaTable(const TPragmaTable& pTable);
     const TPragmaTable& getPragmaTable() const { return *pragmaTable; }
-#ifndef GLSLANG_WEB
     void setSpirvInstruction(const TSpirvInstruction& inst) { spirvInst = inst; }
     const TSpirvInstruction& getSpirvInstruction() const { return spirvInst; }
-#endif
 protected:
     TIntermAggregate(const TIntermAggregate&); // disallow copy constructor
     TIntermAggregate& operator=(const TIntermAggregate&); // disallow assignment operator
@@ -1679,9 +1704,7 @@ protected:
     bool optimize;
     bool debug;
     TPragmaTable* pragmaTable;
-#ifndef GLSLANG_WEB
     TSpirvInstruction spirvInst;
-#endif
 };
 
 //
@@ -1819,7 +1842,7 @@ public:
 
     TIntermNode *getParentNode()
     {
-        return path.size() == 0 ? NULL : path.back();
+        return path.size() == 0 ? nullptr : path.back();
     }
 
     const bool preVisit;

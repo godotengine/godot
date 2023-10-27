@@ -155,7 +155,8 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				Ref<WorldBoundaryShape2D> world_boundary = node->get_shape();
 
 				if (idx == 0) {
-					world_boundary->set_distance(p_point.length());
+					Vector2 normal = world_boundary->get_normal();
+					world_boundary->set_distance(p_point.dot(normal) / normal.length_squared());
 				} else {
 					world_boundary->set_normal(p_point.normalized());
 				}
@@ -434,7 +435,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	Ref<Texture2D> h = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> h = get_editor_theme_icon(SNAME("EditorHandle"));
 	Vector2 size = h->get_size() * 0.5;
 
 	handles.clear();

@@ -6,9 +6,23 @@ import subprocess
 from collections import OrderedDict
 from collections.abc import Mapping
 from typing import Iterator
+from pathlib import Path
+from os.path import normpath, basename
+
+# Get the "Godot" folder name ahead of time
+base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
+base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
+# Listing all the folders we have converted
+# for SCU in scu_builders.py
+_scu_folders = set()
 
 
-def add_source_files(self, sources, files):
+def set_scu_folders(scu_folders):
+    global _scu_folders
+    _scu_folders = scu_folders
+
+
+def add_source_files_orig(self, sources, files, allow_gen=False):
     # Convert string to list of absolute paths (including expanding wildcard)
     if isinstance(files, (str, bytes)):
         # Keep SCons project-absolute path as they are (no wildcard support)
@@ -23,7 +37,7 @@ def add_source_files(self, sources, files):
             skip_gen_cpp = "*" in files
             dir_path = self.Dir(".").abspath
             files = sorted(glob.glob(dir_path + "/" + files))
-            if skip_gen_cpp:
+            if skip_gen_cpp and not allow_gen:
                 files = [f for f in files if not f.endswith(".gen.cpp")]
 
     # Add each path as compiled Object following environment (self) configuration
@@ -33,6 +47,69 @@ def add_source_files(self, sources, files):
             print('WARNING: Object "{}" already included in environment sources.'.format(obj))
             continue
         sources.append(obj)
+
+
+# The section name is used for checking
+# the hash table to see whether the folder
+# is included in the SCU build.
+# It will be something like "core/math".
+def _find_scu_section_name(subdir):
+    section_path = os.path.abspath(subdir) + "/"
+
+    folders = []
+    folder = ""
+
+    for i in range(8):
+        folder = os.path.dirname(section_path)
+        folder = os.path.basename(folder)
+        if folder == base_folder_only:
+            break
+        folders += [folder]
+        section_path += "../"
+        section_path = os.path.abspath(section_path) + "/"
+
+    section_name = ""
+    for n in range(len(folders)):
+        # section_name += folders[len(folders) - n - 1] + " "
+        section_name += folders[len(folders) - n - 1]
+        if n != (len(folders) - 1):
+            section_name += "/"
+
+    return section_name
+
+
+def add_source_files_scu(self, sources, files, allow_gen=False):
+    if self["scu_build"] and isinstance(files, str):
+        if "*." not in files:
+            return False
+
+        # If the files are in a subdirectory, we want to create the scu gen
+        # files inside this subdirectory.
+        subdir = os.path.dirname(files)
+        if subdir != "":
+            subdir += "/"
+
+        section_name = _find_scu_section_name(subdir)
+        # if the section name is in the hash table?
+        # i.e. is it part of the SCU build?
+        global _scu_folders
+        if section_name not in (_scu_folders):
+            return False
+
+        # Add all the gen.cpp files in the SCU directory
+        add_source_files_orig(self, sources, subdir + "scu/scu_*.gen.cpp", True)
+        return True
+    return False
+
+
+# Either builds the folder using the SCU system,
+# or reverts to regular build.
+def add_source_files(self, sources, files, allow_gen=False):
+    if not add_source_files_scu(self, sources, files, allow_gen):
+        # Wraps the original function when scu build is not active.
+        add_source_files_orig(self, sources, files, allow_gen)
+        return False
+    return True
 
 
 def disable_warnings(self):
@@ -179,14 +256,11 @@ const char *const VERSION_HASH = "{git_hash}";
 
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
-
     fs = open(fname, "r")
     line = fs.readline()
 
     while line:
-
         if re.match(r"^\s*uniform", line):
-
             res = re.match(r"uniform ([\d\w]*) ([\d\w]*)")
             type = res.groups(1)
             name = res.groups(2)
@@ -427,7 +501,6 @@ def sort_module_list(env):
 
 
 def use_windows_spawn_fix(self, platform=None):
-
     if os.name != "nt":
         return  # not needed, only for windows
 
@@ -442,7 +515,6 @@ def use_windows_spawn_fix(self, platform=None):
     self.Replace(ARFLAGS="q")
 
     def mySubProcess(cmdline, env):
-
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         popen_args = {
@@ -465,7 +537,6 @@ def use_windows_spawn_fix(self, platform=None):
         return rv
 
     def mySpawn(sh, escape, cmd, args, env):
-
         newargs = " ".join(args[1:])
         cmdline = cmd + " " + newargs
 
@@ -485,36 +556,7 @@ def use_windows_spawn_fix(self, platform=None):
     self["SPAWN"] = mySpawn
 
 
-def save_active_platforms(apnames, ap):
-
-    for x in ap:
-        svg_names = []
-        if os.path.isfile(x + "/logo.svg"):
-            svg_names.append("logo")
-        if os.path.isfile(x + "/run_icon.svg"):
-            svg_names.append("run_icon")
-
-        for name in svg_names:
-            svgf = open(x + "/" + name + ".svg", "rb")
-            b = svgf.read(1)
-            svg_str = " /* AUTOGENERATED FILE, DO NOT EDIT */ \n"
-            svg_str += " static const char *_" + x[9:] + "_" + name + '_svg = "'
-            while len(b) == 1:
-                svg_str += "\\" + hex(ord(b))[1:]
-                b = svgf.read(1)
-
-            svg_str += '";\n'
-
-            svgf.close()
-
-            # NOTE: It is safe to generate this file here, since this is still executed serially
-            wf = x + "/" + name + "_svg.gen.h"
-            with open(wf, "w") as svgw:
-                svgw.write(svg_str)
-
-
 def no_verbose(sys, env):
-
     colors = {}
 
     # Colors are disabled in non-TTY environments such as pipes. This means
@@ -628,7 +670,6 @@ def detect_visual_c_compiler_version(tools_env):
 
     # and for VS 2017 and newer we check VCTOOLSINSTALLDIR:
     if "VCTOOLSINSTALLDIR" in tools_env:
-
         # Newer versions have a different path available
         vc_amd64_compiler_detection_index = (
             tools_env["PATH"].upper().find(tools_env["VCTOOLSINSTALLDIR"].upper() + "BIN\\HOSTX64\\X64;")
@@ -732,8 +773,18 @@ def add_to_vs_project(env, sources):
                 env.vs_srcs += [basename + ".cpp"]
 
 
-def generate_vs_project(env, num_jobs, project_name="godot"):
+def generate_vs_project(env, original_args, project_name="godot"):
     batch_file = find_visual_c_batch_file(env)
+    filtered_args = original_args.copy()
+    # Ignore the "vsproj" option to not regenerate the VS project on every build
+    filtered_args.pop("vsproj", None)
+    # The "platform" option is ignored because only the Windows platform is currently supported for VS projects
+    filtered_args.pop("platform", None)
+    # The "target" option is ignored due to the way how targets configuration is performed for VS projects (there is a separate project configuration for each target)
+    filtered_args.pop("target", None)
+    # The "progress" option is ignored as the current compilation progress indication doesn't work in VS
+    filtered_args.pop("progress", None)
+
     if batch_file:
 
         class ModuleConfigs(Mapping):
@@ -809,23 +860,10 @@ def generate_vs_project(env, num_jobs, project_name="godot"):
                     "platform=windows",
                     f"target={configuration_getter}",
                     "progress=no",
-                    "-j%s" % num_jobs,
                 ]
 
-                if env["dev_build"]:
-                    common_build_postfix.append("dev_build=yes")
-
-                if env["dev_mode"]:
-                    common_build_postfix.append("dev_mode=yes")
-
-                elif env["tests"]:
-                    common_build_postfix.append("tests=yes")
-
-                if env["custom_modules"]:
-                    common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
-
-                if env["precision"] == "double":
-                    common_build_postfix.append("precision=double")
+                for arg, value in filtered_args.items():
+                    common_build_postfix.append(f"{arg}={value}")
 
                 result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
                 return result
@@ -961,9 +999,21 @@ def is_vanilla_clang(env):
 
 def get_compiler_version(env):
     """
-    Returns an array of version numbers as ints: [major, minor, patch].
-    The return array should have at least two values (major, minor).
+    Returns a dictionary with various version information:
+
+    - major, minor, patch: Version following semantic versioning system
+    - metadata1, metadata2: Extra information
+    - date: Date of the build
     """
+    ret = {
+        "major": -1,
+        "minor": -1,
+        "patch": -1,
+        "metadata1": None,
+        "metadata2": None,
+        "date": None,
+    }
+
     if not env.msvc:
         # Not using -dumpversion as some GCC distros only return major, and
         # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
@@ -971,23 +1021,28 @@ def get_compiler_version(env):
             version = subprocess.check_output([env.subst(env["CXX"]), "--version"]).strip().decode("utf-8")
         except (subprocess.CalledProcessError, OSError):
             print("Couldn't parse CXX environment variable to infer compiler version.")
-            return None
-    else:  # TODO: Implement for MSVC
-        return None
+            return ret
+    else:
+        # TODO: Implement for MSVC
+        return ret
     match = re.search(
-        "(?:(?<=version )|(?<=\) )|(?<=^))"
-        "(?P<major>\d+)"
-        "(?:\.(?P<minor>\d*))?"
-        "(?:\.(?P<patch>\d*))?"
-        "(?:-(?P<metadata1>[0-9a-zA-Z-]*))?"
-        "(?:\+(?P<metadata2>[0-9a-zA-Z-]*))?"
-        "(?: (?P<date>[0-9]{8}|[0-9]{6})(?![0-9a-zA-Z]))?",
+        r"(?:(?<=version )|(?<=\) )|(?<=^))"
+        r"(?P<major>\d+)"
+        r"(?:\.(?P<minor>\d*))?"
+        r"(?:\.(?P<patch>\d*))?"
+        r"(?:-(?P<metadata1>[0-9a-zA-Z-]*))?"
+        r"(?:\+(?P<metadata2>[0-9a-zA-Z-]*))?"
+        r"(?: (?P<date>[0-9]{8}|[0-9]{6})(?![0-9a-zA-Z]))?",
         version,
     )
     if match is not None:
-        return match.groupdict()
-    else:
-        return None
+        for key, value in match.groupdict().items():
+            if value is not None:
+                ret[key] = value
+    # Transform semantic versioning to integers
+    for key in ["major", "minor", "patch"]:
+        ret[key] = int(ret[key] or -1)
+    return ret
 
 
 def using_gcc(env):

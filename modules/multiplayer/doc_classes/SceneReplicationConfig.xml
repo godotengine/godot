@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneReplicationConfig" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="SceneReplicationConfig" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Configuration for properties to synchronize with a [MultiplayerSynchronizer].
 	</brief_description>
@@ -37,6 +37,13 @@
 				Finds the index of the given [param path].
 			</description>
 		</method>
+		<method name="property_get_replication_mode">
+			<return type="int" enum="SceneReplicationConfig.ReplicationMode" />
+			<param index="0" name="path" type="NodePath" />
+			<description>
+				Returns the replication mode for the property identified by the given [param path]. See [enum ReplicationMode].
+			</description>
+		</method>
 		<method name="property_get_spawn">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
@@ -44,18 +51,28 @@
 				Returns whether the property identified by the given [param path] is configured to be synchronized on spawn.
 			</description>
 		</method>
-		<method name="property_get_sync">
+		<method name="property_get_sync" is_deprecated="true">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
 				Returns whether the property identified by the given [param path] is configured to be synchronized on process.
+				[i]Deprecated.[/i] Use [method property_get_replication_mode] instead.
 			</description>
 		</method>
-		<method name="property_get_watch">
+		<method name="property_get_watch" is_deprecated="true">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
 				Returns whether the property identified by the given [param path] is configured to be reliably synchronized when changes are detected on process.
+				[i]Deprecated.[/i] Use [method property_get_replication_mode] instead.
+			</description>
+		</method>
+		<method name="property_set_replication_mode">
+			<return type="void" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="mode" type="int" enum="SceneReplicationConfig.ReplicationMode" />
+			<description>
+				Sets the synchronization mode for the property identified by the given [param path]. See [enum ReplicationMode].
 			</description>
 		</method>
 		<method name="property_set_spawn">
@@ -66,20 +83,22 @@
 				Sets whether the property identified by the given [param path] is configured to be synchronized on spawn.
 			</description>
 		</method>
-		<method name="property_set_sync">
+		<method name="property_set_sync" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="path" type="NodePath" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets whether the property identified by the given [param path] is configured to be synchronized on process.
+				[i]Deprecated.[/i] Use [method property_set_replication_mode] with [constant REPLICATION_MODE_ALWAYS] instead.
 			</description>
 		</method>
-		<method name="property_set_watch">
+		<method name="property_set_watch" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="path" type="NodePath" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets whether the property identified by the given [param path] is configured to be reliably synchronized when changes are detected on process.
+				[i]Deprecated.[/i] Use [method property_set_replication_mode] with [constant REPLICATION_MODE_ON_CHANGE] instead.
 			</description>
 		</method>
 		<method name="remove_property">
@@ -90,4 +109,15 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="REPLICATION_MODE_NEVER" value="0" enum="ReplicationMode">
+			Do not keep the given property synchronized.
+		</constant>
+		<constant name="REPLICATION_MODE_ALWAYS" value="1" enum="ReplicationMode">
+			Replicate the given property on process by constantly sending updates using unreliable transfer mode.
+		</constant>
+		<constant name="REPLICATION_MODE_ON_CHANGE" value="2" enum="ReplicationMode">
+			Replicate the given property on process by sending updates using reliable transfer mode when its value changes.
+		</constant>
+	</constants>
 </class>

@@ -49,7 +49,9 @@ class FileSystemDock;
 class Mesh;
 class Node;
 class ScriptEditor;
+class SubViewport;
 class Texture2D;
+class Theme;
 class VBoxContainer;
 class Window;
 
@@ -84,14 +86,15 @@ public:
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
 
-	void add_editor_plugin(EditorPlugin *p_plugin);
-	void remove_editor_plugin(EditorPlugin *p_plugin);
-
 	// Editor GUI.
+
+	Ref<Theme> get_editor_theme() const;
 
 	Control *get_base_control() const;
 	VBoxContainer *get_editor_main_screen() const;
 	ScriptEditor *get_script_editor() const;
+	SubViewport *get_editor_viewport_2d() const;
+	SubViewport *get_editor_viewport_3d(int p_idx = 0) const;
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
@@ -103,6 +106,9 @@ public:
 	void popup_dialog_centered(Window *p_dialog, const Size2i &p_minsize = Size2i());
 	void popup_dialog_centered_ratio(Window *p_dialog, float p_ratio = 0.8);
 	void popup_dialog_centered_clamped(Window *p_dialog, const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
+
+	String get_current_feature_profile() const;
+	void set_current_feature_profile(const String &p_profile_name);
 
 	// Editor docks.
 
@@ -129,6 +135,8 @@ public:
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
+	void mark_scene_as_unsaved();
+	void save_all_scenes();
 
 	// Scene playback.
 

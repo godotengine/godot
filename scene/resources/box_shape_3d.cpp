@@ -80,7 +80,7 @@ void BoxShape3D::set_size(const Vector3 &p_size) {
 	ERR_FAIL_COND_MSG(p_size.x < 0 || p_size.y < 0 || p_size.z < 0, "BoxShape3D size cannot be negative.");
 	size = p_size;
 	_update_shape();
-	notify_change_to_owners();
+	emit_changed();
 }
 
 Vector3 BoxShape3D::get_size() const {

@@ -40,6 +40,8 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
+class ImageTexture;
+
 class EditorProfiler : public VBoxContainer {
 	GDCLASS(EditorProfiler, VBoxContainer);
 

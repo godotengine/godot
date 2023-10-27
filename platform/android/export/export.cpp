@@ -30,10 +30,11 @@
 
 #include "export.h"
 
+#include "export_plugin.h"
+
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
-#include "export_plugin.h"
 
 void register_android_exporter_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformAndroid);
@@ -52,6 +53,9 @@ void register_android_exporter() {
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
 
 	EDITOR_DEF("export/android/one_click_deploy_clear_previous_install", false);
+
+	EDITOR_DEF("export/android/use_wifi_for_remote_debug", false);
+	EDITOR_DEF("export/android/wifi_remote_debug_host", "localhost");
 #endif
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>(memnew(EditorExportPlatformAndroid));

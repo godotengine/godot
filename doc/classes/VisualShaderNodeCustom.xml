@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Virtual class to define custom [VisualShaderNode]s for use in the Visual Shader Editor.
 	</brief_description>
@@ -37,6 +37,14 @@
 				Defining this method is [b]required[/b].
 			</description>
 		</method>
+		<method name="_get_default_input_port" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="type" type="int" enum="VisualShaderNode.PortType" />
+			<description>
+				Override this method to define the input port which should be connected by default when this node is created as a result of dragging a connection from an existing node to the empty space on the graph.
+				Defining this method is [b]optional[/b]. If not overridden, the connection will be created to the first valid port.
+			</description>
+		</method>
 		<method name="_get_description" qualifiers="virtual const">
 			<return type="String" />
 			<description>
@@ -70,6 +78,14 @@
 			<description>
 				Override this method to define the number of input ports of the associated custom node.
 				Defining this method is [b]required[/b]. If not overridden, the node has no input ports.
+			</description>
+		</method>
+		<method name="_get_input_port_default_value" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="port" type="int" />
+			<description>
+				Override this method to define the default value for the specified input port. Prefer use this over [method VisualShaderNode.set_input_port_default_value].
+				Defining this method is [b]required[/b]. If not overridden, the node has no default values for their input ports.
 			</description>
 		</method>
 		<method name="_get_input_port_name" qualifiers="virtual const">
@@ -118,6 +134,37 @@
 				Defining this method is [b]optional[/b], but recommended. If not overridden, output ports will return the [constant VisualShaderNode.PORT_TYPE_SCALAR] type.
 			</description>
 		</method>
+		<method name="_get_property_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Override this method to define the number of the properties.
+				Defining this method is [b]optional[/b].
+			</description>
+		</method>
+		<method name="_get_property_default_index" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Override this method to define the default index of the property of the associated custom node.
+				Defining this method is [b]optional[/b].
+			</description>
+		</method>
+		<method name="_get_property_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Override this method to define the names of the property of the associated custom node.
+				Defining this method is [b]optional[/b].
+			</description>
+		</method>
+		<method name="_get_property_options" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Override this method to define the options inside the drop-down list property of the associated custom node.
+				Defining this method is [b]optional[/b].
+			</description>
+		</method>
 		<method name="_get_return_icon_type" qualifiers="virtual const">
 			<return type="int" enum="VisualShaderNode.PortType" />
 			<description>
@@ -139,6 +186,13 @@
 			<description>
 				Override this method to enable high-end mark in the Visual Shader Editor's members dialog.
 				Defining this method is [b]optional[/b]. If not overridden, it's [code]false[/code].
+			</description>
+		</method>
+		<method name="get_option_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="option" type="int" />
+			<description>
+				Returns the selected index of the drop-down list option within a graph. You may use this function to define the specific behavior in the [method _get_code] or [method _get_global_code].
 			</description>
 		</method>
 	</methods>

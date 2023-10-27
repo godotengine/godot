@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Separator" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Separator" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for separators.
 	</brief_description>
@@ -8,4 +8,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<theme_items>
+		<theme_item name="separation" data_type="constant" type="int" default="0">
+			The size of the area covered by the separator. Effectively works like a minimum width/height.
+		</theme_item>
+		<theme_item name="separator" data_type="style" type="StyleBox">
+			The style for the separator line. Works best with [StyleBoxLine] (remember to enable [member StyleBoxLine.vertical] for [VSeparator]).
+		</theme_item>
+	</theme_items>
 </class>

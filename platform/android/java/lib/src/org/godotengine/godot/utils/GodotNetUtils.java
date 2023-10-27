@@ -36,7 +36,8 @@ import android.net.wifi.WifiManager;
 import android.util.Base64;
 import android.util.Log;
 
-import java.io.StringWriter;
+import androidx.annotation.NonNull;
+
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -50,9 +51,9 @@ public class GodotNetUtils {
 	/* A single, reference counted, multicast lock, or null if permission CHANGE_WIFI_MULTICAST_STATE is missing */
 	private WifiManager.MulticastLock multicastLock;
 
-	public GodotNetUtils(Activity p_activity) {
-		if (PermissionsUtil.hasManifestPermission(p_activity, "android.permission.CHANGE_WIFI_MULTICAST_STATE")) {
-			WifiManager wifi = (WifiManager)p_activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+	public GodotNetUtils(Context context) {
+		if (PermissionsUtil.hasManifestPermission(context, "android.permission.CHANGE_WIFI_MULTICAST_STATE")) {
+			WifiManager wifi = (WifiManager)context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 			multicastLock = wifi.createMulticastLock("GodotMulticastLock");
 			multicastLock.setReferenceCounted(true);
 		}
@@ -91,7 +92,7 @@ public class GodotNetUtils {
 	 * @see https://developer.android.com/reference/java/security/KeyStore .
 	 * @return A string of concatenated X509 certificates in PEM format.
 	 */
-	public static String getCACertificates() {
+	public static @NonNull String getCACertificates() {
 		try {
 			KeyStore ks = KeyStore.getInstance("AndroidCAStore");
 			StringBuilder writer = new StringBuilder();

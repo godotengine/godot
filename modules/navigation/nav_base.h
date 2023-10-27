@@ -33,6 +33,7 @@
 
 #include "nav_rid.h"
 #include "nav_utils.h"
+
 #include "servers/navigation/navigation_utilities.h"
 
 class NavMap;

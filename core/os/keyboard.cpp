@@ -146,6 +146,7 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::FAVORITES             ,"Favorites"},
 	{Key::SEARCH                ,"Search"},
 	{Key::STANDBY               ,"StandBy"},
+	{Key::OPENURL               ,"OpenURL"},
 	{Key::LAUNCHMAIL            ,"LaunchMail"},
 	{Key::LAUNCHMEDIA           ,"LaunchMedia"},
 	{Key::LAUNCH0               ,"Launch0"},
@@ -238,6 +239,8 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::BAR                   ,"Bar"},
 	{Key::BRACERIGHT            ,"BraceRight"},
 	{Key::ASCIITILDE            ,"AsciiTilde"},
+	{Key::YEN                   ,"Yen"},
+	{Key::SECTION               ,"Section"},
 	{Key::NONE                  ,nullptr}
 	/* clang-format on */
 };
@@ -400,17 +403,38 @@ String keycode_get_string(Key p_code) {
 	return codestr;
 }
 
-Key find_keycode(const String &p_code) {
+Key find_keycode(const String &p_codestr) {
+	Key keycode = Key::NONE;
+	Vector<String> code_parts = p_codestr.split("+");
+	if (code_parts.size() < 1) {
+		return keycode;
+	}
+
+	String last_part = code_parts[code_parts.size() - 1];
 	const _KeyCodeText *kct = &_keycodes[0];
 
 	while (kct->text) {
-		if (p_code.nocasecmp_to(kct->text) == 0) {
-			return kct->code;
+		if (last_part.nocasecmp_to(kct->text) == 0) {
+			keycode = kct->code;
+			break;
 		}
 		kct++;
 	}
 
-	return Key::NONE;
+	for (int part = 0; part < code_parts.size() - 1; part++) {
+		String code_part = code_parts[part];
+		if (code_part.nocasecmp_to(find_keycode_name(Key::SHIFT)) == 0) {
+			keycode |= KeyModifierMask::SHIFT;
+		} else if (code_part.nocasecmp_to(find_keycode_name(Key::CTRL)) == 0) {
+			keycode |= KeyModifierMask::CTRL;
+		} else if (code_part.nocasecmp_to(find_keycode_name(Key::META)) == 0) {
+			keycode |= KeyModifierMask::META;
+		} else if (code_part.nocasecmp_to(find_keycode_name(Key::ALT)) == 0) {
+			keycode |= KeyModifierMask::ALT;
+		}
+	}
+
+	return keycode;
 }
 
 const char *find_keycode_name(Key p_keycode) {

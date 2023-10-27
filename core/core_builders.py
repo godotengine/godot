@@ -239,7 +239,6 @@ def make_license_header(target, source, env):
             data_list += part["Copyright"]
 
     with open(dst, "w", encoding="utf-8") as f:
-
         f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         f.write("#ifndef LICENSE_GEN_H\n")
         f.write("#define LICENSE_GEN_H\n")

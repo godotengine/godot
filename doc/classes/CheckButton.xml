@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CheckButton" inherits="Button" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CheckButton" inherits="Button" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A button that represents a binary choice.
 	</brief_description>
@@ -14,42 +14,8 @@
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>
 	<theme_items>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
-			The [CheckButton] text's font color.
-		</theme_item>
-		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
-			The [CheckButton] text's font color when it's disabled.
-		</theme_item>
-		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
-			The [CheckButton] text's font color when it's focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
-		</theme_item>
-		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
-			The [CheckButton] text's font color when it's hovered.
-		</theme_item>
-		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			The [CheckButton] text's font color when it's hovered and pressed.
-		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			The tint of text outline of the [CheckButton].
-		</theme_item>
-		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			The [CheckButton] text's font color when it's pressed.
-		</theme_item>
 		<theme_item name="check_v_offset" data_type="constant" type="int" default="0">
 			The vertical offset used when rendering the toggle icons (in pixels).
-		</theme_item>
-		<theme_item name="h_separation" data_type="constant" type="int" default="4">
-			The separation between the toggle icon and the text (in pixels). Negative values will be treated as [code]0[/code] when used.
-		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
-			The size of the text outline.
-			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			The [Font] to use for the [CheckButton] text.
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [CheckButton]'s text.
 		</theme_item>
 		<theme_item name="checked" data_type="icon" type="Texture2D">
 			The icon to display when the [CheckButton] is checked (for left-to-right layouts).
@@ -74,24 +40,6 @@
 		</theme_item>
 		<theme_item name="unchecked_mirrored" data_type="icon" type="Texture2D">
 			The icon to display when the [CheckButton] is unchecked (for right-to-left layouts).
-		</theme_item>
-		<theme_item name="disabled" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckButton] is disabled.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckButton] is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
-		</theme_item>
-		<theme_item name="hover" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckButton] is hovered.
-		</theme_item>
-		<theme_item name="hover_pressed" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckButton] is hovered and pressed.
-		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background.
-		</theme_item>
-		<theme_item name="pressed" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckButton] is pressed.
 		</theme_item>
 	</theme_items>
 </class>

@@ -35,7 +35,9 @@
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
-#include "scene/resources/texture.h"
+
+class ImageTexture;
+class Texture2D;
 
 class EditorResourcePreviewGenerator : public RefCounted {
 	GDCLASS(EditorResourcePreviewGenerator, RefCounted);

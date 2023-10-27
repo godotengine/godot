@@ -33,6 +33,7 @@
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/inspector_dock.h"
@@ -63,6 +64,11 @@ void ShaderEditorPlugin::_update_shader_list() {
 			}
 		}
 
+		// When shader is deleted in filesystem dock, need this to correctly close shader editor.
+		if (!path.is_empty()) {
+			shader->set_meta("_edit_res_path", path);
+		}
+
 		bool unsaved = false;
 		if (edited_shader.shader_editor) {
 			unsaved = edited_shader.shader_editor->is_unsaved();
@@ -74,10 +80,10 @@ void ShaderEditorPlugin::_update_shader_list() {
 		}
 
 		String _class = shader->get_class();
-		if (!shader_list->has_theme_icon(_class, SNAME("EditorIcons"))) {
+		if (!shader_list->has_theme_icon(_class, EditorStringName(EditorIcons))) {
 			_class = "TextFile";
 		}
-		Ref<Texture2D> icon = shader_list->get_theme_icon(_class, SNAME("EditorIcons"));
+		Ref<Texture2D> icon = shader_list->get_editor_theme_icon(_class);
 
 		shader_list->add_item(text, icon);
 		shader_list->set_item_tooltip(shader_list->get_item_count() - 1, path);
@@ -101,7 +107,7 @@ void ShaderEditorPlugin::_update_shader_list_status() {
 			if (se->was_compilation_successful()) {
 				shader_list->set_item_tag_icon(i, Ref<Texture2D>());
 			} else {
-				shader_list->set_item_tag_icon(i, shader_list->get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+				shader_list->set_item_tag_icon(i, shader_list->get_editor_theme_icon(SNAME("Error")));
 			}
 		}
 	}
@@ -285,6 +291,27 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value("ShaderEditor", "open_shaders", shaders);
 	p_layout->set_value("ShaderEditor", "split_offset", main_split->get_split_offset());
 	p_layout->set_value("ShaderEditor", "selected_shader", selected_shader);
+}
+
+String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
+	if (!p_for_scene.is_empty()) {
+		// TODO: handle built-in shaders.
+		return String();
+	}
+
+	// TODO: This should also include visual shaders and shader includes, but save_external_data() doesn't seem to save them...
+	PackedStringArray unsaved_shaders;
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		if (edited_shaders[i].shader_editor) {
+			if (edited_shaders[i].shader_editor->is_unsaved()) {
+				if (unsaved_shaders.is_empty()) {
+					unsaved_shaders.append(TTR("Save changes to the following shaders(s) before quitting?"));
+				}
+				unsaved_shaders.append(edited_shaders[i].shader_editor->get_name());
+			}
+		}
+	}
+	return String("\n").join(unsaved_shaders);
 }
 
 void ShaderEditorPlugin::save_external_data() {
@@ -549,17 +576,27 @@ void ShaderEditorPlugin::_window_changed(bool p_visible) {
 	make_floating->set_visible(!p_visible);
 }
 
+void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		const Ref<Shader> &shader = edited_shaders[i].shader;
+		if (shader->get_meta("_edit_res_path") == p_removed_file) {
+			_close_shader(i);
+		}
+	}
+}
+
 void ShaderEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ShaderEditorPlugin::_close_builtin_shaders_from_scene));
+			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ShaderEditorPlugin::_file_removed));
 		} break;
 	}
 }
 
 ShaderEditorPlugin::ShaderEditorPlugin() {
 	window_wrapper = memnew(WindowWrapper);
-	window_wrapper->set_window_title(TTR("Shader Editor - Godot Engine"));
+	window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Shader Editor")));
 	window_wrapper->set_margins_enabled(true);
 
 	main_split = memnew(HSplitContainer);

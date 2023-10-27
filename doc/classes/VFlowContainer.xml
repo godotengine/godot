@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VFlowContainer" inherits="FlowContainer" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VFlowContainer" inherits="FlowContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container that arranges its child controls vertically and wraps them around at the borders.
 	</brief_description>
@@ -9,12 +9,4 @@
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
-	<theme_items>
-		<theme_item name="h_separation" data_type="constant" type="int" default="4">
-			The horizontal separation of children nodes.
-		</theme_item>
-		<theme_item name="v_separation" data_type="constant" type="int" default="4">
-			The vertical separation of children nodes.
-		</theme_item>
-	</theme_items>
 </class>

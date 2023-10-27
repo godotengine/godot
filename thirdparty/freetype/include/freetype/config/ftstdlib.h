@@ -111,13 +111,13 @@
 
 #include <stdio.h>
 
-#define FT_FILE     FILE
-#define ft_fclose   fclose
-#define ft_fopen    fopen
-#define ft_fread    fread
-#define ft_fseek    fseek
-#define ft_ftell    ftell
-#define ft_sprintf  sprintf
+#define FT_FILE      FILE
+#define ft_fclose    fclose
+#define ft_fopen     fopen
+#define ft_fread     fread
+#define ft_fseek     fseek
+#define ft_ftell     ftell
+#define ft_snprintf  snprintf
 
 
   /**************************************************************************

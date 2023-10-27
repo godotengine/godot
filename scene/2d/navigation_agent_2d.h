@@ -43,7 +43,6 @@ class NavigationAgent2D : public Node {
 	Node2D *agent_parent = nullptr;
 
 	RID agent;
-	RID map_before_pause;
 	RID map_override;
 
 	bool avoidance_enabled = false;
@@ -75,7 +74,7 @@ class NavigationAgent2D : public Node {
 	Vector2 safe_velocity;
 
 	/// The submitted target velocity, sets the "wanted" rvo agent velocity on the next update
-	// this velocity is not guaranteed, the simulation will try to fulfil it if possible
+	// this velocity is not guaranteed, the simulation will try to fulfill it if possible
 	// if other agents or obstacles interfere it will be changed accordingly
 	Vector2 velocity;
 	bool velocity_submitted = false;

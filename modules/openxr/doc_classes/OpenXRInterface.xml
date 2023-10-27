@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRInterface" inherits="XRInterface" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRInterface" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Our OpenXR interface.
 	</brief_description>
@@ -23,11 +23,87 @@
 				Returns display refresh rates supported by the current HMD. Only returned if this feature is supported by the OpenXR runtime and after the interface has been initialized.
 			</description>
 		</method>
+		<method name="get_hand_joint_angular_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
+			<description>
+				If handtracking is enabled, returns the angular velocity of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is relative to [XROrigin3D]!
+			</description>
+		</method>
+		<method name="get_hand_joint_flags" qualifiers="const">
+			<return type="int" enum="OpenXRInterface.HandJointFlags" is_bitfield="true" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
+			<description>
+				If handtracking is enabled, returns flags that inform us of the validity of the tracking data.
+			</description>
+		</method>
+		<method name="get_hand_joint_linear_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
+			<description>
+				If handtracking is enabled, returns the linear velocity of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is relative to [XROrigin3D] without worldscale applied!
+			</description>
+		</method>
+		<method name="get_hand_joint_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
+			<description>
+				If handtracking is enabled, returns the position of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is relative to [XROrigin3D] without worldscale applied!
+			</description>
+		</method>
+		<method name="get_hand_joint_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
+			<description>
+				If handtracking is enabled, returns the radius of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is without worldscale applied!
+			</description>
+		</method>
+		<method name="get_hand_joint_rotation" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
+			<description>
+				If handtracking is enabled, returns the rotation of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR.
+			</description>
+		</method>
+		<method name="get_motion_range" qualifiers="const">
+			<return type="int" enum="OpenXRInterface.HandMotionRange" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<description>
+				If handtracking is enabled and motion range is supported, gets the currently configured motion range for [param hand].
+			</description>
+		</method>
 		<method name="is_action_set_active" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if the given action set is active.
+			</description>
+		</method>
+		<method name="is_eye_gaze_interaction_supported">
+			<return type="bool" />
+			<description>
+				Returns the capabilities of the eye gaze interaction extension.
+				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
+			</description>
+		</method>
+		<method name="is_foveation_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OpenXR's foveation extension is supported, the interface must be initialized before this returns a valid value.
+				[b]Note:[/b] This feature is only available on the compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
+			</description>
+		</method>
+		<method name="is_hand_tracking_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OpenXR's hand tracking is supported and enabled.
+				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
 			</description>
 		</method>
 		<method name="set_action_set_active">
@@ -38,10 +114,24 @@
 				Sets the given action set as active or inactive.
 			</description>
 		</method>
+		<method name="set_motion_range">
+			<return type="void" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<param index="1" name="motion_range" type="int" enum="OpenXRInterface.HandMotionRange" />
+			<description>
+				If handtracking is enabled and motion range is supported, sets the currently configured motion range for [param hand] to [param motion_range].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="display_refresh_rate" type="float" setter="set_display_refresh_rate" getter="get_display_refresh_rate" default="0.0">
 			The display refresh rate for the current HMD. Only functional if this feature is supported by the OpenXR runtime and after the interface has been initialized.
+		</member>
+		<member name="foveation_dynamic" type="bool" setter="set_foveation_dynamic" getter="get_foveation_dynamic" default="false">
+			Enable dynamic foveation adjustment, the interface must be initialized before this is accessible. If enabled foveation will automatically adjusted between low and [member foveation_level].
+		</member>
+		<member name="foveation_level" type="int" setter="set_foveation_level" getter="get_foveation_level" default="0">
+			Set foveation level from 0 (off) to 3 (high), the interface must be initialized before this is accessible.
 		</member>
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
 			The render size multiplier for the current HMD. Must be set before the interface has been initialized.
@@ -74,4 +164,123 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="HAND_LEFT" value="0" enum="Hand">
+			Left hand.
+		</constant>
+		<constant name="HAND_RIGHT" value="1" enum="Hand">
+			Right hand.
+		</constant>
+		<constant name="HAND_MAX" value="2" enum="Hand">
+			Maximum value for the hand enum.
+		</constant>
+		<constant name="HAND_MOTION_RANGE_UNOBSTRUCTED" value="0" enum="HandMotionRange">
+		</constant>
+		<constant name="HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER" value="1" enum="HandMotionRange">
+		</constant>
+		<constant name="HAND_MOTION_RANGE_MAX" value="2" enum="HandMotionRange">
+		</constant>
+		<constant name="HAND_JOINT_PALM" value="0" enum="HandJoints">
+			Palm joint.
+		</constant>
+		<constant name="HAND_JOINT_WRIST" value="1" enum="HandJoints">
+			Wrist joint.
+		</constant>
+		<constant name="HAND_JOINT_THUMB_METACARPAL" value="2" enum="HandJoints">
+			Thumb metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_THUMB_PROXIMAL" value="3" enum="HandJoints">
+			Thumb proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_THUMB_DISTAL" value="4" enum="HandJoints">
+			Thumb distal joint.
+		</constant>
+		<constant name="HAND_JOINT_THUMB_TIP" value="5" enum="HandJoints">
+			Thumb tip joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_METACARPAL" value="6" enum="HandJoints">
+			Index metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_PROXIMAL" value="7" enum="HandJoints">
+			Index proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_INTERMEDIATE" value="8" enum="HandJoints">
+			Index intermediate joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_DISTAL" value="9" enum="HandJoints">
+			Index distal joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_TIP" value="10" enum="HandJoints">
+			Index tip joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_METACARPAL" value="11" enum="HandJoints">
+			Middle metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_PROXIMAL" value="12" enum="HandJoints">
+			Middle proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_INTERMEDIATE" value="13" enum="HandJoints">
+			Middle intermediate joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_DISTAL" value="14" enum="HandJoints">
+			Middle distal joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_TIP" value="15" enum="HandJoints">
+			Middle tip joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_METACARPAL" value="16" enum="HandJoints">
+			Ring metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_PROXIMAL" value="17" enum="HandJoints">
+			Ring proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_INTERMEDIATE" value="18" enum="HandJoints">
+			Ring intermediate joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_DISTAL" value="19" enum="HandJoints">
+			Ring distal joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_TIP" value="20" enum="HandJoints">
+			Ring tip joint.
+		</constant>
+		<constant name="HAND_JOINT_LITTLE_METACARPAL" value="21" enum="HandJoints">
+			Little metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_LITTLE_PROXIMAL" value="22" enum="HandJoints">
+			Little proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_LITTLE_INTERMEDIATE" value="23" enum="HandJoints">
+			Little intermediate joint.
+		</constant>
+		<constant name="HAND_JOINT_LITTLE_DISTAL" value="24" enum="HandJoints">
+			Little distal joint.
+		</constant>
+		<constant name="HAND_JOINT_LITTLE_TIP" value="25" enum="HandJoints">
+			Little tip joint.
+		</constant>
+		<constant name="HAND_JOINT_MAX" value="26" enum="HandJoints">
+			Maximum value for the hand joint enum.
+		</constant>
+		<constant name="HAND_JOINT_NONE" value="0" enum="HandJointFlags" is_bitfield="true">
+			No flags are set.
+		</constant>
+		<constant name="HAND_JOINT_ORIENTATION_VALID" value="1" enum="HandJointFlags" is_bitfield="true">
+			If set, the orientation data is valid, otherwise, the orientation data is unreliable and should not be used.
+		</constant>
+		<constant name="HAND_JOINT_ORIENTATION_TRACKED" value="2" enum="HandJointFlags" is_bitfield="true">
+			If set, the orientation data comes from tracking data, otherwise, the orientation data contains predicted data.
+		</constant>
+		<constant name="HAND_JOINT_POSITION_VALID" value="4" enum="HandJointFlags" is_bitfield="true">
+			If set, the positional data is valid, otherwise, the positional data is unreliable and should not be used.
+		</constant>
+		<constant name="HAND_JOINT_POSITION_TRACKED" value="8" enum="HandJointFlags" is_bitfield="true">
+			If set, the positional data comes from tracking data, otherwise, the positional data contains predicted data.
+		</constant>
+		<constant name="HAND_JOINT_LINEAR_VELOCITY_VALID" value="16" enum="HandJointFlags" is_bitfield="true">
+			If set, our linear velocity data is valid, otherwise, the linear velocity data is unreliable and should not be used.
+		</constant>
+		<constant name="HAND_JOINT_ANGULAR_VELOCITY_VALID" value="32" enum="HandJointFlags" is_bitfield="true">
+			If set, our angular velocity data is valid, otherwise, the angular velocity data is unreliable and should not be used.
+		</constant>
+	</constants>
 </class>

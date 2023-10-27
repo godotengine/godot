@@ -51,6 +51,8 @@ public:
 	AxisStretchMode axis_h = AXIS_STRETCH_MODE_STRETCH;
 	AxisStretchMode axis_v = AXIS_STRETCH_MODE_STRETCH;
 
+	void _texture_changed();
+
 protected:
 	void _notification(int p_what);
 	virtual Size2 get_minimum_size() const override;

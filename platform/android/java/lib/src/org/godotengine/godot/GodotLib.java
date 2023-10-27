@@ -114,7 +114,7 @@ public class GodotLib {
 	/**
 	 * Dispatch mouse events
 	 */
-	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative);
+	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY);
 
 	public static native void magnify(float x, float y, float factor);
 
@@ -147,7 +147,7 @@ public class GodotLib {
 	/**
 	 * Forward regular key events.
 	 */
-	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed);
+	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed, boolean p_echo);
 
 	/**
 	 * Forward game device's key events.

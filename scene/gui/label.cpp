@@ -31,10 +31,9 @@
 #include "label.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
-
+#include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
 
 void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
@@ -128,10 +127,10 @@ void Label::_shape() {
 				TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
 			}
 		}
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-		}
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, txt));
+		if (!tab_stops.is_empty()) {
+			TS->shaped_text_tab_align(text_rid, tab_stops);
+		}
 		dirty = false;
 		font_dirty = false;
 		lines_dirty = true;
@@ -162,6 +161,9 @@ void Label::_shape() {
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
 		for (int i = 0; i < line_breaks.size(); i = i + 2) {
 			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
+			if (!tab_stops.is_empty()) {
+				TS->shaped_text_tab_align(line, tab_stops);
+			}
 			lines_rid.push_back(line);
 		}
 	}
@@ -205,6 +207,10 @@ void Label::_shape() {
 
 		// Fill after min_size calculation.
 
+		BitField<TextServer::JustificationFlag> line_jst_flags = jst_flags;
+		if (!tab_stops.is_empty()) {
+			line_jst_flags.set_flag(TextServer::JUSTIFICATION_AFTER_LAST_TAB);
+		}
 		if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
 			int visible_lines = get_visible_line_count();
 			bool lines_hidden = visible_lines > 0 && visible_lines < lines_rid.size();
@@ -213,13 +219,13 @@ void Label::_shape() {
 			}
 			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				int jst_to_line = visible_lines;
-				if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+				if (lines_rid.size() == 1 && line_jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
 					jst_to_line = lines_rid.size();
 				} else {
-					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+					if (line_jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
 						jst_to_line = visible_lines - 1;
 					}
-					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+					if (line_jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
 						for (int i = visible_lines - 1; i >= 0; i--) {
 							if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
 								jst_to_line = i;
@@ -230,7 +236,7 @@ void Label::_shape() {
 				}
 				for (int i = 0; i < lines_rid.size(); i++) {
 					if (i < jst_to_line) {
-						TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
+						TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
 					} else if (i == (visible_lines - 1)) {
 						TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 					}
@@ -241,13 +247,13 @@ void Label::_shape() {
 		} else {
 			// Autowrap disabled.
 			int jst_to_line = lines_rid.size();
-			if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+			if (lines_rid.size() == 1 && line_jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
 				jst_to_line = lines_rid.size();
 			} else {
-				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+				if (line_jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
 					jst_to_line = lines_rid.size() - 1;
 				}
-				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+				if (line_jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
 					for (int i = lines_rid.size() - 1; i >= 0; i--) {
 						if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
 							jst_to_line = i;
@@ -258,10 +264,10 @@ void Label::_shape() {
 			}
 			for (int i = 0; i < lines_rid.size(); i++) {
 				if (i < jst_to_line && horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
+					TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 				}
@@ -290,9 +296,9 @@ void Label::_update_visible() {
 	int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
 	for (int64_t i = lines_skipped; i < last_line; i++) {
 		minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
-		if (minsize.height > (get_size().height - style->get_minimum_size().height + line_spacing)) {
-			break;
-		}
+	}
+	if (minsize.height > 0) {
+		minsize.height -= line_spacing;
 	}
 }
 
@@ -316,22 +322,6 @@ inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Col
 			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_outline_color);
 		}
 	}
-}
-
-void Label::_update_theme_item_cache() {
-	Control::_update_theme_item_cache();
-
-	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
-	theme_cache.font = get_theme_font(SNAME("font"));
-
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.line_spacing = get_theme_constant(SNAME("line_spacing"));
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_shadow_color = get_theme_color(SNAME("font_shadow_color"));
-	theme_cache.font_shadow_offset = Point2(get_theme_constant(SNAME("shadow_offset_x")), get_theme_constant(SNAME("shadow_offset_y")));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.font_shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
 }
 
 PackedStringArray Label::get_configuration_warnings() const {
@@ -774,11 +764,11 @@ void Label::_invalidate() {
 void Label::set_label_settings(const Ref<LabelSettings> &p_settings) {
 	if (settings != p_settings) {
 		if (settings.is_valid()) {
-			settings->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate));
+			settings->disconnect_changed(callable_mp(this, &Label::_invalidate));
 		}
 		settings = p_settings;
 		if (settings.is_valid()) {
-			settings->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate), CONNECT_REFERENCE_COUNTED);
+			settings->connect_changed(callable_mp(this, &Label::_invalidate), CONNECT_REFERENCE_COUNTED);
 		}
 		_invalidate();
 	}
@@ -851,6 +841,18 @@ void Label::set_clip_text(bool p_clip) {
 
 bool Label::is_clipping_text() const {
 	return clip;
+}
+
+void Label::set_tab_stops(const PackedFloat32Array &p_tab_stops) {
+	if (tab_stops != p_tab_stops) {
+		tab_stops = p_tab_stops;
+		dirty = true;
+		queue_redraw();
+	}
+}
+
+PackedFloat32Array Label::get_tab_stops() const {
+	return tab_stops;
 }
 
 void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
@@ -986,6 +988,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &Label::get_justification_flags);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &Label::set_clip_text);
 	ClassDB::bind_method(D_METHOD("is_clipping_text"), &Label::is_clipping_text);
+	ClassDB::bind_method(D_METHOD("set_tab_stops", "tab_stops"), &Label::set_tab_stops);
+	ClassDB::bind_method(D_METHOD("get_tab_stops"), &Label::get_tab_stops);
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Label::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Label::get_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &Label::set_uppercase);
@@ -1019,6 +1023,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");
 
 	ADD_GROUP("Displayed Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");
@@ -1033,6 +1038,19 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Label, normal_style, "normal");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Label, line_spacing);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Label, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, Label, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_shadow_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_offset.x, "shadow_offset_x");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_offset.y, "shadow_offset_y");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_outline_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_outline_size, "outline_size");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_outline_size, "shadow_outline_size");
 }
 
 Label::Label(const String &p_text) {

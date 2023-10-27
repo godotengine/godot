@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 
+/* DEBUG_BUF_SIZE must be at least 2 */
 #define DEBUG_BUF_SIZE      512
 
 static int debug_threshold = 0;
@@ -69,6 +70,8 @@ void mbedtls_debug_print_msg(const mbedtls_ssl_context *ssl, int level,
     char str[DEBUG_BUF_SIZE];
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
+    MBEDTLS_STATIC_ASSERT(DEBUG_BUF_SIZE >= 2, "DEBUG_BUF_SIZE too small");
+
     if (NULL == ssl              ||
         NULL == ssl->conf        ||
         NULL == ssl->conf->f_dbg ||
@@ -80,10 +83,15 @@ void mbedtls_debug_print_msg(const mbedtls_ssl_context *ssl, int level,
     ret = mbedtls_vsnprintf(str, DEBUG_BUF_SIZE, format, argp);
     va_end(argp);
 
-    if (ret >= 0 && ret < DEBUG_BUF_SIZE - 1) {
-        str[ret]     = '\n';
-        str[ret + 1] = '\0';
+    if (ret < 0) {
+        ret = 0;
+    } else {
+        if (ret >= DEBUG_BUF_SIZE - 1) {
+            ret = DEBUG_BUF_SIZE - 2;
+        }
     }
+    str[ret]     = '\n';
+    str[ret + 1] = '\0';
 
     debug_send_line(ssl, level, file, line, str);
 }

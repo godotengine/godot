@@ -64,7 +64,7 @@ void AndroidInputHandler::_set_key_modifier_state(Ref<InputEventWithModifiers> e
 	}
 }
 
-void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed) {
+void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed, bool p_echo) {
 	static char32_t prev_wc = 0;
 	char32_t unicode = p_unicode;
 	if ((p_unicode & 0xfffffc00) == 0xd800) {
@@ -88,7 +88,7 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 	ev.instantiate();
 
 	Key physical_keycode = godot_code_from_android_code(p_physical_keycode);
-	Key keycode = physical_keycode;
+	Key keycode;
 	if (unicode == '\b') { // 0x08
 		keycode = Key::BACKSPACE;
 	} else if (unicode == '\t') { // 0x09
@@ -125,6 +125,7 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 	ev->set_key_label(fix_key_label(p_key_label, keycode));
 	ev->set_unicode(fix_unicode(unicode));
 	ev->set_pressed(p_pressed);
+	ev->set_echo(p_echo);
 
 	_set_key_modifier_state(ev, keycode);
 
@@ -291,7 +292,7 @@ void AndroidInputHandler::_release_mouse_event_info(bool p_source_mouse_relative
 	mouse_event_info.valid = false;
 }
 
-void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative) {
+void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative, float p_pressure, Vector2 p_tilt) {
 	BitField<MouseButtonMask> event_buttons_mask = _android_button_mask_to_godot_button_mask(p_event_android_buttons_mask);
 	switch (p_event_action) {
 		case AMOTION_EVENT_ACTION_HOVER_MOVE: // hover move
@@ -348,6 +349,8 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 				hover_prev_pos = p_event_pos;
 			}
 			ev->set_button_mask(event_buttons_mask);
+			ev->set_pressure(p_pressure);
+			ev->set_tilt(p_tilt);
 			Input::get_singleton()->parse_input_event(ev);
 		} break;
 

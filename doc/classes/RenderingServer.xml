@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RenderingServer" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RenderingServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server for anything visible.
 	</brief_description>
@@ -25,6 +25,13 @@
 			<param index="2" name="image_size" type="Vector2i" />
 			<description>
 				Bakes the material data of the Mesh passed in the [param base] parameter with optional [param material_overrides] to a set of [Image]s of size [param image_size]. Returns an array of [Image]s containing material properties as specified in [enum BakeChannels].
+			</description>
+		</method>
+		<method name="call_on_render_thread">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				As the RenderingServer actual logic may run on an separate thread, accessing its internals from the main (or any other) thread will result in errors. To make it easier to run code that can safely access the rendering internals (such as [RenderingDevice] and similar RD classes), push a callable via this function so it will be executed on the render thread.
 			</description>
 		</method>
 		<method name="camera_attributes_create">
@@ -240,7 +247,7 @@
 			<param index="1" name="mesh" type="RID" />
 			<param index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="4" name="texture" type="RID" />
+			<param index="4" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a mesh created with [method mesh_create] with given [param transform], [param modulate] color, and [param texture]. This is used internally by [MeshInstance2D].
 			</description>
@@ -273,7 +280,7 @@
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="mesh" type="RID" />
-			<param index="2" name="texture" type="RID" />
+			<param index="2" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a 2D [MultiMesh] on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multimesh].
 			</description>
@@ -309,7 +316,7 @@
 			<param index="1" name="points" type="PackedVector2Array" />
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
-			<param index="4" name="texture" type="RID" />
+			<param index="4" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a 2D polygon on the [CanvasItem] pointed to by the [param item] [RID]. If you need more flexibility (such as being able to use bones), use [method canvas_item_add_triangle_array] instead. See also [method CanvasItem.draw_polygon].
 			</description>
@@ -387,7 +394,7 @@
 			<param index="4" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="5" name="bones" type="PackedInt32Array" default="PackedInt32Array()" />
 			<param index="6" name="weights" type="PackedFloat32Array" default="PackedFloat32Array()" />
-			<param index="7" name="texture" type="RID" />
+			<param index="7" name="texture" type="RID" default="RID()" />
 			<param index="8" name="count" type="int" default="-1" />
 			<description>
 				Draws a triangle array on the [CanvasItem] pointed to by the [param item] [RID]. This is internally used by [Line2D] and [StyleBoxFlat] for rendering. [method canvas_item_add_triangle_array] is highly flexible, but more complex to use than [method canvas_item_add_polygon].
@@ -1368,7 +1375,7 @@
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RendeeringServer directly.
+				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RenderingServer directly.
 			</description>
 		</method>
 		<method name="get_default_clear_color">
@@ -1443,6 +1450,7 @@
 			<description>
 				Returns the name of the video adapter (e.g. "GeForce GTX 1080/PCIe/SSE2").
 				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
+				[b]Note:[/b] On the web platform, some browsers such as Firefox may report a different, fixed GPU name such as "GeForce GTX 980" (regardless of the user's actual GPU model). This is done to make fingerprinting more difficult.
 			</description>
 		</method>
 		<method name="get_video_adapter_type" qualifiers="const">
@@ -1797,7 +1805,7 @@
 		<method name="instances_cull_aabb" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<param index="0" name="aabb" type="AABB" />
-			<param index="1" name="scenario" type="RID" />
+			<param index="1" name="scenario" type="RID" default="RID()" />
 			<description>
 				Returns an array of object IDs intersecting with the provided AABB. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
@@ -1806,7 +1814,7 @@
 		<method name="instances_cull_convex" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<param index="0" name="convex" type="Plane[]" />
-			<param index="1" name="scenario" type="RID" />
+			<param index="1" name="scenario" type="RID" default="RID()" />
 			<description>
 				Returns an array of object IDs intersecting with the provided convex shape. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
@@ -1816,7 +1824,7 @@
 			<return type="PackedInt64Array" />
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
-			<param index="2" name="scenario" type="RID" />
+			<param index="2" name="scenario" type="RID" default="RID()" />
 			<description>
 				Returns an array of object IDs intersecting with the provided 3D ray. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
@@ -2096,7 +2104,7 @@
 			<param index="2" name="arrays" type="Array" />
 			<param index="3" name="blend_shapes" type="Array" default="[]" />
 			<param index="4" name="lods" type="Dictionary" default="{}" />
-			<param index="5" name="compress_format" type="int" enum="RenderingServer.ArrayFormat" default="0" />
+			<param index="5" name="compress_format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" default="0" />
 			<description>
 			</description>
 		</method>
@@ -2199,31 +2207,43 @@
 		</method>
 		<method name="mesh_surface_get_format_attribute_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
+				Returns the stride of the attribute buffer for a mesh with given [param format].
+			</description>
+		</method>
+		<method name="mesh_surface_get_format_normal_tangent_stride" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
+			<param index="1" name="vertex_count" type="int" />
+			<description>
+				Returns the stride of the combined normals and tangents for a mesh with given [param format]. Note importantly that, while normals and tangents are in the vertex buffer with vertices, they are only interleaved with each other and so have a different stride than vertex positions.
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_offset" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<param index="2" name="array_index" type="int" />
 			<description>
+				Returns the offset of a given attribute by [param array_index] in the start of its respective buffer.
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_skin_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
+				Returns the stride of the skin buffer for a mesh with given [param format].
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_vertex_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
+				Returns the stride of the vertex positions for a mesh with given [param format]. Note importantly that vertex positions are stored consecutively and are not interleaved with the other attributes in the vertex buffer (normals and tangents).
 			</description>
 		</method>
 		<method name="mesh_surface_get_material" qualifiers="const">
@@ -2607,6 +2627,14 @@
 				Sets the number of particles to be drawn and allocates the memory for them. Equivalent to [member GPUParticles3D.amount].
 			</description>
 		</method>
+		<method name="particles_set_amount_ratio">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="ratio" type="float" />
+			<description>
+				Sets the amount ratio for particles to be emitted. Equivalent to [member GPUParticles3D.amount_ratio].
+			</description>
+		</method>
 		<method name="particles_set_collision_base_size">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
@@ -2655,6 +2683,14 @@
 				Sets the [Transform3D] that will be used by the particles when they first emit.
 			</description>
 		</method>
+		<method name="particles_set_emitter_velocity">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="velocity" type="Vector3" />
+			<description>
+				Sets the velocity of a particle node, that will be used by [member ParticleProcessMaterial.inherit_velocity_ratio].
+			</description>
+		</method>
 		<method name="particles_set_emitting">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
@@ -2685,6 +2721,14 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], uses fractional delta which smooths the movement of the particles. Equivalent to [member GPUParticles3D.fract_delta].
+			</description>
+		</method>
+		<method name="particles_set_interp_to_end">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="factor" type="float" />
+			<description>
+				Sets the value that informs a [ParticleProcessMaterial] to rush all particles towards the end of their lifetime.
 			</description>
 		</method>
 		<method name="particles_set_interpolate">
@@ -3281,13 +3325,20 @@
 				[b]Note:[/b] The [param texture] must have the same width, height, depth and format as the current texture data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height, depth or format, use [method texture_replace] instead.
 			</description>
 		</method>
+		<method name="texture_get_format" qualifiers="const">
+			<return type="int" enum="Image.Format" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Returns the [enum Image.Format] for the texture.
+			</description>
+		</method>
 		<method name="texture_get_native_handle" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="srgb" type="bool" default="false" />
 			<description>
-				Returns the internal graphics handle for this texture object. For use when communicating with 3rd party APIs mostly with GDExternal.
-				[b]Note:[/b] This functions returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
+				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
+				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
 			</description>
 		</method>
 		<method name="texture_get_path" qualifiers="const">
@@ -3304,19 +3355,27 @@
 				Returns a texture [RID] that can be used with [RenderingDevice].
 			</description>
 		</method>
-		<method name="texture_proxy_create">
+		<method name="texture_proxy_create" is_deprecated="true">
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />
 			<description>
-				[i]Deprecated.[/i] As ProxyTexture was removed in Godot 4, this method does nothing when called and always returns a null [RID].
+				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method does nothing when called and always returns a null [RID].
 			</description>
 		</method>
-		<method name="texture_proxy_update">
+		<method name="texture_proxy_update" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="proxy_to" type="RID" />
 			<description>
 				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method cannot be used anymore.
+			</description>
+		</method>
+		<method name="texture_rd_create">
+			<return type="RID" />
+			<param index="0" name="rd_texture" type="RID" />
+			<param index="1" name="layer_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
+			<description>
+				Creates a new texture object based on a texture created directly on the [RenderingDevice]. If the texture contains layers, [param layer_type] is used to define the layer type.
 			</description>
 		</method>
 		<method name="texture_replace">
@@ -3734,6 +3793,15 @@
 				If [code]true[/code], enables debanding on the specified viewport. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
 			</description>
 		</method>
+		<method name="viewport_set_use_hdr_2d">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be a [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be a [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
+				[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
+			</description>
+		</method>
 		<method name="viewport_set_use_occlusion_culling">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -3960,8 +4028,8 @@
 		<constant name="MAX_GLOW_LEVELS" value="7">
 			The maximum number of glow levels that can be used with the glow post-processing effect.
 		</constant>
-		<constant name="MAX_CURSORS" value="8">
-			[i]Deprecated.[/i] This constant is unused.
+		<constant name="MAX_CURSORS" value="8" is_deprecated="true">
+			[i]Deprecated.[/i] This constant is unused internally.
 		</constant>
 		<constant name="MAX_2D_DIRECTIONAL_LIGHTS" value="8">
 			The maximum number of directional lights that can be rendered at a given time in 2D.
@@ -4152,9 +4220,31 @@
 		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat" is_bitfield="true">
 		</constant>
 		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark that the array uses 8 bone weighs instead of 4.
+			Flag used to mark that the array uses 8 bone weights instead of 4.
 		</constant>
 		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that the mesh does not have a vertex array and instead will infer vertex positions in the shader using indices and other information.
+		</constant>
+		<constant name="ARRAY_FLAG_COMPRESS_ATTRIBUTES" value="536870912" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that a mesh is using compressed attributes (vertices, normals, tangents, uvs). When this form of compression is enabled, vertex positions will be packed into into an RGBA16UNORM attribute and scaled in the vertex shader. The normal and tangent will be packed into a RG16UNORM representing an axis, and an 16 bit float stored in the A-channel of the vertex. UVs will use 16-bit normalized floats instead of full 32 bit signed floats. When using this compression mode you must either use vertices, normals, and tangents or only vertices. You cannot use normals without tangents. Importers will automatically enable this compression if they can.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_BASE" value="35" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark the start of the bits used to store the mesh version.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_SHIFT" value="35" enum="ArrayFormat" is_bitfield="true">
+			Flag used to shift a mesh format int to bring the version into the lowest digits.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_1" value="0" enum="ArrayFormat" is_bitfield="true">
+			Flag used to record the format used by prior mesh versions before the introduction of a version.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_2" value="34359738368" enum="ArrayFormat" is_bitfield="true">
+			Flag used to record the second iteration of the mesh version flag. The primary difference between this and [constant ARRAY_FLAG_FORMAT_VERSION_1] is that this version supports [constant ARRAY_FLAG_COMPRESS_ATTRIBUTES] and in this version vertex positions are de-interleaved from normals and tangents.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_CURRENT_VERSION" value="34359738368" enum="ArrayFormat" is_bitfield="true">
+			Flag used to record the current version that the engine expects. Currently this is the same as [constant ARRAY_FLAG_FORMAT_VERSION_2].
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_MASK" value="255" enum="ArrayFormat" is_bitfield="true">
+			Flag used to isolate the bits used for mesh version after using [constant ARRAY_FLAG_FORMAT_VERSION_SHIFT] to shift them into place.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.
@@ -4271,6 +4361,9 @@
 			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low resolution shadow maps. A high value can make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
 		</constant>
 		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="19" enum="LightParam">
+		</constant>
+		<constant name="LIGHT_PARAM_INTENSITY" value="20" enum="LightParam">
+			Constant representing the intensity of the light, measured in Lumens when dealing with a [SpotLight3D] or [OmniLight3D], or measured in Lux with a [DirectionalLight3D]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
 		<constant name="LIGHT_PARAM_MAX" value="21" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
@@ -4472,7 +4565,10 @@
 		<constant name="VIEWPORT_SCALING_3D_MODE_FSR" value="1" enum="ViewportScaling3DMode">
 			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
-		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="2" enum="ViewportScaling3DMode">
+		<constant name="VIEWPORT_SCALING_3D_MODE_FSR2" value="2" enum="ViewportScaling3DMode">
+			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
+		</constant>
+		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="3" enum="ViewportScaling3DMode">
 			Represents the size of the [enum ViewportScaling3DMode] enum.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
@@ -4575,7 +4671,7 @@
 			Number of objects drawn in a single frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME" value="1" enum="ViewportRenderInfo">
-			Number of vertices drawn in a single frame.
+			Number of points, lines, or triangles drawn in a single frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="2" enum="ViewportRenderInfo">
 			Number of draw calls during this frame.
@@ -4625,6 +4721,8 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="ViewportDebugDraw">
 			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
+			The slice of the camera frustum related to the shadow map cascade is superimposed to visualize coverage. The color of each slice matches the colors used for [constant VIEWPORT_DEBUG_DRAW_PSSM_SPLITS]. When shadow cascades are blended the overlap is taken into account when drawing the frustum slices.
+			The last cascade shows all frustum slices to illustrate the coverage of all slices.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="ViewportDebugDraw">
 			Draws the estimated scene luminance. This is a 1×1 texture that is generated when autoexposure is enabled to control the scene's exposure.
@@ -4670,6 +4768,9 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="25" enum="ViewportDebugDraw">
 			Draws the motion vectors buffer. This is used by temporal antialiasing to correct for motion that occurs during gameplay.
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="ViewportDebugDraw">
+			Internal buffer is drawn instead of regular scene so you can see the per-pixel output that will be used by post-processing effects.
 		</constant>
 		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
 			Variable rate shading is disabled.
@@ -5201,7 +5302,7 @@
 			Number of objects rendered in the current 3D scene. This varies depending on camera position and rotation.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME" value="1" enum="RenderingInfo">
-			Number of vertices/indices rendered in the current 3D scene. This varies depending on camera position and rotation.
+			Number of points, lines, or triangles rendered in the current 3D scene. This varies depending on camera position and rotation.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME" value="2" enum="RenderingInfo">
 			Number of draw calls performed to render in the current 3D scene. This varies depending on camera position and rotation.
@@ -5210,10 +5311,10 @@
 			Texture memory used (in bytes).
 		</constant>
 		<constant name="RENDERING_INFO_BUFFER_MEM_USED" value="4" enum="RenderingInfo">
-			Buffer memory used (in bytes).
+			Buffer memory used (in bytes). This includes vertex data, uniform buffers, and many miscellaneous buffer types used internally.
 		</constant>
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
-			Video memory used (in bytes). This is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics.
+			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">
 			Hardware supports shaders. This enum is currently unused in Godot 3.x.

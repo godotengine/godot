@@ -87,6 +87,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _resource_saved(Object *obj);
 	void _close_shader(int p_index);
 	void _close_builtin_shaders_from_scene(const String &p_scene);
+	void _file_removed(const String &p_removed_file);
 
 	void _shader_created(Ref<Shader> p_shader);
 	void _shader_include_created(Ref<ShaderInclude> p_shader_inc);
@@ -115,6 +116,7 @@ public:
 	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
 	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 
+	virtual String get_unsaved_status(const String &p_for_scene) const override;
 	virtual void save_external_data() override;
 	virtual void apply_changes() override;
 

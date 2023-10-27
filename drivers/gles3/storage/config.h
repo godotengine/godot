@@ -33,16 +33,12 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/config/project_settings.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
+#include "core/templates/vector.h"
 
-// This must come first to avoid windows.h mess
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
+#include "platform_gl.h"
 
 #ifdef ANDROID_ENABLED
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei);
@@ -58,14 +54,14 @@ public:
 	bool use_nearest_mip_filter = false;
 	bool use_depth_prepass = true;
 
-	int max_vertex_texture_image_units = 0;
-	int max_texture_image_units = 0;
-	int max_texture_size = 0;
-	int max_viewport_size[2] = { 0, 0 };
-	int max_uniform_buffer_size = 0;
-	int max_renderable_elements = 0;
-	int max_renderable_lights = 0;
-	int max_lights_per_object = 0;
+	int64_t max_vertex_texture_image_units = 0;
+	int64_t max_texture_image_units = 0;
+	int64_t max_texture_size = 0;
+	int64_t max_viewport_size[2] = { 0, 0 };
+	int64_t max_uniform_buffer_size = 0;
+	int64_t max_renderable_elements = 0;
+	int64_t max_renderable_lights = 0;
+	int64_t max_lights_per_object = 0;
 
 	// TODO implement wireframe in OpenGL
 	// bool generate_wireframes;

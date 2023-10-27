@@ -159,6 +159,8 @@ public:
 	void set_include_hidden(bool p_enable);
 	bool get_include_hidden() const;
 
+	virtual bool is_case_sensitive(const String &p_path) const;
+
 	DirAccess() {}
 	virtual ~DirAccess() {}
 };

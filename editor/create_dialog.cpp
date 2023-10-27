@@ -37,11 +37,12 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
 	_fill_type_list();
 
-	icon_fallback = search_options->has_theme_icon(base_type, SNAME("EditorIcons")) ? base_type : "Object";
+	icon_fallback = search_options->has_theme_icon(base_type, EditorStringName(EditorIcons)) ? base_type : "Object";
 
 	if (p_dont_clear) {
 		search_box->select_all();
@@ -135,6 +136,10 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true; // Wrong inheritance.
 		}
 
+		if (!ClassDB::is_class_exposed(p_type)) {
+			return true; // Unexposed types.
+		}
+
 		for (const StringName &E : type_blacklist) {
 			if (ClassDB::is_parent_class(p_type, E)) {
 				return true; // Parent type is blacklisted.
@@ -170,7 +175,7 @@ void CreateDialog::_update_search() {
 
 	TreeItem *root = search_options->create_item();
 	root->set_text(0, base_type);
-	root->set_icon(0, search_options->get_theme_icon(icon_fallback, SNAME("EditorIcons")));
+	root->set_icon(0, search_options->get_editor_theme_icon(icon_fallback));
 	search_options_types[base_type] = root;
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
 
@@ -274,6 +279,7 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category) {
 	bool script_type = ScriptServer::is_global_class(p_type);
+	bool is_abstract = false;
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		r_item->set_text(0, p_type);
 	} else if (p_type_category == TypeCategory::PATH_TYPE) {
@@ -281,32 +287,37 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
-		r_item->set_suffix(0, "(" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+		String script_path = ScriptServer::get_global_class_path(p_type);
+		r_item->set_suffix(0, "(" + script_path.get_file() + ")");
+
+		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
+		ERR_FAIL_COND(!scr.is_valid());
+		is_abstract = scr->is_abstract();
 	} else {
 		r_item->set_metadata(0, custom_type_parents[p_type]);
 		r_item->set_text(0, p_type);
 	}
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
-			p_type_category == TypeCategory::OTHER_TYPE;
-	bool is_virtual = ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type);
+			(p_type_category == TypeCategory::OTHER_TYPE && !is_abstract);
+	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
 
-	r_item->set_meta(SNAME("__instantiable"), can_instantiate && !is_virtual);
+	r_item->set_meta(SNAME("__instantiable"), instantiable);
 
-	if (can_instantiate && !is_virtual) {
-		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
-	} else {
-		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
-		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type));
+	if (!instantiable) {
+		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	}
 
-	bool is_deprecated = EditorHelp::get_doc_data()->class_list[p_type].is_deprecated;
-	bool is_experimental = EditorHelp::get_doc_data()->class_list[p_type].is_experimental;
+	HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(p_type);
+
+	bool is_deprecated = (class_doc && class_doc->value.is_deprecated);
+	bool is_experimental = (class_doc && class_doc->value.is_experimental);
 
 	if (is_deprecated) {
-		r_item->add_button(0, get_theme_icon("StatusError", SNAME("EditorIcons")), 0, false, TTR("This class is marked as deprecated."));
+		r_item->add_button(0, get_editor_theme_icon("StatusError"), 0, false, TTR("This class is marked as deprecated."));
 	} else if (is_experimental) {
-		r_item->add_button(0, get_theme_icon("NodeWarning", SNAME("EditorIcons")), 0, false, TTR("This class is marked as experimental."));
+		r_item->add_button(0, get_editor_theme_icon("NodeWarning"), 0, false, TTR("This class is marked as experimental."));
 	}
 
 	if (!search_box->get_text().is_empty()) {
@@ -321,7 +332,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_collapsed(should_collapse);
 	}
 
-	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
+	const String &description = DTR(class_doc ? class_doc->value.brief_description : "");
 	r_item->set_tooltip_text(0, description);
 
 	if (p_type_category == TypeCategory::OTHER_TYPE && !script_type) {
@@ -370,7 +381,8 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 
 	// Look through at most 5 recent items
 	bool in_recent = false;
-	for (int i = 0; i < MIN(5, recent->get_item_count()); i++) {
+	constexpr int RECENT_COMPLETION_SIZE = 5;
+	for (int i = 0; i < MIN(RECENT_COMPLETION_SIZE - 1, recent->get_item_count()); i++) {
 		if (recent->get_item_text(i) == p_type) {
 			in_recent = true;
 			break;
@@ -406,7 +418,8 @@ void CreateDialog::_confirmed() {
 		if (f.is_valid()) {
 			f->store_line(selected_item);
 
-			for (int i = 0; i < MIN(32, recent->get_item_count()); i++) {
+			constexpr int RECENT_HISTORY_SIZE = 15;
+			for (int i = 0; i < MIN(RECENT_HISTORY_SIZE - 1, recent->get_item_count()); i++) {
 				if (recent->get_item_text(i) != selected_item) {
 					f->store_line(recent->get_item_text(i));
 				}
@@ -449,16 +462,10 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
-void CreateDialog::_update_theme() {
-	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-	favorite->set_icon(search_options->get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
-}
-
 void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
-			_update_theme();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -475,12 +482,13 @@ void CreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			const int icon_width = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			search_options->add_theme_constant_override("icon_max_width", icon_width);
 			favorites->add_theme_constant_override("icon_max_width", icon_width);
 			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
 
-			_update_theme();
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			favorite->set_icon(get_editor_theme_icon(SNAME("Favorites")));
 		} break;
 	}
 }
@@ -494,10 +502,11 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	to_select->select(0);
 	search_options->scroll_to_item(to_select, p_center_on_item);
 
-	if (EditorHelp::get_doc_data()->class_list.has(p_type) && !DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description).is_empty()) {
+	String text = help_bit->get_class_description(p_type);
+	if (!text.is_empty()) {
 		// Display both class name and description, since the help bit may be displayed
 		// far away from the location (especially if the dialog was resized to be taller).
-		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description)));
+		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, text));
 		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
 	} else {
 		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
@@ -712,7 +721,7 @@ void CreateDialog::_save_and_update_favorite_list() {
 
 				TreeItem *ti = favorites->create_item(root);
 				ti->set_text(0, l);
-				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
 	}
@@ -729,7 +738,7 @@ void CreateDialog::_load_favorites_and_history() {
 			String name = l.get_slicec(' ', 0);
 
 			if (EditorNode::get_editor_data().is_type_recognized(name) && !_is_class_disabled_by_feature_profile(name)) {
-				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
 	}

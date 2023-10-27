@@ -163,6 +163,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		live_editor->_res_set_func(p_args[0], p_args[1], p_args[2]);
 
 	} else if (p_msg == "live_node_call") {
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
 		LocalVector<Variant> args;
 		LocalVector<Variant *> argptrs;
 		args.resize(p_args.size() - 2);
@@ -171,11 +172,10 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 			args[i] = p_args[i + 2];
 			argptrs[i] = &args[i];
 		}
-		live_editor->_node_call_func(p_args[0], p_args[1], (const Variant **)argptrs.ptr(), argptrs.size());
+		live_editor->_node_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
 
 	} else if (p_msg == "live_res_call") {
-		ERR_FAIL_COND_V(p_args.size() < 10, ERR_INVALID_DATA);
-
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
 		LocalVector<Variant> args;
 		LocalVector<Variant *> argptrs;
 		args.resize(p_args.size() - 2);
@@ -184,7 +184,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 			args[i] = p_args[i + 2];
 			argptrs[i] = &args[i];
 		}
-		live_editor->_res_call_func(p_args[0], p_args[1], (const Variant **)argptrs.ptr(), argptrs.size());
+		live_editor->_res_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
 
 	} else if (p_msg == "live_create_node") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
@@ -221,7 +221,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 
 void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
 	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 
 #ifdef TOOLS_ENABLED
 	HashMap<const Node *, Node *> duplimap;
@@ -336,6 +336,12 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 	}
 
 	if (Node *node = Object::cast_to<Node>(obj)) {
+		// For debugging multiplayer.
+		{
+			PropertyInfo pi(Variant::INT, String("Node/multiplayer_authority"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
+			properties.push_back(SceneDebuggerProperty(pi, node->get_multiplayer_authority()));
+		}
+
 		// Add specialized NodePath info (if inside tree).
 		if (node->is_inside_tree()) {
 			PropertyInfo pi(Variant::NODE_PATH, String("Node/path"));

@@ -125,7 +125,7 @@ static const x509_attr_descriptor_t *x509_attr_descr_from_name(const char *name,
 
 int mbedtls_x509_string_to_names(mbedtls_asn1_named_data **head, const char *name)
 {
-    int ret = 0;
+    int ret = MBEDTLS_ERR_X509_INVALID_NAME;
     const char *s = name, *c = s;
     const char *end = s + strlen(s);
     const char *oid = NULL;
@@ -177,6 +177,9 @@ int mbedtls_x509_string_to_names(mbedtls_asn1_named_data **head, const char *nam
 
             s = c + 1;
             in_tag = 1;
+
+            /* Successfully parsed one name, update ret to success */
+            ret = 0;
         }
 
         if (!in_tag && s != c + 1) {
@@ -282,9 +285,11 @@ int mbedtls_x509_write_names(unsigned char **p, unsigned char *start,
 
 int mbedtls_x509_write_sig(unsigned char **p, unsigned char *start,
                            const char *oid, size_t oid_len,
-                           unsigned char *sig, size_t size)
+                           unsigned char *sig, size_t size,
+                           mbedtls_pk_type_t pk_alg)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    int write_null_par;
     size_t len = 0;
 
     if (*p < start || (size_t) (*p - start) < size) {
@@ -307,8 +312,19 @@ int mbedtls_x509_write_sig(unsigned char **p, unsigned char *start,
 
     // Write OID
     //
-    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_algorithm_identifier(p, start, oid,
-                                                                      oid_len, 0));
+    if (pk_alg == MBEDTLS_PK_ECDSA) {
+        /*
+         * The AlgorithmIdentifier's parameters field must be absent for DSA/ECDSA signature
+         * algorithms, see https://www.rfc-editor.org/rfc/rfc5480#page-17 and
+         * https://www.rfc-editor.org/rfc/rfc5758#section-3.
+         */
+        write_null_par = 0;
+    } else {
+        write_null_par = 1;
+    }
+    MBEDTLS_ASN1_CHK_ADD(len,
+                         mbedtls_asn1_write_algorithm_identifier_ext(p, start, oid, oid_len,
+                                                                     0, write_null_par));
 
     return (int) len;
 }

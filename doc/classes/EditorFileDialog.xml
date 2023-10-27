@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileDialog" inherits="ConfirmationDialog" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorFileDialog" inherits="ConfirmationDialog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A modified version of [FileDialog] used by the editor.
 	</brief_description>
@@ -19,6 +19,14 @@
 				For example, a [param filter] of [code]"*.tscn, *.scn"[/code] and a [param description] of [code]"Scenes"[/code] results in filter text "Scenes (*.tscn, *.scn)".
 			</description>
 		</method>
+		<method name="add_side_menu">
+			<return type="void" />
+			<param index="0" name="menu" type="Control" />
+			<param index="1" name="title" type="String" default="&quot;&quot;" />
+			<description>
+				Adds the given [param menu] to the side of the file dialog with the given [param title] text on top. Only one side menu is allowed.
+			</description>
+		</method>
 		<method name="clear_filters">
 			<return type="void" />
 			<description>
@@ -35,7 +43,7 @@
 		<method name="get_vbox">
 			<return type="VBoxContainer" />
 			<description>
-				Returns the [code]VBoxContainer[/code] used to display the file system.
+				Returns the [VBoxContainer] used to display the file system.
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>

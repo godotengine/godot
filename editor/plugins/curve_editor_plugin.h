@@ -104,6 +104,8 @@ private:
 	void _redraw();
 
 private:
+	const float ASPECT_RATIO = 6.f / 13.f;
+
 	Transform2D _world_to_view;
 
 	Ref<Curve> curve;

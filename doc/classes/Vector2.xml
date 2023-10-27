@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector2" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Vector2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D vector using floating point coordinates.
 	</brief_description>
@@ -157,7 +157,7 @@
 			<param index="6" name="post_b_t" type="float" />
 			<description>
 				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
-				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
 			</description>
 		</method>
 		<method name="direction_to" qualifiers="const">
@@ -419,7 +419,9 @@
 			<return type="Vector2" />
 			<param index="0" name="right" type="Transform2D" />
 			<description>
-				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix.
+				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				[code]vector * transform[/code] is equivalent to [code]transform.inverse() * vector[/code]. See [method Transform2D.inverse].
+				For transforming by inverse of an affine transformation (e.g. with scaling) [code]transform.affine_inverse() * vector[/code] can be used instead. See [method Transform2D.affine_inverse].
 			</description>
 		</operator>
 		<operator name="operator *">

@@ -299,7 +299,7 @@
       /* ascender and descender are optional and could both be zero */
       /* check if values are meaningful before overriding defaults  */
       if ( fi->Ascender > fi->Descender )
-      {  
+      {
         /* no `U' suffix here to 0x8000! */
         t1_face->ascender  = (FT_Short)( ( fi->Ascender  + 0x8000 ) >> 16 );
         t1_face->descender = (FT_Short)( ( fi->Descender + 0x8000 ) >> 16 );
@@ -405,7 +405,7 @@
 #else /* T1_CONFIG_OPTION_NO_AFM */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _t1_afm_dummy;
+  typedef int  t1_afm_dummy_;
 
 #endif /* T1_CONFIG_OPTION_NO_AFM */
 

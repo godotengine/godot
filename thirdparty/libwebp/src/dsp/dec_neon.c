@@ -1428,7 +1428,7 @@ static WEBP_INLINE void DC8_NEON(uint8_t* dst, int do_top, int do_left) {
 
   if (do_top) {
     const uint8x8_t A = vld1_u8(dst - BPS);  // top row
-#if defined(__aarch64__)
+#if WEBP_AARCH64
     const uint16_t p2 = vaddlv_u8(A);
     sum_top = vdupq_n_u16(p2);
 #else
@@ -1511,7 +1511,7 @@ static WEBP_INLINE void DC16_NEON(uint8_t* dst, int do_top, int do_left) {
 
   if (do_top) {
     const uint8x16_t A = vld1q_u8(dst - BPS);  // top row
-#if defined(__aarch64__)
+#if WEBP_AARCH64
     const uint16_t p3 = vaddlvq_u8(A);
     sum_top = vdupq_n_u16(p3);
 #else

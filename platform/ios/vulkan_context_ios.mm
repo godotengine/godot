@@ -28,9 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#import "vulkan_context_ios.h"
+
 #ifdef VULKAN_ENABLED
 
-#include "vulkan_context_ios.h"
 #ifdef USE_VOLK
 #include <volk.h>
 #else

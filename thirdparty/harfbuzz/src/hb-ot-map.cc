@@ -213,7 +213,8 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
   /* Sort features and merge duplicates */
   if (feature_infos.length)
   {
-    feature_infos.qsort ();
+    if (!is_simple)
+      feature_infos.qsort ();
     auto *f = feature_infos.arrayZ;
     unsigned int j = 0;
     unsigned count = feature_infos.length;
@@ -238,6 +239,13 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
     feature_infos.shrink (j + 1);
   }
 
+  hb_map_t feature_indices[2];
+  for (unsigned int table_index = 0; table_index < 2; table_index++)
+    hb_ot_layout_collect_features_map (face,
+				       table_tags[table_index],
+				       script_index[table_index],
+				       language_index[table_index],
+				       &feature_indices[table_index]);
 
   /* Allocate bits now */
   static_assert ((!(HB_GLYPH_FLAG_DEFINED & (HB_GLYPH_FLAG_DEFINED + 1))), "");
@@ -260,7 +268,6 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
     if (!info->max_value || next_bit + bits_needed >= global_bit_shift)
       continue; /* Feature disabled, or not enough bits. */
 
-
     bool found = false;
     unsigned int feature_index[2];
     for (unsigned int table_index = 0; table_index < 2; table_index++)
@@ -268,12 +275,14 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
       if (required_feature_tag[table_index] == info->tag)
 	required_feature_stage[table_index] = info->stage[table_index];
 
-      found |= (bool) hb_ot_layout_language_find_feature (face,
-							  table_tags[table_index],
-							  script_index[table_index],
-							  language_index[table_index],
-							  info->tag,
-							  &feature_index[table_index]);
+      hb_codepoint_t *index;
+      if (feature_indices[table_index].has (info->tag, &index))
+      {
+        feature_index[table_index] = *index;
+        found = true;
+      }
+      else
+        feature_index[table_index] = HB_OT_LAYOUT_NO_FEATURE_INDEX;
     }
     if (!found && (info->flags & F_GLOBAL_SEARCH))
     {
@@ -314,7 +323,8 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
     map->needs_fallback = !found;
   }
   //feature_infos.shrink (0); /* Done with these */
-
+  if (is_simple)
+    m.features.qsort ();
 
   add_gsub_pause (nullptr);
   add_gpos_pause (nullptr);
@@ -350,7 +360,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
       }
 
       /* Sort lookups and merge duplicates */
-      if (last_num_lookups < lookups.length)
+      if (last_num_lookups + 1 < lookups.length)
       {
 	lookups.as_array ().sub_array (last_num_lookups, lookups.length - last_num_lookups).qsort ();
 

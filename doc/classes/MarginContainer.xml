@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MarginContainer" inherits="Container" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MarginContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container that keeps a margin around its child controls.
 	</brief_description>
@@ -30,16 +30,16 @@
 	</tutorials>
 	<theme_items>
 		<theme_item name="margin_bottom" data_type="constant" type="int" default="0">
-			All direct children of [MarginContainer] will have a bottom margin of [code]margin_bottom[/code] pixels.
+			Offsets towards the inside direct children of the container by this amount of pixels from the bottom.
 		</theme_item>
 		<theme_item name="margin_left" data_type="constant" type="int" default="0">
-			All direct children of [MarginContainer] will have a left margin of [code]margin_left[/code] pixels.
+			Offsets towards the inside direct children of the container by this amount of pixels from the left.
 		</theme_item>
 		<theme_item name="margin_right" data_type="constant" type="int" default="0">
-			All direct children of [MarginContainer] will have a right margin of [code]margin_right[/code] pixels.
+			Offsets towards the inside direct children of the container by this amount of pixels from the right.
 		</theme_item>
 		<theme_item name="margin_top" data_type="constant" type="int" default="0">
-			All direct children of [MarginContainer] will have a top margin of [code]margin_top[/code] pixels.
+			Offsets towards the inside direct children of the container by this amount of pixels from the top.
 		</theme_item>
 	</theme_items>
 </class>

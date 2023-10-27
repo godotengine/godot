@@ -33,6 +33,7 @@
 
 #include "core/templates/vset.h"
 #include "scene/3d/collision_object_3d.h"
+#include "scene/scene_string_names.h"
 
 class Area3D : public CollisionObject3D {
 	GDCLASS(Area3D, CollisionObject3D);
@@ -134,10 +135,10 @@ private:
 	void _clear_monitoring();
 
 	bool audio_bus_override = false;
-	StringName audio_bus = "Master";
+	StringName audio_bus = SceneStringNames::get_singleton()->Master;
 
 	bool use_reverb_bus = false;
-	StringName reverb_bus = "Master";
+	StringName reverb_bus = SceneStringNames::get_singleton()->Master;
 	float reverb_amount = 0.0;
 	float reverb_uniformity = 0.0;
 

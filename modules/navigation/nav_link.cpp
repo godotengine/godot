@@ -36,9 +36,28 @@ void NavLink::set_map(NavMap *p_map) {
 	if (map == p_map) {
 		return;
 	}
+
+	if (map) {
+		map->remove_link(this);
+	}
+
 	map = p_map;
 	link_dirty = true;
+
+	if (map) {
+		map->add_link(this);
+	}
 }
+
+void NavLink::set_enabled(bool p_enabled) {
+	if (enabled == p_enabled) {
+		return;
+	}
+	enabled = p_enabled;
+
+	// TODO: This should not require a full rebuild as the link has not really changed.
+	link_dirty = true;
+};
 
 void NavLink::set_bidirectional(bool p_bidirectional) {
 	if (bidirectional == p_bidirectional) {
