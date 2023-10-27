@@ -1019,7 +1019,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 	uint32_t dst_offsets[Mesh::ARRAY_MAX];
 	RenderingServer::get_singleton()->mesh_surface_make_offsets_from_format(p_new_format & (~RS::ARRAY_FORMAT_INDEX), p_elements, 0, dst_offsets, dst_vertex_stride, dst_normal_tangent_stride, dst_attribute_stride, dst_skin_stride);
 
-	vertex_data.resize(dst_vertex_stride * p_elements);
+	vertex_data.resize((dst_vertex_stride + dst_normal_tangent_stride) * p_elements);
 	attribute_data.resize(dst_attribute_stride * p_elements);
 	skin_data.resize(dst_skin_stride * p_elements);
 
