@@ -76,6 +76,11 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 		_update_graph();
 	}
 
+	if (read_only) {
+		tool_create->set_pressed(false);
+		tool_connect->set_pressed(false);
+	}
+
 	tool_create->set_disabled(read_only);
 	tool_connect->set_disabled(read_only);
 }
@@ -1589,6 +1594,11 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 		tool_erase->set_disabled(nothing_selected || start_end_selected || read_only);
 	} else {
 		selection_tools_hb->hide();
+	}
+
+	if (read_only) {
+		tool_create->set_pressed(false);
+		tool_connect->set_pressed(false);
 	}
 
 	if (tool_connect->is_pressed()) {
