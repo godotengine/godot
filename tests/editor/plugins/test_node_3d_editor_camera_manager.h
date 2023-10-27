@@ -62,6 +62,7 @@ namespace TestNode3DEditorCameraManager {
 		editor_settings->set("editors/3d/navigation_feel/orbit_inertia", 1.0);
 		editor_settings->set("editors/3d/navigation_feel/translation_inertia", 1.0);
 		editor_settings->set("editors/3d/navigation_feel/zoom_inertia", 1.0);
+		editor_settings->set("editors/3d/freelook/freelook_navigation_scheme", 0);
 
 		SUBCASE("[TestNode3DEditorCameraManager] Camera settings") {
 			camera_manager->set_camera_settings(0.5, 1.0, 100.0);
@@ -640,30 +641,229 @@ namespace TestNode3DEditorCameraManager {
 
 		SUBCASE("[TestNode3DEditorCameraManager] Toggle orthogonal / perspective") {
 			
+			SUBCASE("Should configure editor's camera") {
+				camera_manager->set_orthogonal(true);
+				CHECK(camera_manager->is_orthogonal());
+				CHECK(editor_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_ORTHOGONAL);
+				camera_manager->set_orthogonal(false);
+				CHECK(!camera_manager->is_orthogonal());
+				CHECK(editor_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
+			}
+
+			SUBCASE("Should stop piloting when setting to orthogonal") {
+				camera_manager->pilot(some_node);
+				camera_manager->set_orthogonal(true);
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
+			}
+
+			SUBCASE("Should not stop piloting when setting to perspective") {
+				camera_manager->pilot(some_node);
+				camera_manager->set_orthogonal(false);
+				CHECK(camera_manager->get_node_being_piloted() == some_node);
+			}
+
+			SUBCASE("Should stop piloting when setting to orthogonal and the piloting camera is perspective") {
+				camera_manager->pilot(previewing_camera);
+				camera_manager->set_orthogonal(true);
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
+			}
+
+			SUBCASE("Should stop piloting when setting to perspective and the piloting camera is orthogonal") {
+				previewing_camera->set_projection(Camera3D::ProjectionType::PROJECTION_ORTHOGONAL);
+				camera_manager->set_orthogonal(true);
+				camera_manager->pilot(previewing_camera);
+				camera_manager->set_orthogonal(false);
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
+			}
+
+			SUBCASE("Should not stop piloting when setting to perspective and the piloting camera is perspective too") {
+				camera_manager->set_orthogonal(true);
+				camera_manager->pilot(previewing_camera);
+				camera_manager->set_orthogonal(false);
+				CHECK(camera_manager->get_node_being_piloted() == previewing_camera);
+			}
+
+			SUBCASE("Should not stop piloting when setting to orthogonal and the piloting camera is orthogonal too") {
+				previewing_camera->set_projection(Camera3D::ProjectionType::PROJECTION_ORTHOGONAL);
+				camera_manager->set_orthogonal(false);
+				camera_manager->pilot(previewing_camera);
+				camera_manager->set_orthogonal(true);
+				CHECK(camera_manager->get_node_being_piloted() == previewing_camera);
+			}
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Set FOV scale") {
+			camera_manager->set_fov_scale(1.5);
+			CHECK(camera_manager->get_cursor().get_target_values().fov_scale == 1.5);
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Navigation move") {
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+			camera_manager->navigation_move(10.0, 20.0, 2.0);
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(camera_manager->get_cursor().get_target_values().position == Vector3(20.0, 0.0, 40.0));
+			CHECK(camera_manager->get_cursor().get_target_values().x_rot == previous_cursor_values.x_rot);
+			CHECK(camera_manager->get_cursor().get_target_values().y_rot == previous_cursor_values.y_rot);
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Navigation freelook move") {
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+			camera_manager->set_freelook_active(true);
+			camera_manager->navigation_freelook_move(Vector3(10.0, 20.0, 30.0), 20.0, 0.1);
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(camera_manager->get_cursor().get_target_values().position.is_equal_approx(Vector3(-16.8864346, 6.33776855, -72.6270065)));
+			CHECK(camera_manager->get_cursor().get_target_values().x_rot == previous_cursor_values.x_rot);
+			CHECK(camera_manager->get_cursor().get_target_values().y_rot == previous_cursor_values.y_rot);
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Navigation look") {
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+			camera_manager->set_freelook_active(true);
+			camera_manager->navigation_look(Vector2(10.0, 20.0), 2.0);
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)1.57));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)19.5));
+			CHECK(camera_manager->get_cursor().get_target_values().eye_position == previous_cursor_values.eye_position);
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Navigation pan") {
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+			camera_manager->navigation_pan(Vector2(10.0, 20.0), 2.0);
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(camera_manager->get_cursor().get_target_values().position.is_equal_approx(Vector3(-26.7456055, 35.1033020, -7.24090958)));
+			CHECK(camera_manager->get_cursor().get_target_values().x_rot == previous_cursor_values.x_rot);
+			CHECK(camera_manager->get_cursor().get_target_values().y_rot == previous_cursor_values.y_rot);
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Navigation zoom") {
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+			camera_manager->navigation_zoom_to_distance(1.5);
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(camera_manager->get_cursor().get_target_values().distance == 1.5);
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+			CHECK(camera_manager->get_cursor().get_target_values().x_rot == previous_cursor_values.x_rot);
+			CHECK(camera_manager->get_cursor().get_target_values().y_rot == previous_cursor_values.y_rot);
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Navigation orbit") {
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+			camera_manager->navigation_orbit(Vector2(20.0, 40.0));
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)20.5));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)39.5));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Orbit view") {
+			Node3DEditorCameraCursor::Values previous_cursor_values = camera_manager->get_cursor().get_current_values();
+
+			camera_manager->orbit_view_down();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)0.238200605));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)-0.5));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			camera_manager->orbit_view_up();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)0.5));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)-0.5));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			camera_manager->orbit_view_right();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)0.5));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)-0.761799395));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			camera_manager->orbit_view_left();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)0.5));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)-0.5));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			camera_manager->orbit_view_180();
+			CHECK(camera_manager->get_cursor().get_current_values() == previous_cursor_values);
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().x_rot, (real_t)0.5));
+			CHECK(Math::is_equal_approx(camera_manager->get_cursor().get_target_values().y_rot, (real_t)2.64159274));
+			CHECK(camera_manager->get_cursor().get_target_values().position == previous_cursor_values.position);
+
+			SUBCASE("Should stop piloting") {
+				camera_manager->pilot(some_node);
+
+				SUBCASE("Should stop piloting when orbit view down") {
+					camera_manager->orbit_view_down();
+				}
+
+				SUBCASE("Should stop piloting when orbit view up") {
+					camera_manager->orbit_view_up();
+				}
+
+				SUBCASE("Should stop piloting when orbit view right") {
+					camera_manager->orbit_view_right();
+				}
+
+				SUBCASE("Should stop piloting when orbit view left") {
+					camera_manager->orbit_view_left();
+				}
+
+				SUBCASE("Should stop piloting when orbit view 180") {
+					camera_manager->orbit_view_180();
+				}
+
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
+			}
+
+			SUBCASE("Should stop previewing camera") {
+				camera_manager->preview_camera(previewing_camera);
+
+				SUBCASE("Should stop previewing camera when orbit view down") {
+					camera_manager->orbit_view_down();
+				}
+
+				SUBCASE("Should stop previewing camera when orbit view up") {
+					camera_manager->orbit_view_up();
+				}
+
+				SUBCASE("Should stop previewing camera when orbit view right") {
+					camera_manager->orbit_view_right();
+				}
+
+				SUBCASE("Should stop previewing camera when orbit view left") {
+					camera_manager->orbit_view_left();
+				}
+
+				SUBCASE("Should stop previewing camera when orbit view 180") {
+					camera_manager->orbit_view_180();
+				}
+
+				CHECK(camera_manager->get_previewing_camera() == nullptr);
+			}
+
+			SUBCASE("Should stop cinematic preview mode") {
+				camera_manager->set_cinematic_preview_mode(true);
+
+				SUBCASE("Should stop cinematic preview mode when orbit view down") {
+					camera_manager->orbit_view_down();
+				}
+
+				SUBCASE("Should stop cinematic preview mode when orbit view up") {
+					camera_manager->orbit_view_up();
+				}
+
+				SUBCASE("Should stop cinematic preview mode when orbit view right") {
+					camera_manager->orbit_view_right();
+				}
+
+				SUBCASE("Should stop cinematic preview mode when orbit view left") {
+					camera_manager->orbit_view_left();
+				}
+
+				SUBCASE("Should stop cinematic preview mode when orbit view 180") {
+					camera_manager->orbit_view_180();
+				}
+
+				CHECK(!camera_manager->is_in_cinematic_preview_mode());
+			}
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Change view") {
