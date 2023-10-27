@@ -443,6 +443,9 @@ void InspectorDock::_notification(int p_what) {
 				forward_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
 
+			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+			history_menu->get_popup()->add_theme_constant_override("icon_max_width", icon_width);
+
 			history_menu->set_icon(get_editor_theme_icon(SNAME("History")));
 			object_menu->set_icon(get_editor_theme_icon(SNAME("Tools")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
