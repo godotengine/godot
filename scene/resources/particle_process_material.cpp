@@ -992,7 +992,6 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		ACTIVE = false;\n";
 		code += "	}\n";
 	}
-	code += "	vec3 final_velocity = controlled_displacement + VELOCITY;\n";
 	code += "	\n";
 	code += "	// turbulence before limiting\n";
 	if (turbulence_enabled) {
@@ -1009,13 +1008,16 @@ void ParticleProcessMaterial::_update_shader() {
 		if (collision_mode == COLLISION_RIGID) {
 			code += "		if (!COLLIDED) {\n";
 		}
-		code += "			float vel_mag = length(final_velocity);\n";
+		code += "			float vel_mag = length(VELOCITY);\n";
 		code += "			float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0,1.0);\n";
-		code += "			final_velocity = mix(final_velocity, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
+		code += "			VELOCITY = mix(VELOCITY, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
+		code += "			vel_mag = length(controlled_displacement);\n";
+		code += "			controlled_displacement = mix(controlled_displacement, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
 		if (collision_mode == COLLISION_RIGID) {
 			code += "		}\n";
 		}
 	}
+	code += "	vec3 final_velocity = controlled_displacement + VELOCITY;\n";
 	code += "	\n";
 	code += "	// limit velocity\n";
 	if (velocity_limit_curve.is_valid()) {
@@ -2160,11 +2162,11 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_GROUP("Turbulence", "turbulence_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled"), "set_turbulence_enabled", "get_turbulence_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_strength", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_turbulence_noise_strength", "get_turbulence_noise_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_scale", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_turbulence_noise_scale", "get_turbulence_noise_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_scale", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), "set_turbulence_noise_scale", "get_turbulence_noise_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "turbulence_noise_speed"), "set_turbulence_noise_speed", "get_turbulence_noise_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_speed_random", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_turbulence_noise_speed_random", "get_turbulence_noise_speed_random");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_influence_min", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_min", "get_param_min", PARAM_TURB_VEL_INFLUENCE);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_influence_max", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_max", "get_param_max", PARAM_TURB_VEL_INFLUENCE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_influence_min", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param_min", "get_param_min", PARAM_TURB_VEL_INFLUENCE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_influence_max", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param_max", "get_param_max", PARAM_TURB_VEL_INFLUENCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_initial_displacement_min", PROPERTY_HINT_RANGE, "-100,100,0.1"), "set_param_min", "get_param_min", PARAM_TURB_INIT_DISPLACEMENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_initial_displacement_max", PROPERTY_HINT_RANGE, "-100,100,0.1"), "set_param_max", "get_param_max", PARAM_TURB_INIT_DISPLACEMENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "turbulence_influence_over_life", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_TURB_INFLUENCE_OVER_LIFE);
