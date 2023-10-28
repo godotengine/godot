@@ -7651,7 +7651,7 @@ EditorNode::EditorNode() {
 
 	editor_toaster = memnew(EditorToaster);
 	bottom_panel_hb->add_child(editor_toaster);
-	
+
 	version_btn = memnew(LinkButton);
 	version_btn->set_text(VERSION_FULL_CONFIG);
 	String hash = String(VERSION_HASH);
