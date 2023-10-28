@@ -575,6 +575,46 @@ void EditorNode::update_preview_themes(int p_mode) {
 	}
 }
 
+void EditorNode::update_preview3d() {
+	if (!scene_root->is_inside_tree()) {
+		return; // Too early.
+	}
+
+	if (editor_plugin_screen->get_name() != "2D") {
+		return;
+	}
+
+	int preview_mode = CanvasItemEditor::get_singleton()->get_state()["preview3d_pressed_index"];
+	int viewport_index = preview_mode - 1;
+
+	if (viewport_index == -1) {
+		for (int i = 0; i < (int)Node3DEditor::get_singleton()->VIEWPORTS_COUNT; i++) {
+			Node3DEditor::get_singleton()->get_editor_viewport(i)->get_viewport_node()->set_update_mode(SubViewport::UPDATE_DISABLED);
+		}
+
+	} else {
+		Node3DEditor::get_singleton()->get_editor_viewport(viewport_index)->get_viewport_node()->set_update_mode(SubViewport::UPDATE_ALWAYS);
+	}
+
+	bool is_connected = RenderingServer::get_singleton()->is_connected("frame_post_draw", callable_mp(this, &EditorNode::set_preview3d_texture));
+	if (!is_connected) {
+		RenderingServer::get_singleton()->connect("frame_post_draw", callable_mp(this, &EditorNode::set_preview3d_texture).bind(viewport_index), Object::CONNECT_ONE_SHOT);
+	}
+}
+
+void EditorNode::set_preview3d_texture(int p_index) {
+	Ref<ViewportTexture> p_texture = nullptr;
+	if (p_index != -1 && get_edited_scene() != nullptr) {
+		p_texture = Node3DEditor::get_singleton()->get_editor_viewport(p_index)->get_viewport_node()->get_texture();
+
+		if (editor_plugin_screen->get_name() == "2D") {
+			Node3DEditor::get_singleton()->get_editor_viewport(p_index)->get_viewport_node()->set_update_mode(SubViewport::UPDATE_DISABLED);
+		}
+	}
+
+	preview3d_rect->set_texture(p_texture);
+}
+
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -7189,6 +7229,11 @@ EditorNode::EditorNode() {
 	scene_root->set_disable_3d(true);
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
+
+	preview3d_rect = memnew(TextureRect);
+	preview3d_rect->set_size(Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height")));
+	preview3d_rect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	scene_root->add_child(preview3d_rect);
 
 	main_screen_vbox = memnew(VBoxContainer);
 	main_screen_vbox->set_name("MainScreen");
