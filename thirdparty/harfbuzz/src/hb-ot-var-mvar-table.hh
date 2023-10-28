@@ -27,7 +27,7 @@
 #ifndef HB_OT_VAR_MVAR_TABLE_HH
 #define HB_OT_VAR_MVAR_TABLE_HH
 
-#include "hb-ot-layout-common.hh"
+#include "hb-ot-var-common.hh"
 
 
 namespace OT {
@@ -39,6 +39,19 @@ struct VariationValueRecord
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this));
+  }
+
+  bool subset (hb_subset_context_t *c,
+               const hb_map_t& varidx_map) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+
+    hb_codepoint_t *new_idx;
+    return_trace (c->serializer->check_assign (out->varIdx,
+                                               (varidx_map.has (varIdx, &new_idx)) ? *new_idx : HB_OT_LAYOUT_NO_VARIATIONS_INDEX,
+                                               HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   public:
@@ -71,6 +84,47 @@ struct MVAR
 		  c->check_range (valuesZ.arrayZ,
 				  valueRecordCount,
 				  valueRecordSize));
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+#ifdef HB_NO_VAR
+    return_trace (false);
+#endif
+
+    if (c->plan->all_axes_pinned)
+      return_trace (false);
+
+    MVAR *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+    out->version = version;
+    out->reserved = reserved;
+    out->valueRecordSize = valueRecordSize;
+    out->valueRecordCount = valueRecordCount;
+
+    item_variations_t item_vars;
+    const VariationStore& src_var_store = this+varStore;
+
+    if (!item_vars.instantiate (src_var_store, c->plan))
+      return_trace (false);
+
+    /* serialize varstore */
+    if (!out->varStore.serialize_serialize (c->serializer, item_vars.has_long_word (),
+                                            c->plan->axis_tags,
+                                            item_vars.get_region_list (),
+                                            item_vars.get_vardata_encodings ()))
+      return_trace (false);
+
+    /* serialize value records array */
+    unsigned value_rec_count = valueRecordCount;
+    const VariationValueRecord *record = reinterpret_cast<const VariationValueRecord*> (valuesZ.arrayZ);
+    for (unsigned i = 0; i < value_rec_count; i++)
+    {
+      if (!record->subset (c, item_vars.get_varidx_map ())) return_trace (false);
+      record++;
+    }
+    return_trace (true);
   }
 
   float get_var (hb_tag_t tag,

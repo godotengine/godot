@@ -31,7 +31,7 @@
 #include "hb.hh"
 
 
-#line 32 "hb-number-parser.hh"
+#line 35 "hb-number-parser.hh"
 static const unsigned char _double_parser_trans_keys[] = {
 	0u, 0u, 43u, 57u, 46u, 57u, 48u, 57u, 43u, 57u, 48u, 57u, 48u, 101u, 48u, 57u, 
 	46u, 101u, 0
@@ -135,12 +135,12 @@ strtod_rl (const char *p, const char **end_ptr /* IN/OUT */)
 
   int cs;
   
-#line 132 "hb-number-parser.hh"
+#line 139 "hb-number-parser.hh"
 	{
 	cs = double_parser_start;
 	}
 
-#line 135 "hb-number-parser.hh"
+#line 144 "hb-number-parser.hh"
 	{
 	int _slen;
 	int _trans;
@@ -198,7 +198,7 @@ _resume:
 	  exp_overflow = true;
 }
 	break;
-#line 187 "hb-number-parser.hh"
+#line 202 "hb-number-parser.hh"
 	}
 
 _again:
