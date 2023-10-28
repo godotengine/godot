@@ -1155,13 +1155,16 @@ void ItemList::_notification(int p_what) {
 			first_visible_separator = lo;
 		}
 
-		for (int i = first_visible_separator; i < separators.size(); i++) {
-			if (separators[i] > clip.position.y + clip.size.y) {
-				break; // done
-			}
+		// If not in thumbnails mode, draw visible separators.
+		if (icon_mode != ICON_MODE_TOP) {
+			for (int i = first_visible_separator; i < separators.size(); i++) {
+				if (separators[i] > clip.position.y + clip.size.y) {
+					break; // done
+				}
 
-			const int y = base_ofs.y + separators[i];
-			draw_line(Vector2(bg->get_margin(MARGIN_LEFT), y), Vector2(width, y), guide_color);
+				const int y = base_ofs.y + separators[i];
+				draw_line(Vector2(bg->get_margin(MARGIN_LEFT), y), Vector2(width, y), guide_color);
+			}
 		}
 	}
 }
