@@ -1279,11 +1279,9 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 					return;
 				}
 			}
-		} else {
-			if (FileAccess::exists(path + ".import")) {
-				show_warning(TTR("This resource can't be saved because it was imported from another file. Make it unique first."));
-				return;
-			}
+		} else if (FileAccess::exists(path + ".import")) {
+			show_warning(TTR("This resource can't be saved because it was imported from another file. Make it unique first."));
+			return;
 		}
 	}
 
@@ -4063,11 +4061,9 @@ bool EditorNode::is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_
 				}
 			}
 		}
-	} else {
+	} else if (FileAccess::exists(path + ".import")) {
 		// The resource is not a subresource, but if it has an .import file, it's imported so treat it as read only.
-		if (FileAccess::exists(path + ".import")) {
-			return true;
-		}
+		return true;
 	}
 
 	return false;
