@@ -911,7 +911,7 @@ void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 }
 
 void VersionControlEditorPlugin::register_editor() {
-	EditorDockManager::get_singleton()->add_control_to_dock(EditorDockManager::DOCK_SLOT_RIGHT_UL, version_commit_dock);
+	EditorDockManager::get_singleton()->add_dock(version_commit_dock, "", EditorDockManager::DOCK_SLOT_RIGHT_UL);
 
 	version_control_dock_button = EditorNode::get_bottom_panel()->add_item(TTR("Version Control"), version_control_dock, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTR("Toggle Version Control Bottom Panel")));
 
@@ -931,7 +931,7 @@ void VersionControlEditorPlugin::shut_down() {
 	memdelete(EditorVCSInterface::get_singleton());
 	EditorVCSInterface::set_singleton(nullptr);
 
-	EditorDockManager::get_singleton()->remove_control_from_dock(version_commit_dock);
+	EditorDockManager::get_singleton()->remove_dock(version_commit_dock);
 	EditorNode::get_bottom_panel()->remove_item(version_control_dock);
 
 	_set_vcs_ui_state(false);
