@@ -788,7 +788,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	tree->set_column_custom_minimum_width(1, EDSCALE * 250);
 	tree->set_column_expand(1, false);
 	tree->set_hide_root(true);
-	tree->set_hide_folding(true);
+	tree->set_hide_folding(false);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	tree->connect("item_edited", callable_mp(this, &AnimationLibraryEditor::_item_renamed));
