@@ -136,7 +136,7 @@ void AnimationLibraryEditor::_load_library() {
 		file_dialog->add_filter("*." + K);
 	}
 
-	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 	file_dialog->set_current_file("");
 	file_dialog->popup_centered_ratio();
 
@@ -300,83 +300,6 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 }
 void AnimationLibraryEditor::_load_file(String p_path) {
 	switch (file_dialog_action) {
-		case FILE_DIALOG_ACTION_OPEN_LIBRARY: {
-			Ref<AnimationLibrary> al = ResourceLoader::load(p_path);
-			if (al.is_null()) {
-				error_dialog->set_text(TTR("Invalid AnimationLibrary file."));
-				error_dialog->popup_centered();
-				return;
-			}
-
-			TypedArray<StringName> libs = mixer->call("get_animation_library_list");
-			for (int i = 0; i < libs.size(); i++) {
-				const StringName K = libs[i];
-				Ref<AnimationLibrary> al2 = mixer->call("get_animation_library", K);
-				if (al2 == al) {
-					error_dialog->set_text(TTR("This library is already added to the mixer."));
-					error_dialog->popup_centered();
-
-					return;
-				}
-			}
-
-			String name = AnimationLibrary::validate_library_name(p_path.get_file().get_basename());
-
-			int attempt = 1;
-
-			while (bool(mixer->call("has_animation_library", name))) {
-				attempt++;
-				name = p_path.get_file().get_basename() + " " + itos(attempt);
-			}
-
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
-			undo_redo->create_action(vformat(TTR("Add Animation Library: %s"), name));
-			undo_redo->add_do_method(mixer, "add_animation_library", name, al);
-			undo_redo->add_undo_method(mixer, "remove_animation_library", name);
-			undo_redo->add_do_method(this, "_update_editor", mixer);
-			undo_redo->add_undo_method(this, "_update_editor", mixer);
-			undo_redo->commit_action();
-		} break;
-		case FILE_DIALOG_ACTION_OPEN_ANIMATION: {
-			Ref<Animation> anim = ResourceLoader::load(p_path);
-			if (anim.is_null()) {
-				error_dialog->set_text(TTR("Invalid Animation file."));
-				error_dialog->popup_centered();
-				return;
-			}
-
-			Ref<AnimationLibrary> al = mixer->call("get_animation_library", adding_animation_to_library);
-			List<StringName> anims;
-			al->get_animation_list(&anims);
-			for (const StringName &K : anims) {
-				Ref<Animation> a2 = al->get_animation(K);
-				if (a2 == anim) {
-					error_dialog->set_text(TTR("This animation is already added to the library."));
-					error_dialog->popup_centered();
-					return;
-				}
-			}
-
-			String name = p_path.get_file().get_basename();
-
-			int attempt = 1;
-
-			while (al->has_animation(name)) {
-				attempt++;
-				name = p_path.get_file().get_basename() + " " + itos(attempt);
-			}
-
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
-			undo_redo->create_action(vformat(TTR("Load Animation into Library: %s"), name));
-			undo_redo->add_do_method(al.ptr(), "add_animation", name, anim);
-			undo_redo->add_undo_method(al.ptr(), "remove_animation", name);
-			undo_redo->add_do_method(this, "_update_editor", mixer);
-			undo_redo->add_undo_method(this, "_update_editor", mixer);
-			undo_redo->commit_action();
-		} break;
-
 		case FILE_DIALOG_ACTION_SAVE_LIBRARY: {
 			Ref<AnimationLibrary> al = mixer->call("get_animation_library", file_dialog_library);
 			String prev_path = al->get_path();
@@ -414,6 +337,93 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 				undo_redo->commit_action();
 			}
 		} break;
+		default:
+			break;
+	}
+}
+
+void AnimationLibraryEditor::_load_files(const Vector<String> &p_paths) {
+	for (const String &p_path : p_paths) {
+		switch (file_dialog_action) {
+			case FILE_DIALOG_ACTION_OPEN_LIBRARY: {
+				Ref<AnimationLibrary> al = ResourceLoader::load(p_path);
+				if (al.is_null()) {
+					error_dialog->set_text(TTR("Invalid AnimationLibrary file."));
+					error_dialog->popup_centered();
+					return;
+				}
+
+				TypedArray<StringName> libs = mixer->call("get_animation_library_list");
+				for (int i = 0; i < libs.size(); i++) {
+					const StringName K = libs[i];
+					Ref<AnimationLibrary> al2 = mixer->call("get_animation_library", K);
+					if (al2 == al) {
+						error_dialog->set_text(TTR("This library is already added to the mixer."));
+						error_dialog->popup_centered();
+
+						return;
+					}
+				}
+
+				String name = AnimationLibrary::validate_library_name(p_path.get_file().get_basename());
+
+				int attempt = 1;
+
+				while (bool(mixer->call("has_animation_library", name))) {
+					attempt++;
+					name = p_path.get_file().get_basename() + " " + itos(attempt);
+				}
+
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+				undo_redo->create_action(vformat(TTR("Add Animation Library: %s"), name));
+				undo_redo->add_do_method(mixer, "add_animation_library", name, al);
+				undo_redo->add_undo_method(mixer, "remove_animation_library", name);
+				undo_redo->add_do_method(this, "_update_editor", mixer);
+				undo_redo->add_undo_method(this, "_update_editor", mixer);
+				undo_redo->commit_action();
+			} break;
+			case FILE_DIALOG_ACTION_OPEN_ANIMATION: {
+				Ref<Animation> anim = ResourceLoader::load(p_path);
+				if (anim.is_null()) {
+					error_dialog->set_text(TTR("Invalid Animation file."));
+					error_dialog->popup_centered();
+					return;
+				}
+
+				Ref<AnimationLibrary> al = mixer->call("get_animation_library", adding_animation_to_library);
+				List<StringName> anims;
+				al->get_animation_list(&anims);
+				for (const StringName &K : anims) {
+					Ref<Animation> a2 = al->get_animation(K);
+					if (a2 == anim) {
+						error_dialog->set_text(TTR("This animation is already added to the library."));
+						error_dialog->popup_centered();
+						return;
+					}
+				}
+
+				String name = p_path.get_file().get_basename();
+
+				int attempt = 1;
+
+				while (al->has_animation(name)) {
+					attempt++;
+					name = p_path.get_file().get_basename() + " " + itos(attempt);
+				}
+
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+				undo_redo->create_action(vformat(TTR("Load Animation into Library: %s"), name));
+				undo_redo->add_do_method(al.ptr(), "add_animation", name, anim);
+				undo_redo->add_undo_method(al.ptr(), "remove_animation", name);
+				undo_redo->add_do_method(this, "_update_editor", mixer);
+				undo_redo->add_undo_method(this, "_update_editor", mixer);
+				undo_redo->commit_action();
+			} break;
+			default:
+				break;
+		}
 	}
 }
 
@@ -505,7 +515,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 				}
 
 				file_dialog->set_title(TTR("Load Animation"));
-				file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+				file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 				file_dialog->set_current_file("");
 				file_dialog->popup_centered_ratio();
 
@@ -742,6 +752,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	file_dialog = memnew(EditorFileDialog);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &AnimationLibraryEditor::_load_file));
+	file_dialog->connect("files_selected", callable_mp(this, &AnimationLibraryEditor::_load_files));
 
 	add_library_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *dialog_vb = memnew(VBoxContainer);
