@@ -4728,14 +4728,15 @@ void EditorNode::_dock_floating_close_request(WindowWrapper *p_wrapper) {
 	// Give back the dock to the original owner.
 	Control *dock = p_wrapper->release_wrapped_control();
 
+	int target_index = MIN(dock_slot_index, dock_slot[dock_slot_num]->get_tab_count());
 	dock_slot[dock_slot_num]->add_child(dock);
-	dock_slot[dock_slot_num]->move_child(dock, MIN(dock_slot_index, dock_slot[dock_slot_num]->get_tab_count()));
-	dock_slot[dock_slot_num]->set_current_tab(dock_slot_index);
+	dock_slot[dock_slot_num]->move_child(dock, target_index);
+	dock_slot[dock_slot_num]->set_current_tab(target_index);
 
 	floating_docks.erase(p_wrapper);
 	p_wrapper->queue_free();
 
-	_update_dock_containers();
+	_update_dock_slots_visibility(true);
 
 	_edit_current();
 }
@@ -4779,36 +4780,11 @@ void EditorNode::_dock_make_float(Control *p_dock, int p_slot_index, bool p_show
 		wrapper->restore_window(Rect2i(dock_screen_pos, dock_size), get_window()->get_current_screen());
 	}
 
-	_update_dock_containers();
+	_update_dock_slots_visibility(true);
 
 	floating_docks.push_back(wrapper);
 
 	_edit_current();
-}
-
-void EditorNode::_update_dock_containers() {
-	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
-		if (dock_slot[i]->get_tab_count() == 0 && dock_slot[i]->is_visible()) {
-			dock_slot[i]->hide();
-		}
-		if (dock_slot[i]->get_tab_count() > 0 && !dock_slot[i]->is_visible()) {
-			dock_slot[i]->show();
-		}
-	}
-	for (int i = 0; i < vsplits.size(); i++) {
-		bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
-		if (in_use) {
-			vsplits[i]->show();
-		} else {
-			vsplits[i]->hide();
-		}
-	}
-
-	if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible()) {
-		right_hsplit->show();
-	} else {
-		right_hsplit->hide();
-	}
 }
 
 void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
@@ -4849,7 +4825,7 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 			dock_slot[nrect]->show();
 			dock_select->queue_redraw();
 
-			_update_dock_containers();
+			_update_dock_slots_visibility(true);
 
 			_edit_current();
 			_save_editor_layout();
@@ -5139,83 +5115,44 @@ void EditorNode::_update_dock_slots_visibility(bool p_keep_selected_tabs) {
 		right_hsplit->hide();
 	} else {
 		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
-			int tabs_visible = 0;
+			int first_tab_visible = -1;
 			for (int j = 0; j < dock_slot[i]->get_tab_count(); j++) {
 				if (!dock_slot[i]->is_tab_hidden(j)) {
-					tabs_visible++;
+					first_tab_visible = j;
+					break;
 				}
 			}
-			if (tabs_visible) {
+			if (first_tab_visible >= 0) {
 				dock_slot[i]->show();
+				if (p_keep_selected_tabs) {
+					int current_tab = dock_slot[i]->get_current_tab();
+					if (dock_slot[i]->is_tab_hidden(current_tab)) {
+						dock_slot[i]->set_block_signals(true);
+						dock_slot[i]->select_next_available();
+						dock_slot[i]->set_block_signals(false);
+					}
+				} else {
+					dock_slot[i]->set_block_signals(true);
+					dock_slot[i]->set_current_tab(first_tab_visible);
+					dock_slot[i]->set_block_signals(false);
+				}
 			} else {
 				dock_slot[i]->hide();
 			}
 		}
 
 		for (int i = 0; i < vsplits.size(); i++) {
-			bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
-			if (in_use) {
-				vsplits[i]->show();
-			} else {
-				vsplits[i]->hide();
-			}
+			bool in_use = dock_slot[i * 2 + 0]->is_visible() || dock_slot[i * 2 + 1]->is_visible();
+			vsplits[i]->set_visible(in_use);
 		}
 
-		if (!p_keep_selected_tabs) {
-			for (int i = 0; i < DOCK_SLOT_MAX; i++) {
-				if (dock_slot[i]->is_visible() && dock_slot[i]->get_tab_count()) {
-					dock_slot[i]->set_current_tab(0);
-				}
-			}
-		}
-
-		if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible()) {
-			right_hsplit->show();
-		} else {
-			right_hsplit->hide();
-		}
+		right_hsplit->set_visible(right_l_vsplit->is_visible() || right_r_vsplit->is_visible());
 	}
 }
 
 void EditorNode::_dock_tab_changed(int p_tab) {
 	// Update visibility but don't set current tab.
-
-	if (!docks_visible) {
-		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
-			dock_slot[i]->hide();
-		}
-
-		for (int i = 0; i < vsplits.size(); i++) {
-			vsplits[i]->hide();
-		}
-
-		right_hsplit->hide();
-		bottom_panel->hide();
-	} else {
-		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
-			if (dock_slot[i]->get_tab_count()) {
-				dock_slot[i]->show();
-			} else {
-				dock_slot[i]->hide();
-			}
-		}
-
-		for (int i = 0; i < vsplits.size(); i++) {
-			bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
-			if (in_use) {
-				vsplits[i]->show();
-			} else {
-				vsplits[i]->hide();
-			}
-		}
-		bottom_panel->show();
-
-		if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible()) {
-			right_hsplit->show();
-		} else {
-			right_hsplit->hide();
-		}
-	}
+	_update_dock_slots_visibility(true);
 }
 
 void EditorNode::_restore_floating_dock(const Dictionary &p_dock_dump, Control *p_dock, int p_slot_index) {
@@ -5284,20 +5221,14 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			if (atidx == i) {
 				dock_slot[i]->move_child(node, 0);
 			} else if (atidx != -1) {
-				dock_slot[atidx]->remove_child(node);
-
-				if (dock_slot[atidx]->get_tab_count() == 0) {
-					dock_slot[atidx]->hide();
-				}
-				dock_slot[i]->add_child(node);
-				dock_slot[i]->move_child(node, 0);
-				dock_slot[i]->set_tab_title(0, TTRGET(node->get_name()));
-				dock_slot[i]->show();
+				dock_slot[i]->move_tab_from_tab_container(dock_slot[atidx], dock_slot[atidx]->get_tab_idx_from_control(node), 0);
 			}
 
 			WindowWrapper *wrapper = Object::cast_to<WindowWrapper>(node);
 			if (restore_window_on_load && floating_docks_dump.has(name)) {
-				_restore_floating_dock(floating_docks_dump[name], node, i);
+				if (!dock_slot[i]->is_tab_hidden(dock_slot[i]->get_tab_idx_from_control(node))) {
+					_restore_floating_dock(floating_docks_dump[name], node, i);
+				}
 			} else if (wrapper) {
 				wrapper->set_window_enabled(false);
 			}
@@ -5330,26 +5261,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		hsplits[i]->set_split_offset(ofs);
 	}
 
-	for (int i = 0; i < vsplits.size(); i++) {
-		bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
-		if (in_use) {
-			vsplits[i]->show();
-		} else {
-			vsplits[i]->hide();
-		}
-	}
-
-	if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible()) {
-		right_hsplit->show();
-	} else {
-		right_hsplit->hide();
-	}
-
-	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
-		if (dock_slot[i]->is_visible() && dock_slot[i]->get_tab_count()) {
-			dock_slot[i]->set_current_tab(0);
-		}
-	}
+	_update_dock_slots_visibility(false);
 
 	// FileSystemDock.
 
@@ -6676,6 +6588,10 @@ void EditorNode::_resource_loaded(Ref<Resource> p_resource, const String &p_path
 
 void EditorNode::_feature_profile_changed() {
 	Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
+	// FIXME: Close all floating docks to avoid crash.
+	for (WindowWrapper *wrapper : floating_docks) {
+		wrapper->set_window_enabled(false);
+	}
 	TabContainer *import_tabs = cast_to<TabContainer>(ImportDock::get_singleton()->get_parent());
 	TabContainer *node_tabs = cast_to<TabContainer>(NodeDock::get_singleton()->get_parent());
 	TabContainer *fs_tabs = cast_to<TabContainer>(FileSystemDock::get_singleton()->get_parent());
