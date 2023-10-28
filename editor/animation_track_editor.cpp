@@ -31,6 +31,7 @@
 #include "animation_track_editor.h"
 
 #include "animation_track_editor_plugins.h"
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
 #include "editor/animation_bezier_editor.h"
 #include "editor/editor_node.h"
@@ -4105,6 +4106,12 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	for (int i = 0; i < leftover_path.size() - 1; i++) {
 		bool valid;
 		property_info_base = property_info_base.get_named(leftover_path[i], valid);
+	}
+
+	if (property_info_base.is_null()) {
+		WARN_PRINT(vformat("Could not determine track hint for '%s:%s' because its base property is null.",
+				String(path.get_concatenated_names()), String(path.get_concatenated_subnames())));
+		return PropertyInfo();
 	}
 
 	List<PropertyInfo> pinfo;
