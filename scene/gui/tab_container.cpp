@@ -381,22 +381,29 @@ void TabContainer::move_tab_from_tab_container(TabContainer *p_from, int p_from_
 	// Get the tab properties before they get erased by the child removal.
 	String tab_title = p_from->get_tab_title(p_from_index);
 	Ref<Texture2D> tab_icon = p_from->get_tab_icon(p_from_index);
+	Ref<Texture2D> tab_button_icon = p_from->get_tab_button_icon(p_from_index);
 	bool tab_disabled = p_from->is_tab_disabled(p_from_index);
+	bool tab_hidden = p_from->is_tab_hidden(p_from_index);
 	Variant tab_metadata = p_from->get_tab_metadata(p_from_index);
+	int tab_icon_max_width = p_from->get_tab_bar()->get_tab_icon_max_width(p_from_index);
 
 	Control *moving_tabc = p_from->get_tab_control(p_from_index);
 	p_from->remove_child(moving_tabc);
 	add_child(moving_tabc, true);
 
-	set_tab_title(get_tab_count() - 1, tab_title);
-	set_tab_icon(get_tab_count() - 1, tab_icon);
-	set_tab_disabled(get_tab_count() - 1, tab_disabled);
-	set_tab_metadata(get_tab_count() - 1, tab_metadata);
-
 	if (p_to_index < 0 || p_to_index > get_tab_count() - 1) {
 		p_to_index = get_tab_count() - 1;
 	}
 	move_child(moving_tabc, get_tab_control(p_to_index)->get_index(false));
+
+	set_tab_title(p_to_index, tab_title);
+	set_tab_icon(p_to_index, tab_icon);
+	set_tab_button_icon(p_to_index, tab_button_icon);
+	set_tab_disabled(p_to_index, tab_disabled);
+	set_tab_hidden(p_to_index, tab_hidden);
+	set_tab_metadata(p_to_index, tab_metadata);
+	get_tab_bar()->set_tab_icon_max_width(p_to_index, tab_icon_max_width);
+
 	if (!is_tab_disabled(p_to_index)) {
 		set_current_tab(p_to_index);
 	}
