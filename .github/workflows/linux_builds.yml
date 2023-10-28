@@ -162,7 +162,7 @@ jobs:
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
-          ${{ matrix.bin }} --test --headless
+          ${{ matrix.bin }} --headless --test --force-colors
 
       # Check class reference
       - name: Check for class reference updates
