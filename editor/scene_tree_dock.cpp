@@ -1758,6 +1758,11 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 				break;
 			}
 
+			if (Object::cast_to<Animation>(resource)) {
+				// Animation resources are handled by animation editor.
+				break;
+			}
+
 			List<PropertyInfo> properties;
 			resource->get_property_list(&properties);
 
