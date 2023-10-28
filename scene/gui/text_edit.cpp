@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "text_edit.h"
+#include "text_edit.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -4316,41 +4317,41 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 	return Point2i(col, row);
 }
 
-Point2i TextEdit::get_pos_at_line_column(int p_line, int p_column) const {
-	Rect2i rect = get_rect_at_line_column(p_line, p_column);
-	return rect.position.x == -1 ? rect.position : rect.position + Vector2i(0, get_line_height());
+Point2 TextEdit::get_pos_at_line_column(int p_line, int p_column) const {
+	Rect2 rect = get_rect_at_line_column(p_line, p_column);
+	return rect.position.x == -1 ? rect.position : rect.position + Vector2(0, get_line_height());
 }
 
-Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), Rect2i(-1, -1, 0, 0));
-	ERR_FAIL_COND_V(p_column < 0, Rect2i(-1, -1, 0, 0));
-	ERR_FAIL_COND_V(p_column > text[p_line].length(), Rect2i(-1, -1, 0, 0));
+Rect2 TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), Rect2(-1, -1, 0, 0));
+	ERR_FAIL_COND_V(p_column < 0, Rect2(-1, -1, 0, 0));
+	ERR_FAIL_COND_V(p_column > text[p_line].length(), Rect2(-1, -1, 0, 0));
 
 	if (text.size() == 1 && text[0].length() == 0) {
 		// The TextEdit is empty.
-		return Rect2i();
+		return Rect2();
 	}
 
 	if (line_drawing_cache.size() == 0 || !line_drawing_cache.has(p_line)) {
 		// Line is not in the cache, which means it's outside of the viewing area.
-		return Rect2i(-1, -1, 0, 0);
+		return Rect2(-1, -1, 0, 0);
 	}
 	LineDrawingCache cache_entry = line_drawing_cache[p_line];
 
 	int wrap_index = get_line_wrap_index_at_column(p_line, p_column);
 	if (wrap_index >= cache_entry.first_visible_chars.size()) {
 		// Line seems to be wrapped beyond the viewable area.
-		return Rect2i(-1, -1, 0, 0);
+		return Rect2(-1, -1, 0, 0);
 	}
 
 	int first_visible_char = cache_entry.first_visible_chars[wrap_index];
 	int last_visible_char = cache_entry.last_visible_chars[wrap_index];
 	if (p_column < first_visible_char || p_column > last_visible_char) {
 		// Character is outside of the viewing area, no point calculating its position.
-		return Rect2i(-1, -1, 0, 0);
+		return Rect2(-1, -1, 0, 0);
 	}
 
-	Point2i pos, size;
+	Point2 pos, size;
 	pos.y = cache_entry.y_offset + get_line_height() * wrap_index;
 	pos.x = get_total_gutter_width() + theme_cache.style_normal->get_margin(SIDE_LEFT) - get_h_scroll();
 
@@ -4361,7 +4362,7 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 
 	size.y = get_line_height();
 
-	return Rect2i(pos, size);
+	return Rect2(pos, size);
 }
 
 int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {

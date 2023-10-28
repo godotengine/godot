@@ -948,8 +948,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 13);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
-			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
-			line_0.y /= 2;
+			Point2 line_0 = text_edit->get_pos_at_line_column(0, 0);
+			line_0.y /= 2.0;
 			SEND_GUI_MOUSE_BUTTON_EVENT(line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
@@ -980,8 +980,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 
-			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
-			line_0.y /= 2;
+			Point2 line_0 = text_edit->get_pos_at_line_column(0, 0);
+			line_0.y /= 2.0;
 			SEND_GUI_MOUSE_BUTTON_EVENT(line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
@@ -1147,8 +1147,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->grab_click_focus();
 			MessageQueue::get_singleton()->flush();
 
-			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
-			line_0.y /= 2;
+			Point2 line_0 = text_edit->get_pos_at_line_column(0, 0);
+			line_0.y /= 2.0;
 			SEND_GUI_MOUSE_BUTTON_EVENT(line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->is_mouse_over_selection());
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
@@ -1156,7 +1156,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "drag me");
 
 			line_0 = target_text_edit->get_pos_at_line_column(0, 0);
-			line_0.y /= 2;
+			line_0.y /= 2.0;
 			line_0.x += 401; // As empty add one.
 			SEND_GUI_MOUSE_MOTION_EVENT(line_0, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
@@ -3247,11 +3247,11 @@ TEST_CASE("[SceneTree][TextEdit] mouse") {
 
 	text_edit->set_size(Size2(800, 200));
 
-	CHECK(text_edit->get_rect_at_line_column(0, 0).get_position() == Point2i(0, 0));
+	CHECK(text_edit->get_rect_at_line_column(0, 0).get_position() == Point2(0, 0));
 
 	text_edit->set_line(0, "A");
 	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_rect_at_line_column(0, 1).get_position().x > 0);
+	CHECK(text_edit->get_rect_at_line_column(0, 1).get_position().x > 0.0);
 
 	text_edit->clear(); // Necessary, otherwise the following test cases fail.
 
@@ -3262,21 +3262,21 @@ TEST_CASE("[SceneTree][TextEdit] mouse") {
 	CHECK(text_edit->get_word_at_pos(text_edit->get_pos_at_line_column(0, 9)) == "ipsum");
 
 	ERR_PRINT_OFF;
-	CHECK(text_edit->get_pos_at_line_column(0, -1) == Point2i(-1, -1));
-	CHECK(text_edit->get_pos_at_line_column(-1, 0) == Point2i(-1, -1));
-	CHECK(text_edit->get_pos_at_line_column(-1, -1) == Point2i(-1, -1));
+	CHECK(text_edit->get_pos_at_line_column(0, -1) == Point2(-1, -1));
+	CHECK(text_edit->get_pos_at_line_column(-1, 0) == Point2(-1, -1));
+	CHECK(text_edit->get_pos_at_line_column(-1, -1) == Point2(-1, -1));
 
-	CHECK(text_edit->get_pos_at_line_column(0, 500) == Point2i(-1, -1));
-	CHECK(text_edit->get_pos_at_line_column(2, 0) == Point2i(-1, -1));
-	CHECK(text_edit->get_pos_at_line_column(2, 500) == Point2i(-1, -1));
+	CHECK(text_edit->get_pos_at_line_column(0, 500) == Point2(-1, -1));
+	CHECK(text_edit->get_pos_at_line_column(2, 0) == Point2(-1, -1));
+	CHECK(text_edit->get_pos_at_line_column(2, 500) == Point2(-1, -1));
 
 	// Out of view.
-	CHECK(text_edit->get_pos_at_line_column(0, text_edit->get_line(0).length() - 1) == Point2i(-1, -1));
+	CHECK(text_edit->get_pos_at_line_column(0, text_edit->get_line(0).length() - 1) == Point2(-1, -1));
 	ERR_PRINT_ON;
 
 	// Add method to get drawn column count?
-	Point2i start_pos = text_edit->get_pos_at_line_column(0, 0);
-	Point2i end_pos = text_edit->get_pos_at_line_column(0, 105);
+	Point2 start_pos = text_edit->get_pos_at_line_column(0, 0);
+	Point2 end_pos = text_edit->get_pos_at_line_column(0, 105);
 
 	CHECK(text_edit->get_line_column_at_pos(Point2i(start_pos.x, start_pos.y)) == Point2i(0, 0));
 	CHECK(text_edit->get_line_column_at_pos(Point2i(end_pos.x, end_pos.y)) == Point2i(104, 0));
