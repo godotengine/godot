@@ -8222,14 +8222,15 @@ Node3DEditor::Node3DEditor() {
 	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
 	vbc->add_child(toolbar_margin);
 
-	// A fluid container for all toolbars.
-	HFlowContainer *main_flow = memnew(HFlowContainer);
-	toolbar_margin->add_child(main_flow);
+	// Stacks the different toolbars.
+	// I'm not sure if there's a good way to have both the new functionality (main menu being an HFlowContainer, but colliding more neatly with other menus)
+	VBoxContainer *main_vbox = memnew(VBoxContainer);
+	toolbar_margin->add_child(main_vbox);
 
 	// Main toolbars.
 	HFlowContainer *main_menu_hflow = memnew(HFlowContainer);
 	main_menu_hflow->set_h_size_flags(HFlowContainer::SIZE_EXPAND_FILL);
-	main_flow->add_child(main_menu_hflow);
+	main_vbox->add_child(main_menu_hflow);
 
 	String sct;
 
@@ -8440,7 +8441,7 @@ Node3DEditor::Node3DEditor() {
 	context_toolbar_panel = memnew(PanelContainer);
 	context_toolbar_hflow = memnew(HFlowContainer);
 	context_toolbar_panel->add_child(context_toolbar_hflow);
-	main_flow->add_child(context_toolbar_panel);
+	main_vbox->add_child(context_toolbar_panel);
 
 	// Get the view menu popup and have it stay open when a checkable item is selected
 	p = view_menu->get_popup();
