@@ -112,7 +112,7 @@ private:
 		// Consider this when extending ParticleFlags, EmissionShape, or SubEmitterMode.
 		uint64_t texture_mask : PARAM_MAX;
 		uint64_t texture_color : 1;
-		uint64_t particle_flags : PARTICLE_FLAG_MAX - 1;
+		uint64_t particle_flags : PARTICLE_FLAG_MAX;
 		uint64_t emission_shape : 3;
 		uint64_t invalid_key : 1;
 		uint64_t has_emission_color : 1;
