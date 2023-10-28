@@ -1158,9 +1158,25 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					return;
 				}
 			}
-			bool enabling = !first_selected->get()->is_unique_name_in_owner();
 
 			List<Node *> full_selection = editor_selection->get_full_selected_node_list();
+
+			// Check if all the nodes for this operation are invalid, and if they are, pop up a dialog and end here.
+			bool all_nodes_owner_invalid = true;
+			for (Node *node : full_selection) {
+				if (node->get_owner() == get_tree()->get_edited_scene_root()) {
+					all_nodes_owner_invalid = false;
+					break;
+				}
+			}
+			if (all_nodes_owner_invalid) {
+				accept->set_text(TTR("Can't toggle unique name for nodes in subscene!"));
+				accept->popup_centered();
+				return;
+			}
+
+			bool enabling = !first_selected->get()->is_unique_name_in_owner();
+
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 			if (enabling) {
@@ -1172,6 +1188,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					if (node->is_unique_name_in_owner()) {
 						continue;
 					}
+					if (node->get_owner() != get_tree()->get_edited_scene_root()) {
+						continue;
+					}
+
 					StringName name = node->get_name();
 					if (new_unique_names.find(name) != -1 || get_tree()->get_edited_scene_root()->get_node_or_null(UNIQUE_NODE_PREFIX + String(name)) != nullptr) {
 						cant_be_set_unique_names.push_back(name);
@@ -1203,6 +1223,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				undo_redo->create_action(TTR("Disable Scene Unique Name(s)"));
 				for (Node *node : full_selection) {
 					if (!node->is_unique_name_in_owner()) {
+						continue;
+					}
+					if (node->get_owner() != get_tree()->get_edited_scene_root()) {
 						continue;
 					}
 					undo_redo->add_do_method(node, "set_unique_name_in_owner", false);
