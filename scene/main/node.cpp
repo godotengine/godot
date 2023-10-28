@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "node.h"
+#include "node.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
@@ -806,6 +807,23 @@ bool Node::_is_enabled() const {
 	}
 
 	return (process_mode != PROCESS_MODE_DISABLED);
+}
+
+bool Node::_is_node_of_type(const Node *p_node, const String &p_type) const {
+	if (p_type.is_empty() || p_node->is_class(p_type)) {
+		return true;
+	} else if (p_node->get_script_instance()) {
+		Ref<Script> scr = p_node->get_script_instance()->get_script();
+		while (scr.is_valid()) {
+			if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
+				return true;
+			}
+
+			scr = scr->get_base_script();
+		}
+	}
+
+	return false;
 }
 
 bool Node::is_enabled() const {
@@ -1647,11 +1665,12 @@ bool Node::has_node(const NodePath &p_path) const {
 	return get_node_or_null(p_path) != nullptr;
 }
 
-// Finds the first child node (in tree order) whose name matches the given pattern.
+// Finds the first child node (in tree order) whose name matches the given pattern,
+// class name, or both (either pattern or type can be left empty).
 // Can be recursive or not, and limited to owned nodes.
-Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) const {
+Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned, const String &p_type) const {
 	ERR_THREAD_GUARD_V(nullptr);
-	ERR_FAIL_COND_V(p_pattern.is_empty(), nullptr);
+	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), nullptr);
 	_update_children_cache();
 	Node *const *cptr = data.children_cache.ptr();
 	int ccount = data.children_cache.size();
@@ -1659,6 +1678,16 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
 		}
+
+		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
+			if (_is_node_of_type(cptr[i], p_type)) {
+				return cptr[i];
+			}
+			if (!p_pattern.is_empty() && !p_type.is_empty()) {
+				continue;
+			}
+		}
+
 		if (cptr[i]->data.name.operator String().match(p_pattern)) {
 			return cptr[i];
 		}
@@ -1667,7 +1696,7 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 			continue;
 		}
 
-		Node *ret = cptr[i]->find_child(p_pattern, true, p_owned);
+		Node *ret = cptr[i]->find_child(p_pattern, true, p_owned, p_type);
 		if (ret) {
 			return ret;
 		}
@@ -1691,18 +1720,8 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 		}
 
 		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
-			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
+			if (_is_node_of_type(cptr[i], p_type)) {
 				ret.append(cptr[i]);
-			} else if (cptr[i]->get_script_instance()) {
-				Ref<Script> scr = cptr[i]->get_script_instance()->get_script();
-				while (scr.is_valid()) {
-					if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
-						ret.append(cptr[i]);
-						break;
-					}
-
-					scr = scr->get_base_script();
-				}
 			}
 		}
 
@@ -1731,10 +1750,23 @@ Node *Node::get_parent() const {
 	return data.parent;
 }
 
-Node *Node::find_parent(const String &p_pattern) const {
+// Finds the first parent node (in tree order) whose name matches the given
+// pattern, class name, or both (either pattern or type can be left empty).
+Node *Node::find_parent(const String &p_pattern, const String &p_type) const {
 	ERR_THREAD_GUARD_V(nullptr);
+	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), nullptr);
 	Node *p = data.parent;
 	while (p) {
+		if (p_pattern.is_empty() || p->data.name.operator String().match(p_pattern)) {
+			if (_is_node_of_type(p, p_type)) {
+				return p;
+			}
+			if (!p_pattern.is_empty() && !p_type.is_empty()) {
+				p = p->data.parent;
+				continue;
+			}
+		}
+
 		if (p->data.name.operator String().match(p_pattern)) {
 			return p;
 		}
@@ -3269,16 +3301,16 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("reparent", "new_parent", "keep_global_transform"), &Node::reparent, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
+	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDScript.
 	ClassDB::bind_method(D_METHOD("get_children", "include_internal"), &Node::get_children, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_child", "idx", "include_internal"), &Node::get_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
-	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned"), &Node::find_child, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned", "type"), &Node::find_child, DEFVAL(true), DEFVAL(true), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("find_children", "pattern", "type", "recursive", "owned"), &Node::find_children, DEFVAL(""), DEFVAL(true), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("find_parent", "pattern"), &Node::find_parent);
+	ClassDB::bind_method(D_METHOD("find_parent", "pattern", "type"), &Node::find_parent, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 

@@ -241,6 +241,7 @@ private:
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;
 
 	TypedArray<StringName> _get_groups() const;
+	bool _is_node_of_type(const Node *p_node, const String &p_type) const;
 
 	Error _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Error _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -328,6 +329,11 @@ protected:
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
 
 public:
+#ifndef DISABLE_DEPRECATED
+	Node *_find_child_bind_compat_83219(const String &p_pattern, bool p_recursive = true, bool p_owned = true);
+	Node *_find_parent_bind_compat_83219(const String &p_pattern) const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 	enum {
 		// you can make your own, but don't use the same numbers as other notifications in other nodes
 		NOTIFICATION_ENTER_TREE = 10,
@@ -398,14 +404,14 @@ public:
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
-	Node *find_child(const String &p_pattern, bool p_recursive = true, bool p_owned = true) const;
+	Node *find_child(const String &p_pattern, bool p_recursive = true, bool p_owned = true, const String &p_type = "") const;
 	TypedArray<Node> find_children(const String &p_pattern, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
-	Node *find_parent(const String &p_pattern) const;
+	Node *find_parent(const String &p_pattern, const String &p_type = "") const;
 
 	Window *get_window() const;
 	Window *get_last_exclusive_window() const;

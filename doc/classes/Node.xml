@@ -230,11 +230,13 @@
 			<param index="0" name="pattern" type="String" />
 			<param index="1" name="recursive" type="bool" default="true" />
 			<param index="2" name="owned" type="bool" default="true" />
+			<param index="3" name="type" type="String" default="&quot;&quot;" />
 			<description>
-				Finds the first descendant of this node whose name matches [param pattern] as in [method String.match]. Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
-				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				Finds the first descendant of this node whose name matches [param pattern] as in [method String.match], and/or type matches [param type] as in [method Object.is_class]. Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
+				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code].
 				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are matched.
 				If [param owned] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				[param type] will check equality or inheritance, and is case-sensitive. [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
 				Returns [code]null[/code] if no matching [Node] is found.
 				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
 				[b]Note:[/b] To find all descendant nodes matching a pattern or a class type, see [method find_children].
@@ -248,7 +250,7 @@
 			<param index="3" name="owned" type="bool" default="true" />
 			<description>
 				Finds descendants of this node whose name matches [param pattern] as in [method String.match], and/or type matches [param type] as in [method Object.is_class]. Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
-				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code].
 				[param type] will check equality or inheritance, and is case-sensitive. [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
 				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are matched.
 				If [param owned] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
@@ -260,9 +262,11 @@
 		<method name="find_parent" qualifiers="const">
 			<return type="Node" />
 			<param index="0" name="pattern" type="String" />
+			<param index="1" name="type" type="String" default="&quot;&quot;" />
 			<description>
-				Finds the first parent of the current node whose name matches [param pattern] as in [method String.match].
-				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				Finds the first parent of the current node whose name matches [param pattern] as in [method String.match], and/or type matches [param type] as in [method Object.is_class].
+				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code].
+				[param type] will check equality or inheritance, and is case-sensitive. [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
 				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
 			</description>
 		</method>
