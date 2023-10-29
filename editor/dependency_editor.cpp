@@ -132,6 +132,10 @@ void DependencyEditor::_fix_all() {
 
 	for (const String &E : missing) {
 		String base = E.get_file();
+		// Split the base from any sub-resources.
+		if (base.contains("::")) {
+			base = base.get_slice("::", 0);
+		}
 		if (!candidates.has(base)) {
 			candidates[base] = HashMap<String, String>();
 		}
@@ -146,7 +150,17 @@ void DependencyEditor::_fix_all() {
 	for (KeyValue<String, HashMap<String, String>> &E : candidates) {
 		for (const KeyValue<String, String> &F : E.value) {
 			if (!F.value.is_empty()) {
+				String sub_res;
+
+				if (F.key.contains("::")) {
+					sub_res = F.key.get_slice("::", 1);
+				}
+
 				remaps[F.key] = F.value;
+
+				if (!sub_res.is_empty()) {
+					remaps[F.key] += "::" + sub_res;
+				}
 			}
 		}
 	}
@@ -180,6 +194,7 @@ void DependencyEditor::_update_list() {
 		TreeItem *item = tree->create_item(root);
 		String path;
 		String type;
+		String foreign_resource_id;
 
 		if (n.contains("::")) {
 			path = n.get_slice("::", 0);
@@ -203,7 +218,17 @@ void DependencyEditor::_update_list() {
 			}
 		}
 
+		if (n.get_slice_count("::") >= 4) {
+			foreign_resource_id = n.get_slice("::", 3);
+		}
+
 		String name = path.get_file();
+		String base_path = path;
+
+		if (!foreign_resource_id.is_empty()) {
+			name += "::" + foreign_resource_id;
+			path += "::" + foreign_resource_id;
+		}
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
 		item->set_text(0, name);
@@ -211,7 +236,7 @@ void DependencyEditor::_update_list() {
 		item->set_metadata(0, type);
 		item->set_text(1, path);
 
-		if (!FileAccess::exists(path)) {
+		if (!FileAccess::exists(base_path)) {
 			item->set_custom_color(1, Color(1, 0.4, 0.3));
 			missing.push_back(path);
 			broken = true;

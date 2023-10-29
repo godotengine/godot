@@ -434,9 +434,20 @@ Error ResourceLoaderText::load() {
 		String path = next_tag.fields["path"];
 		String type = next_tag.fields["type"];
 		String id = next_tag.fields["id"];
+		String foreign_resource_id;
 
 		if (next_tag.fields.has("uid")) {
 			String uidt = next_tag.fields["uid"];
+
+			// Check if the path contains a splitter indicating it points to a foreign resource.
+			if (path.contains("::")) {
+				PackedStringArray split_path = path.split("::", false);
+				if (split_path.size() == 2) {
+					path = split_path[0];
+					foreign_resource_id = split_path[1];
+				}
+			}
+
 			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
 			if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
 				// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
@@ -460,6 +471,11 @@ Error ResourceLoaderText::load() {
 
 		if (remaps.has(path)) {
 			path = remaps[path];
+		}
+
+		// If we found a sub-resource ID, append it to the path now.
+		if (!foreign_resource_id.is_empty()) {
+			path += "::" + foreign_resource_id;
 		}
 
 		ext_resources[id].path = path;
@@ -855,14 +871,26 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 		String path = next_tag.fields["path"];
 		String type = next_tag.fields["type"];
 		String fallback_path;
+		String foreign_resource_id;
 
 		bool using_uid = false;
 		if (next_tag.fields.has("uid")) {
 			// If uid exists, return uid in text format, not the path.
 			String uidt = next_tag.fields["uid"];
+			String base_path = path;
+
+			// Check if the path contains a splitter indicating it points to a foreign resource.
+			if (path.contains("::")) {
+				PackedStringArray split_path = path.split("::", false);
+				if (split_path.size() == 2) {
+					base_path = split_path[0];
+					foreign_resource_id = split_path[1];
+				}
+			}
+
 			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
 			if (uid != ResourceUID::INVALID_ID) {
-				fallback_path = path; // Used by Dependency Editor, in case uid path fails.
+				fallback_path = base_path; // Used by Dependency Editor, in case uid path fails.
 				path = ResourceUID::get_singleton()->id_to_text(uid);
 				using_uid = true;
 			}
@@ -881,6 +909,10 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 				path += "::"; // Ensure that path comes third, even if there is no type.
 			}
 			path += "::" + fallback_path;
+			// If we found a sub-resource ID, append it to the path now.
+			if (!foreign_resource_id.is_empty()) {
+				path += "::" + foreign_resource_id;
+			}
 		}
 
 		p_dependencies->push_back(path);
@@ -905,7 +937,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 
 	Ref<FileAccess> fw;
 
-	String base_path = local_path.get_base_dir();
+	String base_dir_path = local_path.get_base_dir();
 
 	uint64_t tag_end = f->get_position();
 
@@ -933,7 +965,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 					res_uid = ResourceSaver::get_resource_id_for_path(p_path);
 				}
 
-				String uid_text = "";
+				String uid_text;
 				if (res_uid != ResourceUID::INVALID_ID) {
 					uid_text = " uid=\"" + ResourceUID::get_singleton()->id_to_text(res_uid) + "\"";
 				}
@@ -958,6 +990,8 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 			String id = next_tag.fields["id"];
 			String type = next_tag.fields["type"];
 
+			String original_path = path;
+
 			if (next_tag.fields.has("uid")) {
 				String uidt = next_tag.fields["uid"];
 				ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
@@ -968,25 +1002,43 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 			}
 			bool relative = false;
 			if (!path.begins_with("res://")) {
-				path = base_path.path_join(path).simplify_path();
+				path = base_dir_path.path_join(path).simplify_path();
 				relative = true;
 			}
 
-			if (p_map.has(path)) {
-				path = p_map[path];
+			if (p_map.has(original_path)) {
+				path = p_map[original_path];
+			}
+
+			String base_path = path;
+			String foreign_resource_id;
+
+			// Check if the path contains a splitter indicating it points to a foreign resource.
+			if (path.contains("::")) {
+				PackedStringArray split_path = path.split("::", false);
+				if (split_path.size() == 2) {
+					base_path = split_path[0];
+					foreign_resource_id = split_path[1];
+				}
 			}
 
 			if (relative) {
 				//restore relative
-				path = base_path.path_to_file(path);
+				base_path = base_dir_path.path_to_file(base_path);
 			}
 
 			String s = "[ext_resource type=\"" + type + "\"";
 
-			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(path);
+			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(base_path);
 			if (uid != ResourceUID::INVALID_ID) {
 				s += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
 			}
+
+			// If we found a sub-resource ID, append it to the path now.
+			if (!foreign_resource_id.is_empty()) {
+				path = base_path + "::" + foreign_resource_id;
+			}
+
 			s += " path=\"" + path + "\" id=\"" + id + "\"]";
 			fw->store_line(s); // Bundled.
 
@@ -1841,7 +1893,7 @@ String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res
 	} else {
 		if (internal_resources.has(res)) {
 			return "SubResource(\"" + internal_resources[res] + "\")";
-		} else if (!res->is_built_in()) {
+		} else if (!res->is_built_in(local_path)) {
 			if (res->get_path() == local_path) { //circular reference attempt
 				return "null";
 			}
@@ -1855,7 +1907,7 @@ String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res
 	}
 }
 
-void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {
+void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, const String &p_base_path, bool p_main) {
 	switch (p_variant.get_type()) {
 		case Variant::OBJECT: {
 			Ref<Resource> res = p_variant;
@@ -1864,7 +1916,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				return;
 			}
 
-			if (!p_main && (!bundle_resources) && !res->is_built_in()) {
+			if (!p_main && (!bundle_resources) && !res->is_built_in(p_base_path)) {
 				if (res->get_path() == local_path) {
 					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
 					return;
@@ -1907,10 +1959,10 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 							resource_set.insert(sres);
 							saved_resources.push_back(sres);
 						} else {
-							_find_resources(v);
+							_find_resources(v, p_base_path);
 						}
 					} else {
-						_find_resources(v);
+						_find_resources(v, p_base_path);
 					}
 				}
 
@@ -1925,7 +1977,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
 				const Variant &v = varray.get(i);
-				_find_resources(v);
+				_find_resources(v, p_base_path);
 			}
 
 		} break;
@@ -1936,9 +1988,9 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			for (const Variant &E : keys) {
 				// Of course keys should also be cached, after all we can't prevent users from using resources as keys, right?
 				// See also ResourceFormatSaverBinaryInstance::_find_resources (when p_variant is of type Variant::DICTIONARY)
-				_find_resources(E);
+				_find_resources(E, p_base_path);
 				Variant v = d[E];
-				_find_resources(v);
+				_find_resources(v, p_base_path);
 			}
 		} break;
 		default: {
@@ -1956,14 +2008,19 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 }
 
 Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
-	if (p_path.ends_with(".tscn")) {
-		packed_scene = p_resource;
-	}
-
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_OPEN, "Cannot save file '" + p_path + "'.");
 	Ref<FileAccess> _fref(f);
+
+	String base_path = p_resource->get_path();
+	if (p_path.ends_with(".tscn")) {
+		packed_scene = p_resource;
+		// If we're saving a scene and we don't have a resource path, attempt to derive it by the path in the SceneState.
+		if (base_path.is_empty() && packed_scene.is_valid()) {
+			base_path = packed_scene->get_state()->get_path();
+		}
+	}
 
 	local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
@@ -1976,7 +2033,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	}
 
 	// Save resources.
-	_find_resources(p_resource, true);
+	_find_resources(p_resource, base_path, true);
 
 	if (packed_scene.is_valid()) {
 		// Add instances to external resources if saving a packed scene.
@@ -2079,10 +2136,20 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 	for (int i = 0; i < sorted_er.size(); i++) {
 		String p = sorted_er[i].resource->get_path();
+		String bs_p = p;
 
 		String s = "[ext_resource type=\"" + sorted_er[i].resource->get_save_class() + "\"";
 
-		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p, false);
+		// Check if the path contains a splitter indicating it points to a foreign resource.
+		if (p.contains("::")) {
+			PackedStringArray split_path = p.split("::", false);
+			if (split_path.size() == 2) {
+				// We found a single split, so just use the base path.
+				bs_p = split_path[0];
+			}
+		}
+
+		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(bs_p, false);
 		if (uid != ResourceUID::INVALID_ID) {
 			s += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
 		}
@@ -2098,7 +2165,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 	for (List<Ref<Resource>>::Element *E = saved_resources.front(); E; E = E->next()) {
 		Ref<Resource> res = E->get();
-		if (E->next() && res->is_built_in()) {
+		if (E->next() && res->is_built_in(local_path)) {
 			if (!res->get_scene_unique_id().is_empty()) {
 				if (used_unique_ids.has(res->get_scene_unique_id())) {
 					res->set_scene_unique_id(""); // Repeated.

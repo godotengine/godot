@@ -1802,9 +1802,11 @@ void EditorNode::_save_scene(String p_file, int idx) {
 			sdata->recreate_state();
 		} else {
 			sdata.instantiate();
+			sdata->get_state()->set_path(scene->get_scene_file_path());
 		}
 	} else {
 		sdata.instantiate();
+		sdata->get_state()->set_path(scene->get_scene_file_path());
 	}
 	Error err = sdata->pack(scene);
 
@@ -1820,6 +1822,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
 	err = ResourceSaver::save(sdata, p_file, flg);
+	sdata->set_path(p_file, true);
 
 	// This needs to be emitted before saving external resources.
 	emit_signal(SNAME("scene_saved"), p_file);
