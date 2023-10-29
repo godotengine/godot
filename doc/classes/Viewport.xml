@@ -258,11 +258,8 @@
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
 		</member>
-		<member name="disable_2d" type="bool" setter="set_disable_2d" getter="is_2d_disabled" default="false">
-			If [code]true[/code], disables 2D rendering while keeping 3D rendering. See also [member disable_3d].
-		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
-			If [code]true[/code], disables 3D rendering while keeping 2D rendering. See also [member disable_2d].
+			Disable 3D rendering (but keep 2D rendering).
 		</member>
 		<member name="fsr_sharpness" type="float" setter="set_fsr_sharpness" getter="get_fsr_sharpness" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.

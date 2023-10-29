@@ -675,7 +675,7 @@ bool TabBar::select_previous_available() {
 		if (target_tab < 0) {
 			target_tab += get_tab_count();
 		}
-		if (!is_tab_disabled(target_tab)) {
+		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
 			set_current_tab(target_tab);
 			return true;
 		}
@@ -687,7 +687,7 @@ bool TabBar::select_next_available() {
 	const int offset_end = (get_tab_count() - get_current_tab());
 	for (int i = 1; i < offset_end; i++) {
 		int target_tab = (get_current_tab() + i) % get_tab_count();
-		if (!is_tab_disabled(target_tab)) {
+		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
 			set_current_tab(target_tab);
 			return true;
 		}
@@ -1100,6 +1100,23 @@ void TabBar::remove_tab(int p_idx) {
 		max_drawn_tab = 0;
 		previous = 0;
 	} else {
+		// Try to change to a valid tab if possible (without firing the `tab_selected` signal).
+		for (int i = current; i < tabs.size(); i++) {
+			if (!is_tab_disabled(i) && !is_tab_hidden(i)) {
+				current = i;
+				break;
+			}
+		}
+		// If nothing, try backwards.
+		if (is_tab_disabled(current) || is_tab_hidden(current)) {
+			for (int i = current - 1; i >= 0; i--) {
+				if (!is_tab_disabled(i) && !is_tab_hidden(i)) {
+					current = i;
+					break;
+				}
+			}
+		}
+
 		offset = MIN(offset, tabs.size() - 1);
 		max_drawn_tab = MIN(max_drawn_tab, tabs.size() - 1);
 

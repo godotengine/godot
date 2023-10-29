@@ -65,6 +65,9 @@ void GraphEditArranger::arrange_nodes() {
 	float gap_v = 100.0f;
 	float gap_h = 100.0f;
 
+	List<GraphEdit::Connection> connection_list;
+	graph_edit->get_connection_list(&connection_list);
+
 	for (int i = graph_edit->get_child_count() - 1; i >= 0; i--) {
 		GraphNode *graph_element = Object::cast_to<GraphNode>(graph_edit->get_child(i));
 		if (!graph_element) {
@@ -74,8 +77,6 @@ void GraphEditArranger::arrange_nodes() {
 		if (graph_element->is_selected() || arrange_entire_graph) {
 			selected_nodes.insert(graph_element->get_name());
 			HashSet<StringName> s;
-			List<GraphEdit::Connection> connection_list;
-			graph_edit->get_connection_list(&connection_list);
 			for (List<GraphEdit::Connection>::Element *E = connection_list.front(); E; E = E->next()) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from_node]);
 				if (E->get().to_node == graph_element->get_name() && (p_from->is_selected() || arrange_entire_graph) && E->get().to_node != E->get().from_node) {
@@ -85,12 +86,6 @@ void GraphEditArranger::arrange_nodes() {
 					String s_connection = String(p_from->get_name()) + " " + String(E->get().to_node);
 					StringName _connection(s_connection);
 					Pair<int, int> ports(E->get().from_port, E->get().to_port);
-					if (port_info.has(_connection)) {
-						Pair<int, int> p_ports = port_info[_connection];
-						if (p_ports.first < ports.first) {
-							ports = p_ports;
-						}
-					}
 					port_info.insert(_connection, ports);
 				}
 			}
@@ -216,13 +211,14 @@ int GraphEditArranger::_set_operations(SET_OPERATIONS p_operation, HashSet<Strin
 			return 1;
 		} break;
 		case GraphEditArranger::DIFFERENCE: {
-			for (HashSet<StringName>::Iterator E = r_u.begin(); E;) {
-				HashSet<StringName>::Iterator N = E;
-				++N;
-				if (r_v.has(*E)) {
-					r_u.remove(E);
+			Vector<StringName> common;
+			for (const StringName &E : r_u) {
+				if (r_v.has(E)) {
+					common.append(E);
 				}
-				E = N;
+			}
+			for (const StringName &E : common) {
+				r_u.erase(E);
 			}
 			return r_u.size();
 		} break;
@@ -260,9 +256,7 @@ HashMap<int, Vector<StringName>> GraphEditArranger::_layering(const HashSet<Stri
 				selected = true;
 				t.append_array(l[current_layer]);
 				l.insert(current_layer, t);
-				HashSet<StringName> V;
-				V.insert(E);
-				_set_operations(GraphEditArranger::UNION, u, V);
+				u.insert(E);
 			}
 		}
 		if (!selected) {
