@@ -283,6 +283,9 @@ int initialize_libudev(int verbose) {
   char *error;
   handle = dlopen("libudev.so.1", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libudev.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

@@ -628,6 +628,9 @@ int initialize_fontconfig(int verbose) {
   char *error;
   handle = dlopen("libfontconfig.so.1", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libfontconfig.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

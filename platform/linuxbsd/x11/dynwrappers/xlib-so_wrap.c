@@ -1830,6 +1830,9 @@ int initialize_xlib(int verbose) {
   char *error;
   handle = dlopen("libX11.so.6", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libX11.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }
