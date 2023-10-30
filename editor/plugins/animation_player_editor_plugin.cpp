@@ -1265,7 +1265,9 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 			player->seek(pos, true, true);
 			player->seek(pos + delta, true, true);
 		} else {
-			player->stop();
+			if (player->is_playing()) {
+				player->stop();
+			}
 			player->seek(pos, true, true);
 		}
 	}
