@@ -1300,7 +1300,11 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 				points.push_back(Vector3(-x, z, 0.0) + center_offset);
 			}
 			normals.push_back(normal);
-			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
+			if (orientation == FACE_X) {
+				ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
+			} else {
+				ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
+			}
 			uvs.push_back(Vector2(1.0 - u, 1.0 - v)); /* 1.0 - uv to match orientation with Quad */
 			point++;
 
