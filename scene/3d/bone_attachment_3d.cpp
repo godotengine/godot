@@ -349,6 +349,16 @@ void BoneAttachment3D::notify_skeleton_bones_renamed(Node *p_base_scene, Skeleto
 		}
 	}
 }
+
+void BoneAttachment3D::notify_rebind_required() {
+	// Ensures bindings are properly updated after a scene reload.
+	_check_unbind();
+	if (use_external_skeleton) {
+		_update_external_skeleton_cache();
+	}
+	bone_idx = -1;
+	_check_bind();
+}
 #endif // TOOLS_ENABLED
 
 BoneAttachment3D::BoneAttachment3D() {
