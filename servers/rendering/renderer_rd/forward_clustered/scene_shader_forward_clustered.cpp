@@ -122,6 +122,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["ROUGHNESS"] = &uses_roughness;
 	actions.usage_flag_pointers["NORMAL"] = &uses_normal;
 	actions.usage_flag_pointers["NORMAL_MAP"] = &uses_normal;
+	actions.usage_flag_pointers["SURFACE_NORMAL"] = &uses_normal;
 
 	actions.usage_flag_pointers["POINT_SIZE"] = &uses_point_size;
 	actions.usage_flag_pointers["POINT_COORD"] = &uses_point_size;
@@ -129,6 +130,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.write_flag_pointers["MODELVIEW_MATRIX"] = &writes_modelview_or_projection;
 	actions.write_flag_pointers["PROJECTION_MATRIX"] = &writes_modelview_or_projection;
 	actions.write_flag_pointers["VERTEX"] = &uses_vertex;
+	actions.write_flag_pointers["SURFACE_POSITION"] = &uses_vertex;
 	actions.write_flag_pointers["POSITION"] = &uses_position;
 
 	actions.uniforms = &uniforms;
@@ -563,6 +565,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
 		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
 
+		actions.renames["SURFACE_POSITION"] = "surface_pos";
+		actions.renames["SURFACE_NORMAL"] = "surface_normal";
+
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
 		actions.renames["ALPHA_HASH_SCALE"] = "alpha_hash_scale";
 		actions.renames["ALPHA_ANTIALIASING_EDGE"] = "alpha_antialiasing_edge";
@@ -660,6 +665,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
+
+		actions.usage_defines["SURFACE_POSITION"] = "#define SURFACE_POSITION_USED\n";
+		actions.usage_defines["SURFACE_NORMAL"] = "#define SURFACE_NORMAL_USED\n";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";
