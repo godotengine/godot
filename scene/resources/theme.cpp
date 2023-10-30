@@ -1240,6 +1240,11 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 		types.insert(E.key);
 	}
 
+	// Variations.
+	for (const KeyValue<StringName, StringName> &E : variation_map) {
+		types.insert(E.key);
+	}
+
 	for (const StringName &E : types) {
 		p_list->push_back(E);
 	}
