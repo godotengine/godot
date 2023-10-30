@@ -1621,8 +1621,10 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				encode_uint32(datalen, buf);
 				buf += 4;
 				const uint8_t *r = data.ptr();
-				memcpy(buf, &r[0], datalen * datasize);
-				buf += datalen * datasize;
+				if (r) {
+					memcpy(buf, &r[0], datalen * datasize);
+					buf += datalen * datasize;
+				}
 			}
 
 			r_len += 4 + datalen * datasize;
