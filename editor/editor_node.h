@@ -356,8 +356,6 @@ private:
 
 	uint64_t started_timestamp = 0;
 
-	PluginConfigDialog *plugin_config_dialog = nullptr;
-
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
 
