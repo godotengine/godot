@@ -623,6 +623,20 @@ void EditorNode::_notification(int p_what) {
 			ResourceImporterTexture::get_singleton()->update_imports();
 
 			bottom_panel_updating = false;
+
+			if (requested_first_scan) {
+				requested_first_scan = false;
+
+				OS::get_singleton()->benchmark_begin_measure("editor_scan_and_import");
+
+				if (run_surface_upgrade_tool) {
+					run_surface_upgrade_tool = false;
+					SurfaceUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
+					SurfaceUpgradeTool::get_singleton()->finish_upgrade();
+				} else {
+					EditorFileSystem::get_singleton()->scan();
+				}
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1041,6 +1055,10 @@ void EditorNode::_sources_changed(bool p_exist) {
 			OS::get_singleton()->benchmark_end_measure("editor_load_scene");
 
 			OS::get_singleton()->benchmark_dump();
+		}
+
+		if (SurfaceUpgradeTool::get_singleton()->is_show_requested()) {
+			SurfaceUpgradeTool::get_singleton()->show_popup();
 		}
 	}
 }
@@ -4615,8 +4633,10 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
 void EditorNode::_begin_first_scan() {
-	OS::get_singleton()->benchmark_begin_measure("editor_scan_and_import");
-	EditorFileSystem::get_singleton()->scan();
+	if (!waiting_for_first_scan) {
+		return;
+	}
+	requested_first_scan = true;
 }
 
 Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only) {
@@ -6809,6 +6829,13 @@ EditorNode::EditorNode() {
 
 	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
 
+	// Warm up the surface upgrade tool as early as possible.
+	surface_upgrade_tool = memnew(SurfaceUpgradeTool);
+	run_surface_upgrade_tool = EditorSettings::get_singleton()->get_project_metadata("surface_upgrade_tool", "run_on_restart", false);
+	if (run_surface_upgrade_tool) {
+		SurfaceUpgradeTool::get_singleton()->begin_upgrade();
+	}
+
 	{
 		int display_scale = EDITOR_GET("interface/editor/display_scale");
 
@@ -8051,8 +8078,6 @@ EditorNode::EditorNode() {
 	String exec = OS::get_singleton()->get_executable_path();
 	// Save editor executable path for third-party tools.
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec);
-
-	surface_upgrade_tool = memnew(SurfaceUpgradeTool);
 }
 
 EditorNode::~EditorNode() {

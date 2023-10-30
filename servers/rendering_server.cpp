@@ -2076,10 +2076,10 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 	}
 
 	if (warn_on_surface_upgrade) {
-		if (p_path.is_empty()) {
-			WARN_PRINT("A surface uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
-		} else {
-			WARN_PRINT("A surface of " + p_path + " uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
+		WARN_PRINT_ONCE_ED("At least one surface uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
+
+		if (!p_path.is_empty()) {
+			WARN_PRINT("A surface of " + p_path + " uses an old surface format and needs to be upgraded.");
 		}
 	}
 #endif
