@@ -76,7 +76,7 @@
 		</member>
 		<member name="interp_to_end" type="float" setter="set_interp_to_end" getter="get_interp_to_end" default="0.0">
 			Causes all the particles in this node to interpolate towards the end of their lifetime.
-			[b]Note[/b]: This only works when used with a [ParticleProcessMaterial]. It needs to be manually implemented for custom process shaders.
+			[b]Note:[/b] This only works when used with a [ParticleProcessMaterial]. It needs to be manually implemented for custom process shaders.
 		</member>
 		<member name="interpolate" type="bool" setter="set_interpolate" getter="get_interpolate" default="true">
 			Enables particle interpolation, which makes the particle movement smoother when their [member fixed_fps] is lower than the screen refresh rate.
