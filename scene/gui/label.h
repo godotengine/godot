@@ -161,6 +161,8 @@ public:
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
+	Rect2 get_character_bounds(int p_pos) const;
+
 	Label(const String &p_text = String());
 	~Label();
 };

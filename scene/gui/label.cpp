@@ -668,6 +668,127 @@ void Label::_notification(int p_what) {
 	}
 }
 
+Rect2 Label::get_character_bounds(int p_pos) const {
+	if (dirty || font_dirty || lines_dirty) {
+		const_cast<Label *>(this)->_shape();
+	}
+
+	bool has_settings = settings.is_valid();
+	Size2 size = get_size();
+	Ref<StyleBox> style = theme_cache.normal_style;
+	int line_spacing = has_settings ? settings->get_line_spacing() : theme_cache.line_spacing;
+	bool rtl = (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL);
+	bool rtl_layout = is_layout_rtl();
+
+	float total_h = 0.0;
+	int lines_visible = 0;
+
+	// Get number of lines to fit to the height.
+	for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
+		total_h += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
+		if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
+			break;
+		}
+		lines_visible++;
+	}
+
+	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
+		lines_visible = max_lines_visible;
+	}
+
+	int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
+
+	// Get real total height.
+	total_h = 0;
+	for (int64_t i = lines_skipped; i < last_line; i++) {
+		total_h += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
+	}
+
+	total_h += style->get_margin(SIDE_TOP) + style->get_margin(SIDE_BOTTOM);
+
+	int vbegin = 0, vsep = 0;
+	if (lines_visible > 0) {
+		switch (vertical_alignment) {
+			case VERTICAL_ALIGNMENT_TOP: {
+				// Nothing.
+			} break;
+			case VERTICAL_ALIGNMENT_CENTER: {
+				vbegin = (size.y - (total_h - line_spacing)) / 2;
+				vsep = 0;
+
+			} break;
+			case VERTICAL_ALIGNMENT_BOTTOM: {
+				vbegin = size.y - (total_h - line_spacing);
+				vsep = 0;
+
+			} break;
+			case VERTICAL_ALIGNMENT_FILL: {
+				vbegin = 0;
+				if (lines_visible > 1) {
+					vsep = (size.y - (total_h - line_spacing)) / (lines_visible - 1);
+				} else {
+					vsep = 0;
+				}
+
+			} break;
+		}
+	}
+
+	Vector2 ofs;
+	ofs.y = style->get_offset().y + vbegin;
+	for (int i = lines_skipped; i < last_line; i++) {
+		Size2 line_size = TS->shaped_text_get_size(lines_rid[i]);
+		ofs.x = 0;
+		switch (horizontal_alignment) {
+			case HORIZONTAL_ALIGNMENT_FILL:
+				if (rtl && autowrap_mode != TextServer::AUTOWRAP_OFF) {
+					ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
+				} else {
+					ofs.x = style->get_offset().x;
+				}
+				break;
+			case HORIZONTAL_ALIGNMENT_LEFT: {
+				if (rtl_layout) {
+					ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
+				} else {
+					ofs.x = style->get_offset().x;
+				}
+			} break;
+			case HORIZONTAL_ALIGNMENT_CENTER: {
+				ofs.x = int(size.width - line_size.width) / 2;
+			} break;
+			case HORIZONTAL_ALIGNMENT_RIGHT: {
+				if (rtl_layout) {
+					ofs.x = style->get_offset().x;
+				} else {
+					ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
+				}
+			} break;
+		}
+		int v_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
+		const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
+
+		float gl_off = 0.0f;
+		for (int j = 0; j < v_size; j++) {
+			if ((glyphs[j].count > 0) && ((glyphs[j].index != 0) || ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE))) {
+				if (p_pos >= glyphs[j].start && p_pos < glyphs[j].end) {
+					float advance = 0.f;
+					for (int k = 0; k < glyphs[j].count; k++) {
+						advance += glyphs[j + k].advance;
+					}
+					Rect2 rect;
+					rect.position = ofs + Vector2(gl_off, 0);
+					rect.size = Vector2(advance, TS->shaped_text_get_size(lines_rid[i]).y);
+					return rect;
+				}
+			}
+			gl_off += glyphs[j].advance * glyphs[j].repeat;
+		}
+		ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + TS->shaped_text_get_descent(lines_rid[i]) + vsep + line_spacing;
+	}
+	return Rect2();
+}
+
 Size2 Label::get_minimum_size() const {
 	// don't want to mutable everything
 	if (dirty || font_dirty || lines_dirty) {
@@ -1054,6 +1175,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &Label::get_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &Label::set_structured_text_bidi_override_options);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &Label::get_structured_text_bidi_override_options);
+
+	ClassDB::bind_method(D_METHOD("get_character_bounds", "pos"), &Label::get_character_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "label_settings", PROPERTY_HINT_RESOURCE_TYPE, "LabelSettings"), "set_label_settings", "get_label_settings");
