@@ -31,7 +31,6 @@
 #include "particle_process_material.h"
 
 #include "core/version.h"
-#include "scene/resources/curve_texture.h"
 
 Mutex ParticleProcessMaterial::material_mutex;
 SelfList<ParticleProcessMaterial>::List *ParticleProcessMaterial::dirty_materials = nullptr;
@@ -672,13 +671,18 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "	float orbit_amount = param.orbit_velocity;\n";
 
 			if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
-				code += "   orbit_amount *= texture(orbit_velocity_curve, vec2(lifetime)).r;\n";
+				CurveTexture *texture = Object::cast_to<CurveTexture>(tex_parameters[PARAM_ORBIT_VELOCITY].ptr());
+				if (texture) {
+					code += "   orbit_amount *= texture(orbit_velocity_curve, vec2(lifetime)).r;\n";
+				} else {
+					code += "   orbit_amount *= texture(orbit_velocity_curve, vec2(lifetime)).b;\n";
+				}
 			}
 			code += "	if (orbit_amount != 0.0) {\n";
 			code += "       vec3 pos = transform[3].xyz;\n";
 			code += "       vec3 org = emission_transform[3].xyz;\n";
 			code += "       vec3 diff = pos - org;\n";
-			code += "	     float ang = orbit_amount * pi * 2.0;\n";
+			code += "	     float ang = orbit_amount * pi * 2.0 * delta;\n";
 			code += "	     mat2 rot = mat2(vec2(cos(ang), -sin(ang)), vec2(sin(ang), cos(ang)));\n";
 			code += "	     displacement.xy -= diff.xy;\n";
 			code += "        displacement.xy += rot * diff.xy;\n";
@@ -687,8 +691,8 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "	vec3 orbit_velocities = vec3(param.orbit_velocity);\n";
 			code += "   orbit_velocities *= texture(orbit_velocity_curve, vec2(lifetime)).rgb;\n";
 
-			code += "	orbit_velocities *= degree_to_rad;\n";
-			code += "	orbit_velocities *= delta/total_lifetime; // we wanna process those by the delta angle\n";
+			code += "	orbit_velocities *= pi * 2.0;\n";
+			code += "	orbit_velocities *= delta; // we wanna process those by the delta angle\n";
 			code += "	//vec3 local_velocity_pivot = ((emission_transform) * vec4(velocity_pivot,1.0)).xyz;\n";
 			code += "	// X axis\n";
 			code += "	vec3 local_pos = (inverse(emission_transform) * transform[3]).xyz;\n";
@@ -719,7 +723,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "	local_pos -= velocity_pivot;\n";
 			code += "	local_pos.z = 0.;\n";
 			code += "	mat3 z_rotation_mat = mat3(\n";
-			code += "		vec3(cos(orbit_velocities.z),-sin(orbit_velocities.z),0.0),\n";
+			code += "		vec3(cos(orbit_velocities.z),sin(orbit_velocities.z),0.0),\n";
 			code += "		vec3(-sin(orbit_velocities.z),cos(orbit_velocities.z), 0.0),\n";
 			code += "		vec3(0.0,0.0,1.0)\n";
 			code += "	);\n";
@@ -1387,7 +1391,7 @@ void ParticleProcessMaterial::set_param_texture(Parameter p_param, const Ref<Tex
 		} break;
 		case PARAM_ORBIT_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->orbit_velocity_texture, tex_rid);
-			_adjust_curve_range(p_texture, -500, 500);
+			_adjust_curve_range(p_texture, -2, 2);
 			notify_property_list_changed();
 		} break;
 		case PARAM_LINEAR_ACCEL: {
@@ -2100,8 +2104,8 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_velocity_max", PROPERTY_HINT_RANGE, "-720,720,0.01,or_less,or_greater"), "set_param_max", "get_param_max", PARAM_DIRECTIONAL_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "directional_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveXYZTexture"), "set_param_texture", "get_param_texture", PARAM_DIRECTIONAL_VELOCITY);
 	ADD_SUBGROUP("Orbit Velocity", "orbit_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "orbit_velocity_min", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_less,or_greater"), "set_param_min", "get_param_min", PARAM_ORBIT_VELOCITY);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "orbit_velocity_max", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_less,or_greater"), "set_param_max", "get_param_max", PARAM_ORBIT_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "orbit_velocity_min", PROPERTY_HINT_RANGE, "-2,2,0.001,or_less,or_greater"), "set_param_min", "get_param_min", PARAM_ORBIT_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "orbit_velocity_max", PROPERTY_HINT_RANGE, "-2,2,0.001,or_less,or_greater"), "set_param_max", "get_param_max", PARAM_ORBIT_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "orbit_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture,CurveXYZTexture"), "set_param_texture", "get_param_texture", PARAM_ORBIT_VELOCITY);
 	ADD_SUBGROUP("Radial Velocity", "radial_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "radial_velocity_min", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_less,or_greater"), "set_param_min", "get_param_min", PARAM_RADIAL_VELOCITY);
