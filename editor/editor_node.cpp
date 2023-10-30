@@ -315,6 +315,7 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			FileSystemDock::get_singleton()->focus_on_filter();
+			get_tree()->get_root()->set_input_as_handled();
 		}
 
 		if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
