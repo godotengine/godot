@@ -615,6 +615,15 @@ void TreeItem::set_collapsed(bool p_collapsed) {
 		return;
 	}
 	collapsed = p_collapsed;
+
+	for (int i = 0; i < cells.size(); i++) {
+		cells.write[i].cached_minimum_size_dirty = true;
+	}
+
+	for (int i = 0; i < tree->columns.size(); i++) {
+		tree->columns.write[i].cached_minimum_width_dirty = true;
+	}
+
 	TreeItem *ci = tree->selected_item;
 	if (ci) {
 		while (ci && ci != this) {
@@ -1482,6 +1491,14 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 
 	if (cell.cached_minimum_size_dirty) {
 		Size2 size;
+
+		size.width += parent_tree->theme_cache.inner_item_margin_left + parent_tree->theme_cache.inner_item_margin_right;
+
+		if (p_column == 0 && !(disable_folding || parent_tree->hide_folding)) {
+			size.width += parent_tree->theme_cache.item_margin;
+		} else {
+			size.width += parent_tree->theme_cache.h_separation;
+		}
 
 		// Text.
 		if (!cell.text.is_empty()) {
@@ -4683,8 +4700,19 @@ int Tree::get_column_minimum_width(int p_column) const {
 			int depth = 0;
 			TreeItem *next;
 			for (TreeItem *item = get_root(); item; item = next) {
+				// Get the item minimum size.
+				Size2 item_size = item->get_minimum_size(p_column);
+				if (p_column == 0) {
+					item_size.width += theme_cache.item_margin * depth;
+				} else {
+					item_size.width += theme_cache.h_separation;
+				}
+
+				// Check if the item is wider.
+				min_width = MAX(min_width, item_size.width);
+
+				// Compute the depth of the next item.
 				next = item->get_next_visible();
-				// Compute the depth in tree.
 				if (next && p_column == 0) {
 					if (next->get_parent() == item) {
 						depth += 1;
@@ -4696,17 +4724,6 @@ int Tree::get_column_minimum_width(int p_column) const {
 						}
 					}
 				}
-
-				// Get the item minimum size.
-				Size2 item_size = item->get_minimum_size(p_column);
-				if (p_column == 0) {
-					item_size.width += theme_cache.item_margin * depth;
-				} else {
-					item_size.width += theme_cache.h_separation;
-				}
-
-				// Check if the item is wider.
-				min_width = MAX(min_width, item_size.width);
 			}
 		}
 
