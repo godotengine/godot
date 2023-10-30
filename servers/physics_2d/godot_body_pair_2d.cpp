@@ -604,5 +604,7 @@ GodotBodyPair2D::GodotBodyPair2D(GodotBody2D *p_A, int p_shape_A, GodotBody2D *p
 
 GodotBodyPair2D::~GodotBodyPair2D() {
 	A->remove_constraint(this, 0);
+	A->wakeup();
 	B->remove_constraint(this, 1);
+	B->wakeup();
 }

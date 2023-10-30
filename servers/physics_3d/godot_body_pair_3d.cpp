@@ -608,7 +608,9 @@ GodotBodyPair3D::GodotBodyPair3D(GodotBody3D *p_A, int p_shape_A, GodotBody3D *p
 
 GodotBodyPair3D::~GodotBodyPair3D() {
 	A->remove_constraint(this);
+	A->wakeup();
 	B->remove_constraint(this);
+	B->wakeup();
 }
 
 void GodotBodySoftBodyPair3D::_contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
@@ -984,5 +986,6 @@ GodotBodySoftBodyPair3D::GodotBodySoftBodyPair3D(GodotBody3D *p_A, int p_shape_A
 
 GodotBodySoftBodyPair3D::~GodotBodySoftBodyPair3D() {
 	body->remove_constraint(this);
+	body->wakeup();
 	soft_body->remove_constraint(this);
 }
