@@ -3072,8 +3072,12 @@ void TileMap::_internal_update() {
 		return;
 	}
 
+	// FIXME: This should only clear polygons that are no longer going to be used, but since it's difficult to determine,
+	// the cache is never cleared at runtime to prevent invalidating used polygons.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		polygon_cache.clear();
+	}
 	// Update dirty quadrants on layers.
-	polygon_cache.clear();
 	for (Ref<TileMapLayer> &layer : layers) {
 		layer->internal_update();
 	}
