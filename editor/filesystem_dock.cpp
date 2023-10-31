@@ -1790,7 +1790,9 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 	if (new_exist) {
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
-		ti->set_text(col_index, old_name);
+		if (ti) {
+			ti->set_text(col_index, old_name);
+		}
 		return;
 	}
 
