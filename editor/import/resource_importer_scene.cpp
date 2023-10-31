@@ -1954,6 +1954,12 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	}
 }
 
+void ResourceImporterScene::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+		importer_elem->handle_compatibility_options(p_import_params);
+	}
+}
+
 void ResourceImporterScene::_replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner) {
 	if (p_node != p_new_owner && p_node->get_owner() == p_scene) {
 		p_node->set_owner(p_new_owner);
@@ -2658,10 +2664,10 @@ ResourceImporterScene *ResourceImporterScene::animation_singleton = nullptr;
 Vector<Ref<EditorSceneFormatImporter>> ResourceImporterScene::importers;
 Vector<Ref<EditorScenePostImportPlugin>> ResourceImporterScene::post_importer_plugins;
 
-bool ResourceImporterScene::ResourceImporterScene::has_advanced_options() const {
+bool ResourceImporterScene::has_advanced_options() const {
 	return true;
 }
-void ResourceImporterScene::ResourceImporterScene::show_advanced_options(const String &p_path) {
+void ResourceImporterScene::show_advanced_options(const String &p_path) {
 	SceneImportSettings::get_singleton()->open_settings(p_path, animation_importer);
 }
 
