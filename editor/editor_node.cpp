@@ -2317,7 +2317,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	}
 
 	// Update the use folding setting and state.
-	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
+	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding")) || current_obj->is_class("EditorDebuggerRemoteObject");
 	if (InspectorDock::get_inspector_singleton()->is_using_folding() == disable_folding) {
 		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding, false);
 	}
@@ -2393,9 +2393,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	} else {
 		Node *selected_node = nullptr;
 
-		if (current_obj->is_class("EditorDebuggerRemoteObject")) {
-			disable_folding = true;
-		} else if (current_obj->is_class("MultiNodeEdit")) {
+		if (current_obj->is_class("MultiNodeEdit")) {
 			Node *scene = get_edited_scene();
 			if (scene) {
 				MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(current_obj);
