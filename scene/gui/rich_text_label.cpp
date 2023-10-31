@@ -1219,7 +1219,14 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
 			Color font_color = _find_color(it, p_base_color);
 			if (_find_underline(it) || (_find_meta(it, nullptr) && underline_meta)) {
-				if (!ul_started) {
+				if (ul_started && font_color != ul_color) {
+					float y_off = TS->shaped_text_get_underline_position(rid);
+					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
+					draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
+					ul_start = p_ofs + Vector2(off.x, off.y);
+					ul_color = font_color;
+					ul_color.a *= 0.5;
+				} else if (!ul_started) {
 					ul_started = true;
 					ul_start = p_ofs + Vector2(off.x, off.y);
 					ul_color = font_color;
@@ -1232,7 +1239,14 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
 			}
 			if (_find_hint(it, nullptr) && underline_hint) {
-				if (!dot_ul_started) {
+				if (dot_ul_started && font_color != dot_ul_color) {
+					float y_off = TS->shaped_text_get_underline_position(rid);
+					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
+					draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
+					dot_ul_start = p_ofs + Vector2(off.x, off.y);
+					dot_ul_color = font_color;
+					dot_ul_color.a *= 0.5;
+				} else if (!dot_ul_started) {
 					dot_ul_started = true;
 					dot_ul_start = p_ofs + Vector2(off.x, off.y);
 					dot_ul_color = font_color;
@@ -1245,7 +1259,14 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
 			}
 			if (_find_strikethrough(it)) {
-				if (!st_started) {
+				if (st_started && font_color != st_color) {
+					float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
+					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
+					draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), st_color, underline_width);
+					st_start = p_ofs + Vector2(off.x, off.y);
+					st_color = font_color;
+					st_color.a *= 0.5;
+				} else if (!st_started) {
 					st_started = true;
 					st_start = p_ofs + Vector2(off.x, off.y);
 					st_color = font_color;
