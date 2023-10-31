@@ -1380,7 +1380,7 @@ void ParticleProcessMaterial::set_param_texture(Parameter p_param, const Ref<Tex
 
 	tex_parameters[p_param] = p_texture;
 
-	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 
 	switch (p_param) {
 		case PARAM_INITIAL_LINEAR_VELOCITY: {
@@ -1476,7 +1476,7 @@ Color ParticleProcessMaterial::get_color() const {
 
 void ParticleProcessMaterial::set_color_ramp(const Ref<Texture2D> &p_texture) {
 	color_ramp = p_texture;
-	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->color_ramp, tex_rid);
 	_queue_shader_change();
 	notify_property_list_changed();
@@ -1488,7 +1488,7 @@ Ref<Texture2D> ParticleProcessMaterial::get_color_ramp() const {
 
 void ParticleProcessMaterial::set_color_initial_ramp(const Ref<Texture2D> &p_texture) {
 	color_initial_ramp = p_texture;
-	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->color_initial_ramp, tex_rid);
 	_queue_shader_change();
 	notify_property_list_changed();
@@ -1509,7 +1509,7 @@ void ParticleProcessMaterial::set_particle_flag(ParticleFlags p_particle_flag, b
 
 void ParticleProcessMaterial::set_alpha_curve(const Ref<Texture2D> &p_texture) {
 	alpha_curve = p_texture;
-	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->alpha_ramp, tex_rid);
 	_queue_shader_change();
 	notify_property_list_changed();
@@ -1521,7 +1521,7 @@ Ref<Texture2D> ParticleProcessMaterial::get_alpha_curve() const {
 
 void ParticleProcessMaterial::set_emission_curve(const Ref<Texture2D> &p_texture) {
 	emission_curve = p_texture;
-	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ramp, tex_rid);
 	_queue_shader_change();
 	notify_property_list_changed();
@@ -1533,7 +1533,7 @@ Ref<Texture2D> ParticleProcessMaterial::get_emission_curve() const {
 
 void ParticleProcessMaterial::set_velocity_limit_curve(const Ref<Texture2D> &p_texture) {
 	velocity_limit_curve = p_texture;
-	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->velocity_limit_curve, tex_rid);
 	_queue_shader_change();
 	notify_property_list_changed();
@@ -1567,19 +1567,19 @@ void ParticleProcessMaterial::set_emission_box_extents(Vector3 p_extents) {
 
 void ParticleProcessMaterial::set_emission_point_texture(const Ref<Texture2D> &p_points) {
 	emission_point_texture = p_points;
-	RID tex_rid = p_points.is_valid() ? p_points->get_rid() : RID();
+	Variant tex_rid = p_points.is_valid() ? Variant(p_points->get_rid()) : Variant();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_points, tex_rid);
 }
 
 void ParticleProcessMaterial::set_emission_normal_texture(const Ref<Texture2D> &p_normals) {
 	emission_normal_texture = p_normals;
-	RID tex_rid = p_normals.is_valid() ? p_normals->get_rid() : RID();
+	Variant tex_rid = p_normals.is_valid() ? Variant(p_normals->get_rid()) : Variant();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_normal, tex_rid);
 }
 
 void ParticleProcessMaterial::set_emission_color_texture(const Ref<Texture2D> &p_colors) {
 	emission_color_texture = p_colors;
-	RID tex_rid = p_colors.is_valid() ? p_colors->get_rid() : RID();
+	Variant tex_rid = p_colors.is_valid() ? Variant(p_colors->get_rid()) : Variant();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_color, tex_rid);
 	_queue_shader_change();
 }
