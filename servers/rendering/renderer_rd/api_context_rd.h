@@ -58,7 +58,7 @@ public:
 
 	virtual void set_setup_buffer(RDD::CommandBufferID p_command_buffer) = 0;
 	virtual void append_command_buffer(RDD::CommandBufferID p_command_buffer) = 0;
-	virtual void flush(bool p_flush_setup = false, bool p_flush_pending = false) = 0;
+	virtual void flush(bool p_flush_setup = false, bool p_flush_pending = false, bool p_sync = true) = 0;
 	virtual Error prepare_buffers(RDD::CommandBufferID p_command_buffer) = 0;
 	virtual void postpare_buffers(RDD::CommandBufferID p_command_buffer) = 0;
 	virtual Error swap_buffers() = 0;
