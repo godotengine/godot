@@ -432,13 +432,13 @@ static String _get_global_shader_uniform_from_type_and_index(const String &p_buf
 			return "(" + p_buffer + "[" + p_index + "].xyzw)";
 		}
 		case ShaderLanguage::TYPE_MAT2: {
-			return "mat2(" + p_buffer + "[" + p_index + "].xy," + p_buffer + "[" + p_index + "+1].xy)";
+			return "mat2(" + p_buffer + "[" + p_index + "].xy," + p_buffer + "[" + p_index + "+1u].xy)";
 		}
 		case ShaderLanguage::TYPE_MAT3: {
-			return "mat3(" + p_buffer + "[" + p_index + "].xyz," + p_buffer + "[" + p_index + "+1].xyz," + p_buffer + "[" + p_index + "+2].xyz)";
+			return "mat3(" + p_buffer + "[" + p_index + "].xyz," + p_buffer + "[" + p_index + "+1u].xyz," + p_buffer + "[" + p_index + "+2u].xyz)";
 		}
 		case ShaderLanguage::TYPE_MAT4: {
-			return "mat4(" + p_buffer + "[" + p_index + "].xyzw," + p_buffer + "[" + p_index + "+1].xyzw," + p_buffer + "[" + p_index + "+2].xyzw," + p_buffer + "[" + p_index + "+3].xyzw)";
+			return "mat4(" + p_buffer + "[" + p_index + "].xyzw," + p_buffer + "[" + p_index + "+1u].xyzw," + p_buffer + "[" + p_index + "+2u].xyzw," + p_buffer + "[" + p_index + "+3u].xyzw)";
 		}
 		default: {
 			ERR_FAIL_V("void");
