@@ -2368,33 +2368,39 @@
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
 		</member>
-		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="">
 			Sets the driver to be used by the renderer when using the Compatibility renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
 		</member>
-		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="">
 			Android override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="">
 			iOS override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="">
 			LinuxBSD override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="">
 			macOS override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="">
 			Web override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="">
 			Windows override for [member rendering/gl_compatibility/driver].
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_angle" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
+			[b]Note:[/b] This setting is implemented only on Windows.
+		</member>
+		<member name="rendering/gl_compatibility/fallback_to_native" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the compatibility renderer will fall back to native OpenGL if ANGLE over Metal is not supported.
+			[b]Note:[/b] This setting is implemented only on macOS.
 		</member>
 		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="" default="[]">
 			An [Array] of devices which should always use the ANGLE renderer.
 			Each entry is a [Dictionary] with the following keys: [code]vendor[/code] and [code]name[/code]. [code]name[/code] can be set to [code]*[/code] to add all devices with the specified [code]vendor[/code].
+			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="rendering/gl_compatibility/item_buffer_size" type="int" setter="" getter="" default="16384">
 			Maximum number of canvas items commands that can be drawn in a single viewport update. If more render commands are issued they will be ignored. Decreasing this limit may improve performance on bandwidth limited devices. Increase this limit if you find that not all objects are being drawn in a frame.
@@ -2605,22 +2611,22 @@
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
 			Override for [member rendering/renderer/rendering_method] on web.
 		</member>
-		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver" type="String" setter="" getter="">
 			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the clustered renderer or the mobile renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
 		</member>
-		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="">
 			Android override for [member rendering/rendering_device/driver].
 		</member>
-		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="">
 			iOS override for [member rendering/rendering_device/driver].
 		</member>
-		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="">
 			LinuxBSD override for [member rendering/rendering_device/driver].
 		</member>
-		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="">
 			macOS override for [member rendering/rendering_device/driver].
 		</member>
-		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="">
 			Windows override for [member rendering/rendering_device/driver].
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/save_chunk_size_mb" type="float" setter="" getter="" default="3.0">
