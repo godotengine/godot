@@ -355,20 +355,27 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	return default_value;
 }
 
-void DocTools::generate(bool p_basic_types) {
+void DocTools::generate(BitField<GenerateFlags> p_flags) {
+	// This may involve instantiating classes that are only usable from the main thread
+	// (which is in fact the case of the core API).
+	ERR_FAIL_COND(!Thread::is_main_thread());
+
 	// Add ClassDB-exposed classes.
 	{
 		List<StringName> classes;
-		ClassDB::get_class_list(&classes);
-		classes.sort_custom<StringName::AlphCompare>();
-		// Move ProjectSettings, so that other classes can register properties there.
-		classes.move_to_back(classes.find("ProjectSettings"));
+		if (p_flags.has_flag(GENERATE_FLAG_EXTENSION_CLASSES_ONLY)) {
+			ClassDB::get_extensions_class_list(&classes);
+		} else {
+			ClassDB::get_class_list(&classes);
+			// Move ProjectSettings, so that other classes can register properties there.
+			classes.move_to_back(classes.find("ProjectSettings"));
+		}
 
 		bool skip_setter_getter_methods = true;
 
 		// Populate documentation data for each exposed class.
 		while (classes.size()) {
-			String name = classes.front()->get();
+			const String &name = classes.front()->get();
 			if (!ClassDB::is_class_exposed(name)) {
 				print_verbose(vformat("Class '%s' is not exposed, skipping.", name));
 				classes.pop_front();
@@ -675,17 +682,16 @@ void DocTools::generate(bool p_basic_types) {
 		}
 	}
 
+	if (p_flags.has_flag(GENERATE_FLAG_SKIP_BASIC_TYPES)) {
+		return;
+	}
+
 	// Add a dummy Variant entry.
 	{
 		// This allows us to document the concept of Variant even though
 		// it's not a ClassDB-exposed class.
 		class_list["Variant"] = DocData::ClassDoc();
 		class_list["Variant"].name = "Variant";
-	}
-
-	// If we don't want to populate basic types, break here.
-	if (!p_basic_types) {
-		return;
 	}
 
 	// Add Variant data types.

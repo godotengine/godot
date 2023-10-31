@@ -2767,7 +2767,7 @@ bool Main::start() {
 
 #ifdef TOOLS_ENABLED
 	String doc_tool_path;
-	bool doc_base = true;
+	BitField<DocTools::GenerateFlags> gen_flags;
 	String _export_preset;
 	bool export_debug = false;
 	bool export_pack_only = false;
@@ -2792,7 +2792,7 @@ bool Main::start() {
 			check_only = true;
 #ifdef TOOLS_ENABLED
 		} else if (args[i] == "--no-docbase") {
-			doc_base = false;
+			gen_flags.set_flag(DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES);
 #ifndef DISABLE_DEPRECATED
 		} else if (args[i] == "--convert-3to4") {
 			converting_project = true;
@@ -2903,7 +2903,7 @@ bool Main::start() {
 
 		Error err;
 		DocTools doc;
-		doc.generate(doc_base);
+		doc.generate(gen_flags);
 
 		DocTools docsrc;
 		HashMap<String, String> doc_data_classes;
