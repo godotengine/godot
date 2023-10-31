@@ -2497,6 +2497,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 	glDisable(GL_BLEND);
 	texture_storage->render_target_disable_clear_request(rb->render_target);
+
+	glActiveTexture(GL_TEXTURE0);
 }
 
 template <PassMode p_pass_mode>
