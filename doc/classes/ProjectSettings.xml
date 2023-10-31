@@ -569,6 +569,7 @@
 		</member>
 		<member name="debug/gdscript/warnings/untyped_declaration" type="int" setter="" getter="" default="0">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable or parameter has no static type, or if a function has no static return type.
+			[b]Note:[/b] This warning is recommended together with [member EditorSettings.text_editor/completion/add_type_hints] to help achieve type safety.
 		</member>
 		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local constant is never used.
@@ -843,6 +844,9 @@
 		</member>
 		<member name="display/window/stretch/scale_mode" type="String" setter="" getter="" default="&quot;fractional&quot;">
 			The policy to use to determine the final scale factor for 2D elements. This affects how [member display/window/stretch/scale] is applied, in addition to the automatic scale factor determined by [member display/window/stretch/mode].
+			[b]"fractional"[/b]: The scale factor will not be modified.
+			[b]"integer"[/b]: The scale factor will be floored to an integer value, which means that the screen size will always be an integer multiple of the base viewport size. This provides a crisp pixel art appearance.
+			[b]Note:[/b] When using integer scaling with a stretch mode, resizing the window to be smaller than the base viewport size will clip the contents. Consider preventing that by setting [member Window.min_size] to the same value as the base viewport size defined in [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 		</member>
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
 			If [code]true[/code] subwindows are embedded in the main window.

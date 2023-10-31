@@ -573,6 +573,11 @@ void CSGShape3D::_notification(int p_what) {
 				// Update this node's parent only if its own visibility has changed, not the visibility of parent nodes
 				parent_shape->_make_dirty();
 			}
+			if (is_visible()) {
+				_update_debug_collision_shape();
+			} else {
+				_clear_debug_collision_shape();
+			}
 			last_visible = is_visible();
 		} break;
 

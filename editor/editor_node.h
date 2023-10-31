@@ -356,8 +356,6 @@ private:
 
 	uint64_t started_timestamp = 0;
 
-	PluginConfigDialog *plugin_config_dialog = nullptr;
-
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
 
@@ -691,6 +689,8 @@ private:
 	void _bottom_panel_raise_toggled(bool);
 
 	void _begin_first_scan();
+
+	void _notify_scene_updated(Node *p_node);
 
 protected:
 	friend class FileSystemDock;
