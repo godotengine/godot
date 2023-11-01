@@ -40,7 +40,10 @@
 Error Expression::_get_token(Token &r_token) {
 	while (true) {
 #define GET_CHAR() (str_ofs >= expression.length() ? 0 : expression[str_ofs++])
-
+#define NEXT_CHAR() (str_ofs >= expression.length() ? 0 : expression[str_ofs])
+#define CURRENT_CHAR() (str_ofs <= 0 ? 0 : expression[str_ofs - 1])
+#define LAST_CHAR() (str_ofs <= 1 ? 0 : expression[str_ofs - 2])
+#define HAS_UNDERSCORE_NEIGHBOR() (is_underscore(LAST_CHAR()) || is_underscore(NEXT_CHAR()))
 		char32_t cchar = GET_CHAR();
 
 		switch (cchar) {
@@ -328,8 +331,7 @@ Error Expression::_get_token(Token &r_token) {
 					break;
 				}
 
-				char32_t next_char = (str_ofs >= expression.length()) ? 0 : expression[str_ofs];
-				if (is_digit(cchar) || (cchar == '.' && is_digit(next_char))) {
+				if (is_digit(cchar) || (cchar == '.' && is_digit(NEXT_CHAR()))) {
 					//a number
 
 					String num;
@@ -355,36 +357,56 @@ Error Expression::_get_token(Token &r_token) {
 							case READING_INT: {
 								if (is_digit(c)) {
 									if (is_first_char && c == '0') {
-										if (next_char == 'b') {
+										if (NEXT_CHAR() == 'b') {
 											reading = READING_BIN;
-										} else if (next_char == 'x') {
+										} else if (NEXT_CHAR() == 'x') {
 											reading = READING_HEX;
 										}
 									}
 								} else if (c == '.') {
+									if (HAS_UNDERSCORE_NEIGHBOR()) {
+										_set_error("Cannot put underscores adjacent to a decimal point.");
+										r_token.type = TK_ERROR;
+										return ERR_PARSE_ERROR;
+									}
 									reading = READING_DEC;
 									is_float = true;
 								} else if (c == 'e') {
+									if (HAS_UNDERSCORE_NEIGHBOR()) {
+										_set_error("Cannot put underscores adjacent to an exponent.");
+										r_token.type = TK_ERROR;
+										return ERR_PARSE_ERROR;
+									}
 									reading = READING_EXP;
 									is_float = true;
-								} else {
+								} else if (!is_underscore(c)) {
 									reading = READING_DONE;
 								}
 
 							} break;
 							case READING_BIN: {
-								if (bin_beg && !is_binary_digit(c)) {
+								if (bin_beg && !is_binary_digit(c) && !is_underscore(c)) {
 									reading = READING_DONE;
 								} else if (c == 'b') {
 									bin_beg = true;
+									if (HAS_UNDERSCORE_NEIGHBOR()) {
+										_set_error("cannot put underscores in the 0b radix prefix.");
+										r_token.type = TK_ERROR;
+										return ERR_PARSE_ERROR;
+									}
 								}
 
 							} break;
 							case READING_HEX: {
-								if (hex_beg && !is_hex_digit(c)) {
+								if (hex_beg && !is_hex_digit(c) && !is_underscore(c)) {
 									reading = READING_DONE;
 								} else if (c == 'x') {
 									hex_beg = true;
+									if (HAS_UNDERSCORE_NEIGHBOR()) {
+										_set_error("cannot put underscores in the 0x radix prefix.");
+										r_token.type = TK_ERROR;
+										return ERR_PARSE_ERROR;
+									}
 								}
 
 							} break;
@@ -392,8 +414,12 @@ Error Expression::_get_token(Token &r_token) {
 								if (is_digit(c)) {
 								} else if (c == 'e') {
 									reading = READING_EXP;
-
-								} else {
+									if (HAS_UNDERSCORE_NEIGHBOR()) {
+										_set_error("Cannot put underscores adjacent to an exponent.");
+										r_token.type = TK_ERROR;
+										return ERR_PARSE_ERROR;
+									}
+								} else if (!is_underscore(c)) {
 									reading = READING_DONE;
 								}
 
@@ -404,8 +430,12 @@ Error Expression::_get_token(Token &r_token) {
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
 									exp_sign = true;
-
-								} else {
+									if (HAS_UNDERSCORE_NEIGHBOR()) {
+										_set_error("Cannot put underscores adjacent to a sign.");
+										r_token.type = TK_ERROR;
+										return ERR_PARSE_ERROR;
+									}
+								} else if (!is_underscore(c)) {
 									reading = READING_DONE;
 								}
 							} break;
@@ -414,15 +444,24 @@ Error Expression::_get_token(Token &r_token) {
 						if (reading == READING_DONE) {
 							break;
 						}
-						num += String::chr(c);
+						if (!is_underscore(c)) {
+							num += String::chr(c);
+						}
 						c = GET_CHAR();
 						is_first_char = false;
 					}
 
-					str_ofs--;
+					if (str_ofs < expression.length() || c != 0) {
+						str_ofs--;
+					}
 
 					r_token.type = TK_CONSTANT;
-
+					// no underscores after a number
+					if (is_underscore(CURRENT_CHAR())) {
+						_set_error("Cannot put underscores at the end of a number.");
+						r_token.type = TK_ERROR;
+						return ERR_PARSE_ERROR;
+					}
 					if (is_float) {
 						r_token.value = num.to_float();
 					} else if (bin_beg) {
@@ -510,6 +549,10 @@ Error Expression::_get_token(Token &r_token) {
 			}
 		}
 #undef GET_CHAR
+#undef NEXT_CHAR
+#undef CURRENT_CHAR
+#undef LAST_CHAR
+#undef HAS_UNDERSCORE_NEIGHBOR
 	}
 
 	r_token.type = TK_ERROR;
@@ -1481,6 +1524,10 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 
 	expression = p_expression;
 	root = _parse_expression();
+
+	if (str_ofs < expression.length()) {
+		_set_error("Unexpected token at end of expression.");
+	}
 
 	if (error_set) {
 		root = nullptr;
