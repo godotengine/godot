@@ -153,8 +153,8 @@
 			<return type="Dictionary" />
 			<description>
 				Returns the current time zone as a dictionary of keys: [code]bias[/code] and [code]name[/code]. 
-				- [code]bias[/code] is the offset from UTC in minutes, since not all time zones are multiples of an hour from UTC. 
-				- [code]name[/code] is localized according to the current user default UI language.
+				- [code]bias[/code] is the offset from UTC in minutes, since not all time zones are multiples of an hour from UTC.
+				- [code]name[/code] is the localized name of the time zone, according to the OS locale settings of the current user.
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime_dict" qualifiers="const">
