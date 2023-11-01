@@ -384,6 +384,7 @@
 			A [CurveTexture] that defines the maximum velocity of a particle during its lifetime.
 		</member>
 		<member name="velocity_pivot" type="Vector3" setter="set_velocity_pivot" getter="get_velocity_pivot" default="Vector3(0, 0, 0)">
+			A pivot point used to calculate radial and orbital velocity of particles.
 		</member>
 	</members>
 	<constants>
