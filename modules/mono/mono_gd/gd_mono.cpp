@@ -556,12 +556,6 @@ GDMono::GDMono() {
 GDMono::~GDMono() {
 	finalizing_scripts_domain = true;
 
-	if (is_runtime_initialized()) {
-		if (GDMonoCache::godot_api_cache_updated) {
-			GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
-		}
-	}
-
 	if (hostfxr_dll_handle) {
 		OS::get_singleton()->close_dynamic_library(hostfxr_dll_handle);
 	}

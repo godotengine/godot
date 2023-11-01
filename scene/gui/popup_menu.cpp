@@ -1487,6 +1487,7 @@ void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, cons
 }
 
 void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu, int p_id) {
+	ERR_FAIL_COND_MSG(p_submenu.validate_node_name() != p_submenu, "Invalid node name for submenu, the following characters are not allowed:\n" + String::get_invalid_node_name_characters());
 	Item item;
 	item.text = p_label;
 	item.xl_text = atr(p_label);

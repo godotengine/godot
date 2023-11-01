@@ -142,6 +142,10 @@ void CSharpLanguage::finalize() {
 		return;
 	}
 
+	if (gdmono && gdmono->is_runtime_initialized() && GDMonoCache::godot_api_cache_updated) {
+		GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
+	}
+
 	finalizing = true;
 
 	// Make sure all script binding gchandles are released before finalizing GDMono

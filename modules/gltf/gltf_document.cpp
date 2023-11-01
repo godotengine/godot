@@ -5846,6 +5846,10 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 		BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
 
 		p_scene_parent->add_child(bone_attachment, true);
+
+		// Find the correct bone_idx so we can properly serialize it.
+		bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+
 		bone_attachment->set_owner(p_scene_root);
 
 		// There is no gltf_node that represent this, so just directly create a unique name
@@ -5949,6 +5953,10 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 			BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, p_node_index);
 
 			p_scene_parent->add_child(bone_attachment, true);
+
+			// Find the correct bone_idx so we can properly serialize it.
+			bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+
 			bone_attachment->set_owner(p_scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name

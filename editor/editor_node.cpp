@@ -47,6 +47,7 @@
 #include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "main/main.h"
+#include "scene/3d/bone_attachment_3d.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
@@ -315,6 +316,7 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			FileSystemDock::get_singleton()->focus_on_filter();
+			get_tree()->get_root()->set_input_as_handled();
 		}
 
 		if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
@@ -826,12 +828,12 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	if (scr.is_null()) {
 		return;
 	}
-	if (p_activate_name.length()) {
-		set_addon_plugin_enabled(p_activate_name, true);
-	}
 	project_settings_editor->update_plugins();
 	project_settings_editor->hide();
 	push_item(scr.operator->());
+	if (p_activate_name.length()) {
+		set_addon_plugin_enabled(p_activate_name, true);
+	}
 }
 
 void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
@@ -2316,7 +2318,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	}
 
 	// Update the use folding setting and state.
-	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
+	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding")) || current_obj->is_class("EditorDebuggerRemoteObject");
 	if (InspectorDock::get_inspector_singleton()->is_using_folding() == disable_folding) {
 		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding, false);
 	}
@@ -2392,9 +2394,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	} else {
 		Node *selected_node = nullptr;
 
-		if (current_obj->is_class("EditorDebuggerRemoteObject")) {
-			disable_folding = true;
-		} else if (current_obj->is_class("MultiNodeEdit")) {
+		if (current_obj->is_class("MultiNodeEdit")) {
 			Node *scene = get_edited_scene();
 			if (scene) {
 				MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(current_obj);
@@ -6067,6 +6067,27 @@ void EditorNode::_file_access_close_error_notify_impl(const String &p_str) {
 	add_io_error(vformat(TTR("Unable to write to file '%s', file in use, locked or lacking permissions."), p_str));
 }
 
+// Since we felt that a bespoke NOTIFICATION might not be desirable, this function
+// provides the hardcoded callbacks to address known bugs which occur on certain
+// nodes during reimport.
+// Ideally, we should probably agree on a standardized method name which could be
+// called from here instead.
+void EditorNode::_notify_scene_updated(Node *p_node) {
+	Skeleton3D *skel_3d = Object::cast_to<Skeleton3D>(p_node);
+	if (skel_3d) {
+		skel_3d->reset_bone_poses();
+	} else {
+		BoneAttachment3D *attachment = Object::cast_to<BoneAttachment3D>(p_node);
+		if (attachment) {
+			attachment->notify_rebind_required();
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_notify_scene_updated(p_node->get_child(i));
+	}
+}
+
 void EditorNode::reload_scene(const String &p_path) {
 	int scene_idx = -1;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
@@ -6450,10 +6471,11 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 					}
 				}
 			}
+
 			// Cleanup the history of the changes.
 			editor_history.cleanup_history();
 
-			current_edited_scene->propagate_notification(NOTIFICATION_NODE_RECACHE_REQUESTED);
+			_notify_scene_updated(current_edited_scene);
 		}
 		edited_scene_map.clear();
 	}
@@ -7349,10 +7371,6 @@ EditorNode::EditorNode() {
 	project_menu->add_item(TTR("Customize Engine Build Configuration..."), TOOLS_BUILD_PROFILE_MANAGER);
 	project_menu->add_separator();
 
-	plugin_config_dialog = memnew(PluginConfigDialog);
-	plugin_config_dialog->connect("plugin_ready", callable_mp(this, &EditorNode::_on_plugin_ready));
-	gui_base->add_child(plugin_config_dialog);
-
 	tool_menu = memnew(PopupMenu);
 	tool_menu->set_name("Tools");
 	tool_menu->connect("index_pressed", callable_mp(this, &EditorNode::_tool_menu_option));
@@ -8052,6 +8070,17 @@ EditorNode::~EditorNode() {
 
 	GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
 	GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;
+
+	FileDialog::get_icon_func = nullptr;
+	FileDialog::register_func = nullptr;
+	FileDialog::unregister_func = nullptr;
+
+	EditorFileDialog::get_icon_func = nullptr;
+	EditorFileDialog::register_func = nullptr;
+	EditorFileDialog::unregister_func = nullptr;
+
+	file_dialogs.clear();
+	editor_file_dialogs.clear();
 
 	singleton = nullptr;
 }

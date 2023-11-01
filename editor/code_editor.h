@@ -110,6 +110,8 @@ protected:
 	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 	void _focus_lost();
 
+	void _update_flags(bool p_direction_backwards);
+
 	bool _search(uint32_t p_flags, int p_from_line, int p_from_col);
 
 	void _replace();

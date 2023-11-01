@@ -400,7 +400,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 		max_val = max_val.abs().max(min_val.abs());
 		max_val2 = max_val2.abs().max(min_val2.abs());
 
-		r_uv_scale = Vector4(max_val.x, max_val.y, max_val2.x, max_val2.y) * Vector4(2.0, 2.0, 2.0, 2.0);
+		if (min_val.x >= 0.0 && min_val2.x >= 0.0 && max_val.x <= 1.0 && max_val2.x <= 1.0 &&
+				min_val.y >= 0.0 && min_val2.y >= 0.0 && max_val.y <= 1.0 && max_val2.y <= 1.0) {
+			// When all channels are in the 0-1 range, we will compress to 16-bit without scaling to
+			// preserve the bits as best as possible.
+			r_uv_scale = Vector4(0.0, 0.0, 0.0, 0.0);
+		} else {
+			r_uv_scale = Vector4(max_val.x, max_val.y, max_val2.x, max_val2.y) * Vector4(2.0, 2.0, 2.0, 2.0);
+		}
 	}
 
 	for (int ai = 0; ai < RS::ARRAY_MAX; ai++) {
@@ -670,8 +677,11 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				if (p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						Vector2 vec = src[i];
-						// Normalize into 0-1 from possible range -uv_scale - uv_scale.
-						vec = vec / (Vector2(r_uv_scale.x, r_uv_scale.y)) + Vector2(0.5, 0.5);
+						if (!r_uv_scale.is_zero_approx()) {
+							// Normalize into 0-1 from possible range -uv_scale - uv_scale.
+							vec = vec / (Vector2(r_uv_scale.x, r_uv_scale.y)) + Vector2(0.5, 0.5);
+						}
+
 						uint16_t uv[2] = { (uint16_t)CLAMP(vec.x * 65535, 0, 65535), (uint16_t)CLAMP(vec.y * 65535, 0, 65535) };
 						memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 4);
 					}
@@ -695,8 +705,10 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				if (p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						Vector2 vec = src[i];
-						// Normalize into 0-1 from possible range -uv_scale - uv_scale.
-						vec = vec / (Vector2(r_uv_scale.z, r_uv_scale.w)) + Vector2(0.5, 0.5);
+						if (!r_uv_scale.is_zero_approx()) {
+							// Normalize into 0-1 from possible range -uv_scale - uv_scale.
+							vec = vec / (Vector2(r_uv_scale.z, r_uv_scale.w)) + Vector2(0.5, 0.5);
+						}
 						uint16_t uv[2] = { (uint16_t)CLAMP(vec.x * 65535, 0, 65535), (uint16_t)CLAMP(vec.y * 65535, 0, 65535) };
 						memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 4);
 					}
@@ -1311,7 +1323,7 @@ void RenderingServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_p
 	mesh_add_surface(p_mesh, sd);
 }
 
-Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb) const {
+Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb, const Vector4 &p_uv_scale) const {
 	uint32_t offsets[RS::ARRAY_MAX];
 
 	uint32_t vertex_elem_size;
@@ -1469,7 +1481,12 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int j = 0; j < p_vertex_len; j++) {
 						const uint16_t *v = reinterpret_cast<const uint16_t *>(&ar[j * attrib_elem_size + offsets[i]]);
-						w[j] = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
+						Vector2 vec = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
+						if (!p_uv_scale.is_zero_approx()) {
+							vec = (vec - Vector2(0.5, 0.5)) * Vector2(p_uv_scale.x, p_uv_scale.y);
+						}
+
+						w[j] = vec;
 					}
 				} else {
 					for (int j = 0; j < p_vertex_len; j++) {
@@ -1489,7 +1506,11 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int j = 0; j < p_vertex_len; j++) {
 						const uint16_t *v = reinterpret_cast<const uint16_t *>(&ar[j * attrib_elem_size + offsets[i]]);
-						w[j] = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
+						Vector2 vec = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
+						if (!p_uv_scale.is_zero_approx()) {
+							vec = (vec - Vector2(0.5, 0.5)) * Vector2(p_uv_scale.z, p_uv_scale.w);
+						}
+						w[j] = vec;
 					}
 				} else {
 					for (int j = 0; j < p_vertex_len; j++) {
@@ -1686,7 +1707,7 @@ TypedArray<Array> RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mes
 		for (uint32_t i = 0; i < blend_shape_count; i++) {
 			Vector<uint8_t> bs_data = blend_shape_data.slice(i * divisor, (i + 1) * divisor);
 			Vector<uint8_t> unused;
-			blend_shape_array.set(i, _get_array_from_surface(bs_format, bs_data, unused, unused, sd.vertex_count, unused, 0, sd.aabb));
+			blend_shape_array.set(i, _get_array_from_surface(bs_format, bs_data, unused, unused, sd.vertex_count, unused, 0, sd.aabb, sd.uv_scale));
 		}
 
 		return blend_shape_array;
@@ -1708,7 +1729,7 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 
 	uint64_t format = p_data.format;
 
-	return _get_array_from_surface(format, vertex_data, attrib_data, skin_data, vertex_len, index_data, index_len, p_data.aabb);
+	return _get_array_from_surface(format, vertex_data, attrib_data, skin_data, vertex_len, index_data, index_len, p_data.aabb, p_data.uv_scale);
 }
 #if 0
 Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const {
