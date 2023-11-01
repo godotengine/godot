@@ -170,6 +170,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 - Android: Fix input routing logic when using a hardware keyboard ([GH-80932](https://github.com/godotengine/godot/pull/80932)).
 - Android: Fix logic for deferred window input events being inverted ([GH-83301](https://github.com/godotengine/godot/pull/83301)).
+- Android: Update the `launchMode` for the `GodotApp` activity ([GH-83954](https://github.com/godotengine/godot/pull/83954)).
 - Linux: Use EWMH for `DisplayServerX11::_window_minimize_check()` implementation ([GH-80036](https://github.com/godotengine/godot/pull/80036)).
 - macOS: Fix borderless mode on macOS 13.6+ ([GH-82357](https://github.com/godotengine/godot/pull/82357)).
 - Web: Fix JavaScript callback memory leak issue ([GH-81105](https://github.com/godotengine/godot/pull/81105)).
