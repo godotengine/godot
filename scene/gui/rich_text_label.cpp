@@ -307,7 +307,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 				Size2 img_size = img->size;
 				if (img->size_in_percent) {
 					img_size = _get_image_size(img->image, p_width * img->rq_size.width / 100.f, p_width * img->rq_size.height / 100.f, img->region);
-					l.text_buf->resize_object((uint64_t)it, img_size, img->inline_align, 1);
+					l.text_buf->resize_object((uint64_t)it, img_size, img->inline_align);
 				}
 			} break;
 			case ITEM_TABLE: {

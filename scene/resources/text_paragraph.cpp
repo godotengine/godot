@@ -175,17 +175,16 @@ void TextParagraph::_shape_lines() {
 			for (int i = 0; i < line_breaks.size(); i = i + 2) {
 				RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
-				if (v_offset < h) {
-					TS->free_rid(line);
-					break;
-				}
 				if (!tab_stops.is_empty()) {
 					TS->shaped_text_tab_align(line, tab_stops);
 				}
-				dropcap_lines++;
-				v_offset -= h;
 				start = line_breaks[i + 1];
 				lines_rid.push_back(line);
+				if (v_offset < h) {
+					break;
+				}
+				dropcap_lines++;
+				v_offset -= h;
 			}
 		}
 		// Use fixed for the rest of lines.
