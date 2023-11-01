@@ -3461,6 +3461,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[4.1.3]: https://github.com/godotengine/godot/compare/4.1.2-stable...4.1.3-stable
 [4.1.2]: https://github.com/godotengine/godot/compare/4.1.1-stable...4.1.2-stable
 [4.1.1]: https://github.com/godotengine/godot/compare/4.1-stable...4.1.1-stable
 [4.1]: https://github.com/godotengine/godot/compare/4.0-stable...4.1-stable
