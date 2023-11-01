@@ -82,7 +82,7 @@ float FogMaterial::get_edge_fade() const {
 
 void FogMaterial::set_density_texture(const Ref<Texture3D> &p_texture) {
 	density_texture = p_texture;
-	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 	RS::get_singleton()->material_set_param(_get_material(), "density_texture", tex_rid);
 }
 

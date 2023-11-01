@@ -294,6 +294,42 @@
 			<param index="1" name="overwrite" type="bool" default="false" />
 			<description>
 				Adds entries from [param dictionary] to this dictionary. By default, duplicate keys are not copied over, unless [param overwrite] is [code]true[/code].
+				[codeblocks]
+				[gdscript]
+				var dict = { "item": "sword", "quantity": 2 }
+				var other_dict = { "quantity": 15, "color": "silver" }
+
+				# Overwriting of existing keys is disabled by default.
+				dict.merge(other_dict)
+				print(dict)  # { "item": "sword", "quantity": 2, "color": "silver" }
+
+				# With overwriting of existing keys enabled.
+				dict.merge(other_dict, true)
+				print(dict)  # { "item": "sword", "quantity": 15, "color": "silver" }
+				[/gdscript]
+				[csharp]
+				var dict = new Godot.Collections.Dictionary
+				{
+				    ["item"] = "sword",
+				    ["quantity"] = 2,
+				};
+
+				var otherDict = new Godot.Collections.Dictionary
+				{
+				    ["quantity"] = 15,
+				    ["color"] = "silver",
+				};
+
+				// Overwriting of existing keys is disabled by default.
+				dict.Merge(otherDict);
+				GD.Print(dict); // { "item": "sword", "quantity": 2, "color": "silver" }
+
+				// With overwriting of existing keys enabled.
+				dict.Merge(otherDict, true);
+				GD.Print(dict); // { "item": "sword", "quantity": 15, "color": "silver" }
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] [method merge] is [i]not[/i] recursive. Nested dictionaries are considered as keys that can be overwritten or not depending on the value of [param overwrite], but they will never be merged together.
 			</description>
 		</method>
 		<method name="size" qualifiers="const">
