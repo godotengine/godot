@@ -186,6 +186,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix special case of cluster render ([GH-81081](https://github.com/godotengine/godot/pull/81081)).
 - Fix VoxelGI static light pairing ([GH-81124](https://github.com/godotengine/godot/pull/81124)).
 - Fix LightmapGI baking with GridMap ([GH-81545](https://github.com/godotengine/godot/pull/81545)).
+- Fix `SubViewport` with `UPDATE_WHEN_VISIBLE` not working properly in exported project ([GH-81607](https://github.com/godotengine/godot/pull/81607)).
 - Fix massive validation errors when enabling TAA + MSAA ([GH-81775](https://github.com/godotengine/godot/pull/81775)).
 - Fix LightmapGI shading sometimes being unlit or black ([GH-81951](https://github.com/godotengine/godot/pull/81951)).
 - Fix ShaderGlobalsOverride property handling ([GH-82100](https://github.com/godotengine/godot/pull/82100)).
