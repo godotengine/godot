@@ -102,6 +102,7 @@ public:
 	virtual TypedArray<RID> map_get_obstacles(RID p_map) const = 0;
 
 	virtual void map_force_update(RID p_map) = 0;
+	virtual uint32_t map_get_iteration_id(RID p_map) const = 0;
 
 	virtual Vector2 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
 
