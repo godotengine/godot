@@ -157,6 +157,7 @@ public:
 
 private:
 	friend class EditorSceneTabs;
+	friend class SurfaceUpgradeTool;
 
 	enum MenuOptions {
 		FILE_NEW_SCENE,
@@ -459,6 +460,8 @@ private:
 	bool opening_prev = false;
 	bool restoring_scenes = false;
 	bool unsaved_cache = true;
+
+	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 
 	int current_menu_option = 0;
@@ -493,6 +496,7 @@ private:
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
 
 	SurfaceUpgradeTool *surface_upgrade_tool = nullptr;
+	bool run_surface_upgrade_tool = false;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
