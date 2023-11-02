@@ -249,7 +249,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 
 	Transform2D xform = ci->xform;
 	if (snapping_2d_transforms_to_pixel) {
-		xform.columns[2] = xform.columns[2].floor();
+		xform.columns[2] = xform.columns[2].round();
 	}
 	xform = p_transform * xform;
 
