@@ -460,9 +460,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 							}
 						}
 
-						bool using_normals_tangents = (p_format & RS::ARRAY_FORMAT_NORMAL) && (p_format & RS::ARRAY_FORMAT_TANGENT);
-
-						if (!using_normals_tangents) {
+						if (!(p_format & RS::ARRAY_FORMAT_NORMAL)) {
 							// Early out if we are only setting vertex positions.
 							for (int i = 0; i < p_vertex_array_len; i++) {
 								Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
@@ -480,12 +478,13 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 						// Validate normal and tangent arrays.
 						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
-						Variant::Type tangent_type = p_arrays[RS::ARRAY_TANGENT].get_type();
-						ERR_FAIL_COND_V(tangent_type != Variant::PACKED_FLOAT32_ARRAY && tangent_type != Variant::PACKED_FLOAT64_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<Vector3> normal_array = p_arrays[RS::ARRAY_NORMAL];
 						ERR_FAIL_COND_V(normal_array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 						const Vector3 *normal_src = normal_array.ptr();
+
+						Variant::Type tangent_type = p_arrays[RS::ARRAY_TANGENT].get_type();
+						ERR_FAIL_COND_V(tangent_type != Variant::PACKED_FLOAT32_ARRAY && tangent_type != Variant::PACKED_FLOAT64_ARRAY && tangent_type != Variant::NIL, ERR_INVALID_PARAMETER);
 
 						// We need a different version if using double precision tangents.
 						if (tangent_type == Variant::PACKED_FLOAT32_ARRAY) {
@@ -524,7 +523,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 									memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
 								}
 							}
-						} else { // PACKED_FLOAT64_ARRAY
+						} else if (tangent_type == Variant::PACKED_FLOAT64_ARRAY) {
 							Vector<double> tangent_array = p_arrays[RS::ARRAY_TANGENT];
 							ERR_FAIL_COND_V(tangent_array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 							const double *tangent_src = tangent_array.ptr();
@@ -534,6 +533,40 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								float angle;
 								Vector3 axis;
 								Vector4 tangent = Vector4(tangent_src[i * 4 + 0], tangent_src[i * 4 + 1], tangent_src[i * 4 + 2], tangent_src[i * 4 + 3]);
+								_get_axis_angle(normal_src[i], tangent, angle, axis);
+
+								// Store axis.
+								{
+									Vector2 res = axis.octahedron_encode();
+									uint16_t vector[2] = {
+										(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+										(uint16_t)CLAMP(res.y * 65535, 0, 65535),
+									};
+
+									memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
+								}
+
+								// Store vertex position + angle.
+								{
+									Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
+									uint16_t vector[4] = {
+										(uint16_t)CLAMP(pos.x * 65535, 0, 65535),
+										(uint16_t)CLAMP(pos.y * 65535, 0, 65535),
+										(uint16_t)CLAMP(pos.z * 65535, 0, 65535),
+										(uint16_t)CLAMP(angle * 65535, 0, 65535)
+									};
+
+									memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
+								}
+							}
+						} else { // No tangent array.
+							// Set data for vertex, normal, and tangent.
+							for (int i = 0; i < p_vertex_array_len; i++) {
+								float angle;
+								Vector3 axis;
+								// Generate an arbitrary vector that is tangential to normal.
+								Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normal_src[i].normalized());
+								Vector4 tangent = Vector4(tan.x, tan.y, tan.z, 1.0);
 								_get_axis_angle(normal_src[i], tangent, angle, axis);
 
 								// Store axis.
@@ -1207,7 +1240,11 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		// If using normals or tangents, then we need all three.
 		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_VERTEX), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using normals or tangents without vertex array.");
 		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_NORMAL), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using tangents without normal array.");
-		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_TANGENT), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using normals without tangent array.");
+	}
+
+	if ((format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && !(format & RS::ARRAY_FORMAT_TANGENT)) {
+		// If no tangent array provided, we will generate one.
+		format |= RS::ARRAY_FORMAT_TANGENT;
 	}
 
 	int vertex_array_size = (vertex_element_size + normal_element_size) * array_len;
@@ -1368,10 +1405,8 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 						Vector3 *w = arr_3d.ptrw();
 
 						if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
-							bool using_normals_tangents = (p_format & RS::ARRAY_FORMAT_NORMAL) && (p_format & RS::ARRAY_FORMAT_TANGENT);
-
 							// We only have vertices to read, so just read them and skip everything else.
-							if (!using_normals_tangents) {
+							if (!(p_format & RS::ARRAY_FORMAT_NORMAL)) {
 								for (int j = 0; j < p_vertex_len; j++) {
 									const uint16_t *v = reinterpret_cast<const uint16_t *>(&r[j * vertex_elem_size + offsets[i]]);
 									Vector3 vec = Vector3(float(v[0]) / 65535.0, float(v[1]) / 65535.0, float(v[2]) / 65535.0);
