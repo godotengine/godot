@@ -112,11 +112,7 @@ void EditorPropertyText::update_property() {
 void EditorPropertyText::set_string_name(bool p_enabled) {
 	string_name = p_enabled;
 	if (p_enabled) {
-		Label *prefix = memnew(Label("&"));
-		prefix->set_tooltip_text("StringName");
-		prefix->set_mouse_filter(MOUSE_FILTER_STOP);
-		text->get_parent()->add_child(prefix);
-		text->get_parent()->move_child(prefix, 0);
+		text->set_tooltip_text("StringName");
 	}
 }
 
