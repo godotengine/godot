@@ -460,12 +460,13 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					(const uint32_t *)merged_indices_ptr, index_count,
 					merged_vertices_f32.ptr(), merged_vertex_count,
 					sizeof(float) * 3, // Vertex stride
+					merged_normals_f32.ptr(),
+					sizeof(float) * 3, // Attribute stride
+					normal_weights.ptr(), 3,
 					index_target,
 					max_mesh_error,
 					simplify_options,
-					&mesh_error,
-					merged_normals_f32.ptr(),
-					normal_weights.ptr(), 3);
+					&mesh_error);
 
 			if (new_index_count < last_index_count * 1.5f) {
 				index_target = index_target * 1.5f;
