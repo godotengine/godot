@@ -58,6 +58,7 @@ namespace TestNode3DEditorCameraManager {
 		root->add_child(previewing_camera);
 		root->add_child(some_node);
 		root->add_child(some_another_node);
+		cinematic_camera->make_current();
 		editor_settings->set("editors/3d/freelook/freelook_inertia", 1.0);
 		editor_settings->set("editors/3d/navigation_feel/orbit_inertia", 1.0);
 		editor_settings->set("editors/3d/navigation_feel/translation_inertia", 1.0);
@@ -451,8 +452,9 @@ namespace TestNode3DEditorCameraManager {
 
 		SUBCASE("[TestNode3DEditorCameraManager] Preview camera") {
 
-			SUBCASE("Should set the camera as viewport's camera") {
-				
+			SUBCASE("Should set the camera as current camera") {
+				camera_manager->preview_camera(previewing_camera);
+				CHECK(camera_manager->get_current_camera() == previewing_camera);
 			}
 
 			SUBCASE("Should stop pilot mode") {
@@ -522,34 +524,78 @@ namespace TestNode3DEditorCameraManager {
 				CHECK(camera_manager->get_previewing_camera() == nullptr);
 			}
 
-			SUBCASE("Should do nothing if camera is null") {
-				
-			}
-
-			SUBCASE("Should do nothing if already previewing the same camera") {
-
-			}
-
-			SUBCASE("Should do nothing if in cinematic previewing mode") {
-
-			}
-
-			SUBCASE("Should replace the camera if was previewing another one") {
-
-			}
-
 			SUBCASE("Should emit signal 'camera_mode_changed'") {
 				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
 				camera_manager->preview_camera(previewing_camera);
 				SIGNAL_CHECK_TRUE("camera_mode_changed");
 				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
 			}
+
+			SUBCASE("Should replace the camera if was previewing another one") {
+				Camera3D* another_camera = memnew(Camera3D);
+				root->add_child(another_camera);
+				camera_manager->preview_camera(another_camera);
+				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+				camera_manager->preview_camera(previewing_camera);
+				SIGNAL_CHECK_TRUE("camera_mode_changed");
+				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
+				CHECK(camera_manager->get_previewing_camera() == previewing_camera);
+				CHECK(camera_manager->get_node_being_piloted() == nullptr);
+				memdelete(another_camera);
+			}
+
+			SUBCASE("Should pilot the camera if was previewing and piloting another one") {
+				Camera3D* another_camera = memnew(Camera3D);
+				root->add_child(another_camera);
+				camera_manager->preview_camera(another_camera);
+				camera_manager->pilot(another_camera);
+				camera_manager->preview_camera(previewing_camera);
+				CHECK(camera_manager->get_previewing_camera() == previewing_camera);
+				CHECK(camera_manager->get_node_being_piloted() == previewing_camera);
+				memdelete(another_camera);
+			}
+
+			SUBCASE("Should do nothing if camera is null") {
+				Camera3D* another_camera = memnew(Camera3D);
+				root->add_child(another_camera);
+				camera_manager->preview_camera(another_camera);
+				camera_manager->pilot(another_camera);
+				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+				camera_manager->preview_camera(nullptr);
+				SIGNAL_CHECK_FALSE("camera_mode_changed");
+				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
+				CHECK(camera_manager->get_previewing_camera() == another_camera);
+				CHECK(camera_manager->get_node_being_piloted() == another_camera);
+				memdelete(another_camera);
+			}
+
+			SUBCASE("Should do nothing if already previewing the same camera") {
+				camera_manager->preview_camera(previewing_camera);
+				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+				camera_manager->preview_camera(previewing_camera);
+				SIGNAL_CHECK_FALSE("camera_mode_changed");
+				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
+				CHECK(camera_manager->get_previewing_camera() == previewing_camera);
+			}
+
+			SUBCASE("Should do nothing if in cinematic previewing mode") {
+				camera_manager->set_cinematic_preview_mode(true);
+				CHECK(camera_manager->get_current_camera() == cinematic_camera);
+				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+				camera_manager->preview_camera(previewing_camera);
+				SIGNAL_CHECK_FALSE("camera_mode_changed");
+				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
+				CHECK(camera_manager->get_previewing_camera() == nullptr);
+				CHECK(camera_manager->get_current_camera() == cinematic_camera);
+			}
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Stop previewing camera") {
 
 			SUBCASE("Should set the editor's camera in the viewport") {
-
+				camera_manager->preview_camera(previewing_camera);
+				camera_manager->stop_previewing_camera();
+				CHECK(camera_manager->get_current_camera() == editor_camera);
 			}
 
 			SUBCASE("Should stop pilot mode") {
@@ -609,15 +655,14 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should set the current camera in the viewport when starting the cinematic preview mode") {
-
+				camera_manager->set_cinematic_preview_mode(true);
+				CHECK(camera_manager->get_current_camera() == cinematic_camera);
 			}
 
 			SUBCASE("Should set the editor's camera in the viewport when leaving the cinematic preview mode") {
-
-			}
-
-			SUBCASE("Should do nothing if set to true and it already is true") {
-
+				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->set_cinematic_preview_mode(false);
+				CHECK(camera_manager->get_current_camera() == editor_camera);
 			}
 
 			SUBCASE("Should emit signal 'camera_mode_changed'") {
@@ -634,6 +679,15 @@ namespace TestNode3DEditorCameraManager {
 				camera_manager->set_cinematic_preview_mode(false);
 				CHECK(camera_manager->get_previewing_camera() == previewing_camera);
 				CHECK(camera_manager->get_node_being_piloted() == previewing_camera);
+				SIGNAL_CHECK_FALSE("camera_mode_changed");
+				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
+			}
+
+			SUBCASE("Should do nothing if set to true and it already is true") {
+				camera_manager->set_cinematic_preview_mode(true);
+				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
+				camera_manager->set_cinematic_preview_mode(true);
+				CHECK(camera_manager->get_current_camera() == cinematic_camera);
 				SIGNAL_CHECK_FALSE("camera_mode_changed");
 				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
 			}
@@ -1016,9 +1070,51 @@ namespace TestNode3DEditorCameraManager {
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Update") {
+
+			SUBCASE("Should update the camera") {
+			}
+
+			SUBCASE("Should update the cursor interpolation") {
+			}
+
+			SUBCASE("Should emit 'camera_updated' signal") {
+			}
+
+			SUBCASE("Should not emit 'camera_updated' signal if cursor didn't changed") {
+			}
+
+			SUBCASE("Should update camera if ortho/perspective changed even if cursor didn't changed") {
+			}
+
+			SUBCASE("Should update the cinematic camera preview") {
+			}
+
+			SUBCASE("Should update the cinematic camera preview") {
+			}
+
+			SUBCASE("Should update to the editor's camera when there isn't a cinematic camera preview") {
+			}
+
+			SUBCASE("Should change the cinematic camera when the previous one is deleted") {
+			}
+
+			SUBCASE("Should change to the editor's camera when the cinematic one is deleted and there aren't any other") {
+			}
 		}
 
 		SUBCASE("[TestNode3DEditorCameraManager] Update camera") {
+
+			SUBCASE("Should update the cursor interpolation") {
+			}
+
+			SUBCASE("Should update the camera transform and settings") {
+			}
+
+			SUBCASE("Should update the camera in orthogonal mode") {
+			}
+
+			SUBCASE("Should emit 'camera_updated' signal") {
+			}
 		}
 
 		memdelete(some_node);

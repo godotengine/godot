@@ -35,9 +35,11 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
+#include "servers/rendering_server.h"
 
 void Node3DEditorCameraManager::setup(Camera3D* p_editor_camera, Viewport* p_viewport, Node* p_scene_root, EditorSettings* p_editor_settings) {
 	editor_camera = p_editor_camera;
+	current_camera = editor_camera;
 	viewport = p_viewport;
 	scene_root = p_scene_root;
 	editor_settings = p_editor_settings;
@@ -70,14 +72,16 @@ void Node3DEditorCameraManager::set_cursor_state(const Vector3& position, real_t
 	cursor.stop_interpolation(true);
 }
 
+void Node3DEditorCameraManager::set_current_camera(Camera3D* p_camera) {
+	if (p_camera == nullptr) {
+		return;
+	}
+	current_camera = p_camera;
+	RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), p_camera->get_camera());
+}
+
 Camera3D* Node3DEditorCameraManager::get_current_camera() const {
-	Camera3D* cam = get_previewing_or_cinematic_camera();
-	if (cam) {
-		return cam;
-	}
-	else {
-		return editor_camera;
-	}
+	return current_camera;
 }
 
 Camera3D* Node3DEditorCameraManager::get_previewing_or_cinematic_camera() const {
@@ -161,12 +165,13 @@ void Node3DEditorCameraManager::preview_camera(Camera3D* p_camera) {
 		return;
 	}
 	bool is_piloting_camera_now = node_being_piloted == p_camera;
+	bool should_start_preview_in_pilot_mode = allow_pilot_previewing_camera || is_piloting_camera_now;
 	stop_piloting();
 	previewing_camera = p_camera;
 	previewing_camera->connect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previewing_camera));
-	RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing_camera->get_camera()); //replace
+	set_current_camera(previewing_camera); //replace
 	emit_signal(SNAME("camera_mode_changed"));
-	if (is_piloting_camera_now || allow_pilot_previewing_camera) {
+	if (should_start_preview_in_pilot_mode) {
 		allow_pilot_previewing_camera = true;
 		pilot(previewing_camera);
 	}
@@ -184,7 +189,7 @@ void Node3DEditorCameraManager::stop_previewing_camera() {
 	previewing_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previewing_camera));
 	previewing_camera = nullptr;
 	stop_piloting();
-	RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), editor_camera->get_camera()); //restore
+	set_current_camera(editor_camera); //restore
 	emit_signal(SNAME("camera_mode_changed"));
 	update_camera();
 }
@@ -204,7 +209,7 @@ void Node3DEditorCameraManager::set_cinematic_preview_mode(bool p_cinematic_mode
 			cinematic_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::update_cinematic_preview));
 			cinematic_camera = nullptr;
 		}
-		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), editor_camera->get_camera()); //restore
+		set_current_camera(editor_camera); //restore
 	}
 	emit_signal(SNAME("camera_mode_changed"));
 	update_camera();
@@ -430,7 +435,7 @@ void Node3DEditorCameraManager::update_cinematic_preview() {
 			}
 			cinematic_camera = cam;
 			cinematic_camera->connect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::update_cinematic_preview));
-			RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
+			set_current_camera(cam);
 		}
 	}
 }
@@ -491,6 +496,7 @@ Node3DEditorCameraManager::Node3DEditorCameraManager() {
 	editor_camera = nullptr;
 	previewing_camera = nullptr;
 	cinematic_camera = nullptr;
+	current_camera = nullptr;
 	node_being_piloted = nullptr;
 	cinematic_preview_mode = false;
 	allow_pilot_previewing_camera = false;

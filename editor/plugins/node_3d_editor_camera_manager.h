@@ -37,6 +37,7 @@
 class Camera3D;
 class Node3D;
 class EditorSettings;
+class RenderingServer;
 
 /**
 * Manages the camera of the 3D editor, including features like navigating, preview, cinematic preview and pilot.
@@ -50,6 +51,7 @@ private:
 	Camera3D* editor_camera = nullptr;
 	Camera3D* previewing_camera = nullptr;
 	Camera3D* cinematic_camera = nullptr;
+	Camera3D* current_camera = nullptr;
 	Node3D* node_being_piloted = nullptr;
 	bool cinematic_preview_mode = false;
 	Transform3D pilot_previous_transform;
@@ -69,6 +71,10 @@ public:
 	Node3DEditorCameraCursor get_cursor() const;
 	void set_cursor_state(const Vector3& position, real_t x_rot, real_t y_rot, real_t distance);
 
+private:
+	void set_current_camera(Camera3D* p_camera);
+
+public:
 	Camera3D* get_current_camera() const;
 	Camera3D* get_previewing_or_cinematic_camera() const;
 
