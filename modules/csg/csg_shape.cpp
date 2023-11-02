@@ -488,7 +488,9 @@ bool CSGShape3D::_is_debug_collision_shape_visible() {
 }
 
 void CSGShape3D::_update_debug_collision_shape() {
-	// NOTE: This is called only for the root shape with collision, when root_collision_shape is valid.
+	if (!use_collision || !is_root_shape() || !root_collision_shape.is_valid() || !_is_debug_collision_shape_visible()) {
+		return;
+	}
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
