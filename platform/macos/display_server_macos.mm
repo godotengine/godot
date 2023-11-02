@@ -4501,7 +4501,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3_angle") {
 		gl_manager_angle = memnew(GLManagerANGLE_MacOS);
-		if (gl_manager_angle->initialize() != OK) {
+		if (gl_manager_angle->initialize() != OK || gl_manager_angle->open_display(nullptr) != OK) {
 			memdelete(gl_manager_angle);
 			gl_manager_angle = nullptr;
 			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
