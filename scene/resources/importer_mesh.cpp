@@ -418,11 +418,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 		}
 
-		LocalVector<float> normal_weights;
-		normal_weights.resize(merged_vertex_count);
-		for (unsigned int j = 0; j < merged_vertex_count; j++) {
-			normal_weights[j] = 2.0; // Give some weight to normal preservation, may be worth exposing as an import setting
-		}
+		const float normal_weights[3] = {
+			// Give some weight to normal preservation, may be worth exposing as an import setting
+			2.0f, 2.0f, 2.0f
+		};
 
 		Vector<float> merged_vertices_f32 = vector3_to_float32_array(merged_vertices_ptr, merged_vertex_count);
 		float scale = SurfaceTool::simplify_scale_func(merged_vertices_f32.ptr(), merged_vertex_count, sizeof(float) * 3);
@@ -462,7 +461,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					sizeof(float) * 3, // Vertex stride
 					merged_normals_f32.ptr(),
 					sizeof(float) * 3, // Attribute stride
-					normal_weights.ptr(), 3,
+					normal_weights, 3,
 					index_target,
 					max_mesh_error,
 					simplify_options,
