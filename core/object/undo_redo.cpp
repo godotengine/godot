@@ -67,7 +67,7 @@ void UndoRedo::cancel_action() {
 	ERR_FAIL_COND(action_level <= 0);
 	action_level--;
 
-	Action head_action = actions.write[actions.size() - 1];
+	Action &head_action = actions.write[actions.size() - 1];
 
 	for (Operation &E : head_action.do_ops) {
 		E.delete_reference();
