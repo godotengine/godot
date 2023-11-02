@@ -506,7 +506,7 @@ UndoRedo::~UndoRedo() {
 void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode", "backward_undo_ops"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("commit_action", "execute"), &UndoRedo::commit_action, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("cancel_action", "execute"), &UndoRedo::cancel_action);
+	ClassDB::bind_method(D_METHOD("cancel_action"), &UndoRedo::cancel_action);
 	ClassDB::bind_method(D_METHOD("is_committing_action"), &UndoRedo::is_committing_action);
 
 	ClassDB::bind_method(D_METHOD("add_do_method", "callable"), &UndoRedo::add_do_method);
