@@ -188,13 +188,12 @@ class EditorHelp : public VBoxContainer {
 	void _toggle_scripts_pressed();
 
 	static String doc_version_hash;
-	static bool doc_gen_first_attempt;
-	static bool doc_gen_use_threads;
-	static Thread gen_thread;
+	static Thread worker_thread;
 
 	static void _wait_for_thread();
 	static void _load_doc_thread(void *p_udata);
 	static void _gen_doc_thread(void *p_udata);
+	static void _gen_extensions_docs();
 	static void _compute_doc_version_hash();
 
 protected:
