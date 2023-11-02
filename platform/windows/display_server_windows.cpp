@@ -3709,63 +3709,18 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return MA_NOACTIVATE; // Do not activate, but process mouse messages.
 			}
 		} break;
-		case WM_SETFOCUS: {
-			windows[window_id].window_has_focus = true;
-			last_focused_window = window_id;
-
-			// Restore mouse mode.
-			_set_mouse_mode_impl(mouse_mode);
-
-			if (!app_focused) {
-				if (OS::get_singleton()->get_main_loop()) {
-					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
-				}
-				app_focused = true;
+		case WM_ACTIVATEAPP: {
+			bool new_app_focused = (bool)wParam;
+			if (new_app_focused == app_focused) {
+				break;
+			}
+			app_focused = new_app_focused;
+			if (OS::get_singleton()->get_main_loop()) {
+				OS::get_singleton()->get_main_loop()->notification(app_focused ? MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN : MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 			}
 		} break;
-		case WM_KILLFOCUS: {
-			windows[window_id].window_has_focus = false;
-			last_focused_window = window_id;
-
-			// Release capture unconditionally because it can be set due to dragging, in addition to captured mode.
-			ReleaseCapture();
-
-			// Release every touch to avoid sticky points.
-			for (const KeyValue<int, Vector2> &E : touch_state) {
-				_touch_event(window_id, false, E.value.x, E.value.y, E.key);
-			}
-			touch_state.clear();
-
-			bool self_steal = false;
-			HWND new_hwnd = (HWND)wParam;
-			if (IsWindow(new_hwnd)) {
-				self_steal = true;
-			}
-
-			if (!self_steal) {
-				if (OS::get_singleton()->get_main_loop()) {
-					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
-				}
-				app_focused = false;
-			}
-		} break;
-		case WM_ACTIVATE: { // Watch for window activate message.
-			if (!windows[window_id].window_focused) {
-				_process_activate_event(window_id, wParam, lParam);
-			} else {
-				windows[window_id].saved_wparam = wParam;
-				windows[window_id].saved_lparam = lParam;
-
-				// Run a timer to prevent event catching warning if the focused window is closing.
-				windows[window_id].focus_timer_id = SetTimer(windows[window_id].hWnd, 2, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
-			}
-			if (wParam != WA_INACTIVE) {
-				track_mouse_leave_event(hWnd);
-
-				if (!IsIconic(hWnd)) {
-					SetFocus(hWnd);
-				}
-			}
+		case WM_ACTIVATE: {
+			_process_activate_event(window_id, wParam, lParam);
 			return 0; // Return to the message loop.
 		} break;
 		case WM_GETMINMAXINFO: {
@@ -3864,9 +3819,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_CLOSE: // Did we receive a close message?
 		{
-			if (windows[window_id].focus_timer_id != 0U) {
-				KillTimer(windows[window_id].hWnd, windows[window_id].focus_timer_id);
-			}
 			_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
 
 			return 0; // Jump back.
@@ -4625,10 +4577,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (!Main::is_iterating()) {
 					Main::iteration();
 				}
-			} else if (wParam == windows[window_id].focus_timer_id) {
-				_process_activate_event(window_id, windows[window_id].saved_wparam, windows[window_id].saved_lparam);
-				KillTimer(windows[window_id].hWnd, wParam);
-				windows[window_id].focus_timer_id = 0U;
 			}
 		} break;
 		case WM_SYSKEYUP:
@@ -4834,20 +4782,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM wParam, LPARAM lParam) {
 	if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE) {
-		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_IN);
-		windows[p_window_id].window_focused = true;
+		last_focused_window = p_window_id;
 		alt_mem = false;
 		control_mem = false;
 		shift_mem = false;
 		gr_mem = false;
-
-		// Restore mouse mode.
 		_set_mouse_mode_impl(mouse_mode);
+		if (!IsIconic(windows[p_window_id].hWnd)) {
+			SetFocus(windows[p_window_id].hWnd);
+		}
+		windows[p_window_id].window_focused = true;
+		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_IN);
 	} else { // WM_INACTIVE.
 		Input::get_singleton()->release_pressed_events();
-		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_OUT);
-		windows[p_window_id].window_focused = false;
+		track_mouse_leave_event(windows[p_window_id].hWnd);
+		// Release capture unconditionally because it can be set due to dragging, in addition to captured mode.
+		ReleaseCapture();
 		alt_mem = false;
+		windows[p_window_id].window_focused = false;
+		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_OUT);
 	}
 
 	if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[p_window_id].wtctx) {
