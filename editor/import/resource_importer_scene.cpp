@@ -965,38 +965,6 @@ Node *ResourceImporterScene::_pre_fix_animations(Node *p_node, Node *p_root, con
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
 
-		for (const StringName &name : anims) {
-			Ref<Animation> anim = ap->get_animation(name);
-			Array animation_slices;
-
-			if (p_animation_data.has(name)) {
-				Dictionary anim_settings = p_animation_data[name];
-				int slices_count = anim_settings["slices/amount"];
-
-				for (int i = 0; i < slices_count; i++) {
-					String slice_name = anim_settings["slice_" + itos(i + 1) + "/name"];
-					int from_frame = anim_settings["slice_" + itos(i + 1) + "/start_frame"];
-					int end_frame = anim_settings["slice_" + itos(i + 1) + "/end_frame"];
-					Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)anim_settings["slice_" + itos(i + 1) + "/loop_mode"]);
-					bool save_to_file = anim_settings["slice_" + itos(i + 1) + "/save_to_file/enabled"];
-					bool save_to_path = anim_settings["slice_" + itos(i + 1) + "/save_to_file/path"];
-					bool save_to_file_keep_custom = anim_settings["slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
-
-					animation_slices.push_back(slice_name);
-					animation_slices.push_back(from_frame / p_animation_fps);
-					animation_slices.push_back(end_frame / p_animation_fps);
-					animation_slices.push_back(loop_mode);
-					animation_slices.push_back(save_to_file);
-					animation_slices.push_back(save_to_path);
-					animation_slices.push_back(save_to_file_keep_custom);
-				}
-			}
-
-			if (animation_slices.size() > 0) {
-				_create_slices(ap, anim, animation_slices, true);
-			}
-		}
-
 		AnimationImportTracks import_tracks_mode[TRACK_CHANNEL_MAX] = {
 			AnimationImportTracks(int(node_settings["import_tracks/position"])),
 			AnimationImportTracks(int(node_settings["import_tracks/rotation"])),
@@ -1063,8 +1031,36 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 		ap->get_animation_list(&anims);
 		for (const StringName &name : anims) {
 			Ref<Animation> anim = ap->get_animation(name);
+			Array animation_slices;
+
 			if (p_animation_data.has(name)) {
 				Dictionary anim_settings = p_animation_data[name];
+
+				{
+					int slices_count = anim_settings["slices/amount"];
+
+					for (int i = 0; i < slices_count; i++) {
+						String slice_name = anim_settings["slice_" + itos(i + 1) + "/name"];
+						int from_frame = anim_settings["slice_" + itos(i + 1) + "/start_frame"];
+						int end_frame = anim_settings["slice_" + itos(i + 1) + "/end_frame"];
+						Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)anim_settings["slice_" + itos(i + 1) + "/loop_mode"]);
+						bool save_to_file = anim_settings["slice_" + itos(i + 1) + "/save_to_file/enabled"];
+						String save_to_path = anim_settings["slice_" + itos(i + 1) + "/save_to_file/path"];
+						bool save_to_file_keep_custom = anim_settings["slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
+
+						animation_slices.push_back(slice_name);
+						animation_slices.push_back(from_frame / p_animation_fps);
+						animation_slices.push_back(end_frame / p_animation_fps);
+						animation_slices.push_back(loop_mode);
+						animation_slices.push_back(save_to_file);
+						animation_slices.push_back(save_to_path);
+						animation_slices.push_back(save_to_file_keep_custom);
+					}
+
+					if (animation_slices.size() > 0) {
+						_create_slices(ap, anim, animation_slices, true);
+					}
+				}
 				{
 					//fill with default values
 					List<ImportOption> iopts;
