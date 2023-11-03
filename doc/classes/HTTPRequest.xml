@@ -46,14 +46,14 @@
 		    var httpRequest = new HttpRequest();
 		    AddChild(httpRequest);
 		    httpRequest.RequestCompleted += HttpRequestCompleted;
-		
+
 		    // Perform a GET request. The URL below returns JSON as of writing.
 		    Error error = httpRequest.Request("https://httpbin.org/get");
 		    if (error != Error.Ok)
 		    {
 		        GD.PushError("An error occurred in the HTTP request.");
 		    }
-		
+
 		    // Perform a POST request. The URL below returns JSON as of writing.
 		    // Note: Don't make simultaneous requests using a single HTTPRequest node.
 		    // The snippet below is provided for reference only.
@@ -67,14 +67,14 @@
 		        GD.PushError("An error occurred in the HTTP request.");
 		    }
 		}
-		
+
 		// Called when the HTTP request is completed.
 		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
 		    var json = new Json();
 		    json.Parse(body.GetStringFromUtf8());
 		    var response = json.Data.AsGodotDictionary();
-		
+
 		    // Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
 		    GD.Print((response["headers"].AsGodotDictionary())["User-Agent"]);
 		}
@@ -118,7 +118,7 @@
 		    var httpRequest = new HttpRequest();
 		    AddChild(httpRequest);
 		    httpRequest.RequestCompleted += HttpRequestCompleted;
-		
+
 		    // Perform the HTTP request. The URL below returns a PNG image as of writing.
 		    Error error = httpRequest.Request("https://via.placeholder.com/512");
 		    if (error != Error.Ok)
@@ -126,7 +126,7 @@
 		        GD.PushError("An error occurred in the HTTP request.");
 		    }
 		}
-		
+
 		// Called when the HTTP request is completed.
 		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
@@ -140,9 +140,9 @@
 		    {
 		        GD.PushError("Couldn't load the image.");
 		    }
-		
+
 		    var texture = ImageTexture.CreateFromImage(image);
-		
+
 		    // Display the image in a TextureRect node.
 		    var textureRect = new TextureRect();
 		    AddChild(textureRect);
