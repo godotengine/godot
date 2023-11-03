@@ -44,6 +44,8 @@ VRS::VRS() {
 		Vector<String> vrs_modes;
 		vrs_modes.push_back("\n"); // VRS_DEFAULT
 		vrs_modes.push_back("\n#define USE_MULTIVIEW\n"); // VRS_MULTIVIEW
+		vrs_modes.push_back("\n#define SPLIT_RG\n"); // VRS_RG
+		vrs_modes.push_back("\n#define SPLIT_RG\n#define USE_MULTIVIEW\n"); // VRS_RG_MULTIVIEW
 
 		vrs_shader.shader.initialize(vrs_modes);
 
@@ -83,12 +85,15 @@ void VRS::copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multi
 	VRSPushConstant push_constant = {};
 
 	int mode = p_multiview ? VRS_MULTIVIEW : VRS_DEFAULT;
-
-	// Set maximum texel factor based on maximum fragment size, some GPUs do not support 8x8 (fragment shading rate approach).
-	if (MIN(RD::get_singleton()->limit_get(RD::LIMIT_VRS_MAX_FRAGMENT_WIDTH), RD::get_singleton()->limit_get(RD::LIMIT_VRS_MAX_FRAGMENT_HEIGHT)) > 4) {
-		push_constant.max_texel_factor = 3.0;
+	if (!RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS) && RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_FD)) {
+		mode += VRS_RG;
 	} else {
-		push_constant.max_texel_factor = 2.0;
+		// Set maximum texel factor based on maximum fragment size, some GPUs do not support 8x8 (fragment shading rate approach).
+		if (MIN(RD::get_singleton()->limit_get(RD::LIMIT_VRS_MAX_FRAGMENT_WIDTH), RD::get_singleton()->limit_get(RD::LIMIT_VRS_MAX_FRAGMENT_HEIGHT)) > 4) {
+			push_constant.max_texel_factor = 3.0;
+		} else {
+			push_constant.max_texel_factor = 2.0;
+		}
 	}
 
 	RID shader = vrs_shader.shader.version_get_shader(vrs_shader.shader_version, mode);
@@ -151,6 +156,10 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 				}
 			}
 #endif // _3D_DISABLED
+		}
+
+		if (vrs_update_mode == RS::VIEWPORT_VRS_UPDATE_ONCE) {
+			texture_storage->render_target_set_vrs_update_mode(p_render_target, RS::VIEWPORT_VRS_UPDATE_DISABLED);
 		}
 
 		if (vrs_update_mode == RS::VIEWPORT_VRS_UPDATE_ONCE) {

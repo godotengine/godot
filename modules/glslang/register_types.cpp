@@ -126,6 +126,9 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 
 	if (p_render_device->has_feature(RD::SUPPORTS_MULTIVIEW)) {
 		preamble += "#define has_VK_KHR_multiview 1\n";
+		if (p_render_device->has_feature(RD::SUPPORTS_ATTACHMENT_FD)) {
+			preamble += "#define has_EXT_fragment_invocation_density 1\n";
+		}
 	}
 
 	if (!preamble.empty()) {

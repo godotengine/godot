@@ -5945,7 +5945,7 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 	}
 }
 
-bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
+bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) const {
 	switch (p_feature) {
 		case SUPPORTS_MULTIVIEW:
 			return multiview_capabilities.is_supported && multiview_capabilities.max_view_count > 1;
@@ -5953,6 +5953,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return shader_capabilities.native_16bit_ops && storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
 		case SUPPORTS_ATTACHMENT_VRS:
 			return vrs_capabilities.ss_image_supported;
+		case SUPPORTS_ATTACHMENT_FD:
+			return false;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		default:

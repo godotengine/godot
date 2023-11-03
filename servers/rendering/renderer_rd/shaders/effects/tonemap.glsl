@@ -7,6 +7,9 @@
 #ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
+#ifdef has_EXT_fragment_invocation_density
+#extension GL_EXT_fragment_invocation_density : enable
+#endif // has_EXT_fragment_invocation_density
 #endif
 #endif
 
@@ -27,6 +30,9 @@ void main() {
 #ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
+#ifdef has_EXT_fragment_invocation_density
+#extension GL_EXT_fragment_invocation_density : enable
+#endif // has_EXT_fragment_invocation_density
 #define ViewIndex gl_ViewIndex
 #else // has_VK_KHR_multiview
 #define ViewIndex 0

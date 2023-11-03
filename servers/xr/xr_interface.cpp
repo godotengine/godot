@@ -265,7 +265,6 @@ RID XRInterface::get_vrs_texture() {
 			uint8_t *data_ptr = data.ptrw();
 
 			Vector2 eye_focus = get_eye_focus(i, aspect);
-
 			Vector2i view_center;
 			view_center.x = int(vrs_size.x * (eye_focus.x + 1.0) * 0.5);
 			view_center.y = int(vrs_size.y * (eye_focus.y + 1.0) * 0.5);

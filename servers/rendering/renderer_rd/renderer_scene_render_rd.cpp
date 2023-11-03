@@ -1356,7 +1356,7 @@ void RendererSceneRenderRD::sdfgi_set_debug_probe_select(const Vector3 &p_positi
 RendererSceneRenderRD *RendererSceneRenderRD::singleton = nullptr;
 
 bool RendererSceneRenderRD::is_vrs_supported() const {
-	return RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS);
+	return RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS) || RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_FD);
 }
 
 bool RendererSceneRenderRD::is_dynamic_gi_supported() const {
