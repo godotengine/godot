@@ -976,7 +976,7 @@ void EditorHelp::_update_doc() {
 
 	// Properties overview
 	HashSet<String> skip_methods;
-
+	
 	bool has_properties = false;
 	bool has_property_descriptions = false;
 	for (const DocData::PropertyDoc &prop : cd.properties) {
@@ -1379,7 +1379,20 @@ void EditorHelp::_update_doc() {
 		}
 
 		// Enums
+		bool enable_enum_docs = false;
+		//This checks for public enums before adding the whole section.
 		if (enums.size()) {
+			for (KeyValue<String, Vector<DocData::ConstantDoc>> &Constant : enums) {
+				if (Constant.key.begins_with("_")) {
+					continue;
+				} else {
+					enable_enum_docs = true;
+					break;
+				}
+			}
+		}
+		// This actually generates all of the documentation.
+		if (enable_enum_docs == true) {
 			section_line.push_back(Pair<String, int>(TTR("Enumerations"), class_desc->get_paragraph_count() - 2));
 			_push_title_font();
 			class_desc->add_text(TTR("Enumerations"));
@@ -1389,6 +1402,9 @@ void EditorHelp::_update_doc() {
 			class_desc->add_newline();
 
 			for (KeyValue<String, Vector<DocData::ConstantDoc>> &E : enums) {
+				if (E.key.begins_with("_")) {
+					continue;
+				}
 				enum_line[E.key] = class_desc->get_paragraph_count() - 2;
 
 				_push_code_font();
