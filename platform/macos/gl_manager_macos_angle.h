@@ -45,6 +45,8 @@
 
 class GLManagerANGLE_MacOS : public EGLManager {
 private:
+	bool use_metal = true;
+
 	virtual const char *_get_platform_extension_name() const override;
 	virtual EGLenum _get_platform_extension_enum() const override;
 	virtual EGLenum _get_platform_api_enum() const override;
@@ -54,7 +56,7 @@ private:
 public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
 
-	GLManagerANGLE_MacOS() {}
+	GLManagerANGLE_MacOS(bool p_metal);
 	~GLManagerANGLE_MacOS() {}
 };
 

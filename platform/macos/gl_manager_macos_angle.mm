@@ -48,7 +48,11 @@ EGLenum GLManagerANGLE_MacOS::_get_platform_extension_enum() const {
 Vector<EGLAttrib> GLManagerANGLE_MacOS::_get_platform_display_attributes() const {
 	Vector<EGLAttrib> ret;
 	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
-	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE);
+	if (use_metal) {
+		ret.push_back(EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE);
+	} else {
+		ret.push_back(EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE);
+	}
 	ret.push_back(EGL_NONE);
 
 	return ret;
@@ -65,6 +69,10 @@ Vector<EGLint> GLManagerANGLE_MacOS::_get_platform_context_attribs() const {
 	ret.push_back(EGL_NONE);
 
 	return ret;
+}
+
+GLManagerANGLE_MacOS::GLManagerANGLE_MacOS(bool p_metal) {
+	use_metal = p_metal;
 }
 
 #endif // MACOS_ENABLED && GLES3_ENABLED

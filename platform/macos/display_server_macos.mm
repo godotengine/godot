@@ -63,6 +63,7 @@
 #import <IOKit/IOKitLib.h>
 #import <IOKit/hid/IOHIDKeys.h>
 #import <IOKit/hid/IOHIDLib.h>
+#import <Metal/Metal.h>
 
 const NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) const {
 	const NSMenu *menu = nullptr;
@@ -3405,7 +3406,7 @@ void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offs
 	wd.wb_offset.x = MAX(wd.wb_offset.x, 12);
 	wd.wb_offset.y = MAX(wd.wb_offset.y, 12);
 	if (wd.window_button_view) {
-		[wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
+		[(GodotButtonView *)wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
 	}
 }
 
@@ -4513,34 +4514,51 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	[main_menu setSubmenu:apple_menu forItem:menu_item];
 	[main_menu setAutoenablesItems:NO];
 
-	//!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3_angle") {
-		gl_manager_angle = memnew(GLManagerANGLE_MacOS);
-		if (gl_manager_angle->initialize() != OK || gl_manager_angle->open_display(nullptr) != OK) {
-			memdelete(gl_manager_angle);
-			gl_manager_angle = nullptr;
-			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
-			if (fallback) {
-				WARN_PRINT("Your video card drivers seem not to support the required Metal version, switching to native OpenGL.");
-				rendering_driver = "opengl3";
-			} else {
-				r_error = ERR_UNAVAILABLE;
-				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
+		if (@available(macOS 10.15, *)) {
+			// Try ANGLE over Metal if running on macOS 10.15+ and on hardware with Metal 2 support.
+			id device = MTLCreateSystemDefaultDevice();
+			if (device && [device supportsFamily:MTLGPUFamilyMac2]) {
+				gl_manager_angle = memnew(GLManagerANGLE_MacOS(true));
+				if (gl_manager_angle->initialize() != OK || gl_manager_angle->open_display(nullptr) != OK) {
+					memdelete(gl_manager_angle);
+					gl_manager_angle = nullptr;
+
+					WARN_PRINT("Your video card drivers seem not to support the required Metal version for ANGLE, switching to ANGLE over OpenGL.");
+				}
+			}
+		}
+		if (!gl_manager_angle) {
+			// Try ANGLE over native OpenGL.
+			gl_manager_angle = memnew(GLManagerANGLE_MacOS(false));
+			if (gl_manager_angle->initialize() != OK || gl_manager_angle->open_display(nullptr) != OK) {
+				memdelete(gl_manager_angle);
+				gl_manager_angle = nullptr;
+
+				bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
+				if (fallback) {
+					WARN_PRINT("Your video card drivers seem not to support the required OpenGL version for ANGLE, switching to native OpenGL.");
+					rendering_driver = "opengl3";
+				} else {
+					r_error = ERR_UNAVAILABLE;
+					ERR_FAIL_MSG("Could not initialize OpenGL (ANGLE).");
+				}
 			}
 		}
 	}
 
 	if (rendering_driver == "opengl3") {
+		// Try natvie OpenGL.
 		gl_manager_legacy = memnew(GLManagerLegacy_MacOS);
 		if (gl_manager_legacy->initialize() != OK) {
 			memdelete(gl_manager_legacy);
 			gl_manager_legacy = nullptr;
+
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Could not initialize native OpenGL.");
+			ERR_FAIL_MSG("Could not initialize OpenGL (Native).");
 		}
 	}
 #endif
