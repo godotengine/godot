@@ -34,6 +34,7 @@ import static android.content.Context.MODE_PRIVATE;
 import static android.content.Context.WINDOW_SERVICE;
 
 import org.godotengine.godot.input.GodotEditText;
+import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.io.directory.DirectoryAccessHandler;
 import org.godotengine.godot.io.file.FileAccessHandler;
 import org.godotengine.godot.plugin.GodotPlugin;
@@ -334,6 +335,21 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	 */
 	@CallSuper
 	protected void onGodotSetupCompleted() {
+		Log.d(TAG, "OnGodotSetupCompleted");
+
+		// These properties are defined after Godot setup completion, so we retrieve them here.
+		boolean longPressEnabled = Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"));
+		boolean panScaleEnabled = Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"));
+
+		runOnUiThread(() -> {
+			GodotView renderView = getRenderView();
+			GodotInputHandler inputHandler = renderView != null ? renderView.getInputHandler() : null;
+			if (inputHandler != null) {
+				inputHandler.enableLongPress(longPressEnabled);
+				inputHandler.enablePanningAndScalingGestures(panScaleEnabled);
+			}
+		});
+
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onGodotSetupCompleted();
 		}
@@ -348,6 +364,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	 */
 	@CallSuper
 	protected void onGodotMainLoopStarted() {
+		Log.d(TAG, "OnGodotMainLoopStarted");
+
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onGodotMainLoopStarted();
 		}
