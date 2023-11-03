@@ -881,7 +881,16 @@ bool AnimationMixer::_update_caches() {
 						case Variant::CALLABLE:
 						case Variant::SIGNAL:
 						case Variant::DICTIONARY:
-						case Variant::ARRAY: {
+						case Variant::ARRAY:
+						case Variant::PACKED_BYTE_ARRAY:
+						case Variant::PACKED_INT32_ARRAY:
+						case Variant::PACKED_INT64_ARRAY:
+						case Variant::PACKED_FLOAT32_ARRAY:
+						case Variant::PACKED_FLOAT64_ARRAY:
+						case Variant::PACKED_STRING_ARRAY:
+						case Variant::PACKED_VECTOR2_ARRAY:
+						case Variant::PACKED_VECTOR3_ARRAY:
+						case Variant::PACKED_COLOR_ARRAY: {
 							WARN_PRINT_ONCE_ED("AnimationMixer: '" + String(E) + "', Value Track: '" + String(path) + "' uses a non-numeric type as key value with UpdateMode.UPDATE_CONTINUOUS. This will not be blended correctly, so it is forced to UpdateMode.UPDATE_DISCRETE.");
 							track_value->is_continuous = false;
 							break;
