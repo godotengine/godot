@@ -122,14 +122,12 @@ public:
 	/** Updates the camera, cursor and cinematic preview. To be called every frame. */
 	void update(float p_delta_time);
 
-	/** Updates the camera properties with current cursor's state. */
-	void update_camera();
-
 private:
-	void update_camera(float p_interp_delta);
+	void update_camera();
 	void update_cinematic_preview();
 	void stop_previews_and_pilots();
 	void update_pilot_transform();
+	void update_camera_transform_to_node_being_piloted();
 	void commit_pilot_transform();
 	void _undo_redo_pilot_transform(Node3D* p_node, const Transform3D& p_transform);
 

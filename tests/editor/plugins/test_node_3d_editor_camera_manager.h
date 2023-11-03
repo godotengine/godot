@@ -1071,19 +1071,75 @@ namespace TestNode3DEditorCameraManager {
 
 		SUBCASE("[TestNode3DEditorCameraManager] Update") {
 
-			SUBCASE("Should update the camera") {
+			SUBCASE("Should update transforms") {
+				camera_manager->navigation_pan(Vector2(10.0, 20.0), 2.0);
+				Node3DEditorCameraCursor::Values cursor_values_before_udpdate = camera_manager->get_cursor().get_current_values();
+				Node3DEditorCameraCursor::Values target_cursor_values_before_udpdate = camera_manager->get_cursor().get_target_values();
+				camera_manager->update(0.033);
+
+				SUBCASE("Should update the cursor's interpolated values") {
+					CHECK(camera_manager->get_cursor().get_current_values() != cursor_values_before_udpdate);
+					CHECK(camera_manager->get_cursor().get_current_values() != target_cursor_values_before_udpdate);
+					CHECK(camera_manager->get_cursor().get_target_values() == target_cursor_values_before_udpdate);
+				}
+
+				SUBCASE("Should update the camera to cursor's current values") {
+					CHECK(editor_camera->get_global_transform().origin == camera_manager->get_cursor().get_current_camera_transform().origin);
+				}
 			}
 
-			SUBCASE("Should update the cursor interpolation") {
+			SUBCASE("Should update the transform of the node being piloted") {
+				camera_manager->pilot(some_node);
+				camera_manager->navigation_pan(Vector2(10.0, 20.0), 2.0);
+				camera_manager->update(0.033);
+				CHECK(some_node->get_global_transform() == camera_manager->get_cursor().get_current_camera_transform());
 			}
 
-			SUBCASE("Should emit 'camera_updated' signal") {
+			SUBCASE("Should update the camera in orthogonal mode") {
+				camera_manager->set_orthogonal(true);
+				camera_manager->set_camera_settings(45.0, 10.0, 100.0);
+				camera_manager->set_fov_scale(2.0);
+				camera_manager->update(0.033);
+				CHECK(editor_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_ORTHOGONAL);
+				CHECK(editor_camera->get_size() == (real_t)8.0);
+				CHECK(editor_camera->get_near() == 10.0);
+				CHECK(editor_camera->get_far() == 100.0);
 			}
 
-			SUBCASE("Should not emit 'camera_updated' signal if cursor didn't changed") {
+			SUBCASE("Should update the camera in perspective mode") {
+				camera_manager->set_orthogonal(false);
+				camera_manager->set_camera_settings(45.0, 10.0, 100.0);
+				camera_manager->set_fov_scale(2.0);
+				camera_manager->update(0.033);
+				CHECK(editor_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
+				CHECK(Math::is_equal_approx(editor_camera->get_fov(), (real_t)45.0 * camera_manager->get_cursor().get_current_values().fov_scale));
+				CHECK(editor_camera->get_near() == 10.0);
+				CHECK(editor_camera->get_far() == 100.0);
 			}
 
 			SUBCASE("Should update camera if ortho/perspective changed even if cursor didn't changed") {
+				camera_manager->set_camera_settings(45.0, 10.0, 100.0);
+				camera_manager->set_orthogonal(true);
+				camera_manager->update(0.033);
+				CHECK(editor_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_ORTHOGONAL);
+				CHECK(Math::is_equal_approx(editor_camera->get_size(), (real_t)3.31371));
+				CHECK(editor_camera->get_near() == 10.0);
+				CHECK(editor_camera->get_far() == 100.0);
+			}
+
+			SUBCASE("Should emit 'camera_updated' signal") {
+				camera_manager->navigation_pan(Vector2(10.0, 20.0), 2.0);
+				SIGNAL_WATCH(camera_manager, "camera_updated");
+				camera_manager->update(0.033);
+				SIGNAL_CHECK_TRUE("camera_updated");
+				SIGNAL_UNWATCH(camera_manager, "camera_updated");
+			}
+
+			SUBCASE("Should not emit 'camera_updated' signal if cursor didn't changed") {
+				SIGNAL_WATCH(camera_manager, "camera_updated");
+				camera_manager->update(0.033);
+				SIGNAL_CHECK_FALSE("camera_updated");
+				SIGNAL_UNWATCH(camera_manager, "camera_updated");
 			}
 
 			SUBCASE("Should update the cinematic camera preview") {
@@ -1099,21 +1155,6 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should change to the editor's camera when the cinematic one is deleted and there aren't any other") {
-			}
-		}
-
-		SUBCASE("[TestNode3DEditorCameraManager] Update camera") {
-
-			SUBCASE("Should update the cursor interpolation") {
-			}
-
-			SUBCASE("Should update the camera transform and settings") {
-			}
-
-			SUBCASE("Should update the camera in orthogonal mode") {
-			}
-
-			SUBCASE("Should emit 'camera_updated' signal") {
 			}
 		}
 

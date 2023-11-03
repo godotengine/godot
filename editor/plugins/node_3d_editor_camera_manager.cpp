@@ -50,7 +50,7 @@ void Node3DEditorCameraManager::set_camera_settings(float p_fov, float p_z_near,
 	fov = p_fov;
 	z_near = p_z_near;
 	z_far = p_z_far;
-	update_camera(0.0);
+	update_camera();
 }
 
 void Node3DEditorCameraManager::reset() {
@@ -119,12 +119,8 @@ void Node3DEditorCameraManager::pilot(Node3D* p_node) {
 	}
 	node_being_piloted = p_node;
 	node_being_piloted->connect("tree_exited", callable_mp(this, &Node3DEditorCameraManager::stop_piloting));
-	Transform3D transform = Transform3D(Basis(), node_being_piloted->get_global_position());
-	transform.basis.set_euler(node_being_piloted->get_global_rotation());
-	pilot_previous_transform = transform;
-	editor_camera->set_global_transform(transform);
-	cursor.set_camera_transform(transform);
-	cursor.stop_interpolation(true);
+	update_camera_transform_to_node_being_piloted();
+	pilot_previous_transform = cursor.get_target_camera_transform();
 	emit_signal(SNAME("camera_mode_changed"));
 	update_camera();
 }
@@ -227,7 +223,7 @@ void Node3DEditorCameraManager::set_orthogonal(bool p_orthogonal) {
 	else {
 		cursor.set_perspective();
 	}
-	update_camera(0.0);
+	update_camera();
 	if (node_being_piloted) {
 		Camera3D* camera_being_piloted = Object::cast_to<Camera3D>(node_being_piloted);
 		if (camera_being_piloted) {
@@ -250,6 +246,7 @@ bool Node3DEditorCameraManager::is_orthogonal() const {
 
 void Node3DEditorCameraManager::set_fov_scale(real_t p_scale) {
 	cursor.set_fov_scale(p_scale);
+	update_camera();
 }
 
 void Node3DEditorCameraManager::set_freelook_active(bool p_active_now) {
@@ -389,40 +386,38 @@ void Node3DEditorCameraManager::focus_selection(const Vector3& p_center_point) {
 
 void Node3DEditorCameraManager::update(float p_delta_time) {
 	update_cinematic_preview();
-	update_camera(p_delta_time);
+	bool is_camera_orthogonal = editor_camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
+	bool cursor_changed = false;
+	if (p_delta_time != 0.0) {
+		cursor_changed = cursor.update_interpolation(p_delta_time);
+	}
+	if (cursor_changed || is_camera_orthogonal != orthogonal) {
+		update_camera();
+	}
+	if (!cursor_changed) {
+		// If not in free look mode, will commit the pilot transform each time the movement interpolation stops;
+		// also, it will do nothing if the pilot didn't move at all, so no problem to call it here all the time:
+		if (!cursor.get_freelook_mode()) {
+			commit_pilot_transform();
+			// In case the node being piloted moved by any reason, we need to update the camera and cursor:
+			update_camera_transform_to_node_being_piloted();
+		}
+	}
 }
 
 void Node3DEditorCameraManager::update_camera() {
-	update_camera(0.0);
-}
-
-void Node3DEditorCameraManager::update_camera(float p_interp_delta) {
-	bool is_camera_orthogonal = editor_camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
-	bool cursor_changed = false;
-	if (p_interp_delta != 0.0) {
-		cursor_changed = cursor.update_interpolation(p_interp_delta);
-	}
 	Node3DEditorCameraCursor::Values cursor_values = cursor.get_current_values();
-
-	if (cursor_changed || p_interp_delta == 0 || is_camera_orthogonal != orthogonal) {
-		editor_camera->set_global_transform(cursor.get_current_camera_transform());
-
-		if (orthogonal) {
-			float half_fov = Math::deg_to_rad(fov * cursor_values.fov_scale) / 2.0;
-			float height = 2.0 * cursor_values.distance * Math::tan(half_fov);
-			editor_camera->set_orthogonal(height, z_near, z_far);
-		}
-		else {
-			editor_camera->set_perspective(fov * cursor_values.fov_scale, z_near, z_far);
-		}
-		update_pilot_transform();
-		emit_signal(SNAME("camera_updated"));
+	editor_camera->set_global_transform(cursor.get_current_camera_transform());
+	if (orthogonal) {
+		float half_fov = Math::deg_to_rad(fov * cursor_values.fov_scale) / 2.0;
+		float height = 2.0 * cursor_values.distance * Math::tan(half_fov);
+		editor_camera->set_orthogonal(height, z_near, z_far);
 	}
-	// If not in free look mode, will commit the pilot transform each time the movement interpolation stops;
-	// also, it will do nothing if the pilot didn't move at all:
-	if (!cursor.get_freelook_mode() && !cursor_changed) {
-		commit_pilot_transform();
+	else {
+		editor_camera->set_perspective(fov * cursor_values.fov_scale, z_near, z_far);
 	}
+	update_pilot_transform();
+	emit_signal(SNAME("camera_updated"));
 }
 
 void Node3DEditorCameraManager::update_cinematic_preview() {
@@ -455,6 +450,17 @@ void Node3DEditorCameraManager::update_pilot_transform() {
 	node_being_piloted->set_global_position(transform.origin);
 	node_being_piloted->set_global_rotation(transform.basis.get_euler());
 	node_being_piloted->set_scale(original_scale); // set_global_rotation seems to be messing with the scale, so we need to set it again here...
+}
+
+void Node3DEditorCameraManager::update_camera_transform_to_node_being_piloted() {
+	if (node_being_piloted == nullptr) {
+		return;
+	}
+	Transform3D transform = Transform3D(Basis(), node_being_piloted->get_global_position());
+	transform.basis.set_euler(node_being_piloted->get_global_rotation());
+	editor_camera->set_global_transform(transform);
+	cursor.set_camera_transform(transform);
+	cursor.stop_interpolation(true);
 }
 
 void Node3DEditorCameraManager::commit_pilot_transform() {

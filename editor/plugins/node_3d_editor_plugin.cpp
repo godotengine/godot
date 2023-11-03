@@ -476,7 +476,6 @@ void Node3DEditorViewport::_view_settings_confirmed(real_t p_interp_delta) {
 	// Set FOV override multiplier back to the default, so that the FOV
 	// setting specified in the View menu is correctly applied.
 	camera_manager->set_fov_scale(1.0);
-	camera_manager->update_camera();
 }
 
 void Node3DEditorViewport::_update_navigation_controls_visibility() {
@@ -4809,7 +4808,6 @@ void Node3DEditorViewport::toggle_allow_pilot_camera(bool p_activate) {
 
 void Node3DEditorViewport::apply_camera_settings() {
 	camera_manager->set_camera_settings(get_fov(), get_znear(), get_zfar());
-	camera_manager->update_camera();
 }
 
 void Node3DEditorViewport::on_camera_updated() {
