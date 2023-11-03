@@ -269,7 +269,7 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	}                                                                                                              \
 	write_array[vert_idx] = transformed_vert;
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, float p_normal_weight, Array p_bone_transform_array) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
@@ -419,8 +419,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		}
 
 		const float normal_weights[3] = {
-			// Give some weight to normal preservation, may be worth exposing as an import setting
-			2.0f, 2.0f, 2.0f
+			p_normal_weight, p_normal_weight, p_normal_weight
 		};
 
 		Vector<float> merged_vertices_f32 = vector3_to_float32_array(merged_vertices_ptr, merged_vertex_count);
