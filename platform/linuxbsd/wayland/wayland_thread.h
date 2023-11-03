@@ -198,9 +198,18 @@ public:
 		struct wp_viewport *wp_viewport = nullptr;
 		struct wp_fractional_scale_v1 *wp_fractional_scale = nullptr;
 
+		// Currently applied buffer scale.
+		double buffer_scale = 0;
+
+		// NOTE: The preferred buffer scale is currently only dynamically calculated.
+		// It can be accessed by calling `window_state_get_preferred_buffer_scale`.
+
 		// Override used by the fractional scale add-on object. If less or equal to 0
 		// (default) then the normal output-based scale is used instead.
 		double fractional_scale = 0;
+
+		// What the compositor is recommending us.
+		double preferred_fractional_scale = 0;
 
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
@@ -211,6 +220,7 @@ public:
 		// can handle this mess gracefully enough to hopefully being able of getting
 		// rid of this cleanly once we have our own CSDs.
 		struct libdecor_frame *libdecor_frame = nullptr;
+		struct libdecor_configuration *pending_libdecor_configuration = nullptr;
 #endif
 
 		RegistryState *registry;
@@ -834,8 +844,9 @@ public:
 
 	void seat_state_echo_keys(SeatState *p_ss);
 
-	static int window_state_get_buffer_scale(WindowState *p_ws);
+	static int window_state_get_preferred_buffer_scale(WindowState *p_ws);
 	static double window_state_get_scale_factor(WindowState *p_ws);
+	static void window_state_update_size(WindowState *p_ws, int p_width, int p_height);
 
 	static Vector2i scale_vector2i(Vector2i p_vector, double p_amount);
 
