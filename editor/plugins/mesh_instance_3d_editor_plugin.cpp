@@ -367,7 +367,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 						}
 
 						uint64_t format = array_mesh->surface_get_format(i);
-						if (format & Mesh::ArrayFormat::ARRAY_FORMAT_NORMAL) {
+						if (!(format & Mesh::ArrayFormat::ARRAY_FORMAT_NORMAL)) {
 							err_dialog->set_text(TTR("Normals are required for lightmap unwrap."));
 							err_dialog->popup_centered();
 							return;
