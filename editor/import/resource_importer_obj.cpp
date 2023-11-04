@@ -327,6 +327,17 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 						}
 						ERR_FAIL_INDEX_V(norm, normals.size(), ERR_FILE_CORRUPT);
 						surf_tool->set_normal(normals[norm]);
+						if (generate_tangents && uvs.is_empty()) {
+							// We can't generate tangents without UVs, so create dummy tangents.
+							Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[norm]);
+							surf_tool->set_tangent(Plane(tan.x, tan.y, tan.z, 1.0));
+						}
+					} else {
+						// No normals, use a dummy normal since normals will be generated.
+						if (generate_tangents && uvs.is_empty()) {
+							// We can't generate tangents without UVs, so create dummy tangents.
+							surf_tool->set_tangent(Plane(1.0, 0.0, 0.0, 1.0));
+						}
 					}
 
 					if (face[idx].size() >= 2 && !face[idx][1].is_empty()) {
@@ -383,9 +394,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 				if (generate_tangents && uvs.size()) {
 					surf_tool->generate_tangents();
-				} else {
-					// We need tangents in order to compress vertex data. So disable if tangents aren't generated.
-					mesh_flags = 0;
 				}
 
 				surf_tool->index();

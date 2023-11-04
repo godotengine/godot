@@ -173,6 +173,15 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	return OK;
 }
 
+Error EGLManager::open_display(void *p_display) {
+	int gldisplay_id = _get_gldisplay_id(p_display);
+	if (gldisplay_id < 0) {
+		return ERR_CANT_CREATE;
+	} else {
+		return OK;
+	}
+}
+
 int EGLManager::display_get_native_visual_id(void *p_display) {
 	int gldisplay_id = _get_gldisplay_id(p_display);
 	ERR_FAIL_COND_V(gldisplay_id < 0, ERR_CANT_CREATE);

@@ -2924,6 +2924,8 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["TANGENT"] = &uses_tangent;
 	actions.usage_flag_pointers["BINORMAL"] = &uses_tangent;
+	actions.usage_flag_pointers["ANISOTROPY"] = &uses_tangent;
+	actions.usage_flag_pointers["ANISOTROPY_FLOW"] = &uses_tangent;
 	actions.usage_flag_pointers["COLOR"] = &uses_color;
 	actions.usage_flag_pointers["UV"] = &uses_uv;
 	actions.usage_flag_pointers["UV2"] = &uses_uv2;
