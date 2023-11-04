@@ -159,11 +159,11 @@
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
 		</member>
 		<member name="directional_velocity_max" type="float" setter="set_param_max" getter="get_param_max">
-			Maximum directional velocity value, which is multiplied by [member directional_velocity_curve].
+			Maximum directional velocity value, which is multiplied by [member directional_velocity_curve]. Specified in pixels per second.
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
 		</member>
 		<member name="directional_velocity_min" type="float" setter="set_param_min" getter="get_param_min">
-			Minimum directional velocity value, which is multiplied by [member directional_velocity_curve].
+			Minimum directional velocity value, which is multiplied by [member directional_velocity_curve]. Specified in pixels per second.
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
@@ -285,11 +285,11 @@
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
 		</member>
 		<member name="radial_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum radial velocity applied to each particle. Makes particles move away from the [member velocity_pivot], or toward it if negative.
+			Maximum radial velocity applied to each particle. Makes particles move away from the [member velocity_pivot], or toward it if negative. Specified in pixels per second.
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
 		</member>
 		<member name="radial_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum radial velocity applied to each particle. Makes particles move away from the [member velocity_pivot], or toward it if negative.
+			Minimum radial velocity applied to each particle. Makes particles move away from the [member velocity_pivot], or toward it if negative. Specified in pixels per second.
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
 		</member>
 		<member name="scale_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
