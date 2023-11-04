@@ -328,6 +328,10 @@ public:
 		Vector<LOD> lods;
 		Vector<AABB> bone_aabbs;
 
+		// Transforms used in runtime bone AABBs compute.
+		// Since bone AABBs is saved in Mesh space, but bones is in Skeleton space.
+		Transform3D mesh_to_skeleton_xform;
+
 		Vector<uint8_t> blend_shape_data;
 
 		Vector4 uv_scale;
@@ -1490,6 +1494,9 @@ public:
 	virtual void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon, CanvasOccluderPolygonCullMode p_mode) = 0;
 
 	virtual void canvas_set_shadow_texture_size(int p_size) = 0;
+
+	Rect2 debug_canvas_item_get_rect(RID p_item);
+	virtual Rect2 _debug_canvas_item_get_rect(RID p_item) = 0;
 
 	/* GLOBAL SHADER UNIFORMS */
 
