@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+import argparse
+import os
+import subprocess
+import sys
+import threading
+import time
 from http.server import HTTPServer, SimpleHTTPRequestHandler, test  # type: ignore
 from pathlib import Path
-import os
-import sys
-import argparse
-import subprocess
 
 
 class CORSRequestHandler(SimpleHTTPRequestHandler):
@@ -17,11 +19,17 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
 
 
 def shell_open(url):
-    if sys.platform == "win32":
-        os.startfile(url)
-    else:
-        opener = "open" if sys.platform == "darwin" else "xdg-open"
-        subprocess.call([opener, url])
+    def inner():
+        # Delay opening so that the web server is fully operational
+        # by the time the browser tries to load the page.
+        time.sleep(0.1)
+        if sys.platform == "win32":
+            os.startfile(url)
+        else:
+            opener = "open" if sys.platform == "darwin" else "xdg-open"
+            subprocess.call([opener, url])
+
+    threading.Thread(target=inner).start()
 
 
 def serve(root, port, run_browser):
@@ -30,7 +38,11 @@ def serve(root, port, run_browser):
     if run_browser:
         # Open the served page in the user's default browser.
         print("Opening the served URL in the default browser (use `--no-browser` or `-n` to disable this).")
-        shell_open(f"http://127.0.0.1:{port}")
+        if os.path.isfile("godot.editor.html"):
+            # Open default file name for the web editor directly.
+            shell_open(f"http://127.0.0.1:{port}/godot.editor.html")
+        else:
+            shell_open(f"http://127.0.0.1:{port}")
 
     test(CORSRequestHandler, HTTPServer, port=port)
 
@@ -39,7 +51,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--port", help="port to listen on", default=8060, type=int)
     parser.add_argument(
-        "-r", "--root", help="path to serve as root (relative to `platform/web/`)", default="../../bin", type=Path
+        "-r",
+        "--root",
+        help="path to serve as root (relative to `platform/web/`)",
+        default="../../bin/.web_zip",
+        type=Path,
     )
     browser_parser = parser.add_mutually_exclusive_group(required=False)
     browser_parser.add_argument(
