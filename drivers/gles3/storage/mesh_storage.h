@@ -103,6 +103,10 @@ struct Mesh {
 
 		Vector<AABB> bone_aabbs;
 
+		// Transform used in runtime bone AABBs compute.
+		// As bone AABBs are saved in Mesh space, but bones animation is in Skeleton space.
+		Transform3D mesh_to_skeleton_xform;
+
 		struct BlendShape {
 			GLuint vertex_buffer = 0;
 			GLuint vertex_array = 0;
