@@ -326,10 +326,9 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh, uint64_t p_c
 		arr[Mesh::ARRAY_WEIGHTS] = w;
 	}
 
-	Ref<ArrayMesh> ncmesh = p_mesh;
-	int sc = ncmesh->get_surface_count();
-	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr, TypedArray<Array>(), Dictionary(), p_compression_flags);
-	ncmesh->surface_set_material(sc, material);
+	int sc = p_mesh->get_surface_count();
+	p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr, TypedArray<Array>(), Dictionary(), p_compression_flags);
+	p_mesh->surface_set_material(sc, material);
 
 	return OK;
 }

@@ -802,25 +802,23 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	}
 
 	for (const Ref<Script> &E : scripts) {
-		Ref<Script> scr = E;
-
-		if (p_for_script.is_valid() && p_for_script != scr) {
+		if (p_for_script.is_valid() && p_for_script != E) {
 			continue;
 		}
 
-		if (scr->is_built_in()) {
+		if (E->is_built_in()) {
 			continue; //internal script, who cares, though weird
 		}
 
-		uint64_t last_date = scr->get_last_modified_time();
-		uint64_t date = FileAccess::get_modified_time(scr->get_path());
+		uint64_t last_date = E->get_last_modified_time();
+		uint64_t date = FileAccess::get_modified_time(E->get_path());
 
 		if (last_date != date) {
-			Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+			Ref<Script> rel_scr = ResourceLoader::load(E->get_path(), E->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 			ERR_CONTINUE(!rel_scr.is_valid());
-			scr->set_source_code(rel_scr->get_source_code());
-			scr->set_last_modified_time(rel_scr->get_last_modified_time());
-			scr->update_exports();
+			E->set_source_code(rel_scr->get_source_code());
+			E->set_last_modified_time(rel_scr->get_last_modified_time());
+			E->update_exports();
 
 			trigger_live_script_reload();
 		}

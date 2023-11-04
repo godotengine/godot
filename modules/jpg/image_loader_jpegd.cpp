@@ -156,20 +156,19 @@ public:
 
 static Error _jpgd_save_to_output_stream(jpge::output_stream *p_output_stream, const Ref<Image> &p_img, float p_quality) {
 	ERR_FAIL_COND_V(p_img.is_null() || p_img->is_empty(), ERR_INVALID_PARAMETER);
-	Ref<Image> image = p_img;
-	if (image->get_format() != Image::FORMAT_RGB8) {
-		image->convert(Image::FORMAT_RGB8);
+	if (p_img->get_format() != Image::FORMAT_RGB8) {
+		p_img->convert(Image::FORMAT_RGB8);
 	}
 
 	jpge::params p;
 	p.m_quality = CLAMP(p_quality * 100, 1, 100);
 
 	jpge::jpeg_encoder enc;
-	enc.init(p_output_stream, image->get_width(), image->get_height(), 3, p);
+	enc.init(p_output_stream, p_img->get_width(), p_img->get_height(), 3, p);
 
-	const uint8_t *src_data = image->get_data().ptr();
-	for (int i = 0; i < image->get_height(); i++) {
-		enc.process_scanline(&src_data[i * image->get_width() * 3]);
+	const uint8_t *src_data = p_img->get_data().ptr();
+	for (int i = 0; i < p_img->get_height(); i++) {
+		enc.process_scanline(&src_data[i * p_img->get_width() * 3]);
 	}
 
 	enc.process_scanline(nullptr);

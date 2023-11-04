@@ -200,14 +200,13 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 	}
 
 	// Create an editable reference and a copy of full event.
-	Ref<InputEvent> received_event = p_event;
-	Ref<InputEvent> received_original_event = received_event->duplicate();
+	Ref<InputEvent> received_original_event = p_event->duplicate();
 
 	// Check what the type is and if it is allowed.
-	Ref<InputEventKey> k = received_event;
-	Ref<InputEventJoypadButton> joyb = received_event;
-	Ref<InputEventJoypadMotion> joym = received_event;
-	Ref<InputEventMouseButton> mb = received_event;
+	Ref<InputEventKey> k = p_event;
+	Ref<InputEventJoypadButton> joyb = p_event;
+	Ref<InputEventJoypadMotion> joym = p_event;
+	Ref<InputEventMouseButton> mb = p_event;
 
 	int type = 0;
 	if (k.is_valid()) {
@@ -242,15 +241,15 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 		}
 	}
 
-	Ref<InputEventWithModifiers> mod = received_event;
+	Ref<InputEventWithModifiers> mod = p_event;
 	if (mod.is_valid()) {
 		mod->set_window_id(0);
 	}
 
 	// Maintain device selection.
-	received_event->set_device(_get_current_device());
+	p_event->set_device(_get_current_device());
 
-	_set_event(received_event, received_original_event);
+	_set_event(p_event, received_original_event);
 }
 
 void InputEventConfigurationDialog::_on_listen_focus_changed() {

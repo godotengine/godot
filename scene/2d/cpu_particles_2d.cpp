@@ -328,12 +328,11 @@ real_t CPUParticles2D::get_param_max(Parameter p_param) const {
 }
 
 static void _adjust_curve_range(const Ref<Curve> &p_curve, real_t p_min, real_t p_max) {
-	Ref<Curve> curve = p_curve;
-	if (!curve.is_valid()) {
+	if (!p_curve.is_valid()) {
 		return;
 	}
 
-	curve->ensure_default_setup(p_min, p_max);
+	p_curve->ensure_default_setup(p_min, p_max);
 }
 
 void CPUParticles2D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curve) {

@@ -2849,14 +2849,12 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 
 	int pixel_size = get_format_pixel_size(format);
 
-	Ref<Image> msk = p_mask;
-
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
 			int src_x = src_rect.position.x + j;
 			int src_y = src_rect.position.y + i;
 
-			if (msk->get_pixel(src_x, src_y).a != 0) {
+			if (p_mask->get_pixel(src_x, src_y).a != 0) {
 				int dst_x = dest_rect.position.x + j;
 				int dst_y = dest_rect.position.y + i;
 
@@ -2886,8 +2884,6 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const 
 		return;
 	}
 
-	Ref<Image> img = p_src;
-
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
 			int src_x = src_rect.position.x + j;
@@ -2896,7 +2892,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const 
 			int dst_x = dest_rect.position.x + j;
 			int dst_y = dest_rect.position.y + i;
 
-			Color sc = img->get_pixel(src_x, src_y);
+			Color sc = p_src->get_pixel(src_x, src_y);
 			if (sc.a != 0) {
 				Color dc = get_pixel(dst_x, dst_y);
 				dc = dc.blend(sc);
@@ -2926,22 +2922,19 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 		return;
 	}
 
-	Ref<Image> img = p_src;
-	Ref<Image> msk = p_mask;
-
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
 			int src_x = src_rect.position.x + j;
 			int src_y = src_rect.position.y + i;
 
 			// If the mask's pixel is transparent then we skip it
-			//Color c = msk->get_pixel(src_x, src_y);
+			//Color c = p_mask->get_pixel(src_x, src_y);
 			//if (c.a == 0) continue;
-			if (msk->get_pixel(src_x, src_y).a != 0) {
+			if (p_mask->get_pixel(src_x, src_y).a != 0) {
 				int dst_x = dest_rect.position.x + j;
 				int dst_y = dest_rect.position.y + i;
 
-				Color sc = img->get_pixel(src_x, src_y);
+				Color sc = p_src->get_pixel(src_x, src_y);
 				if (sc.a != 0) {
 					Color dc = get_pixel(dst_x, dst_y);
 					dc = dc.blend(sc);

@@ -383,8 +383,7 @@ void InspectorDock::_resource_selected(const Ref<Resource> &p_res, const String 
 		return;
 	}
 
-	Ref<Resource> r = p_res;
-	EditorNode::get_singleton()->push_item(r.operator->(), p_property);
+	EditorNode::get_singleton()->push_item(p_res.operator->(), p_property);
 }
 
 void InspectorDock::_edit_forward() {

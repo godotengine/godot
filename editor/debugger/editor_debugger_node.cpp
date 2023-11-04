@@ -796,9 +796,8 @@ void EditorDebuggerNode::add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_
 	ERR_FAIL_COND_MSG(debugger_plugins.has(p_plugin), "Debugger plugin already exists.");
 	debugger_plugins.insert(p_plugin);
 
-	Ref<EditorDebuggerPlugin> plugin = p_plugin;
 	for (int i = 0; get_debugger(i); i++) {
-		plugin->create_session(get_debugger(i));
+		p_plugin->create_session(get_debugger(i));
 	}
 }
 

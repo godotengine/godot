@@ -6632,11 +6632,10 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 
 	properties.clear();
 
-	Ref<VisualShaderNode> node = p_node;
 	Vector<EditorProperty *> editors;
 
 	for (int i = 0; i < pinfo.size(); i++) {
-		EditorProperty *prop = EditorInspector::instantiate_property_editor(node.ptr(), pinfo[i].type, pinfo[i].name, pinfo[i].hint, pinfo[i].hint_string, pinfo[i].usage);
+		EditorProperty *prop = EditorInspector::instantiate_property_editor(p_node.ptr(), pinfo[i].type, pinfo[i].name, pinfo[i].hint, pinfo[i].hint_string, pinfo[i].usage);
 		if (!prop) {
 			return nullptr;
 		}

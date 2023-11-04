@@ -158,8 +158,6 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 	DocTools *doc = EditorHelp::get_doc_data();
 
-	String bbcode = p_bbcode;
-
 	StringBuilder xml_output;
 
 	xml_output.append("<para>");
@@ -169,16 +167,16 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 	bool line_del = false;
 
 	int pos = 0;
-	while (pos < bbcode.length()) {
-		int brk_pos = bbcode.find("[", pos);
+	while (pos < p_bbcode.length()) {
+		int brk_pos = p_bbcode.find("[", pos);
 
 		if (brk_pos < 0) {
-			brk_pos = bbcode.length();
+			brk_pos = p_bbcode.length();
 		}
 
 		if (brk_pos > pos) {
 			if (!line_del) {
-				String text = bbcode.substr(pos, brk_pos - pos);
+				String text = p_bbcode.substr(pos, brk_pos - pos);
 				if (code_tag || tag_stack.size() > 0) {
 					xml_output.append(text.xml_escape());
 				} else {
@@ -198,15 +196,15 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			}
 		}
 
-		if (brk_pos == bbcode.length()) {
+		if (brk_pos == p_bbcode.length()) {
 			break; // nothing else to add
 		}
 
-		int brk_end = bbcode.find("]", brk_pos + 1);
+		int brk_end = p_bbcode.find("]", brk_pos + 1);
 
 		if (brk_end == -1) {
 			if (!line_del) {
-				String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
+				String text = p_bbcode.substr(brk_pos, p_bbcode.length() - brk_pos);
 				if (code_tag || tag_stack.size() > 0) {
 					xml_output.append(text.xml_escape());
 				} else {
@@ -228,7 +226,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			break;
 		}
 
-		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+		String tag = p_bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
 
 		if (tag.begins_with("/")) {
 			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
@@ -450,11 +448,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "url") {
-			int end = bbcode.find("[", brk_end);
+			int end = p_bbcode.find("[", brk_end);
 			if (end == -1) {
-				end = bbcode.length();
+				end = p_bbcode.length();
 			}
-			String url = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			String url = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
 			xml_output.append("<a href=\"");
 			xml_output.append(url);
 			xml_output.append("\">");
@@ -471,13 +469,13 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
 		} else if (tag == "img") {
-			int end = bbcode.find("[", brk_end);
+			int end = p_bbcode.find("[", brk_end);
 			if (end == -1) {
-				end = bbcode.length();
+				end = p_bbcode.length();
 			}
-			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			String image = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			// Not supported. Just append the bbcode.
+			// Not supported. Just append the p_bbcode.
 			xml_output.append("[img]");
 			xml_output.append(image);
 			xml_output.append("[/img]");

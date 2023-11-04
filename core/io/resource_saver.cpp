@@ -154,14 +154,12 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 }
 
 Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
-	String path = p_path;
-
-	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_INVALID_PARAMETER, "Can't update UID to empty path. Provide non-empty path.");
+	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Can't update UID to empty path. Provide non-empty path.");
 
 	Error err = ERR_FILE_UNRECOGNIZED;
 
 	for (int i = 0; i < saver_count; i++) {
-		err = saver[i]->set_uid(path, p_uid);
+		err = saver[i]->set_uid(p_path, p_uid);
 		if (err == OK) {
 			break;
 		}
