@@ -443,7 +443,10 @@
 		<constant name="SCALING_3D_MODE_FSR" value="1" enum="Scaling3DMode">
 			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
-		<constant name="SCALING_3D_MODE_MAX" value="2" enum="Scaling3DMode">
+		<constant name="SCALING_3D_MODE_FSR2" value="2" enum="Scaling3DMode">
+			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
+		</constant>
+		<constant name="SCALING_3D_MODE_MAX" value="3" enum="Scaling3DMode">
 			Represents the size of the [enum Scaling3DMode] enum.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
@@ -552,6 +555,9 @@
 		<constant name="DEBUG_DRAW_OCCLUDERS" value="24" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_MOTION_VECTORS" value="25" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="DebugDraw">
+			Draws the internal resolution buffer of the scene before post-processing is applied.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.

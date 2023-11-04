@@ -281,7 +281,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	export_filter->select(current->get_export_filter());
 	include_filters->set_text(current->get_include_filter());
-	include_label->set_text(current->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES ? TTR("Resources to exclude:") : TTR("Resources to export:"));
+	include_label->set_text(_get_resource_export_header(current->get_export_filter()));
 	exclude_filters->set_text(current->get_exclude_filter());
 	server_strip_message->set_visible(current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED);
 
@@ -750,11 +750,22 @@ void ProjectExportDialog::_export_type_changed(int p_which) {
 	if (filter_type == EditorExportPreset::EXPORT_CUSTOMIZED && current->get_customized_files_count() == 0) {
 		current->set_file_export_mode("res://", EditorExportPreset::MODE_FILE_STRIP);
 	}
-	include_label->set_text(current->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES ? TTR("Resources to exclude:") : TTR("Resources to export:"));
+	include_label->set_text(_get_resource_export_header(current->get_export_filter()));
 
 	updating = true;
 	_fill_resource_tree();
 	updating = false;
+}
+
+String ProjectExportDialog::_get_resource_export_header(EditorExportPreset::ExportFilter p_filter) const {
+	switch (p_filter) {
+		case EditorExportPreset::EXCLUDE_SELECTED_RESOURCES:
+			return TTR("Resources to exclude:");
+		case EditorExportPreset::EXPORT_CUSTOMIZED:
+			return TTR("Resources to override export behavior:");
+		default:
+			return TTR("Resources to export:");
+	}
 }
 
 void ProjectExportDialog::_filter_changed(const String &p_filter) {

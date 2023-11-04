@@ -99,6 +99,7 @@ public:
 #endif // TOOLS_ENABLED
 
 	EXBIND1RC(bool, has_method, const StringName &)
+	EXBIND1RC(bool, has_static_method, const StringName &)
 
 	GDVIRTUAL1RC(Dictionary, _get_method_info, const StringName &)
 	virtual MethodInfo get_method_info(const StringName &p_method) const override {
@@ -109,6 +110,12 @@ public:
 
 	EXBIND0RC(bool, is_tool)
 	EXBIND0RC(bool, is_valid)
+
+	virtual bool is_abstract() const override {
+		bool abst;
+		return GDVIRTUAL_CALL(_is_abstract, abst) && abst;
+	}
+	GDVIRTUAL0RC(bool, _is_abstract)
 
 	EXBIND0RC(ScriptLanguage *, get_language)
 	EXBIND1RC(bool, has_script_signal, const StringName &)
@@ -234,6 +241,16 @@ public:
 		}
 	}
 
+	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
+
+	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
+		Vector<String> ret;
+		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
+		for (int i = 0; i < ret.size(); i++) {
+			p_words->push_back(ret[i]);
+		}
+	}
+
 	GDVIRTUAL0RC(Vector<String>, _get_string_delimiters)
 
 	virtual void get_string_delimiters(List<String> *p_words) const override {
@@ -296,6 +313,9 @@ public:
 				ERR_CONTINUE(!err.has("message"));
 
 				ScriptError serr;
+				if (err.has("path")) {
+					serr.path = err["path"];
+				}
 				serr.line = err["line"];
 				serr.column = err["column"];
 				serr.message = err["message"];
@@ -344,7 +364,9 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_create_script, ret);
 		return Object::cast_to<Script>(ret);
 	}
+#ifndef DISABLE_DEPRECATED
 	EXBIND0RC(bool, has_named_classes)
+#endif
 	EXBIND0RC(bool, supports_builtin_mode)
 	EXBIND0RC(bool, supports_documentation)
 	EXBIND0RC(bool, can_inherit_from_file)
@@ -633,7 +655,7 @@ public:
 	const GDExtensionScriptInstanceInfo2 *native_info;
 	bool free_native_info = false;
 	struct {
-		GDExtensionClassNotification notification_func;
+		GDExtensionScriptInstanceNotification notification_func = nullptr;
 	} deprecated_native_info;
 
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
@@ -662,9 +684,18 @@ public:
 			const GDExtensionPropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
 
 #ifdef TOOLS_ENABLED
-			Ref<Script> script = get_script();
-			if (script.is_valid() && pcount > 0) {
-				p_list->push_back(script->get_class_category());
+			if (pcount > 0) {
+				if (native_info->get_class_category_func) {
+					GDExtensionPropertyInfo gdext_class_category;
+					if (native_info->get_class_category_func(instance, &gdext_class_category)) {
+						p_list->push_back(PropertyInfo(gdext_class_category));
+					}
+				} else {
+					Ref<Script> script = get_script();
+					if (script.is_valid()) {
+						p_list->push_back(script->get_class_category());
+					}
+				}
 			}
 #endif // TOOLS_ENABLED
 

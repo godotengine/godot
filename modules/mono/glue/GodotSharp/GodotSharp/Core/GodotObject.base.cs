@@ -247,6 +247,18 @@ namespace Godot
             return methodBind;
         }
 
+        internal static IntPtr ClassDB_get_method_with_compatibility(StringName type, StringName method, ulong hash)
+        {
+            var typeSelf = (godot_string_name)type.NativeValue;
+            var methodSelf = (godot_string_name)method.NativeValue;
+            IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method_with_compatibility(typeSelf, methodSelf, hash);
+
+            if (methodBind == IntPtr.Zero)
+                throw new NativeMethodBindNotFoundException(type + "." + method);
+
+            return methodBind;
+        }
+
         internal static unsafe delegate* unmanaged<IntPtr> ClassDB_get_constructor(StringName type)
         {
             // for some reason the '??' operator doesn't support 'delegate*'

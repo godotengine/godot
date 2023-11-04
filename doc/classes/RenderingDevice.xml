@@ -706,7 +706,7 @@
 			<param index="5" name="layer_count" type="int" />
 			<param index="6" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
-				Clears the specified [param texture] by replacing all of its pixels with the specified [param color]. [param base_mipmap] and [param mipmap_count] determine which mipmaps of the texture are affected by this clear operation, while [param base_layer] and [param layer_count] determine which layers of a 3D texture (or texture array) are affected by this clear operation. For 2D textures (which only have one layer by design), [param base_layer] and [param layer_count] must both be [code]0[/code].
+				Clears the specified [param texture] by replacing all of its pixels with the specified [param color]. [param base_mipmap] and [param mipmap_count] determine which mipmaps of the texture are affected by this clear operation, while [param base_layer] and [param layer_count] determine which layers of a 3D texture (or texture array) are affected by this clear operation. For 2D textures (which only have one layer by design), [param base_layer] must be [code]0[/code] and [param layer_count] must be [code]1[/code].
 				[b]Note:[/b] [param texture] can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to clear this texture.
 			</description>
 		</method>
@@ -740,6 +740,21 @@
 				Creates a new texture. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 				[b]Note:[/b] Not to be confused with [method RenderingServer.texture_2d_create], which creates the Godot-specific [Texture2D] resource as opposed to the graphics API's own texture type.
+			</description>
+		</method>
+		<method name="texture_create_from_extension">
+			<return type="RID" />
+			<param index="0" name="type" type="int" enum="RenderingDevice.TextureType" />
+			<param index="1" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="2" name="samples" type="int" enum="RenderingDevice.TextureSamples" />
+			<param index="3" name="usage_flags" type="int" enum="RenderingDevice.TextureUsageBits" is_bitfield="true" />
+			<param index="4" name="image" type="int" />
+			<param index="5" name="width" type="int" />
+			<param index="6" name="height" type="int" />
+			<param index="7" name="depth" type="int" />
+			<param index="8" name="layers" type="int" />
+			<description>
+				Returns an RID for an existing [param image] ([code]VkImage[/code]) with the given [param type], [param format], [param samples], [param usage_flags], [param width], [param height], [param depth], and [param layers]. This can be used to allow Godot to render onto foreign images.
 			</description>
 		</method>
 		<method name="texture_create_shared">

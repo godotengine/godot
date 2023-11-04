@@ -206,6 +206,7 @@ void TextServer::_bind_methods() {
 	/* Font Interface */
 
 	ClassDB::bind_method(D_METHOD("create_font"), &TextServer::create_font);
+	ClassDB::bind_method(D_METHOD("create_font_linked_variation", "font_rid"), &TextServer::create_font_linked_variation);
 
 	ClassDB::bind_method(D_METHOD("font_set_data", "font_rid", "data"), &TextServer::font_set_data);
 
@@ -247,6 +248,9 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("font_set_fixed_size", "font_rid", "fixed_size"), &TextServer::font_set_fixed_size);
 	ClassDB::bind_method(D_METHOD("font_get_fixed_size", "font_rid"), &TextServer::font_get_fixed_size);
+
+	ClassDB::bind_method(D_METHOD("font_set_fixed_size_scale_mode", "font_rid", "fixed_size_scale_mode"), &TextServer::font_set_fixed_size_scale_mode);
+	ClassDB::bind_method(D_METHOD("font_get_fixed_size_scale_mode", "font_rid"), &TextServer::font_get_fixed_size_scale_mode);
 
 	ClassDB::bind_method(D_METHOD("font_set_allow_system_fallback", "font_rid", "allow_system_fallback"), &TextServer::font_set_allow_system_fallback);
 	ClassDB::bind_method(D_METHOD("font_is_allow_system_fallback", "font_rid"), &TextServer::font_is_allow_system_fallback);
@@ -618,6 +622,11 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_LIST);
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_GDSCRIPT);
 	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_CUSTOM);
+
+	/* Fixed size scale mode */
+	BIND_ENUM_CONSTANT(FIXED_SIZE_SCALE_DISABLE);
+	BIND_ENUM_CONSTANT(FIXED_SIZE_SCALE_INTEGER_ONLY);
+	BIND_ENUM_CONSTANT(FIXED_SIZE_SCALE_ENABLED);
 }
 
 Vector2 TextServer::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {

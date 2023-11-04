@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		An advanced [Variant] type. All classes in the engine inherit from Object. Each class may define new properties, methods or signals, which are available to all inheriting classes. For example, a [Sprite2D] instance is able to call [method Node.add_child] because it inherits from [Node].
-		You can create new instances, using [code]Object.new()[/code] in GDScript, or [code]new Object[/code] in C#.
+		You can create new instances, using [code]Object.new()[/code] in GDScript, or [code]new GodotObject[/code] in C#.
 		To delete an Object instance, call [method free]. This is necessary for most classes inheriting Object, because they do not manage memory on their own, and will otherwise cause memory leaks when no longer in use. There are a few classes that perform memory management. For example, [RefCounted] (and by extension [Resource]) deletes itself when no longer referenced, and [Node] deletes its children when freed.
 		Objects can have a [Script] attached to them. Once the [Script] is instantiated, it effectively acts as an extension to the base class, allowing it to define and inherit new properties, methods and signals.
 		Inside a [Script], [method _get_property_list] may be overridden to customize properties in several ways. This allows them to be available to the editor, display as lists of options, sub-divide into groups, save on disk, etc. Scripting languages offer easier ways to customize properties, such as with the [annotation @GDScript.@export] annotation.
@@ -159,7 +159,7 @@
 		<method name="_init" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when the object's script is instantiated, oftentimes after the object is initialized in memory (through [code]Object.new()[/code] in GDScript, or [code]new Object[/code] in C#). It can be also defined to take in parameters. This method is similar to a constructor in most programming languages.
+				Called when the object's script is instantiated, oftentimes after the object is initialized in memory (through [code]Object.new()[/code] in GDScript, or [code]new GodotObject[/code] in C#). It can be also defined to take in parameters. This method is similar to a constructor in most programming languages.
 				[b]Note:[/b] If [method _init] is defined with [i]required[/i] parameters, the Object with script may only be created directly. If any other means (such as [method PackedScene.instantiate] or [method Node.duplicate]) are used, the script's initialization will fail.
 			</description>
 		</method>
@@ -219,6 +219,7 @@
 				        # Storing the value in the fake property.
 				        internal_data["fake_property"] = value
 				        return true
+				    return false
 
 				func _get_property_list():
 				    return [
@@ -228,7 +229,7 @@
 				[csharp]
 				private Godot.Collections.Dictionary _internalData = new Godot.Collections.Dictionary();
 
-				public override void _Set(StringName property, Variant value)
+				public override bool _Set(StringName property, Variant value)
 				{
 				    if (property == "FakeProperty")
 				    {
@@ -487,7 +488,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b][code]Object.connect()[/code] or [code]Signal.connect()[/code]?[/b]
+				[b][code skip-lint]Object.connect()[/code] or [code skip-lint]Signal.connect()[/code]?[/b]
 				As seen above, the recommended method to connect signals is not [method Object.connect]. The code block below shows the four options for connecting signals, using either this legacy method or the recommended [method Signal.connect], and using either an implicit [Callable] or a manually defined one.
 				[codeblocks]
 				[gdscript]
@@ -718,7 +719,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [param signal] name. Each connection is represented as a [Dictionary] that contains three entries:
-				- [code]signal[/code] is a reference to the [Signal];
+				- [code skip-lint]signal[/code] is a reference to the [Signal];
 				- [code]callable[/code] is a reference to the connected [Callable];
 				- [code]flags[/code] is a combination of [enum ConnectFlags].
 			</description>

@@ -35,6 +35,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
+// These constants are off by 1, causing the 'z' and '9' characters never to be used.
+// This cannot be fixed without breaking compatibility; see GH-83843.
 static constexpr uint32_t char_count = ('z' - 'a');
 static constexpr uint32_t base = char_count + ('9' - '0');
 

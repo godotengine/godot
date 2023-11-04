@@ -30,6 +30,13 @@
 				Returns the previously active tab index.
 			</description>
 		</method>
+		<method name="get_tab_bar" qualifiers="const">
+			<return type="TabBar" />
+			<description>
+				Returns the [TabBar] contained in this container.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it or editing its tabs may cause a crash. If you wish to edit the tabs, use the methods provided in [TabContainer].
+			</description>
+		</method>
 		<method name="get_tab_button_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="tab_idx" type="int" />
@@ -97,6 +104,18 @@
 			<param index="0" name="tab_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the tab at index [param tab_idx] is hidden.
+			</description>
+		</method>
+		<method name="select_next_available">
+			<return type="bool" />
+			<description>
+				Selects the first available tab with greater index than the currently selected. Returns [code]true[/code] if tab selection changed.
+			</description>
+		</method>
+		<method name="select_previous_available">
+			<return type="bool" />
+			<description>
+				Selects the first available tab with lower index than the currently selected. Returns [code]true[/code] if tab selection changed.
 			</description>
 		</method>
 		<method name="set_popup">
@@ -171,6 +190,9 @@
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
 			Sets the position at which tabs will be placed. See [enum TabBar.AlignmentMode] for details.
 		</member>
+		<member name="tab_focus_mode" type="int" setter="set_tab_focus_mode" getter="get_tab_focus_mode" enum="Control.FocusMode" default="2">
+			The focus access mode for the internal [TabBar] node.
+		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
 			Setting this to [code]-1[/code] will disable rearranging between [TabContainer]s.
@@ -221,7 +243,7 @@
 		<signal name="tab_selected">
 			<param index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab is selected, even if it is the current tab.
+				Emitted when a tab is selected via click, directional input, or script, even if it is the current tab.
 			</description>
 		</signal>
 	</signals>
@@ -291,8 +313,12 @@
 		<theme_item name="tab_disabled" data_type="style" type="StyleBox">
 			The style of disabled tabs.
 		</theme_item>
+		<theme_item name="tab_focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [TabBar] is focused. The [theme_item tab_focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox] of the selected tab, so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
 		<theme_item name="tab_hovered" data_type="style" type="StyleBox">
 			The style of the currently hovered tab.
+			[b]Note:[/b] This style will be drawn with the same width as [theme_item tab_unselected] at minimum.
 		</theme_item>
 		<theme_item name="tab_selected" data_type="style" type="StyleBox">
 			The style of the currently selected tab.

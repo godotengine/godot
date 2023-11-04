@@ -156,6 +156,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 		VIEW_DISPLAY_DEBUG_OCCLUDERS,
 		VIEW_DISPLAY_MOTION_VECTORS,
+		VIEW_DISPLAY_INTERNAL_BUFFER,
 		VIEW_DISPLAY_MAX,
 		// > Keep in sync with menu.
 
@@ -849,9 +850,9 @@ public:
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
-	double get_translate_snap() const;
-	double get_rotate_snap() const;
-	double get_scale_snap() const;
+	real_t get_translate_snap() const;
+	real_t get_rotate_snap() const;
+	real_t get_scale_snap() const;
 
 	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
 	Ref<ArrayMesh> get_axis_gizmo(int idx) const { return axis_gizmo[idx]; }

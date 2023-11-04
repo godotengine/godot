@@ -47,13 +47,16 @@
 
 void SceneCreateDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			select_node_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
 			node_type_2d->set_icon(get_editor_theme_icon(SNAME("Node2D")));
 			node_type_3d->set_icon(get_editor_theme_icon(SNAME("Node3D")));
 			node_type_gui->set_icon(get_editor_theme_icon(SNAME("Control")));
 			node_type_other->add_theme_icon_override(SNAME("icon"), get_editor_theme_icon(SNAME("Node")));
+		} break;
+
+		case NOTIFICATION_READY: {
+			select_node_dialog->select_base();
 		} break;
 	}
 }
@@ -180,7 +183,6 @@ SceneCreateDialog::SceneCreateDialog() {
 	select_node_dialog = memnew(CreateDialog);
 	add_child(select_node_dialog);
 	select_node_dialog->set_base_type("Node");
-	select_node_dialog->select_base();
 	select_node_dialog->connect("create", callable_mp(this, &SceneCreateDialog::on_type_picked));
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);

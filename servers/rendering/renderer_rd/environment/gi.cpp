@@ -64,7 +64,7 @@ void GI::voxel_gi_initialize(RID p_voxel_gi) {
 
 void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	if (voxel_gi->octree_buffer.is_valid()) {
 		RD::get_singleton()->free(voxel_gi->octree_buffer);
@@ -191,20 +191,20 @@ void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xfo
 
 AABB GI::voxel_gi_get_bounds(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, AABB());
+	ERR_FAIL_NULL_V(voxel_gi, AABB());
 
 	return voxel_gi->bounds;
 }
 
 Vector3i GI::voxel_gi_get_octree_size(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector3i());
+	ERR_FAIL_NULL_V(voxel_gi, Vector3i());
 	return voxel_gi->octree_size;
 }
 
 Vector<uint8_t> GI::voxel_gi_get_octree_cells(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(voxel_gi, Vector<uint8_t>());
 
 	if (voxel_gi->octree_buffer.is_valid()) {
 		return RD::get_singleton()->buffer_get_data(voxel_gi->octree_buffer);
@@ -214,7 +214,7 @@ Vector<uint8_t> GI::voxel_gi_get_octree_cells(RID p_voxel_gi) const {
 
 Vector<uint8_t> GI::voxel_gi_get_data_cells(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(voxel_gi, Vector<uint8_t>());
 
 	if (voxel_gi->data_buffer.is_valid()) {
 		return RD::get_singleton()->buffer_get_data(voxel_gi->data_buffer);
@@ -224,7 +224,7 @@ Vector<uint8_t> GI::voxel_gi_get_data_cells(RID p_voxel_gi) const {
 
 Vector<uint8_t> GI::voxel_gi_get_distance_field(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(voxel_gi, Vector<uint8_t>());
 
 	if (voxel_gi->data_buffer.is_valid()) {
 		return RD::get_singleton()->texture_get_data(voxel_gi->sdf_texture, 0);
@@ -234,21 +234,21 @@ Vector<uint8_t> GI::voxel_gi_get_distance_field(RID p_voxel_gi) const {
 
 Vector<int> GI::voxel_gi_get_level_counts(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<int>());
+	ERR_FAIL_NULL_V(voxel_gi, Vector<int>());
 
 	return voxel_gi->level_counts;
 }
 
 Transform3D GI::voxel_gi_get_to_cell_xform(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Transform3D());
+	ERR_FAIL_NULL_V(voxel_gi, Transform3D());
 
 	return voxel_gi->to_cell_xform;
 }
 
 void GI::voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->dynamic_range = p_range;
 	voxel_gi->version++;
@@ -256,14 +256,14 @@ void GI::voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) {
 
 float GI::voxel_gi_get_dynamic_range(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 
 	return voxel_gi->dynamic_range;
 }
 
 void GI::voxel_gi_set_propagation(RID p_voxel_gi, float p_range) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->propagation = p_range;
 	voxel_gi->version++;
@@ -271,72 +271,72 @@ void GI::voxel_gi_set_propagation(RID p_voxel_gi, float p_range) {
 
 float GI::voxel_gi_get_propagation(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->propagation;
 }
 
 void GI::voxel_gi_set_energy(RID p_voxel_gi, float p_energy) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->energy = p_energy;
 }
 
 float GI::voxel_gi_get_energy(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->energy;
 }
 
 void GI::voxel_gi_set_baked_exposure_normalization(RID p_voxel_gi, float p_baked_exposure) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->baked_exposure = p_baked_exposure;
 }
 
 float GI::voxel_gi_get_baked_exposure_normalization(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->baked_exposure;
 }
 
 void GI::voxel_gi_set_bias(RID p_voxel_gi, float p_bias) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->bias = p_bias;
 }
 
 float GI::voxel_gi_get_bias(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->bias;
 }
 
 void GI::voxel_gi_set_normal_bias(RID p_voxel_gi, float p_normal_bias) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->normal_bias = p_normal_bias;
 }
 
 float GI::voxel_gi_get_normal_bias(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->normal_bias;
 }
 
 void GI::voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->interior = p_enable;
 }
 
 void GI::voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->use_two_bounces = p_enable;
 	voxel_gi->version++;
@@ -344,52 +344,56 @@ void GI::voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) {
 
 bool GI::voxel_gi_is_using_two_bounces(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, false);
+	ERR_FAIL_NULL_V(voxel_gi, false);
 	return voxel_gi->use_two_bounces;
 }
 
 bool GI::voxel_gi_is_interior(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->interior;
 }
 
 uint32_t GI::voxel_gi_get_version(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->version;
 }
 
 uint32_t GI::voxel_gi_get_data_version(RID p_voxel_gi) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, 0);
 	return voxel_gi->data_version;
 }
 
 RID GI::voxel_gi_get_octree_buffer(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, RID());
+	ERR_FAIL_NULL_V(voxel_gi, RID());
 	return voxel_gi->octree_buffer;
 }
 
 RID GI::voxel_gi_get_data_buffer(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, RID());
+	ERR_FAIL_NULL_V(voxel_gi, RID());
 	return voxel_gi->data_buffer;
 }
 
 RID GI::voxel_gi_get_sdf_texture(RID p_voxel_gi) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, RID());
+	ERR_FAIL_NULL_V(voxel_gi, RID());
 
 	return voxel_gi->sdf_texture;
 }
 
 Dependency *GI::voxel_gi_get_dependency(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, nullptr);
+	ERR_FAIL_NULL_V(voxel_gi, nullptr);
 
 	return &voxel_gi->dependency;
+}
+
+void GI::sdfgi_reset() {
+	sdfgi_current_version++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -416,6 +420,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	y_scale_mode = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_y_scale(p_env);
 	static const float y_scale[3] = { 2.0, 1.5, 1.0 };
 	y_mult = y_scale[y_scale_mode];
+	version = gi->sdfgi_current_version;
 	cascades.resize(num_cascades);
 	probe_axis_count = SDFGI::PROBE_DIVISOR + 1;
 	solid_cell_ratio = gi->sdfgi_solid_cell_ratio;
@@ -4054,28 +4059,28 @@ void GI::voxel_gi_instance_free(RID p_rid) {
 
 void GI::voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) {
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->transform = p_xform;
 }
 
 bool GI::voxel_gi_needs_update(RID p_probe) const {
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
-	ERR_FAIL_COND_V(!voxel_gi, false);
+	ERR_FAIL_NULL_V(voxel_gi, false);
 
 	return voxel_gi->last_probe_version != voxel_gi_get_version(voxel_gi->probe);
 }
 
 void GI::voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects) {
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->update(p_update_light_instances, p_light_instances, p_dynamic_objects);
 }
 
 void GI::debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
+	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->debug(p_draw_list, p_framebuffer, p_camera_with_transform, p_lighting, p_emission, p_alpha);
 }

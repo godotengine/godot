@@ -2238,6 +2238,19 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 #ifdef MODULE_MONO_ENABLED
 	// Android export is still a work in progress, keep a message as a warning.
 	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
+
+	bool unsupported_arch = false;
+	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
+	for (ABI abi : enabled_abis) {
+		if (abi.arch != "arm64" && abi.arch != "x86_64") {
+			err += vformat(TTR("Android architecture %s not supported in C# projects."), abi.arch) + "\n";
+			unsupported_arch = true;
+		}
+	}
+	if (unsupported_arch) {
+		r_error = err;
+		return false;
+	}
 #endif
 
 	// Look for export templates (first official, and if defined custom templates).
@@ -2635,6 +2648,8 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 	if (da_res->dir_exists(APK_ASSETS_DIRECTORY)) {
 		print_verbose("Clearing APK assets directory...");
 		Ref<DirAccess> da_assets = DirAccess::open(APK_ASSETS_DIRECTORY);
+		ERR_FAIL_COND(da_assets.is_null());
+
 		da_assets->erase_contents_recursive();
 		da_res->remove(APK_ASSETS_DIRECTORY);
 	}
@@ -2643,6 +2658,8 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 	if (da_res->dir_exists(AAB_ASSETS_DIRECTORY)) {
 		print_verbose("Clearing AAB assets directory...");
 		Ref<DirAccess> da_assets = DirAccess::open(AAB_ASSETS_DIRECTORY);
+		ERR_FAIL_COND(da_assets.is_null());
+
 		da_assets->erase_contents_recursive();
 		da_res->remove(AAB_ASSETS_DIRECTORY);
 	}

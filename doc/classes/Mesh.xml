@@ -162,14 +162,14 @@
 		<method name="get_surface_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of surfaces that the [Mesh] holds.
+				Returns the number of surfaces that the [Mesh] holds. This is equivalent to [method MeshInstance3D.get_surface_override_material_count].
 			</description>
 		</method>
 		<method name="surface_get_arrays" qualifiers="const">
 			<return type="Array" />
 			<param index="0" name="surf_idx" type="int" />
 			<description>
-				Returns the arrays for the vertices, normals, uvs, etc. that make up the requested surface (see [method ArrayMesh.add_surface_from_arrays]).
+				Returns the arrays for the vertices, normals, UVs, etc. that make up the requested surface (see [method ArrayMesh.add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_blend_shape_arrays" qualifiers="const">
@@ -184,6 +184,7 @@
 			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Returns a [Material] in a given surface. Surface is rendered using this material.
+				[b]Note:[/b] This returns the material within the [Mesh] resource, not the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties. To get the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.get_surface_override_material] instead.
 			</description>
 		</method>
 		<method name="surface_set_material">
@@ -192,6 +193,7 @@
 			<param index="1" name="material" type="Material" />
 			<description>
 				Sets a [Material] for a given surface. Surface will be rendered using this material.
+				[b]Note:[/b] This assigns the material within the [Mesh] resource, not the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties. To set the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.set_surface_override_material] instead.
 			</description>
 		</method>
 	</methods>
@@ -363,6 +365,9 @@
 		</constant>
 		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark that the mesh intentionally contains no vertex array.
+		</constant>
+		<constant name="ARRAY_FLAG_COMPRESS_ATTRIBUTES" value="536870912" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that a mesh is using compressed attributes (vertices, normals, tangents, UVs). When this form of compression is enabled, vertex positions will be packed into an RGBA16UNORM attribute and scaled in the vertex shader. The normal and tangent will be packed into an RG16UNORM representing an axis, and a 16-bit float stored in the A-channel of the vertex. UVs will use 16-bit normalized floats instead of full 32-bit signed floats. When using this compression mode you must use either vertices, normals, and tangents or only vertices. You cannot use normals without tangents. Importers will automatically enable this compression if they can.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 			Blend shapes are normalized.

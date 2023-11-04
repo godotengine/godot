@@ -866,7 +866,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 		state.instance_data_array[r_index].lights[2] = lights[2];
 		state.instance_data_array[r_index].lights[3] = lights[3];
 
-		state.instance_data_array[r_index].flags = base_flags | (state.instance_data_array[r_index == 0 ? 0 : r_index - 1].flags & (FLAGS_DEFAULT_NORMAL_MAP_USED | FLAGS_DEFAULT_SPECULAR_MAP_USED)); //reset on each command for sanity, keep canvastexture binding config
+		state.instance_data_array[r_index].flags = base_flags | (state.instance_data_array[r_index == 0 ? 0 : r_index - 1].flags & (FLAGS_DEFAULT_NORMAL_MAP_USED | FLAGS_DEFAULT_SPECULAR_MAP_USED)); // Reset on each command for safety, keep canvastexture binding config.
 
 		Color blend_color = base_color;
 		GLES3::CanvasShaderData::BlendMode blend_mode = p_blend_mode;
@@ -1236,7 +1236,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 }
 
 void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
-	ERR_FAIL_COND(!state.canvas_instance_batches[state.current_batch_index].command);
+	ERR_FAIL_NULL(state.canvas_instance_batches[state.current_batch_index].command);
 
 	// Used by Polygon and Mesh.
 	static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
@@ -1383,7 +1383,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				GLuint vertex_array_gl = 0;
 				GLuint index_array_gl = 0;
 
-				uint32_t input_mask = 0; // 2D meshes always use the same vertex format
+				uint64_t input_mask = 0; // 2D meshes always use the same vertex format.
 				if (mesh_instance.is_valid()) {
 					mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, vertex_array_gl);
 				} else {
@@ -1420,6 +1420,13 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 						glEnableVertexAttribArray(5);
 						glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, instance_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(instance_color_offset * sizeof(float)));
 						glVertexAttribDivisor(5, 1);
+					} else {
+						// Set all default instance color and custom data values to 1.0 or 0.0 using a compressed format.
+						uint16_t zero = Math::make_half_float(0.0f);
+						uint16_t one = Math::make_half_float(1.0f);
+						GLuint default_color = (uint32_t(one) << 16) | one;
+						GLuint default_custom = (uint32_t(zero) << 16) | zero;
+						glVertexAttribI4ui(5, default_color, default_color, default_custom, default_custom);
 					}
 				}
 
@@ -2150,7 +2157,7 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 	GLES3::Texture *t = texture_storage->get_texture(p_texture);
 
 	if (t) {
-		ERR_FAIL_COND(!t->canvas_texture);
+		ERR_FAIL_NULL(t->canvas_texture);
 		ct = t->canvas_texture;
 		if (t->render_target) {
 			t->render_target->used_in_frame = true;

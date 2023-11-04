@@ -64,6 +64,11 @@ void ShaderEditorPlugin::_update_shader_list() {
 			}
 		}
 
+		// When shader is deleted in filesystem dock, need this to correctly close shader editor.
+		if (!path.is_empty()) {
+			shader->set_meta("_edit_res_path", path);
+		}
+
 		bool unsaved = false;
 		if (edited_shader.shader_editor) {
 			unsaved = edited_shader.shader_editor->is_unsaved();
@@ -571,10 +576,20 @@ void ShaderEditorPlugin::_window_changed(bool p_visible) {
 	make_floating->set_visible(!p_visible);
 }
 
+void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		const Ref<Shader> &shader = edited_shaders[i].shader;
+		if (shader->get_meta("_edit_res_path") == p_removed_file) {
+			_close_shader(i);
+		}
+	}
+}
+
 void ShaderEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ShaderEditorPlugin::_close_builtin_shaders_from_scene));
+			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ShaderEditorPlugin::_file_removed));
 		} break;
 	}
 }
@@ -599,8 +614,8 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item(TTR("Load Shader File"), FILE_OPEN);
 	file_menu->get_popup()->add_item(TTR("Load Shader Include File"), FILE_OPEN_INCLUDE);
-	file_menu->get_popup()->add_item(TTR("Save File"), FILE_SAVE);
-	file_menu->get_popup()->add_item(TTR("Save File As"), FILE_SAVE_AS);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("shader_editor/save", TTR("Save File"), KeyModifierMask::CMD_OR_CTRL | Key::S), FILE_SAVE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("shader_editor/save_as", TTR("Save File As"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::S), FILE_SAVE_AS);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item(TTR("Open File in Inspector"), FILE_INSPECT);
 	file_menu->get_popup()->add_separator();

@@ -29,7 +29,7 @@
 #ifndef OT_LAYOUT_GDEF_GDEF_HH
 #define OT_LAYOUT_GDEF_GDEF_HH
 
-#include "../../../hb-ot-layout-common.hh"
+#include "../../../hb-ot-var-common.hh"
 
 #include "../../../hb-font.hh"
 #include "../../../hb-cache.hh"
@@ -204,17 +204,19 @@ struct CaretValueFormat3
     if (!c->serializer->embed (coordinate)) return_trace (false);
 
     unsigned varidx = (this+deviceTable).get_variation_index ();
-    if (c->plan->layout_variation_idx_delta_map.has (varidx))
+    hb_pair_t<unsigned, int> *new_varidx_delta;
+    if (!c->plan->layout_variation_idx_delta_map.has (varidx, &new_varidx_delta))
+      return_trace (false);
+
+    uint32_t new_varidx = hb_first (*new_varidx_delta);
+    int delta = hb_second (*new_varidx_delta);
+    if (delta != 0)
     {
-      int delta = hb_second (c->plan->layout_variation_idx_delta_map.get (varidx));
-      if (delta != 0)
-      {
-        if (!c->serializer->check_assign (out->coordinate, coordinate + delta, HB_SERIALIZE_ERROR_INT_OVERFLOW))
-          return_trace (false);
-      }
+      if (!c->serializer->check_assign (out->coordinate, coordinate + delta, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+        return_trace (false);
     }
 
-    if (c->plan->all_axes_pinned)
+    if (new_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
       return_trace (c->serializer->check_assign (out->caretValueFormat, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
 
     if (!c->serializer->embed (deviceTable))
@@ -602,6 +604,26 @@ struct GDEFVersion1_2
 		  (version.to_int () < 0x00010003u || varStore.sanitize (c, this)));
   }
 
+  static void remap_varidx_after_instantiation (const hb_map_t& varidx_map,
+                                                hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>>& layout_variation_idx_delta_map /* IN/OUT */)
+  {
+    /* varidx_map is empty which means varstore is empty after instantiation,
+     * no variations, map all varidx to HB_OT_LAYOUT_NO_VARIATIONS_INDEX.
+     * varidx_map doesn't have original varidx, indicating delta row is all
+     * zeros, map varidx to HB_OT_LAYOUT_NO_VARIATIONS_INDEX */
+    for (auto _ : layout_variation_idx_delta_map.iter_ref ())
+    {
+      /* old_varidx->(varidx, delta) mapping generated for subsetting, then this
+       * varidx is used as key of varidx_map during instantiation */
+      uint32_t varidx = _.second.first;
+      uint32_t *new_varidx;
+      if (varidx_map.has (varidx, &new_varidx))
+        _.second.first = *new_varidx;
+      else
+        _.second.first = HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
+    }
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -624,6 +646,22 @@ struct GDEFVersion1_2
     {
       if (c->plan->all_axes_pinned)
         out->varStore = 0;
+      else if (c->plan->normalized_coords)
+      {
+        if (varStore)
+        {
+          item_variations_t item_vars;
+          if (item_vars.instantiate (this+varStore, c->plan, true, true,
+                                     c->plan->gdef_varstore_inner_maps.as_array ()))
+            subset_varstore = out->varStore.serialize_serialize (c->serializer,
+                                                                 item_vars.has_long_word (),
+                                                                 c->plan->axis_tags,
+                                                                 item_vars.get_region_list (),
+                                                                 item_vars.get_vardata_encodings ());
+          remap_varidx_after_instantiation (item_vars.get_varidx_map (),
+                                            c->plan->layout_variation_idx_delta_map);
+        }
+      }
       else
         subset_varstore = out->varStore.serialize_subset (c, varStore, this, c->plan->gdef_varstore_inner_maps.as_array ());
     }
@@ -922,17 +960,32 @@ struct GDEF
   { get_lig_caret_list ().collect_variation_indices (c); }
 
   void remap_layout_variation_indices (const hb_set_t *layout_variation_indices,
+				       const hb_vector_t<int>& normalized_coords,
+				       bool calculate_delta, /* not pinned at default */
+				       bool no_variations, /* all axes pinned */
 				       hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map /* OUT */) const
   {
     if (!has_var_store ()) return;
-    if (layout_variation_indices->is_empty ()) return;
-
+    const VariationStore &var_store = get_var_store ();
+    float *store_cache = var_store.create_cache ();
+    
     unsigned new_major = 0, new_minor = 0;
     unsigned last_major = (layout_variation_indices->get_min ()) >> 16;
     for (unsigned idx : layout_variation_indices->iter ())
     {
+      int delta = 0;
+      if (calculate_delta)
+        delta = roundf (var_store.get_delta (idx, normalized_coords.arrayZ,
+                                             normalized_coords.length, store_cache));
+
+      if (no_variations)
+      {
+        layout_variation_idx_delta_map->set (idx, hb_pair_t<unsigned, int> (HB_OT_LAYOUT_NO_VARIATIONS_INDEX, delta));
+        continue;
+      }
+
       uint16_t major = idx >> 16;
-      if (major >= get_var_store ().get_sub_table_count ()) break;
+      if (major >= var_store.get_sub_table_count ()) break;
       if (major != last_major)
       {
 	new_minor = 0;
@@ -940,14 +993,11 @@ struct GDEF
       }
 
       unsigned new_idx = (new_major << 16) + new_minor;
-      if (!layout_variation_idx_delta_map->has (idx))
-        continue;
-      int delta = hb_second (layout_variation_idx_delta_map->get (idx));
-
       layout_variation_idx_delta_map->set (idx, hb_pair_t<unsigned, int> (new_idx, delta));
       ++new_minor;
       last_major = major;
     }
+    var_store.destroy_cache (store_cache);
   }
 
   protected:

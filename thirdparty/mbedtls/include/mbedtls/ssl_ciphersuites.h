@@ -1,7 +1,7 @@
 /**
  * \file ssl_ciphersuites.h
  *
- * \brief SSL Ciphersuites for mbed TLS
+ * \brief SSL Ciphersuites for Mbed TLS
  */
 /*
  *  Copyright The Mbed TLS Contributors

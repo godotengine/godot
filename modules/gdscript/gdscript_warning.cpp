@@ -94,6 +94,9 @@ String GDScriptWarning::get_message() const {
 				return vformat(R"*(%s "%s()" has no static return type.)*", symbols[0], symbols[1]);
 			}
 			return vformat(R"(%s "%s" has no static type.)", symbols[0], symbols[1]);
+		case INFERRED_DECLARATION:
+			CHECK_SYMBOLS(2);
+			return vformat(R"(%s "%s" has an implicitly inferred static type.)", symbols[0], symbols[1]);
 		case UNSAFE_PROPERTY_ACCESS:
 			CHECK_SYMBOLS(2);
 			return vformat(R"(The property "%s" is not present on the inferred type "%s" (but may be present on a subtype).)", symbols[0], symbols[1]);
@@ -104,8 +107,8 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The value is cast to "%s" but has an unknown type.)", symbols[0]);
 		case UNSAFE_CALL_ARGUMENT:
-			CHECK_SYMBOLS(4);
-			return vformat(R"*(The argument %s of the function "%s()" requires a the subtype "%s" but the supertype "%s" was provided.)*", symbols[0], symbols[1], symbols[2], symbols[3]);
+			CHECK_SYMBOLS(5);
+			return vformat(R"*(The argument %s of the %s "%s()" requires the subtype "%s" but the supertype "%s" was provided.)*", symbols[0], symbols[1], symbols[2], symbols[3], symbols[4]);
 		case UNSAFE_VOID_RETURN:
 			CHECK_SYMBOLS(2);
 			return vformat(R"*(The method "%s()" returns "void" but it's trying to return a call to "%s()" that can't be ensured to also be "void".)*", symbols[0], symbols[1]);
@@ -207,6 +210,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"CONSTANT_USED_AS_FUNCTION",
 		"FUNCTION_USED_AS_PROPERTY",
 		"UNTYPED_DECLARATION",
+		"INFERRED_DECLARATION",
 		"UNSAFE_PROPERTY_ACCESS",
 		"UNSAFE_METHOD_ACCESS",
 		"UNSAFE_CAST",

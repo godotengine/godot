@@ -39,13 +39,18 @@
 # Hugel <qihu@nfschina.com>, 2022.
 # nitenook <admin@alterbaum.net>, 2022.
 # Edison Lee <edisonlee@edisonlee55.com>, 2023.
+# Bogay Chuang <pojay11523@gmail.com>, 2023.
+# 廖文睿 <petey7271@gmail.com>, 2023.
+# EJAMI <q0932732330000@gmail.com>, 2023.
+# hung0123 <flyking1486325@gmail.com>, 2023.
+# Youuin Wang <los2516lir@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-08 13:52+0000\n"
-"Last-Translator: 鄭惟中 <biglionlion06@gmail.com>\n"
+"PO-Revision-Date: 2023-10-01 21:59+0000\n"
+"Last-Translator: Youuin Wang <los2516lir@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -53,7 +58,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "應用"
@@ -66,6 +71,9 @@ msgstr "名稱"
 
 msgid "Description"
 msgstr "說明"
+
+msgid "Version"
+msgstr "版本"
 
 msgid "Run"
 msgstr "執行"
@@ -118,6 +126,9 @@ msgstr "無邊框"
 msgid "No Focus"
 msgstr "關閉聚焦"
 
+msgid "Window Width Override"
+msgstr "窗口寬度覆蓋"
+
 msgid "Energy Saving"
 msgstr "節能"
 
@@ -126,6 +137,9 @@ msgstr "保持螢幕開啟"
 
 msgid "Audio"
 msgstr "音訊"
+
+msgid "Buses"
+msgstr "總線"
 
 msgid "Editor"
 msgstr "編輯器"
@@ -164,7 +178,7 @@ msgid "Message"
 msgstr "訊息"
 
 msgid "Rendering"
-msgstr "算繪"
+msgstr "渲染"
 
 msgid "Limits"
 msgstr "限制"
@@ -193,11 +207,14 @@ msgstr "Vulkan"
 msgid "Max Descriptors per Pool"
 msgstr "各池最大描述符數"
 
+msgid "Collada"
+msgstr "Collada"
+
+msgid "Use Ambient"
+msgstr "使用環境通道"
+
 msgid "Low Processor Usage Mode"
 msgstr "低處理器使用率模式"
-
-msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "低處理器使用率模式睡眠（微秒）"
 
 msgid "Print Error Messages"
 msgstr "顯示錯誤訊息"
@@ -559,12 +576,6 @@ msgstr "主要字體粗體"
 msgid "Code Font"
 msgstr "程式碼字體"
 
-msgid "Low Processor Mode Sleep (µsec)"
-msgstr "處理器節能模式睡眠 (微秒)"
-
-msgid "Unfocused Low Processor Mode Sleep (µsec)"
-msgstr "未聚焦時處理器節能模式睡眠 (微秒)"
-
 msgid "Separate Distraction Mode"
 msgstr "將專注模式分離"
 
@@ -642,6 +653,12 @@ msgstr "顯示模式"
 
 msgid "Thumbnail Size"
 msgstr "縮圖大小"
+
+msgid "Import"
+msgstr "匯入"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "Docks"
 msgstr "面板"
@@ -967,9 +984,6 @@ msgstr "顯示上一個大綱"
 msgid "Autorename Animation Tracks"
 msgstr "自動重新命名動畫軌道"
 
-msgid "Confirm Insert Track"
-msgstr "確認插入軌道"
-
 msgid "Default Create Bezier Tracks"
 msgstr "預設建立貝茲軌道"
 
@@ -1216,12 +1230,6 @@ msgstr "變化"
 msgid "Transform"
 msgstr "變換"
 
-msgid "Collada"
-msgstr "Collada"
-
-msgid "Use Ambient"
-msgstr "使用環境通道"
-
 msgid "Make Unique"
 msgstr "獨立化"
 
@@ -1267,8 +1275,11 @@ msgstr "縮放網格"
 msgid "Offset Mesh"
 msgstr "Mesh 偏移"
 
-msgid "Import"
-msgstr "匯入"
+msgid "Layer"
+msgstr "圖層"
+
+msgid "Mask"
+msgstr "遮罩"
 
 msgid "Advanced"
 msgstr "進階"
@@ -1780,9 +1791,6 @@ msgstr "獨立動畫名稱"
 msgid "Animations"
 msgstr "動畫"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "Buffer View"
 msgstr "緩衝區視圖"
 
@@ -1861,12 +1869,6 @@ msgstr "編輯器側欄"
 msgid "Mesh Library"
 msgstr "網格庫"
 
-msgid "Layer"
-msgstr "圖層"
-
-msgid "Mask"
-msgstr "遮罩"
-
 msgid "Priority"
 msgstr "優先級"
 
@@ -1886,7 +1888,7 @@ msgid "Ultra Quality Ray Count"
 msgstr "超高品量射線數"
 
 msgid "Loop Offset"
-msgstr "循環偏移"
+msgstr "循環偏移量"
 
 msgid "IOD"
 msgstr "IOD"
@@ -1990,9 +1992,6 @@ msgstr "外掛"
 msgid "Debug Password"
 msgstr "偵錯密碼"
 
-msgid "Version"
-msgstr "版本"
-
 msgid "Code"
 msgstr "程式碼"
 
@@ -2004,12 +2003,6 @@ msgstr "App 分類"
 
 msgid "Graphics"
 msgstr "圖形"
-
-msgid "Hand Tracking Frequency"
-msgstr "手勢追蹤頻率"
-
-msgid "Passthrough"
-msgstr "穿透"
 
 msgid "Allow"
 msgstr "允許"
@@ -2115,24 +2108,6 @@ msgstr "Apple ID 名稱"
 
 msgid "Apple ID Password"
 msgstr "Apple ID 密碼"
-
-msgid "Short Name"
-msgstr "短名稱"
-
-msgid "Publisher Display Name"
-msgstr "發布者顯示名稱"
-
-msgid "Product GUID"
-msgstr "產品 GUID"
-
-msgid "Certificate"
-msgstr "憑證"
-
-msgid "Splash Screen"
-msgstr "啟動畫面"
-
-msgid "Tiles"
-msgstr "圖塊"
 
 msgid "Web"
 msgstr "Web"
@@ -2299,6 +2274,9 @@ msgstr "繪製階段"
 msgid "Passes"
 msgstr "階段"
 
+msgid "End"
+msgstr "頁尾"
+
 msgid "Params"
 msgstr "引數"
 
@@ -2377,9 +2355,6 @@ msgstr "材質覆蓋層"
 msgid "Extra Cull Margin"
 msgstr "額外剔除邊距"
 
-msgid "End"
-msgstr "頁尾"
-
 msgid "World Scale"
 msgstr "世界縮放"
 
@@ -2410,6 +2385,9 @@ msgstr "增加數量"
 msgid "Blend Amount"
 msgstr "混合量"
 
+msgid "Root Node"
+msgstr "根節點"
+
 msgid "Reset"
 msgstr "重設"
 
@@ -2418,9 +2396,6 @@ msgstr "切換"
 
 msgid "Switch Mode"
 msgstr "切換模式"
-
-msgid "Root Node"
-msgstr "根節點"
 
 msgid "Playback Options"
 msgstr "播放選項"
@@ -2457,12 +2432,6 @@ msgstr "預設游標形狀"
 
 msgid "Scroll Offset"
 msgstr "捲軸偏移量"
-
-msgid "Snap Distance"
-msgstr "吸附距離"
-
-msgid "Use Snap"
-msgstr "使用吸附"
 
 msgid "Title"
 msgstr "標題"
@@ -2560,81 +2529,6 @@ msgstr "3D物理"
 msgid "Format"
 msgstr "格式"
 
-msgid "H Separation"
-msgstr "水平分離"
-
-msgid "Shadow Offset X"
-msgstr "陰影 X 偏移"
-
-msgid "Shadow Offset Y"
-msgstr "陰影 Y 偏移"
-
-msgid "Clear"
-msgstr "清除"
-
-msgid "Folded"
-msgstr "已折叠"
-
-msgid "Close"
-msgstr "關閉"
-
-msgid "Close H Offset"
-msgstr "關閉水平偏移"
-
-msgid "Close V Offset"
-msgstr "關閉垂直偏移"
-
-msgid "Reload"
-msgstr "重新載入"
-
-msgid "Folder"
-msgstr "資料夾"
-
-msgid "File"
-msgstr "檔案"
-
-msgid "Separator"
-msgstr "分隔線"
-
-msgid "Submenu"
-msgstr "子選單"
-
-msgid "Font Separator"
-msgstr "分隔線字體"
-
-msgid "V Separation"
-msgstr "垂直分隔"
-
-msgid "Title Offset"
-msgstr "標題偏移量"
-
-msgid "Close Offset"
-msgstr "關閉偏移"
-
-msgid "Port Offset"
-msgstr "連接埠偏移量"
-
-msgid "Cursor"
-msgstr "游標"
-
-msgid "Scroll Border"
-msgstr "捲軸邊框"
-
-msgid "Line Separation"
-msgstr "行分隔"
-
-msgid "Screen Picker"
-msgstr "屏幕取色器"
-
-msgid "Table H Separation"
-msgstr "表格水平分隔"
-
-msgid "Table V Separation"
-msgstr "表格垂直分隔"
-
-msgid "Node"
-msgstr "節點"
-
 msgid "Source"
 msgstr "來源"
 
@@ -2674,6 +2568,9 @@ msgstr "額外間距"
 msgid "Offsets"
 msgstr "偏移"
 
+msgid "From"
+msgstr "來自"
+
 msgid "Shader"
 msgstr "著色器"
 
@@ -2697,6 +2594,9 @@ msgstr "項目"
 
 msgid "Preview"
 msgstr "預覽"
+
+msgid "Image Size"
+msgstr "圖片大小"
 
 msgid "Transform Format"
 msgstr "變換格式"
@@ -2749,14 +2649,23 @@ msgstr "右下"
 msgid "Bottom Left"
 msgstr "左下"
 
-msgid "Image Size"
-msgstr "圖片大小"
+msgid "Terrains"
+msgstr "地形"
 
-msgid "From"
-msgstr "來自"
+msgid "Custom Data"
+msgstr "自訂資料"
+
+msgid "Scene"
+msgstr "場景"
 
 msgid "Transpose"
 msgstr "切換行列（縱橫）顯示"
+
+msgid "Probability"
+msgstr "機率"
+
+msgid "File"
+msgstr "檔案"
 
 msgid "Constant"
 msgstr "常數"
@@ -2766,6 +2675,69 @@ msgstr "函式"
 
 msgid "Plane"
 msgstr "平面"
+
+msgid "H Separation"
+msgstr "水平分離"
+
+msgid "Shadow Offset X"
+msgstr "陰影 X 偏移"
+
+msgid "Shadow Offset Y"
+msgstr "陰影 Y 偏移"
+
+msgid "Clear"
+msgstr "清除"
+
+msgid "Folded"
+msgstr "已折叠"
+
+msgid "Close"
+msgstr "關閉"
+
+msgid "Close H Offset"
+msgstr "關閉水平偏移"
+
+msgid "Close V Offset"
+msgstr "關閉垂直偏移"
+
+msgid "Reload"
+msgstr "重新載入"
+
+msgid "Folder"
+msgstr "資料夾"
+
+msgid "Separator"
+msgstr "分隔線"
+
+msgid "Submenu"
+msgstr "子選單"
+
+msgid "Font Separator"
+msgstr "分隔線字體"
+
+msgid "V Separation"
+msgstr "垂直分隔"
+
+msgid "Cursor"
+msgstr "游標"
+
+msgid "Scroll Border"
+msgstr "捲軸邊框"
+
+msgid "Line Separation"
+msgstr "行分隔"
+
+msgid "Screen Picker"
+msgstr "屏幕取色器"
+
+msgid "Table H Separation"
+msgstr "表格水平分隔"
+
+msgid "Table V Separation"
+msgstr "表格垂直分隔"
+
+msgid "Node"
+msgstr "節點"
 
 msgid "Custom"
 msgstr "自訂"

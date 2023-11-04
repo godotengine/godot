@@ -644,6 +644,7 @@ namespace Godot
 
         /// <summary>
         /// Returns a Vector3 rotated (multiplied) by the inverse quaternion.
+        /// <c>vector * quaternion</c> is equivalent to <c>quaternion.Inverse() * vector</c>. See <see cref="Inverse"/>.
         /// </summary>
         /// <param name="vector">A Vector3 to inversely rotate.</param>
         /// <param name="quaternion">The quaternion to rotate by.</param>
@@ -800,7 +801,7 @@ namespace Godot
         /// <returns>A hash code for this quaternion.</returns>
         public override readonly int GetHashCode()
         {
-            return Y.GetHashCode() ^ X.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode();
+            return HashCode.Combine(X, Y, Z, W);
         }
 
         /// <summary>

@@ -159,7 +159,9 @@ bool OggPacketSequencePlayback::next_ogg_packet(ogg_packet **p_packet) const {
 
 	*p_packet = packet;
 
-	packet_cursor++;
+	if (!packet->e_o_s) { // Added this so it doesn't try to go to the next packet if it's the last packet of the file.
+		packet_cursor++;
+	}
 
 	return true;
 }
@@ -214,6 +216,20 @@ bool OggPacketSequencePlayback::seek_page(int64_t p_granule_pos) {
 	packetno = 0;
 
 	return true;
+}
+
+int64_t OggPacketSequencePlayback::get_page_number() const {
+	return page_cursor;
+}
+
+bool OggPacketSequencePlayback::set_page_number(int64_t p_page_number) {
+	if (p_page_number >= 0 && p_page_number < ogg_packet_sequence->page_data.size()) {
+		page_cursor = p_page_number;
+		packet_cursor = 0;
+		packetno = 0;
+		return true;
+	}
+	return false;
 }
 
 OggPacketSequencePlayback::OggPacketSequencePlayback() {

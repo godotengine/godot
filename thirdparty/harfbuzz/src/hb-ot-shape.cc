@@ -1054,7 +1054,7 @@ hb_ot_position_plan (const hb_ot_shape_context_t *c)
    * direction is backward we don't shift and it will end up
    * hanging over the next glyph after the final reordering.
    *
-   * Note: If fallback positinoing happens, we don't care about
+   * Note: If fallback positioning happens, we don't care about
    * this as it will be overridden.
    */
   bool adjust_offsets_when_zeroing = c->plan->adjust_mark_positioning_when_zeroing &&

@@ -90,8 +90,6 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 }
 
 void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
-	// Don't allow zoom to go below 1% or above 10000%
-	zoom_widget->set_zoom(CLAMP(zoom_widget->get_zoom(), 0.01f, 100.f));
 	float zoom = zoom_widget->get_zoom();
 
 	// Compute the minimum sizes.

@@ -1000,7 +1000,7 @@ namespace Godot
         /// <returns>A hash code for this vector.</returns>
         public override readonly int GetHashCode()
         {
-            return Y.GetHashCode() ^ X.GetHashCode();
+            return HashCode.Combine(X, Y);
         }
 
         /// <summary>

@@ -604,6 +604,8 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display->set_select_mode(Tree::SELECT_ROW);
 	_results_display->set_allow_rmb_select(true);
 	_results_display->set_allow_reselect(true);
+	_results_display->add_theme_constant_override("inner_item_margin_left", 0);
+	_results_display->add_theme_constant_override("inner_item_margin_right", 0);
 	_results_display->create_item(); // Root
 	vbc->add_child(_results_display);
 

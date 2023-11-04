@@ -54,7 +54,6 @@
 // Godot is currently restricted to C++17 which doesn't allow this notation. Make sure critical fields are set.
 
 // forward declarations, we don't want to include these fully
-class OpenXRVulkanExtension;
 class OpenXRInterface;
 
 class OpenXRAPI {
@@ -140,6 +139,7 @@ private:
 		void *swapchain_graphics_data = nullptr;
 		uint32_t image_index = 0;
 		bool image_acquired = false;
+		bool skip_acquire_swapchain = false;
 	};
 
 	OpenXRSwapChainInfo swapchains[OPENXR_SWAPCHAIN_MAX];
@@ -356,6 +356,7 @@ public:
 
 	void pre_render();
 	bool pre_draw_viewport(RID p_render_target);
+	XrSwapchain get_color_swapchain();
 	RID get_color_texture();
 	RID get_depth_texture();
 	void post_draw_viewport(RID p_render_target);
@@ -369,6 +370,15 @@ public:
 	// Render Target size multiplier
 	double get_render_target_size_multiplier() const;
 	void set_render_target_size_multiplier(double multiplier);
+
+	// Foveation settings
+	bool is_foveation_supported() const;
+
+	int get_foveation_level() const;
+	void set_foveation_level(int p_foveation_level);
+
+	bool get_foveation_dynamic() const;
+	void set_foveation_dynamic(bool p_foveation_dynamic);
 
 	// action map
 	String get_default_action_map_resource_name();

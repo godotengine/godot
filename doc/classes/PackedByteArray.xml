@@ -182,7 +182,7 @@
 			<param index="1" name="compression_mode" type="int" default="0" />
 			<description>
 				Returns a new [PackedByteArray] with the data decompressed. Set the compression mode using one of [enum FileAccess.CompressionMode]'s constants. [b]This method only accepts brotli, gzip, and deflate compression modes.[/b]
-				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate its output buffer multiple times while decompressing, whereas [code]decompress[/code] knows it's output buffer size from the beginning.
+				This method is potentially slower than [method decompress], as it may have to re-allocate its output buffer multiple times while decompressing, whereas [method decompress] knows it's output buffer size from the beginning.
 				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [param max_output_size]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
 			</description>
 		</method>
@@ -307,31 +307,31 @@
 		<method name="get_string_from_ascii" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts ASCII/Latin-1 encoded array to [String]. Fast alternative to [method get_string_from_utf8] if the content is ASCII/Latin-1 only. Unlike the UTF-8 function this function maps every byte to a character in the array. Multibyte sequences will not be interpreted correctly. For parsing user input always use [method get_string_from_utf8].
+				Converts ASCII/Latin-1 encoded array to [String]. Fast alternative to [method get_string_from_utf8] if the content is ASCII/Latin-1 only. Unlike the UTF-8 function this function maps every byte to a character in the array. Multibyte sequences will not be interpreted correctly. For parsing user input always use [method get_string_from_utf8]. This is the inverse of [method String.to_ascii_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_utf8" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not valid UTF-8 string.
+				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not valid UTF-8 string. This is the inverse of [method String.to_utf8_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_utf16" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string.
+				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string. This is the inverse of [method String.to_utf16_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_utf32" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string.
+				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string. This is the inverse of [method String.to_utf32_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_wchar" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts wide character ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded array to [String]. Returns empty string if source array is not valid wide string.
+				Converts wide character ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded array to [String]. Returns empty string if source array is not valid wide string. This is the inverse of [method String.to_wchar_buffer].
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -447,7 +447,7 @@
 		<method name="to_float32_array" qualifiers="const">
 			<return type="PackedFloat32Array" />
 			<description>
-				Returns a copy of the data converted to a [PackedFloat32Array], where each block of 4 bytes has been converted to a 32-bit float (C++ [code]float[/code]).
+				Returns a copy of the data converted to a [PackedFloat32Array], where each block of 4 bytes has been converted to a 32-bit float (C++ [code skip-lint]float[/code]).
 				The size of the input array must be a multiple of 4 (size of 32-bit float). The size of the new array will be [code]byte_array.size() / 4[/code].
 				If the original data can't be converted to 32-bit floats, the resulting data is undefined.
 			</description>

@@ -285,11 +285,36 @@
 			<description>
 				Mark the following property as exported (editable in the Inspector dock and saved to disk). To control the type of the exported property, use the type hint notation.
 				[codeblock]
+				extends Node
+
+				enum Direction {LEFT, RIGHT, UP, DOWN}
+
+				# Built-in types.
 				@export var string = ""
 				@export var int_number = 5
 				@export var float_number: float = 5
+
+				# Enums.
+				@export var type: Variant.Type
+				@export var format: Image.Format
+				@export var direction: Direction
+
+				# Resources.
 				@export var image: Image
+				@export var custom_resource: CustomResource
+
+				# Nodes.
+				@export var node: Node
+				@export var custom_node: CustomNode
+
+				# Typed arrays.
+				@export var int_array: Array[int]
+				@export var direction_array: Array[Direction]
+				@export var image_array: Array[Image]
+				@export var node_array: Array[Node]
 				[/codeblock]
+				[b]Note:[/b] Custom resources and nodes must be registered as global classes using [code]class_name[/code].
+				[b]Note:[/b] Node export is only supported in [Node]-derived classes and has a number of other limitations.
 			</description>
 		</annotation>
 		<annotation name="@export_category">
@@ -557,7 +582,7 @@
 			<description>
 				Export an [int] or [float] property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [code]EditorSettings.interface/inspector/default_float_step[/code] setting.
 				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"hide_slider"[/code] hint will hide the slider element of the editor widget.
-				Hints also allow to indicate the units for the edited value. Using [code]"radians"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock. [code]"degrees"[/code] allows to add a degree sign as a unit suffix. Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
+				Hints also allow to indicate the units for the edited value. Using [code]"radians_as_degrees"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock (the range values are also in degrees). [code]"degrees"[/code] allows to add a degree sign as a unit suffix (the value is unchanged). Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
 				See also [constant PROPERTY_HINT_RANGE].
 				[codeblock]
 				@export_range(0, 20) var number
@@ -567,7 +592,7 @@
 				@export_range(0, 100, 1, "or_greater") var power_percent
 				@export_range(0, 100, 1, "or_greater", "or_less") var health_delta
 
-				@export_range(-3.14, 3.14, 0.001, "radians") var angle_radians
+				@export_range(-180, 180, 0.001, "radians_as_degrees") var angle_radians
 				@export_range(0, 360, 1, "degrees") var angle_degrees
 				@export_range(-8, 8, 2, "suffix:px") var target_offset
 				[/codeblock]
@@ -601,8 +626,8 @@
 				@icon("res://path/to/class/icon.svg")
 				[/codeblock]
 				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
-				[b]Note:[/b] As annotations describe their subject, the [code]@icon[/code] annotation must be placed before the class definition and inheritance.
-				[b]Note:[/b] Unlike other annotations, the argument of the [code]@icon[/code] annotation must be a string literal (constant expressions are not supported).
+				[b]Note:[/b] As annotations describe their subject, the [annotation @icon] annotation must be placed before the class definition and inheritance.
+				[b]Note:[/b] Unlike other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
 		<annotation name="@onready">
@@ -653,7 +678,7 @@
 				@tool
 				extends Node
 				[/codeblock]
-				[b]Note:[/b] As annotations describe their subject, the [code]@tool[/code] annotation must be placed before the class definition and inheritance.
+				[b]Note:[/b] As annotations describe their subject, the [annotation @tool] annotation must be placed before the class definition and inheritance.
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">

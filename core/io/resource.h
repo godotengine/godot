@@ -33,6 +33,7 @@
 
 #include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
+#include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
@@ -81,6 +82,7 @@ protected:
 	void _take_over_path(const String &p_path);
 
 	virtual void reset_local_to_scene();
+	GDVIRTUAL0(_setup_local_to_scene);
 
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor

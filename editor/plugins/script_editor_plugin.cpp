@@ -191,6 +191,16 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 			highlighter->add_color_region(beg, end, comment_color, end.is_empty());
 		}
 
+		/* Doc comments */
+		const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+		List<String> doc_comments;
+		scr->get_language()->get_doc_comment_delimiters(&doc_comments);
+		for (const String &doc_comment : doc_comments) {
+			String beg = doc_comment.get_slice(" ", 0);
+			String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
+			highlighter->add_color_region(beg, end, doc_comment_color, end.is_empty());
+		}
+
 		/* Strings */
 		const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 		List<String> strings;
@@ -863,6 +873,10 @@ void ScriptEditor::_close_current_tab(bool p_save) {
 }
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
+	Ref<Script> scr = _get_current_script();
+	if (scr.is_valid()) {
+		scr->reload_from_file();
+	}
 	_close_tab(tab_container->get_current_tab(), false);
 	erase_tab_confirm->hide();
 }
@@ -983,7 +997,7 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 	}
 
 	_update_script_names();
-	_trigger_live_script_reload();
+	trigger_live_script_reload();
 }
 
 void ScriptEditor::_scene_saved_callback(const String &p_path) {
@@ -1011,7 +1025,7 @@ void ScriptEditor::_scene_saved_callback(const String &p_path) {
 	}
 }
 
-void ScriptEditor::_trigger_live_script_reload() {
+void ScriptEditor::trigger_live_script_reload() {
 	if (!pending_auto_reload && auto_reload_running_scripts) {
 		call_deferred(SNAME("_live_auto_reload_running_scripts"));
 		pending_auto_reload = true;
@@ -2506,9 +2520,7 @@ void ScriptEditor::save_current_script() {
 		// If built-in script, save the scene instead.
 		const String scene_path = resource->get_path().get_slice("::", 0);
 		if (!scene_path.is_empty()) {
-			Vector<String> scene_to_save;
-			scene_to_save.push_back(scene_path);
-			EditorNode::get_singleton()->save_scene_list(scene_to_save);
+			EditorNode::get_singleton()->save_scene_if_open(scene_path);
 		}
 	} else {
 		EditorNode::get_singleton()->save_resource(resource);
@@ -2520,7 +2532,7 @@ void ScriptEditor::save_current_script() {
 }
 
 void ScriptEditor::save_all_scripts() {
-	Vector<String> scenes_to_save;
+	HashSet<String> scenes_to_save;
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -2569,7 +2581,7 @@ void ScriptEditor::save_all_scripts() {
 			// For built-in scripts, save their scenes instead.
 			const String scene_path = edited_res->get_path().get_slice("::", 0);
 			if (!scene_path.is_empty() && !scenes_to_save.has(scene_path)) {
-				scenes_to_save.push_back(scene_path);
+				scenes_to_save.insert(scene_path);
 			}
 		}
 	}
@@ -4009,8 +4021,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	debugger->connect("set_execution", callable_mp(this, &ScriptEditor::_set_execution));
 	debugger->connect("clear_execution", callable_mp(this, &ScriptEditor::_clear_execution));
 	debugger->connect("breaked", callable_mp(this, &ScriptEditor::_breaked));
-	debugger->get_default_debugger()->connect("set_breakpoint", callable_mp(this, &ScriptEditor::_set_breakpoint));
-	debugger->get_default_debugger()->connect("clear_breakpoints", callable_mp(this, &ScriptEditor::_clear_breakpoints));
+	debugger->connect("breakpoint_set_in_tree", callable_mp(this, &ScriptEditor::_set_breakpoint));
+	debugger->connect("breakpoints_cleared_in_tree", callable_mp(this, &ScriptEditor::_clear_breakpoints));
 
 	menu_hb->add_spacer();
 

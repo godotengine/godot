@@ -962,6 +962,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 #ifdef TOOLS_ENABLED
 bool _csproj_exists(String p_root_dir) {
 	Ref<DirAccess> dir = DirAccess::open(p_root_dir);
+	ERR_FAIL_COND_V(dir.is_null(), false);
 
 	dir->list_dir_begin();
 	String file_name = dir->_get_next();
@@ -1341,6 +1342,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
+
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/ios/session_category", PROPERTY_HINT_ENUM, "Ambient,Multi Route,Play and Record,Playback,Record,Solo Ambient"), 0);
+	GLOBAL_DEF("audio/general/ios/mix_with_others", false);
 
 	PackedStringArray extensions;
 	extensions.push_back("gd");

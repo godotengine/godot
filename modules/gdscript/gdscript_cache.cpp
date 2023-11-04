@@ -59,7 +59,7 @@ GDScriptAnalyzer *GDScriptParserRef::get_analyzer() {
 }
 
 Error GDScriptParserRef::raise_status(Status p_new_status) {
-	ERR_FAIL_COND_V(parser == nullptr, ERR_INVALID_DATA);
+	ERR_FAIL_NULL_V(parser, ERR_INVALID_DATA);
 
 	if (result != OK) {
 		return result;
@@ -287,7 +287,8 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 
 	if (script.is_null()) {
 		script = get_shallow_script(p_path, r_error);
-		if (r_error) {
+		// Only exit early if script failed to load, otherwise let reload report errors.
+		if (script.is_null()) {
 			return script;
 		}
 	}

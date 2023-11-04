@@ -75,10 +75,6 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	if (p_task->group) {
 		// Handling a group
 		bool do_post = false;
-		Callable::CallError ce;
-		Variant ret;
-		Variant arg;
-		Variant *argptr = &arg;
 
 		while (true) {
 			uint32_t work_index = p_task->group->index.postincrement();
@@ -91,8 +87,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 			} else if (p_task->template_userdata) {
 				p_task->template_userdata->callback_indexed(work_index);
 			} else {
-				arg = work_index;
-				p_task->callable.callp((const Variant **)&argptr, 1, ret, ce);
+				p_task->callable.call(work_index);
 			}
 
 			// This is the only way to ensure posting is done when all tasks are really complete.
@@ -141,9 +136,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 			p_task->template_userdata->callback();
 			memdelete(p_task->template_userdata);
 		} else {
-			Callable::CallError ce;
-			Variant ret;
-			p_task->callable.callp(nullptr, 0, ret, ce);
+			p_task->callable.call();
 		}
 
 		task_mutex.lock();

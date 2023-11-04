@@ -117,34 +117,40 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		uint32_t skin_stride = 0;
 
 		for (int i = 0; i < RS::ARRAY_WEIGHTS; i++) {
-			if ((p_surface.format & (1 << i))) {
+			if ((p_surface.format & (1ULL << i))) {
 				switch (i) {
 					case RS::ARRAY_VERTEX: {
-						if (p_surface.format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
+						if ((p_surface.format & RS::ARRAY_FLAG_USE_2D_VERTICES) || (p_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 							stride += sizeof(float) * 2;
 						} else {
 							stride += sizeof(float) * 3;
 						}
-
 					} break;
 					case RS::ARRAY_NORMAL: {
 						stride += sizeof(uint16_t) * 2;
 
 					} break;
 					case RS::ARRAY_TANGENT: {
-						stride += sizeof(uint16_t) * 2;
-
+						if (!(p_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+							stride += sizeof(uint16_t) * 2;
+						}
 					} break;
 					case RS::ARRAY_COLOR: {
 						attrib_stride += sizeof(uint32_t);
 					} break;
 					case RS::ARRAY_TEX_UV: {
-						attrib_stride += sizeof(float) * 2;
-
+						if (p_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+							attrib_stride += sizeof(uint16_t) * 2;
+						} else {
+							attrib_stride += sizeof(float) * 2;
+						}
 					} break;
 					case RS::ARRAY_TEX_UV2: {
-						attrib_stride += sizeof(float) * 2;
-
+						if (p_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+							attrib_stride += sizeof(uint16_t) * 2;
+						} else {
+							attrib_stride += sizeof(float) * 2;
+						}
 					} break;
 					case RS::ARRAY_CUSTOM0:
 					case RS::ARRAY_CUSTOM1:
@@ -185,92 +191,134 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 #endif
 
+	uint64_t surface_version = p_surface.format & (uint64_t(RS::ARRAY_FLAG_FORMAT_VERSION_MASK) << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+	RS::SurfaceData new_surface = p_surface;
+#ifdef DISABLE_DEPRECATED
+
+	ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION, "Surface version provided (" + itos(int(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT)) + ") does not match current version (" + itos(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) + ")");
+
+#else
+
+	if (surface_version != uint64_t(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION)) {
+		RS::get_singleton()->fix_surface_compatibility(new_surface);
+		surface_version = new_surface.format & (uint64_t(RS::ARRAY_FLAG_FORMAT_VERSION_MASK) << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+		ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+				vformat("Surface version provided (%d) does not match current version (%d).",
+						(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
+						(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK));
+	}
+#endif
+
 	Mesh::Surface *s = memnew(Mesh::Surface);
 
-	s->format = p_surface.format;
-	s->primitive = p_surface.primitive;
+	s->format = new_surface.format;
+	s->primitive = new_surface.primitive;
 
-	if (p_surface.vertex_data.size()) {
+	if (new_surface.vertex_data.size()) {
 		glGenBuffers(1, &s->vertex_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, p_surface.vertex_data.size(), p_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
-		s->vertex_buffer_size = p_surface.vertex_data.size();
+		// If we have an uncompressed surface that contains normals, but not tangents, we need to differentiate the array
+		// from a compressed array in the shader. To do so, we allow the the normal to read 4 components out of the buffer
+		// But only give it 2 components per normal. So essentially, each vertex reads the next normal in normal.zw.
+		// This allows us to avoid adding a shader permutation, and avoid passing dummy tangents. Since the stride is kept small
+		// this should still be a net win for bandwidth.
+		// If we do this, then the last normal will read past the end of the array. So we need to pad the array with dummy data.
+		if (!(new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
+			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
+			Vector<uint8_t> new_vertex_data;
+			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
+			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_vertex_data.size(), new_vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
+			s->vertex_buffer_size = new_vertex_data.size();
+		} else {
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_surface.vertex_data.size(), new_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
+			s->vertex_buffer_size = new_surface.vertex_data.size();
+		}
 	}
 
-	if (p_surface.attribute_data.size()) {
+	if (new_surface.attribute_data.size()) {
 		glGenBuffers(1, &s->attribute_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s->attribute_buffer);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->attribute_buffer, p_surface.attribute_data.size(), p_surface.attribute_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh attribute buffer");
-		s->attribute_buffer_size = p_surface.attribute_data.size();
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->attribute_buffer, new_surface.attribute_data.size(), new_surface.attribute_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh attribute buffer");
+		s->attribute_buffer_size = new_surface.attribute_data.size();
 	}
 
-	if (p_surface.skin_data.size()) {
+	if (new_surface.skin_data.size()) {
 		glGenBuffers(1, &s->skin_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s->skin_buffer);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->skin_buffer, p_surface.skin_data.size(), p_surface.skin_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh skin buffer");
-		s->skin_buffer_size = p_surface.skin_data.size();
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->skin_buffer, new_surface.skin_data.size(), new_surface.skin_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh skin buffer");
+		s->skin_buffer_size = new_surface.skin_data.size();
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	s->vertex_count = p_surface.vertex_count;
+	s->vertex_count = new_surface.vertex_count;
 
-	if (p_surface.format & RS::ARRAY_FORMAT_BONES) {
+	if (new_surface.format & RS::ARRAY_FORMAT_BONES) {
 		mesh->has_bone_weights = true;
 	}
 
-	if (p_surface.index_count) {
-		bool is_index_16 = p_surface.vertex_count <= 65536 && p_surface.vertex_count > 0;
+	if (new_surface.index_count) {
+		bool is_index_16 = new_surface.vertex_count <= 65536 && new_surface.vertex_count > 0;
 		glGenBuffers(1, &s->index_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_buffer);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, s->index_buffer, p_surface.index_data.size(), p_surface.index_data.ptr(), GL_STATIC_DRAW, "Mesh index buffer");
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, s->index_buffer, new_surface.index_data.size(), new_surface.index_data.ptr(), GL_STATIC_DRAW, "Mesh index buffer");
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
-		s->index_count = p_surface.index_count;
-		s->index_buffer_size = p_surface.index_data.size();
+		s->index_count = new_surface.index_count;
+		s->index_buffer_size = new_surface.index_data.size();
 
-		if (p_surface.lods.size()) {
-			s->lods = memnew_arr(Mesh::Surface::LOD, p_surface.lods.size());
-			s->lod_count = p_surface.lods.size();
+		if (new_surface.lods.size()) {
+			s->lods = memnew_arr(Mesh::Surface::LOD, new_surface.lods.size());
+			s->lod_count = new_surface.lods.size();
 
-			for (int i = 0; i < p_surface.lods.size(); i++) {
+			for (int i = 0; i < new_surface.lods.size(); i++) {
 				glGenBuffers(1, &s->lods[i].index_buffer);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->lods[i].index_buffer);
-				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, s->lods[i].index_buffer, p_surface.lods[i].index_data.size(), p_surface.lods[i].index_data.ptr(), GL_STATIC_DRAW, "Mesh index buffer LOD[" + itos(i) + "]");
+				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, s->lods[i].index_buffer, new_surface.lods[i].index_data.size(), new_surface.lods[i].index_data.ptr(), GL_STATIC_DRAW, "Mesh index buffer LOD[" + itos(i) + "]");
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
-				s->lods[i].edge_length = p_surface.lods[i].edge_length;
-				s->lods[i].index_count = p_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
-				s->lods[i].index_buffer_size = p_surface.lods[i].index_data.size();
+				s->lods[i].edge_length = new_surface.lods[i].edge_length;
+				s->lods[i].index_count = new_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
+				s->lods[i].index_buffer_size = new_surface.lods[i].index_data.size();
 			}
 		}
 	}
 
-	ERR_FAIL_COND_MSG(!p_surface.index_count && !p_surface.vertex_count, "Meshes must contain a vertex array, an index array, or both");
+	ERR_FAIL_COND_MSG(!new_surface.index_count && !new_surface.vertex_count, "Meshes must contain a vertex array, an index array, or both");
 
-	s->aabb = p_surface.aabb;
-	s->bone_aabbs = p_surface.bone_aabbs; //only really useful for returning them.
+	s->aabb = new_surface.aabb;
+	s->bone_aabbs = new_surface.bone_aabbs; //only really useful for returning them.
 
-	if (p_surface.skin_data.size() || mesh->blend_shape_count > 0) {
+	s->uv_scale = new_surface.uv_scale;
+
+	if (new_surface.skin_data.size() || mesh->blend_shape_count > 0) {
 		// Size must match the size of the vertex array.
-		int size = p_surface.vertex_data.size();
+		int size = new_surface.vertex_data.size();
 		int vertex_size = 0;
-		int stride = 0;
+		int position_stride = 0;
+		int normal_tangent_stride = 0;
 		int normal_offset = 0;
 		int tangent_offset = 0;
-		if ((p_surface.format & (1 << RS::ARRAY_VERTEX))) {
-			if (p_surface.format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
+		if ((new_surface.format & (1ULL << RS::ARRAY_VERTEX))) {
+			if (new_surface.format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
 				vertex_size = 2;
+				position_stride = sizeof(float) * vertex_size;
 			} else {
-				vertex_size = 3;
+				if (new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+					vertex_size = 4;
+					position_stride = sizeof(uint16_t) * vertex_size;
+				} else {
+					vertex_size = 3;
+					position_stride = sizeof(float) * vertex_size;
+				}
 			}
-			stride = sizeof(float) * vertex_size;
 		}
-		if ((p_surface.format & (1 << RS::ARRAY_NORMAL))) {
-			normal_offset = stride;
-			stride += sizeof(uint16_t) * 2;
+		if ((new_surface.format & (1ULL << RS::ARRAY_NORMAL))) {
+			normal_offset = position_stride * s->vertex_count;
+			normal_tangent_stride += sizeof(uint16_t) * 2;
 		}
-		if ((p_surface.format & (1 << RS::ARRAY_TANGENT))) {
-			tangent_offset = stride;
-			stride += sizeof(uint16_t) * 2;
+		if ((new_surface.format & (1ULL << RS::ARRAY_TANGENT))) {
+			tangent_offset = normal_offset + normal_tangent_stride;
+			normal_tangent_stride += sizeof(uint16_t) * 2;
 		}
 
 		if (mesh->blend_shape_count > 0) {
@@ -282,54 +330,38 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 				glBindVertexArray(s->blend_shapes[i].vertex_array);
 				glGenBuffers(1, &s->blend_shapes[i].vertex_buffer);
 				glBindBuffer(GL_ARRAY_BUFFER, s->blend_shapes[i].vertex_buffer);
-				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->blend_shapes[i].vertex_buffer, size, p_surface.blend_shape_data.ptr() + i * size, (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh blend shape buffer");
+				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->blend_shapes[i].vertex_buffer, size, new_surface.blend_shape_data.ptr() + i * size, (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh blend shape buffer");
 
-				if ((p_surface.format & (1 << RS::ARRAY_VERTEX))) {
+				if ((new_surface.format & (1ULL << RS::ARRAY_VERTEX))) {
 					glEnableVertexAttribArray(RS::ARRAY_VERTEX + 3);
-					glVertexAttribPointer(RS::ARRAY_VERTEX + 3, vertex_size, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(0));
+					glVertexAttribPointer(RS::ARRAY_VERTEX + 3, vertex_size, GL_FLOAT, GL_FALSE, position_stride, CAST_INT_TO_UCHAR_PTR(0));
 				}
-				if ((p_surface.format & (1 << RS::ARRAY_NORMAL))) {
+				if ((new_surface.format & (1ULL << RS::ARRAY_NORMAL))) {
+					// Normal and tangent are packed into the same attribute.
 					glEnableVertexAttribArray(RS::ARRAY_NORMAL + 3);
-					glVertexAttribPointer(RS::ARRAY_NORMAL + 3, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, CAST_INT_TO_UCHAR_PTR(normal_offset));
+					glVertexAttribPointer(RS::ARRAY_NORMAL + 3, 2, GL_UNSIGNED_SHORT, GL_TRUE, normal_tangent_stride, CAST_INT_TO_UCHAR_PTR(normal_offset));
 				}
-				if ((p_surface.format & (1 << RS::ARRAY_TANGENT))) {
+				if ((p_surface.format & (1ULL << RS::ARRAY_TANGENT))) {
 					glEnableVertexAttribArray(RS::ARRAY_TANGENT + 3);
-					glVertexAttribPointer(RS::ARRAY_TANGENT + 3, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, CAST_INT_TO_UCHAR_PTR(tangent_offset));
+					glVertexAttribPointer(RS::ARRAY_TANGENT + 3, 2, GL_UNSIGNED_SHORT, GL_TRUE, normal_tangent_stride, CAST_INT_TO_UCHAR_PTR(tangent_offset));
 				}
 			}
 			glBindVertexArray(0);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 
-		// Create a vertex array to use for skeleton/blend shapes.
-		glGenVertexArrays(1, &s->skeleton_vertex_array);
-		glBindVertexArray(s->skeleton_vertex_array);
-		glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
-
-		if ((p_surface.format & (1 << RS::ARRAY_VERTEX))) {
-			glEnableVertexAttribArray(RS::ARRAY_VERTEX);
-			glVertexAttribPointer(RS::ARRAY_VERTEX, vertex_size, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(0));
-		}
-		if ((p_surface.format & (1 << RS::ARRAY_NORMAL))) {
-			glEnableVertexAttribArray(RS::ARRAY_NORMAL);
-			glVertexAttribPointer(RS::ARRAY_NORMAL, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, CAST_INT_TO_UCHAR_PTR(normal_offset));
-		}
-		if ((p_surface.format & (1 << RS::ARRAY_TANGENT))) {
-			glEnableVertexAttribArray(RS::ARRAY_TANGENT);
-			glVertexAttribPointer(RS::ARRAY_TANGENT, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, CAST_INT_TO_UCHAR_PTR(tangent_offset));
-		}
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 	if (mesh->surface_count == 0) {
-		mesh->aabb = p_surface.aabb;
+		mesh->aabb = new_surface.aabb;
 	} else {
-		mesh->aabb.merge_with(p_surface.aabb);
+		mesh->aabb.merge_with(new_surface.aabb);
 	}
 	mesh->skeleton_aabb_version = 0;
 
-	s->material = p_surface.material;
+	s->material = new_surface.material;
 
 	mesh->surfaces = (Mesh::Surface **)memrealloc(mesh->surfaces, sizeof(Mesh::Surface *) * (mesh->surface_count + 1));
 	mesh->surfaces[mesh->surface_count] = s;
@@ -444,6 +476,11 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	sd.format = s.format;
 	if (s.vertex_buffer != 0) {
 		sd.vertex_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_buffer_size);
+
+		// When using an uncompressed buffer with normals, but without tangents, we have to trim the padding.
+		if (!(s.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (s.format & RS::ARRAY_FORMAT_NORMAL) && !(s.format & RS::ARRAY_FORMAT_TANGENT)) {
+			sd.vertex_data.resize(sd.vertex_data.size() - sizeof(uint16_t) * 2);
+		}
 	}
 
 	if (s.attribute_buffer != 0) {
@@ -478,6 +515,8 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 			sd.blend_shape_data.append_array(Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.blend_shapes[i].vertex_buffer, s.vertex_buffer_size));
 		}
 	}
+
+	sd.uv_scale = s.uv_scale;
 
 	return sd;
 }
@@ -696,10 +735,6 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 			}
 			memdelete_arr(s.blend_shapes);
 		}
-		if (s.skeleton_vertex_array != 0) {
-			glDeleteVertexArrays(1, &s.skeleton_vertex_array);
-			s.skeleton_vertex_array = 0;
-		}
 
 		memdelete(mesh->surfaces[i]);
 	}
@@ -720,15 +755,16 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	}
 }
 
-void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, MeshInstance::Surface *mis) {
+void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, MeshInstance::Surface *mis) {
 	Mesh::Surface::Attrib attribs[RS::ARRAY_MAX];
 
+	int position_stride = 0; // Vertex position only.
+	int normal_tangent_stride = 0;
 	int attributes_stride = 0;
-	int vertex_stride = 0;
 	int skin_stride = 0;
 
 	for (int i = 0; i < RS::ARRAY_INDEX; i++) {
-		if (!(s->format & (1 << i))) {
+		if (!(s->format & (1ULL << i))) {
 			attribs[i].enabled = false;
 			attribs[i].integer = false;
 			continue;
@@ -739,29 +775,55 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 
 		switch (i) {
 			case RS::ARRAY_VERTEX: {
-				attribs[i].offset = vertex_stride;
+				attribs[i].offset = 0;
+				attribs[i].type = GL_FLOAT;
+				attribs[i].normalized = GL_FALSE;
 				if (s->format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
 					attribs[i].size = 2;
+					position_stride = attribs[i].size * sizeof(float);
 				} else {
-					attribs[i].size = 3;
+					if (!mis && (s->format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+						attribs[i].size = 4;
+						position_stride = attribs[i].size * sizeof(uint16_t);
+						attribs[i].type = GL_UNSIGNED_SHORT;
+						attribs[i].normalized = GL_TRUE;
+					} else {
+						attribs[i].size = 3;
+						position_stride = attribs[i].size * sizeof(float);
+					}
 				}
-				attribs[i].type = GL_FLOAT;
-				vertex_stride += attribs[i].size * sizeof(float);
-				attribs[i].normalized = GL_FALSE;
 			} break;
 			case RS::ARRAY_NORMAL: {
-				attribs[i].offset = vertex_stride;
-				attribs[i].size = 2;
+				if (!mis && (s->format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+					attribs[i].size = 2;
+					normal_tangent_stride += 2 * attribs[i].size;
+				} else {
+					attribs[i].size = 4;
+					// A small trick here: if we are uncompressed and we have normals, but no tangents. We need
+					// the shader to think there are 4 components to "axis_tangent_attrib". So we give a size of 4,
+					// but a stride based on only having 2 elements.
+					if (!(s->format & RS::ARRAY_FORMAT_TANGENT)) {
+						normal_tangent_stride += (mis ? sizeof(float) : sizeof(uint16_t)) * 2;
+					} else {
+						normal_tangent_stride += (mis ? sizeof(float) : sizeof(uint16_t)) * 4;
+					}
+				}
+
+				if (mis) {
+					// Transform feedback has interleave all or no attributes. It can't mix interleaving.
+					attribs[i].offset = position_stride;
+					normal_tangent_stride += position_stride;
+					position_stride = normal_tangent_stride;
+				} else {
+					attribs[i].offset = position_stride * s->vertex_count;
+				}
 				attribs[i].type = (mis ? GL_FLOAT : GL_UNSIGNED_SHORT);
-				vertex_stride += sizeof(uint16_t) * 2 * (mis ? 2 : 1);
 				attribs[i].normalized = GL_TRUE;
 			} break;
 			case RS::ARRAY_TANGENT: {
-				attribs[i].offset = vertex_stride;
-				attribs[i].size = 2;
-				attribs[i].type = (mis ? GL_FLOAT : GL_UNSIGNED_SHORT);
-				vertex_stride += sizeof(uint16_t) * 2 * (mis ? 2 : 1);
-				attribs[i].normalized = GL_TRUE;
+				// We never use the tangent attribute. It is always packed in ARRAY_NORMAL, or ARRAY_VERTEX.
+				attribs[i].enabled = false;
+				attribs[i].integer = false;
 			} break;
 			case RS::ARRAY_COLOR: {
 				attribs[i].offset = attributes_stride;
@@ -773,16 +835,28 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			case RS::ARRAY_TEX_UV: {
 				attribs[i].offset = attributes_stride;
 				attribs[i].size = 2;
-				attribs[i].type = GL_FLOAT;
-				attributes_stride += 2 * sizeof(float);
-				attribs[i].normalized = GL_FALSE;
+				if (s->format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+					attribs[i].type = GL_UNSIGNED_SHORT;
+					attributes_stride += 2 * sizeof(uint16_t);
+					attribs[i].normalized = GL_TRUE;
+				} else {
+					attribs[i].type = GL_FLOAT;
+					attributes_stride += 2 * sizeof(float);
+					attribs[i].normalized = GL_FALSE;
+				}
 			} break;
 			case RS::ARRAY_TEX_UV2: {
 				attribs[i].offset = attributes_stride;
 				attribs[i].size = 2;
-				attribs[i].type = GL_FLOAT;
-				attributes_stride += 2 * sizeof(float);
-				attribs[i].normalized = GL_FALSE;
+				if (s->format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+					attribs[i].type = GL_UNSIGNED_SHORT;
+					attributes_stride += 2 * sizeof(uint16_t);
+					attribs[i].normalized = GL_TRUE;
+				} else {
+					attribs[i].type = GL_FLOAT;
+					attributes_stride += 2 * sizeof(float);
+					attribs[i].normalized = GL_FALSE;
+				}
 			} break;
 			case RS::ARRAY_CUSTOM0:
 			case RS::ARRAY_CUSTOM1:
@@ -828,7 +902,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			continue;
 		}
 		if (i <= RS::ARRAY_TANGENT) {
-			attribs[i].stride = vertex_stride;
+			attribs[i].stride = (i == RS::ARRAY_VERTEX) ? position_stride : normal_tangent_stride;
 			if (mis) {
 				glBindBuffer(GL_ARRAY_BUFFER, mis->vertex_buffer);
 			} else {
@@ -946,7 +1020,7 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 	if ((mesh->blend_shape_count > 0 || (mesh->surfaces[p_surface]->format & RS::ARRAY_FORMAT_BONES)) && mesh->surfaces[p_surface]->vertex_buffer_size > 0) {
 		// Cache surface properties
 		s.format_cache = mesh->surfaces[p_surface]->format;
-		if ((s.format_cache & (1 << RS::ARRAY_VERTEX))) {
+		if ((s.format_cache & (1ULL << RS::ARRAY_VERTEX))) {
 			if (s.format_cache & RS::ARRAY_FLAG_USE_2D_VERTICES) {
 				s.vertex_size_cache = 2;
 			} else {
@@ -954,25 +1028,27 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 			}
 			s.vertex_stride_cache = sizeof(float) * s.vertex_size_cache;
 		}
-		if ((s.format_cache & (1 << RS::ARRAY_NORMAL))) {
+		if ((s.format_cache & (1ULL << RS::ARRAY_NORMAL))) {
 			s.vertex_normal_offset_cache = s.vertex_stride_cache;
 			s.vertex_stride_cache += sizeof(uint32_t) * 2;
 		}
-		if ((s.format_cache & (1 << RS::ARRAY_TANGENT))) {
+		if ((s.format_cache & (1ULL << RS::ARRAY_TANGENT))) {
 			s.vertex_tangent_offset_cache = s.vertex_stride_cache;
 			s.vertex_stride_cache += sizeof(uint32_t) * 2;
 		}
 
+		int buffer_size = s.vertex_stride_cache * mesh->surfaces[p_surface]->vertex_count;
+
 		// Buffer to be used for rendering. Final output of skeleton and blend shapes.
 		glGenBuffers(1, &s.vertex_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s.vertex_buffer);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_stride_cache * mesh->surfaces[p_surface]->vertex_count, nullptr, GL_DYNAMIC_DRAW, "MeshInstance vertex buffer");
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffer, buffer_size, nullptr, GL_DYNAMIC_DRAW, "MeshInstance vertex buffer");
 		if (mesh->blend_shape_count > 0) {
 			// Ping-Pong buffers for processing blendshapes.
 			glGenBuffers(2, s.vertex_buffers);
 			for (uint32_t i = 0; i < 2; i++) {
 				glBindBuffer(GL_ARRAY_BUFFER, s.vertex_buffers[i]);
-				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffers[i], s.vertex_stride_cache * mesh->surfaces[p_surface]->vertex_count, nullptr, GL_DYNAMIC_DRAW, "MeshInstance process buffer[" + itos(i) + "]");
+				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffers[i], buffer_size, nullptr, GL_DYNAMIC_DRAW, "MeshInstance process buffer[" + itos(i) + "]");
 			}
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
@@ -1011,19 +1087,19 @@ void MeshStorage::mesh_instance_set_canvas_item_transform(RID p_mesh_instance, c
 void MeshStorage::_blend_shape_bind_mesh_instance_buffer(MeshInstance *p_mi, uint32_t p_surface) {
 	glBindBuffer(GL_ARRAY_BUFFER, p_mi->surfaces[p_surface].vertex_buffers[0]);
 
-	if ((p_mi->surfaces[p_surface].format_cache & (1 << RS::ARRAY_VERTEX))) {
+	if ((p_mi->surfaces[p_surface].format_cache & (1ULL << RS::ARRAY_VERTEX))) {
 		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
 		glVertexAttribPointer(RS::ARRAY_VERTEX, p_mi->surfaces[p_surface].vertex_size_cache, GL_FLOAT, GL_FALSE, p_mi->surfaces[p_surface].vertex_stride_cache, CAST_INT_TO_UCHAR_PTR(0));
 	} else {
 		glDisableVertexAttribArray(RS::ARRAY_VERTEX);
 	}
-	if ((p_mi->surfaces[p_surface].format_cache & (1 << RS::ARRAY_NORMAL))) {
+	if ((p_mi->surfaces[p_surface].format_cache & (1ULL << RS::ARRAY_NORMAL))) {
 		glEnableVertexAttribArray(RS::ARRAY_NORMAL);
 		glVertexAttribIPointer(RS::ARRAY_NORMAL, 2, GL_UNSIGNED_INT, p_mi->surfaces[p_surface].vertex_stride_cache, CAST_INT_TO_UCHAR_PTR(p_mi->surfaces[p_surface].vertex_normal_offset_cache));
 	} else {
 		glDisableVertexAttribArray(RS::ARRAY_NORMAL);
 	}
-	if ((p_mi->surfaces[p_surface].format_cache & (1 << RS::ARRAY_TANGENT))) {
+	if ((p_mi->surfaces[p_surface].format_cache & (1ULL << RS::ARRAY_TANGENT))) {
 		glEnableVertexAttribArray(RS::ARRAY_TANGENT);
 		glVertexAttribIPointer(RS::ARRAY_TANGENT, 2, GL_UNSIGNED_INT, p_mi->surfaces[p_surface].vertex_stride_cache, CAST_INT_TO_UCHAR_PTR(p_mi->surfaces[p_surface].vertex_tangent_offset_cache));
 	} else {
@@ -1091,7 +1167,7 @@ void MeshStorage::update_mesh_instances() {
 		}
 
 		for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
-			if (mi->surfaces[i].vertex_buffer == 0 || mi->mesh->surfaces[i]->skeleton_vertex_array == 0) {
+			if (mi->surfaces[i].vertex_buffer == 0) {
 				continue;
 			}
 
@@ -1106,10 +1182,10 @@ void MeshStorage::update_mesh_instances() {
 				specialization |= array_is_2d ? SkeletonShaderGLES3::MODE_2D : 0;
 				specialization |= SkeletonShaderGLES3::USE_BLEND_SHAPES;
 				if (!array_is_2d) {
-					if ((mi->surfaces[i].format_cache & (1 << RS::ARRAY_NORMAL))) {
+					if ((mi->surfaces[i].format_cache & (1ULL << RS::ARRAY_NORMAL))) {
 						specialization |= SkeletonShaderGLES3::USE_NORMAL;
 					}
-					if ((mi->surfaces[i].format_cache & (1 << RS::ARRAY_TANGENT))) {
+					if ((mi->surfaces[i].format_cache & (1ULL << RS::ARRAY_TANGENT))) {
 						specialization |= SkeletonShaderGLES3::USE_TANGENT;
 					}
 				}
@@ -1123,7 +1199,12 @@ void MeshStorage::update_mesh_instances() {
 				skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::BLEND_SHAPE_COUNT, float(mi->mesh->blend_shape_count), skeleton_shader.shader_version, variant, specialization);
 
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
-				glBindVertexArray(mi->mesh->surfaces[i]->skeleton_vertex_array);
+				GLuint vertex_array_gl = 0;
+				uint64_t mask = ((1 << 10) - 1) << 3; // Mask from ARRAY_FORMAT_COLOR to ARRAY_FORMAT_INDEX.
+				mask = ~mask;
+				uint64_t format = mi->surfaces[i].format_cache & mask; // Format should only have vertex, normal, tangent (as necessary) + compressions.
+				mesh_surface_get_vertex_arrays_and_format(mi->mesh->surfaces[i], format, vertex_array_gl);
+				glBindVertexArray(vertex_array_gl);
 				glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, mi->surfaces[i].vertex_buffers[0]);
 				glBeginTransformFeedback(GL_POINTS);
 				glDrawArrays(GL_POINTS, 0, mi->mesh->surfaces[i]->vertex_count);
@@ -1210,10 +1291,10 @@ void MeshStorage::update_mesh_instances() {
 				specialization |= SkeletonShaderGLES3::FINAL_PASS;
 				specialization |= use_8_weights ? SkeletonShaderGLES3::USE_EIGHT_WEIGHTS : 0;
 				if (!array_is_2d) {
-					if ((mi->surfaces[i].format_cache & (1 << RS::ARRAY_NORMAL))) {
+					if ((mi->surfaces[i].format_cache & (1ULL << RS::ARRAY_NORMAL))) {
 						specialization |= SkeletonShaderGLES3::USE_NORMAL;
 					}
-					if ((mi->surfaces[i].format_cache & (1 << RS::ARRAY_TANGENT))) {
+					if ((mi->surfaces[i].format_cache & (1ULL << RS::ARRAY_TANGENT))) {
 						specialization |= SkeletonShaderGLES3::USE_TANGENT;
 					}
 				}
@@ -1233,7 +1314,12 @@ void MeshStorage::update_mesh_instances() {
 				skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::INVERSE_TRANSFORM_Y, inverse_transform[1], skeleton_shader.shader_version, variant, specialization);
 				skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::INVERSE_TRANSFORM_OFFSET, inverse_transform[2], skeleton_shader.shader_version, variant, specialization);
 
-				glBindVertexArray(mi->mesh->surfaces[i]->skeleton_vertex_array);
+				GLuint vertex_array_gl = 0;
+				uint64_t mask = ((1 << 10) - 1) << 3; // Mask from ARRAY_FORMAT_COLOR to ARRAY_FORMAT_INDEX.
+				mask = ~mask;
+				uint64_t format = mi->surfaces[i].format_cache & mask; // Format should only have vertex, normal, tangent (as necessary) + compressions.
+				mesh_surface_get_vertex_arrays_and_format(mi->mesh->surfaces[i], format, vertex_array_gl);
+				glBindVertexArray(vertex_array_gl);
 				_compute_skeleton(mi, sk, i);
 			}
 		}

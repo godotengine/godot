@@ -48,12 +48,14 @@ bool Bone2D::_set(const StringName &p_path, const Variant &p_value) {
 	} else if (path.begins_with("default_length")) {
 		set_length(p_value);
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor_settings/show_bone_gizmo")) {
+	else if (path.begins_with("editor_settings/show_bone_gizmo")) {
 		_editor_set_show_bone_gizmo(p_value);
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -70,12 +72,14 @@ bool Bone2D::_get(const StringName &p_path, Variant &r_ret) const {
 	} else if (path.begins_with("default_length")) {
 		r_ret = get_length();
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor_settings/show_bone_gizmo")) {
+	else if (path.begins_with("editor_settings/show_bone_gizmo")) {
 		r_ret = _editor_get_show_bone_gizmo();
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }

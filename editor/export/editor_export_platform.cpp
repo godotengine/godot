@@ -859,16 +859,20 @@ Vector<String> EditorExportPlatform::get_forced_export_files() {
 		bool use_data = GLOBAL_GET("internationalization/locale/include_text_server_data");
 		if (use_data) {
 			// Try using user provided data file.
-			String ts_data = "res://" + TS->get_support_data_filename();
-			if (FileAccess::exists(ts_data)) {
-				files.push_back(ts_data);
-			} else {
-				// Use default text server data.
-				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_icu_data");
-				ERR_FAIL_COND_V(!TS->save_support_data(icu_data_file), files);
-				files.push_back(icu_data_file);
-				// Remove the file later.
-				MessageQueue::get_singleton()->push_callable(callable_mp_static(DirAccess::remove_absolute), icu_data_file);
+			if (!TS->get_support_data_filename().is_empty()) {
+				String ts_data = "res://" + TS->get_support_data_filename();
+				if (FileAccess::exists(ts_data)) {
+					files.push_back(ts_data);
+				} else {
+					// Use default text server data.
+					String abs_path = ProjectSettings::get_singleton()->globalize_path(ts_data);
+					ERR_FAIL_COND_V(!TS->save_support_data(abs_path), files);
+					if (FileAccess::exists(abs_path)) {
+						files.push_back(ts_data);
+						// Remove the file later.
+						MessageQueue::get_singleton()->push_callable(callable_mp_static(DirAccess::remove_absolute), abs_path);
+					}
+				}
 			}
 		}
 	}
@@ -1383,6 +1387,8 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 	String dir = p_folder.is_empty() ? p_root_path : p_root_path.path_join(p_folder);
 
 	Ref<DirAccess> da = DirAccess::open(dir);
+	ERR_FAIL_COND(da.is_null());
+
 	da->list_dir_begin();
 	String f = da->get_next();
 	while (!f.is_empty()) {

@@ -46,12 +46,14 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 
 	uint32_t surface_offsets[RS::ARRAY_MAX];
 	uint32_t vertex_stride;
+	uint32_t normal_tangent_stride;
 	uint32_t attrib_stride;
 	uint32_t skin_stride;
-	RS::get_singleton()->mesh_surface_make_offsets_from_format(surface_data.format, surface_data.vertex_count, surface_data.index_count, surface_offsets, vertex_stride, attrib_stride, skin_stride);
+	RS::get_singleton()->mesh_surface_make_offsets_from_format(surface_data.format, surface_data.vertex_count, surface_data.index_count, surface_offsets, vertex_stride, normal_tangent_stride, attrib_stride, skin_stride);
 
 	buffer = surface_data.vertex_data;
 	stride = vertex_stride;
+	normal_stride = normal_tangent_stride;
 	offset_vertices = surface_offsets[RS::ARRAY_VERTEX];
 	offset_normal = surface_offsets[RS::ARRAY_NORMAL];
 }
@@ -59,6 +61,7 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 void SoftBodyRenderingServerHandler::clear() {
 	buffer.resize(0);
 	stride = 0;
+	normal_stride = 0;
 	offset_vertices = 0;
 	offset_normal = 0;
 
@@ -83,15 +86,11 @@ void SoftBodyRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &
 }
 
 void SoftBodyRenderingServerHandler::set_normal(int p_vertex_id, const Vector3 &p_normal) {
-	// Store normal vector in A2B10G10R10 format.
-	Vector3 n = p_normal;
-	n *= Vector3(0.5, 0.5, 0.5);
-	n += Vector3(0.5, 0.5, 0.5);
-	Vector2 res = n.octahedron_encode();
+	Vector2 res = p_normal.octahedron_encode();
 	uint32_t value = 0;
 	value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 	value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
-	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], &value, sizeof(uint32_t));
+	memcpy(&write_buffer[p_vertex_id * normal_stride + offset_normal], &value, sizeof(uint32_t));
 }
 
 void SoftBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
@@ -472,6 +471,7 @@ void SoftBody3D::_become_mesh_owner() {
 	uint32_t surface_format = mesh->surface_get_format(0);
 
 	surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
+	surface_format &= ~Mesh::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 
 	Ref<ArrayMesh> soft_mesh;
 	soft_mesh.instantiate();

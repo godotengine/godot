@@ -52,7 +52,7 @@ class RenderingServer : public Object {
 	int mm_policy = 0;
 	bool render_loop_enabled = true;
 
-	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
+	Array _get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb, const Vector4 &p_uv_scale) const;
 
 	const Vector2 SMALL_VEC2 = Vector2(CMP_EPSILON, CMP_EPSILON);
 	const Vector3 SMALL_VEC3 = Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON);
@@ -66,7 +66,7 @@ protected:
 	RID white_texture;
 	RID test_material;
 
-	Error _surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb);
+	Error _surface_set_data(Array p_arrays, uint64_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_normal_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb, Vector4 &r_uv_scale);
 
 	static RenderingServer *(*create_func)();
 	static void _bind_methods();
@@ -220,12 +220,12 @@ public:
 	/* MESH API */
 
 	enum ArrayType {
-		ARRAY_VERTEX = 0, // RG32F or RGB32F (depending on 2D bit)
-		ARRAY_NORMAL = 1, // A2B10G10R10, A is ignored.
-		ARRAY_TANGENT = 2, // A2B10G10R10, A flips sign of binormal.
+		ARRAY_VERTEX = 0, // RG32F (2D), RGB32F, RGBA16 (compressed)
+		ARRAY_NORMAL = 1, // RG16
+		ARRAY_TANGENT = 2, // BA16 (with normal) or A16 (with vertex, when compressed)
 		ARRAY_COLOR = 3, // RGBA8
-		ARRAY_TEX_UV = 4, // RG32F
-		ARRAY_TEX_UV2 = 5, // RG32F
+		ARRAY_TEX_UV = 4, // RG32F or RG16
+		ARRAY_TEX_UV2 = 5, // RG32F or RG16
 		ARRAY_CUSTOM0 = 6, // Depends on ArrayCustomFormat.
 		ARRAY_CUSTOM1 = 7,
 		ARRAY_CUSTOM2 = 8,
@@ -252,7 +252,7 @@ public:
 		ARRAY_CUSTOM_MAX
 	};
 
-	enum ArrayFormat {
+	enum ArrayFormat : uint64_t {
 		/* ARRAY FORMAT FLAGS */
 		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX,
 		ARRAY_FORMAT_NORMAL = 1 << ARRAY_NORMAL,
@@ -284,8 +284,21 @@ public:
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 1),
 		ARRAY_FLAG_USE_8_BONE_WEIGHTS = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 2),
 
-		ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY = 1 << (ARRAY_INDEX + 1 + 15),
+		ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 3),
+
+		ARRAY_FLAG_COMPRESS_ATTRIBUTES = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 4),
+		// We leave enough room for up to 5 more compression flags.
+
+		ARRAY_FLAG_FORMAT_VERSION_BASE = ARRAY_COMPRESS_FLAGS_BASE + 10,
+		ARRAY_FLAG_FORMAT_VERSION_SHIFT = ARRAY_FLAG_FORMAT_VERSION_BASE,
+		// When changes are made to the mesh format, add a new version and use it for the CURRENT_VERSION.
+		ARRAY_FLAG_FORMAT_VERSION_1 = 0,
+		ARRAY_FLAG_FORMAT_VERSION_2 = 1ULL << ARRAY_FLAG_FORMAT_VERSION_SHIFT,
+		ARRAY_FLAG_FORMAT_CURRENT_VERSION = ARRAY_FLAG_FORMAT_VERSION_2,
+		ARRAY_FLAG_FORMAT_VERSION_MASK = 0xFF, // 8 bits version
 	};
+
+	static_assert(sizeof(ArrayFormat) == 8, "ArrayFormat should be 64 bits long.");
 
 	enum PrimitiveType {
 		PRIMITIVE_POINTS,
@@ -299,7 +312,7 @@ public:
 	struct SurfaceData {
 		PrimitiveType primitive = PRIMITIVE_MAX;
 
-		uint32_t format = 0;
+		uint64_t format = ARRAY_FLAG_FORMAT_CURRENT_VERSION;
 		Vector<uint8_t> vertex_data; // Vertex, Normal, Tangent (change with skinning, blendshape).
 		Vector<uint8_t> attribute_data; // Color, UV, UV2, Custom0-3.
 		Vector<uint8_t> skin_data; // Bone index, Bone weight.
@@ -317,6 +330,8 @@ public:
 
 		Vector<uint8_t> blend_shape_data;
 
+		Vector4 uv_scale;
+
 		RID material;
 	};
 
@@ -327,12 +342,13 @@ public:
 
 	virtual uint32_t mesh_surface_get_format_offset(BitField<ArrayFormat> p_format, int p_vertex_len, int p_array_index) const;
 	virtual uint32_t mesh_surface_get_format_vertex_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
+	virtual uint32_t mesh_surface_get_format_normal_tangent_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 	virtual uint32_t mesh_surface_get_format_attribute_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 	virtual uint32_t mesh_surface_get_format_skin_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 
 	/// Returns stride
-	virtual void mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t &r_vertex_element_size, uint32_t &r_attrib_element_size, uint32_t &r_skin_element_size) const;
-	virtual Error mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);
+	virtual void mesh_surface_make_offsets_from_format(uint64_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t &r_vertex_element_size, uint32_t &r_normal_element_size, uint32_t &r_attrib_element_size, uint32_t &r_skin_element_size) const;
+	virtual Error mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint64_t p_compress_format = 0);
 	Array mesh_create_arrays_from_surface_data(const SurfaceData &p_data) const;
 	Array mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
 	TypedArray<Array> mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
@@ -617,6 +633,8 @@ public:
 
 	virtual void voxel_gi_set_quality(VoxelGIQuality) = 0;
 
+	virtual void sdfgi_reset() = 0;
+
 	/* LIGHTMAP */
 
 	virtual RID lightmap_create() = 0;
@@ -646,6 +664,7 @@ public:
 	virtual void particles_set_emitting(RID p_particles, bool p_enable) = 0;
 	virtual bool particles_get_emitting(RID p_particles) = 0;
 	virtual void particles_set_amount(RID p_particles, int p_amount) = 0;
+	virtual void particles_set_amount_ratio(RID p_particles, float p_amount_ratio) = 0;
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
@@ -703,6 +722,8 @@ public:
 	virtual AABB particles_get_current_aabb(RID p_particles) = 0;
 
 	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) = 0; // This is only used for 2D, in 3D it's automatic.
+	virtual void particles_set_emitter_velocity(RID p_particles, const Vector3 &p_velocity) = 0;
+	virtual void particles_set_interp_to_end(RID p_particles, float p_interp) = 0;
 
 	/* PARTICLES COLLISION API */
 
@@ -807,6 +828,7 @@ public:
 	enum ViewportScaling3DMode {
 		VIEWPORT_SCALING_3D_MODE_BILINEAR,
 		VIEWPORT_SCALING_3D_MODE_FSR,
+		VIEWPORT_SCALING_3D_MODE_FSR2,
 		VIEWPORT_SCALING_3D_MODE_MAX,
 		VIEWPORT_SCALING_3D_MODE_OFF = 255, // for internal use only
 	};
@@ -971,6 +993,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 		VIEWPORT_DEBUG_DRAW_OCCLUDERS,
 		VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
+		VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
@@ -1393,6 +1416,9 @@ public:
 
 	virtual void canvas_item_set_canvas_group_mode(RID p_item, CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false) = 0;
 
+	virtual void canvas_item_set_debug_redraw(bool p_enabled) = 0;
+	virtual bool canvas_item_get_debug_redraw() const = 0;
+
 	/* CANVAS LIGHT */
 	virtual RID canvas_light_create() = 0;
 
@@ -1608,6 +1634,16 @@ public:
 	RenderingServer();
 	virtual ~RenderingServer();
 
+#ifdef TOOLS_ENABLED
+	typedef void (*SurfaceUpgradeCallback)();
+	void set_surface_upgrade_callback(SurfaceUpgradeCallback p_callback);
+	void set_warn_on_surface_upgrade(bool p_warn);
+#endif
+
+#ifndef DISABLE_DEPRECATED
+	void fix_surface_compatibility(SurfaceData &p_surface, const String &p_path = "");
+#endif
+
 private:
 	// Binder helpers
 	RID _texture_2d_layered_create(const TypedArray<Image> &p_layers, TextureLayeredType p_layered_type);
@@ -1621,6 +1657,10 @@ private:
 	TypedArray<Dictionary> _instance_geometry_get_shader_parameter_list(RID p_instance) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
+#ifdef TOOLS_ENABLED
+	SurfaceUpgradeCallback surface_upgrade_callback = nullptr;
+	bool warn_on_surface_upgrade = true;
+#endif
 };
 
 // Make variant understand the enums.

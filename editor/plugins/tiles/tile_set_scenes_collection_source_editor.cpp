@@ -563,12 +563,12 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	right_vbox_container->add_child(scenes_bottom_actions);
 
 	scene_tile_add_button = memnew(Button);
-	scene_tile_add_button->set_flat(true);
+	scene_tile_add_button->set_theme_type_variation("FlatButton");
 	scene_tile_add_button->connect("pressed", callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_add_pressed));
 	scenes_bottom_actions->add_child(scene_tile_add_button);
 
 	scene_tile_delete_button = memnew(Button);
-	scene_tile_delete_button->set_flat(true);
+	scene_tile_delete_button->set_theme_type_variation("FlatButton");
 	scene_tile_delete_button->set_disabled(true);
 	scene_tile_delete_button->connect("pressed", callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_delete_pressed));
 	scenes_bottom_actions->add_child(scene_tile_delete_button);

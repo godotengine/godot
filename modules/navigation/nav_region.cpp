@@ -89,13 +89,13 @@ int NavRegion::get_connections_count() const {
 }
 
 Vector3 NavRegion::get_connection_pathway_start(int p_connection_id) const {
-	ERR_FAIL_COND_V(!map, Vector3());
+	ERR_FAIL_NULL_V(map, Vector3());
 	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
 	return connections[p_connection_id].pathway_start;
 }
 
 Vector3 NavRegion::get_connection_pathway_end(int p_connection_id) const {
-	ERR_FAIL_COND_V(!map, Vector3());
+	ERR_FAIL_NULL_V(map, Vector3());
 	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
 	return connections[p_connection_id].pathway_end;
 }
@@ -125,11 +125,11 @@ void NavRegion::update_polygons() {
 
 #ifdef DEBUG_ENABLED
 	if (!Math::is_equal_approx(double(map->get_cell_size()), double(mesh->get_cell_size()))) {
-		ERR_PRINT_ONCE(vformat("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(map->get_cell_size()), double(mesh->get_cell_size())));
+		ERR_PRINT_ONCE(vformat("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(mesh->get_cell_size()), double(map->get_cell_size())));
 	}
 
 	if (!Math::is_equal_approx(double(map->get_cell_height()), double(mesh->get_cell_height()))) {
-		ERR_PRINT_ONCE(vformat("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a `cell_height` of %s while assigned to a navigation map set to a `cell_height` of %s. The cell height for navigation maps can be changed by using the NavigationServer map_set_cell_height() function. The cell height for default navigation maps can also be changed in the ProjectSettings.", double(map->get_cell_height()), double(mesh->get_cell_height())));
+		ERR_PRINT_ONCE(vformat("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a `cell_height` of %s while assigned to a navigation map set to a `cell_height` of %s. The cell height for navigation maps can be changed by using the NavigationServer map_set_cell_height() function. The cell height for default navigation maps can also be changed in the ProjectSettings.", double(mesh->get_cell_height()), double(map->get_cell_height())));
 	}
 
 	if (map && Math::rad_to_deg(map->get_up().angle_to(transform.basis.get_column(1))) >= 90.0f) {

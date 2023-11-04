@@ -63,6 +63,7 @@
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "servers/display_server.h"
+#include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 
 struct FloatConstantDef {
@@ -453,7 +454,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	// All nodes are closable except the output node.
 	if (p_id >= 2) {
 		vsnode->set_closable(true);
-		node->connect("close_request", callable_mp(editor, &VisualShaderEditor::_close_node_request).bind(p_type, p_id), CONNECT_DEFERRED);
+		node->connect("delete_request", callable_mp(editor, &VisualShaderEditor::_delete_node_request).bind(p_type, p_id), CONNECT_DEFERRED);
 	}
 	graph->add_child(node);
 	node->set_theme(vstheme);
@@ -548,6 +549,48 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 				custom_editor->call_deferred(SNAME("_show_prop_names"), true);
 			}
 			break;
+		}
+	}
+
+	if (custom_node.is_valid()) {
+		bool first = true;
+		VBoxContainer *vbox = nullptr;
+
+		for (int i = 0; i < custom_node->dp_props.size(); i++) {
+			const VisualShaderNodeCustom::DropDownListProperty &dp = custom_node->dp_props[i];
+
+			if (first) {
+				first = false;
+				vbox = memnew(VBoxContainer);
+				node->add_child(vbox);
+				port_offset++;
+			}
+
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			vbox->add_child(hbox);
+			hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+			String prop_name = dp.name.strip_edges();
+			if (!prop_name.is_empty()) {
+				Label *label = memnew(Label);
+				label->set_auto_translate(false); // TODO: Implement proper translation switch.
+				label->set_text(prop_name + ":");
+				hbox->add_child(label);
+			}
+
+			OptionButton *op = memnew(OptionButton);
+			hbox->add_child(op);
+			op->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			op->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_set_custom_node_option).bind(p_id, i), CONNECT_DEFERRED);
+
+			for (const String &s : dp.options) {
+				op->add_item(s);
+			}
+			if (custom_node->dp_selected_cache.has(i)) {
+				op->select(custom_node->dp_selected_cache[i]);
+			} else {
+				op->select(0);
+			}
 		}
 	}
 
@@ -802,6 +845,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					hb->add_child(remove_btn);
 				} else {
 					Label *label = memnew(Label);
+					label->set_auto_translate(false); // TODO: Implement proper translation switch.
 					label->set_text(name_left);
 					label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
 					hb->add_child(label);
@@ -851,6 +895,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_output_port_type).bind(p_id, i), CONNECT_DEFERRED);
 				} else {
 					Label *label = memnew(Label);
+					label->set_auto_translate(false); // TODO: Implement proper translation switch.
 					label->set_text(name_right);
 					label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
 					hb->add_child(label);
@@ -1051,9 +1096,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 		}
 
+		expression_box->begin_bulk_theme_override();
 		expression_box->add_theme_font_override("font", editor->get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
 		expression_box->add_theme_font_size_override("font_size", editor->get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 		expression_box->add_theme_color_override("font_color", text_color);
+		expression_box->end_bulk_theme_override();
+
 		expression_syntax_highlighter->set_number_color(number_color);
 		expression_syntax_highlighter->set_symbol_color(symbol_color);
 		expression_syntax_highlighter->set_function_color(function_color);
@@ -2704,6 +2752,22 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	editing_port = p_port;
 }
 
+void VisualShaderEditor::_set_custom_node_option(int p_index, int p_node, int p_op) {
+	VisualShader::Type type = get_current_shader_type();
+	Ref<VisualShaderNodeCustom> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Set Custom Node Option"));
+	undo_redo->add_do_method(node.ptr(), "_set_option_index", p_op, p_index);
+	undo_redo->add_undo_method(node.ptr(), "_set_option_index", p_op, node->get_option_index(p_op));
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type, p_node);
+	undo_redo->commit_action();
+}
+
 void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Variant> &p_ops) {
 	// INPUT
 	{
@@ -3084,7 +3148,9 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 		}
 		VisualShaderNodeCustom *custom_node = Object::cast_to<VisualShaderNodeCustom>(vsn);
 		ERR_FAIL_NULL(custom_node);
-		custom_node->update_ports();
+		custom_node->update_property_default_values();
+		custom_node->update_input_port_default_values();
+		custom_node->update_properties();
 	}
 
 	bool is_texture2d = (Object::cast_to<VisualShaderNodeTexture>(vsnode.ptr()) != nullptr);
@@ -3793,7 +3859,7 @@ void VisualShaderEditor::_convert_constants_to_parameters(bool p_vice_versa) {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_close_node_request(int p_type, int p_node) {
+void VisualShaderEditor::_delete_node_request(int p_type, int p_node) {
 	Ref<VisualShaderNode> node = visual_shader->get_node((VisualShader::Type)p_type, p_node);
 	if (!node->is_closable()) {
 		return;
@@ -3808,7 +3874,7 @@ void VisualShaderEditor::_close_node_request(int p_type, int p_node) {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_close_nodes_request(const TypedArray<StringName> &p_nodes) {
+void VisualShaderEditor::_delete_nodes_request(const TypedArray<StringName> &p_nodes) {
 	List<int> to_erase;
 
 	if (p_nodes.is_empty()) {
@@ -4135,9 +4201,12 @@ void VisualShaderEditor::_notification(int p_what) {
 					}
 				}
 
+				preview_text->begin_bulk_theme_override();
 				preview_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
 				preview_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 				preview_text->add_theme_color_override("font_color", text_color);
+				preview_text->end_bulk_theme_override();
+
 				syntax_highlighter->set_number_color(number_color);
 				syntax_highlighter->set_symbol_color(symbol_color);
 				syntax_highlighter->set_function_color(function_color);
@@ -4151,9 +4220,11 @@ void VisualShaderEditor::_notification(int p_what) {
 				preview_text->add_comment_delimiter("//", "", true);
 
 				error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+				error_label->begin_bulk_theme_override();
 				error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 				error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
 				error_label->add_theme_color_override("font_color", error_color);
+				error_label->end_bulk_theme_override();
 			}
 
 			tools->set_icon(get_editor_theme_icon(SNAME("Tools")));
@@ -4839,7 +4910,7 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 			_paste_nodes(true, menu_point);
 			break;
 		case NodeMenuOptions::DELETE:
-			_close_nodes_request(TypedArray<StringName>());
+			_delete_nodes_request(TypedArray<StringName>());
 			break;
 		case NodeMenuOptions::DUPLICATE:
 			_duplicate_nodes();
@@ -5024,20 +5095,52 @@ void VisualShaderEditor::_update_preview() {
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_shader_uniform_type_func = _visual_shader_editor_get_global_shader_uniform_type;
 
-	ShaderLanguage sl;
-
-	Error err = sl.compile(code, info);
-
 	for (int i = 0; i < preview_text->get_line_count(); i++) {
 		preview_text->set_line_background_color(i, Color(0, 0, 0, 0));
 	}
+
+	String preprocessed_code;
+	{
+		String path = visual_shader->get_path();
+		String error_pp;
+		List<ShaderPreprocessor::FilePosition> err_positions;
+		ShaderPreprocessor preprocessor;
+		Error err = preprocessor.preprocess(code, path, preprocessed_code, &error_pp, &err_positions);
+		if (err != OK) {
+			ERR_FAIL_COND(err_positions.is_empty());
+
+			String file = err_positions.front()->get().file;
+			int err_line = err_positions.front()->get().line;
+			Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
+			preview_text->set_line_background_color(err_line - 1, error_line_color);
+			error_panel->show();
+
+			error_label->set_text("error(" + file + ":" + itos(err_line) + "): " + error_pp);
+			shader_error = true;
+			return;
+		}
+	}
+
+	ShaderLanguage sl;
+	Error err = sl.compile(preprocessed_code, info);
 	if (err != OK) {
+		int err_line;
+		String err_text;
+		Vector<ShaderLanguage::FilePosition> include_positions = sl.get_include_positions();
+		if (include_positions.size() > 1) {
+			// Error is in an include.
+			err_line = include_positions[0].line;
+			err_text = "error(" + itos(err_line) + ") in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
+		} else {
+			err_line = sl.get_error_line();
+			err_text = "error(" + itos(err_line) + "): " + sl.get_error_text();
+		}
+
 		Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
-		preview_text->set_line_background_color(sl.get_error_line() - 1, error_line_color);
+		preview_text->set_line_background_color(err_line - 1, error_line_color);
 		error_panel->show();
 
-		String text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
-		error_label->set_text(text);
+		error_label->set_text(err_text);
 		shader_error = true;
 	} else {
 		error_panel->hide();
@@ -5139,7 +5242,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualShaderEditor::_duplicate_nodes));
 	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes).bind(false));
 	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes).bind(false, Point2()));
-	graph->connect("close_nodes_request", callable_mp(this, &VisualShaderEditor::_close_nodes_request));
+	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes_request));
 	graph->connect("gui_input", callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
 	graph->connect("connection_from_empty", callable_mp(this, &VisualShaderEditor::_connection_from_empty));
@@ -5268,7 +5371,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	varying_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
 
 	preview_shader = memnew(Button);
-	preview_shader->set_flat(true);
+	preview_shader->set_theme_type_variation("FlatButton");
 	preview_shader->set_toggle_mode(true);
 	preview_shader->set_tooltip_text(TTR("Show generated shader code."));
 	graph->get_menu_hbox()->add_child(preview_shader);
@@ -6456,6 +6559,7 @@ public:
 			} else {
 				prop_name_str = prop_name_str.capitalize() + ":";
 			}
+			prop_name->set_auto_translate(false); // TODO: Implement proper translation switch.
 			prop_name->set_text(prop_name_str);
 			prop_name->set_visible(false);
 			hbox->add_child(prop_name);

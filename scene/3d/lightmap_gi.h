@@ -44,6 +44,7 @@ class LightmapGIData : public Resource {
 	RES_BASE_EXTENSION("lmbake")
 
 	Ref<TextureLayered> light_texture;
+	TypedArray<TextureLayered> light_textures;
 
 	bool uses_spherical_harmonics = false;
 	bool interior = false;
@@ -65,8 +66,8 @@ class LightmapGIData : public Resource {
 	Array _get_user_data() const;
 	void _set_probe_data(const Dictionary &p_data);
 	Dictionary _get_probe_data() const;
-	void _set_light_textures_data(const Array &p_data);
-	Array _get_light_textures_data() const;
+
+	void _reset_lightmap_textures();
 
 protected:
 	static void _bind_methods();
@@ -80,8 +81,13 @@ public:
 	int get_user_lightmap_slice_index(int p_user) const;
 	void clear_users();
 
+#ifndef DISABLE_DEPRECATED
 	void set_light_texture(const Ref<TextureLayered> &p_light_texture);
 	Ref<TextureLayered> get_light_texture() const;
+
+	void _set_light_textures_data(const Array &p_data);
+	Array _get_light_textures_data() const;
+#endif
 
 	void set_uses_spherical_harmonics(bool p_enable);
 	bool is_using_spherical_harmonics() const;
@@ -97,6 +103,9 @@ public:
 	AABB get_capture_bounds() const;
 
 	void clear();
+
+	void set_lightmap_textures(const TypedArray<TextureLayered> &p_data);
+	TypedArray<TextureLayered> get_lightmap_textures() const;
 
 	virtual RID get_rid() const override;
 	LightmapGIData();
@@ -145,7 +154,9 @@ public:
 private:
 	BakeQuality bake_quality = BAKE_QUALITY_MEDIUM;
 	bool use_denoiser = true;
+	float denoiser_strength = 0.1f;
 	int bounces = 3;
+	float bounce_indirect_energy = 1.0;
 	float bias = 0.0005;
 	int max_texture_size = 16384;
 	bool interior = false;
@@ -154,6 +165,7 @@ private:
 	Color environment_custom_color = Color(1, 1, 1);
 	float environment_custom_energy = 1.0;
 	bool directional = false;
+	bool use_texture_for_bounces = true;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
 
@@ -239,8 +251,14 @@ public:
 	void set_use_denoiser(bool p_enable);
 	bool is_using_denoiser() const;
 
+	void set_denoiser_strength(float p_denoiser_strength);
+	float get_denoiser_strength() const;
+
 	void set_directional(bool p_enable);
 	bool is_directional() const;
+
+	void set_use_texture_for_bounces(bool p_enable);
+	bool is_using_texture_for_bounces() const;
 
 	void set_interior(bool p_interior);
 	bool is_interior() const;
@@ -259,6 +277,9 @@ public:
 
 	void set_bounces(int p_bounces);
 	int get_bounces() const;
+
+	void set_bounce_indirect_energy(float p_indirect_energy);
+	float get_bounce_indirect_energy() const;
 
 	void set_bias(float p_bias);
 	float get_bias() const;

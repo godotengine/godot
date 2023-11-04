@@ -19,6 +19,21 @@
 				Override this method to return a custom [RID] when [method get_rid] is called.
 			</description>
 		</method>
+		<method name="_setup_local_to_scene" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Override this method to customize the newly duplicated resource created from [method PackedScene.instantiate], if the original's [member resource_local_to_scene] is set to [code]true[/code].
+				[b]Example:[/b] Set a random [code]damage[/code] value to every local resource from an instantiated scene.
+				[codeblock]
+				extends Resource
+
+				var damage = 0
+
+				func _setup_local_to_scene():
+				    damage = randi_range(10, 40)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Resource" />
 			<param index="0" name="subresources" type="bool" default="false" />
@@ -58,8 +73,8 @@
 		<method name="setup_local_to_scene" is_deprecated="true">
 			<return type="void" />
 			<description>
-				Emits the [signal setup_local_to_scene_requested] signal. If [member resource_local_to_scene] is set to [code]true[/code], this method is called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance.
-				For most resources, this method performs no logic of its own. Custom behavior can be defined by connecting [signal setup_local_to_scene_requested] from a script, [b]not[/b] by overriding this method.
+				Calls [method _setup_local_to_scene]. If [member resource_local_to_scene] is set to [code]true[/code], this method is automatically called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance.
+				[i]Deprecated.[/i] This method should only be called internally. Override [method _setup_local_to_scene] instead.
 			</description>
 		</method>
 		<method name="take_over_path">
@@ -77,6 +92,7 @@
 		</member>
 		<member name="resource_name" type="String" setter="set_name" getter="get_name" default="&quot;&quot;">
 			An optional name for this resource. When defined, its value is displayed to represent the resource in the Inspector dock. For built-in scripts, the name is displayed as part of the tab name in the script editor.
+			[b]Note:[/b] Some resource formats do not support resource names. You can still set the name in the editor or via code, but it will be lost when the resource is reloaded. For example, only built-in scripts can have a resource name, while scripts stored in separate files cannot.
 		</member>
 		<member name="resource_path" type="String" setter="set_path" getter="get_path" default="&quot;&quot;">
 			The unique path to this resource. If it has been saved to disk, the value will be its filepath. If the resource is exclusively contained within a scene, the value will be the [PackedScene]'s filepath, followed by a unique identifier.
@@ -90,9 +106,10 @@
 				[b]Note:[/b] This signal is not emitted automatically for properties of custom resources. If necessary, a setter needs to be created to emit the signal.
 			</description>
 		</signal>
-		<signal name="setup_local_to_scene_requested">
+		<signal name="setup_local_to_scene_requested" is_deprecated="true">
 			<description>
-				Emitted by the newly duplicated resource with [member resource_local_to_scene] set to [code]true[/code], when the scene is instantiated. Custom behavior can be defined by connecting this signal.
+				Emitted by a newly duplicated resource with [member resource_local_to_scene] set to [code]true[/code]. 
+				[i]Deprecated.[/i] This signal is only emitted when the resource is created. Override [method _setup_local_to_scene] instead.
 			</description>
 		</signal>
 	</signals>

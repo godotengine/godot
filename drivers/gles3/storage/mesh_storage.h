@@ -58,7 +58,7 @@ struct Mesh {
 			uint32_t offset;
 		};
 		RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
-		uint32_t format = 0;
+		uint64_t format = 0;
 
 		GLuint vertex_buffer = 0;
 		GLuint attribute_buffer = 0;
@@ -97,6 +97,8 @@ struct Mesh {
 		AABB aabb;
 
 		Vector<AABB> bone_aabbs;
+
+		Vector4 uv_scale;
 
 		struct BlendShape {
 			GLuint vertex_buffer = 0;
@@ -144,7 +146,7 @@ struct MeshInstance {
 		int vertex_size_cache = 0;
 		int vertex_normal_offset_cache = 0;
 		int vertex_tangent_offset_cache = 0;
-		uint32_t format_cache = 0;
+		uint64_t format_cache = 0;
 
 		Mesh::Surface::Version *versions = nullptr; //allocated on demand
 		uint32_t version_count = 0;
@@ -221,7 +223,7 @@ private:
 
 	mutable RID_Owner<Mesh, true> mesh_owner;
 
-	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, MeshInstance::Surface *mis = nullptr);
+	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, MeshInstance::Surface *mis = nullptr);
 
 	/* Mesh Instance API */
 
@@ -381,18 +383,18 @@ public:
 	}
 
 	// Use this to cache Vertex Array Objects so they are only generated once
-	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint32_t p_input_mask, GLuint &r_vertex_array_gl) {
+	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint64_t p_input_mask, GLuint &r_vertex_array_gl) {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		s->version_lock.lock();
 
-		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
+		// There will never be more than 3 or 4 versions, so iterating is the fastest way.
 
 		for (uint32_t i = 0; i < s->version_count; i++) {
 			if (s->versions[i].input_mask != p_input_mask) {
 				continue;
 			}
-			//we have this version, hooray
+			// We have this version, hooray.
 			r_vertex_array_gl = s->versions[i].vertex_array;
 			s->version_lock.unlock();
 			return;
@@ -424,7 +426,7 @@ public:
 
 	// TODO: considering hashing versions with multimesh buffer RID.
 	// Doing so would allow us to avoid specifying multimesh buffer pointers every frame and may improve performance.
-	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, GLuint &r_vertex_array_gl) {
+	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint64_t p_input_mask, GLuint &r_vertex_array_gl) {
 		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 		ERR_FAIL_NULL(mi);
 		Mesh *mesh = mi->mesh;

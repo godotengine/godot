@@ -44,8 +44,11 @@
 #endif
 
 /* Some versions of ASan result in errors about not enough registers */
-#if defined(MBEDTLS_HAVE_ASM) && defined(__GNUC__) && defined(__i386__) && \
+#if defined(MBEDTLS_PADLOCK_C) && defined(MBEDTLS_HAVE_ASM) && \
+    defined(__GNUC__) && defined(__i386__) && \
     !defined(MBEDTLS_HAVE_ASAN)
+
+#define MBEDTLS_VIA_PADLOCK_HAVE_CODE
 
 #ifndef MBEDTLS_HAVE_X86
 #define MBEDTLS_HAVE_X86
@@ -120,6 +123,7 @@ int mbedtls_padlock_xcryptcbc(mbedtls_aes_context *ctx,
 }
 #endif
 
-#endif /* HAVE_X86  */
+#endif /* MBEDTLS_PADLOCK_C && MBEDTLS_HAVE_ASM &&
+          __GNUC__ && __i386__ && !MBEDTLS_HAVE_ASAN */
 
 #endif /* padlock.h */

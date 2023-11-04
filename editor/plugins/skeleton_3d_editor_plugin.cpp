@@ -363,7 +363,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 
 void Skeleton3DEditor::create_physical_skeleton() {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ERR_FAIL_COND(!get_tree());
+	ERR_FAIL_NULL(get_tree());
 	Node *owner = get_tree()->get_edited_scene_root();
 
 	const int bone_count = skeleton->get_bone_count();
@@ -712,11 +712,13 @@ void Skeleton3DEditor::create_editors() {
 	add_child(file_dialog);
 
 	// Create Top Menu Bar.
-	HBoxContainer *topmenu_bar = memnew(HBoxContainer);
+	topmenu_bar = memnew(HBoxContainer);
 	ne->add_control_to_menu_panel(topmenu_bar);
 
 	// Create Skeleton Option in Top Menu Bar.
 	skeleton_options = memnew(MenuButton);
+	skeleton_options->set_flat(false);
+	skeleton_options->set_theme_type_variation("FlatMenuButton");
 	topmenu_bar->add_child(skeleton_options);
 
 	skeleton_options->set_text(TTR("Skeleton3D"));
@@ -738,7 +740,7 @@ void Skeleton3DEditor::create_editors() {
 
 	edit_mode_button = memnew(Button);
 	topmenu_bar->add_child(edit_mode_button);
-	edit_mode_button->set_flat(true);
+	edit_mode_button->set_theme_type_variation("FlatButton");
 	edit_mode_button->set_toggle_mode(true);
 	edit_mode_button->set_focus_mode(FOCUS_NONE);
 	edit_mode_button->set_tooltip_text(TTR("Edit Mode\nShow buttons on joints."));
@@ -758,7 +760,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->hide();
 
 	key_loc_button = memnew(Button);
-	key_loc_button->set_flat(true);
+	key_loc_button->set_theme_type_variation("FlatButton");
 	key_loc_button->set_toggle_mode(true);
 	key_loc_button->set_pressed(false);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
@@ -766,7 +768,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_loc_button);
 
 	key_rot_button = memnew(Button);
-	key_rot_button->set_flat(true);
+	key_rot_button->set_theme_type_variation("FlatButton");
 	key_rot_button->set_toggle_mode(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
@@ -774,7 +776,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_rot_button);
 
 	key_scale_button = memnew(Button);
-	key_scale_button->set_flat(true);
+	key_scale_button->set_theme_type_variation("FlatButton");
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_pressed(false);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
@@ -782,7 +784,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_scale_button);
 
 	key_insert_button = memnew(Button);
-	key_insert_button->set_flat(true);
+	key_insert_button->set_theme_type_variation("FlatButton");
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
 	key_insert_button->set_tooltip_text(TTR("Insert key of bone poses already exist track."));
@@ -790,7 +792,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_insert_button);
 
 	key_insert_all_button = memnew(Button);
-	key_insert_all_button->set_flat(true);
+	key_insert_all_button->set_theme_type_variation("FlatButton");
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
 	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
 	key_insert_all_button->set_tooltip_text(TTR("Insert key of all bone poses."));
@@ -869,7 +871,9 @@ void Skeleton3DEditor::_notification(int p_what) {
 				skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_update_properties));
 				skeleton->set_transform_gizmo_visible(true);
 #endif
-				handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
+				if (handles_mesh_instance->get_parent()) {
+					handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
+				}
 			}
 			edit_mode_toggled(false);
 		} break;
@@ -914,24 +918,32 @@ Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skel
 // Skeleton 3D gizmo handle shader.
 
 shader_type spatial;
-render_mode unshaded, shadows_disabled, depth_draw_always;
+render_mode unshaded, shadows_disabled, depth_draw_always, fog_disabled;
+
 uniform sampler2D texture_albedo : source_color;
-uniform float point_size : hint_range(0,128) = 32;
+uniform float point_size : hint_range(0, 128) = 32;
+
 void vertex() {
 	if (!OUTPUT_IS_SRGB) {
-		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
+		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));
 	}
+
 	VERTEX = VERTEX;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
-	POSITION.z = mix(POSITION.z, 0, 0.999);
+	POSITION.z = mix(POSITION.z, 0.0, 0.999);
 	POINT_SIZE = point_size;
 }
+
 void fragment() {
-	vec4 albedo_tex = texture(texture_albedo,POINT_COORD);
+	vec4 albedo_tex = texture(texture_albedo, POINT_COORD);
 	vec3 col = albedo_tex.rgb + COLOR.rgb;
-	col = vec3(min(col.r,1.0),min(col.g,1.0),min(col.b,1.0));
+	col = vec3(min(col.r, 1.0), min(col.g, 1.0), min(col.b, 1.0));
 	ALBEDO = col;
-	if (albedo_tex.a < 0.5) { discard; }
+
+	if (albedo_tex.a < 0.5) {
+		discard;
+	}
+
 	ALPHA = albedo_tex.a;
 }
 )");
@@ -1095,25 +1107,8 @@ Skeleton3DEditor::~Skeleton3DEditor() {
 
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 
-	if (animation_hb) {
-		ne->remove_control_from_menu_panel(animation_hb);
-		memdelete(animation_hb);
-	}
-
-	if (separator) {
-		ne->remove_control_from_menu_panel(separator);
-		memdelete(separator);
-	}
-
-	if (skeleton_options) {
-		ne->remove_control_from_menu_panel(skeleton_options);
-		memdelete(skeleton_options);
-	}
-
-	if (edit_mode_button) {
-		ne->remove_control_from_menu_panel(edit_mode_button);
-		memdelete(edit_mode_button);
-	}
+	ne->remove_control_from_menu_panel(topmenu_bar);
+	memdelete(topmenu_bar);
 }
 
 bool EditorInspectorPluginSkeleton::can_handle(Object *p_object) {
@@ -1199,6 +1194,7 @@ Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
 	unselected_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	unselected_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	unselected_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	unselected_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 	selected_mat = Ref<ShaderMaterial>(memnew(ShaderMaterial));
 	selected_sh = Ref<Shader>(memnew(Shader));

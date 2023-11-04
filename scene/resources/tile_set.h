@@ -641,9 +641,10 @@ private:
 	void _create_coords_mapping_cache(Vector2i p_atlas_coords);
 
 	bool use_texture_padding = true;
-	Ref<ImageTexture> padded_texture;
+	Ref<CanvasTexture> padded_texture;
 	bool padded_texture_needs_update = false;
 	void _queue_update_padded_texture();
+	Ref<ImageTexture> _create_padded_image_texture(const Ref<Texture2D> &p_source);
 	void _update_padded_texture();
 
 protected:

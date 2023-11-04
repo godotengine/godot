@@ -453,7 +453,7 @@ struct hb_sanitize_context_t :
 	edit_count = 0;
 	sane = t->sanitize (this);
 	if (edit_count) {
-	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILLING", edit_count);
+	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILING", edit_count);
 	  sane = false;
 	}
       }

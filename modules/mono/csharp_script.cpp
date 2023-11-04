@@ -121,16 +121,16 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
 #endif
 
-	gdmono = memnew(GDMono);
-	gdmono->initialize();
-
 #ifdef TOOLS_ENABLED
-	if (gdmono->is_runtime_initialized()) {
-		gdmono->initialize_load_assemblies();
-	}
-
 	EditorNode::add_init_callback(&_editor_init_callback);
 #endif
+
+	gdmono = memnew(GDMono);
+
+	// Initialize only if the project uses C#.
+	if (gdmono->should_initialize()) {
+		gdmono->initialize();
+	}
 }
 
 void CSharpLanguage::finish() {
@@ -140,6 +140,10 @@ void CSharpLanguage::finish() {
 void CSharpLanguage::finalize() {
 	if (finalized) {
 		return;
+	}
+
+	if (gdmono && gdmono->is_runtime_initialized() && GDMonoCache::godot_api_cache_updated) {
+		GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
 	}
 
 	finalizing = true;
@@ -328,6 +332,11 @@ void CSharpLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("/* */"); // delimited comment
 }
 
+void CSharpLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) const {
+	p_delimiters->push_back("///"); // single-line doc comment
+	p_delimiters->push_back("/** */"); // delimited doc comment
+}
+
 void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("' '"); // character literal
 	p_delimiters->push_back("\" \""); // regular string literal
@@ -390,10 +399,6 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 
 Script *CSharpLanguage::create_script() const {
 	return memnew(CSharpScript);
-}
-
-bool CSharpLanguage::has_named_classes() const {
-	return false;
 }
 
 bool CSharpLanguage::supports_builtin_mode() const {
@@ -554,13 +559,13 @@ bool CSharpLanguage::handles_global_class_type(const String &p_type) const {
 
 String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
 	Ref<CSharpScript> scr = ResourceLoader::load(p_path, get_type());
-	if (!scr.is_valid() || !scr->valid || !scr->global_class) {
-		// Invalid script or the script is not a global class.
-		return String();
-	}
+	// Always assign r_base_type and r_icon_path, even if the script
+	// is not a global one. In the case that it is not a global script,
+	// return an empty string AFTER assigning the return parameters.
+	// See GDScriptLanguage::get_global_class_name() in modules/gdscript/gdscript.cpp
 
-	String name = scr->class_name;
-	if (unlikely(name.is_empty())) {
+	if (!scr.is_valid() || !scr->valid) {
+		// Invalid script.
 		return String();
 	}
 
@@ -587,7 +592,8 @@ String CSharpLanguage::get_global_class_name(const String &p_path, String *r_bas
 			*r_base_type = scr->get_instance_base_type();
 		}
 	}
-	return name;
+
+	return scr->global_class ? scr->class_name : String();
 }
 
 String CSharpLanguage::debug_get_error() const {
@@ -2300,6 +2306,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	bool tool = false;
 	bool global_class = false;
+	bool abstract_class = false;
 
 	// TODO: Use GDExtension godot_dictionary
 	Array methods_array;
@@ -2313,12 +2320,13 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	String icon_path;
 	Ref<CSharpScript> base_script;
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptClassInfo(
-			p_script.ptr(), &class_name, &tool, &global_class, &icon_path,
+			p_script.ptr(), &class_name, &tool, &global_class, &abstract_class, &icon_path,
 			&methods_array, &rpc_functions_dict, &signals_dict, &base_script);
 
 	p_script->class_name = class_name;
 	p_script->tool = tool;
 	p_script->global_class = global_class;
+	p_script->abstract_class = abstract_class;
 	p_script->icon_path = icon_path;
 
 	p_script->rpc_config.clear();
@@ -2408,7 +2416,7 @@ bool CSharpScript::can_instantiate() const {
 		ERR_FAIL_V_MSG(false, "Cannot instance script because the associated class could not be found. Script: '" + get_path() + "'. Make sure the script exists and contains a class definition with a name that matches the filename of the script exactly (it's case-sensitive).");
 	}
 
-	return valid && extra_cond;
+	return valid && !abstract_class && extra_cond;
 }
 
 StringName CSharpScript::get_instance_base_type() const {

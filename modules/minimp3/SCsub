@@ -13,5 +13,8 @@ if not env.msvc:
 else:
     env_minimp3.Prepend(CPPPATH=[thirdparty_dir])
 
+if not env["minimp3_extra_formats"]:
+    env_minimp3.Append(CPPDEFINES=["MINIMP3_ONLY_MP3"])
+
 # Godot source files
 env_minimp3.add_source_files(env.modules_sources, "*.cpp")

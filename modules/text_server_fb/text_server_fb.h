@@ -245,12 +245,18 @@ class TextServerFallback : public TextServerExtension {
 		}
 	};
 
+	struct FontFallbackLinkedVariation {
+		RID base_font;
+		int extra_spacing[4] = { 0, 0, 0, 0 };
+	};
+
 	struct FontFallback {
 		Mutex mutex;
 
 		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 		bool mipmaps = false;
 		bool msdf = false;
+		FixedSizeScaleMode fixed_size_scale_mode = FIXED_SIZE_SCALE_DISABLE;
 		int msdf_range = 14;
 		int msdf_source_size = 48;
 		int fixed_size = 0;
@@ -451,8 +457,18 @@ class TextServerFallback : public TextServerExtension {
 	// Common data.
 
 	double oversampling = 1.0;
+	mutable RID_PtrOwner<FontFallbackLinkedVariation> font_var_owner;
 	mutable RID_PtrOwner<FontFallback> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataFallback> shaped_owner;
+
+	_FORCE_INLINE_ FontFallback *_get_font_data(const RID &p_font_rid) const {
+		RID rid = p_font_rid;
+		FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(rid);
+		if (unlikely(fdv)) {
+			rid = fdv->base_font;
+		}
+		return font_owner.get_or_null(rid);
+	}
 
 	struct SystemFontKey {
 		String font_name;
@@ -569,6 +585,7 @@ public:
 	/* Font interface */
 
 	MODBIND0R(RID, create_font);
+	MODBIND1R(RID, create_font_linked_variation, const RID &);
 
 	MODBIND2(font_set_data, const RID &, const PackedByteArray &);
 	MODBIND3(font_set_data_ptr, const RID &, const uint8_t *, int64_t);
@@ -610,6 +627,9 @@ public:
 
 	MODBIND2(font_set_fixed_size, const RID &, int64_t);
 	MODBIND1RC(int64_t, font_get_fixed_size, const RID &);
+
+	MODBIND2(font_set_fixed_size_scale_mode, const RID &, FixedSizeScaleMode);
+	MODBIND1RC(FixedSizeScaleMode, font_get_fixed_size_scale_mode, const RID &);
 
 	MODBIND2(font_set_allow_system_fallback, const RID &, bool);
 	MODBIND1RC(bool, font_is_allow_system_fallback, const RID &);

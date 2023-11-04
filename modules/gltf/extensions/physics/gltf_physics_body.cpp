@@ -112,7 +112,7 @@ void GLTFPhysicsBody::set_inertia_tensor(Basis p_inertia_tensor) {
 Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_node(const CollisionObject3D *p_body_node) {
 	Ref<GLTFPhysicsBody> physics_body;
 	physics_body.instantiate();
-	ERR_FAIL_COND_V_MSG(!p_body_node, physics_body, "Tried to create a GLTFPhysicsBody from a CollisionObject3D node, but the given node was null.");
+	ERR_FAIL_NULL_V_MSG(p_body_node, physics_body, "Tried to create a GLTFPhysicsBody from a CollisionObject3D node, but the given node was null.");
 	if (cast_to<CharacterBody3D>(p_body_node)) {
 		physics_body->body_type = "character";
 	} else if (cast_to<AnimatableBody3D>(p_body_node)) {

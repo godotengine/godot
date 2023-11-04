@@ -392,6 +392,9 @@ void TextEditor::_edit_option(int p_op) {
 		case EDIT_DUPLICATE_SELECTION: {
 			code_editor->duplicate_selection();
 		} break;
+		case EDIT_DUPLICATE_LINES: {
+			code_editor->get_text_editor()->duplicate_lines();
+		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 			int previous_line = -1;
 			for (int caret_idx : tx->get_caret_index_edit_order()) {
@@ -651,6 +654,7 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_lines"), EDIT_DUPLICATE_LINES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
