@@ -326,6 +326,8 @@ public:
 
 	void update_visibility_notifiers();
 
+	Rect2 _debug_canvas_item_get_rect(RID p_item);
+
 	bool free(RID p_rid);
 	RendererCanvasCull();
 	~RendererCanvasCull();
