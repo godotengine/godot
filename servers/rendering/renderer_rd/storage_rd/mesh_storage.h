@@ -120,6 +120,10 @@ private:
 
 			Vector<AABB> bone_aabbs;
 
+			// Transform used in runtime bone AABBs compute.
+			// As bone AABBs are saved in Mesh space, but bones animation is in Skeleton space.
+			Transform3D mesh_to_skeleton_xform;
+
 			Vector4 uv_scale;
 
 			RID blend_shape_buffer;
