@@ -423,14 +423,19 @@ void Node3DEditorCameraManager::update_camera() {
 void Node3DEditorCameraManager::update_cinematic_preview() {
 	if (cinematic_preview_mode && scene_root != nullptr) {
 		Camera3D* cam = scene_root->get_viewport()->get_camera_3d();
-		if (cam != nullptr && cam != cinematic_camera) {
+		if (cam != cinematic_camera) {
 			//then switch the viewport's camera to the scene's viewport camera
 			if (cinematic_camera != nullptr) {
-				cinematic_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::update_cinematic_preview));
+				cinematic_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previews_and_pilots));
 			}
 			cinematic_camera = cam;
-			cinematic_camera->connect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::update_cinematic_preview));
-			set_current_camera(cam);
+			if (cinematic_camera != nullptr) {
+				cinematic_camera->connect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previews_and_pilots));
+				set_current_camera(cam);
+			}
+			else {
+				set_current_camera(editor_camera);
+			}
 		}
 	}
 }

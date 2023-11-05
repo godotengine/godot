@@ -1143,18 +1143,32 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should update the cinematic camera preview") {
-			}
-
-			SUBCASE("Should update the cinematic camera preview") {
+				Camera3D* another_cinematic_camera = memnew(Camera3D);
+				root->add_child(another_cinematic_camera);
+				camera_manager->set_cinematic_preview_mode(true);
+				CHECK(camera_manager->get_current_camera() == cinematic_camera);
+				another_cinematic_camera->make_current();
+				camera_manager->update(0.033);
+				CHECK(camera_manager->get_current_camera() == another_cinematic_camera);
+				memdelete(another_cinematic_camera);
 			}
 
 			SUBCASE("Should update to the editor's camera when there isn't a cinematic camera preview") {
+				camera_manager->set_cinematic_preview_mode(true);
+				cinematic_camera->clear_current(false);
+				camera_manager->update(0.033);
+				CHECK(camera_manager->get_current_camera() == editor_camera);
 			}
 
-			SUBCASE("Should change the cinematic camera when the previous one is deleted") {
-			}
-
-			SUBCASE("Should change to the editor's camera when the cinematic one is deleted and there aren't any other") {
+			SUBCASE("Should leave cinematic preview mode when the current camera is deleted") {
+				Camera3D* another_cinematic_camera = memnew(Camera3D);
+				root->add_child(another_cinematic_camera);
+				camera_manager->set_cinematic_preview_mode(true);
+				another_cinematic_camera->make_current();
+				camera_manager->update(0.033);
+				memdelete(another_cinematic_camera);
+				CHECK(camera_manager->get_current_camera() == editor_camera);
+				CHECK(!camera_manager->is_in_cinematic_preview_mode());
 			}
 		}
 
