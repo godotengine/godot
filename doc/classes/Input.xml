@@ -312,7 +312,7 @@
 		</method>
 		<method name="set_custom_mouse_cursor">
 			<return type="void" />
-			<param index="0" name="image" type="Resource" />
+			<param index="0" name="image" type="ImageTexture" />
 			<param index="1" name="shape" type="int" enum="Input.CursorShape" default="0" />
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
