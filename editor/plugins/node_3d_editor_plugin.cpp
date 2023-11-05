@@ -4243,17 +4243,16 @@ bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Poin
 			return false;
 		}
 
-		if (spatial_editor->get_preview_material() != mesh_instance->get_surface_override_material(closest_surface)) {
-			spatial_editor->set_preview_material_surface(closest_surface);
-			spatial_editor->set_preview_reset_material(mesh_instance->get_surface_override_material(closest_surface));
-			mesh_instance->set_surface_override_material(closest_surface, spatial_editor->get_preview_material());
-		}
+		spatial_editor->set_preview_material_surface(closest_surface);
+		spatial_editor->set_preview_reset_material(mesh_instance->get_surface_override_material(closest_surface));
+		mesh_instance->set_surface_override_material(closest_surface, spatial_editor->get_preview_material());
 
 		return true;
 	}
 
 	GeometryInstance3D *geometry_instance = Object::cast_to<GeometryInstance3D>(target_inst);
-	if (geometry_instance && spatial_editor->get_preview_material() != geometry_instance->get_material_override()) {
+	if (geometry_instance) {
+		spatial_editor->set_preview_material_surface(-1);
 		spatial_editor->set_preview_reset_material(geometry_instance->get_material_override());
 		geometry_instance->set_material_override(spatial_editor->get_preview_material());
 		return true;
@@ -4273,7 +4272,6 @@ void Node3DEditorViewport::_reset_preview_material() const {
 	GeometryInstance3D *geometry_instance = Object::cast_to<GeometryInstance3D>(last_target_inst);
 	if (mesh_instance && spatial_editor->get_preview_material_surface() != -1) {
 		mesh_instance->set_surface_override_material(spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
-		spatial_editor->set_preview_material_surface(-1);
 	} else if (geometry_instance) {
 		geometry_instance->set_material_override(spatial_editor->get_preview_reset_material());
 	}
