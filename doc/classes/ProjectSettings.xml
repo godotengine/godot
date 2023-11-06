@@ -2393,6 +2393,10 @@
 			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
+		<member name="rendering/gl_compatibility/fallback_to_gles" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the compatibility renderer will fall back to OpenGLES if desktop OpenGL is not supported.
+			[b]Note:[/b] This setting is implemented only on Linux/X11.
+		</member>
 		<member name="rendering/gl_compatibility/fallback_to_native" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the compatibility renderer will fall back to native OpenGL if ANGLE over Metal is not supported.
 			[b]Note:[/b] This setting is implemented only on macOS.

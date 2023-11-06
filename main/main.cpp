@@ -1774,6 +1774,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST("rendering/gl_compatibility/nvidia_disable_threaded_optimization", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_angle", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_native", true);
+		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_gles", true);
 
 		GLOBAL_DEF_RST(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), Array());
 	}
