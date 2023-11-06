@@ -237,6 +237,7 @@ private:
 
 		Ref<Texture2D> bar_arrow;
 		Ref<Texture2D> sample_bg;
+		Ref<Texture2D> sample_revert;
 		Ref<Texture2D> overbright_indicator;
 		Ref<Texture2D> picker_cursor;
 		Ref<Texture2D> color_hue;
