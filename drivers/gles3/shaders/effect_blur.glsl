@@ -41,7 +41,8 @@ uniform sampler2D source_ssao; //texunit:1
 uniform float lod;
 uniform vec2 pixel_size;
 
-layout(location = 0) out vec4 frag_color;
+layout(location = 0) out vec4 frag_color_final;
+vec4 frag_color;
 
 #ifdef SSAO_MERGE
 
@@ -315,4 +316,5 @@ void main() {
 	frag_color = vec4(mix(color.rgb, color.rgb * mix(ssao_color.rgb, vec3(1.0), ssao), color.a), 1.0);
 
 #endif
+	frag_color_final = frag_color;
 }

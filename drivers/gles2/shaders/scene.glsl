@@ -2380,11 +2380,18 @@ FRAGMENT_SHADER_CODE
 
 #endif // !USE_SHADOW_TO_OPACITY
 
+	// Instead of writing directly to gl_FragColor,
+	// we use an intermediate, and only write
+	// to gl_FragColor ONCE at the end of the shader.
+	// This is because some hardware can have huge
+	// slowdown if you modify gl_FragColor multiple times.
+	vec4 frag_color;
+
 #ifndef RENDER_DEPTH
 
 #ifdef SHADELESS
 
-	gl_FragColor = vec4(albedo, alpha);
+	frag_color = vec4(albedo, alpha);
 #else
 
 	ambient_light *= albedo;
@@ -2399,13 +2406,13 @@ FRAGMENT_SHADER_CODE
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
 
-	gl_FragColor = vec4(ambient_light + diffuse_light + specular_light, alpha);
+	frag_color = vec4(ambient_light + diffuse_light + specular_light, alpha);
 
 	//add emission if in base pass
 #ifdef BASE_PASS
-	gl_FragColor.rgb += emission;
+	frag_color.rgb += emission;
 #endif
-	// gl_FragColor = vec4(normal, 1.0);
+	// frag_color = vec4(normal, 1.0);
 
 //apply fog
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
@@ -2413,9 +2420,9 @@ FRAGMENT_SHADER_CODE
 #if defined(USE_VERTEX_LIGHTING)
 
 #if defined(BASE_PASS)
-	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_interp.rgb, fog_interp.a);
+	frag_color.rgb = mix(frag_color.rgb, fog_interp.rgb, fog_interp.a);
 #else
-	gl_FragColor.rgb *= (1.0 - fog_interp.a);
+	frag_color.rgb *= (1.0 - fog_interp.a);
 #endif // BASE_PASS
 
 #else //pixel based fog
@@ -2436,7 +2443,7 @@ FRAGMENT_SHADER_CODE
 		fog_amount = pow(fog_z, fog_depth_curve) * fog_color_base.a;
 
 		if (fog_transmit_enabled) {
-			vec3 total_light = gl_FragColor.rgb;
+			vec3 total_light = frag_color.rgb;
 			float transmit = pow(fog_z, fog_transmit_curve);
 			fog_color = mix(max(total_light, fog_color), fog_color, transmit);
 		}
@@ -2451,9 +2458,9 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #if defined(BASE_PASS)
-	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_color, fog_amount);
+	frag_color.rgb = mix(frag_color.rgb, fog_color, fog_amount);
 #else
-	gl_FragColor.rgb *= (1.0 - fog_amount);
+	frag_color.rgb *= (1.0 - fog_amount);
 #endif // BASE_PASS
 
 #endif //use vertex lit
@@ -2464,7 +2471,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef OUTPUT_LINEAR
 	// sRGB -> linear
-	gl_FragColor.rgb = mix(pow((gl_FragColor.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), gl_FragColor.rgb * (1.0 / 12.92), vec3(lessThan(gl_FragColor.rgb, vec3(0.04045))));
+	frag_color.rgb = mix(pow((frag_color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), frag_color.rgb * (1.0 / 12.92), vec3(lessThan(frag_color.rgb, vec3(0.04045))));
 #endif
 
 #else // not RENDER_DEPTH
@@ -2474,8 +2481,10 @@ FRAGMENT_SHADER_CODE
 	highp float depth = ((position_interp.z / position_interp.w) + 1.0) * 0.5 + 0.0; // bias
 	highp vec4 comp = fract(depth * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
-	gl_FragColor = comp;
+	frag_color = comp;
 
 #endif
 #endif
+
+	gl_FragColor = frag_color;
 }

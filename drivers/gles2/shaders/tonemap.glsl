@@ -376,9 +376,9 @@ void main() {
 	color.rgb = apply_color_correction(color.rgb, color_correction);
 #endif
 
-	gl_FragColor = color;
-
 #ifdef DISABLE_ALPHA
-	gl_FragColor.a = 1.0;
+	color.a = 1.0;
 #endif
+
+	gl_FragColor = color;
 }

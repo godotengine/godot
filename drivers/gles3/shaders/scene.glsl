@@ -911,7 +911,8 @@ uniform highp sampler2D screen_texture; // texunit:-8
 
 #endif
 
-layout(location = 0) out vec4 frag_color;
+layout(location = 0) out vec4 frag_color_final;
+vec4 frag_color;
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS //ubershader-skip
 
@@ -2446,6 +2447,12 @@ FRAGMENT_SHADER_CODE
 	frag_color.rgb += emission;
 #endif //ubershader-runtime
 #endif //SHADELESS //ubershader-runtime
+
+	// Write to the final output once and only once.
+	// Use a temporary in the rest of the shader.
+	// This is for drivers that have a performance drop
+	// when the output is read during the shader.
+	frag_color_final = frag_color;
 
 #endif //USE_MULTIPLE_RENDER_TARGETS //ubershader-runtime
 
