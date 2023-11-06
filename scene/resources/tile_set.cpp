@@ -1839,20 +1839,25 @@ Vector<Vector<Ref<Texture2D>>> TileSet::generate_terrains_icons(Size2i p_size) {
 	// Generate the icons.
 	for (int terrain_set = 0; terrain_set < get_terrain_sets_count(); terrain_set++) {
 		for (int terrain = 0; terrain < get_terrains_count(terrain_set); terrain++) {
-			Ref<Image> image;
-			image.instantiate();
+			Ref<Image> dst_image;
+			dst_image.instantiate();
 			if (counts[terrain_set][terrain].count > 0) {
 				// Get the best tile.
-				Ref<Texture2D> texture = counts[terrain_set][terrain].texture;
+				Ref<Texture2D> src_texture = counts[terrain_set][terrain].texture;
+				ERR_FAIL_COND_V(src_texture.is_null(), output);
+				Ref<Image> src_image = src_texture->get_image();
+				ERR_FAIL_COND_V(src_image.is_null(), output);
 				Rect2i region = counts[terrain_set][terrain].region;
-				image->initialize_data(region.size.x, region.size.y, false, Image::FORMAT_RGBA8);
-				image->blit_rect(texture->get_image(), region, Point2i());
-				image->resize(p_size.x, p_size.y, Image::INTERPOLATE_NEAREST);
+
+				dst_image->initialize_data(region.size.x, region.size.y, false, src_image->get_format());
+				dst_image->blit_rect(src_image, region, Point2i());
+				dst_image->convert(Image::FORMAT_RGBA8);
+				dst_image->resize(p_size.x, p_size.y, Image::INTERPOLATE_NEAREST);
 			} else {
-				image->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
-				image->set_pixel(0, 0, get_terrain_color(terrain_set, terrain));
+				dst_image->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
+				dst_image->set_pixel(0, 0, get_terrain_color(terrain_set, terrain));
 			}
-			Ref<ImageTexture> icon = ImageTexture::create_from_image(image);
+			Ref<ImageTexture> icon = ImageTexture::create_from_image(dst_image);
 			icon->set_size_override(p_size);
 			output.write[terrain_set].write[terrain] = icon;
 		}
