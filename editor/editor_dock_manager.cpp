@@ -702,15 +702,18 @@ EditorDockManager::EditorDockManager() {
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
 
-	if (!SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && !EDITOR_GET("interface/editor/single_window_mode") && EDITOR_GET("interface/multi_window/enable")) {
-		dock_float = memnew(Button);
-		dock_float->set_text(TTR("Make Floating"));
-		dock_float->set_focus_mode(Control::FOCUS_NONE);
-		dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-		dock_float->connect("pressed", callable_mp(this, &EditorDockManager::_dock_make_selected_float));
-
-		dock_vb->add_child(dock_float);
+	dock_float = memnew(Button);
+	dock_float->set_text(TTR("Make Floating"));
+	if (!EditorNode::get_singleton()->is_multi_window_enabled()) {
+		dock_float->set_disabled(true);
+		dock_float->set_tooltip_text(EditorNode::get_singleton()->get_multiwindow_support_tooltip_text());
+	} else {
+		dock_float->set_tooltip_text(TTR("Make this dock floating."));
 	}
+	dock_float->set_focus_mode(Control::FOCUS_NONE);
+	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	dock_float->connect("pressed", callable_mp(this, &EditorDockManager::_dock_make_selected_float));
+	dock_vb->add_child(dock_float);
 
 	dock_select_popup->reset_size();
 }
