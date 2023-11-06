@@ -38,6 +38,7 @@
 
 #include "core/io/image_loader.h"
 #include "core/string/translation.h"
+#include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
@@ -555,8 +556,6 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, 
 }
 
 void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
-	Ref<ImageTexture> it = memnew(ImageTexture);
-
 	Vector<uint8_t> data;
 
 	data.resize(8);
@@ -586,49 +585,35 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 	};
 
 	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
-		Ref<Image> copy = p_icon; // does this make sense? doesn't this just increase the reference count instead of making a copy? Do we even need a copy?
+		Ref<Image> copy = p_icon->duplicate();
 		copy->convert(Image::FORMAT_RGBA8);
 		copy->resize(icon_infos[i].size, icon_infos[i].size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
 
 		if (icon_infos[i].is_png) {
 			// Encode PNG icon.
-			it->set_image(copy);
-			String path = EditorPaths::get_singleton()->get_cache_dir().path_join("icon.png");
-			ResourceSaver::save(it, path);
-
-			{
-				Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
-				if (f.is_null()) {
-					// Clean up generated file.
-					DirAccess::remove_file_or_error(path);
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not open icon file \"%s\"."), path));
-					return;
-				}
-
+			Vector<uint8_t> png_buffer;
+			Error err = PNGDriverCommon::image_to_png(copy, png_buffer);
+			if (err == OK) {
 				int ofs = data.size();
-				uint64_t len = f->get_length();
+				uint64_t len = png_buffer.size();
 				data.resize(data.size() + len + 8);
-				f->get_buffer(&data.write[ofs + 8], len);
+				memcpy(&data.write[ofs + 8], png_buffer.ptr(), len);
 				len += 8;
 				len = BSWAP32(len);
 				memcpy(&data.write[ofs], icon_infos[i].name, 4);
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
-
-			// Clean up generated file.
-			DirAccess::remove_file_or_error(path);
-
 		} else {
 			Vector<uint8_t> src_data = copy->get_data();
 
-			//encode 24bit RGB RLE icon
+			// Encode 24-bit RGB RLE icon.
 			{
 				int ofs = data.size();
 				data.resize(data.size() + 8);
 
-				_rgba8_to_packbits_encode(0, icon_infos[i].size, src_data, data); // encode R
-				_rgba8_to_packbits_encode(1, icon_infos[i].size, src_data, data); // encode G
-				_rgba8_to_packbits_encode(2, icon_infos[i].size, src_data, data); // encode B
+				_rgba8_to_packbits_encode(0, icon_infos[i].size, src_data, data); // Encode R.
+				_rgba8_to_packbits_encode(1, icon_infos[i].size, src_data, data); // Encode G.
+				_rgba8_to_packbits_encode(2, icon_infos[i].size, src_data, data); // Encode B.
 
 				int len = data.size() - ofs;
 				len = BSWAP32(len);
@@ -636,7 +621,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
 
-			//encode 8bit mask uncompressed icon
+			// Encode 8-bit mask uncompressed icon.
 			{
 				int ofs = data.size();
 				int len = copy->get_width() * copy->get_height();
