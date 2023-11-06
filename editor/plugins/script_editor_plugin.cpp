@@ -433,7 +433,11 @@ ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *_se) {
 	String val = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
+	const int display_limit = 300;
 	if (!val.is_empty()) {
+		if (val.size() > display_limit) {
+			val = val.left(display_limit) + " [...] truncated!";
+		}
 		return p_text + ": " + val;
 	} else {
 		return String();
