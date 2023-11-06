@@ -49,6 +49,7 @@ public:
 			List<String> *r_missing_deps, Error *r_err = nullptr) override;
 	virtual void get_import_options(const String &p_path,
 			List<ResourceImporter::ImportOption> *r_options) override;
+	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
 };
 
 #endif // TOOLS_ENABLED

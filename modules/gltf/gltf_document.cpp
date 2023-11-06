@@ -576,6 +576,9 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> p_state) {
 		} else {
 			p_state->scene_name = p_state->filename;
 		}
+		if (_naming_version == 0) {
+			p_state->scene_name = _gen_unique_name(p_state, p_state->scene_name);
+		}
 	}
 
 	return OK;
@@ -3023,6 +3026,14 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+void GLTFDocument::set_naming_version(int p_version) {
+	_naming_version = p_version;
+}
+
+int GLTFDocument::get_naming_version() const {
+	return _naming_version;
+}
+
 void GLTFDocument::set_image_format(const String &p_image_format) {
 	_image_format = p_image_format;
 }
@@ -5358,12 +5369,22 @@ void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
 		}
 		String gltf_node_name = gltf_node->get_name();
 		if (gltf_node_name.is_empty()) {
-			if (gltf_node->mesh >= 0) {
-				gltf_node_name = "Mesh";
-			} else if (gltf_node->camera >= 0) {
-				gltf_node_name = "Camera";
+			if (_naming_version == 0) {
+				if (gltf_node->mesh >= 0) {
+					gltf_node_name = _gen_unique_name(p_state, "Mesh");
+				} else if (gltf_node->camera >= 0) {
+					gltf_node_name = _gen_unique_name(p_state, "Camera3D");
+				} else {
+					gltf_node_name = _gen_unique_name(p_state, "Node");
+				}
 			} else {
-				gltf_node_name = "Node";
+				if (gltf_node->mesh >= 0) {
+					gltf_node_name = "Mesh";
+				} else if (gltf_node->camera >= 0) {
+					gltf_node_name = "Camera";
+				} else {
+					gltf_node_name = "Node";
+				}
 			}
 		}
 		gltf_node->set_name(_gen_unique_name(p_state, gltf_node_name));
@@ -7405,7 +7426,11 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	if (unlikely(p_state->scene_name.is_empty())) {
 		p_state->scene_name = single_root->get_name();
 	} else if (single_root->get_name() == StringName()) {
-		single_root->set_name(_gen_unique_name(p_state, p_state->scene_name));
+		if (_naming_version == 0) {
+			single_root->set_name(p_state->scene_name);
+		} else {
+			single_root->set_name(_gen_unique_name(p_state, p_state->scene_name));
+		}
 	}
 	return single_root;
 }
