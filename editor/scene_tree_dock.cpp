@@ -501,16 +501,25 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				// Preserve ownership relations ready for pasting.
 				List<Node *> owned;
-				node->get_owned_by(node->get_owner() ? node->get_owner() : node, &owned);
+				Node *owner = node;
+				while (owner) {
+					List<Node *> cur_owned;
+					node->get_owned_by(owner, &cur_owned);
+					owner = owner->get_owner();
+					for (Node *F : cur_owned) {
+						owned.push_back(F);
+					}
+				}
 
 				for (Node *F : owned) {
 					if (!duplimap.has(F) || F == node) {
 						continue;
 					}
 					Node *d = duplimap[F];
-					// Only use this as a marker that ownership needs to be assigned when pasting.
-					// The actual owner doesn't matter.
-					d->set_owner(dup);
+					// Only use nullptr as a marker that ownership may need to be assigned when pasting.
+					// The ownership is subsequently tracked in the node_clipboard_edited_scene_owned list.
+					d->set_owner(nullptr);
+					node_clipboard_edited_scene_owned.insert(d);
 				}
 
 				node_clipboard.push_back(dup);
@@ -3581,14 +3590,17 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 
 		for (KeyValue<const Node *, Node *> &E2 : duplimap) {
 			Node *d = E2.value;
-			// When copying, all nodes that should have an owner assigned here were given node as an owner.
-			if (d != dup && E2.key->get_owner() == node) {
-				ur->add_do_method(d, "set_owner", owner);
+			// When copying, all nodes that should have an owner assigned here were given nullptr as an owner
+			// and added to the node_clipboard_edited_scene_owned list.
+			if (d != dup && E2.key->get_owner() == nullptr) {
+				if (node_clipboard_edited_scene_owned.find(const_cast<Node *>(E2.key))) {
+					ur->add_do_method(d, "set_owner", edited_scene);
+				}
 			}
 		}
 
 		if (dup != owner) {
-			ur->add_do_method(dup, "set_owner", owner);
+			ur->add_do_method(dup, "set_owner", edited_scene);
 		}
 		ur->add_do_method(editor_selection, "add_node", dup);
 
@@ -3735,6 +3747,7 @@ void SceneTreeDock::_clear_clipboard() {
 		memdelete(E);
 	}
 	node_clipboard.clear();
+	node_clipboard_edited_scene_owned.clear();
 	clipboard_resource_remap.clear();
 }
 

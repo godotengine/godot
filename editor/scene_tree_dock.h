@@ -143,6 +143,7 @@ class SceneTreeDock : public VBoxContainer {
 	EditorSelection *editor_selection = nullptr;
 
 	List<Node *> node_clipboard;
+	HashSet<Node *> node_clipboard_edited_scene_owned;
 	String clipboard_source_scene;
 	HashMap<String, HashMap<Ref<Resource>, Ref<Resource>>> clipboard_resource_remap;
 
