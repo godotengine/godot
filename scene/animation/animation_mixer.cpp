@@ -1998,10 +1998,11 @@ void AnimationMixer::reset() {
 	ERR_FAIL_NULL(root_node_object);
 
 	AnimationPlayer *aux_player = memnew(AnimationPlayer);
-	EditorNode::get_singleton()->add_child(aux_player);
+	root_node_object->add_child(aux_player);
 	Ref<AnimationLibrary> al;
 	al.instantiate();
 	al->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
+	aux_player->set_reset_on_save_enabled(false);
 	aux_player->set_root_node(aux_player->get_path_to(root_node_object));
 	aux_player->add_animation_library("", al);
 	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
