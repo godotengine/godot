@@ -178,7 +178,7 @@ double AnimationNodeAnimation::_process(const AnimationMixer::PlaybackInfo p_pla
 	}
 	set_parameter(time, cur_time);
 
-	return is_looping ? HUGE_LENGTH : anim_size - cur_time;
+	return anim_size - cur_time;
 }
 
 String AnimationNodeAnimation::get_caption() const {

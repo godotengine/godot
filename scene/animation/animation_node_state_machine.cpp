@@ -1038,6 +1038,16 @@ bool AnimationNodeStateMachinePlayback::_can_transition_to_next(AnimationTree *p
 		return false;
 	}
 
+    // Prevent automatic transitioning looped animations
+    AnimationNode::State* state = p_state_machine->states[current].node->state;
+    if (state) {
+        AnimationPlayer *player = state->player;
+        Ref<Animation> anim = player->get_animation(player->get_current_animation());
+        if (anim.is_valid() && anim->get_loop_mode() != Animation::LOOP_NONE) {
+            return false;
+        }
+    }
+
 	if (current != p_state_machine->start_node && p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
 		return pos_current >= len_current - p_next.xfade;
 	}
