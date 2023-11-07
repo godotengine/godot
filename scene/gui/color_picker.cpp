@@ -89,6 +89,10 @@ void ColorPicker::_notification(int p_what) {
 			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_VHS_CIRCLE), theme_cache.shape_circle);
 			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_OKHSL_CIRCLE), theme_cache.shape_circle);
 
+			if (current_shape != SHAPE_NONE) {
+				btn_shape->set_icon(shape_popup->get_item_icon(current_shape));
+			}
+
 			internal_margin->begin_bulk_theme_override();
 			internal_margin->add_theme_constant_override(SNAME("margin_bottom"), theme_cache.content_margin);
 			internal_margin->add_theme_constant_override(SNAME("margin_left"), theme_cache.content_margin);
@@ -1791,8 +1795,6 @@ ColorPicker::ColorPicker() {
 	shape_popup->add_radio_check_item("OKHSL Circle", SHAPE_OKHSL_CIRCLE);
 	shape_popup->set_item_checked(current_shape, true);
 	shape_popup->connect("id_pressed", callable_mp(this, &ColorPicker::set_picker_shape));
-
-	btn_shape->set_icon(shape_popup->get_item_icon(current_shape));
 
 	add_mode(new ColorModeRGB(this));
 	add_mode(new ColorModeHSV(this));

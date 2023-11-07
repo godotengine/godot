@@ -37,6 +37,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
+class AnimationMixer;
 class EditorFileDialog;
 
 class AnimationLibraryEditor : public AcceptDialog {
@@ -90,7 +91,7 @@ class AnimationLibraryEditor : public AcceptDialog {
 
 	Tree *tree = nullptr;
 
-	Object *mixer = nullptr;
+	AnimationMixer *mixer = nullptr;
 
 	void _add_library();
 	void _add_library_validate(const String &p_name);
