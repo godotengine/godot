@@ -124,7 +124,7 @@ void LightmapperRD::add_probe(const Vector3 &p_position) {
 	probe_positions.push_back(probe);
 }
 
-void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[3], uint32_t p_triangle_index, LocalVector<TriangleSort> &triangles, uint32_t p_grid_size) {
+void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[3], uint32_t p_triangle_index, LocalVector<TriangleSort> &p_triangles_sort, uint32_t p_grid_size) {
 	int half_size = p_size / 2;
 
 	for (int i = 0; i < 8; i++) {
@@ -159,10 +159,66 @@ void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Ve
 			TriangleSort ts;
 			ts.cell_index = n.x + (n.y * p_grid_size) + (n.z * p_grid_size * p_grid_size);
 			ts.triangle_index = p_triangle_index;
-			triangles.push_back(ts);
+			ts.triangle_aabb.position = p_points[0];
+			ts.triangle_aabb.size = Vector3();
+			ts.triangle_aabb.expand_to(p_points[1]);
+			ts.triangle_aabb.expand_to(p_points[2]);
+			p_triangles_sort.push_back(ts);
 		} else {
-			_plot_triangle_into_triangle_index_list(half_size, n, aabb, p_points, p_triangle_index, triangles, p_grid_size);
+			_plot_triangle_into_triangle_index_list(half_size, n, aabb, p_points, p_triangle_index, p_triangles_sort, p_grid_size);
 		}
+	}
+}
+
+void LightmapperRD::_sort_triangle_clusters(uint32_t p_cluster_size, uint32_t p_cluster_index, uint32_t p_index_start, uint32_t p_count, LocalVector<TriangleSort> &p_triangle_sort, LocalVector<ClusterAABB> &p_cluster_aabb) {
+	if (p_count == 0) {
+		return;
+	}
+
+	// Compute AABB for all triangles in the range.
+	SortArray<TriangleSort, TriangleSortAxis<0>> triangle_sorter_x;
+	SortArray<TriangleSort, TriangleSortAxis<1>> triangle_sorter_y;
+	SortArray<TriangleSort, TriangleSortAxis<2>> triangle_sorter_z;
+	AABB cluster_aabb = p_triangle_sort[p_index_start].triangle_aabb;
+	for (uint32_t i = 1; i < p_count; i++) {
+		cluster_aabb.merge_with(p_triangle_sort[p_index_start + i].triangle_aabb);
+	}
+
+	if (p_count > p_cluster_size) {
+		int longest_axis_index = cluster_aabb.get_longest_axis_index();
+		switch (longest_axis_index) {
+			case 0:
+				triangle_sorter_x.sort(&p_triangle_sort[p_index_start], p_count);
+				break;
+			case 1:
+				triangle_sorter_y.sort(&p_triangle_sort[p_index_start], p_count);
+				break;
+			case 2:
+				triangle_sorter_z.sort(&p_triangle_sort[p_index_start], p_count);
+				break;
+			default:
+				DEV_ASSERT(false && "Invalid axis returned by AABB.");
+				break;
+		}
+
+		uint32_t left_cluster_count = next_power_of_2(p_count / 2);
+		left_cluster_count = MAX(left_cluster_count, p_cluster_size);
+		left_cluster_count = MIN(left_cluster_count, p_count);
+		_sort_triangle_clusters(p_cluster_size, p_cluster_index, p_index_start, left_cluster_count, p_triangle_sort, p_cluster_aabb);
+
+		if (left_cluster_count < p_count) {
+			uint32_t cluster_index_right = p_cluster_index + (left_cluster_count / p_cluster_size);
+			_sort_triangle_clusters(p_cluster_size, cluster_index_right, p_index_start + left_cluster_count, p_count - left_cluster_count, p_triangle_sort, p_cluster_aabb);
+		}
+	} else {
+		ClusterAABB &aabb = p_cluster_aabb[p_cluster_index];
+		Vector3 aabb_end = cluster_aabb.get_end();
+		aabb.min_bounds[0] = cluster_aabb.position.x;
+		aabb.min_bounds[1] = cluster_aabb.position.y;
+		aabb.min_bounds[2] = cluster_aabb.position.z;
+		aabb.max_bounds[0] = aabb_end.x;
+		aabb.max_bounds[1] = aabb_end.y;
+		aabb.max_bounds[2] = aabb_end.z;
 	}
 }
 
@@ -281,7 +337,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	return BAKE_OK;
 }
 
-void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &p_probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
+void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, uint32_t p_cluster_size, Vector<Probe> &p_probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &r_triangle_indices_buffer, RID &r_cluster_indices_buffer, RID &r_cluster_aabbs_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	HashMap<Vertex, uint32_t, VertexHash> vertex_map;
 
 	//fill triangles array and vertex array
@@ -433,30 +489,69 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	//sort it
 	triangle_sort.sort();
 
+	LocalVector<uint32_t> cluster_indices;
+	LocalVector<ClusterAABB> cluster_aabbs;
 	Vector<uint32_t> triangle_indices;
 	triangle_indices.resize(triangle_sort.size());
 	Vector<uint32_t> grid_indices;
 	grid_indices.resize(grid_size * grid_size * grid_size * 2);
 	memset(grid_indices.ptrw(), 0, grid_indices.size() * sizeof(uint32_t));
-	Vector<bool> solid;
-	solid.resize(grid_size * grid_size * grid_size);
-	memset(solid.ptrw(), 0, solid.size() * sizeof(bool));
 
 	{
-		uint32_t *tiw = triangle_indices.ptrw();
+		// Fill grid with cell indices.
 		uint32_t last_cell = 0xFFFFFFFF;
 		uint32_t *giw = grid_indices.ptrw();
-		bool *solidw = solid.ptrw();
+		uint32_t cluster_count = 0;
+		uint32_t solid_cell_count = 0;
 		for (uint32_t i = 0; i < triangle_sort.size(); i++) {
 			uint32_t cell = triangle_sort[i].cell_index;
 			if (cell != last_cell) {
-				//cell changed, update pointer to indices
-				giw[cell * 2 + 1] = i;
-				solidw[cell] = true;
+				giw[cell * 2 + 1] = solid_cell_count;
+				solid_cell_count++;
 			}
-			tiw[i] = triangle_sort[i].triangle_index;
-			giw[cell * 2]++; //update counter
+
+			if ((giw[cell * 2] % p_cluster_size) == 0) {
+				// Add an extra cluster every time the triangle counter reaches a multiple of the cluster size.
+				cluster_count++;
+			}
+
+			giw[cell * 2]++;
 			last_cell = cell;
+		}
+
+		// Build fixed-size triangle clusters for all the cells to speed up the traversal. A cell can hold multiple clusters that each contain a fixed
+		// amount of triangles and an AABB. The tracer will check against the AABBs first to know whether it needs to visit the cell's triangles.
+		//
+		// The building algorithm will divide the triangles recursively contained inside each cell, sorting by the longest axis of the AABB on each step.
+		//
+		// - If the amount of triangles is less or equal to the cluster size, the AABB will be stored and the algorithm stops.
+		//
+		// - The division by two is increased to the next power of two of half the amount of triangles (with cluster size as the minimum value) to
+		//   ensure the first half always fills the cluster.
+
+		cluster_indices.resize(solid_cell_count * 2);
+		cluster_aabbs.resize(cluster_count);
+
+		uint32_t i = 0;
+		uint32_t cluster_index = 0;
+		uint32_t solid_cell_index = 0;
+		uint32_t *tiw = triangle_indices.ptrw();
+		while (i < triangle_sort.size()) {
+			cluster_indices[solid_cell_index * 2] = cluster_index;
+			cluster_indices[solid_cell_index * 2 + 1] = i;
+
+			uint32_t cell = triangle_sort[i].cell_index;
+			uint32_t triangle_count = giw[cell * 2];
+			uint32_t cell_cluster_count = (triangle_count + p_cluster_size - 1) / p_cluster_size;
+			_sort_triangle_clusters(p_cluster_size, cluster_index, i, triangle_count, triangle_sort, cluster_aabbs);
+
+			for (uint32_t j = 0; j < triangle_count; j++) {
+				tiw[i + j] = triangle_sort[i + j].triangle_index;
+			}
+
+			i += triangle_count;
+			cluster_index += cell_cluster_count;
+			solid_cell_index++;
 		}
 	}
 #if 0
@@ -507,7 +602,13 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		triangle_buffer = rd->storage_buffer_create(tb.size(), tb);
 
 		Vector<uint8_t> tib = triangle_indices.to_byte_array();
-		triangle_cell_indices_buffer = rd->storage_buffer_create(tib.size(), tib);
+		r_triangle_indices_buffer = rd->storage_buffer_create(tib.size(), tib);
+
+		Vector<uint8_t> cib = cluster_indices.to_byte_array();
+		r_cluster_indices_buffer = rd->storage_buffer_create(cib.size(), cib);
+
+		Vector<uint8_t> cab = cluster_aabbs.to_byte_array();
+		r_cluster_aabbs_buffer = rd->storage_buffer_create(cab.size(), cab);
 
 		Vector<uint8_t> lb = lights.to_byte_array();
 		if (lb.size() == 0) {
@@ -1020,24 +1121,29 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID vertex_buffer;
 	RID triangle_buffer;
 	RID lights_buffer;
-	RID triangle_cell_indices_buffer;
+	RID triangle_indices_buffer;
+	RID cluster_indices_buffer;
+	RID cluster_aabbs_buffer;
 	RID grid_texture;
 	RID seams_buffer;
 	RID probe_positions_buffer;
 
 	Vector<int> slice_seam_count;
 
-#define FREE_BUFFERS                        \
-	rd->free(bake_parameters_buffer);       \
-	rd->free(vertex_buffer);                \
-	rd->free(triangle_buffer);              \
-	rd->free(lights_buffer);                \
-	rd->free(triangle_cell_indices_buffer); \
-	rd->free(grid_texture);                 \
-	rd->free(seams_buffer);                 \
+#define FREE_BUFFERS                   \
+	rd->free(bake_parameters_buffer);  \
+	rd->free(vertex_buffer);           \
+	rd->free(triangle_buffer);         \
+	rd->free(lights_buffer);           \
+	rd->free(triangle_indices_buffer); \
+	rd->free(cluster_indices_buffer);  \
+	rd->free(cluster_aabbs_buffer);    \
+	rd->free(grid_texture);            \
+	rd->free(seams_buffer);            \
 	rd->free(probe_positions_buffer);
 
-	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_cell_indices_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
+	const uint32_t cluster_size = 16;
+	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, cluster_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_indices_buffer, cluster_indices_buffer, cluster_aabbs_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
 
 	// Create global bake parameters buffer.
 	BakeParameters bake_parameters;
@@ -1133,7 +1239,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
-			u.append_id(triangle_cell_indices_buffer);
+			u.append_id(triangle_indices_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
@@ -1185,6 +1291,20 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			u.append_id(sampler);
 			base_uniforms.push_back(u);
 		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 11;
+			u.append_id(cluster_indices_buffer);
+			base_uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 12;
+			u.append_id(cluster_aabbs_buffer);
+			base_uniforms.push_back(u);
+		}
 	}
 
 	RID raster_base_uniform = rd->uniform_set_create(base_uniforms, rasterize_shader, 0);
@@ -1230,6 +1350,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	Ref<RDShaderFile> compute_shader;
 	String defines = "";
+	defines += "\n#define CLUSTER_SIZE " + uitos(cluster_size) + "\n";
+
 	if (p_bake_sh) {
 		defines += "\n#define USE_SH_LIGHTMAPS\n";
 	}

@@ -565,7 +565,7 @@ if selected_platform in platform_list:
         if read_scu_limit != 0:
             max_includes_per_scu = read_scu_limit
 
-        methods.set_scu_folders(scu_builders.generate_scu_files(env["verbose"], max_includes_per_scu))
+        methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
 
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.
@@ -722,9 +722,9 @@ if selected_platform in platform_list:
         if env.msvc:
             env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
         else:
-            env.Append(CCFLAGS=["-fno-exceptions"])
+            env.Append(CXXFLAGS=["-fno-exceptions"])
     elif env.msvc:
-        env.Append(CCFLAGS=["/EHsc"])
+        env.Append(CXXFLAGS=["/EHsc"])
 
     # Configure compiler warnings
     if env.msvc:  # MSVC

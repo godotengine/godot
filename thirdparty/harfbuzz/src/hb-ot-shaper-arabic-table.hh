@@ -6,10 +6,10 @@
  *
  * on files with these headers:
  *
- * # ArabicShaping-15.0.0.txt
- * # Date: 2022-02-14, 18:50:00 GMT [KW, RP]
- * # Blocks-15.0.0.txt
- * # Date: 2022-01-28, 20:58:00 GMT [KW]
+ * # ArabicShaping-15.1.0.txt
+ * # Date: 2023-01-05
+ * # Blocks-15.1.0.txt
+ * # Date: 2023-07-28, 15:47:20 GMT
  * UnicodeData.txt does not have a header.
  */
 

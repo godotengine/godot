@@ -35,9 +35,10 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "scene/animation/animation_mixer.h"
 
 void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
-	mixer = p_mixer;
+	mixer = Object::cast_to<AnimationMixer>(p_mixer);
 }
 
 void AnimationLibraryEditor::_add_library() {
@@ -54,7 +55,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 	String error;
 
 	if (adding_animation) {
-		Ref<AnimationLibrary> al = mixer->call("get_animation_library", adding_animation_to_library);
+		Ref<AnimationLibrary> al = mixer->get_animation_library(adding_animation_to_library);
 		ERR_FAIL_COND(al.is_null());
 		if (p_name == "") {
 			error = TTR("Animation name can't be empty.");
@@ -64,11 +65,11 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 			error = TTR("Animation with the same name already exists.");
 		}
 	} else {
-		if (p_name == "" && bool(mixer->call("has_animation_library", ""))) {
+		if (p_name == "" && mixer->has_animation_library("")) {
 			error = TTR("Enter a library name.");
 		} else if (!AnimationLibrary::is_valid_library_name(p_name)) {
 			error = TTR("Library name contains invalid characters: '/', ':', ',' or '['.");
-		} else if (bool(mixer->call("has_animation_library", p_name))) {
+		} else if (mixer->has_animation_library(p_name)) {
 			error = TTR("Library with the same name already exists.");
 		}
 	}
@@ -97,7 +98,7 @@ void AnimationLibraryEditor::_add_library_confirm() {
 		String anim_name = add_library_name->get_text();
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
-		Ref<AnimationLibrary> al = mixer->call("get_animation_library", adding_animation_to_library);
+		Ref<AnimationLibrary> al = mixer->get_animation_library(adding_animation_to_library);
 		ERR_FAIL_COND(!al.is_valid());
 
 		Ref<Animation> anim;
@@ -144,7 +145,7 @@ void AnimationLibraryEditor::_load_library() {
 }
 
 void AnimationLibraryEditor::_file_popup_selected(int p_id) {
-	Ref<AnimationLibrary> al = mixer->call("get_animation_library", file_dialog_library);
+	Ref<AnimationLibrary> al = mixer->get_animation_library(file_dialog_library);
 	Ref<Animation> anim;
 	if (file_dialog_animation != StringName()) {
 		anim = al->get_animation(file_dialog_animation);
@@ -308,10 +309,10 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 				return;
 			}
 
-			TypedArray<StringName> libs = mixer->call("get_animation_library_list");
-			for (int i = 0; i < libs.size(); i++) {
-				const StringName K = libs[i];
-				Ref<AnimationLibrary> al2 = mixer->call("get_animation_library", K);
+			List<StringName> libs;
+			mixer->get_animation_library_list(&libs);
+			for (const StringName &K : libs) {
+				Ref<AnimationLibrary> al2 = mixer->get_animation_library(K);
 				if (al2 == al) {
 					error_dialog->set_text(TTR("This library is already added to the mixer."));
 					error_dialog->popup_centered();
@@ -324,7 +325,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 
 			int attempt = 1;
 
-			while (bool(mixer->call("has_animation_library", name))) {
+			while (bool(mixer->has_animation_library(name))) {
 				attempt++;
 				name = p_path.get_file().get_basename() + " " + itos(attempt);
 			}
@@ -346,7 +347,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 				return;
 			}
 
-			Ref<AnimationLibrary> al = mixer->call("get_animation_library", adding_animation_to_library);
+			Ref<AnimationLibrary> al = mixer->get_animation_library(adding_animation_to_library);
 			List<StringName> anims;
 			al->get_animation_list(&anims);
 			for (const StringName &K : anims) {
@@ -378,7 +379,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 		} break;
 
 		case FILE_DIALOG_ACTION_SAVE_LIBRARY: {
-			Ref<AnimationLibrary> al = mixer->call("get_animation_library", file_dialog_library);
+			Ref<AnimationLibrary> al = mixer->get_animation_library(file_dialog_library);
 			String prev_path = al->get_path();
 			EditorNode::get_singleton()->save_resource_in_path(al, p_path);
 
@@ -395,7 +396,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 
 		} break;
 		case FILE_DIALOG_ACTION_SAVE_ANIMATION: {
-			Ref<AnimationLibrary> al = mixer->call("get_animation_library", file_dialog_library);
+			Ref<AnimationLibrary> al = mixer->get_animation_library(file_dialog_library);
 			Ref<Animation> anim;
 			if (file_dialog_animation != StringName()) {
 				anim = al->get_animation(file_dialog_animation);
@@ -430,7 +431,7 @@ void AnimationLibraryEditor::_item_renamed() {
 		if (ti->get_parent() == tree->get_root()) {
 			// Renamed library
 
-			if (mixer->call("has_animation_library", text)) {
+			if (mixer->has_animation_library(text)) {
 				restore_text = true;
 			} else {
 				undo_redo->create_action(vformat(TTR("Rename Animation Library: %s"), text));
@@ -451,7 +452,7 @@ void AnimationLibraryEditor::_item_renamed() {
 		} else {
 			// Renamed anim
 			StringName library = ti->get_parent()->get_metadata(0);
-			Ref<AnimationLibrary> al = mixer->call("get_animation_library", library);
+			Ref<AnimationLibrary> al = mixer->get_animation_library(library);
 
 			if (al.is_valid()) {
 				if (al->has_animation(text)) {
@@ -483,7 +484,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 	if (p_item->get_parent() == tree->get_root()) {
 		// Library
 		StringName lib_name = p_item->get_metadata(0);
-		Ref<AnimationLibrary> al = mixer->call("get_animation_library", lib_name);
+		Ref<AnimationLibrary> al = mixer->get_animation_library(lib_name);
 		switch (p_id) {
 			case LIB_BUTTON_ADD: {
 				add_library_dialog->set_title(TTR("Animation Name:"));
@@ -576,7 +577,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 		// Animation
 		StringName lib_name = p_item->get_parent()->get_metadata(0);
 		StringName anim_name = p_item->get_metadata(0);
-		Ref<AnimationLibrary> al = mixer->call("get_animation_library", lib_name);
+		Ref<AnimationLibrary> al = mixer->get_animation_library(lib_name);
 		Ref<Animation> anim = al->get_animation(anim_name);
 		ERR_FAIL_COND(!anim.is_valid());
 		switch (p_id) {
@@ -626,10 +627,10 @@ void AnimationLibraryEditor::update_tree() {
 	Color ss_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 
 	TreeItem *root = tree->create_item();
-	TypedArray<StringName> libs = mixer->call("get_animation_library_list");
+	List<StringName> libs;
+	mixer->get_animation_library_list(&libs);
 
-	for (int i = 0; i < libs.size(); i++) {
-		const StringName K = libs[i];
+	for (const StringName &K : libs) {
 		TreeItem *libitem = tree->create_item(root);
 		libitem->set_text(0, K);
 		if (K == StringName()) {
@@ -638,7 +639,7 @@ void AnimationLibraryEditor::update_tree() {
 			libitem->set_suffix(0, "");
 		}
 
-		Ref<AnimationLibrary> al = mixer->call("get_animation_library", K);
+		Ref<AnimationLibrary> al = mixer->get_animation_library(K);
 		bool animation_library_is_foreign = false;
 		String al_path = al->get_path();
 		if (!al_path.is_resource_file()) {
@@ -668,7 +669,7 @@ void AnimationLibraryEditor::update_tree() {
 			}
 		}
 
-		libitem->set_editable(0, !animation_library_is_foreign);
+		libitem->set_editable(0, true);
 		libitem->set_metadata(0, K);
 		libitem->set_icon(0, get_editor_theme_icon("AnimationLibrary"));
 

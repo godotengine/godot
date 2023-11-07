@@ -906,7 +906,7 @@ class Godot(private val context: Context) : SensorEventListener {
 				val arg = ByteArray(strlen)
 				r = inputStream.read(arg)
 				if (r == strlen) {
-					cmdline[i] = String(arg, StandardCharsets.UTF_8)
+					cmdline.add(String(arg, StandardCharsets.UTF_8))
 				}
 			}
 			cmdline

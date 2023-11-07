@@ -226,11 +226,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
 	Vector3 offset_mesh = p_offset_mesh;
-	uint64_t mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-
-	if (p_disable_compression) {
-		mesh_flags = 0;
-	}
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
@@ -332,6 +327,17 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 						}
 						ERR_FAIL_INDEX_V(norm, normals.size(), ERR_FILE_CORRUPT);
 						surf_tool->set_normal(normals[norm]);
+						if (generate_tangents && uvs.is_empty()) {
+							// We can't generate tangents without UVs, so create dummy tangents.
+							Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[norm]);
+							surf_tool->set_tangent(Plane(tan.x, tan.y, tan.z, 1.0));
+						}
+					} else {
+						// No normals, use a dummy normal since normals will be generated.
+						if (generate_tangents && uvs.is_empty()) {
+							// We can't generate tangents without UVs, so create dummy tangents.
+							surf_tool->set_tangent(Plane(1.0, 0.0, 0.0, 1.0));
+						}
 					}
 
 					if (face[idx].size() >= 2 && !face[idx][1].is_empty()) {
@@ -374,6 +380,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				}
 			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
+			uint64_t mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+
+			if (p_disable_compression) {
+				mesh_flags = 0;
+			}
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
@@ -383,9 +394,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 				if (generate_tangents && uvs.size()) {
 					surf_tool->generate_tangents();
-				} else {
-					// We need tangents in order to compress vertex data. So disable if tangents aren't generated.
-					mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 				}
 
 				surf_tool->index();
@@ -517,7 +525,7 @@ String ResourceImporterOBJ::get_importer_name() const {
 }
 
 String ResourceImporterOBJ::get_visible_name() const {
-	return "OBJ As Mesh";
+	return "OBJ as Mesh";
 }
 
 void ResourceImporterOBJ::get_recognized_extensions(List<String> *p_extensions) const {

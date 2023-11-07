@@ -915,9 +915,9 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 #ifdef TOOLS_ENABLED
 	p_extension->set_reloadable(config->get_value("configuration", "reloadable", false) && Engine::get_singleton()->is_extension_reloading_enabled());
 
-	p_extension->update_last_modified_time(MAX(
-			FileAccess::get_modified_time(library_path),
-			FileAccess::get_modified_time(p_path)));
+	p_extension->update_last_modified_time(
+			FileAccess::get_modified_time(p_path),
+			FileAccess::get_modified_time(library_path));
 #endif
 
 	err = p_extension->open_library(library_path, entry_symbol);
@@ -959,13 +959,15 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 	// object if one has already been loaded (even if caching is disabled at the resource
 	// loader level).
 	GDExtensionManager *manager = GDExtensionManager::get_singleton();
-	Ref<GDExtension> lib = manager->get_extension(p_path);
-	if (lib.is_null()) {
-		Error err = load_gdextension_resource(p_path, lib);
-		if (err != OK && r_error) {
-			// Errors already logged in load_gdextension_resource().
-			*r_error = err;
-		}
+	if (manager->is_extension_loaded(p_path)) {
+		return manager->get_extension(p_path);
+	}
+
+	Ref<GDExtension> lib;
+	Error err = load_gdextension_resource(p_path, lib);
+	if (err != OK && r_error) {
+		// Errors already logged in load_gdextension_resource().
+		*r_error = err;
 	}
 	return lib;
 }
@@ -988,10 +990,13 @@ String GDExtensionResourceLoader::get_resource_type(const String &p_path) const 
 
 #ifdef TOOLS_ENABLED
 bool GDExtension::has_library_changed() const {
-	if (FileAccess::get_modified_time(get_path()) > last_modified_time) {
+	// Check only that the last modified time is different (rather than checking
+	// that it's newer) since some OS's (namely Windows) will preserve the modified
+	// time by default when copying files.
+	if (FileAccess::get_modified_time(get_path()) != resource_last_modified_time) {
 		return true;
 	}
-	if (FileAccess::get_modified_time(library_path) > last_modified_time) {
+	if (FileAccess::get_modified_time(library_path) != library_last_modified_time) {
 		return true;
 	}
 	return false;

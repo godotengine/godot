@@ -88,6 +88,7 @@ void FileSystemList::_line_editor_submit(String p_text) {
 bool FileSystemList::edit_selected() {
 	ERR_FAIL_COND_V_MSG(!is_anything_selected(), false, "No item selected.");
 	int s = get_current();
+	ERR_FAIL_COND_V_MSG(s < 0, false, "No current item selected.");
 	ensure_current_is_visible();
 
 	Rect2 rect;
@@ -733,7 +734,11 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	_update_tree(get_uncollapsed_paths(), false, p_select_in_favorites, true);
 	if (display_mode != DISPLAY_MODE_TREE_ONLY) {
 		_update_file_list(false);
-		files->get_v_scroll_bar()->set_value(0);
+
+		// Reset the scroll for a directory.
+		if (p_path.ends_with("/")) {
+			files->get_v_scroll_bar()->set_value(0);
+		}
 	}
 
 	String file_name = p_path.get_file();
@@ -903,12 +908,13 @@ void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file
 }
 
 void FileSystemDock::_update_file_list(bool p_keep_selection) {
-	// Register the previously selected items.
-	HashSet<String> cselection;
+	// Register the previously current and selected items.
+	HashSet<String> previous_selection;
+	HashSet<int> valid_selection;
 	if (p_keep_selection) {
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->is_selected(i)) {
-				cselection.insert(files->get_item_text(i));
+				previous_selection.insert(files->get_item_text(i));
 			}
 		}
 	}
@@ -1064,8 +1070,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					Color this_folder_color = has_custom_color ? folder_colors[assigned_folder_colors[dpath]] : inherited_folder_color;
 					files->set_item_icon_modulate(-1, editor_is_dark_theme ? this_folder_color : this_folder_color * 1.75);
 
-					if (cselection.has(dname)) {
+					if (previous_selection.has(dname)) {
 						files->select(files->get_item_count() - 1, false);
+						valid_selection.insert(files->get_item_count() - 1);
 					}
 				}
 			}
@@ -1138,8 +1145,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		}
 
 		// Select the items.
-		if (cselection.has(fname)) {
+		if (previous_selection.has(fname)) {
 			files->select(item_index, false);
+			valid_selection.insert(item_index);
 		}
 
 		if (!p_keep_selection && !file.is_empty() && fname == file) {
@@ -1155,14 +1163,17 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		}
 		files->set_item_tooltip(item_index, tooltip);
 	}
+
+	// If we only have any selected items retained, we need to update the current idx.
+	if (!valid_selection.is_empty()) {
+		files->set_current(*valid_selection.begin());
+	}
 }
 
 void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites) {
 	String fpath = p_path;
 	if (fpath.ends_with("/")) {
-		if (fpath != "res://") {
-			fpath = fpath.substr(0, fpath.length() - 1);
-		}
+		// Ignore a directory.
 	} else if (fpath != "Favorites") {
 		if (FileAccess::exists(fpath + ".import")) {
 			Ref<ConfigFile> config;
@@ -1377,7 +1388,7 @@ void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Ve
 	}
 }
 
-void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const Vector<String> &p_renames, Vector<String> &r_file_owners) const {
+void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const HashSet<String> &p_renames, HashSet<String> &r_file_owners) const {
 	for (int i = 0; i < p_efsd->get_subdir_count(); i++) {
 		_find_file_owners(p_efsd->get_subdir(i), p_renames, r_file_owners);
 	}
@@ -1385,7 +1396,7 @@ void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const 
 		Vector<String> deps = p_efsd->get_file_deps(i);
 		for (int j = 0; j < deps.size(); j++) {
 			if (p_renames.has(deps[j])) {
-				r_file_owners.push_back(p_efsd->get_file_path(i));
+				r_file_owners.insert(p_efsd->get_file_path(i));
 				break;
 			}
 		}
@@ -1528,6 +1539,8 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			}
 		}
 	} else {
+		da->make_dir(new_path);
+
 		// Recursively duplicate all files inside the folder.
 		Ref<DirAccess> old_dir = DirAccess::open(old_path);
 		ERR_FAIL_COND(old_dir.is_null());
@@ -1552,7 +1565,9 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const {
 	// Update the paths in ResourceUID, so that UIDs remain valid.
 	for (const KeyValue<String, ResourceUID::ID> &pair : p_uids) {
-		ResourceUID::get_singleton()->set_id(pair.value, p_renames[pair.key]);
+		if (p_renames.has(pair.key)) {
+			ResourceUID::get_singleton()->set_id(pair.value, p_renames[pair.key]);
+		}
 	}
 
 	// Rename all resources loaded, be it subresources or actual resources.
@@ -1576,14 +1591,15 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 	}
 }
 
-void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const Vector<String> &p_file_owners) const {
+void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const {
 	// The following code assumes that the following holds:
 	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
 	// 2) ResourceLoader can use the new paths without needing to call rescan.
 	List<String> scenes_to_reload;
-	for (int i = 0; i < p_file_owners.size(); ++i) {
+	for (const String &E : p_file_owners) {
 		// Because we haven't called a rescan yet the found remap might still be an old path itself.
-		const String file = p_renames.has(p_file_owners[i]) ? p_renames[p_file_owners[i]] : p_file_owners[i];
+		const HashMap<String, String>::ConstIterator I = p_renames.find(E);
+		const String file = I ? I->value : E;
 		print_verbose("Remapping dependencies for: " + file);
 		const Error err = ResourceLoader::rename_dependencies(file, p_renames);
 		if (err == OK) {
@@ -1591,7 +1607,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 				scenes_to_reload.push_back(file);
 			}
 		} else {
-			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies for:") + "\n" + p_file_owners[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies for:") + "\n" + E + "\n");
 		}
 	}
 
@@ -1685,7 +1701,7 @@ void FileSystemDock::_make_scene_confirm() {
 	int idx = EditorNode::get_singleton()->new_scene();
 	EditorNode::get_editor_data().set_scene_path(idx, scene_path);
 	EditorNode::get_singleton()->set_edited_scene(make_scene_dialog->create_scene_root());
-	EditorNode::get_singleton()->save_scene_list({ scene_path });
+	EditorNode::get_singleton()->save_scene_if_open(scene_path);
 }
 
 void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
@@ -1783,12 +1799,14 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 	if (new_exist) {
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
-		ti->set_text(col_index, old_name);
+		if (ti) {
+			ti->set_text(col_index, old_name);
+		}
 		return;
 	}
 
 	HashMap<String, ResourceUID::ID> uids;
-	Vector<String> file_owners; // The files that use these moved/renamed resource files.
+	HashSet<String> file_owners; // The files that use these moved/renamed resource files.
 	_before_move(uids, file_owners);
 
 	HashMap<String, String> file_renames;
@@ -1894,22 +1912,15 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		if (p_overwrite == OVERWRITE_RENAME) {
 			new_paths.write[i] = _get_unique_name(to_move[i], p_to_path);
 		} else {
-			new_paths.write[i] = p_to_path.path_join(to_move[i].path.get_file());
+			new_paths.write[i] = p_to_path.path_join(to_move[i].path.trim_suffix("/").get_file());
 		}
 	}
 
 	if (p_copy) {
 		bool is_copied = false;
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_duplicate_item(to_move[i], new_path);
+			if (to_move[i].path != new_paths[i]) {
+				_try_duplicate_item(to_move[i], new_paths[i]);
 				is_copied = true;
 			}
 		}
@@ -1926,7 +1937,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		}
 
 		HashMap<String, ResourceUID::ID> uids;
-		Vector<String> file_owners; // The files that use these moved/renamed resource files.
+		HashSet<String> file_owners; // The files that use these moved/renamed resource files.
 		_before_move(uids, file_owners);
 
 		bool is_moved = false;
@@ -1934,15 +1945,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		HashMap<String, String> folder_renames;
 
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_move_item(to_move[i], new_path, file_renames, folder_renames);
+			if (to_move[i].path != new_paths[i]) {
+				_try_move_item(to_move[i], new_paths[i], file_renames, folder_renames);
 				is_moved = true;
 			}
 		}
@@ -1965,11 +1969,11 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 }
 
-void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Vector<String> &r_file_owners) const {
-	Vector<String> renamed_files;
+void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, HashSet<String> &r_file_owners) const {
+	HashSet<String> renamed_files;
 	for (int i = 0; i < to_move.size(); i++) {
 		if (to_move[i].is_file) {
-			renamed_files.push_back(to_move[i].path);
+			renamed_files.insert(to_move[i].path);
 			ResourceUID::ID uid = ResourceLoader::get_resource_uid(to_move[i].path);
 			if (uid != ResourceUID::INVALID_ID) {
 				r_uids[to_move[i].path] = uid;
@@ -1982,7 +1986,7 @@ void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Vect
 				current_folder = folders.front()->get();
 				for (int j = 0; j < current_folder->get_file_count(); j++) {
 					const String file_path = current_folder->get_file_path(j);
-					renamed_files.push_back(file_path);
+					renamed_files.insert(file_path);
 					ResourceUID::ID uid = ResourceLoader::get_resource_uid(file_path);
 					if (uid != ResourceUID::INVALID_ID) {
 						r_uids[file_path] = uid;
@@ -2503,6 +2507,7 @@ Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
 		// No tooltip for directory.
 		return nullptr;
 	}
+	ERR_FAIL_COND_V(!FileAccess::exists(p_path), nullptr);
 
 	const String type = ResourceLoader::get_resource_type(p_path);
 	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
@@ -2915,7 +2920,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("New Inherited Scene"), FILE_INHERIT);
 				if (GLOBAL_GET("application/run/main_scene") != filenames[0]) {
-					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
+					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTR("Set as Main Scene"), FILE_MAIN_SCENE);
 				}
 			} else {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scenes"), FILE_OPEN);

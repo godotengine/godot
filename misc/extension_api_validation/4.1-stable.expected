@@ -286,10 +286,29 @@ Validate extension JSON: Error: Field 'classes/MeshDataTool/methods/get_format/r
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/shader_get_vertex_input_attribute_mask/return_value': meta changed value in new API, from "uint32" to "uint64".
 Validate extension JSON: Error: Field 'classes/SurfaceTool/methods/commit/arguments/1': meta changed value in new API, from "uint32" to "uint64".
 
-Surface format was increased to 64 bits from 32 bits. Compatibility methods registered. 
+Surface format was increased to 64 bits from 32 bits. Compatibility methods registered.
 
 GH-79527
 --------
 Validate extension JSON: Error: Field 'classes/ParticleProcessMaterial/properties/orbit_velocity_curve': type changed value in new API, from "CurveTexture" to "CurveTexture,CurveXYZTexture".
 
 Added accepted curve type from only CurveTexture to CurveXYZTexture.
+
+
+GH-84113
+--------
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_albedo': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_emission': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_normal': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_orm': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/LineEdit/properties/right_icon': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Sprite3D/properties/texture': type changed value in new API, from "Texture" to "Texture2D".
+
+Changed the hint types of some nodes' properties from Texture to Texture2D. No adjustments should be necessary.
+
+
+GH-84419
+--------
+Validate extension JSON: API was removed: classes/Node/constants/NOTIFICATION_NODE_RECACHE_REQUESTED
+
+Removed unused NOTIFICATION_NODE_RECACHE_REQUESTED notification. It also used to conflict with CanvasItem.NOTIFICATION_DRAW and Window.NOTIFICATION_VISIBILITY_CHANGED (which still need to be resolved).

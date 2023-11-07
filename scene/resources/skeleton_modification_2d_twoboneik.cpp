@@ -47,14 +47,16 @@ bool SkeletonModification2DTwoBoneIK::_set(const StringName &p_path, const Varia
 	} else if (path == "joint_two_bone2d_node") {
 		set_joint_two_bone2d_node(p_value);
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
+	else if (path.begins_with("editor/draw_gizmo")) {
 		set_editor_draw_gizmo(p_value);
 	} else if (path.begins_with("editor/draw_min_max")) {
 		set_editor_draw_min_max(p_value);
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -71,14 +73,16 @@ bool SkeletonModification2DTwoBoneIK::_get(const StringName &p_path, Variant &r_
 	} else if (path == "joint_two_bone2d_node") {
 		r_ret = get_joint_two_bone2d_node();
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
+	else if (path.begins_with("editor/draw_gizmo")) {
 		r_ret = get_editor_draw_gizmo();
 	} else if (path.begins_with("editor/draw_min_max")) {
 		r_ret = get_editor_draw_min_max();
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -138,7 +142,7 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 		return;
 	}
 
-	// Adopted from the links below:
+	// Adapted from the links below:
 	// http://theorangeduck.com/page/simple-two-joint
 	// https://www.alanzucconi.com/2018/05/02/ik-2d-2/
 	// With modifications by TwistedTwigleg
@@ -146,9 +150,10 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 	float joint_one_to_target = target_difference.length();
 	float angle_atan = target_difference.angle();
 
-	float bone_one_length = joint_one_bone->get_length() * MIN(joint_one_bone->get_global_scale().x, joint_one_bone->get_global_scale().y);
-	float bone_two_length = joint_two_bone->get_length() * MIN(joint_two_bone->get_global_scale().x, joint_two_bone->get_global_scale().y);
+	float bone_one_length = joint_one_bone->get_length() * MIN(joint_one_bone->get_global_scale().abs().x, joint_one_bone->get_global_scale().abs().y);
+	float bone_two_length = joint_two_bone->get_length() * MIN(joint_two_bone->get_global_scale().abs().x, joint_two_bone->get_global_scale().abs().y);
 	bool override_angles_due_to_out_of_range = false;
+	bool same_scale_sign = true;
 
 	if (joint_one_to_target < target_minimum_distance) {
 		joint_one_to_target = target_minimum_distance;
@@ -159,6 +164,10 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 
 	if (bone_one_length + bone_two_length < joint_one_to_target) {
 		override_angles_due_to_out_of_range = true;
+	}
+
+	if (joint_one_bone->get_global_scale().sign().x != joint_one_bone->get_global_scale().sign().y) {
+		same_scale_sign = false;
 	}
 
 	if (!override_angles_due_to_out_of_range) {
@@ -173,12 +182,23 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 		if (isnan(angle_0) || isnan(angle_1)) {
 			// We cannot solve for this angle! Do nothing to avoid setting the rotation (and scale) to NaN.
 		} else {
-			joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
+			if (same_scale_sign) {
+				joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
+			} else {
+				joint_one_bone->set_global_rotation(angle_atan + angle_0 + joint_one_bone->get_bone_angle());
+			}
+
 			joint_two_bone->set_rotation(-Math_PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
 		}
+
 	} else {
-		joint_one_bone->set_global_rotation(angle_atan - joint_one_bone->get_bone_angle());
-		joint_two_bone->set_global_rotation(angle_atan - joint_two_bone->get_bone_angle());
+		if (same_scale_sign) {
+			joint_one_bone->set_global_rotation(angle_atan - joint_one_bone->get_bone_angle());
+			joint_two_bone->set_global_rotation(angle_atan - joint_two_bone->get_bone_angle());
+		} else {
+			joint_one_bone->set_global_rotation(angle_atan + joint_one_bone->get_bone_angle());
+			joint_two_bone->set_global_rotation(angle_atan + joint_two_bone->get_bone_angle());
+		}
 	}
 
 	stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, joint_one_bone->get_transform(), stack->strength, true);
@@ -207,7 +227,8 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 	}
 	stack->skeleton->draw_set_transform(
 			stack->skeleton->to_local(operation_bone_one->get_global_position()),
-			operation_bone_one->get_global_rotation() - stack->skeleton->get_global_rotation());
+			operation_bone_one->get_global_rotation() - stack->skeleton->get_global_rotation(),
+			operation_bone_one->get_global_scale());
 
 	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);
 #ifdef TOOLS_ENABLED

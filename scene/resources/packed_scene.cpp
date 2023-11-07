@@ -450,7 +450,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			}
 
 			if (!old_parent_path.is_empty()) {
-				node->_set_name_nocheck(old_parent_path + "@" + node->get_name());
+				node->set_name(old_parent_path + "#" + node->get_name());
 			}
 
 			if (n.owner >= 0) {
@@ -1028,7 +1028,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 			cd.to = target_id;
 			cd.method = _nm_get_string(base_callable.get_method(), name_map);
 			cd.signal = _nm_get_string(c.signal.get_name(), name_map);
-			cd.flags = c.flags;
+			cd.flags = c.flags & ~CONNECT_INHERITED; // Do not store inherited.
 			cd.unbinds = unbinds;
 
 			for (int i = 0; i < binds.size(); i++) {

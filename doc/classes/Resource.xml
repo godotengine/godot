@@ -92,6 +92,7 @@
 		</member>
 		<member name="resource_name" type="String" setter="set_name" getter="get_name" default="&quot;&quot;">
 			An optional name for this resource. When defined, its value is displayed to represent the resource in the Inspector dock. For built-in scripts, the name is displayed as part of the tab name in the script editor.
+			[b]Note:[/b] Some resource formats do not support resource names. You can still set the name in the editor or via code, but it will be lost when the resource is reloaded. For example, only built-in scripts can have a resource name, while scripts stored in separate files cannot.
 		</member>
 		<member name="resource_path" type="String" setter="set_path" getter="get_path" default="&quot;&quot;">
 			The unique path to this resource. If it has been saved to disk, the value will be its filepath. If the resource is exclusively contained within a scene, the value will be the [PackedScene]'s filepath, followed by a unique identifier.

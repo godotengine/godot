@@ -50,7 +50,7 @@ enum myanmar_syllable_type_t {
 };
 
 
-#line 51 "hb-ot-shaper-myanmar-machine.hh"
+#line 54 "hb-ot-shaper-myanmar-machine.hh"
 #define myanmar_syllable_machine_ex_A 9u
 #define myanmar_syllable_machine_ex_As 32u
 #define myanmar_syllable_machine_ex_C 1u
@@ -77,7 +77,7 @@ enum myanmar_syllable_type_t {
 #define myanmar_syllable_machine_ex_ZWNJ 5u
 
 
-#line 76 "hb-ot-shaper-myanmar-machine.hh"
+#line 81 "hb-ot-shaper-myanmar-machine.hh"
 static const unsigned char _myanmar_syllable_machine_trans_keys[] = {
 	1u, 41u, 3u, 41u, 5u, 39u, 5u, 8u, 3u, 41u, 3u, 39u, 3u, 39u, 5u, 39u, 
 	5u, 39u, 3u, 39u, 3u, 39u, 3u, 41u, 5u, 39u, 1u, 15u, 3u, 39u, 3u, 39u, 
@@ -443,7 +443,7 @@ find_syllables_myanmar (hb_buffer_t *buffer)
   int cs;
   hb_glyph_info_t *info = buffer->info;
   
-#line 436 "hb-ot-shaper-myanmar-machine.hh"
+#line 447 "hb-ot-shaper-myanmar-machine.hh"
 	{
 	cs = myanmar_syllable_machine_start;
 	ts = 0;
@@ -459,7 +459,7 @@ find_syllables_myanmar (hb_buffer_t *buffer)
 
   unsigned int syllable_serial = 1;
   
-#line 448 "hb-ot-shaper-myanmar-machine.hh"
+#line 463 "hb-ot-shaper-myanmar-machine.hh"
 	{
 	int _slen;
 	int _trans;
@@ -473,7 +473,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 460 "hb-ot-shaper-myanmar-machine.hh"
+#line 477 "hb-ot-shaper-myanmar-machine.hh"
 	}
 
 	_keys = _myanmar_syllable_machine_trans_keys + (cs<<1);
@@ -519,7 +519,7 @@ _eof_trans:
 #line 113 "hb-ot-shaper-myanmar-machine.rl"
 	{te = p;p--;{ found_syllable (myanmar_non_myanmar_cluster); }}
 	break;
-#line 498 "hb-ot-shaper-myanmar-machine.hh"
+#line 523 "hb-ot-shaper-myanmar-machine.hh"
 	}
 
 _again:
@@ -528,7 +528,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 505 "hb-ot-shaper-myanmar-machine.hh"
+#line 532 "hb-ot-shaper-myanmar-machine.hh"
 	}
 
 	if ( ++p != pe )

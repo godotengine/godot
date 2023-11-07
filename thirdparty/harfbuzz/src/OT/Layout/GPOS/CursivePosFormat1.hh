@@ -24,16 +24,17 @@ struct EntryExitRecord
     (src_base+exitAnchor).collect_variation_indices (c);
   }
 
-  EntryExitRecord* subset (hb_subset_context_t *c,
-                           const void *src_base) const
+  bool subset (hb_subset_context_t *c,
+	       const void *src_base) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->serializer->embed (this);
-    if (unlikely (!out)) return_trace (nullptr);
+    if (unlikely (!out)) return_trace (false);
 
-    out->entryAnchor.serialize_subset (c, entryAnchor, src_base);
-    out->exitAnchor.serialize_subset (c, exitAnchor, src_base);
-    return_trace (out);
+    bool ret = false;
+    ret |= out->entryAnchor.serialize_subset (c, entryAnchor, src_base);
+    ret |= out->exitAnchor.serialize_subset (c, exitAnchor, src_base);
+    return_trace (ret);
   }
 
   protected:

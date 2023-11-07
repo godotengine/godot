@@ -1108,10 +1108,12 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				// Set margin on the margin container
+				margin_container->begin_bulk_theme_override();
 				margin_container->add_theme_constant_override("margin_left", theme_cache.panel_style->get_margin(Side::SIDE_LEFT));
 				margin_container->add_theme_constant_override("margin_top", theme_cache.panel_style->get_margin(Side::SIDE_TOP));
 				margin_container->add_theme_constant_override("margin_right", theme_cache.panel_style->get_margin(Side::SIDE_RIGHT));
 				margin_container->add_theme_constant_override("margin_bottom", theme_cache.panel_style->get_margin(Side::SIDE_BOTTOM));
+				margin_container->end_bulk_theme_override();
 			}
 		} break;
 	}
@@ -1485,6 +1487,7 @@ void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, cons
 }
 
 void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu, int p_id) {
+	ERR_FAIL_COND_MSG(p_submenu.validate_node_name() != p_submenu, "Invalid node name for submenu, the following characters are not allowed:\n" + String::get_invalid_node_name_characters());
 	Item item;
 	item.text = p_label;
 	item.xl_text = atr(p_label);
@@ -2184,6 +2187,7 @@ void PopupMenu::scroll_to_item(int p_idx) {
 }
 
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
+	ERR_FAIL_COND_V(p_event.is_null(), false);
 	Key code = Key::NONE;
 	Ref<InputEventKey> k = p_event;
 

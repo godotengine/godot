@@ -52,7 +52,7 @@ class RenderingServer : public Object {
 	int mm_policy = 0;
 	bool render_loop_enabled = true;
 
-	Array _get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb) const;
+	Array _get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb, const Vector4 &p_uv_scale) const;
 
 	const Vector2 SMALL_VEC2 = Vector2(CMP_EPSILON, CMP_EPSILON);
 	const Vector3 SMALL_VEC3 = Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON);
@@ -297,6 +297,8 @@ public:
 		ARRAY_FLAG_FORMAT_CURRENT_VERSION = ARRAY_FLAG_FORMAT_VERSION_2,
 		ARRAY_FLAG_FORMAT_VERSION_MASK = 0xFF, // 8 bits version
 	};
+
+	static_assert(sizeof(ArrayFormat) == 8, "ArrayFormat should be 64 bits long.");
 
 	enum PrimitiveType {
 		PRIMITIVE_POINTS,
@@ -630,6 +632,8 @@ public:
 	};
 
 	virtual void voxel_gi_set_quality(VoxelGIQuality) = 0;
+
+	virtual void sdfgi_reset() = 0;
 
 	/* LIGHTMAP */
 
@@ -1630,8 +1634,14 @@ public:
 	RenderingServer();
 	virtual ~RenderingServer();
 
+#ifdef TOOLS_ENABLED
+	typedef void (*SurfaceUpgradeCallback)();
+	void set_surface_upgrade_callback(SurfaceUpgradeCallback p_callback);
+	void set_warn_on_surface_upgrade(bool p_warn);
+#endif
+
 #ifndef DISABLE_DEPRECATED
-	static void _fix_surface_compatibility(SurfaceData &p_surface);
+	void fix_surface_compatibility(SurfaceData &p_surface, const String &p_path = "");
 #endif
 
 private:
@@ -1647,6 +1657,10 @@ private:
 	TypedArray<Dictionary> _instance_geometry_get_shader_parameter_list(RID p_instance) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
+#ifdef TOOLS_ENABLED
+	SurfaceUpgradeCallback surface_upgrade_callback = nullptr;
+	bool warn_on_surface_upgrade = true;
+#endif
 };
 
 // Make variant understand the enums.

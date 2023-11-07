@@ -1386,6 +1386,36 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 }
 #endif
 
+thread_local GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_thread_local;
+
+GDScript::UpdatableFuncPtrElement GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
+	UpdatableFuncPtrElement result = {};
+
+	{
+		MutexLock lock(func_ptrs_to_update_thread_local.mutex);
+		result.element = func_ptrs_to_update_thread_local.ptrs.push_back(p_func_ptr_ptr);
+		result.mutex = &func_ptrs_to_update_thread_local.mutex;
+
+		if (likely(func_ptrs_to_update_thread_local.initialized)) {
+			return result;
+		}
+
+		func_ptrs_to_update_thread_local.initialized = true;
+	}
+
+	MutexLock lock(func_ptrs_to_update_mutex);
+	func_ptrs_to_update.push_back(&func_ptrs_to_update_thread_local);
+
+	return result;
+}
+
+void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement p_func_ptr_element) {
+	ERR_FAIL_NULL(p_func_ptr_element.element);
+	ERR_FAIL_NULL(p_func_ptr_element.mutex);
+	MutexLock lock(*p_func_ptr_element.mutex);
+	p_func_ptr_element.element->erase();
+}
+
 void GDScript::clear(ClearData *p_clear_data) {
 	if (clearing) {
 		return;
@@ -1401,6 +1431,16 @@ void GDScript::clear(ClearData *p_clear_data) {
 	if (clear_data == nullptr) {
 		clear_data = &data;
 		is_root = true;
+	}
+
+	{
+		MutexLock outer_lock(func_ptrs_to_update_mutex);
+		for (UpdatableFuncPtr *updatable : func_ptrs_to_update) {
+			MutexLock inner_lock(updatable->mutex);
+			for (GDScriptFunction **func_ptr_ptr : updatable->ptrs) {
+				*func_ptr_ptr = nullptr;
+			}
+		}
 	}
 
 	RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();

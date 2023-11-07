@@ -141,6 +141,20 @@ void FindReplaceBar::_focus_lost() {
 	}
 }
 
+void FindReplaceBar::_update_flags(bool p_direction_backwards) {
+	flags = 0;
+
+	if (is_whole_words()) {
+		flags |= TextEdit::SEARCH_WHOLE_WORDS;
+	}
+	if (is_case_sensitive()) {
+		flags |= TextEdit::SEARCH_MATCH_CASE;
+	}
+	if (p_direction_backwards) {
+		flags |= TextEdit::SEARCH_BACKWARDS;
+	}
+}
+
 bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) {
 	if (!preserve_cursor) {
 		text_editor->remove_secondary_carets();
@@ -431,14 +445,7 @@ void FindReplaceBar::_update_matches_label() {
 }
 
 bool FindReplaceBar::search_current() {
-	flags = 0;
-
-	if (is_whole_words()) {
-		flags |= TextEdit::SEARCH_WHOLE_WORDS;
-	}
-	if (is_case_sensitive()) {
-		flags |= TextEdit::SEARCH_MATCH_CASE;
-	}
+	_update_flags(false);
 
 	int line, col;
 	_get_search_from(line, col);
@@ -455,17 +462,9 @@ bool FindReplaceBar::search_prev() {
 		popup_search(true);
 	}
 
-	flags = 0;
 	String text = get_search_text();
 
-	if (is_whole_words()) {
-		flags |= TextEdit::SEARCH_WHOLE_WORDS;
-	}
-	if (is_case_sensitive()) {
-		flags |= TextEdit::SEARCH_MATCH_CASE;
-	}
-
-	flags |= TextEdit::SEARCH_BACKWARDS;
+	_update_flags(true);
 
 	int line, col;
 	_get_search_from(line, col);
@@ -491,14 +490,7 @@ bool FindReplaceBar::search_next() {
 		popup_search(true);
 	}
 
-	flags = 0;
-
-	if (is_whole_words()) {
-		flags |= TextEdit::SEARCH_WHOLE_WORDS;
-	}
-	if (is_case_sensitive()) {
-		flags |= TextEdit::SEARCH_MATCH_CASE;
-	}
+	_update_flags(false);
 
 	int line, col;
 	_get_search_from(line, col, true);
@@ -546,11 +538,9 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 			search_text->set_caret_column(search_text->get_text().length());
 		}
 
-		results_count = -1;
-		results_count_to_current = -1;
-		needs_to_count_results = true;
-		_update_results_count();
-		_update_matches_label();
+		preserve_cursor = true;
+		_search_text_changed(get_search_text());
+		preserve_cursor = false;
 	}
 }
 
@@ -1514,8 +1504,8 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 			// Empty lines should not be counted.
 			bool is_empty = text_editor->get_line(line).strip_edges().is_empty();
 			is_all_empty = is_all_empty && is_empty;
-			// `.left(1)` here because get_delimiter_start_key will return `##` instead of `#` when there is multiple comment delimiter in a line.
-			if (!is_empty && (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx).left(1) != delimiter)) {
+			// get_delimiter_start_key will return `##` instead of `#` when there is multiple comment delimiter in a line.
+			if (!is_empty && (delimiter_idx == -1 || !text_editor->get_delimiter_start_key(delimiter_idx).begins_with(delimiter))) {
 				is_commented = false;
 				break;
 			}
@@ -1718,6 +1708,8 @@ void CodeTextEditor::_update_text_editor_theme() {
 	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
 	error->add_theme_font_override("font", status_bar_font);
 	error->add_theme_font_size_override("font_size", status_bar_font_size);
+	error->end_bulk_theme_override();
+
 	int count = status_bar->get_child_count();
 	for (int i = 0; i < count; i++) {
 		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
@@ -1726,7 +1718,6 @@ void CodeTextEditor::_update_text_editor_theme() {
 			n->add_theme_font_size_override("font_size", status_bar_font_size);
 		}
 	}
-	error->end_bulk_theme_override();
 }
 
 void CodeTextEditor::_on_settings_change() {
@@ -1834,25 +1825,28 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_update_status_bar_theme() {
 	error_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
+	warning_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+
+	error_button->begin_bulk_theme_override();
 	error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 	error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+	error_button->end_bulk_theme_override();
 
-	warning_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+	warning_button->begin_bulk_theme_override();
 	warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 	warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+	warning_button->end_bulk_theme_override();
 
+	line_and_col_txt->begin_bulk_theme_override();
 	line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 	line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+	line_and_col_txt->end_bulk_theme_override();
 }
 
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			_update_status_bar_theme();
-		} break;
-
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_status_bar_theme();
 			if (toggle_scripts_button->is_visible()) {

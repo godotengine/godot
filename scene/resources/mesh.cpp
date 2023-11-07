@@ -870,6 +870,8 @@ void Mesh::_bind_methods() {
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
 
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_COMPRESS_ATTRIBUTES);
+
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
 
@@ -1019,7 +1021,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 	uint32_t dst_offsets[Mesh::ARRAY_MAX];
 	RenderingServer::get_singleton()->mesh_surface_make_offsets_from_format(p_new_format & (~RS::ARRAY_FORMAT_INDEX), p_elements, 0, dst_offsets, dst_vertex_stride, dst_normal_tangent_stride, dst_attribute_stride, dst_skin_stride);
 
-	vertex_data.resize(dst_vertex_stride * p_elements);
+	vertex_data.resize((dst_vertex_stride + dst_normal_tangent_stride) * p_elements);
 	attribute_data.resize(dst_attribute_stride * p_elements);
 	skin_data.resize(dst_skin_stride * p_elements);
 
@@ -1638,7 +1640,12 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 #ifndef DISABLE_DEPRECATED
 		uint64_t surface_version = surface.format & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 		if (surface_version != ARRAY_FLAG_FORMAT_CURRENT_VERSION) {
-			RS::_fix_surface_compatibility(surface);
+			RS::get_singleton()->fix_surface_compatibility(surface, get_path());
+			surface_version = surface.format & (RS::ARRAY_FLAG_FORMAT_VERSION_MASK << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+			ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+					vformat("Surface version provided (%d) does not match current version (%d).",
+							(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
+							(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK));
 		}
 #endif
 
@@ -1707,7 +1714,7 @@ bool ArrayMesh::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 
-	return true;
+	return false;
 }
 
 void ArrayMesh::reset_state() {
@@ -2008,17 +2015,19 @@ void ArrayMesh::regen_normal_maps() {
 		return;
 	}
 	Vector<Ref<SurfaceTool>> surfs;
+	Vector<uint64_t> formats;
 	for (int i = 0; i < get_surface_count(); i++) {
 		Ref<SurfaceTool> st = memnew(SurfaceTool);
 		st->create_from(Ref<ArrayMesh>(this), i);
 		surfs.push_back(st);
+		formats.push_back(surface_get_format(i));
 	}
 
 	clear_surfaces();
 
 	for (int i = 0; i < surfs.size(); i++) {
 		surfs.write[i]->generate_tangents();
-		surfs.write[i]->commit(Ref<ArrayMesh>(this));
+		surfs.write[i]->commit(Ref<ArrayMesh>(this), formats[i]);
 	}
 }
 

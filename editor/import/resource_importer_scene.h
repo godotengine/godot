@@ -79,6 +79,7 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr);
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options);
+	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {}
 
 	EditorSceneFormatImporter() {}
 };
@@ -276,6 +277,7 @@ public:
 
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
+	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 

@@ -159,9 +159,7 @@ public:
 		userdata = p_info->callable_userdata;
 		token = p_info->token;
 
-		if (p_info->object != nullptr) {
-			object = ((Object *)p_info->object)->get_instance_id();
-		}
+		object = p_info->object_id;
 
 		call_func = p_info->call_func;
 		is_valid_func = p_info->is_valid_func;
@@ -400,7 +398,7 @@ static void gdextension_variant_iter_get(GDExtensionConstVariantPtr p_self, GDEx
 	Variant *iter = (Variant *)r_iter;
 
 	bool valid;
-	memnew_placement(r_ret, Variant(self->iter_next(*iter, valid)));
+	memnew_placement(r_ret, Variant(self->iter_get(*iter, valid)));
 	*r_valid = valid;
 }
 

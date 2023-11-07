@@ -836,6 +836,8 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		item->set_custom_color(0, disabled_color);
 	}
 
+	tile_data_editors_tree->update_minimum_size();
+
 #undef ADD_TILE_DATA_EDITOR_GROUP
 #undef ADD_TILE_DATA_EDITOR
 

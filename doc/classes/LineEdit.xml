@@ -269,7 +269,7 @@
 			If [code]true[/code], every character is replaced with the secret character (see [member secret_character]).
 		</member>
 		<member name="secret_character" type="String" setter="set_secret_character" getter="get_secret_character" default="&quot;•&quot;">
-			The character to use to mask secret input (defaults to "•"). Only a single character can be used as the secret character.
+			The character to use to mask secret input. Only a single character can be used as the secret character. If it is longer than one character, only the first one will be used. If it is empty, a space will be used instead.
 		</member>
 		<member name="select_all_on_focus" type="bool" setter="set_select_all_on_focus" getter="is_select_all_on_focus" default="false">
 			If [code]true[/code], the [LineEdit] will select the whole text when it gains focus.

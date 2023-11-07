@@ -596,7 +596,7 @@ void EditorBuildProfileManager::_action_confirm() {
 void EditorBuildProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
 	TreeItem *class_item = class_list->create_item(p_parent);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class, "Node"));
+	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class));
 	String text = p_class;
 
 	bool disabled = edited->is_class_disabled(p_class);

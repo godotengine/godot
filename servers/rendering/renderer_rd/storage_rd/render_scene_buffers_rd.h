@@ -58,6 +58,7 @@
 #define RB_TEX_BLUR_1 SNAME("blur_1")
 #define RB_TEX_HALF_BLUR SNAME("half_blur") // only for raster!
 
+#define RB_TEX_BACK_COLOR SNAME("back_color")
 #define RB_TEX_BACK_DEPTH SNAME("back_depth")
 
 class RenderSceneBuffersRD : public RenderSceneBuffers {
@@ -267,7 +268,16 @@ public:
 	}
 
 	// back buffer (color)
-	RID get_back_buffer_texture() const { return has_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0) ? get_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0) : RID(); } // We (re)use our blur texture here.
+	RID get_back_buffer_texture() const {
+		// Prefer returning the dedicated backbuffer color texture if it was created. Return the reused blur texture otherwise.
+		if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR)) {
+			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR);
+		} else if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0)) {
+			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0);
+		} else {
+			return RID();
+		}
+	}
 
 	// Upscaled.
 	void ensure_upscaled();

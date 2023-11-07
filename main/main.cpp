@@ -1739,12 +1739,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		String default_driver = driver_hints.get_slice(",", 0);
 
 		// For now everything defaults to vulkan when available. This can change in future updates.
-		GLOBAL_DEF_RST("rendering/rendering_device/driver", default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL("rendering/rendering_device/driver", default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 	}
 
 	{
@@ -1763,16 +1763,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		default_driver_macos = "opengl3_angle"; // Default to ANGLE if it's built-in.
 #endif
 
-		GLOBAL_DEF_RST("rendering/gl_compatibility/driver", default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints_egl), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver_macos);
+		GLOBAL_DEF_RST_NOVAL("rendering/gl_compatibility/driver", default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints_egl), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver_macos);
 
 		GLOBAL_DEF_RST("rendering/gl_compatibility/nvidia_disable_threaded_optimization", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_angle", true);
+		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_native", true);
 
 		GLOBAL_DEF_RST(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), Array());
 	}
@@ -1960,19 +1961,29 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
 		int initial_position_type = GLOBAL_GET("display/window/size/initial_position_type").operator int();
-		if (initial_position_type == 0) {
+		if (initial_position_type == 0) { // Absolute.
 			if (!init_use_custom_pos) {
 				init_custom_pos = GLOBAL_GET("display/window/size/initial_position").operator Vector2i();
 				init_use_custom_pos = true;
 			}
-		} else if (initial_position_type == 1) {
+		} else if (initial_position_type == 1) { // Center of Primary Screen.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServer::SCREEN_PRIMARY;
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == 2) {
+		} else if (initial_position_type == 2) { // Center of Other Screen.
 			if (!init_use_custom_screen) {
 				init_screen = GLOBAL_GET("display/window/size/initial_screen").operator int();
+				init_use_custom_screen = true;
+			}
+		} else if (initial_position_type == 3) { // Center of Screen With Mouse Pointer.
+			if (!init_use_custom_screen) {
+				init_screen = DisplayServer::SCREEN_WITH_MOUSE_FOCUS;
+				init_use_custom_screen = true;
+			}
+		} else if (initial_position_type == 4) { // Center of Screen With Keyboard Focus.
+			if (!init_use_custom_screen) {
+				init_screen = DisplayServer::SCREEN_WITH_KEYBOARD_FOCUS;
 				init_use_custom_screen = true;
 			}
 		}
@@ -2757,7 +2768,7 @@ bool Main::start() {
 
 #ifdef TOOLS_ENABLED
 	String doc_tool_path;
-	bool doc_base = true;
+	BitField<DocTools::GenerateFlags> gen_flags;
 	String _export_preset;
 	bool export_debug = false;
 	bool export_pack_only = false;
@@ -2782,7 +2793,7 @@ bool Main::start() {
 			check_only = true;
 #ifdef TOOLS_ENABLED
 		} else if (args[i] == "--no-docbase") {
-			doc_base = false;
+			gen_flags.set_flag(DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES);
 #ifndef DISABLE_DEPRECATED
 		} else if (args[i] == "--convert-3to4") {
 			converting_project = true;
@@ -2893,7 +2904,7 @@ bool Main::start() {
 
 		Error err;
 		DocTools doc;
-		doc.generate(doc_base);
+		doc.generate(gen_flags);
 
 		DocTools docsrc;
 		HashMap<String, String> doc_data_classes;

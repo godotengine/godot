@@ -68,7 +68,10 @@ void EditorColorMap::create() {
 	add_conversion_color_pair("#414042", "#414042"); // Godot Gray
 
 	add_conversion_color_pair("#ffffff", "#414141"); // Pure white
+	add_conversion_color_pair("#fefefe", "#fefefe"); // Forced light color
 	add_conversion_color_pair("#000000", "#bfbfbf"); // Pure black
+	add_conversion_color_pair("#010101", "#010101"); // Forced dark color
+
 	// Keep pure RGB colors as is, but list them for explicitness.
 	add_conversion_color_pair("#ff0000", "#ff0000"); // Pure red
 	add_conversion_color_pair("#00ff00", "#00ff00"); // Pure green
@@ -76,7 +79,6 @@ void EditorColorMap::create() {
 
 	// GUI Colors
 	add_conversion_color_pair("#e0e0e0", "#5a5a5a"); // Common icon color
-	add_conversion_color_pair("#fefefe", "#fefefe"); // Forced light color
 	add_conversion_color_pair("#808080", "#808080"); // GUI disabled color
 	add_conversion_color_pair("#b3b3b3", "#363636"); // GUI disabled light color
 	add_conversion_color_pair("#699ce8", "#699ce8"); // GUI highlight color
@@ -84,7 +86,6 @@ void EditorColorMap::create() {
 
 	add_conversion_color_pair("#c38ef1", "#a85de9"); // Animation
 	add_conversion_color_pair("#8da5f3", "#3d64dd"); // 2D
-	add_conversion_color_pair("#4b70ea", "#1a3eac"); // 2D Dark
 	add_conversion_color_pair("#7582a8", "#6d83c8"); // 2D Abstract
 	add_conversion_color_pair("#fc7f7f", "#cd3838"); // 3D
 	add_conversion_color_pair("#b56d6d", "#be6a6a"); // 3D Abstract
@@ -1808,7 +1809,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "HScrollBar", make_line_stylebox(separator_color, 50));
 	} else {
-		theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
+		theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, -5, 1, -5, 1));
 	}
 	theme->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
 	theme->set_stylebox("grabber", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
@@ -1826,7 +1827,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "VScrollBar", make_line_stylebox(separator_color, 50, 1, 1, true));
 	} else {
-		theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
+		theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, -5, 1, -5));
 	}
 	theme->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
 	theme->set_stylebox("grabber", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
@@ -2046,12 +2047,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphn_sb_panel_selected->set_corner_radius_individual(0, 0, corner_radius * EDSCALE, corner_radius * EDSCALE);
 	graphn_sb_panel_selected->set_expand_margin(SIDE_TOP, 17 * EDSCALE);
 
-	const int gn_titlebar_margin_side = 12;
-	Ref<StyleBoxFlat> graphn_sb_titlebar = make_flat_stylebox(graphnode_bg, gn_titlebar_margin_side, gn_margin_top, gn_titlebar_margin_side, 0, corner_width);
+	const int gn_titlebar_margin_left = 12;
+	const int gn_titlebar_margin_right = 4; // The rest is for the close button.
+	Ref<StyleBoxFlat> graphn_sb_titlebar = make_flat_stylebox(graphnode_bg, gn_titlebar_margin_left, gn_margin_top, gn_titlebar_margin_right, 0, corner_width);
 	graphn_sb_titlebar->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
 	graphn_sb_titlebar->set_corner_radius_individual(corner_radius * EDSCALE, corner_radius * EDSCALE, 0, 0);
 
-	Ref<StyleBoxFlat> graphn_sb_titlebar_selected = make_flat_stylebox(graph_node_selected_border_color, gn_titlebar_margin_side, gn_margin_top, gn_titlebar_margin_side, 0, corner_width);
+	Ref<StyleBoxFlat> graphn_sb_titlebar_selected = make_flat_stylebox(graph_node_selected_border_color, gn_titlebar_margin_left, gn_margin_top, gn_titlebar_margin_right, 0, corner_width);
 	graphn_sb_titlebar_selected->set_corner_radius_individual(corner_radius * EDSCALE, corner_radius * EDSCALE, 0, 0);
 	graphn_sb_titlebar_selected->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
 	Ref<StyleBoxEmpty> graphn_sb_slot = make_empty_stylebox(12, 0, 12, 0);

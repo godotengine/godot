@@ -1585,7 +1585,13 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	GDScriptParser::FunctionNode *previous_function = parser->current_function;
 	parser->current_function = p_function;
 	bool previous_static_context = static_context;
-	static_context = p_function->is_static;
+	if (p_is_lambda) {
+		// For lambdas this is determined from the context, the `static` keyword is not allowed.
+		p_function->is_static = static_context;
+	} else {
+		// For normal functions, this is determined in the parser by the `static` keyword.
+		static_context = p_function->is_static;
+	}
 
 	GDScriptParser::DataType prev_datatype = p_function->get_datatype();
 
@@ -3317,15 +3323,16 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 
 		if (is_self && static_context && !method_flags.has_flag(METHOD_FLAG_STATIC)) {
-			if (parser->current_function) {
-				// Get the parent function above any lambda.
-				GDScriptParser::FunctionNode *parent_function = parser->current_function;
-				while (parent_function->source_lambda) {
-					parent_function = parent_function->source_lambda->parent_function;
-				}
+			// Get the parent function above any lambda.
+			GDScriptParser::FunctionNode *parent_function = parser->current_function;
+			while (parent_function && parent_function->source_lambda) {
+				parent_function = parent_function->source_lambda->parent_function;
+			}
+
+			if (parent_function) {
 				push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parent_function->identifier->name), p_call);
 			} else {
-				push_error(vformat(R"*(Cannot call non-static function "%s()" for static variable initializer.)*", p_call->function_name), p_call);
+				push_error(vformat(R"*(Cannot call non-static function "%s()" from a static variable initializer.)*", p_call->function_name), p_call);
 			}
 		} else if (!is_self && base_type.is_meta_type && !method_flags.has_flag(METHOD_FLAG_STATIC)) {
 			base_type.is_meta_type = false; // For `to_string()`.
@@ -3908,15 +3915,16 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		bool source_is_variable = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || p_identifier->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 		bool source_is_signal = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
 		if ((source_is_variable || source_is_signal) && static_context) {
-			if (parser->current_function) {
-				// Get the parent function above any lambda.
-				GDScriptParser::FunctionNode *parent_function = parser->current_function;
-				while (parent_function->source_lambda) {
-					parent_function = parent_function->source_lambda->parent_function;
-				}
+			// Get the parent function above any lambda.
+			GDScriptParser::FunctionNode *parent_function = parser->current_function;
+			while (parent_function && parent_function->source_lambda) {
+				parent_function = parent_function->source_lambda->parent_function;
+			}
+
+			if (parent_function) {
 				push_error(vformat(R"*(Cannot access %s "%s" from the static function "%s()".)*", source_is_signal ? "signal" : "instance variable", p_identifier->name, parent_function->identifier->name), p_identifier);
 			} else {
-				push_error(vformat(R"*(Cannot access %s "%s" for a static variable initializer.)*", source_is_signal ? "signal" : "instance variable", p_identifier->name), p_identifier);
+				push_error(vformat(R"*(Cannot access %s "%s" from a static variable initializer.)*", source_is_signal ? "signal" : "instance variable", p_identifier->name), p_identifier);
 			}
 		}
 
@@ -5459,12 +5467,15 @@ void GDScriptAnalyzer::resolve_pending_lambda_bodies() {
 	}
 
 	GDScriptParser::LambdaNode *previous_lambda = current_lambda;
+	bool previous_static_context = static_context;
 
 	List<GDScriptParser::LambdaNode *> lambdas = pending_body_resolution_lambdas;
 	pending_body_resolution_lambdas.clear();
 
 	for (GDScriptParser::LambdaNode *lambda : lambdas) {
 		current_lambda = lambda;
+		static_context = lambda->function->is_static;
+
 		resolve_function_body(lambda->function, true);
 
 		int captures_amount = lambda->captures.size();
@@ -5493,6 +5504,7 @@ void GDScriptAnalyzer::resolve_pending_lambda_bodies() {
 	}
 
 	current_lambda = previous_lambda;
+	static_context = previous_static_context;
 }
 
 bool GDScriptAnalyzer::class_exists(const StringName &p_class) const {

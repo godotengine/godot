@@ -868,7 +868,7 @@ void ImporterMesh::_set_data(const Dictionary &p_data) {
 			if (s.has("material")) {
 				material = s["material"];
 			}
-			uint32_t flags = 0;
+			uint64_t flags = 0;
 			if (s.has("flags")) {
 				flags = s["flags"];
 			}
@@ -909,9 +909,7 @@ Dictionary ImporterMesh::_get_data() const {
 			d["name"] = surfaces[i].name;
 		}
 
-		if (surfaces[i].flags != 0) {
-			d["flags"] = surfaces[i].flags;
-		}
+		d["flags"] = surfaces[i].flags;
 
 		surface_arr.push_back(d);
 	}

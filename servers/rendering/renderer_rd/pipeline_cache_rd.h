@@ -38,7 +38,7 @@ class PipelineCacheRD {
 	SpinLock spin_lock;
 
 	RID shader;
-	uint32_t input_mask;
+	uint64_t input_mask;
 
 	RD::RenderPrimitive render_primitive;
 	RD::PipelineRasterizationState rasterization_state;

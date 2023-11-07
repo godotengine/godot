@@ -73,6 +73,7 @@ public:
 
 private:
 	const float BAKE_FPS = 30.0f;
+	int _naming_version = 1;
 	String _image_format = "PNG";
 	float _lossy_quality = 0.75f;
 	Ref<GLTFDocumentExtension> _image_save_extension;
@@ -86,6 +87,8 @@ public:
 	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
 	static void unregister_all_gltf_document_extensions();
 
+	void set_naming_version(int p_version);
+	int get_naming_version() const;
 	void set_image_format(const String &p_image_format);
 	String get_image_format() const;
 	void set_lossy_quality(float p_lossy_quality);

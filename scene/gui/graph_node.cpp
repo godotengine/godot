@@ -620,7 +620,7 @@ void GraphNode::_port_pos_update() {
 				port_cache.pos = Point2i(edgeofs, vertical_ofs + size.height / 2);
 				port_cache.type = slot_table[i].type_left;
 				port_cache.color = slot_table[i].color_left;
-				port_cache.slot_index = child->get_index(); // Index with internal nodes included.
+				port_cache.slot_index = child->get_index(false);
 				left_port_cache.push_back(port_cache);
 			}
 			if (slot_table[i].enable_right) {
@@ -628,7 +628,7 @@ void GraphNode::_port_pos_update() {
 				port_cache.pos = Point2i(get_size().width - edgeofs, vertical_ofs + size.height / 2);
 				port_cache.type = slot_table[i].type_right;
 				port_cache.color = slot_table[i].color_right;
-				port_cache.slot_index = child->get_index(); // Index with internal nodes included.
+				port_cache.slot_index = child->get_index(false);
 				right_port_cache.push_back(port_cache);
 			}
 		}

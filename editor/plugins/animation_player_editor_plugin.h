@@ -111,8 +111,9 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Ref<Texture2D> autoplay_icon;
 	Ref<Texture2D> reset_icon;
 	Ref<ImageTexture> autoplay_reset_icon;
-	bool last_active;
-	float timeline_position;
+
+	bool last_active = false;
+	float timeline_position = 0;
 
 	EditorFileDialog *file = nullptr;
 	ConfirmationDialog *delete_dialog = nullptr;
@@ -130,8 +131,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	ConfirmationDialog *error_dialog = nullptr;
 	int name_dialog_op = TOOL_NEW_ANIM;
 
-	bool updating;
-	bool updating_blends;
+	bool updating = false;
+	bool updating_blends = false;
 
 	AnimationTrackEditor *track_editor = nullptr;
 	static AnimationPlayerEditor *singleton;
@@ -190,7 +191,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _animation_remove();
 	void _animation_remove_confirmed();
-	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
 	Ref<Animation> _animation_clone(const Ref<Animation> p_anim);
@@ -198,6 +198,9 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _scale_changed(const String &p_scale);
 	void _seek_value_changed(float p_value, bool p_set = false, bool p_timeline_only = false);
 	void _blend_editor_next_changed(const int p_idx);
+
+	void _edit_animation_blend();
+	void _update_animation_blend();
 
 	void _list_changed();
 	void _current_animation_changed(const String &p_name);

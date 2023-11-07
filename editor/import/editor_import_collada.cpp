@@ -925,6 +925,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
+			// We can't generate tangents without UVs, so create dummy tangents.
+			bool generate_dummy_tangents = (!binormal_src || !tangent_src) && !uv_src && force_make_tangents;
+
 			Ref<SurfaceTool> surftool;
 			surftool.instantiate();
 			surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
@@ -934,6 +937,14 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 					surftool->set_normal(vertex_array[k].normal);
 					if (binormal_src && tangent_src) {
 						surftool->set_tangent(vertex_array[k].tangent);
+					} else if (generate_dummy_tangents) {
+						Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(vertex_array[k].normal);
+						surftool->set_tangent(Plane(tan.x, tan.y, tan.z, 1.0));
+					}
+				} else {
+					// No normals, use a dummy normal since normals will be generated.
+					if (generate_dummy_tangents) {
+						surftool->set_tangent(Plane(1.0, 0.0, 0.0, 1.0));
 					}
 				}
 				if (uv_src) {
@@ -985,7 +996,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				surftool->generate_tangents();
 			}
 
-			if (!binormal_src || !(tangent_src || generate_tangents) || p_mesh->get_blend_shape_count() != 0 || p_skin_controller) {
+			if (p_mesh->get_blend_shape_count() != 0 || p_skin_controller) {
 				// Can't compress if attributes missing or if using vertex weights.
 				mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}

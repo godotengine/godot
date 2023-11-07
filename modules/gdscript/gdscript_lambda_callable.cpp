@@ -44,11 +44,18 @@ bool GDScriptLambdaCallable::compare_less(const CallableCustom *p_a, const Calla
 	return p_a < p_b;
 }
 
+bool GDScriptLambdaCallable::is_valid() const {
+	return CallableCustom::is_valid() && function != nullptr;
+}
+
 uint32_t GDScriptLambdaCallable::hash() const {
 	return h;
 }
 
 String GDScriptLambdaCallable::get_as_text() const {
+	if (function == nullptr) {
+		return "<invalid lambda>";
+	}
 	if (function->get_name() != StringName()) {
 		return function->get_name().operator String() + "(lambda)";
 	}
@@ -73,6 +80,12 @@ StringName GDScriptLambdaCallable::get_method() const {
 
 void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 	int captures_amount = captures.size();
+
+	if (function == nullptr) {
+		r_return_value = Variant();
+		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return;
+	}
 
 	if (captures_amount > 0) {
 		Vector<const Variant *> args;
@@ -127,11 +140,19 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 }
 
 GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures) {
+	ERR_FAIL_NULL(p_script.ptr());
+	ERR_FAIL_NULL(p_function);
 	script = p_script;
 	function = p_function;
 	captures = p_captures;
 
 	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
+
+	updatable_func_ptr_element = p_script->_add_func_ptr_to_update(&function);
+}
+
+GDScriptLambdaCallable::~GDScriptLambdaCallable() {
+	GDScript::_remove_func_ptr_to_update(updatable_func_ptr_element);
 }
 
 bool GDScriptLambdaSelfCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -144,11 +165,18 @@ bool GDScriptLambdaSelfCallable::compare_less(const CallableCustom *p_a, const C
 	return p_a < p_b;
 }
 
+bool GDScriptLambdaSelfCallable::is_valid() const {
+	return CallableCustom::is_valid() && function != nullptr;
+}
+
 uint32_t GDScriptLambdaSelfCallable::hash() const {
 	return h;
 }
 
 String GDScriptLambdaSelfCallable::get_as_text() const {
+	if (function == nullptr) {
+		return "<invalid lambda>";
+	}
 	if (function->get_name() != StringName()) {
 		return function->get_name().operator String() + "(lambda)";
 	}
@@ -177,6 +205,12 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 #endif
 
 	int captures_amount = captures.size();
+
+	if (function == nullptr) {
+		r_return_value = Variant();
+		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return;
+	}
 
 	if (captures_amount > 0) {
 		Vector<const Variant *> args;
@@ -231,18 +265,36 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 }
 
 GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures) {
+	ERR_FAIL_NULL(p_self.ptr());
+	ERR_FAIL_NULL(p_function);
 	reference = p_self;
 	object = p_self.ptr();
 	function = p_function;
 	captures = p_captures;
 
 	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
+
+	GDScript *gds = p_function->get_script();
+	if (gds != nullptr) {
+		updatable_func_ptr_element = gds->_add_func_ptr_to_update(&function);
+	}
 }
 
 GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures) {
+	ERR_FAIL_NULL(p_self);
+	ERR_FAIL_NULL(p_function);
 	object = p_self;
 	function = p_function;
 	captures = p_captures;
 
 	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
+
+	GDScript *gds = p_function->get_script();
+	if (gds != nullptr) {
+		updatable_func_ptr_element = gds->_add_func_ptr_to_update(&function);
+	}
+}
+
+GDScriptLambdaSelfCallable::~GDScriptLambdaSelfCallable() {
+	GDScript::_remove_func_ptr_to_update(updatable_func_ptr_element);
 }
