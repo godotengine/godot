@@ -1040,13 +1040,13 @@ bool AnimationNodeStateMachinePlayback::_can_transition_to_next(AnimationTree *p
 		return false;
 	}
 
-    // Prevent automatic transitioning looped animations
-    bool is_looping = false;
-    Ref<AnimationNodeAnimation> node = p_state_machine->states[current].node;
-    if (node.is_valid()) {
-        Ref<Animation> anim = p_tree->get_animation(node->get_animation());
-        is_looping = anim.is_valid() && anim->get_loop_mode() != Animation::LOOP_NONE;
-    }
+	// Prevent automatic transitioning looped animations
+	bool is_looping = false;
+	Ref<AnimationNodeAnimation> node = p_state_machine->states[current].node;
+	if (node.is_valid()) {
+		Ref<Animation> anim = p_tree->get_animation(node->get_animation());
+		is_looping = anim.is_valid() && anim->get_loop_mode() != Animation::LOOP_NONE;
+	}
 
 	if (current != p_state_machine->start_node && p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END && !is_looping) {
 		return pos_current >= len_current - p_next.xfade;
