@@ -1542,18 +1542,32 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image) {
 	bool scale_splash = GLOBAL_GET("application/boot_splash/fullsize");
 	bool apply_filter = GLOBAL_GET("application/boot_splash/use_filter");
+	bool show_splash_image = GLOBAL_GET("application/boot_splash/show_image");
 	String project_splash_path = GLOBAL_GET("application/boot_splash/image");
 
-	if (!project_splash_path.is_empty()) {
-		splash_image.instantiate();
-		print_verbose("Loading splash image: " + project_splash_path);
-		const Error err = ImageLoader::load_image(project_splash_path, splash_image);
-		if (err) {
-			if (OS::get_singleton()->is_stdout_verbose()) {
-				print_error("- unable to load splash image from " + project_splash_path + " (" + itos(err) + ")");
+	// Setup the splash bg color.
+	bool bg_color_valid = false;
+	Color bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color", &bg_color_valid);
+	if (!bg_color_valid) {
+		bg_color = boot_splash_bg_color;
+	}
+
+	if (show_splash_image) {
+		if (!project_splash_path.is_empty()) {
+			splash_image.instantiate();
+			print_verbose("Loading splash image: " + project_splash_path);
+			const Error err = ImageLoader::load_image(project_splash_path, splash_image);
+			if (err) {
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					print_error("- unable to load splash image from " + project_splash_path + " (" + itos(err) + ")");
+				}
+				splash_image.unref();
 			}
-			splash_image.unref();
 		}
+	} else {
+		splash_image.instantiate();
+		splash_image->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
+		splash_image->set_pixel(0, 0, bg_color);
 	}
 
 	if (splash_image.is_null()) {
@@ -1575,13 +1589,6 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 			height = splash_image->get_height() * screen_size.width / splash_image->get_width();
 		}
 		splash_image->resize(width, height);
-	}
-
-	// Setup the splash bg color
-	bool bg_color_valid;
-	Color bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color", &bg_color_valid);
-	if (!bg_color_valid) {
-		bg_color = boot_splash_bg_color;
 	}
 
 	print_verbose("Creating splash background color image.");
