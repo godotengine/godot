@@ -4633,6 +4633,14 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
 void EditorNode::_begin_first_scan() {
+	// In headless mode, scan right away.
+	// This allows users to continue using `godot --headless --editor --quit` to prepare a project.
+	if (!DisplayServer::get_singleton()->window_can_draw()) {
+		OS::get_singleton()->benchmark_begin_measure("editor_scan_and_import");
+		EditorFileSystem::get_singleton()->scan();
+		return;
+	}
+
 	if (!waiting_for_first_scan) {
 		return;
 	}
