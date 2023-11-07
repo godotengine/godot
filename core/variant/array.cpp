@@ -337,20 +337,16 @@ int Array::find(const Variant &p_value, int p_from) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "find"), -1);
 
-	int ret = -1;
-
 	if (p_from < 0 || size() == 0) {
-		return ret;
+		return -1;
 	}
 
 	for (int i = p_from; i < size(); i++) {
 		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
-			ret = i;
-			break;
+			return i;
 		}
 	}
-
-	return ret;
+	return -1;
 }
 
 int Array::rfind(const Variant &p_value, int p_from) const {

@@ -341,20 +341,16 @@ Error CowData<T>::resize(int p_size) {
 
 template <class T>
 int CowData<T>::find(const T &p_val, int p_from) const {
-	int ret = -1;
-
 	if (p_from < 0 || size() == 0) {
-		return ret;
+		return -1;
 	}
 
 	for (int i = p_from; i < size(); i++) {
 		if (get(i) == p_val) {
-			ret = i;
-			break;
+			return i;
 		}
 	}
-
-	return ret;
+	return -1;
 }
 
 template <class T>
