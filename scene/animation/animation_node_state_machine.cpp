@@ -31,6 +31,8 @@
 #include "animation_node_state_machine.h"
 #include "scene/main/window.h"
 
+#include "scene/animation/animation_blend_tree.h"
+
 /////////////////////////////////////////////////
 
 void AnimationNodeStateMachineTransition::set_switch_mode(SwitchMode p_mode) {
@@ -1039,16 +1041,14 @@ bool AnimationNodeStateMachinePlayback::_can_transition_to_next(AnimationTree *p
 	}
 
     // Prevent automatic transitioning looped animations
-    AnimationNode::State* state = p_state_machine->states[current].node->state;
-    if (state) {
-        AnimationPlayer *player = state->player;
-        Ref<Animation> anim = player->get_animation(player->get_current_animation());
-        if (anim.is_valid() && anim->get_loop_mode() != Animation::LOOP_NONE) {
-            return false;
-        }
+    bool is_looping = false;
+    Ref<AnimationNodeAnimation> node = p_state_machine->states[current].node;
+    if (node.is_valid()) {
+        Ref<Animation> anim = p_tree->get_animation(node->get_animation());
+        is_looping = anim.is_valid() && anim->get_loop_mode() != Animation::LOOP_NONE;
     }
 
-	if (current != p_state_machine->start_node && p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
+	if (current != p_state_machine->start_node && p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END && !is_looping) {
 		return pos_current >= len_current - p_next.xfade;
 	}
 	return true;

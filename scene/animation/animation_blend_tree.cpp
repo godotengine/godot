@@ -157,7 +157,7 @@ double AnimationNodeAnimation::_process(const AnimationMixer::PlaybackInfo p_pla
 				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation);
 			}
 			// Finished.
-			if (prev_time < anim_size && cur_time >= anim_size) {
+			if (prev_time < anim_size && cur_time >= anim_size && !is_looping) {
 				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_finished", animation);
 			}
 		}
