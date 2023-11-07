@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShapeTexture2D" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D texture of a regular shape.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_using_hdr" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code], if the texture is HDR texture. HDR is enabled automatically if [member fill_color] or [member border_color] is overbright.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased" default="false">
+			If enabled, the edges of the shape appear smoother.
+		</member>
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(0, 0, 0, 1)">
+		</member>
+		<member name="border_width" type="float" setter="set_border_width" getter="get_border_width" default="0.0">
+		</member>
+		<member name="fill_color" type="Color" setter="set_fill_color" getter="get_fill_color" default="Color(1, 1, 1, 1)">
+		</member>
+		<member name="height" type="int" setter="set_height" getter="get_height" default="64">
+		</member>
+		<member name="points" type="int" setter="set_points" getter="get_points" default="3">
+			Amount of points. For example [code]3[/code] for triangle, [code]4[/code] for rectangle, big number for circle.
+		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+		<member name="rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees" default="0.0">
+			Rotates the shape.
+		</member>
+		<member name="star_enabled" type="bool" setter="set_star_enabled" getter="is_star_enabled" default="false">
+			If enabled, adds additional vertices between each vertex for a star shape.
+		</member>
+		<member name="star_inset" type="float" setter="set_star_inset" getter="get_star_inset" default="0.5">
+			How far towards the center inner vertices go if [member star_enabled] is enabled. 0 = no insetting, 1 = center.
+		</member>
+		<member name="width" type="int" setter="set_width" getter="get_width" default="64">
+		</member>
+	</members>
+</class>
