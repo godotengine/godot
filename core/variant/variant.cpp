@@ -3495,50 +3495,6 @@ bool Variant::is_ref_counted() const {
 	return type == OBJECT && _get_obj().id.is_ref_counted();
 }
 
-Vector<Variant> varray() {
-	return Vector<Variant>();
-}
-
-Vector<Variant> varray(const Variant &p_arg1) {
-	Vector<Variant> v;
-	v.push_back(p_arg1);
-	return v;
-}
-
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2) {
-	Vector<Variant> v;
-	v.push_back(p_arg1);
-	v.push_back(p_arg2);
-	return v;
-}
-
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3) {
-	Vector<Variant> v;
-	v.push_back(p_arg1);
-	v.push_back(p_arg2);
-	v.push_back(p_arg3);
-	return v;
-}
-
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4) {
-	Vector<Variant> v;
-	v.push_back(p_arg1);
-	v.push_back(p_arg2);
-	v.push_back(p_arg3);
-	v.push_back(p_arg4);
-	return v;
-}
-
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5) {
-	Vector<Variant> v;
-	v.push_back(p_arg1);
-	v.push_back(p_arg2);
-	v.push_back(p_arg3);
-	v.push_back(p_arg4);
-	v.push_back(p_arg5);
-	return v;
-}
-
 void Variant::static_assign(const Variant &p_variant) {
 }
 
