@@ -34,6 +34,7 @@
 #include "editor/plugins/node_3d_editor_camera_manager.h"
 
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_camera_cursor.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
@@ -366,10 +367,6 @@ namespace TestNode3DEditorCameraManager {
 					SIGNAL_CHECK_TRUE("camera_mode_changed");
 					SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
 				}
-			}
-
-			SUBCASE("Undo / redo") {
-
 			}
 		}
 
