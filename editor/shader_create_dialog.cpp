@@ -647,6 +647,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	file_path->connect("text_changed", callable_mp(this, &ShaderCreateDialog::_path_changed));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
+	register_text_enter(file_path);
 	path_button = memnew(Button);
 	path_button->connect("pressed", callable_mp(this, &ShaderCreateDialog::_browse_path));
 	hb->add_child(path_button);
