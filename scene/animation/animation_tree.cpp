@@ -33,6 +33,7 @@
 
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
+#include "scene/animation/animation_player.h"
 #include "scene/scene_string_names.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -764,15 +765,16 @@ void AnimationTree::_setup_animation_player() {
 		return;
 	}
 
-	AnimationMixer *mixer = Object::cast_to<AnimationMixer>(get_node_or_null(animation_player));
-	if (mixer) {
-		if (!mixer->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			mixer->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+	// Using AnimationPlayer here is for compatibility. Changing to AnimationMixer needs extra work like error handling.
+	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node_or_null(animation_player));
+	if (player) {
+		if (!player->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
 		}
-		if (!mixer->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			mixer->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+		if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
 		}
-		Node *root = mixer->get_node_or_null(mixer->get_root_node());
+		Node *root = player->get_node_or_null(player->get_root_node());
 		if (root) {
 			set_root_node(get_path_to(root, true));
 		}
@@ -780,9 +782,9 @@ void AnimationTree::_setup_animation_player() {
 			remove_animation_library(animation_libraries[0].name);
 		}
 		List<StringName> list;
-		mixer->get_animation_library_list(&list);
+		player->get_animation_library_list(&list);
 		for (int i = 0; i < list.size(); i++) {
-			Ref<AnimationLibrary> lib = mixer->get_animation_library(list[i]);
+			Ref<AnimationLibrary> lib = player->get_animation_library(list[i]);
 			if (lib.is_valid()) {
 				add_animation_library(list[i], lib);
 			}
