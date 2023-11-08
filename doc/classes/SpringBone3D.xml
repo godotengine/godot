@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpringBone3D" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node to rotate bones of a [Skeleton3D] bone chain like a spring.
+	</brief_description>
+	<description>
+		SpringBone3D is used to make a [Skeleton3D] bone that automatically jiggles and wobbles when it moves. A typical scenario for spring bone is to make a character's hairs swing when moving.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_adjust_tail_position" qualifiers="virtual">
+			<return type="Vector3" />
+			<param index="0" name="tail_position" type="Vector3" />
+			<param index="1" name="previous_tail_position" type="Vector3" />
+			<param index="2" name="bone_position" type="Vector3" />
+			<param index="3" name="tail_length" type="float" />
+			<description>
+				Called after computing the next tail position.
+				Returns a new tail position [Vector3] space after custom adjustment, result and the position parameters are in world space.
+				You can override this function to implement collision check, or for other purposes.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="additional_force" type="Vector3" setter="set_additional_force" getter="get_additional_force" default="Vector3(0, 0, 0)">
+			Additional force used for spring effect, such as gravity.
+		</member>
+		<member name="bone" type="StringName" setter="set_bone" getter="get_bone" default="&amp;&quot;&quot;">
+			The name of the bone to apply spring effect.
+		</member>
+		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="0.05">
+			The spring bone's damping ratio. A value between [code]0[/code] and [code]1[/code]. When the two bones move into different directions, the system tries to align them to the spring axis again. A high [member damping] value forces the attached bones to align faster.
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			If [code]true[/code], enable spring effect.
+		</member>
+		<member name="influence" type="float" setter="set_influence" getter="get_influence" default="1.0">
+			Influence value for how much the spring effect is applied to the bone. The higher the value, the stronger the bone will deform.
+		</member>
+		<member name="skeleton_node" type="NodePath" setter="set_skeleton_node" getter="get_skeleton_node" default="NodePath(&quot;..&quot;)">
+			The skeleton node which spring effect will apply to.
+		</member>
+		<member name="stiffness" type="float" setter="set_stiffness" getter="get_stiffness" default="0.75">
+			The higher the value, the less the bone will deform. The joint applies an opposing force to the bone, the product of the stiffness multiplied by the size difference from its resting length.
+		</member>
+		<member name="stretchable" type="bool" setter="set_stretchable" getter="is_stretchable" default="false">
+			If [code]true[/code], bone tail position can be stretched, otherwise it will be calculated in fixed length.
+		</member>
+		<member name="tail_bone" type="StringName" setter="set_tail_bone" getter="get_tail_bone" default="&amp;&quot;&quot;">
+			The name of the child bone to treat as tail base. Leave empty will treat the spring bone position from parent in spring bone space as tail direction.
+		</member>
+		<member name="tail_position_offset" type="Vector3" setter="set_tail_position_offset" getter="get_tail_position_offset" default="Vector3(0, 0, 0)">
+			Local position offset from computed tail position relative to the spring bone, use this to fix tail position.
+		</member>
+	</members>
+</class>

@@ -267,6 +267,7 @@
 #include "scene/3d/skeleton_ik_3d.h"
 #include "scene/3d/soft_body_3d.h"
 #include "scene/3d/spring_arm_3d.h"
+#include "scene/3d/spring_bone_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
@@ -564,6 +565,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(SkeletonIK3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
+	GDREGISTER_CLASS(SpringBone3D);
 
 	GDREGISTER_CLASS(VehicleBody3D);
 	GDREGISTER_CLASS(VehicleWheel3D);
