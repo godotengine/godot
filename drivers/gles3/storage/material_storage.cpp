@@ -3047,7 +3047,40 @@ RS::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {
 
 SceneShaderData::SceneShaderData() {
 	valid = false;
+	uses_point_size = false;
+	uses_alpha = false;
+	uses_blend_alpha = false;
+	uses_alpha_clip = false;
+	uses_depth_prepass_alpha = false;
+	uses_discard = false;
+	uses_roughness = false;
+	uses_normal = false;
+	uses_particle_trails = false;
+	wireframe = false;
+	unshaded = false;
+	uses_vertex = false;
+	uses_position = false;
+	uses_sss = false;
+	uses_transmittance = false;
 	uses_screen_texture = false;
+	uses_screen_texture_mipmaps = false;
+	uses_depth_texture = false;
+	uses_normal_texture = false;
+	uses_time = false;
+	uses_vertex_time = false;
+	uses_fragment_time = false;
+	writes_modelview_or_projection = false;
+	uses_world_coordinates = false;
+	uses_tangent = false;
+	uses_color = false;
+	uses_uv = false;
+	uses_uv2 = false;
+	uses_custom0 = false;
+	uses_custom1 = false;
+	uses_custom2 = false;
+	uses_custom3 = false;
+	uses_bones = false;
+	uses_weights = false;
 }
 
 SceneShaderData::~SceneShaderData() {
