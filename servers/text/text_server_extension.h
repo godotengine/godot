@@ -444,6 +444,8 @@ public:
 
 	virtual bool shaped_text_is_ready(const RID &p_shaped) const override;
 	GDVIRTUAL1RC(bool, _shaped_text_is_ready, RID);
+	virtual bool shaped_text_is_using_system_font_fallback(const RID &p_shaped) const override;
+	GDVIRTUAL1RC(bool, _shaped_text_is_using_system_font_fallback, RID);
 
 	virtual const Glyph *shaped_text_get_glyphs(const RID &p_shaped) const override;
 	virtual const Glyph *shaped_text_sort_logical(const RID &p_shaped) override;

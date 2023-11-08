@@ -49,6 +49,10 @@ private:
 	Size2 minsize;
 	bool uppercase = false;
 
+	mutable bool cw_dirty = true;
+	mutable bool cw_sysfont = false;
+	mutable bool cw_invchar = false;
+
 	bool lines_dirty = true;
 	bool dirty = true;
 	bool font_dirty = true;

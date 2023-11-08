@@ -43,6 +43,10 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 ///                            TEXT                                         ///
 ///////////////////////////////////////////////////////////////////////////////
@@ -3015,6 +3019,8 @@ void TextEdit::_update_caches() {
 	text.set_font(theme_cache.font);
 	text.set_font_size(theme_cache.font_size);
 	text.invalidate_font();
+	cw_dirty = true;
+	update_configuration_warnings();
 	_update_placeholder();
 
 	/* Syntax highlighting. */
@@ -3030,6 +3036,35 @@ Size2 TextEdit::get_minimum_size() const {
 		size.y += content_height_cache;
 	}
 	return size;
+}
+
+PackedStringArray TextEdit::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
+#ifdef TOOLS_ENABLED
+	if (cw_dirty) {
+		cw_dirty = false;
+		cw_sysfont = false;
+		cw_invchar = false;
+		for (int i = 0; i < text.size(); i++) {
+			if (!cw_sysfont && TS->shaped_text_is_using_system_font_fallback(text.get_line_data(i)->get_rid())) {
+				cw_sysfont = true;
+			}
+			if (!cw_invchar && TS->shaped_text_has_invalid_chars(text.get_line_data(i)->get_rid())) {
+				cw_invchar = true;
+			}
+			if (cw_invchar && cw_sysfont) {
+				break;
+			}
+		}
+	}
+	if (EDITOR_GET("docks/scene_tree/system_font_fallback_warnings").operator bool() && cw_sysfont) {
+		warnings.push_back(RTR("One or more characters used in this TextEdit's text are using system font fallback. Used font might be missing or look differently on other platforms."));
+	}
+	if (cw_invchar && EDITOR_GET("docks/scene_tree/missing_glyphs_warnings").operator bool()) {
+		warnings.push_back(RTR("The current font does not support rendering one or more characters used in this TextEdit's text."));
+	}
+#endif
+	return warnings;
 }
 
 bool TextEdit::is_text_field() const {
@@ -3211,6 +3246,8 @@ void TextEdit::set_text_direction(Control::TextDirection p_text_direction) {
 		}
 		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		text.invalidate_font();
+		cw_dirty = true;
+		update_configuration_warnings();
 		_update_placeholder();
 
 		if (menu_dir) {
@@ -3238,6 +3275,8 @@ void TextEdit::set_language(const String &p_language) {
 		}
 		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		text.invalidate_all();
+		cw_dirty = true;
+		update_configuration_warnings();
 		_update_placeholder();
 		queue_redraw();
 	}
@@ -3254,6 +3293,8 @@ void TextEdit::set_structured_text_bidi_override(TextServer::StructuredTextParse
 			text.set(i, text[i], structured_text_parser(st_parser, st_args, text[i]));
 		}
 		queue_redraw();
+		cw_dirty = true;
+		update_configuration_warnings();
 	}
 }
 
@@ -3270,6 +3311,8 @@ void TextEdit::set_structured_text_bidi_override_options(Array p_args) {
 	for (int i = 0; i < text.size(); i++) {
 		text.set(i, text[i], structured_text_parser(st_parser, st_args, text[i]));
 	}
+	cw_dirty = true;
+	update_configuration_warnings();
 	queue_redraw();
 }
 
@@ -3374,6 +3417,8 @@ void TextEdit::_clear() {
 	deselect();
 
 	emit_signal(SNAME("lines_edited_from"), old_text_size, 0);
+	cw_dirty = true;
+	update_configuration_warnings();
 }
 
 void TextEdit::set_text(const String &p_text) {
@@ -5980,6 +6025,8 @@ void TextEdit::set_draw_control_chars(bool p_enabled) {
 		}
 		text.set_draw_control_chars(draw_control_chars);
 		text.invalidate_font();
+		cw_dirty = true;
+		update_configuration_warnings();
 		_update_placeholder();
 		queue_redraw();
 	}
@@ -7817,6 +7864,8 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 		text_changed_dirty = true;
 	}
 	emit_signal(SNAME("lines_edited_from"), p_line, r_end_line);
+	cw_dirty = true;
+	update_configuration_warnings();
 }
 
 String TextEdit::_base_get_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const {
@@ -7863,6 +7912,8 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 		text_changed_dirty = true;
 	}
 	emit_signal(SNAME("lines_edited_from"), p_to_line, p_from_line);
+	cw_dirty = true;
+	update_configuration_warnings();
 }
 
 TextEdit::TextEdit(const String &p_placeholder) {

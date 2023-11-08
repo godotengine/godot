@@ -141,6 +141,10 @@ private:
 	bool drag_action = false;
 	bool drag_caret_force_displayed = false;
 
+	mutable bool cw_dirty = true;
+	mutable bool cw_sysfont = false;
+	mutable bool cw_invchar = false;
+
 	Ref<Texture2D> right_icon;
 	bool flat = false;
 

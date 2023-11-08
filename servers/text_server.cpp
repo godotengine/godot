@@ -418,6 +418,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_shape", "shaped"), &TextServer::shaped_text_shape);
 	ClassDB::bind_method(D_METHOD("shaped_text_is_ready", "shaped"), &TextServer::shaped_text_is_ready);
 	ClassDB::bind_method(D_METHOD("shaped_text_has_visible_chars", "shaped"), &TextServer::shaped_text_has_visible_chars);
+	ClassDB::bind_method(D_METHOD("shaped_text_has_invalid_chars", "shaped"), &TextServer::shaped_text_has_invalid_chars);
+	ClassDB::bind_method(D_METHOD("shaped_text_is_using_system_font_fallback", "shaped"), &TextServer::shaped_text_is_using_system_font_fallback);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_glyphs", "shaped"), &TextServer::_shaped_text_get_glyphs_wrapper);
 	ClassDB::bind_method(D_METHOD("shaped_text_sort_logical", "shaped"), &TextServer::_shaped_text_sort_logical_wrapper);
@@ -716,6 +718,21 @@ bool TextServer::shaped_text_has_visible_chars(const RID &p_shaped) const {
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 	for (int i = 0; i < v_size; i++) {
 		if (glyphs[i].index != 0 && (glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool TextServer::shaped_text_has_invalid_chars(const RID &p_shaped) const {
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	if (v_size == 0) {
+		return false;
+	}
+
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+	for (int i = 0; i < v_size; i++) {
+		if (glyphs[i].font_rid.is_null() && (glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL) {
 			return true;
 		}
 	}

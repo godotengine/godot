@@ -489,6 +489,7 @@ class TextServerAdvanced : public TextServerExtension {
 		bool justification_ops_valid = false; // Virtual elongation glyphs are added to the string.
 		bool sort_valid = false;
 		bool text_trimmed = false;
+		bool use_sysfb = false;
 
 		bool preserve_invalid = true; // Draw hex code box instead of missing characters.
 		bool preserve_control = false; // Draw control characters.
@@ -937,6 +938,7 @@ public:
 	MODBIND3(shaped_text_overrun_trim_to_width, const RID &, double, BitField<TextServer::TextOverrunFlag>);
 
 	MODBIND1RC(bool, shaped_text_is_ready, const RID &);
+	MODBIND1RC(bool, shaped_text_is_using_system_font_fallback, const RID &);
 
 	MODBIND1RC(const Glyph *, shaped_text_get_glyphs, const RID &);
 	MODBIND1R(const Glyph *, shaped_text_sort_logical, const RID &);

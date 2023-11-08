@@ -459,6 +459,8 @@ public:
 
 	virtual bool shaped_text_is_ready(const RID &p_shaped) const = 0;
 	bool shaped_text_has_visible_chars(const RID &p_shaped) const;
+	bool shaped_text_has_invalid_chars(const RID &p_shaped) const;
+	virtual bool shaped_text_is_using_system_font_fallback(const RID &p_shaped) const = 0;
 
 	virtual const Glyph *shaped_text_get_glyphs(const RID &p_shaped) const = 0;
 	TypedArray<Dictionary> _shaped_text_get_glyphs_wrapper(const RID &p_shaped) const;

@@ -48,6 +48,10 @@
 #include "modules/regex/regex.h"
 #endif
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 RichTextLabel::ItemCustomFX::ItemCustomFX() {
 	type = ITEM_CUSTOMFX;
 	char_fx_transform.instantiate();
@@ -2956,6 +2960,7 @@ bool RichTextLabel::_validate_line_caches() {
 		}
 		return true;
 	}
+	cw_dirty = true;
 	validating.store(false);
 	stop_thread.store(false);
 	if (threaded) {
@@ -6171,6 +6176,45 @@ int RichTextLabel::get_total_glyph_count() const {
 	}
 
 	return tg;
+}
+
+PackedStringArray RichTextLabel::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
+#ifdef TOOLS_ENABLED
+	if (EDITOR_GET("docks/scene_tree/system_font_fallback_warnings").operator bool() || EDITOR_GET("docks/scene_tree/missing_glyphs_warnings").operator bool()) {
+		if (cw_dirty) {
+			cw_dirty = false;
+			cw_sysfont = false;
+			cw_invchar = false;
+			Item *it = main;
+			while (it) {
+				if (it->type == ITEM_FRAME) {
+					ItemFrame *f = static_cast<ItemFrame *>(it);
+					for (int i = 0; i < (int)f->lines.size(); i++) {
+						MutexLock lock(f->lines[i].text_buf->get_mutex());
+						if (!cw_sysfont && TS->shaped_text_is_using_system_font_fallback(f->lines[i].text_buf->get_rid())) {
+							cw_sysfont = true;
+						}
+						if (!cw_invchar && TS->shaped_text_has_invalid_chars(f->lines[i].text_buf->get_rid())) {
+							cw_invchar = true;
+						}
+					}
+				}
+				if (cw_invchar && cw_sysfont) {
+					break;
+				}
+				it = _get_next_item(it, true);
+			}
+		}
+		if (EDITOR_GET("docks/scene_tree/system_font_fallback_warnings").operator bool() && cw_sysfont) {
+			warnings.push_back(RTR("One or more characters used in this RichTextLabel's text are using system font fallback. Used font might be missing or look differently on other platforms."));
+		}
+		if (EDITOR_GET("docks/scene_tree/missing_glyphs_warnings").operator bool() && cw_invchar) {
+			warnings.push_back(RTR("The current font does not support rendering one or more characters used in this RichTextLabel's text."));
+		}
+	}
+#endif
+	return warnings;
 }
 
 Size2 RichTextLabel::get_minimum_size() const {

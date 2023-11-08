@@ -34,6 +34,10 @@
 #include "scene/theme/theme_db.h"
 #include "servers/rendering_server.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 Size2 Button::get_minimum_size() const {
 	Ref<Texture2D> _icon = icon;
 	if (_icon.is_null() && has_theme_icon(SNAME("icon"))) {
@@ -41,6 +45,24 @@ Size2 Button::get_minimum_size() const {
 	}
 
 	return get_minimum_size_for_text_and_icon("", _icon);
+}
+
+PackedStringArray Button::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
+#ifdef TOOLS_ENABLED
+	if (cw_dirty) {
+		cw_dirty = false;
+		cw_sysfont = TS->shaped_text_is_using_system_font_fallback(text_buf->get_rid());
+		cw_invchar = TS->shaped_text_has_invalid_chars(text_buf->get_rid());
+	}
+	if (EDITOR_GET("docks/scene_tree/system_font_fallback_warnings").operator bool() && cw_sysfont) {
+		warnings.push_back(RTR("One or more characters used in this Label's text are using system font fallback. Used font might be missing or look differently on other platforms."));
+	}
+	if (EDITOR_GET("docks/scene_tree/missing_glyphs_warnings").operator bool() && cw_invchar) {
+		warnings.push_back(RTR("The current font does not support rendering one or more characters used in this Label's text."));
+	}
+#endif
+	return warnings;
 }
 
 void Button::_set_internal_margin(Side p_side, float p_value) {
@@ -439,6 +461,9 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
 	}
 	p_paragraph->add_string(p_text, font, font_size, language);
 	p_paragraph->set_text_overrun_behavior(overrun_behavior);
+
+	cw_dirty = true;
+	update_configuration_warnings();
 }
 
 void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {

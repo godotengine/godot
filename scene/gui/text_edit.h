@@ -264,6 +264,10 @@ private:
 	bool alt_start = false;
 	uint32_t alt_code = 0;
 
+	mutable bool cw_dirty = true;
+	mutable bool cw_sysfont = false;
+	mutable bool cw_invchar = false;
+
 	// Text properties.
 	String ime_text = "";
 	Point2 ime_selection;
@@ -685,6 +689,7 @@ public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	bool alt_input(const Ref<InputEvent> &p_gui_input);
 	virtual Size2 get_minimum_size() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 	virtual bool is_text_field() const override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 	virtual Variant get_drag_data(const Point2 &p_point) override;

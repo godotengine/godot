@@ -37,6 +37,10 @@
 #include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode == p_mode) {
 		return;
@@ -136,6 +140,9 @@ void Label::_shape() {
 		dirty = false;
 		font_dirty = false;
 		lines_dirty = true;
+
+		cw_dirty = true;
+		update_configuration_warnings();
 	}
 
 	if (lines_dirty) {
@@ -328,7 +335,18 @@ inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Col
 
 PackedStringArray Label::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+	if (cw_dirty) {
+		cw_dirty = false;
+		cw_sysfont = TS->shaped_text_is_using_system_font_fallback(text_rid);
+		cw_invchar = TS->shaped_text_has_invalid_chars(text_rid);
+	}
+	if (EDITOR_GET("docks/scene_tree/system_font_fallback_warnings").operator bool() && cw_sysfont) {
+		warnings.push_back(RTR("One or more characters used in this Label's text are using system font fallback. Used font might be missing or look differently on other platforms."));
+	}
+	if (EDITOR_GET("docks/scene_tree/missing_glyphs_warnings").operator bool() && cw_invchar) {
+		warnings.push_back(RTR("The current font does not support rendering one or more characters used in this Label's text."));
+	}
 	// FIXME: This is not ideal and the sizing model should be fixed,
 	// but for now we have to warn about this impossible to resolve combination.
 	// See GH-83546.
@@ -341,31 +359,7 @@ PackedStringArray Label::get_configuration_warnings() const {
 			warnings.push_back(RTR("Labels with autowrapping enabled must have a custom minimum size configured to work correctly inside a container."));
 		}
 	}
-
-	// Ensure that the font can render all of the required glyphs.
-	Ref<Font> font;
-	if (settings.is_valid()) {
-		font = settings->get_font();
-	}
-	if (font.is_null()) {
-		font = theme_cache.font;
-	}
-
-	if (font.is_valid()) {
-		if (dirty || font_dirty || lines_dirty) {
-			const_cast<Label *>(this)->_shape();
-		}
-
-		const Glyph *glyph = TS->shaped_text_get_glyphs(text_rid);
-		int64_t glyph_count = TS->shaped_text_get_glyph_count(text_rid);
-		for (int64_t i = 0; i < glyph_count; i++) {
-			if (glyph[i].font_rid == RID()) {
-				warnings.push_back(RTR("The current font does not support rendering one or more characters used in this Label's text."));
-				break;
-			}
-		}
-	}
-
+#endif
 	return warnings;
 }
 
@@ -383,7 +377,6 @@ void Label::_notification(int p_what) {
 			dirty = true;
 
 			queue_redraw();
-			update_configuration_warnings();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -768,7 +761,6 @@ void Label::set_text(const String &p_string) {
 	}
 	queue_redraw();
 	update_minimum_size();
-	update_configuration_warnings();
 }
 
 void Label::_invalidate() {
