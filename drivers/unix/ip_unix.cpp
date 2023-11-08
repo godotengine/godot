@@ -53,7 +53,9 @@
 #ifdef __FreeBSD__
 #include <sys/types.h>
 #endif
+#ifndef SWITCH_ENABLED
 #include <ifaddrs.h>
+#endif
 #endif
 #include <arpa/inet.h>
 #include <sys/socket.h>
