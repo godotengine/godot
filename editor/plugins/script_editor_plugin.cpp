@@ -1311,6 +1311,18 @@ void ScriptEditor::_menu_option(int p_option) {
 		switch (p_option) {
 			case FILE_SAVE: {
 				save_current_script();
+				{
+					// If both scene and script use same shortcut to save (most likely ctrl-s),
+					// save the current scene silently (omitting error dialogs if any).
+					Ref<Shortcut> save_shortcut = ED_GET_SHORTCUT("script_editor/save");
+					Ref<Shortcut> scene_save_shortcut = ED_GET_SHORTCUT("editor/save_scene");
+					if (save_shortcut.is_valid()) {
+						if (save_shortcut->is_match(scene_save_shortcut)) {
+							EditorNode::get_singleton()->save_scene_if_valid();
+						}
+					}
+				}
+
 			} break;
 			case FILE_SAVE_AS: {
 				if (trim_trailing_whitespace_on_save) {

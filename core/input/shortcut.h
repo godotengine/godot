@@ -51,6 +51,8 @@ public:
 	bool matches_event(const Ref<InputEvent> &p_event) const;
 	bool has_valid_event() const;
 
+	bool is_match(const Ref<Shortcut> &p_shortcut) const;
+
 	String get_as_text() const;
 
 	static bool is_event_array_equal(const Array &p_event_array1, const Array &p_event_array2);

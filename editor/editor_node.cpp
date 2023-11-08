@@ -1579,7 +1579,7 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 	}
 }
 
-void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
+void EditorNode::_save_scene_with_preview(String p_file, int p_idx, bool p_show_error_dialogs) {
 	EditorProgress save("save", TTR("Saving Scene"), 4);
 
 	if (editor_data.get_edited_scene_root() != nullptr) {
@@ -1656,7 +1656,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	}
 
 	save.step(TTR("Saving Scene"), 4);
-	_save_scene(p_file, p_idx);
+	_save_scene(p_file, p_idx, p_show_error_dialogs);
 
 	if (!singleton->cmdline_export_mode) {
 		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
@@ -1745,16 +1745,40 @@ static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Re
 	}
 }
 
-void EditorNode::_save_scene(String p_file, int idx) {
+void EditorNode::save_scene_if_valid() {
+	// Do not save if no editing was made.
+	if (!EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_current_edited_scene_history_id())) {
+		return;
+	}
+	// Do not save if not saved before.
+	Node *scene = editor_data.get_edited_scene_root();
+	if (!scene || scene->get_scene_file_path().is_empty()) {
+		return;
+	}
+
+	// Do not save if path gone.
+	if (!DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
+		return;
+	}
+
+	_save_scene(scene->get_scene_file_path(), -1, false);
+	save_editor_layout_delayed();
+}
+
+void EditorNode::_save_scene(String p_file, int idx, bool p_show_error_dialogs) {
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
 	if (!scene) {
-		show_accept(TTR("This operation can't be done without a tree root."), TTR("OK"));
+		if (p_show_error_dialogs) {
+			show_accept(TTR("This operation can't be done without a tree root."), TTR("OK"));
+		}
 		return;
 	}
 
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
-		show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
+		if (p_show_error_dialogs) {
+			show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
+		}
 		return;
 	}
 
@@ -1786,7 +1810,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	Error err = sdata->pack(scene);
 
 	if (err != OK) {
-		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("OK"));
+		if (p_show_error_dialogs) {
+			show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("OK"));
+		}
 		return;
 	}
 
@@ -1818,7 +1844,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		_update_title();
 		scene_tabs->update_scene_tabs();
 	} else {
-		_dialog_display_save_error(p_file, err);
+		if (p_show_error_dialogs) {
+			_dialog_display_save_error(p_file, err);
+		}
 	}
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);

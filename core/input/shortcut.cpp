@@ -86,6 +86,30 @@ String Shortcut::get_as_text() const {
 	return "None";
 }
 
+bool Shortcut::is_match(const Ref<Shortcut> &p_shortcut) const {
+	if (p_shortcut.is_null()) {
+		return false;
+	}
+
+	for (int i = 0; i < events.size(); i++) {
+		Ref<InputEvent> ie = events[i];
+		if (!ie.is_valid()) {
+			continue;
+		}
+		for (int j = 0; j < p_shortcut->events.size(); j++) {
+			Ref<InputEvent> ie_overlap = p_shortcut->events[i];
+			if (!ie_overlap.is_valid()) {
+				continue;
+			}
+
+			if (ie->is_match(ie_overlap)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 bool Shortcut::has_valid_event() const {
 	// Tests if there is ANY input event which is valid.
 	for (int i = 0; i < events.size(); i++) {

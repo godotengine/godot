@@ -581,7 +581,7 @@ private:
 	void _set_current_scene(int p_idx);
 	void _set_current_scene_nocheck(int p_idx);
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
-	void _save_scene(String p_file, int idx = -1);
+	void _save_scene(String p_file, int idx = -1, bool p_show_error_dialogs = true);
 	void _save_all_scenes();
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
@@ -622,7 +622,7 @@ private:
 	void _mark_unsaved_scenes();
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
-	void _save_scene_with_preview(String p_file, int p_idx = -1);
+	void _save_scene_with_preview(String p_file, int p_idx = -1, bool p_show_error_dialogs = true);
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
@@ -877,6 +877,8 @@ public:
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
 	Control *get_gui_base() { return gui_base; }
+
+	void save_scene_if_valid();
 
 	void save_scene_to_path(String p_file, bool p_with_preview = true) {
 		if (p_with_preview) {

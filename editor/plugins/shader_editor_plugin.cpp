@@ -413,11 +413,29 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 			if (editor && editor->get_trim_trailing_whitespace_on_save()) {
 				editor->trim_trailing_whitespace();
 			}
+
+			Ref<Resource> resource;
 			if (edited_shaders[index].shader.is_valid()) {
-				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader);
+				resource = edited_shaders[index].shader;
 			} else {
-				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader_inc);
+				resource = edited_shaders[index].shader_inc;
 			}
+
+			EditorNode::get_singleton()->save_resource(resource);
+
+			if (resource->get_path().is_resource_file()) {
+				// If resource file exists, this means that the shader will not trigger a save-as popup-up.
+				// If both scene and script use same shortcut to save (most likely ctrl-s),
+				// save the current scene silently (omitting error dialogs if any).
+				Ref<Shortcut> save_shortcut = ED_GET_SHORTCUT("shader_editor/save");
+				Ref<Shortcut> scene_save_shortcut = ED_GET_SHORTCUT("editor/save_scene");
+				if (save_shortcut.is_valid()) {
+					if (save_shortcut->is_match(scene_save_shortcut)) {
+						EditorNode::get_singleton()->save_scene_if_valid();
+					}
+				}
+			}
+
 			if (editor) {
 				editor->tag_saved_version();
 			}
