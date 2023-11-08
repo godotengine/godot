@@ -46,7 +46,7 @@ def get_opts():
 
 def get_doc_classes():
     return [
-        "EditorExportPlatformLinuxBSD",
+        "EditorExportPlatformSwitch",
     ]
 
 
@@ -56,6 +56,7 @@ def get_doc_path():
 
 def get_flags():
     return [
+        ("arch", "aarch64"),
         ("tools", False),
         ("builtin_enet", True),
         ("builtin_freetype", True),
@@ -83,7 +84,7 @@ def configure(env):
 
     ## Build type
 
-    dkp = os.environ.get("DEVKITPRO")
+    dkp = os.environ.get("DEVKITPRO", "/opt/devkitpro")
     env["ENV"]["DEVKITPRO"] = dkp
     updated_path = "{}/portlibs/switch/bin:{}/devkitA64/bin:".format(dkp, dkp) + os.environ["PATH"]
     env["ENV"]["PATH"] = updated_path

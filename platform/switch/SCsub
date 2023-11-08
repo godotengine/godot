@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+import version
+import os
+
+#Godot platform specifics
+
+Import("env")
+
+files = [
+    "godot_switch.cpp",
+    "os_switch.cpp",
+]
+
+program = env.add_program("#bin/godot", files)
+
+# Switch specifics
+devkitpro_path = os.environ.get("DEVKITPRO", "/opt/devkitpro")
+nacptool_path = devkitpro_path + "/tools/bin/nacptool"
+elf2nro_path = devkitpro_path + "/tools/bin/elf2nro"
+
+default_icon = "icon.png"
+nacp = "_default.nacp"
+romfs_path = "romfs"
+
+build_target = env["target"]
+nro_target =  "#bin/switch_" + env["target"] + ".nro"
+version_str = "{}.{}.{}-{}".format(version.major, version.minor, version.patch, version.status)
+
+# generate nacp with dummy info
+env.Command(nacp, None, nacptool_path + " --create 'Godot' 'Godot Switch Team' '" + version_str + "' $TARGET")
+
+# build nro (ref https://github.com/switchbrew/switch-tools/blob/master/src/elf2nro.c)
+env.Command(nro_target, program, elf2nro_path + " $SOURCE $TARGET --icon=" + default_icon + " --nacp=platform/switch/" + nacp + " --romfsdir=platform/switch/" + romfs_path)
+
+# make sure default nro is ready before build nro target
+env.Depends(target=nro_target, dependency=nacp)
+
+# ref : https://github.com/switchbrew/switch-tools
+# ref : https://switchbrew.org/wiki/Setting_up_Development_Environment
+
+# if someone needs this they can enable it themselves..
+# env.Command("#bin/switch_" + env['target'] + ".nso", prog, "/opt/devkitpro/tools/bin/elf2nso $SOURCE $TARGET")
