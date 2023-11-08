@@ -763,7 +763,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
 	_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, false);
 
-	_update_render_base_uniform_set(rb->get_samplers()); //may have changed due to the above (light buffer enlarged, as an example)
+	// May have changed due to the above (light buffer enlarged, as an example).
+	if (is_reflection_probe) {
+		_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), BASE_UNIFORM_SET_CACHE_DEFAULT);
+	} else {
+		_update_render_base_uniform_set(rb->get_samplers(), BASE_UNIFORM_SET_CACHE_VIEWPORT);
+	}
 
 	RD::get_singleton()->draw_command_end_label(); // Render Setup
 
@@ -902,7 +907,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		p_render_data->scene_data->directional_light_count = p_render_data->directional_light_count;
 
 		// Shadow pass can change the base uniform set samplers.
-		_update_render_base_uniform_set(rb->get_samplers());
+		if (is_reflection_probe) {
+			_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), BASE_UNIFORM_SET_CACHE_DEFAULT);
+		} else {
+			_update_render_base_uniform_set(rb->get_samplers(), BASE_UNIFORM_SET_CACHE_VIEWPORT);
+		}
 
 		_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, p_render_data->render_buffers.is_valid());
 
@@ -1264,7 +1273,7 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 void RenderForwardMobile::_render_shadow_begin() {
 	scene_state.shadow_passes.clear();
 	RD::get_singleton()->draw_command_begin_label("Shadow Setup");
-	_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
+	_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), BASE_UNIFORM_SET_CACHE_DEFAULT);
 
 	render_list[RENDER_LIST_SECONDARY].clear();
 }
@@ -1371,7 +1380,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
 
-	_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
+	_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), BASE_UNIFORM_SET_CACHE_DEFAULT);
 
 	RenderSceneDataRD scene_data;
 	scene_data.cam_projection = p_cam_projection;
@@ -1422,7 +1431,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 
 	RD::get_singleton()->draw_command_begin_label("Render UV2");
 
-	_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
+	_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), BASE_UNIFORM_SET_CACHE_DEFAULT);
 
 	RenderSceneDataRD scene_data;
 	scene_data.dual_paraboloid_side = 0;
@@ -1496,7 +1505,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 
 	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
 
-	_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
+	_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), BASE_UNIFORM_SET_CACHE_DEFAULT);
 
 	RenderSceneDataRD scene_data;
 	scene_data.cam_projection = p_cam_projection;
@@ -1534,23 +1543,23 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 }
 
 void RenderForwardMobile::base_uniforms_changed() {
-	if (!render_base_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
-		RD::get_singleton()->free(render_base_uniform_set);
+	for (int i = 0; i < BASE_UNIFORM_SET_CACHE_MAX; i++) {
+		if (!render_base_uniform_set_cache[i].is_null() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set_cache[i])) {
+			RD::get_singleton()->free(render_base_uniform_set_cache[i]);
+		}
+		render_base_uniform_set_cache[i] = RID();
 	}
-	render_base_uniform_set = RID();
 }
 
-void RenderForwardMobile::_update_render_base_uniform_set(const RendererRD::MaterialStorage::Samplers &p_samplers) {
+void RenderForwardMobile::_update_render_base_uniform_set(const RendererRD::MaterialStorage::Samplers &p_samplers, BaseUniformSetCache p_cache_index) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
-	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != light_storage->lightmap_array_get_version())) {
-		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
-			RD::get_singleton()->free(render_base_uniform_set);
+	if (render_base_uniform_set_cache[p_cache_index].is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set_cache[p_cache_index]) || (lightmap_texture_array_version_cache[p_cache_index] != light_storage->lightmap_array_get_version())) {
+		if (render_base_uniform_set_cache[p_cache_index].is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set_cache[p_cache_index])) {
+			RD::get_singleton()->free(render_base_uniform_set_cache[p_cache_index]);
 		}
 
-		// This is all loaded into set 0
-
-		lightmap_texture_array_version = light_storage->lightmap_array_get_version();
+		lightmap_texture_array_version_cache[p_cache_index] = light_storage->lightmap_array_get_version();
 
 		Vector<RD::Uniform> uniforms;
 
@@ -1699,8 +1708,9 @@ void RenderForwardMobile::_update_render_base_uniform_set(const RendererRD::Mate
 
 		uniforms.append_array(p_samplers.get_uniforms(SAMPLERS_BINDING_FIRST_INDEX));
 
-		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET);
+		render_base_uniform_set_cache[p_cache_index] = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET);
 	}
+	render_base_uniform_set = render_base_uniform_set_cache[p_cache_index];
 }
 
 RID RenderForwardMobile::_render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) {
