@@ -1291,7 +1291,13 @@ void Variant::zero() {
 			break;
 
 		default:
+			Type prev_type = type;
 			this->clear();
+			if (type != prev_type) {
+				// clear() changes type to NIL, so it needs to be restored.
+				Callable::CallError ce;
+				Variant::construct(prev_type, *this, nullptr, 0, ce);
+			}
 			break;
 	}
 }
