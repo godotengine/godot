@@ -1278,6 +1278,15 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 }
 
 void EditorNode::save_resource(const Ref<Resource> &p_resource) {
+	// If built-in resource, save the scene instead.
+	if (p_resource->is_built_in()) {
+		const String scene_path = p_resource->get_path().get_slice("::", 0);
+		if (!scene_path.is_empty()) {
+			save_scene_if_open(scene_path);
+			return;
+		}
+	}
+
 	// If the resource has been imported, ask the user to use a different path in order to save it.
 	String path = p_resource->get_path();
 	if (path.is_resource_file() && !FileAccess::exists(path + ".import")) {
