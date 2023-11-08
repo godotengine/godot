@@ -1410,10 +1410,11 @@ GDScript::UpdatableFuncPtrElement GDScript::_add_func_ptr_to_update(GDScriptFunc
 }
 
 void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement p_func_ptr_element) {
-	ERR_FAIL_NULL(p_func_ptr_element.element);
 	ERR_FAIL_NULL(p_func_ptr_element.mutex);
-	MutexLock lock(*p_func_ptr_element.mutex);
-	p_func_ptr_element.element->erase();
+	MutexLock lock_func_ptr_element(*p_func_ptr_element.mutex);
+	ERR_FAIL_NULL(p_func_ptr_element.element->get());
+	MutexLock lock_func_ptrs_to_update_thread_local(func_ptrs_to_update_thread_local.mutex);
+	func_ptrs_to_update_thread_local.ptrs.erase(p_func_ptr_element.element);
 }
 
 void GDScript::clear(ClearData *p_clear_data) {
