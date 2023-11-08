@@ -1243,6 +1243,12 @@ void TextEdit::_notification(int p_what) {
 						if (char_pos >= xmargin_beg) {
 							if (highlight_matching_braces_enabled) {
 								for (int c = 0; c < carets.size(); c++) {
+									// Brace mismatch highlighting shouldn't happen within comments.
+									String lineData = get_line(line);
+									if (lineData.begins_with("//") || lineData.begins_with("#")) {
+										continue;
+									}
+
 									if ((brace_matching[c].open_match_line == line && brace_matching[c].open_match_column == glyphs[j].start) ||
 											(get_caret_column(c) == glyphs[j].start && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index && (brace_matching[c].open_matching || brace_matching[c].open_mismatch))) {
 										if (brace_matching[c].open_mismatch) {
