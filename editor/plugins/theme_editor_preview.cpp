@@ -354,8 +354,8 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 
 	PopupMenu *test_submenu = memnew(PopupMenu);
 	test_menu_button->get_popup()->add_child(test_submenu);
-	test_submenu->set_name("submenu");
-	test_menu_button->get_popup()->add_submenu_item(TTR("Submenu"), "submenu");
+	test_submenu->set_name("SubMenu");
+	test_menu_button->get_popup()->add_submenu_item(TTR("Submenu"), "SubMenu");
 	test_submenu->add_item(TTR("Subitem 1"));
 	test_submenu->add_item(TTR("Subitem 2"));
 	first_vb->add_child(test_menu_button);
