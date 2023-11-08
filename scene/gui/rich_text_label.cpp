@@ -830,37 +830,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			prefix = segment + prefix;
 		}
 	}
-	if (!prefix.is_empty()) {
-		Ref<Font> font = theme_cache.normal_font;
-		int font_size = theme_cache.normal_font_size;
-
-		ItemFont *font_it = _find_font(l.from);
-		if (font_it) {
-			if (font_it->font.is_valid()) {
-				font = font_it->font;
-			}
-			if (font_it->font_size > 0) {
-				font_size = font_it->font_size;
-			}
-		}
-		ItemFontSize *font_size_it = _find_font_size(l.from);
-		if (font_size_it && font_size_it->font_size > 0) {
-			font_size = font_size_it->font_size;
-		}
-		if (rtl) {
-			float offx = 0.0f;
-			if (!lrtl && p_frame == main) { // Skip Scrollbar.
-				offx -= scroll_w;
-			}
-			font->draw_string(ci, p_ofs + Vector2(p_width - l.offset.x + offx, l.text_buf->get_line_ascent(0)), " " + prefix, HORIZONTAL_ALIGNMENT_LEFT, l.offset.x, font_size, _find_color(l.from, p_base_color));
-		} else {
-			float offx = 0.0f;
-			if (lrtl && p_frame == main) { // Skip Scrollbar.
-				offx += scroll_w;
-			}
-			font->draw_string(ci, p_ofs + Vector2(offx, l.text_buf->get_line_ascent(0)), prefix + " ", HORIZONTAL_ALIGNMENT_RIGHT, l.offset.x, font_size, _find_color(l.from, p_base_color));
-		}
-	}
 
 	// Draw dropcap.
 	int dc_lines = l.text_buf->get_dropcap_lines();
@@ -922,6 +891,30 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					off.x += width - length;
 				}
 			} break;
+		}
+
+		if (!prefix.is_empty() && line == 0) {
+			Ref<Font> font = theme_cache.normal_font;
+			int font_size = theme_cache.normal_font_size;
+
+			ItemFont *font_it = _find_font(l.from);
+			if (font_it) {
+				if (font_it->font.is_valid()) {
+					font = font_it->font;
+				}
+				if (font_it->font_size > 0) {
+					font_size = font_it->font_size;
+				}
+			}
+			ItemFontSize *font_size_it = _find_font_size(l.from);
+			if (font_size_it && font_size_it->font_size > 0) {
+				font_size = font_size_it->font_size;
+			}
+			if (rtl) {
+				font->draw_string(ci, p_ofs + Vector2(off.x + length, l.text_buf->get_line_ascent(0)), " " + prefix, HORIZONTAL_ALIGNMENT_LEFT, l.offset.x, font_size, _find_color(l.from, p_base_color));
+			} else {
+				font->draw_string(ci, p_ofs + Vector2(off.x - l.offset.x, l.text_buf->get_line_ascent(0)), prefix + " ", HORIZONTAL_ALIGNMENT_RIGHT, l.offset.x, font_size, _find_color(l.from, p_base_color));
+			}
 		}
 
 		if (line <= dc_lines) {
