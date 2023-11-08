@@ -226,10 +226,32 @@ class CSharpInstance : public ScriptInstance {
 	friend class CSharpLanguage;
 
 	Object *owner = nullptr;
+
+	/**
+	 * If true, the C# class derives from RefCounted.
+	 */
 	bool base_ref_counted = false;
+
+	/**
+	 * If true, the C# class is RefCounted and the reference count has reached 0.
+	 */
 	bool ref_dying = false;
+
+	/**
+	 * If the C# class is RefCounted, we must increment the reference count when the instance is created
+	 * so it counts as one of the references, this also means we have to decrement the reference count
+	 * to allow the object to be destroyed.
+	 * This flag keeps track of whether the reference count has already been incremented for this purpose.
+	 * If true, the C# class is RefCounted and has already incremented the reference count.
+	 * If false, the C# class is not RefCounted, or the reference count has not been incremented yet,
+	 * or it's about to be destroyed and the reference count has already been decremented.
+	 * See _reference_owner_unsafe() and _unreference_owner_unsafe()
+	 */
 	bool unsafe_referenced = false;
-	bool predelete_notified = false;
+
+	/**
+	 * If true, the CSharpInstance destructor has been called so the C# instance is in the process of being destroyed.
+	 */
 	bool destructing_script_instance = false;
 
 	Ref<CSharpScript> script;
