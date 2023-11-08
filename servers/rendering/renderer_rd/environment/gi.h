@@ -569,7 +569,18 @@ public:
 
 			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
 			RID sdf_tex;
+			RID jump_flood_tex; // used for computing jump floods
+			RID light_data;
 			RID light_tex;
+
+			float cell_size;
+			Vector3i position;
+
+			static const Vector3i DIRTY_ALL;
+			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
+
+#if 0
+
 			RID light_aniso_0_tex;
 			RID light_aniso_1_tex;
 
@@ -590,12 +601,6 @@ public:
 			RID lightprobe_history_tex;
 			RID lightprobe_average_tex;
 
-			float cell_size;
-			Vector3i position;
-
-			static const Vector3i DIRTY_ALL;
-			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
-
 			RID sdf_store_uniform_set;
 			RID sdf_direct_light_static_uniform_set;
 			RID sdf_direct_light_dynamic_uniform_set;
@@ -604,14 +609,30 @@ public:
 			RID integrate_uniform_set;
 			RID lights_buffer;
 
-			float baked_exposure_normalization = 1.0;
+
 
 			bool all_dynamic_lights_dirty = true;
+#endif
+			float baked_exposure_normalization = 1.0;
 		};
 
 		// access to our containers
 		GI *gi = nullptr;
 
+		RID render_albedo; //x6, anisotropic
+		RID render_solid_bits[2];
+		RID render_aniso_normals;
+		RID render_emission;
+		RID render_emission_aniso;
+
+		RID compute_sdf_jumpflood[2];
+
+		LocalVector<Cascade> cascades;
+
+		float solid_cell_ratio = 0;
+		uint32_t solid_cell_count = 0;
+
+#if 0
 		// used for rendering (voxelization)
 		RID render_albedo;
 		RID render_emission;
@@ -631,9 +652,7 @@ public:
 		int upscale_jfa_uniform_set_index;
 		RID occlusion_uniform_set;
 
-		uint32_t cascade_size = 128;
 
-		LocalVector<Cascade> cascades;
 
 		RID lightprobe_texture;
 		RID lightprobe_data;
@@ -645,16 +664,15 @@ public:
 		RID lightprobe_average_scroll; //used for scrolling lightprobes
 
 		uint32_t history_size = 0;
-		float solid_cell_ratio = 0;
-		uint32_t solid_cell_count = 0;
-
+#endif
 		int num_cascades = 6;
 		float min_cell_size = 0;
 		uint32_t probe_axis_count = 0; //amount of probes per axis, this is an odd number because it encloses endpoints
-
+#if 0
 		RID debug_uniform_set[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID debug_probes_scene_data_ubo;
 		RID debug_probes_uniform_set;
+#endif
 		RID cascades_ubo;
 
 		bool uses_occlusion = false;
@@ -671,8 +689,9 @@ public:
 		uint32_t render_pass = 0;
 
 		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
+#if 0
 		RID integrate_sky_uniform_set;
-
+#endif
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
 		virtual void free_data() override;
 		~SDFGI();

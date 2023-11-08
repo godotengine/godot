@@ -410,8 +410,8 @@ static RID create_clear_texture(const RD::TextureFormat &p_format, const String 
 }
 
 void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi) {
-	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	//RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	//RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	gi = p_gi;
 	num_cascades = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_cascades(p_env);
@@ -424,48 +424,58 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	cascades.resize(num_cascades);
 	probe_axis_count = SDFGI::PROBE_DIVISOR + 1;
 	solid_cell_ratio = gi->sdfgi_solid_cell_ratio;
-	solid_cell_count = uint32_t(float(cascade_size * cascade_size * cascade_size) * solid_cell_ratio);
+	solid_cell_count = uint32_t(float(SDFGI::CASCADE_SIZE * SDFGI::CASCADE_SIZE * SDFGI::CASCADE_SIZE) * solid_cell_ratio);
 
 	float base_cell_size = min_cell_size;
 
 	RD::TextureFormat tf_sdf;
-	tf_sdf.format = RD::DATA_FORMAT_R8_UNORM;
-	tf_sdf.width = cascade_size; // Always 64x64
-	tf_sdf.height = cascade_size;
-	tf_sdf.depth = cascade_size;
+	tf_sdf.format = RD::DATA_FORMAT_R16_UNORM;
+	tf_sdf.width = CASCADE_SIZE;
+	tf_sdf.height = CASCADE_SIZE;
+	tf_sdf.depth = CASCADE_SIZE;
 	tf_sdf.texture_type = RD::TEXTURE_TYPE_3D;
 	tf_sdf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
 	{
-		RD::TextureFormat tf_render = tf_sdf;
-		tf_render.format = RD::DATA_FORMAT_R16_UINT;
-		render_albedo = create_clear_texture(tf_render, "SDFGI Render Albedo");
-
-		tf_render.format = RD::DATA_FORMAT_R32_UINT;
-		render_emission = create_clear_texture(tf_render, "SDFGI Render Emission");
-		render_emission_aniso = create_clear_texture(tf_render, "SDFGI Render Emission Aniso");
-
-		tf_render.format = RD::DATA_FORMAT_R8_UNORM; //at least its easy to visualize
-
-		for (int i = 0; i < 8; i++) {
-			render_occlusion[i] = create_clear_texture(tf_render, String("SDFGI Render Occlusion ") + itos(i));
+		{ // Albedo texture, this is anisotropic (x6).
+			RD::TextureFormat tf_render_albedo = tf_sdf;
+			tf_render_albedo.width /= 2; // Albedo is half size..
+			tf_render_albedo.height /= 2;
+			tf_render_albedo.depth /= 2;
+			tf_render_albedo.depth *= 6; // ..but anisotropic.
+			tf_render_albedo.format = RD::DATA_FORMAT_R16_UINT;
+			render_albedo = create_clear_texture(tf_render_albedo, "SDFGI Render Albedo");
 		}
 
-		tf_render.format = RD::DATA_FORMAT_R32_UINT;
-		render_geom_facing = create_clear_texture(tf_render, "SDFGI Render Geometry Facing");
+		{ // Emission texture, this is anisotropic but in a different way (main light, then x6 aniso weight) to save space.
+			RD::TextureFormat tf_render_emission = tf_sdf;
+			tf_render_emission.format = RD::DATA_FORMAT_R32_UINT;
+			render_emission = create_clear_texture(tf_render_emission, "SDFGI Render Emission");
+			render_emission_aniso = create_clear_texture(tf_render_emission, "SDFGI Render Emission Aniso");
+		}
+		{ // Solid bits
+			RD::TextureFormat tf_render_solid_bits = tf_sdf;
+			tf_render_solid_bits.format = RD::DATA_FORMAT_R32_UINT;
 
-		tf_render.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
-		render_sdf[0] = create_clear_texture(tf_render, "SDFGI Render SDF 0");
-		render_sdf[1] = create_clear_texture(tf_render, "SDFGI Render SDF 1");
+			for (int i = 0; i < 2; i++) {
+				render_solid_bits[i] = create_clear_texture(tf_render_solid_bits, String("SDFGI Render Solid Bits ") + itos(i));
+			}
+			render_aniso_normals = create_clear_texture(tf_render_solid_bits, String("SDFGI Render Solid Bits "));
+		}
 
-		tf_render.width /= 2;
-		tf_render.height /= 2;
-		tf_render.depth /= 2;
-
-		render_sdf_half[0] = create_clear_texture(tf_render, "SDFGI Render SDF Half 0");
-		render_sdf_half[1] = create_clear_texture(tf_render, "SDFGI Render SDF Half 1");
+		{
+			// Used for SDF jumpflood (later will be set to cascade for SDF itself).
+			RD::TextureFormat tf_compute_sdf_jumpflood = tf_sdf;
+			tf_compute_sdf_jumpflood.format = RD::DATA_FORMAT_R32_UINT;
+			for (int i = 0; i < 2; i++) {
+				compute_sdf_jumpflood[i] = create_clear_texture(tf_compute_sdf_jumpflood, String("SDFGI Compute SDF JumpFlood ") + itos(i));
+			}
+		}
 	}
 
+	cascades_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES);
+
+#if 0
 	RD::TextureFormat tf_occlusion = tf_sdf;
 	tf_occlusion.format = RD::DATA_FORMAT_R16_UINT;
 	tf_occlusion.shareable_formats.push_back(RD::DATA_FORMAT_R16_UINT);
@@ -483,7 +493,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	RD::TextureFormat tf_aniso1 = tf_sdf;
 	tf_aniso1.format = RD::DATA_FORMAT_R8G8_UNORM;
 
-	int passes = nearest_shift(cascade_size) - 1;
+	int passes = nearest_shift(CASCADE_SIZE) - 1;
 
 	//store lightprobe SH
 	RD::TextureFormat tf_probes;
@@ -533,7 +543,6 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		ambient_texture = create_clear_texture(tf_ambient, "SDFGI Ambient Texture");
 	}
 
-	cascades_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES);
 
 	occlusion_data = create_clear_texture(tf_occlusion, "SDFGI Occlusion Data");
 	{
@@ -541,16 +550,16 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		tv.format_override = RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16;
 		occlusion_texture = RD::get_singleton()->texture_create_shared(tv, occlusion_data);
 	}
-
+#endif
 	for (SDFGI::Cascade &cascade : cascades) {
 		/* 3D Textures */
 
 		cascade.sdf_tex = create_clear_texture(tf_sdf, "SDFGI Cascade SDF Texture");
 
-		cascade.light_data = create_clear_texture(tf_light, "SDFGI Cascade Light Data");
+		RD::TextureFormat tf_light = tf_sdf;
+		tf_light.format = RD::DATA_FORMAT_R32_UINT;
 
-		cascade.light_aniso_0_tex = create_clear_texture(tf_aniso0, "SDFGI Cascade Light Aniso 0 Texture");
-		cascade.light_aniso_1_tex = create_clear_texture(tf_aniso1, "SDFGI Cascade Light Aniso 1 Texture");
+		cascade.light_data = create_clear_texture(tf_light, "SDFGI Cascade Light Data");
 
 		{
 			RD::TextureView tv;
@@ -561,7 +570,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		cascade.cell_size = base_cell_size;
 		Vector3 world_position = p_world_position;
 		world_position.y *= y_mult;
-		int32_t probe_cells = cascade_size / SDFGI::PROBE_DIVISOR;
+		int32_t probe_cells = CASCADE_SIZE / SDFGI::PROBE_DIVISOR;
 		Vector3 probe_size = Vector3(1, 1, 1) * cascade.cell_size * probe_cells;
 		Vector3i probe_pos = Vector3i((world_position / probe_size + Vector3(0.5, 0.5, 0.5)).floor());
 		cascade.position = probe_pos * probe_cells;
@@ -569,7 +578,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
 
 		base_cell_size *= 2.0;
-
+#if 0
 		/* Probe History */
 
 		cascade.lightprobe_history_tex = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
@@ -732,10 +741,12 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 
 			cascade.scroll_occlusion_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_SCROLL_OCCLUSION), 0);
 		}
+#endif
 	}
-
+#if 0
 	//direct light
 	for (SDFGI::Cascade &cascade : cascades) {
+
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
@@ -823,8 +834,11 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 
 		cascade.sdf_direct_light_static_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_STATIC), 0);
 		cascade.sdf_direct_light_dynamic_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_DYNAMIC), 0);
-	}
 
+	}
+#endif
+
+#if 0
 	//preprocess initialize uniform set
 	{
 		Vector<RD::Uniform> uniforms;
@@ -1111,7 +1125,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 
 		cascades[i].integrate_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.integrate.version_get_shader(gi->sdfgi_shader.integrate_shader, 0), 0);
 	}
-
+#endif
 	bounce_feedback = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_bounce_feedback(p_env);
 	energy = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_energy(p_env);
 	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_normal_bias(p_env);
@@ -1119,11 +1133,350 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_read_sky_light(p_env);
 }
 
+void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization) {
+	//print_line("rendering region " + itos(p_region));
+	ERR_FAIL_COND(p_render_buffers.is_null()); // we wouldn't be here if this failed but...
+	AABB bounds;
+	Vector3i from;
+	Vector3i size;
+
+	int cascade_prev = get_pending_region_data(p_region - 1, from, size, bounds);
+	int cascade_next = get_pending_region_data(p_region + 1, from, size, bounds);
+	int cascade = get_pending_region_data(p_region, from, size, bounds);
+	ERR_FAIL_COND(cascade < 0);
+
+	if (cascade_prev != cascade) {
+		//initialize render
+		//@TODO: Add a clear region to RenderingDevice to optimize this part
+		RD::get_singleton()->texture_clear(render_albedo, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(render_emission, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(render_emission_aniso, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(render_solid_bits[0], Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(render_solid_bits[1], Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(render_aniso_normals, Color(0, 0, 0, 0), 0, 1, 0, 1);
+	}
+
+	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(cascades[cascade].cell_size));
+	RendererSceneRenderRD::get_singleton()->_render_sdfgi(p_render_buffers, from, size, bounds, p_instances, render_albedo, render_emission, render_emission_aniso, render_solid_bits[0], render_solid_bits[1], render_aniso_normals, p_exposure_normalization);
+
+	if (cascade_next != cascade) {
+#if 0
+		RD::get_singleton()->draw_command_begin_label("SDFGI Pre-Process Cascade");
+
+		RENDER_TIMESTAMP("> SDFGI Update SDF");
+		//done rendering! must update SDF
+		//clear dispatch indirect data
+
+		SDFGIShader::PreprocessPushConstant push_constant;
+		memset(&push_constant, 0, sizeof(SDFGIShader::PreprocessPushConstant));
+
+		RENDER_TIMESTAMP("SDFGI Scroll SDF");
+
+		//scroll
+		if (cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
+			//for scroll
+			Vector3i dirty = cascades[cascade].dirty_regions;
+			push_constant.scroll[0] = dirty.x;
+			push_constant.scroll[1] = dirty.y;
+			push_constant.scroll[2] = dirty.z;
+		} else {
+			//for no scroll
+			push_constant.scroll[0] = 0;
+			push_constant.scroll[1] = 0;
+			push_constant.scroll[2] = 0;
+		}
+
+		cascades[cascade].all_dynamic_lights_dirty = true;
+		cascades[cascade].baked_exposure_normalization = p_exposure_normalization;
+
+		push_constant.grid_size = CASCADE_SIZE;
+		push_constant.cascade = cascade;
+
+		if (cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
+			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+			//must pre scroll existing data because not all is dirty
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_SCROLL]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].scroll_uniform_set, 0);
+
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascades[cascade].solid_cell_dispatch_buffer, 0);
+			// no barrier do all together
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_SCROLL_OCCLUSION]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].scroll_occlusion_uniform_set, 0);
+
+			Vector3i dirty = cascades[cascade].dirty_regions;
+			Vector3i groups;
+			groups.x = CASCADE_SIZE - ABS(dirty.x);
+			groups.y = CASCADE_SIZE - ABS(dirty.y);
+			groups.z = CASCADE_SIZE - ABS(dirty.z);
+
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, groups.x, groups.y, groups.z);
+
+			//no barrier, continue together
+
+			{
+				//scroll probes and their history also
+
+				SDFGIShader::IntegratePushConstant ipush_constant;
+				ipush_constant.grid_size[1] = CASCADE_SIZE;
+				ipush_constant.grid_size[2] = CASCADE_SIZE;
+				ipush_constant.grid_size[0] = CASCADE_SIZE;
+				ipush_constant.max_cascades = cascades.size();
+				ipush_constant.probe_axis_size = probe_axis_count;
+				ipush_constant.history_index = 0;
+				ipush_constant.history_size = history_size;
+				ipush_constant.ray_count = 0;
+				ipush_constant.ray_bias = 0;
+				ipush_constant.sky_mode = 0;
+				ipush_constant.sky_energy = 0;
+				ipush_constant.sky_color[0] = 0;
+				ipush_constant.sky_color[1] = 0;
+				ipush_constant.sky_color[2] = 0;
+				ipush_constant.y_mult = y_mult;
+				ipush_constant.store_ambient_texture = false;
+
+				ipush_constant.image_size[0] = probe_axis_count * probe_axis_count;
+				ipush_constant.image_size[1] = probe_axis_count;
+
+				int32_t probe_divisor = CASCADE_SIZE / SDFGI::PROBE_DIVISOR;
+				ipush_constant.cascade = cascade;
+				ipush_constant.world_offset[0] = cascades[cascade].position.x / probe_divisor;
+				ipush_constant.world_offset[1] = cascades[cascade].position.y / probe_divisor;
+				ipush_constant.world_offset[2] = cascades[cascade].position.z / probe_divisor;
+
+				ipush_constant.scroll[0] = dirty.x / probe_divisor;
+				ipush_constant.scroll[1] = dirty.y / probe_divisor;
+				ipush_constant.scroll[2] = dirty.z / probe_divisor;
+
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_SCROLL]);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].integrate_uniform_set, 0);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDFGIShader::IntegratePushConstant));
+				RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count, probe_axis_count, 1);
+
+				RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_SCROLL_STORE]);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].integrate_uniform_set, 0);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDFGIShader::IntegratePushConstant));
+				RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count, probe_axis_count, 1);
+
+				RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+				if (bounce_feedback > 0.0) {
+					//multibounce requires this to be stored so direct light can read from it
+
+					RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_STORE]);
+
+					//convert to octahedral to store
+					ipush_constant.image_size[0] *= SDFGI::LIGHTPROBE_OCT_SIZE;
+					ipush_constant.image_size[1] *= SDFGI::LIGHTPROBE_OCT_SIZE;
+
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].integrate_uniform_set, 0);
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDFGIShader::IntegratePushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, 1);
+				}
+			}
+
+			//ok finally barrier
+			RD::get_singleton()->compute_list_end();
+		}
+
+		//clear dispatch indirect data
+		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
+		RD::get_singleton()->buffer_update(cascades[cascade].solid_cell_dispatch_buffer, 0, sizeof(uint32_t) * 4, dispatch_indirct_data);
+
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+		bool half_size = true; //much faster, very little difference
+		static const int optimized_jf_group_size = 8;
+
+		if (half_size) {
+			push_constant.grid_size >>= 1;
+
+			uint32_t cascade_half_size = CASCADE_SIZE >> 1;
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE_HALF]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_initialize_half_uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+			//must start with regular jumpflood
+
+			push_constant.half_size = true;
+			{
+				RENDER_TIMESTAMP("SDFGI Jump Flood (Half-Size)");
+
+				uint32_t s = cascade_half_size;
+
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD]);
+
+				int jf_us = 0;
+				//start with regular jump flood for very coarse reads, as this is impossible to optimize
+				while (s > 1) {
+					s /= 2;
+					push_constant.step_size = s;
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_half_uniform_set[jf_us], 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size);
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+					jf_us = jf_us == 0 ? 1 : 0;
+
+					if (cascade_half_size / (s / 2) >= optimized_jf_group_size) {
+						break;
+					}
+				}
+
+				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Half-Size)");
+
+				//continue with optimized jump flood for smaller reads
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
+				while (s > 1) {
+					s /= 2;
+					push_constant.step_size = s;
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_half_uniform_set[jf_us], 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size);
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+					jf_us = jf_us == 0 ? 1 : 0;
+				}
+			}
+
+			// restore grid size for last passes
+			push_constant.grid_size = CASCADE_SIZE;
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_UPSCALE]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_upscale_uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, CASCADE_SIZE, CASCADE_SIZE, CASCADE_SIZE);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+			//run one pass of fullsize jumpflood to fix up half size artifacts
+
+			push_constant.half_size = false;
+			push_constant.step_size = 1;
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_uniform_set[upscale_jfa_uniform_set_index], 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, CASCADE_SIZE, CASCADE_SIZE, CASCADE_SIZE);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+		} else {
+			//full size jumpflood
+			RENDER_TIMESTAMP("SDFGI Jump Flood (Full-Size)");
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_initialize_uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, CASCADE_SIZE, CASCADE_SIZE, CASCADE_SIZE);
+
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+			push_constant.half_size = false;
+			{
+				uint32_t s = CASCADE_SIZE;
+
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD]);
+
+				int jf_us = 0;
+				//start with regular jump flood for very coarse reads, as this is impossible to optimize
+				while (s > 1) {
+					s /= 2;
+					push_constant.step_size = s;
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_uniform_set[jf_us], 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, CASCADE_SIZE, CASCADE_SIZE, CASCADE_SIZE);
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+					jf_us = jf_us == 0 ? 1 : 0;
+
+					if (CASCADE_SIZE / (s / 2) >= optimized_jf_group_size) {
+						break;
+					}
+				}
+
+				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Full-Size)");
+
+				//continue with optimized jump flood for smaller reads
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
+				while (s > 1) {
+					s /= 2;
+					push_constant.step_size = s;
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_uniform_set[jf_us], 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, CASCADE_SIZE, CASCADE_SIZE, CASCADE_SIZE);
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+					jf_us = jf_us == 0 ? 1 : 0;
+				}
+			}
+		}
+
+		RENDER_TIMESTAMP("SDFGI Occlusion");
+
+		// occlusion
+		{
+			uint32_t probe_size = CASCADE_SIZE / SDFGI::PROBE_DIVISOR;
+			Vector3i probe_global_pos = cascades[cascade].position / probe_size;
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_OCCLUSION]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, occlusion_uniform_set, 0);
+			for (int i = 0; i < 8; i++) {
+				//dispatch all at once for performance
+				Vector3i offset(i & 1, (i >> 1) & 1, (i >> 2) & 1);
+
+				if ((probe_global_pos.x & 1) != 0) {
+					offset.x = (offset.x + 1) & 1;
+				}
+				if ((probe_global_pos.y & 1) != 0) {
+					offset.y = (offset.y + 1) & 1;
+				}
+				if ((probe_global_pos.z & 1) != 0) {
+					offset.z = (offset.z + 1) & 1;
+				}
+				push_constant.probe_offset[0] = offset.x;
+				push_constant.probe_offset[1] = offset.y;
+				push_constant.probe_offset[2] = offset.z;
+				push_constant.occlusion_index = i;
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+
+				Vector3i groups = Vector3i(probe_size + 1, probe_size + 1, probe_size + 1) - offset; //if offset, it's one less probe per axis to compute
+				RD::get_singleton()->compute_list_dispatch(compute_list, groups.x, groups.y, groups.z);
+			}
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		}
+
+		RENDER_TIMESTAMP("SDFGI Store");
+
+		// store
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_STORE]);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].sdf_store_uniform_set, 0);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, CASCADE_SIZE, CASCADE_SIZE, CASCADE_SIZE);
+
+		RD::get_singleton()->compute_list_end();
+
+		//clear these textures, as they will have previous garbage on next draw
+		RD::get_singleton()->texture_clear(cascades[cascade].light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+
+		RENDER_TIMESTAMP("< SDFGI Update SDF");
+		RD::get_singleton()->draw_command_end_label();
+
+#endif
+	}
+}
+
 void GI::SDFGI::free_data() {
 	// we don't free things here, we handle SDFGI differently at the moment destructing the object when it needs to change.
 }
 
 GI::SDFGI::~SDFGI() {
+#if 0
 	for (const SDFGI::Cascade &c : cascades) {
 		RD::get_singleton()->free(c.light_data);
 		RD::get_singleton()->free(c.light_aniso_0_tex);
@@ -1176,6 +1529,7 @@ GI::SDFGI::~SDFGI() {
 		RD::get_singleton()->free(debug_probes_scene_data_ubo);
 		debug_probes_scene_data_ubo = RID();
 	}
+#endif
 }
 
 void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
@@ -1185,12 +1539,12 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_probe_bias(p_env);
 	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_read_sky_light(p_env);
 
-	int32_t drag_margin = (cascade_size / SDFGI::PROBE_DIVISOR) / 2;
+	int32_t drag_margin = (CASCADE_SIZE / SDFGI::PROBE_DIVISOR) / 2;
 
 	for (SDFGI::Cascade &cascade : cascades) {
 		cascade.dirty_regions = Vector3i();
 
-		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(cascade_size / SDFGI::PROBE_DIVISOR) * 0.5;
+		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(CASCADE_SIZE / SDFGI::PROBE_DIVISOR) * 0.5;
 		probe_half_size = Vector3(0, 0, 0);
 
 		Vector3 world_position = p_world_position;
@@ -1212,7 +1566,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 
 			if (cascade.dirty_regions[j] == 0) {
 				continue; // not dirty
-			} else if (uint32_t(ABS(cascade.dirty_regions[j])) >= cascade_size) {
+			} else if (uint32_t(ABS(cascade.dirty_regions[j])) >= CASCADE_SIZE) {
 				//moved too much, just redraw everything (make all dirty)
 				cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
 				break;
@@ -1221,10 +1575,10 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 
 		if (cascade.dirty_regions != Vector3i() && cascade.dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
 			//see how much the total dirty volume represents from the total volume
-			uint32_t total_volume = cascade_size * cascade_size * cascade_size;
+			uint32_t total_volume = CASCADE_SIZE * CASCADE_SIZE * CASCADE_SIZE;
 			uint32_t safe_volume = 1;
 			for (int j = 0; j < 3; j++) {
-				safe_volume *= cascade_size - ABS(cascade.dirty_regions[j]);
+				safe_volume *= CASCADE_SIZE - ABS(cascade.dirty_regions[j]);
 			}
 			uint32_t dirty_volume = total_volume - safe_volume;
 			if (dirty_volume > (safe_volume / 2)) {
@@ -1236,6 +1590,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 }
 
 void GI::SDFGI::update_light() {
+#if 0
 	RD::get_singleton()->draw_command_begin_label("SDFGI Update dynamic Light");
 
 	/* Update dynamic light */
@@ -1245,9 +1600,9 @@ void GI::SDFGI::update_light() {
 
 	SDFGIShader::DirectLightPushConstant push_constant;
 
-	push_constant.grid_size[0] = cascade_size;
-	push_constant.grid_size[1] = cascade_size;
-	push_constant.grid_size[2] = cascade_size;
+	push_constant.grid_size[0] = CASCADE_SIZE;
+	push_constant.grid_size[1] = CASCADE_SIZE;
+	push_constant.grid_size[2] = CASCADE_SIZE;
 	push_constant.max_cascades = cascades.size();
 	push_constant.probe_axis_size = probe_axis_count;
 	push_constant.bounce_feedback = bounce_feedback;
@@ -1280,15 +1635,17 @@ void GI::SDFGI::update_light() {
 	}
 	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_COMPUTE);
 	RD::get_singleton()->draw_command_end_label();
+#endif
 }
 
 void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
+#if 0
 	RD::get_singleton()->draw_command_begin_label("SDFGI Update Probes");
 
 	SDFGIShader::IntegratePushConstant push_constant;
-	push_constant.grid_size[1] = cascade_size;
-	push_constant.grid_size[2] = cascade_size;
-	push_constant.grid_size[0] = cascade_size;
+	push_constant.grid_size[1] = CASCADE_SIZE;
+	push_constant.grid_size[2] = CASCADE_SIZE;
+	push_constant.grid_size[0] = CASCADE_SIZE;
 	push_constant.max_cascades = cascades.size();
 	push_constant.probe_axis_size = probe_axis_count;
 	push_constant.history_index = render_pass % history_size;
@@ -1354,7 +1711,7 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin(true);
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_PROCESS]);
 
-	int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
+	int32_t probe_divisor = CASCADE_SIZE / SDFGI::PROBE_DIVISOR;
 	for (uint32_t i = 0; i < cascades.size(); i++) {
 		push_constant.cascade = i;
 		push_constant.world_offset[0] = cascades[i].position.x / probe_divisor;
@@ -1372,16 +1729,18 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	//RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER);
 
 	RD::get_singleton()->draw_command_end_label();
+#endif
 }
 
 void GI::SDFGI::store_probes() {
+#if 0
 	RD::get_singleton()->barrier(RD::BARRIER_MASK_COMPUTE, RD::BARRIER_MASK_COMPUTE);
 	RD::get_singleton()->draw_command_begin_label("SDFGI Store Probes");
 
 	SDFGIShader::IntegratePushConstant push_constant;
-	push_constant.grid_size[1] = cascade_size;
-	push_constant.grid_size[2] = cascade_size;
-	push_constant.grid_size[0] = cascade_size;
+	push_constant.grid_size[1] = CASCADE_SIZE;
+	push_constant.grid_size[2] = CASCADE_SIZE;
+	push_constant.grid_size[0] = CASCADE_SIZE;
 	push_constant.max_cascades = cascades.size();
 	push_constant.probe_axis_size = probe_axis_count;
 	push_constant.history_index = render_pass % history_size;
@@ -1417,6 +1776,7 @@ void GI::SDFGI::store_probes() {
 	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_COMPUTE);
 
 	RD::get_singleton()->draw_command_end_label();
+#endif
 }
 
 int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds) const {
@@ -1427,9 +1787,9 @@ int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, V
 		if (c.dirty_regions == SDFGI::Cascade::DIRTY_ALL) {
 			if (dirty_count == p_region) {
 				r_local_offset = Vector3i();
-				r_local_size = Vector3i(1, 1, 1) * cascade_size;
+				r_local_size = Vector3i(1, 1, 1) * CASCADE_SIZE;
 
-				r_bounds.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + c.position)) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
+				r_bounds.position = Vector3((Vector3i(1, 1, 1) * -int32_t(CASCADE_SIZE >> 1) + c.position)) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 				r_bounds.size = Vector3(r_local_size) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 				return i;
 			}
@@ -1439,7 +1799,7 @@ int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, V
 				if (c.dirty_regions[j] != 0) {
 					if (dirty_count == p_region) {
 						Vector3i from = Vector3i(0, 0, 0);
-						Vector3i to = Vector3i(1, 1, 1) * cascade_size;
+						Vector3i to = Vector3i(1, 1, 1) * CASCADE_SIZE;
 
 						if (c.dirty_regions[j] > 0) {
 							//fill from the beginning
@@ -1461,7 +1821,7 @@ int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, V
 						r_local_offset = from;
 						r_local_size = to - from;
 
-						r_bounds.position = Vector3(from + Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + c.position) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
+						r_bounds.position = Vector3(from + Vector3i(1, 1, 1) * -int32_t(CASCADE_SIZE >> 1) + c.position) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 						r_bounds.size = Vector3(r_local_size) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 
 						return i;
@@ -1478,10 +1838,10 @@ int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, V
 void GI::SDFGI::update_cascades() {
 	//update cascades
 	SDFGI::Cascade::UBO cascade_data[SDFGI::MAX_CASCADES];
-	int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
+	int32_t probe_divisor = CASCADE_SIZE / SDFGI::PROBE_DIVISOR;
 
 	for (uint32_t i = 0; i < cascades.size(); i++) {
-		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
+		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(CASCADE_SIZE >> 1) + cascades[i].position)) * cascades[i].cell_size;
 
 		cascade_data[i].offset[0] = pos.x;
 		cascade_data[i].offset[1] = pos.y;
@@ -1497,6 +1857,7 @@ void GI::SDFGI::update_cascades() {
 }
 
 void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views) {
+#if 0
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
@@ -1599,9 +1960,9 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, debug_uniform_set[v], 0);
 
 		SDFGIShader::DebugPushConstant push_constant;
-		push_constant.grid_size[0] = cascade_size;
-		push_constant.grid_size[1] = cascade_size;
-		push_constant.grid_size[2] = cascade_size;
+		push_constant.grid_size[0] = CASCADE_SIZE;
+		push_constant.grid_size[1] = CASCADE_SIZE;
+		push_constant.grid_size[2] = CASCADE_SIZE;
 		push_constant.max_cascades = cascades.size();
 		push_constant.screen_size[0] = p_width;
 		push_constant.screen_size[1] = p_height;
@@ -1634,9 +1995,11 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 
 	Size2i rtsize = texture_storage->render_target_get_size(p_render_target);
 	copy_effects->copy_to_fb_rect(p_texture, texture_storage->render_target_get_rd_framebuffer(p_render_target), Rect2i(Point2i(), rtsize), true, false, false, false, RID(), p_view_count > 1);
+#endif
 }
 
 void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth) {
+#if 0
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	// setup scene data
@@ -1668,9 +2031,9 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 	uint32_t total_points = push_constant.sections_in_band * band_points;
 	uint32_t total_probes = probe_axis_count * probe_axis_count * probe_axis_count;
 
-	push_constant.grid_size[0] = cascade_size;
-	push_constant.grid_size[1] = cascade_size;
-	push_constant.grid_size[2] = cascade_size;
+	push_constant.grid_size[0] = CASCADE_SIZE;
+	push_constant.grid_size[1] = CASCADE_SIZE;
+	push_constant.grid_size[2] = CASCADE_SIZE;
 	push_constant.cascade = 0;
 
 	push_constant.probe_axis_size = probe_axis_count;
@@ -1728,15 +2091,15 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 
 	if (gi->sdfgi_debug_probe_dir != Vector3()) {
 		uint32_t cascade = 0;
-		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
-		Vector3 probe_size = cascades[cascade].cell_size * (cascade_size / SDFGI::PROBE_DIVISOR) * Vector3(1.0, 1.0 / y_mult, 1.0);
+		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -int32_t(CASCADE_SIZE >> 1) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
+		Vector3 probe_size = cascades[cascade].cell_size * (CASCADE_SIZE / SDFGI::PROBE_DIVISOR) * Vector3(1.0, 1.0 / y_mult, 1.0);
 		Vector3 ray_from = gi->sdfgi_debug_probe_pos;
-		Vector3 ray_to = gi->sdfgi_debug_probe_pos + gi->sdfgi_debug_probe_dir * cascades[cascade].cell_size * Math::sqrt(3.0) * cascade_size;
+		Vector3 ray_to = gi->sdfgi_debug_probe_pos + gi->sdfgi_debug_probe_dir * cascades[cascade].cell_size * Math::sqrt(3.0) * CASCADE_SIZE;
 		float sphere_radius = 0.2;
 		float closest_dist = 1e20;
 		gi->sdfgi_debug_probe_enabled = false;
 
-		Vector3i probe_from = cascades[cascade].position / (cascade_size / SDFGI::PROBE_DIVISOR);
+		Vector3i probe_from = cascades[cascade].position / (CASCADE_SIZE / SDFGI::PROBE_DIVISOR);
 		for (int i = 0; i < (SDFGI::PROBE_DIVISOR + 1); i++) {
 			for (int j = 0; j < (SDFGI::PROBE_DIVISOR + 1); j++) {
 				for (int k = 0; k < (SDFGI::PROBE_DIVISOR + 1); k++) {
@@ -1759,7 +2122,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 
 	if (gi->sdfgi_debug_probe_enabled) {
 		uint32_t cascade = 0;
-		uint32_t probe_cells = (cascade_size / SDFGI::PROBE_DIVISOR);
+		uint32_t probe_cells = (CASCADE_SIZE / SDFGI::PROBE_DIVISOR);
 		Vector3i probe_from = cascades[cascade].position / probe_cells;
 		Vector3i ofs = gi->sdfgi_debug_probe_index - probe_from;
 		if (ofs.x < 0 || ofs.y < 0 || ofs.z < 0) {
@@ -1784,17 +2147,19 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 
 	RD::get_singleton()->draw_command_end_label();
 	RD::get_singleton()->draw_list_end();
+#endif
 }
 
 void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data) {
+#if 0
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	/* Update general SDFGI Buffer */
 
 	SDFGIData sdfgi_data;
 
-	sdfgi_data.grid_size[0] = cascade_size;
-	sdfgi_data.grid_size[1] = cascade_size;
-	sdfgi_data.grid_size[2] = cascade_size;
+	sdfgi_data.grid_size[0] = CASCADE_SIZE;
+	sdfgi_data.grid_size[1] = CASCADE_SIZE;
+	sdfgi_data.grid_size[2] = CASCADE_SIZE;
 
 	sdfgi_data.max_cascades = cascades.size();
 	sdfgi_data.probe_axis_size = probe_axis_count;
@@ -1802,7 +2167,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 	sdfgi_data.cascade_probe_size[1] = sdfgi_data.probe_axis_size - 1;
 	sdfgi_data.cascade_probe_size[2] = sdfgi_data.probe_axis_size - 1;
 
-	float csize = cascade_size;
+	float csize = CASCADE_SIZE;
 	sdfgi_data.probe_to_uvw = 1.0 / float(sdfgi_data.cascade_probe_size[0]);
 	sdfgi_data.use_occlusion = uses_occlusion;
 	//sdfgi_data.energy = energy;
@@ -1835,18 +2200,18 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 	sdfgi_data.occlusion_renormalize[1] = 1.0;
 	sdfgi_data.occlusion_renormalize[2] = 1.0 / float(sdfgi_data.max_cascades);
 
-	int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
+	int32_t probe_divisor = CASCADE_SIZE / SDFGI::PROBE_DIVISOR;
 
 	for (uint32_t i = 0; i < sdfgi_data.max_cascades; i++) {
 		SDFGIData::ProbeCascadeData &c = sdfgi_data.cascades[i];
-		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
+		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(CASCADE_SIZE >> 1) + cascades[i].position)) * cascades[i].cell_size;
 		Vector3 cam_origin = p_transform.origin;
 		cam_origin.y *= y_mult;
 		pos -= cam_origin; //make pos local to camera, to reduce numerical error
 		c.position[0] = pos.x;
 		c.position[1] = pos.y;
 		c.position[2] = pos.z;
-		c.to_probe = 1.0 / (float(cascade_size) * cascades[i].cell_size / float(probe_axis_count - 1));
+		c.to_probe = 1.0 / (float(CASCADE_SIZE) * cascades[i].cell_size / float(probe_axis_count - 1));
 
 		Vector3i probe_ofs = cascades[i].position / probe_divisor;
 		c.probe_world_offset[0] = probe_ofs.x;
@@ -1912,8 +2277,8 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 
 		AABB cascade_aabb;
-		cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascade.position)) * cascade.cell_size;
-		cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cascade.cell_size;
+		cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(CASCADE_SIZE >> 1) + cascade.position)) * cascade.cell_size;
+		cascade_aabb.size = Vector3(1, 1, 1) * CASCADE_SIZE * cascade.cell_size;
 
 		for (uint32_t j = 0; j < p_render_data->sdfgi_update_data->positional_light_count; j++) {
 			if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
@@ -1988,368 +2353,11 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 
 		cascade_dynamic_light_count[i] = idx;
 	}
-}
-
-void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization) {
-	//print_line("rendering region " + itos(p_region));
-	ERR_FAIL_COND(p_render_buffers.is_null()); // we wouldn't be here if this failed but...
-	AABB bounds;
-	Vector3i from;
-	Vector3i size;
-
-	int cascade_prev = get_pending_region_data(p_region - 1, from, size, bounds);
-	int cascade_next = get_pending_region_data(p_region + 1, from, size, bounds);
-	int cascade = get_pending_region_data(p_region, from, size, bounds);
-	ERR_FAIL_COND(cascade < 0);
-
-	if (cascade_prev != cascade) {
-		//initialize render
-		RD::get_singleton()->texture_clear(render_albedo, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_emission, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_emission_aniso, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_geom_facing, Color(0, 0, 0, 0), 0, 1, 0, 1);
-	}
-
-	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(cascades[cascade].cell_size));
-	RendererSceneRenderRD::get_singleton()->_render_sdfgi(p_render_buffers, from, size, bounds, p_instances, render_albedo, render_emission, render_emission_aniso, render_geom_facing, p_exposure_normalization);
-
-	if (cascade_next != cascade) {
-		RD::get_singleton()->draw_command_begin_label("SDFGI Pre-Process Cascade");
-
-		RENDER_TIMESTAMP("> SDFGI Update SDF");
-		//done rendering! must update SDF
-		//clear dispatch indirect data
-
-		SDFGIShader::PreprocessPushConstant push_constant;
-		memset(&push_constant, 0, sizeof(SDFGIShader::PreprocessPushConstant));
-
-		RENDER_TIMESTAMP("SDFGI Scroll SDF");
-
-		//scroll
-		if (cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
-			//for scroll
-			Vector3i dirty = cascades[cascade].dirty_regions;
-			push_constant.scroll[0] = dirty.x;
-			push_constant.scroll[1] = dirty.y;
-			push_constant.scroll[2] = dirty.z;
-		} else {
-			//for no scroll
-			push_constant.scroll[0] = 0;
-			push_constant.scroll[1] = 0;
-			push_constant.scroll[2] = 0;
-		}
-
-		cascades[cascade].all_dynamic_lights_dirty = true;
-		cascades[cascade].baked_exposure_normalization = p_exposure_normalization;
-
-		push_constant.grid_size = cascade_size;
-		push_constant.cascade = cascade;
-
-		if (cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
-			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-
-			//must pre scroll existing data because not all is dirty
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_SCROLL]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].scroll_uniform_set, 0);
-
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascades[cascade].solid_cell_dispatch_buffer, 0);
-			// no barrier do all together
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_SCROLL_OCCLUSION]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].scroll_occlusion_uniform_set, 0);
-
-			Vector3i dirty = cascades[cascade].dirty_regions;
-			Vector3i groups;
-			groups.x = cascade_size - ABS(dirty.x);
-			groups.y = cascade_size - ABS(dirty.y);
-			groups.z = cascade_size - ABS(dirty.z);
-
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, groups.x, groups.y, groups.z);
-
-			//no barrier, continue together
-
-			{
-				//scroll probes and their history also
-
-				SDFGIShader::IntegratePushConstant ipush_constant;
-				ipush_constant.grid_size[1] = cascade_size;
-				ipush_constant.grid_size[2] = cascade_size;
-				ipush_constant.grid_size[0] = cascade_size;
-				ipush_constant.max_cascades = cascades.size();
-				ipush_constant.probe_axis_size = probe_axis_count;
-				ipush_constant.history_index = 0;
-				ipush_constant.history_size = history_size;
-				ipush_constant.ray_count = 0;
-				ipush_constant.ray_bias = 0;
-				ipush_constant.sky_mode = 0;
-				ipush_constant.sky_energy = 0;
-				ipush_constant.sky_color[0] = 0;
-				ipush_constant.sky_color[1] = 0;
-				ipush_constant.sky_color[2] = 0;
-				ipush_constant.y_mult = y_mult;
-				ipush_constant.store_ambient_texture = false;
-
-				ipush_constant.image_size[0] = probe_axis_count * probe_axis_count;
-				ipush_constant.image_size[1] = probe_axis_count;
-
-				int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
-				ipush_constant.cascade = cascade;
-				ipush_constant.world_offset[0] = cascades[cascade].position.x / probe_divisor;
-				ipush_constant.world_offset[1] = cascades[cascade].position.y / probe_divisor;
-				ipush_constant.world_offset[2] = cascades[cascade].position.z / probe_divisor;
-
-				ipush_constant.scroll[0] = dirty.x / probe_divisor;
-				ipush_constant.scroll[1] = dirty.y / probe_divisor;
-				ipush_constant.scroll[2] = dirty.z / probe_divisor;
-
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_SCROLL]);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].integrate_uniform_set, 0);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDFGIShader::IntegratePushConstant));
-				RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count, probe_axis_count, 1);
-
-				RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_SCROLL_STORE]);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].integrate_uniform_set, 0);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDFGIShader::IntegratePushConstant));
-				RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count, probe_axis_count, 1);
-
-				RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-				if (bounce_feedback > 0.0) {
-					//multibounce requires this to be stored so direct light can read from it
-
-					RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_STORE]);
-
-					//convert to octahedral to store
-					ipush_constant.image_size[0] *= SDFGI::LIGHTPROBE_OCT_SIZE;
-					ipush_constant.image_size[1] *= SDFGI::LIGHTPROBE_OCT_SIZE;
-
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].integrate_uniform_set, 0);
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDFGIShader::IntegratePushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, 1);
-				}
-			}
-
-			//ok finally barrier
-			RD::get_singleton()->compute_list_end();
-		}
-
-		//clear dispatch indirect data
-		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
-		RD::get_singleton()->buffer_update(cascades[cascade].solid_cell_dispatch_buffer, 0, sizeof(uint32_t) * 4, dispatch_indirct_data);
-
-		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-
-		bool half_size = true; //much faster, very little difference
-		static const int optimized_jf_group_size = 8;
-
-		if (half_size) {
-			push_constant.grid_size >>= 1;
-
-			uint32_t cascade_half_size = cascade_size >> 1;
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE_HALF]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_initialize_half_uniform_set, 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-			//must start with regular jumpflood
-
-			push_constant.half_size = true;
-			{
-				RENDER_TIMESTAMP("SDFGI Jump Flood (Half-Size)");
-
-				uint32_t s = cascade_half_size;
-
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD]);
-
-				int jf_us = 0;
-				//start with regular jump flood for very coarse reads, as this is impossible to optimize
-				while (s > 1) {
-					s /= 2;
-					push_constant.step_size = s;
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_half_uniform_set[jf_us], 0);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size);
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-					jf_us = jf_us == 0 ? 1 : 0;
-
-					if (cascade_half_size / (s / 2) >= optimized_jf_group_size) {
-						break;
-					}
-				}
-
-				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Half-Size)");
-
-				//continue with optimized jump flood for smaller reads
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
-				while (s > 1) {
-					s /= 2;
-					push_constant.step_size = s;
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_half_uniform_set[jf_us], 0);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size);
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-					jf_us = jf_us == 0 ? 1 : 0;
-				}
-			}
-
-			// restore grid size for last passes
-			push_constant.grid_size = cascade_size;
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_UPSCALE]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_upscale_uniform_set, 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-			//run one pass of fullsize jumpflood to fix up half size artifacts
-
-			push_constant.half_size = false;
-			push_constant.step_size = 1;
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_uniform_set[upscale_jfa_uniform_set_index], 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-		} else {
-			//full size jumpflood
-			RENDER_TIMESTAMP("SDFGI Jump Flood (Full-Size)");
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_initialize_uniform_set, 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-			push_constant.half_size = false;
-			{
-				uint32_t s = cascade_size;
-
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD]);
-
-				int jf_us = 0;
-				//start with regular jump flood for very coarse reads, as this is impossible to optimize
-				while (s > 1) {
-					s /= 2;
-					push_constant.step_size = s;
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_uniform_set[jf_us], 0);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-					jf_us = jf_us == 0 ? 1 : 0;
-
-					if (cascade_size / (s / 2) >= optimized_jf_group_size) {
-						break;
-					}
-				}
-
-				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Full-Size)");
-
-				//continue with optimized jump flood for smaller reads
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
-				while (s > 1) {
-					s /= 2;
-					push_constant.step_size = s;
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_uniform_set[jf_us], 0);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-					jf_us = jf_us == 0 ? 1 : 0;
-				}
-			}
-		}
-
-		RENDER_TIMESTAMP("SDFGI Occlusion");
-
-		// occlusion
-		{
-			uint32_t probe_size = cascade_size / SDFGI::PROBE_DIVISOR;
-			Vector3i probe_global_pos = cascades[cascade].position / probe_size;
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_OCCLUSION]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, occlusion_uniform_set, 0);
-			for (int i = 0; i < 8; i++) {
-				//dispatch all at once for performance
-				Vector3i offset(i & 1, (i >> 1) & 1, (i >> 2) & 1);
-
-				if ((probe_global_pos.x & 1) != 0) {
-					offset.x = (offset.x + 1) & 1;
-				}
-				if ((probe_global_pos.y & 1) != 0) {
-					offset.y = (offset.y + 1) & 1;
-				}
-				if ((probe_global_pos.z & 1) != 0) {
-					offset.z = (offset.z + 1) & 1;
-				}
-				push_constant.probe_offset[0] = offset.x;
-				push_constant.probe_offset[1] = offset.y;
-				push_constant.probe_offset[2] = offset.z;
-				push_constant.occlusion_index = i;
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-
-				Vector3i groups = Vector3i(probe_size + 1, probe_size + 1, probe_size + 1) - offset; //if offset, it's one less probe per axis to compute
-				RD::get_singleton()->compute_list_dispatch(compute_list, groups.x, groups.y, groups.z);
-			}
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-		}
-
-		RENDER_TIMESTAMP("SDFGI Store");
-
-		// store
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_STORE]);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].sdf_store_uniform_set, 0);
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-
-		RD::get_singleton()->compute_list_end();
-
-		//clear these textures, as they will have previous garbage on next draw
-		RD::get_singleton()->texture_clear(cascades[cascade].light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-
-#if 0
-		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cascades[cascade].sdf, 0);
-		Ref<Image> img;
-		img.instantiate();
-		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.slice(128 * 128 * i, 128 * 128 * (i + 1));
-			img->set_data(cascade_size, cascade_size, false, Image::FORMAT_L8, subarr);
-			img->save_png("res://cascade_sdf_" + itos(cascade) + "_" + itos(i) + ".png");
-		}
-
-		//finalize render and update sdf
 #endif
-
-#if 0
-		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(render_albedo, 0);
-		Ref<Image> img;
-		img.instantiate();
-		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.slice(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2);
-			img->createcascade_size, cascade_size, false, Image::FORMAT_RGB565, subarr);
-			img->convert(Image::FORMAT_RGBA8);
-			img->save_png("res://cascade_" + itos(cascade) + "_" + itos(i) + ".png");
-		}
-
-		//finalize render and update sdf
-#endif
-
-		RENDER_TIMESTAMP("< SDFGI Update SDF");
-		RD::get_singleton()->draw_command_end_label();
-	}
 }
 
 void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result) {
+#if 0
 	ERR_FAIL_COND(p_render_buffers.is_null()); // we wouldn't be here if this failed but...
 
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
@@ -2369,8 +2377,8 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 		{ //fill light buffer
 
 			AABB cascade_aabb;
-			cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cc.position)) * cc.cell_size;
-			cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cc.cell_size;
+			cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(CASCADE_SIZE >> 1) + cc.position)) * cc.cell_size;
+			cascade_aabb.size = Vector3(1, 1, 1) * CASCADE_SIZE * cc.cell_size;
 
 			int idx = 0;
 
@@ -2458,9 +2466,9 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 
 	SDFGIShader::DirectLightPushConstant dl_push_constant;
 
-	dl_push_constant.grid_size[0] = cascade_size;
-	dl_push_constant.grid_size[1] = cascade_size;
-	dl_push_constant.grid_size[2] = cascade_size;
+	dl_push_constant.grid_size[0] = CASCADE_SIZE;
+	dl_push_constant.grid_size[1] = CASCADE_SIZE;
+	dl_push_constant.grid_size[2] = CASCADE_SIZE;
 	dl_push_constant.max_cascades = cascades.size();
 	dl_push_constant.probe_axis_size = probe_axis_count;
 	dl_push_constant.bounce_feedback = 0.0; // this is static light, do not multibounce yet
@@ -2489,6 +2497,7 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 	RD::get_singleton()->compute_list_end();
 
 	RD::get_singleton()->draw_command_end_label();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3890,8 +3899,8 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				u.binding = 3;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-					if (use_sdfgi && j < sdfgi->cascades.size()) {
-						u.append_id(sdfgi->cascades[j].light_aniso_0_tex);
+					if (false && use_sdfgi && j < sdfgi->cascades.size()) {
+						//u.append_id(sdfgi->cascades[j].light_aniso_0_tex);
 					} else {
 						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
@@ -3903,8 +3912,8 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				u.binding = 4;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-					if (use_sdfgi && j < sdfgi->cascades.size()) {
-						u.append_id(sdfgi->cascades[j].light_aniso_1_tex);
+					if (false && use_sdfgi && j < sdfgi->cascades.size()) {
+						//u.append_id(sdfgi->cascades[j].light_aniso_1_tex);
 					} else {
 						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 					}
@@ -3915,8 +3924,8 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 5;
-				if (use_sdfgi) {
-					u.append_id(sdfgi->occlusion_texture);
+				if (false && use_sdfgi) {
+					//u.append_id(sdfgi->occlusion_texture);
 				} else {
 					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
 				}
@@ -3956,8 +3965,8 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 11;
-				if (use_sdfgi) {
-					u.append_id(sdfgi->lightprobe_texture);
+				if (false && use_sdfgi) {
+					//u.append_id(sdfgi->lightprobe_texture);
 				} else {
 					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE));
 				}

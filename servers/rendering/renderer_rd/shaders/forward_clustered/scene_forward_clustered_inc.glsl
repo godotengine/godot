@@ -255,7 +255,8 @@ cluster_buffer;
 layout(r16ui, set = 1, binding = 10) uniform restrict writeonly uimage3D albedo_volume_grid;
 layout(r32ui, set = 1, binding = 11) uniform restrict writeonly uimage3D emission_grid;
 layout(r32ui, set = 1, binding = 12) uniform restrict writeonly uimage3D emission_aniso_grid;
-layout(r32ui, set = 1, binding = 13) uniform restrict uimage3D geom_facing_grid;
+layout(r32ui, set = 1, binding = 13) uniform restrict uimage3D geom_solid_bits[2];
+layout(r32ui, set = 1, binding = 14) uniform restrict uimage3D geom_normal_bits;
 
 //still need to be present for shaders that use it, so remap them to something
 #define depth_buffer shadow_atlas

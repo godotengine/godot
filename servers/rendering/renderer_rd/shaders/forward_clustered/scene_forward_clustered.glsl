@@ -2206,12 +2206,101 @@ void fragment_shader(in SceneData scene_data) {
 
 	{
 		vec3 local_pos = (implementation_data.sdf_to_bounds * vec4(vertex, 1.0)).xyz;
-		ivec3 grid_pos = implementation_data.sdf_offset + ivec3(local_pos * vec3(implementation_data.sdf_size));
+		vec3 grid_pos = vec3(implementation_data.sdf_offset) + local_pos * vec3(implementation_data.sdf_size);
+		ivec3 igrid_pos = ivec3(grid_pos);
 
-		uint albedo16 = 0x1; //solid flag
-		albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 11;
-		albedo16 |= clamp(uint(albedo.g * 31.0), 0, 31) << 6;
-		albedo16 |= clamp(uint(albedo.b * 31.0), 0, 31) << 1;
+		// Compute solid bits
+
+		ivec3 isubgrid_pos = min(ivec3((grid_pos - vec3(igrid_pos)) * 4.0),ivec3(3,3,3));
+
+		uint bit_ofs = 16 * isubgrid_pos.z + 4 * isubgrid_pos.y + isubgrid_pos.x;
+
+
+		// Compute normal bits
+
+		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normalize(normal_interp);
+
+		const float normal_treshold = 0.001;
+		uint bit_normal = 0;
+		if (cam_normal.x < -normal_treshold) {
+			bit_normal|=1<<0;
+		} else if (cam_normal.x > normal_treshold) {
+			bit_normal|=1<<1;
+		}
+
+		if (cam_normal.y < -normal_treshold) {
+			bit_normal|=1<<2;
+		} else if (cam_normal.y > normal_treshold) {
+			bit_normal|=1<<3;
+		}
+
+		if (cam_normal.z < -normal_treshold) {
+			bit_normal|=1<<4;
+		} else if (cam_normal.z > normal_treshold) {
+			bit_normal|=1<<5;
+		}
+
+		// Subgroup merge and store solid and normal bits
+
+		{
+			//todo subgroup
+
+			if (bit_ofs < 32) {
+#ifdef MOLTENVK_USED
+				imageStore(geom_solid_bits[0], igrid_pos, uvec4(imageLoad(geom_solid_bits[0], igrid_pos).r | (1<<bit_ofs))); //store solid bits
+#else
+				imageAtomicOr(geom_solid_bits[0], igrid_pos, 1<<bit_ofs); //store solid bits
+#endif
+			} else {
+				bit_ofs-=32;
+#ifdef MOLTENVK_USED
+				imageStore(geom_solid_bits[1], igrid_pos, uvec4(imageLoad(geom_solid_bits[1], igrid_pos).r | (1<<bit_ofs))); //store solid bits
+#else
+				imageAtomicOr(geom_solid_bits[1], igrid_pos, 1<<bit_ofs); //store solid bits
+#endif
+
+			}
+
+#ifdef MOLTENVK_USED
+				imageStore(geom_solid_bits[1], igrid_pos, uvec4(imageLoad(geom_solid_bits[1], igrid_pos).r | (1<<bit_ofs))); //store solid bits
+#else
+				imageAtomicOr(geom_normal_bits, igrid_pos, bit_normal); //store solid bits
+#endif
+		}
+
+		// Compute aniso albedo
+
+		const vec3 aniso_dir[6] = vec3[](
+				vec3(1, 0, 0),
+				vec3(-1, 0, 0),
+				vec3(0, 1, 1),
+				vec3(0, -1, 0),
+				vec3(0, 0, 1),
+				vec3(0, 0, -1));
+
+
+		for (uint i = 0; i < 6; i++) {
+			float d = dot(cam_normal, aniso_dir[i]);
+			if (d > 0.0) {
+
+				vec4 aniso_albedo = vec4(albedo, 1.0);
+
+				uint albedo16 = 0;
+				albedo16 |= clamp(uint(aniso_albedo[i].r * 31.0), 0, 31) << 11;
+				albedo16 |= clamp(uint(aniso_albedo[i].g * 31.0), 0, 31) << 6;
+				albedo16 |= clamp(uint(aniso_albedo[i].b * 31.0), 0, 31) << 1;
+				ivec3 store_pos = igrid_pos;
+				store_pos.z = store_pos.z * 6 + i;
+				imageStore(albedo_volume_grid, store_pos, uvec4(albedo16));
+			}
+		}
+
+
+		// Store normal facing bits
+
+		// Store bit field first
+
+
 
 		imageStore(albedo_volume_grid, grid_pos, uvec4(albedo16));
 
