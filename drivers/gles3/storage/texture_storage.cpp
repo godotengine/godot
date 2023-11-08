@@ -2320,6 +2320,20 @@ GLuint TextureStorage::render_target_get_depth(RID p_render_target) const {
 	}
 }
 
+void TextureStorage::render_target_set_reattach_textures(RID p_render_target, bool p_reattach_textures) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->reattach_textures = p_reattach_textures;
+}
+
+bool TextureStorage::render_target_is_reattach_textures(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->reattach_textures;
+}
+
 void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
