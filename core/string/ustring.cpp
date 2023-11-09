@@ -4699,11 +4699,16 @@ String String::property_name_encode() const {
 
 static const char32_t invalid_node_name_characters[] = { '.', ':', '@', '/', '\"', UNIQUE_NODE_PREFIX[0], 0 };
 
-String String::get_invalid_node_name_characters() {
+String String::get_invalid_node_name_characters(bool p_allow_internal) {
 	// Do not use this function for critical validation.
 	String r;
 	const char32_t *c = invalid_node_name_characters;
 	while (*c) {
+		if (p_allow_internal && *c == '@') {
+			c++;
+			continue;
+		}
+
 		if (c != invalid_node_name_characters) {
 			r += " ";
 		}
