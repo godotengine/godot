@@ -41,5 +41,7 @@
 #define FRAME_BUFFER_HEIGHT 720
 
 int main(int argc, char *argv[]) {
-    return 0;
+	OS_Switch os;
+
+	return 0;
 }
