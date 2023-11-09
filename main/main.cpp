@@ -1776,7 +1776,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_native", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_gles", true);
 
-		GLOBAL_DEF_RST(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), Array());
+		Array device_blocklist;
+
+#define BLOCK_DEVICE(m_vendor, m_name)      \
+	{                                       \
+		Dictionary device;                  \
+		device["vendor"] = m_vendor;        \
+		device["name"] = m_name;            \
+		device_blocklist.push_back(device); \
+	}
+
+		// AMD GPUs.
+		BLOCK_DEVICE("ATI", "AMD Radeon(TM) R2 Graphics");
+		BLOCK_DEVICE("ATI", "AMD Radeon(TM) R3 Graphics");
+		BLOCK_DEVICE("ATI", "AMD Radeon HD 8400 / R3 Series");
+		BLOCK_DEVICE("ATI", "AMD Radeon R5 M200 Series");
+		BLOCK_DEVICE("ATI", "AMD Radeon R5 M230 Series");
+		BLOCK_DEVICE("ATI", "AMD Radeon R5 M255");
+		BLOCK_DEVICE("AMD", "AMD Radeon (TM) R5 M330");
+
+#undef BLOCK_DEVICE
+
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), device_blocklist);
 	}
 
 	// Start with RenderingDevice-based backends. Should be included if any RD driver present.

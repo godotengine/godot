@@ -4658,7 +4658,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
 		for (int i = 0; i < device_list.size(); i++) {
 			const Dictionary &device = device_list[i];
-			if (device.has("vendor") && device.has("name") && device["vendor"].operator String().to_upper() == gl_info["vendor"].operator String().to_upper() && (device["name"] == "*" || device["name"].operator String().to_upper() == gl_info["name"].operator String().to_upper())) {
+			if (device.has("vendor") && device.has("name") && gl_info["vendor"].operator String().to_upper().contains(device["vendor"].operator String().to_upper()) && (device["name"] == "*" || gl_info["name"].operator String().to_upper().contains(device["name"].operator String().to_upper()))) {
 				force_angle = true;
 				break;
 			}

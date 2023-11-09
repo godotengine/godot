@@ -2401,7 +2401,7 @@
 			If [code]true[/code], the compatibility renderer will fall back to native OpenGL if ANGLE over Metal is not supported.
 			[b]Note:[/b] This setting is implemented only on macOS.
 		</member>
-		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="" default="[]">
+		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="">
 			An [Array] of devices which should always use the ANGLE renderer.
 			Each entry is a [Dictionary] with the following keys: [code]vendor[/code] and [code]name[/code]. [code]name[/code] can be set to [code]*[/code] to add all devices with the specified [code]vendor[/code].
 			[b]Note:[/b] This setting is implemented only on Windows.
