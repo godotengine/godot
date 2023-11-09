@@ -135,7 +135,7 @@
 		</method>
 		<method name="move_and_slide">
 			<return type="bool" />
-			<param index="0" name="delta" type="float" />
+			<param index="0" name="delta" type="float" default="-1.0" />
 			<description>
 				Moves the body based on [member velocity]. If the body collides with another, it will slide along the other body (by default only on floor) rather than stop immediately. If the other body is a [CharacterBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
 				Modifies [member velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for detailed information about collisions that occurred, use [method get_slide_collision].
