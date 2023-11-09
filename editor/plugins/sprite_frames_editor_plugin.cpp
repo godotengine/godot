@@ -1322,8 +1322,9 @@ void SpriteFramesEditor::_edit() {
 void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	_update_stop_icon();
 
-	if (!p_frames.is_valid()) {
+	if (p_frames.is_null()) {
 		frames.unref();
+		_remove_sprite_node();
 		hide();
 		return;
 	}
