@@ -79,6 +79,14 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	wd.fs_transition = true;
+
+	// Temporary disable borderless and transparent state.
+	if ([wd.window_object styleMask] == NSWindowStyleMaskBorderless) {
+		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
+	}
+	if (wd.layered_window) {
+		ds->set_window_per_pixel_transparency_enabled(false, window_id);
+	}
 }
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow *)window {
@@ -175,9 +183,14 @@
 		[wd.window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 	}
 
-	// Restore resizability state.
-	if (wd.resize_disabled) {
-		[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
+	// Restore borderless, transparent and resizability state.
+	if (wd.borderless || wd.layered_window) {
+		[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
+	} else {
+		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+	}
+	if (wd.layered_window) {
+		ds->set_window_per_pixel_transparency_enabled(true, window_id);
 	}
 
 	// Restore on-top state.
