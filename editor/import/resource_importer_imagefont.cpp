@@ -89,6 +89,84 @@ bool ResourceImporterImageFont::_decode_range(const String &p_token, int32_t &r_
 	}
 }
 
+String ResourceImporterImageFont::correct_outlier_splitters(const String &p_range) {
+	String new_range, accumulator;
+	if (p_range.is_empty()) {
+		return new_range;
+	}
+	enum Tokens {
+		OPEN_SINGLE_QUOTE,
+		CHARACTER,
+		CLOSE_SINGLE_QUOTE,
+		SPLITTER,
+		INVALID
+	};
+	Tokens next_token[2] = { OPEN_SINGLE_QUOTE, CHARACTER };
+	size_t ptr = 0;
+	bool outlier_splitter = false;
+	while (true) {
+		if (ptr >= (size_t)p_range.length()) {
+			break;
+		}
+		switch (p_range[ptr]) {
+			case '\'':
+				if (next_token[0] == OPEN_SINGLE_QUOTE || next_token[1] == OPEN_SINGLE_QUOTE) {
+					next_token[0] = CHARACTER;
+					next_token[1] = INVALID;
+				} else if (next_token[0] == CHARACTER || next_token[1] == CHARACTER) {
+					next_token[0] = CLOSE_SINGLE_QUOTE;
+					next_token[1] = INVALID;
+				} else if (next_token[0] == CLOSE_SINGLE_QUOTE || next_token[1] == CLOSE_SINGLE_QUOTE) {
+					next_token[0] = SPLITTER;
+					next_token[1] = INVALID;
+					accumulator.clear();
+					if (outlier_splitter) {
+						outlier_splitter = false;
+						new_range += "0x2D"; // Outlier? replace it.
+					} else {
+						new_range += p_range.substr(ptr - 2, 3);
+					}
+				} else {
+					new_range += accumulator;
+					new_range += p_range.substr(ptr);
+					return new_range;
+				}
+				accumulator += p_range[ptr];
+				break;
+			case '-':
+				if (next_token[0] == CHARACTER || next_token[1] == CHARACTER) {
+					next_token[0] = CLOSE_SINGLE_QUOTE;
+					next_token[1] = INVALID;
+					outlier_splitter = true;
+				} else if (next_token[0] == SPLITTER || next_token[1] == SPLITTER) {
+					next_token[0] = OPEN_SINGLE_QUOTE;
+					next_token[1] = CHARACTER;
+					accumulator.clear();
+					new_range += '-'; // Not outlier? add it.
+				} else {
+					new_range += accumulator;
+					new_range += p_range.substr(ptr);
+					return new_range;
+				}
+				accumulator += p_range[ptr];
+				break;
+			default:
+				if (next_token[0] == CHARACTER || next_token[1] == CHARACTER) {
+					accumulator.clear();
+					new_range += p_range[ptr]; // Not outlier? add it.
+				} else {
+					new_range += accumulator;
+					new_range += p_range.substr(ptr);
+					return new_range;
+				}
+				accumulator += p_range[ptr];
+				break;
+		}
+		ptr++;
+	}
+	return new_range;
+}
+
 Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing image font from: " + p_source_file);
 
@@ -129,21 +207,27 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 
 	int pos = 0;
 	for (int i = 0; i < ranges.size(); i++) {
+		String range = correct_outlier_splitters(ranges[i]);
 		int32_t start, end;
-		Vector<String> tokens = ranges[i].split("-");
+		Vector<String> tokens = range.split("-");
+		if (tokens.size() == 2 && tokens[0] == tokens[1]) {
+			String token = tokens[0];
+			tokens.clear();
+			tokens.push_back(token);
+		}
 		if (tokens.size() == 2) {
 			if (!_decode_range(tokens[0], start) || !_decode_range(tokens[1], end)) {
-				WARN_PRINT("Invalid range: \"" + ranges[i] + "\"");
+				WARN_PRINT("Invalid range: \"" + range + "\"");
 				continue;
 			}
 		} else if (tokens.size() == 1) {
 			if (!_decode_range(tokens[0], start)) {
-				WARN_PRINT("Invalid range: \"" + ranges[i] + "\"");
+				WARN_PRINT("Invalid range: \"" + range + "\"");
 				continue;
 			}
 			end = start;
 		} else {
-			WARN_PRINT("Invalid range: \"" + ranges[i] + "\"");
+			WARN_PRINT("Invalid range: \"" + range + "\"");
 			continue;
 		}
 		for (int32_t idx = start; idx <= end; idx++) {
