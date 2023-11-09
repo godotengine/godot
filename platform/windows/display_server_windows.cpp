@@ -1692,7 +1692,9 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
 			restore_mouse_trails = 0;
 		}
-	} else if (p_mode == WINDOW_MODE_WINDOWED) {
+	}
+
+	if (p_mode == WINDOW_MODE_WINDOWED) {
 		ShowWindow(wd.hWnd, SW_RESTORE);
 		wd.maximized = false;
 		wd.minimized = false;
