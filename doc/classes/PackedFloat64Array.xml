@@ -132,7 +132,7 @@
 			<return type="int" />
 			<param index="0" name="new_size" type="int" />
 			<description>
-				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size. Calling [method resize] once and assigning the new values is faster than adding new elements one by one.
 			</description>
 		</method>
 		<method name="reverse">
