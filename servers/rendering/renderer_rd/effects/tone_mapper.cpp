@@ -128,6 +128,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
 
 	tonemap.push_constant.flags |= p_settings.convert_to_srgb ? TONEMAP_FLAG_CONVERT_TO_SRGB : 0;
+	tonemap.push_constant.flags |= p_settings.transparent_bg ? TONEMAP_FLAG_TRANSPARENT_BG : 0;
 
 	if (p_settings.view_count > 1) {
 		// Use MULTIVIEW versions
@@ -212,6 +213,7 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
 	tonemap.push_constant.flags |= p_settings.convert_to_srgb ? TONEMAP_FLAG_CONVERT_TO_SRGB : 0;
+	tonemap.push_constant.flags |= p_settings.transparent_bg ? TONEMAP_FLAG_TRANSPARENT_BG : 0;
 
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);

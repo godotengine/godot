@@ -571,6 +571,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.view_count = rb->get_view_count();
 
 		tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(render_target);
+		tonemap.transparent_bg = texture_storage->render_target_get_transparent(render_target);
 
 		RID dest_fb;
 		bool use_intermediate_fb = use_fsr;
@@ -681,6 +682,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.view_count = rb->get_view_count();
 
 	tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(rb->get_render_target());
+	tonemap.transparent_bg = texture_storage->render_target_get_transparent(rb->get_render_target());
 
 	tone_mapper->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
 

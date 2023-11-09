@@ -2000,7 +2000,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			Vector<Color> c;
 			{
 				Color cc = clear_color.srgb_to_linear();
-				if (using_separate_specular || rb_data.is_valid()) {
+				if (using_separate_specular || RendererRD::TextureStorage::get_singleton()->render_target_get_transparent(rb->get_render_target())) {
 					// Effects that rely on separate specular, like subsurface scattering, must clear the alpha to zero.
 					cc.a = 0;
 				}
