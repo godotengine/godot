@@ -39,10 +39,11 @@
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
+bool ScriptServer::languages_ready = false;
+Mutex ScriptServer::languages_mutex;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
-SafeFlag ScriptServer::languages_finished; // Used until GH-76581 is fixed properly.
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 void Script::_notification(int p_what) {
@@ -160,12 +161,13 @@ bool ScriptServer::is_scripting_enabled() {
 }
 
 ScriptLanguage *ScriptServer::get_language(int p_idx) {
+	MutexLock lock(languages_mutex);
 	ERR_FAIL_INDEX_V(p_idx, _language_count, nullptr);
-
 	return _languages[p_idx];
 }
 
 Error ScriptServer::register_language(ScriptLanguage *p_language) {
+	MutexLock lock(languages_mutex);
 	ERR_FAIL_NULL_V(p_language, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(_language_count >= MAX_LANGUAGES, ERR_UNAVAILABLE, "Script languages limit has been reach, cannot register more.");
 	for (int i = 0; i < _language_count; i++) {
@@ -179,6 +181,8 @@ Error ScriptServer::register_language(ScriptLanguage *p_language) {
 }
 
 Error ScriptServer::unregister_language(const ScriptLanguage *p_language) {
+	MutexLock lock(languages_mutex);
+
 	for (int i = 0; i < _language_count; i++) {
 		if (_languages[i] == p_language) {
 			_language_count--;
@@ -219,17 +223,31 @@ void ScriptServer::init_languages() {
 		}
 	}
 
-	for (int i = 0; i < _language_count; i++) {
-		_languages[i]->init();
+	{
+		MutexLock lock(languages_mutex);
+
+		for (int i = 0; i < _language_count; i++) {
+			_languages[i]->init();
+		}
+
+		languages_ready = true;
 	}
 }
 
 void ScriptServer::finish_languages() {
+	MutexLock lock(languages_mutex);
+
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->finish();
 	}
 	global_classes_clear();
-	languages_finished.set();
+
+	languages_ready = false;
+}
+
+bool ScriptServer::are_languages_initialized() {
+	MutexLock lock(languages_mutex);
+	return languages_ready;
 }
 
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
@@ -241,7 +259,8 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 }
 
 void ScriptServer::thread_enter() {
-	if (!languages_finished.is_set()) {
+	MutexLock lock(languages_mutex);
+	if (!languages_ready) {
 		return;
 	}
 	for (int i = 0; i < _language_count; i++) {
@@ -250,7 +269,8 @@ void ScriptServer::thread_enter() {
 }
 
 void ScriptServer::thread_exit() {
-	if (!languages_finished.is_set()) {
+	MutexLock lock(languages_mutex);
+	if (!languages_ready) {
 		return;
 	}
 	for (int i = 0; i < _language_count; i++) {
