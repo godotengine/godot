@@ -1989,24 +1989,31 @@ const Variant CSharpInstance::get_rpc_config() const {
 
 void CSharpInstance::notification(int p_notification, bool p_reversed) {
 	if (p_notification == Object::NOTIFICATION_PREDELETE) {
-		// When NOTIFICATION_PREDELETE is sent, we also take the chance to call Dispose().
-		// It's safe to call Dispose() multiple times and NOTIFICATION_PREDELETE is guaranteed
+		if (base_ref_counted) {
+			// At this point, Dispose() was already called (manually or from the finalizer).
+			// The RefCounted wouldn't have reached 0 otherwise, since the managed side
+			// references it and Dispose() needs to be called to release it.
+			// However, this means C# RefCounted scripts can't receive NOTIFICATION_PREDELETE, but
+			// this is likely the case with GDScript as well: https://github.com/godotengine/godot/issues/6784
+			return;
+		}
+	} else if (p_notification == Object::NOTIFICATION_PREDELETE_CLEANUP) {
+		// When NOTIFICATION_PREDELETE_CLEANUP is sent, we also take the chance to call Dispose().
+		// It's safe to call Dispose() multiple times and NOTIFICATION_PREDELETE_CLEANUP is guaranteed
 		// to be sent at least once, which happens right before the call to the destructor.
 
 		predelete_notified = true;
 
 		if (base_ref_counted) {
-			// It's not safe to proceed if the owner derives RefCounted and the refcount reached 0.
-			// At this point, Dispose() was already called (manually or from the finalizer) so
-			// that's not a problem. The refcount wouldn't have reached 0 otherwise, since the
-			// managed side references it and Dispose() needs to be called to release it.
-			// However, this means C# RefCounted scripts can't receive NOTIFICATION_PREDELETE, but
-			// this is likely the case with GDScript as well: https://github.com/godotengine/godot/issues/6784
+			// At this point, Dispose() was already called (manually or from the finalizer).
+			// The RefCounted wouldn't have reached 0 otherwise, since the managed side
+			// references it and Dispose() needs to be called to release it.
 			return;
 		}
 
-		_call_notification(p_notification, p_reversed);
-
+		// NOTIFICATION_PREDELETE_CLEANUP is not sent to scripts.
+		// After calling Dispose() the C# instance can no longer be used,
+		// so it should be the last thing we do.
 		GDMonoCache::managed_callbacks.CSharpInstanceBridge_CallDispose(
 				gchandle.get_intptr(), /* okIfNull */ false);
 

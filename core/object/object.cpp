@@ -198,6 +198,7 @@ bool Object::_predelete() {
 	notification(NOTIFICATION_PREDELETE, true);
 	if (_predelete_ok) {
 		_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
+		notification(NOTIFICATION_PREDELETE_CLEANUP, true);
 	}
 	return _predelete_ok;
 }
