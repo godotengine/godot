@@ -1653,6 +1653,7 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 
 	data.custom_minimum_size = p_custom;
 	update_minimum_size();
+	update_configuration_warnings();
 }
 
 Size2 Control::get_custom_minimum_size() const {

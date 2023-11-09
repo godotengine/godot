@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
+#include "scene/gui/container.h"
 #include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
 
@@ -44,6 +45,7 @@ void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	autowrap_mode = p_mode;
 	lines_dirty = true;
 	queue_redraw();
+	update_configuration_warnings();
 
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
@@ -326,6 +328,19 @@ inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Col
 
 PackedStringArray Label::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
+
+	// FIXME: This is not ideal and the sizing model should be fixed,
+	// but for now we have to warn about this impossible to resolve combination.
+	// See GH-83546.
+	if (is_inside_tree() && get_tree()->get_edited_scene_root() != this) {
+		// If the Label happens to be the root node of the edited scene, we don't need
+		// to check what its parent is. It's going to be some node from the editor tree
+		// and it can be a container, but that makes no difference to the user.
+		Container *parent_container = Object::cast_to<Container>(get_parent_control());
+		if (parent_container && autowrap_mode != TextServer::AUTOWRAP_OFF && get_custom_minimum_size() == Size2()) {
+			warnings.push_back(RTR("Labels with autowrapping enabled must have a custom minimum size configured to work correctly inside a container."));
+		}
+	}
 
 	// Ensure that the font can render all of the required glyphs.
 	Ref<Font> font;
