@@ -1164,9 +1164,12 @@ void RigidBody3D::_reload_physics_characteristics() {
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-bool CharacterBody3D::move_and_slide() {
-	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+bool CharacterBody3D::move_and_slide(double delta) {
+	// Negative delta means no value was passed (default is -1), so we infer it from context
+	if (delta < 0) {
+		// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
+		delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+	}
 
 	for (int i = 0; i < 3; i++) {
 		if (locked_axis & (1 << i)) {
@@ -1964,7 +1967,7 @@ void CharacterBody3D::_notification(int p_what) {
 }
 
 void CharacterBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody3D::move_and_slide);
+	ClassDB::bind_method(D_METHOD("move_and_slide", "delta"), &CharacterBody3D::move_and_slide);
 	ClassDB::bind_method(D_METHOD("apply_floor_snap"), &CharacterBody3D::apply_floor_snap);
 
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody3D::set_velocity);
