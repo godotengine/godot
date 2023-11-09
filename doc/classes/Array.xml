@@ -544,6 +544,7 @@
 			<param index="0" name="size" type="int" />
 			<description>
 				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code]. Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				Calling [method resize] once and assigning the new values is faster than adding new elements one by one.
 				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 			</description>
 		</method>
