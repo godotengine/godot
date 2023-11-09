@@ -133,7 +133,7 @@
 				Modifies [member velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for more detailed information about collisions that occurred, use [method get_slide_collision].
 				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
 				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
-				By default, the time delta used for motion depends on the context the method is called from. When called from [method Node._physics_process], the delta is the time passed between the current and last [i]pyhsics[/i] frame. When called from [method Node._process], the delta is the time passed between the current and last [i]render[/i] frame. This can be overriden by passing a custom [param delta] value to the method.
+				By default, the time delta used for motion depends on the context the method is called from. When called from [method Node._physics_process], the delta is the time passed between the current and last [i]pyhsics[/i] frame. When called from [method Node._process], the delta is the time passed between the current and last [i]render[/i] frame. This can be overridden by passing a custom [param delta] value to the method.
 				[b]Note:[/b] [param delta] must be a positive number. Zero or negative values will treated as if no value was passed.
 			</description>
 		</method>
