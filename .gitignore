@@ -378,3 +378,8 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+#switch
+*.nro
+*.nso
+*.nacp

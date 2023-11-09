@@ -12,6 +12,7 @@ files = [
 ]
 
 program = env.add_program("#bin/godot", files)
+simple_console = env.add_program("#bin/simple_console", "simple_console.cpp")
 
 # Switch specifics
 devkitpro_path = os.environ.get("DEVKITPRO", "/opt/devkitpro")
@@ -19,9 +20,10 @@ nacptool_path = devkitpro_path + "/tools/bin/nacptool"
 elf2nro_path = devkitpro_path + "/tools/bin/elf2nro"
 elf2nso_path = devkitpro_path + "/tools/bin/elf2nso"
 
-default_icon = "icon.png"
+icon_path = "platform/switch/icon.jpg"
 nacp = "_default.nacp"
-romfs_path = "romfs"
+nacp_path = "platform/switch/" + nacp
+romfsdir_path = "platform/switch/romfs"
 
 build_target = env["target"]
 nro_target =  "#bin/switch_" + env["target"] + ".nro"
@@ -29,16 +31,35 @@ nso_target =  "#bin/switch_" + env["target"] + ".nso"
 version_str = "{}.{}.{}-{}".format(version.major, version.minor, version.patch, version.status)
 
 # generate nacp with dummy info
-env.Command(nacp, None, nacptool_path + " --create 'Godot' 'Godot Switch Team' '" + version_str + "' $TARGET")
+env.Command(nacp, None, nacptool_path + " --create 'Godot Switch Template' 'Godot Team' '" + version_str + "' $TARGET")
+env.AlwaysBuild(nacp)
 
 # build nro (ref https://github.com/switchbrew/switch-tools/blob/master/src/elf2nro.c)
-env.Command(nro_target, program, elf2nro_path + " $SOURCE $TARGET --icon=" + default_icon + " --nacp=platform/switch/" + nacp + " --romfsdir=platform/switch/" + romfs_path)
+env.Command(nro_target, program, elf2nro_path + " $SOURCE $TARGET --icon=" + icon_path + " --nacp=" + nacp_path + " --romfsdir=" + romfsdir_path)
+env.AlwaysBuild(nro_target)
 
 # build nso (ref https://github.com/switchbrew/switch-tools/blob/master/src/elf2nso.c)
-env.Command(nso_target, program, elf2nso_path + " $SOURCE $TARGET")
+#env.Command(nso_target, program, elf2nso_path + " $SOURCE $TARGET")
+#env.AlwaysBuild(nso_target)
 
 # make sure default nro is ready before build nro target
 env.Depends(target=nro_target, dependency=nacp)
+
+def build_nro(prog_name, output_name, title):
+    nacp = output_name + ".nacp"
+    nro = "#bin/" + output_name + ".nro"
+
+    # generate nacp with dummy info
+    env.Command(nacp, None, nacptool_path + " --create '" + title + "' 'Godot Team' '" + version_str + "' $TARGET")
+    env.AlwaysBuild(nacp)
+
+    # build nro (ref https://github.com/switchbrew/switch-tools/blob/master/src/elf2nro.c)
+    env.Command(nro, prog_name, elf2nro_path + " $SOURCE $TARGET --icon=" + icon_path + " --nacp=platform/switch/" + output_name + ".nacp" + " --romfsdir=" + romfsdir_path)
+    env.AlwaysBuild(nro)
+
+    env.Depends(target=nro, dependency=nacp)
+
+build_nro(simple_console, "simple_console", "Simple Console")
 
 # ref : https://github.com/switchbrew/switch-tools
 # ref : https://switchbrew.org/wiki/Setting_up_Development_Environment
