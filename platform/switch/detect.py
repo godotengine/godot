@@ -210,6 +210,7 @@ def configure(env):
     env.Append(CPPPATH=["#platform/switch"])
     env.Append(CPPDEFINES=[
         "SWITCH_ENABLED",
+        "UNIX_ENABLED",
         "GLES3_ENABLED",
         "PTHREAD_NO_RENAME",
         "UNIX_SOCKET_UNAVAILABLE"])

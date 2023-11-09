@@ -31,15 +31,17 @@
 #ifndef OS_SWITCH_H
 #define OS_SWITCH_H
 
-#include "core/os/os.h"
+#include "drivers/unix/os_unix.h"
 
-class OS_Switch : public OS {
+class OS_Switch : public OS_Unix {
 	MainLoop *main_loop = nullptr;
 
 private:
 protected:
 	virtual void initialize() override;
 	virtual void finalize() override;
+
+	virtual void initialize_core() override;
 	virtual void finalize_core() override;
 
 	virtual void initialize_joypads() override;
@@ -49,10 +51,6 @@ protected:
 
 public:
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
-	virtual Vector<String> get_video_adapter_driver_info() const override;
-
-	virtual String get_stdin_string() override;
-	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
 	// we do not care about process, we won't run any on the switch
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override { return ERR_UNAVAILABLE; }
@@ -68,16 +66,9 @@ public:
 
 	virtual String get_name() const override { return "switch"; }
 	virtual String get_distribution_name() const override { return ""; }
-	virtual String get_version() const override;
+	virtual String get_version() const override { return ""; };
 
 	virtual MainLoop *get_main_loop() const override { return main_loop; }
-
-	virtual OS::DateTime get_datetime(bool utc = false) const override;
-	virtual OS::TimeZoneInfo get_time_zone_info() const override;
-
-	virtual void delay_usec(uint32_t p_usec) const override;
-
-	virtual uint64_t get_ticks_usec() const override;
 
 	OS_Switch();
 	virtual ~OS_Switch();

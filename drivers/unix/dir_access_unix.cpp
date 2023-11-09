@@ -440,6 +440,10 @@ bool DirAccessUnix::is_link(String p_file) {
 }
 
 String DirAccessUnix::read_link(String p_file) {
+#if defined(__SWITCH__)
+	// Don't compile this code at all to avoid undefined references.
+	ERR_FAIL_V("");
+#else
 	if (p_file.is_relative_path()) {
 		p_file = get_current_dir().path_join(p_file);
 	}
@@ -454,9 +458,14 @@ String DirAccessUnix::read_link(String p_file) {
 		link.parse_utf8(buf, len);
 	}
 	return link;
+#endif
 }
 
 Error DirAccessUnix::create_link(String p_source, String p_target) {
+#if defined(__SWITCH__)
+	// Don't compile this code at all to avoid undefined references.
+	ERR_FAIL_V(FAILED);
+#else
 	if (p_target.is_relative_path()) {
 		p_target = get_current_dir().path_join(p_target);
 	}
@@ -469,6 +478,7 @@ Error DirAccessUnix::create_link(String p_source, String p_target) {
 	} else {
 		return FAILED;
 	}
+#endif
 }
 
 uint64_t DirAccessUnix::get_space_left() {

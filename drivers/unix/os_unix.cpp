@@ -67,7 +67,9 @@
 #include <uvm/uvm_extern.h>
 #endif
 
+#if !defined(__SWITCH__)
 #include <dlfcn.h>
+#endif
 #include <errno.h>
 #include <poll.h>
 #include <signal.h>
@@ -120,6 +122,7 @@ static void _setup_clock() {
 }
 #endif
 
+#if !defined(__SWITCH__)
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
 		return;
@@ -128,14 +131,21 @@ static void handle_interrupt(int sig) {
 	EngineDebugger::get_script_debugger()->set_depth(-1);
 	EngineDebugger::get_script_debugger()->set_lines_left(1);
 }
+#endif
 
 void OS_Unix::initialize_debugging() {
+#if defined(__SWITCH__)
+	// Don't compile this code at all to avoid undefined references.
+	// Actual virtual call goes to OS_Web.
+	ERR_FAIL_V();
+#else
 	if (EngineDebugger::is_active()) {
 		struct sigaction action;
 		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
 		sigaction(SIGINT, &action, nullptr);
 	}
+#endif
 }
 
 int OS_Unix::unix_initialize_audio(int p_audio_driver) {
@@ -152,14 +162,20 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
+#ifndef UNIX_SOCKET_UNAVAILABLE
 	NetSocketPosix::make_default();
+#endif
+#if !defined(__SWITCH__)
 	IPUnix::make_default();
+#endif
 
 	_setup_clock();
 }
 
 void OS_Unix::finalize_core() {
+#ifndef UNIX_SOCKET_UNAVAILABLE
 	NetSocketPosix::cleanup();
+#endif
 }
 
 Vector<String> OS_Unix::get_video_adapter_driver_info() const {
@@ -467,18 +483,20 @@ Dictionary OS_Unix::get_memory_info() const {
 	}
 #endif
 
+#ifndef __SWITCH__
 	rlimit stackinfo = {};
 	getrlimit(RLIMIT_STACK, &stackinfo);
 
 	if (stackinfo.rlim_cur != 0) {
 		meminfo["stack"] = (int64_t)stackinfo.rlim_cur;
 	}
+#endif
 
 	return meminfo;
 }
 
 Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__) || defined(__SWITCH__)
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
@@ -552,7 +570,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 }
 
 Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__) || defined(__SWITCH__)
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
@@ -592,6 +610,11 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 }
 
 Error OS_Unix::kill(const ProcessID &p_pid) {
+#if defined(__SWITCH__)
+	// Don't compile this code at all to avoid undefined references.
+	// Actual virtual call goes to OS_Web.
+	ERR_FAIL_V(ERR_BUG);
+#endif
 	int ret = ::kill(p_pid, SIGKILL);
 	if (!ret) {
 		//avoid zombie process
@@ -606,6 +629,11 @@ int OS_Unix::get_process_id() const {
 }
 
 bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
+#if defined(__SWITCH__)
+	// Don't compile this code at all to avoid undefined references.
+	// Actual virtual call goes to OS_Web.
+	ERR_FAIL_V(false);
+#endif
 	int status = 0;
 	if (waitpid(p_pid, &status, WNOHANG) != 0) {
 		return false;
@@ -627,6 +655,7 @@ String OS_Unix::get_locale() const {
 	return locale;
 }
 
+#ifndef __SWITCH__
 Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path;
 
@@ -677,6 +706,7 @@ Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const S
 	}
 	return OK;
 }
+#endif
 
 Error OS_Unix::set_cwd(const String &p_cwd) {
 	if (chdir(p_cwd.utf8().get_data()) != 0) {
