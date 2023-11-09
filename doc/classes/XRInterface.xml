@@ -119,7 +119,7 @@
 			<param index="0" name="mode" type="int" enum="XRInterface.EnvironmentBlendMode" />
 			<description>
 				Sets the active environment blend mode.
-				[param mode] is the [enum XRInterface.EnvironmentBlendMode] starting with the next frame.
+				[param mode] is the environment blend mode starting with the next frame.
 				[b]Note:[/b] Not all runtimes support all environment blend modes, so it is important to check this at startup. For example:
 				[codeblock]
 				                func _ready():
