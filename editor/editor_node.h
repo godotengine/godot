@@ -157,6 +157,7 @@ public:
 
 private:
 	friend class EditorSceneTabs;
+	friend class SurfaceUpgradeTool;
 
 	enum MenuOptions {
 		FILE_NEW_SCENE,
@@ -356,8 +357,6 @@ private:
 
 	uint64_t started_timestamp = 0;
 
-	PluginConfigDialog *plugin_config_dialog = nullptr;
-
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
 
@@ -461,6 +460,8 @@ private:
 	bool opening_prev = false;
 	bool restoring_scenes = false;
 	bool unsaved_cache = true;
+
+	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 
 	int current_menu_option = 0;
@@ -495,6 +496,7 @@ private:
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
 
 	SurfaceUpgradeTool *surface_upgrade_tool = nullptr;
+	bool run_surface_upgrade_tool = false;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -691,6 +693,8 @@ private:
 	void _bottom_panel_raise_toggled(bool);
 
 	void _begin_first_scan();
+
+	void _notify_scene_updated(Node *p_node);
 
 protected:
 	friend class FileSystemDock;
@@ -912,7 +916,8 @@ public:
 	PopupMenu *get_export_as_menu();
 
 	void save_all_scenes();
-	void save_scene_list(Vector<String> p_scene_filenames);
+	void save_scene_if_open(const String &p_scene_path);
+	void save_scene_list(const HashSet<String> &p_scene_paths);
 	void save_before_run();
 	void try_autosave();
 	void restart_editor();

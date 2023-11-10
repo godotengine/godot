@@ -98,8 +98,23 @@ void ClassDB::get_class_list(List<StringName> *p_classes) {
 		p_classes->push_back(E.key);
 	}
 
-	p_classes->sort();
+	p_classes->sort_custom<StringName::AlphCompare>();
 }
+
+#ifdef TOOLS_ENABLED
+void ClassDB::get_extensions_class_list(List<StringName> *p_classes) {
+	OBJTYPE_RLOCK;
+
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		if (E.value.api != API_EXTENSION && E.value.api != API_EDITOR_EXTENSION) {
+			continue;
+		}
+		p_classes->push_back(E.key);
+	}
+
+	p_classes->sort_custom<StringName::AlphCompare>();
+}
+#endif
 
 void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;

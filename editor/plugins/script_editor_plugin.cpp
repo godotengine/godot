@@ -433,7 +433,11 @@ ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *_se) {
 	String val = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
+	const int display_limit = 300;
 	if (!val.is_empty()) {
+		if (val.size() > display_limit) {
+			val = val.left(display_limit) + " [...] truncated!";
+		}
 		return p_text + ": " + val;
 	} else {
 		return String();
@@ -2520,9 +2524,7 @@ void ScriptEditor::save_current_script() {
 		// If built-in script, save the scene instead.
 		const String scene_path = resource->get_path().get_slice("::", 0);
 		if (!scene_path.is_empty()) {
-			Vector<String> scene_to_save;
-			scene_to_save.push_back(scene_path);
-			EditorNode::get_singleton()->save_scene_list(scene_to_save);
+			EditorNode::get_singleton()->save_scene_if_open(scene_path);
 		}
 	} else {
 		EditorNode::get_singleton()->save_resource(resource);
@@ -2534,7 +2536,7 @@ void ScriptEditor::save_current_script() {
 }
 
 void ScriptEditor::save_all_scripts() {
-	Vector<String> scenes_to_save;
+	HashSet<String> scenes_to_save;
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -2583,7 +2585,7 @@ void ScriptEditor::save_all_scripts() {
 			// For built-in scripts, save their scenes instead.
 			const String scene_path = edited_res->get_path().get_slice("::", 0);
 			if (!scene_path.is_empty() && !scenes_to_save.has(scene_path)) {
-				scenes_to_save.push_back(scene_path);
+				scenes_to_save.insert(scene_path);
 			}
 		}
 	}

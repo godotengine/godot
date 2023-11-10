@@ -448,7 +448,7 @@ Error VulkanContext::_initialize_instance_extensions() {
 	}
 #ifdef DEV_ENABLED
 	for (uint32_t i = 0; i < instance_extension_count; i++) {
-		print_verbose(String("VULKAN: Found instance extension ") + String(instance_extensions[i].extensionName));
+		print_verbose(String("VULKAN: Found instance extension ") + String::utf8(instance_extensions[i].extensionName));
 	}
 #endif
 
@@ -465,9 +465,9 @@ Error VulkanContext::_initialize_instance_extensions() {
 		if (!enabled_instance_extension_names.has(requested_extension.key)) {
 			if (requested_extension.value) {
 				free(instance_extensions);
-				ERR_FAIL_V_MSG(ERR_BUG, String("Required extension ") + String(requested_extension.key) + String(" not found, is a driver installed?"));
+				ERR_FAIL_V_MSG(ERR_BUG, String("Required extension ") + String::utf8(requested_extension.key) + String(" not found, is a driver installed?"));
 			} else {
-				print_verbose(String("Optional extension ") + String(requested_extension.key) + String(" not found"));
+				print_verbose(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found"));
 			}
 		}
 	}
@@ -546,7 +546,7 @@ Error VulkanContext::_initialize_device_extensions() {
 
 #ifdef DEV_ENABLED
 	for (uint32_t i = 0; i < device_extension_count; i++) {
-		print_verbose(String("VULKAN: Found device extension ") + String(device_extensions[i].extensionName));
+		print_verbose(String("VULKAN: Found device extension ") + String::utf8(device_extensions[i].extensionName));
 	}
 #endif
 
@@ -564,9 +564,9 @@ Error VulkanContext::_initialize_device_extensions() {
 			if (requested_extension.value) {
 				free(device_extensions);
 				ERR_FAIL_V_MSG(ERR_BUG,
-						String("vkEnumerateDeviceExtensionProperties failed to find the ") + String(requested_extension.key) + String(" extension.\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?\nvkCreateInstance Failure"));
+						String("vkEnumerateDeviceExtensionProperties failed to find the ") + String::utf8(requested_extension.key) + String(" extension.\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?\nvkCreateInstance Failure"));
 			} else {
-				print_verbose(String("Optional extension ") + String(requested_extension.key) + String(" not found"));
+				print_verbose(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found"));
 			}
 		}
 	}
@@ -1248,7 +1248,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 					}
 				}
 			}
-			String name = props.deviceName;
+			String name = String::utf8(props.deviceName);
 			String vendor = "Unknown";
 			String dev_type;
 			switch (props.deviceType) {
@@ -1330,7 +1330,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	// Get identifier properties.
 	vkGetPhysicalDeviceProperties(gpu, &gpu_props);
 
-	device_name = gpu_props.deviceName;
+	device_name = String::utf8(gpu_props.deviceName);
 	device_type = gpu_props.deviceType;
 	pipeline_cache_id = String::hex_encode_buffer(gpu_props.pipelineCacheUUID, VK_UUID_SIZE);
 	pipeline_cache_id += "-driver-" + itos(gpu_props.driverVersion);

@@ -4882,8 +4882,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
 				snap = spatial_editor->get_rotate_snap();
 			}
-			angle = Math::rad_to_deg(angle) + snap * 0.5; //else it won't reach +180
-			angle -= Math::fmod(angle, snap);
+			angle = Math::snapped(Math::rad_to_deg(angle), snap);
 			set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
 			angle = Math::deg_to_rad(angle);
 
@@ -5857,9 +5856,9 @@ Dictionary Node3DEditor::get_state() const {
 	Dictionary d;
 
 	d["snap_enabled"] = snap_enabled;
-	d["translate_snap"] = get_translate_snap();
-	d["rotate_snap"] = get_rotate_snap();
-	d["scale_snap"] = get_scale_snap();
+	d["translate_snap"] = snap_translate_value;
+	d["rotate_snap"] = snap_rotate_value;
+	d["scale_snap"] = snap_scale_value;
 
 	d["local_coords"] = tool_option_button[TOOL_OPT_LOCAL_COORDS]->is_pressed();
 
@@ -8872,9 +8871,8 @@ void Node3DEditorPlugin::set_state(const Dictionary &p_state) {
 
 Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 	if (is_snap_enabled()) {
-		p_target.x = Math::snap_scalar(0.0, get_translate_snap(), p_target.x);
-		p_target.y = Math::snap_scalar(0.0, get_translate_snap(), p_target.y);
-		p_target.z = Math::snap_scalar(0.0, get_translate_snap(), p_target.z);
+		real_t snap = get_translate_snap();
+		p_target.snap(Vector3(snap, snap, snap));
 	}
 	return p_target;
 }
@@ -8886,36 +8884,27 @@ bool Node3DEditor::is_gizmo_visible() const {
 	return gizmo.visible;
 }
 
-double Node3DEditor::get_translate_snap() const {
-	double snap_value;
+real_t Node3DEditor::get_translate_snap() const {
+	real_t snap_value = snap_translate_value;
 	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
-		snap_value = snap_translate->get_text().to_float() / 10.0;
-	} else {
-		snap_value = snap_translate->get_text().to_float();
+		snap_value /= 10.0f;
 	}
-
 	return snap_value;
 }
 
-double Node3DEditor::get_rotate_snap() const {
-	double snap_value;
+real_t Node3DEditor::get_rotate_snap() const {
+	real_t snap_value = snap_rotate_value;
 	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
-		snap_value = snap_rotate->get_text().to_float() / 3.0;
-	} else {
-		snap_value = snap_rotate->get_text().to_float();
+		snap_value /= 3.0f;
 	}
-
 	return snap_value;
 }
 
-double Node3DEditor::get_scale_snap() const {
-	double snap_value;
+real_t Node3DEditor::get_scale_snap() const {
+	real_t snap_value = snap_scale_value;
 	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
-		snap_value = snap_scale->get_text().to_float() / 2.0;
-	} else {
-		snap_value = snap_scale->get_text().to_float();
+		snap_value /= 2.0f;
 	}
-
 	return snap_value;
 }
 

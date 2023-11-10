@@ -21,7 +21,7 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
-        ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
+        ("ANDROID_HOME", "Path to the Android SDK", get_env_android_sdk_root()),
         (
             "ndk_platform",
             'Target platform (android-<api>, e.g. "android-' + str(get_min_target_api()) + '")',
@@ -41,9 +41,9 @@ def get_doc_path():
     return "doc_classes"
 
 
-# Return the ANDROID_SDK_ROOT environment variable.
+# Return the ANDROID_HOME environment variable.
 def get_env_android_sdk_root():
-    return os.environ.get("ANDROID_SDK_ROOT", -1)
+    return os.environ.get("ANDROID_HOME", os.environ.get("ANDROID_SDK_ROOT", ""))
 
 
 def get_min_sdk_version(platform):
@@ -51,7 +51,7 @@ def get_min_sdk_version(platform):
 
 
 def get_android_ndk_root(env):
-    return env["ANDROID_SDK_ROOT"] + "/ndk/" + get_ndk_version()
+    return env["ANDROID_HOME"] + "/ndk/" + get_ndk_version()
 
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
@@ -75,7 +75,7 @@ def get_flags():
 # If not, install it.
 def install_ndk_if_needed(env):
     print("Checking for Android NDK...")
-    sdk_root = env["ANDROID_SDK_ROOT"]
+    sdk_root = env["ANDROID_HOME"]
     if not os.path.exists(get_android_ndk_root(env)):
         extension = ".bat" if os.name == "nt" else ""
         sdkmanager = sdk_root + "/cmdline-tools/latest/bin/sdkmanager" + extension
@@ -87,7 +87,7 @@ def install_ndk_if_needed(env):
         else:
             print("Cannot find " + sdkmanager)
             print(
-                "Please ensure ANDROID_SDK_ROOT is correct and cmdline-tools are installed, or install NDK version "
+                "Please ensure ANDROID_HOME is correct and cmdline-tools are installed, or install NDK version "
                 + get_ndk_version()
                 + " manually."
             )

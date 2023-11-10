@@ -186,7 +186,7 @@
 			<param index="1" name="submenu" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
 			<description>
-				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument is the name of the child [PopupMenu] node that will be shown when the item is clicked.
+				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument must be the name of an existing [PopupMenu] that has been added as a child to this node. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
 			</description>
 		</method>

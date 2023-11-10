@@ -35,13 +35,31 @@
 
 class EditorFileSystemDirectory;
 
-class SurfaceUpgradeTool {
-	static void upgrade_all_meshes();
+class SurfaceUpgradeTool : public Object {
+	GDCLASS(SurfaceUpgradeTool, Object);
 
-	static void _show_popup();
-	static void _add_files(EditorFileSystemDirectory *p_dir, HashSet<String> &r_paths, PackedStringArray &r_files);
+	static SurfaceUpgradeTool *singleton;
+
+	bool show_requested = false;
+	bool popped_up = false;
+	Mutex mutex;
+
+	static void _try_show_popup();
+	void _show_popup();
+	void _add_files(EditorFileSystemDirectory *p_dir, Vector<String> &r_reimport_paths, Vector<String> &r_resave_paths);
+
+protected:
+	static void _bind_methods();
 
 public:
+	static SurfaceUpgradeTool *get_singleton() { return singleton; };
+
+	bool is_show_requested() const { return show_requested; };
+	void show_popup() { _show_popup(); }
+
+	void begin_upgrade();
+	void finish_upgrade();
+
 	SurfaceUpgradeTool();
 	~SurfaceUpgradeTool();
 };

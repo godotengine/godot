@@ -494,7 +494,7 @@ void ShaderCreateDialog::_update_dialog() {
 	if (!is_built_in && !is_path_valid) {
 		validation_panel->set_message(MSG_ID_SHADER, TTR("Invalid path."), EditorValidationPanel::MSG_ERROR);
 	}
-	if (!path_error.is_empty()) {
+	if (!is_built_in && !path_error.is_empty()) {
 		validation_panel->set_message(MSG_ID_PATH, path_error, EditorValidationPanel::MSG_ERROR);
 	} else if (validation_panel->is_valid() && !is_new_shader_created) {
 		validation_panel->set_message(MSG_ID_SHADER, TTR("File exists, it will be reused."), EditorValidationPanel::MSG_OK);

@@ -2361,13 +2361,11 @@ void EditorHelp::_add_text(const String &p_bbcode) {
 }
 
 String EditorHelp::doc_version_hash;
-bool EditorHelp::doc_gen_first_attempt = true;
-bool EditorHelp::doc_gen_use_threads = true;
-Thread EditorHelp::gen_thread;
+Thread EditorHelp::worker_thread;
 
 void EditorHelp::_wait_for_thread() {
-	if (gen_thread.is_started()) {
-		gen_thread.wait_to_finish();
+	if (worker_thread.is_started()) {
+		worker_thread.wait_to_finish();
 	}
 }
 
@@ -2381,18 +2379,18 @@ String EditorHelp::get_cache_full_path() {
 }
 
 void EditorHelp::_load_doc_thread(void *p_udata) {
-	DEV_ASSERT(doc_gen_first_attempt);
-
 	Ref<Resource> cache_res = ResourceLoader::load(get_cache_full_path());
 	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == doc_version_hash) {
 		Array classes = cache_res->get_meta("classes", Array());
 		for (int i = 0; i < classes.size(); i++) {
 			doc->add_doc(DocData::ClassDoc::from_dict(classes[i]));
 		}
+
+		// Extensions' docs are not cached. Generate them now (on the main thread).
+		callable_mp_static(&EditorHelp::_gen_extensions_docs).call_deferred();
 	} else {
-		// We have to go back to the main thread to start from scratch.
-		doc_gen_first_attempt = false;
-		callable_mp_static(&EditorHelp::generate_doc).bind(true).call_deferred();
+		// We have to go back to the main thread to start from scratch, bypassing any possibly existing cache.
+		callable_mp_static(&EditorHelp::generate_doc).bind(false).call_deferred();
 	}
 }
 
@@ -2406,6 +2404,12 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 	cache_res->set_meta("version_hash", doc_version_hash);
 	Array classes;
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
+		if (ClassDB::class_exists(E.value.name)) {
+			ClassDB::APIType api = ClassDB::get_api_type(E.value.name);
+			if (api == ClassDB::API_EXTENSION || api == ClassDB::API_EDITOR_EXTENSION) {
+				continue;
+			}
+		}
 		classes.push_back(DocData::ClassDoc::to_dict(E.value));
 	}
 	cache_res->set_meta("classes", classes);
@@ -2415,14 +2419,15 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 	}
 }
 
+void EditorHelp::_gen_extensions_docs() {
+	doc->generate((DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES | DocTools::GENERATE_FLAG_EXTENSION_CLASSES_ONLY));
+}
+
 void EditorHelp::generate_doc(bool p_use_cache) {
 	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
-	if (doc_gen_use_threads) {
-		// In case not the first attempt.
-		_wait_for_thread();
-	}
 
-	DEV_ASSERT(doc_gen_first_attempt == (doc == nullptr));
+	// In case not the first attempt.
+	_wait_for_thread();
 
 	if (!doc) {
 		doc = memnew(DocTools);
@@ -2432,24 +2437,14 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 		_compute_doc_version_hash();
 	}
 
-	if (p_use_cache && doc_gen_first_attempt && FileAccess::exists(get_cache_full_path())) {
-		if (doc_gen_use_threads) {
-			gen_thread.start(_load_doc_thread, nullptr);
-		} else {
-			_load_doc_thread(nullptr);
-		}
+	if (p_use_cache && FileAccess::exists(get_cache_full_path())) {
+		worker_thread.start(_load_doc_thread, nullptr);
 	} else {
 		print_verbose("Regenerating editor help cache");
-
-		// Not doable on threads unfortunately, since it instantiates all sorts of classes to get default values.
-		doc->generate(true);
-
-		if (doc_gen_use_threads) {
-			gen_thread.start(_gen_doc_thread, nullptr);
-		} else {
-			_gen_doc_thread(nullptr);
-		}
+		doc->generate();
+		worker_thread.start(_gen_doc_thread, nullptr);
 	}
+
 	OS::get_singleton()->benchmark_end_measure("EditorHelp::generate_doc");
 }
 

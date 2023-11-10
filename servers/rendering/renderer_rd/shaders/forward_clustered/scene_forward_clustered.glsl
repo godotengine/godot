@@ -1019,13 +1019,11 @@ void fragment_shader(in SceneData scene_data) {
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
 #ifdef MODE_RENDER_DEPTH
-#ifdef USE_OPAQUE_PREPASS
-#ifndef ALPHA_SCISSOR_USED
+#if defined(USE_OPAQUE_PREPASS) || defined(ALPHA_ANTIALIASING_EDGE_USED)
 	if (alpha < scene_data.opaque_prepass_threshold) {
 		discard;
 	}
-#endif // !ALPHA_SCISSOR_USED
-#endif // USE_OPAQUE_PREPASS
+#endif // USE_OPAQUE_PREPASS || ALPHA_ANTIALIASING_EDGE_USED
 #endif // MODE_RENDER_DEPTH
 
 #endif // !USE_SHADOW_TO_OPACITY

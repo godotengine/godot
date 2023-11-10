@@ -127,59 +127,57 @@ void Sprite2DEditor::_menu_option(int p_option) {
 			debug_uv_dialog->set_ok_button_text(TTR("Create MeshInstance2D"));
 			debug_uv_dialog->set_title(TTR("MeshInstance2D Preview"));
 
-			_update_mesh_data();
-			debug_uv_dialog->popup_centered();
-			debug_uv->queue_redraw();
-
+			_popup_debug_uv_dialog();
 		} break;
 		case MENU_OPTION_CONVERT_TO_POLYGON_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create Polygon2D"));
 			debug_uv_dialog->set_title(TTR("Polygon2D Preview"));
 
-			_update_mesh_data();
-			debug_uv_dialog->popup_centered();
-			debug_uv->queue_redraw();
+			_popup_debug_uv_dialog();
 		} break;
 		case MENU_OPTION_CREATE_COLLISION_POLY_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create CollisionPolygon2D"));
 			debug_uv_dialog->set_title(TTR("CollisionPolygon2D Preview"));
 
-			_update_mesh_data();
-			debug_uv_dialog->popup_centered();
-			debug_uv->queue_redraw();
-
+			_popup_debug_uv_dialog();
 		} break;
 		case MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create LightOccluder2D"));
 			debug_uv_dialog->set_title(TTR("LightOccluder2D Preview"));
 
-			_update_mesh_data();
-			debug_uv_dialog->popup_centered();
-			debug_uv->queue_redraw();
-
+			_popup_debug_uv_dialog();
 		} break;
 	}
 }
 
-void Sprite2DEditor::_update_mesh_data() {
+void Sprite2DEditor::_popup_debug_uv_dialog() {
+	String error_message;
 	if (node->get_owner() != get_tree()->get_edited_scene_root()) {
-		err_dialog->set_text(TTR("Can't convert a Sprite2D from a foreign scene."));
-		err_dialog->popup_centered();
+		error_message = TTR("Can't convert a sprite from a foreign scene.");
 	}
-
 	Ref<Texture2D> texture = node->get_texture();
 	if (texture.is_null()) {
-		err_dialog->set_text(TTR("Sprite2D is empty!"));
-		err_dialog->popup_centered();
-		return;
+		error_message = TTR("Can't convert an empty sprite to mesh.");
 	}
-
 	if (node->get_hframes() > 1 || node->get_vframes() > 1) {
-		err_dialog->set_text(TTR("Can't convert a sprite using animation frames to mesh."));
+		error_message = TTR("Can't convert a sprite using animation frames to mesh.");
+	}
+
+	if (!error_message.is_empty()) {
+		err_dialog->set_text(error_message);
 		err_dialog->popup_centered();
 		return;
 	}
 
+	_update_mesh_data();
+	debug_uv_dialog->popup_centered();
+	debug_uv->queue_redraw();
+}
+
+void Sprite2DEditor::_update_mesh_data() {
+	ERR_FAIL_NULL(node);
+	Ref<Texture2D> texture = node->get_texture();
+	ERR_FAIL_COND(texture.is_null());
 	Ref<Image> image = texture->get_image();
 	ERR_FAIL_COND(image.is_null());
 
@@ -187,12 +185,9 @@ void Sprite2DEditor::_update_mesh_data() {
 		image->decompress();
 	}
 
+	// TODO: Add support for Sprite2D's region.
 	Rect2 rect;
-	if (node->is_region_enabled()) {
-		rect = node->get_region_rect();
-	} else {
-		rect.size = image->get_size();
-	}
+	rect.size = image->get_size();
 
 	Ref<BitMap> bm;
 	bm.instantiate();

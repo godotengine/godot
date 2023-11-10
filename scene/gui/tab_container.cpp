@@ -143,6 +143,13 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (setup_current_tab >= 0) {
+				set_current_tab(setup_current_tab);
+				setup_current_tab = -1;
+			}
+		} break;
+
 		case NOTIFICATION_READY:
 		case NOTIFICATION_RESIZED: {
 			_update_margins();
@@ -330,14 +337,23 @@ Vector<Control *> TabContainer::_get_tab_controls() const {
 }
 
 Variant TabContainer::_get_drag_data_fw(const Point2 &p_point, Control *p_from_control) {
+	if (!drag_to_rearrange_enabled) {
+		return Variant();
+	}
 	return tab_bar->_handle_get_drag_data("tab_container_tab", p_point);
 }
 
 bool TabContainer::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const {
+	if (!drag_to_rearrange_enabled) {
+		return false;
+	}
 	return tab_bar->_handle_can_drop_data("tab_container_tab", p_point, p_data);
 }
 
 void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) {
+	if (!drag_to_rearrange_enabled) {
+		return;
+	}
 	return tab_bar->_handle_drop_data("tab_container_tab", p_point, p_data, callable_mp(this, &TabContainer::_drag_move_tab), callable_mp(this, &TabContainer::_drag_move_tab_from));
 }
 
@@ -519,6 +535,10 @@ int TabContainer::get_tab_count() const {
 }
 
 void TabContainer::set_current_tab(int p_current) {
+	if (!is_inside_tree()) {
+		setup_current_tab = p_current;
+		return;
+	}
 	tab_bar->set_current_tab(p_current);
 }
 
@@ -815,11 +835,11 @@ Popup *TabContainer::get_popup() const {
 }
 
 void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
-	tab_bar->set_drag_to_rearrange_enabled(p_enabled);
+	drag_to_rearrange_enabled = p_enabled;
 }
 
 bool TabContainer::get_drag_to_rearrange_enabled() const {
-	return tab_bar->get_drag_to_rearrange_enabled();
+	return drag_to_rearrange_enabled;
 }
 
 void TabContainer::set_tabs_rearrange_group(int p_group_id) {
@@ -903,7 +923,7 @@ void TabContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");

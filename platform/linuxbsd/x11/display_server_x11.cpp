@@ -672,7 +672,7 @@ Atom DisplayServerX11::_clipboard_get_image_target(Atom p_source, Window x11_win
 	unsigned long atom_count = 0;
 
 	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
-	if (selection_owner != None) {
+	if (selection_owner != None && selection_owner != x11_window) {
 		// Block events polling while processing selection events.
 		MutexLock mutex_lock(events_mutex);
 
@@ -783,7 +783,7 @@ Ref<Image> DisplayServerX11::clipboard_get_image() const {
 
 	Window selection_owner = XGetSelectionOwner(x11_display, clipboard);
 
-	if (selection_owner != None) {
+	if (selection_owner != None && selection_owner != x11_window) {
 		// Block events polling while processing selection events.
 		MutexLock mutex_lock(events_mutex);
 
@@ -1571,7 +1571,7 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 
 	//Use xrandr to get screen refresh rate.
 	if (xrandr_ext_ok) {
-		XRRScreenResources *screen_info = XRRGetScreenResources(x11_display, windows[MAIN_WINDOW_ID].x11_window);
+		XRRScreenResources *screen_info = XRRGetScreenResourcesCurrent(x11_display, windows[MAIN_WINDOW_ID].x11_window);
 		if (screen_info) {
 			RRMode current_mode = 0;
 			xrr_monitor_info *monitors = nullptr;

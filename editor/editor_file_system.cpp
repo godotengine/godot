@@ -2012,6 +2012,11 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 	}
 
+	if (FileAccess::exists(p_file + ".import")) {
+		// We only want to handle compat for existing files, not new ones.
+		importer->handle_compatibility_options(params);
+	}
+
 	//mix with default params, in case a parameter is missing
 
 	List<ResourceImporter::ImportOption> opts;

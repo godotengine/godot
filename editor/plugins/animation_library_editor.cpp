@@ -668,7 +668,7 @@ void AnimationLibraryEditor::update_tree() {
 			}
 		}
 
-		libitem->set_editable(0, !animation_library_is_foreign);
+		libitem->set_editable(0, true);
 		libitem->set_metadata(0, K);
 		libitem->set_icon(0, get_editor_theme_icon("AnimationLibrary"));
 

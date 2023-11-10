@@ -339,7 +339,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 8.1.1 (1d665c2b521512cdd56964138fc601debd1f1177, 2023)
+- Version: 8.2.2 (18a6e78549e8e04a281129ea8ca784ce85f111b8, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -480,7 +480,7 @@ in the MSVC debugger.
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.4 (aeb97a18913a86f051afab11b2c92c6be0c2eb83, 2023)
+- Version: 2.28.5 (47e8cc9db2e469d902b0e3093ae9e482c3d87188, 2023)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -490,8 +490,8 @@ File extracted from upstream release tarball:
 - All `.c` and `.h` from `library/` to `thirdparty/mbedtls/library/` except
   those starting with `psa_*`
 - The `LICENSE` file
-- Applied the patch in `patches/windows-arm64-hardclock.diff`
-  Applied the patch in `aesni-no-arm-intrinsics.patch` to fix MSVC ARM build
+- Applied the patch `windows-arm64-hardclock.diff` to fix Windows ARM64 build
+  Applied the patch `windows-entropy-bcrypt.diff` to fix Windows Store support
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
 - Added the file `godot_module_mbedtls_config.h` to customize the build
@@ -672,7 +672,7 @@ with the provided patch.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.28 (f5beb0131f1bea8701ace744d1b50df9049bf331, 2023)
+- Version: 1.0.31 (95fe35ffb383710a6e0567e958ead9a3b66e930c, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -689,6 +689,7 @@ Files extracted from upstream source:
 Exclude:
 
 - `src/external/android-jni-wrappers` and `src/external/jnipp` (not used yet)
+- Obsolete `src/xr_generated_dispatch_table.{c,h}`
 - All CMake stuff: `cmake/`, `CMakeLists.txt` and `*.cmake`
 - All Gradle stuff: `*gradle*`, `AndroidManifest.xml`
 - All following files (and their `.license` files):
