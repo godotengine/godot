@@ -1046,6 +1046,9 @@ void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 		(*rot_x) = CLAMP((*rot_x), -Math_PI / 2, Math_PI / 2);
 		_update_camera();
 	}
+	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+		DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CursorShape::CURSOR_ARROW);
+	}
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 		(*zoom) *= 1.1;
