@@ -1122,6 +1122,10 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Set active tablet driver name.
+				Supported drivers:
+				- [code]winink[/code]: Windows Ink API, default (Windows 8.1+ required).
+				- [code]wintab[/code]: Wacom Wintab API (compatible device driver required).
+				- [code]dummy[/code]: Dummy driver, tablet input is disabled.
 				[b]Note:[/b] This method is implemented only on Windows.
 			</description>
 		</method>
