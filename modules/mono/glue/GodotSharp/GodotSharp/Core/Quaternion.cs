@@ -631,12 +631,6 @@ namespace Godot
         /// <returns>The rotated Vector3.</returns>
         public static Vector3 operator *(Quaternion quaternion, Vector3 vector)
         {
-#if DEBUG
-            if (!quaternion.IsNormalized())
-            {
-                throw new InvalidOperationException("Quaternion is not normalized.");
-            }
-#endif
             var u = new Vector3(quaternion.X, quaternion.Y, quaternion.Z);
             Vector3 uv = u.Cross(vector);
             return vector + (((uv * quaternion.W) + u.Cross(uv)) * 2);
@@ -651,6 +645,12 @@ namespace Godot
         /// <returns>The inversely rotated Vector3.</returns>
         public static Vector3 operator *(Vector3 vector, Quaternion quaternion)
         {
+#if DEBUG
+            if (!quaternion.IsNormalized())
+            {
+                throw new InvalidOperationException("Quaternion is not normalized.");
+            }
+#endif
             return quaternion.Inverse() * vector;
         }
 
