@@ -30,13 +30,14 @@
 # Maksym <maksym@mowemax.com>, 2023.
 # Dan <jonweblin2205@protonmail.com>, 2023.
 # Siked Siked <siked3@gmail.com>, 2023.
+# Вадим Коваль <vadimkoval571@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-21 15:42+0000\n"
-"Last-Translator: Siked Siked <siked3@gmail.com>\n"
+"PO-Revision-Date: 2023-10-29 17:04+0000\n"
+"Last-Translator: Вадим Коваль <vadimkoval571@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -45,7 +46,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 msgid "Application"
 msgstr "Застосунок"
@@ -169,6 +170,9 @@ msgstr "Сила 2D панорамування"
 
 msgid "3D Panning Strength"
 msgstr "Сила 3D панорамування"
+
+msgid "iOS"
+msgstr "iOS"
 
 msgid "Editor"
 msgstr "Редактор"
@@ -2192,9 +2196,6 @@ msgstr "Докладно до stdout"
 msgid "Low Processor Mode"
 msgstr "Режим низького споживання процесора"
 
-msgid "iOS"
-msgstr "iOS"
-
 msgid "Hide Home Indicator"
 msgstr "Приховати індикатор домівки"
 
@@ -2242,6 +2243,9 @@ msgstr "Емулювати дотик з миші"
 
 msgid "Emulate Mouse From Touch"
 msgstr "Емулювати мишу з дотику"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Mouse Cursor"
 msgstr "Курсор миші"
@@ -2743,9 +2747,6 @@ msgstr "Необов'язкові можливості"
 
 msgid "Visibility State"
 msgstr "Перемкнути видимість"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Шлях Android SDK"
@@ -4196,6 +4197,9 @@ msgstr "Відкладений режим"
 msgid "Presets Visible"
 msgstr "Видимі набори"
 
+msgid "Constants"
+msgstr "Константи"
+
 msgid "Grow Direction"
 msgstr "Напрямки"
 
@@ -4310,12 +4314,6 @@ msgstr "Видимі символи"
 msgid "Max Length"
 msgstr "Максимальна довжина"
 
-msgid "Secret"
-msgstr "Пароль"
-
-msgid "Secret Character"
-msgstr "Символ пароля"
-
 msgid "Context Menu Enabled"
 msgstr "Увімкнено контекстне меню"
 
@@ -4339,6 +4337,12 @@ msgstr "Права кнопка"
 
 msgid "Blink"
 msgstr "Блимання"
+
+msgid "Secret"
+msgstr "Пароль"
+
+msgid "Secret Character"
+msgstr "Символ пароля"
 
 msgid "Underline"
 msgstr "Підкреслений"
@@ -4451,14 +4455,14 @@ msgstr "Гортання увімкнено"
 msgid "Tabs Visible"
 msgstr "Вкладки видимі"
 
-msgid "Syntax Highlighter"
-msgstr "Засіб підсвічування синтаксису"
-
 msgid "Fit Content Height"
 msgstr "Висота підбирання за вмістом"
 
 msgid "Draw"
 msgstr "Креслення"
+
+msgid "Syntax Highlighter"
+msgstr "Засіб підсвічування синтаксису"
 
 msgid "Hover"
 msgstr "Наведення"
@@ -4990,18 +4994,6 @@ msgstr "Розміри планки"
 
 msgid "Bundled"
 msgstr "З'єднане"
-
-msgid "Point Texture"
-msgstr "Точкова текстура"
-
-msgid "Normal Texture"
-msgstr "Нормальна текстура"
-
-msgid "Color Texture"
-msgstr "Кольорова текстура"
-
-msgid "Point Count"
-msgstr "Кількість точок"
 
 msgid "Scale Curve"
 msgstr "Крива масштабування"

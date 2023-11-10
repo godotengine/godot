@@ -41,13 +41,15 @@
 # Ruan Azevedo <ruan.azevedo@gmail.com>, 2023.
 # Fábio Sousa <fabiodaniel.2000@gmail.com>, 2023.
 # Lucas Souza <lucasteisouza@gmail.com>, 2023.
+# André Luiz Santana Siqueira <hivosoft@outlook.com>, 2023.
+# gomakappa <gomaproi@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-29 19:03+0000\n"
-"Last-Translator: Lucas Souza <lucasteisouza@gmail.com>\n"
+"PO-Revision-Date: 2023-10-20 09:04+0000\n"
+"Last-Translator: gomakappa <gomaproi@outlook.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -55,7 +57,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.1\n"
+
+msgid "Main Thread"
+msgstr "Linha Principal"
 
 msgid "Unset"
 msgstr "Desativar"
@@ -799,6 +804,11 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Remover Pista de Animação"
 
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Mantenha a tecla Shift pressionada ao clicar no ícone da tecla para pular "
+"esta caixa de diálogo."
+
 msgid "Create new track for %s and insert key?"
 msgstr "Criar NOVA faixa para %s e inserir chave?"
 
@@ -949,6 +959,9 @@ msgstr ""
 "Algumas opções, incluindo repetição, estão disponíveis aqui. Para adicionar "
 "faixas personalizadas, ative \"Gravar em Ficheiro\" e\n"
 "\"Manter faixas personalizadas\"."
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "AnimationPlayer está inativo. A reprodução não será processada."
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Selecione um nó AnimationPlayer para criar e editar animações."
@@ -1210,6 +1223,14 @@ msgstr "Substituir todos"
 msgid "Selection Only"
 msgstr "Apenas seleção"
 
+msgctxt "Indentation"
+msgid "Spaces"
+msgstr "Espaços"
+
+msgctxt "Indentation"
+msgid "Tabs"
+msgstr "Tabs"
+
 msgid "Toggle Scripts Panel"
 msgstr "Alternar Painel de Scripts"
 
@@ -1323,15 +1344,6 @@ msgstr "Fechar"
 
 msgid "Connect"
 msgstr "Ligar"
-
-msgid "Class:"
-msgstr "Classe:"
-
-msgid "Signal:"
-msgstr "Sinal:"
-
-msgid "No description."
-msgstr "Sem descrição."
 
 msgid "Connect '%s' to '%s'"
 msgstr "Ligar '%s' a '%s'"
@@ -1916,6 +1928,18 @@ msgstr ""
 msgid "%s (already exists)"
 msgstr "%s (já existe)"
 
+msgid "%d file conflicts with your project and won't be installed"
+msgid_plural "%d files conflict with your project and won't be installed"
+msgstr[0] "%d arquivo entra em conflito com seu projeto e não será instalado"
+msgstr[1] ""
+"%d arquivos entram em conflito com seu projeto e não serão instalados"
+
+msgid "This asset doesn't have a root directory, so it can't be ignored."
+msgstr "Este asset não tem um diretório raiz, então não pode ser ignorado."
+
+msgid "Ignore the root directory when extracting files."
+msgstr "Ignorar diretório raiz ao extrair arquivos."
+
 msgid "Uncompressing Assets"
 msgstr "A Descomprimir Recursos"
 
@@ -1930,6 +1954,10 @@ msgstr "Recurso \"%s\" instalado com sucesso!"
 
 msgid "Success!"
 msgstr "Sucesso!"
+
+msgid "Open the list of the asset contents and select which files to install."
+msgstr ""
+"Abrir a lista de conteúdos do asset e selecionar quais arquivos para instalar."
 
 msgid "Install"
 msgstr "Instalar"
@@ -2301,6 +2329,13 @@ msgstr "Classes forçadas ao detetar:"
 msgid "Edit Build Configuration Profile"
 msgstr "Editar Perfil de Configuração da Compilação"
 
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"Falha ao executar comando \"%s\":\n"
+"%s."
+
 msgid "Filter Commands"
 msgstr "Filtrar Comandos"
 
@@ -2534,6 +2569,9 @@ msgstr "Códigos de erro retornados:"
 msgid "Top"
 msgstr "Topo"
 
+msgid "Class:"
+msgstr "Classe:"
+
 msgid "Inherits:"
 msgstr "Herdar:"
 
@@ -2648,6 +2686,12 @@ msgstr "Descrições de Método"
 msgid "Operator Descriptions"
 msgstr "Descrições de Operadores"
 
+msgid "Property:"
+msgstr "Propriedade:"
+
+msgid "Signal:"
+msgstr "Sinal:"
+
 msgid "%d match."
 msgstr "%d correspondência."
 
@@ -2725,9 +2769,6 @@ msgstr "Este membro esta marcado como obsoleto."
 
 msgid "This member is marked as experimental."
 msgstr "Este membro está marcado como experimental."
-
-msgid "Property:"
-msgstr "Propriedade:"
 
 msgid "Pin Value"
 msgstr "Fixar valor"
@@ -4279,14 +4320,14 @@ msgstr ""
 "Todas as predefinições devem ter um caminho de exportação definido para que "
 "Exportar Tudo funcione."
 
+msgid "Delete preset '%s'?"
+msgstr "Apagar predefinição '%s'?"
+
 msgid "Resources to exclude:"
 msgstr "Recursos a excluir:"
 
 msgid "Resources to export:"
 msgstr "Recursos a exportar:"
-
-msgid "Delete preset '%s'?"
-msgstr "Apagar predefinição '%s'?"
 
 msgid "(Inherited)"
 msgstr "(Herdado)"
@@ -4583,9 +4624,6 @@ msgstr "A duplicar Diretoria:"
 msgid "New Inherited Scene"
 msgstr "Nova Cena Herdada"
 
-msgid "Set As Main Scene"
-msgstr "Definir Como Cena Principal"
-
 msgid "Open Scenes"
 msgstr "Abrir Cenas"
 
@@ -4699,9 +4737,6 @@ msgstr "Ir à/ao próxima/o pasta/ficheiro selecionado."
 
 msgid "Re-Scan Filesystem"
 msgstr "Re-pesquisar o Sistema de Ficheiros"
-
-msgid "Toggle Split Mode"
-msgstr "Alternar Modo de Divisão"
 
 msgid "Filter Files"
 msgstr "Filtrar Ficheiros"
@@ -6297,25 +6332,20 @@ msgstr "Forçar modulação branca"
 msgid "Include Gizmos (3D)"
 msgstr "Incluir Bugigangas (3D)"
 
-msgid "Onion Skinning temporarily disabled due to rendering bug."
-msgstr ""
-"Papel Vegetal(transparência) temporariamente desativado por conta de "
-"problemas de renderização."
-
 msgid "Pin AnimationPlayer"
 msgstr "Pregar AnimationPlayer"
 
 msgid "Error!"
 msgstr "Erro!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Tempos de Mistura de Animação cruzada"
+
 msgid "Blend Times:"
 msgstr "Tempos de Mistura:"
 
 msgid "Next (Auto Queue):"
 msgstr "Próximo (Auto-Fila):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Tempos de Mistura de Animação cruzada"
 
 msgid "Move Node"
 msgstr "Mover Nó"
@@ -7640,9 +7670,6 @@ msgstr "Criar Malha de Navegação"
 msgid "Create Debug Tangents"
 msgstr "Criar Tangentes de Depuração"
 
-msgid "Contained Mesh is not of type ArrayMesh."
-msgstr "Malha contida não é do tipo ArrayMesh."
-
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -7664,11 +7691,14 @@ msgstr ""
 "A malha não pode desempacotar UVs porque foi importada de outro tipo de "
 "ficheiro. Torne -a única primeiro."
 
-msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr "Falhou o desempacotamento UV, a malha pode não ser múltipla?"
-
 msgid "Unwrap UV2"
 msgstr "Desempacotar UV2"
+
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr "Malha contida não é do tipo ArrayMesh."
+
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr "Falhou o desempacotamento UV, a malha pode não ser múltipla?"
 
 msgid "No mesh to debug."
 msgstr "Nenhuma malha para depurar."
@@ -9254,12 +9284,6 @@ msgstr "Criar LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "Pré-visualização LightOccluder2D"
-
-msgid "Can't convert a Sprite2D from a foreign scene."
-msgstr "Não é possível converter um Sprite2D de uma cena externa."
-
-msgid "Sprite2D is empty!"
-msgstr "Sprite2D está vazio!"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "Incapaz de converter sprite com frames de animação para malha."
@@ -12676,14 +12700,6 @@ msgstr ""
 "Desativar \"editable_instance\" irá reverter todas as propriedades do nó para "
 "os seus valores predefinição."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Ativar \"Carregar como Espaço Reservado\" vai desativar \"Filhos Editáveis\" "
-"e fazer com que todas as propriedades do nó revertam para valores "
-"predefinidos."
-
 msgid "Make Local"
 msgstr "Tornar Local"
 
@@ -12771,9 +12787,6 @@ msgstr "Limpar herança"
 
 msgid "Editable Children"
 msgstr "Filhos editáveis"
-
-msgid "Load As Placeholder"
-msgstr "Carregar como marcador de posição"
 
 msgid "Auto Expand to Selected"
 msgstr "Auto Expandir Selecionados"
@@ -13273,9 +13286,6 @@ msgstr "Plotar iluminação direta"
 
 msgid "Integrate indirect lighting"
 msgstr "Integrar iluminação indireta"
-
-msgid "Bounce %d/%d: Integrate indirect lighting %d%%"
-msgstr "Ressaltando %d/%d: Integrando iluminação indireta %d%%"
 
 msgid "Baking lightprobes"
 msgstr "Gerando sondas de iluminação"
@@ -13903,13 +13913,6 @@ msgstr ""
 ".ipa só pode ser criado no macOS. Saindo do projeto Xcode sem compilar o "
 "pacote."
 
-msgid ""
-"If this project does not use C#, use a non-C# editor build to export the "
-"project."
-msgstr ""
-"Se esse projeto não utiliza C#, use um editor de build não-C# para exportar o "
-"projeto."
-
 msgid "Identifier is missing."
 msgstr "Falta o identificador."
 
@@ -13966,6 +13969,9 @@ msgstr "Enviando scripts..."
 
 msgid "Starting project..."
 msgstr "Iniciando projeto…"
+
+msgid "All Files"
+msgstr "Todos os Ficheiros"
 
 msgid "Can't get filesystem access."
 msgstr "Não é possível obter acesso ao sistema de arquivos."
@@ -14046,12 +14052,6 @@ msgstr "App Store Connect API key ID não foi especificado."
 msgid "App Store Connect issuer ID name not specified."
 msgstr "O nome do App Store Connect issuer ID não foi especificado."
 
-msgid "Icon Creation"
-msgstr "Criação de Ícone"
-
-msgid "Could not open icon file \"%s\"."
-msgstr "Não foi possível abrir o ficheiro de ícone \"%s\"."
-
 msgid "Notarization"
 msgstr "Autenticação Documental (Notarização)"
 
@@ -14093,13 +14093,6 @@ msgstr "As ferramentas de linha de comando do Xcode não estão instaladas."
 
 msgid "Could not start xcrun executable."
 msgstr "Não foi possível iniciar o executável xcrun."
-
-msgid ""
-"The notarization process generally takes less than an hour. When the process "
-"is completed, you'll receive an email."
-msgstr ""
-"O processo de notarização geralmente leva menos que uma hora. Quando o "
-"processo estiver concluído, receberá um e-mail."
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "O CodeSign integrado falhou com erro \"%s\"."
@@ -14276,11 +14269,21 @@ msgstr "Template de exportação inválido: \"%s\"."
 msgid "Could not write file: \"%s\"."
 msgstr "Não foi possível escrever o ficheiro: \"%s\"."
 
+msgid "Icon Creation"
+msgstr "Criação de Ícone"
+
 msgid "Could not read file: \"%s\"."
 msgstr "Não foi possível ler o ficheiro: \"%s\"."
 
 msgid "PWA"
 msgstr "PWA"
+
+msgid ""
+"If this project does not use C#, use a non-C# editor build to export the "
+"project."
+msgstr ""
+"Se esse projeto não utiliza C#, use um editor de build não-C# para exportar o "
+"projeto."
 
 msgid "Could not read HTML shell: \"%s\"."
 msgstr "Não foi possível ler o shell HTML: \"%s\"."
@@ -15207,9 +15210,6 @@ msgstr "Confirme por favor..."
 msgid "You don't have permission to access contents of this folder."
 msgstr "Não tem permissão para acessar o conteúdo desta pasta."
 
-msgid "All Files"
-msgstr "Todos os Ficheiros"
-
 msgid "Invalid extension, or empty filename."
 msgstr "Extensão inválida ou nome de ficheiro vazio."
 
@@ -15651,9 +15651,6 @@ msgstr ""
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying '%s' não pode ser passada para o parâmetro '%s' nesse contexto."
-
-msgid "A constant value cannot be passed for '%s' parameter."
-msgstr "Um valor constante não pode ser passado ao parâmetro '%s'."
 
 msgid ""
 "Unable to pass a multiview texture sampler as a parameter to custom function. "

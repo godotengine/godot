@@ -36,7 +36,7 @@
 # Hilman Hazazi <hafizd.muhammad.kren.403@gmail.com>, 2021.
 # Brian <brian@brianthe.dev>, 2021.
 # Helmi Hibatullah <helmihibatullah393@gmail.com>, 2022.
-# ProgrammerIndonesia 44 <elo.jhy@gmail.com>, 2022.
+# ProgrammerIndonesia 44 <elo.jhy@gmail.com>, 2022, 2023.
 # Rizky Ramadhan <rizkyterm@gmail.com>, 2022.
 # Primananda Kurnia <primakurnia71@gmail.com>, 2022.
 # FellowMustard <rachmawanng33@gmail.com>, 2022.
@@ -53,13 +53,14 @@
 # GID <ghavind12345@gmail.com>, 2023.
 # Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
 # Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
+# Avirur Rahman <avirahmandev@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-15 12:39+0000\n"
-"Last-Translator: Bayu Satiyo <itsyuukunz@gmail.com>\n"
+"PO-Revision-Date: 2023-10-23 06:30+0000\n"
+"Last-Translator: ProgrammerIndonesia 44 <elo.jhy@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -67,13 +68,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1\n"
+
+msgid "Main Thread"
+msgstr "Utas Utama"
 
 msgid "Unset"
 msgstr "Batal disetel"
 
 msgid "Physical"
-msgstr "Fisikal"
+msgstr "Fisik"
 
 msgid "Left Mouse Button"
 msgstr "Tombol kiri Mouse"
@@ -223,7 +227,7 @@ msgid "touched"
 msgstr "disentuh"
 
 msgid "released"
-msgstr "dirilis"
+msgstr "dilepas"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Layar %s pada (%s) dengan titik sentuh %s"
@@ -914,7 +918,7 @@ msgid "BlendShape"
 msgstr "BlendShape"
 
 msgid "Methods"
-msgstr "Method"
+msgstr "Metode"
 
 msgid "Bezier"
 msgstr "Bezier"
@@ -991,7 +995,7 @@ msgid "FPS"
 msgstr "FPS"
 
 msgid "Edit"
-msgstr "Ubah"
+msgstr "Sunting"
 
 msgid "Animation properties."
 msgstr "Properti Animasi."
@@ -1332,15 +1336,6 @@ msgstr "Tutup"
 
 msgid "Connect"
 msgstr "Menghubungkan"
-
-msgid "Class:"
-msgstr "Kelas:"
-
-msgid "Signal:"
-msgstr "Sinyal:"
-
-msgid "No description."
-msgstr "Tidak ada deskripsi."
 
 msgid "Connect '%s' to '%s'"
 msgstr "Sambungkan '%s' ke '%s'"
@@ -2546,6 +2541,9 @@ msgstr "Kode kesalahan dikembalikan:"
 msgid "Top"
 msgstr "Atas"
 
+msgid "Class:"
+msgstr "Kelas:"
+
 msgid "Inherits:"
 msgstr "Mewarisi:"
 
@@ -2661,6 +2659,12 @@ msgstr "Deskripsi Method"
 msgid "Operator Descriptions"
 msgstr "Deskripsi Operator"
 
+msgid "Property:"
+msgstr "Properti:"
+
+msgid "Signal:"
+msgstr "Sinyal:"
+
 msgid "%d match."
 msgstr "Ditemukan %d kecocokan."
 
@@ -2738,9 +2742,6 @@ msgstr "Anggota ini ditandai sebagai tidak digunakan lagi."
 
 msgid "This member is marked as experimental."
 msgstr "Anggota ini ditandai sebagai eksperimental."
-
-msgid "Property:"
-msgstr "Properti:"
 
 msgid "Pin Value"
 msgstr "Nilai Pin"
@@ -3908,28 +3909,28 @@ msgid "Binding"
 msgstr "Mengikat"
 
 msgid "Left Stick Left, Joystick 0 Left"
-msgstr "StikKiri Kiri, Joystick 0 Kiri"
+msgstr "AnalogKiri Kiri, Joystick 0 Kiri"
 
 msgid "Left Stick Right, Joystick 0 Right"
-msgstr "StikKiri Kanan, Joystick 0 Kanan"
+msgstr "AnalogKiri Kanan, Joystick 0 Kanan"
 
 msgid "Left Stick Up, Joystick 0 Up"
-msgstr "StikKiri Atas, Joystick 0 Atas"
+msgstr "AnalogKiri Atas, Joystick 0 Atas"
 
 msgid "Left Stick Down, Joystick 0 Down"
-msgstr "StikKiri Bawah, Joystick 0 Bawah"
+msgstr "AnalogKiri Bawah, Joystick 0 Bawah"
 
 msgid "Right Stick Left, Joystick 1 Left"
-msgstr "StikKanan Kiri, Joystick 1 Kiri"
+msgstr "AnalogKanan Kiri, Joystick 1 Kiri"
 
 msgid "Right Stick Right, Joystick 1 Right"
-msgstr "StikKanan Kanan, Joystick 1 Kanan"
+msgstr "AnalogKanan Kanan, Joystick 1 Kanan"
 
 msgid "Right Stick Up, Joystick 1 Up"
-msgstr "Stik Atas, Joystick 1 Atas"
+msgstr "AnalogKanan Atas, Joystick 1 Atas"
 
 msgid "Right Stick Down, Joystick 1 Down"
-msgstr "TongkatKanan Bawah, Joystick 1 Bawah"
+msgstr "AnalogKanan Bawah, Joystick 1 Bawah"
 
 msgid "Joystick 2 Left"
 msgstr "Joystick 2 Kiri"
@@ -4276,14 +4277,14 @@ msgstr ""
 "Semua preset harus memiliki path ekspor yang ditentukan agar Ekspor Semua "
 "dapat berfungsi."
 
+msgid "Delete preset '%s'?"
+msgstr "Hapus preset '%s'?"
+
 msgid "Resources to exclude:"
 msgstr "Sumber daya yang harus dikecualikan:"
 
 msgid "Resources to export:"
 msgstr "Resource yang akan diekspor:"
-
-msgid "Delete preset '%s'?"
-msgstr "Hapus preset '%s'?"
 
 msgid "(Inherited)"
 msgstr "(Mewarising)"
@@ -4580,9 +4581,6 @@ msgstr "Menggandakan folder:"
 msgid "New Inherited Scene"
 msgstr "Skena Warisan Baru"
 
-msgid "Set As Main Scene"
-msgstr "Jadikan sebagai Skena Utama"
-
 msgid "Open Scenes"
 msgstr "Buka Skena"
 
@@ -4696,9 +4694,6 @@ msgstr "Buka folder/file yang dipilih berikutnya."
 
 msgid "Re-Scan Filesystem"
 msgstr "Pindai Ulang Berkas Sistem"
-
-msgid "Toggle Split Mode"
-msgstr "Jungkitkan Mode Split"
 
 msgid "Filter Files"
 msgstr "Filter File"
@@ -6300,23 +6295,20 @@ msgstr "Paksa Modulasi Putih"
 msgid "Include Gizmos (3D)"
 msgstr "Masukkan Gizmo (3D)"
 
-msgid "Onion Skinning temporarily disabled due to rendering bug."
-msgstr "Onion Skinning dinonaktifkan sementara karena bug rendering."
-
 msgid "Pin AnimationPlayer"
 msgstr "Sematkan AnimationPlayer"
 
 msgid "Error!"
 msgstr "Kesalahan!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Waktu Berbaur Animasi-silang"
+
 msgid "Blend Times:"
 msgstr "Waktu Berbaur:"
 
 msgid "Next (Auto Queue):"
 msgstr "Selanjutnya (Antrian Otomatis):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Waktu Berbaur Animasi-silang"
 
 msgid "Move Node"
 msgstr "Pindahkan Node"
@@ -7658,9 +7650,6 @@ msgstr "Buat Mesh Navigasi"
 msgid "Create Debug Tangents"
 msgstr "Membuat Garis Singgung Debug"
 
-msgid "Contained Mesh is not of type ArrayMesh."
-msgstr "Mesh yang terkandung bukan bertipe ArrayMesh."
-
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -7682,11 +7671,14 @@ msgstr ""
 "Mesh tidak dapat membuka UV karena diimpor dari jenis file lain. Buatlah unik "
 "terlebih dahulu."
 
-msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr "UV Unwrap gagal, mesh mungkin tidak bermacam-macam?"
-
 msgid "Unwrap UV2"
 msgstr "Buka UV2"
+
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr "Mesh yang terkandung bukan bertipe ArrayMesh."
+
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr "UV Unwrap gagal, mesh mungkin tidak bermacam-macam?"
 
 msgid "No mesh to debug."
 msgstr "Tidak ada mesh untuk diawakutu."
@@ -9290,12 +9282,6 @@ msgstr "Buat LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "Pratinjau LightOccluder2D"
-
-msgid "Can't convert a Sprite2D from a foreign scene."
-msgstr "Tidak dapat mengonversi Sprite2D dari skena asing."
-
-msgid "Sprite2D is empty!"
-msgstr "Sprite2D kosong!"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "Tidak dapat mengonversi sprite menggunakan frame animasi menjadi mesh."
@@ -11295,14 +11281,6 @@ msgstr ""
 "Menonaktifkan \"editable_instance\" mengakibatkan semua properti node akan "
 "dikembalikan ke properti bakunya."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Mengaktifkan \"Muas sebagai Placeholder\" akan menonaktifkan \"Anakan yang "
-"Dapat Disunting\" dan mengakibatkan semua properti node dikembalikan ke "
-"properti bakunya."
-
 msgid "Make Local"
 msgstr "Jadikan Local"
 
@@ -11363,9 +11341,6 @@ msgstr "Bersihkan Pewarisan"
 msgid "Editable Children"
 msgstr "Anakan yang Dapat Disunting"
 
-msgid "Load As Placeholder"
-msgstr "Muat sebagai Placeholder"
-
 msgid "Auto Expand to Selected"
 msgstr "Perluas Otomatis ke yang Dipilih"
 
@@ -11380,6 +11355,12 @@ msgstr ""
 
 msgid "Can't paste root node into the same scene."
 msgstr "Tidak dapat menempelkan node akar ke dalam skena yang sama."
+
+msgid "Instantiate Child Scene..."
+msgstr "Instansi Adegan Anak..."
+
+msgid "Paste as Sibling"
+msgstr "Tempel sebagai Saudara"
 
 msgid "Reparent to New Node"
 msgstr "Pengindukan Ulang ke Node Baru"
@@ -11743,6 +11724,12 @@ msgstr "Direktori 'build-tools' tidak ditemukan!"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Tidak dapat menemukan apksigner dalam Android SDK build-tools."
 
+msgid "Code Signing"
+msgstr "Penandatanganan Kode"
+
+msgid "Signing debug %s..."
+msgstr "Menandatangani debug %s..."
+
 msgid "Signing release %s..."
 msgstr "Menandatangani rilis %s..."
 
@@ -11752,12 +11739,18 @@ msgstr "Tidak dapat menemukan keystore, tidak bisa ekspor."
 msgid "Could not start apksigner executable."
 msgstr "Tidak dapat memulai apksigner."
 
+msgid "'apksigner' returned with error #%d"
+msgstr "'apksigner' mengembalikan kesalahan #%d"
+
 msgid ""
 "output: \n"
 "%s"
 msgstr ""
 "keluaran:\n"
 "%s"
+
+msgid "Verifying %s..."
+msgstr "Memverifikasi %s..."
 
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr "Nama berkas tak valid! Android App Bundle memerlukan ekstensi *.aab ."

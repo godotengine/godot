@@ -26,13 +26,14 @@
 # Tefa <gassmannstefano@gmail.com>, 2023.
 # Maximiliano Gamón <maximilianogamon@gmail.com>, 2023.
 # Deleted User <noreply+68785@weblate.org>, 2023.
+# Evelyn Salido <evelynsalido2@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-19 21:46+0000\n"
-"Last-Translator: Deleted User <noreply+68785@weblate.org>\n"
+"PO-Revision-Date: 2023-10-07 02:01+0000\n"
+"Last-Translator: Evelyn Salido <evelynsalido2@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -41,6 +42,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1-dev\n"
+
+msgid "Main Thread"
+msgstr "Hilo Principal"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -102,8 +106,68 @@ msgstr "Eje X del Joystick 2, Gatillo Izquierdo, Sony L2, Xbox LT"
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
 msgstr "Eje Y del Joystick 2, Gatillo Derecho, Sony R2, Xbox RT"
 
+msgid "Joystick 3 X-Axis"
+msgstr "Eje-X del Joystick 3"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Eje-Y del Joystick 3"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Eje-X del Joystick 4"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Eje-Y del Joystick 4"
+
 msgid "Unknown Joypad Axis"
 msgstr "Eje de Joypad Desconocido"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Acción Abajo, Cruz en Sony, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Acción Derecha, Círculo en Sony, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Acción Izquierda, Cuadrado en Sony, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Acción Arriba, Triángulo en Sony, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Back, Sony Select, Back de Xbox, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Botón Guide, PS en Sony, Home en Xbox"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Start, Menu en Xbox, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Stick Izquierdo, L3 de Sony, L/LS en Xbox"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Stick Derecho, R3 en Sony, R/RS en Xbox"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Botón Izquierdo, L1 en Sony, LB en Xbox"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Botón Derecho, R1 en Sony, RB en Xbox"
+
+msgid "D-pad Up"
+msgstr "D-pad Arriba"
+
+msgid "D-pad Down"
+msgstr "D-pad Abajo"
+
+msgid "D-pad Left"
+msgstr "D-pad Izquierda"
+
+msgid "D-pad Right"
+msgstr "D-pad Derecha"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Share en Xbox, Microphone en PS5, Capture en Nintendo"
 
 msgid "Select"
 msgstr "Seleccionar"
@@ -643,12 +707,6 @@ msgstr "Cerrar"
 
 msgid "Connect"
 msgstr "Conectar"
-
-msgid "Class:"
-msgstr "Clase:"
-
-msgid "Signal:"
-msgstr "Señal:"
 
 msgid "Connect '%s' to '%s'"
 msgstr "Conectar '%s' a '%s'"
@@ -1485,6 +1543,9 @@ msgstr "(Re)Importando Assets"
 msgid "Top"
 msgstr "Cima"
 
+msgid "Class:"
+msgstr "Clase:"
+
 msgid "Inherits:"
 msgstr "Hereda:"
 
@@ -1543,6 +1604,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "Descripción de Método"
 
+msgid "Property:"
+msgstr "Propiedad:"
+
+msgid "Signal:"
+msgstr "Señal:"
+
 msgid "%d match."
 msgstr "%d coincidencia."
 
@@ -1599,9 +1666,6 @@ msgstr "Propiedad"
 
 msgid "Theme Property"
 msgstr "Propiedades del Tema"
-
-msgid "Property:"
-msgstr "Propiedad:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -2596,11 +2660,11 @@ msgstr ""
 msgid "Runnable"
 msgstr "Ejecutable"
 
-msgid "Resources to export:"
-msgstr "Recursos a exportar:"
-
 msgid "Delete preset '%s'?"
 msgstr "Eliminar preset '%s'?"
+
+msgid "Resources to export:"
+msgstr "Recursos a exportar:"
 
 msgid "Release"
 msgstr "Release"
@@ -2751,9 +2815,6 @@ msgstr "Duplicando carpeta:"
 msgid "New Inherited Scene"
 msgstr "Nueva Escena Heredada"
 
-msgid "Set As Main Scene"
-msgstr "Seleccionar Como Escena Principal"
-
 msgid "Open Scenes"
 msgstr "Abrir Escenas"
 
@@ -2816,9 +2877,6 @@ msgstr "Renombrar..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Reexaminar Sistema de Archivos"
-
-msgid "Toggle Split Mode"
-msgstr "Act/Desact. Modo Dividido"
 
 msgid ""
 "Scanning Files,\n"
@@ -3575,14 +3633,14 @@ msgstr "Fijar AnimationPlayer"
 msgid "Error!"
 msgstr "Error!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Tiempos de Blending Entre Animaciones"
+
 msgid "Blend Times:"
 msgstr "Tiempos de Blending:"
 
 msgid "Next (Auto Queue):"
 msgstr "Siguiente (Auto Queue):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Tiempos de Blending Entre Animaciones"
 
 msgid "Move Node"
 msgstr "Mover Nodo"
@@ -7193,13 +7251,6 @@ msgstr ""
 "Desactivar \"editable_instance\" causara que todas las propiedades del nodo "
 "vuelvan a sus valores por defecto."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Activar \"Cargar como Placeholder\" desactivará \"Hijos Editables\" y causará "
-"que todas las propiedades del nodo se reviertan a sus valores por defecto."
-
 msgid "Make Local"
 msgstr "Crear Local"
 
@@ -7257,9 +7308,6 @@ msgstr "Limpiar Herencia"
 
 msgid "Editable Children"
 msgstr "Hijos Editables"
-
-msgid "Load As Placeholder"
-msgstr "Cargar Como Placeholder"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
