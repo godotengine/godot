@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This [Control] node is used in the editor's Inspector dock to allow editing of numeric values. Can be used with [EditorInspectorPlugin] to recreate the same behavior.
-		If [member step] is [code]1[/code], the [EditorSpinSlider] will display up/down arrows, similar to [SpinBox]. If the [member step] is not [code]1[/code], a slider will be displayed instead.
+		If the [member Range.step] value is [code]1[/code], the [EditorSpinSlider] will display up/down arrows, similar to [SpinBox]. If the [member Range.step] value is not [code]1[/code], a slider will be displayed instead.
 	</description>
 	<tutorials>
 	</tutorials>
