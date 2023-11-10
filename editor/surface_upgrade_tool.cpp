@@ -92,7 +92,8 @@ void SurfaceUpgradeTool::_show_popup() {
 		EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "reimport_paths", reimport_paths);
 		EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "resave_paths", resave_paths);
 
-		EditorNode::get_singleton()->restart_editor();
+		// Delay to avoid deadlocks, since this dialog can be triggered by loading a scene.
+		MessageQueue::get_singleton()->push_callable(callable_mp(EditorNode::get_singleton(), &EditorNode::restart_editor));
 	} else {
 		RS::get_singleton()->set_warn_on_surface_upgrade(true);
 	}
