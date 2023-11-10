@@ -47,6 +47,19 @@
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 
+void EditorResourcePicker::_preview_changed(const String &p_path) {
+	String resource_path;
+	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
+		resource_path = edited_resource->get_path();
+	}
+
+	if (resource_path != p_path) {
+		return;
+	}
+
+	EditorResourcePreview::get_singleton()->queue_edited_resource_preview_changed(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
+}
+
 void EditorResourcePicker::_update_resource() {
 	String resource_path;
 	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
@@ -804,6 +817,7 @@ void EditorResourcePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_resource();
+			EditorResourcePreview::get_singleton()->connect("preview_changed", callable_mp(this, &EditorResourcePicker::_preview_changed));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {

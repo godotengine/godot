@@ -109,6 +109,7 @@ class EditorResourcePicker : public HBoxContainer {
 	void _duplicate_selected_resources();
 
 protected:
+	virtual void _preview_changed(const String &p_path);
 	virtual void _update_resource();
 
 	Button *get_assign_button() { return assign_button; }
