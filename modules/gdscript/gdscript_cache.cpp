@@ -364,28 +364,33 @@ void GDScriptCache::remove_static_script(const String &p_fqcn) {
 Ref<PackedScene> GDScriptCache::get_packed_scene(const String &p_path, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->mutex);
 
-	if (singleton->packed_scene_cache.has(p_path)) {
-		singleton->packed_scene_dependencies[p_path].insert(p_owner);
-		return singleton->packed_scene_cache[p_path];
+	String path = p_path;
+	if (path.begins_with("uid://")) {
+		path = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(path));
 	}
 
-	Ref<PackedScene> scene = ResourceCache::get_ref(p_path);
+	if (singleton->packed_scene_cache.has(path)) {
+		singleton->packed_scene_dependencies[path].insert(p_owner);
+		return singleton->packed_scene_cache[path];
+	}
+
+	Ref<PackedScene> scene = ResourceCache::get_ref(path);
 	if (scene.is_valid()) {
-		singleton->packed_scene_cache[p_path] = scene;
-		singleton->packed_scene_dependencies[p_path].insert(p_owner);
+		singleton->packed_scene_cache[path] = scene;
+		singleton->packed_scene_dependencies[path].insert(p_owner);
 		return scene;
 	}
 	scene.instantiate();
 
 	r_error = OK;
-	if (p_path.is_empty()) {
+	if (path.is_empty()) {
 		r_error = ERR_FILE_BAD_PATH;
 		return scene;
 	}
 
-	scene->set_path(p_path);
-	singleton->packed_scene_cache[p_path] = scene;
-	singleton->packed_scene_dependencies[p_path].insert(p_owner);
+	scene->set_path(path);
+	singleton->packed_scene_cache[path] = scene;
+	singleton->packed_scene_dependencies[path].insert(p_owner);
 
 	scene->reload_from_file();
 	return scene;
