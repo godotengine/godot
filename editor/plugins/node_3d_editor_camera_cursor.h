@@ -33,8 +33,6 @@
 
 #include "scene/main/node.h"
 
-class EditorSettings;
-
 /**
 * The invisible cursor 3D that the camera follows and rotates around in the viewport. Contains interpolation
 * for a smooth movement.
@@ -82,7 +80,6 @@ private:
 	bool orthogonal = false;
 	float z_near = 0.0;
 	float z_far = 0.0;
-	EditorSettings* editor_settings = nullptr;
 
 public:
 	/** Returns the current values being interpolated. */
@@ -152,7 +149,6 @@ private:
 	void recalculate_position(Values& p_values);
 
 public:
-	void set_editor_settings(EditorSettings* p_editor_settings);
 	Node3DEditorCameraCursor();
 };
 

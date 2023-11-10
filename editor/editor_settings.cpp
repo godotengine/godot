@@ -327,7 +327,7 @@ bool EditorSettings::has_default_value(const String &p_setting) const {
 	return props[p_setting].has_default_value;
 }
 
-void EditorSettings::load_defaults(Ref<ConfigFile> p_extra_config) {
+void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_THREAD_SAFE_METHOD_
 // Sets up the editor setting with a default value and hint PropertyInfo.
 #define EDITOR_SETTING(m_type, m_property_hint, m_name, m_default_value, m_hint_string) \
@@ -958,10 +958,9 @@ fail:
 	}
 
 	singleton = Ref<EditorSettings>(memnew(EditorSettings));
-	singleton->load_defaults();
 	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
-	singleton->load_defaults(extra_config);
+	singleton->_load_defaults(extra_config);
 	singleton->setup_language();
 	singleton->setup_network();
 	singleton->list_text_editor_themes();
@@ -1725,6 +1724,8 @@ void EditorSettings::_bind_methods() {
 
 EditorSettings::EditorSettings() {
 	last_order = 0;
+
+	_load_defaults();
 }
 
 EditorSettings::~EditorSettings() {

@@ -43,28 +43,22 @@
 
 namespace TestNode3DEditorCameraManager {
 
-	TEST_CASE("[TestNode3DEditorCameraManager][SceneTree] Camera manager") {
+	TEST_CASE("[TestNode3DEditorCameraManager][SceneTree][Editor] Camera manager") {
 
 		Node3DEditorCameraManager* camera_manager = memnew(Node3DEditorCameraManager);
-		EditorSettings* editor_settings = memnew(EditorSettings);
 		Window* root = SceneTree::get_singleton()->get_root();
 		Camera3D* editor_camera = memnew(Camera3D);
 		Camera3D* previewing_camera = memnew(Camera3D);
 		Camera3D* cinematic_camera = memnew(Camera3D);
 		Node3D* some_node = memnew(Node3D);
 		Node3D* some_another_node = memnew(Node3D);
-		camera_manager->setup(editor_camera, root, root, editor_settings);
+		camera_manager->setup(editor_camera, root, root);
 		root->add_child(editor_camera);
 		root->add_child(cinematic_camera);
 		root->add_child(previewing_camera);
 		root->add_child(some_node);
 		root->add_child(some_another_node);
 		cinematic_camera->make_current();
-		editor_settings->set("editors/3d/freelook/freelook_inertia", 1.0);
-		editor_settings->set("editors/3d/navigation_feel/orbit_inertia", 1.0);
-		editor_settings->set("editors/3d/navigation_feel/translation_inertia", 1.0);
-		editor_settings->set("editors/3d/navigation_feel/zoom_inertia", 1.0);
-		editor_settings->set("editors/3d/freelook/freelook_navigation_scheme", 0);
 
 		SUBCASE("[TestNode3DEditorCameraManager] Camera settings") {
 			camera_manager->set_camera_settings(0.5, 1.0, 100.0);
@@ -1175,7 +1169,6 @@ namespace TestNode3DEditorCameraManager {
 		memdelete(previewing_camera);
 		memdelete(editor_camera);
 		memdelete(camera_manager);
-		memdelete(editor_settings);
 	}
 
 } // namespace TestNode3DEditorCameraManager

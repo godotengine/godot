@@ -4893,7 +4893,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
-	camera_manager->setup(camera, viewport, SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root(), EditorSettings::get_singleton());
+	camera_manager->setup(camera, viewport, SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root());
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);

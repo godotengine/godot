@@ -38,7 +38,7 @@
 
 namespace TestNode3DEditorCameraCursor {
 
-TEST_CASE("[Node3DEditorCameraCursor] Values operator ==") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Values operator ==") {
 	Node3DEditorCameraCursor::Values values1, values2;
 
 	CHECK(values1 == values2);
@@ -58,7 +58,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Values operator ==") {
 	CHECK(values1 != values2);
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Default cursor") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Default cursor") {
 	Node3DEditorCameraCursor cursor;
 
 	CHECK_MESSAGE(
@@ -99,7 +99,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Default cursor") {
 		"Unexpected initial y_rot.");
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Move") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Move") {
 	Node3DEditorCameraCursor cursor;
 
 	SUBCASE("Move from original position") {
@@ -128,7 +128,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Move") {
 	}
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Move to") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Move to") {
 	Node3DEditorCameraCursor cursor;
 	cursor.move(Vector3(10.0, 20.0, 30.0));
 	cursor.move_to(Vector3(100.0, 200.0, 300.0));
@@ -141,7 +141,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Move to") {
 		"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move to a position.");
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Orbit to") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Orbit to") {
 	Node3DEditorCameraCursor cursor;
 	cursor.move_to(Vector3(100.0, 0.0, 0.0));
 	cursor.orbit_to(0.0, Math::deg_to_rad(90.0));
@@ -160,7 +160,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Orbit to") {
 		"Unexpected eye_position ", cursor.get_target_values().eye_position, " after rotate to an angle.");
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Orbit") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Orbit") {
 	Node3DEditorCameraCursor cursor;
 	cursor.move_to(Vector3(100.0, 0.0, 0.0));
 	cursor.orbit_to(Math::deg_to_rad(-45.0), Math::deg_to_rad(30.0));
@@ -180,7 +180,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Orbit") {
 		"Unexpected eye_position ", cursor.get_target_values().eye_position, " after rotate.");
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Look to") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Look to") {
 	Node3DEditorCameraCursor cursor;
 	cursor.orbit_to(0.0, 0.0);
 	cursor.move_to(Vector3(100.0, 0.0, 0.0));
@@ -200,7 +200,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Look to") {
 		"Unexpected position ", cursor.get_target_values().position, " after rotate to an angle.");
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Look") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Look") {
 	Node3DEditorCameraCursor cursor;
 	cursor.orbit_to(0.0, 0.0);
 	cursor.move_to(Vector3(100.0, 0.0, 0.0));
@@ -220,7 +220,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Look") {
 		"Unexpected position ", cursor.get_target_values().position, " after rotate.");
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Get and set freelook mode") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Get and set freelook mode") {
 	Node3DEditorCameraCursor cursor;
 
 	SUBCASE("Initial state") {
@@ -239,7 +239,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Get and set freelook mode") {
 	}
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Move distance") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Move distance") {
 	Node3DEditorCameraCursor cursor;
 	cursor.orbit_to(0.0, 0.0);
 
@@ -269,7 +269,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Move distance") {
 	}
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Move distance to") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Move distance to") {
 	Node3DEditorCameraCursor cursor;
 	cursor.orbit_to(0.0, 0.0);
 
@@ -291,7 +291,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Move distance to") {
 	}
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Move freelook") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Move freelook") {
 	Node3DEditorCameraCursor cursor;
 	cursor.set_freelook_mode(true);
 	cursor.orbit_to(0.0, Math::deg_to_rad(90.0));
@@ -299,8 +299,6 @@ TEST_CASE("[Node3DEditorCameraCursor] Move freelook") {
 	cursor.move_distance_to(2.0);
 	cursor.stop_interpolation(true);
 	EditorSettings* editor_settings = memnew(EditorSettings);
-	editor_settings->set("editors/3d/freelook/freelook_navigation_scheme", Node3DEditorCameraCursor::FreelookNavigationScheme::FREELOOK_DEFAULT);
-	cursor.set_editor_settings(editor_settings);
 
 	SUBCASE("Move in freelook mode") {
 		cursor.move_freelook(Vector3(10.0, 5.0, -1.0), 2.0, 3.0);
@@ -324,7 +322,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Move freelook") {
 	memdelete(editor_settings);
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Get camera transform") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Get camera transform") {
 	Node3DEditorCameraCursor cursor;
 	cursor.move_to(Vector3(100.0, 0.0, 200.0));
 	cursor.orbit_to(0.0, Math::deg_to_rad(90.0));
@@ -360,7 +358,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Get camera transform") {
 	}
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Set camera transform") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Set camera transform") {
 	Node3DEditorCameraCursor cursor;
 	cursor.move_distance(10.0);
 	Transform3D transform;
@@ -410,7 +408,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Set camera transform") {
 	}
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Toggle perspective / orthogonal") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Toggle perspective / orthogonal") {
 	Node3DEditorCameraCursor cursor;
 	cursor.move_to(Vector3(100.0, 0.0, 200.0));
 	cursor.orbit_to(0.0, Math::deg_to_rad(90.0));
@@ -426,7 +424,7 @@ TEST_CASE("[Node3DEditorCameraCursor] Toggle perspective / orthogonal") {
 	}
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Stop interpolation") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Stop interpolation") {
 	Node3DEditorCameraCursor cursor;
 	cursor.orbit_to(0.1, 0.2);
 	cursor.move_to(Vector3(100.0, 200.0, 300.0));
@@ -455,15 +453,9 @@ TEST_CASE("[Node3DEditorCameraCursor] Stop interpolation") {
 	}
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Update interpolation") {
+TEST_CASE("[Node3DEditorCameraCursor][Editor] Update interpolation") {
 	Node3DEditorCameraCursor cursor;
 	Node3DEditorCameraCursor::Values previous_current_values = cursor.get_current_values();
-	EditorSettings* editor_settings = memnew(EditorSettings);
-	editor_settings->set("editors/3d/freelook/freelook_inertia", 0.1);
-	editor_settings->set("editors/3d/navigation_feel/orbit_inertia", 0.1);
-	editor_settings->set("editors/3d/navigation_feel/translation_inertia", 0.1);
-	editor_settings->set("editors/3d/navigation_feel/zoom_inertia", 0.1);
-	cursor.set_editor_settings(editor_settings);
 
 	SUBCASE("Should change nothing if there aren't updates in target values") {
 		CHECK(!cursor.update_interpolation(0.01));
@@ -543,8 +535,6 @@ TEST_CASE("[Node3DEditorCameraCursor] Update interpolation") {
 		CHECK(cursor.get_current_values().eye_position.z > previous_current_values.eye_position.z);
 		CHECK(cursor.get_current_values().eye_position.z < cursor.get_target_values().eye_position.z);
 	}
-
-	memdelete(editor_settings);
 }
 
 } // namespace TestNode3DEditorCameraCursor
