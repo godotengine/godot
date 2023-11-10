@@ -116,13 +116,16 @@
 # Chloe Lee-Hone <chloe.leehone@gmail.com>, 2023.
 # François de la Taste <francois.delataste@wildwits.games>, 2023.
 # VBasic <vincentbarkmann@gmail.com>, 2023.
+# Vivalzar <gillespeyroux@hotmail.com>, 2023.
+# Gouvernon Stan <stany@gouvernon.org>, 2023.
+# Rertsyd <rertsyd@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-01 21:59+0000\n"
-"Last-Translator: VBasic <vincentbarkmann@gmail.com>\n"
+"PO-Revision-Date: 2023-10-26 13:04+0000\n"
+"Last-Translator: Rertsyd <rertsyd@outlook.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -130,7 +133,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.1.1\n"
 
 msgid "Application"
 msgstr "Application"
@@ -261,6 +264,9 @@ msgstr "Intensité du panoramique audio en 2D"
 msgid "3D Panning Strength"
 msgstr "Intensité du panoramique audio en 3D"
 
+msgid "iOS"
+msgstr "iOS"
+
 msgid "Editor"
 msgstr "Éditeur"
 
@@ -371,6 +377,9 @@ msgstr "Délai max. de la recherche incrémentale (ms)"
 
 msgid "Common"
 msgstr "Commun"
+
+msgid "Snap Controls to Pixels"
+msgstr "Aimanter les contrôles aux pixels"
 
 msgid "Fonts"
 msgstr "Polices"
@@ -790,7 +799,7 @@ msgid "Deletable"
 msgstr "Supprimable"
 
 msgid "Distraction Free Mode"
-msgstr "Mode Sans Distraction"
+msgstr "Mode sans distraction"
 
 msgid "Interface"
 msgstr "Interface"
@@ -2217,6 +2226,9 @@ msgstr "Afficher le manipulateur de rotation dans le viewport"
 msgid "Show Viewport Navigation Gizmo"
 msgstr "Afficher le manipulateur de navigation dans la fenêtre d'affichage"
 
+msgid "Gizmo Settings"
+msgstr "Paramètres du manipulateur"
+
 msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Recharger et parcourir les scripts automatiquement à l'enregistrement"
 
@@ -2255,9 +2267,6 @@ msgstr "Squelette"
 
 msgid "Selected Bone"
 msgstr "Os sélectionné"
-
-msgid "Gizmo Settings"
-msgstr "Paramètres du manipulateur"
 
 msgid "Bone Axis Length"
 msgstr "Longueur des axes d'os"
@@ -2442,9 +2451,6 @@ msgstr "Latence d'image (en milisec)"
 msgid "Low Processor Mode"
 msgstr "Mode Processeur Faible"
 
-msgid "iOS"
-msgstr "iOS"
-
 msgid "Allow High Refresh Rate"
 msgstr "Autoriser les taux de rafraîchissement élevés"
 
@@ -2520,6 +2526,9 @@ msgstr "Émuler le toucher tactile avec la souris"
 msgid "Emulate Mouse From Touch"
 msgstr "Émuler la souris avec le toucher tactile"
 
+msgid "Android"
+msgstr "Android"
+
 msgid "Text Driver"
 msgstr "Pilote de texte"
 
@@ -2554,7 +2563,7 @@ msgid "Operation"
 msgstr "Opération"
 
 msgid "Snap"
-msgstr "Magnétisme, Aimantation"
+msgstr "Aimantation"
 
 msgid "Calculate Tangents"
 msgstr "Calculer les Tangentes"
@@ -2578,7 +2587,7 @@ msgid "Flip Faces"
 msgstr "Retourner les faces"
 
 msgid "Mesh"
-msgstr "Mesh"
+msgstr "Maillage"
 
 msgid "Material"
 msgstr "Matériau"
@@ -3089,9 +3098,6 @@ msgstr "Type d'espace de référence"
 
 msgid "Visibility State"
 msgstr "État de la visibilité"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Chemin du SDK Android"
@@ -5037,12 +5043,6 @@ msgstr "Caractères visibles"
 msgid "Max Length"
 msgstr "Longueur Max"
 
-msgid "Secret"
-msgstr "Secret"
-
-msgid "Secret Character"
-msgstr "Caractère secret"
-
 msgid "Expand to Text Length"
 msgstr "Étendre à la longueur du texte"
 
@@ -5069,6 +5069,12 @@ msgstr "Icône droite"
 
 msgid "Blink"
 msgstr "Clignoter"
+
+msgid "Secret"
+msgstr "Secret"
+
+msgid "Secret Character"
+msgstr "Caractère secret"
 
 msgid "Underline"
 msgstr "Souligner"
@@ -5185,7 +5191,7 @@ msgid "Current Tab"
 msgstr "Onglet actuel"
 
 msgid "Tab Close Display Policy"
-msgstr "Stratégie d'affichage pour la fermeture d'onglet"
+msgstr "Stratégie d'affichage du bouton de fermeture d'onglet"
 
 msgid "Scrolling Enabled"
 msgstr "Défilement activé"
@@ -5193,14 +5199,14 @@ msgstr "Défilement activé"
 msgid "Tabs Visible"
 msgstr "Onglets Visibles"
 
-msgid "Syntax Highlighter"
-msgstr "Coloration syntaxique"
-
 msgid "Fit Content Height"
 msgstr "Ajuster à la hauteur du conteneur"
 
 msgid "Draw"
 msgstr "Dessiner"
+
+msgid "Syntax Highlighter"
+msgstr "Coloration syntaxique"
 
 msgid "Hover"
 msgstr "Survoler"
@@ -5886,18 +5892,6 @@ msgstr "Décalage du Précalcul AABB"
 msgid "Bundled"
 msgstr "Empaqueté"
 
-msgid "Point Texture"
-msgstr "Texture ponctuelle"
-
-msgid "Normal Texture"
-msgstr "Texture Normale"
-
-msgid "Color Texture"
-msgstr "Texture de couleur"
-
-msgid "Point Count"
-msgstr "Nombre de points"
-
 msgid "Scale Curve"
 msgstr "Courbe d'échelle"
 
@@ -6276,6 +6270,9 @@ msgstr "Bouton personnalisé quand pressé"
 msgid "Custom Button Hover"
 msgstr "Bouton personnalisé au survol"
 
+msgid "Indeterminate"
+msgstr "Indéterminé"
+
 msgid "Select Arrow"
 msgstr "Flèche de sélection"
 
@@ -6641,6 +6638,9 @@ msgstr "Sans ombrage"
 
 msgid "Ensure Correct Normals"
 msgstr "Assurer des Normales Correctes"
+
+msgid "Shadows Disabled"
+msgstr "Ombres désactivées"
 
 msgid "Vertex Lighting"
 msgstr "Éclairage de sommet"

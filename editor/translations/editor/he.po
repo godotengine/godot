@@ -33,13 +33,15 @@
 # אורי מיכאל <000ori000@gmail.com>, 2023.
 # Benjamin Stern <benj_stern@hotmail.com>, 2023.
 # Roi Gabay <roigby@gmail.com>, 2023.
+# Kfir Pshititsky <Kfir4321@gmail.com>, 2023.
+# RoastedPear <RoastedPear@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-29 19:03+0000\n"
-"Last-Translator: Roi Gabay <roigby@gmail.com>\n"
+"PO-Revision-Date: 2023-10-18 02:43+0000\n"
+"Last-Translator: RoastedPear <RoastedPear@outlook.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
 "Language: he\n"
@@ -48,7 +50,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && n "
 "% 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.1\n"
+
+msgid "Main Thread"
+msgstr "תהליכון ראשי"
 
 msgid "Unset"
 msgstr "ביטול הגדרה"
@@ -150,7 +155,7 @@ msgid "Cut"
 msgstr "גזור"
 
 msgid "Copy"
-msgstr "העתק"
+msgstr "העתקה"
 
 msgid "Paste"
 msgstr "הדבק"
@@ -351,7 +356,7 @@ msgid "Wrap Loop Interp"
 msgstr "אינטרפולצית לולאה מסוג Wrap"
 
 msgid "Insert Key"
-msgstr "הכנס מפתח"
+msgstr "הכנסת מפתח"
 
 msgid "Duplicate Key(s)"
 msgstr "שכפול מפתח(ות)"
@@ -447,9 +452,6 @@ msgstr "Bezier"
 
 msgid "Audio"
 msgstr "שמע"
-
-msgid "Clipboard is empty!"
-msgstr "לוח העתקה ריק!"
 
 msgid "Paste Tracks"
 msgstr "הדבקת רצועות"
@@ -591,6 +593,10 @@ msgstr "להחליף הכול"
 msgid "Selection Only"
 msgstr "בחירה בלבד"
 
+msgctxt "Indentation"
+msgid "Spaces"
+msgstr "רווחים"
+
 msgid "Toggle Scripts Panel"
 msgstr "החלפת תצוגת חלונית סקריפטים"
 
@@ -668,12 +674,6 @@ msgstr "סגירה"
 
 msgid "Connect"
 msgstr "התחברות"
-
-msgid "Class:"
-msgstr "מחלקה:"
-
-msgid "Signal:"
-msgstr "אות:"
 
 msgid "Connect '%s' to '%s'"
 msgstr "חיבור '%s' ל- '%s'"
@@ -1294,6 +1294,9 @@ msgstr "פיזיקה דו-מימדית"
 msgid "3D Physics"
 msgstr "פיזיקה תלת-מימדית"
 
+msgid "OpenGL"
+msgstr "OpenGL"
+
 msgid "Nodes and Classes:"
 msgstr "איברים ומחלקות:"
 
@@ -1485,6 +1488,9 @@ msgstr "ניסיוני"
 msgid "Top"
 msgstr "עליון"
 
+msgid "Class:"
+msgstr "מחלקה:"
+
 msgid "Inherits:"
 msgstr "ירושה:"
 
@@ -1543,6 +1549,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "תיאורי מתודות"
 
+msgid "Property:"
+msgstr "מאפיין:"
+
+msgid "Signal:"
+msgstr "אות:"
+
 msgid "%d match."
 msgstr "%d התאמה."
 
@@ -1600,9 +1612,6 @@ msgstr "מאפיין"
 msgid "Theme Property"
 msgstr "מאפיין ערכת עיצוב"
 
-msgid "Property:"
-msgstr "מאפיין:"
-
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr "הצמדת ערך מאלצת אותו להישמר גם אם הוא שווה לברירת המחדל."
 
@@ -1656,7 +1665,7 @@ msgid "Clear Output"
 msgstr "ניקוי פלט"
 
 msgid "Copy Selection"
-msgstr "העתקת בחירה"
+msgstr "העתקת הבחירה"
 
 msgid "Unnamed Project"
 msgstr "פרויקט ללא שם"
@@ -2051,6 +2060,9 @@ msgstr "ניהול תבניות ייצוא..."
 
 msgid "Help"
 msgstr "עזרה"
+
+msgid "Questions & Answers"
+msgstr "שאלות ותשובות"
 
 msgid "Community"
 msgstr "קהילה"
@@ -2837,14 +2849,14 @@ msgstr "הצמדת AnimationPlayer"
 msgid "Error!"
 msgstr "שגיאה!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "זמני מיזוג בין הנפשות"
+
 msgid "Blend Times:"
 msgstr "זמני מיזוג:"
 
 msgid "Next (Auto Queue):"
 msgstr "הבא (תור אוטומטי):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "זמני מיזוג בין הנפשות"
 
 msgid "Move Node"
 msgstr "הזזת מפרק"
@@ -3348,6 +3360,9 @@ msgstr "מיון"
 msgid "File"
 msgstr "קובץ"
 
+msgid "Open..."
+msgstr "פתיחה..."
+
 msgid "Save All"
 msgstr "לשמור הכול"
 
@@ -3595,13 +3610,6 @@ msgid ""
 msgstr ""
 "ביטול \"editable_instance\" תחזיר את כל מאפייני המפרק לברירת המחדל שלהם."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"הפעלת \"Load As Placeholder\" תבטל את \"Editable Children\" ותגרום להחזרת כל "
-"מאפייני המפרק לברירת המחדל שלהם."
-
 msgid "Make Local"
 msgstr "הפיכה למקומי"
 
@@ -3651,9 +3659,6 @@ msgstr "ניקוי קשר ירושה"
 
 msgid "Editable Children"
 msgstr "צאצאים הניתנים לעריכה"
-
-msgid "Load As Placeholder"
-msgstr "טען כשומר מקום"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"

@@ -876,12 +876,6 @@ msgstr "Tutup"
 msgid "Connect"
 msgstr "Sambung"
 
-msgid "Class:"
-msgstr "Kelas:"
-
-msgid "Signal:"
-msgstr "Isyarat:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Sambungkan '% s' ke '% s'"
 
@@ -1602,6 +1596,9 @@ msgstr "Mengimport (Semula) Aset"
 msgid "Top"
 msgstr "Atas"
 
+msgid "Class:"
+msgstr "Kelas:"
+
 msgid "Inherits:"
 msgstr "Mewarisi:"
 
@@ -1660,6 +1657,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "Penerangan Kaedah"
 
+msgid "Property:"
+msgstr "Sifat:"
+
+msgid "Signal:"
+msgstr "Isyarat:"
+
 msgid "%d match."
 msgstr "%d padan."
 
@@ -1716,9 +1719,6 @@ msgstr "Sifat"
 
 msgid "Theme Property"
 msgstr "Sifat Tema"
-
-msgid "Property:"
-msgstr "Sifat:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -2705,9 +2705,6 @@ msgstr "Menduakan folder:"
 msgid "New Inherited Scene"
 msgstr "Adegan Baru Yang Diwarisi"
 
-msgid "Set As Main Scene"
-msgstr "Tetapkan Sebagai Adegan Utama"
-
 msgid "Open Scenes"
 msgstr "Buka Adegan-adegan"
 
@@ -2770,9 +2767,6 @@ msgstr "Namakan semula..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Imbas Semula Sistem Fail"
-
-msgid "Toggle Split Mode"
-msgstr "Togol Mod Berpisah"
 
 msgid ""
 "Scanning Files,\n"
@@ -3433,14 +3427,14 @@ msgstr "Pin AnimationPlayer"
 msgid "Error!"
 msgstr "Ralat!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Masa Adunan Animasi Silang"
+
 msgid "Blend Times:"
 msgstr "Masa Adunan:"
 
 msgid "Next (Auto Queue):"
 msgstr "Seterusnya (Baris Gilir Automatik):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Masa Adunan Animasi Silang"
 
 msgid "Move Node"
 msgstr "Pindahkan Nod"

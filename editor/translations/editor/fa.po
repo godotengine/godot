@@ -1195,15 +1195,6 @@ msgstr "بستن"
 msgid "Connect"
 msgstr "اتصال"
 
-msgid "Class:"
-msgstr "کلاس:"
-
-msgid "Signal:"
-msgstr "سیگنال:"
-
-msgid "No description."
-msgstr "بدون توضیحات."
-
 msgid "Connect '%s' to '%s'"
 msgstr "'%s' را به '%s' متصل کن"
 
@@ -2085,6 +2076,9 @@ msgstr ""
 msgid "Top"
 msgstr "بالا"
 
+msgid "Class:"
+msgstr "کلاس:"
+
 msgid "Inherits:"
 msgstr "ارث می‌برد از:"
 
@@ -2163,6 +2157,12 @@ msgstr "درحال حاضر هیچ توضیحی برای این ویژگی وج�
 msgid "Method Descriptions"
 msgstr "توضیحات تابع"
 
+msgid "Property:"
+msgstr "ویژگی:"
+
+msgid "Signal:"
+msgstr "سیگنال:"
+
 msgid "%d match."
 msgstr "%d منطبق."
 
@@ -2225,9 +2225,6 @@ msgstr "این عضو بعنوان منسوخ علامت گذاری شده اس�
 
 msgid "This member is marked as experimental."
 msgstr "این عضو بعنوان آزمایشی علامت گذاری شده است."
-
-msgid "Property:"
-msgstr "ویژگی:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -4471,9 +4468,6 @@ msgstr "پخش IK"
 msgid "Create Polygon2D"
 msgstr "ساخت چندضلعی دوبعدی"
 
-msgid "Sprite2D is empty!"
-msgstr "اسپرایت‌۲‌بعدی خالی است!"
-
 msgid "Convert to Polygon2D"
 msgstr "تبدیل به چندضلعی دوبعدی"
 
@@ -5568,9 +5562,6 @@ msgstr "پاک کردن ارث‌بری"
 msgid "Editable Children"
 msgstr "فرزند قابل ویرایش"
 
-msgid "Load As Placeholder"
-msgstr "بارگیری به عنوان جانگهدار"
-
 msgid "All Scene Sub-Resources"
 msgstr "همه زیرمنابع صحنه"
 
@@ -5783,14 +5774,6 @@ msgstr "افزودن فایل‌ها..."
 
 msgid "Export Icons"
 msgstr "آیکون‌های خروجی"
-
-msgid ""
-"Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. "
-"Use Godot 3 to target iOS with C#/Mono instead."
-msgstr ""
-"هنگام استفاده از سی‌شارپ/دات‌نت، خروجی به آی‌او‌اس در حال حاضر در گودو ۴ پشتیبانی "
-"نمی‌شود. در عوض از گودو ۳ برای هدف قرار دادن آی‌او‌اس با سی‌شارپ/مونو استفاده "
-"کنید."
 
 msgid "Exporting project..."
 msgstr "صدور پروژه..."

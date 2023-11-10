@@ -149,13 +149,17 @@
 # Oleg <olegase123@gmail.com>, 2023.
 # "Anton Zhuchkov (fireton)" <zhuchkov.anton@gmail.com>, 2023.
 # drowerer24cd38f74c9b4fd2 <aleks_tikh@mail.ru>, 2023.
+# Denis Soin <wmzaru@gmail.com>, 2023.
+# Daniil Zimchuk <danrus228zk@gmail.com>, 2023.
+# Иван Жиляк <zilakivan2008@gmail.com>, 2023.
+# Ilia Brykin <brykin.ilia@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-28 04:12+0000\n"
-"Last-Translator: drowerer24cd38f74c9b4fd2 <aleks_tikh@mail.ru>\n"
+"PO-Revision-Date: 2023-11-09 22:40+0000\n"
+"Last-Translator: Ilia Brykin <brykin.ilia@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -164,7 +168,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -295,6 +299,9 @@ msgstr "Сила панорамирования 2D"
 msgid "3D Panning Strength"
 msgstr "Сила панорамирования 3D"
 
+msgid "iOS"
+msgstr "iOS"
+
 msgid "Editor"
 msgstr "Редактор"
 
@@ -330,6 +337,9 @@ msgstr "Соотношение"
 
 msgid "Scale"
 msgstr "Масштаб"
+
+msgid "Scale Mode"
+msgstr "Режим масштабирования"
 
 msgid "Debug"
 msgstr "Отладка"
@@ -1080,6 +1090,9 @@ msgstr "Blender"
 
 msgid "FBX"
 msgstr "FBX"
+
+msgid "FBX2glTF Path"
+msgstr "FBX2glTF Путь"
 
 msgid "Docks"
 msgstr "Панели"
@@ -2071,9 +2084,6 @@ msgstr "Подробный стандартный вывод"
 msgid "Low Processor Mode"
 msgstr "Режим низкой нагрузки процессора"
 
-msgid "iOS"
-msgstr "iOS"
-
 msgid "Hide Home Indicator"
 msgstr "Скрыть индикатор «Домой»"
 
@@ -2130,6 +2140,9 @@ msgstr "Эмулировать сенсорный ввод мышью"
 
 msgid "Emulate Mouse From Touch"
 msgstr "Эмулировать мышь сенсорным вводом"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Mouse Cursor"
 msgstr "Курсор мыши"
@@ -2590,9 +2603,6 @@ msgstr "Дополнительные Компоненты"
 msgid "Visibility State"
 msgstr "Видимость"
 
-msgid "Android"
-msgstr "Android"
-
 msgid "Android SDK Path"
 msgstr "Путь к Android SDK"
 
@@ -2903,7 +2913,7 @@ msgid "Speed Scale"
 msgstr "Масштаб скорости"
 
 msgid "Centered"
-msgstr "Центрированный"
+msgstr "По центру"
 
 msgid "Monitoring"
 msgstr "Наблюдение"
@@ -3886,11 +3896,11 @@ msgstr "Текущая вкладка"
 msgid "Tabs Visible"
 msgstr "Видимость вкладок"
 
-msgid "Syntax Highlighter"
-msgstr "Подсветка синтаксиса"
-
 msgid "Fit Content Height"
 msgstr "Вместить по высоте контента"
+
+msgid "Syntax Highlighter"
+msgstr "Подсветка синтаксиса"
 
 msgid "Focused"
 msgstr "Сфокусировано"
@@ -4269,15 +4279,6 @@ msgstr "Смещение запекания AABB"
 
 msgid "Bundled"
 msgstr "Вложенный"
-
-msgid "Normal Texture"
-msgstr "Нормаль Текстура"
-
-msgid "Color Texture"
-msgstr "Текстура Цвета"
-
-msgid "Point Count"
-msgstr "Количество Точек"
 
 msgid "Scale Curve"
 msgstr "Кривая масштаба"

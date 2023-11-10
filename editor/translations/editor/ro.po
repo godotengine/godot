@@ -728,12 +728,6 @@ msgstr "Închide"
 msgid "Connect"
 msgstr "Conectați"
 
-msgid "Class:"
-msgstr "Clasă:"
-
-msgid "Signal:"
-msgstr "Semnal:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Conectați '%s' la '%s'"
 
@@ -1393,6 +1387,9 @@ msgstr "Experimental"
 msgid "Top"
 msgstr "Sus"
 
+msgid "Class:"
+msgstr "Clasă:"
+
 msgid "Inherits:"
 msgstr "Mosteneste:"
 
@@ -1452,6 +1449,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "Descrierile Metodei"
 
+msgid "Property:"
+msgstr "Proprietate:"
+
+msgid "Signal:"
+msgstr "Semnal:"
+
 msgid "%d match."
 msgstr "%d potriviri."
 
@@ -1508,9 +1511,6 @@ msgstr "Proprietate"
 
 msgid "Theme Property"
 msgstr "Proprietate Temă"
-
-msgid "Property:"
-msgstr "Proprietate:"
 
 msgid "Resize Array"
 msgstr "Redimensionați Array-ul"
@@ -2169,9 +2169,6 @@ msgstr "Duplicând directorul:"
 msgid "New Inherited Scene"
 msgstr "Nouă scenă moștenită"
 
-msgid "Set As Main Scene"
-msgstr "Setează ca scenă principală"
-
 msgid "Open Scenes"
 msgstr "Deschide Scene"
 
@@ -2216,9 +2213,6 @@ msgstr "Redenumește..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Rescanează Sistemul de Fișiere"
-
-msgid "Toggle Split Mode"
-msgstr "Comută Modul Split"
 
 msgid ""
 "Scanning Files,\n"
@@ -2677,14 +2671,14 @@ msgstr "Include Gizmo-uri (3D)"
 msgid "Error!"
 msgstr "Eroare!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Timpi de Amestecare Cross-Animație"
+
 msgid "Blend Times:"
 msgstr "Timpi de Amestecare:"
 
 msgid "Next (Auto Queue):"
 msgstr "Următorul (Rând Automat):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Timpi de Amestecare Cross-Animație"
 
 msgid "Transition exists!"
 msgstr "Tranziţia există!"
