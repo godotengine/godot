@@ -912,6 +912,8 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	bool is_static_library = library_path.ends_with(".a") || library_path.ends_with(".xcframework");
+
 	if (!library_path.is_resource_file() && !library_path.is_absolute_path()) {
 		library_path = p_path.get_base_dir().path_join(library_path);
 	}
@@ -928,7 +930,7 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 			FileAccess::get_modified_time(library_path));
 #endif
 
-	err = p_extension->open_library(library_path, entry_symbol);
+	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol);
 	if (err != OK) {
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 		// If the DLL fails to load, make sure that temporary DLL copies are cleaned up.
