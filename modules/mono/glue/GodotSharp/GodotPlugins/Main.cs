@@ -5,8 +5,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using Godot;
 using Godot.Bridge;
 using Godot.NativeInterop;
+using Environment = System.Environment;
 
 namespace GodotPlugins
 {
@@ -91,6 +93,7 @@ namespace GodotPlugins
             PluginsCallbacks* pluginsCallbacks, ManagedCallbacks* managedCallbacks,
             IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
+            bool isNativeFuncsInitialized = false;
             try
             {
                 _editorHint = editorHint.ToBool();
@@ -102,6 +105,7 @@ namespace GodotPlugins
 
                 AlcReloadCfg.Configure(alcReloadEnabled: _editorHint);
                 NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
+                isNativeFuncsInitialized = true;
 
                 if (_editorHint)
                 {
@@ -123,7 +127,15 @@ namespace GodotPlugins
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e);
+                if (isNativeFuncsInitialized)
+                {
+                    ExceptionUtils.LogException(e);
+                }
+                else
+                {
+                    // TODO: Find a way for handle exception messaging before NativeFuncs is initialized
+                    Console.Error.WriteLine(e);
+                }
                 return godot_bool.False;
             }
         }
@@ -157,7 +169,7 @@ namespace GodotPlugins
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e);
+                ExceptionUtils.LogException(e);
                 return godot_bool.False;
             }
         }
@@ -193,7 +205,7 @@ namespace GodotPlugins
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e);
+                ExceptionUtils.LogException(e);
                 return IntPtr.Zero;
             }
         }
@@ -224,7 +236,7 @@ namespace GodotPlugins
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e);
+                ExceptionUtils.LogException(e);
                 return godot_bool.False;
             }
         }
@@ -238,11 +250,14 @@ namespace GodotPlugins
 
                 if (!pluginLoadContext.IsCollectible)
                 {
-                    Console.Error.WriteLine("Cannot unload a non-collectible assembly load context.");
+                    GD.PrintErr("Cannot unload a non-collectible assembly load context.");
                     return false;
                 }
 
-                Console.WriteLine("Unloading assembly load context...");
+                if (OS.IsStdOutVerbose())
+                {
+                    GD.Print("Unloading assembly load context...");
+                }
 
                 pluginLoadContext.Unload();
 
@@ -263,28 +278,28 @@ namespace GodotPlugins
                     {
                         takingTooLong = true;
 
-                        // TODO: How to log from GodotPlugins? (delegate pointer?)
-                        Console.Error.WriteLine("Assembly unloading is taking longer than expected...");
+                        GD.PrintErr("Assembly unloading is taking longer than expected...");
                     }
                     else if (elapsedTimeMs >= 1000)
                     {
-                        // TODO: How to log from GodotPlugins? (delegate pointer?)
-                        Console.Error.WriteLine(
+                        GD.PrintErr(
                             "Failed to unload assemblies. Possible causes: Strong GC handles, running threads, etc.");
 
                         return false;
                     }
                 }
 
-                Console.WriteLine("Assembly load context unloaded successfully.");
+                if (OS.IsStdOutVerbose())
+                {
+                    GD.Print("Assembly load context unloaded successfully.");
+                }
 
                 pluginLoadContext = null;
                 return true;
             }
             catch (Exception e)
             {
-                // TODO: How to log exceptions from GodotPlugins? (delegate pointer?)
-                Console.Error.WriteLine(e);
+                ExceptionUtils.LogException(e);
                 return false;
             }
         }

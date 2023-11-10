@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 #nullable enable
 
+[assembly: InternalsVisibleTo(assemblyName: "GodotPlugins")]
 namespace Godot.NativeInterop
 {
     internal static class ExceptionUtils

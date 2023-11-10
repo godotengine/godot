@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
+using Godot;
+using FileAccess = System.IO.FileAccess;
 
 namespace GodotPlugins
 {
@@ -37,8 +39,7 @@ namespace GodotPlugins
                 }
                 else
                 {
-                    // TODO: How to log from GodotPlugins? (delegate pointer?)
-                    Console.Error.WriteLine("Failed to set AppContext.BaseDirectory. Dynamic loading of libraries may fail.");
+                    GD.PrintErr("Failed to set AppContext.BaseDirectory. Dynamic loading of libraries may fail.");
                 }
             }
         }
