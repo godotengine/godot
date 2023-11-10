@@ -3608,32 +3608,15 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	if (xkeyevent->type != KeyPress) {
 		p_echo = false;
 
-		// make sure there are events pending,
-		// so this call won't block.
-		if (p_event_index + 1 < p_events.size()) {
-			XEvent &peek_event = p_events[p_event_index + 1];
-
-			// I'm using a threshold of 5 msecs,
-			// since sometimes there seems to be a little
-			// jitter. I'm still not convinced that all this approach
-			// is correct, but the xorg developers are
-			// not very helpful today.
-
-#define ABSDIFF(x, y) (((x) < (y)) ? ((y) - (x)) : ((x) - (y)))
-			::Time threshold = ABSDIFF(peek_event.xkey.time, xkeyevent->time);
-#undef ABSDIFF
-			if (peek_event.type == KeyPress && threshold < 5) {
-				KeySym rk;
-				XLookupString((XKeyEvent *)&peek_event, str, 256, &rk, nullptr);
-				if (rk == keysym_keycode) {
-					// Consume to next event.
-					++p_event_index;
-					_handle_key_event(p_window, (XKeyEvent *)&peek_event, p_events, p_event_index, true);
-					return; //ignore current, echo next
-				}
+		XEvent &curr_event = p_events[p_event_index];
+		for (uint32_t peek_index = p_event_index + 1; peek_index < p_events.size(); peek_index++) {
+			XEvent &peek_event = p_events[peek_index];
+			if (peek_event.type == KeyPress && peek_event.xkey.keycode == curr_event.xkey.keycode && peek_event.xkey.time - curr_event.xkey.time < 2) {
+				// Consume to next event.
+				++p_event_index;
+				_handle_key_event(p_window, (XKeyEvent *)&peek_event, p_events, p_event_index, true);
+				return; //ignore current, echo next
 			}
-
-			// use the time from peek_event so it always works
 		}
 
 		// save the time to check for echo when keypress happens
