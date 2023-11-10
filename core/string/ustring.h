@@ -157,6 +157,7 @@ public:
 	void operator=(const char *p_cstr);
 	bool operator<(const CharString &p_right) const;
 	bool operator==(const CharString &p_right) const;
+	bool operator==(const char *p_right) const;
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char *get_data() const;
