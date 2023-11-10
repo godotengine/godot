@@ -444,7 +444,7 @@
 		<method name="get_tree" qualifiers="const">
 			<return type="SceneTree" />
 			<description>
-				Returns the [SceneTree] that contains this node.
+				Returns the [SceneTree] that contains this node. Returns [code]null[/code] and prints an error if this node is not inside the scene tree. See also [method is_inside_tree].
 			</description>
 		</method>
 		<method name="get_tree_string">
