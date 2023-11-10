@@ -93,9 +93,27 @@ void EditorSceneFormatImporter::add_import_option_advanced(Variant::Type p_type,
 }
 
 void EditorSceneFormatImporter::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
-	current_option_list = r_options;
-	GDVIRTUAL_CALL(_get_import_options, p_path);
-	current_option_list = nullptr;
+	Array needed;
+	needed.push_back("name");
+	needed.push_back("default_value");
+
+	TypedArray<Dictionary> options;
+
+	if (GDVIRTUAL_CALL(_get_import_options, p_path, options)) {
+		for (int i = 0; i < options.size(); i++) {
+			Dictionary d = options[i];
+			ERR_FAIL_COND(!d.has_all(needed));
+
+			Variant default_value = d["default_value"];
+			PropertyInfo property_info = PropertyInfo::from_dict(d);
+
+			ResourceImporter::ImportOption option(property_info, default_value);
+			r_options->push_back(option);
+		}
+		return;
+	}
+
+	ERR_FAIL_MSG("Unimplemented _get_import_options in add-on.");
 }
 
 Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option, const HashMap<StringName, Variant> &p_options) {
@@ -199,9 +217,24 @@ void EditorScenePostImportPlugin::internal_process(InternalImportCategory p_cate
 }
 
 void EditorScenePostImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
-	current_option_list = r_options;
-	GDVIRTUAL_CALL(_get_import_options, p_path);
-	current_option_list = nullptr;
+	Array needed = { "name", "default_value" };
+	TypedArray<Dictionary> options;
+
+	if (GDVIRTUAL_CALL(_get_import_options, p_path, options)) {
+		for (int i = 0; i < options.size(); i++) {
+			Dictionary d = options[i];
+			ERR_FAIL_COND(!d.has_all(needed));
+
+			Variant default_value = d["default_value"];
+			PropertyInfo property_info = PropertyInfo::from_dict(d);
+
+			ResourceImporter::ImportOption option(property_info, default_value);
+			r_options->push_back(option);
+		}
+		return;
+	}
+
+	ERR_FAIL_MSG("Unimplemented _get_import_options in add-on.");
 }
 Variant EditorScenePostImportPlugin::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	current_options = &p_options;

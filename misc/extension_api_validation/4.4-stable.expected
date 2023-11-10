@@ -329,3 +329,11 @@ Validate extension JSON: API was removed: classes/VisualShader/methods/set_graph
 Validate extension JSON: API was removed: classes/VisualShader/methods/get_graph_offset
 
 The graph_offset property was removed from the resource. This information is now stored in `vs_editor_cache.cfg`.
+
+GH-84516
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorSceneFormatImporter/methods/_get_import_options': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorScenePostImportPlugin/methods/_get_import_options': return_value
+Validate extension JSON: Error: Hash changed for 'classes/EditorScenePostImportPlugin/methods/_get_import_options', from 04FD3184 to 5DFD10C4. This means that the function has changed and no compatibility function was provided.
+
+C# glue for get_import_options of EditorSceneFormatImporter and EditorScenePostImportPlugin overload is missing return value for options which makes it completely useless because there is no way to return the option list to the engine.

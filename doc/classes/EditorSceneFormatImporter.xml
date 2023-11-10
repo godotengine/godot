@@ -17,7 +17,7 @@
 			</description>
 		</method>
 		<method name="_get_import_options" qualifiers="virtual">
-			<return type="void" />
+			<return type="Dictionary[]" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Override to add general import options. These will appear in the main import dock on the editor. Add options via [method add_import_option] and [method add_import_option_advanced].
