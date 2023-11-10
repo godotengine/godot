@@ -463,6 +463,10 @@ bool UndoRedo::has_redo() const {
 	return (current_action + 1) < actions.size();
 }
 
+bool UndoRedo::is_merging() const {
+	return merging;
+}
+
 uint64_t UndoRedo::get_version() const {
 	return version;
 }
