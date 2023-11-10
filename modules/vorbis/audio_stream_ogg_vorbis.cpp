@@ -144,7 +144,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 }
 
 int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p_frames) {
-	ERR_FAIL_COND_V(!ready, 0);
+	ERR_FAIL_COND_V(!ready, p_frames);
 	if (!have_samples_left) {
 		ogg_packet *packet = nullptr;
 		int err;
@@ -156,10 +156,10 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 		}
 
 		err = vorbis_synthesis(&block, packet);
-		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis synthesis " + itos(err));
+		ERR_FAIL_COND_V_MSG(err != 0, p_frames, "Error during vorbis synthesis " + itos(err));
 
 		err = vorbis_synthesis_blockin(&dsp_state, &block);
-		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis block processing " + itos(err));
+		ERR_FAIL_COND_V_MSG(err != 0, p_frames, "Error during vorbis block processing " + itos(err));
 
 		have_packets_left = !packet->e_o_s;
 	}
