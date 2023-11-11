@@ -328,7 +328,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 				}
 
 				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				ilogmem[iloglen] = '\0';
+				memset(ilogmem, 0, iloglen + 1);
 				glGetShaderInfoLog(spec.vert_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Vertex shader compilation failed:\n";
@@ -376,7 +376,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 				}
 
 				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				ilogmem[iloglen] = '\0';
+				memset(ilogmem, 0, iloglen + 1);
 				glGetShaderInfoLog(spec.frag_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Fragment shader compilation failed:\n";
