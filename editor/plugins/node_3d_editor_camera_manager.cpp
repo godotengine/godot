@@ -486,6 +486,7 @@ void Node3DEditorCameraManager::_undo_redo_pilot_transform(Node3D* p_node, const
 	if (p_node == node_being_piloted) {
 		align_camera_and_cursor_to_node_being_piloted();
 		pilot_previous_transform = cursor.get_target_camera_transform();
+		emit_signal(SNAME("camera_updated"));
 	}
 }
 
