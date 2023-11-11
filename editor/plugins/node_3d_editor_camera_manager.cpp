@@ -480,7 +480,6 @@ void Node3DEditorCameraManager::commit_pilot_transform() {
 			undo_redo->add_do_method(this, "_undo_redo_pilot_transform", node_being_piloted, transform_to_commit);
 			undo_redo->add_undo_method(this, "_undo_redo_pilot_transform", node_being_piloted, pilot_previous_transform);
 			undo_redo->commit_action(false);
-			//undo_redo->set_history_as_unsaved();
 		}
 		pilot_previous_transform = transform_to_commit;
 	}
