@@ -479,7 +479,6 @@ void Node3DEditorViewport::_view_settings_confirmed(real_t p_interp_delta) {
 }
 
 void Node3DEditorViewport::_update_navigation_controls_visibility() {
-	
 	bool show_viewport_rotation_gizmo = EDITOR_GET("editors/3d/navigation/show_viewport_rotation_gizmo") && (camera_manager->get_previewing_or_cinematic_camera() == nullptr);
 	rotation_control->set_visible(show_viewport_rotation_gizmo);
 
@@ -1477,7 +1476,6 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
-
 	bool is_piloting_preview = camera_manager->get_previewing_camera() && camera_manager->get_previewing_camera() == camera_manager->get_node_being_piloted();
 
 	if ((camera_manager->get_previewing_camera() && !is_piloting_preview) || camera_manager->is_in_cinematic_preview_mode()) {
@@ -3018,7 +3016,7 @@ void Node3DEditorViewport::_draw() {
 
 void Node3DEditorViewport::_view_menu_popped_up() {
 	PopupMenu *view_menu_popup = view_menu->get_popup();
-	Node3D* selected_node = Node3DEditor::get_singleton()->get_single_selected_node();
+	Node3D *selected_node = Node3DEditor::get_singleton()->get_single_selected_node();
 	if (selected_node) {
 		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_PILOT), false);
 		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_PILOT), vformat(TTR("Pilot '%s'"), selected_node->get_name()));
@@ -3490,8 +3488,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	ERR_FAIL_COND(!p_activate && !camera_manager->get_previewing_camera());
 	if (p_activate) {
 		camera_manager->preview_camera(preview);
-	}
-	else {
+	} else {
 		camera_manager->stop_previewing_camera();
 	}
 }
@@ -3499,8 +3496,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 	if (p_activate) {
 		camera_manager->cinematic_preview_scene(SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root());
-	}
-	else {
+	} else {
 		camera_manager->stop_cinematic_preview();
 	}
 }
@@ -4830,8 +4826,7 @@ void Node3DEditorViewport::refresh_pilot_and_preview_ui() {
 		preview_camera->set_visible(false);
 		pilot_preview_camera_checkbox->set_visible(false);
 		stop_piloting_button->set_visible(false);
-	}
-	else {
+	} else {
 		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW), false);
 		cinema_label->set_visible(false);
 		if (camera_manager->get_previewing_camera()) {
@@ -4840,8 +4835,7 @@ void Node3DEditorViewport::refresh_pilot_and_preview_ui() {
 			pilot_preview_camera_checkbox->set_visible(true);
 			pilot_preview_camera_checkbox->set_pressed_no_signal(camera_manager->get_previewing_camera() == camera_manager->get_node_being_piloted());
 			stop_piloting_button->set_visible(false);
-		}
-		else {
+		} else {
 			preview_camera->set_visible(preview != nullptr);
 			preview_camera->set_pressed_no_signal(false);
 			pilot_preview_camera_checkbox->set_visible(false);

@@ -34,11 +34,10 @@
 #include "scene/main/node.h"
 
 /**
-* The invisible cursor 3D that the camera follows and rotates around in the viewport. Contains interpolation
-* for a smooth movement.
-*/
+ * The invisible cursor 3D that the camera follows and rotates around in the viewport. Contains interpolation
+ * for a smooth movement.
+ */
 class Node3DEditorCameraCursor {
-
 public:
 	struct Values {
 		/** The position the cursor points to. */
@@ -59,8 +58,8 @@ public:
 		/** FOV scale of the camera. */
 		real_t fov_scale;
 
-		bool operator==(const Values& other) const;
-		bool operator!=(const Values& other) const;
+		bool operator==(const Values &other) const;
+		bool operator!=(const Values &other) const;
 
 		Values();
 
@@ -89,10 +88,10 @@ public:
 	Values get_target_values() const;
 
 	/** Moves the position and eye position given the motion vector. */
-	void move(const Vector3& p_delta);
+	void move(const Vector3 &p_delta);
 
 	/** Moves the position to the given the point. */
-	void move_to(const Vector3& p_position);
+	void move_to(const Vector3 &p_position);
 
 	/** Rotates the given delta angles in radians around the cursor's position. */
 	void orbit(real_t p_x, real_t p_y);
@@ -114,7 +113,7 @@ public:
 	bool get_freelook_mode() const;
 
 	/** Moves in free look mode. Free look mode must be enabled. */
-	void move_freelook(const Vector3& p_direction, real_t p_speed, real_t p_delta);
+	void move_freelook(const Vector3 &p_direction, real_t p_speed, real_t p_delta);
 
 	/** Increases or decreases the distance of the eye's position to the cursor's position. */
 	void move_distance(real_t p_delta);
@@ -141,12 +140,12 @@ public:
 	Transform3D get_target_camera_transform() const;
 
 	/** Sets the values to the cursor to match the given camera's transform. */
-	void set_camera_transform(const Transform3D& p_transform);
+	void set_camera_transform(const Transform3D &p_transform);
 
 private:
-	Transform3D values_to_camera_transform(const Values& p_values) const;
-	void recalculate_eye_position(Values& p_values);
-	void recalculate_position(Values& p_values);
+	Transform3D values_to_camera_transform(const Values &p_values) const;
+	void recalculate_eye_position(Values &p_values);
+	void recalculate_position(Values &p_values);
 
 public:
 	Node3DEditorCameraCursor();

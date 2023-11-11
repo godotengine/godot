@@ -32,16 +32,11 @@
 
 #include "editor/editor_settings.h"
 
-bool Node3DEditorCameraCursor::Values::operator==(const Values& other) const {
-	return position == other.position
-		&& eye_position == other.eye_position
-		&& x_rot == other.x_rot
-		&& y_rot == other.y_rot
-		&& distance == other.distance
-		&& fov_scale == other.fov_scale;
+bool Node3DEditorCameraCursor::Values::operator==(const Values &other) const {
+	return position == other.position && eye_position == other.eye_position && x_rot == other.x_rot && y_rot == other.y_rot && distance == other.distance && fov_scale == other.fov_scale;
 }
 
-bool Node3DEditorCameraCursor::Values::operator!=(const Values& other) const {
+bool Node3DEditorCameraCursor::Values::operator!=(const Values &other) const {
 	return !(*this == other);
 }
 
@@ -63,12 +58,12 @@ Node3DEditorCameraCursor::Values Node3DEditorCameraCursor::get_target_values() c
 	return target_values;
 }
 
-void Node3DEditorCameraCursor::move(const Vector3& p_delta) {
+void Node3DEditorCameraCursor::move(const Vector3 &p_delta) {
 	target_values.position += p_delta;
 	target_values.eye_position += p_delta;
 }
 
-void Node3DEditorCameraCursor::move_to(const Vector3& p_position) {
+void Node3DEditorCameraCursor::move_to(const Vector3 &p_position) {
 	target_values.position = p_position;
 	recalculate_eye_position(target_values);
 }
@@ -106,7 +101,7 @@ bool Node3DEditorCameraCursor::get_freelook_mode() const {
 	return freelook_mode;
 }
 
-void Node3DEditorCameraCursor::move_freelook(const Vector3& p_direction, real_t p_speed, real_t p_delta) {
+void Node3DEditorCameraCursor::move_freelook(const Vector3 &p_direction, real_t p_speed, real_t p_delta) {
 	if (!freelook_mode) {
 		return;
 	}
@@ -118,8 +113,7 @@ void Node3DEditorCameraCursor::move_freelook(const Vector3& p_direction, real_t 
 	if (navigation_scheme == FREELOOK_FULLY_AXIS_LOCKED) {
 		// Forward/backward keys will always go straight forward/backward, never moving on the Y axis.
 		forward = Vector3(0, 0, -1).rotated(Vector3(0, 1, 0), camera_transform.basis.get_euler().y);
-	}
-	else {
+	} else {
 		// Forward/backward keys will be relative to the camera pitch.
 		forward = camera_transform.basis.xform(Vector3(0, 0, -1));
 	}
@@ -130,8 +124,7 @@ void Node3DEditorCameraCursor::move_freelook(const Vector3& p_direction, real_t 
 	if (navigation_scheme == FREELOOK_PARTIALLY_AXIS_LOCKED || navigation_scheme == FREELOOK_FULLY_AXIS_LOCKED) {
 		// Up/down keys will always go up/down regardless of camera pitch.
 		up = Vector3(0, 1, 0);
-	}
-	else {
+	} else {
 		// Up/down keys will be relative to the camera pitch.
 		up = camera_transform.basis.xform(Vector3(0, 1, 0));
 	}
@@ -153,8 +146,7 @@ void Node3DEditorCameraCursor::move_distance_to(real_t p_distance) {
 void Node3DEditorCameraCursor::stop_interpolation(bool p_go_to_target) {
 	if (p_go_to_target) {
 		current_values = target_values;
-	}
-	else {
+	} else {
 		target_values = current_values;
 	}
 }
@@ -185,8 +177,7 @@ bool Node3DEditorCameraCursor::update_interpolation(float p_interp_delta) {
 		}
 
 		recalculate_position(current_values);
-	}
-	else {
+	} else {
 		const real_t orbit_inertia = EDITOR_DEF("editors/3d/navigation_feel/orbit_inertia", 0.1);
 		const real_t translation_inertia = EDITOR_DEF("editors/3d/navigation_feel/translation_inertia", 0.1);
 		const real_t zoom_inertia = EDITOR_DEF("editors/3d/navigation_feel/zoom_inertia", 0.1);
@@ -211,14 +202,11 @@ bool Node3DEditorCameraCursor::update_interpolation(float p_interp_delta) {
 	bool something_changed = false;
 	if (!Math::is_equal_approx(old_values.x_rot, current_values.x_rot, tolerance) || !Math::is_equal_approx(old_values.y_rot, current_values.y_rot, tolerance)) {
 		something_changed = true;
-	}
-	else if (!old_values.position.is_equal_approx(current_values.position)) {
+	} else if (!old_values.position.is_equal_approx(current_values.position)) {
 		something_changed = true;
-	}
-	else if (!Math::is_equal_approx(old_values.distance, current_values.distance, tolerance)) {
+	} else if (!Math::is_equal_approx(old_values.distance, current_values.distance, tolerance)) {
 		something_changed = true;
-	}
-	else if (!Math::is_equal_approx(old_values.fov_scale, current_values.fov_scale, tolerance)) {
+	} else if (!Math::is_equal_approx(old_values.fov_scale, current_values.fov_scale, tolerance)) {
 		something_changed = true;
 	}
 	return something_changed;
@@ -244,14 +232,13 @@ Transform3D Node3DEditorCameraCursor::get_target_camera_transform() const {
 	return values_to_camera_transform(target_values);
 }
 
-void Node3DEditorCameraCursor::set_camera_transform(const Transform3D& p_transform) {
+void Node3DEditorCameraCursor::set_camera_transform(const Transform3D &p_transform) {
 	target_values = Values();
 	Transform3D transform = p_transform;
 	Transform3D eye_transform = p_transform;
 	if (orthogonal) {
 		transform.translate_local(0, 0, -((z_far - z_near) / 2.0));
-	}
-	else {
+	} else {
 		transform.translate_local(0, 0, -target_values.distance);
 	}
 	target_values.position = transform.origin;
@@ -261,26 +248,25 @@ void Node3DEditorCameraCursor::set_camera_transform(const Transform3D& p_transfo
 	recalculate_eye_position(target_values);
 }
 
-Transform3D Node3DEditorCameraCursor::values_to_camera_transform(const Values& p_values) const {
+Transform3D Node3DEditorCameraCursor::values_to_camera_transform(const Values &p_values) const {
 	Transform3D camera_transform;
 	camera_transform.translate_local(p_values.position);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -p_values.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -p_values.y_rot);
 	if (orthogonal) {
 		camera_transform.translate_local(0, 0, (z_far - z_near) / 2.0);
-	}
-	else {
+	} else {
 		camera_transform.translate_local(0, 0, p_values.distance);
 	}
 	return camera_transform;
 }
 
-void Node3DEditorCameraCursor::recalculate_eye_position(Values& p_values) {
+void Node3DEditorCameraCursor::recalculate_eye_position(Values &p_values) {
 	Vector3 forward = values_to_camera_transform(p_values).basis.xform(Vector3(0, 0, -1));
 	p_values.eye_position = p_values.position - p_values.distance * forward;
 }
 
-void Node3DEditorCameraCursor::recalculate_position(Values& p_values) {
+void Node3DEditorCameraCursor::recalculate_position(Values &p_values) {
 	Vector3 forward = values_to_camera_transform(p_values).basis.xform(Vector3(0, 0, -1));
 	p_values.position = p_values.eye_position + forward * p_values.distance;
 }

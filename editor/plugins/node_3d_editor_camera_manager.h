@@ -31,8 +31,8 @@
 #ifndef NODE_3D_EDITOR_CAMERA_MANAGER_H
 #define NODE_3D_EDITOR_CAMERA_MANAGER_H
 
-#include "scene/main/node.h"
 #include "node_3d_editor_camera_cursor.h"
+#include "scene/main/node.h"
 
 class Camera3D;
 class Node3D;
@@ -40,19 +40,19 @@ class EditorSettings;
 class RenderingServer;
 
 /**
-* Manages the camera of the 3D editor, including features like navigating, preview, cinematic preview and pilot.
-*/
+ * Manages the camera of the 3D editor, including features like navigating, preview, cinematic preview and pilot.
+ */
 class Node3DEditorCameraManager : public Node {
 	GDCLASS(Node3DEditorCameraManager, Node);
 
 private:
-	Node* cinematic_scene_root = nullptr;
-	Viewport* viewport = nullptr;
-	Camera3D* editor_camera = nullptr;
-	Camera3D* previewing_camera = nullptr;
-	Camera3D* cinematic_camera = nullptr;
-	Camera3D* current_camera = nullptr;
-	Node3D* node_being_piloted = nullptr;
+	Node *cinematic_scene_root = nullptr;
+	Viewport *viewport = nullptr;
+	Camera3D *editor_camera = nullptr;
+	Camera3D *previewing_camera = nullptr;
+	Camera3D *cinematic_camera = nullptr;
+	Camera3D *current_camera = nullptr;
+	Node3D *node_being_piloted = nullptr;
 	bool cinematic_preview_mode = false;
 	Transform3D pilot_previous_transform;
 	bool allow_pilot_previewing_camera = false;
@@ -60,7 +60,7 @@ private:
 	float fov;
 	float z_near;
 	float z_far;
-	EditorSettings* editor_settings = nullptr;
+	EditorSettings *editor_settings = nullptr;
 	Node3DEditorCameraCursor cursor;
 
 public:
@@ -68,25 +68,25 @@ public:
 	void reset();
 
 	Node3DEditorCameraCursor get_cursor() const;
-	void set_cursor_state(const Vector3& position, real_t x_rot, real_t y_rot, real_t distance);
+	void set_cursor_state(const Vector3 &position, real_t x_rot, real_t y_rot, real_t distance);
 
 private:
-	void set_current_camera(Camera3D* p_camera);
+	void set_current_camera(Camera3D *p_camera);
 
 public:
-	Camera3D* get_current_camera() const;
-	Camera3D* get_previewing_or_cinematic_camera() const;
+	Camera3D *get_current_camera() const;
+	Camera3D *get_previewing_or_cinematic_camera() const;
 
-	void pilot(Node3D* p_node);
+	void pilot(Node3D *p_node);
 	void stop_piloting();
-	Node3D* get_node_being_piloted() const;
+	Node3D *get_node_being_piloted() const;
 
 	void set_allow_pilot_previewing_camera(bool p_allow_pilot_camera);
-	void preview_camera(Camera3D* p_camera);
-	Camera3D* get_previewing_camera() const;
+	void preview_camera(Camera3D *p_camera);
+	Camera3D *get_previewing_camera() const;
 	void stop_previewing_camera();
 
-	void cinematic_preview_scene(Node* p_scene_root);
+	void cinematic_preview_scene(Node *p_scene_root);
 	void stop_cinematic_preview();
 	bool is_in_cinematic_preview_mode() const;
 
@@ -97,11 +97,11 @@ public:
 	void set_freelook_active(bool p_active_now);
 
 	void navigation_move(float p_right, float p_forward, float p_speed);
-	void navigation_freelook_move(const Vector3& p_direction, real_t p_speed, real_t p_delta);
-	void navigation_look(const Vector2& p_axis_movement, float p_speed);
-	void navigation_pan(const Vector2& p_direction, float p_speed);
+	void navigation_freelook_move(const Vector3 &p_direction, real_t p_speed, real_t p_delta);
+	void navigation_look(const Vector2 &p_axis_movement, float p_speed);
+	void navigation_pan(const Vector2 &p_direction, float p_speed);
 	void navigation_zoom_to_distance(float p_zoom);
-	void navigation_orbit(const Vector2& p_rotation);
+	void navigation_orbit(const Vector2 &p_rotation);
 
 	void orbit_view_down();
 	void orbit_view_up();
@@ -117,7 +117,7 @@ public:
 	void view_rear();
 
 	void center_to_origin();
-	void focus_selection(const Vector3& p_center_point);
+	void focus_selection(const Vector3 &p_center_point);
 
 	/** Updates the camera, cursor and cinematic preview. To be called every frame. */
 	void update(float p_delta_time);
@@ -128,14 +128,14 @@ private:
 	void stop_previews_and_pilots();
 	void align_camera_and_cursor_to_node_being_piloted();
 	void commit_pilot_transform();
-	void _undo_redo_pilot_transform(Node3D* p_node, const Transform3D& p_transform);
-	void align_node_to_transform(Node3D* p_node, const Transform3D& p_transform);
+	void _undo_redo_pilot_transform(Node3D *p_node, const Transform3D &p_transform);
+	void align_node_to_transform(Node3D *p_node, const Transform3D &p_transform);
 
 protected:
 	static void _bind_methods();
 
 public:
-	Node3DEditorCameraManager(Camera3D* p_editor_camera, Viewport* p_viewport);
+	Node3DEditorCameraManager(Camera3D *p_editor_camera, Viewport *p_viewport);
 	~Node3DEditorCameraManager();
 };
 

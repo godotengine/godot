@@ -56,14 +56,14 @@ Node3DEditorCameraCursor Node3DEditorCameraManager::get_cursor() const {
 	return cursor;
 }
 
-void Node3DEditorCameraManager::set_cursor_state(const Vector3& position, real_t x_rot, real_t y_rot, real_t distance) {
+void Node3DEditorCameraManager::set_cursor_state(const Vector3 &position, real_t x_rot, real_t y_rot, real_t distance) {
 	cursor.orbit_to(x_rot, y_rot);
 	cursor.move_to(position);
 	cursor.move_distance_to(distance);
 	cursor.stop_interpolation(true);
 }
 
-void Node3DEditorCameraManager::set_current_camera(Camera3D* p_camera) {
+void Node3DEditorCameraManager::set_current_camera(Camera3D *p_camera) {
 	if (p_camera == nullptr) {
 		return;
 	}
@@ -71,23 +71,21 @@ void Node3DEditorCameraManager::set_current_camera(Camera3D* p_camera) {
 	RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), p_camera->get_camera());
 }
 
-Camera3D* Node3DEditorCameraManager::get_current_camera() const {
+Camera3D *Node3DEditorCameraManager::get_current_camera() const {
 	return current_camera;
 }
 
-Camera3D* Node3DEditorCameraManager::get_previewing_or_cinematic_camera() const {
+Camera3D *Node3DEditorCameraManager::get_previewing_or_cinematic_camera() const {
 	if (cinematic_preview_mode && cinematic_camera) {
 		return cinematic_camera;
-	}
-	else if (previewing_camera) {
+	} else if (previewing_camera) {
 		return previewing_camera;
-	}
-	else {
+	} else {
 		return nullptr;
 	}
 }
 
-void Node3DEditorCameraManager::pilot(Node3D* p_node) {
+void Node3DEditorCameraManager::pilot(Node3D *p_node) {
 	if (p_node == nullptr || p_node == node_being_piloted) {
 		return;
 	}
@@ -98,11 +96,10 @@ void Node3DEditorCameraManager::pilot(Node3D* p_node) {
 		stop_previewing_camera();
 	}
 	stop_piloting();
-	Camera3D* node_as_camera = Object::cast_to<Camera3D>(p_node);
+	Camera3D *node_as_camera = Object::cast_to<Camera3D>(p_node);
 	if (node_as_camera) {
 		set_orthogonal(node_as_camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL);
-	}
-	else {
+	} else {
 		set_orthogonal(false);
 	}
 	if (p_node == previewing_camera) {
@@ -131,7 +128,7 @@ void Node3DEditorCameraManager::stop_piloting() {
 	update_camera();
 }
 
-Node3D* Node3DEditorCameraManager::get_node_being_piloted() const {
+Node3D *Node3DEditorCameraManager::get_node_being_piloted() const {
 	return node_being_piloted;
 }
 
@@ -147,7 +144,7 @@ void Node3DEditorCameraManager::set_allow_pilot_previewing_camera(bool p_allow_p
 	}
 }
 
-void Node3DEditorCameraManager::preview_camera(Camera3D* p_camera) {
+void Node3DEditorCameraManager::preview_camera(Camera3D *p_camera) {
 	if (p_camera == nullptr || cinematic_preview_mode || p_camera == previewing_camera) {
 		return;
 	}
@@ -165,7 +162,7 @@ void Node3DEditorCameraManager::preview_camera(Camera3D* p_camera) {
 	update_camera();
 }
 
-Camera3D* Node3DEditorCameraManager::get_previewing_camera() const {
+Camera3D *Node3DEditorCameraManager::get_previewing_camera() const {
 	return previewing_camera;
 }
 
@@ -181,7 +178,7 @@ void Node3DEditorCameraManager::stop_previewing_camera() {
 	update_camera();
 }
 
-void Node3DEditorCameraManager::cinematic_preview_scene(Node* p_scene_root) {
+void Node3DEditorCameraManager::cinematic_preview_scene(Node *p_scene_root) {
 	if (!p_scene_root) {
 		return;
 	}
@@ -220,22 +217,19 @@ void Node3DEditorCameraManager::set_orthogonal(bool p_orthogonal) {
 	orthogonal = p_orthogonal;
 	if (orthogonal) {
 		cursor.set_orthogonal(z_near, z_far);
-	}
-	else {
+	} else {
 		cursor.set_perspective();
 	}
 	update_camera();
 	if (node_being_piloted) {
-		Camera3D* camera_being_piloted = Object::cast_to<Camera3D>(node_being_piloted);
+		Camera3D *camera_being_piloted = Object::cast_to<Camera3D>(node_being_piloted);
 		if (camera_being_piloted) {
 			if (p_orthogonal && camera_being_piloted->get_projection() != Camera3D::PROJECTION_ORTHOGONAL) {
 				stop_piloting();
-			}
-			else if (!p_orthogonal && camera_being_piloted->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
+			} else if (!p_orthogonal && camera_being_piloted->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
 				stop_piloting();
 			}
-		}
-		else if (p_orthogonal) {
+		} else if (p_orthogonal) {
 			stop_piloting();
 		}
 	}
@@ -263,8 +257,7 @@ void Node3DEditorCameraManager::navigation_move(float p_right, float p_forward, 
 	if (navigation_scheme == Node3DEditorViewport::FreelookNavigationScheme::FREELOOK_FULLY_AXIS_LOCKED) {
 		// Forward/backward keys will always go straight forward/backward, never moving on the Y axis.
 		forward = Vector3(0, 0, p_forward).rotated(Vector3(0, 1, 0), editor_camera->get_rotation().y);
-	}
-	else {
+	} else {
 		// Forward/backward keys will be relative to the camera pitch.
 		forward = editor_camera->get_transform().basis.xform(Vector3(0, 0, p_forward));
 	}
@@ -274,11 +267,11 @@ void Node3DEditorCameraManager::navigation_move(float p_right, float p_forward, 
 	cursor.move(motion);
 }
 
-void Node3DEditorCameraManager::navigation_freelook_move(const Vector3& p_direction, real_t p_speed, real_t p_delta) {
+void Node3DEditorCameraManager::navigation_freelook_move(const Vector3 &p_direction, real_t p_speed, real_t p_delta) {
 	cursor.move_freelook(p_direction, p_speed, p_delta);
 }
 
-void Node3DEditorCameraManager::navigation_look(const Vector2& p_axis_movement, float p_speed) {
+void Node3DEditorCameraManager::navigation_look(const Vector2 &p_axis_movement, float p_speed) {
 	real_t x_rot = cursor.get_current_values().x_rot;
 	real_t y_rot = cursor.get_current_values().y_rot;
 	Vector3 eye_position = cursor.get_current_values().eye_position;
@@ -292,7 +285,7 @@ void Node3DEditorCameraManager::navigation_look(const Vector2& p_axis_movement, 
 	cursor.look_to(x_rot, y_rot);
 }
 
-void Node3DEditorCameraManager::navigation_pan(const Vector2& p_direction, float p_speed) {
+void Node3DEditorCameraManager::navigation_pan(const Vector2 &p_direction, float p_speed) {
 	Transform3D camera_transform;
 	Node3DEditorCameraCursor::Values cursor_values = cursor.get_current_values();
 	camera_transform.translate_local(cursor_values.position);
@@ -301,9 +294,9 @@ void Node3DEditorCameraManager::navigation_pan(const Vector2& p_direction, float
 	const bool invert_x_axis = EDITOR_GET("editors/3d/navigation/invert_x_axis");
 	const bool invert_y_axis = EDITOR_GET("editors/3d/navigation/invert_y_axis");
 	Vector3 translation(
-		(invert_x_axis ? -1 : 1) * -p_direction.x * p_speed,
-		(invert_y_axis ? -1 : 1) * p_direction.y * p_speed,
-		0);
+			(invert_x_axis ? -1 : 1) * -p_direction.x * p_speed,
+			(invert_y_axis ? -1 : 1) * p_direction.y * p_speed,
+			0);
 	const static real_t distance_default = 4.0;
 	translation *= cursor_values.distance / distance_default;
 	camera_transform.translate_local(translation);
@@ -314,7 +307,7 @@ void Node3DEditorCameraManager::navigation_zoom_to_distance(float p_zoom) {
 	cursor.move_distance_to(p_zoom);
 }
 
-void Node3DEditorCameraManager::navigation_orbit(const Vector2& p_rotation) {
+void Node3DEditorCameraManager::navigation_orbit(const Vector2 &p_rotation) {
 	cursor.orbit(p_rotation.x, p_rotation.y);
 }
 
@@ -380,7 +373,7 @@ void Node3DEditorCameraManager::center_to_origin() {
 	stop_previews_and_pilots();
 }
 
-void Node3DEditorCameraManager::focus_selection(const Vector3& p_center_point) {
+void Node3DEditorCameraManager::focus_selection(const Vector3 &p_center_point) {
 	cursor.move_to(p_center_point);
 	stop_previews_and_pilots();
 }
@@ -411,7 +404,7 @@ void Node3DEditorCameraManager::update(float p_delta_time) {
 
 void Node3DEditorCameraManager::update_camera() {
 	Node3DEditorCameraCursor::Values cursor_values = cursor.get_current_values();
-	Node3D* camera_or_node_being_piloted = node_being_piloted ? node_being_piloted : editor_camera;
+	Node3D *camera_or_node_being_piloted = node_being_piloted ? node_being_piloted : editor_camera;
 	Transform3D cursor_transform = cursor.get_current_camera_transform();
 	align_node_to_transform(camera_or_node_being_piloted, cursor_transform);
 	if (camera_or_node_being_piloted != current_camera) {
@@ -421,8 +414,7 @@ void Node3DEditorCameraManager::update_camera() {
 		float half_fov = Math::deg_to_rad(fov * cursor_values.fov_scale) / 2.0;
 		float height = 2.0 * cursor_values.distance * Math::tan(half_fov);
 		editor_camera->set_orthogonal(height, z_near, z_far);
-	}
-	else {
+	} else {
 		editor_camera->set_perspective(fov * cursor_values.fov_scale, z_near, z_far);
 	}
 	emit_signal(SNAME("camera_updated"));
@@ -430,7 +422,7 @@ void Node3DEditorCameraManager::update_camera() {
 
 void Node3DEditorCameraManager::update_cinematic_preview() {
 	if (cinematic_preview_mode && cinematic_scene_root != nullptr) {
-		Camera3D* cam = cinematic_scene_root->get_viewport()->get_camera_3d();
+		Camera3D *cam = cinematic_scene_root->get_viewport()->get_camera_3d();
 		if (cam != cinematic_camera) {
 			//then switch the viewport's camera to the scene's viewport camera
 			if (cinematic_camera != nullptr) {
@@ -440,8 +432,7 @@ void Node3DEditorCameraManager::update_cinematic_preview() {
 			if (cinematic_camera != nullptr) {
 				cinematic_camera->connect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previews_and_pilots));
 				set_current_camera(cam);
-			}
-			else {
+			} else {
 				set_current_camera(editor_camera);
 			}
 		}
@@ -472,7 +463,7 @@ void Node3DEditorCameraManager::commit_pilot_transform() {
 	// Always commit using the cursor's transform to avoid commiting a transform that is being interpolated to smooth the movement:
 	Transform3D transform_to_commit = cursor.get_target_camera_transform();
 	if (transform_to_commit != pilot_previous_transform) {
-		EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		if (undo_redo != nullptr) {
 			int history_id = EditorNode::get_singleton()->get_editor_data().get_current_edited_scene_history_id();
 			undo_redo->create_action_for_history(TTR("Piloting Transform"), history_id);
@@ -484,7 +475,7 @@ void Node3DEditorCameraManager::commit_pilot_transform() {
 	}
 }
 
-void Node3DEditorCameraManager::_undo_redo_pilot_transform(Node3D* p_node, const Transform3D& p_transform) {
+void Node3DEditorCameraManager::_undo_redo_pilot_transform(Node3D *p_node, const Transform3D &p_transform) {
 	align_node_to_transform(p_node, p_transform);
 	if (p_node == node_being_piloted) {
 		align_camera_and_cursor_to_node_being_piloted();
@@ -493,7 +484,7 @@ void Node3DEditorCameraManager::_undo_redo_pilot_transform(Node3D* p_node, const
 	}
 }
 
-void Node3DEditorCameraManager::align_node_to_transform(Node3D* p_node, const Transform3D& p_transform) {
+void Node3DEditorCameraManager::align_node_to_transform(Node3D *p_node, const Transform3D &p_transform) {
 	Vector3 original_scale = p_node->get_scale();
 	p_node->set_global_transform(p_transform);
 	p_node->set_scale(original_scale);
@@ -505,7 +496,7 @@ void Node3DEditorCameraManager::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("camera_mode_changed"));
 }
 
-Node3DEditorCameraManager::Node3DEditorCameraManager(Camera3D* p_editor_camera, Viewport* p_viewport) {
+Node3DEditorCameraManager::Node3DEditorCameraManager(Camera3D *p_editor_camera, Viewport *p_viewport) {
 	editor_camera = p_editor_camera;
 	current_camera = editor_camera;
 	viewport = p_viewport;

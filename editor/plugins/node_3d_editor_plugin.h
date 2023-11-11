@@ -455,11 +455,11 @@ private:
 
 	void _set_lock_view_rotation(bool p_lock_rotation);
 
-	Button* stop_piloting_button = nullptr;
-	CheckBox* pilot_preview_camera_checkbox = nullptr;
+	Button *stop_piloting_button = nullptr;
+	CheckBox *pilot_preview_camera_checkbox = nullptr;
 	void toggle_allow_pilot_camera(bool p_activate);
 
-	Node3DEditorCameraManager* camera_manager;
+	Node3DEditorCameraManager *camera_manager;
 	void apply_camera_settings();
 	void on_camera_updated();
 	void refresh_pilot_and_preview_ui();
