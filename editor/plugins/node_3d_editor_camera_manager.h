@@ -126,10 +126,10 @@ private:
 	void update_camera();
 	void update_cinematic_preview();
 	void stop_previews_and_pilots();
-	void update_pilot_transform();
-	void update_camera_transform_to_node_being_piloted();
+	void align_camera_and_cursor_to_node_being_piloted();
 	void commit_pilot_transform();
 	void _undo_redo_pilot_transform(Node3D* p_node, const Transform3D& p_transform);
+	void align_node_to_transform(Node3D* p_node, const Transform3D& p_transform);
 
 protected:
 	static void _bind_methods();

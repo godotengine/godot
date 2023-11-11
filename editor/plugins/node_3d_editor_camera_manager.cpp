@@ -117,7 +117,7 @@ void Node3DEditorCameraManager::pilot(Node3D* p_node) {
 	}
 	node_being_piloted = p_node;
 	node_being_piloted->connect("tree_exited", callable_mp(this, &Node3DEditorCameraManager::stop_piloting));
-	update_camera_transform_to_node_being_piloted();
+	align_camera_and_cursor_to_node_being_piloted();
 	pilot_previous_transform = cursor.get_target_camera_transform();
 	emit_signal(SNAME("camera_mode_changed"));
 	update_camera();
@@ -393,19 +393,27 @@ void Node3DEditorCameraManager::update(float p_delta_time) {
 		update_camera();
 	}
 	if (!cursor_changed) {
-		// If not in free look mode, will commit the pilot transform each time the movement interpolation stops;
-		// also, it will do nothing if the pilot didn't move at all, so no problem to call it here all the time:
 		if (!cursor.get_freelook_mode()) {
+			// If not in free look mode, will commit the pilot transform each time the movement interpolation stops;
+			// also, it will do nothing if the pilot didn't move at all, so no problem to call it here all the time:
 			commit_pilot_transform();
 			// In case the node being piloted moved by any reason, we need to update the camera and cursor:
-			update_camera_transform_to_node_being_piloted();
+			if (node_being_piloted != nullptr && node_being_piloted != current_camera) {
+				align_camera_and_cursor_to_node_being_piloted();
+				pilot_previous_transform = cursor.get_target_camera_transform();
+			}
 		}
 	}
 }
 
 void Node3DEditorCameraManager::update_camera() {
 	Node3DEditorCameraCursor::Values cursor_values = cursor.get_current_values();
-	editor_camera->set_global_transform(cursor.get_current_camera_transform());
+	Node3D* camera_or_node_being_piloted = node_being_piloted ? node_being_piloted : editor_camera;
+	Transform3D cursor_transform = cursor.get_current_camera_transform();
+	align_node_to_transform(camera_or_node_being_piloted, cursor_transform);
+	if (camera_or_node_being_piloted != current_camera) {
+		align_node_to_transform(editor_camera, cursor_transform);
+	}
 	if (orthogonal) {
 		float half_fov = Math::deg_to_rad(fov * cursor_values.fov_scale) / 2.0;
 		float height = 2.0 * cursor_values.distance * Math::tan(half_fov);
@@ -414,7 +422,6 @@ void Node3DEditorCameraManager::update_camera() {
 	else {
 		editor_camera->set_perspective(fov * cursor_values.fov_scale, z_near, z_far);
 	}
-	update_pilot_transform();
 	emit_signal(SNAME("camera_updated"));
 }
 
@@ -444,18 +451,7 @@ void Node3DEditorCameraManager::stop_previews_and_pilots() {
 	set_cinematic_preview_mode(false);
 }
 
-void Node3DEditorCameraManager::update_pilot_transform() {
-	if (!node_being_piloted) {
-		return;
-	}
-	Transform3D transform = editor_camera->get_global_transform();
-	Vector3 original_scale = node_being_piloted->get_scale();
-	node_being_piloted->set_global_position(transform.origin);
-	node_being_piloted->set_global_rotation(transform.basis.get_euler());
-	node_being_piloted->set_scale(original_scale); // set_global_rotation seems to be messing with the scale, so we need to set it again here...
-}
-
-void Node3DEditorCameraManager::update_camera_transform_to_node_being_piloted() {
+void Node3DEditorCameraManager::align_camera_and_cursor_to_node_being_piloted() {
 	if (node_being_piloted == nullptr) {
 		return;
 	}
@@ -486,12 +482,17 @@ void Node3DEditorCameraManager::commit_pilot_transform() {
 }
 
 void Node3DEditorCameraManager::_undo_redo_pilot_transform(Node3D* p_node, const Transform3D& p_transform) {
-	p_node->set_global_transform(p_transform);
-	// If the node is still in pilot mode, we need to restart it to avoid it being out of sync with the editor's camera:
+	align_node_to_transform(p_node, p_transform);
 	if (p_node == node_being_piloted) {
-		stop_piloting();
-		pilot(p_node);
+		align_camera_and_cursor_to_node_being_piloted();
+		pilot_previous_transform = cursor.get_target_camera_transform();
 	}
+}
+
+void Node3DEditorCameraManager::align_node_to_transform(Node3D* p_node, const Transform3D& p_transform) {
+	Vector3 original_scale = p_node->get_scale();
+	p_node->set_global_transform(p_transform);
+	p_node->set_scale(original_scale);
 }
 
 void Node3DEditorCameraManager::_bind_methods() {
