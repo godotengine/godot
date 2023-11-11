@@ -56,12 +56,14 @@ if PLATFORM == 'linuxbsd'
         dependency('xi'),
         #dependency('vulkan')
         #_cpp.find_library('vulkan'),
+        DEP_GLAD,
     ]
 
     CPP_ARGS += [
         '-DUNIX_ENABLED',
         '-DVULKAN_ENABLED',
         '-DX11_ENABLED',
+        '-DGLES3_ENABLED',
     ]
 
     DEPENDENCIES += _linuxbsd_deps
