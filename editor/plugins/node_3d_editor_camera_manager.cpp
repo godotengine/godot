@@ -37,13 +37,6 @@
 #include "editor/scene_tree_dock.h"
 #include "servers/rendering_server.h"
 
-void Node3DEditorCameraManager::setup(Camera3D* p_editor_camera, Viewport* p_viewport, Node* p_scene_root) {
-	editor_camera = p_editor_camera;
-	current_camera = editor_camera;
-	viewport = p_viewport;
-	scene_root = p_scene_root;
-}
-
 void Node3DEditorCameraManager::set_camera_settings(float p_fov, float p_z_near, float p_z_far) {
 	fov = p_fov;
 	z_near = p_z_near;
@@ -502,13 +495,13 @@ void Node3DEditorCameraManager::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("camera_mode_changed"));
 }
 
-Node3DEditorCameraManager::Node3DEditorCameraManager() {
-	scene_root = nullptr;
-	viewport = nullptr;
-	editor_camera = nullptr;
+Node3DEditorCameraManager::Node3DEditorCameraManager(Camera3D* p_editor_camera, Viewport* p_viewport, Node* p_scene_root) {
+	editor_camera = p_editor_camera;
+	current_camera = editor_camera;
+	viewport = p_viewport;
+	scene_root = p_scene_root;
 	previewing_camera = nullptr;
 	cinematic_camera = nullptr;
-	current_camera = nullptr;
 	node_being_piloted = nullptr;
 	cinematic_preview_mode = false;
 	allow_pilot_previewing_camera = false;

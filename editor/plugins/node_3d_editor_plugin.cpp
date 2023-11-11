@@ -4848,11 +4848,6 @@ void Node3DEditorViewport::refresh_pilot_and_preview_ui() {
 }
 
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {
-	camera_manager = memnew(Node3DEditorCameraManager);
-	add_child(camera_manager);
-	camera_manager->connect("camera_updated", callable_mp(this, &Node3DEditorViewport::on_camera_updated));
-	camera_manager->connect("camera_mode_changed", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
-
 	cpu_time_history_index = 0;
 	gpu_time_history_index = 0;
 
@@ -4893,7 +4888,11 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
-	camera_manager->setup(camera, viewport, SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root());
+
+	camera_manager = memnew(Node3DEditorCameraManager(camera, viewport, SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root()));
+	add_child(camera_manager);
+	camera_manager->connect("camera_updated", callable_mp(this, &Node3DEditorViewport::on_camera_updated));
+	camera_manager->connect("camera_mode_changed", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);

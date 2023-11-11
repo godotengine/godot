@@ -64,7 +64,6 @@ private:
 	Node3DEditorCameraCursor cursor;
 
 public:
-	void setup(Camera3D* p_editor_camera, Viewport* p_viewport, Node* p_scene_root);
 	void set_camera_settings(float p_fov, float p_z_near, float p_z_far);
 	void reset();
 
@@ -135,7 +134,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Node3DEditorCameraManager();
+	Node3DEditorCameraManager(Camera3D* p_editor_camera, Viewport* p_viewport, Node* p_scene_root);
 	~Node3DEditorCameraManager();
 };
 
