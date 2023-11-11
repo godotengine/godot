@@ -30,7 +30,7 @@
 
 #include "node_3d_editor_camera_manager.h"
 
-#include "editor/editor_data.h"
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -475,10 +475,12 @@ void Node3DEditorCameraManager::commit_pilot_transform() {
 	if (transform_to_commit != pilot_previous_transform) {
 		EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
 		if (undo_redo != nullptr) {
-			undo_redo->create_action(TTR("Piloting Transform"));
+			int history_id = EditorNode::get_singleton()->get_editor_data().get_current_edited_scene_history_id();
+			undo_redo->create_action_for_history(TTR("Piloting Transform"), history_id);
 			undo_redo->add_do_method(this, "_undo_redo_pilot_transform", node_being_piloted, transform_to_commit);
 			undo_redo->add_undo_method(this, "_undo_redo_pilot_transform", node_being_piloted, pilot_previous_transform);
-			undo_redo->commit_action(true);
+			undo_redo->commit_action(false);
+			//undo_redo->set_history_as_unsaved();
 		}
 		pilot_previous_transform = transform_to_commit;
 	}
