@@ -46,7 +46,7 @@ class Node3DEditorCameraManager : public Node {
 	GDCLASS(Node3DEditorCameraManager, Node);
 
 private:
-	Node* scene_root = nullptr;
+	Node* cinematic_scene_root = nullptr;
 	Viewport* viewport = nullptr;
 	Camera3D* editor_camera = nullptr;
 	Camera3D* previewing_camera = nullptr;
@@ -86,7 +86,8 @@ public:
 	Camera3D* get_previewing_camera() const;
 	void stop_previewing_camera();
 
-	void set_cinematic_preview_mode(bool p_cinematic_mode);
+	void cinematic_preview_scene(Node* p_scene_root);
+	void stop_cinematic_preview();
 	bool is_in_cinematic_preview_mode() const;
 
 	void set_orthogonal(bool p_orthogonal);
@@ -134,7 +135,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Node3DEditorCameraManager(Camera3D* p_editor_camera, Viewport* p_viewport, Node* p_scene_root);
+	Node3DEditorCameraManager(Camera3D* p_editor_camera, Viewport* p_viewport);
 	~Node3DEditorCameraManager();
 };
 

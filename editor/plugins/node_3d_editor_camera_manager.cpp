@@ -47,7 +47,7 @@ void Node3DEditorCameraManager::set_camera_settings(float p_fov, float p_z_near,
 void Node3DEditorCameraManager::reset() {
 	stop_piloting();
 	stop_previewing_camera();
-	set_cinematic_preview_mode(false);
+	stop_cinematic_preview();
 	set_orthogonal(false);
 	cursor = Node3DEditorCameraCursor();
 }
@@ -92,7 +92,7 @@ void Node3DEditorCameraManager::pilot(Node3D* p_node) {
 		return;
 	}
 	if (cinematic_preview_mode) {
-		set_cinematic_preview_mode(false);
+		stop_cinematic_preview();
 	}
 	if (p_node != previewing_camera) {
 		stop_previewing_camera();
@@ -181,23 +181,33 @@ void Node3DEditorCameraManager::stop_previewing_camera() {
 	update_camera();
 }
 
-void Node3DEditorCameraManager::set_cinematic_preview_mode(bool p_cinematic_mode) {
-	if (cinematic_preview_mode == p_cinematic_mode) {
+void Node3DEditorCameraManager::cinematic_preview_scene(Node* p_scene_root) {
+	if (!p_scene_root) {
 		return;
 	}
-	cinematic_preview_mode = p_cinematic_mode;
-	if (p_cinematic_mode) {
-		stop_previewing_camera();
-		stop_piloting();
-		update_cinematic_preview();
+	if (cinematic_preview_mode) {
+		stop_cinematic_preview();
 	}
-	else {
-		if (cinematic_camera) {
-			cinematic_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::update_cinematic_preview));
-			cinematic_camera = nullptr;
-		}
-		set_current_camera(editor_camera); //restore
+	cinematic_scene_root = p_scene_root;
+	cinematic_preview_mode = true;
+	stop_previewing_camera();
+	stop_piloting();
+	update_cinematic_preview();
+	emit_signal(SNAME("camera_mode_changed"));
+	update_camera();
+}
+
+void Node3DEditorCameraManager::stop_cinematic_preview() {
+	if (!cinematic_preview_mode) {
+		return;
 	}
+	cinematic_scene_root = nullptr;
+	cinematic_preview_mode = false;
+	if (cinematic_camera) {
+		cinematic_camera->disconnect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::update_cinematic_preview));
+		cinematic_camera = nullptr;
+	}
+	set_current_camera(editor_camera); //restore
 	emit_signal(SNAME("camera_mode_changed"));
 	update_camera();
 }
@@ -419,8 +429,8 @@ void Node3DEditorCameraManager::update_camera() {
 }
 
 void Node3DEditorCameraManager::update_cinematic_preview() {
-	if (cinematic_preview_mode && scene_root != nullptr) {
-		Camera3D* cam = scene_root->get_viewport()->get_camera_3d();
+	if (cinematic_preview_mode && cinematic_scene_root != nullptr) {
+		Camera3D* cam = cinematic_scene_root->get_viewport()->get_camera_3d();
 		if (cam != cinematic_camera) {
 			//then switch the viewport's camera to the scene's viewport camera
 			if (cinematic_camera != nullptr) {
@@ -441,7 +451,7 @@ void Node3DEditorCameraManager::update_cinematic_preview() {
 void Node3DEditorCameraManager::stop_previews_and_pilots() {
 	stop_previewing_camera();
 	stop_piloting();
-	set_cinematic_preview_mode(false);
+	stop_cinematic_preview();
 }
 
 void Node3DEditorCameraManager::align_camera_and_cursor_to_node_being_piloted() {
@@ -495,11 +505,11 @@ void Node3DEditorCameraManager::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("camera_mode_changed"));
 }
 
-Node3DEditorCameraManager::Node3DEditorCameraManager(Camera3D* p_editor_camera, Viewport* p_viewport, Node* p_scene_root) {
+Node3DEditorCameraManager::Node3DEditorCameraManager(Camera3D* p_editor_camera, Viewport* p_viewport) {
 	editor_camera = p_editor_camera;
 	current_camera = editor_camera;
 	viewport = p_viewport;
-	scene_root = p_scene_root;
+	cinematic_scene_root = nullptr;
 	previewing_camera = nullptr;
 	cinematic_camera = nullptr;
 	node_being_piloted = nullptr;

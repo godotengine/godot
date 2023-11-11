@@ -3497,7 +3497,12 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 }
 
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
-	camera_manager->set_cinematic_preview_mode(p_activate);
+	if (p_activate) {
+		camera_manager->cinematic_preview_scene(SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root());
+	}
+	else {
+		camera_manager->stop_cinematic_preview();
+	}
 }
 
 void Node3DEditorViewport::_selection_result_pressed(int p_result) {
@@ -4889,7 +4894,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
 
-	camera_manager = memnew(Node3DEditorCameraManager(camera, viewport, SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root()));
+	camera_manager = memnew(Node3DEditorCameraManager(camera, viewport));
 	add_child(camera_manager);
 	camera_manager->connect("camera_updated", callable_mp(this, &Node3DEditorViewport::on_camera_updated));
 	camera_manager->connect("camera_mode_changed", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));

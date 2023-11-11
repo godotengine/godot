@@ -44,15 +44,13 @@
 namespace TestNode3DEditorCameraManager {
 
 	TEST_CASE("[TestNode3DEditorCameraManager][SceneTree][Editor] Camera manager") {
-
-		Node3DEditorCameraManager* camera_manager = memnew(Node3DEditorCameraManager);
 		Window* root = SceneTree::get_singleton()->get_root();
 		Camera3D* editor_camera = memnew(Camera3D);
 		Camera3D* previewing_camera = memnew(Camera3D);
 		Camera3D* cinematic_camera = memnew(Camera3D);
 		Node3D* some_node = memnew(Node3D);
 		Node3D* some_another_node = memnew(Node3D);
-		camera_manager->setup(editor_camera, root, root);
+		Node3DEditorCameraManager* camera_manager = memnew(Node3DEditorCameraManager(editor_camera, root));
 		root->add_child(editor_camera);
 		root->add_child(cinematic_camera);
 		root->add_child(previewing_camera);
@@ -91,7 +89,7 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should leave cinematic preview mode") {
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				camera_manager->reset();
 				CHECK(!camera_manager->is_in_cinematic_preview_mode());
 			}
@@ -125,7 +123,7 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Cinematic previewing camera") {
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				CHECK(camera_manager->get_current_camera() == cinematic_camera);
 			}
 		}
@@ -139,7 +137,7 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Cinematic previewing camera") {
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				CHECK(camera_manager->get_previewing_or_cinematic_camera() == cinematic_camera);
 			}
 
@@ -188,7 +186,7 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Pilot while in cinematic preview mode should turn it off") {
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				camera_manager->pilot(some_node);
 				CHECK(!camera_manager->is_in_cinematic_preview_mode());
 			}
@@ -287,7 +285,7 @@ namespace TestNode3DEditorCameraManager {
 				}
 
 				SUBCASE("Should not leave cinematic preview mode") {
-					camera_manager->set_cinematic_preview_mode(true);
+					camera_manager->cinematic_preview_scene(root);
 					camera_manager->pilot(nullptr);
 					CHECK(camera_manager->is_in_cinematic_preview_mode());
 				}
@@ -570,7 +568,7 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should do nothing if in cinematic previewing mode") {
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				CHECK(camera_manager->get_current_camera() == cinematic_camera);
 				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
 				camera_manager->preview_camera(previewing_camera);
@@ -633,52 +631,43 @@ namespace TestNode3DEditorCameraManager {
 
 		SUBCASE("[TestNode3DEditorCameraManager] Set cinematic preview mode") {
 
-			SUBCASE("Should stop pilot mode if setting to true") {
+			SUBCASE("Should stop pilot mode if starting preview") {
 				camera_manager->pilot(some_node);
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				CHECK(camera_manager->get_node_being_piloted() == nullptr);
 			}
 
-			SUBCASE("Should stop camera preview mode if setting to true") {
+			SUBCASE("Should stop camera preview mode if starting preview") {
 				camera_manager->preview_camera(previewing_camera);
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				CHECK(camera_manager->get_previewing_camera() == nullptr);
 			}
 
 			SUBCASE("Should set the current camera in the viewport when starting the cinematic preview mode") {
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				CHECK(camera_manager->get_current_camera() == cinematic_camera);
 			}
 
 			SUBCASE("Should set the editor's camera in the viewport when leaving the cinematic preview mode") {
-				camera_manager->set_cinematic_preview_mode(true);
-				camera_manager->set_cinematic_preview_mode(false);
+				camera_manager->cinematic_preview_scene(root);
+				camera_manager->stop_cinematic_preview();
 				CHECK(camera_manager->get_current_camera() == editor_camera);
 			}
 
 			SUBCASE("Should emit signal 'camera_mode_changed'") {
 				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				SIGNAL_CHECK_TRUE("camera_mode_changed");
 				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
 			}
 
-			SUBCASE("Should do nothing if set to false and it already is false") {
+			SUBCASE("Should do nothing if stopping but it was not in cinematic preview mode") {
 				camera_manager->preview_camera(previewing_camera);
 				camera_manager->pilot(previewing_camera);
 				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
-				camera_manager->set_cinematic_preview_mode(false);
+				camera_manager->stop_cinematic_preview();
 				CHECK(camera_manager->get_previewing_camera() == previewing_camera);
 				CHECK(camera_manager->get_node_being_piloted() == previewing_camera);
-				SIGNAL_CHECK_FALSE("camera_mode_changed");
-				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
-			}
-
-			SUBCASE("Should do nothing if set to true and it already is true") {
-				camera_manager->set_cinematic_preview_mode(true);
-				SIGNAL_WATCH(camera_manager, "camera_mode_changed");
-				camera_manager->set_cinematic_preview_mode(true);
-				CHECK(camera_manager->get_current_camera() == cinematic_camera);
 				SIGNAL_CHECK_FALSE("camera_mode_changed");
 				SIGNAL_UNWATCH(camera_manager, "camera_mode_changed");
 			}
@@ -885,7 +874,7 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should stop cinematic preview mode") {
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 
 				SUBCASE("Should stop cinematic preview mode when orbit view down") {
 					camera_manager->orbit_view_down();
@@ -1011,7 +1000,7 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should stop cinematic preview mode") {
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 
 				SUBCASE("Should stop cinematic preview mode when set view top") {
 					camera_manager->view_top();
@@ -1136,7 +1125,7 @@ namespace TestNode3DEditorCameraManager {
 			SUBCASE("Should update the cinematic camera preview") {
 				Camera3D* another_cinematic_camera = memnew(Camera3D);
 				root->add_child(another_cinematic_camera);
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				CHECK(camera_manager->get_current_camera() == cinematic_camera);
 				another_cinematic_camera->make_current();
 				camera_manager->update(0.033);
@@ -1145,7 +1134,7 @@ namespace TestNode3DEditorCameraManager {
 			}
 
 			SUBCASE("Should update to the editor's camera when there isn't a cinematic camera preview") {
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				cinematic_camera->clear_current(false);
 				camera_manager->update(0.033);
 				CHECK(camera_manager->get_current_camera() == editor_camera);
@@ -1154,7 +1143,7 @@ namespace TestNode3DEditorCameraManager {
 			SUBCASE("Should leave cinematic preview mode when the current camera is deleted") {
 				Camera3D* another_cinematic_camera = memnew(Camera3D);
 				root->add_child(another_cinematic_camera);
-				camera_manager->set_cinematic_preview_mode(true);
+				camera_manager->cinematic_preview_scene(root);
 				another_cinematic_camera->make_current();
 				camera_manager->update(0.033);
 				memdelete(another_cinematic_camera);
