@@ -14,10 +14,10 @@ production = "yes"
 tools="no"
 use_lto="yes"
 lto="full"
+use_static_cpp="yes"
 precision="single"
 vulkan = "no"
 opengl3 = "yes"
-
 
 # REQUIRED to compile
 

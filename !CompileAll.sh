@@ -8,8 +8,9 @@ rm -rf ./bin
 #Compile Editor
 scons target=editor profile=EditorCustom.py 
 
+# Windows
+
 # Linux
-scons profile=TemplatesCustom.py platform=windows target=template_release arch=x86_64
 scons profile=TemplatesCustom.py platform=linuxbsd target=template_release arch=x86_64
 
 # Android Templates
