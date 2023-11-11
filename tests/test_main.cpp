@@ -288,7 +288,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	}
 
 	void test_case_end(const doctest::CurrentTestCaseStats &) override {
-
 		if (SceneTree::get_singleton()) {
 			SceneTree::get_singleton()->finalize();
 		}
