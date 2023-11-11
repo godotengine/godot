@@ -27,6 +27,10 @@ if PLATFORM != 'server' and PLATFORM != 'javascript'
     subdir('vulkan')
 endif
 
+subdir('gl_context')
+subdir('gles3')
+subdir('egl')
+
 # Core dependencies
 subdir('png')
 
