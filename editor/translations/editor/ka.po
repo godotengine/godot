@@ -755,15 +755,6 @@ msgstr "დახურვა"
 msgid "Connect"
 msgstr "დაკავშირება"
 
-msgid "Class:"
-msgstr "კლასი:"
-
-msgid "Signal:"
-msgstr "სიგნალი:"
-
-msgid "No description."
-msgstr "აღწერის გარეშე."
-
 msgid "Connect '%s' to '%s'"
 msgstr "'%s' და '%s' დაკავშირება"
 
@@ -1328,6 +1319,9 @@ msgstr "ექსპერიმენტალური"
 msgid "Top"
 msgstr "თავში"
 
+msgid "Class:"
+msgstr "კლასი:"
+
 msgid "Description"
 msgstr "აღწერა"
 
@@ -1379,6 +1373,12 @@ msgstr "მეთოდის აღწერები"
 msgid "Operator Descriptions"
 msgstr "ოპერატორის აღწერები"
 
+msgid "Property:"
+msgstr "თვისება:"
+
+msgid "Signal:"
+msgstr "სიგნალი:"
+
 msgid "%d matches."
 msgstr "%d დამთხვევა."
 
@@ -1399,9 +1399,6 @@ msgstr "მუდმივა"
 
 msgid "Property"
 msgstr "პარამეტრი"
-
-msgid "Property:"
-msgstr "თვისება:"
 
 msgid "(%d change)"
 msgid_plural "(%d changes)"
@@ -2861,9 +2858,6 @@ msgstr "მონიშნული პოზების დაბრუნე�
 
 msgid "Insert key of all bone poses."
 msgstr "ყველა ძვლს პოზის გასაღების ჩასმა."
-
-msgid "Sprite2D is empty!"
-msgstr "Sprite2D ცარიელია!"
 
 msgid "Simplification:"
 msgstr "გამარტივება:"

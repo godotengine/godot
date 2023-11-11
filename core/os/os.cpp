@@ -490,6 +490,12 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 
+#if defined(IOS_SIMULATOR)
+	if (p_feature == "simulator") {
+		return true;
+	}
+#endif
+
 	if (_check_internal_feature_support(p_feature)) {
 		return true;
 	}

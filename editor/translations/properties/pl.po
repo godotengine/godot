@@ -79,13 +79,15 @@
 # Karangia23 <karangia3984@op.pl>, 2023.
 # Eryk Michalak <gnu.ewm@protonmail.com>, 2023.
 # Led Liedtke <przemekliedtke@gmail.com>, 2023.
+# ThomsikDev <szczopek7@outlook.com>, 2023.
+# johnny1029 <jkste07@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-23 21:23+0000\n"
-"Last-Translator: Led Liedtke <przemekliedtke@gmail.com>\n"
+"PO-Revision-Date: 2023-11-07 01:15+0000\n"
+"Last-Translator: johnny1029 <jkste07@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
 "Language: pl\n"
@@ -94,7 +96,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -225,6 +227,9 @@ msgstr "Siła przesuwania 2D"
 msgid "3D Panning Strength"
 msgstr "Siła przesuwania 3D"
 
+msgid "iOS"
+msgstr "iOS"
+
 msgid "Editor"
 msgstr "Edytor"
 
@@ -260,6 +265,9 @@ msgstr "Aspekt"
 
 msgid "Scale"
 msgstr "Skala"
+
+msgid "Scale Mode"
+msgstr "Tryb skalowania"
 
 msgid "Debug"
 msgstr "Debugowanie"
@@ -321,8 +329,20 @@ msgstr "Internacjonalizacja"
 msgid "Force Right to Left Layout Direction"
 msgstr "Wymuś kierunek układu od prawej do lewej"
 
+msgid "GUI"
+msgstr "GUI"
+
+msgid "Timers"
+msgstr "Czasy"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "Maksymalny interwał szukania przyrostowego (ms)"
+
 msgid "Common"
 msgstr "Pospolite"
+
+msgid "Snap Controls to Pixels"
+msgstr "Przyciągaj kontrolki do pikseli"
 
 msgid "Fonts"
 msgstr "Fonty"
@@ -369,8 +389,14 @@ msgstr "Użyj otoczenia"
 msgid "Low Processor Usage Mode"
 msgstr "Tryb niskiego wykorzystania procesora"
 
+msgid "Delta Smoothing"
+msgstr "Wygładzanie delty"
+
 msgid "Print Error Messages"
 msgstr "Wyświetlaj komunikaty o błędach"
+
+msgid "Max Physics Steps per Frame"
+msgstr "Maksymalna liczba kroków fizyki na klatkę"
 
 msgid "Max FPS"
 msgstr "Maks. FPS"
@@ -387,17 +413,41 @@ msgstr "Tryb myszki"
 msgid "Use Accumulated Input"
 msgstr "Użyj skumulowanego wejścia"
 
+msgid "Input Devices"
+msgstr "Urządzenia wejściowe"
+
+msgid "Compatibility"
+msgstr "Kompatybilność"
+
 msgid "Device"
 msgstr "Urządzenie"
 
 msgid "Window ID"
 msgstr "ID Okna"
 
+msgid "Alt Pressed"
+msgstr "Alt Wciśnięty"
+
+msgid "Shift Pressed"
+msgstr "Shift Wciśnięty"
+
+msgid "Ctrl Pressed"
+msgstr "Ctrl Wciśnięty"
+
 msgid "Pressed"
 msgstr "Wciśnięty"
 
+msgid "Keycode"
+msgstr "Kod klawisza"
+
+msgid "Physical Keycode"
+msgstr "Fizyczny kod klawisza"
+
+msgid "Key Label"
+msgstr "Etykieta klucza"
+
 msgid "Unicode"
-msgstr "Unikod"
+msgstr "Unicode"
 
 msgid "Echo"
 msgstr "Echo"
@@ -416,6 +466,9 @@ msgstr "Czynnik"
 
 msgid "Button Index"
 msgstr "Indeks przycisków"
+
+msgid "Canceled"
+msgstr "Anulowane"
 
 msgid "Double Click"
 msgstr "Podwójne kliknięcie"
@@ -444,6 +497,9 @@ msgstr "Wartość osi"
 msgid "Index"
 msgstr "Indeks"
 
+msgid "Double Tap"
+msgstr "Podwójne dotknięcie"
+
 msgid "Action"
 msgstr "Akcja"
 
@@ -467,6 +523,15 @@ msgstr "Numer kontrolera"
 
 msgid "Controller Value"
 msgstr "Wartość kontrolera"
+
+msgid "Shortcut"
+msgstr "Skrót"
+
+msgid "Events"
+msgstr "Zdarzenia"
+
+msgid "Include Hidden"
+msgstr "Zawrzyj ukryte"
 
 msgid "Big Endian"
 msgstr "Big endian"
@@ -519,8 +584,14 @@ msgstr "Ziarno"
 msgid "State"
 msgstr "Stan"
 
+msgid "Message Queue"
+msgstr "Kolejka wiadomości"
+
 msgid "Network"
 msgstr "Sieć"
+
+msgid "TCP"
+msgstr "TCP"
 
 msgid "TLS"
 msgstr "TLS"
@@ -1740,9 +1811,6 @@ msgstr "Werbalne stdout"
 msgid "Low Processor Mode"
 msgstr "Tryb niskiego wykorzystania procesora"
 
-msgid "iOS"
-msgstr "iOS"
-
 msgid "Hide Home Indicator"
 msgstr "Ukryj wskaźnik powitalny"
 
@@ -1785,6 +1853,9 @@ msgstr "Emulacja dotyku za pomocą myszy"
 msgid "Emulate Mouse From Touch"
 msgstr "Emulacja myszy za pomocą dotyku"
 
+msgid "Android"
+msgstr "Android"
+
 msgid "Mouse Cursor"
 msgstr "Kursor myszy"
 
@@ -1793,6 +1864,9 @@ msgstr "Własny punkt dostępu do obrazów"
 
 msgid "Tooltip Position Offset"
 msgstr "Przesunięcie pozycji podpowiedzi"
+
+msgid "Minimum Display Time"
+msgstr "Minimalny czas wyświetlania"
 
 msgid "Project"
 msgstr "Projekt"
@@ -1917,6 +1991,9 @@ msgstr "Przesunięcie bajtu"
 msgid "Count"
 msgstr "Liczba"
 
+msgid "Sparse Indices Buffer View"
+msgstr "Parsowanie bufora indeksów rzadkich"
+
 msgid "Loop"
 msgstr "Zapętl"
 
@@ -2031,9 +2108,6 @@ msgstr "Funkcje wymagane"
 msgid "Optional Features"
 msgstr "Funkcje opcjonalne"
 
-msgid "Android"
-msgstr "Android"
-
 msgid "Plugins"
 msgstr "Wtyczki"
 
@@ -2075,6 +2149,9 @@ msgstr "Nazwa produktu"
 
 msgid "Frame"
 msgstr "Klatka"
+
+msgid "Centered"
+msgstr "Wyśrodkowana"
 
 msgid "Point"
 msgstr "Punkt"
@@ -2436,15 +2513,6 @@ msgstr "Format transformacji"
 msgid "Parsed Geometry Type"
 msgstr "Parsowany typ geometrii"
 
-msgid "Point Texture"
-msgstr "Tekstura punktowa"
-
-msgid "Normal Texture"
-msgstr "Tekstura normalnych"
-
-msgid "Color Texture"
-msgstr "Tekstura koloru"
-
 msgid "B"
 msgstr "B"
 
@@ -2615,6 +2683,9 @@ msgstr "OpenGL"
 
 msgid "Shaders"
 msgstr "Shadery"
+
+msgid "Primary Interface"
+msgstr "Interfejs główny"
 
 msgid "Property"
 msgstr "Właściwość"

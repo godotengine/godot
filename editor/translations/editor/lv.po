@@ -924,15 +924,6 @@ msgstr "Aizvērt"
 msgid "Connect"
 msgstr "Savienot"
 
-msgid "Class:"
-msgstr "Klase:"
-
-msgid "Signal:"
-msgstr "Signāls:"
-
-msgid "No description."
-msgstr "Nav apraksta."
-
 msgid "Connect '%s' to '%s'"
 msgstr "Savienot '%s' pie '%s'"
 
@@ -1667,6 +1658,9 @@ msgstr "(Re)Importē vienumus"
 msgid "Top"
 msgstr "Virsotne"
 
+msgid "Class:"
+msgstr "Klase:"
+
 msgid "Inherits:"
 msgstr "Manto:"
 
@@ -1728,6 +1722,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "Metožu Apraksts"
 
+msgid "Property:"
+msgstr "Parametrs:"
+
+msgid "Signal:"
+msgstr "Signāls:"
+
 msgid "%d match."
 msgstr "%d sakritība."
 
@@ -1784,9 +1784,6 @@ msgstr "Mainīgais"
 
 msgid "Theme Property"
 msgstr "Motīva Mainīgais"
-
-msgid "Property:"
-msgstr "Parametrs:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -2564,9 +2561,6 @@ msgstr "Skatīt lietas kā sarakstu."
 
 msgid "Error moving:"
 msgstr "Kļūda parvietojot:"
-
-msgid "Set As Main Scene"
-msgstr "Iestatīt Kā Galveno Ainu"
 
 msgid "Open Scenes"
 msgstr "Atvērt Ainas"

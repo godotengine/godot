@@ -635,7 +635,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				// If using compression we store tangent while storing vertices.
 				if (!(p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 					Variant::Type type = p_arrays[ai].get_type();
-					ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY, ERR_INVALID_PARAMETER);
+					ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY && type != Variant::NIL, ERR_INVALID_PARAMETER);
+
 					if (type == Variant::PACKED_FLOAT32_ARRAY) {
 						Vector<float> array = p_arrays[ai];
 						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
@@ -657,7 +658,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
-					} else { // PACKED_FLOAT64_ARRAY
+					} else if (type == Variant::PACKED_FLOAT64_ARRAY) {
 						Vector<double> array = p_arrays[ai];
 						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 						const double *src_ptr = array.ptr();
@@ -665,6 +666,30 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
 							Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
+							uint16_t vector[2] = {
+								(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+								(uint16_t)CLAMP(res.y * 65535, 0, 65535),
+							};
+
+							if (vector[0] == 0 && vector[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								vector[0] = 65535;
+							}
+
+							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
+						}
+					} else { // No tangent array.
+						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
+
+						Vector<Vector3> normal_array = p_arrays[RS::ARRAY_NORMAL];
+						ERR_FAIL_COND_V(normal_array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
+						const Vector3 *normal_src = normal_array.ptr();
+						// Set data for tangent.
+						for (int i = 0; i < p_vertex_array_len; i++) {
+							// Generate an arbitrary vector that is tangential to normal.
+							Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normal_src[i].normalized());
+							Vector2 res = tan.octahedron_tangent_encode(1.0);
 							uint16_t vector[2] = {
 								(uint16_t)CLAMP(res.x * 65535, 0, 65535),
 								(uint16_t)CLAMP(res.y * 65535, 0, 65535),
@@ -1172,6 +1197,11 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				} break;
 			}
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
+		} else if (i == RS::ARRAY_NORMAL) {
+			if (p_arrays[RS::ARRAY_TANGENT].get_type() == Variant::NIL) {
+				// We must use tangents if using normals.
+				format |= (1ULL << RS::ARRAY_TANGENT);
+			}
 		} else if (i == RS::ARRAY_BONES) {
 			switch (p_arrays[i].get_type()) {
 				case Variant::PACKED_INT32_ARRAY: {
@@ -1240,11 +1270,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		// If using normals or tangents, then we need all three.
 		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_VERTEX), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using normals or tangents without vertex array.");
 		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_NORMAL), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using tangents without normal array.");
-	}
-
-	if ((format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && !(format & RS::ARRAY_FORMAT_TANGENT)) {
-		// If no tangent array provided, we will generate one.
-		format |= RS::ARRAY_FORMAT_TANGENT;
 	}
 
 	int vertex_array_size = (vertex_element_size + normal_element_size) * array_len;

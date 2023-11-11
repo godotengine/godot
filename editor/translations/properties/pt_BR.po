@@ -160,13 +160,14 @@
 # Daniel Mucciolo <danielviannapsi@gmail.com>, 2023.
 # Romildo Franco <rtfranco@gmail.com>, 2023.
 # Felipe Bertola <eduardodelphinodepaula@gmail.com>, 2023.
+# Vittor Paulo Vieira da Costa <vittorpaulovc@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-09-08 21:47+0000\n"
-"Last-Translator: Felipe Bertola <eduardodelphinodepaula@gmail.com>\n"
+"PO-Revision-Date: 2023-11-03 04:56+0000\n"
+"Last-Translator: Vittor Paulo Vieira da Costa <vittorpaulovc@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -174,7 +175,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -304,6 +305,9 @@ msgstr "Intensidade da Panorâmica 2D"
 
 msgid "3D Panning Strength"
 msgstr "Intensidade da Panorâmica 3D"
+
+msgid "iOS"
+msgstr "iOS"
 
 msgid "Editor"
 msgstr "Editor"
@@ -1857,7 +1861,7 @@ msgid "Apply Node Transforms"
 msgstr "Aplicar Transformações"
 
 msgid "Normalize Position Tracks"
-msgstr "Normalizar Faixas de Posicionamento"
+msgstr "Normalizar faixas de posição"
 
 msgid "Overwrite Axis"
 msgstr "Sobrescrever Eixos"
@@ -2300,6 +2304,9 @@ msgstr "Exibir Gizmo de Rotação do Viewport"
 msgid "Show Viewport Navigation Gizmo"
 msgstr "Exibir Gizmo de Navegação do Viewport"
 
+msgid "Gizmo Settings"
+msgstr "Configurações do Gizmo"
+
 msgid "External"
 msgstr "Externo"
 
@@ -2332,9 +2339,6 @@ msgstr "Esqueleto"
 
 msgid "Selected Bone"
 msgstr "Osso selecionado"
-
-msgid "Gizmo Settings"
-msgstr "Configurações do Gizmo"
 
 msgid "Bone Axis Length"
 msgstr "Comprimento do Eixo do Osso"
@@ -2510,9 +2514,6 @@ msgstr "Intervalo de Frames (ms)"
 msgid "Low Processor Mode"
 msgstr "Modo Processamento Baixo"
 
-msgid "iOS"
-msgstr "iOS"
-
 msgid "Allow High Refresh Rate"
 msgstr "Permitir Alta Taxa de Refresh"
 
@@ -2593,6 +2594,9 @@ msgstr "Simular Toque à Partir do Mouse"
 
 msgid "Emulate Mouse From Touch"
 msgstr "Simular Mouse à Partir do Touch"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Text Driver"
 msgstr "Driver de Texto"
@@ -3310,9 +3314,6 @@ msgstr "Tipo de Espaço de Referência"
 
 msgid "Visibility State"
 msgstr "Estado de Visibilidade"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Caminho para SDK Android"
@@ -4523,9 +4524,6 @@ msgstr "Tamanho de Pixel"
 msgid "Flags"
 msgstr "Sinalizadores"
 
-msgid "Billboard"
-msgstr "'Billboard'"
-
 msgid "No Depth Test"
 msgstr "Sem Teste de Profundidade"
 
@@ -5051,14 +5049,14 @@ msgstr "Caracteres Visiveis"
 msgid "Max Length"
 msgstr "Máx. Comprimento"
 
+msgid "Blink"
+msgstr "Piscar"
+
 msgid "Secret"
 msgstr "Secreto"
 
 msgid "Secret Character"
 msgstr "Caracteres Secretos"
-
-msgid "Blink"
-msgstr "Piscar"
 
 msgid "Underline"
 msgstr "Sublinhado"
@@ -5189,9 +5187,6 @@ msgstr "Usar Esconder Tabs para Tamanho Mínimo"
 msgid "Wrap Mode"
 msgstr "Modo Enrolar"
 
-msgid "Syntax Highlighter"
-msgstr "Realçar Sintaxe"
-
 msgid "Fit Content Height"
 msgstr "Ajustar Altura do Conteúdo"
 
@@ -5200,6 +5195,9 @@ msgstr "Desenhar"
 
 msgid "Move on Right Click"
 msgstr "Mover com Botão Direito"
+
+msgid "Syntax Highlighter"
+msgstr "Realçar Sintaxe"
 
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Detecção de ociosidade de edição de texto (seg)"
@@ -5529,7 +5527,7 @@ msgid "Multiplier"
 msgstr "Multiplicador"
 
 msgid "Auto Exposure"
-msgstr "Auto Exposição"
+msgstr "Exposição automática"
 
 msgid "DOF Blur"
 msgstr "Embaçamento DOF"
@@ -5705,6 +5703,9 @@ msgstr "Para"
 msgid "Map Width"
 msgstr "Largura do Mapa"
 
+msgid "Next Pass"
+msgstr "Próximo passo"
+
 msgid "Shader"
 msgstr "Shader"
 
@@ -5719,6 +5720,9 @@ msgstr "Modo Especular"
 
 msgid "Disable Ambient Light"
 msgstr "Desativar a luz ambiente"
+
+msgid "Disable Fog"
+msgstr "Desativar Fog"
 
 msgid "Vertex Color"
 msgstr "Cor do vértice"
@@ -5776,9 +5780,6 @@ msgstr "Nitidez Triplanar"
 
 msgid "World Triplanar"
 msgstr "Triplanar Global"
-
-msgid "Sampling"
-msgstr "Mostragem"
 
 msgid "Shadows"
 msgstr "Sombras"
@@ -5851,12 +5852,6 @@ msgstr "Vãos de Baixa Altura Caminháveis"
 
 msgid "Bundled"
 msgstr "Agrupados"
-
-msgid "Point Texture"
-msgstr "Textura de Ponto"
-
-msgid "Normal Texture"
-msgstr "Textura Normal"
 
 msgid "Turbulence"
 msgstr "Turbulência"
@@ -6286,6 +6281,12 @@ msgstr "Arrastador Horizontal"
 
 msgid "V Grabber"
 msgstr "Arrastador Vertical"
+
+msgid "Zoom Out"
+msgstr "Afastar"
+
+msgid "Zoom In"
+msgstr "Ampliar"
 
 msgid "Port Hotzone Inner Extent"
 msgstr "Extensão interna da zona ativa da porta"

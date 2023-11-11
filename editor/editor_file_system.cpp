@@ -261,7 +261,8 @@ void EditorFileSystem::_scan_filesystem() {
 					cpath = name;
 
 				} else {
-					Vector<String> split = l.split("::");
+					// The last section (deps) may contain the same splitter, so limit the maxsplit to 8 to get the complete deps.
+					Vector<String> split = l.split("::", true, 8);
 					ERR_CONTINUE(split.size() < 9);
 					String name = split[0];
 					String file;

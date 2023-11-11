@@ -563,7 +563,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 
 	List<StringName> animation_names;
 	tree->get_animation_list(&animation_names);
-	menu->add_submenu_item(TTR("Add Animation"), "animations");
+	menu->add_submenu_item(TTR("Add Animation"), "AddAnimations");
 	if (animation_names.is_empty()) {
 		menu->set_item_disabled(menu->get_item_idx_from_text(TTR("Add Animation")), true);
 	} else {
@@ -1774,7 +1774,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	animations_menu = memnew(PopupMenu);
 	menu->add_child(animations_menu);
-	animations_menu->set_name("animations");
+	animations_menu->set_name("AddAnimations");
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_animation_type));
 
 	connect_menu = memnew(PopupMenu);
