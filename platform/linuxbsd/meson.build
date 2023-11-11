@@ -38,12 +38,57 @@ if PLATFORM == 'linuxbsd'
         'crash_handler_linuxbsd.cpp',
         'os_linuxbsd.cpp',
         'joypad_linux.cpp',
-        'xkbcommon-so_wrap.c',
+        'freedesktop_portal_desktop.cpp',
+        'freedesktop_screensaver.cpp',
     )
+
+    if get_option('use_sowrap')
+        _linuxbsd_srcs += files('xkbcommon-so_wrap.c')
+        CPP_ARGS += '-DSOWRAP_ENABLED'
+    endif
+
+    _linuxbsd_deps = []
+
+    _WRAPPED_LIBS = [
+        [
+            'speechd', 'speech-dispatcher', '-DSPEECHD_ENABLED',
+            'speechd-so_wrap.c', 'tts_linux.cpp'
+        ], [
+            'fontconfig', 'fontconfig', '-DFONTCONFIG_ENABLED',
+            'fontconfig-so_wrap.c',
+        ], [
+            'udev', 'libudev', '-DUDEV_ENABLED', 'libudev-so_wrap.c'
+        ], [
+            'dbus', 'dbus-1', '-DDBUS_ENABLED', 'dbus-so_wrap.c'
+        ], [
+            'alsa', 'alsa', ['-DALSA_ENABLED', '-DALSAMIDI_ENABLED'],
+            '../../drivers/alsa/asound-so_wrap.c'
+        ], [
+            'pulseaudio', 'libpulse', '-DPULSEAUDIO_ENABLED',
+            '../../drivers/pulseaudio/pulse-so_wrap.c'
+        ],
+    ]
+
+    foreach wl : _WRAPPED_LIBS
+        if get_option(wl[0])
+            if not get_option('use_sowrap')
+                d = dependency(wl[1])
+                _linuxbsd_deps += d
+                if d.found()
+                    _linuxbsd_srcs += files(wl.get(4, []))
+                    CPP_ARGS += wl[2]
+                endif
+            else
+                _linuxbsd_srcs += files(wl.get(3, []))
+                _linuxbsd_srcs += files(wl.get(4, []))
+                CPP_ARGS += wl[2]
+            endif
+        endif
+    endforeach
 
     # get all of our dependencies
     _cpp = meson.get_compiler('cpp')
-    _linuxbsd_deps = [
+    _linuxbsd_deps += [
         _cpp.find_library('dl'),
         dependency('threads'),
 
@@ -54,17 +99,25 @@ if PLATFORM == 'linuxbsd'
         dependency('xrandr'),
         dependency('xrender'),
         dependency('xi'),
-        #dependency('vulkan')
-        #_cpp.find_library('vulkan'),
         DEP_GLAD,
+        DEP_LINUXBSD_HEADERS,
     ]
 
     CPP_ARGS += [
         '-DUNIX_ENABLED',
-        '-DVULKAN_ENABLED',
         '-DX11_ENABLED',
-        '-DGLES3_ENABLED',
     ]
+
+    if get_option('vulkan')
+        CPP_ARGS += ['-DVULKAN_ENABLED']
+        if not get_option('use_volk')
+            _linuxbsd_deps += dependency('vulkan')
+        endif
+    endif
+
+    if get_option('opengl3')
+        CPP_ARGS += ['-DGLES3_ENABLED']
+    endif
 
     DEPENDENCIES += _linuxbsd_deps
     SOURCES += _linuxbsd_srcs
