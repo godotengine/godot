@@ -269,6 +269,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Access basis components using their index. [code]b[0][/code] is equivalent to [code]b.x[/code], [code]b[1][/code] is equivalent to [code]b.y[/code], and [code]b[2][/code] is equivalent to [code]b.z[/code].
+				[b]Note:[/b] In C++ use methods [code]set_column[/code]/[code]get_column[/code]. Array indexes are rows!
 			</description>
 		</operator>
 	</operators>
