@@ -152,4 +152,4 @@ public:
 	Node3DEditorCameraCursor();
 };
 
-#endif // NODE_3D_EDITOR_CAMERA_MANAGER_H
+#endif // NODE_3D_EDITOR_CAMERA_CURSOR_H
