@@ -18,8 +18,8 @@ export ANDROID_SDK_ROOT=/home/gopher/Android/Sdk/
 scons profile=TemplatesCustom.py platform=android target=template_release arch=armv7
 scons profile=TemplatesCustom.py platform=android target=template_release arch=arm64v8
 cd platform/android/java
-call .\gradlew cleanGodotTemplates
-call .\gradlew generateGodotTemplates
+./gradlew cleanGodotTemplates
+./gradlew generateGodotTemplates
 cd ../../..
 
 # Web Template
