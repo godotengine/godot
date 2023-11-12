@@ -253,7 +253,7 @@ TEST_CASE("[Node3DEditorCameraCursor][Editor] Move distance") {
 				"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move the distance.");
 	}
 
-	SUBCASE("Move the distance again in oposition direction") {
+	SUBCASE("Move the distance again in opposition direction") {
 		cursor.move_distance(2.0);
 		cursor.move_distance(-4.0);
 		CHECK_MESSAGE(
@@ -265,7 +265,7 @@ TEST_CASE("[Node3DEditorCameraCursor][Editor] Move distance") {
 		cursor.move_distance(-5.0);
 		CHECK_MESSAGE(
 				cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 0.0)),
-				"Eye position ", cursor.get_target_values().eye_position, " sould be zero because it should clamp the distance to never be smaller than 0.");
+				"Eye position ", cursor.get_target_values().eye_position, " should be zero because it should clamp the distance to never be smaller than 0.");
 	}
 }
 

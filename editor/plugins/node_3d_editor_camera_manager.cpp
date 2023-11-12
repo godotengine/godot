@@ -460,7 +460,7 @@ void Node3DEditorCameraManager::commit_pilot_transform() {
 	if (!node_being_piloted) {
 		return;
 	}
-	// Always commit using the cursor's transform to avoid commiting a transform that is being interpolated to smooth the movement:
+	// Always commit using the cursor's transform to avoid committing a transform that is being interpolated to smooth the movement:
 	Transform3D transform_to_commit = cursor.get_target_camera_transform();
 	if (transform_to_commit != pilot_previous_transform) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
