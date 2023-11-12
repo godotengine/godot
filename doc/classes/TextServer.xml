@@ -155,7 +155,7 @@
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Recturns an active face index in the TrueType / OpenType collection.
+				Returns an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="font_get_fixed_size" qualifiers="const">
@@ -169,7 +169,7 @@
 			<return type="int" enum="TextServer.FixedSizeScaleMode" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returned bitmap font scaling mode.
+				Returns bitmap font scaling mode.
 			</description>
 		</method>
 		<method name="font_get_generate_mipmaps" qualifiers="const">
