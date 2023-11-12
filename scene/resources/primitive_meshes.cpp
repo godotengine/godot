@@ -1161,7 +1161,7 @@ void CylinderMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_top"), "set_cap_top", "is_cap_top");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_bottom"), "set_cap_bottom", "is_cap_bottom");
 }
