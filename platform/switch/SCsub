@@ -18,7 +18,6 @@ simple_console = env.add_program("#bin/simple_console", "simple_console.cpp")
 devkitpro_path = os.environ.get("DEVKITPRO", "/opt/devkitpro")
 nacptool_path = devkitpro_path + "/tools/bin/nacptool"
 elf2nro_path = devkitpro_path + "/tools/bin/elf2nro"
-elf2nso_path = devkitpro_path + "/tools/bin/elf2nso"
 
 icon_path = "platform/switch/icon.jpg"
 nacp = "_default.nacp"

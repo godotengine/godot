@@ -32,9 +32,17 @@
 #define OS_SWITCH_H
 
 #include "drivers/unix/os_unix.h"
+#include "core/crypto/crypto_core.h"
+
+#include "switch_wrapper.h"
+
+#include <vector>
+#include <string>
 
 class OS_Switch : public OS_Unix {
-	MainLoop *main_loop = nullptr;
+	MainLoop *_main_loop = nullptr;
+	CryptoCore::RandomGenerator _random_generator;
+	std::vector<std::string> _args;
 
 private:
 protected:
@@ -46,11 +54,18 @@ protected:
 
 	virtual void initialize_joypads() override;
 
-	virtual void set_main_loop(MainLoop *p_main_loop) override { main_loop = p_main_loop; }
+	Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
+
+	virtual void set_main_loop(MainLoop *p_main_loop) override { _main_loop = p_main_loop; }
 	virtual void delete_main_loop() override;
 
 public:
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
+
+	String get_executable_path() const override { return String(_args[0].c_str());}
+
+	// actual switch appends here
+	void run();
 
 	// we do not care about process, we won't run any on the switch
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override { return ERR_UNAVAILABLE; }
@@ -68,9 +83,9 @@ public:
 	virtual String get_distribution_name() const override { return ""; }
 	virtual String get_version() const override { return ""; };
 
-	virtual MainLoop *get_main_loop() const override { return main_loop; }
+	virtual MainLoop *get_main_loop() const override { return _main_loop; }
 
-	OS_Switch();
+	OS_Switch(const std::vector<std::string>& args);
 	virtual ~OS_Switch();
 };
 

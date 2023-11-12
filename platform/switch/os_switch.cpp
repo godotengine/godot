@@ -28,12 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "switch/kernel/random.h"
+
 #include "os_switch.h"
 
 void OS_Switch::initialize() {
+	print("initialize\n");
+	initialize_core();
+	_random_generator.init();
 }
 
 void OS_Switch::finalize() {
+	print("finalize\n");
+	finalize_core();
 }
 
 void OS_Switch::initialize_core() {
@@ -44,13 +51,36 @@ void OS_Switch::finalize_core() {
 	OS_Unix::finalize_core();
 }
 
-void OS_Switch::initialize_joypads() {}
-
-void OS_Switch::delete_main_loop() {}
-
-bool OS_Switch::_check_internal_feature_support(const String &p_feature) {}
-
-OS_Switch::OS_Switch() {
+Error OS_Switch::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	ERR_FAIL_COND_V(_random_generator.get_random_bytes(r_buffer, p_bytes), FAILED);
+	return OK;
 }
 
-OS_Switch::~OS_Switch() {}
+void OS_Switch::initialize_joypads() {
+	print("initialize_joypads\n");
+}
+
+void OS_Switch::delete_main_loop() {
+}
+
+bool OS_Switch::_check_internal_feature_support(const String &p_feature) {
+	return false;
+}
+
+void OS_Switch::run() {
+	print("run\n");
+}
+
+OS_Switch::OS_Switch(const std::vector<std::string> &args) :
+		_args(args) {
+	socketInitializeDefault();
+	nxlinkStdio();
+	romfsInit();
+	print("OS_Switch\n");
+}
+
+OS_Switch::~OS_Switch() {
+	print("~OS_Switch\n");
+	romfsExit();
+	socketExit();
+}

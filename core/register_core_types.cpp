@@ -277,7 +277,9 @@ void register_core_types() {
 	resource_loader_gdextension.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
 
+#if !defined(SWITCH_ENABLED)
 	ip = IP::create();
+#endif
 
 	_geometry_2d = memnew(core_bind::Geometry2D);
 	_geometry_3d = memnew(core_bind::Geometry3D);
