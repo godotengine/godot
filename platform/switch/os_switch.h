@@ -79,8 +79,8 @@ public:
 	virtual void set_environment(const String &p_var, const String &p_value) const override {}
 	virtual void unset_environment(const String &p_var) const override {}
 
-	virtual String get_name() const override { return "switch"; }
-	virtual String get_distribution_name() const override { return ""; }
+	virtual String get_name() const override { return "Switch"; }
+	virtual String get_distribution_name() const override { return "Horizon"; }
 	virtual String get_version() const override { return ""; };
 
 	virtual MainLoop *get_main_loop() const override { return _main_loop; }
