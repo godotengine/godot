@@ -128,11 +128,16 @@ class GDScript : public Script {
 		Mutex *mutex = nullptr;
 	};
 	static thread_local UpdatableFuncPtr func_ptrs_to_update_thread_local;
+	static thread_local LocalVector<List<UpdatableFuncPtr *>::Element> func_ptrs_to_update_entries_thread_local;
+	static UpdatableFuncPtr *func_ptrs_to_update_main_thread;
 	List<UpdatableFuncPtr *> func_ptrs_to_update;
+	List<UpdatableFuncPtrElement> func_ptrs_to_update_elems;
 	Mutex func_ptrs_to_update_mutex;
 
-	UpdatableFuncPtrElement _add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
-	static void _remove_func_ptr_to_update(const UpdatableFuncPtrElement p_func_ptr_element);
+	UpdatableFuncPtrElement *_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
+	static void _remove_func_ptr_to_update(const UpdatableFuncPtrElement *p_func_ptr_element);
+
+	static void _fixup_thread_function_bookkeeping();
 
 #ifdef TOOLS_ENABLED
 	// For static data storage during hot-reloading.
@@ -553,6 +558,10 @@ public:
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) override;
 	virtual void remove_named_global_constant(const StringName &p_name) override;
+
+	/* MULTITHREAD FUNCTIONS */
+
+	virtual void thread_exit() override;
 
 	/* DEBUGGER FUNCTIONS */
 
