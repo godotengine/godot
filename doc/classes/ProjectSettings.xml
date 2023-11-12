@@ -328,7 +328,8 @@
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/frame_delay_msec" type="int" setter="" getter="" default="0">
-			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
+			Forces a [i]constant[/i] delay between frames in the main loop (in milliseconds). In most situations, [member application/run/max_fps] should be preferred as an FPS limiter as it's more precise.
+			This setting can be overridden using the [code]--frame-delay &lt;ms;&gt;[/code] command line argument.
 		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables low-processor usage mode. This setting only works on desktop platforms. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
