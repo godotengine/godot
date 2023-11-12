@@ -877,7 +877,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID
 			if (err != OK || exitcode != 0) {
 				da->remove(fname_out);
 				print_verbose(str);
-				ERR_FAIL_V_MSG(BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, vformat(TTR("OIDN denoiser failed, return code: %d"), exitcode));
+				ERR_FAIL_V_MSG(BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, vformat("OIDN denoiser failed, return code: %d", exitcode));
 			}
 
 			Ref<Image> img = _read_pfm(fname_out);
@@ -988,7 +988,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				oidn_path = oidn_path.path_join("oidnDenoise");
 			}
 		}
-		ERR_FAIL_COND_V_MSG(oidn_path.is_empty() || !da->file_exists(oidn_path), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, TTR("OIDN denoiser is selected in the project settings, but no or invalid OIDN executable path is configured in the editor settings."));
+		ERR_FAIL_COND_V_MSG(oidn_path.is_empty() || !da->file_exists(oidn_path), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, "OIDN denoiser is selected in the project settings, but no or invalid OIDN executable path is configured in the editor settings.");
 	}
 
 	if (p_step_function) {

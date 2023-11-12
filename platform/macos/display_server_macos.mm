@@ -616,7 +616,7 @@ void DisplayServerMacOS::menu_open(NSMenu *p_menu) {
 
 			md.open.callp(nullptr, 0, ret, ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				ERR_PRINT(vformat(RTR("Failed to execute menu open callback: %s."), Variant::get_callable_error_text(md.open, nullptr, 0, ce)));
+				ERR_PRINT(vformat("Failed to execute menu open callback: %s.", Variant::get_callable_error_text(md.open, nullptr, 0, ce)));
 			}
 		}
 	}
@@ -632,7 +632,7 @@ void DisplayServerMacOS::menu_close(NSMenu *p_menu) {
 
 			md.close.callp(nullptr, 0, ret, ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				ERR_PRINT(vformat(RTR("Failed to execute menu close callback: %s."), Variant::get_callable_error_text(md.close, nullptr, 0, ce)));
+				ERR_PRINT(vformat("Failed to execute menu close callback: %s.", Variant::get_callable_error_text(md.close, nullptr, 0, ce)));
 			}
 		}
 	}
@@ -2009,7 +2009,7 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 
 		p_callback.callp(args, 1, ret, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat(RTR("Failed to execute dialog callback: %s."), Variant::get_callable_error_text(p_callback, args, 1, ce)));
+			ERR_PRINT(vformat("Failed to execute dialog callback: %s.", Variant::get_callable_error_text(p_callback, args, 1, ce)));
 		}
 	}
 
@@ -2194,7 +2194,7 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 
 								  callback.callp(args, 3, ret, ce);
 								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat(RTR("Failed to execute file dialog callback: %s."), Variant::get_callable_error_text(callback, args, 3, ce)));
+									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
 								  }
 							  }
 						  } else {
@@ -2208,7 +2208,7 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 
 								  callback.callp(args, 3, ret, ce);
 								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(callback, args, 3, ce)));
+									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
 								  }
 							  }
 						  }
@@ -2279,7 +2279,7 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 
 								  callback.callp(args, 3, ret, ce);
 								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat(RTR("Failed to execute file dialog callback: %s."), Variant::get_callable_error_text(callback, args, 3, ce)));
+									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
 								  }
 							  }
 						  } else {
@@ -2293,7 +2293,7 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 
 								  callback.callp(args, 3, ret, ce);
 								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(callback, args, 3, ce)));
+									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
 								  }
 							  }
 						  }
@@ -2335,7 +2335,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 
 		p_callback.callp(args, 1, ret, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat(RTR("Failed to execute input dialog callback: %s."), Variant::get_callable_error_text(p_callback, args, 1, ce)));
+			ERR_PRINT(vformat("Failed to execute input dialog callback: %s.", Variant::get_callable_error_text(p_callback, args, 1, ce)));
 		}
 	}
 
@@ -4107,7 +4107,7 @@ void DisplayServerMacOS::process_events() {
 
 		call.callback.callp(args, 1, ret, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat(RTR("Failed to execute menu callback: %s."), Variant::get_callable_error_text(call.callback, args, 1, ce)));
+			ERR_PRINT(vformat("Failed to execute menu callback: %s.", Variant::get_callable_error_text(call.callback, args, 1, ce)));
 		}
 	}
 

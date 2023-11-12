@@ -2706,7 +2706,7 @@ void SceneTreeDock::perform_node_replace(Node *p_base, Node *p_node, Node *p_by_
 			p_base->set(propertyname, updated_variant);
 			if (!warn_message.is_empty()) {
 				String node_path = (String(edited_scene->get_name()) + "/" + String(edited_scene->get_path_to(p_base))).trim_suffix("/.");
-				WARN_PRINT(warn_message + vformat(TTR("Removing the node from variable \"%s\" on node \"%s\"."), propertyname, node_path));
+				WARN_PRINT(warn_message + vformat("Removing the node from variable \"%s\" on node \"%s\".", propertyname, node_path));
 			}
 		}
 	}
@@ -2724,7 +2724,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 					r_variant = p_by_node;
 				} else {
 					r_variant = memnew(Object);
-					r_warn_message = vformat(TTR("The node's new type is incompatible with an exported variable (expected %s, but type is %s)."), type_hint, p_by_node->get_class());
+					r_warn_message = vformat("The node's new type is incompatible with an exported variable (expected %s, but type is %s).", type_hint, p_by_node->get_class());
 				}
 				return true;
 			}

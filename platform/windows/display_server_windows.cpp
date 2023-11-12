@@ -355,7 +355,7 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 
 				p_callback.callp(args, 3, ret, ce);
 				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
 				}
 			}
 		} else {
@@ -369,7 +369,7 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 
 				p_callback.callp(args, 3, ret, ce);
 				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
 				}
 			}
 		}
