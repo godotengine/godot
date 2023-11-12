@@ -3617,20 +3617,20 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 }
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
-	Node3DEditorCameraCursor::Values cursor = camera_manager->get_cursor().get_target_values();
+	Node3DEditorCameraCursor::Values cursor_values = camera_manager->get_cursor().get_target_values();
 	if (p_state.has("position")) {
-		cursor.position = p_state["position"];
+		cursor_values.position = p_state["position"];
 	}
 	if (p_state.has("x_rotation")) {
-		cursor.x_rot = p_state["x_rotation"];
+		cursor_values.x_rot = p_state["x_rotation"];
 	}
 	if (p_state.has("y_rotation")) {
-		cursor.y_rot = p_state["y_rotation"];
+		cursor_values.y_rot = p_state["y_rotation"];
 	}
 	if (p_state.has("distance")) {
-		cursor.distance = p_state["distance"];
+		cursor_values.distance = p_state["distance"];
 	}
-	camera_manager->set_cursor_state(cursor.position, cursor.x_rot, cursor.y_rot, cursor.distance);
+	camera_manager->set_cursor_state(cursor_values.position, cursor_values.x_rot, cursor_values.y_rot, cursor_values.distance);
 	if (p_state.has("orthogonal")) {
 		bool orth = p_state["orthogonal"];
 		_menu_option(orth ? VIEW_ORTHOGONAL : VIEW_PERSPECTIVE);
@@ -3740,11 +3740,11 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 
 Dictionary Node3DEditorViewport::get_state() const {
 	Dictionary d;
-	Node3DEditorCameraCursor::Values cursor = camera_manager->get_cursor().get_target_values();
-	d["position"] = cursor.position;
-	d["x_rotation"] = cursor.x_rot;
-	d["y_rotation"] = cursor.y_rot;
-	d["distance"] = cursor.distance;
+	Node3DEditorCameraCursor::Values cursor_values = camera_manager->get_cursor().get_target_values();
+	d["position"] = cursor_values.position;
+	d["x_rotation"] = cursor_values.x_rot;
+	d["y_rotation"] = cursor_values.y_rot;
+	d["distance"] = cursor_values.distance;
 	d["use_environment"] = camera->get_environment().is_valid();
 	d["orthogonal"] = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
 	d["view_type"] = view_type;
@@ -3872,9 +3872,9 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	}
 
 	// Plane facing the camera using fallback distance.
-	Node3DEditorCameraCursor::Values cursor = camera_manager->get_cursor().get_target_values();
+	Node3DEditorCameraCursor::Values camera_cursor = camera_manager->get_cursor().get_target_values();
 	if (is_orthogonal) {
-		plane = Plane(world_ray, cursor.position - world_ray * (cursor.distance - FALLBACK_DISTANCE));
+		plane = Plane(world_ray, camera_cursor.position - world_ray * (camera_cursor.distance - FALLBACK_DISTANCE));
 	} else {
 		plane = Plane(world_ray, world_pos + world_ray * FALLBACK_DISTANCE);
 	}

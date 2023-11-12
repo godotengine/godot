@@ -274,7 +274,6 @@ void Node3DEditorCameraManager::navigation_freelook_move(const Vector3 &p_direct
 void Node3DEditorCameraManager::navigation_look(const Vector2 &p_axis_movement, float p_speed) {
 	real_t x_rot = cursor.get_current_values().x_rot;
 	real_t y_rot = cursor.get_current_values().y_rot;
-	Vector3 eye_position = cursor.get_current_values().eye_position;
 
 	x_rot += p_axis_movement.y * p_speed;
 	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.

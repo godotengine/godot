@@ -235,7 +235,6 @@ Transform3D Node3DEditorCameraCursor::get_target_camera_transform() const {
 void Node3DEditorCameraCursor::set_camera_transform(const Transform3D &p_transform) {
 	target_values = Values();
 	Transform3D transform = p_transform;
-	Transform3D eye_transform = p_transform;
 	if (orthogonal) {
 		transform.translate_local(0, 0, -((z_far - z_near) / 2.0));
 	} else {
