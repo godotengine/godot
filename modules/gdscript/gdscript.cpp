@@ -992,6 +992,7 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 
 	String old_path = path;
 	path = p_path;
+	path_valid = true;
 	GDScriptCache::move_script(old_path, p_path);
 
 	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
@@ -1000,6 +1001,9 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 }
 
 String GDScript::get_script_path() const {
+	if (!path_valid && !get_path().is_empty()) {
+		return get_path();
+	}
 	return path;
 }
 
@@ -1035,6 +1039,7 @@ Error GDScript::load_source_code(const String &p_path) {
 
 	source = s;
 	path = p_path;
+	path_valid = true;
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
 	set_edited(false);

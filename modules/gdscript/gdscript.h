@@ -171,6 +171,7 @@ class GDScript : public Script {
 	//exported members
 	String source;
 	String path;
+	bool path_valid = false; // False if using default path.
 	StringName local_name; // Inner class identifier or `class_name`.
 	StringName global_name; // `class_name`.
 	String fully_qualified_name;
