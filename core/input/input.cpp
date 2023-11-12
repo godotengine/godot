@@ -695,53 +695,34 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	}
 
 	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
-		if (InputMap::get_singleton()->event_is_action(p_event, E.key)) {
-			Action &action = action_state[E.key];
-			bool is_joypad_axis = jm.is_valid();
-			bool is_pressed = false;
-			if (!p_event->is_echo()) {
-				if (p_event->is_action_pressed(E.key)) {
-					bool is_joypad_axis_valid_zone_enter = false;
-					if (is_joypad_axis) {
-						if (!action.axis_pressed) {
-							is_joypad_axis_valid_zone_enter = true;
-							action.pressed++;
-							action.axis_pressed = true;
-						}
-					} else {
-						action.pressed++;
-					}
-					if (action.pressed == 1 && (is_joypad_axis_valid_zone_enter || !is_joypad_axis)) {
-						action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
-						action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
-					}
-					is_pressed = true;
-				} else {
-					bool is_released = true;
-					if (is_joypad_axis) {
-						if (action.axis_pressed) {
-							action.axis_pressed = false;
-						} else {
-							is_released = false;
-						}
-					}
-
-					if (is_released) {
-						if (action.pressed == 1) {
-							action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
-							action.released_process_frame = Engine::get_singleton()->get_process_frames();
-						}
-						action.pressed = MAX(action.pressed - 1, 0);
-					}
-				}
-				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
-			}
-
-			if (is_pressed || action.pressed == 0) {
-				action.strength = p_event->get_action_strength(E.key);
-				action.raw_strength = p_event->get_action_raw_strength(E.key);
-			}
+		const int event_index = InputMap::get_singleton()->event_get_index(p_event, E.key);
+		if (event_index == -1) {
+			continue;
 		}
+
+		Action &action = action_state[E.key];
+		if (!p_event->is_echo()) {
+			if (p_event->is_action_pressed(E.key)) {
+				if (!action.pressed) {
+					action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+					action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+				}
+				action.pressed |= ((uint64_t)1 << event_index);
+			} else {
+				action.pressed &= ~((uint64_t)1 << event_index);
+				action.pressed &= ~(1 << MAX_EVENT); // Always release the event from action_press() method.
+
+				if (!action.pressed) {
+					action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+					action.released_process_frame = Engine::get_singleton()->get_process_frames();
+				}
+				_update_action_strength(action, MAX_EVENT, 0.0);
+				_update_action_raw_strength(action, MAX_EVENT, 0.0);
+			}
+			action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
+		}
+		_update_action_strength(action, event_index, p_event->get_action_strength(E.key));
+		_update_action_raw_strength(action, event_index, p_event->get_action_raw_strength(E.key));
 	}
 
 	if (event_dispatch_function) {
@@ -858,13 +839,13 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	// Create or retrieve existing action.
 	Action &action = action_state[p_action];
 
-	action.pressed++;
-	if (action.pressed == 1) {
+	if (!action.pressed) {
 		action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
 		action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 	}
-	action.strength = p_strength;
-	action.raw_strength = p_strength;
+	action.pressed |= 1 << MAX_EVENT;
+	_update_action_strength(action, MAX_EVENT, p_strength);
+	_update_action_raw_strength(action, MAX_EVENT, p_strength);
 	action.exact = true;
 }
 
@@ -872,13 +853,15 @@ void Input::action_release(const StringName &p_action) {
 	// Create or retrieve existing action.
 	Action &action = action_state[p_action];
 
-	action.pressed--;
-	if (action.pressed == 0) {
-		action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
-		action.released_process_frame = Engine::get_singleton()->get_process_frames();
+	action.pressed = 0;
+	action.strength = 0.0;
+	action.raw_strength = 0.0;
+	action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+	action.released_process_frame = Engine::get_singleton()->get_process_frames();
+	for (uint64_t i = 0; i <= MAX_EVENT; i++) {
+		action.strengths[i] = 0.0;
+		action.raw_strengths[i] = 0.0;
 	}
-	action.strength = 0.0f;
-	action.raw_strength = 0.0f;
 	action.exact = true;
 }
 
@@ -1205,6 +1188,38 @@ void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
 	ievent->set_axis_value(p_value);
 
 	parse_input_event(ievent);
+}
+
+void Input::_update_action_strength(Action &p_action, int p_event_index, float p_strength) {
+	ERR_FAIL_INDEX(p_event_index, (int)MAX_EVENT + 1);
+
+	float old_strength = p_action.strengths[p_event_index];
+	p_action.strengths[p_event_index] = p_strength;
+
+	if (p_strength > p_action.strength) {
+		p_action.strength = p_strength;
+	} else if (Math::is_equal_approx(old_strength, p_action.strength)) {
+		p_action.strength = p_strength;
+		for (uint64_t i = 0; i <= MAX_EVENT; i++) {
+			p_action.strength = MAX(p_action.strength, p_action.strengths[i]);
+		}
+	}
+}
+
+void Input::_update_action_raw_strength(Action &p_action, int p_event_index, float p_strength) {
+	ERR_FAIL_INDEX(p_event_index, (int)MAX_EVENT + 1);
+
+	float old_strength = p_action.raw_strengths[p_event_index];
+	p_action.raw_strengths[p_event_index] = p_strength;
+
+	if (p_strength > p_action.raw_strength) {
+		p_action.raw_strength = p_strength;
+	} else if (Math::is_equal_approx(old_strength, p_action.raw_strength)) {
+		p_action.raw_strength = p_strength;
+		for (uint64_t i = 0; i <= MAX_EVENT; i++) {
+			p_action.raw_strength = MAX(p_action.raw_strength, p_action.raw_strengths[i]);
+		}
+	}
 }
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
