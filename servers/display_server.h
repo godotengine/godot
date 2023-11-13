@@ -348,6 +348,20 @@ public:
 	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); }
 	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return Ref<Image>(); }
 	virtual Ref<Image> screen_get_image_rect(const Rect2i &p_rect) const { return Ref<Image>(); }
+
+	enum ScreenSubpixelLayout {
+		SCREEN_SUBPIXEL_LAYOUT_NONE,
+		SCREEN_SUBPIXEL_LAYOUT_HRGB,
+		SCREEN_SUBPIXEL_LAYOUT_HBGR,
+		SCREEN_SUBPIXEL_LAYOUT_VRGB,
+		SCREEN_SUBPIXEL_LAYOUT_VBGR,
+		SCREEN_SUBPIXEL_LAYOUT_AUTO,
+		SCREEN_SUBPIXEL_LAYOUT_MAX,
+	};
+
+	virtual ScreenSubpixelLayout screen_get_subpixel_layout(int p_screen = SCREEN_OF_MAIN_WINDOW) const {
+		return _subpixel_layout_rotate(SCREEN_SUBPIXEL_LAYOUT_HRGB, screen_get_orientation(p_screen));
+	}
 	virtual bool is_touchscreen_available() const;
 
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
@@ -361,6 +375,38 @@ public:
 		SCREEN_SENSOR_PORTRAIT,
 		SCREEN_SENSOR,
 	};
+
+	static ScreenSubpixelLayout _subpixel_layout_rotate(ScreenSubpixelLayout p_layout, ScreenOrientation p_orientation) {
+		const ScreenSubpixelLayout layouts[] = { SCREEN_SUBPIXEL_LAYOUT_VBGR, SCREEN_SUBPIXEL_LAYOUT_HBGR, SCREEN_SUBPIXEL_LAYOUT_VRGB, SCREEN_SUBPIXEL_LAYOUT_HRGB };
+		int idx = 0;
+		switch (p_layout) {
+			case SCREEN_SUBPIXEL_LAYOUT_HRGB: {
+				idx = 3;
+			} break;
+			case SCREEN_SUBPIXEL_LAYOUT_HBGR: {
+				idx = 1;
+			} break;
+			case SCREEN_SUBPIXEL_LAYOUT_VRGB: {
+				idx = 2;
+			} break;
+			case SCREEN_SUBPIXEL_LAYOUT_VBGR: {
+				idx = 0;
+			} break;
+			default:
+				return SCREEN_SUBPIXEL_LAYOUT_NONE;
+		}
+
+		switch (p_orientation) {
+			case SCREEN_PORTRAIT:
+				return layouts[(idx + 3) % 4];
+			case SCREEN_REVERSE_LANDSCAPE:
+				return layouts[(idx + 2) % 4];
+			case SCREEN_REVERSE_PORTRAIT:
+				return layouts[(idx + 1) % 4];
+			default:
+				return p_layout;
+		}
+	}
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW);
 	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
@@ -639,5 +685,6 @@ VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
 VARIANT_ENUM_CAST(DisplayServer::FileDialogMode)
+VARIANT_ENUM_CAST(DisplayServer::ScreenSubpixelLayout)
 
 #endif // DISPLAY_SERVER_H

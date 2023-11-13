@@ -119,7 +119,6 @@ class TextServerFallback : public TextServerExtension {
 	HashMap<int32_t, StringName> feature_sets_inv;
 
 	SafeNumeric<TextServer::FontLCDSubpixelLayout> lcd_subpixel_layout{ TextServer::FontLCDSubpixelLayout::FONT_LCD_SUBPIXEL_LAYOUT_NONE };
-	void _update_settings();
 
 	void _insert_feature_sets();
 	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag);
@@ -258,6 +257,7 @@ class TextServerFallback : public TextServerExtension {
 	struct FontFallback {
 		Mutex mutex;
 
+		TextServer::FontLCDSubpixelLayout last_used_layout = TextServer::FONT_LCD_SUBPIXEL_LAYOUT_HRGB;
 		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 		bool disable_embedded_bitmaps = true;
 		bool mipmaps = false;

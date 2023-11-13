@@ -1544,6 +1544,9 @@ public:
 
 	virtual void canvas_item_set_canvas_group_mode(RID p_item, CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false) = 0;
 
+	virtual void canvas_item_set_subpixel_layout(RID p_item, DisplayServer::ScreenSubpixelLayout p_layout) = 0;
+	virtual DisplayServer::ScreenSubpixelLayout canvas_item_get_subpixel_layout(RID p_item) = 0;
+
 	virtual void canvas_item_set_debug_redraw(bool p_enabled) = 0;
 	virtual bool canvas_item_get_debug_redraw() const = 0;
 

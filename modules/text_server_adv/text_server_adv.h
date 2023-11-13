@@ -163,7 +163,6 @@ class TextServerAdvanced : public TextServerExtension {
 	HashMap<int32_t, FeatureInfo> feature_sets_inv;
 
 	SafeNumeric<TextServer::FontLCDSubpixelLayout> lcd_subpixel_layout{ TextServer::FontLCDSubpixelLayout::FONT_LCD_SUBPIXEL_LAYOUT_NONE };
-	void _update_settings();
 
 	void _insert_num_systems_lang();
 	void _insert_feature_sets();
@@ -316,6 +315,7 @@ class TextServerAdvanced : public TextServerExtension {
 	struct FontAdvanced {
 		Mutex mutex;
 
+		TextServer::FontLCDSubpixelLayout last_used_layout = TextServer::FONT_LCD_SUBPIXEL_LAYOUT_HRGB;
 		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 		bool disable_embedded_bitmaps = true;
 		bool mipmaps = false;

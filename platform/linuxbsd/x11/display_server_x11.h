@@ -322,10 +322,23 @@ class DisplayServerX11 : public DisplayServer {
 	void set_wm_fullscreen(bool p_enabled);
 	void set_wm_above(bool p_enabled);
 
+	typedef XRRScreenResources *(*xrr_get_screen_resources_t)(Display *dpy, Window window);
+	typedef void (*xrr_free_screen_resources_t)(XRRScreenResources *resources);
+	typedef XRROutputInfo *(*xrr_get_output_info_t)(Display *dpy, XRRScreenResources *resources, RROutput output);
+	typedef void (*xrr_free_output_info_t)(XRROutputInfo *outputInfo);
+	typedef XRRCrtcInfo *(*xrr_get_crtc_info_t)(Display *dpy, XRRScreenResources *resources, RRCrtc crtc);
+	typedef void (*xrr_free_crtc_info_t)(XRRCrtcInfo *crtcInfo);
 	typedef xrr_monitor_info *(*xrr_get_monitors_t)(Display *dpy, Window window, Bool get_active, int *nmonitors);
 	typedef void (*xrr_free_monitors_t)(xrr_monitor_info *monitors);
 	xrr_get_monitors_t xrr_get_monitors = nullptr;
 	xrr_free_monitors_t xrr_free_monitors = nullptr;
+	xrr_get_screen_resources_t xrr_get_screen_resources = nullptr;
+	xrr_free_screen_resources_t xrr_free_screen_resources = nullptr;
+	xrr_get_output_info_t xrr_get_output_info = nullptr;
+	xrr_free_output_info_t xrr_free_output_info = nullptr;
+	xrr_get_crtc_info_t xrr_get_crtc_info = nullptr;
+	xrr_free_crtc_info_t xrr_free_crtc_info = nullptr;
+
 	void *xrandr_handle = nullptr;
 	bool xrandr_ext_ok = true;
 	bool xinerama_ext_ok = true;
@@ -432,6 +445,9 @@ public:
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
 	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+
+	virtual ScreenSubpixelLayout screen_get_subpixel_layout(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 #if defined(DBUS_ENABLED)
 	virtual void screen_set_keep_on(bool p_enable) override;

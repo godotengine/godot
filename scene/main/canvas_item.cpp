@@ -137,9 +137,13 @@ void CanvasItem::_redraw_callback() {
 		return;
 	}
 
-	RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
+	RID ci = get_canvas_item();
+	RenderingServer::get_singleton()->canvas_item_clear(ci);
 	//todo updating = true - only allow drawing here
 	if (is_visible_in_tree()) {
+		DisplayServer::ScreenSubpixelLayout layout = get_viewport()->_get_screen_subpixel_layout();
+		RenderingServer::get_singleton()->canvas_item_set_subpixel_layout(ci, layout);
+
 		drawing = true;
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);

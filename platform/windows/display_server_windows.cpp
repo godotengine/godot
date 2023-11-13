@@ -1141,6 +1141,19 @@ typedef struct {
 	float rate;
 } EnumRefreshRateData;
 
+typedef struct {
+	int count;
+	int screen;
+	int orientation;
+} EnumOrientationData;
+
+typedef struct {
+	int count;
+	int screen;
+	int orientation;
+	String name;
+} EnumSubPixelLayoutData;
+
 static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumSizeData *data = (EnumSizeData *)dwData;
 	if (data->count == data->screen) {
@@ -1211,6 +1224,47 @@ static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonit
 
 			data->rate = dm.dmDisplayFrequency;
 		}
+	}
+
+	data->count++;
+	return TRUE;
+}
+
+static BOOL CALLBACK _MonitorEnumProcOrientation(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumOrientationData *data = (EnumOrientationData *)dwData;
+	if (data->count == data->screen) {
+		MONITORINFOEXW minfo;
+		memset(&minfo, 0, sizeof(minfo));
+		minfo.cbSize = sizeof(minfo);
+		GetMonitorInfoW(hMonitor, &minfo);
+
+		DEVMODEW dm;
+		memset(&dm, 0, sizeof(dm));
+		dm.dmSize = sizeof(dm);
+		EnumDisplaySettingsW(minfo.szDevice, ENUM_CURRENT_SETTINGS, &dm);
+
+		data->orientation = dm.dmDisplayOrientation;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
+static BOOL CALLBACK _MonitorEnumProcSubPixelLayout(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumSubPixelLayoutData *data = (EnumSubPixelLayoutData *)dwData;
+	if (data->count == data->screen) {
+		MONITORINFOEXW minfo;
+		memset(&minfo, 0, sizeof(minfo));
+		minfo.cbSize = sizeof(minfo);
+		GetMonitorInfoW(hMonitor, &minfo);
+
+		DEVMODEW dm;
+		memset(&dm, 0, sizeof(dm));
+		dm.dmSize = sizeof(dm);
+		EnumDisplaySettingsW(minfo.szDevice, ENUM_CURRENT_SETTINGS, &dm);
+
+		data->orientation = dm.dmDisplayOrientation;
+		data->name = String::utf16((const char16_t *)minfo.szDevice);
 	}
 
 	data->count++;
@@ -1470,6 +1524,70 @@ float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcRefreshRate, (LPARAM)&data);
 	return data.rate;
+}
+
+DisplayServer::ScreenSubpixelLayout DisplayServerWindows::screen_get_subpixel_layout(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	EnumSubPixelLayoutData data = { 0, p_screen, DMDO_DEFAULT, String() };
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcSubPixelLayout, (LPARAM)&data);
+
+	ScreenOrientation ori;
+	switch (data.orientation) {
+		case DMDO_90: {
+			ori = SCREEN_PORTRAIT;
+		} break;
+		case DMDO_180: {
+			ori = SCREEN_REVERSE_LANDSCAPE;
+		} break;
+		case DMDO_270: {
+			ori = SCREEN_REVERSE_PORTRAIT;
+		} break;
+		default: {
+			ori = SCREEN_LANDSCAPE;
+		} break;
+	}
+
+	String id = "Software\\Microsoft\\Avalon.Graphics\\" + data.name;
+	HKEY hkey;
+
+	if (RegOpenKeyExW(HKEY_CURRENT_USER, (LPCWSTR)(id.utf16().get_data()), 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
+		return _subpixel_layout_rotate(SCREEN_SUBPIXEL_LAYOUT_HRGB, ori);
+	}
+
+	DWORD pixel_structure = 0;
+	DWORD buffer = 32;
+	DWORD vtype = REG_DWORD;
+	if (RegQueryValueExW(hkey, L"PixelStructure", nullptr, &vtype, (LPBYTE)&pixel_structure, &buffer) != ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return _subpixel_layout_rotate(SCREEN_SUBPIXEL_LAYOUT_HRGB, ori);
+	}
+	RegCloseKey(hkey);
+
+	if (pixel_structure == 0) { // Flat.
+		return SCREEN_SUBPIXEL_LAYOUT_NONE;
+	}
+
+	return _subpixel_layout_rotate((pixel_structure == 1) ? SCREEN_SUBPIXEL_LAYOUT_HRGB : SCREEN_SUBPIXEL_LAYOUT_HBGR, ori);
+}
+
+DisplayServer::ScreenOrientation DisplayServerWindows::screen_get_orientation(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	EnumOrientationData data = { 0, p_screen, DMDO_DEFAULT };
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcOrientation, (LPARAM)&data);
+	switch (data.orientation) {
+		case DMDO_90:
+			return SCREEN_PORTRAIT;
+		case DMDO_180:
+			return SCREEN_REVERSE_LANDSCAPE;
+		case DMDO_270:
+			return SCREEN_REVERSE_PORTRAIT;
+		default:
+			return SCREEN_LANDSCAPE;
+	}
 }
 
 void DisplayServerWindows::screen_set_keep_on(bool p_enable) {

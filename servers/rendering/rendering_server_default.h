@@ -990,6 +990,9 @@ public:
 
 	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
 
+	FUNC2(canvas_item_set_subpixel_layout, RID, DisplayServer::ScreenSubpixelLayout);
+	FUNC1R(DisplayServer::ScreenSubpixelLayout, canvas_item_get_subpixel_layout, RID);
+
 	FUNC1(canvas_item_set_debug_redraw, bool)
 	FUNC0RC(bool, canvas_item_get_debug_redraw)
 
