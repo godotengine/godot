@@ -7663,6 +7663,7 @@ Dictionary Node3DEditor::get_state() const {
 		pd["environ_tonemap_enabled"] = environ_tonemap_button->is_pressed();
 		pd["environ_ao_enabled"] = environ_ao_button->is_pressed();
 		pd["environ_gi_enabled"] = environ_gi_button->is_pressed();
+		pd["environ_volumetric_fog_enabled"] = environ_volumetric_fog_button->is_pressed();
 		pd["sun_shadow_max_distance"] = sun_shadow_max_distance->get_value();
 
 		pd["sun_color"] = sun_color->get_pick_color();
@@ -7822,6 +7823,7 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		environ_tonemap_button->set_pressed_no_signal(pd["environ_tonemap_enabled"]);
 		environ_ao_button->set_pressed_no_signal(pd["environ_ao_enabled"]);
 		environ_gi_button->set_pressed_no_signal(pd["environ_gi_enabled"]);
+		environ_volumetric_fog_button->set_pressed(pd["environ_volumetric_fog_enabled"]);
 		sun_shadow_max_distance->set_value_no_signal(pd["sun_shadow_max_distance"]);
 
 		sun_color->set_pick_color(pd["sun_color"]);
@@ -10213,6 +10215,11 @@ void Node3DEditor::_preview_settings_changed() {
 		environment->set_ssao_enabled(environ_ao_button->is_pressed());
 		environment->set_glow_enabled(environ_glow_button->is_pressed());
 		environment->set_sdfgi_enabled(environ_gi_button->is_pressed());
+		environment->set_volumetric_fog_enabled(environ_volumetric_fog_button->is_pressed());
+		if (environment->is_volumetric_fog_enabled()) {
+			// Decrease volumetric fog density to make scene editing easier. We mainly want to be able to see FogVolume nodes in action.
+			environment->set_volumetric_fog_density(0.01);
+		}
 		environment->set_tonemapper(environ_tonemap_button->is_pressed() ? Environment::TONE_MAPPER_FILMIC : Environment::TONE_MAPPER_LINEAR);
 	}
 }
@@ -10240,6 +10247,7 @@ void Node3DEditor::_load_default_preview_settings() {
 	environ_tonemap_button->set_pressed_no_signal(false);
 	environ_ao_button->set_pressed_no_signal(false);
 	environ_gi_button->set_pressed_no_signal(false);
+	environ_volumetric_fog_button->set_pressed(false);
 	sun_shadow_max_distance->set_value_no_signal(100);
 
 	sun_color->set_pick_color(Color(1, 1, 1));
@@ -11117,6 +11125,11 @@ void fragment() {
 		environ_gi_button->set_toggle_mode(true);
 		environ_gi_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_environ_set_gi), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_gi_button);
+		environ_volumetric_fog_button = memnew(Button);
+		environ_volumetric_fog_button->set_text(TTR("Vol. Fog"));
+		environ_volumetric_fog_button->set_toggle_mode(true);
+		environ_volumetric_fog_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
+		fx_vb->add_child(environ_volumetric_fog_button);
 		environ_vb->add_margin_child(TTRC("Post Process"), fx_vb);
 
 		environ_add_to_scene = memnew(Button);
