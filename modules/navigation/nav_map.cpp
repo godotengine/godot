@@ -1135,6 +1135,8 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 		for (size_t i = 0; i < rvo_2d_vertices.size(); i++) {
 			RVO2D::Obstacle2D *rvo_2d_obstacle = new RVO2D::Obstacle2D();
 			rvo_2d_obstacle->point_ = rvo_2d_vertices[i];
+			rvo_2d_obstacle->elevation_ = _obstacle_position.y;
+
 			rvo_2d_obstacle->avoidance_layers_ = _obstacle_avoidance_layers;
 
 			if (i != 0) {
