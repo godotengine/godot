@@ -963,13 +963,13 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 	for (List<Connection>::Element *E = g->connections.front(); E;) {
 		List<Connection>::Element *N = E->next();
 		if (E->get().from_node == p_id || E->get().to_node == p_id) {
-			g->connections.erase(E);
 			if (E->get().from_node == p_id) {
 				g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
 				g->nodes[E->get().to_node].node->set_input_port_connected(E->get().to_port, false);
 			} else if (E->get().to_node == p_id) {
 				g->nodes[E->get().from_node].next_connected_nodes.erase(p_id);
 			}
+			g->connections.erase(E);
 		}
 		E = N;
 	}
