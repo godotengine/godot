@@ -43,7 +43,7 @@
 #define _DEBUG
 #endif
 #endif
-#include "vk_mem_alloc.h"
+#include "thirdparty/vulkan/vk_mem_alloc.h"
 
 #ifdef USE_VOLK
 #include <volk.h>

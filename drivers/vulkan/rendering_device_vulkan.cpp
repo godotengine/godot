@@ -1365,6 +1365,9 @@ Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size,
 	allocInfo.memoryTypeBits = 0;
 	allocInfo.pool = nullptr;
 	allocInfo.pUserData = nullptr;
+	if (p_mem_usage == VMA_MEMORY_USAGE_AUTO_PREFER_HOST) {
+		allocInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+	}
 	if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
 		uint32_t mem_type_index = 0;
 		vmaFindMemoryTypeIndexForBufferInfo(allocator, &bufferInfo, &allocInfo, &mem_type_index);
@@ -1410,7 +1413,7 @@ Error RenderingDeviceVulkan::_insert_staging_block() {
 	VmaAllocationCreateInfo allocInfo;
 	allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
 	allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
-	allocInfo.requiredFlags = 0;
+	allocInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
 	allocInfo.pool = nullptr;
