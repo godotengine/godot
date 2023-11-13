@@ -536,7 +536,10 @@ private:
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> unchecked;
+		Ref<Texture2D> checked_disabled;
+		Ref<Texture2D> unchecked_disabled;
 		Ref<Texture2D> indeterminate;
+		Ref<Texture2D> indeterminate_disabled;
 		Ref<Texture2D> arrow;
 		Ref<Texture2D> arrow_collapsed;
 		Ref<Texture2D> arrow_collapsed_mirrored;
@@ -545,6 +548,7 @@ private:
 
 		Color font_color;
 		Color font_selected_color;
+		Color font_disabled_color;
 		Color guide_color;
 		Color drop_position_color;
 		Color relationship_line_color;

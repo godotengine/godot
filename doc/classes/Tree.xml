@@ -506,6 +506,9 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Default text [Color] of the item.
 		</theme_item>
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Text [Color] for a [constant TreeItem.CELL_MODE_CHECK] mode cell when it's non-editable (see [method TreeItem.set_editable]).
+		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the item.
 		</theme_item>
@@ -619,16 +622,25 @@
 			The arrow icon used when a foldable item is collapsed (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="checked" data_type="icon" type="Texture2D">
-			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked.
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked and editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="checked_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked and non-editable (see [method TreeItem.set_editable]).
 		</theme_item>
 		<theme_item name="indeterminate" data_type="icon" type="Texture2D">
-			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate.
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate and editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="indeterminate_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate and non-editable (see [method TreeItem.set_editable]).
 		</theme_item>
 		<theme_item name="select_arrow" data_type="icon" type="Texture2D">
 			The arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
 		<theme_item name="unchecked" data_type="icon" type="Texture2D">
-			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked.
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked and editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="unchecked_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked and non-editable (see [method TreeItem.set_editable]).
 		</theme_item>
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.

@@ -773,8 +773,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("custom_button_hover", "Tree", button_hover);
 
 	theme->set_icon("checked", "Tree", icons["checked"]);
+	theme->set_icon("checked_disabled", "Tree", icons["checked_disabled"]);
 	theme->set_icon("unchecked", "Tree", icons["unchecked"]);
+	theme->set_icon("unchecked_disabled", "Tree", icons["unchecked_disabled"]);
 	theme->set_icon("indeterminate", "Tree", icons["indeterminate"]);
+	theme->set_icon("indeterminate_disabled", "Tree", icons["indeterminate_disabled"]);
 	theme->set_icon("updown", "Tree", icons["updown"]);
 	theme->set_icon("select_arrow", "Tree", icons["option_button_arrow"]);
 	theme->set_icon("arrow", "Tree", icons["arrow_down"]);
@@ -789,6 +792,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("title_button_color", "Tree", control_font_color);
 	theme->set_color("font_color", "Tree", control_font_low_color);
 	theme->set_color("font_selected_color", "Tree", control_font_pressed_color);
+	theme->set_color("font_disabled_color", "Tree", control_font_disabled_color);
 	theme->set_color("font_outline_color", "Tree", Color(1, 1, 1));
 	theme->set_color("guide_color", "Tree", Color(0.7, 0.7, 0.7, 0.25));
 	theme->set_color("drop_position_color", "Tree", Color(1, 1, 1));
