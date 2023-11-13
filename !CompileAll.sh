@@ -15,8 +15,10 @@ scons profile=TemplatesCustom.py platform=linuxbsd target=template_release arch=
 
 # Android Templates
 export ANDROID_SDK_ROOT=/home/gopher/Android/Sdk/
-scons profile=TemplatesCustom.py platform=android target=template_release arch=armv7
-scons profile=TemplatesCustom.py platform=android target=template_release arch=arm64v8
+scons profile=TemplatesCustom.py platform=android target=template_release arch=arm32
+scons profile=TemplatesCustom.py platform=android target=template_release arch=arm64
+scons profile=TemplatesCustom.py platform=android target=template_debug arch=arm32
+scons profile=TemplatesCustom.py platform=android target=template_debug arch=arm64
 cd platform/android/java
 ./gradlew cleanGodotTemplates
 ./gradlew generateGodotTemplates

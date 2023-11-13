@@ -9,8 +9,8 @@ REM scons platform=linux target=template_release arch=x86_32
 REM scons profile=TemplatesCustom.py platform=linux target=template_release arch=x86_64
 
 REM Android Templates
-scons profile=TemplatesCustom.py platform=android target=template_release arch=armv7
-scons profile=TemplatesCustom.py platform=android target=template_release arch=arm64v8
+scons profile=TemplatesCustom.py platform=android target=template_release arch=arm32
+scons profile=TemplatesCustom.py platform=android target=template_release arch=arm64
 cd platform/android/java
 call .\gradlew cleanGodotTemplates
 call .\gradlew generateGodotTemplates
