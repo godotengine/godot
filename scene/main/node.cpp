@@ -2510,6 +2510,11 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
 			for (int i = 0; i < N->get()->get_child_count(); ++i) {
 				Node *descendant = N->get()->get_child(i);
+
+				if (!descendant->get_owner()) {
+					continue; // Internal nodes or nodes added by scripts.
+				}
+
 				// Skip nodes not really belonging to the instantiated hierarchy; they'll be processed normally later
 				// but remember non-instantiated nodes that are hidden below instantiated ones
 				if (!instance_roots.has(descendant->get_owner())) {
