@@ -3207,6 +3207,9 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_
 	ERR_FAIL_COND(p_image.is_null());
 	ERR_FAIL_COND(p_image->get_width() == 0);
 	ERR_FAIL_COND(p_image->get_height() == 0);
+	ERR_FAIL_COND(p_width < 0);
+	ERR_FAIL_COND(p_height < 0);
+
 	ItemImage *item = memnew(ItemImage);
 
 	if (p_region.has_area()) {
@@ -3239,6 +3242,9 @@ void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask>
 		ERR_FAIL_COND(p_image->get_width() == 0);
 		ERR_FAIL_COND(p_image->get_height() == 0);
 	}
+
+	ERR_FAIL_COND(p_width < 0);
+	ERR_FAIL_COND(p_height < 0);
 
 	bool reshape = false;
 
@@ -3291,6 +3297,9 @@ void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask>
 					}
 				}
 				if ((p_mask & UPDATE_SIZE) || (p_mask & UPDATE_REGION) || (p_mask & UPDATE_TEXTURE)) {
+					ERR_FAIL_COND(item->image.is_null());
+					ERR_FAIL_COND(item->image->get_width() == 0);
+					ERR_FAIL_COND(item->image->get_height() == 0);
 					Size2 new_size = _get_image_size(item->image, item->rq_size.width, item->rq_size.height, item->region);
 					if (item->size != new_size) {
 						reshape = true;
