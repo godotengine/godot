@@ -8,7 +8,7 @@ from detect import try_cmd
 def make_debug_mingw(target, source, env):
     dst = str(target[0])
     # Force separate debug symbols if executable size is larger than 1.9 GB.
-    if env["separate_debug_symbols"] or os.stat(dst).st_size >= 2040109465:
+    if env["debug_symbols"] == "separate" or os.stat(dst).st_size >= 2040109465:
         mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
         if try_cmd("objcopy --version", env["mingw_prefix"], env["arch"]):
             os.system(mingw_bin_prefix + "objcopy --only-keep-debug {0} {0}.debugsymbols".format(dst))

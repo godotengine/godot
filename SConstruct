@@ -14,6 +14,8 @@ from types import ModuleType
 from collections import OrderedDict
 from importlib.util import spec_from_file_location, module_from_spec
 
+from SCons.Variables.BoolVariable import TRUE_STRINGS, FALSE_STRINGS
+
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
 # an `editor.py` file at the root of the module creates a clash with the editor
@@ -178,8 +180,26 @@ opts.Add(
         "optimize", "Optimization level", "speed_trace", ("none", "custom", "debug", "speed", "speed_trace", "size")
     )
 )
-opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
-opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
+legacy_values = TRUE_STRINGS + FALSE_STRINGS
+debug_symbols = EnumVariable(
+    "debug_symbols",
+    "Build with debugging symbols (deprecated value `yes` defaults to `embedded`)",
+    "no",
+    # values from TRUE_STRINGS and FALSE_STRINGS are supported for backwards compatibility
+    ("yes", "no", "embedded", "separate") + legacy_values,
+)
+debug_symbols = list(debug_symbols)  # convert to list to make values mutable
+help_text_to_erase = "|" + "|".join(legacy_values)
+# but their usage is deprecated and they should not appear in the --help text
+debug_symbols[1] = debug_symbols[1].replace(help_text_to_erase, "")  # help text is at the 1st index
+opts.Add(tuple(debug_symbols))  # go back to a tuple now that we've made our modification to the help text
+opts.Add(
+    BoolVariable(
+        "separate_debug_symbols",
+        "Extract debugging symbols to a separate file (deprecated, use debug_symbols=separate instead)",
+        False,
+    )
+)
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("threads", "Enable threading support", True))
@@ -435,7 +455,12 @@ else:  # Release
     opt_level = "speed"
 
 env_base["optimize"] = ARGUMENTS.get("optimize", opt_level)
-env_base["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env_base.dev_build)
+
+if env_base["debug_symbols"] in TRUE_STRINGS:
+    print("debug_symbols=yes is deprecated. Please pass debug_symbols=embedded instead")
+if env_base["separate_debug_symbols"]:
+    print("separate_debug_symbols=yes is deprecated. Please pass debug_symbols=separate instead")
+env_base["debug_symbols"] = methods.get_debug_symbols_enum(env_base.dev_build)
 
 if env_base.editor_build:
     env_base.Append(CPPDEFINES=["TOOLS_ENABLED"])
@@ -553,7 +578,7 @@ if selected_platform in platform_list:
         env["tests"] = methods.get_cmdline_bool("tests", True)
     if env["production"]:
         env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
-        env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
+        env["debug_symbols"] = methods.get_debug_symbols_enum(False)
         # LTO "auto" means we handle the preferred option in each platform detect.py.
         env["lto"] = ARGUMENTS.get("lto", "auto")
 
@@ -582,7 +607,7 @@ if selected_platform in platform_list:
     # "custom" means do nothing and let users set their own optimization flags.
     # Needs to happen after configure to have `env.msvc` defined.
     if env.msvc:
-        if env["debug_symbols"]:
+        if env["debug_symbols"] in ["embedded", "separate"]:
             env.Append(CCFLAGS=["/Zi", "/FS"])
             env.Append(LINKFLAGS=["/DEBUG:FULL"])
         else:
@@ -600,7 +625,7 @@ if selected_platform in platform_list:
         elif env["optimize"] == "debug" or env["optimize"] == "none":
             env.Append(CCFLAGS=["/Od"])
     else:
-        if env["debug_symbols"]:
+        if env["debug_symbols"] in ["embedded", "separate"]:
             # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
             # otherwise addr2line doesn't understand them
             env.Append(CCFLAGS=["-gdwarf-4"])
