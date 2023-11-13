@@ -96,6 +96,8 @@ class SceneTreeEditor : public Control {
 
 	bool can_rename;
 	bool can_open_instance;
+	bool node_process_status_color = false;
+	bool node_type_status_color = false;
 	bool updating_tree = false;
 	bool show_enabled_subscene = false;
 	bool is_scene_tree_dock = false;
@@ -118,6 +120,8 @@ class SceneTreeEditor : public Control {
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
+	void set_node_item_process_color(TreeItem *p_item, Node *p_node);
+	void set_node_item_type_color(TreeItem *p_item, Node *p_node);
 
 	void _selection_changed();
 	Node *get_scene_node();
@@ -156,6 +160,8 @@ public:
 	Node *get_selected();
 	void set_can_rename(bool p_can_rename) { can_rename = p_can_rename; }
 	void set_editor_selection(EditorSelection *p_selection);
+	void use_node_type_color();
+	void use_node_process_color();
 
 	void set_show_enabled_subscene(bool p_show) { show_enabled_subscene = p_show; }
 	void set_valid_types(const Vector<StringName> &p_valid);

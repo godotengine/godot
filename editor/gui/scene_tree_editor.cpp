@@ -267,8 +267,6 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		item->set_text(0, node_name);
 		item->set_selectable(0, marked_selectable);
 		_set_item_custom_color(item, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
-	} else if (!p_node->can_process()) {
-		_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	} else if (!marked_selectable && !marked_children_selectable) {
 		Node *node = p_node;
 		while (node) {
@@ -491,20 +489,11 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		_add_nodes(p_node->get_child(i), item);
 	}
 
-	if (valid_types.size()) {
-		bool valid = false;
-		for (const StringName &E : valid_types) {
-			if (p_node->is_class(E) ||
-					EditorNode::get_singleton()->is_object_of_custom_type(p_node, E)) {
-				valid = true;
-				break;
-			}
-		}
-
-		if (!valid) {
-			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
-			item->set_selectable(0, false);
-		}
+	if (node_process_status_color) {
+		set_node_item_process_color(item, p_node);
+	}
+	if (node_type_status_color) {
+		set_node_item_type_color(item, p_node);
 	}
 }
 
@@ -555,6 +544,35 @@ void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
 void SceneTreeEditor::_set_item_custom_color(TreeItem *p_item, Color p_color) {
 	p_item->set_custom_color(0, p_color);
 	p_item->set_meta(SNAME("custom_color"), p_color);
+}
+
+void SceneTreeEditor::set_node_item_process_color(TreeItem *p_item, Node *p_node) {
+	if (!p_node->can_process()) {
+		_set_item_custom_color(p_item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+	}
+}
+
+void SceneTreeEditor::set_node_item_type_color(TreeItem *p_item, Node *p_node) {
+	if (valid_types.is_empty()) {
+		return;
+	}
+
+	bool valid = false;
+
+	for (const StringName &type : valid_types) {
+		if (p_node->is_class(type) ||
+				EditorNode::get_singleton()->is_object_of_custom_type(p_node, type)) {
+			valid = true;
+			break;
+		}
+	}
+
+	if (!valid) {
+		_set_item_custom_color(p_item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		p_item->set_selectable(0, false);
+	} else {
+		_set_item_custom_color(p_item, get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
+	}
 }
 
 void SceneTreeEditor::_node_script_changed(Node *p_node) {
@@ -1128,6 +1146,14 @@ void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_cursor_can_exit_tree(false);
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeEditor::_selection_changed));
+}
+
+void SceneTreeEditor::use_node_type_color() {
+	node_type_status_color = true;
+}
+
+void SceneTreeEditor::use_node_process_color() {
+	node_process_status_color = true;
 }
 
 void SceneTreeEditor::_update_selection(TreeItem *item) {
