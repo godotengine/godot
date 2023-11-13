@@ -535,6 +535,13 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 #endif
 
+#ifdef SWITCH_ENABLED
+		if (!found) {
+			// On the switch the game pck will be bundle int the romfs
+			found = _load_resource_pack("romfs:/" + exec_basename + ".pck");
+		}
+#endif
+
 		if (!found) {
 			// Try to load data pack at the location of the executable.
 			// As mentioned above, we have two potential names to attempt.

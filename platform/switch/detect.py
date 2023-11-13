@@ -61,7 +61,7 @@ def get_flags():
         ("builtin_enet", True),
         ("builtin_freetype", True),
         ("builtin_libogg", False),
-        ("builtin_libpng", False),
+        ("builtin_libpng", True),
         ("builtin_libtheora", False),
         ("builtin_libvorbis", False),
         ("builtin_libwebp", False),
@@ -70,7 +70,7 @@ def get_flags():
         ("builtin_miniupnpc", False),
         ("builtin_pcre2", False),
         ("builtin_squish", True),
-        ("builtin_zlib", False),
+        ("builtin_zlib", True),
         ("builtin_zstd", False),
     ]
 
@@ -148,12 +148,6 @@ def configure(env):
         env["builtin_freetype"] = True
         env["builtin_libpng"] = True
         env["builtin_zlib"] = True
-
-    if not env["builtin_freetype"]:
-        env.ParseConfig("aarch64-none-elf-pkg-config freetype2 --cflags --libs")
-
-    if not env["builtin_libpng"]:
-        env.ParseConfig("aarch64-none-elf-pkg-config libpng --cflags --libs")
 
     if not env["builtin_enet"]:
         env.ParseConfig("aarch64-none-elf-pkg-config libenet --cflags --libs")

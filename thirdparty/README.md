@@ -697,6 +697,17 @@ They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments and a patch is provided in the squish/ folder.
 
 
+## switch-tools
+
+- Upstream: https://github.com/switchbrew/switch-tools
+- Version: 1.12.0
+- License: ISC License (equivalent MIT)
+
+Files extracted from upstream source:
+
+- all
+
+
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr

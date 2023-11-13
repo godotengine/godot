@@ -45,67 +45,28 @@
 #endif
 
 Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
-	bool export_as_zip = p_path.ends_with("zip");
+	// what is happening: 
+	// first we create a normal .pck (no console wrapper / no pck embed fix)
+	// we create a romfs folder, we put the image for the applet mode and the actual .pck in it
+	// then we create the nacp file with game info provided, amd finally we create the nro + romfs (containing the pck)
+	// the pck file got the exec_basename (see project_setting.cpp, the loading of the game need to match)
+	// to build the nacp and the nro we use the devkitpro tools (they could de deployed in the platform template)
 
-	String pkg_name;
-	if (String(GLOBAL_GET("application/config/name")) != "") {
-		pkg_name = String(GLOBAL_GET("application/config/name"));
-	} else {
-		pkg_name = "Unnamed";
-	}
-
-	pkg_name = OS::get_singleton()->get_safe_dir_name(pkg_name);
-
-	// Setup temp folder.
-	String path = p_path;
-	String tmp_dir_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name);
-
-	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_dir_path);
-	if (export_as_zip) {
-		if (tmp_app_dir.is_null()) {
-			return ERR_CANT_CREATE;
-		}
-		if (DirAccess::exists(tmp_dir_path)) {
-			if (tmp_app_dir->change_dir(tmp_dir_path) == OK) {
-				tmp_app_dir->erase_contents_recursive();
-			}
-		}
-		tmp_app_dir->make_dir_recursive(tmp_dir_path);
-		path = tmp_dir_path.path_join(p_path.get_file().get_basename());
-	}
+	// normally this is useless as they are hidden and set correctly by default
+	p_preset->set("binary_format/embed_pck", false);
+	p_preset->set("debug/export_console_wrapper", 0);
 
 	// Export project.
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, path, p_flags);
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, p_path, p_flags);
 	if (err != OK) {
 		return err;
 	}
 
-	// ZIP project.
-	if (export_as_zip) {
-		if (FileAccess::exists(p_path)) {
-			OS::get_singleton()->move_to_trash(p_path);
-		}
-
-		Ref<FileAccess> io_fa_dst;
-		zlib_filefunc_def io_dst = zipio_create_io(&io_fa_dst);
-		zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
-
-		zip_folder_recursive(zip, tmp_dir_path, "", pkg_name);
-
-		zipClose(zip, nullptr);
-
-		if (tmp_app_dir->change_dir(tmp_dir_path) == OK) {
-			tmp_app_dir->erase_contents_recursive();
-			tmp_app_dir->change_dir("..");
-			tmp_app_dir->remove(pkg_name);
-		}
-	}
-
-	return err;
+	return OK;
 }
 
 String EditorExportPlatformSwitch::get_template_file_name(const String &p_target, const String &p_arch) const {
-	return "switch_" + p_target + ".aarch64";
+	return "switch_" + p_target + ".nro";
 }
 
 List<String> EditorExportPlatformSwitch::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
@@ -117,8 +78,18 @@ List<String> EditorExportPlatformSwitch::get_binary_extensions(const Ref<EditorE
 bool EditorExportPlatformSwitch::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	if (p_preset) {
 		// Hide nxlink options.
-		bool ssh = p_preset->get("nxlink/enabled");
-		if (!ssh && p_option != "nxlink/enabled" && p_option.begins_with("nxlink/")) {
+		bool nxlink = p_preset->get("nxlink/enabled");
+		if (!nxlink && p_option != "nxlink/enabled" && p_option.begins_with("nxlink/")) {
+			return false;
+		}
+		if(p_option == "binary_format/embed_pck") {
+			return false;
+		}
+		if(p_option == "debug/export_console_wrapper") {
+			return false;
+		}
+		if( p_option.begins_with("debug/export_console_wrapper"))
+		{
 			return false;
 		}
 	}
@@ -127,6 +98,11 @@ bool EditorExportPlatformSwitch::get_export_option_visibility(const EditorExport
 
 void EditorExportPlatformSwitch::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformPC::get_export_options(r_options);
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "app/title"), "Gogod Game"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "app/author"), "Author"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "app/version"), "1.0.0"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "app/icon"), "icon.jpg"));
 
 	//TODO:vrince deduce all thoses
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/nacp"), "/opt/devkitpro/tools/bin/nacptool"));
@@ -169,11 +145,6 @@ String EditorExportPlatformSwitch::get_option_tooltip(int p_index) const {
 }
 
 Error EditorExportPlatformSwitch::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
-
-	if (p_device) { // Stop command, cleanup only.
-		return OK;
-	}
-
 	EditorProgress ep("run", TTR("Running..."), 5);
 
 	return OK;
