@@ -273,6 +273,7 @@ EditorFileServer::EditorFileServer() {
 	server.instantiate();
 
 	EDITOR_DEF("filesystem/file_server/port", 6010);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "filesystem/file_server/port", PROPERTY_HINT_RANGE, "1,65535,1"));
 	EDITOR_DEF("filesystem/file_server/password", "");
 }
 

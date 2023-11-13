@@ -600,7 +600,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Behavior: Files
 	_initial_set("text_editor/behavior/files/trim_trailing_whitespace_on_save", false);
-	_initial_set("text_editor/behavior/files/autosave_interval_secs", 0);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/files/autosave_interval_secs", 0, "0,600,1,or_greater");
 	_initial_set("text_editor/behavior/files/restore_scripts_on_load", true);
 	_initial_set("text_editor/behavior/files/convert_indent_on_save", true);
 	_initial_set("text_editor/behavior/files/auto_reload_scripts_on_external_change", false);
@@ -630,7 +630,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Editors */
 
 	// GridMap
-	_initial_set("editors/grid_map/pick_distance", 5000.0);
+	// Range matches the SpinBox in the GridMap editor plugin.
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/grid_map/pick_distance", 5000.0, "500,10000,1")
 
 	// 3D
 	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5), "")
@@ -713,14 +714,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/animation_editors_panning_scheme", 1, "Scroll Zooms,Scroll Pans");
 	_initial_set("editors/panning/simple_panning", false);
 	_initial_set("editors/panning/warped_mouse_panning", true);
-	_initial_set("editors/panning/2d_editor_pan_speed", 20);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/panning/2d_editor_pan_speed", 20, "1,10000,1");
 
 	// Tiles editor
 	_initial_set("editors/tiles_editor/display_grid", true);
 	_initial_set("editors/tiles_editor/grid_color", Color(1.0, 0.5, 0.2, 0.5));
 
 	// Polygon editor
-	_initial_set("editors/polygon_editor/point_grab_radius", has_touchscreen_ui ? 32 : 8);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/polygon_editor/point_grab_radius", has_touchscreen_ui ? 32 : 8, "1,100,1");
 	_initial_set("editors/polygon_editor/show_previous_outline", true);
 
 	// Animation

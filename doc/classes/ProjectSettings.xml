@@ -2789,9 +2789,12 @@
 			[/codeblock]
 		</member>
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
+			The ratio of threads to use as low-priority threads for multiprocessing tasks. The result is rounded down to the nearest integer. For example, the default ratio of [code]0.3[/code] on a system with 8 threads will result in 2 threads being used for low-priority tasks. Regardless of this value, the number of low-priority threads is always at least 1.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
-			Maximum number of threads to be used by [WorkerThreadPool]. Value of [code]-1[/code] means no limit.
+			Maximum number of threads to be used by [WorkerThreadPool]. A value of [code]-1[/code] means there will be as many threads created as the number of [i]logical[/i] CPU cores available on the system.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://openxr_action_map.tres&quot;">
 			Action map configuration to load by default.

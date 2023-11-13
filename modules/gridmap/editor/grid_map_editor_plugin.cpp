@@ -1204,6 +1204,7 @@ GridMapEditor::GridMapEditor() {
 	ED_SHORTCUT("grid_map/fill_selection", TTR("Fill Selection"), KeyModifierMask::CTRL + Key::F);
 
 	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/palette_min_width", PROPERTY_HINT_RANGE, "100,600,1"));
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(mw, 0) * EDSCALE);
 	add_child(ec);
@@ -1314,6 +1315,7 @@ GridMapEditor::GridMapEditor() {
 	add_child(size_slider);
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/preview_size", PROPERTY_HINT_RANGE, "32,128,16"));
 
 	mesh_library_palette = memnew(ItemList);
 	mesh_library_palette->set_auto_translate(false);

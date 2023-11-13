@@ -745,6 +745,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	mirror_handle_length = true;
 
 	disk_size = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", 0.8);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT, "editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", PROPERTY_HINT_RANGE, "0.01,4,0.001,or_greater"));
 
 	Ref<Path3DGizmoPlugin> gizmo_plugin = memnew(Path3DGizmoPlugin(disk_size));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
