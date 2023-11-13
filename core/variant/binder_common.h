@@ -224,6 +224,14 @@ struct PtrToArg<char32_t> {
 template <typename T>
 struct VariantObjectClassChecker {
 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
+#ifdef DEBUG_ENABLED
+		bool freed;
+		p_variant.get_validated_object_with_check(freed);
+		if (freed) {
+			return false;
+		}
+#endif
+
 		using TStripped = std::remove_pointer_t<T>;
 		if constexpr (std::is_base_of<Object, TStripped>::value) {
 			Object *obj = p_variant;
@@ -257,6 +265,7 @@ struct VariantCasterAndValidate {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
 			r_error.expected = argtype;
+			return VariantCaster<T>::cast(Variant());
 		}
 
 		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
