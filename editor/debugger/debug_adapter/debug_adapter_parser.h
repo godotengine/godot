@@ -71,6 +71,7 @@ public:
 	Dictionary req_attach(const Dictionary &p_params) const;
 	Dictionary req_restart(const Dictionary &p_params) const;
 	Dictionary req_terminate(const Dictionary &p_params) const;
+	Dictionary req_configurationDone(const Dictionary &p_params) const;
 	Dictionary req_pause(const Dictionary &p_params) const;
 	Dictionary req_continue(const Dictionary &p_params) const;
 	Dictionary req_threads(const Dictionary &p_params) const;
@@ -83,6 +84,9 @@ public:
 	Dictionary req_stepIn(const Dictionary &p_params) const;
 	Dictionary req_evaluate(const Dictionary &p_params) const;
 	Dictionary req_godot_put_msg(const Dictionary &p_params) const;
+
+	// Internal requests
+	Dictionary _launch_process(const Dictionary &p_params) const;
 
 	// Events
 	Dictionary ev_initialized() const;
