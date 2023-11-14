@@ -6668,6 +6668,10 @@ void TextEdit::_cut_internal(int p_caret) {
 
 	begin_complex_operation();
 	Vector<int> carets_to_remove;
+	int lines_to_subtract = 0;
+
+	Vector<int> true_columns;
+	true_columns.resize_zeroed(get_caret_count());
 
 	StringBuilder clipboard;
 	// This is the exception and has to edit in reverse order else the string copied to the clipboard will be backwards.
@@ -6679,9 +6683,6 @@ void TextEdit::_cut_internal(int p_caret) {
 		}
 
 		int cl = get_caret_line(caret_idx);
-		int cc = get_caret_column(caret_idx);
-		int indent_level = get_indent_level(cl);
-		double hscroll = get_h_scroll();
 
 		// Check for overlapping carets.
 		// We don't need to worry about selections as that is caught before this entire section.
@@ -6692,31 +6693,93 @@ void TextEdit::_cut_internal(int p_caret) {
 			}
 		}
 
+		// Compensate for lines removed in previous iterations.
+		set_caret_line(cl - lines_to_subtract, false, false, false, caret_idx);
+		cl = get_caret_line(caret_idx);
+		int cc = get_caret_column(caret_idx);
+
+		// Store tab indentation not represented by characters, so the visually perceived column can be restored later.
+		int indent = 0;
+		for (int j = 0; j < cc; j++) {
+			if (text[cl][j] == '\t') {
+				indent += text.get_tab_size() - 1;
+			} else {
+				break;
+			}
+		}
+		true_columns.set(caret_idx, cc + indent);
+
 		clipboard += text[cl];
-		if (p_caret == -1 && caret_idx != 0) {
+		if (p_caret == -1 && i != 0) {
 			clipboard += "\n";
 		}
 
-		if (cl == 0 && get_line_count() > 1) {
-			_remove_text(cl, 0, cl + 1, 0);
-			adjust_carets_after_edit(caret_idx, cl, 0, cl + 1, text[cl].length());
+		if (cl == 0) {
+			if (get_line_count() == 1) {
+				_remove_text(cl, 0, cl, text[0].length());
+			} else {
+				merge_gutters(cl, cl + 1);
+				_remove_text(cl, 0, cl + 1, 0);
+			}
 		} else {
-			_remove_text(cl, 0, cl, text[cl].length());
-			set_caret_column(0, false, caret_idx);
-			backspace(caret_idx);
-			set_caret_line(get_caret_line(caret_idx) + 1, caret_idx == 0, 0, 0, caret_idx);
+			merge_gutters(cl - 1, cl);
+			_remove_text(cl - 1, text[cl - 1].length(), cl, text[cl].length());
+			lines_to_subtract += 1;
+		}
+	}
+
+	// Sort and remove backwards to preserve indexes.
+	carets_to_remove.sort();
+	for (int i = carets_to_remove.size() - 1; i >= 0; i--) {
+		true_columns.remove_at(carets_to_remove[i]);
+		remove_caret(carets_to_remove[i]);
+	}
+
+	carets_to_remove.clear();
+	caret_edit_order = get_caret_index_edit_order();
+	for (int i = 0; i < caret_edit_order.size(); i++) {
+		int caret_idx = caret_edit_order[i];
+
+		// Clamp carets to last valid line.
+		int last_valid_line = get_last_unhidden_line();
+		if (get_caret_line(caret_idx) > last_valid_line) {
+			set_caret_line(last_valid_line, caret_idx == 0, false, false, caret_idx);
+		}
+
+		// Skip over hidden lines.
+		int cl = get_caret_line(caret_idx);
+		if (_is_line_hidden(cl)) {
+			set_caret_line(cl + get_next_visible_line_offset_from(cl, 1), caret_idx == 0, false, false, caret_idx);
+		}
+
+		// Leave only one caret per line.
+		if (i != caret_edit_order.size() - 1) {
+			if (get_caret_line(caret_idx) == get_caret_line(caret_edit_order[i + 1])) {
+				carets_to_remove.push_back(caret_idx);
+				continue;
+			}
 		}
 
 		// Correct the visually perceived caret column taking care of indentation level of the lines.
-		int diff_indent = indent_level - get_indent_level(get_caret_line(caret_idx));
-		cc += diff_indent;
-		if (diff_indent != 0) {
-			cc += diff_indent > 0 ? -1 : 1;
+		cl = get_caret_line(caret_idx);
+		int cc = get_caret_column(caret_idx);
+		int true_column = true_columns[caret_idx];
+		for (int j = 0; j < cc; j++) {
+			if (text[cl][j] == '\t') {
+				true_column -= text.get_tab_size() - 1;
+			} else {
+				break;
+			}
 		}
+		cc = true_column;
 
-		// Restore horizontal scroll and caret column modified by the backspace() call.
-		set_h_scroll(hscroll);
-		set_caret_column(cc, caret_idx == 0, caret_idx);
+		// Restore caret column.
+		int line_length = text[cl].size();
+		if (cc > line_length) {
+			set_caret_column(line_length, caret_idx == 0, caret_idx);
+		} else {
+			set_caret_column(cc, caret_idx == 0, caret_idx);
+		}
 	}
 
 	// Sort and remove backwards to preserve indexes.
