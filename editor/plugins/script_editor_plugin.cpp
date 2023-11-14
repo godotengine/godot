@@ -1427,11 +1427,7 @@ void ScriptEditor::_menu_option(int p_option) {
 						path = path.get_slice("::", 0); // Show the scene instead.
 					}
 
-					FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
-					file_system_dock->navigate_to_path(path);
-					// Ensure that the FileSystem dock is visible.
-					TabContainer *dock_tab_container = (TabContainer *)file_system_dock->get_parent_control();
-					dock_tab_container->set_current_tab(dock_tab_container->get_tab_idx_from_control(file_system_dock));
+					FileSystemDock::get_singleton()->navigate_to_path(path);
 				}
 			} break;
 			case CLOSE_DOCS: {
