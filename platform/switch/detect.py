@@ -41,6 +41,14 @@ def get_opts():
         BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True),
         BoolVariable("openxr", "Enable the OpenXR driver", False),
         BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", False),
+        BoolVariable("alsa", "Use ALSA", False),
+        BoolVariable("pulseaudio", "Use PulseAudio", False),
+        BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", False),
+        BoolVariable("speechd", "Use Speech Dispatcher for Text-to-Speech support", False),
+        BoolVariable("fontconfig", "Use fontconfig for system fonts support", False),
+        BoolVariable("udev", "Use udev for gamepad connection callbacks", False),
+        BoolVariable("x11", "Enable X11 display", False),
+        BoolVariable("touch", "Enable touch events", False),
     ]
 
 

@@ -248,6 +248,7 @@ opts.Add(BoolVariable("builtin_recastnavigation", "Use the built-in Recast navig
 opts.Add(BoolVariable("builtin_rvo2_2d", "Use the built-in RVO2 2D library", True))
 opts.Add(BoolVariable("builtin_rvo2_3d", "Use the built-in RVO2 3D library", True))
 opts.Add(BoolVariable("builtin_squish", "Use the built-in squish library", True))
+opts.Add(BoolVariable("builtin_switchtools", "Use the built-in switch tools", True))
 opts.Add(BoolVariable("builtin_xatlas", "Use the built-in xatlas library", True))
 opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
