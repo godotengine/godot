@@ -27,7 +27,7 @@ def can_build():
     if not os.path.exists("{}/portlibs/switch/bin/aarch64-none-elf-pkg-config".format(os.environ.get("DEVKITPRO"))):
         print("Error: aarch64-none-elf-pkg-config not found. Aborting [switch platform]")
         return False
-    
+
     return True
 
 
@@ -40,7 +40,7 @@ def get_opts():
         BoolVariable("vulkan", "Enable the vulkan rendering driver", False),
         BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True),
         BoolVariable("openxr", "Enable the OpenXR driver", False),
-        BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", False)
+        BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", False),
     ]
 
 
@@ -56,7 +56,7 @@ def get_doc_path():
 
 def get_flags():
     return [
-        ("arch", "aarch64"),
+        ("arch", "arm64"),
         ("tools", False),
         ("builtin_enet", True),
         ("builtin_freetype", True),
@@ -82,7 +82,7 @@ def configure(env):
     env["RANLIB"] = "aarch64-none-elf-ranlib"
     env["AR"] = "aarch64-none-elf-ar"
 
-    ## Build type
+    ## Build
 
     dkp = os.environ.get("DEVKITPRO", "/opt/devkitpro")
     env["ENV"]["DEVKITPRO"] = dkp
@@ -91,11 +91,11 @@ def configure(env):
     os.environ["PATH"] = updated_path  # os environment has to be updated for subprocess calls
 
     arch = ["-march=armv8-a", "-mtune=cortex-a57", "-mtp=soft", "-fPIE"]
-    env.Prepend(CCFLAGS=arch + ["-ffunction-sections"])
+    env.Prepend(CCFLAGS=arch + ["-ffunction-sections", "-flax-vector-conversions"])
+    # "-flax-vector-conversions" is required to build embree aarch64
 
     env.Prepend(CPPPATH=["{}/portlibs/switch/include".format(dkp)])
     env.Prepend(CPPFLAGS=["-isystem", "{}/libnx/include".format(dkp)])
-    env.Prepend(CPPFLAGS=["-D__SWITCH__", "-DPOSH_COMPILER_GCC", "-DPOSH_OS_HORIZON", '-DPOSH_OS_STRING=\\"horizon\\"'])
 
     env.Append(LIBPATH=["{}/portlibs/switch/lib".format(dkp), "{}/libnx/lib".format(dkp)])
     env.Prepend(LINKFLAGS=arch + ["-specs={}/libnx/switch.specs".format(dkp)])
@@ -165,10 +165,6 @@ def configure(env):
         env["builtin_libogg"] = False  # Needed to link against system libtheora
         env["builtin_libvorbis"] = False  # Needed to link against system libtheora
         env.ParseConfig("aarch64-none-elf-pkg-config theora theoradec --cflags --libs")
-    else:
-        list_of_x86 = ["x86_64", "x86", "i386", "i586"]
-        if any(platform.machine() in s for s in list_of_x86):
-            env["x86_libtheora_opt_gcc"] = True
 
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
@@ -196,18 +192,25 @@ def configure(env):
         env.ParseConfig("aarch64-none-elf-pkg-config libpcre2-32 --cflags --libs")
 
     # Linkflags below this line should typically stay the last ones
-    if not env['builtin_zlib']:
-        env.ParseConfig('aarch64-none-elf-pkg-config zlib --cflags --libs')
+    if not env["builtin_zlib"]:
+        env.ParseConfig("aarch64-none-elf-pkg-config zlib --cflags --libs")
 
     ## Flags
-    
+
     env.Append(CPPPATH=["#platform/switch"])
-    env.Append(CPPDEFINES=[
-        "SWITCH_ENABLED",
-        "UNIX_ENABLED",
-        "GLES3_ENABLED",
-        "PTHREAD_NO_RENAME",
-        "UNIX_SOCKET_UNAVAILABLE"])
+    env.Append(
+        CPPDEFINES=[
+            "__aarch64__",
+            "__SWITCH__",
+            "POSH_COMPILER_GCC",
+            "POSH_OS_HORIZON",
+            'POSH_OS_STRING="horizon"',
+            "SWITCH_ENABLED",
+            "UNIX_ENABLED",
+            "GLES3_ENABLED",
+            "PTHREAD_NO_RENAME",
+            "UNIX_SOCKET_UNAVAILABLE",
+        ]
+    )
 
     env.Append(LIBS=["EGL", "GLESv2", "glapi", "drm_nouveau", "nx"])
-    # -lglad -lEGL -lglapi -ldrm_nouveau

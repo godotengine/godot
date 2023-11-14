@@ -31,9 +31,7 @@ namespace embree
     CONDITION_VARIABLE cond;
   };
 }
-#endif
-
-#if defined(__UNIX__) || defined(PTHREADS_WIN32)
+#else
 #include <pthread.h>
 namespace embree
 {

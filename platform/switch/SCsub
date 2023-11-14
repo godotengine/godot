@@ -2,7 +2,7 @@
 import version
 import os
 
-#Godot platform specifics
+# Godot platform specifics
 
 Import("env")
 
@@ -25,13 +25,14 @@ nacp = "_default.nacp"
 nacp_path = "platform/switch/" + nacp
 romfsdir_path = "platform/switch/romfs"
 
-build_target = env["target"].replace("template_", "") # to be consistent with other godot targets
+build_target = env["target"].replace("template_", "")  # to be consistent with other godot targets
 version_str = "{}.{}.{}-{}".format(version.major, version.minor, version.patch, version.status)
 
+
 def build_nro(prog_name, output_name, title):
-    '''
+    """
     Helper function to build nacp, nro and make sure they are build in proper order
-    '''
+    """
     nacp = output_name + ".nacp"
     nro = "#bin/" + output_name + ".nro"
 
@@ -40,11 +41,23 @@ def build_nro(prog_name, output_name, title):
     env.AlwaysBuild(nacp)
 
     # build nro (ref https://github.com/switchbrew/switch-tools/blob/master/src/elf2nro.c)
-    env.Command(nro, prog_name, elf2nro_path + " $SOURCE $TARGET --icon=" + icon_path + " --nacp=platform/switch/" + output_name + ".nacp" + " --romfsdir=" + romfsdir_path)
+    env.Command(
+        nro,
+        prog_name,
+        elf2nro_path
+        + " $SOURCE $TARGET --icon="
+        + icon_path
+        + " --nacp=platform/switch/"
+        + output_name
+        + ".nacp"
+        + " --romfsdir="
+        + romfsdir_path,
+    )
     env.AlwaysBuild(nro)
 
     # make sure default nro is ready before build nro target
     env.Depends(target=nro, dependency=nacp)
+
 
 build_nro(program, "switch_" + build_target, "Godot Switch (" + build_target + ")")
 build_nro(simple_console, "simple_console", "Simple Console")

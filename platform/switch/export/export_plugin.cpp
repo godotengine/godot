@@ -82,13 +82,14 @@ bool EditorExportPlatformSwitch::get_export_option_visibility(const EditorExport
 		if (!nxlink && p_option != "nxlink/enabled" && p_option.begins_with("nxlink/")) {
 			return false;
 		}
+		// we do not support any of the following so hide them
 		if(p_option == "binary_format/embed_pck") {
 			return false;
 		}
 		if(p_option == "debug/export_console_wrapper") {
 			return false;
 		}
-		if( p_option.begins_with("debug/export_console_wrapper"))
+		if( p_option.begins_with("custom_template/"))
 		{
 			return false;
 		}
