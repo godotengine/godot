@@ -249,6 +249,7 @@
 			<param index="0" name="code" type="int" enum="Key" />
 			<description>
 				Returns the given keycode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
+				[b]Note:[/b] You should notice the difference between [member InputEventKey.keycode] and [member InputEventKey.physical_keycode]. For example, if you create an event with a physical keycode, its keycode will be assigned [constant @GlobalScope.KEY_NONE], and call this function on it will return empty string. See also [member InputEventKey.physical_keycode] for how to to get a human-readable representation of the [InputEventKey].
 				See also [member InputEventKey.keycode] and [method InputEventKey.get_keycode_with_modifiers].
 			</description>
 		</method>
