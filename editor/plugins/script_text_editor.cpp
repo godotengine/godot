@@ -341,7 +341,9 @@ void ScriptTextEditor::reload_text() {
 	te->tag_saved_version();
 
 	code_editor->update_line_and_column();
-	_validate_script();
+	if (editor_enabled) {
+		_validate_script();
+	}
 }
 
 void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
