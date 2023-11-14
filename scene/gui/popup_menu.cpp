@@ -2025,6 +2025,28 @@ void PopupMenu::set_item_indent(int p_idx, int p_indent) {
 	_menu_changed();
 }
 
+void PopupMenu::set_item_max_states(int p_idx, int p_max_states) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].max_states == p_max_states) {
+		return;
+	}
+
+	items.write[p_idx].max_states = p_max_states;
+	items.write[p_idx].state = CLAMP(items.write[p_idx].state, 0, items.write[p_idx].max_states);
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_max_states(global_menu_name, p_idx, items[p_idx].max_states);
+		DisplayServer::get_singleton()->global_menu_set_item_state(global_menu_name, p_idx, items[p_idx].state);
+	}
+
+	control->queue_redraw();
+	_menu_changed();
+}
+
 void PopupMenu::set_item_multistate(int p_idx, int p_state) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
@@ -2035,10 +2057,10 @@ void PopupMenu::set_item_multistate(int p_idx, int p_state) {
 		return;
 	}
 
-	items.write[p_idx].state = p_state;
+	items.write[p_idx].state = CLAMP(p_state, 0, items.write[p_idx].max_states);
 
 	if (!global_menu_name.is_empty()) {
-		DisplayServer::get_singleton()->global_menu_set_item_state(global_menu_name, p_idx, p_state);
+		DisplayServer::get_singleton()->global_menu_set_item_state(global_menu_name, p_idx, items[p_idx].state);
 	}
 
 	control->queue_redraw();
@@ -2487,8 +2509,20 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 		if (property == "text") {
 			set_item_text(item_index, p_value);
 			return true;
+		} else if (property == "text_direction") {
+			set_item_text_direction(item_index, (Control::TextDirection)(int)p_value);
+			return true;
+		} else if (property == "language") {
+			set_item_language(item_index, p_value);
+			return true;
 		} else if (property == "icon") {
 			set_item_icon(item_index, p_value);
+			return true;
+		} else if (property == "icon_max_width") {
+			set_item_icon_max_width(item_index, p_value);
+			return true;
+		} else if (property == "icon_modulate") {
+			set_item_icon_modulate(item_index, p_value);
 			return true;
 		} else if (property == "checkable") {
 			bool radio_checkable = (int)p_value == Item::CHECKABLE_TYPE_RADIO_BUTTON;
@@ -2510,6 +2544,27 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 			return true;
 		} else if (property == "separator") {
 			set_item_as_separator(item_index, p_value);
+			return true;
+		} else if (property == "submenu") {
+			set_item_submenu(item_index, p_value);
+			return true;
+		} else if (property == "tooltip") {
+			set_item_tooltip(item_index, p_value);
+			return true;
+		} else if (property == "indent") {
+			set_item_indent(item_index, p_value);
+			return true;
+		} else if (property == "max_states") {
+			set_item_max_states(item_index, p_value);
+			return true;
+		} else if (property == "state") {
+			set_item_multistate(item_index, p_value);
+			return true;
+		} else if (property == "shortcut") {
+			set_item_shortcut(item_index, p_value);
+			return true;
+		} else if (property == "shortcut_disabled") {
+			set_item_shortcut_disabled(item_index, p_value);
 			return true;
 		}
 	}
@@ -2566,8 +2621,20 @@ bool PopupMenu::_get(const StringName &p_name, Variant &r_ret) const {
 		if (property == "text") {
 			r_ret = get_item_text(item_index);
 			return true;
+		} else if (property == "text_direction") {
+			r_ret = get_item_text_direction(item_index);
+			return true;
+		} else if (property == "language") {
+			r_ret = get_item_language(item_index);
+			return true;
 		} else if (property == "icon") {
 			r_ret = get_item_icon(item_index);
+			return true;
+		} else if (property == "icon_max_width") {
+			r_ret = get_item_icon_max_width(item_index);
+			return true;
+		} else if (property == "icon_modulate") {
+			r_ret = get_item_icon_modulate(item_index);
 			return true;
 		} else if (property == "checkable") {
 			if (item_index >= 0 && item_index < items.size()) {
@@ -2589,6 +2656,27 @@ bool PopupMenu::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (property == "separator") {
 			r_ret = is_item_separator(item_index);
 			return true;
+		} else if (property == "submenu") {
+			r_ret = get_item_submenu(item_index);
+			return true;
+		} else if (property == "tooltip") {
+			r_ret = get_item_tooltip(item_index);
+			return true;
+		} else if (property == "indent") {
+			r_ret = get_item_indent(item_index);
+			return true;
+		} else if (property == "max_states") {
+			r_ret = get_item_max_states(item_index);
+			return true;
+		} else if (property == "state") {
+			r_ret = get_item_state(item_index);
+			return true;
+		} else if (property == "shortcut") {
+			r_ret = get_item_shortcut(item_index);
+			return true;
+		} else if (property == "shortcut_disabled") {
+			r_ret = is_item_shortcut_disabled(item_index);
+			return true;
 		}
 	}
 	return false;
@@ -2596,11 +2684,24 @@ bool PopupMenu::_get(const StringName &p_name, Variant &r_ret) const {
 
 void PopupMenu::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < items.size(); i++) {
+		PropertyInfo pi = PropertyInfo(Variant::INT, vformat("item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
+		p_list->push_back(pi);
+
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		pi = PropertyInfo(Variant::INT, vformat("item_%d/text_direction", i), PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited");
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::STRING, vformat("item_%d/language", i), PROPERTY_HINT_LOCALE_ID, "");
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 		pi.usage &= ~(get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
+
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("item_%d/icon_max_width", i)));
+
+		p_list->push_back(PropertyInfo(Variant::COLOR, vformat("item_%d/icon_modulate", i)));
 
 		pi = PropertyInfo(Variant::INT, vformat("item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button");
 		pi.usage &= ~(!is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
@@ -2610,9 +2711,6 @@ void PopupMenu::_get_property_list(List<PropertyInfo> *p_list) const {
 		pi.usage &= ~(!is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
-		p_list->push_back(pi);
-
 		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/disabled", i));
 		pi.usage &= ~(!is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
@@ -2620,6 +2718,21 @@ void PopupMenu::_get_property_list(List<PropertyInfo> *p_list) const {
 		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/separator", i));
 		pi.usage &= ~(!is_item_separator(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::NODE_PATH, vformat("item_%d/submenu", i), PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PopupMenu");
+		p_list->push_back(pi);
+
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/tooltip", i)));
+
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("item_%d/indent", i)));
+
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("item_%d/max_states", i)));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("item_%d/state", i)));
+
+		pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/shortcut", i), PROPERTY_HINT_RESOURCE_TYPE, "Shortcut");
+		p_list->push_back(pi);
+
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("item_%d/shortcut_disabled", i)));
 	}
 }
 
@@ -2663,6 +2776,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_shortcut", "index", "shortcut", "global"), &PopupMenu::set_item_shortcut, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_item_indent", "index", "indent"), &PopupMenu::set_item_indent);
 	ClassDB::bind_method(D_METHOD("set_item_multistate", "index", "state"), &PopupMenu::set_item_multistate);
+	ClassDB::bind_method(D_METHOD("set_item_max_states", "index", "max_state"), &PopupMenu::set_item_max_states);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut_disabled", "index", "disabled"), &PopupMenu::set_item_shortcut_disabled);
 
 	ClassDB::bind_method(D_METHOD("toggle_item_checked", "index"), &PopupMenu::toggle_item_checked);

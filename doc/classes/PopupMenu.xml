@@ -467,6 +467,14 @@
 				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
+		<method name="set_item_max_states">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="max_state" type="int" />
+			<description>
+				Sets maximum number of states of the multistate item at the given [param index].
+			</description>
+		</method>
 		<method name="set_item_metadata">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
