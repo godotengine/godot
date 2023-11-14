@@ -58,16 +58,16 @@
 			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
 		</member>
 		<member name="texture_format/bptc" type="bool" setter="" getter="">
-			If [code]true[/code], project textures are exported in the BPTC format.
+			If [code]true[/code], project textures are exported in the BPTC format. If used, [member texture_format/s3tc] must be used as well.
 		</member>
 		<member name="texture_format/etc" type="bool" setter="" getter="">
-			If [code]true[/code], project textures are exported in the ETC format.
+			This option does not do anything and may be removed in the future.
 		</member>
 		<member name="texture_format/etc2" type="bool" setter="" getter="">
 			If [code]true[/code], project textures are exported in the ETC2 format.
 		</member>
 		<member name="texture_format/s3tc" type="bool" setter="" getter="">
-			If [code]true[/code], project textures are exported in the S3TC format.
+			If [code]true[/code], project textures are exported in the S3TC format. If used, [member texture_format/bptc] must be used as well.
 		</member>
 	</members>
 </class>

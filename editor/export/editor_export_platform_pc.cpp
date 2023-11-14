@@ -34,17 +34,14 @@
 #include "scene/resources/image_texture.h"
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	if (p_preset->get("texture_format/bptc")) {
+	if (p_preset->get("texture_format/bptc") || p_preset->get("texture_format/s3tc")) {
 		r_features->push_back("bptc");
-	}
-	if (p_preset->get("texture_format/s3tc")) {
 		r_features->push_back("s3tc");
 	}
-	if (p_preset->get("texture_format/etc")) {
-		r_features->push_back("etc");
-	}
+
 	if (p_preset->get("texture_format/etc2")) {
 		r_features->push_back("etc2");
+		r_features->push_back("astc");
 	}
 	// PC platforms only have one architecture per export, since
 	// we export a single executable instead of a bundle.
@@ -102,6 +99,21 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
+
+	bool uses_s3tc = p_preset->get("texture_format/s3tc");
+	bool uses_bptc = p_preset->get("texture_format/bptc");
+
+	if (uses_s3tc != uses_bptc) {
+		valid = false;
+		err += TTR("If using either s3tc or bptc texture format, you must use both s3tc and bptc.");
+	}
+
+	bool uses_etc2 = p_preset->get("texture_format/etc2");
+
+	if (!uses_s3tc && !uses_bptc && !uses_etc2) {
+		valid = false;
+		err += TTR("A texture format must be selected to export the project. Please select at least one texture format.");
+	}
 
 	if (!err.is_empty()) {
 		r_error = err;
