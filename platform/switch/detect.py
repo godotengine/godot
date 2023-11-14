@@ -72,6 +72,7 @@ def get_flags():
         ("builtin_squish", True),
         ("builtin_zlib", True),
         ("builtin_zstd", False),
+        ("builtin_embree", False),
     ]
 
 
@@ -123,6 +124,7 @@ def configure(env):
     env["bits"] = "64"
 
     # leak sanitizer requires (address) sanitizer
+
     if env["use_sanitizer"] or env["use_leak_sanitizer"]:
         env.Append(CCFLAGS=["-fsanitize=address", "-fno-omit-frame-pointer"])
         env.Append(LINKFLAGS=["-fsanitize=address"])
@@ -139,6 +141,12 @@ def configure(env):
             env.Append(LINKFLAGS=["-flto"])
 
         env["RANLIB"] = "aarch64-none-elf-gcc-ranlib"
+
+    # Modules
+
+    # raycast modeul request embtree that we canot compile for swtichbrew for now
+    env["module_raycast_enabled"] = False
+    env["builtin_embree"] = False
 
     ## Dependencies
 

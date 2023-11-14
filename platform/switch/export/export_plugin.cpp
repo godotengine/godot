@@ -45,7 +45,7 @@
 #endif
 
 Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
-	// what is happening: 
+	// what is happening:
 	// first we create a normal .pck (no console wrapper / no pck embed fix)
 	// we create a romfs folder, we put the image for the applet mode and the actual .pck in it
 	// then we create the nacp file with game info provided, amd finally we create the nro + romfs (containing the pck)
