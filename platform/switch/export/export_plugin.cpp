@@ -83,14 +83,13 @@ bool EditorExportPlatformSwitch::get_export_option_visibility(const EditorExport
 			return false;
 		}
 		// we do not support any of the following so hide them
-		if(p_option == "binary_format/embed_pck") {
+		if (p_option == "binary_format/embed_pck") {
 			return false;
 		}
-		if(p_option == "debug/export_console_wrapper") {
+		if (p_option == "debug/export_console_wrapper") {
 			return false;
 		}
-		if( p_option.begins_with("custom_template/"))
-		{
+		if (p_option.begins_with("custom_template/")) {
 			return false;
 		}
 	}
@@ -115,7 +114,6 @@ void EditorExportPlatformSwitch::get_export_options(List<ExportOption> *r_option
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "nxlink/host"), "0.0.0.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "nxlink/port"), "28280"));
 }
-
 
 Error EditorExportPlatformSwitch::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
 	return OK;

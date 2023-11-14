@@ -31,13 +31,13 @@
 #ifndef OS_SWITCH_H
 #define OS_SWITCH_H
 
-#include "drivers/unix/os_unix.h"
 #include "core/crypto/crypto_core.h"
+#include "drivers/unix/os_unix.h"
 
 #include "switch_wrapper.h"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 class OS_Switch : public OS_Unix {
 	MainLoop *_main_loop = nullptr;
@@ -62,7 +62,7 @@ protected:
 public:
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
-	String get_executable_path() const override { return String(_args[0].c_str());}
+	String get_executable_path() const override { return String(_args[0].c_str()); }
 
 	// actual switch appends here
 	void run();
@@ -85,7 +85,7 @@ public:
 
 	virtual MainLoop *get_main_loop() const override { return _main_loop; }
 
-	OS_Switch(const std::vector<std::string>& args);
+	OS_Switch(const std::vector<std::string> &args);
 	virtual ~OS_Switch();
 };
 

@@ -23,7 +23,7 @@ if env["builtin_switchtools"]:
         "src/npdmtool.c",
         "src/nxlink.c",
         "src/romfs.c",
-        "src/sha256.c"
+        "src/sha256.c",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
