@@ -152,6 +152,13 @@ void RasterizerStorageGLES3::GLWrapper::reset() {
 	texture_unit_table.blank();
 }
 
+int32_t RasterizerStorageGLES3::safe_gl_get_integer(unsigned int p_gl_param_name, int32_t p_max_accepted) {
+	int64_t temp;
+	glGetInteger64v(p_gl_param_name, &temp);
+	temp = MIN(temp, (int64_t)p_max_accepted);
+	return temp;
+}
+
 Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &r_srgb, bool p_force_decompress) const {
 	r_compressed = false;
 	r_gl_format = 0;
@@ -8143,8 +8150,7 @@ void RasterizerStorageGLES3::initialize() {
 	///
 
 	{
-		int max_extensions = 0;
-		glGetIntegerv(GL_NUM_EXTENSIONS, &max_extensions);
+		int max_extensions = safe_gl_get_integer(GL_NUM_EXTENSIONS);
 		for (int i = 0; i < max_extensions; i++) {
 			const GLubyte *s = glGetStringi(GL_EXTENSIONS, i);
 			if (!s) {
@@ -8157,8 +8163,12 @@ void RasterizerStorageGLES3::initialize() {
 	config.shrink_textures_x2 = false;
 	config.use_fast_texture_filter = int(ProjectSettings::get_singleton()->get("rendering/quality/filters/use_nearest_mipmap_filter"));
 
+	// Cap max_texture_image_units as we don't need large numbers of units,
+	// just in case an implementation provides a large number, as we want to keep
+	// the table in gl_wrapper small.
+	config.max_texture_image_units = safe_gl_get_integer(GL_MAX_TEXTURE_IMAGE_UNITS, Config::max_desired_texture_image_units);
+
 	// Initialize GLWrapper early on, as required for any calls to glActiveTexture.
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	gl_wrapper.initialize(config.max_texture_image_units);
 
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
@@ -8392,8 +8402,8 @@ void RasterizerStorageGLES3::initialize() {
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
-	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &config.max_cubemap_texture_size);
+	config.max_texture_size = safe_gl_get_integer(GL_MAX_TEXTURE_SIZE);
+	config.max_cubemap_texture_size = safe_gl_get_integer(GL_MAX_CUBE_MAP_TEXTURE_SIZE);
 
 	config.use_rgba_2d_shadows = !config.framebuffer_float_supported;
 

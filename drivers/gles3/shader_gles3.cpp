@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/threaded_callable_queue.h"
+#include "drivers/gles3/rasterizer_storage_gles3.h"
 #include "drivers/gles3/shader_cache_gles3.h"
 #include "servers/visual_server.h"
 
@@ -1216,7 +1217,8 @@ void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_co
 		}
 	}
 
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_image_units);
+	// The upper limit must match the version used in storage.
+	max_image_units = RasterizerStorageGLES3::safe_gl_get_integer(GL_MAX_TEXTURE_IMAGE_UNITS, RasterizerStorageGLES3::Config::max_desired_texture_image_units);
 }
 
 void ShaderGLES3::init_async_compilation() {

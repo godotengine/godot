@@ -558,7 +558,8 @@ void ShaderGLES2::setup(
 		}
 	}
 
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_image_units);
+	// The upper limit must match the version used in storage.
+	max_image_units = RasterizerStorageGLES2::safe_gl_get_integer(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, RasterizerStorageGLES2::Config::max_desired_texture_image_units);
 }
 
 void ShaderGLES2::finish() {
