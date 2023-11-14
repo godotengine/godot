@@ -3,8 +3,7 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
-import os
-import os.path
+from os.path import splitext, basename
 from platform_methods import subprocess_main
 
 
@@ -22,7 +21,7 @@ def make_fonts_header(target, source, env):
         with open(source[i], "rb") as f:
             buf = f.read()
 
-        name = os.path.splitext(os.path.basename(source[i]))[0]
+        name = splitext(basename(source[i]))[0]
 
         g.write("static const int _font_" + name + "_size = " + str(len(buf)) + ";\n")
         g.write("static const unsigned char _font_" + name + "[] = {\n")
