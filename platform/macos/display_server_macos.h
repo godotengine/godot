@@ -120,6 +120,7 @@ public:
 		bool mpass = false;
 		bool focused = false;
 		bool is_visible = true;
+		bool extend_to_title = false;
 
 		Rect2i parent_safe_rect;
 	};
@@ -209,7 +210,6 @@ private:
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd);
-	void _set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
 
 	void _update_displays_arrangement();
 	Point2i _get_screens_origin() const;
@@ -261,6 +261,7 @@ public:
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
 	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);
+	void set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
