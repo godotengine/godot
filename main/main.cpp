@@ -1753,15 +1753,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		String driver_hints_egl = "";
 #ifdef GLES3_ENABLED
 		driver_hints = "opengl3";
-		driver_hints_angle = "opengl3,opengl3_angle";
-		driver_hints_egl = "opengl3,opengl3_es";
+		driver_hints_angle = "opengl3,opengl3_angle"; // macOS, Windows.
+		driver_hints_egl = "opengl3,opengl3_es"; // Linux.
 #endif
 
 		String default_driver = driver_hints.get_slice(",", 0);
-		String default_driver_macos = default_driver;
-#if defined(GLES3_ENABLED) && defined(EGL_STATIC) && defined(MACOS_ENABLED)
-		default_driver_macos = "opengl3_angle"; // Default to ANGLE if it's built-in.
-#endif
+		String default_driver_macos = driver_hints_angle.get_slice(",", 1);
 
 		GLOBAL_DEF_RST_NOVAL("rendering/gl_compatibility/driver", default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
