@@ -43,6 +43,7 @@
 #include "scene/gui/tab_container.h"
 
 class FileSystemDock;
+class EditorFileDialog;
 
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
@@ -77,6 +78,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	ImportDefaultsEditor *import_defaults_editor = nullptr;
 	EditorData *data = nullptr;
+	EditorFileDialog *import_file_dialog = nullptr;
+	EditorFileDialog *export_file_dialog = nullptr;
 
 	void _advanced_toggled(bool p_button_pressed);
 	void _update_advanced(bool p_is_advanced);
@@ -104,11 +107,16 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_removed(const String &p_name);
 	void _action_renamed(const String &p_old_name, const String &p_new_name);
 	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
+	void _action_import();
+	void _action_export();
 	void _update_action_map_editor();
 	void _update_theme();
 
 	void _input_filter_focused();
 	void _input_filter_unfocused();
+
+	Error _import_file_callback(const String &p_file);
+	Error _export_file_callback(const String &p_file);
 
 protected:
 	void _notification(int p_what);

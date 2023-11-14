@@ -72,6 +72,14 @@ void ActionMapEditor::_add_action_pressed() {
 	_add_action(add_edit->get_text());
 }
 
+void ActionMapEditor::_import_action_pressed() {
+	emit_signal(SNAME("action_import"));
+}
+
+void ActionMapEditor::_export_action_pressed() {
+	emit_signal(SNAME("action_export"));
+}
+
 String ActionMapEditor::_check_new_action_name(const String &p_name) {
 	if (p_name.is_empty() || !_is_action_name_valid(p_name)) {
 		return TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'");
@@ -370,6 +378,8 @@ void ActionMapEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
 	ADD_SIGNAL(MethodInfo("action_reordered", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::STRING, "relative_to"), PropertyInfo(Variant::BOOL, "before")));
+	ADD_SIGNAL(MethodInfo(SNAME("action_import")));
+	ADD_SIGNAL(MethodInfo(SNAME("action_export")));
 	ADD_SIGNAL(MethodInfo(SNAME("filter_focused")));
 	ADD_SIGNAL(MethodInfo(SNAME("filter_unfocused")));
 }
@@ -569,6 +579,16 @@ ActionMapEditor::ActionMapEditor() {
 	add_hbox->add_child(add_button);
 	// Disable the button and set its tooltip.
 	_add_edit_text_changed(add_edit->get_text());
+
+	import_button = memnew(Button);
+	import_button->set_text(TTR("Import"));
+	import_button->connect("pressed", callable_mp(this, &ActionMapEditor::_import_action_pressed));
+	add_hbox->add_child(import_button);
+	export_button = memnew(Button);
+
+	export_button->set_text(TTR("Export"));
+	export_button->connect("pressed", callable_mp(this, &ActionMapEditor::_export_action_pressed));
+	add_hbox->add_child(export_button);
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
 	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));

@@ -89,11 +89,15 @@ private:
 	HBoxContainer *add_hbox = nullptr;
 	LineEdit *add_edit = nullptr;
 	Button *add_button = nullptr;
+	Button *import_button = nullptr;
+	Button *export_button = nullptr;
 
 	void _event_config_confirmed();
 
 	void _add_action_pressed();
 	void _add_edit_text_changed(const String &p_name);
+	void _import_action_pressed();
+	void _export_action_pressed();
 	String _check_new_action_name(const String &p_name);
 	bool _has_action(const String &p_name) const;
 	void _add_action(const String &p_name);
