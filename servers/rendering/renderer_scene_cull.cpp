@@ -3087,7 +3087,6 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 			uint32_t prev_cascade = 0xFFFFFFFF;
 			uint32_t pending_region_count = scene_render->sdfgi_get_pending_region_count(p_render_buffers);
-
 			for (uint32_t i = 0; i < pending_region_count; i++) {
 				cull.sdfgi.region_aabb[i] = scene_render->sdfgi_get_pending_region_bounds(p_render_buffers, i);
 				uint32_t region_cascade = scene_render->sdfgi_get_pending_region_cascade(p_render_buffers, i);

@@ -8,7 +8,7 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 #define MAX_CASCADES 8
 
-layout(set = 0, binding = 1) uniform texture3D sdf_cascades[MAX_CASCADES];
+layout(set = 0, binding = 1) uniform texture3D sdf_cascades;
 layout(set = 0, binding = 2) uniform sampler linear_sampler;
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer DispatchData {
@@ -20,25 +20,22 @@ layout(set = 0, binding = 3, std430) restrict readonly buffer DispatchData {
 dispatch_data;
 
 struct ProcessVoxel {
-	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
-	uint albedo; // rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neighbors.
-	uint light; // rgbe8985 encoded total saved light, extra 2 bits for neighbors.
-	uint light_aniso; // 55555 light anisotropy, extra 2 bits for neighbors.
-	//total neighbors: 26
+	uint position; // xyz 10 bit packed
+	uint albedo_emission_r; // 0 - 15, albedo 16-31 emission R
+	uint emission_gb; // 0-15 emission G, 16-31 emission B
+	uint normal; // 0-20 normal RG octahedron 21-32 cached occlusion?
 };
 
-#ifdef MODE_PROCESS_STATIC
+#define PROCESS_STATIC_PENDING_BIT 0x80000000
+#define PROCESS_DYNAMIC_PENDING_BIT 0x40000000
+
+// Can always write, because it needs to set off dirty bits
 layout(set = 0, binding = 4, std430) restrict buffer ProcessVoxels {
-#else
-layout(set = 0, binding = 4, std430) restrict buffer readonly ProcessVoxels {
-#endif
 	ProcessVoxel data[];
 }
 process_voxels;
 
-layout(r32ui, set = 0, binding = 5) uniform restrict uimage3D dst_light;
-layout(rgba8, set = 0, binding = 6) uniform restrict image3D dst_aniso0;
-layout(rg8, set = 0, binding = 7) uniform restrict image3D dst_aniso1;
+layout(r32ui, set = 0, binding = 5) uniform restrict writeonly uimage3D dst_light;
 
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
@@ -71,6 +68,7 @@ struct Light {
 	float cos_spot_angle;
 	float inv_spot_attenuation;
 	float radius;
+
 };
 
 layout(set = 0, binding = 9, std140) buffer restrict readonly Lights {
@@ -78,8 +76,10 @@ layout(set = 0, binding = 9, std140) buffer restrict readonly Lights {
 }
 lights;
 
+#if 0
 layout(set = 0, binding = 10) uniform texture2DArray lightprobe_texture;
 layout(set = 0, binding = 11) uniform texture3D occlusion_texture;
+#endif
 
 layout(push_constant, std430) uniform Params {
 	vec3 grid_size;
@@ -94,6 +94,12 @@ layout(push_constant, std430) uniform Params {
 	float bounce_feedback;
 	float y_mult;
 	bool use_occlusion;
+
+	bool dirty_dynamic_update;
+	uint pad0;
+	uint pad1;
+	uint pad2;
+
 }
 params;
 
@@ -112,6 +118,16 @@ vec2 octahedron_encode(vec3 n) {
 	return n.xy;
 }
 
+vec3 octahedron_decode(vec2 f) {
+	// https://twitter.com/Stubbesaurus/status/937994790553227264
+	f = f * 2.0 - 1.0;
+	vec3 n = vec3(f.x, f.y, 1.0f - abs(f.x) - abs(f.y));
+	float t = clamp(-n.z, 0.0, 1.0);
+	n.x += n.x >= 0 ? -t : t;
+	n.y += n.y >= 0 ? -t : t;
+	return normalize(n);
+}
+
 float get_omni_attenuation(float distance, float inv_range, float decay) {
 	float nd = distance * inv_range;
 	nd *= nd;
@@ -121,43 +137,171 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 	return nd * pow(max(distance, 0.0001), -decay);
 }
 
+#define REGION_SIZE 8
+
+bool trace_ray(vec3 ray_pos, vec3 ray_dir) {
+
+	// No interpolation
+	vec3 inv_dir = 1.0 / ray_dir;
+
+	bool hit = false;
+	ivec3 hit_pos;
+
+	int prev_cascade = -1;
+	int cascade = int(params.cascade);
+
+	vec3 pos;
+	vec3 side;
+	vec3 delta;
+	ivec3 step;
+	ivec3 icell;
+	vec3 pos_to_uvw = 1.0 / (params.grid_size * vec3(1,1,float(params.max_cascades)));
+	ivec3 iendcell;
+	float advance_remainder;
+
+//	uint iters = 0;
+	while(true) {
+
+		if (cascade != prev_cascade) {
+			pos = ray_pos - cascades.data[cascade].offset;
+			pos *= cascades.data[cascade].to_cell;
+
+			if (any(lessThan(pos,vec3(0.0))) || any(greaterThanEqual(pos,params.grid_size))) {
+				cascade++;
+				if (cascade == params.max_cascades) {
+					break;
+				}
+				continue;
+			}
+
+			//find maximum advance distance (until reaching bounds)
+			vec3 t0 = -pos * inv_dir;
+			vec3 t1 = (params.grid_size - pos) * inv_dir;
+			vec3 tmax = max(t0, t1);
+			advance_remainder = max(0,min(tmax.x, min(tmax.y, tmax.z)) - 0.1);
+
+			vec3 from_cell = pos / float(REGION_SIZE);
+
+			icell = ivec3(from_cell);
+
+			delta = min(abs(1.0 / ray_dir), params.grid_size / float(REGION_SIZE)); // Use bake_params.grid_size as max to prevent infinity values.
+			step = ivec3(sign(ray_dir));
+			side = (sign(ray_dir) * (vec3(icell) - from_cell) + (sign(ray_dir) * 0.5) + 0.5) * delta;
+
+			prev_cascade = cascade;
+
+		}
+
+
+		vec3 lpos = pos - vec3(icell * REGION_SIZE);
+		vec3 tmax = (mix(vec3(REGION_SIZE),vec3(0.0),lessThan(ray_dir,vec3(0.0))) - lpos) * inv_dir;
+		float max_advance = max(0.0,min(tmax.x, min(tmax.y, tmax.z)));
+
+		vec3 clamp_min = vec3(icell * REGION_SIZE) + 0.5;
+		vec3 clamp_max = vec3((icell+ivec3(1)) * REGION_SIZE) - 0.5;
+
+		float advance = 0;
+		vec3 uvw;
+
+		while (advance < max_advance) {
+			vec3 posf = clamp(pos + ray_dir * advance,clamp_min,clamp_max);
+			posf.z+=float(cascade * params.grid_size.x);
+			uvw = posf * pos_to_uvw;
+			float d = texture(sampler3D(sdf_cascades, linear_sampler), uvw).r * 15.0 - 1.0;
+			if (d < -0.001) {
+
+				hit=true;
+				break;
+			}
+			advance += max(d, 0.01);
+		}
+
+
+		if (hit) {
+			break;
+		}
+
+		pos += ray_dir * max_advance;
+		advance_remainder -= max_advance;
+
+		if (advance_remainder <= 0.0) {
+			pos /= cascades.data[cascade].to_cell;
+			pos += cascades.data[cascade].offset;
+			ray_pos = pos;
+			cascade++;
+			if (cascade == params.max_cascades) {
+				break;
+			}
+			continue;
+		}
+
+
+		bvec3 mask = lessThanEqual(side.xyz, min(side.yzx, side.zxy));
+		side += vec3(mask) * delta;
+		icell += ivec3(vec3(mask)) * step;
+
+//		iters++;
+//		if (iters==1000) {
+//			break;
+//		}
+	}
+
+
+	return hit;
+}
+
+
 void main() {
 	uint voxel_index = uint(gl_GlobalInvocationID.x);
-
-	//used for skipping voxels every N frames
-	if (params.process_increment > 1) {
-		voxel_index *= params.process_increment;
-		voxel_index += params.process_offset;
-	}
 
 	if (voxel_index >= dispatch_data.total_count) {
 		return;
 	}
 
-	uint voxel_position = process_voxels.data[voxel_index].position;
+#ifdef MODE_PROCESS_STATIC
+	// Discard if not marked for static update
+	if (!bool(process_voxels.data[voxel_index].position & PROCESS_STATIC_PENDING_BIT)) {
+		return;
+	}
+#else
 
-	//keep for storing to texture
-	ivec3 positioni = ivec3((uvec3(voxel_position, voxel_position, voxel_position) >> uvec3(0, 7, 14)) & uvec3(0x7F));
+	//used for skipping voxels every N frames
+	if (params.process_increment > 1) {
+		if ( ( (voxel_index + params.process_offset) % params.process_increment) != 0 ) {
+
+			bool still_render = false;
+			if (params.dirty_dynamic_update && bool(process_voxels.data[voxel_index].position & PROCESS_DYNAMIC_PENDING_BIT)) {
+				//saved	because it still needs dynamic update
+			} else {
+				return;
+			}
+		}
+	}
+
+	if (params.dirty_dynamic_update) {
+		process_voxels.data[voxel_index].position&=~uint(PROCESS_DYNAMIC_PENDING_BIT);
+	}
+#endif
+
+
+	// Decode ProcessVoxel
+
+	ivec3 positioni = ivec3((uvec3(process_voxels.data[voxel_index].position) >> uvec3(0, 10, 20)) & uvec3(0x3FF));
 
 	vec3 position = vec3(positioni) + vec3(0.5);
 	position /= cascades.data[params.cascade].to_cell;
 	position += cascades.data[params.cascade].offset;
 
-	uint voxel_albedo = process_voxels.data[voxel_index].albedo;
+	uint voxel_albedo = process_voxels.data[voxel_index].albedo_emission_r;
 
-	vec3 albedo = vec3(uvec3(voxel_albedo >> 10, voxel_albedo >> 5, voxel_albedo) & uvec3(0x1F)) / float(0x1F);
-	vec3 light_accum[6] = vec3[](vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
-	uint valid_aniso = (voxel_albedo >> 15) & 0x3F;
+	vec3 albedo = vec3( (uvec3(process_voxels.data[voxel_index].albedo_emission_r) >> uvec3(0, 5, 11)) & uvec3(0x1F,0x3F,0x1F)) / vec3(0x1F,0x3F,0x1F);
+	vec3 emission = vec3(unpackHalf2x16(process_voxels.data[voxel_index].albedo_emission_r).g,unpackHalf2x16(process_voxels.data[voxel_index].emission_gb));
+	vec3 normal = octahedron_decode( vec2((uvec2(process_voxels.data[voxel_index].normal) >> uvec2(0, 10)) & uvec2(0x3FF,0x3FF)) / vec2(0x3FF,0x3FF));
 
-	const vec3 aniso_dir[6] = vec3[](
-			vec3(1, 0, 0),
-			vec3(0, 1, 0),
-			vec3(0, 0, 1),
-			vec3(-1, 0, 0),
-			vec3(0, -1, 0),
-			vec3(0, 0, -1));
+	vec3 light_accum = vec3(0.0);
 
 	// Add indirect light first, in order to save computation resources
+#if 0
 #ifdef MODE_PROCESS_DYNAMIC
 	if (params.bounce_feedback > 0.001) {
 		vec3 feedback = (params.bounce_feedback < 1.0) ? (albedo * params.bounce_feedback) : mix(albedo, vec3(1.0), params.bounce_feedback - 1.0);
@@ -235,25 +379,7 @@ void main() {
 	}
 
 #endif
-
-	{
-		uint rgbe = process_voxels.data[voxel_index].light;
-
-		//read rgbe8985
-		float r = float((rgbe & 0xff) << 1);
-		float g = float((rgbe >> 8) & 0x1ff);
-		float b = float(((rgbe >> 17) & 0xff) << 1);
-		float e = float((rgbe >> 25) & 0x1F);
-		float m = pow(2.0, e - 15.0 - 9.0);
-
-		vec3 l = vec3(r, g, b) * m;
-
-		uint aniso = process_voxels.data[voxel_index].light_aniso;
-		for (uint i = 0; i < 6; i++) {
-			float strength = ((aniso >> (i * 5)) & 0x1F) / float(0x1F);
-			light_accum[i] += l * strength;
-		}
-	}
+#endif
 
 	// Raytrace light
 
@@ -268,6 +394,7 @@ void main() {
 		switch (lights.data[i].type) {
 			case LIGHT_TYPE_DIRECTIONAL: {
 				direction = -lights.data[i].direction;
+				attenuation *= max(0.0,dot(normal,direction));
 			} break;
 			case LIGHT_TYPE_OMNI: {
 				vec3 rel_vec = lights.data[i].position - position;
@@ -275,14 +402,17 @@ void main() {
 				light_distance = length(rel_vec);
 				rel_vec.y /= params.y_mult;
 				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
+				attenuation *= max(0.0,dot(normal,direction));
 
 			} break;
 			case LIGHT_TYPE_SPOT: {
 				vec3 rel_vec = lights.data[i].position - position;
 				direction = normalize(rel_vec);
+
 				light_distance = length(rel_vec);
 				rel_vec.y /= params.y_mult;
 				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
+				attenuation *= max(0.0,dot(normal,direction));
 
 				float cos_spot_angle = lights.data[i].cos_spot_angle;
 				float cos_angle = dot(-direction, lights.data[i].direction);
@@ -312,81 +442,26 @@ void main() {
 		ray_pos += sign(direction) * cell_size * 0.48; // go almost to the box edge but remain inside
 		ray_pos += ray_dir * 0.4 * cell_size; //apply a small bias from there
 
-		for (uint j = params.cascade; j < params.max_cascades; j++) {
-			//convert to local bounds
-			vec3 pos = ray_pos - cascades.data[j].offset;
-			pos *= cascades.data[j].to_cell;
-			float local_distance = light_distance * cascades.data[j].to_cell;
 
-			if (any(lessThan(pos, vec3(0.0))) || any(greaterThanEqual(pos, params.grid_size))) {
-				continue; //already past bounds for this cascade, goto next
-			}
-
-			//find maximum advance distance (until reaching bounds)
-			vec3 t0 = -pos * inv_dir;
-			vec3 t1 = (params.grid_size - pos) * inv_dir;
-			vec3 tmax = max(t0, t1);
-			float max_advance = min(tmax.x, min(tmax.y, tmax.z));
-
-			max_advance = min(local_distance, max_advance);
-
-			float advance = 0.0;
-			float occlusion = 1.0;
-
-			while (advance < max_advance) {
-				//read how much to advance from SDF
-				vec3 uvw = (pos + ray_dir * advance) * pos_to_uvw;
-
-				float distance = texture(sampler3D(sdf_cascades[j], linear_sampler), uvw).r * 255.0 - 1.0;
-				if (distance < 0.001) {
-					//consider hit
-					hit = true;
-					break;
-				}
-
-				occlusion = min(occlusion, distance);
-
-				advance += distance;
-			}
-
-			if (hit) {
-				attenuation *= occlusion;
-				break;
-			}
-
-			if (advance >= local_distance) {
-				break; //past light distance, abandon search
-			}
-			//change ray origin to collision with bounds
-			pos += ray_dir * max_advance;
-			pos /= cascades.data[j].to_cell;
-			pos += cascades.data[j].offset;
-			light_distance -= max_advance / cascades.data[j].to_cell;
-			ray_pos = pos;
-		}
+		hit = trace_ray(ray_pos,ray_dir);
 
 		if (!hit) {
-			vec3 light = albedo * lights.data[i].color.rgb * lights.data[i].energy * attenuation;
-
-			for (int j = 0; j < 6; j++) {
-				if (bool(valid_aniso & (1 << j))) {
-					light_accum[j] += max(0.0, dot(aniso_dir[j], direction)) * light;
-				}
-			}
+			light_accum += albedo * lights.data[i].color.rgb * lights.data[i].energy * attenuation;
 		}
 	}
 
-	// Store the light in the light texture
+	light_accum += emission;
 
-	float lumas[6];
-	vec3 light_total = vec3(0);
+#ifdef MODE_PROCESS_STATIC
+	// Add to self, since its static.
+	process_voxels.data[voxel_index].albedo_emission_r&=0xFFFF; // Keep albedo (lower 16 bits).
 
-	for (int i = 0; i < 6; i++) {
-		light_total += light_accum[i];
-		lumas[i] = max(light_accum[i].r, max(light_accum[i].g, light_accum[i].b));
-	}
+	process_voxels.data[voxel_index].albedo_emission_r |= packHalf2x16(vec2(light_accum.r,0))<<16;
+	process_voxels.data[voxel_index].emission_gb = packHalf2x16(light_accum.gb);
+	process_voxels.data[voxel_index].position&=~uint(PROCESS_STATIC_PENDING_BIT); // Clear process static bit.
+#else
 
-	float luma_total = max(light_total.r, max(light_total.g, light_total.b));
+	// Store to light texture
 
 	uint light_total_rgbe;
 
@@ -398,9 +473,9 @@ void main() {
 		const float N = 9.0f;
 		const float LN2 = 0.6931471805599453094172321215;
 
-		float cRed = clamp(light_total.r, 0.0, 65408.0);
-		float cGreen = clamp(light_total.g, 0.0, 65408.0);
-		float cBlue = clamp(light_total.b, 0.0, 65408.0);
+		float cRed = clamp(light_accum.r, 0.0, 65408.0);
+		float cGreen = clamp(light_accum.g, 0.0, 65408.0);
+		float cBlue = clamp(light_accum.b, 0.0, 65408.0);
 
 		float cMax = max(cRed, max(cGreen, cBlue));
 
@@ -417,91 +492,13 @@ void main() {
 		float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
 		float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
 		float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-#ifdef MODE_PROCESS_STATIC
-		//since its self-save, use RGBE8985
-		light_total_rgbe = ((uint(sRed) & 0x1FF) >> 1) | ((uint(sGreen) & 0x1FF) << 8) | (((uint(sBlue) & 0x1FF) >> 1) << 17) | ((uint(exps) & 0x1F) << 25);
 
-#else
 		light_total_rgbe = (uint(sRed) & 0x1FF) | ((uint(sGreen) & 0x1FF) << 9) | ((uint(sBlue) & 0x1FF) << 18) | ((uint(exps) & 0x1F) << 27);
-#endif
 	}
 
-#ifdef MODE_PROCESS_DYNAMIC
-
-	vec4 aniso0;
-	aniso0.r = lumas[0] / luma_total;
-	aniso0.g = lumas[1] / luma_total;
-	aniso0.b = lumas[2] / luma_total;
-	aniso0.a = lumas[3] / luma_total;
-
-	vec2 aniso1;
-	aniso1.r = lumas[4] / luma_total;
-	aniso1.g = lumas[5] / luma_total;
-
-	//save to 3D textures
-	imageStore(dst_aniso0, positioni, aniso0);
-	imageStore(dst_aniso1, positioni, vec4(aniso1, 0.0, 0.0));
+	positioni.z+=int(params.cascade) * int(params.grid_size.x);
 	imageStore(dst_light, positioni, uvec4(light_total_rgbe));
 
-	//also fill neighbors, so light interpolation during the indirect pass works
-
-	//recover the neighbor list from the leftover bits
-	uint neighbors = (voxel_albedo >> 21) | ((voxel_position >> 21) << 11) | ((process_voxels.data[voxel_index].light >> 30) << 22) | ((process_voxels.data[voxel_index].light_aniso >> 30) << 24);
-
-	const uint max_neighbours = 26;
-	const ivec3 neighbour_positions[max_neighbours] = ivec3[](
-			ivec3(-1, -1, -1),
-			ivec3(-1, -1, 0),
-			ivec3(-1, -1, 1),
-			ivec3(-1, 0, -1),
-			ivec3(-1, 0, 0),
-			ivec3(-1, 0, 1),
-			ivec3(-1, 1, -1),
-			ivec3(-1, 1, 0),
-			ivec3(-1, 1, 1),
-			ivec3(0, -1, -1),
-			ivec3(0, -1, 0),
-			ivec3(0, -1, 1),
-			ivec3(0, 0, -1),
-			ivec3(0, 0, 1),
-			ivec3(0, 1, -1),
-			ivec3(0, 1, 0),
-			ivec3(0, 1, 1),
-			ivec3(1, -1, -1),
-			ivec3(1, -1, 0),
-			ivec3(1, -1, 1),
-			ivec3(1, 0, -1),
-			ivec3(1, 0, 0),
-			ivec3(1, 0, 1),
-			ivec3(1, 1, -1),
-			ivec3(1, 1, 0),
-			ivec3(1, 1, 1));
-
-	for (uint i = 0; i < max_neighbours; i++) {
-		if (bool(neighbors & (1 << i))) {
-			ivec3 neighbour_pos = positioni + neighbour_positions[i];
-			imageStore(dst_light, neighbour_pos, uvec4(light_total_rgbe));
-			imageStore(dst_aniso0, neighbour_pos, aniso0);
-			imageStore(dst_aniso1, neighbour_pos, vec4(aniso1, 0.0, 0.0));
-		}
-	}
-
 #endif
 
-#ifdef MODE_PROCESS_STATIC
-
-	//save back the anisotropic
-
-	uint light = process_voxels.data[voxel_index].light & (3 << 30);
-	light |= light_total_rgbe;
-	process_voxels.data[voxel_index].light = light; //replace
-
-	uint light_aniso = process_voxels.data[voxel_index].light_aniso & (3 << 30);
-	for (int i = 0; i < 6; i++) {
-		light_aniso |= min(31, uint((lumas[i] / luma_total) * 31.0)) << (i * 5);
-	}
-
-	process_voxels.data[voxel_index].light_aniso = light_aniso;
-
-#endif
 }

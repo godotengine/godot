@@ -262,15 +262,11 @@ private:
 
 	struct SDFGIShader {
 		enum SDFGIPreprocessShaderVersion {
-			PRE_PROCESS_SCROLL,
-			PRE_PROCESS_SCROLL_OCCLUSION,
-			PRE_PROCESS_JUMP_FLOOD_INITIALIZE,
-			PRE_PROCESS_JUMP_FLOOD_INITIALIZE_HALF,
-			PRE_PROCESS_JUMP_FLOOD,
+			PRE_PROCESS_SDF_SCROLL,
 			PRE_PROCESS_JUMP_FLOOD_OPTIMIZED,
-			PRE_PROCESS_JUMP_FLOOD_UPSCALE,
-			PRE_PROCESS_OCCLUSION,
-			PRE_PROCESS_STORE,
+			PRE_PROCESS_LIGHT_STORE,
+			PRE_PROCESS_LIGHT_SCROLL,
+			PRE_PROCESS_LIGHT_SCROLL_STORE,
 			PRE_PROCESS_MAX
 		};
 
@@ -278,17 +274,16 @@ private:
 			int32_t scroll[3];
 			int32_t grid_size;
 
-			int32_t probe_offset[3];
+			int32_t offset[3];
 			int32_t step_size;
 
-			int32_t half_size;
-			uint32_t occlusion_index;
-			int32_t cascade;
-			uint32_t pad;
+			int32_t limit[3];
+			uint32_t cascade;
 		};
 
 		SdfgiPreprocessShaderRD preprocess;
 		RID preprocess_shader;
+		RID preprocess_shader_version[PRE_PROCESS_MAX];
 		RID preprocess_pipeline[PRE_PROCESS_MAX];
 
 		struct DebugPushConstant {
@@ -372,6 +367,9 @@ private:
 			float bounce_feedback;
 			float y_mult;
 			uint32_t use_occlusion;
+
+			uint32_t dirty_dynamic_update;
+			uint32_t pad[3];
 		};
 
 		enum {
@@ -381,13 +379,11 @@ private:
 		};
 		SdfgiDirectLightShaderRD direct_light;
 		RID direct_light_shader;
+		RID direct_light_shader_version[DIRECT_LIGHT_MODE_MAX];
 		RID direct_light_pipeline[DIRECT_LIGHT_MODE_MAX];
 
 		enum {
 			INTEGRATE_MODE_PROCESS,
-			INTEGRATE_MODE_STORE,
-			INTEGRATE_MODE_SCROLL,
-			INTEGRATE_MODE_SCROLL_STORE,
 			INTEGRATE_MODE_MAX
 		};
 		struct IntegratePushConstant {
@@ -424,9 +420,8 @@ private:
 
 		SdfgiIntegrateShaderRD integrate;
 		RID integrate_shader;
+		RID integrate_shader_version[INTEGRATE_MODE_MAX];
 		RID integrate_pipeline[INTEGRATE_MODE_MAX];
-
-		RID integrate_default_sky_uniform_set;
 
 	} sdfgi_shader;
 
@@ -551,10 +546,12 @@ public:
 			MAX_CASCADES = 8,
 			CASCADE_SIZE = 128,
 			PROBE_DIVISOR = 16,
+			SDF_REGION_SIZE = 8,
 			ANISOTROPY_SIZE = 6,
 			MAX_DYNAMIC_LIGHTS = 128,
 			MAX_STATIC_LIGHTS = 1024,
-			LIGHTPROBE_OCT_SIZE = 6,
+			LIGHTPROBE_OCT_SIZE = 5,
+			LIGHTPROBE_RAY_FRAMES = 4,
 			SH_SIZE = 16
 		};
 
@@ -568,16 +565,28 @@ public:
 			};
 
 			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
-			RID sdf_tex;
-			RID jump_flood_tex; // used for computing jump floods
-			RID light_data;
-			RID light_tex;
-
 			float cell_size;
 			Vector3i position;
 
 			static const Vector3i DIRTY_ALL;
 			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
+
+			RID light_process_buffer;
+			RID light_process_dispatch_buffer;
+			RID light_process_dispatch_buffer_copy;
+			RID light_process_grid;
+
+			RID light_position_bufer;
+
+			bool static_lights_dirty = true;
+			bool dynamic_lights_dirty = true;
+
+			struct LightProcessCell { // this struct is unused, but remains as reference for size
+				uint32_t position;
+				uint32_t albedo;
+				uint32_t emission;
+				uint32_t normal;
+			};
 
 #if 0
 
@@ -588,17 +597,11 @@ public:
 			RID light_aniso_0_data;
 			RID light_aniso_1_data;
 
-			struct SolidCell { // this struct is unused, but remains as reference for size
-				uint32_t position;
-				uint32_t albedo;
-				uint32_t static_light;
-				uint32_t static_light_aniso;
-			};
+
 
 			RID solid_cell_dispatch_buffer; //buffer for indirect compute dispatch
 			RID solid_cell_buffer;
 
-			RID lightprobe_history_tex;
 			RID lightprobe_average_tex;
 
 			RID sdf_store_uniform_set;
@@ -619,18 +622,35 @@ public:
 		// access to our containers
 		GI *gi = nullptr;
 
+		RID sdf_tex;
+		RID light_tex;
+		RID light_tex_data;
 		RID render_albedo; //x6, anisotropic
 		RID render_solid_bits[2];
 		RID render_aniso_normals;
 		RID render_emission;
 		RID render_emission_aniso;
 
-		RID compute_sdf_jumpflood[2];
+		RID light_process_buffer_render;
+		RID light_process_dispatch_buffer_render;
+		RID light_process_dispatch_buffer_render_copy;
+		RID light_copy_buffer;
+
+		RID lightprobe_compute_tex;
+		RID lightprobe_filtered_tex;
+		RID lightprobe_tex;
+		RID lightprobe_ambient_write_tex;
+		RID lightprobe_ambient_tex;
+		RID lightprobe_sampling_cache_buffer;
 
 		LocalVector<Cascade> cascades;
 
 		float solid_cell_ratio = 0;
 		uint32_t solid_cell_count = 0;
+		uint32_t sampling_cache_buffer_cascade_size = 0;
+
+		Vector<RID> cascade_sdf_textures_cache;
+		Vector<RID> cascade_light_textures_cache;
 
 #if 0
 		// used for rendering (voxelization)
@@ -668,8 +688,8 @@ public:
 		int num_cascades = 6;
 		float min_cell_size = 0;
 		uint32_t probe_axis_count = 0; //amount of probes per axis, this is an odd number because it encloses endpoints
+
 #if 0
-		RID debug_uniform_set[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID debug_probes_scene_data_ubo;
 		RID debug_probes_uniform_set;
 #endif
@@ -701,7 +721,8 @@ public:
 		void update_light();
 		void update_probes(RID p_env, RendererRD::SkyRD::Sky *p_sky);
 		void store_probes();
-		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds) const;
+		int get_pending_region_count() const;
+		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds, Vector3i &r_scroll) const;
 		void update_cascades();
 
 		void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);

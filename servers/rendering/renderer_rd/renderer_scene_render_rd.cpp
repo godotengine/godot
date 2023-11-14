@@ -987,7 +987,7 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
 void RendererSceneRenderRD::_pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi) {
 	if (p_render_data->render_buffers.is_valid()) {
 		if (p_use_gi) {
-			RD::get_singleton()->compute_list_end();
+			//RD::get_singleton()->compute_list_end();
 		}
 	}
 }
