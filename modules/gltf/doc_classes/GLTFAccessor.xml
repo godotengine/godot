@@ -5,6 +5,7 @@
 	<description>
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<members>
 		<member name="buffer_view" type="int" setter="set_buffer_view" getter="get_buffer_view" default="-1">

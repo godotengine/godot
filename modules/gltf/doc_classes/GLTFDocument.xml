@@ -9,6 +9,7 @@
 		GLTFDocument can be extended with arbitrary functionality by extending the [GLTFDocumentExtension] class and registering it with GLTFDocument via [method register_gltf_document_extension]. This allows for custom data to be imported and exported.
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="glTF 'What the duck?' guide">https://www.khronos.org/files/gltf20-reference-guide.pdf</link>
 		<link title="Khronos glTF specification">https://registry.khronos.org/glTF/</link>
 	</tutorials>
