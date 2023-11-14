@@ -970,11 +970,20 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									coff.x = rect.size.width - table->columns[col].width - coff.x;
 								}
 								if (row % 2 == 0) {
-									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg), true);
+									Color c = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
+									if (c.a > 0.0) {
+										draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+									}
 								} else {
-									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg), true);
+									Color c = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
+									if (c.a > 0.0) {
+										draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+									}
 								}
-								draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), (frame->border != Color(0, 0, 0, 0) ? frame->border : border), false);
+								Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
+								if (bc.a > 0.0) {
+									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position, Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), bc, false);
+								}
 							}
 
 							for (int j = 0; j < (int)frame->lines.size(); j++) {
@@ -1197,14 +1206,17 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 		Vector2 ul_start;
 		bool ul_started = false;
+		Color ul_color_prev;
 		Color ul_color;
 
 		Vector2 dot_ul_start;
 		bool dot_ul_started = false;
+		Color dot_ul_color_prev;
 		Color dot_ul_color;
 
 		Vector2 st_start;
 		bool st_started = false;
+		Color st_color_prev;
 		Color st_color;
 
 		for (int i = 0; i < gl_size; i++) {
@@ -1212,16 +1224,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
 			Color font_color = _find_color(it, p_base_color);
 			if (_find_underline(it) || (_find_meta(it, nullptr) && underline_meta)) {
-				if (ul_started && font_color != ul_color) {
+				if (ul_started && font_color != ul_color_prev) {
 					float y_off = TS->shaped_text_get_underline_position(rid);
 					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
 					draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
 					ul_start = p_ofs + Vector2(off.x, off.y);
+					ul_color_prev = font_color;
 					ul_color = font_color;
 					ul_color.a *= 0.5;
 				} else if (!ul_started) {
 					ul_started = true;
 					ul_start = p_ofs + Vector2(off.x, off.y);
+					ul_color_prev = font_color;
 					ul_color = font_color;
 					ul_color.a *= 0.5;
 				}
@@ -1232,16 +1246,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
 			}
 			if (_find_hint(it, nullptr) && underline_hint) {
-				if (dot_ul_started && font_color != dot_ul_color) {
+				if (dot_ul_started && font_color != dot_ul_color_prev) {
 					float y_off = TS->shaped_text_get_underline_position(rid);
 					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
 					draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
 					dot_ul_start = p_ofs + Vector2(off.x, off.y);
+					dot_ul_color_prev = font_color;
 					dot_ul_color = font_color;
 					dot_ul_color.a *= 0.5;
 				} else if (!dot_ul_started) {
 					dot_ul_started = true;
 					dot_ul_start = p_ofs + Vector2(off.x, off.y);
+					dot_ul_color_prev = font_color;
 					dot_ul_color = font_color;
 					dot_ul_color.a *= 0.5;
 				}
@@ -1252,16 +1268,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
 			}
 			if (_find_strikethrough(it)) {
-				if (st_started && font_color != st_color) {
+				if (st_started && font_color != st_color_prev) {
 					float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
 					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
 					draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), st_color, underline_width);
 					st_start = p_ofs + Vector2(off.x, off.y);
+					st_color_prev = font_color;
 					st_color = font_color;
 					st_color.a *= 0.5;
 				} else if (!st_started) {
 					st_started = true;
 					st_start = p_ofs + Vector2(off.x, off.y);
+					st_color_prev = font_color;
 					st_color = font_color;
 					st_color.a *= 0.5;
 				}
