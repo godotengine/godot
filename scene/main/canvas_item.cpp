@@ -891,18 +891,22 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	 * notification anyway).
 	 */
 
-	if (p_node->block_transform_notify || p_node->_is_global_invalid()) {
+	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
 		return; //nothing to do
 	}
 
 	p_node->_set_global_invalid(true);
 
-	if (p_node->notify_transform && !p_node->xform_change.in_list() && p_node->is_inside_tree()) {
-		if (is_accessible_from_caller_thread()) {
-			get_tree()->xform_change_list.add(&p_node->xform_change);
-		} else {
-			// Should be rare, but still needs to be handled.
-			MessageQueue::get_singleton()->push_callable(callable_mp(p_node, &CanvasItem::_notify_transform_deferred));
+	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
+		if (!p_node->block_transform_notify) {
+			if (p_node->is_inside_tree()) {
+				if (is_accessible_from_caller_thread()) {
+					get_tree()->xform_change_list.add(&p_node->xform_change);
+				} else {
+					// Should be rare, but still needs to be handled.
+					MessageQueue::get_singleton()->push_callable(callable_mp(p_node, &CanvasItem::_notify_transform_deferred));
+				}
+			}
 		}
 	}
 
