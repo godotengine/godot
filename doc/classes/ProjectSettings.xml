@@ -810,7 +810,9 @@
 			Main window can't be focused. No-focus window will ignore all input, except mouse clicks.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
-			Allows the window to be resizable by default.
+			If [code]true[/code], allows the window to be resizable by default.
+			[b]Note:[/b] This property is only read when the project starts. To change whether the window is resizable at runtime, set [member Window.unresizable] instead on the root Window, which can be retrieved using [code]get_viewport().get_window()[/code]. [member Window.unresizable] takes the opposite value of this setting.
+			[b]Note:[/b] Certain window managers can be configured to ignore the non-resizable status of a window. Do not rely on this setting as a guarantee that the window will [i]never[/i] be resizable.
 			[b]Note:[/b] This setting is ignored on iOS.
 		</member>
 		<member name="display/window/size/transparent" type="bool" setter="" getter="" default="false">
