@@ -143,6 +143,8 @@ protected:
 		Object *object = nullptr;
 		ObjectID object_id;
 		real_t total_weight = 0.0;
+
+		virtual ~TrackCache() {}
 	};
 
 	struct TrackCacheTransform : public TrackCache {
@@ -164,6 +166,7 @@ protected:
 		TrackCacheTransform() {
 			type = Animation::TYPE_POSITION_3D;
 		}
+		~TrackCacheTransform() {}
 	};
 
 	struct RootMotionCache {
@@ -178,6 +181,7 @@ protected:
 		float value = 0;
 		int shape_index = -1;
 		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
+		~TrackCacheBlendShape() {}
 	};
 
 	struct TrackCacheValue : public TrackCache {
@@ -187,10 +191,16 @@ protected:
 		bool is_continuous = false;
 		bool is_using_angle = false;
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
+		~TrackCacheValue() {
+			// Clear ref to avoid leaking.
+			init_value = Variant();
+			value = Variant();
+		}
 	};
 
 	struct TrackCacheMethod : public TrackCache {
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
+		~TrackCacheMethod() {}
 	};
 
 	struct TrackCacheBezier : public TrackCache {
@@ -200,6 +210,7 @@ protected:
 		TrackCacheBezier() {
 			type = Animation::TYPE_BEZIER;
 		}
+		~TrackCacheBezier() {}
 	};
 
 	// Audio stream information for each audio stream placed on the track.
@@ -228,6 +239,7 @@ protected:
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
 		}
+		~TrackCacheAudio() {}
 	};
 
 	struct TrackCacheAnimation : public TrackCache {
@@ -236,6 +248,7 @@ protected:
 		TrackCacheAnimation() {
 			type = Animation::TYPE_ANIMATION;
 		}
+		~TrackCacheAnimation() {}
 	};
 
 	RootMotionCache root_motion_cache;
@@ -377,6 +390,12 @@ class AnimatedValuesBackup : public RefCounted {
 public:
 	void set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> p_data) { data = p_data; };
 	HashMap<NodePath, AnimationMixer::TrackCache *> get_data() const { return data; };
+
+	~AnimatedValuesBackup() {
+		for (KeyValue<NodePath, AnimationMixer::TrackCache *> &K : data) {
+			memdelete(K.value);
+		}
+	}
 };
 #endif
 

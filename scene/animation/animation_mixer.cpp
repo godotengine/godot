@@ -445,7 +445,7 @@ bool AnimationMixer::is_active() const {
 
 void AnimationMixer::set_root_node(const NodePath &p_path) {
 	root_node = p_path;
-	clear_caches();
+	_clear_caches();
 }
 
 NodePath AnimationMixer::get_root_node() const {
@@ -454,7 +454,7 @@ NodePath AnimationMixer::get_root_node() const {
 
 void AnimationMixer::set_deterministic(bool p_deterministic) {
 	deterministic = p_deterministic;
-	clear_caches();
+	_clear_caches();
 }
 
 bool AnimationMixer::is_deterministic() const {
