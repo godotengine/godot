@@ -1520,7 +1520,7 @@ void AnimationBezierTrackEdit::_zoom_callback(float p_zoom_factor, Vector2 p_ori
 		// Alternate zoom (doesn't affect timeline).
 		timeline_v_zoom = CLAMP(timeline_v_zoom * p_zoom_factor, 0.000001, 100000);
 	} else {
-		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / p_zoom_factor);
+		timeline->_zoom_callback(p_zoom_factor, p_origin, p_event);
 	}
 	timeline_v_scroll = timeline_v_scroll + (p_origin.y - get_size().y / 2.0) * (timeline_v_zoom - v_zoom_orig);
 	queue_redraw();
@@ -1688,6 +1688,7 @@ void AnimationBezierTrackEdit::_bind_methods() {
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &AnimationBezierTrackEdit::_pan_callback), callable_mp(this, &AnimationBezierTrackEdit::_zoom_callback));
+	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR);
 
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
