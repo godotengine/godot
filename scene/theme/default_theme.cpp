@@ -299,13 +299,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "CheckBox", cbx_focus);
 
 	theme->set_icon("checked", "CheckBox", icons["checked"]);
-	theme->set_icon("checked_disabled", "CheckBox", icons["checked"]);
+	theme->set_icon("checked_disabled", "CheckBox", icons["checked_disabled"]);
 	theme->set_icon("unchecked", "CheckBox", icons["unchecked"]);
-	theme->set_icon("unchecked_disabled", "CheckBox", icons["unchecked"]);
+	theme->set_icon("unchecked_disabled", "CheckBox", icons["unchecked_disabled"]);
 	theme->set_icon("radio_checked", "CheckBox", icons["radio_checked"]);
-	theme->set_icon("radio_checked_disabled", "CheckBox", icons["radio_checked"]);
+	theme->set_icon("radio_checked_disabled", "CheckBox", icons["radio_checked_disabled"]);
 	theme->set_icon("radio_unchecked", "CheckBox", icons["radio_unchecked"]);
-	theme->set_icon("radio_unchecked_disabled", "CheckBox", icons["radio_unchecked"]);
+	theme->set_icon("radio_unchecked_disabled", "CheckBox", icons["radio_unchecked_disabled"]);
 
 	theme->set_font("font", "CheckBox", Ref<Font>());
 	theme->set_font_size("font_size", "CheckBox", -1);
@@ -685,13 +685,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("labeled_separator_right", "PopupMenu", separator_horizontal);
 
 	theme->set_icon("checked", "PopupMenu", icons["checked"]);
-	theme->set_icon("checked_disabled", "PopupMenu", icons["checked"]);
+	theme->set_icon("checked_disabled", "PopupMenu", icons["checked_disabled"]);
 	theme->set_icon("unchecked", "PopupMenu", icons["unchecked"]);
-	theme->set_icon("unchecked_disabled", "PopupMenu", icons["unchecked"]);
+	theme->set_icon("unchecked_disabled", "PopupMenu", icons["unchecked_disabled"]);
 	theme->set_icon("radio_checked", "PopupMenu", icons["radio_checked"]);
-	theme->set_icon("radio_checked_disabled", "PopupMenu", icons["radio_checked"]);
+	theme->set_icon("radio_checked_disabled", "PopupMenu", icons["radio_checked_disabled"]);
 	theme->set_icon("radio_unchecked", "PopupMenu", icons["radio_unchecked"]);
-	theme->set_icon("radio_unchecked_disabled", "PopupMenu", icons["radio_unchecked"]);
+	theme->set_icon("radio_unchecked_disabled", "PopupMenu", icons["radio_unchecked_disabled"]);
 	theme->set_icon("submenu", "PopupMenu", icons["popup_menu_arrow_right"]);
 	theme->set_icon("submenu_mirrored", "PopupMenu", icons["popup_menu_arrow_left"]);
 
