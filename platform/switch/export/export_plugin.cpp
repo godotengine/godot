@@ -30,6 +30,7 @@
 
 #include "export_plugin.h"
 
+#include "core/version.h"
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
@@ -44,6 +45,8 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
+#include "modules/switch/switch_tools.h"
+
 Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	// what is happening:
 	// first we create a normal .pck (no console wrapper / no pck embed fix)
@@ -56,27 +59,98 @@ Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &
 	p_preset->set("binary_format/embed_pck", false);
 	p_preset->set("debug/export_console_wrapper", 0);
 
+	String export_folder = p_path.get_base_dir();
+	String nacp_file = p_path.get_basename().get_file() + ".nacp";
+	String nacp_path = export_folder.path_join(nacp_file);
+	String pck_file = p_path.get_basename().get_file() + ".pck";
+	String pck_path = export_folder.path_join(pck_file);
+	String nro_path = export_folder.path_join(p_path.get_basename().get_file() + ".nro");
+
+	String current_version = VERSION_FULL_CONFIG;
+	String template_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version);
+
+	String applet_splash_path = template_dir.path_join("switch").path_join("applet_splash.rgba.gz");
+	String default_icon_path = template_dir.path_join("switch").path_join("icon.jpg");
+
 	// Export project.
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, p_path, p_flags);
 	if (err != OK) {
 		return err;
 	}
 
+	bool devprokit = p_preset->get("devkitpro/enabled");
+	if (devprokit) {
+		String bin_path = p_preset->get("devkitpro/tools_path");
+
+		int exit_code = 0;
+		String output;
+		{
+			List<String> args;
+			// build nacp file
+
+			String nacp_tool_path = bin_path.path_join(String(p_preset->get("devkitpro/nacp")));
+
+			args.push_back("--create");
+			args.push_back(p_preset->get("app/title"));
+			args.push_back(p_preset->get("app/author"));
+			args.push_back(p_preset->get("app/version"));
+			args.push_back(nacp_path);
+
+			err = OS::get_singleton()->execute(nacp_tool_path, args, &output, &exit_code, true);
+			ERR_FAIL_COND_V_MSG(exit_code != 0, err, output);
+		}
+
+		// make the romfs temp dir
+		const String romfs = export_folder.path_join("romfs");
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		da->remove(romfs);
+		err = da->make_dir_recursive(romfs);
+		ERR_FAIL_COND_V_MSG(err != OK, err, output);
+
+		err = da->copy(pck_path, romfs.path_join(pck_file));
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot copy pck file");
+
+		err = da->copy(applet_splash_path, romfs.path_join(applet_splash_path.get_file()));
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot copy splash file to romfs");
+
+		//build the file nro
+		{
+			List<String> args;
+			// build nacp file
+
+			String elf2nro_path = bin_path.path_join(String(p_preset->get("devkitpro/nro")));
+
+			args.push_back(p_path);
+			args.push_back(nro_path);
+			args.push_back("--icon=\"" + default_icon_path + "\"");
+			args.push_back("--nacp=\"" + nacp_path + "\"");
+			args.push_back("--romfsdir=\"" + romfs + "\"");
+
+			err = OS::get_singleton()->execute(elf2nro_path, args, &output, &exit_code, true);
+			ERR_FAIL_COND_V_MSG(exit_code != 0, err, output);
+		}
+	}
+
 	return OK;
 }
 
 String EditorExportPlatformSwitch::get_template_file_name(const String &p_target, const String &p_arch) const {
-	return "switch_" + p_target + ".nro";
+	return "switch_" + p_target + ".arm64";
 }
 
 List<String> EditorExportPlatformSwitch::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
-	list.push_back("nro");
+	list.push_back("arm64");
 	return list;
 }
 
 bool EditorExportPlatformSwitch::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	if (p_preset) {
+		// Hide devkitpro options.
+		bool devprokit = p_preset->get("devkitpro/enabled");
+		if (!devprokit && p_option != "devkitpro/enabled" && p_option.begins_with("devkitpro/")) {
+			return false;
+		}
 		// Hide nxlink options.
 		bool nxlink = p_preset->get("nxlink/enabled");
 		if (!nxlink && p_option != "nxlink/enabled" && p_option.begins_with("nxlink/")) {
@@ -99,16 +173,17 @@ bool EditorExportPlatformSwitch::get_export_option_visibility(const EditorExport
 void EditorExportPlatformSwitch::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformPC::get_export_options(r_options);
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "app/title"), "Gogod Game"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "app/title"), "Godot Game"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "app/author"), "Author"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "app/version"), "1.0.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "app/icon"), "icon.jpg"));
 
-	//TODO:vrince deduce all thoses
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/nacp"), "/opt/devkitpro/tools/bin/nacptool"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/elf2nro"), "/opt/devkitpro/tools/bin/elf2nro"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/romfs"), "/opt/devkitpro/tools/bin/romfs"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/nxlink"), "/opt/devkitpro/tools/bin/nxlink"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "devkitpro/enabled"), true, true));
+	//TODO:vrince deduce this
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/tools_path"), "/opt/devkitpro/tools/bin"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/nacp"), "nacptool"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/nro"), "elf2nro"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/nxlink"), "nxlink"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "nxlink/enabled"), false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "nxlink/host"), "0.0.0.0"));

@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 
-void initialize_switch_tools_module(ModuleInitializationLevel p_level) {
+void initialize_switch_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}

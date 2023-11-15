@@ -34,7 +34,6 @@ if env["builtin_switchtools"]:
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
     env.modules_sources += thirdparty_obj
 
-
 # Godot source files
 
 module_obj = []
