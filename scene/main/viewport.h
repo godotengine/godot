@@ -610,6 +610,8 @@ public:
 	void gui_release_focus();
 	Control *gui_get_focus_owner() const;
 
+	Control *gui_get_mouse_over() const;
+
 	PackedStringArray get_configuration_warnings() const override;
 
 	void set_debug_draw(DebugDraw p_debug_draw);

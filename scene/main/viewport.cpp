@@ -3491,6 +3491,11 @@ Control *Viewport::gui_get_focus_owner() const {
 	return gui.key_focus;
 }
 
+Control *Viewport::gui_get_mouse_over() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
+	return gui.mouse_over;
+}
+
 void Viewport::set_msaa_2d(MSAA p_msaa) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_msaa, MSAA_MAX);
@@ -4530,6 +4535,10 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("gui_release_focus"), &Viewport::gui_release_focus);
 	ClassDB::bind_method(D_METHOD("gui_get_focus_owner"), &Viewport::gui_get_focus_owner);
+
+	ClassDB::bind_method(D_METHOD("gui_get_mouse_over"), &Viewport::gui_get_mouse_over);
+
+	ClassDB::bind_method(D_METHOD("gui_find_control", "point"), &Viewport::gui_find_control);
 
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
