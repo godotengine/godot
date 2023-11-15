@@ -239,7 +239,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(Object
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
@@ -252,7 +252,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
