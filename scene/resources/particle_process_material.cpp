@@ -743,21 +743,25 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	vec3 velocity = vec3(0.);\n";
 	code += "	float spread_rad = spread_angle * degree_to_rad;\n";
 	code += "	float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-	code += "	float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-	code += "	vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
-	code += "	vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
-	code += "	direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
-	code += "	vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-	code += "	vec3 direction_nrm = length(direction) > 0.0 ? normalize(direction) : vec3(0.0, 0.0, 1.0);\n";
-	code += "	// rotate spread to direction\n";
-	code += "	vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
-	code += "	if (length(binormal) < 0.0001) {\n";
-	code += "		// direction is parallel to Y. Choose Z as the binormal.\n";
-	code += "		binormal = vec3(0.0, 0.0, 1.0);\n";
-	code += "	}\n";
-	code += "	binormal = normalize(binormal);\n";
-	code += "	vec3 normal = cross(binormal, direction_nrm);\n";
-	code += "	spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+		code += "	vec3 spread_direction = normalize(vec3(cos(angle1_rad), sin(angle1_rad), 0.0) + vec3(normalize(direction.xy), 0.0));\n";
+	} else {
+		code += "	float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
+		code += "	vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
+		code += "	vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
+		code += "	direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
+		code += "	vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
+		code += "	vec3 direction_nrm = length(direction) > 0.0 ? normalize(direction) : vec3(0.0, 0.0, 1.0);\n";
+		code += "	// rotate spread to direction\n";
+		code += "	vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
+		code += "	if (length(binormal) < 0.0001) {\n";
+		code += "		// direction is parallel to Y. Choose Z as the binormal.\n";
+		code += "		binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "	}\n";
+		code += "	binormal = normalize(binormal);\n";
+		code += "	vec3 normal = cross(binormal, direction_nrm);\n";
+		code += "	spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+	}
 	code += "	return spread_direction;\n";
 
 	code += "}\n";
