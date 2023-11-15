@@ -1450,7 +1450,7 @@ const char *RenamesMap3To4::shaders_renames[][2] = {
 	{ "NORMALMAP_DEPTH", "NORMAL_MAP_DEPTH" },
 	{ "TRANSMISSION", "BACKLIGHT" },
 	{ "WORLD_MATRIX", "MODEL_MATRIX" },
-	{ "depth_draw_alpha_prepass", "depth_draw_opaque" },
+	{ "depth_draw_alpha_prepass", "depth_prepass_alpha" },
 	{ "hint_albedo", "source_color" },
 	{ "hint_aniso", "hint_anisotropy" },
 	{ "hint_black", "hint_default_black" },

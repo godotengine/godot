@@ -852,8 +852,8 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 	}
 
 	if (!p_custom_features.is_empty()) {
+		// Store how many properties are saved, add one for custom features, which must always go first.
 		file->store_32(count + 1);
-		//store how many properties are saved, add one for custom featuers, which must always go first
 		String key = CoreStringNames::get_singleton()->_custom_features;
 		file->store_pascal_string(key);
 
@@ -870,7 +870,8 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 		file->store_buffer(buff.ptr(), buff.size());
 
 	} else {
-		file->store_32(count); //store how many properties are saved
+		// Store how many properties are saved.
+		file->store_32(count);
 	}
 
 	for (const KeyValue<String, List<String>> &E : p_props) {
