@@ -311,60 +311,60 @@ void Node3DEditorCameraManager::navigation_orbit(const Vector2 &p_rotation) {
 }
 
 void Node3DEditorCameraManager::orbit_view_down() {
+	stop_previews_and_pilots();
 	// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 	cursor.orbit_to(CLAMP(cursor.get_target_values().x_rot - Math_PI / 12.0, -1.57, 1.57), cursor.get_target_values().y_rot);
-	stop_previews_and_pilots();
 }
 
 void Node3DEditorCameraManager::orbit_view_up() {
+	stop_previews_and_pilots();
 	// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 	cursor.orbit_to(CLAMP(cursor.get_target_values().x_rot + Math_PI / 12.0, -1.57, 1.57), cursor.get_target_values().y_rot);
-	stop_previews_and_pilots();
 }
 
 void Node3DEditorCameraManager::orbit_view_right() {
-	cursor.orbit_to(cursor.get_target_values().x_rot, cursor.get_target_values().y_rot - Math_PI / 12.0);
 	stop_previews_and_pilots();
+	cursor.orbit_to(cursor.get_target_values().x_rot, cursor.get_target_values().y_rot - Math_PI / 12.0);
 }
 
 void Node3DEditorCameraManager::orbit_view_left() {
-	cursor.orbit_to(cursor.get_target_values().x_rot, cursor.get_target_values().y_rot + Math_PI / 12.0);
 	stop_previews_and_pilots();
+	cursor.orbit_to(cursor.get_target_values().x_rot, cursor.get_target_values().y_rot + Math_PI / 12.0);
 }
 
 void Node3DEditorCameraManager::orbit_view_180() {
-	cursor.orbit_to(cursor.get_target_values().x_rot, cursor.get_target_values().y_rot + Math_PI);
 	stop_previews_and_pilots();
+	cursor.orbit_to(cursor.get_target_values().x_rot, cursor.get_target_values().y_rot + Math_PI);
 }
 
 void Node3DEditorCameraManager::view_top() {
-	cursor.orbit_to(Math_PI / 2.0, 0.0);
 	stop_previews_and_pilots();
+	cursor.orbit_to(Math_PI / 2.0, 0.0);
 }
 
 void Node3DEditorCameraManager::view_bottom() {
-	cursor.orbit_to(-Math_PI / 2.0, 0.0);
 	stop_previews_and_pilots();
+	cursor.orbit_to(-Math_PI / 2.0, 0.0);
 }
 
 void Node3DEditorCameraManager::view_left() {
-	cursor.orbit_to(0.0, Math_PI / 2.0);
 	stop_previews_and_pilots();
+	cursor.orbit_to(0.0, Math_PI / 2.0);
 }
 
 void Node3DEditorCameraManager::view_right() {
-	cursor.orbit_to(0.0, -Math_PI / 2.0);
 	stop_previews_and_pilots();
+	cursor.orbit_to(0.0, -Math_PI / 2.0);
 }
 
 void Node3DEditorCameraManager::view_front() {
-	cursor.orbit_to(0.0, 0.0);
 	stop_previews_and_pilots();
+	cursor.orbit_to(0.0, 0.0);
 }
 
 void Node3DEditorCameraManager::view_rear() {
-	cursor.orbit_to(0.0, Math_PI);
 	stop_previews_and_pilots();
+	cursor.orbit_to(0.0, Math_PI);
 }
 
 void Node3DEditorCameraManager::center_to_origin() {
@@ -374,7 +374,7 @@ void Node3DEditorCameraManager::center_to_origin() {
 
 void Node3DEditorCameraManager::focus_selection(const Vector3 &p_center_point) {
 	cursor.move_to(p_center_point);
-	stop_previews_and_pilots();
+	commit_pilot_transform();
 }
 
 void Node3DEditorCameraManager::update(float p_delta_time) {
