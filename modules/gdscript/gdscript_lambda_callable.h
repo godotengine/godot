@@ -45,7 +45,7 @@ class GDScriptLambdaCallable : public CallableCustom {
 	GDScriptFunction *function = nullptr;
 	Ref<GDScript> script;
 	uint32_t h;
-	GDScript::UpdatableFuncPtrElement updatable_func_ptr_element;
+	GDScript::UpdatableFuncPtrElement *updatable_func_ptr_element = nullptr;
 
 	Vector<Variant> captures;
 
@@ -72,7 +72,7 @@ class GDScriptLambdaSelfCallable : public CallableCustom {
 	Ref<RefCounted> reference; // For objects that are RefCounted, keep a reference.
 	Object *object = nullptr; // For non RefCounted objects, use a direct pointer.
 	uint32_t h;
-	GDScript::UpdatableFuncPtrElement updatable_func_ptr_element;
+	GDScript::UpdatableFuncPtrElement *updatable_func_ptr_element = nullptr;
 
 	Vector<Variant> captures;
 

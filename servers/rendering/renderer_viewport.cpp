@@ -116,19 +116,30 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 		if (p_viewport->size.width == 0 || p_viewport->size.height == 0) {
 			p_viewport->render_buffers.unref();
 		} else {
+			const float EPSILON = 0.0001;
 			float scaling_3d_scale = p_viewport->scaling_3d_scale;
 			RS::ViewportScaling3DMode scaling_3d_mode = p_viewport->scaling_3d_mode;
+			bool upscaler_available = p_viewport->fsr_enabled;
+
+			if ((!upscaler_available || scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_BILINEAR || scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) && scaling_3d_scale >= (1.0 - EPSILON) && scaling_3d_scale <= (1.0 + EPSILON)) {
+				// No 3D scaling on bilinear or FSR? Ignore scaling mode, this just introduces overhead.
+				// - Mobile can't perform optimal path
+				// - FSR does an extra pass (or 2 extra passes if 2D-MSAA is enabled)
+				// Scaling = 1.0 on FSR2 has benefits
+				scaling_3d_scale = 1.0;
+				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
+			}
+
 			bool scaling_3d_is_fsr = (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) || (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2);
 			bool use_taa = p_viewport->use_taa;
 
-			if (scaling_3d_is_fsr && (scaling_3d_scale > 1.0)) {
+			if (scaling_3d_is_fsr && (scaling_3d_scale >= (1.0 + EPSILON))) {
 				// FSR is not designed for downsampling.
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			}
 
-			bool upscaler_available = p_viewport->fsr_enabled;
 			if (scaling_3d_is_fsr && !upscaler_available) {
 				// FSR is not actually available.
 				// Fall back to bilinear scaling.
@@ -143,8 +154,8 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				use_taa = false;
 			}
 
-			int width;
-			int height;
+			int target_width;
+			int target_height;
 			int render_width;
 			int render_height;
 
@@ -152,40 +163,40 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				case RS::VIEWPORT_SCALING_3D_MODE_BILINEAR:
 					// Clamp 3D rendering resolution to reasonable values supported on most hardware.
 					// This prevents freezing the engine or outright crashing on lower-end GPUs.
-					width = CLAMP(p_viewport->size.width * scaling_3d_scale, 1, 16384);
-					height = CLAMP(p_viewport->size.height * scaling_3d_scale, 1, 16384);
-					render_width = width;
-					render_height = height;
+					target_width = p_viewport->size.width;
+					target_height = p_viewport->size.height;
+					render_width = CLAMP(target_width * scaling_3d_scale, 1, 16384);
+					render_height = CLAMP(target_height * scaling_3d_scale, 1, 16384);
 					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
-					width = p_viewport->size.width;
-					height = p_viewport->size.height;
-					render_width = MAX(width * scaling_3d_scale, 1.0); // width / (width * scaling)
-					render_height = MAX(height * scaling_3d_scale, 1.0);
+					target_width = p_viewport->size.width;
+					target_height = p_viewport->size.height;
+					render_width = MAX(target_width * scaling_3d_scale, 1.0); // target_width / (target_width * scaling)
+					render_height = MAX(target_height * scaling_3d_scale, 1.0);
 					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_OFF:
-					width = p_viewport->size.width;
-					height = p_viewport->size.height;
-					render_width = width;
-					render_height = height;
+					target_width = p_viewport->size.width;
+					target_height = p_viewport->size.height;
+					render_width = target_width;
+					render_height = target_height;
 					break;
 				default:
 					// This is an unknown mode.
 					WARN_PRINT_ONCE(vformat("Unknown scaling mode: %d. Disabling 3D resolution scaling.", scaling_3d_mode));
 					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 					scaling_3d_scale = 1.0;
-					width = p_viewport->size.width;
-					height = p_viewport->size.height;
-					render_width = width;
-					render_height = height;
+					target_width = p_viewport->size.width;
+					target_height = p_viewport->size.height;
+					render_width = target_width;
+					render_height = target_height;
 					break;
 			}
 
 			uint32_t jitter_phase_count = 0;
 			if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2) {
 				// Implementation has been copied from ffxFsr2GetJitterPhaseCount.
-				jitter_phase_count = uint32_t(8.0f * pow(float(width) / render_width, 2.0f));
+				jitter_phase_count = uint32_t(8.0f * pow(float(target_width) / render_width, 2.0f));
 			} else if (use_taa) {
 				// Default jitter count for TAA.
 				jitter_phase_count = 16;
@@ -201,7 +212,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			RenderSceneBuffersConfiguration rb_config;
 			rb_config.set_render_target(p_viewport->render_target);
 			rb_config.set_internal_size(Size2i(render_width, render_height));
-			rb_config.set_target_size(Size2(width, height));
+			rb_config.set_target_size(Size2(target_width, target_height));
 			rb_config.set_view_count(p_viewport->view_count);
 			rb_config.set_scaling_3d_mode(scaling_3d_mode);
 			rb_config.set_msaa_3d(p_viewport->msaa_3d);
@@ -259,6 +270,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 	/* Camera should always be BEFORE any other 3D */
 
+	bool can_draw_2d = !p_viewport->disable_2d && p_viewport->view_count == 1; // Stereo rendering does not support 2D, no depth data
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
 	int scenario_canvas_max_layer = 0;
 	bool force_clear_render_target = false;
@@ -272,7 +284,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	if (RSG::scene->is_scenario(p_viewport->scenario)) {
 		RID environment = RSG::scene->scenario_get_environment(p_viewport->scenario);
 		if (RSG::scene->is_environment(environment)) {
-			if (!p_viewport->disable_2d && !viewport_is_environment_disabled(p_viewport)) {
+			if (can_draw_2d && !viewport_is_environment_disabled(p_viewport)) {
 				scenario_draw_canvas_bg = RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS;
 				scenario_canvas_max_layer = RSG::scene->environment_get_canvas_max_layer(environment);
 			} else if (RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS) {
@@ -307,7 +319,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		_draw_3d(p_viewport);
 	}
 
-	if (!p_viewport->disable_2d) {
+	if (can_draw_2d) {
 		RBMap<Viewport::CanvasKey, Viewport::CanvasData *> canvas_map;
 
 		Rect2 clip_rect(0, 0, p_viewport->size.x, p_viewport->size.y);

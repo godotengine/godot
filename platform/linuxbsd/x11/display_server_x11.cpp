@@ -672,7 +672,7 @@ Atom DisplayServerX11::_clipboard_get_image_target(Atom p_source, Window x11_win
 	unsigned long atom_count = 0;
 
 	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
-	if (selection_owner != None) {
+	if (selection_owner != None && selection_owner != x11_window) {
 		// Block events polling while processing selection events.
 		MutexLock mutex_lock(events_mutex);
 
@@ -783,7 +783,7 @@ Ref<Image> DisplayServerX11::clipboard_get_image() const {
 
 	Window selection_owner = XGetSelectionOwner(x11_display, clipboard);
 
-	if (selection_owner != None) {
+	if (selection_owner != None && selection_owner != x11_window) {
 		// Block events polling while processing selection events.
 		MutexLock mutex_lock(events_mutex);
 
@@ -1571,7 +1571,7 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 
 	//Use xrandr to get screen refresh rate.
 	if (xrandr_ext_ok) {
-		XRRScreenResources *screen_info = XRRGetScreenResources(x11_display, windows[MAIN_WINDOW_ID].x11_window);
+		XRRScreenResources *screen_info = XRRGetScreenResourcesCurrent(x11_display, windows[MAIN_WINDOW_ID].x11_window);
 		if (screen_info) {
 			RRMode current_mode = 0;
 			xrr_monitor_info *monitors = nullptr;
@@ -6065,33 +6065,36 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 	}
 	if (rendering_driver == "opengl3") {
-		GLManager_X11::ContextType opengl_api_type = GLManager_X11::GLES_3_0_COMPATIBLE;
-
-		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
-
-		if (gl_manager->initialize(x11_display) != OK) {
+		gl_manager = memnew(GLManager_X11(p_resolution, GLManager_X11::GLES_3_0_COMPATIBLE));
+		if (gl_manager->initialize(x11_display) != OK || gl_manager->open_display(x11_display) != OK) {
 			memdelete(gl_manager);
 			gl_manager = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
+			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_gles");
+			if (fallback) {
+				WARN_PRINT("Your video card drivers seem not to support the required OpenGL version, switching to OpenGLES.");
+				rendering_driver = "opengl3_es";
+			} else {
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Could not initialize OpenGL.");
+			}
+		} else {
+			driver_found = true;
+			RasterizerGLES3::make_current(true);
 		}
-		driver_found = true;
-
-		RasterizerGLES3::make_current(true);
 	}
+
 	if (rendering_driver == "opengl3_es") {
 		gl_manager_egl = memnew(GLManagerEGL_X11);
-
 		if (gl_manager_egl->initialize() != OK) {
 			memdelete(gl_manager_egl);
 			gl_manager_egl = nullptr;
 			r_error = ERR_UNAVAILABLE;
-			return;
+			ERR_FAIL_MSG("Could not initialize OpenGLES.");
 		}
 		driver_found = true;
-
 		RasterizerGLES3::make_current(false);
 	}
+
 #endif
 	if (!driver_found) {
 		r_error = ERR_UNAVAILABLE;

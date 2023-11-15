@@ -1171,12 +1171,6 @@ msgstr "Tancar"
 msgid "Connect"
 msgstr "Connectar"
 
-msgid "Class:"
-msgstr "Classe:"
-
-msgid "Signal:"
-msgstr "Senyal:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Connectar '%s' amb '%s'"
 
@@ -1952,6 +1946,9 @@ msgstr "(Re)Important Recursos"
 msgid "Top"
 msgstr "Dalt"
 
+msgid "Class:"
+msgstr "Classe:"
+
 msgid "Inherits:"
 msgstr "Hereta:"
 
@@ -1997,6 +1994,12 @@ msgstr ""
 
 msgid "Method Descriptions"
 msgstr "Descripcions dels Mètodes"
+
+msgid "Property:"
+msgstr "Propietat:"
+
+msgid "Signal:"
+msgstr "Senyal:"
 
 msgid "%d match."
 msgstr "%d coincidència."
@@ -2054,9 +2057,6 @@ msgstr "Propietat"
 
 msgid "Theme Property"
 msgstr "Propietats del tema"
-
-msgid "Property:"
-msgstr "Propietat:"
 
 msgid "Move Up"
 msgstr "Mou Amunt"
@@ -2962,11 +2962,11 @@ msgstr ""
 msgid "Runnable"
 msgstr "Executable"
 
-msgid "Resources to export:"
-msgstr "Recursos per exportar:"
-
 msgid "Delete preset '%s'?"
 msgstr "Esborrar la configuració '%s' ?"
+
+msgid "Resources to export:"
+msgstr "Recursos per exportar:"
 
 msgid "Presets"
 msgstr "Configuracions prestablertes"
@@ -3143,9 +3143,6 @@ msgstr "Reanomena..."
 
 msgid "Re-Scan Filesystem"
 msgstr "ReAnalitza Sistema de Fitxers"
-
-msgid "Toggle Split Mode"
-msgstr "Commutar Mode Dividit"
 
 msgid ""
 "Scanning Files,\n"
@@ -3814,14 +3811,14 @@ msgstr "Fixar AnimationPlayer"
 msgid "Error!"
 msgstr "Error !"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Temps de mescla entre Animacions"
+
 msgid "Blend Times:"
 msgstr "Temps de mescla:"
 
 msgid "Next (Auto Queue):"
 msgstr "Següent (Enviar a la Cua):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Temps de mescla entre Animacions"
 
 msgid "Move Node"
 msgstr "Moure Node"
@@ -6248,9 +6245,6 @@ msgstr "Elimina l'Herència"
 
 msgid "Editable Children"
 msgstr "Fills Editables"
-
-msgid "Load As Placeholder"
-msgstr "Carrega com a Contenidor Temporal"
 
 msgid "Can't paste root node into the same scene."
 msgstr "No es pot enganxar el node arrel a la mateixa escena."

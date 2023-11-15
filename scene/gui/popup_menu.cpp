@@ -1487,6 +1487,11 @@ void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, cons
 }
 
 void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu, int p_id) {
+	String submenu_name_safe = p_submenu.replace("@", "_"); // Allow special characters for auto-generated names.
+	if (submenu_name_safe.validate_node_name() != submenu_name_safe) {
+		ERR_FAIL_MSG(vformat("Invalid node name '%s' for a submenu, the following characters are not allowed:\n%s", p_submenu, String::get_invalid_node_name_characters(true)));
+	}
+
 	Item item;
 	item.text = p_label;
 	item.xl_text = atr(p_label);
@@ -2186,6 +2191,7 @@ void PopupMenu::scroll_to_item(int p_idx) {
 }
 
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
+	ERR_FAIL_COND_V(p_event.is_null(), false);
 	Key code = Key::NONE;
 	Ref<InputEventKey> k = p_event;
 

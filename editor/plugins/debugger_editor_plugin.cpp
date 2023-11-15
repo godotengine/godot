@@ -95,12 +95,12 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 
 	// Multi-instance, start/stop
 	instances_menu = memnew(PopupMenu);
-	instances_menu->set_name("run_instances");
+	instances_menu->set_name("RunInstances");
 	instances_menu->set_hide_on_checkable_item_selection(false);
 
 	debug_menu->add_child(instances_menu);
 	debug_menu->add_separator();
-	debug_menu->add_submenu_item(TTR("Run Multiple Instances"), "run_instances");
+	debug_menu->add_submenu_item(TTR("Run Multiple Instances"), "RunInstances");
 
 	for (int i = 1; i <= 4; i++) {
 		instances_menu->add_radio_check_item(vformat(TTRN("Run %d Instance", "Run %d Instances", i), i));

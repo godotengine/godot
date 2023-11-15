@@ -259,6 +259,11 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 	sdcache->sort.shader_id = p_shader_id;
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
 	sdcache->sort.priority = p_material->priority;
+
+	GLES3::Mesh::Surface *s = reinterpret_cast<GLES3::Mesh::Surface *>(sdcache->surface);
+	if (p_material->shader_data->uses_tangent && !(s->format & RS::ARRAY_FORMAT_TANGENT)) {
+		WARN_PRINT_ED("Attempting to use a shader that requires tangents with a mesh that doesn't contain tangents. Ensure that meshes are imported with the 'ensure_tangents' option. If creating your own meshes, add an `ARRAY_TANGENT` array (when using ArrayMesh) or call `generate_tangents()` (when using SurfaceTool).");
+	}
 }
 
 void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material_chain(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material_data, RID p_mat_src, RID p_mesh) {
@@ -1254,9 +1259,14 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 			inst->light_passes.clear();
 			inst->spot_light_gl_cache.clear();
 			inst->omni_light_gl_cache.clear();
+			uint64_t current_frame = RSG::rasterizer->get_frame_number();
+
 			if (inst->paired_omni_light_count) {
 				for (uint32_t j = 0; j < inst->paired_omni_light_count; j++) {
 					RID light_instance = inst->paired_omni_lights[j];
+					if (GLES3::LightStorage::get_singleton()->light_instance_get_render_pass(light_instance) != current_frame) {
+						continue;
+					}
 					RID light = GLES3::LightStorage::get_singleton()->light_instance_get_base_light(light_instance);
 					int32_t shadow_id = GLES3::LightStorage::get_singleton()->light_instance_get_shadow_id(light_instance);
 
@@ -1277,6 +1287,9 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 			if (inst->paired_spot_light_count) {
 				for (uint32_t j = 0; j < inst->paired_spot_light_count; j++) {
 					RID light_instance = inst->paired_spot_lights[j];
+					if (GLES3::LightStorage::get_singleton()->light_instance_get_render_pass(light_instance) != current_frame) {
+						continue;
+					}
 					RID light = GLES3::LightStorage::get_singleton()->light_instance_get_base_light(light_instance);
 					int32_t shadow_id = GLES3::LightStorage::get_singleton()->light_instance_get_shadow_id(light_instance);
 
@@ -1712,6 +1725,8 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 				r_spot_light_count++;
 			} break;
 		}
+
+		li->last_pass = RSG::rasterizer->get_frame_number();
 	}
 
 	if (r_omni_light_count) {
@@ -1896,7 +1911,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 }
 
 // Render shadows
-void RasterizerSceneGLES3::_render_shadows(const RenderDataGLES3 *p_render_data) {
+void RasterizerSceneGLES3::_render_shadows(const RenderDataGLES3 *p_render_data, const Size2i &p_viewport_size) {
 	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
 
 	LocalVector<int> cube_shadows;
@@ -1932,20 +1947,20 @@ void RasterizerSceneGLES3::_render_shadows(const RenderDataGLES3 *p_render_data)
 
 		// Render cubemap shadows.
 		for (const int &index : cube_shadows) {
-			_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info);
+			_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info, p_viewport_size);
 		}
 		// Render directional shadows.
 		for (uint32_t i = 0; i < directional_shadows.size(); i++) {
-			_render_shadow_pass(p_render_data->render_shadows[directional_shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[directional_shadows[i]].pass, p_render_data->render_shadows[directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info);
+			_render_shadow_pass(p_render_data->render_shadows[directional_shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[directional_shadows[i]].pass, p_render_data->render_shadows[directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info, p_viewport_size);
 		}
 		// Render positional shadows (Spotlight and Omnilight with dual-paraboloid).
 		for (uint32_t i = 0; i < shadows.size(); i++) {
-			_render_shadow_pass(p_render_data->render_shadows[shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[shadows[i]].pass, p_render_data->render_shadows[shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info);
+			_render_shadow_pass(p_render_data->render_shadows[shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[shadows[i]].pass, p_render_data->render_shadows[shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info, p_viewport_size);
 		}
 	}
 }
 
-void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, RenderingMethod::RenderInfo *p_render_info) {
+void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, RenderingMethod::RenderInfo *p_render_info, const Size2i &p_viewport_size) {
 	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
 
 	ERR_FAIL_COND(!light_storage->owns_light_instance(p_light));
@@ -2083,7 +2098,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	render_data.instances = &p_instances;
 	render_data.render_info = p_render_info;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), false, Color(), use_pancake, shadow_bias);
+	_setup_environment(&render_data, true, p_viewport_size, false, Color(), use_pancake, shadow_bias);
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 		render_data.screen_mesh_lod_threshold = 0.0;
@@ -2261,7 +2276,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		// If we're rendering right-side up, then we need to change the winding order.
 		glFrontFace(GL_CW);
 	}
-	_render_shadows(&render_data);
+	_render_shadows(&render_data, screen_size);
 
 	_setup_lights(&render_data, true, render_data.directional_light_count, render_data.omni_light_count, render_data.spot_light_count, render_data.directional_shadow_count);
 	_setup_environment(&render_data, render_data.reflection_probe.is_valid(), screen_size, flip_y, clear_color, false);
@@ -2487,6 +2502,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 	glDisable(GL_BLEND);
 	texture_storage->render_target_disable_clear_request(rb->render_target);
+
+	glActiveTexture(GL_TEXTURE0);
 }
 
 template <PassMode p_pass_mode>
@@ -3278,6 +3295,9 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 
 	// Quality settings.
 	use_physical_light_units = GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units");
+
+	positional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"));
+	directional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality"));
 
 	{
 		// Setup Lights

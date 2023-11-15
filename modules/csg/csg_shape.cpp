@@ -488,7 +488,9 @@ bool CSGShape3D::_is_debug_collision_shape_visible() {
 }
 
 void CSGShape3D::_update_debug_collision_shape() {
-	// NOTE: This is called only for the root shape with collision, when root_collision_shape is valid.
+	if (!use_collision || !is_root_shape() || !root_collision_shape.is_valid() || !_is_debug_collision_shape_visible()) {
+		return;
+	}
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
@@ -572,6 +574,11 @@ void CSGShape3D::_notification(int p_what) {
 			if (!is_root_shape() && last_visible != is_visible()) {
 				// Update this node's parent only if its own visibility has changed, not the visibility of parent nodes
 				parent_shape->_make_dirty();
+			}
+			if (is_visible()) {
+				_update_debug_collision_shape();
+			} else {
+				_clear_debug_collision_shape();
 			}
 			last_visible = is_visible();
 		} break;

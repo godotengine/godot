@@ -338,6 +338,7 @@ _FORCE_INLINE_ bool is_connected_to_prev(char32_t p_chr, char32_t p_pchr) {
 /*************************************************************************/
 
 bool TextServerAdvanced::icu_data_loaded = false;
+PackedByteArray TextServerAdvanced::icu_data;
 
 bool TextServerAdvanced::_has_feature(Feature p_feature) const {
 	switch (p_feature) {
@@ -438,7 +439,7 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 			return false;
 		}
 		uint64_t len = f->get_length();
-		PackedByteArray icu_data = f->get_buffer(len);
+		icu_data = f->get_buffer(len);
 
 		UErrorCode err = U_ZERO_ERROR;
 		udata_setCommonData(icu_data.ptr(), &err);
@@ -476,10 +477,10 @@ bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
 		return false;
 	}
 
-	PackedByteArray icu_data;
-	icu_data.resize(U_ICUDATA_SIZE);
-	memcpy(icu_data.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
-	f->store_buffer(icu_data);
+	PackedByteArray icu_data_static;
+	icu_data_static.resize(U_ICUDATA_SIZE);
+	memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
+	f->store_buffer(icu_data_static);
 
 	return true;
 #else
@@ -1112,14 +1113,14 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 					case FT_PIXEL_MODE_LCD: {
 						int ofs_color = i * bitmap.pitch + (j * 3);
 						if (p_bgra) {
-							wr[ofs + 0] = bitmap.buffer[ofs_color + 0];
-							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
-							wr[ofs + 2] = bitmap.buffer[ofs_color + 2];
-							wr[ofs + 3] = 255;
-						} else {
 							wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
 							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
 							wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 3] = 255;
+						} else {
+							wr[ofs + 0] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
+							wr[ofs + 2] = bitmap.buffer[ofs_color + 2];
 							wr[ofs + 3] = 255;
 						}
 					} break;
@@ -4311,6 +4312,8 @@ bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const V
 				sd->width += gl.advance * gl.repeat;
 			}
 		}
+		sd->sort_valid = false;
+		sd->glyphs_logical.clear();
 		_realign(sd);
 	}
 	return true;

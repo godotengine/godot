@@ -881,7 +881,16 @@ bool AnimationMixer::_update_caches() {
 						case Variant::CALLABLE:
 						case Variant::SIGNAL:
 						case Variant::DICTIONARY:
-						case Variant::ARRAY: {
+						case Variant::ARRAY:
+						case Variant::PACKED_BYTE_ARRAY:
+						case Variant::PACKED_INT32_ARRAY:
+						case Variant::PACKED_INT64_ARRAY:
+						case Variant::PACKED_FLOAT32_ARRAY:
+						case Variant::PACKED_FLOAT64_ARRAY:
+						case Variant::PACKED_STRING_ARRAY:
+						case Variant::PACKED_VECTOR2_ARRAY:
+						case Variant::PACKED_VECTOR3_ARRAY:
+						case Variant::PACKED_COLOR_ARRAY: {
 							WARN_PRINT_ONCE_ED("AnimationMixer: '" + String(E) + "', Value Track: '" + String(path) + "' uses a non-numeric type as key value with UpdateMode.UPDATE_CONTINUOUS. This will not be blended correctly, so it is forced to UpdateMode.UPDATE_DISCRETE.");
 							track_value->is_continuous = false;
 							break;
@@ -1989,10 +1998,11 @@ void AnimationMixer::reset() {
 	ERR_FAIL_NULL(root_node_object);
 
 	AnimationPlayer *aux_player = memnew(AnimationPlayer);
-	EditorNode::get_singleton()->add_child(aux_player);
+	root_node_object->add_child(aux_player);
 	Ref<AnimationLibrary> al;
 	al.instantiate();
 	al->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
+	aux_player->set_reset_on_save_enabled(false);
 	aux_player->set_root_node(aux_player->get_path_to(root_node_object));
 	aux_player->add_animation_library("", al);
 	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);

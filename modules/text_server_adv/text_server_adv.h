@@ -158,6 +158,7 @@ class TextServerAdvanced : public TextServerExtension {
 	// ICU support data.
 
 	static bool icu_data_loaded;
+	static PackedByteArray icu_data;
 	mutable USet *allowed = nullptr;
 	mutable USpoofChecker *sc_spoof = nullptr;
 	mutable USpoofChecker *sc_conf = nullptr;
@@ -680,11 +681,7 @@ class TextServerAdvanced : public TextServerExtension {
 		_FORCE_INLINE_ bool operator()(const Glyph &l, const Glyph &r) const {
 			if (l.start == r.start) {
 				if (l.count == r.count) {
-					if ((l.flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL) {
-						return false;
-					} else {
-						return true;
-					}
+					return (l.flags & TextServer::GRAPHEME_IS_VIRTUAL) < (r.flags & TextServer::GRAPHEME_IS_VIRTUAL);
 				}
 				return l.count > r.count; // Sort first glyph with count & flags, order of the rest are irrelevant.
 			} else {

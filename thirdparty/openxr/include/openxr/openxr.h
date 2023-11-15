@@ -25,7 +25,7 @@ extern "C" {
     ((((major) & 0xffffULL) << 48) | (((minor) & 0xffffULL) << 32) | ((patch) & 0xffffffffULL))
 
 // OpenXR current version number.
-#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 0, 30)
+#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 0, 31)
 
 #define XR_VERSION_MAJOR(version) (uint16_t)(((uint64_t)(version) >> 48)& 0xffffULL)
 #define XR_VERSION_MINOR(version) (uint16_t)(((uint64_t)(version) >> 32) & 0xffffULL)
@@ -220,6 +220,7 @@ typedef enum XrResult {
     XR_ERROR_MARKER_ID_INVALID_VARJO = -1000124001,
     XR_ERROR_SPATIAL_ANCHOR_NAME_NOT_FOUND_MSFT = -1000142001,
     XR_ERROR_SPATIAL_ANCHOR_NAME_INVALID_MSFT = -1000142002,
+    XR_SCENE_MARKER_DATA_NOT_STRING_MSFT = 1000147000,
     XR_ERROR_SPACE_MAPPING_INSUFFICIENT_FB = -1000169000,
     XR_ERROR_SPACE_LOCALIZATION_FAILED_FB = -1000169001,
     XR_ERROR_SPACE_NETWORK_TIMEOUT_FB = -1000169002,
@@ -444,8 +445,14 @@ typedef enum XrStructureType {
     XR_TYPE_FRAME_END_INFO_ML = 1000135000,
     XR_TYPE_GLOBAL_DIMMER_FRAME_END_INFO_ML = 1000136000,
     XR_TYPE_COORDINATE_SPACE_CREATE_INFO_ML = 1000137000,
+    XR_TYPE_EVENT_DATA_HEADSET_FIT_CHANGED_ML = 1000472000,
+    XR_TYPE_EVENT_DATA_EYE_CALIBRATION_CHANGED_ML = 1000472001,
+    XR_TYPE_USER_CALIBRATION_ENABLE_EVENTS_INFO_ML = 1000472002,
     XR_TYPE_SPATIAL_ANCHOR_PERSISTENCE_INFO_MSFT = 1000142000,
     XR_TYPE_SPATIAL_ANCHOR_FROM_PERSISTED_ANCHOR_CREATE_INFO_MSFT = 1000142001,
+    XR_TYPE_SCENE_MARKERS_MSFT = 1000147000,
+    XR_TYPE_SCENE_MARKER_TYPE_FILTER_MSFT = 1000147001,
+    XR_TYPE_SCENE_MARKER_QR_CODES_MSFT = 1000147002,
     XR_TYPE_SPACE_QUERY_INFO_FB = 1000156001,
     XR_TYPE_SPACE_QUERY_RESULTS_FB = 1000156002,
     XR_TYPE_SPACE_STORAGE_LOCATION_FILTER_INFO_FB = 1000156003,
@@ -2876,6 +2883,7 @@ typedef enum XrSceneComputeFeatureMSFT {
     XR_SCENE_COMPUTE_FEATURE_VISUAL_MESH_MSFT = 3,
     XR_SCENE_COMPUTE_FEATURE_COLLIDER_MESH_MSFT = 4,
     XR_SCENE_COMPUTE_FEATURE_SERIALIZE_SCENE_MSFT = 1000098000,
+    XR_SCENE_COMPUTE_FEATURE_MARKER_MSFT = 1000147000,
     XR_SCENE_COMPUTE_FEATURE_MAX_ENUM_MSFT = 0x7FFFFFFF
 } XrSceneComputeFeatureMSFT;
 
@@ -2901,6 +2909,7 @@ typedef enum XrSceneComponentTypeMSFT {
     XR_SCENE_COMPONENT_TYPE_VISUAL_MESH_MSFT = 3,
     XR_SCENE_COMPONENT_TYPE_COLLIDER_MESH_MSFT = 4,
     XR_SCENE_COMPONENT_TYPE_SERIALIZED_SCENE_FRAGMENT_MSFT = 1000098000,
+    XR_SCENE_COMPONENT_TYPE_MARKER_MSFT = 1000147000,
     XR_SCENE_COMPONENT_TYPE_MAX_ENUM_MSFT = 0x7FFFFFFF
 } XrSceneComponentTypeMSFT;
 
@@ -4131,7 +4140,7 @@ typedef struct XrSystemRenderModelPropertiesFB {
     XrBool32              supportsRenderModelLoading;
 } XrSystemRenderModelPropertiesFB;
 
-// XrRenderModelCapabilitiesRequestFB extends XrSystemProperties
+// XrRenderModelCapabilitiesRequestFB extends XrRenderModelPropertiesFB
 typedef struct XrRenderModelCapabilitiesRequestFB {
     XrStructureType         type;
     void* XR_MAY_ALIAS      next;
@@ -4359,7 +4368,7 @@ typedef struct XrSpatialAnchorFromPersistedAnchorCreateInfoMSFT {
 typedef XrResult (XRAPI_PTR *PFN_xrCreateSpatialAnchorStoreConnectionMSFT)(XrSession session, XrSpatialAnchorStoreConnectionMSFT* spatialAnchorStore);
 typedef XrResult (XRAPI_PTR *PFN_xrDestroySpatialAnchorStoreConnectionMSFT)(XrSpatialAnchorStoreConnectionMSFT spatialAnchorStore);
 typedef XrResult (XRAPI_PTR *PFN_xrPersistSpatialAnchorMSFT)(XrSpatialAnchorStoreConnectionMSFT spatialAnchorStore, const XrSpatialAnchorPersistenceInfoMSFT* spatialAnchorPersistenceInfo);
-typedef XrResult (XRAPI_PTR *PFN_xrEnumeratePersistedSpatialAnchorNamesMSFT)(XrSpatialAnchorStoreConnectionMSFT spatialAnchorStore, uint32_t spatialAnchorNamesCapacityInput, uint32_t* spatialAnchorNamesCountOutput, XrSpatialAnchorPersistenceNameMSFT* persistedAnchorNames);
+typedef XrResult (XRAPI_PTR *PFN_xrEnumeratePersistedSpatialAnchorNamesMSFT)(XrSpatialAnchorStoreConnectionMSFT spatialAnchorStore, uint32_t spatialAnchorNameCapacityInput, uint32_t* spatialAnchorNameCountOutput, XrSpatialAnchorPersistenceNameMSFT* spatialAnchorNames);
 typedef XrResult (XRAPI_PTR *PFN_xrCreateSpatialAnchorFromPersistedNameMSFT)(XrSession session, const XrSpatialAnchorFromPersistedAnchorCreateInfoMSFT* spatialAnchorCreateInfo, XrSpatialAnchorMSFT* spatialAnchor);
 typedef XrResult (XRAPI_PTR *PFN_xrUnpersistSpatialAnchorMSFT)(XrSpatialAnchorStoreConnectionMSFT        spatialAnchorStore, const XrSpatialAnchorPersistenceNameMSFT* spatialAnchorPersistenceName);
 typedef XrResult (XRAPI_PTR *PFN_xrClearSpatialAnchorStoreMSFT)(XrSpatialAnchorStoreConnectionMSFT spatialAnchorStore);
@@ -4379,9 +4388,9 @@ XRAPI_ATTR XrResult XRAPI_CALL xrPersistSpatialAnchorMSFT(
 
 XRAPI_ATTR XrResult XRAPI_CALL xrEnumeratePersistedSpatialAnchorNamesMSFT(
     XrSpatialAnchorStoreConnectionMSFT          spatialAnchorStore,
-    uint32_t                                    spatialAnchorNamesCapacityInput,
-    uint32_t*                                   spatialAnchorNamesCountOutput,
-    XrSpatialAnchorPersistenceNameMSFT*         persistedAnchorNames);
+    uint32_t                                    spatialAnchorNameCapacityInput,
+    uint32_t*                                   spatialAnchorNameCountOutput,
+    XrSpatialAnchorPersistenceNameMSFT*         spatialAnchorNames);
 
 XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorFromPersistedNameMSFT(
     XrSession                                   session,
@@ -4394,6 +4403,78 @@ XRAPI_ATTR XrResult XRAPI_CALL xrUnpersistSpatialAnchorMSFT(
 
 XRAPI_ATTR XrResult XRAPI_CALL xrClearSpatialAnchorStoreMSFT(
     XrSpatialAnchorStoreConnectionMSFT          spatialAnchorStore);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+#define XR_MSFT_scene_marker 1
+#define XR_MSFT_scene_marker_SPEC_VERSION 1
+#define XR_MSFT_SCENE_MARKER_EXTENSION_NAME "XR_MSFT_scene_marker"
+
+typedef enum XrSceneMarkerTypeMSFT {
+    XR_SCENE_MARKER_TYPE_QR_CODE_MSFT = 1,
+    XR_SCENE_MARKER_TYPE_MAX_ENUM_MSFT = 0x7FFFFFFF
+} XrSceneMarkerTypeMSFT;
+
+typedef enum XrSceneMarkerQRCodeSymbolTypeMSFT {
+    XR_SCENE_MARKER_QR_CODE_SYMBOL_TYPE_QR_CODE_MSFT = 1,
+    XR_SCENE_MARKER_QR_CODE_SYMBOL_TYPE_MICRO_QR_CODE_MSFT = 2,
+    XR_SCENE_MARKER_QRCODE_SYMBOL_TYPE_MAX_ENUM_MSFT = 0x7FFFFFFF
+} XrSceneMarkerQRCodeSymbolTypeMSFT;
+typedef struct XrSceneMarkerMSFT {
+    XrSceneMarkerTypeMSFT    markerType;
+    XrTime                   lastSeenTime;
+    XrOffset2Df              center;
+    XrExtent2Df              size;
+} XrSceneMarkerMSFT;
+
+// XrSceneMarkersMSFT extends XrSceneComponentsMSFT
+typedef struct XrSceneMarkersMSFT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    sceneMarkerCapacityInput;
+    XrSceneMarkerMSFT*          sceneMarkers;
+} XrSceneMarkersMSFT;
+
+// XrSceneMarkerTypeFilterMSFT extends XrSceneComponentsGetInfoMSFT
+typedef struct XrSceneMarkerTypeFilterMSFT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    markerTypeCount;
+    XrSceneMarkerTypeMSFT*      markerTypes;
+} XrSceneMarkerTypeFilterMSFT;
+
+typedef struct XrSceneMarkerQRCodeMSFT {
+    XrSceneMarkerQRCodeSymbolTypeMSFT    symbolType;
+    uint8_t                              version;
+} XrSceneMarkerQRCodeMSFT;
+
+// XrSceneMarkerQRCodesMSFT extends XrSceneComponentsMSFT
+typedef struct XrSceneMarkerQRCodesMSFT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    qrCodeCapacityInput;
+    XrSceneMarkerQRCodeMSFT*    qrCodes;
+} XrSceneMarkerQRCodesMSFT;
+
+typedef XrResult (XRAPI_PTR *PFN_xrGetSceneMarkerRawDataMSFT)(XrSceneMSFT scene, const XrUuidMSFT* markerId, uint32_t bufferCapacityInput, uint32_t* bufferCountOutput, uint8_t* buffer);
+typedef XrResult (XRAPI_PTR *PFN_xrGetSceneMarkerDecodedStringMSFT)(XrSceneMSFT scene, const XrUuidMSFT* markerId, uint32_t bufferCapacityInput, uint32_t* bufferCountOutput, char* buffer);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSceneMarkerRawDataMSFT(
+    XrSceneMSFT                                 scene,
+    const XrUuidMSFT*                           markerId,
+    uint32_t                                    bufferCapacityInput,
+    uint32_t*                                   bufferCountOutput,
+    uint8_t*                                    buffer);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSceneMarkerDecodedStringMSFT(
+    XrSceneMSFT                                 scene,
+    const XrUuidMSFT*                           markerId,
+    uint32_t                                    bufferCapacityInput,
+    uint32_t*                                   bufferCountOutput,
+    char*                                       buffer);
 #endif /* XR_EXTENSION_PROTOTYPES */
 #endif /* !XR_NO_PROTOTYPES */
 
@@ -6153,6 +6234,55 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetPlanePolygonBufferEXT(
 #define XR_OPPO_controller_interaction 1
 #define XR_OPPO_controller_interaction_SPEC_VERSION 1
 #define XR_OPPO_CONTROLLER_INTERACTION_EXTENSION_NAME "XR_OPPO_controller_interaction"
+
+
+#define XR_ML_user_calibration 1
+#define XR_ML_user_calibration_SPEC_VERSION 1
+#define XR_ML_USER_CALIBRATION_EXTENSION_NAME "XR_ML_user_calibration"
+
+typedef enum XrHeadsetFitStatusML {
+    XR_HEADSET_FIT_STATUS_UNKNOWN_ML = 0,
+    XR_HEADSET_FIT_STATUS_NOT_WORN_ML = 1,
+    XR_HEADSET_FIT_STATUS_GOOD_FIT_ML = 2,
+    XR_HEADSET_FIT_STATUS_BAD_FIT_ML = 3,
+    XR_HEADSET_FIT_STATUS_MAX_ENUM_ML = 0x7FFFFFFF
+} XrHeadsetFitStatusML;
+
+typedef enum XrEyeCalibrationStatusML {
+    XR_EYE_CALIBRATION_STATUS_UNKNOWN_ML = 0,
+    XR_EYE_CALIBRATION_STATUS_NONE_ML = 1,
+    XR_EYE_CALIBRATION_STATUS_COARSE_ML = 2,
+    XR_EYE_CALIBRATION_STATUS_FINE_ML = 3,
+    XR_EYE_CALIBRATION_STATUS_MAX_ENUM_ML = 0x7FFFFFFF
+} XrEyeCalibrationStatusML;
+typedef struct XrEventDataHeadsetFitChangedML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrHeadsetFitStatusML        status;
+    XrTime                      time;
+} XrEventDataHeadsetFitChangedML;
+
+typedef struct XrEventDataEyeCalibrationChangedML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrEyeCalibrationStatusML    status;
+} XrEventDataEyeCalibrationChangedML;
+
+typedef struct XrUserCalibrationEnableEventsInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrBool32                    enabled;
+} XrUserCalibrationEnableEventsInfoML;
+
+typedef XrResult (XRAPI_PTR *PFN_xrEnableUserCalibrationEventsML)(XrInstance                                       instance, const XrUserCalibrationEnableEventsInfoML*            enableInfo);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrEnableUserCalibrationEventsML(
+    XrInstance                                  instance,
+    const XrUserCalibrationEnableEventsInfoML*  enableInfo);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
 
 
 #define XR_YVR_controller_interaction 1

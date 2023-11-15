@@ -7,6 +7,7 @@
 		Represents a light as defined by the [code]KHR_lights_punctual[/code] GLTF extension.
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="KHR_lights_punctual GLTF extension spec">https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual</link>
 	</tutorials>
 	<methods>

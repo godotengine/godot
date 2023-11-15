@@ -170,7 +170,15 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->connect("text_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
 			agnode->set_closable(true);
-			node->connect("delete_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_node_request).bind(E), CONNECT_DEFERRED);
+
+			if (!read_only) {
+				Button *delete_button = memnew(Button);
+				delete_button->set_flat(true);
+				delete_button->set_focus_mode(FOCUS_NONE);
+				delete_button->set_icon(get_editor_theme_icon(SNAME("Close")));
+				delete_button->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_node_request).bind(E), CONNECT_DEFERRED);
+				node->get_titlebar_hbox()->add_child(delete_button);
+			}
 		}
 
 		for (int i = 0; i < agnode->get_input_count(); i++) {

@@ -178,11 +178,11 @@ public:
 
 		bool operator==(const DataType &p_other) const {
 			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
-				return true; // Can be consireded equal for parsing purposes.
+				return true; // Can be considered equal for parsing purposes.
 			}
 
 			if (type_source == INFERRED || p_other.type_source == INFERRED) {
-				return true; // Can be consireded equal for parsing purposes.
+				return true; // Can be considered equal for parsing purposes.
 			}
 
 			if (kind != p_other.kind) {

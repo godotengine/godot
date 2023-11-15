@@ -30,6 +30,7 @@
 
 #include "worker_thread_pool.h"
 
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
 
@@ -60,6 +61,14 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		set_current_thread_safe_for_nodes(false);
 		pool_thread_index = thread_ids[Thread::get_caller_id()];
 		ThreadData &curr_thread = threads[pool_thread_index];
+		// Since the WorkerThreadPool is started before the script server,
+		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
+		// Therefore, we do it late at the first opportunity, so in case the task
+		// about to be run uses scripting, guarantees are held.
+		if (!curr_thread.ready_for_scripting && ScriptServer::are_languages_initialized()) {
+			ScriptServer::thread_enter();
+			curr_thread.ready_for_scripting = true;
+		}
 		task_mutex.lock();
 		p_task->pool_thread_index = pool_thread_index;
 		if (low_priority) {

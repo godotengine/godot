@@ -341,6 +341,8 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	if (load_task.resource.is_valid()) {
 		if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 			load_task.resource->set_path(load_task.local_path);
+		} else if (!load_task.local_path.is_resource_file()) {
+			load_task.resource->set_path_cache(load_task.local_path);
 		}
 
 		if (load_task.xl_remapped) {
@@ -918,7 +920,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		}
 
 		// Fallback to p_path if new_path does not exist.
-		if (!FileAccess::exists(new_path)) {
+		if (!FileAccess::exists(new_path + ".import") && !FileAccess::exists(new_path)) {
 			WARN_PRINT(vformat("Translation remap '%s' does not exist. Falling back to '%s'.", new_path, p_path));
 			new_path = p_path;
 		}
@@ -1053,8 +1055,9 @@ void ResourceLoader::clear_thread_load_tasks() {
 		thread_load_mutex.lock();
 	}
 
-	for (KeyValue<String, LoadToken *> &E : user_load_tokens) {
-		memdelete(E.value);
+	while (user_load_tokens.begin()) {
+		// User load tokens remove themselves from the map on destruction.
+		memdelete(user_load_tokens.begin()->value);
 	}
 	user_load_tokens.clear();
 

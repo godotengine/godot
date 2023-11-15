@@ -30,13 +30,16 @@
 # Zsuzsanna Tatusko <zsutatusko@gmail.com>, 2023.
 # Adam Borda <borda.adam3@gmail.com>, 2023.
 # Netesfiu <r4verino@gmail.com>, 2023.
+# H-Anna <anna.k.harsanyi@gmail.com>, 2023.
+# Gergő Dániel <danigerci@gmail.com>, 2023.
+# Martin Kovács <3is73az7@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-19 21:46+0000\n"
-"Last-Translator: Netesfiu <r4verino@gmail.com>\n"
+"PO-Revision-Date: 2023-11-04 06:49+0000\n"
+"Last-Translator: Martin Kovács <3is73az7@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -44,7 +47,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
+
+msgid "Main Thread"
+msgstr "Fő thread"
 
 msgid "Unset"
 msgstr "Nincs beállítva"
@@ -189,6 +195,9 @@ msgstr "Joypad Gomb %d"
 
 msgid "Pressure:"
 msgstr "Nyomás:"
+
+msgid "canceled"
+msgstr "megszakítva"
 
 msgid "touched"
 msgstr "érintve"
@@ -339,8 +348,17 @@ msgstr "Kurzor a Dokumentum Elejére"
 msgid "Caret Document End"
 msgstr "Kurzor a Dokumentum Végére"
 
+msgid "Scroll Up"
+msgstr "Görgő Fel"
+
+msgid "Scroll Down"
+msgstr "Görgő Le"
+
 msgid "Select All"
 msgstr "Összes Kijelölése"
+
+msgid "Select Word Under Caret"
+msgstr "Szó Kijelölése a Kurzor Alatt"
 
 msgid "Duplicate Nodes"
 msgstr "Node-ok duplikálása"
@@ -368,6 +386,9 @@ msgstr "Érvénytelen argumentumok a(z) '%s' építőben"
 
 msgid "On call to '%s':"
 msgstr "'%s' hívásánál:"
+
+msgid "Built-in script"
+msgstr "Beépített szkript"
 
 msgid "B"
 msgstr "B"
@@ -750,6 +771,14 @@ msgstr "Összes cseréje"
 msgid "Selection Only"
 msgstr "Csak kijelölés"
 
+msgctxt "Indentation"
+msgid "Spaces"
+msgstr "Szóközök"
+
+msgctxt "Indentation"
+msgid "Tabs"
+msgstr "Tabulátorok"
+
 msgid "Toggle Scripts Panel"
 msgstr "Szkript panel váltása"
 
@@ -830,12 +859,6 @@ msgstr "Bezárás"
 msgid "Connect"
 msgstr "Csatlakoztatás"
 
-msgid "Class:"
-msgstr "Osztály:"
-
-msgid "Signal:"
-msgstr "Jelzés:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "'%s' csatlakoztatása ehhez: '%s'"
 
@@ -858,7 +881,7 @@ msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Biztosan eltávolítja az összes kapcsolatot a(z) \"%s\" jelzésről?"
 
 msgid "Signals"
-msgstr "jelek"
+msgstr "Jelek"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Biztosan eltávolítja az összes kapcsolatot erről a jelzésről?"
@@ -1505,6 +1528,9 @@ msgstr "Kísérleti"
 msgid "Top"
 msgstr "Eleje"
 
+msgid "Class:"
+msgstr "Osztály:"
+
 msgid "Inherits:"
 msgstr "Örökli:"
 
@@ -1559,6 +1585,12 @@ msgstr "Metódus leírások"
 
 msgid "Operator Descriptions"
 msgstr "Operátor tulajdonságok"
+
+msgid "Property:"
+msgstr "Tulajdonság:"
+
+msgid "Signal:"
+msgstr "Jelzés:"
 
 msgid "%d match."
 msgstr "%d egyezés."
@@ -1616,9 +1648,6 @@ msgstr "Tulajdonság"
 
 msgid "Theme Property"
 msgstr "Téma tulajdonság"
-
-msgid "Property:"
-msgstr "Tulajdonság:"
 
 msgid "Move Up"
 msgstr "Mozgatás Felfelé"
@@ -2372,9 +2401,6 @@ msgstr "Mappa másolása:"
 msgid "New Inherited Scene"
 msgstr "Új örökölt Jelenet"
 
-msgid "Set As Main Scene"
-msgstr "Beállítás fő jelenetként"
-
 msgid "Open Scenes"
 msgstr "Jelenetek megnyitása"
 
@@ -2419,9 +2445,6 @@ msgstr "Átnevezés..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Fájlrendszer Újra-vizsgálata"
-
-msgid "Toggle Split Mode"
-msgstr "Váltás az osztott módra"
 
 msgid ""
 "Scanning Files,\n"
@@ -2951,14 +2974,14 @@ msgstr "Kihatás Gizmókra Is (3D)"
 msgid "Error!"
 msgstr "Hiba!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Animációk Közötti Keverési Idők"
+
 msgid "Blend Times:"
 msgstr "Keverési Idők:"
 
 msgid "Next (Auto Queue):"
 msgstr "Következő (Auto Sor):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Animációk Közötti Keverési Idők"
 
 msgid "Move Node"
 msgstr "Node áthelyezése"

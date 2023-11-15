@@ -180,6 +180,9 @@ msgstr "Força de Panning 2D"
 msgid "3D Panning Strength"
 msgstr "Força de Panning 3D"
 
+msgid "iOS"
+msgstr "iOS"
+
 msgid "Editor"
 msgstr "Editor"
 
@@ -1776,9 +1779,6 @@ msgstr "Intervalo de Frames (ms)"
 msgid "Low Processor Mode"
 msgstr "Modo de Baixo Uso do Processador"
 
-msgid "iOS"
-msgstr "iOS"
-
 msgid "Allow High Refresh Rate"
 msgstr "Permitir Alta Taxa de Refresh"
 
@@ -1844,6 +1844,9 @@ msgstr "Emular Toque do Rato"
 
 msgid "Emulate Mouse From Touch"
 msgstr "Emular o Rato do Toque"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Mouse Cursor"
 msgstr "Cursor do Rato"
@@ -2390,9 +2393,6 @@ msgstr "Tipo de Espaço de Referência"
 
 msgid "Visibility State"
 msgstr "Estado de Visibilidade"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Caminho do SDK Android"
@@ -3927,14 +3927,14 @@ msgstr "Caracteres Visiveis"
 msgid "Max Length"
 msgstr "Máx. Comprimento"
 
+msgid "Blink"
+msgstr "Piscar"
+
 msgid "Secret"
 msgstr "Secreto"
 
 msgid "Secret Character"
 msgstr "Caracteres Secretos"
-
-msgid "Blink"
-msgstr "Piscar"
 
 msgid "Underline"
 msgstr "Sublinhado"
@@ -4005,14 +4005,14 @@ msgstr "Rolagem Ativada"
 msgid "Use Hidden Tabs for Min Size"
 msgstr "Usar Esconder Tabs para Tamanho Mínimo"
 
-msgid "Syntax Highlighter"
-msgstr "Destaque de Sintaxe"
-
 msgid "Draw"
 msgstr "Desenhar"
 
 msgid "Move on Right Click"
 msgstr "Mover com Botão Direito"
+
+msgid "Syntax Highlighter"
+msgstr "Destaque de Sintaxe"
 
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Detecção de ociosidade de edição de texto (seg)"
@@ -4457,12 +4457,6 @@ msgstr "Vãos de Baixa Altura Caminháveis"
 
 msgid "Bundled"
 msgstr "Agrupados"
-
-msgid "Point Texture"
-msgstr "Textura de Ponto"
-
-msgid "Normal Texture"
-msgstr "Textura Normal"
 
 msgid "Turbulence"
 msgstr "Turbulência"

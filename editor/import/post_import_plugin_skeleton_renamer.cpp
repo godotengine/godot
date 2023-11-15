@@ -31,6 +31,7 @@
 #include "post_import_plugin_skeleton_renamer.h"
 
 #include "editor/import/scene_import_settings.h"
+#include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
@@ -119,19 +120,17 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 
 	// Rename bones in all Nodes by calling method.
 	{
-		Array vargs;
-		vargs.push_back(p_base_scene);
-		vargs.push_back(skeleton);
 		Dictionary rename_map_dict;
 		for (HashMap<String, String>::Iterator E = p_rename_map.begin(); E; ++E) {
 			rename_map_dict[E->key] = E->value;
 		}
-		vargs.push_back(rename_map_dict);
 
-		TypedArray<Node> nodes = p_base_scene->find_children("*");
+		TypedArray<Node> nodes = p_base_scene->find_children("*", "BoneAttachment3D");
 		while (nodes.size()) {
-			Node *nd = Object::cast_to<Node>(nodes.pop_back());
-			nd->callv("_notify_skeleton_bones_renamed", vargs);
+			BoneAttachment3D *attachment = Object::cast_to<BoneAttachment3D>(nodes.pop_back());
+			if (attachment) {
+				attachment->notify_skeleton_bones_renamed(p_base_scene, skeleton, rename_map_dict);
+			}
 		}
 	}
 }

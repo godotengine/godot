@@ -573,8 +573,11 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> p_state) {
 		// Determine what to use for the scene name.
 		if (scene_dict.has("name") && !String(scene_dict["name"]).is_empty() && !((String)scene_dict["name"]).begins_with("Scene")) {
 			p_state->scene_name = scene_dict["name"];
-		} else {
+		} else if (p_state->scene_name.is_empty()) {
 			p_state->scene_name = p_state->filename;
+		}
+		if (_naming_version == 0) {
+			p_state->scene_name = _gen_unique_name(p_state, p_state->scene_name);
 		}
 	}
 
@@ -2797,9 +2800,26 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				array[Mesh::ARRAY_INDEX] = indices;
 			}
 
-			bool generate_tangents = p_state->force_generate_tangents && (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("TEXCOORD_0") && a.has("NORMAL"));
+			bool generate_tangents = p_state->force_generate_tangents && (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("NORMAL"));
 
-			if (p_state->force_disable_compression || !a.has("POSITION") || !a.has("NORMAL") || !(a.has("TANGENT") || generate_tangents) || p.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
+			if (generate_tangents && !a.has("TEXCOORD_0")) {
+				// If we don't have UVs we provide a dummy tangent array.
+				Vector<float> tangents;
+				tangents.resize(vertex_num * 4);
+				float *tangentsw = tangents.ptrw();
+
+				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
+				for (int k = 0; k < vertex_num; k++) {
+					Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[k]);
+					tangentsw[k * 4 + 0] = tan.x;
+					tangentsw[k * 4 + 1] = tan.y;
+					tangentsw[k * 4 + 2] = tan.z;
+					tangentsw[k * 4 + 3] = 1.0;
+				}
+				array[Mesh::ARRAY_TANGENT] = tangents;
+			}
+
+			if (p_state->force_disable_compression || !a.has("POSITION") || !a.has("NORMAL") || p.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
 				flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
@@ -2810,7 +2830,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				mesh_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 			}
 			mesh_surface_tool->index();
-			if (generate_tangents) {
+			if (generate_tangents && a.has("TEXCOORD_0")) {
 				//must generate mikktspace tangents.. ergh..
 				mesh_surface_tool->generate_tangents();
 			}
@@ -3004,6 +3024,14 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 	print_verbose("glTF: Total meshes: " + itos(p_state->meshes.size()));
 
 	return OK;
+}
+
+void GLTFDocument::set_naming_version(int p_version) {
+	_naming_version = p_version;
+}
+
+int GLTFDocument::get_naming_version() const {
+	return _naming_version;
 }
 
 void GLTFDocument::set_image_format(const String &p_image_format) {
@@ -5341,12 +5369,22 @@ void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
 		}
 		String gltf_node_name = gltf_node->get_name();
 		if (gltf_node_name.is_empty()) {
-			if (gltf_node->mesh >= 0) {
-				gltf_node_name = "Mesh";
-			} else if (gltf_node->camera >= 0) {
-				gltf_node_name = "Camera";
+			if (_naming_version == 0) {
+				if (gltf_node->mesh >= 0) {
+					gltf_node_name = _gen_unique_name(p_state, "Mesh");
+				} else if (gltf_node->camera >= 0) {
+					gltf_node_name = _gen_unique_name(p_state, "Camera3D");
+				} else {
+					gltf_node_name = _gen_unique_name(p_state, "Node");
+				}
 			} else {
-				gltf_node_name = "Node";
+				if (gltf_node->mesh >= 0) {
+					gltf_node_name = "Mesh";
+				} else if (gltf_node->camera >= 0) {
+					gltf_node_name = "Camera";
+				} else {
+					gltf_node_name = "Node";
+				}
 			}
 		}
 		gltf_node->set_name(_gen_unique_name(p_state, gltf_node_name));
@@ -5846,6 +5884,10 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 		BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
 
 		p_scene_parent->add_child(bone_attachment, true);
+
+		// Find the correct bone_idx so we can properly serialize it.
+		bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+
 		bone_attachment->set_owner(p_scene_root);
 
 		// There is no gltf_node that represent this, so just directly create a unique name
@@ -5949,6 +5991,10 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 			BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, p_node_index);
 
 			p_scene_parent->add_child(bone_attachment, true);
+
+			// Find the correct bone_idx so we can properly serialize it.
+			bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+
 			bone_attachment->set_owner(p_scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name
@@ -7380,7 +7426,11 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	if (unlikely(p_state->scene_name.is_empty())) {
 		p_state->scene_name = single_root->get_name();
 	} else if (single_root->get_name() == StringName()) {
-		single_root->set_name(_gen_unique_name(p_state, p_state->scene_name));
+		if (_naming_version == 0) {
+			single_root->set_name(p_state->scene_name);
+		} else {
+			single_root->set_name(_gen_unique_name(p_state, p_state->scene_name));
+		}
 	}
 	return single_root;
 }

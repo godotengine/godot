@@ -283,7 +283,6 @@ private:
 
 	void _update_audio_listener_2d();
 
-	bool disable_2d = false;
 	bool disable_3d = false;
 
 	void _propagate_viewport_notification(Node *p_node, int p_what);
@@ -362,6 +361,7 @@ private:
 		BitField<MouseButtonMask> mouse_focus_mask;
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
+		LocalVector<Control *> mouse_over_hierarchy;
 		Window *subwindow_over = nullptr; // mouse_over and subwindow_over are mutually exclusive. At all times at least one of them is nullptr.
 		Window *windowmanager_window_over = nullptr; // Only used in root Viewport.
 		Control *drag_mouse_over = nullptr;
@@ -430,6 +430,7 @@ private:
 
 	void _gui_remove_control(Control *p_control);
 	void _gui_hide_control(Control *p_control);
+	void _gui_update_mouse_over();
 
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
@@ -456,7 +457,7 @@ private:
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
-	void _drop_mouse_over();
+	void _drop_mouse_over(Control *p_until_control = nullptr);
 	void _drop_mouse_focus();
 	void _drop_physics_mouseover(bool p_paused_only = false);
 
@@ -495,6 +496,7 @@ protected:
 
 public:
 	void canvas_parent_mark_dirty(Node *p_node);
+	void canvas_item_top_level_changed();
 
 	uint64_t get_processed_events_count() const { return event_count; }
 
@@ -738,9 +740,6 @@ public:
 
 	void set_camera_3d_override_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
 	void set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
-
-	void set_disable_2d(bool p_disable);
-	bool is_2d_disabled() const;
 
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;

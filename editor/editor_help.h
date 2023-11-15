@@ -187,12 +187,14 @@ class EditorHelp : public VBoxContainer {
 	String _fix_constant(const String &p_constant) const;
 	void _toggle_scripts_pressed();
 
-	static Thread thread;
+	static String doc_version_hash;
+	static Thread worker_thread;
 
 	static void _wait_for_thread();
 	static void _load_doc_thread(void *p_udata);
 	static void _gen_doc_thread(void *p_udata);
-	static void _generate_doc_first_step();
+	static void _gen_extensions_docs();
+	static void _compute_doc_version_hash();
 
 protected:
 	virtual void _update_theme_item_cache() override;

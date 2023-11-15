@@ -629,12 +629,6 @@ msgstr "Fermi"
 msgid "Connect"
 msgstr "Konekti"
 
-msgid "Class:"
-msgstr "Klaso:"
-
-msgid "Signal:"
-msgstr "Signalo:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Konekti '%s' al '%s'"
 
@@ -1418,6 +1412,9 @@ msgstr "(Re)enportas havaĵoj"
 msgid "Top"
 msgstr "Supro"
 
+msgid "Class:"
+msgstr "Klaso:"
+
 msgid "Inherits:"
 msgstr "Heredato:"
 
@@ -1460,6 +1457,12 @@ msgstr ""
 
 msgid "Method Descriptions"
 msgstr "Metodaj priskriboj"
+
+msgid "Property:"
+msgstr "Atributo:"
+
+msgid "Signal:"
+msgstr "Signalo:"
 
 msgid "%d match."
 msgstr "%d rekono."
@@ -1517,9 +1520,6 @@ msgstr "Atributo"
 
 msgid "Theme Property"
 msgstr "Etosa atributo"
-
-msgid "Property:"
-msgstr "Atributo:"
 
 msgid "Resize Array"
 msgstr "Regrandigi Vicon"
@@ -2349,9 +2349,6 @@ msgstr "Duplikatas dosierujon:"
 msgid "New Inherited Scene"
 msgstr "Nova heredita sceno"
 
-msgid "Set As Main Scene"
-msgstr "Defini kiel ĉefan scenon"
-
 msgid "Open Scenes"
 msgstr "Malfermi scenojn"
 
@@ -2396,9 +2393,6 @@ msgstr "Renomi..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Reesplori dosiersistemon"
-
-msgid "Toggle Split Mode"
-msgstr "Baskuli dividan reĝimon"
 
 msgid ""
 "Scanning Files,\n"
@@ -3055,14 +3049,14 @@ msgstr "Fiksi AnimationPlayer"
 msgid "Error!"
 msgstr "Eraro!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Tempoj de trans-animacia mikso"
+
 msgid "Blend Times:"
 msgstr "Tempoj de mikso:"
 
 msgid "Next (Auto Queue):"
 msgstr "Sekvo (aŭtomata atendovico):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Tempoj de trans-animacia mikso"
 
 msgid "Move Node"
 msgstr "Movi nodon"
@@ -4192,9 +4186,6 @@ msgstr "Subrisurcoj"
 
 msgid "Clear Inheritance"
 msgstr "Vakigi heredadon"
-
-msgid "Load As Placeholder"
-msgstr "Ŝargi kiel lokokupilo"
 
 msgid "Make Scene Root"
 msgstr "Farigi scena radiko"

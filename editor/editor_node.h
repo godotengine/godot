@@ -113,6 +113,7 @@ class ProjectSettingsEditor;
 class RunSettingsDialog;
 class SceneImportSettings;
 class ScriptCreateDialog;
+class SurfaceUpgradeTool;
 class WindowWrapper;
 
 class EditorNode : public Node {
@@ -156,6 +157,7 @@ public:
 
 private:
 	friend class EditorSceneTabs;
+	friend class SurfaceUpgradeTool;
 
 	enum MenuOptions {
 		FILE_NEW_SCENE,
@@ -355,8 +357,6 @@ private:
 
 	uint64_t started_timestamp = 0;
 
-	PluginConfigDialog *plugin_config_dialog = nullptr;
-
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
 
@@ -460,6 +460,8 @@ private:
 	bool opening_prev = false;
 	bool restoring_scenes = false;
 	bool unsaved_cache = true;
+
+	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 
 	int current_menu_option = 0;
@@ -492,6 +494,9 @@ private:
 	PrintHandlerList print_handler;
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
+
+	SurfaceUpgradeTool *surface_upgrade_tool = nullptr;
+	bool run_surface_upgrade_tool = false;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -689,6 +694,8 @@ private:
 
 	void _begin_first_scan();
 
+	void _notify_scene_updated(Node *p_node);
+
 protected:
 	friend class FileSystemDock;
 
@@ -738,7 +745,7 @@ public:
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
 
-	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"));
+	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"), uint32_t p_wrap_width = 0);
 
 	static void cleanup();
 
@@ -909,7 +916,8 @@ public:
 	PopupMenu *get_export_as_menu();
 
 	void save_all_scenes();
-	void save_scene_list(Vector<String> p_scene_filenames);
+	void save_scene_if_open(const String &p_scene_path);
+	void save_scene_list(const HashSet<String> &p_scene_paths);
 	void save_before_run();
 	void try_autosave();
 	void restart_editor();
@@ -921,7 +929,7 @@ public:
 
 	bool has_scenes_in_session();
 
-	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false);
+	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr);
 
 	EditorNode();
 	~EditorNode();

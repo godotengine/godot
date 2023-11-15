@@ -32,7 +32,7 @@ namespace Godot.SourceGenerators
             disabledGenerators != null &&
             disabledGenerators.Split(';').Contains(generatorName));
 
-        public static bool InheritsFrom(this INamedTypeSymbol? symbol, string assemblyName, string typeFullName)
+        public static bool InheritsFrom(this ITypeSymbol? symbol, string assemblyName, string typeFullName)
         {
             while (symbol != null)
             {

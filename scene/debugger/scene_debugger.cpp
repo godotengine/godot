@@ -336,6 +336,12 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 	}
 
 	if (Node *node = Object::cast_to<Node>(obj)) {
+		// For debugging multiplayer.
+		{
+			PropertyInfo pi(Variant::INT, String("Node/multiplayer_authority"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
+			properties.push_back(SceneDebuggerProperty(pi, node->get_multiplayer_authority()));
+		}
+
 		// Add specialized NodePath info (if inside tree).
 		if (node->is_inside_tree()) {
 			PropertyInfo pi(Variant::NODE_PATH, String("Node/path"));

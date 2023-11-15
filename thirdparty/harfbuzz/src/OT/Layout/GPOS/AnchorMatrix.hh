@@ -65,14 +65,15 @@ struct AnchorMatrix
     if (unlikely (!c->serializer->extend_min (out)))  return_trace (false);
 
     out->rows = num_rows;
+    bool ret = false;
     for (const unsigned i : index_iter)
     {
       auto *offset = c->serializer->embed (matrixZ[i]);
       if (!offset) return_trace (false);
-      offset->serialize_subset (c, matrixZ[i], this);
+      ret |= offset->serialize_subset (c, matrixZ[i], this);
     }
 
-    return_trace (true);
+    return_trace (ret);
   }
 };
 

@@ -1403,6 +1403,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that should be called when files are dropped from the operating system's file manager to the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 				[b]Note:[/b] This method is implemented on Windows, macOS, Linux (X11) and Web.
 			</description>
 		</method>
@@ -1447,6 +1448,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that should be called when any [InputEvent] is sent to the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 		<method name="window_set_input_text_callback">
@@ -1455,6 +1457,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that should be called when text is entered using the virtual keyboard to the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 		<method name="window_set_max_size">
@@ -1552,6 +1555,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that will be called when the window specified by [param window_id] is moved or resized.
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 		<method name="window_set_size">
@@ -1609,6 +1613,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that will be called when an event occurs in the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 	</methods>
@@ -1882,30 +1887,30 @@
 			Max value of the [enum WindowFlags].
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
-			Sent when the mouse pointer enters the window, see [method window_set_window_event_callback].
+			Sent when the mouse pointer enters the window.
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_EXIT" value="1" enum="WindowEvent">
-			Sent when the mouse pointer exits the window, see [method window_set_window_event_callback].
+			Sent when the mouse pointer exits the window.
 		</constant>
 		<constant name="WINDOW_EVENT_FOCUS_IN" value="2" enum="WindowEvent">
-			Sent when the window grabs focus, see [method window_set_window_event_callback].
+			Sent when the window grabs focus.
 		</constant>
 		<constant name="WINDOW_EVENT_FOCUS_OUT" value="3" enum="WindowEvent">
-			Sent when the window loses focus, see [method window_set_window_event_callback].
+			Sent when the window loses focus.
 		</constant>
 		<constant name="WINDOW_EVENT_CLOSE_REQUEST" value="4" enum="WindowEvent">
-			Sent when the user has attempted to close the window (e.g. close button is pressed), see [method window_set_window_event_callback].
+			Sent when the user has attempted to close the window (e.g. close button is pressed).
 		</constant>
 		<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5" enum="WindowEvent">
-			Sent when the device "Back" button is pressed, see [method window_set_window_event_callback].
+			Sent when the device "Back" button is pressed.
 			[b]Note:[/b] This event is implemented only on Android.
 		</constant>
 		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
-			Sent when the window is moved to the display with different DPI, or display DPI is changed, see [method window_set_window_event_callback].
+			Sent when the window is moved to the display with different DPI, or display DPI is changed.
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
-			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode), see [method window_set_window_event_callback].
+			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode).
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">

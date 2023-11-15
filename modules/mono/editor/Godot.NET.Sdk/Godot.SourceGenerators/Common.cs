@@ -230,6 +230,31 @@ namespace Godot.SourceGenerators
                 location?.SourceTree?.FilePath));
         }
 
+        public static void ReportOnlyNodesShouldExportNodes(
+            GeneratorExecutionContext context,
+            ISymbol exportedMemberSymbol
+        )
+        {
+            var locations = exportedMemberSymbol.Locations;
+            var location = locations.FirstOrDefault(l => l.SourceTree != null) ?? locations.FirstOrDefault();
+            bool isField = exportedMemberSymbol is IFieldSymbol;
+
+            string message = $"Types not derived from Node should not export Node {(isField ? "fields" : "properties")}";
+
+            string description = $"{message}. Node export is only supported in Node-derived classes.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GD0107",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                location,
+                location?.SourceTree?.FilePath));
+        }
+
         public static void ReportSignalDelegateMissingSuffix(
             GeneratorExecutionContext context,
             INamedTypeSymbol delegateSymbol)

@@ -198,9 +198,19 @@ private:
 	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas = false, int p_index = 0);
 	void _pre_opaque_render(RenderDataRD *p_render_data);
 
-	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
+	enum BaseUniformSetCache {
+		BASE_UNIFORM_SET_CACHE_VIEWPORT,
+		BASE_UNIFORM_SET_CACHE_DEFAULT,
+		BASE_UNIFORM_SET_CACHE_MAX
+	};
 
-	void _update_render_base_uniform_set(const RendererRD::MaterialStorage::Samplers &p_samplers);
+	// One for custom samplers, one for default samplers.
+	// Need to switch between them as default is needed for probes, shadows, materials, etc.
+	RID render_base_uniform_set_cache[BASE_UNIFORM_SET_CACHE_MAX];
+
+	uint64_t lightmap_texture_array_version_cache[BASE_UNIFORM_SET_CACHE_MAX] = { 0xFFFFFFFF, 0xFFFFFFFF };
+
+	void _update_render_base_uniform_set(const RendererRD::MaterialStorage::Samplers &p_samplers, BaseUniformSetCache p_cache_index);
 
 	void _update_instance_data_buffer(RenderListType p_render_list);
 	void _fill_instance_data(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1, bool p_update_buffer = true);
@@ -535,6 +545,7 @@ protected:
 		struct ForwardIDAllocator {
 			LocalVector<bool> allocations;
 			LocalVector<uint8_t> map;
+			LocalVector<uint64_t> last_pass;
 		};
 
 		ForwardIDAllocator forward_id_allocators[RendererRD::FORWARD_ID_MAX];
@@ -542,7 +553,7 @@ protected:
 	public:
 		virtual RendererRD::ForwardID allocate_forward_id(RendererRD::ForwardIDType p_type) override;
 		virtual void free_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id) override;
-		virtual void map_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id, uint32_t p_index) override;
+		virtual void map_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id, uint32_t p_index, uint64_t p_last_pass) override;
 		virtual bool uses_forward_ids() const override { return true; }
 	};
 

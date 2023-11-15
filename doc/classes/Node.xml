@@ -444,7 +444,7 @@
 		<method name="get_tree" qualifiers="const">
 			<return type="SceneTree" />
 			<description>
-				Returns the [SceneTree] that contains this node.
+				Returns the [SceneTree] that contains this node. Returns [code]null[/code] and prints an error if this node is not inside the scene tree. See also [method is_inside_tree].
 			</description>
 		</method>
 		<method name="get_tree_string">
@@ -1034,16 +1034,13 @@
 			Notification received every frame when the internal physics process flag is set (see [method set_physics_process_internal]).
 		</constant>
 		<constant name="NOTIFICATION_POST_ENTER_TREE" value="27">
-			Notification received when the node is ready, just before [constant NOTIFICATION_READY] is received. Unlike the latter, it's sent every time the node enters tree, instead of only once.
+			Notification received when the node is ready, just before [constant NOTIFICATION_READY] is received. Unlike the latter, it's sent every time the node enters the tree, instead of only once.
 		</constant>
 		<constant name="NOTIFICATION_DISABLED" value="28">
 			Notification received when the node is disabled. See [constant PROCESS_MODE_DISABLED].
 		</constant>
 		<constant name="NOTIFICATION_ENABLED" value="29">
 			Notification received when the node is enabled again after being disabled. See [constant PROCESS_MODE_DISABLED].
-		</constant>
-		<constant name="NOTIFICATION_NODE_RECACHE_REQUESTED" value="30">
-			Notification received when other nodes in the tree may have been removed/replaced and node pointers may require re-caching.
 		</constant>
 		<constant name="NOTIFICATION_EDITOR_PRE_SAVE" value="9001">
 			Notification received right before the scene with the node is saved in the editor. This notification is only sent in the Godot editor and will not occur in exported projects.

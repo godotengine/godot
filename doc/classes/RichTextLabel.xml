@@ -764,10 +764,10 @@
 			The vertical separation of elements in a table.
 		</theme_item>
 		<theme_item name="text_highlight_h_padding" data_type="constant" type="int" default="3">
-			The horizontal padding around a highlighting and background color box.
+			The horizontal padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
 		</theme_item>
 		<theme_item name="text_highlight_v_padding" data_type="constant" type="int" default="3">
-			The vertical padding around a highlighting and background color box.
+			The vertical padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
 		</theme_item>
 		<theme_item name="bold_font" data_type="font" type="Font">
 			The font used for bold text.

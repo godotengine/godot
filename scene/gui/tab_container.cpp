@@ -143,6 +143,13 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (setup_current_tab >= 0) {
+				set_current_tab(setup_current_tab);
+				setup_current_tab = -1;
+			}
+		} break;
+
 		case NOTIFICATION_READY:
 		case NOTIFICATION_RESIZED: {
 			_update_margins();
@@ -333,140 +340,65 @@ Variant TabContainer::_get_drag_data_fw(const Point2 &p_point, Control *p_from_c
 	if (!drag_to_rearrange_enabled) {
 		return Variant();
 	}
-
-	int tab_over = get_tab_idx_at_point(p_point);
-	if (tab_over < 0) {
-		return Variant();
-	}
-
-	HBoxContainer *drag_preview = memnew(HBoxContainer);
-
-	Ref<Texture2D> icon = get_tab_icon(tab_over);
-	if (!icon.is_null()) {
-		TextureRect *tf = memnew(TextureRect);
-		tf->set_texture(icon);
-		drag_preview->add_child(tf);
-	}
-
-	Label *label = memnew(Label(get_tab_title(tab_over)));
-	set_drag_preview(drag_preview);
-	drag_preview->add_child(label);
-
-	Dictionary drag_data;
-	drag_data["type"] = "tabc_element";
-	drag_data["tabc_element"] = tab_over;
-	drag_data["from_path"] = get_path();
-
-	return drag_data;
+	return tab_bar->_handle_get_drag_data("tab_container_tab", p_point);
 }
 
 bool TabContainer::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const {
 	if (!drag_to_rearrange_enabled) {
 		return false;
 	}
-
-	Dictionary d = p_data;
-	if (!d.has("type")) {
-		return false;
-	}
-
-	if (String(d["type"]) == "tabc_element") {
-		NodePath from_path = d["from_path"];
-		NodePath to_path = get_path();
-		if (from_path == to_path) {
-			return true;
-		} else if (get_tabs_rearrange_group() != -1) {
-			// Drag and drop between other TabContainers.
-			Node *from_node = get_node(from_path);
-			TabContainer *from_tabc = Object::cast_to<TabContainer>(from_node);
-			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
-				return true;
-			}
-		}
-	}
-
-	return false;
+	return tab_bar->_handle_can_drop_data("tab_container_tab", p_point, p_data);
 }
 
 void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) {
 	if (!drag_to_rearrange_enabled) {
 		return;
 	}
+	return tab_bar->_handle_drop_data("tab_container_tab", p_point, p_data, callable_mp(this, &TabContainer::_drag_move_tab), callable_mp(this, &TabContainer::_drag_move_tab_from));
+}
 
-	Dictionary d = p_data;
-	if (!d.has("type")) {
+void TabContainer::_drag_move_tab(int p_from_index, int p_to_index) {
+	move_child(get_tab_control(p_from_index), get_tab_control(p_to_index)->get_index(false));
+}
+
+void TabContainer::_drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index) {
+	Node *parent = p_from_tabbar->get_parent();
+	if (!parent) {
 		return;
 	}
+	TabContainer *from_tab_container = Object::cast_to<TabContainer>(parent);
+	if (!from_tab_container) {
+		return;
+	}
+	move_tab_from_tab_container(from_tab_container, p_from_index, p_to_index);
+}
 
-	if (String(d["type"]) == "tabc_element") {
-		int tab_from_id = d["tabc_element"];
-		int hover_now = get_tab_idx_at_point(p_point);
-		NodePath from_path = d["from_path"];
-		NodePath to_path = get_path();
+void TabContainer::move_tab_from_tab_container(TabContainer *p_from, int p_from_index, int p_to_index) {
+	ERR_FAIL_NULL(p_from);
+	ERR_FAIL_INDEX(p_from_index, p_from->get_tab_count());
+	ERR_FAIL_INDEX(p_to_index, get_tab_count() + 1);
 
-		if (from_path == to_path) {
-			if (tab_from_id == hover_now) {
-				return;
-			}
+	// Get the tab properties before they get erased by the child removal.
+	String tab_title = p_from->get_tab_title(p_from_index);
+	Ref<Texture2D> tab_icon = p_from->get_tab_icon(p_from_index);
+	bool tab_disabled = p_from->is_tab_disabled(p_from_index);
+	Variant tab_metadata = p_from->get_tab_metadata(p_from_index);
 
-			// Drop the new tab to the left or right depending on where the target tab is being hovered.
-			if (hover_now != -1) {
-				Rect2 tab_rect = tab_bar->get_tab_rect(hover_now);
-				if (is_layout_rtl() ^ (p_point.x <= tab_rect.position.x + tab_rect.size.width / 2)) {
-					if (hover_now > tab_from_id) {
-						hover_now -= 1;
-					}
-				} else if (tab_from_id > hover_now) {
-					hover_now += 1;
-				}
-			} else {
-				hover_now = is_layout_rtl() ^ (p_point.x < tab_bar->get_tab_rect(0).position.x) ? 0 : get_tab_count() - 1;
-			}
+	Control *moving_tabc = p_from->get_tab_control(p_from_index);
+	p_from->remove_child(moving_tabc);
+	add_child(moving_tabc, true);
 
-			move_child(get_tab_control(tab_from_id), get_tab_control(hover_now)->get_index(false));
-			if (!is_tab_disabled(hover_now)) {
-				emit_signal(SNAME("active_tab_rearranged"), hover_now);
-				set_current_tab(hover_now);
-			}
+	set_tab_title(get_tab_count() - 1, tab_title);
+	set_tab_icon(get_tab_count() - 1, tab_icon);
+	set_tab_disabled(get_tab_count() - 1, tab_disabled);
+	set_tab_metadata(get_tab_count() - 1, tab_metadata);
 
-		} else if (get_tabs_rearrange_group() != -1) {
-			// Drag and drop between TabContainers.
-
-			Node *from_node = get_node(from_path);
-			TabContainer *from_tabc = Object::cast_to<TabContainer>(from_node);
-
-			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
-				// Get the tab properties before they get erased by the child removal.
-				String tab_title = from_tabc->get_tab_title(tab_from_id);
-				Ref<Texture2D> tab_icon = from_tabc->get_tab_icon(tab_from_id);
-				bool tab_disabled = from_tabc->is_tab_disabled(tab_from_id);
-				Variant tab_metadata = from_tabc->get_tab_metadata(tab_from_id);
-
-				// Drop the new tab to the left or right depending on where the target tab is being hovered.
-				if (hover_now != -1) {
-					Rect2 tab_rect = tab_bar->get_tab_rect(hover_now);
-					if (is_layout_rtl() ^ (p_point.x > tab_rect.position.x + tab_rect.size.width / 2)) {
-						hover_now += 1;
-					}
-				} else {
-					hover_now = is_layout_rtl() ^ (p_point.x < tab_bar->get_tab_rect(0).position.x) ? 0 : get_tab_count();
-				}
-
-				Control *moving_tabc = from_tabc->get_tab_control(tab_from_id);
-				from_tabc->remove_child(moving_tabc);
-				add_child(moving_tabc, true);
-
-				set_tab_title(get_tab_count() - 1, tab_title);
-				set_tab_icon(get_tab_count() - 1, tab_icon);
-				set_tab_disabled(get_tab_count() - 1, tab_disabled);
-				set_tab_metadata(get_tab_count() - 1, tab_metadata);
-
-				move_child(moving_tabc, get_tab_control(hover_now)->get_index(false));
-				if (!is_tab_disabled(hover_now)) {
-					set_current_tab(hover_now);
-				}
-			}
-		}
+	if (p_to_index < 0 || p_to_index > get_tab_count() - 1) {
+		p_to_index = get_tab_count() - 1;
+	}
+	move_child(moving_tabc, get_tab_control(p_to_index)->get_index(false));
+	if (!is_tab_disabled(p_to_index)) {
+		set_current_tab(p_to_index);
 	}
 }
 
@@ -494,6 +426,10 @@ void TabContainer::_on_tab_selected(int p_tab) {
 
 void TabContainer::_on_tab_button_pressed(int p_tab) {
 	emit_signal(SNAME("tab_button_pressed"), p_tab);
+}
+
+void TabContainer::_on_active_tab_rearranged(int p_tab) {
+	emit_signal(SNAME("active_tab_rearranged"), p_tab);
 }
 
 void TabContainer::_refresh_tab_names() {
@@ -599,6 +535,10 @@ int TabContainer::get_tab_count() const {
 }
 
 void TabContainer::set_current_tab(int p_current) {
+	if (!is_inside_tree()) {
+		setup_current_tab = p_current;
+		return;
+	}
 	tab_bar->set_current_tab(p_current);
 }
 
@@ -983,7 +923,7 @@ void TabContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
@@ -1038,6 +978,7 @@ TabContainer::TabContainer() {
 	tab_bar->connect("tab_hovered", callable_mp(this, &TabContainer::_on_tab_hovered));
 	tab_bar->connect("tab_selected", callable_mp(this, &TabContainer::_on_tab_selected));
 	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
+	tab_bar->connect("active_tab_rearranged", callable_mp(this, &TabContainer::_on_active_tab_rearranged));
 
 	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
 }
