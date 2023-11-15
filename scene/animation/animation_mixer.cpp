@@ -1789,7 +1789,7 @@ void AnimationMixer::_blend_apply() {
 
 void AnimationMixer::_call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
 	// Separate function to use alloca() more efficiently
-	const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * p_params.size());
+	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * p_params.size());
 	const Variant *args = p_params.ptr();
 	uint32_t argcount = p_params.size();
 	for (uint32_t i = 0; i < argcount; i++) {
