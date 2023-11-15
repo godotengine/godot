@@ -2177,7 +2177,7 @@ PoolVector<uint8_t> _File::get_buffer(int64_t p_length) const {
 	w.release();
 
 	if (len < p_length) {
-		data.resize(p_length);
+		data.resize(len);
 	}
 
 	return data;
