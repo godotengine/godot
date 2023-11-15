@@ -29,6 +29,8 @@ module_gdscript_enabled = "yes"
 
 
 # Disabling Extra Modules
+
+use_volk = "no" # Dynamic Vulkan Loader
 disable_3d = "yes"
 module_jsonrpc_enabled = "no"
 module_mono_enabled = "no"
