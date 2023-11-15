@@ -43,6 +43,14 @@ if PLATFORM == 'windows'
         'tts_windows.cpp',
     ])
 
+    if get_option('opengl3')
+        _windows_srcs += files([
+            'gl_manager_windows_native.cpp',
+            'gl_manager_windows_angle.cpp',
+            'wgl_detect_version.cpp',
+        ])
+    endif
+
     # get all of our dependencies
     _cpp = meson.get_compiler('cpp')
 
@@ -70,15 +78,27 @@ if PLATFORM == 'windows'
         _cpp.find_library('crypt32'),
         _cpp.find_library('ntdll'),
         _cpp.find_library('sapi'),
+        DEP_GLAD,
+        DEP_ANGLE,
 ]
 
     CPP_ARGS += [
-        '-DVULKAN_ENABLED',
         '-DWINDOWS_ENABLED',
         '-DWASAPI_ENABLED',
         '-DWINMIDI_ENABLED',
         '-DWIN32',
     ]
+
+    if get_option('vulkan')
+        CPP_ARGS += ['-DVULKAN_ENABLED']
+        if not get_option('use_volk')
+            _windows_deps += _cpp.find_library('vulkan')
+        endif
+    endif
+
+    if get_option('opengl3')
+        CPP_ARGS += ['-DGLES3_ENABLED']
+    endif
 
     if get_option('windows_subsystem') == 'console'
         CPP_ARGS += '-DWINDOWS_SUBSYSTEM_CONSOLE'
