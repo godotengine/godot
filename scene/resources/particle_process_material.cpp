@@ -758,6 +758,9 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	binormal = normalize(binormal);\n";
 	code += "	vec3 normal = cross(binormal, direction_nrm);\n";
 	code += "	spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+		code += "	spread_direction = vec3(normalize(spread_direction.xy), 0.0);\n";
+	}
 	code += "	return spread_direction;\n";
 
 	code += "}\n";
