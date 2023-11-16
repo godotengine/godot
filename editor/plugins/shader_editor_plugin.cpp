@@ -65,9 +65,7 @@ void ShaderEditorPlugin::_update_shader_list() {
 		}
 
 		// When shader is deleted in filesystem dock, need this to correctly close shader editor.
-		if (!path.is_empty()) {
-			shader->set_meta("_edit_res_path", path);
-		}
+		edited_shader.path = path;
 
 		bool unsaved = false;
 		if (edited_shader.shader_editor) {
@@ -578,9 +576,9 @@ void ShaderEditorPlugin::_window_changed(bool p_visible) {
 
 void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
 	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-		const Ref<Shader> &shader = edited_shaders[i].shader;
-		if (shader->get_meta("_edit_res_path") == p_removed_file) {
+		if (edited_shaders[i].path == p_removed_file) {
 			_close_shader(i);
+			break;
 		}
 	}
 }
@@ -609,6 +607,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	vb->add_child(menu_hb);
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));
+	file_menu->set_shortcut_context(main_split);
 	file_menu->get_popup()->add_item(TTR("New Shader"), FILE_NEW);
 	file_menu->get_popup()->add_item(TTR("New Shader Include"), FILE_NEW_INCLUDE);
 	file_menu->get_popup()->add_separator();

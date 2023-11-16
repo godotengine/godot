@@ -4505,9 +4505,10 @@
 			Draw particles in the order that they appear in the particles array.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_LIFETIME" value="1" enum="ParticlesDrawOrder">
-			Sort particles based on their lifetime.
+			Sort particles based on their lifetime. In other words, the particle with the highest lifetime is drawn at the front.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="ParticlesDrawOrder">
+			Sort particles based on the inverse of their lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="3" enum="ParticlesDrawOrder">
 			Sort particles based on their distance to the camera.

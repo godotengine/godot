@@ -437,7 +437,7 @@ public:
 	String property_name_encode() const;
 
 	// node functions
-	static String get_invalid_node_name_characters();
+	static String get_invalid_node_name_characters(bool p_allow_internal = false);
 	String validate_node_name() const;
 	String validate_identifier() const;
 	String validate_filename() const;

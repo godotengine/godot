@@ -616,7 +616,7 @@ void DisplayServerMacOS::menu_open(NSMenu *p_menu) {
 
 			md.open.callp(nullptr, 0, ret, ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				ERR_PRINT(vformat(RTR("Failed to execute menu open callback: %s."), Variant::get_callable_error_text(md.open, nullptr, 0, ce)));
+				ERR_PRINT(vformat("Failed to execute menu open callback: %s.", Variant::get_callable_error_text(md.open, nullptr, 0, ce)));
 			}
 		}
 	}
@@ -632,7 +632,7 @@ void DisplayServerMacOS::menu_close(NSMenu *p_menu) {
 
 			md.close.callp(nullptr, 0, ret, ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				ERR_PRINT(vformat(RTR("Failed to execute menu close callback: %s."), Variant::get_callable_error_text(md.close, nullptr, 0, ce)));
+				ERR_PRINT(vformat("Failed to execute menu close callback: %s.", Variant::get_callable_error_text(md.close, nullptr, 0, ce)));
 			}
 		}
 	}
@@ -2009,7 +2009,7 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 
 		p_callback.callp(args, 1, ret, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat(RTR("Failed to execute dialog callback: %s."), Variant::get_callable_error_text(p_callback, args, 1, ce)));
+			ERR_PRINT(vformat("Failed to execute dialog callback: %s.", Variant::get_callable_error_text(p_callback, args, 1, ce)));
 		}
 	}
 
@@ -2194,7 +2194,7 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 
 								  callback.callp(args, 3, ret, ce);
 								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat(RTR("Failed to execute file dialog callback: %s."), Variant::get_callable_error_text(callback, args, 3, ce)));
+									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
 								  }
 							  }
 						  } else {
@@ -2208,7 +2208,7 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 
 								  callback.callp(args, 3, ret, ce);
 								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(callback, args, 3, ce)));
+									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
 								  }
 							  }
 						  }
@@ -2279,7 +2279,7 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 
 								  callback.callp(args, 3, ret, ce);
 								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat(RTR("Failed to execute file dialog callback: %s."), Variant::get_callable_error_text(callback, args, 3, ce)));
+									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
 								  }
 							  }
 						  } else {
@@ -2293,7 +2293,7 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 
 								  callback.callp(args, 3, ret, ce);
 								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(callback, args, 3, ce)));
+									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
 								  }
 							  }
 						  }
@@ -2335,7 +2335,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 
 		p_callback.callp(args, 1, ret, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat(RTR("Failed to execute input dialog callback: %s."), Variant::get_callable_error_text(p_callback, args, 1, ce)));
+			ERR_PRINT(vformat("Failed to execute input dialog callback: %s.", Variant::get_callable_error_text(p_callback, args, 1, ce)));
 		}
 	}
 
@@ -2488,7 +2488,7 @@ void DisplayServerMacOS::warp_mouse(const Point2i &p_position) {
 		NSRect pointInWindowRect = NSMakeRect(p_position.x / scale, contentRect.size.height - (p_position.y / scale), scale, scale);
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 
-		// Point in scren coords.
+		// Point in screen coords.
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 
 		// Do the warping.
@@ -3282,6 +3282,18 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
+			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN || p_mode == WINDOW_MODE_FULLSCREEN) {
+				if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+					const NSUInteger presentationOptions = NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar;
+					[NSApp setPresentationOptions:presentationOptions];
+					wd.exclusive_fullscreen = true;
+				} else {
+					wd.exclusive_fullscreen = false;
+					update_presentation_mode();
+				}
+				return;
+			}
+
 			[(NSWindow *)wd.window_object setLevel:NSNormalWindowLevel];
 			_set_window_per_pixel_transparency_enabled(true, p_window);
 			if (wd.resize_disabled) { // Restore resize disabled.
@@ -3335,6 +3347,7 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 				wd.exclusive_fullscreen = true;
 			} else {
 				wd.exclusive_fullscreen = false;
+				update_presentation_mode();
 			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
@@ -4094,7 +4107,7 @@ void DisplayServerMacOS::process_events() {
 
 		call.callback.callp(args, 1, ret, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat(RTR("Failed to execute menu callback: %s."), Variant::get_callable_error_text(call.callback, args, 1, ce)));
+			ERR_PRINT(vformat("Failed to execute menu callback: %s.", Variant::get_callable_error_text(call.callback, args, 1, ce)));
 		}
 	}
 
@@ -4509,8 +4522,8 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 				WARN_PRINT("Your video card drivers seem not to support the required Metal version, switching to native OpenGL.");
 				rendering_driver = "opengl3";
 			} else {
-				ERR_FAIL_MSG("Could not initialize OpenGL.");
-				return;
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
 			}
 		}
 	}
@@ -4521,8 +4534,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			memdelete(gl_manager_legacy);
 			gl_manager_legacy = nullptr;
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Could not initialize OpenGL.");
-			return;
+			ERR_FAIL_MSG("Could not initialize native OpenGL.");
 		}
 	}
 #endif

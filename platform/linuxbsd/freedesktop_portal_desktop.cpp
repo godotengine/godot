@@ -434,7 +434,7 @@ void FreeDesktopPortalDesktop::_file_dialog_callback(const Callable &p_callable,
 
 	p_callable.callp(args, 3, ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(p_callable, args, 3, ce)));
+		ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callable, args, 3, ce)));
 	}
 }
 

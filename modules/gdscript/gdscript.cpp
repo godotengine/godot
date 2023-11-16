@@ -992,6 +992,7 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 
 	String old_path = path;
 	path = p_path;
+	path_valid = true;
 	GDScriptCache::move_script(old_path, p_path);
 
 	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
@@ -1000,6 +1001,9 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 }
 
 String GDScript::get_script_path() const {
+	if (!path_valid && !get_path().is_empty()) {
+		return get_path();
+	}
 	return path;
 }
 
@@ -1035,6 +1039,7 @@ Error GDScript::load_source_code(const String &p_path) {
 
 	source = s;
 	path = p_path;
+	path_valid = true;
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
 	set_edited(false);
@@ -1387,33 +1392,106 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 #endif
 
 thread_local GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_thread_local;
+GDScript::UpdatableFuncPtr *GDScript::func_ptrs_to_update_main_thread = &func_ptrs_to_update_thread_local;
 
-GDScript::UpdatableFuncPtrElement GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
-	UpdatableFuncPtrElement result = {};
+GDScript::UpdatableFuncPtrElement *GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
+	MutexLock lock(func_ptrs_to_update_mutex);
+
+	List<UpdatableFuncPtrElement>::Element *result = func_ptrs_to_update_elems.push_back(UpdatableFuncPtrElement());
 
 	{
-		MutexLock lock(func_ptrs_to_update_thread_local.mutex);
-		result.element = func_ptrs_to_update_thread_local.ptrs.push_back(p_func_ptr_ptr);
-		result.mutex = &func_ptrs_to_update_thread_local.mutex;
+		MutexLock lock2(func_ptrs_to_update_thread_local.mutex);
+		result->get().element = func_ptrs_to_update_thread_local.ptrs.push_back(p_func_ptr_ptr);
+		result->get().mutex = &func_ptrs_to_update_thread_local.mutex;
 
 		if (likely(func_ptrs_to_update_thread_local.initialized)) {
-			return result;
+			return &result->get();
 		}
 
 		func_ptrs_to_update_thread_local.initialized = true;
 	}
 
-	MutexLock lock(func_ptrs_to_update_mutex);
 	func_ptrs_to_update.push_back(&func_ptrs_to_update_thread_local);
 
-	return result;
+	return &result->get();
 }
 
-void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement p_func_ptr_element) {
-	ERR_FAIL_NULL(p_func_ptr_element.element);
-	ERR_FAIL_NULL(p_func_ptr_element.mutex);
-	MutexLock lock(*p_func_ptr_element.mutex);
-	p_func_ptr_element.element->erase();
+void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement *p_func_ptr_element) {
+	// None of these checks should ever fail, unless there's a bug.
+	// They can be removed once we are sure they never catch anything.
+	// Left here now due to extra safety needs late in the release cycle.
+	ERR_FAIL_NULL(p_func_ptr_element);
+	MutexLock lock(*p_func_ptr_element->mutex);
+	ERR_FAIL_NULL(p_func_ptr_element->element);
+	ERR_FAIL_NULL(p_func_ptr_element->mutex);
+	p_func_ptr_element->element->erase();
+}
+
+void GDScript::_fixup_thread_function_bookkeeping() {
+	// Transfer the ownership of these update items to the main thread,
+	// because the current one is dying, leaving theirs orphan, dangling.
+
+	HashSet<GDScript *> scripts;
+
+	DEV_ASSERT(!Thread::is_main_thread());
+	MutexLock lock(func_ptrs_to_update_main_thread->mutex);
+
+	{
+		MutexLock lock2(func_ptrs_to_update_thread_local.mutex);
+
+		while (!func_ptrs_to_update_thread_local.ptrs.is_empty()) {
+			// Transfer the thread-to-script records from the dying thread to the main one.
+
+			List<GDScriptFunction **>::Element *E = func_ptrs_to_update_thread_local.ptrs.front();
+			List<GDScriptFunction **>::Element *new_E = func_ptrs_to_update_main_thread->ptrs.push_front(E->get());
+
+			GDScript *script = (*E->get())->get_script();
+			if (!scripts.has(script)) {
+				scripts.insert(script);
+
+				// Replace dying thread by the main thread in the script-to-thread records.
+
+				MutexLock lock3(script->func_ptrs_to_update_mutex);
+				DEV_ASSERT(script->func_ptrs_to_update.find(&func_ptrs_to_update_thread_local));
+				{
+					for (List<UpdatableFuncPtrElement>::Element *F = script->func_ptrs_to_update_elems.front(); F; F = F->next()) {
+						bool is_dying_thread_entry = F->get().mutex == &func_ptrs_to_update_thread_local.mutex;
+						if (is_dying_thread_entry) {
+							// This may lead to multiple main-thread entries, but that's not a problem
+							// and allows to reuse the element, which is needed, since it's tracked by pointer.
+							F->get().element = new_E;
+							F->get().mutex = &func_ptrs_to_update_main_thread->mutex;
+						}
+					}
+				}
+			}
+
+			E->erase();
+		}
+	}
+	func_ptrs_to_update_main_thread->initialized = true;
+
+	{
+		// Remove orphan thread-to-script entries from every script.
+		// FIXME: This involves iterating through every script whenever a thread dies.
+		//        While it's OK that thread creation/destruction are heavy operations,
+		//        additional bookkeeping can be used to outperform this brute-force approach.
+
+		GDScriptLanguage *gd_lang = GDScriptLanguage::get_singleton();
+
+		MutexLock lock2(gd_lang->mutex);
+
+		for (SelfList<GDScript> *s = gd_lang->script_list.first(); s; s = s->next()) {
+			GDScript *script = s->self();
+			for (List<UpdatableFuncPtr *>::Element *E = script->func_ptrs_to_update.front(); E; E = E->next()) {
+				bool is_dying_thread_entry = &E->get()->mutex == &func_ptrs_to_update_thread_local.mutex;
+				if (is_dying_thread_entry) {
+					E->erase();
+					break;
+				}
+			}
+		}
+	}
 }
 
 void GDScript::clear(ClearData *p_clear_data) {
@@ -1441,6 +1519,7 @@ void GDScript::clear(ClearData *p_clear_data) {
 				*func_ptr_ptr = nullptr;
 			}
 		}
+		func_ptrs_to_update_elems.clear();
 	}
 
 	RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();
@@ -2058,6 +2137,10 @@ Variant GDScriptLanguage::get_any_global_constant(const StringName &p_name) {
 void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	ERR_FAIL_COND(!named_globals.has(p_name));
 	named_globals.erase(p_name);
+}
+
+void GDScriptLanguage::thread_exit() {
+	GDScript::_fixup_thread_function_bookkeeping();
 }
 
 void GDScriptLanguage::init() {

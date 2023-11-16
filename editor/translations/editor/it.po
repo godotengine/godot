@@ -91,13 +91,15 @@
 # E D <th3-crasin3ss@hotmail.com>, 2023.
 # Damiano Bonaccorsi <ozerodb@users.noreply.hosted.weblate.org>, 2023.
 # Luca Martinelli <lucxmangajet@gmail.com>, 2023.
+# Frankie McEyes <mceyes@protonmail.com>, 2023.
+# Andrea <andrea.rubino1990@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-21 15:42+0000\n"
-"Last-Translator: Luca Martinelli <lucxmangajet@gmail.com>\n"
+"PO-Revision-Date: 2023-10-23 06:30+0000\n"
+"Last-Translator: Andrea <andrea.rubino1990@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -105,7 +107,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.1\n"
+
+msgid "Main Thread"
+msgstr "Thread principale"
 
 msgid "Unset"
 msgstr "Non impostato"
@@ -1378,15 +1383,6 @@ msgstr "Chiudi"
 msgid "Connect"
 msgstr "Connetti"
 
-msgid "Class:"
-msgstr "Classe:"
-
-msgid "Signal:"
-msgstr "Segnale:"
-
-msgid "No description."
-msgstr "Nessuna descrizione."
-
 msgid "Connect '%s' to '%s'"
 msgstr "Connetti \"%s\" a \"%s\""
 
@@ -2597,6 +2593,9 @@ msgstr "Codici di errore restituiti:"
 msgid "Top"
 msgstr "In cima"
 
+msgid "Class:"
+msgstr "Classe:"
+
 msgid "Inherits:"
 msgstr "Eredita:"
 
@@ -2711,6 +2710,12 @@ msgstr "Descrizioni del metodo"
 msgid "Operator Descriptions"
 msgstr "Descrizione degli operatori"
 
+msgid "Property:"
+msgstr "Proprietà:"
+
+msgid "Signal:"
+msgstr "Segnale:"
+
 msgid "%d match."
 msgstr "%d corrispondenze."
 
@@ -2788,9 +2793,6 @@ msgstr "Questo membro è segnato come deprecato."
 
 msgid "This member is marked as experimental."
 msgstr "Questo membro è stato segnato come sperimentale."
-
-msgid "Property:"
-msgstr "Proprietà:"
 
 msgid "Pin Value"
 msgstr "Fissa il valore"
@@ -3385,6 +3387,23 @@ msgstr "Elimina disposizione"
 
 msgid "Default"
 msgstr "Predefinito"
+
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] "%d minuto fa"
+msgstr[1] "%d minuti fa"
+
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] "%d minuto fa"
+msgstr[1] "%d minuti fa"
+
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"Last saved: %s."
+msgstr ""
+"La scena \"%s\" ha modifiche non salvate.\n"
+"Ultimo salvataggio: %s."
 
 msgid "Save & Close"
 msgstr "Salva e chiudi"
@@ -4137,6 +4156,9 @@ msgstr ""
 "Il PCK integrato non può essere più grande di 4 GiB nelle esportazioni a 32 "
 "bit."
 
+msgid "Plugin \"%s\" is not supported on \"%s\""
+msgstr "Il plugin \"%s\" non é supportato su \"%s\""
+
 msgid "Open the folder containing these templates."
 msgstr "Apri la cartella che contiene questi modelli."
 
@@ -4352,14 +4374,14 @@ msgstr ""
 "Tutti i preset devono avere un percorso di esportazione definito affinché "
 "\"Esporta tutto\" funzioni."
 
+msgid "Delete preset '%s'?"
+msgstr "Eliminare preset \"%s\"?"
+
 msgid "Resources to exclude:"
 msgstr "Risorse da esclurdere:"
 
 msgid "Resources to export:"
 msgstr "Risorse da esportare:"
-
-msgid "Delete preset '%s'?"
-msgstr "Eliminare preset \"%s\"?"
 
 msgid "(Inherited)"
 msgstr "(Ereditato)"
@@ -4655,9 +4677,6 @@ msgstr "Duplica cartella:"
 msgid "New Inherited Scene"
 msgstr "Nuova Scena Ereditata"
 
-msgid "Set As Main Scene"
-msgstr "Imposta Come Scena Principale"
-
 msgid "Open Scenes"
 msgstr "Apri Scene"
 
@@ -4771,9 +4790,6 @@ msgstr "Vai al prossimo file (o cartella) selezionato."
 
 msgid "Re-Scan Filesystem"
 msgstr "Ri-scansiona il Filesystem"
-
-msgid "Toggle Split Mode"
-msgstr "Commuta la modalità divisa"
 
 msgid "Filter Files"
 msgstr "Filtra i file"
@@ -5210,6 +5226,9 @@ msgstr "Scene Tree (Nodi):"
 msgid "Node Configuration Warning!"
 msgstr "Avviso di Configurazione Nodo!"
 
+msgid "Allowed:"
+msgstr "Permesso:"
+
 msgid "Select a Node"
 msgstr "Scegli un Nodo"
 
@@ -5644,6 +5663,13 @@ msgid "Advanced..."
 msgstr "Avanzato..."
 
 msgid ""
+"The imported resource is currently loaded. All instances will be replaced and "
+"undo history will be cleared."
+msgstr ""
+"La risorsa importata é attualmente caricata. Tutte le istanze saranno "
+"rimpiazzata e la cronologia degli annullamenti sará ripulita."
+
+msgid ""
 "Select a resource file in the filesystem or in the inspector to adjust import "
 "settings."
 msgstr ""
@@ -5881,8 +5907,22 @@ msgstr "Aggiorna"
 msgid "Plugin Name:"
 msgstr "Nome dell'estensione:"
 
+msgid "Required. This name will be displayed in the list of plugins."
+msgstr "Obbligatorio. Questo nome sará mostrato nella lista di plugin."
+
 msgid "Subfolder:"
 msgstr "Sottocartella:"
+
+msgid ""
+"Optional. The folder name should generally use `snake_case` naming (avoid "
+"spaces and special characters).\n"
+"If left empty, the folder will be named after the plugin name converted to "
+"`snake_case`."
+msgstr ""
+"Facoltativo. Il nome della cartella deve generalmente usare il nome "
+"`snake_case` (evitare spazi e caratteri speciali).\n"
+"Se lasciata vuota, la cartella verrà nominata con il nome del plugin "
+"convertito in `snake_case`."
 
 msgid "Author:"
 msgstr "Autore:"
@@ -6392,24 +6432,20 @@ msgstr "Forza Modulazione Bianca"
 msgid "Include Gizmos (3D)"
 msgstr "Includi Gizmo (3D)"
 
-msgid "Onion Skinning temporarily disabled due to rendering bug."
-msgstr ""
-"Buccia di cipolla temporaneamente disabilitata a causa di un bug di rendering."
-
 msgid "Pin AnimationPlayer"
 msgstr "Fissa AnimationPlayer"
 
 msgid "Error!"
 msgstr "Errore!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Tempi di Blend Cross-Animation"
+
 msgid "Blend Times:"
 msgstr "Tempi di Blend:"
 
 msgid "Next (Auto Queue):"
 msgstr "Successivo (Coda Automatica):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Tempi di Blend Cross-Animation"
 
 msgid "Move Node"
 msgstr "Sposta Nodo"
@@ -9291,12 +9327,6 @@ msgstr "Crea LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "Anteprima LightOccluder2D"
-
-msgid "Can't convert a Sprite2D from a foreign scene."
-msgstr "Impossibile convertire uno Sprite2D da una scena esterna."
-
-msgid "Sprite2D is empty!"
-msgstr "Lo Sprite2D è vuoto!"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -12293,13 +12323,6 @@ msgstr ""
 "Disabilitando \"editable_instance\" tutte le proprietà del nodo saranno "
 "riportate al loro valore predefinito."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Abilitare \"Carica come Placeholder\" disabiliterà \"Figli Modificabili\" e "
-"riporterà tutte le proprietà del nodo ai loro valori predefiniti."
-
 msgid "Make Local"
 msgstr "Rendi Locale"
 
@@ -12387,9 +12410,6 @@ msgstr "Libera Ereditarietà"
 
 msgid "Editable Children"
 msgstr "Figli Modificabili"
-
-msgid "Load As Placeholder"
-msgstr "Carica come Placeholder"
 
 msgid "Filter by Type"
 msgstr "Filtra per tipo"
@@ -13470,6 +13490,9 @@ msgstr "Caricando gli script..."
 msgid "Starting project..."
 msgstr "Avviando il progetto..."
 
+msgid "All Files"
+msgstr "Tutti i file"
+
 msgid "Can't get filesystem access."
 msgstr "Non si può avere accesso al filesystem."
 
@@ -13530,12 +13553,6 @@ msgstr "Identificatore del bundle non valido:"
 msgid "Apple ID password not specified."
 msgstr "Password dell Apple ID non specificata."
 
-msgid "Icon Creation"
-msgstr "Creazione Icona"
-
-msgid "Could not open icon file \"%s\"."
-msgstr "Impossibile aprire il file icona \"%s\"."
-
 msgid "Notarization"
 msgstr "Autenticazione"
 
@@ -13565,13 +13582,6 @@ msgstr ""
 
 msgid "Could not start xcrun executable."
 msgstr "Impossibile avviare l'eseguibile di xcrun."
-
-msgid ""
-"The notarization process generally takes less than an hour. When the process "
-"is completed, you'll receive an email."
-msgstr ""
-"Il processo di autenticazione impiega generalmente meno di un'ora. Riceverai "
-"una email quando il processo sarà concluso."
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "Firma del codice incorporata fallita con errore \"%s\"."
@@ -13708,6 +13718,9 @@ msgstr "Modello di esportazione non valido: \"%s\"."
 
 msgid "Could not write file: \"%s\"."
 msgstr "Non è stato possibile scrivere il file: \"%s\"."
+
+msgid "Icon Creation"
+msgstr "Creazione Icona"
 
 msgid "Could not read file: \"%s\"."
 msgstr "Non è stato possibile leggere il file: \"%s\"."
@@ -14155,9 +14168,6 @@ msgstr "Attenzione!"
 msgid "Please Confirm..."
 msgstr "Per Favore Conferma..."
 
-msgid "All Files"
-msgstr "Tutti i file"
-
 msgid "Invalid extension, or empty filename."
 msgstr "Estensione non valida o nome del file vuoto."
 
@@ -14360,9 +14370,6 @@ msgstr "Nessuna funzione corrispondente trovata per: \"%s\"."
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "'%s' variabile non può essere passato come parametro '%s' in quel contesto."
-
-msgid "A constant value cannot be passed for '%s' parameter."
-msgstr "Un valore costante non può essere passato per il parametro \"%s\"."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Identificatore sconosciuto nell'espressione \"%s\"."

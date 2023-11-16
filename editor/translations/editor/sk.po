@@ -16,13 +16,14 @@
 # Milan <brnecovsky@gmail.com>, 2023.
 # Tengado <tenda151002@gmail.com>, 2023.
 # Lukáš Ševc <sevclukas0@gmail.com>, 2023.
+# Milan Šalka <salka.milan@googlemail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-29 19:03+0000\n"
-"Last-Translator: Lukáš Ševc <sevclukas0@gmail.com>\n"
+"PO-Revision-Date: 2023-10-06 12:19+0000\n"
+"Last-Translator: Milan Šalka <salka.milan@googlemail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -989,15 +990,6 @@ msgstr "Zatvoriť"
 
 msgid "Connect"
 msgstr "Pripojiť"
-
-msgid "Class:"
-msgstr "Trieda:"
-
-msgid "Signal:"
-msgstr "Signál:"
-
-msgid "No description."
-msgstr "Žiadny popis."
 
 msgid "Connect '%s' to '%s'"
 msgstr "Pripojiť '%s' k '%s'"
@@ -2131,6 +2123,9 @@ msgstr "Navrátené kody Chýb:"
 msgid "Top"
 msgstr "Top"
 
+msgid "Class:"
+msgstr "Trieda:"
+
 msgid "Inherits:"
 msgstr "Dedí od:"
 
@@ -2242,6 +2237,12 @@ msgstr "Popisy Metód"
 msgid "Operator Descriptions"
 msgstr "Popisy Operátorov"
 
+msgid "Property:"
+msgstr "Vlastnosť:"
+
+msgid "Signal:"
+msgstr "Signál:"
+
 msgid "%d match."
 msgstr "%d sa zhoduje."
 
@@ -2319,9 +2320,6 @@ msgstr "Tento člen je označený ako zastaraný."
 
 msgid "This member is marked as experimental."
 msgstr "Tento člen je označený ako experimentálny."
-
-msgid "Property:"
-msgstr "Vlastnosť:"
 
 msgid "Pin Value"
 msgstr "Pripnúť Hodnotu"
@@ -3552,11 +3550,11 @@ msgstr ""
 "Všetky predvoľby musia mať definovanú exportnú cestu, aby fungovala funkcia "
 "\"Exportovať všetko\"."
 
-msgid "Resources to export:"
-msgstr "Zdroje k exportu:"
-
 msgid "Delete preset '%s'?"
 msgstr "Vymazať predvoľbu '%s'?"
+
+msgid "Resources to export:"
+msgstr "Zdroje k exportu:"
 
 msgid "%s Export"
 msgstr "Export %s"
@@ -3788,9 +3786,6 @@ msgstr "Duplikovanie priečinka:"
 msgid "New Inherited Scene"
 msgstr "Nová Zdedená Scéna"
 
-msgid "Set As Main Scene"
-msgstr "Nastaviť ako Hlavnú Scénu"
-
 msgid "Open Scenes"
 msgstr "Otvoriť Scény"
 
@@ -3859,9 +3854,6 @@ msgstr "Premenovať..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Preskenovať Filesystem"
-
-msgid "Toggle Split Mode"
-msgstr "Prepnúť Split Mode"
 
 msgid ""
 "Scanning Files,\n"
@@ -4681,14 +4673,14 @@ msgstr "Pripnúť Prehrávač Animácie"
 msgid "Error!"
 msgstr "Chyba!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Prelínanie časov medzi animáciami"
+
 msgid "Blend Times:"
 msgstr "Prelínanie časov:"
 
 msgid "Next (Auto Queue):"
 msgstr "Ďalej (Automatický Rad):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Prelínanie časov medzi animáciami"
 
 msgid "Move Node"
 msgstr "Presunúť Node"
@@ -5665,11 +5657,11 @@ msgstr "Vytvoriť Trimesh Static Shape"
 msgid "Couldn't create any collision shapes."
 msgstr "Nie je možné vytvoriť žiadne kolízne tvary."
 
-msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr "Rozbalenie UV zlyhalo, mesh nie je manifold?"
-
 msgid "Unwrap UV2"
 msgstr "Rozbaliť UV2"
+
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr "Rozbalenie UV zlyhalo, mesh nie je manifold?"
 
 msgid "Could not create outline."
 msgstr "Nepodarilo sa vytvoriť obrys."
@@ -6422,6 +6414,9 @@ msgstr "Uložiť súbor ako..."
 msgid "Open..."
 msgstr "Otvoriť..."
 
+msgid "Run"
+msgstr "Spustiť"
+
 msgid "Search"
 msgstr "Vyhľadať"
 
@@ -6845,13 +6840,6 @@ msgstr ""
 "Vypnutie \"upravitelna_instancia\" spôsobí návrat všetkých vlastností nodu na "
 "ich predvolené hodnoty."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Zapnutie \"Načítať ako Zástupný symbol\" vypne \"Upraviteľné deti\" a spôsobi "
-"návrat všetkých vlastností nodu na ich predvolené hodnoty."
-
 msgid "Enable Scene Unique Name(s)"
 msgstr "Zapnúť Scénovo Jedinečné Názvy"
 
@@ -6980,6 +6968,9 @@ msgstr "Prichádzajúce RPC"
 msgid "Outgoing RPC"
 msgstr "Vychádzajúce RPC"
 
+msgid "Config"
+msgstr "Nastavenia"
+
 msgid "Select a replicator node in order to pick a property to add to it."
 msgstr ""
 "Vyberte replikačný node, aby ste vybrali vlastnosť, ktorú chcete k nemu "
@@ -7076,9 +7067,6 @@ msgstr "Štartovanie projektu..."
 
 msgid "Invalid bundle identifier:"
 msgstr "Neplatný identifikátor zväzku:"
-
-msgid "Could not open icon file \"%s\"."
-msgstr "Nedalo sa otvoriť ikonu \"%s\"."
 
 msgid "Could not start rcodesign executable."
 msgstr "Nepodarilo sa spustiť spustiteľný súbor rcodesign."

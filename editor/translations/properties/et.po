@@ -145,6 +145,9 @@ msgstr "2D Kerimise Tugevus"
 msgid "3D Panning Strength"
 msgstr "3D Kerimise Tugevus"
 
+msgid "iOS"
+msgstr "iOS"
+
 msgid "Editor"
 msgstr "Redaktor"
 
@@ -1882,6 +1885,9 @@ msgstr "Kuva Vaateava Pööramise Gizmo"
 msgid "Show Viewport Navigation Gizmo"
 msgstr "Kuva Vaateava Navigeerimise Gizmo"
 
+msgid "Gizmo Settings"
+msgstr "Gizmo Sätted"
+
 msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Automatiseeri Skriptide Uuesti Laadimine Ja Analüüsimine Salvestamisel"
 
@@ -1914,9 +1920,6 @@ msgstr "Skelett"
 
 msgid "Selected Bone"
 msgstr "Valitud Kont"
-
-msgid "Gizmo Settings"
-msgstr "Gizmo Sätted"
 
 msgid "Bone Axis Length"
 msgstr "Kondi Telje Pikkus"
@@ -2077,9 +2080,6 @@ msgstr "Kaadri Viivitus Millisekundites"
 msgid "Low Processor Mode"
 msgstr "Madal Protsessorirežiim"
 
-msgid "iOS"
-msgstr "iOS"
-
 msgid "Allow High Refresh Rate"
 msgstr "Luba Kõrge Värskendussagedus"
 
@@ -2142,6 +2142,9 @@ msgstr "Emuleerige Puudutust Hiirest"
 
 msgid "Emulate Mouse From Touch"
 msgstr "Emuleerige Hiirt Puudutusest"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Mouse Cursor"
 msgstr "Hiire Kursor"
@@ -2619,9 +2622,6 @@ msgstr "Nõutavad Funktsioonid"
 
 msgid "Optional Features"
 msgstr "Valikulised Funktsioonid"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Android SDK Tee"

@@ -577,6 +577,8 @@ Error ResourceLoaderText::load() {
 		if (do_assign) {
 			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 				res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+			} else if (!path.is_resource_file()) {
+				res->set_path_cache(path);
 			}
 			res->set_scene_unique_id(id);
 		}

@@ -33,13 +33,14 @@
 # duong cfa <duongcfa1@gmail.com>, 2023.
 # plantcraft94 <plantcraft60@gmail.com>, 2023.
 # Anh Hoang Nguyen <iam@hoanganh.dev>, 2023.
+# Huu Le <huuptag@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-21 15:42+0000\n"
-"Last-Translator: Anh Hoang Nguyen <iam@hoanganh.dev>\n"
+"PO-Revision-Date: 2023-10-15 16:02+0000\n"
+"Last-Translator: Huu Le <huuptag@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -48,6 +49,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.1-dev\n"
+
+msgid "Main Thread"
+msgstr "Chủ đề chính"
 
 msgid "Unset"
 msgstr "Hủy bỏ"
@@ -69,6 +73,12 @@ msgstr "Lăn chuột Lên"
 
 msgid "Mouse Wheel Down"
 msgstr "Lăn chuột Xuống"
+
+msgid "Mouse Wheel Left"
+msgstr "Con lăn trái"
+
+msgid "Mouse Wheel Right"
+msgstr "Con lăn phải"
 
 msgid "Mouse Thumb Button 1"
 msgstr "Nút lật trang ngón cái 1"
@@ -689,12 +699,6 @@ msgstr "Đóng"
 
 msgid "Connect"
 msgstr "Kết nối"
-
-msgid "Class:"
-msgstr "Lớp:"
-
-msgid "Signal:"
-msgstr "Tín hiệu:"
 
 msgid "Connect '%s' to '%s'"
 msgstr "Kết nối '%s' đến '%s'"
@@ -1397,6 +1401,9 @@ msgstr "Tính thử nghiệm"
 msgid "Top"
 msgstr "Trên đầu"
 
+msgid "Class:"
+msgstr "Lớp:"
+
 msgid "Inherits:"
 msgstr "Kế thừa:"
 
@@ -1473,6 +1480,12 @@ msgstr "Các mô tả phương thức"
 msgid "Operator Descriptions"
 msgstr "Các mô tả toán tử"
 
+msgid "Property:"
+msgstr "Thuộc tính:"
+
+msgid "Signal:"
+msgstr "Tín hiệu:"
+
 msgid "%d match."
 msgstr "%d khớp."
 
@@ -1529,9 +1542,6 @@ msgstr "Thuộc tính"
 
 msgid "Theme Property"
 msgstr "Cài đặt Tông màu"
-
-msgid "Property:"
-msgstr "Thuộc tính:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr "Ghim giá trị khiến nó phải được lưu dù nó bằng giá trị mặc định."
@@ -2492,9 +2502,6 @@ msgstr "Tạo bản sao thư mục:"
 msgid "New Inherited Scene"
 msgstr "Tạo Cảnh kế thừa mới"
 
-msgid "Set As Main Scene"
-msgstr "Chọn làm Scene chính"
-
 msgid "Open Scenes"
 msgstr "Mở cảnh"
 
@@ -2539,9 +2546,6 @@ msgstr "Đổi tên..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Quét lại hệ thống tập tin"
-
-msgid "Toggle Split Mode"
-msgstr "Chế độ Phân chia"
 
 msgid ""
 "Scanning Files,\n"
@@ -5346,13 +5350,6 @@ msgid ""
 "reverted to their default."
 msgstr ""
 "Vô hiệu \"editable_instance\" sẽ khiến tất cả thuộc tính nút về lại mặc định."
-
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Kích hoạt \"Load As Placeholder\" sẽ vô hiệu hoá \"Editable Children\" và "
-"khiến tất cả thuộc tính của nút về lại mặc định."
 
 msgid "Create Root Node:"
 msgstr "Tạo Nút Gốc:"

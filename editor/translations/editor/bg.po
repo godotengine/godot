@@ -792,15 +792,6 @@ msgstr "Затваряне"
 msgid "Connect"
 msgstr "Свързване"
 
-msgid "Class:"
-msgstr "Клас:"
-
-msgid "Signal:"
-msgstr "Сигнал:"
-
-msgid "No description."
-msgstr "Няма описание."
-
 msgid "Connect '%s' to '%s'"
 msgstr "Свързване на „%s“ с „%s“"
 
@@ -1346,6 +1337,9 @@ msgstr "Не връща стойност."
 msgid "Experimental"
 msgstr "Експериментален"
 
+msgid "Class:"
+msgstr "Клас:"
+
 msgid "Inherits:"
 msgstr "Наследява:"
 
@@ -1396,6 +1390,9 @@ msgstr "(стойност)"
 
 msgid "Method Descriptions"
 msgstr "Описания на методите"
+
+msgid "Signal:"
+msgstr "Сигнал:"
 
 msgid "%d match."
 msgstr "%d съвпадение."
@@ -2198,9 +2195,6 @@ msgstr "Дублиране на файла:"
 msgid "New Inherited Scene"
 msgstr "Нова сцена – наследник"
 
-msgid "Set As Main Scene"
-msgstr "Задаване като главна сцена"
-
 msgid "Open Scenes"
 msgstr "Отваряне на сцените"
 
@@ -2257,9 +2251,6 @@ msgstr "Преминаване към предходно избраната па
 
 msgid "Go to next selected folder/file."
 msgstr "Преминаване към следващата избрана папка/файл."
-
-msgid "Toggle Split Mode"
-msgstr "Превключване на разделения режим"
 
 msgid "Filter Files"
 msgstr "Филтриране на файловете"
@@ -3081,14 +3072,14 @@ msgstr "Закачане на AnimationPlayer"
 msgid "Error!"
 msgstr "Грешка!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Времена на смесване между анимациите"
+
 msgid "Blend Times:"
 msgstr "Времена на смесване:"
 
 msgid "Next (Auto Queue):"
 msgstr "Следваща (авт. опашка):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Времена на смесване между анимациите"
 
 msgid "Move Node"
 msgstr "Преместване на обекта"
@@ -5454,9 +5445,6 @@ msgstr "Неправилен идентификатор на пакета:"
 
 msgid "Apple ID password not specified."
 msgstr "Не е въведена парола за Apple ID."
-
-msgid "Could not open icon file \"%s\"."
-msgstr "Файлът на иконката „%s“ не може да бъде отворен."
 
 msgid "Cannot sign file %s."
 msgstr "Файлът „%s“ не може да бъде подписан."

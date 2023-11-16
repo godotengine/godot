@@ -684,12 +684,6 @@ msgstr "Sulge"
 msgid "Connect"
 msgstr "Ühenda"
 
-msgid "Class:"
-msgstr "Klass:"
-
-msgid "Signal:"
-msgstr "Signaal:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Ühenda '%s' ja '%s'"
 
@@ -1630,6 +1624,9 @@ msgstr "Tagastatud veakoodid:"
 msgid "Top"
 msgstr "Ülaosa"
 
+msgid "Class:"
+msgstr "Klass:"
+
 msgid "Inherits:"
 msgstr "Pärandub:"
 
@@ -1727,6 +1724,12 @@ msgstr "Meetodite kirjeldused"
 msgid "Operator Descriptions"
 msgstr "Operaatorite kirjeldused"
 
+msgid "Property:"
+msgstr "Atribuut:"
+
+msgid "Signal:"
+msgstr "Signaal:"
+
 msgid "%d match."
 msgstr "%d vaste."
 
@@ -1804,9 +1807,6 @@ msgstr "See liige on märgitud aegunuks."
 
 msgid "This member is marked as experimental."
 msgstr "See liige on märgitud eksperimentaalseks."
-
-msgid "Property:"
-msgstr "Atribuut:"
 
 msgid "(%d change)"
 msgid_plural "(%d changes)"
@@ -3221,14 +3221,14 @@ msgstr ""
 "Kõigil eelseadetel peab olema määratud eksporditee, et suvand Ekspordi Kõik "
 "toimiks."
 
+msgid "Delete preset '%s'?"
+msgstr "Kas kustutada eelseade '%s'?"
+
 msgid "Resources to exclude:"
 msgstr "Välistavad ressursid:"
 
 msgid "Resources to export:"
 msgstr "Eksporditavad ressursid:"
-
-msgid "Delete preset '%s'?"
-msgstr "Kas kustutada eelseade '%s'?"
 
 msgid "(Inherited)"
 msgstr "(Pärinud)"
@@ -3494,9 +3494,6 @@ msgstr "Duplikeerin Kausta:"
 msgid "New Inherited Scene"
 msgstr "Uus Päritud Stseen"
 
-msgid "Set As Main Scene"
-msgstr "Määra Põhi Stseeniks"
-
 msgid "Open Scenes"
 msgstr "Ava Stseenid"
 
@@ -3610,9 +3607,6 @@ msgstr "Liikuge järgmise valitud kausta/faili juurde."
 
 msgid "Re-Scan Filesystem"
 msgstr "Failisüsteemi uuesti skannimine"
-
-msgid "Toggle Split Mode"
-msgstr "Lülita jagamisrežiim sisse/välja"
 
 msgid "Filter Files"
 msgstr "Filtreeri Faile"
@@ -6078,9 +6072,6 @@ msgstr "Loo Navigatsioonivõrk"
 msgid "Create Debug Tangents"
 msgstr "Loo Silumis Puutujad"
 
-msgid "Contained Mesh is not of type ArrayMesh."
-msgstr "Sisalduv võrk ei ole ArrayMesh tüüpi."
-
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -6102,11 +6093,14 @@ msgstr ""
 "Mesh ei saa UV-sid lahti pakkida, kuna see imporditi teisest failitüübist. "
 "Tehke see kõigepealt ainulaadseks."
 
-msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr "UV lahtipakkimine ebaõnnestus, mesh may not be manifold?"
-
 msgid "Unwrap UV2"
 msgstr "Unwrap UV2"
+
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr "Sisalduv võrk ei ole ArrayMesh tüüpi."
+
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr "UV lahtipakkimine ebaõnnestus, mesh may not be manifold?"
 
 msgid "No mesh to debug."
 msgstr "Silumiseks puudub Mesh."
@@ -7645,12 +7639,6 @@ msgstr "Loo LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D Eelvaade"
-
-msgid "Can't convert a Sprite2D from a foreign scene."
-msgstr "Sprite2D-d ei saa võõrast Stseenist konverteerida."
-
-msgid "Sprite2D is empty!"
-msgstr "Sprite2D on tühi!"
 
 msgid "Invalid geometry, can't replace by mesh."
 msgstr "Sobimatu geomeetria, ei saa Mesh'iga asendada."
@@ -9610,9 +9598,6 @@ msgstr "Tühjenda Pärandumine"
 msgid "Editable Children"
 msgstr "Redigeeritavad Lapsed"
 
-msgid "Load As Placeholder"
-msgstr "Lae Kohahoidjana"
-
 msgid "Auto Expand to Selected"
 msgstr "Laiendamine Valituks Tehtud Elemendini Automaatselt"
 
@@ -9773,9 +9758,6 @@ msgstr "Ei saanud luua ajutist kausta:"
 
 msgid "Failed to create \"%s\" subfolder."
 msgstr "Alamkausta \"%s\" loomine ebaõnnestus."
-
-msgid "Could not open icon file \"%s\"."
-msgstr "Ikoonifaili \"%s\" ei saanud avada."
 
 msgid "Creating app bundle"
 msgstr "Rakenduse komplekti loomine"

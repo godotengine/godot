@@ -1220,6 +1220,7 @@ void unregister_scene_types() {
 	PhysicalSkyMaterial::cleanup_shader();
 	PanoramaSkyMaterial::cleanup_shader();
 	ProceduralSkyMaterial::cleanup_shader();
+	FogMaterial::cleanup_shader();
 #endif // _3D_DISABLED
 
 	ParticleProcessMaterial::finish_shaders();

@@ -259,7 +259,7 @@ namespace Godot.NativeInterop
                 }
 
                 return new godot_callable(method /* Takes ownership of disposable */,
-                    p_managed_callable.Target.GetInstanceId());
+                    p_managed_callable.Target?.GetInstanceId() ?? 0);
             }
         }
 
