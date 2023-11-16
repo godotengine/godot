@@ -299,18 +299,14 @@ else:
     if selected_platform != "":
         print("Automatically detected platform: " + selected_platform)
 
-if selected_platform in ["macos", "osx"]:
-    if selected_platform == "osx":
-        # Deprecated alias kept for compatibility.
-        print('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
-    # Alias for convenience.
+if selected_platform == "osx":
+    # Deprecated alias kept for compatibility.
+    print('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
     selected_platform = "macos"
 
-if selected_platform in ["ios", "iphone"]:
-    if selected_platform == "iphone":
-        # Deprecated alias kept for compatibility.
-        print('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
-    # Alias for convenience.
+if selected_platform == "iphone":
+    # Deprecated alias kept for compatibility.
+    print('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
     selected_platform = "ios"
 
 if selected_platform in ["linux", "bsd", "x11"]:
