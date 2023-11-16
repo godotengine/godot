@@ -284,8 +284,7 @@ void DisplayServerSwitch::swap_buffers() {
 	}
 }
 
-void DisplayServerSwitch::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window)
-{
+void DisplayServerSwitch::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	if (gl_manager) {
 		gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
 	}
@@ -315,17 +314,24 @@ DisplayServer *DisplayServerSwitch::create_func(const String &p_rendering_driver
 
 DisplayServerSwitch::DisplayServerSwitch(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 	OS::get_singleton()->print("DisplayServerSwitch\n");
-	
+
+	r_error = FAILED;
+
+	NWindow *window = nwindowGetDefault();
+
+	printf("windows %p\n", window);
+	unsigned int w, h;
+	nwindowGetDimensions(window, &w, &h);
+	printf("windows size (%d,%d)\n", w, h);
+	printf("windows valid %d\n", nwindowIsValid(window));
+
 	//Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	// Initialize context and rendering device.
 
 	gl_manager = memnew(GLManagerSwitch());
 
-	// retreive the main windows
-	NWindow* window = nwindowGetDefault();
-
-	if( nwindowIsValid(window)) {
+	if (!nwindowIsValid(window)) {
 		ERR_FAIL_MSG("Windows is not valid");
 		return;
 	}
@@ -340,6 +346,8 @@ DisplayServerSwitch::DisplayServerSwitch(const String &p_rendering_driver, Windo
 
 	// plug nvwindows id
 	// WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
+
+	r_error = OK;
 }
 
 DisplayServerSwitch::~DisplayServerSwitch() {

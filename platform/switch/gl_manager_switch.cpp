@@ -31,6 +31,9 @@
 #include "gl_manager_switch.h"
 
 GLManagerSwitch::GLManagerSwitch() {
+	setenv("EGL_LOG_LEVEL", "debug", 1);
+	setenv("MESA_VERBOSE", "all", 1);
+	setenv("NOUVEAU_MESA_DEBUG", "1", 1);
 }
 
 GLManagerSwitch::~GLManagerSwitch() {
@@ -46,17 +49,23 @@ Error GLManagerSwitch::initialize(NWindow *window) {
 		OS::get_singleton()->print("Could not connect to display! error: %d\n", eglGetError());
 		return ERR_UNCONFIGURED;
 	}
-	OS::get_singleton()->print("1\n");
 
 	// Initialize the EGL display connection
 	eglInitialize(_display, NULL, NULL);
-	OS::get_singleton()->print("2\n");
+
+	// Select OpenGL (Core) as the desired graphics API
+	if (eglBindAPI(EGL_OPENGL_API) == EGL_FALSE) {
+		printf("Could not set API! error: %d", eglGetError());
+		eglTerminate(_display);
+		_display = NULL;
+		return ERR_UNCONFIGURED;
+	}
+
 	// Get an appropriate EGL framebuffer configuration
 	EGLConfig config;
 	EGLint numConfigs;
 	static const EGLint framebufferAttributeList[] = {
-		EGL_RENDERABLE_TYPE,
-		EGL_OPENGL_BIT,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
 		EGL_RED_SIZE, 8,
 		EGL_GREEN_SIZE, 8,
 		EGL_BLUE_SIZE, 8,
@@ -65,15 +74,16 @@ Error GLManagerSwitch::initialize(NWindow *window) {
 		EGL_STENCIL_SIZE, 8,
 		EGL_NONE
 	};
+
 	eglChooseConfig(_display, framebufferAttributeList, &config, 1, &numConfigs);
-	OS::get_singleton()->print("3\n");
+
 	if (numConfigs == 0) {
 		OS::get_singleton()->print("No config found! error: %d\n", eglGetError());
 		eglTerminate(_display);
 		_display = NULL;
 		return ERR_UNCONFIGURED;
 	}
-	OS::get_singleton()->print("4\n");
+
 	// Create an EGL window surface
 	_surface = eglCreateWindowSurface(_display, config, window, NULL);
 	if (!_surface) {
@@ -82,7 +92,7 @@ Error GLManagerSwitch::initialize(NWindow *window) {
 		_display = NULL;
 		return ERR_UNCONFIGURED;
 	}
-	OS::get_singleton()->print("5\n");
+
 	static const EGLint contextAttributeList[] = {
 		EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR,
 		EGL_CONTEXT_MAJOR_VERSION_KHR, 4,
@@ -92,19 +102,29 @@ Error GLManagerSwitch::initialize(NWindow *window) {
 
 	// Create an EGL rendering context
 	_context = eglCreateContext(_display, config, EGL_NO_CONTEXT, contextAttributeList);
-	OS::get_singleton()->print("6\n");
+
 	if (!_context) {
 		OS::get_singleton()->print("Context creation failed! error: %d\n", eglGetError());
 		eglDestroySurface(_display, _surface);
 		eglTerminate(_display);
-		_surface = NULL;
-		_display = NULL;
+		_surface = nullptr;
+		_display = nullptr;
 		return ERR_UNCONFIGURED;
 	}
-	OS::get_singleton()->print("7\n");
+
 	// Connect the context to the surface
-	eglMakeCurrent(_display, _surface, _surface, _context);
-	OS::get_singleton()->print("EGL context created");
+	if (!eglMakeCurrent(_display, _surface, _surface, _context)) {
+		OS::get_singleton()->print("Make current failed! error: %d\n", eglGetError());
+        eglDestroyContext(_display, _context);
+		eglDestroySurface(_display, _surface);
+		eglTerminate(_display);
+        _context = nullptr;
+		_surface = nullptr;
+		_display = nullptr;
+		return ERR_UNCONFIGURED;
+	}
+
+	OS::get_singleton()->print("EGL context created\n");
 	return OK;
 }
 
