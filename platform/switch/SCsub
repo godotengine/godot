@@ -9,6 +9,8 @@ Import("env")
 files = [
     "godot_switch.cpp",
     "os_switch.cpp",
+    "gl_manager_switch.cpp",
+    "display_server_switch.cpp"
 ]
 
 program = env.add_program("#bin/godot", files)
@@ -17,7 +19,7 @@ simple_console = env.add_program("#bin/simple_console", "simple_console.cpp")
 # Switch specifics
 # TODO:vrince make is magic on windows/mac
 devkitpro_path = os.environ.get("DEVKITPRO", "/opt/devkitpro")
-nacptool_path = devkitpro_path + "/tools/bin/nacptool"
+nacptool_path = os.path.join(devkitpro_path, "tools", "bin", "nacptool")
 elf2nro_path = devkitpro_path + "/tools/bin/elf2nro"
 
 icon_path = "platform/switch/icon.jpg"
@@ -53,7 +55,7 @@ def build_nro(prog_name, output_name, title):
         + " --romfsdir="
         + romfsdir_path,
     )
-    env.AlwaysBuild(nro)
+
 
     # make sure default nro is ready before build nro target
     env.Depends(target=nro, dependency=nacp)
@@ -61,7 +63,6 @@ def build_nro(prog_name, output_name, title):
 
 build_nro(program, "switch_" + build_target, "Godot Switch (" + build_target + ")")
 build_nro(simple_console, "simple_console", "Simple Console")
-
 
 # ref : https://github.com/switchbrew/switch-tools
 # ref : https://switchbrew.org/wiki/Setting_up_Development_Environment

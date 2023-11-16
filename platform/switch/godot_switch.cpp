@@ -53,12 +53,12 @@ int main(int argc, char *argv[]) {
 		ERR_PRINT("application in applet mode!");
 		display_applet_splash();
 	} else {
-		os.print("Main::setup");
+		os.print("Main::setup\n");
 		Error err = Main::setup(argv[0], argc - 1, &argv[1]);
 		if (err != OK) {
 			return 255;
 		}
-		os.print("Main::start");
+		os.print("Main::start\n");
 		if (Main::start()) {
 			os.run();
 		}

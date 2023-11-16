@@ -537,7 +537,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 #ifdef SWITCH_ENABLED
 		if (!found) {
-			// On the switch the game pck will be bundle int the romfs
+			// On the switch the game pck will be bundle in the romfs
 			found = _load_resource_pack("romfs:/" + exec_basename + ".pck");
 		}
 #endif

@@ -31,6 +31,7 @@
 #include "switch/kernel/random.h"
 
 #include "os_switch.h"
+#include "display_server_switch.h"
 
 void OS_Switch::initialize() {
 	print("initialize\n");
@@ -41,6 +42,7 @@ void OS_Switch::initialize() {
 void OS_Switch::finalize() {
 	print("finalize\n");
 	finalize_core();
+	delete_main_loop();
 }
 
 void OS_Switch::initialize_core() {
@@ -61,6 +63,10 @@ void OS_Switch::initialize_joypads() {
 }
 
 void OS_Switch::delete_main_loop() {
+	if (_main_loop) {
+		memdelete(_main_loop);
+	}
+	_main_loop = nullptr;
 }
 
 bool OS_Switch::_check_internal_feature_support(const String &p_feature) {
@@ -69,6 +75,12 @@ bool OS_Switch::_check_internal_feature_support(const String &p_feature) {
 
 void OS_Switch::run() {
 	print("run\n");
+
+	if (!_main_loop) {
+		return;
+	}
+
+	_main_loop->initialize();
 }
 
 OS_Switch::OS_Switch(const std::vector<std::string> &args) :
@@ -76,6 +88,10 @@ OS_Switch::OS_Switch(const std::vector<std::string> &args) :
 	socketInitializeDefault();
 	nxlinkStdio();
 	romfsInit();
+
+	//this will provide the create_function to the Main to instanciate the DisplayServer
+	DisplayServerSwitch::register_NVN_driver();
+
 	print("OS_Switch\n");
 }
 
