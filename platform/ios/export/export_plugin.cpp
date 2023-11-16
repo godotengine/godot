@@ -1077,14 +1077,15 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	String base_dir = p_asset.get_base_dir().replace("res://", "");
+	String base_dir = p_asset.get_base_dir().replace("res://", "").replace(".godot/mono/temp/bin/", "");
+	String asset = p_asset.ends_with("/") ? p_asset.left(p_asset.length() - 1) : p_asset;
 	String destination_dir;
 	String destination;
 	String asset_path;
 
 	bool create_framework = false;
 
-	if (p_is_framework && p_asset.ends_with(".dylib")) {
+	if (p_is_framework && asset.ends_with(".dylib")) {
 		// For iOS we need to turn .dylib into .framework
 		// to be able to send application to AppStore
 		asset_path = String("dylibs").path_join(base_dir);
@@ -1103,7 +1104,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 		destination_dir = p_out_dir.path_join(asset_path);
 		destination = destination_dir.path_join(file_name);
 		create_framework = true;
-	} else if (p_is_framework && (p_asset.ends_with(".framework") || p_asset.ends_with(".xcframework"))) {
+	} else if (p_is_framework && (asset.ends_with(".framework") || asset.ends_with(".xcframework"))) {
 		asset_path = String("dylibs").path_join(base_dir);
 
 		String file_name;
@@ -1146,6 +1147,9 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 	Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
 	if (err) {
 		return err;
+	}
+	if (asset_path.ends_with("/")) {
+		asset_path = asset_path.left(asset_path.length() - 1);
 	}
 	IOSExportAsset exported_asset = { binary_name.path_join(asset_path), p_is_framework, p_should_embed };
 	r_exported_assets.push_back(exported_asset);
@@ -1213,13 +1217,16 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets) {
 	for (int f_idx = 0; f_idx < p_assets.size(); ++f_idx) {
 		String asset = p_assets[f_idx];
-		if (!asset.begins_with("res://")) {
+		if (asset.begins_with("res://")) {
+			Error err = _copy_asset(p_out_dir, asset, nullptr, p_is_framework, p_should_embed, r_exported_assets);
+			ERR_FAIL_COND_V(err, err);
+		} else if (ProjectSettings::get_singleton()->localize_path(asset).begins_with("res://")) {
+			Error err = _copy_asset(p_out_dir, ProjectSettings::get_singleton()->localize_path(asset), nullptr, p_is_framework, p_should_embed, r_exported_assets);
+			ERR_FAIL_COND_V(err, err);
+		} else {
 			// either SDK-builtin or already a part of the export template
 			IOSExportAsset exported_asset = { asset, p_is_framework, p_should_embed };
 			r_exported_assets.push_back(exported_asset);
-		} else {
-			Error err = _copy_asset(p_out_dir, asset, nullptr, p_is_framework, p_should_embed, r_exported_assets);
-			ERR_FAIL_COND_V(err, err);
 		}
 	}
 
