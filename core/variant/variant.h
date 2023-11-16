@@ -338,6 +338,9 @@ public:
 	_FORCE_INLINE_ bool is_num() const {
 		return type == INT || type == FLOAT;
 	}
+	_FORCE_INLINE_ bool is_string() const {
+		return type == STRING || type == STRING_NAME;
+	}
 	_FORCE_INLINE_ bool is_array() const {
 		return type >= ARRAY;
 	}

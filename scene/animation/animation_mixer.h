@@ -190,6 +190,7 @@ protected:
 		Vector<StringName> subpath;
 		bool is_continuous = false;
 		bool is_using_angle = false;
+		Variant element_size;
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
 		~TrackCacheValue() {
 			// Clear ref to avoid leaking.
