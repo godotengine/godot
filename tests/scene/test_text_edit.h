@@ -4118,7 +4118,7 @@ TEST_CASE("[SceneTree][TextEdit] setter getters") {
 		CHECK_FALSE(text_edit->is_drawing_spaces());
 	}
 
-	SUBCASE("[TextEdit] draw minimao") {
+	SUBCASE("[TextEdit] draw minimap") {
 		text_edit->set_draw_minimap(true);
 		CHECK(text_edit->is_drawing_minimap());
 		text_edit->set_draw_minimap(false);

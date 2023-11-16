@@ -770,7 +770,14 @@ void TextEdit::_notification(int p_what) {
 					Dictionary color_map = _get_line_syntax_highlighting(minimap_line);
 
 					Color line_background_color = text.get_line_background_color(minimap_line);
-					line_background_color.a *= 0.6;
+
+					if (line_background_color != theme_cache.background_color) {
+						// Make non-default background colors more visible, such as error markers.
+						line_background_color.a = 1.0;
+					} else {
+						line_background_color.a *= 0.6;
+					}
+
 					Color current_color = theme_cache.font_color;
 					if (!editable) {
 						current_color = theme_cache.font_readonly_color;
