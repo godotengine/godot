@@ -1911,21 +1911,6 @@ msgstr "黃金贊助"
 msgid "Silver Sponsors"
 msgstr "白銀贊助"
 
-msgid "Bronze Sponsors"
-msgstr "青銅贊助"
-
-msgid "Mini Sponsors"
-msgstr "迷你贊助"
-
-msgid "Gold Donors"
-msgstr "黃金捐贈者"
-
-msgid "Silver Donors"
-msgstr "白銀捐贈者"
-
-msgid "Bronze Donors"
-msgstr "青銅捐贈者"
-
 msgid "Donors"
 msgstr "捐贈者"
 
@@ -5383,15 +5368,6 @@ msgstr "動態渲染的 TrueType/OpenType 字體"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "預渲染的multichannel（+true）signed distance field"
-
-msgid "Can't load font texture:"
-msgstr "無法加載字體貼圖："
-
-msgid "Image margin too big."
-msgstr "圖像邊距太大。"
-
-msgid "Character margin too big."
-msgstr "字符邊距太大。"
 
 msgid "Pre-Import Scene"
 msgstr "預導入場景"
@@ -13124,14 +13100,6 @@ msgstr "移除節點"
 msgid "Change type of node(s)"
 msgstr "更改節點的型別"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "從變數”%s“移除節點，原節點為”%s\"。"
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr "節點的新型別與導出變數不相容（需要 %s，但型別為 %s）。"
-
 msgid "This operation requires a single selected node."
 msgstr "此操作需要單個選定的節點。"
 
@@ -14239,20 +14207,8 @@ msgstr "無法寫入擴充套件檔案！"
 msgid "Building Android Project (gradle)"
 msgstr "建置 Android 專案（Gradle）"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"建置 Android 專案失敗，請檢查輸出以確認錯誤。也可以瀏覽 docs.godotengine.org "
-"檢視 Android 建置說明文件。"
-
 msgid "Moving output"
 msgstr "移動輸出"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr "無法複製並更名匯出的檔案，請於 Gradle 專案資料夾內確認輸出。"
 
 msgid "Package not found: \"%s\"."
 msgstr "未找到套件：「%s」。"
@@ -15752,14 +15708,6 @@ msgstr ""
 "重新保存，而不會有資料遺失的風險。"
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"正在將場景中的唯一節點名稱”%s“設給”%s“，但該名稱已被”%s“佔用。\n"
-"“%s“不再設定為具有唯一名稱。"
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -15770,13 +15718,6 @@ msgid ""
 "This node is marked as experimental and may be subject to removal or major "
 "changes in future versions."
 msgstr "此節點標記為實驗性節點，可能會在將來的版本中刪除或進行重大更改。"
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"無法載入專案設定中指定的預設環境 (Rendering -> Environment -> Default "
-"Environment)中指定的默認環境。"
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -15797,27 +15738,6 @@ msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr "Viewport長與寬必須皆大於或等於2像素才可進行算繪。"
-
-msgid "Cannot open font from file: %s."
-msgstr "無法開啟字型檔：%s。"
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "不支援版本為%d的 BMFont（應該是3）。"
-
-msgid "Invalid BMFont info block size."
-msgstr "無效的 BMFont 訊息塊大小。"
-
-msgid "Invalid BMFont common block size."
-msgstr "無效的 BMFont 一般塊大小。"
-
-msgid "Can't load font texture: %s."
-msgstr "無法載入字型紋理：%s。"
-
-msgid "Unsupported BMFont texture format."
-msgstr "不支援的BMFont 紋理格式。"
-
-msgid "Invalid BMFont block type."
-msgstr "無效的 BMFont 塊型別。"
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

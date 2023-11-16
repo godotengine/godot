@@ -34,13 +34,14 @@
 # plantcraft94 <plantcraft60@gmail.com>, 2023.
 # Anh Hoang Nguyen <iam@hoanganh.dev>, 2023.
 # Huu Le <huuptag@gmail.com>, 2023.
+# Phaspez <tramtrimin@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-15 16:02+0000\n"
-"Last-Translator: Huu Le <huuptag@gmail.com>\n"
+"PO-Revision-Date: 2023-11-12 10:25+0000\n"
+"Last-Translator: Phaspez <tramtrimin@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -48,7 +49,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 msgid "Main Thread"
 msgstr "Chủ đề chính"
@@ -128,6 +129,15 @@ msgstr "Trục Y của cần điều khiển 4"
 msgid "Unknown Joypad Axis"
 msgstr "Trục chưa định danh của bàn di chuột"
 
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Chuyển động của Joypad trên Trục %d (%s) với Giá trị %.2f"
+
+msgid "D-pad Up"
+msgstr "D-pad Trên"
+
+msgid "D-pad Down"
+msgstr "D-pad Dưới"
+
 msgid "D-pad Left"
 msgstr "D-pad trái"
 
@@ -136,6 +146,21 @@ msgstr "D-pad phải"
 
 msgid "canceled"
 msgstr "Huỷ bỏ"
+
+msgid "touched"
+msgstr "Đã chạm"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Cử chỉ Phóng to tại (%s) với hệ số (%s)"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Cử chỉ Điều hướng tại (%s) với delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Ngõ vào MIDI tại Kênh=%s Tin nhắn=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Sự kiện Đầu vào với Phím tắt=%s"
 
 msgid "Accept"
 msgstr "Xác nhận"
@@ -1015,21 +1040,6 @@ msgstr "Nhà tài trợ Vàng"
 msgid "Silver Sponsors"
 msgstr "Nhà tài trợ Bạc"
 
-msgid "Bronze Sponsors"
-msgstr "Nhà tài trợ Đồng"
-
-msgid "Mini Sponsors"
-msgstr "Nhà tài trợ Nhỏ"
-
-msgid "Gold Donors"
-msgstr "Người ủng hộ Vàng"
-
-msgid "Silver Donors"
-msgstr "Người ủng hộ Bạc"
-
-msgid "Bronze Donors"
-msgstr "Người ủng hộ Đồng"
-
 msgid "Donors"
 msgstr "Người ủng hộ"
 
@@ -1394,6 +1404,10 @@ msgstr ""
 
 msgid "(Re)Importing Assets"
 msgstr "Nhập lại tài nguyên"
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Giá trị này là một số nguyên được tính như là bitmask của những flags sau."
 
 msgid "Experimental"
 msgstr "Tính thử nghiệm"
@@ -5654,13 +5668,6 @@ msgstr ""
 
 msgid "Building Android Project (gradle)"
 msgstr "Đang dựng dự án Android (gradle)"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Không thể sao chép và đổi tên tệp xuất, hãy kiểm tra thư mục Gradle của dự án "
-"để xem kết quả."
 
 msgid "Invalid Identifier:"
 msgstr "Định danh không hợp lệ:"

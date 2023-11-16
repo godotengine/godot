@@ -54,13 +54,14 @@
 # Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
 # Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
 # Avirur Rahman <avirahmandev@gmail.com>, 2023.
+# Nazan <121859424+nazhard@users.noreply.github.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-23 06:30+0000\n"
-"Last-Translator: ProgrammerIndonesia 44 <elo.jhy@gmail.com>\n"
+"PO-Revision-Date: 2023-11-15 10:05+0000\n"
+"Last-Translator: Nazan <121859424+nazhard@users.noreply.github.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -68,7 +69,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.1\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -590,6 +591,9 @@ msgstr "Batalkan Pilihan Semua Kunci"
 
 msgid "Animation Change Transition"
 msgstr "Ubah Transisi Animasi"
+
+msgid "Animation Change Rotation3D"
+msgstr "Ubah Transisi Animasi 3D"
 
 msgid "Animation Change Keyframe Value"
 msgstr "Ubah Nilai Keyframe Animasi"
@@ -1871,21 +1875,6 @@ msgstr "Sponsor Emas"
 
 msgid "Silver Sponsors"
 msgstr "Donatur Perak"
-
-msgid "Bronze Sponsors"
-msgstr "Donatur Perunggu"
-
-msgid "Mini Sponsors"
-msgstr "Sponsor Mini"
-
-msgid "Gold Donors"
-msgstr "Donatur Emas"
-
-msgid "Silver Donors"
-msgstr "Donatur Perak"
-
-msgid "Bronze Donors"
-msgstr "Donatur Perunggu"
 
 msgid "Donors"
 msgstr "Donatur"
@@ -5303,12 +5292,6 @@ msgstr "Font TrueType/OpenType yang ditampilkan secara dinamis"
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr ""
 "Bidang jarak bertanda multisaluran(+benar) yang telah ditentukan sebelumnya"
-
-msgid "Can't load font texture:"
-msgstr "Tidak dapat memuat tekstur font:"
-
-msgid "Image margin too big."
-msgstr "Margin gambar terlalu besar."
 
 msgid "Pre-Import Scene"
 msgstr "Adegan Pra-Impor"
@@ -11780,22 +11763,8 @@ msgstr "Tidak dapat menulis berkas paket ekspansi!"
 msgid "Building Android Project (gradle)"
 msgstr "Membangun Proyek Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Pembangunan proyek Android gagal, periksa output untuk galatnya. Atau "
-"kunjungi docs.godotengine.org untuk dokumentasi build Android."
-
 msgid "Moving output"
 msgstr "Memindahkan keluaran"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Tidak dapat menyalin dan mengubah nama berkas ekspor, cek direktori proyek "
-"gradle untuk hasilnya."
 
 msgid "Could not find template APK to export: \"%s\"."
 msgstr "Tidak dapat menemukan contoh APK untuk ekspor: \"%s\""

@@ -1146,21 +1146,6 @@ msgstr "Arany Szponzorok"
 msgid "Silver Sponsors"
 msgstr "Ezüst adományozók"
 
-msgid "Bronze Sponsors"
-msgstr "Bronz adományozók"
-
-msgid "Mini Sponsors"
-msgstr "Mini Szponzorok"
-
-msgid "Gold Donors"
-msgstr "Arany Adományozók"
-
-msgid "Silver Donors"
-msgstr "Ezüst Adományozók"
-
-msgid "Bronze Donors"
-msgstr "Bronz Adományozók"
-
 msgid "Donors"
 msgstr "Adományozók"
 

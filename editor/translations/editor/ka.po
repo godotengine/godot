@@ -1103,18 +1103,6 @@ msgstr "პლატინის სპონსორები"
 msgid "Gold Sponsors"
 msgstr "ოქროს სპონსორები"
 
-msgid "Mini Sponsors"
-msgstr "მინი სპონსორები"
-
-msgid "Gold Donors"
-msgstr "ოქროს დონატორები"
-
-msgid "Silver Donors"
-msgstr "ვერცხლის დონატორები"
-
-msgid "Bronze Donors"
-msgstr "ბრინჯაოს დონატორები"
-
 msgid "Donors"
 msgstr "დონატორები"
 
@@ -3866,9 +3854,6 @@ msgstr "მარცხნიდან-მარჯვნივ"
 
 msgid "Right-to-Left"
 msgstr "მარჯვნიდან-მარცხნივ"
-
-msgid "Cannot open font from file: %s."
-msgstr "ფაილიდან ფონტის გახსნის შეცდომა: %s."
 
 msgid "Default Color"
 msgstr "ნაგულისხმები ფერი"

@@ -108,7 +108,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-09 22:40+0000\n"
+"PO-Revision-Date: 2023-11-11 00:20+0000\n"
 "Last-Translator: Cerno_b <cerno.b@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
@@ -250,6 +250,12 @@ msgstr "Stärke des 3D-Panning"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Session Category"
+msgstr "Session-Kategorie"
+
+msgid "Mix With Others"
+msgstr "Mit anderen mixen"
 
 msgid "Editor"
 msgstr "Editor"
@@ -433,6 +439,9 @@ msgstr "Ambient verwenden"
 
 msgid "Low Processor Usage Mode"
 msgstr "Prozessorenergiesparmodus"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "Leerlaufzeit im Prozessorenergiesparmodus (μs)"
 
 msgid "Delta Smoothing"
 msgstr "Delta-Glättung"
@@ -774,7 +783,7 @@ msgid "Animation"
 msgstr "Animation"
 
 msgid "Easing"
-msgstr "Glätten Ein-Aus"
+msgstr "Easing"
 
 msgid "Debug Adapter"
 msgstr "Debug-Adapter"
@@ -959,6 +968,12 @@ msgstr "Hauptschriftart Fett"
 msgid "Code Font"
 msgstr "Quellcodeschriftart"
 
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "Leerlaufzeit im Prozessorenergiesparmodus (μs)"
+
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "Leerlaufzeit im Prozessorenergiesparmodus bei fehlendem Fokus (μs)"
+
 msgid "Separate Distraction Mode"
 msgstr "Separater ablenkungsfreier Modus"
 
@@ -1132,6 +1147,15 @@ msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF-Pfad"
+
+msgid "Tools"
+msgstr "Tools"
+
+msgid "Oidn"
+msgstr "Oidn"
+
+msgid "Oidn Denoise Path"
+msgstr "Pfad Oidn Noise-Unterdrückung"
 
 msgid "Docks"
 msgstr "Docks"
@@ -1679,6 +1703,9 @@ msgstr "Nutzertypfarbe"
 msgid "Comment Color"
 msgstr "Kommentarfarbe"
 
+msgid "Doc Comment Color"
+msgstr "Dokumentations-Kommentarfarbe"
+
 msgid "String Color"
 msgstr "String-Farbe"
 
@@ -1958,6 +1985,9 @@ msgstr "Nicht-gemappte Knochen"
 msgid "Create From"
 msgstr "Erstellen aus"
 
+msgid "Scaling Mode"
+msgstr "Skalierungs-Modus"
+
 msgid "Delimiter"
 msgstr "Trennzeichen"
 
@@ -2026,6 +2056,9 @@ msgstr "Mesh verschieben"
 
 msgid "Optimize Mesh"
 msgstr "Mesh optimieren"
+
+msgid "Force Disable Mesh Compression"
+msgstr "Mesh-Kompression deaktivert erzwingen"
 
 msgid "Skip Import"
 msgstr "Import überspringen"
@@ -2218,6 +2251,9 @@ msgstr "Lichtbacken"
 
 msgid "Lightmap Texel Size"
 msgstr "Lightmap Texelgröße"
+
+msgid "Force Disable Compression"
+msgstr "Kompression deaktiviert erzwingen"
 
 msgid "Skins"
 msgstr "Skins"
@@ -2414,6 +2450,12 @@ msgstr "Viewport-Navigationsgizmo anzeigen"
 msgid "Gizmo Settings"
 msgstr "Gizmo-Einstellungen"
 
+msgid "Path 3D Tilt Disk Size"
+msgstr "Größe Path3D Tilt-Disk"
+
+msgid "Path Tilt"
+msgstr "Pfad-Tilt"
+
 msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Skripte beim Speichern auto-neuladen und parsen"
 
@@ -2588,6 +2630,18 @@ msgstr "GL-Kompatibilität"
 msgid "Nvidia Disable Threaded Optimization"
 msgstr "Nvidia-Thread-Optimierung deaktivieren"
 
+msgid "Fallback to Angle"
+msgstr "Fallback auf ANGLE"
+
+msgid "Fallback to Native"
+msgstr "Fallback auf nativ"
+
+msgid "Fallback to Gles"
+msgstr "Fallback auf GLES"
+
+msgid "Force Angle on Devices"
+msgstr "Winkel auf Devices erzwingen"
+
 msgid "Renderer"
 msgstr "Renderer"
 
@@ -2692,6 +2746,15 @@ msgstr "Tiefenpuffer absenden"
 
 msgid "Startup Alert"
 msgstr "Startbenachrichtigung"
+
+msgid "Extensions"
+msgstr "Extensions"
+
+msgid "Hand Tracking"
+msgstr "Hand-Tracking"
+
+msgid "Eye Gaze Interaction"
+msgstr "Blickkontakt-Interaktion"
 
 msgid "In Editor"
 msgstr "Im Editor"
@@ -2950,6 +3013,9 @@ msgstr "Thread verwenden"
 
 msgid "glTF"
 msgstr "glTF"
+
+msgid "Naming Version"
+msgstr "Naming-Version"
 
 msgid "Embedded Image Handling"
 msgstr "Handhabung für eingebettete Bilder"
@@ -3295,6 +3361,12 @@ msgstr "Probe-Strahlenanzahl Ultra-Qualität"
 
 msgid "Max Rays per Probe Pass"
 msgstr "Max. Strahlen pro Probe-Durchlauf"
+
+msgid "Denoising"
+msgstr "Rauschunterdrückung"
+
+msgid "Denoiser"
+msgstr "Rauschunterdrückungs-Typ"
 
 msgid "BPM"
 msgstr "BPM"
@@ -4320,7 +4392,7 @@ msgid "Playing"
 msgstr "Wird abgespielt"
 
 msgid "Autoplay"
-msgstr "Automatisches Abspielen"
+msgstr "Autoplay"
 
 msgid "Stream Paused"
 msgstr "Abspielen pausiert"
@@ -4622,6 +4694,9 @@ msgstr "Versatz Max."
 msgid "Offset Curve"
 msgstr "Versatzkurve"
 
+msgid "Amount Ratio"
+msgstr "Mengenverhältnis"
+
 msgid "Sub Emitter"
 msgstr "Unteremitter"
 
@@ -4630,6 +4705,9 @@ msgstr "Materialverarbeitung"
 
 msgid "Interpolate"
 msgstr "Interpolieren"
+
+msgid "Interp to End"
+msgstr "Interp zum Ende"
 
 msgid "Base Size"
 msgstr "Basisgröße"
@@ -5625,10 +5703,16 @@ msgid "Quality"
 msgstr "Qualität"
 
 msgid "Bounces"
-msgstr "Aufprälle"
+msgstr "Abprälle"
+
+msgid "Bounce Indirect Energy"
+msgstr "Indirekte Energie abprallen"
 
 msgid "Directional"
 msgstr "Direktional"
+
+msgid "Use Texture for Bounces"
+msgstr "Textur für Abprallen verwenden"
 
 msgid "Interior"
 msgstr "Innenbereich"
@@ -5671,6 +5755,9 @@ msgstr "Pfadhöhenversatz"
 
 msgid "Use 3D Avoidance"
 msgstr "3D-Vermeidung verwenden"
+
+msgid "Keep Y Velocity"
+msgstr "Y-Geschwindigkeit behalten"
 
 msgid "Navigation Mesh"
 msgstr "Navigations-Mesh"
@@ -6018,7 +6105,7 @@ msgid "Propagation"
 msgstr "Verbreitung"
 
 msgid "Use Two Bounces"
-msgstr "Zwei Aufprälle benutzen"
+msgstr "Zwei Abprälle benutzen"
 
 msgid "Tracker"
 msgstr "Tracker"
@@ -6911,6 +6998,15 @@ msgstr "Mehrere"
 msgid "Syntax Highlighter"
 msgstr "Syntaxhervorhebung"
 
+msgid "Visual Whitespace"
+msgstr "Visueller Whitespace"
+
+msgid "Control Chars"
+msgstr "Steuerzeichen"
+
+msgid "Spaces"
+msgstr "Leerzeichen"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Text Edit-Inaktivitätserkennung (Sek.)"
 
@@ -7351,6 +7447,9 @@ msgstr "Min Größe"
 
 msgid "Max Size"
 msgstr "Max Größe"
+
+msgid "Keep Title Visible"
+msgstr "Titel sichtbar halten"
 
 msgid "Content Scale"
 msgstr "Inhaltsskalierung"
@@ -8081,6 +8180,78 @@ msgstr "Quellengeometriegruppenname"
 msgid "Bundled"
 msgstr "Gebündelt"
 
+msgid "Damping as Friction"
+msgstr "Dämpfung als Reibung"
+
+msgid "Spawn"
+msgstr "Spawn"
+
+msgid "Emission Shape Offset"
+msgstr "Emissions-Shape-Offset"
+
+msgid "Emission Shape Scale"
+msgstr "Emissions-Shape-Skala"
+
+msgid "Emission Sphere Radius"
+msgstr "Emissions-Kugel-Radius"
+
+msgid "Emission Box Extents"
+msgstr "Emissions-Box-Ausmaße"
+
+msgid "Emission Point Texture"
+msgstr "Emissions-Punkt-Textur"
+
+msgid "Emission Normal Texture"
+msgstr "Emissions-Normalen-Textur"
+
+msgid "Emission Color Texture"
+msgstr "Emissions-Farbtextur"
+
+msgid "Emission Point Count"
+msgstr "Emissions-Punktzahl"
+
+msgid "Emission Ring Axis"
+msgstr "Emissions-Ringachse"
+
+msgid "Emission Ring Height"
+msgstr "Emission-Ringhöhe"
+
+msgid "Emission Ring Radius"
+msgstr "Emissions-Ring-Radius"
+
+msgid "Emission Ring Inner Radius"
+msgstr "Emissions-Ring-Innenradius"
+
+msgid "Inherit Velocity Ratio"
+msgstr "Geschwindigkeits-Verhältnis erben"
+
+msgid "Velocity Pivot"
+msgstr "Geschwindigkeits-Pivot"
+
+msgid "Initial Velocity Min"
+msgstr "Initiale Geschwindigkeit Min"
+
+msgid "Initial Velocity Max"
+msgstr "Initiale Geschwindigkeit Max"
+
+msgid "Animated Velocity"
+msgstr "Animierte Geschwindigkeit"
+
+msgid "Velocity Limit"
+msgstr "Geschwindigkeits-Limit"
+
+msgid "Directional Velocity"
+msgstr "Richtungsgeschwindigkeit"
+
+msgid "Radial Velocity"
+msgstr "Radialgeschwindigkeit"
+
+msgid "Velocity Limit Curve"
+msgstr "Geschwindigkeits-Limit-Kurve"
+
+msgid "Accelerations"
+msgstr "Beschleunigungen"
+
 msgid "Attractor Interaction"
 msgstr "Attraktor-Interaktion"
 
@@ -8092,6 +8263,27 @@ msgstr "Skala Max."
 
 msgid "Scale Curve"
 msgstr "Skalierungskurve"
+
+msgid "Scale Over Velocity"
+msgstr "Skalierung über Geschwindigkeit"
+
+msgid "Scale over Velocity Min"
+msgstr "Skalierung über Geschwindigkeit Min"
+
+msgid "Scale over Velocity Max"
+msgstr "Skalierung über Geschwindigkeit Max"
+
+msgid "Scale over Velocity Curve"
+msgstr "Skalierung Geschwindigkeits-Kurve"
+
+msgid "Color Curves"
+msgstr "Farbkurven"
+
+msgid "Alpha Curve"
+msgstr "Alphakurve"
+
+msgid "Emission Curve"
+msgstr "Emissions-Kurve"
 
 msgid "Turbulence"
 msgstr "Turbulenz"
@@ -9428,6 +9620,9 @@ msgstr "Pegel dB"
 msgid "Pan"
 msgstr "Panning"
 
+msgid "Attack (µs)"
+msgstr "Attack (μs)"
+
 msgid "Release (ms)"
 msgstr "Release (ms)"
 
@@ -9699,7 +9894,7 @@ msgid "Exclude"
 msgstr "Ausschließen"
 
 msgid "Collide With Bodies"
-msgstr "Mit anderen Körpern kollidieren"
+msgstr "Mit anderen Bodies kollidieren"
 
 msgid "Collide With Areas"
 msgstr "Mit anderen Gebieten kollidieren"
@@ -9714,7 +9909,7 @@ msgid "Collide Separation Ray"
 msgstr "Kollision Trennungsstrahl"
 
 msgid "Exclude Bodies"
-msgstr "Körper ausschließen"
+msgstr "Bodies ausschließen"
 
 msgid "Exclude Objects"
 msgstr "Objekte ausschließen"
@@ -9772,6 +9967,12 @@ msgstr "Hauptträgheitsachse"
 
 msgid "Max Collisions"
 msgstr "Max. Kollisionen"
+
+msgid "Debug Redraw Time"
+msgstr "Zeit Debug-Neuzeichnen"
+
+msgid "Debug Redraw Color"
+msgstr "Farbe Debug-Neuzeichnen"
 
 msgid "Vertex"
 msgstr "Vertex"

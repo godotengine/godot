@@ -158,7 +158,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-09 22:40+0000\n"
+"PO-Revision-Date: 2023-11-15 10:06+0000\n"
 "Last-Translator: Ilia Brykin <brykin.ilia@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
@@ -301,6 +301,9 @@ msgstr "Сила панорамирования 3D"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Mix With Others"
+msgstr "Смешивание с другими"
 
 msgid "Editor"
 msgstr "Редактор"
@@ -1088,11 +1091,20 @@ msgstr "Импорт"
 msgid "Blender"
 msgstr "Blender"
 
+msgid "RPC Server Uptime"
+msgstr "Время работы сервера RPC"
+
 msgid "FBX"
 msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF Путь"
+
+msgid "Oidn"
+msgstr ""
+"Oidn означает Open Image Denoise, это свободно распространяемая библиотека "
+"для обработки изображений с открытым исходным кодом, предназначенная для "
+"удаления шумов из рендеров."
 
 msgid "Docks"
 msgstr "Панели"
@@ -1417,6 +1429,9 @@ msgstr "Размер контура кости"
 
 msgid "Viewport Border Color"
 msgstr "Цвет границы Viewport"
+
+msgid "Use Integer Zoom by Default"
+msgstr "Использовать целочисленное масштабирование по умолчанию"
 
 msgid "Sub Editors Panning Scheme"
 msgstr "Схема панорамирования подредакторов"
@@ -1780,6 +1795,21 @@ msgstr "Точность"
 
 msgid "Symmetry Planes Clipping Bias"
 msgstr "Плоскости симметрии смещение отсечения"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "Смещение отсечения осей революции"
+
+msgid "Min Volume per Convex Hull"
+msgstr "Минимальный объем для каждой выпуклой оболочки"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "Максимальное количество вершин для каждой выпуклой оболочки"
+
+msgid "Plane Downsampling"
+msgstr "Понижение разрешения для плоскости"
+
+msgid "Convexhull Downsampling"
+msgstr "Понижение разрешения для выпуклой оболочки"
 
 msgid "Height"
 msgstr "Высота"

@@ -1138,18 +1138,6 @@ msgstr "Platinasponsorer"
 msgid "Gold Sponsors"
 msgstr "Gullsponsorer"
 
-msgid "Mini Sponsors"
-msgstr "Minisponsorer"
-
-msgid "Gold Donors"
-msgstr "Gulldonorer"
-
-msgid "Silver Donors"
-msgstr "Sølvdonorer"
-
-msgid "Bronze Donors"
-msgstr "Bronsedonorer"
-
 msgid "Donors"
 msgstr "Donorer"
 
