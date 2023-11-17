@@ -510,6 +510,97 @@ bool MeshInstance3D::_property_get_revert(const StringName &p_name, Variant &r_p
 	return false;
 }
 
+void MeshInstance3D::bake_mesh_from_current_skeleton_pose(Ref<ArrayMesh> p_bake_mesh) {
+	ERR_FAIL_NULL_MSG(p_bake_mesh, "The bake mesh must be a valid ArrayMesh.");
+	Ref<ArrayMesh> source_mesh = get_mesh();
+	ERR_FAIL_NULL_MSG(source_mesh, "The source mesh must be a valid ArrayMesh.");
+	ERR_FAIL_COND_MSG(source_mesh == p_bake_mesh, "The source mesh can not be the same mesh as the bake mesh.");
+
+	ERR_FAIL_NULL_MSG(skin_ref, "The source mesh must have a valid skin.");
+	ERR_FAIL_NULL_MSG(skin_internal, "The source mesh must have a valid skin.");
+	RID skeleton = skin_ref->get_skeleton();
+	ERR_FAIL_COND_MSG(!skeleton.is_valid(), "The source mesh must have its skin registered with a valid skeleton.");
+
+	const int bone_count = RenderingServer::get_singleton()->skeleton_get_bone_count(skeleton);
+	ERR_FAIL_COND(bone_count <= 0);
+	ERR_FAIL_COND(bone_count < skin_internal->get_bind_count());
+
+	LocalVector<Transform3D> bone_transforms;
+	bone_transforms.resize(bone_count);
+	for (int bone_index = 0; bone_index < bone_count; bone_index++) {
+		bone_transforms[bone_index] = RenderingServer::get_singleton()->skeleton_bone_get_transform(skeleton, bone_index);
+	}
+
+	p_bake_mesh->clear_surfaces();
+
+	int mesh_surface_count = source_mesh->get_surface_count();
+
+	for (int surface_index = 0; surface_index < mesh_surface_count; surface_index++) {
+		ERR_CONTINUE(source_mesh->surface_get_primitive_type(surface_index) != Mesh::PRIMITIVE_TRIANGLES);
+
+		uint32_t surface_format = source_mesh->surface_get_format(surface_index);
+
+		ERR_CONTINUE(0 == (surface_format & Mesh::ARRAY_FORMAT_VERTEX));
+		ERR_CONTINUE(0 == (surface_format & Mesh::ARRAY_FORMAT_BONES));
+		ERR_CONTINUE(0 == (surface_format & Mesh::ARRAY_FORMAT_WEIGHTS));
+
+		unsigned int bones_per_vertex = surface_format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+
+		surface_format &= ~Mesh::ARRAY_FORMAT_BONES;
+		surface_format &= ~Mesh::ARRAY_FORMAT_WEIGHTS;
+
+		const Array &source_mesh_arrays = source_mesh->surface_get_arrays(surface_index);
+
+		ERR_FAIL_COND(source_mesh_arrays.size() != RS::ARRAY_MAX);
+
+		const Vector<Vector3> &source_mesh_vertex_array = source_mesh_arrays[Mesh::ARRAY_VERTEX];
+		const Vector<int> &source_mesh_bones_array = source_mesh_arrays[Mesh::ARRAY_BONES];
+		const Vector<float> &source_mesh_weights_array = source_mesh_arrays[Mesh::ARRAY_WEIGHTS];
+
+		unsigned int vertex_count = source_mesh_vertex_array.size();
+		int expected_bone_array_size = vertex_count * bones_per_vertex;
+		ERR_CONTINUE(source_mesh_bones_array.size() != expected_bone_array_size);
+		ERR_CONTINUE(source_mesh_weights_array.size() != expected_bone_array_size);
+
+		Array new_mesh_arrays;
+		new_mesh_arrays.resize(Mesh::ARRAY_MAX);
+		for (int i = 0; i < source_mesh_arrays.size(); i++) {
+			if (i == Mesh::ARRAY_VERTEX || i == Mesh::ARRAY_BONES || i == Mesh::ARRAY_WEIGHTS) {
+				continue;
+			}
+			new_mesh_arrays[i] = source_mesh_arrays[i];
+		}
+
+		Vector<Vector3> bone_transformed_vertex_array = source_mesh_vertex_array;
+
+		const Vector3 *vertices_ptr = source_mesh_vertex_array.ptr();
+		Vector3 *transformed_vertices_ptrw = bone_transformed_vertex_array.ptrw();
+
+		const int *bones_ptr = source_mesh_bones_array.ptr();
+		const float *weights_ptr = source_mesh_weights_array.ptr();
+
+		for (unsigned int vertex_index = 0; vertex_index < vertex_count; vertex_index++) {
+			Vector3 bone_transformed_vertex;
+
+			for (unsigned int weight_index = 0; weight_index < bones_per_vertex; weight_index++) {
+				int vertex_bone_index = bones_ptr[vertex_index * bones_per_vertex + weight_index];
+				float bone_weight = weights_ptr[vertex_index * bones_per_vertex + weight_index];
+				if (bone_weight < FLT_EPSILON) {
+					continue;
+				}
+				ERR_FAIL_INDEX(vertex_bone_index, static_cast<int>(bone_transforms.size()));
+				bone_transformed_vertex += bone_transforms[vertex_bone_index].xform(vertices_ptr[vertex_index]) * bone_weight;
+			}
+
+			transformed_vertices_ptrw[vertex_index] = bone_transformed_vertex;
+		}
+
+		new_mesh_arrays[Mesh::ARRAY_VERTEX] = bone_transformed_vertex_array;
+
+		p_bake_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, new_mesh_arrays, Array(), Dictionary(), surface_format);
+	}
+}
+
 void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance3D::get_mesh);
@@ -536,6 +627,9 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_shape_value", "blend_shape_idx", "value"), &MeshInstance3D::set_blend_shape_value);
 
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance3D::create_debug_tangents);
+
+	ClassDB::bind_method(D_METHOD("bake_mesh_from_current_skeleton_pose", "bake_mesh"), &MeshInstance3D::bake_mesh_from_current_skeleton_pose);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_GROUP("Skeleton", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");

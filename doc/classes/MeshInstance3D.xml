@@ -13,6 +13,14 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
+		<method name="bake_mesh_from_current_skeleton_pose">
+			<return type="void" />
+			<param index="0" name="bake_mesh" type="ArrayMesh" />
+			<description>
+				Takes a snapshot of the current animated skeleton pose of the skinned mesh and bakes it to the provided [param bake_mesh]. Requires a skeleton with registered skin to work. Blendshapes are ignored. Mesh surface materials are not copied.
+				[b]Performance:[/b] [Mesh] data needs to be received from the GPU, stalling the [RenderingServer] in the process.
+			</description>
+		</method>
 		<method name="create_convex_collision">
 			<return type="void" />
 			<param index="0" name="clean" type="bool" default="true" />
