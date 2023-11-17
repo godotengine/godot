@@ -79,11 +79,17 @@ Point2i DisplayServerSwitch::screen_get_position(int p_screen) const {
 }
 
 Size2i DisplayServerSwitch::screen_get_size(int p_screen) const {
-	return Size2i(1280, 720);
+	if (_window) {
+		unsigned int w, h;
+		nwindowGetDimensions(_window, &w, &h);
+		Size2i(w, h);
+	}
+	return Size2i(0, 0);
 }
 
 Rect2i DisplayServerSwitch::screen_get_usable_rect(int p_screen) const {
-	return Rect2i(0, 0, 1280, 720);
+	Size2i size = screen_get_size();
+	return Rect2i(0, 0, size[0], size[1]);
 }
 
 int DisplayServerSwitch::screen_get_dpi(int p_screen) const {
@@ -138,8 +144,8 @@ int DisplayServerSwitch::window_get_current_screen(WindowID p_window) const {
 }
 
 void DisplayServerSwitch::gl_window_make_current(DisplayServer::WindowID p_window_id) {
-	if (gl_manager) {
-		gl_manager->make_current();
+	if (_gl_manager) {
+		_gl_manager->make_current();
 	}
 }
 
@@ -261,38 +267,40 @@ Key DisplayServerSwitch::keyboard_get_keycode_from_physical(Key p_keycode) const
 }
 
 void DisplayServerSwitch::process_events() {
-	//TODO:vrince of course
+	// input
+	// keyboard
+	// pads
 
 	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerSwitch::release_rendering_thread() {
-	if (gl_manager) {
-		gl_manager->release_current();
+	if (_gl_manager) {
+		_gl_manager->release_current();
 	}
 }
 
 void DisplayServerSwitch::make_rendering_thread() {
-	if (gl_manager) {
-		gl_manager->make_current();
+	if (_gl_manager) {
+		_gl_manager->make_current();
 	}
 }
 
 void DisplayServerSwitch::swap_buffers() {
-	if (gl_manager) {
-		gl_manager->swap_buffers();
+	if (_gl_manager) {
+		_gl_manager->swap_buffers();
 	}
 }
 
 void DisplayServerSwitch::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
-	if (gl_manager) {
-		gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
+	if (_gl_manager) {
+		_gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
 	}
 }
 
 DisplayServer::VSyncMode DisplayServerSwitch::window_get_vsync_mode(WindowID p_window) const {
-	if (gl_manager) {
-		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	if (_gl_manager) {
+		return _gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
 }
 
@@ -316,32 +324,32 @@ DisplayServerSwitch::DisplayServerSwitch(const String &p_rendering_driver, Windo
 	OS::get_singleton()->print("DisplayServerSwitch\n");
 
 	r_error = FAILED;
-
-	NWindow *window = nwindowGetDefault();
-
-	printf("windows %p\n", window);
-	unsigned int w, h;
-	nwindowGetDimensions(window, &w, &h);
-	printf("windows size (%d,%d)\n", w, h);
-	printf("windows valid %d\n", nwindowIsValid(window));
+	_window = nwindowGetDefault();
 
 	//Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	// Initialize context and rendering device.
+	_gl_manager = memnew(GLManagerSwitch());
 
-	gl_manager = memnew(GLManagerSwitch());
-
-	if (!nwindowIsValid(window)) {
+	if (!nwindowIsValid(_window)) {
+		_window = nullptr;
 		ERR_FAIL_MSG("Windows is not valid");
 		return;
 	}
 
-	if (gl_manager->initialize(window) != OK) {
-		memdelete(gl_manager);
-		gl_manager = nullptr;
+	unsigned int w, h;
+	nwindowGetDimensions(_window, &w, &h);
+	printf("nwindows size (%d,%d)\n", w, h);
+
+	if (_gl_manager->initialize(_window) != OK) {
+		memdelete(_gl_manager);
+		_window = nullptr;
+		_gl_manager = nullptr;
 		ERR_FAIL_MSG("Cannot initialize GL");
 		return;
 	}
+
+	RasterizerGLES3::make_current();
 	RasterizerGLES3::make_current();
 
 	// plug nvwindows id
@@ -351,13 +359,13 @@ DisplayServerSwitch::DisplayServerSwitch(const String &p_rendering_driver, Windo
 }
 
 DisplayServerSwitch::~DisplayServerSwitch() {
-	if (gl_manager) {
-		gl_manager->cleanup();
+	if (_gl_manager) {
+		_gl_manager->cleanup();
 	}
 
-	if (gl_manager) {
-		memdelete(gl_manager);
-		gl_manager = nullptr;
+	if (_gl_manager) {
+		memdelete(_gl_manager);
+		_gl_manager = nullptr;
 	}
 }
 

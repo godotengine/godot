@@ -45,7 +45,8 @@
 class DisplayServerSwitch : public DisplayServer {
 	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
-	GLManagerSwitch *gl_manager = nullptr;
+	GLManagerSwitch *_gl_manager = nullptr;
+	NWindow *_window = nullptr;
 
 public:
 	virtual bool has_feature(Feature p_feature) const override;
@@ -68,7 +69,7 @@ public:
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
-	
+
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;

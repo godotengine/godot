@@ -64,6 +64,11 @@ public:
 
 	String get_executable_path() const override { return String(_args[0].c_str()); }
 
+	String get_data_path() const override;
+	String get_config_path() const override;
+	String get_cache_path() const override;
+	String get_user_data_dir() const override;
+
 	// actual switch appends here
 	void run();
 

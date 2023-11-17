@@ -96,6 +96,7 @@ public:
 	void finalize();
 
 	static RendererCompositor *_create_current() {
+		print_line("_create_current(RasterizerGLES3)");
 		return memnew(RasterizerGLES3);
 	}
 

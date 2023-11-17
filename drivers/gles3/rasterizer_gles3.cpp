@@ -258,29 +258,36 @@ RasterizerGLES3::RasterizerGLES3() {
 #endif // CAN_DEBUG
 
 	{
+		print_line("Engine::get_singleton()->get_shader_cache_path()");
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
 		if (shader_cache_dir.is_empty()) {
 			shader_cache_dir = "user://";
 		}
+		print_line("DirAccess::open(shader_cache_dir");
 		Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
 		if (da.is_null()) {
 			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
 		} else {
+			print_line("shader_cache");
 			Error err = da->change_dir("shader_cache");
 			if (err != OK) {
+				print_line("make_dir shader_cache");
 				err = da->make_dir("shader_cache");
+				print_line("make_dir shader_cache done");
 			}
+			print_line("err != OK");
 			if (err != OK) {
 				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
 			} else {
 				shader_cache_dir = shader_cache_dir.path_join("shader_cache");
-
+				print_line("shader_cache_enabled");
 				bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
 				if (!Engine::get_singleton()->is_editor_hint() && !shader_cache_enabled) {
 					shader_cache_dir = String(); //disable only if not editor
 				}
-
+				print_line("sb;ab;ab;a");
 				if (!shader_cache_dir.is_empty()) {
+					print_line("ShaderGLES3::set_shader_cache_dir");
 					ShaderGLES3::set_shader_cache_dir(shader_cache_dir);
 				}
 			}
@@ -288,17 +295,30 @@ RasterizerGLES3::RasterizerGLES3() {
 	}
 
 	// OpenGL needs to be initialized before initializing the Rasterizers
+	int i = 0;
+	print_line(i++);
 	config = memnew(GLES3::Config);
+	print_line(i++);
 	utilities = memnew(GLES3::Utilities);
+	print_line(i++);
 	texture_storage = memnew(GLES3::TextureStorage);
+	print_line(i++);
 	material_storage = memnew(GLES3::MaterialStorage);
+	print_line(i++);
 	mesh_storage = memnew(GLES3::MeshStorage);
+	print_line(i++);
 	particles_storage = memnew(GLES3::ParticlesStorage);
+	print_line(i++);
 	light_storage = memnew(GLES3::LightStorage);
+	print_line(i++);
 	copy_effects = memnew(GLES3::CopyEffects);
+	print_line(i++);
 	gi = memnew(GLES3::GI);
+	print_line(i++);
 	fog = memnew(GLES3::Fog);
+	print_line(i++);
 	canvas = memnew(RasterizerCanvasGLES3());
+	print_line(i++);
 	scene = memnew(RasterizerSceneGLES3());
 }
 

@@ -30,8 +30,11 @@
 
 #include "switch/kernel/random.h"
 
-#include "os_switch.h"
+#include "main/main.h"
+#include "core/config/project_settings.h"
+
 #include "display_server_switch.h"
+#include "os_switch.h"
 
 void OS_Switch::initialize() {
 	print("initialize\n");
@@ -73,14 +76,56 @@ bool OS_Switch::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
-void OS_Switch::run() {
-	print("run\n");
+String OS_Switch::get_data_path() const {
+	return "sdmc:/switch";
+}
 
+String OS_Switch::get_config_path() const {
+	return "sdmc:/switch";
+}
+
+String OS_Switch::get_cache_path() const {
+	return "sdmc:/switch";
+}
+
+String OS_Switch::get_user_data_dir() const {
+	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
+	if (!appname.is_empty()) {
+		return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname);
+	}
+	return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join("unnamed");
+}
+
+void OS_Switch::run() {
 	if (!_main_loop) {
 		return;
 	}
 
 	_main_loop->initialize();
+
+	// Configure our supported input layout: a single player with standard controller styles
+	padConfigureInput(1, HidNpadStyleSet_NpadStandard);
+
+	// Initialize the default gamepad (which reads handheld mode inputs as well as the first connected controller)
+	PadState pad;
+	padInitializeDefault(&pad);
+
+	while (appletMainLoop()) {
+		DisplayServer::get_singleton()->process_events(); // get rid of pending events
+
+		padUpdate(&pad);
+		u32 kDown = padGetButtonsDown(&pad);
+		if (kDown & HidNpadButton_Plus) {
+			break;
+		}
+
+		if (Main::iteration()) {
+			break;
+		}
+		print("++\n");
+	}
+
+	_main_loop->finalize();
 }
 
 OS_Switch::OS_Switch(const std::vector<std::string> &args) :
