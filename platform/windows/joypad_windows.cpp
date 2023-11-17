@@ -57,6 +57,7 @@ JoypadWindows::JoypadWindows(HWND *hwnd) {
 	xinput_dll = nullptr;
 	xinput_get_state = nullptr;
 	xinput_set_state = nullptr;
+	is_enabled = Input::get_singleton()->get_enable_joypad();
 
 	load_xinput();
 
@@ -305,6 +306,10 @@ void JoypadWindows::close_joypad(int id) {
 }
 
 void JoypadWindows::probe_joypads() {
+	if (!is_enabled) {
+		return;
+	}
+
 	ERR_FAIL_NULL_MSG(dinput, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	DWORD dwResult;
 	for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {
@@ -345,6 +350,10 @@ void JoypadWindows::probe_joypads() {
 }
 
 void JoypadWindows::process_joypads() {
+	if (!is_enabled) {
+		return;
+	}
+
 	HRESULT hr;
 
 	for (int i = 0; i < XUSER_MAX_COUNT; i++) {

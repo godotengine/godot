@@ -39,6 +39,10 @@
 #include "core/os/thread.h"
 #endif
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"a",
 	"b",
@@ -763,6 +767,24 @@ void Input::stop_joy_vibration(int p_device) {
 
 void Input::vibrate_handheld(int p_duration_ms) {
 	OS::get_singleton()->vibrate_handheld(p_duration_ms);
+}
+
+void Input::set_force_disable_joypad(bool p_force) {
+	force_disable_joypad = p_force;
+}
+
+bool Input::get_enable_joypad() const {
+	if (force_disable_joypad) {
+		return false;
+	}
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return EDITOR_GET("input_devices/joypad/enabled");
+	}
+#endif
+
+	return GLOBAL_GET("input_devices/joypad/enabled");
 }
 
 void Input::set_gravity(const Vector3 &p_gravity) {
