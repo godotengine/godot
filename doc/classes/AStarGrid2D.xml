@@ -173,6 +173,9 @@
 			Enables or disables jumping to skip up the intermediate points and speeds up the searching algorithm.
 			[b]Note:[/b] Currently, toggling it on disables the consideration of weight scaling in pathfinding.
 		</member>
+		<member name="max_traversals" type="int" setter="set_max_traversals" getter="get_max_traversals" default="-1">
+			The maximum number of points to traverse before giving up. If set to [code]-1[/code], the search will continue until the end point is reached or the whole grid is traversed.
+		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The offset of the grid which will be applied to calculate the resulting point position returned by [method get_point_path]. If changed, [method update] needs to be called before finding the next path.
 		</member>

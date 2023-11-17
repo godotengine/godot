@@ -139,8 +139,16 @@ void AStarGrid2D::set_jumping_enabled(bool p_enabled) {
 	jumping_enabled = p_enabled;
 }
 
+void AStarGrid2D::set_max_traversals(int64_t p_max_traversals) {
+	max_traversals = p_max_traversals;
+}
+
 bool AStarGrid2D::is_jumping_enabled() const {
 	return jumping_enabled;
+}
+
+int64_t AStarGrid2D::get_max_traversals() const {
+	return max_traversals;
 }
 
 void AStarGrid2D::set_diagonal_mode(DiagonalMode p_diagonal_mode) {
@@ -424,6 +432,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 	}
 
 	bool found_route = false;
+	int64_t traversal_count = 0;
 
 	LocalVector<Point *> open_list;
 	SortArray<Point *, SortPoints> sorter;
@@ -438,6 +447,11 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 
 		if (p == p_end_point) {
 			found_route = true;
+			break;
+		}
+
+		// If we have a limit on traversals, increment and stop once we reach the threshold.
+		if (max_traversals != -1 && traversal_count++ >= max_traversals) {
 			break;
 		}
 
@@ -626,6 +640,8 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update"), &AStarGrid2D::update);
 	ClassDB::bind_method(D_METHOD("set_jumping_enabled", "enabled"), &AStarGrid2D::set_jumping_enabled);
 	ClassDB::bind_method(D_METHOD("is_jumping_enabled"), &AStarGrid2D::is_jumping_enabled);
+	ClassDB::bind_method(D_METHOD("set_max_traversals", "max_traversals"), &AStarGrid2D::set_max_traversals);
+	ClassDB::bind_method(D_METHOD("get_max_traversals"), &AStarGrid2D::get_max_traversals);
 	ClassDB::bind_method(D_METHOD("set_diagonal_mode", "mode"), &AStarGrid2D::set_diagonal_mode);
 	ClassDB::bind_method(D_METHOD("get_diagonal_mode"), &AStarGrid2D::get_diagonal_mode);
 	ClassDB::bind_method(D_METHOD("set_default_compute_heuristic", "heuristic"), &AStarGrid2D::set_default_compute_heuristic);
@@ -653,6 +669,7 @@ void AStarGrid2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "jumping_enabled"), "set_jumping_enabled", "is_jumping_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_traversals"), "set_max_traversals", "get_max_traversals");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_compute_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_compute_heuristic", "get_default_compute_heuristic");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_estimate_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_estimate_heuristic", "get_default_estimate_heuristic");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Never,Always,At Least One Walkable,Only If No Obstacles"), "set_diagonal_mode", "get_diagonal_mode");
