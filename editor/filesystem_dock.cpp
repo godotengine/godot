@@ -1563,10 +1563,37 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 }
 
 void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const {
-	// Update the paths in ResourceUID, so that UIDs remain valid.
-	for (const KeyValue<String, ResourceUID::ID> &pair : p_uids) {
-		if (p_renames.has(pair.key)) {
-			ResourceUID::get_singleton()->set_id(pair.value, p_renames[pair.key]);
+	for (const KeyValue<String, String> &pair : p_renames) {
+		// Update UID path.
+		const HashMap<String, ResourceUID::ID>::ConstIterator I = p_uids.find(pair.key);
+		if (I) {
+			ResourceUID::get_singleton()->set_id(I->value, pair.value);
+		}
+
+		int index = -1;
+		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->find_file(pair.key, &index);
+		const StringName &type = efd->get_file_type(index);
+		if (!ClassDB::is_parent_class(type, "Script")) {
+			continue;
+		}
+
+		// Update paths for global classes.
+		if (!efd->get_file_script_class_name(index).is_empty()) {
+			String lang;
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				if (ScriptServer::get_language(i)->handles_global_class_type(type)) {
+					lang = ScriptServer::get_language(i)->get_name();
+					break;
+				}
+			}
+			if (lang.is_empty()) {
+				continue; // No language found that can handle this global class.
+			}
+
+			ScriptServer::remove_global_class_by_path(pair.key);
+			ScriptServer::add_global_class(efd->get_file_script_class_name(index), efd->get_file_script_class_extends(index), lang, pair.value);
+			EditorNode::get_editor_data().script_class_set_icon_path(efd->get_file_script_class_name(index), efd->get_file_script_class_icon_path(index));
+			EditorNode::get_editor_data().script_class_set_name(pair.value, efd->get_file_script_class_name(index));
 		}
 	}
 
