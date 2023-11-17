@@ -63,8 +63,8 @@ class NavMap : public NavRid {
 	/// This value is used to limit how far links search to find polygons to connect to.
 	real_t link_connection_radius = 1.0;
 
-	bool regenerate_polygons = true;
-	bool regenerate_links = true;
+	bool polygons_dirty = true;
+	bool connections_dirty = true;
 
 	/// Map regions
 	LocalVector<NavRegion *> regions;
@@ -210,7 +210,8 @@ private:
 	void compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent);
 	void compute_single_avoidance_step_3d(uint32_t index, NavAgent **agent);
 
-	void clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const;
+	void clip_path(const LocalVector<gd::Node> &p_navigation_polys, Vector<Vector3> &path, const gd::Node *p_from_node, const Vector3 &p_to_point, const gd::Node *p_to_node, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const;
+	void _update_connections();
 	void _update_rvo_simulation();
 	void _update_rvo_obstacles_tree_2d();
 	void _update_rvo_agents_tree_2d();

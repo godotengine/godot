@@ -72,74 +72,64 @@ struct EdgeKey {
 	}
 };
 
-struct Point {
-	Vector3 pos;
-	PointKey key;
-};
+struct Connection {
+	/// Polygon that this connection leads to.
+	Polygon *polygon = nullptr;
 
-struct Edge {
-	/// The gateway in the edge, as, in some case, the whole edge might not be navigable.
-	struct Connection {
-		/// Polygon that this connection leads to.
-		Polygon *polygon = nullptr;
+	/// Edge of the source polygon where this connection starts from.
+	int edge = -1;
 
-		/// Edge of the source polygon where this connection starts from.
-		int edge = -1;
+	/// Is this a connection to a polygon from a different region?
+	bool is_external = false;
 
-		/// Point on the edge where the gateway leading to the poly starts.
-		Vector3 pathway_start;
+	/// Point on the edge where the gateway leading to the polygon starts.
+	Vector3 pathway_start;
 
-		/// Point on the edge where the gateway leading to the poly ends.
-		Vector3 pathway_end;
-	};
-
-	/// Connections from this edge to other polygons.
-	Vector<Connection> connections;
+	/// Point on the edge where the gateway leading to the polygon ends.
+	Vector3 pathway_end;
 };
 
 struct Polygon {
 	/// Navigation region or link that contains this polygon.
 	const NavBase *owner = nullptr;
 
-	/// The points of this `Polygon`
-	LocalVector<Point> points;
+	/// The vertices of this `Polygon`
+	LocalVector<Vector3> vertices;
 
-	/// Are the points clockwise?
+	/// Are the vertices clockwise?
 	bool clockwise;
 
-	/// The edges of this `Polygon`
-	LocalVector<Edge> edges;
+	/// The connection of this `Polygon`
+	LocalVector<Connection> connections;
 
 	/// The center of this `Polygon`
 	Vector3 center;
 };
 
-struct NavigationPoly {
-	uint32_t self_id = 0;
-	/// This poly.
-	const Polygon *poly;
+struct Node {
+	/// The id of this node.
+	uint32_t id = 0;
+	/// The polygon that this `Node` is on.
+	const Polygon *polygon;
+	/// The the position of this `Node`.
+	Vector3 position;
+	/// The best cost so far to reach this `Node` from the start `Node`.
+	real_t cost = 0.0;
+	/// The id of the previous `Node` in the path.
+	int previous_node_id = -1;
+	/// The connection that was used to reach this `Node`.
+	Connection last_connection;
 
-	/// Those 4 variables are used to travel the path backwards.
-	int back_navigation_poly_id = -1;
-	int back_navigation_edge = -1;
-	Vector3 back_navigation_edge_pathway_start;
-	Vector3 back_navigation_edge_pathway_end;
+	Node() { polygon = nullptr; }
 
-	/// The entry position of this poly.
-	Vector3 entry;
-	/// The distance to the destination.
-	real_t traveled_distance = 0.0;
+	Node(const Polygon *p_polygon) :
+			polygon(p_polygon) {}
 
-	NavigationPoly() { poly = nullptr; }
-
-	NavigationPoly(const Polygon *p_poly) :
-			poly(p_poly) {}
-
-	bool operator==(const NavigationPoly &other) const {
-		return this->poly == other.poly;
+	bool operator==(const Node &other) const {
+		return this->polygon == other.polygon;
 	}
 
-	bool operator!=(const NavigationPoly &other) const {
+	bool operator!=(const Node &other) const {
 		return !operator==(other);
 	}
 };
