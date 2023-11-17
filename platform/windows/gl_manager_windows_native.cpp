@@ -104,7 +104,7 @@ static bool nvapi_err_check(const char *msg, int status) {
 }
 
 // On windows we have to disable threaded optimization when using NVIDIA graphics cards
-// to avoid stuttering, see https://github.com/microsoft/vscode-cpptools/issues/6592
+// to avoid stuttering, see https://stackoverflow.com/questions/36959508/nvidia-graphics-driver-causing-noticeable-frame-stuttering/37632948
 // also see https://github.com/Ryujinx/Ryujinx/blob/master/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
 void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	HMODULE nvapi = 0;
