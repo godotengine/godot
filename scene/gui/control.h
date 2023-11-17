@@ -317,6 +317,8 @@ private:
 
 	// Extra properties.
 
+	static int root_layout_direction;
+
 	String get_tooltip_text() const;
 
 protected:
@@ -402,6 +404,8 @@ public:
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
 
 	// Editor integration.
+
+	static void set_root_layout_direction(int p_root_dir);
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 	PackedStringArray get_configuration_warnings() const override;
