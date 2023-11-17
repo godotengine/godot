@@ -656,7 +656,7 @@ private:
 	friend class RefCounted;
 	bool type_is_reference = false;
 
-	std::mutex _instance_binding_mutex;
+	BinaryMutex _instance_binding_mutex;
 	struct InstanceBinding {
 		void *binding = nullptr;
 		void *token = nullptr;

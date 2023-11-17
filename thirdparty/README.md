@@ -515,6 +515,24 @@ error metrics instead of a combination of distance and attribute errors. Patches
 for both changes can be found in the `patches` directory.
 
 
+## mingw-std-threads
+
+- Upstream: https://github.com/meganz/mingw-std-threads
+- Version: git (c931bac289dd431f1dd30fc4a5d1a7be36668073, 2023)
+- License: BSD-2-clause
+
+Files extracted from upstream repository:
+
+- `LICENSE`
+- `mingw.condition_variable.h`
+- `mingw.invoke.h`
+- `mingw.mutex.h`
+- `mingw.shared_mutex.h`
+- `mingw.thread.h`
+
+Once copied, apply `no_except.patch` (needed because Godot is built without exceptions).
+
+
 ## minimp3
 
 - Upstream: https://github.com/lieff/minimp3
