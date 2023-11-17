@@ -208,28 +208,42 @@ void Control::set_root_layout_direction(int p_root_dir) {
 #ifdef TOOLS_ENABLED
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	ERR_READ_THREAD_GUARD;
-	CanvasItem::get_argument_options(p_function, p_idx, r_options);
-
 	if (p_idx == 0) {
-		List<StringName> sn;
 		const String pf = p_function;
+		Theme::DataType type = Theme::DATA_TYPE_MAX;
+
 		if (pf == "add_theme_color_override" || pf == "has_theme_color" || pf == "has_theme_color_override" || pf == "get_theme_color") {
-			ThemeDB::get_singleton()->get_default_theme()->get_color_list(get_class(), &sn);
-		} else if (pf == "add_theme_style_override" || pf == "has_theme_style" || pf == "has_theme_style_override" || pf == "get_theme_style") {
-			ThemeDB::get_singleton()->get_default_theme()->get_stylebox_list(get_class(), &sn);
-		} else if (pf == "add_theme_font_override" || pf == "has_theme_font" || pf == "has_theme_font_override" || pf == "get_theme_font") {
-			ThemeDB::get_singleton()->get_default_theme()->get_font_list(get_class(), &sn);
-		} else if (pf == "add_theme_font_size_override" || pf == "has_theme_font_size" || pf == "has_theme_font_size_override" || pf == "get_theme_font_size") {
-			ThemeDB::get_singleton()->get_default_theme()->get_font_size_list(get_class(), &sn);
+			type = Theme::DATA_TYPE_COLOR;
 		} else if (pf == "add_theme_constant_override" || pf == "has_theme_constant" || pf == "has_theme_constant_override" || pf == "get_theme_constant") {
-			ThemeDB::get_singleton()->get_default_theme()->get_constant_list(get_class(), &sn);
+			type = Theme::DATA_TYPE_CONSTANT;
+		} else if (pf == "add_theme_font_override" || pf == "has_theme_font" || pf == "has_theme_font_override" || pf == "get_theme_font") {
+			type = Theme::DATA_TYPE_FONT;
+		} else if (pf == "add_theme_font_size_override" || pf == "has_theme_font_size" || pf == "has_theme_font_size_override" || pf == "get_theme_font_size") {
+			type = Theme::DATA_TYPE_FONT_SIZE;
+		} else if (pf == "add_theme_icon_override" || pf == "has_theme_icon" || pf == "has_theme_icon_override" || pf == "get_theme_icon") {
+			type = Theme::DATA_TYPE_ICON;
+		} else if (pf == "add_theme_style_override" || pf == "has_theme_style" || pf == "has_theme_style_override" || pf == "get_theme_style") {
+			type = Theme::DATA_TYPE_STYLEBOX;
 		}
 
-		sn.sort_custom<StringName::AlphCompare>();
-		for (const StringName &name : sn) {
-			r_options->push_back(String(name).quote());
+		if (type != Theme::DATA_TYPE_MAX) {
+			List<ThemeDB::ThemeItemBind> theme_items;
+			ThemeDB::get_singleton()->get_class_items(get_class_name(), &theme_items, true, type);
+
+			List<StringName> sn;
+			for (const ThemeDB::ThemeItemBind &E : theme_items) {
+				if (E.data_type == type) {
+					sn.push_back(E.item_name);
+				}
+			}
+
+			sn.sort_custom<StringName::AlphCompare>();
+			for (const StringName &name : sn) {
+				r_options->push_back(String(name).quote());
+			}
 		}
 	}
+	CanvasItem::get_argument_options(p_function, p_idx, r_options);
 }
 #endif
 
