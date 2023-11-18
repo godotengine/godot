@@ -161,7 +161,8 @@ EditorAbout::EditorAbout() {
 
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	about_text->set_text(String::utf8("\xc2\xa9 2014-present ") + TTR("Godot Engine contributors") + "." +
+	about_text->set_text(
+			String::utf8("\xc2\xa9 2014-present ") + TTR("Godot Engine contributors") + "." +
 			String::utf8("\n\xc2\xa9 2007-2014 Juan Linietsky, Ariel Manzur.\n"));
 	version_info_vbc->add_child(about_text);
 
@@ -182,24 +183,35 @@ EditorAbout::EditorAbout() {
 	// TRANSLATORS: This refers to a job title.
 	dev_sections.push_back(TTR("Project Manager", "Job Title"));
 	dev_sections.push_back(TTR("Developers"));
-	const char *const *dev_src[] = { AUTHORS_FOUNDERS, AUTHORS_LEAD_DEVELOPERS,
-		AUTHORS_PROJECT_MANAGERS, AUTHORS_DEVELOPERS };
+	const char *const *dev_src[] = {
+		AUTHORS_FOUNDERS,
+		AUTHORS_LEAD_DEVELOPERS,
+		AUTHORS_PROJECT_MANAGERS,
+		AUTHORS_DEVELOPERS,
+	};
 	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 1));
 
 	// Donors
 
 	List<String> donor_sections;
+	donor_sections.push_back(TTR("Patrons"));
 	donor_sections.push_back(TTR("Platinum Sponsors"));
 	donor_sections.push_back(TTR("Gold Sponsors"));
 	donor_sections.push_back(TTR("Silver Sponsors"));
-	donor_sections.push_back(TTR("Bronze Sponsors"));
-	donor_sections.push_back(TTR("Mini Sponsors"));
-	donor_sections.push_back(TTR("Gold Donors"));
-	donor_sections.push_back(TTR("Silver Donors"));
-	donor_sections.push_back(TTR("Bronze Donors"));
-	const char *const *donor_src[] = { DONORS_SPONSOR_PLATINUM, DONORS_SPONSOR_GOLD,
-		DONORS_SPONSOR_SILVER, DONORS_SPONSOR_BRONZE, DONORS_SPONSOR_MINI,
-		DONORS_GOLD, DONORS_SILVER, DONORS_BRONZE };
+	donor_sections.push_back(TTR("Diamond Members"));
+	donor_sections.push_back(TTR("Titanium Members"));
+	donor_sections.push_back(TTR("Platinum Members"));
+	donor_sections.push_back(TTR("Gold Members"));
+	const char *const *donor_src[] = {
+		DONORS_PATRONS,
+		DONORS_SPONSORS_PLATINUM,
+		DONORS_SPONSORS_GOLD,
+		DONORS_SPONSORS_SILVER,
+		DONORS_MEMBERS_DIAMOND,
+		DONORS_MEMBERS_TITANIUM,
+		DONORS_MEMBERS_PLATINUM,
+		DONORS_MEMBERS_GOLD,
+	};
 	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 3));
 
 	// License

@@ -977,21 +977,6 @@ msgstr "Sponsori Aur"
 msgid "Silver Sponsors"
 msgstr "Sponsori de argint"
 
-msgid "Bronze Sponsors"
-msgstr "Sponsori de bronz"
-
-msgid "Mini Sponsors"
-msgstr "Mini Sponsori"
-
-msgid "Gold Donors"
-msgstr "Donatori de Aur"
-
-msgid "Silver Donors"
-msgstr "Donatori de Argint"
-
-msgid "Bronze Donors"
-msgstr "Donatori de Bronz"
-
 msgid "Donors"
 msgstr "Donatori"
 

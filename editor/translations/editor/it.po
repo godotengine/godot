@@ -36,7 +36,7 @@
 # Davide Giuliano <davidegiuliano00@gmail.com>, 2019.
 # Stefano Merazzi <asso99@hotmail.com>, 2019.
 # Sinapse X <sinapsex13@gmail.com>, 2019.
-# Micila Micillotto <micillotto@gmail.com>, 2019, 2020, 2021, 2022.
+# Micila Micillotto <micillotto@gmail.com>, 2019, 2020, 2021, 2022, 2023.
 # Mirko Soppelsa <miknsop@gmail.com>, 2019, 2020, 2021, 2022, 2023.
 # No <kingofwizards.kw7@gmail.com>, 2019.
 # StarFang208 <polaritymanx@yahoo.it>, 2019, 2023.
@@ -98,8 +98,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-23 06:30+0000\n"
-"Last-Translator: Andrea <andrea.rubino1990@gmail.com>\n"
+"PO-Revision-Date: 2023-11-15 10:05+0000\n"
+"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -107,7 +107,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread principale"
@@ -853,6 +853,11 @@ msgstr ""
 
 msgid "Remove Anim Track"
 msgstr "Rimuovi una traccia d'animazione"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Tieni premuto Maiuscolo (Shift) mentre clicchi l'icona a forma di chiave per "
+"non far comparire questo dialogo."
 
 msgid "Create new track for %s and insert key?"
 msgstr "Creare una nuova traccia per %s e inserire la chiave?"
@@ -1918,21 +1923,6 @@ msgstr "Sponsor oro"
 
 msgid "Silver Sponsors"
 msgstr "Sponsor argento"
-
-msgid "Bronze Sponsors"
-msgstr "Sponsor bronzo"
-
-msgid "Mini Sponsors"
-msgstr "Sponsor mini"
-
-msgid "Gold Donors"
-msgstr "Donatori oro"
-
-msgid "Silver Donors"
-msgstr "Donatori argento"
-
-msgid "Bronze Donors"
-msgstr "Donatori bronzo"
 
 msgid "Donors"
 msgstr "Donatori"
@@ -4782,6 +4772,21 @@ msgstr "Rinomina..."
 msgid "Open in External Program"
 msgstr "Apri in un programma esterno"
 
+msgid "Yellow"
+msgstr "Giallo"
+
+msgid "Green"
+msgstr "Verde"
+
+msgid "Blue"
+msgstr "Blu"
+
+msgid "Pink"
+msgstr "Rosa"
+
+msgid "Gray"
+msgstr "Grigio"
+
 msgid "Go to previous selected folder/file."
 msgstr "Vai al file (o cartella) precedentemente selezionato."
 
@@ -5405,12 +5410,6 @@ msgstr "Font TrueType/OpenType renderizzato dinamicamente"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Campo distanza sottoscritta(+true) multicanale prerenderizzata"
-
-msgid "Can't load font texture:"
-msgstr "Impossibile caricare texture del font:"
-
-msgid "Image margin too big."
-msgstr "Margine dell'immagine troppo grande."
 
 msgid "Pre-Import Scene"
 msgstr "Pre-importazione della scena"
@@ -13347,23 +13346,8 @@ msgstr "Impossibile scrivere il file del pacchetto di espansione!"
 msgid "Building Android Project (gradle)"
 msgstr "Compilazione di un progetto Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Compilazione del progetto Android fallita, controlla l'output per vedere gli "
-"errori. In alternativa, visita docs.godotengine.org per la documentazione "
-"della build Android."
-
 msgid "Moving output"
 msgstr "Spostando l'output"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Impossibile copiare e rinominare il file di esportazione, controlla la "
-"directory del progetto gradle per gli output."
 
 msgid "Package not found: \"%s\"."
 msgstr "Pacchetto non trovato: \"%s\"."
@@ -14268,15 +14252,6 @@ msgid ""
 msgstr ""
 "La dimensione del Viewport deve essere maggiore o uguale a 2 pixel su "
 "entrambi i lati per visualizzare qualcosa."
-
-msgid "Cannot open font from file: %s."
-msgstr "Impossibile aprie il font dal file: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "La Versione %d di BMFont non è supportata (dovrebbe essere la 3)."
-
-msgid "Can't load font texture: %s."
-msgstr "Impossibile caricare la texture del font: %s."
 
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "

@@ -1556,21 +1556,6 @@ msgstr "Patrocinadores Ouro"
 msgid "Silver Sponsors"
 msgstr "Patrocinadores Prata"
 
-msgid "Bronze Sponsors"
-msgstr "Patrocinadores Bronce"
-
-msgid "Mini Sponsors"
-msgstr "Patrocinadores Mini"
-
-msgid "Gold Donors"
-msgstr "Doadores Ouro"
-
-msgid "Silver Donors"
-msgstr "Doadores Prata"
-
-msgid "Bronze Donors"
-msgstr "Doadores Bronce"
-
 msgid "Donors"
 msgstr "Doadores"
 
@@ -5173,14 +5158,6 @@ msgstr ""
 
 msgid "Building Android Project (gradle)"
 msgstr "Construir Proxecto Android (gradle)"
-
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"A creación do proxecto para Android fallou, comproba a saída para encontrar o "
-"erro. Alternativamente visita docs.godotengine.org para ver a documentación "
-"sobre compilación para Android."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"

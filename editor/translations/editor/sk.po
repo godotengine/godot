@@ -1490,21 +1490,6 @@ msgstr "Zlatý Sponzori"
 msgid "Silver Sponsors"
 msgstr "Strieborný Sponzori"
 
-msgid "Bronze Sponsors"
-msgstr "Bronzový Sponzori"
-
-msgid "Mini Sponsors"
-msgstr "Malý Sponzori"
-
-msgid "Gold Donors"
-msgstr "Zlatý Darcovia"
-
-msgid "Silver Donors"
-msgstr "Strieborný Darcovia"
-
-msgid "Bronze Donors"
-msgstr "Bronzový Darcovia"
-
 msgid "Donors"
 msgstr "Darcovia"
 
@@ -7462,15 +7447,6 @@ msgstr ""
 "straty dát."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"Nastavenie názvu nodu '%s', aby bol jedinečným v scéne '%s', ale názov už je "
-"nárokovaný '%s'.\n"
-"'%s' už nie je nastavený ako s jedinečným názvom."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -7490,9 +7466,6 @@ msgid ""
 msgstr ""
 "ShaderGlobalsOverride nie je aktívny, pretože iný node rovnakého typu je v "
 "scéne."
-
-msgid "Cannot open font from file: %s."
-msgstr "Nedá sa otvoriť font zo súboru: %s."
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

@@ -12,13 +12,14 @@
 # D āvis <dlektauers@gmail.com>, 2022.
 # Agnis Aldiņš <agnis16@gmail.com>, 2023.
 # Andrejs <ledaviskylv@gmail.com>, 2023.
+# Peter Lauris <peterlauris@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-23 21:22+0000\n"
-"Last-Translator: Andrejs <ledaviskylv@gmail.com>\n"
+"PO-Revision-Date: 2023-11-16 07:52+0000\n"
+"Last-Translator: Peter Lauris <peterlauris@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -27,7 +28,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2\n"
+
+msgid "Main Thread"
+msgstr "Galvenais Pavediens"
 
 msgid "Unset"
 msgstr "Neiestatīts"
@@ -1222,21 +1226,6 @@ msgstr "Zelta Sponsori"
 
 msgid "Silver Sponsors"
 msgstr "Sudraba Sponsors"
-
-msgid "Bronze Sponsors"
-msgstr "Bronzas Sponsors"
-
-msgid "Mini Sponsors"
-msgstr "Mini Sponsori"
-
-msgid "Gold Donors"
-msgstr "Zelta Donors"
-
-msgid "Silver Donors"
-msgstr "Sudraba Donors"
-
-msgid "Bronze Donors"
-msgstr "Bronzas Donors"
 
 msgid "Donors"
 msgstr "Ziedotāji"

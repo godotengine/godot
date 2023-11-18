@@ -170,7 +170,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-10 13:46+0000\n"
+"PO-Revision-Date: 2023-11-11 19:11+0000\n"
 "Last-Translator: Ilia Brykin <brykin.ilia@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -2064,21 +2064,6 @@ msgstr "Золотые спонсоры"
 msgid "Silver Sponsors"
 msgstr "Серебряные спонсоры"
 
-msgid "Bronze Sponsors"
-msgstr "Бронзовые спонсоры"
-
-msgid "Mini Sponsors"
-msgstr "Мини спонсоры"
-
-msgid "Gold Donors"
-msgstr "Золотые доноры"
-
-msgid "Silver Donors"
-msgstr "Серебряные доноры"
-
-msgid "Bronze Donors"
-msgstr "Бронзовые доноры"
-
 msgid "Donors"
 msgstr "Доноры"
 
@@ -2943,11 +2928,23 @@ msgstr "Описания методов"
 msgid "Operator Descriptions"
 msgstr "Описания операторов"
 
+msgid "Metadata:"
+msgstr "Метаданные:"
+
 msgid "Property:"
 msgstr "Свойство:"
 
+msgid "Method:"
+msgstr "Метод:"
+
 msgid "Signal:"
 msgstr "Сигнал:"
+
+msgid "Theme Item:"
+msgstr "Элемент темы:"
+
+msgid "No description available."
+msgstr "Описание недоступно."
 
 msgid "%d match."
 msgstr "%d совпадение."
@@ -4079,6 +4076,12 @@ msgstr ""
 msgid "Assign..."
 msgstr "Устанавливать.."
 
+msgid "Copy as Text"
+msgstr "Копировать как текст"
+
+msgid "Show Node in Tree"
+msgstr "Показать узел в дереве"
+
 msgid "Invalid RID"
 msgstr "Неверный RID"
 
@@ -4640,6 +4643,9 @@ msgstr "Удалить пресет '%s'?"
 msgid "Resources to exclude:"
 msgstr "Исключаемые ресурсы:"
 
+msgid "Resources to override export behavior:"
+msgstr "Ресурсы для изменения поведения экспорта:"
+
 msgid "Resources to export:"
 msgstr "Ресурсы для экспорта:"
 
@@ -4942,6 +4948,9 @@ msgstr "Дублирование папки:"
 msgid "New Inherited Scene"
 msgstr "Новая вложенная сцена"
 
+msgid "Set as Main Scene"
+msgstr "Установить как основную сцену"
+
 msgid "Open Scenes"
 msgstr "Открыть сцены"
 
@@ -5053,6 +5062,33 @@ msgstr "Переименовать..."
 msgid "Open in External Program"
 msgstr "Открыть во внешней программе"
 
+msgid "Red"
+msgstr "Красный"
+
+msgid "Orange"
+msgstr "Оранжевый"
+
+msgid "Yellow"
+msgstr "Желтый"
+
+msgid "Green"
+msgstr "Зеленый"
+
+msgid "Teal"
+msgstr "Бирюзовый"
+
+msgid "Blue"
+msgstr "Синий"
+
+msgid "Purple"
+msgstr "Фиолетовый"
+
+msgid "Pink"
+msgstr "Розовый"
+
+msgid "Gray"
+msgstr "Серый"
+
 msgid "Go to previous selected folder/file."
 msgstr "Перейти к предыдущей выбранной папке/файлу."
 
@@ -5061,6 +5097,9 @@ msgstr "Перейти к следующей выбранной папке/фа�
 
 msgid "Re-Scan Filesystem"
 msgstr "Пересканировать файловую систему"
+
+msgid "Change Split Mode"
+msgstr "Изменить режим разделения"
 
 msgid "Filter Files"
 msgstr "Фильтр файлов"
@@ -5679,15 +5718,6 @@ msgstr "Динамически отображаемый шрифт TrueType/Open
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Предрендерное многоканальное (+true) подписанное поле расстояния"
-
-msgid "Can't load font texture:"
-msgstr "Не удаётся загрузить текстуру шрифта:"
-
-msgid "Image margin too big."
-msgstr "Поля изображения слишком большие."
-
-msgid "Character margin too big."
-msgstr "Слишком большой отступ символов."
 
 msgid "Pre-Import Scene"
 msgstr "Предварительно импортировать сцену"
@@ -6677,6 +6707,10 @@ msgstr "[Глобальная] (создать)"
 
 msgid "Duplicated Animation Name:"
 msgstr "Повторяющееся имя анимации:"
+
+msgid "Onion skinning requires a RESET animation."
+msgstr ""
+"Для использования \"onion skinning\" необходима анимация с сбросом (RESET)."
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr ""
@@ -7819,6 +7853,19 @@ msgstr ""
 "Когда эта опция включена, формы, радиус и скорости объектов избегания будут "
 "видны в работающем проекте."
 
+msgid "Debug CanvasItem Redraws"
+msgstr "Отладочная перерисовка элемента холста"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"Когда эта опция включена, запросы на перерисовку 2D объектов становятся "
+"видимыми (как короткое вспышки) в работающем проекте.\n"
+"Это полезно для устранения неполадок в режиме низкой производительности "
+"процессора."
+
 msgid "Synchronize Scene Changes"
 msgstr "Синхронизация изменений в сценах"
 
@@ -8188,6 +8235,9 @@ msgstr "Создать меш навигации"
 msgid "Create Debug Tangents"
 msgstr "Отладка генерации касательной"
 
+msgid "No mesh to unwrap."
+msgstr "Нет сетки для распаковки."
+
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -8215,6 +8265,15 @@ msgstr "Развернуть UV2"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "Содержимое меша не типа ArrayMesh."
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "Невозможно распаковать сетку с формами смешивания (blend shapes)."
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "Поддерживаются только треугольники для распаковки карты освещения."
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "Для распаковки карты освещения требуются нормали."
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "UV развертка не удалась, возможно у меша не односвязная форма?"
@@ -9943,6 +10002,12 @@ msgstr "Создать LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "Предпросмотр LightOccluder2D"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "Невозможно преобразовать спрайт из другой сцены."
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "Невозможно преобразовать пустой спрайт в меш."
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -13667,8 +13732,18 @@ msgstr ""
 "Отключение параметра \"editable_instance\" приведет к тому, что все свойства "
 "узла будут возвращены к значениям по умолчанию."
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"Включение \"Загружать как заполнитель\" отключит \"Редактируемых дочерних "
+"элементов\" и приведет к возврату всех свойств узла к значениям по умолчанию."
+
 msgid "Make Local"
 msgstr "Сделать локальным"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "Нельзя переключить уникальное имя для узлов в подсцене!"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "Включить уникальные имена сцен"
@@ -13722,16 +13797,6 @@ msgstr "Удалить узел(узлы)"
 msgid "Change type of node(s)"
 msgstr "Изменить тип узла(ов)"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "Удаление узла из переменной \"%s\" на узле \"%s\"."
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr ""
-"Новый тип узла несовместим с экспортируемой переменной (ожидается %s, но тип "
-"- %s)."
-
 msgid "This operation requires a single selected node."
 msgstr "Эта операция требует одного выбранного узла."
 
@@ -13765,6 +13830,9 @@ msgstr "Очистить наследование"
 
 msgid "Editable Children"
 msgstr "Редактируемые потомки"
+
+msgid "Load as Placeholder"
+msgstr "Загрузить как заполнитель"
 
 msgid "Auto Expand to Selected"
 msgstr "Авто-раскрыть дерево до выбранного элемента"
@@ -14066,6 +14134,45 @@ msgstr "Имя '%s' является зарезервированным слов
 msgid "Add Shader Global Parameter"
 msgstr "Добавить глобальный параметр шейдера"
 
+msgid ""
+"This project uses meshes with an outdated mesh format from previous Godot "
+"versions. The engine needs to update the format in order to use those "
+"meshes.\n"
+"\n"
+"Press 'Restart & Upgrade' to run the surface upgrade tool which will update "
+"and re-save all meshes and scenes. This update will restart the editor and "
+"may take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"Press 'Upgrade Only' to continue opening the scene as normal. The engine will "
+"update each mesh in memory, but the update will not be saved. Choosing this "
+"option will lead to slower load times every time this project is loaded."
+msgstr ""
+"Этот проект использует сетки с устаревшим форматом из предыдущих версий "
+"Godot. Для использования этих сеток необходимо обновить формат.\n"
+"\n"
+"Нажмите 'Перезапустить и обновить', чтобы запустить инструмент обновления "
+"поверхности, который обновит и пересохранил все сетки и сцены. Это обновление "
+"перезапустит редактор и может занять несколько минут. После обновления сетки "
+"станут несовместимыми с предыдущими версиями Godot.\n"
+"\n"
+"Нажмите 'Только обновление', чтобы продолжить открытие сцены как обычно. "
+"Движок обновит каждую сетку в памяти, но обновление не будет сохранено. Выбор "
+"этой опции приведет к более медленным временам загрузки при каждом открытии "
+"проекта."
+
+msgid "Restart & Upgrade"
+msgstr "Перезапустить и обновить"
+
+msgid "Upgrade Only"
+msgstr "Только обновление"
+
+msgid "Upgrading All Meshes in Project"
+msgstr "Обновление всех сеток в проекте"
+
+msgid "Attempting to re-save "
+msgstr "Попытка повторного сохранения "
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Сделать эту панель плавающей на экране %d."
 
@@ -14096,6 +14203,9 @@ msgstr ""
 "Недопустимое значение аргумента type для convert(), используйте константы "
 "TYPE_*."
 
+msgid "Cannot resize array."
+msgstr "Невозможно изменить размер массива."
+
 msgid "Step argument is zero!"
 msgstr "Аргумент шага равен нулю!"
 
@@ -14120,6 +14230,9 @@ msgstr "Недопустимый формат экземпляра словар�
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Недопустимый экземпляр словаря (неверные подклассы)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "Невозможно создать экземпляр класса GDScript."
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "Значение типа '%s' не может иметь длину."
@@ -14325,6 +14438,9 @@ msgstr "Прямое освещение участка"
 
 msgid "Integrate indirect lighting"
 msgstr "Интегрировать непрямое освещение"
+
+msgid "Integrate indirect lighting %d%%"
+msgstr "Интегрировать непрямое освещение %d%%"
 
 msgid "Baking lightprobes"
 msgstr "Запекание карт освещения"
@@ -14744,6 +14860,9 @@ msgstr "Не удалось выполнить на устройстве."
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "Экспорт в Android при использовании C#/.NET является экспериментальным."
 
+msgid "Android architecture %s not supported in C# projects."
+msgstr "Архитектура Android %s не поддерживается в проектах на C#."
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14902,23 +15021,8 @@ msgstr "Не удалось записать расширение файла п�
 msgid "Building Android Project (gradle)"
 msgstr "Сборка проекта Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Сборка Android проекта не удалась, проверьте вывод на ошибки. Вы также можете "
-"посетить docs.godotengine.org для получения документации по сборке для "
-"Android."
-
 msgid "Moving output"
 msgstr "Перемещение выходных данных"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Невозможно скопировать и переименовать файл экспорта, проверьте каталог "
-"проекта gradle на наличие выходных данных."
 
 msgid "Package not found: \"%s\"."
 msgstr "Пакет не найден: \"%s\"."
@@ -14990,6 +15094,14 @@ msgid ""
 msgstr ""
 "Пакет .ipa может быть собран только на macOS. Выход из проекта Xcode без "
 "сборки пакета."
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr ""
+"Экспорт в iOS при использовании C#/.NET является экспериментальным и требует "
+"наличия macOS."
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "Экспорт в iOS при использовании C#/.NET является экспериментальным."
 
 msgid "Identifier is missing."
 msgstr "Отсутствует определитель."
@@ -15158,6 +15270,13 @@ msgstr ""
 
 msgid "App sandbox is required for App Store distribution."
 msgstr "Требуется приложение-песочница для распространения в App Store."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries (GDExtension or .NET)."
+msgstr ""
+"'rcodesign' не поддерживает подписывание приложений с встроенными "
+"динамическими библиотеками (GDExtension или .NET)."
 
 msgid "Code signing is required for App Store distribution."
 msgstr "Подписание кода требуется для распространения в App Store."
@@ -15360,6 +15479,13 @@ msgid ""
 msgstr ""
 "Для подписанных ad-hoc приложений требуется право 'Отключить проверку "
 "библиотеки' для загрузки динамических библиотек."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries."
+msgstr ""
+"'rcodesign' не поддерживает подписывание приложений с встроенными "
+"динамическими библиотеками."
 
 msgid "Could not create entitlements file."
 msgstr "Не удалось создать файл прав."
@@ -15831,6 +15957,17 @@ msgid ""
 msgstr ""
 "Слой TileMap установлен как Y-сортированный, но Y-сортировка не включена на "
 "самом узле TileMap."
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"Узел TileMap установлен как сортированный по Y, но сортировка по Y не "
+"включена ни на одном из слоев TileMap.\n"
+"Это может привести к нежелательным поведениям, поскольку слой, который не "
+"сортируется по Y, будет сортироваться по Y в целом."
 
 msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled for "
@@ -16480,6 +16617,14 @@ msgid "Automatically arrange selected nodes."
 msgstr "Автоматически располагать выбранные узлы."
 
 msgid ""
+"Labels with autowrapping enabled must have a custom minimum size configured "
+"to work correctly inside a container."
+msgstr ""
+"Этикетки с включенной автоматической переноской должны иметь настроенный "
+"пользовательский минимальный размер, чтобы правильно работать внутри "
+"контейнера."
+
+msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr ""
@@ -16612,15 +16757,6 @@ msgstr ""
 "сохранены повторно без риска потери данных."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"Установлено уникальное имя узла '%s' в пределах сцены для '%s', но оно уже "
-"занято '%s'.\n"
-"'%s' больше не устанавливается как имеющий уникальное имя."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -16633,13 +16769,6 @@ msgid ""
 msgstr ""
 "Этот узел является экспериментальным и может быть удалён или значительно "
 "изменён в следующих версиях."
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"Не удалось загрузить окружение по умолчанию, указанное в настройке проекта "
-"\"rendering/environment/defaults/default_environment\"."
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -16666,27 +16795,6 @@ msgid ""
 msgstr ""
 "Размер области просмотра должен быть больше или равен 2 пикселям в обоих "
 "измерениях, чтобы отобразить что-либо."
-
-msgid "Cannot open font from file: %s."
-msgstr "Невозможно открыть шрифт из файла: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "Версия %d BMFont не поддерживается (должно быть 3)."
-
-msgid "Invalid BMFont info block size."
-msgstr "Неверный размер блока информации BMFont."
-
-msgid "Invalid BMFont common block size."
-msgstr "Неверный размер общего блока BMFont."
-
-msgid "Can't load font texture: %s."
-msgstr "Не удается загрузить текстуру шрифта: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Неподдерживаемый формат текстуры BMFont."
-
-msgid "Invalid BMFont block type."
-msgstr "Неверный тип блока BMFont."
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "
