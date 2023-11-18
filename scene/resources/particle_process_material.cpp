@@ -86,9 +86,9 @@ void ParticleProcessMaterial::init_shaders() {
 	shader_names->tangent_accel_texture = "tangent_accel_texture";
 	shader_names->damping_texture = "damping_texture";
 	shader_names->scale_texture = "scale_curve";
-	shader_names->hue_variation_texture = "hue_variation_texture";
-	shader_names->anim_speed_texture = "anim_speed_texture";
-	shader_names->anim_offset_texture = "anim_offset_texture";
+	shader_names->hue_variation_texture = "hue_rot_curve";
+	shader_names->anim_speed_texture = "animation_speed_curve";
+	shader_names->anim_offset_texture = "animation_offset_curve";
 	shader_names->directional_velocity_texture = "directional_velocity_curve";
 	shader_names->scale_over_velocity_texture = "scale_over_velocity_curve";
 

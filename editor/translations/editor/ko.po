@@ -1875,21 +1875,6 @@ msgstr "골드 스폰서"
 msgid "Silver Sponsors"
 msgstr "실버 스폰서"
 
-msgid "Bronze Sponsors"
-msgstr "브론즈 스폰서"
-
-msgid "Mini Sponsors"
-msgstr "미니 스폰서"
-
-msgid "Gold Donors"
-msgstr "골드 기부자"
-
-msgid "Silver Donors"
-msgstr "실버 기부자"
-
-msgid "Bronze Donors"
-msgstr "브론즈 기부자"
-
 msgid "Donors"
 msgstr "기부자"
 
@@ -5258,12 +5243,6 @@ msgstr "동적으로 렌더링된 트루타입/오픈타입 글꼴"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "미리 렌더링된 다중 채널(+true) 부호 있는 거리 필드 (Multichannel SDF)"
-
-msgid "Can't load font texture:"
-msgstr "글꼴 텍스처를 로드할 수 없습니다:"
-
-msgid "Image margin too big."
-msgstr "이미지 여백이 너무 큽니다."
 
 msgid "Pre-Import Scene"
 msgstr "씬 미리 가져오기"
@@ -13774,22 +13753,8 @@ msgstr "확장 패키지 파일을 쓸 수 없었습니다!"
 msgid "Building Android Project (gradle)"
 msgstr "Android 프로젝트 빌드 중 (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Android 프로젝트의 빌드에 실패했습니다, 출력된 오류를 확인하세요. 또는 docs."
-"godotengine.org에서 Android 빌드 문서를 찾아보세요."
-
 msgid "Moving output"
 msgstr "출력 이동 중"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"내보내기 파일을 복사하고 이름을 바꿀 수 없습니다, 출력에 대한 gradle 프로젝트 "
-"디렉토리를 확인하세요."
 
 msgid "Package not found: \"%s\"."
 msgstr "패키지를 찾을 수 없음: \"%s\"."
@@ -14987,15 +14952,6 @@ msgstr ""
 "지됩니다. 따라서 데이터를 잃을 우려 없이 저장할 수 있습니다."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"노드 이름 '%s'을(를) 씬에서 '%s'에 대해 고유하게 만들었지만, 그것은 이미 "
-"'%s'가 소유하고 있습니다.\n"
-"'%s'는 더 이상 고유 이름을 가지지 않게 됩니다."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -15006,13 +14962,6 @@ msgid ""
 "This node is marked as experimental and may be subject to removal or major "
 "changes in future versions."
 msgstr "이 노드는 실험적이며 이후 버전에서 삭제되거나 변경될 수도 있습니다."
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"프로젝트 설정 \"rendering/environment/defaults/default_environment\"에 지정한 "
-"디폴트 환경을 불러올 수 없습니다."
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -15037,27 +14986,6 @@ msgid ""
 "dimensions to render anything."
 msgstr ""
 "무엇이든 렌더링하려면 뷰포트 크기가 양쪽 차원에서 2픽셀 이상이어야 합니다."
-
-msgid "Cannot open font from file: %s."
-msgstr "파일으로부터 글꼴을 열 수 없습니다: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "BMFont 버전 %d는 지원되지 않습니다 (3이어야 합니다)."
-
-msgid "Invalid BMFont info block size."
-msgstr "BMFont info block의 크기가 올바르지 않습니다."
-
-msgid "Invalid BMFont common block size."
-msgstr "BMFont common block의 크기가 올바르지 않습니다."
-
-msgid "Can't load font texture: %s."
-msgstr "글꼴 텍스쳐를 불러오지 못했습니다: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "지원되지 않는 BMFont 텍스처 형식입니다."
-
-msgid "Invalid BMFont block type."
-msgstr "잘못된 BMFont block 타입입니다."
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

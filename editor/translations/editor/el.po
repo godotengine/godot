@@ -1250,21 +1250,6 @@ msgstr "Χρυσοί Χορυγοί"
 msgid "Silver Sponsors"
 msgstr "Αργυροί Δωρητές"
 
-msgid "Bronze Sponsors"
-msgstr "Χάλκινοι Δωρητές"
-
-msgid "Mini Sponsors"
-msgstr "Μικροί Χορηγοί"
-
-msgid "Gold Donors"
-msgstr "Χρυσοί Δωρητές"
-
-msgid "Silver Donors"
-msgstr "Αργυροί Δωρητές"
-
-msgid "Bronze Donors"
-msgstr "Χάλκινοι Δωρητές"
-
 msgid "Donors"
 msgstr "Δωρητές"
 

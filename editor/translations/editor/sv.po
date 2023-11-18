@@ -1809,21 +1809,6 @@ msgstr "Guldsponsorer"
 msgid "Silver Sponsors"
 msgstr "Silverdonatorer"
 
-msgid "Bronze Sponsors"
-msgstr "Bronsdonatorer"
-
-msgid "Mini Sponsors"
-msgstr "Minisponsorer"
-
-msgid "Gold Donors"
-msgstr "Gulddonatorer"
-
-msgid "Silver Donors"
-msgstr "Silverdonatorer"
-
-msgid "Bronze Donors"
-msgstr "Bronsdonatorer"
-
 msgid "Donors"
 msgstr "Donatorer"
 
@@ -4335,12 +4320,6 @@ msgstr "Konfiguration:"
 
 msgid "Add configuration"
 msgstr "Lägg till konfiguration"
-
-msgid "Image margin too big."
-msgstr "Bildmarginal för stor."
-
-msgid "Character margin too big."
-msgstr "Teckenmarginal för stor."
 
 msgid "Import Scene"
 msgstr "Importera Scen"
@@ -7407,12 +7386,6 @@ msgstr "Infoga kontroltecken"
 
 msgid "(Other)"
 msgstr "(Annat)"
-
-msgid "Cannot open font from file: %s."
-msgstr "Kan inte öppna typsnitt från fil: %s."
-
-msgid "Invalid BMFont block type."
-msgstr "Ogiltig BMFont blocktyp."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

@@ -2520,15 +2520,7 @@ void ScriptEditor::save_current_script() {
 		clear_docs_from_script(scr);
 	}
 
-	if (resource->is_built_in()) {
-		// If built-in script, save the scene instead.
-		const String scene_path = resource->get_path().get_slice("::", 0);
-		if (!scene_path.is_empty()) {
-			EditorNode::get_singleton()->save_scene_if_open(scene_path);
-		}
-	} else {
-		EditorNode::get_singleton()->save_resource(resource);
-	}
+	EditorNode::get_singleton()->save_resource(resource);
 
 	if (scr.is_valid()) {
 		update_docs_from_script(scr);
@@ -3971,8 +3963,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	_update_recent_scripts();
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KeyModifierMask::CMD_OR_CTRL | Key::S), FILE_SAVE);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::S), FILE_SAVE_AS);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::S), FILE_SAVE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::S), FILE_SAVE_ALL);
 	ED_SHORTCUT_OVERRIDE("script_editor/save_all", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::S);
 	file_menu->get_popup()->add_separator();

@@ -100,7 +100,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-17 06:43+0000\n"
+"PO-Revision-Date: 2023-11-16 16:21+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
@@ -109,7 +109,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -242,6 +242,12 @@ msgstr "3D Kaydırma Keskinliği"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Session Category"
+msgstr "Oturum Kategorisi"
+
+msgid "Mix With Others"
+msgstr "Diğerleri ile Karıştır"
 
 msgid "Editor"
 msgstr "Düzenleyici"
@@ -425,6 +431,9 @@ msgstr "Çevreyi Kullan"
 
 msgid "Low Processor Usage Mode"
 msgstr "Düşük İşlemci Kullanım Kipi"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "Düşük İşlemci Kullanım Kipi Uyku (µsec)"
 
 msgid "Delta Smoothing"
 msgstr "Delta Yumuşatması"
@@ -951,6 +960,12 @@ msgstr "Ana Yazı Tipi Kalın"
 msgid "Code Font"
 msgstr "Kod Yazı Tipi"
 
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "Düşük İşlemci Kipi Uyku (µsec)"
+
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "Odaklanılmamış Düşük İşlemci Kipi Uyku (µsec)"
+
 msgid "Separate Distraction Mode"
 msgstr "Ayrık Dikkat Dağıtma Kipi"
 
@@ -1124,6 +1139,15 @@ msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF Yolu"
+
+msgid "Tools"
+msgstr "Araçlar"
+
+msgid "Oidn"
+msgstr "Oidn"
+
+msgid "Oidn Denoise Path"
+msgstr "Oidn Gürültü Giderici Yolu"
 
 msgid "Docks"
 msgstr "Yuvalar"
@@ -1671,6 +1695,9 @@ msgstr "Kullanıcı Tip Rengi"
 msgid "Comment Color"
 msgstr "Yorum Rengi"
 
+msgid "Doc Comment Color"
+msgstr "Döküman Yorum Rengi"
+
 msgid "String Color"
 msgstr "Dize Rengi"
 
@@ -1950,6 +1977,9 @@ msgstr "Haritalanmamış Kemikler"
 msgid "Create From"
 msgstr "Şuradan Oluştur"
 
+msgid "Scaling Mode"
+msgstr "Ölçekleme Kipi"
+
 msgid "Delimiter"
 msgstr "Ayırıcı"
 
@@ -2018,6 +2048,9 @@ msgstr "Örgü Kaydırma"
 
 msgid "Optimize Mesh"
 msgstr "Örgüyü En İyileştir"
+
+msgid "Force Disable Mesh Compression"
+msgstr "Örgü Sıkıştırmayı Devre Dışı Bırakmayı Zorla"
 
 msgid "Skip Import"
 msgstr "İçe Aktarmayı Atla"
@@ -2210,6 +2243,9 @@ msgstr "Işık Pişirme"
 
 msgid "Lightmap Texel Size"
 msgstr "Işık Haritası Texel Boyutu"
+
+msgid "Force Disable Compression"
+msgstr "Sıkıştırmayı Zorla Devre Dışı bırak"
 
 msgid "Skins"
 msgstr "Kaplamalar"
@@ -2406,6 +2442,12 @@ msgstr "Çerçevede Gezinti Aletini Göster"
 msgid "Gizmo Settings"
 msgstr "Alet Ayarları"
 
+msgid "Path 3D Tilt Disk Size"
+msgstr "3B Yolu Eğme Diski Boyutu"
+
+msgid "Path Tilt"
+msgstr "Yol Eğimi"
+
 msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Kaydederken Betikleri Otomatik Tekrar Yükle ve Çözümle"
 
@@ -2580,6 +2622,18 @@ msgstr "GL Uyumluluğu"
 msgid "Nvidia Disable Threaded Optimization"
 msgstr "Nvidia İş Parçacıklı En İyileştirmeyi Kapat"
 
+msgid "Fallback to Angle"
+msgstr "Son Çare Angle'a Geri Dön"
+
+msgid "Fallback to Native"
+msgstr "Son Çare Yerel'e Geri Dön"
+
+msgid "Fallback to Gles"
+msgstr "Son Çare Gles'e Geri Dön"
+
+msgid "Force Angle on Devices"
+msgstr "Cihazlarda Angle kullanımını Zorla"
+
 msgid "Renderer"
 msgstr "İşleyici"
 
@@ -2684,6 +2738,15 @@ msgstr "Derinlik Arabelleğini Gönder"
 
 msgid "Startup Alert"
 msgstr "Başlangıç Uyarısı"
+
+msgid "Extensions"
+msgstr "Uzantılar"
+
+msgid "Hand Tracking"
+msgstr "El Takibi"
+
+msgid "Eye Gaze Interaction"
+msgstr "Göz Bakış Etkileşimi"
 
 msgid "In Editor"
 msgstr "Düzenleyici İçinde"
@@ -2942,6 +3005,9 @@ msgstr "İş Parçası Kullan"
 
 msgid "glTF"
 msgstr "glTF"
+
+msgid "Naming Version"
+msgstr "Sürümü İsimlendirme"
 
 msgid "Embedded Image Handling"
 msgstr "Gömülü Resim İşlemesi"
@@ -3287,6 +3353,12 @@ msgstr "Çok Yüksek Kalite Sonda Işın Sayısı"
 
 msgid "Max Rays per Probe Pass"
 msgstr "Sonda Geçişi başına En Fazla Işın"
+
+msgid "Denoising"
+msgstr "Gürültü Giderme"
+
+msgid "Denoiser"
+msgstr "Gürültü Giderici"
 
 msgid "BPM"
 msgstr "Dakika Başına Vuruş (BPM)"
@@ -4614,6 +4686,9 @@ msgstr "Kaydırma En Çok"
 msgid "Offset Curve"
 msgstr "Kaydırma Eğrisi"
 
+msgid "Amount Ratio"
+msgstr "Miktar Oranı"
+
 msgid "Sub Emitter"
 msgstr "Alt Yayıcı"
 
@@ -4622,6 +4697,9 @@ msgstr "İşleme Malzemesi"
 
 msgid "Interpolate"
 msgstr "Ara Değerle"
+
+msgid "Interp to End"
+msgstr "Sona Ara Değerle"
 
 msgid "Base Size"
 msgstr "Temel Boyut"
@@ -5619,8 +5697,14 @@ msgstr "Kalite"
 msgid "Bounces"
 msgstr "Sekmeli"
 
+msgid "Bounce Indirect Energy"
+msgstr "Dolaylı Enerjiyi Sektir"
+
 msgid "Directional"
 msgstr "Yönlü"
+
+msgid "Use Texture for Bounces"
+msgstr "Sektirme için Doku Kullan"
 
 msgid "Interior"
 msgstr "İç Mekan"
@@ -5663,6 +5747,9 @@ msgstr "Yol Yüksekliği Kayması"
 
 msgid "Use 3D Avoidance"
 msgstr "3B Kaçınma Kullan"
+
+msgid "Keep Y Velocity"
+msgstr "Y Hızını Koru"
 
 msgid "Navigation Mesh"
 msgstr "Gezinti Örgüsü"
@@ -6903,6 +6990,15 @@ msgstr "Çoklu"
 msgid "Syntax Highlighter"
 msgstr "Sözdizimi Vurgulama"
 
+msgid "Visual Whitespace"
+msgstr "Görsel Beyazboşluk"
+
+msgid "Control Chars"
+msgstr "Denetim Karakterleri"
+
+msgid "Spaces"
+msgstr "Boşluklar"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Metn Düzenleme Boşta Kalma Algılama (sn)"
 
@@ -7343,6 +7439,9 @@ msgstr "En Küçük Boyut"
 
 msgid "Max Size"
 msgstr "En Büyük Boyut"
+
+msgid "Keep Title Visible"
+msgstr "Başlığı Görünür Tut"
 
 msgid "Content Scale"
 msgstr "İçerik Ölçeği"
@@ -8073,6 +8172,78 @@ msgstr "Kaynak Geometri Grup İsmi"
 msgid "Bundled"
 msgstr "Paketlenmiş"
 
+msgid "Damping as Friction"
+msgstr "Sönümlemeyi Sürtünme Olarak Al"
+
+msgid "Spawn"
+msgstr "Oluştur"
+
+msgid "Emission Shape Offset"
+msgstr "Yayılma Şekli Kayması"
+
+msgid "Emission Shape Scale"
+msgstr "Yayılma Şekli Ölçeği"
+
+msgid "Emission Sphere Radius"
+msgstr "Yayılma Küresi Yarıçapı"
+
+msgid "Emission Box Extents"
+msgstr "Yayılma Kutusu Uzanımları"
+
+msgid "Emission Point Texture"
+msgstr "Yayılma Noktası Dokusu"
+
+msgid "Emission Normal Texture"
+msgstr "Yayılmaz Normali Dokusu"
+
+msgid "Emission Color Texture"
+msgstr "Yayılma Rengi Dokusu"
+
+msgid "Emission Point Count"
+msgstr "Yayılma Noktası Sayısı"
+
+msgid "Emission Ring Axis"
+msgstr "Yayılma Halkası Ekseni"
+
+msgid "Emission Ring Height"
+msgstr "Yayılma Halkası Yüksekliği"
+
+msgid "Emission Ring Radius"
+msgstr "Yayılma Halkası Yarıçapı"
+
+msgid "Emission Ring Inner Radius"
+msgstr "Yayılma Halkası İç Yarıçapı"
+
+msgid "Inherit Velocity Ratio"
+msgstr "Hız Oranını Miras Al"
+
+msgid "Velocity Pivot"
+msgstr "Hız Ekseni"
+
+msgid "Initial Velocity Min"
+msgstr "Başlangıç Hızı En Az"
+
+msgid "Initial Velocity Max"
+msgstr "Başlangıç Hızı En Fazla"
+
+msgid "Animated Velocity"
+msgstr "Canlandırılan Hız"
+
+msgid "Velocity Limit"
+msgstr "Hız Sınırı"
+
+msgid "Directional Velocity"
+msgstr "Yönlü Hız"
+
+msgid "Radial Velocity"
+msgstr "Radyal Hız"
+
+msgid "Velocity Limit Curve"
+msgstr "Hız Sınırı Eğrisi"
+
+msgid "Accelerations"
+msgstr "Hızlanmalar"
+
 msgid "Attractor Interaction"
 msgstr "Çekici Etkileşimi"
 
@@ -8084,6 +8255,27 @@ msgstr "Ölçek En Fazla"
 
 msgid "Scale Curve"
 msgstr "Ölçek Eğri"
+
+msgid "Scale Over Velocity"
+msgstr "Hız Üzerinden Ölçeklendir"
+
+msgid "Scale over Velocity Min"
+msgstr "En Az Hız Üzerinden Ölçekle"
+
+msgid "Scale over Velocity Max"
+msgstr "En Fazla Hız Üzerinden Ölçekle"
+
+msgid "Scale over Velocity Curve"
+msgstr "Hız Eğrisi Üzerinden Ölçekle"
+
+msgid "Color Curves"
+msgstr "Renk Eğrileri"
+
+msgid "Alpha Curve"
+msgstr "Alfa Eğrisi"
+
+msgid "Emission Curve"
+msgstr "Yayılım Eğrisi"
 
 msgid "Turbulence"
 msgstr "Çalkantı"
@@ -9420,6 +9612,9 @@ msgstr "Seviye dB"
 msgid "Pan"
 msgstr "Kaydır"
 
+msgid "Attack (µs)"
+msgstr "Atak (µs)"
+
 msgid "Release (ms)"
 msgstr "Bırakma (ms)"
 
@@ -9764,6 +9959,12 @@ msgstr "Esas Elemsizlik Ekseni"
 
 msgid "Max Collisions"
 msgstr "En Fazla Çarpışmalar"
+
+msgid "Debug Redraw Time"
+msgstr "Hata Ayıklama Tekrar Çizme Süresi"
+
+msgid "Debug Redraw Color"
+msgstr "Hata Ayıklama Tekrar Çizme Rengi"
 
 msgid "Vertex"
 msgstr "Köşenokta"

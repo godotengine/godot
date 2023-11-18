@@ -373,6 +373,8 @@ protected:
 
 	static void _bind_methods();
 
+	static bool inform_variant_array(int &r_min, int &r_max); // Returns true if max and min are swapped.
+
 public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
@@ -487,11 +489,19 @@ public:
 	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);
 	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests
 
-	// Helper math functions for Variant.
+	// Helper functions for Variant.
+	static bool is_variant_interpolatable(const Variant p_value);
+
+	static Variant cast_to_blendwise(const Variant p_value);
+	static Variant cast_from_blendwise(const Variant p_value, const Variant::Type p_type);
+
+	static Variant string_to_array(const Variant p_value);
+	static Variant array_to_string(const Variant p_value);
+
 	static Variant add_variant(const Variant &a, const Variant &b);
 	static Variant subtract_variant(const Variant &a, const Variant &b);
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
-	static Variant interpolate_variant(const Variant &a, const Variant &b, float c);
+	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
 
 	Animation();
 	~Animation();

@@ -105,12 +105,13 @@
 # Yusuf <yusufdundar92@gmail.com>, 2023.
 # Ufuk SARIALTIN <sarialtinufuk@gmail.com>, 2023.
 # Caner Özer <canerozer44@gmail.com>, 2023.
+# yiid <tunayigit026@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-17 06:43+0000\n"
+"PO-Revision-Date: 2023-11-16 16:21+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -119,7 +120,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "Ana İş Parçası"
@@ -1996,21 +1997,6 @@ msgstr "Altın Sponsorlar"
 msgid "Silver Sponsors"
 msgstr "Gümüş Bağışçılar"
 
-msgid "Bronze Sponsors"
-msgstr "Bronz Bağışçılar"
-
-msgid "Mini Sponsors"
-msgstr "Mini Sponsorlar"
-
-msgid "Gold Donors"
-msgstr "Altın Bağışçılar"
-
-msgid "Silver Donors"
-msgstr "Gümüş Bağışçılar"
-
-msgid "Bronze Donors"
-msgstr "Bronz Bağışçılar"
-
 msgid "Donors"
 msgstr "Bağışçılar"
 
@@ -2884,11 +2870,23 @@ msgstr "Yöntem Tanımlamaları"
 msgid "Operator Descriptions"
 msgstr "İşleç Tanımlamaları"
 
+msgid "Metadata:"
+msgstr "Metaveri:"
+
 msgid "Property:"
 msgstr "Özellik:"
 
+msgid "Method:"
+msgstr "Yöntem:"
+
 msgid "Signal:"
 msgstr "Sinyal:"
+
+msgid "Theme Item:"
+msgstr "Tema Öğesi:"
+
+msgid "No description available."
+msgstr "Tanımlama mevcut değil."
 
 msgid "%d match."
 msgstr "%d eşleşme."
@@ -4018,6 +4016,12 @@ msgstr ""
 msgid "Assign..."
 msgstr "Ata..."
 
+msgid "Copy as Text"
+msgstr "Metin Olarak Kopyala"
+
+msgid "Show Node in Tree"
+msgstr "Düğümü Ağaçta Görüntüle"
+
 msgid "Invalid RID"
 msgstr "Geçersiz kaynak kimliği (RID)"
 
@@ -4585,6 +4589,9 @@ msgstr "'%s' hazırayarı silinsin mi?"
 msgid "Resources to exclude:"
 msgstr "Hariç tutulacak kaynaklar:"
 
+msgid "Resources to override export behavior:"
+msgstr "Dışa aktarma davranışının üzerine yazacak kaynaklar:"
+
 msgid "Resources to export:"
 msgstr "Dışa aktarılacak kaynaklar:"
 
@@ -4893,6 +4900,9 @@ msgstr "Klasör çoğaltılıyor:"
 msgid "New Inherited Scene"
 msgstr "Yeni Miras Alınmış Sahne"
 
+msgid "Set as Main Scene"
+msgstr "Ana Sahne olarak ayarla"
+
 msgid "Open Scenes"
 msgstr "Sahneleri Aç"
 
@@ -5004,6 +5014,33 @@ msgstr "Yeniden Adlandır..."
 msgid "Open in External Program"
 msgstr "Harici Programda Aç"
 
+msgid "Red"
+msgstr "Kırmızı"
+
+msgid "Orange"
+msgstr "Turuncu"
+
+msgid "Yellow"
+msgstr "Sarı"
+
+msgid "Green"
+msgstr "Yeşil"
+
+msgid "Teal"
+msgstr "Ördekbaşı"
+
+msgid "Blue"
+msgstr "Mavi"
+
+msgid "Purple"
+msgstr "Mor"
+
+msgid "Pink"
+msgstr "Pembe"
+
+msgid "Gray"
+msgstr "Gri"
+
 msgid "Go to previous selected folder/file."
 msgstr "Önceki seçilen klasöre/dosyaya git."
 
@@ -5012,6 +5049,9 @@ msgstr "Sonraki seçilen klasöre/dosyaya git."
 
 msgid "Re-Scan Filesystem"
 msgstr "Dosyasistemi'ni Yeniden Tara"
+
+msgid "Change Split Mode"
+msgstr "Bölünmüş Kipi Değiştir"
 
 msgid "Filter Files"
 msgstr "Dosyaları Filtrele"
@@ -5628,15 +5668,6 @@ msgstr "Dinamik olarak işlenen TrueType/OpenType yazı tipi"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Ön-işlenmiş çok kanallı(+true) işaretli uzaklık alanı (MSDF)"
-
-msgid "Can't load font texture:"
-msgstr "Font dokusu yüklenemiyor:"
-
-msgid "Image margin too big."
-msgstr "Görüntü kenar boşluğu çok büyük."
-
-msgid "Character margin too big."
-msgstr "Karakter dış kenar boşluğu çok fazla."
 
 msgid "Pre-Import Scene"
 msgstr "\"İçe Aktarım Öncesi\" Sahnesi"
@@ -6627,6 +6658,9 @@ msgstr "[Genel] (oluştur)"
 
 msgid "Duplicated Animation Name:"
 msgstr "Yinelenen Animasyon İsmi:"
+
+msgid "Onion skinning requires a RESET animation."
+msgstr "Onion skinning, bir RESET (Sıfırlama) animasyonu gerektiriyor."
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "Seçilen animasyonu geçerli konumdan geriye doğru oynat. (A)"
@@ -7768,6 +7802,18 @@ msgstr ""
 "Bu seçenek etkinleştirildiğinde, kaçınma nesnelerinin şekilleri, yarıçapları "
 "ve hızları çalışan projede görünür olacaktır."
 
+msgid "Debug CanvasItem Redraws"
+msgstr "CanvasItem (kanvas öğeleri) Yeniden Çizimi Hata Ayıkla"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"Bu seçenek etkinleştirildiğinde, 2B nesnelerin tekrar çizim istekleri çalışan "
+"projede görünür (kısa yanıp sönme şeklinde) olacaktır.\n"
+"Düşük işlemci güç kipinde sorunları bulmak için yararlıdır."
+
 msgid "Synchronize Scene Changes"
 msgstr "Sahne Değişikliklerini Eşle"
 
@@ -8137,6 +8183,9 @@ msgstr "Gezinti Örgüsü Oluştur"
 msgid "Create Debug Tangents"
 msgstr "Hata Ayıklama Teğetleri Oluştur"
 
+msgid "No mesh to unwrap."
+msgstr "Açılacak hiçbir örgü yok."
+
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -8163,6 +8212,15 @@ msgstr "UV2 'yi aç"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "Kapsanan Örgü, ArrayMesh (DiziÖrgü) tipinde değil."
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "Harman şekilleri içeren örgüler açılamıyor."
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "Işık haritası açılması sırasında sadece üçgenler desteklenir."
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "Normaller, ışık haritası açılması için gereklidir."
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "UV Açma başarısız oldu, örgü bir çokkatmanlı (manifold) olmayabilir?"
@@ -9898,6 +9956,12 @@ msgstr "LightOccluder2D -2B ışık perdeleyici- Oluştur"
 
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D -2B ışık perdeleyici- Önizle"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "Yabancı bir sahnedeki bir grafik öğe dönüştürülemiyor."
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "Boş bir grafik öğe örgüye dönüştürülemiyor."
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -13626,8 +13690,19 @@ msgstr ""
 "\"düzenlenebilir_örnek\" seçeneği iptal edilirse, düğümün tüm özellikleri "
 "varsayılan değerlere geri döner."
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"\"Yer Tutucu Olarak Yükle\" seçeneğini etkinleştirilmek, \"Düzenlenebilir Alt-"
+"düğüm\" seçeneğini etkisiz hale getirir ve düğümün tüm özelliklerini "
+"varsayılanlara geri döndürür."
+
 msgid "Make Local"
 msgstr "Yerel Yap"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "Alt sahnedeki düğümler için benzersiz isim değiştirilemiyor!"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "Sahne İçi Benzersiz İsim(ler)i Etkin Kıl"
@@ -13680,16 +13755,6 @@ msgstr "Düğüm(ler)i Kaldır"
 msgid "Change type of node(s)"
 msgstr "Düğüm(ler)in türünü değiştir"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "Düğüm, \"%s\" değişkeninden (\"%s\" düğümündeki) kaldırılıyor."
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr ""
-"Düğümün yeni türü, dışa aktarılan bir değişkenle uyumsuz (beklenen %s, ancak "
-"tür %s)."
-
 msgid "This operation requires a single selected node."
 msgstr "Bu işlem, seçilmiş tek bir düğüm gerektirir."
 
@@ -13721,6 +13786,9 @@ msgstr "Kalıtımı Temizle"
 
 msgid "Editable Children"
 msgstr "Düzenlenebilir Alt-öğeler"
+
+msgid "Load as Placeholder"
+msgstr "Yer Tutucu olarak Yükle"
 
 msgid "Auto Expand to Selected"
 msgstr "Seçilene Otomatik Genişlet"
@@ -14019,6 +14087,47 @@ msgstr "'%s' ismi gölgelendirici dili için ayrılmış bir anahtar kelimedir."
 msgid "Add Shader Global Parameter"
 msgstr "Gölgelendirici Genel Parametresi Ekle"
 
+msgid ""
+"This project uses meshes with an outdated mesh format from previous Godot "
+"versions. The engine needs to update the format in order to use those "
+"meshes.\n"
+"\n"
+"Press 'Restart & Upgrade' to run the surface upgrade tool which will update "
+"and re-save all meshes and scenes. This update will restart the editor and "
+"may take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"Press 'Upgrade Only' to continue opening the scene as normal. The engine will "
+"update each mesh in memory, but the update will not be saved. Choosing this "
+"option will lead to slower load times every time this project is loaded."
+msgstr ""
+"Bu proje, eski Godot sürümlerinin kullandığı eski bir örgü biçimine sahip "
+"örgüler kullanmaktadır. Bu örgüleri kullanabilmek için, motorun biçimlerini "
+"güncellemesi gerekiyor.\n"
+"\n"
+"Tüm örgüleri ve sahneleri güncelleyip yeniden kaydedecek olan yüzey "
+"güncelleme aracını çalıştırmak için, 'Yeniden Başlat ve Güncelle' düğmesine "
+"basın. Bu güncelleme, düzenleyiciyi yeniden başlatır ve birkaç dakika "
+"sürebilir. Bu güncelleme, bu örgüleri Godot'un önceki sürümleriyle uyumsuz "
+"hale getirecektir.\n"
+"\n"
+"Sahneyi normal şekilde açmaya devam etmek için 'Sadece Güncelle' ye basın. "
+"Motor, örgülerin güncellemesini bellekte yapacak ancak bu güncellemeleri "
+"kaydetmeyecektir. Bu seçeneği seçmek, projenin her açılmasında daha yavaş "
+"yüklenmesine sebep olacaktır."
+
+msgid "Restart & Upgrade"
+msgstr "Yeniden Başlat ve Güncelle"
+
+msgid "Upgrade Only"
+msgstr "Yalnızca Güncelleme"
+
+msgid "Upgrading All Meshes in Project"
+msgstr "Projedeki Tüm Örgüler Güncelleniyor"
+
+msgid "Attempting to re-save "
+msgstr "Yeniden kaydetme deneniyor "
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Bu paneli %d ekranında yüzer hale getir."
 
@@ -14048,6 +14157,9 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
 "convert() için geçersiz tipte girdi değişkeni, TYPE_* sabitlerini kullanın."
 
+msgid "Cannot resize array."
+msgstr "Dizi yeniden boyutlandırılamadı."
+
 msgid "Step argument is zero!"
 msgstr "Adım girdi değişkeni sıfır!"
 
@@ -14071,6 +14183,9 @@ msgstr "Geçersiz örnek sözlüğü biçimi (@path 'teki betik geçersiz)"
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Geçersiz örnek sözlüğü (geçersiz altsınıflar)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "GDScript sınıfı örneklenemiyor."
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "'%s' tipindeki değer, bir uzunluk sağlayamaz."
@@ -14283,6 +14398,9 @@ msgstr "Doğrudan aydınlatma çizme"
 msgid "Integrate indirect lighting"
 msgstr "Dolaylı aydınlatmayı birleştir"
 
+msgid "Integrate indirect lighting %d%%"
+msgstr "Dolaylı aydınlatmayı birleştir %d%%"
+
 msgid "Baking lightprobes"
 msgstr "Işık-sondaları pişiriliyor"
 
@@ -14290,7 +14408,7 @@ msgid "Integrating light probes %d%%"
 msgstr "Işık sondaları birleştiriliyor %d%%"
 
 msgid "Denoising"
-msgstr "Gürültü arındırılıyor"
+msgstr "Gürültü Giderme"
 
 msgid "Retrieving textures"
 msgstr "Dokular alınıyor"
@@ -14707,6 +14825,9 @@ msgstr "Cihazda yürütülemedi."
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "C#/.NET kullanırken Android'e dışa aktarma henüz deneyseldir."
 
+msgid "Android architecture %s not supported in C# projects."
+msgstr "Android %s mimarisi C# projelerinde desteklenmez."
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14869,23 +14990,8 @@ msgstr "Genişletme paketi dosyası yazılamadı!"
 msgid "Building Android Project (gradle)"
 msgstr "Android Projesi Oluşturuluyor (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Android projesinin oluşturulması başarısız oldu, hata için çıktıları kontrol "
-"edin. Alternatif olarak, Android derleme belgeleri için docs.godotengine.org "
-"adresini ziyaret edin."
-
 msgid "Moving output"
 msgstr "Çıktı taşınıyor"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Dışa aktarma dosyası kopyalanamıyor ve yeniden adlandırılamıyor, çıktılar "
-"için gradle proje dizinini kontrol edin."
 
 msgid "Package not found: \"%s\"."
 msgstr "Paket bulunamadı: \"%s\"."
@@ -14961,6 +15067,12 @@ msgid ""
 msgstr ""
 ".ipa yalnızca macOS üzerinde oluşturulabilir. Paketi oluşturmadan Xcode "
 "projesinden çıkılıyor."
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr "C#/.NET kullanırken iOS'a dışa aktarma deneyseldir ve macOS gerektirir."
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "C#/.NET kullanırken iOS'a dışa aktarma deneyseldir."
 
 msgid "Identifier is missing."
 msgstr "Tanımlayıcı eksik."
@@ -15125,6 +15237,13 @@ msgstr "App Store dağıtımı için yükleyici imzalama kimliği gereklidir."
 
 msgid "App sandbox is required for App Store distribution."
 msgstr "App Store dağıtımı için App korumalı oyun alanı (sandbox) gereklidir."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries (GDExtension or .NET)."
+msgstr ""
+"'rcodesign', gömülü dinamik kütüphaneli (GDExtension veya .NET) uygulamaların "
+"imzalanmasını desteklemez."
 
 msgid "Code signing is required for App Store distribution."
 msgstr "Kod imzalama, App Store dağıtım için gereklidir."
@@ -15317,6 +15436,13 @@ msgid ""
 msgstr ""
 "Geçici imzalı uygulamalar, dinamik kitaplıkları yüklemek için 'Kitaplık "
 "Doğrulamasını Devre Dışı Bırak' yetkilendirmesini gerektirir."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries."
+msgstr ""
+"'rcodesign', gömülü dinamik kütüphaneli uygulamaların imzalanmasını "
+"desteklemez."
 
 msgid "Could not create entitlements file."
 msgstr "Yetkilendirmeler dosyası oluşturulamadı."
@@ -15786,6 +15912,17 @@ msgid ""
 msgstr ""
 "Bir KaroHaritası'nın (TileMap) katmanı Y-sıralı olarak ayarlandı, ancak "
 "KaroHaritası düğümünün kendisinde Y-sıralaması etkinleştirilmedi."
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"KaroHaritası düğümü Y-sıralamalı olarak ayarlanmış, ancak KaroHaritası'nın "
+"hiçbir katmanında Y-sıralama etkin değil.\n"
+"Bu durum istenmeyen davranışlara yol açabilir, çünkü Y-sıralı olmayan bir "
+"katmanda bir bütün halinde Y-sıralama yapılacaktır."
 
 msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled for "
@@ -16475,6 +16612,14 @@ msgid "Automatically arrange selected nodes."
 msgstr "Seçilen düğümleri otomatik olarak düzenle."
 
 msgid ""
+"Labels with autowrapping enabled must have a custom minimum size configured "
+"to work correctly inside a container."
+msgstr ""
+"Otomatik sarma özelliği etkin olan etiketlerin (Label) bir taşıyıcı "
+"içerisinde düzgün çalışabilmesi için özel en küçük boy ayarı yapılması "
+"gereklidir."
+
+msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr ""
@@ -16600,15 +16745,6 @@ msgstr ""
 "şekilde yeniden kaydedilebilir."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"'%s' düğüm ismi, '%s' için sahne içinde benzersiz olması için ayarlanmaya "
-"çalışılıyor, ancak bu isim zaten '%s' tarafından alınmış.\n"
-"'%s' artık benzersiz bir isime sahip olarak ayarlı değil."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -16622,13 +16758,6 @@ msgid ""
 msgstr ""
 "Bu düğüm, deneysel olarak işaretlenmiştir, ve gelecek sürümlerde "
 "kaldırılabilir veya büyük değişikliklere tabi olabilir."
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"Proje Ayarlarında, \"işleme/ortam/varsayılanlar/varsayılan_ortam\", "
-"belirlenmiş Varsayılan Ortam yüklenemedi."
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -16654,29 +16783,6 @@ msgid ""
 msgstr ""
 "Herhangi bir şeyi işlemek için, çerçevenin (Viewport) boyutları her iki "
 "boyutta da 2 piksele eşit ya da büyük olmalıdır."
-
-msgid "Cannot open font from file: %s."
-msgstr "Yazı tipi, dosyadan açılamıyor: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr ""
-"BitHaritası yazı tipi yükleyici'nin (BMFont) %d sürümü desteklenmemektedir (3 "
-"olmalı)."
-
-msgid "Invalid BMFont info block size."
-msgstr "Geçersiz BMFont bilgi kalıp boyutu."
-
-msgid "Invalid BMFont common block size."
-msgstr "Geçersiz BMFont ortak kalıp boyutu."
-
-msgid "Can't load font texture: %s."
-msgstr "Yazı tipi dokusu yüklenemiyor: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Desteklenmeyen BMFont doku biçimi."
-
-msgid "Invalid BMFont block type."
-msgstr "Geçersiz BMFont kalıbı türü."
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

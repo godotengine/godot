@@ -101,7 +101,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-11-10 08:03+0000\n"
+"PO-Revision-Date: 2023-11-11 03:41+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -1959,21 +1959,6 @@ msgstr "黄金赞助"
 msgid "Silver Sponsors"
 msgstr "白银赞助"
 
-msgid "Bronze Sponsors"
-msgstr "青铜赞助"
-
-msgid "Mini Sponsors"
-msgstr "迷你赞助"
-
-msgid "Gold Donors"
-msgstr "黄金捐赠者"
-
-msgid "Silver Donors"
-msgstr "白银捐赠者"
-
-msgid "Bronze Donors"
-msgstr "青铜捐赠者"
-
 msgid "Donors"
 msgstr "捐助者"
 
@@ -2811,11 +2796,23 @@ msgstr "方法说明"
 msgid "Operator Descriptions"
 msgstr "运算符说明"
 
+msgid "Metadata:"
+msgstr "元数据："
+
 msgid "Property:"
 msgstr "属性："
 
+msgid "Method:"
+msgstr "方法："
+
 msgid "Signal:"
 msgstr "信号："
+
+msgid "Theme Item:"
+msgstr "主题项目："
+
+msgid "No description available."
+msgstr "没有可用的描述。"
 
 msgid "%d match."
 msgstr "%d 个匹配。"
@@ -3896,6 +3893,12 @@ msgstr ""
 msgid "Assign..."
 msgstr "指定..."
 
+msgid "Copy as Text"
+msgstr "复制文本"
+
+msgid "Show Node in Tree"
+msgstr "在树中显示节点"
+
 msgid "Invalid RID"
 msgstr "无效的 RID"
 
@@ -4440,6 +4443,9 @@ msgstr "是否删除预设 “%s”？"
 msgid "Resources to exclude:"
 msgstr "排除的资源："
 
+msgid "Resources to override export behavior:"
+msgstr "覆盖导出行为的资源："
+
 msgid "Resources to export:"
 msgstr "导出的资源："
 
@@ -4729,6 +4735,9 @@ msgstr "复制文件夹："
 msgid "New Inherited Scene"
 msgstr "新建继承场景"
 
+msgid "Set as Main Scene"
+msgstr "设为主场景"
+
 msgid "Open Scenes"
 msgstr "打开场景"
 
@@ -4840,6 +4849,33 @@ msgstr "重命名..."
 msgid "Open in External Program"
 msgstr "在外部程序中打开"
 
+msgid "Red"
+msgstr "红色"
+
+msgid "Orange"
+msgstr "橙色"
+
+msgid "Yellow"
+msgstr "黄色"
+
+msgid "Green"
+msgstr "绿色"
+
+msgid "Teal"
+msgstr "青绿色"
+
+msgid "Blue"
+msgstr "蓝色"
+
+msgid "Purple"
+msgstr "紫色"
+
+msgid "Pink"
+msgstr "粉色"
+
+msgid "Gray"
+msgstr "灰色"
+
 msgid "Go to previous selected folder/file."
 msgstr "转到之前选定的文件夹/文件。"
 
@@ -4848,6 +4884,9 @@ msgstr "转到下一个选定的文件夹/文件。"
 
 msgid "Re-Scan Filesystem"
 msgstr "重新扫描文件系统"
+
+msgid "Change Split Mode"
+msgstr "修改拆分模式"
 
 msgid "Filter Files"
 msgstr "筛选文件"
@@ -5436,15 +5475,6 @@ msgstr "动态渲染的 TrueType/OpenType 字体"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "预渲染的多通道（+true）有符号距离场"
-
-msgid "Can't load font texture:"
-msgstr "无法加载字体纹理："
-
-msgid "Image margin too big."
-msgstr "图像边距太大。"
-
-msgid "Character margin too big."
-msgstr "字符边距太大。"
 
 msgid "Pre-Import Scene"
 msgstr "预导入场景"
@@ -6388,6 +6418,9 @@ msgstr "[全局]（创建）"
 
 msgid "Duplicated Animation Name:"
 msgstr "副本动画名称："
+
+msgid "Onion skinning requires a RESET animation."
+msgstr "洋葱皮需要 RESET 动画。"
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "从当前位置倒放选中动画（A）"
@@ -7496,6 +7529,17 @@ msgid ""
 "will be visible in the running project."
 msgstr "启用该选项时，避障对象的形状、半径、速度都将在项目运行时可见。"
 
+msgid "Debug CanvasItem Redraws"
+msgstr "调试 CanvasItem 重绘"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"启用该选项时，2D 对象的重绘请求将在项目运行时可见（短暂的闪光）。\n"
+"可用于低处理器模式下的故障排除。"
+
 msgid "Synchronize Scene Changes"
 msgstr "同步场景修改"
 
@@ -7852,6 +7896,9 @@ msgstr "创建导航网格"
 msgid "Create Debug Tangents"
 msgstr "创建调试切线"
 
+msgid "No mesh to unwrap."
+msgstr "没有可展开的网格。"
+
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -7873,6 +7920,15 @@ msgstr "展开 UV2"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "包含的 Mesh 不是 ArrayMesh 类型。"
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "无法展开带混合变形的网格。"
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "光照贴图的展开仅支持三角形。"
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "光照贴图的展开需要法线。"
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "UV 展开失败，可能该网格并非流形？"
@@ -9569,6 +9625,12 @@ msgstr "创建 LightOccluder2D"
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D 预览"
 
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "无法将外部场景转换为精灵。"
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "无法将空精灵转换为网格。"
+
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "无法将使用动画帧的精灵转换为网格。"
 
@@ -9778,7 +9840,7 @@ msgstr ""
 "应该采取什么行动？"
 
 msgid "%s Mipmaps"
-msgstr "%s Mipmaps"
+msgstr "%s Mipmap"
 
 msgid "Memory: %s"
 msgstr "内存：%s"
@@ -13119,8 +13181,17 @@ msgid ""
 "reverted to their default."
 msgstr "禁用 “editable_instance” 将导致节点的所有属性恢复为其默认值。"
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"开启“加载为占位符”将禁用“子节点可编辑”，该节点的所有属性都会恢复为默认值。"
+
 msgid "Make Local"
 msgstr "转为本地"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "无法为子场景中的节点开关唯一名称！"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "启用场景唯一名称"
@@ -13173,14 +13244,6 @@ msgstr "移除节点"
 msgid "Change type of node(s)"
 msgstr "修改节点的类型"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "从变量“%s”移除节点，原节点为“%s”。"
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr "节点的新类型与导出变量不兼容（需要 %s，但类型为 %s）。"
-
 msgid "This operation requires a single selected node."
 msgstr "此操作只能应用于单个选中节点。"
 
@@ -13212,6 +13275,9 @@ msgstr "清除继承"
 
 msgid "Editable Children"
 msgstr "子节点可编辑"
+
+msgid "Load as Placeholder"
+msgstr "加载为占位符"
 
 msgid "Auto Expand to Selected"
 msgstr "自动展开至选定项"
@@ -13500,6 +13566,41 @@ msgstr "名称“%s”是为着色器语言保留的关键字。"
 msgid "Add Shader Global Parameter"
 msgstr "添加着色器全局参数"
 
+msgid ""
+"This project uses meshes with an outdated mesh format from previous Godot "
+"versions. The engine needs to update the format in order to use those "
+"meshes.\n"
+"\n"
+"Press 'Restart & Upgrade' to run the surface upgrade tool which will update "
+"and re-save all meshes and scenes. This update will restart the editor and "
+"may take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"Press 'Upgrade Only' to continue opening the scene as normal. The engine will "
+"update each mesh in memory, but the update will not be saved. Choosing this "
+"option will lead to slower load times every time this project is loaded."
+msgstr ""
+"这个项目使用了以前版本 Godot 的过时网格格式。引擎需要对格式进行升级才能使用这"
+"些网格。\n"
+"\n"
+"点击“重启并升级”运行表面升级工具，会将所有网格和场景进行更新并重新保存。升级时"
+"将会重启编辑器，可能需要几分钟时间。更新后的网格不再兼容以前版本的 Godot。\n"
+"\n"
+"点击“仅升级”继续正常打开场景。引擎会在内存中升级各个网格，但是不会保存更新。选"
+"择这个选项将会使得每次加载这个项目的时间变长。"
+
+msgid "Restart & Upgrade"
+msgstr "重启并升级"
+
+msgid "Upgrade Only"
+msgstr "仅升级"
+
+msgid "Upgrading All Meshes in Project"
+msgstr "正在升级项目中的所有网格"
+
+msgid "Attempting to re-save "
+msgstr "正在尝试重新保存 "
+
 msgid "Make this panel floating in the screen %d."
 msgstr "让这个面板在屏幕 %d 中浮动。"
 
@@ -13528,6 +13629,9 @@ msgstr "修改圆环外半径"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "convert() 的参数类型无效，请使用 TYPE_* 常量。"
 
+msgid "Cannot resize array."
+msgstr "无法调整数组大小。"
+
 msgid "Step argument is zero!"
 msgstr "Step 参数为 0！"
 
@@ -13551,6 +13655,9 @@ msgstr "实例字典格式不正确（@path 的脚本无效）"
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "实例字典无效（派生类无效）"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "无法实例化 GDScript 类。"
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "类型为“%s”的值无法提供长度。"
@@ -13750,6 +13857,9 @@ msgstr "构建直接光照"
 msgid "Integrate indirect lighting"
 msgstr "集成间接光照"
 
+msgid "Integrate indirect lighting %d%%"
+msgstr "集成间接光照 %d%%"
+
 msgid "Baking lightprobes"
 msgstr "正在烘焙光照探针"
 
@@ -13757,7 +13867,7 @@ msgid "Integrating light probes %d%%"
 msgstr "正在集成光照探针 %d%%"
 
 msgid "Denoising"
-msgstr "正在降噪"
+msgstr "降噪"
 
 msgid "Retrieving textures"
 msgstr "正在获取纹理"
@@ -14143,6 +14253,9 @@ msgstr "无法在设备上运行。"
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "使用 C#/.NET 时导出到 Android 是实验性的。"
 
+msgid "Android architecture %s not supported in C# projects."
+msgstr "C# 项目中不支持 Android 架构 %s。"
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14288,20 +14401,8 @@ msgstr "无法写入扩展包文件！"
 msgid "Building Android Project (gradle)"
 msgstr "构建 Android 项目 (Gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Android 项目构建失败，请检查输出中显示的错误。也可以访问 docs.godotengine.org "
-"查看 Android 构建文档。"
-
 msgid "Moving output"
 msgstr "移动输出"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr "无法复制与更名导出文件，请在 Gradle 项目文件夹内确认输出。"
 
 msgid "Package not found: \"%s\"."
 msgstr "包不存在：“%s”。"
@@ -14369,6 +14470,12 @@ msgid ""
 ".ipa can only be built on macOS. Leaving Xcode project without building the "
 "package."
 msgstr ".ipa 只能在 macOS 上构建。正在离开 Xcode 项目，未构建包。"
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr "使用 C#/.NET 时导出到 iOS 是实验性的，并且需要 macOS。"
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "使用 C#/.NET 时导出到 iOS 是实验性的。"
 
 msgid "Identifier is missing."
 msgstr "缺少标识符。"
@@ -14528,6 +14635,12 @@ msgstr "App Store 分发时，安装程序签名身份是必填项。"
 
 msgid "App sandbox is required for App Store distribution."
 msgstr "App Store 分发时，App 沙盒是必选项。"
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries (GDExtension or .NET)."
+msgstr ""
+"“rcodesign”不支持对带有嵌入式动态库的应用程序进行签名（GDExtension 和 .NET）。"
 
 msgid "Code signing is required for App Store distribution."
 msgstr "App Store 分发时，代码签名是必选项。"
@@ -14702,6 +14815,11 @@ msgid ""
 "Ad-hoc signed applications require the 'Disable Library Validation' "
 "entitlement to load dynamic libraries."
 msgstr "Ad-hoc 签名的应用需要“Disable Library Validation”授权才能加载动态库。"
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries."
+msgstr "“rcodesign”不支持对带有嵌入式动态库的应用程序进行签名。"
 
 msgid "Could not create entitlements file."
 msgstr "无法创建授权文件。"
@@ -15117,6 +15235,15 @@ msgid ""
 "A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
 "node itself."
 msgstr "TileMap 图层设置为 Y 排序，但 TileMap 节点本身未启用 Y 排序。"
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"TileMap 节点启用了 Y 排序，但是 TileMap 中并没有启用了 Y 排序的层。\n"
+"这可能会导致不需要的行为，因为未按 Y 排序的层将作为一个整体进行 Y 排序。"
 
 msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled for "
@@ -15683,6 +15810,12 @@ msgid "Automatically arrange selected nodes."
 msgstr "自动排列所选节点。"
 
 msgid ""
+"Labels with autowrapping enabled must have a custom minimum size configured "
+"to work correctly inside a container."
+msgstr ""
+"位于容器中的 Label 如果启用了自动换行，则必须配置自定义最小尺寸才能正常工作。"
+
+msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr "当前字体不支持渲染该标签文本中使用的一个或多个字符。"
@@ -15799,14 +15932,6 @@ msgstr ""
 "新保存，而不会有数据丢失的风险。"
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"正在将场景中的唯一节点名称“%s”设给“%s”，但该名称已被“%s”占用。\n"
-"“%s”不再设置为具有唯一名称。"
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -15817,13 +15942,6 @@ msgid ""
 "This node is marked as experimental and may be subject to removal or major "
 "changes in future versions."
 msgstr "此节点标记为实验性节点，可能会在将来的版本中删除或进行重大更改。"
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"无法加载项目设置“rendering/environment/defaults/default_environment”中指定的默"
-"认环境。"
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -15844,27 +15962,6 @@ msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr "Viewport 的宽高都大于等于 2 像素时才能进行渲染。"
-
-msgid "Cannot open font from file: %s."
-msgstr "无法打开字体文件：%s。"
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "不支持版本为 %d 的 BMFont（应该是3）。"
-
-msgid "Invalid BMFont info block size."
-msgstr "无效的 BMFont 信息块大小。"
-
-msgid "Invalid BMFont common block size."
-msgstr "无效的 BMFont 公共块大小。"
-
-msgid "Can't load font texture: %s."
-msgstr "无法加载字体纹理：%s。"
-
-msgid "Unsupported BMFont texture format."
-msgstr "不支持的 BMFont 纹理格式。"
-
-msgid "Invalid BMFont block type."
-msgstr "无效的 BMFont 块类型。"
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

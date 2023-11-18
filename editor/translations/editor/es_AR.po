@@ -1096,21 +1096,6 @@ msgstr "Sponsors Oro"
 msgid "Silver Sponsors"
 msgstr "Sponsors Plata"
 
-msgid "Bronze Sponsors"
-msgstr "Sponsors Bronce"
-
-msgid "Mini Sponsors"
-msgstr "Mini Sponsors"
-
-msgid "Gold Donors"
-msgstr "Donantes Oro"
-
-msgid "Silver Donors"
-msgstr "Donantes Plata"
-
-msgid "Bronze Donors"
-msgstr "Donantes Bronce"
-
 msgid "Donors"
 msgstr "Donantes"
 
@@ -7763,23 +7748,8 @@ msgstr "¡No se pudo escribir el archivo del paquete de expansión!"
 msgid "Building Android Project (gradle)"
 msgstr "Construir Proyecto Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"La construcción del proyecto Android falló, comprueba la salida del error. "
-"También podés visitar docs.godotengine.org para consultar la documentación de "
-"compilación de Android."
-
 msgid "Moving output"
 msgstr "Moviendo salida"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"No se puede copiar y renombrar el archivo de exportación, comprobá el "
-"directorio del proyecto de gradle para ver los resultados."
 
 msgid "Creating APK..."
 msgstr "Creando APK..."

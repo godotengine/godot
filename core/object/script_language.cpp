@@ -223,26 +223,48 @@ void ScriptServer::init_languages() {
 		}
 	}
 
+	HashSet<ScriptLanguage *> langs_to_init;
 	{
 		MutexLock lock(languages_mutex);
-
 		for (int i = 0; i < _language_count; i++) {
-			_languages[i]->init();
+			if (_languages[i]) {
+				langs_to_init.insert(_languages[i]);
+			}
 		}
+	}
 
+	for (ScriptLanguage *E : langs_to_init) {
+		E->init();
+	}
+
+	{
+		MutexLock lock(languages_mutex);
 		languages_ready = true;
 	}
 }
 
 void ScriptServer::finish_languages() {
-	MutexLock lock(languages_mutex);
+	HashSet<ScriptLanguage *> langs_to_finish;
 
-	for (int i = 0; i < _language_count; i++) {
-		_languages[i]->finish();
+	{
+		MutexLock lock(languages_mutex);
+		for (int i = 0; i < _language_count; i++) {
+			if (_languages[i]) {
+				langs_to_finish.insert(_languages[i]);
+			}
+		}
 	}
-	global_classes_clear();
 
-	languages_ready = false;
+	for (ScriptLanguage *E : langs_to_finish) {
+		E->finish();
+	}
+
+	{
+		MutexLock lock(languages_mutex);
+		languages_ready = false;
+	}
+
+	global_classes_clear();
 }
 
 bool ScriptServer::are_languages_initialized() {
@@ -558,9 +580,6 @@ void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properti
 	} else {
 		for (const PropertyInfo &E : properties) {
 			PropertyInfo pinfo = E;
-			if (!values.has(pinfo.name)) {
-				pinfo.usage |= PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE;
-			}
 			p_properties->push_back(E);
 		}
 	}

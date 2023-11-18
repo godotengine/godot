@@ -133,7 +133,7 @@ void CallableCustomBind::get_bound_arguments(Vector<Variant> &r_arguments, int &
 }
 
 void CallableCustomBind::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
-	const Variant **args = (const Variant **)alloca(sizeof(const Variant **) * (binds.size() + p_argcount));
+	const Variant **args = (const Variant **)alloca(sizeof(Variant *) * (binds.size() + p_argcount));
 	for (int i = 0; i < p_argcount; i++) {
 		args[i] = (const Variant *)p_arguments[i];
 	}
@@ -145,7 +145,7 @@ void CallableCustomBind::call(const Variant **p_arguments, int p_argcount, Varia
 }
 
 Error CallableCustomBind::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
-	const Variant **args = (const Variant **)alloca(sizeof(const Variant **) * (binds.size() + p_argcount));
+	const Variant **args = (const Variant **)alloca(sizeof(Variant *) * (binds.size() + p_argcount));
 	for (int i = 0; i < p_argcount; i++) {
 		args[i] = (const Variant *)p_arguments[i];
 	}
