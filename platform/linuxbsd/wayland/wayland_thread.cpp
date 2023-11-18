@@ -2656,6 +2656,13 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		rect_msg->rect.size = scaled_size;
 		p_ws->wayland_thread->push_message(rect_msg);
 	}
+
+	if (scale_changed) {
+		Ref<WindowEventMessage> dpi_msg;
+		dpi_msg.instantiate();
+		dpi_msg->event = DisplayServer::WINDOW_EVENT_DPI_CHANGE;
+		p_ws->wayland_thread->push_message(dpi_msg);
+	}
 }
 
 // Scales a vector according to wp_fractional_scale's rules, where coordinates
