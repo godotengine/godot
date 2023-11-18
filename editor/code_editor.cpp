@@ -1277,7 +1277,7 @@ void CodeTextEditor::move_lines_up() {
 
 		for (int j = 0; j < caret_groups[i].size(); j++) {
 			int c = caret_groups[i][j];
-			Vector<int> caret_parameters = caret_group_parameters[j];
+			const Vector<int> &caret_parameters = caret_group_parameters[j];
 			text_editor->set_caret_line(caret_parameters[4] - 1, c == 0, true, 0, c);
 			text_editor->set_caret_column(caret_parameters[5], c == 0, c);
 
@@ -1374,7 +1374,7 @@ void CodeTextEditor::move_lines_down() {
 
 		for (int j = 0; j < caret_groups[i].size(); j++) {
 			int c = caret_groups[i][j];
-			Vector<int> caret_parameters = caret_group_parameters[j];
+			const Vector<int> &caret_parameters = caret_group_parameters[j];
 			text_editor->set_caret_line(caret_parameters[4] + 1, c == 0, true, 0, c);
 			text_editor->set_caret_column(caret_parameters[5], c == 0, c);
 

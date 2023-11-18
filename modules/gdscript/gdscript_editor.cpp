@@ -620,9 +620,9 @@ static String _trim_parent_class(const String &p_class, const String &p_base_cla
 	}
 	Vector<String> names = p_class.split(".", false, 1);
 	if (names.size() == 2) {
-		String first = names[0];
-		String rest = names[1];
+		const String &first = names[0];
 		if (ClassDB::class_exists(p_base_class) && ClassDB::class_exists(first) && ClassDB::is_parent_class(p_base_class, first)) {
+			const String &rest = names[1];
 			return rest;
 		}
 	}

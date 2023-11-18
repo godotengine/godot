@@ -1151,7 +1151,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 					ERR_FAIL_COND_V(skeletons.is_empty(), ERR_INVALID_DATA);
 
-					String skname = skeletons[0];
+					const String &skname = skeletons[0];
 					ERR_FAIL_COND_V(!node_map.has(skname), ERR_INVALID_DATA);
 					NodeMap nmsk = node_map[skname];
 					Skeleton3D *sk = Object::cast_to<Skeleton3D>(nmsk.node);
@@ -1205,7 +1205,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 							valid = true;
 							Vector<String> names = morph->sources[target].sarray;
 							for (int i = 0; i < names.size(); i++) {
-								String meshid2 = names[i];
+								const String &meshid2 = names[i];
 								if (collada.state.mesh_data_map.has(meshid2)) {
 									Ref<ImporterMesh> mesh = Ref<ImporterMesh>(memnew(ImporterMesh));
 									const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];

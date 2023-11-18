@@ -2660,7 +2660,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 	HashSet<String> folders_set;
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	for (int i = 0; i < p_files.size(); i++) {
-		String file = p_files[i];
+		const String &file = p_files[i];
 		folders_set.insert(da->dir_exists(file) ? file : file.get_base_dir());
 	}
 	if (folders_set.size() > 0) {
@@ -3058,7 +3058,7 @@ ProjectManager::ProjectManager() {
 		language_btn->set_text(current_lang);
 
 		for (int i = 0; i < editor_languages.size(); i++) {
-			String lang = editor_languages[i];
+			const String &lang = editor_languages[i];
 			String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
 			language_btn->add_item(vformat("[%s] %s", lang, lang_name), i);
 			language_btn->set_item_metadata(i, lang);

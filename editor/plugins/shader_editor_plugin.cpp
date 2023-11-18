@@ -517,7 +517,7 @@ bool ShaderEditorPlugin::can_drop_data_fw(const Point2 &p_point, const Variant &
 		}
 
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
+			const String &file = files[i];
 			if (ResourceLoader::exists(file, "Shader")) {
 				Ref<Shader> shader = ResourceLoader::load(file);
 				if (shader.is_valid()) {
@@ -558,7 +558,7 @@ void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		Vector<String> files = d["files"];
 
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
+			const String &file = files[i];
 			Ref<Resource> res;
 			if (ResourceLoader::exists(file, "Shader") || ResourceLoader::exists(file, "ShaderInclude")) {
 				res = ResourceLoader::load(file);

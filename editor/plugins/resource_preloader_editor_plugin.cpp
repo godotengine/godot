@@ -50,7 +50,7 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 
 void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths) {
 	for (int i = 0; i < p_paths.size(); i++) {
-		String path = p_paths[i];
+		const String &path = p_paths[i];
 
 		Ref<Resource> resource;
 		resource = ResourceLoader::load(path);

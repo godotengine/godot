@@ -3018,7 +3018,7 @@ void EditorInspector::update_tree() {
 
 		Vector<String> components = path.split("/");
 		for (int i = 0; i < components.size(); i++) {
-			String component = components[i];
+			const String &component = components[i];
 			acc_path += (i > 0) ? "/" + component : component;
 
 			if (!vbox_per_path[root_vbox].has(acc_path)) {

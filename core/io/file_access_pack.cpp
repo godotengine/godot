@@ -491,7 +491,7 @@ PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 	}
 
 	for (int i = 0; i < paths.size(); i++) {
-		String p = paths[i];
+		const String &p = paths[i];
 		if (p == ".") {
 			continue;
 		} else if (p == "..") {

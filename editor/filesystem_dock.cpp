@@ -388,7 +388,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	const Color default_folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
 	for (int i = 0; i < favorite_paths.size(); i++) {
-		String favorite = favorite_paths[i];
+		const String &favorite = favorite_paths[i];
 		if (!favorite.begins_with("res://")) {
 			continue;
 		}
@@ -2172,7 +2172,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Instantiate all selected scenes.
 			Vector<String> paths;
 			for (int i = 0; i < p_selected.size(); i++) {
-				String fpath = p_selected[i];
+				const String &fpath = p_selected[i];
 				if (EditorFileSystem::get_singleton()->get_file_type(fpath) == "PackedScene") {
 					paths.push_back(fpath);
 				}
@@ -2210,7 +2210,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_DEPENDENCIES: {
 			// Checkout the file dependencies.
 			if (!p_selected.is_empty()) {
-				String fpath = p_selected[0];
+				const String &fpath = p_selected[0];
 				deps_editor->edit(fpath);
 			}
 		} break;
@@ -2218,7 +2218,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_OWNERS: {
 			// Checkout the file owners.
 			if (!p_selected.is_empty()) {
-				String fpath = p_selected[0];
+				const String &fpath = p_selected[0];
 				owners_editor->show(fpath);
 			}
 		} break;
@@ -2228,7 +2228,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			to_move.clear();
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 			for (int i = collapsed_paths.size() - 1; i >= 0; i--) {
-				String fpath = collapsed_paths[i];
+				const String &fpath = collapsed_paths[i];
 				if (fpath != "res://") {
 					to_move.push_back(FileOrFolder(fpath, !fpath.ends_with("/")));
 				}
@@ -2275,7 +2275,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 
 			for (int i = 0; i < collapsed_paths.size(); i++) {
-				String fpath = collapsed_paths[i];
+				const String &fpath = collapsed_paths[i];
 				if (fpath != "res://") {
 					if (fpath.ends_with("/")) {
 						remove_folders.push_back(fpath);
@@ -2347,7 +2347,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		case FILE_COPY_PATH: {
 			if (!p_selected.is_empty()) {
-				String fpath = p_selected[0];
+				const String &fpath = p_selected[0];
 				DisplayServer::get_singleton()->clipboard_set(fpath);
 			}
 		} break;
@@ -2859,7 +2859,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 
 	// Update project settings with new folder colors.
 	for (int i = 0; i < selected.size(); i++) {
-		String fpath = selected[i];
+		const String &fpath = selected[i];
 
 		if (chosen_color_name) {
 			assigned_folder_colors[fpath] = chosen_color_name;
@@ -2890,7 +2890,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	bool all_not_favorites = true;
 
 	for (int i = 0; i < p_paths.size(); i++) {
-		String fpath = p_paths[i];
+		const String &fpath = p_paths[i];
 		if (fpath.ends_with("/")) {
 			foldernames.push_back(fpath);
 			all_files = false;
@@ -3048,7 +3048,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	}
 
 	if (p_paths.size() == 1) {
-		const String fpath = p_paths[0];
+		const String &fpath = p_paths[0];
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 		p_popup->add_separator();
@@ -3424,7 +3424,7 @@ void FileSystemDock::_update_import_dock() {
 	Vector<String> imports;
 	String import_type;
 	for (int i = 0; i < efiles.size(); i++) {
-		String fpath = efiles[i];
+		const String &fpath = efiles[i];
 		Ref<ConfigFile> cf;
 		cf.instantiate();
 		Error err = cf->load(fpath + ".import");

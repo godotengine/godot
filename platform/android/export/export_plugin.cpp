@@ -1111,7 +1111,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						}
 
 						for (int i = 0; i < feature_names.size(); i++) {
-							String feature_name = feature_names[i];
+							const String &feature_name = feature_names[i];
 							bool feature_required = feature_required_list[i];
 							int feature_version = feature_versions[i];
 							bool has_version_attribute = feature_version != -1;
