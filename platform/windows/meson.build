@@ -69,6 +69,7 @@ if PLATFORM == 'windows'
         _cpp.find_library('dbghelp'),
         _cpp.find_library('crypt32'),
         _cpp.find_library('ntdll'),
+        _cpp.find_library('sapi'),
 ]
 
     CPP_ARGS += [
