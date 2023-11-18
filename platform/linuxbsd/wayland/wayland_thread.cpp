@@ -2592,37 +2592,30 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	ERR_FAIL_NULL(p_ws);
 
 	int preferred_buffer_scale = window_state_get_preferred_buffer_scale(p_ws);
-
 	bool using_fractional = p_ws->preferred_fractional_scale > 0;
+	bool scale_changed = false;
+	bool size_changed = false;
 
-	if (p_ws->rect.size.width == p_width && p_ws->rect.size.height == p_height) {
-		if (using_fractional && p_ws->fractional_scale == p_ws->preferred_fractional_scale) {
-			return;
-		}
+	if (p_ws->rect.size.width != p_width || p_ws->rect.size.height != p_height) {
+		p_ws->rect.size.width = p_width;
+		p_ws->rect.size.height = p_height;
 
-		if (!using_fractional && p_ws->buffer_scale == preferred_buffer_scale) {
-			return;
-		}
+		size_changed = true;
 	}
-
-	p_ws->rect.size.width = p_width;
-	p_ws->rect.size.height = p_height;
-
-	Size2i scaled_size;
 
 	if (using_fractional) {
-		p_ws->fractional_scale = p_ws->preferred_fractional_scale;
-
-		scaled_size = scale_vector2i(p_ws->rect.size, p_ws->fractional_scale);
-		DEBUG_LOG_WAYLAND_THREAD(vformat("Scaling window in fractional mode from %s to %s (x%f).", p_ws->rect.size, scaled_size, p_ws->fractional_scale));
+		if (p_ws->fractional_scale != p_ws->preferred_fractional_scale) {
+			p_ws->fractional_scale = p_ws->preferred_fractional_scale;
+			scale_changed = true;
+		}
 	} else {
-		p_ws->buffer_scale = preferred_buffer_scale;
-
-		scaled_size = scale_vector2i(p_ws->rect.size, p_ws->buffer_scale);
-		DEBUG_LOG_WAYLAND_THREAD(vformat("Scaling window in integer mode from %s to %s (x%d).", p_ws->rect.size, scaled_size, p_ws->buffer_scale));
+		if (p_ws->buffer_scale != preferred_buffer_scale) {
+			p_ws->buffer_scale = preferred_buffer_scale;
+			scale_changed = true;
+		}
 	}
 
-	if (p_ws->wl_surface) {
+	if (p_ws->wl_surface && (size_changed || scale_changed)) {
 		wl_surface_set_buffer_scale(p_ws->wl_surface, preferred_buffer_scale);
 
 		if (p_ws->wp_viewport) {
@@ -2630,7 +2623,7 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		}
 
 		if (p_ws->xdg_surface) {
-			xdg_surface_set_window_geometry(p_ws->xdg_surface, 0, 0, scaled_size.width, scaled_size.height);
+			xdg_surface_set_window_geometry(p_ws->xdg_surface, 0, 0, p_width, p_height);
 		}
 
 		wl_surface_commit(p_ws->wl_surface);
@@ -2638,21 +2631,31 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 
 #ifdef LIBDECOR_ENABLED
 	if (p_ws->libdecor_frame) {
-		struct libdecor_state *state = libdecor_state_new(scaled_size.width, scaled_size.height);
+		struct libdecor_state *state = libdecor_state_new(p_width, p_height);
 		libdecor_frame_commit(p_ws->libdecor_frame, state, p_ws->pending_libdecor_configuration);
 		libdecor_state_free(state);
 		p_ws->pending_libdecor_configuration = nullptr;
 	}
 #endif
 
-	// FIXME: Actually resize the hint instead of centering it.
-	p_ws->wayland_thread->pointer_set_hint(scaled_size / 2);
+	if (size_changed || scale_changed) {
+		Size2i scaled_size = scale_vector2i(p_ws->rect.size, window_state_get_scale_factor(p_ws));
 
-	Ref<WindowRectMessage> rect_msg;
-	rect_msg.instantiate();
-	rect_msg->rect = p_ws->rect;
-	rect_msg->rect.size = scaled_size;
-	p_ws->wayland_thread->push_message(rect_msg);
+		if (using_fractional) {
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Resizing the window from %s to %s (fractional scale x%f).", p_ws->rect.size, scaled_size, p_ws->fractional_scale));
+		} else {
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Resizing the window from %s to %s (buffer scale x%d).", p_ws->rect.size, scaled_size, p_ws->buffer_scale));
+		}
+
+		// FIXME: Actually resize the hint instead of centering it.
+		p_ws->wayland_thread->pointer_set_hint(scaled_size / 2);
+
+		Ref<WindowRectMessage> rect_msg;
+		rect_msg.instantiate();
+		rect_msg->rect = p_ws->rect;
+		rect_msg->rect.size = scaled_size;
+		p_ws->wayland_thread->push_message(rect_msg);
+	}
 }
 
 // Scales a vector according to wp_fractional_scale's rules, where coordinates

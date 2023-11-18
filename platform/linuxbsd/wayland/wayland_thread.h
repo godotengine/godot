@@ -199,7 +199,7 @@ public:
 		struct wp_fractional_scale_v1 *wp_fractional_scale = nullptr;
 
 		// Currently applied buffer scale.
-		double buffer_scale = 0;
+		double buffer_scale = 1;
 
 		// NOTE: The preferred buffer scale is currently only dynamically calculated.
 		// It can be accessed by calling `window_state_get_preferred_buffer_scale`.
