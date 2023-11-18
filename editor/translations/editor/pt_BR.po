@@ -2067,21 +2067,6 @@ msgstr "Patrocinadores Ouro"
 msgid "Silver Sponsors"
 msgstr "Patrocinadores Prata"
 
-msgid "Bronze Sponsors"
-msgstr "Patrocinadores Bronze"
-
-msgid "Mini Sponsors"
-msgstr "Patrocinadores Mini"
-
-msgid "Gold Donors"
-msgstr "Doadores Ouro"
-
-msgid "Silver Donors"
-msgstr "Doadores Prata"
-
-msgid "Bronze Donors"
-msgstr "Doadores Bronze"
-
 msgid "Donors"
 msgstr "Doadores"
 
@@ -5552,12 +5537,6 @@ msgstr "Fonte TrueType/OpenType renderizada dinamicamente"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Campo de distância com sinal multicanal pré-renderizado (+verdadeiro)"
-
-msgid "Can't load font texture:"
-msgstr "Não é possível carregar a textura da fonte:"
-
-msgid "Image margin too big."
-msgstr "Margem da imagem muito grande."
 
 msgid "Pre-Import Scene"
 msgstr "Pré-importando Cena"
@@ -14238,23 +14217,8 @@ msgstr "Não foi possível escrever o arquivo do pacote de expansão!"
 msgid "Building Android Project (gradle)"
 msgstr "Construindo Projeto Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"A compilação do projeto Android falhou, verifique a saída para detalhes. Ou "
-"então visite docs.godotengine.org para ver a documentação de compilação do "
-"Android."
-
 msgid "Moving output"
 msgstr "Movendo saída"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Não foi possível copiar e renomear o arquivo de exportação, verifique o "
-"diretório do projeto gradle por saídas."
 
 msgid "Package not found: \"%s\"."
 msgstr "Pacote não encontrado: \"%s\"."
@@ -15885,15 +15849,6 @@ msgstr ""
 "novamente com segurança, sem risco de perda de dados."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"Configurando o nome do nó '%s' para ser único dentro da cena para '%s', mas "
-"já foi reivindicado por '%s'.\n"
-"'%s' não está mais definido como tendo um nome exclusivo."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -15906,13 +15861,6 @@ msgid ""
 msgstr ""
 "Este nó está marcado como experimental e pode estar sujeito a remoção ou "
 "grandes alterações em versões futuras."
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"O ambiente padrão conforme especificado na configuração do projeto "
-"\"rendering/environment/defaults/default_environment\" não pôde ser carregado."
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -15939,27 +15887,6 @@ msgid ""
 msgstr ""
 "O tamanho do Viewport deve ser maior ou igual a 2 pixels em ambas as "
 "dimensões para renderizar algo."
-
-msgid "Cannot open font from file: %s."
-msgstr "Não é possível abrir a fonte do arquivo: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "A versão %d de BMFont não é suportada (deve ser 3)."
-
-msgid "Invalid BMFont info block size."
-msgstr "Tamanho de bloco de informações BMFont inválido."
-
-msgid "Invalid BMFont common block size."
-msgstr "Tamanho de bloco comum BMFont inválido."
-
-msgid "Can't load font texture: %s."
-msgstr "Não é possível carregar a textura da fonte: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Formato de textura BMFont não suportado."
-
-msgid "Invalid BMFont block type."
-msgstr "Tipo de bloco BMFont inválido."
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

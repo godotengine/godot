@@ -2620,12 +2620,12 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 }
 
 Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	ERR_FAIL_COND_V(!valid, Variant());
-
-	Variant ret;
-	bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
-	if (ok) {
-		return ret;
+	if (valid) {
+		Variant ret;
+		bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
+		if (ok) {
+			return ret;
+		}
 	}
 
 	return Script::callp(p_method, p_args, p_argcount, r_error);

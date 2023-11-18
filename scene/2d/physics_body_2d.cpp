@@ -451,10 +451,14 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
 		_sync_body_state(p_state);
 
+		Transform2D old_transform = get_global_transform();
 		GDVIRTUAL_CALL(_integrate_forces, p_state);
+		Transform2D new_transform = get_global_transform();
 
-		// Update the physics server with any new transform, to prevent it from being overwritten at the sync below.
-		force_update_transform();
+		if (new_transform != old_transform) {
+			// Update the physics server with the new transform, to prevent it from being overwritten at the sync below.
+			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
+		}
 	}
 
 	_sync_body_state(p_state);

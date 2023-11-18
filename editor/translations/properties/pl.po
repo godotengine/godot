@@ -81,13 +81,14 @@
 # Led Liedtke <przemekliedtke@gmail.com>, 2023.
 # ThomsikDev <szczopek7@outlook.com>, 2023.
 # johnny1029 <jkste07@gmail.com>, 2023.
+# Marcin Zieliński <czolgista83@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-07 01:15+0000\n"
-"Last-Translator: johnny1029 <jkste07@gmail.com>\n"
+"PO-Revision-Date: 2023-11-12 10:25+0000\n"
+"Last-Translator: Marcin Zieliński <czolgista83@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
 "Language: pl\n"
@@ -229,6 +230,9 @@ msgstr "Siła przesuwania 3D"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Session Category"
+msgstr "Kategoria sesji"
 
 msgid "Editor"
 msgstr "Edytor"
@@ -848,6 +852,9 @@ msgstr "Rozmiar miniaturki"
 msgid "Import"
 msgstr "Zaimportuj"
 
+msgid "Blender 3 Path"
+msgstr "Ścieżka Blender 3"
+
 msgid "FBX"
 msgstr "FBX"
 
@@ -1419,7 +1426,7 @@ msgid "MSDF Size"
 msgstr "Rozmiar MSDF"
 
 msgid "Hinting"
-msgstr "Hinting"
+msgstr "Podpowiedź"
 
 msgid "Subpixel Positioning"
 msgstr "Pozycjonowanie subpikselowe"
@@ -1531,6 +1538,9 @@ msgstr "Wysokość"
 
 msgid "Radius"
 msgstr "Promień"
+
+msgid "Simplification Distance"
+msgstr "Dystans uproszczenia"
 
 msgid "Save to File"
 msgstr "Zapisz do pliku"
@@ -1679,6 +1689,9 @@ msgstr "Używaj wątków"
 msgid "Available URLs"
 msgstr "Dostępne URL"
 
+msgid "Bone Mapper"
+msgstr "Mapper kości"
+
 msgid "Unset"
 msgstr "Wymaż"
 
@@ -1702,6 +1715,9 @@ msgstr "Regulacja przezroczystości uchwytu"
 
 msgid "Show Viewport Rotation Gizmo"
 msgstr "Pokaż obrót widoku uchwytu"
+
+msgid "Path Tilt"
+msgstr "Odchył ścieżki"
 
 msgid "External"
 msgstr "Zewnętrzne"
@@ -1777,6 +1793,9 @@ msgstr "Ścieżka szukania szablonów"
 
 msgid "Naming"
 msgstr "Nazewnictwo"
+
+msgid "Scene Name Casing"
+msgstr "Wielkość liter w nazwie Sceny"
 
 msgid "Reimport Missing Imported Files"
 msgstr "Zaimportuj ponownie brakujące importowane pliki"
@@ -1952,11 +1971,17 @@ msgstr "CSG"
 msgid "GDScript"
 msgstr "GDScript"
 
+msgid "Notice List"
+msgstr "Lista uwag"
+
 msgid "Warnings"
 msgstr "Ostrzeżenia"
 
 msgid "Language Server"
 msgstr "Serwer języka"
+
+msgid "Range"
+msgstr "Przedział"
 
 msgid "Diffuse Img"
 msgstr "Rozmycie obrazu"
@@ -1999,6 +2024,12 @@ msgstr "Zapętl"
 
 msgid "Perspective"
 msgstr "Perspektywa"
+
+msgid "Size Mag"
+msgstr "Rozmiar"
+
+msgid "Instance Materials"
+msgstr "Materiały instancji"
 
 msgid "Skin"
 msgstr "Skórka"
@@ -2045,6 +2076,9 @@ msgstr "Lightmapping"
 msgid "Region Size"
 msgstr "Rozmiar regionu"
 
+msgid "Denoiser"
+msgstr "Filtr"
+
 msgid "Loop Offset"
 msgstr "Przesunięcie pętli"
 
@@ -2090,6 +2124,9 @@ msgstr "Siła uderzenia"
 msgid "Noise"
 msgstr "Szum"
 
+msgid "Render Target Size Multiplier"
+msgstr "Multiplier rozmiaru obiektu renderowania"
+
 msgid "Names"
 msgstr "Nazwy"
 
@@ -2108,17 +2145,50 @@ msgstr "Funkcje wymagane"
 msgid "Optional Features"
 msgstr "Funkcje opcjonalne"
 
+msgid "Min SDK"
+msgstr "minimalne SDK"
+
 msgid "Plugins"
 msgstr "Wtyczki"
+
+msgid "Unique Name"
+msgstr "Unikalna nazwa"
+
+msgid "App Category"
+msgstr "Kategoria aplikacji"
+
+msgid "Graphics"
+msgstr "Grafika"
+
+msgid "Extra Args"
+msgstr "Dodatkowe argumenty"
 
 msgid "Icons"
 msgstr "Ikony"
 
+msgid "Notification 40 X 40"
+msgstr "Notifikacja 40 X 40"
+
+msgid "Notification 60 X 60"
+msgstr "Notyfikacja 60 X 60"
+
+msgid "Export Method Release"
+msgstr "Metoda eksportu wydania"
+
+msgid "Bundle Identifier"
+msgstr "Identyfikator zbioru"
+
 msgid "Access Wi-Fi"
 msgstr "Dostęp do Wi-Fi"
 
+msgid "Push Notifications"
+msgstr "Powiadomienia push"
+
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Provisioning Profile"
+msgstr "Profil aprowizacji"
 
 msgid "Location"
 msgstr "Lokalizacja"
@@ -2311,6 +2381,9 @@ msgstr "Synchronizuj"
 
 msgid "Request"
 msgstr "Żądanie"
+
+msgid "Seek Request"
+msgstr "Żądanie danych"
 
 msgid "Root Node"
 msgstr "Węzeł główny"
@@ -2618,6 +2691,9 @@ msgstr "Kolor separatora czcionki"
 msgid "Cursor"
 msgstr "Kursor"
 
+msgid "Screen Picker"
+msgstr "Operator ekranu"
+
 msgid "Node"
 msgstr "Węzeł"
 
@@ -2629,6 +2705,12 @@ msgstr "Domyślne pozycjonowanie subpikselowe czcionki"
 
 msgid "Pan"
 msgstr "Pan"
+
+msgid "Tap 1"
+msgstr "Pierwszy"
+
+msgid "Tap 2"
+msgstr "Pierwsze dwa"
 
 msgid "Feedback"
 msgstr "Informacja zwrotna"
@@ -2651,6 +2733,9 @@ msgstr "Wartość progowa dB"
 msgid "Soft Clip dB"
 msgstr "Miękkie przesterowanie dB"
 
+msgid "Time Pullout (ms)"
+msgstr "Przekroczenie czasu"
+
 msgid "Vertex"
 msgstr "Wierzchołki"
 
@@ -2658,7 +2743,7 @@ msgid "Fragment"
 msgstr "Fragmenty"
 
 msgid "Cull"
-msgstr "Cull"
+msgstr "Zredukuj"
 
 msgid "Ensure Correct Normals"
 msgstr "Zapewnij prawidłowe wartości normalnych"
@@ -2674,6 +2759,9 @@ msgstr "GI"
 
 msgid "Overrides"
 msgstr "Nadpisuje"
+
+msgid "Decals"
+msgstr "Naklejki"
 
 msgid "Screen Space Reflection"
 msgstr "Odbicie w przestrzeni ekranu"

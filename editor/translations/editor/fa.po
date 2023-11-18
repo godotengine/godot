@@ -48,8 +48,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-25 08:36+0000\n"
-"Last-Translator: John Smith <pkafsharix@gmail.com>\n"
+"PO-Revision-Date: 2023-11-16 07:52+0000\n"
+"Last-Translator: theBSH <bloodshot1387@hotmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -57,7 +57,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2\n"
+
+msgid "Main Thread"
+msgstr "موضوع اصلی"
 
 msgid "Unset"
 msgstr "تنظیم نشده"
@@ -576,6 +579,15 @@ msgstr "لغو انتخاب کلیدها"
 msgid "Animation Change Transition"
 msgstr "انتقال تغییر انیمیشن"
 
+msgid "Animation Change Position3D"
+msgstr "تغییر انیمیشن مختصات سه بعدی"
+
+msgid "Animation Change Rotation3D"
+msgstr "تغییر انیمیشن چرخش سه بعدی"
+
+msgid "Animation Change Scale3D"
+msgstr "تغییر انیمیشن ابعاد سه بعدی"
+
 msgid "Animation Change Keyframe Value"
 msgstr "تغییر مقدار لحظه‌کلید انیمیشن"
 
@@ -584,6 +596,15 @@ msgstr "تغییر فراخوان انیمیشن"
 
 msgid "Animation Multi Change Transition"
 msgstr "انیمیشن انتقال چند تغییر"
+
+msgid "Animation Multi Change Position3D"
+msgstr "تغییرات انیمیشن مختصات سه بعدی"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "تغییرات انیمیشن چرخش سه بعدی"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "تغییرات انیمیشن ابعاد سه بعدی"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "تغییرات مقدار لحظه کلید انیمیشن"
@@ -796,6 +817,10 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "حذف ترک انیمیشن"
 
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"هنگام کلیک کردن روی نماد، کلید Shift را نگه دارید تا از این گفتگو رد شوید."
+
 msgid "Create new track for %s and insert key?"
 msgstr "یک مسیر جدید برای %s بساز و کلید را درج کن؟"
 
@@ -874,6 +899,9 @@ msgstr "افزودن کلید اندازه"
 msgid "Add Track Key"
 msgstr "افزودن کلید ترک"
 
+msgid "Track path is invalid, so can't add a method key."
+msgstr "مسیر نامعتبر است، پس نمی‌توان کلید تابعی (متد) اضافه کرد."
+
 msgid "Add Method Track Key"
 msgstr "افزودن تابع کلید میسر"
 
@@ -910,9 +938,55 @@ msgstr "حافظه پنهان خالی است!"
 msgid "Paste Tracks"
 msgstr "جاگذاری مسیر ها"
 
+msgid "Animation Scale Keys"
+msgstr "انیمیشن اندازه ی کلید ها"
+
+msgid "Make Easing Keys"
+msgstr "ساخت کلید تسهیل"
+
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr "این گزینه برای اصلاح بِزیِر کار نمی کند, چون تنها یک مسیر واحد است."
+
+msgid "Animation Add RESET Keys"
+msgstr "اضافه کردن کلید های تنظیم مجدد (reset) انیمیشن"
+
+msgid "Bake Animation as Linear Keys"
+msgstr "محاسبه پیش از اجرای انیمیشن به عنوان کلیدهای خطی"
+
+msgid ""
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To modify this animation, navigate to the scene's Advanced Import settings "
+"and select the animation.\n"
+"Some options, including looping, are available here. To add custom tracks, "
+"enable \"Save To File\" and\n"
+"\"Keep Custom Tracks\"."
+msgstr ""
+"این انیمیشن متعلق به یک صحنه ورودی است, بنابراین تغییرات در مسیرهای ورودی "
+"ذخیره نمیشوند.\n"
+"\n"
+"برای امکان اضافه کردن مسیر های سفارشی, به تنظیمات ورودی صحنه بروید و انیمیشن "
+"را انتخاب کنید.\n"
+"برخی گزینه ها مانند تکرار اینجا موجود هستند.برای اضافه کردن مسیر های "
+"سفارشی(Custom)\"ذخیره در فایل\" و \"نگه داشتن مسیر های سفارشی\" را\n"
+"فعال کنید."
+
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"‏‏‎‏تعدادی از گزینه های ویرایشگر پخش کننده ی انیمیشن غیر فعال هستند زیرا این پخش "
+"کننده ی انیمیشن ساختگی، برای پیش نمایش است.\n"
+"پخش کننده ی ساختگی به اجبار فعال و غیر قطعی است و مسیر حرکتی ریشه را ندارد. "
+"علاوه بر این، گره ی اصلی به طور موقت غیر فعال است."
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "پخش کننده ی انیمیشن غیر فعال است. پخش پردازش نخواهد شد."
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "یک گره AnimationPlayer را برای ایجاد و ویرایش انیمیشن ها برگزینید."
@@ -922,6 +996,21 @@ msgstr "صحنه ی وارد شده"
 
 msgid "Warning: Editing imported animation"
 msgstr "هشدار: در حال ویرایش انیمیشن وارد شده"
+
+msgid "Dummy Player"
+msgstr "پخش کننده ی ساختگی"
+
+msgid "Warning: Editing dummy AnimationPlayer"
+msgstr "هشدار: در حال ویرایش پخش کننده ی انیمیشن ساختگی"
+
+msgid "Inactive Player"
+msgstr "پخش کننده ی غیر فعال"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "هشدار: پخش کننده ی انیمیشن غیر فعال است"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "بین ویرایشگر منحنی bezier و ویرایشگر مسیر جابه‌جا شوید."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "فقط مسیرهای از گره های انتخاب شده در درخت نشان داده شود."
@@ -957,6 +1046,9 @@ msgstr "انتخاب شده را تغییر مقیاس بده"
 msgid "Scale From Cursor"
 msgstr "از مکان‌نما تغییر مقیاس بده"
 
+msgid "Make Easing Selection"
+msgstr "ساخت تسهیل برگزیده"
+
 msgid "Duplicate Selection"
 msgstr "تکثیر برگزیده"
 
@@ -975,11 +1067,35 @@ msgstr "برو به گام پیشین"
 msgid "Apply Reset"
 msgstr "بازنشانی را اعمال کنید"
 
+msgid "Bake Animation"
+msgstr "از پیش تعیین کردن انیمیشن"
+
+msgid "Optimize Animation (no undo)"
+msgstr "بهینه سازی انیمیشن (بازگردانی نمیشود)"
+
+msgid "Clean-Up Animation (no undo)"
+msgstr "پاک سازی انیمیشن (بازگردانی نمیشود)"
+
+msgid "Pick a node to animate:"
+msgstr "گره را برای انیمیت کردن انتخاب کنید:"
+
 msgid "Use Bezier Curves"
 msgstr "بکارگیری منحنی بِزیِر"
 
 msgid "Create RESET Track(s)"
 msgstr "ایجاد آهنگ (های) بازنشانی"
+
+msgid "Animation Optimizer"
+msgstr "بهینه‌ساز انیمیشن"
+
+msgid "Max Velocity Error:"
+msgstr "خطای Max Velocity:"
+
+msgid "Max Angular Error:"
+msgstr "خطای Max Angular:"
+
+msgid "Max Precision Error:"
+msgstr "خطای Max Precision:"
 
 msgid "Optimize"
 msgstr "بهینه‌سازی کن"
@@ -994,13 +1110,20 @@ msgid "Clean-up all animations"
 msgstr "تمام انیمیشن‌ها را پاکسازی کن"
 
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "انیمیشن(ها) را پاکسازی کن (نه UNDO !)"
+msgstr "انیمیشن(ها) را پاکسازی کن (بدون بازگردانی !)"
 
 msgid "Clean-Up"
 msgstr "پاکسازی"
 
 msgid "Scale Ratio:"
 msgstr "نسبت تغییر مقیاس:"
+
+msgid "Select Transition and Easing"
+msgstr "انتخاب انتقال و تسهیل دهنده"
+
+msgctxt "Transition Type"
+msgid "Linear"
+msgstr "خطی"
 
 msgctxt "Transition Type"
 msgid "Sine"
@@ -1019,26 +1142,78 @@ msgid "Quad"
 msgstr "چهار‌گوش"
 
 msgctxt "Transition Type"
+msgid "Expo"
+msgstr "نمایی (Expo)"
+
+msgctxt "Transition Type"
 msgid "Elastic"
 msgstr "کشسان"
 
 msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "مکعبی"
+
+msgctxt "Transition Type"
 msgid "Circ"
-msgstr "دایره"
+msgstr "دایره ای"
 
 msgctxt "Transition Type"
 msgid "Bounce"
 msgstr "پرش"
 
 msgctxt "Transition Type"
+msgid "Back"
+msgstr "عقب"
+
+msgctxt "Transition Type"
 msgid "Spring"
 msgstr "فنر"
 
+msgctxt "Ease Type"
+msgid "In"
+msgstr "ورود"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "خروج"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "ورود و خروج"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "خروج و ورود"
+
+msgid "Transition Type:"
+msgstr "نوع انتقال:"
+
+msgid "Ease Type:"
+msgstr "نوع سهول:"
+
+msgid "FPS:"
+msgstr "FPS:"
+
+msgid "Animation Baker"
+msgstr "از پیش تعیین کننده انیمیشن"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "مسیر مکان/چرخش/مقیاس سه‌بعدی:"
+
+msgid "Blendshape Track:"
+msgstr "مسیر BlendShape:"
+
+msgid "Value Track:"
+msgstr "مسیر مقدار:"
+
 msgid "Select Tracks to Copy"
-msgstr "انتخاب میسرها جهت تکثیر"
+msgstr "انتخاب میسرها جهت کپی"
 
 msgid "Select All/None"
 msgstr "انتخاب همه/هیچ"
+
+msgid "Animation Change Keyframe Time"
+msgstr "تغییر زمان کلید فریم انیمیشن"
 
 msgid "Add Audio Track Clip"
 msgstr "افزودن کلیپ آهنگ صوتی"
@@ -1058,21 +1233,24 @@ msgstr "شماره خط:"
 msgid "%d replaced."
 msgstr "%d جایگزین شده."
 
+msgid "No match"
+msgstr "بدون مطابقت"
+
 msgid "%d match"
 msgid_plural "%d matches"
-msgstr[0] "%d نظیر"
-msgstr[1] "%d نظیر"
+msgstr[0] "%d مطابقت"
+msgstr[1] "%d مطابقت ها"
 
 msgid "%d of %d match"
 msgid_plural "%d of %d matches"
-msgstr[0] "%d نظیر"
-msgstr[1] "%d نظیر"
+msgstr[0] "%d از %d مطابقت"
+msgstr[1] "%d از %d مطابقت ها"
 
 msgid "Match Case"
-msgstr "بین حروف کوچک و بزرگ لاتین تمایز قائل شو"
+msgstr "تطابق بزرگی حروف"
 
 msgid "Whole Words"
-msgstr "عین کلمات (بدون هیچ کم و کاستی)"
+msgstr "کل کلمات"
 
 msgid "Replace"
 msgstr "جایگزینی"
@@ -1083,8 +1261,16 @@ msgstr "جایگزینی همه"
 msgid "Selection Only"
 msgstr "تنها در قسمت انتخاب شده"
 
+msgctxt "Indentation"
+msgid "Spaces"
+msgstr "جاهای خالی"
+
+msgctxt "Indentation"
+msgid "Tabs"
+msgstr "Tabs"
+
 msgid "Toggle Scripts Panel"
-msgstr "تغییر پانل اسکریپت ها"
+msgstr "تغییر پنل اسکریپت ها"
 
 msgid "Zoom In"
 msgstr "بزرگنمایی"
@@ -1164,6 +1350,9 @@ msgstr "آرگومان‌های اضافی فراخوانی:"
 
 msgid "Allows to drop arguments sent by signal emitter."
 msgstr "اجازه می‌دهد تا آرگومان‌های ارسال شده توسط فرستنده سیگنال را رها کنید."
+
+msgid "Unbind Signal Arguments:"
+msgstr "آرگومان‌های سیگنال‌ Unbind:"
 
 msgid "Receiver Method:"
 msgstr "روش گیرنده:"
@@ -1279,6 +1468,9 @@ msgstr "تطبیق‌ها:"
 msgid "Description:"
 msgstr "توضیح:"
 
+msgid "Remote %s:"
+msgstr "ریموت%s:"
+
 msgid "Debugger"
 msgstr "اشکال زدا"
 
@@ -1315,6 +1507,12 @@ msgstr "همگام‌سازی سرصفحه‌ها"
 msgid "Getting remote file system"
 msgstr "دریافت سیستم فایل از راه دور"
 
+msgid "Decompressing remote file system"
+msgstr "در حال باز کردن(Decompress)سیستم فایل ریموت"
+
+msgid "Scanning for local changes"
+msgstr "در حال اسکن برای تغييرات محلی"
+
 msgid "Sending list of changed files:"
 msgstr "ارسال فهرست فایل‌های تغییر یافته:"
 
@@ -1348,6 +1546,9 @@ msgstr "پاک کردن"
 msgid "Measure:"
 msgstr "اندازه گیری:"
 
+msgid "Frame Time (ms)"
+msgstr "زمان فریم (ms)"
+
 msgid "Average Time (ms)"
 msgstr "زمان متوسط (میلی‌ثانیه)"
 
@@ -1357,8 +1558,26 @@ msgstr "فریم %"
 msgid "Physics Frame %"
 msgstr "% فریم فیزیک"
 
+msgid "Inclusive"
+msgstr "تمام وقت"
+
 msgid "Self"
 msgstr "خود"
+
+msgid ""
+"Inclusive: Includes time from other functions called by this function.\n"
+"Use this to spot bottlenecks.\n"
+"\n"
+"Self: Only count the time spent in the function itself, not in other "
+"functions called by that function.\n"
+"Use this to find individual functions to optimize."
+msgstr ""
+"تمام وقت: شامل زمان از توابع دیگر فراخوانده شده توسط این تابع\n"
+"استفاده کن از این برای پیدا کردن bottleneck ها\n"
+"\n"
+"خود:فقط زمانی را می شمارد که درون خود توابع صرف شده نه در توابع دیگر "
+"فراخوانده شده توسط آن تابع.\n"
+"استفاده کن از این برای پیدا کردن توابع تکی برای بهینه سازی."
 
 msgid "Frame #:"
 msgstr "فریم #:"
@@ -1372,8 +1591,17 @@ msgstr "زمان"
 msgid "Calls"
 msgstr "فراخوانی‌ها"
 
+msgid "Fit to Frame"
+msgstr "جا کردن در تصویر"
+
 msgid "Linked"
 msgstr "پیوند داده شده"
+
+msgid "CPU"
+msgstr "پردازنده (CPU)"
+
+msgid "GPU"
+msgstr "واحد پردازش گرافیکی (GPU)"
 
 msgid "Execution resumed."
 msgstr "راه‌اندازی از سر گرفته شد."
@@ -1384,23 +1612,83 @@ msgstr "بایت‌ها:"
 msgid "Warning:"
 msgstr "هشدار:"
 
+msgid "Error:"
+msgstr "خطا:"
+
+msgid "%s Error"
+msgstr "خطای %s"
+
+msgid "%s Error:"
+msgstr "خطای %s:"
+
+msgid "%s Source"
+msgstr "منبع %s"
+
+msgid "%s Source:"
+msgstr "منبع %s:"
+
+msgid "Stack Trace"
+msgstr "ردیابی پشته(Stack Trace)"
+
+msgid "Stack Trace:"
+msgstr "ردیابی پشته(Stack Trace):"
+
+msgid "Debug session started."
+msgstr "نشست اشکال زدایی شزوع شد."
+
+msgid "Debug session closed."
+msgstr "نشست اشکال زدایی بسته شد."
+
+msgid "Line %d"
+msgstr "خط %d"
+
+msgid "Delete Breakpoint"
+msgstr "حذف Breakpoint"
+
+msgid "Delete All Breakpoints in:"
+msgstr "تمام Breakpoints ها را حذف کن در:"
+
+msgid "Delete All Breakpoints"
+msgstr "حذف تمام Breakpoint ها"
+
 msgid "Copy Error"
-msgstr "خطای کپی"
+msgstr "کپی خطا"
 
 msgid "Open C++ Source on GitHub"
 msgstr "بازکردن منبع C++ در گیت‌هاب"
 
+msgid "C++ Source"
+msgstr "منبع C++"
+
 msgid "Video RAM"
 msgstr "ویدئو رم"
 
+msgid "Skip Breakpoints"
+msgstr "ردکردن Breakpoint ها"
+
+msgid "Step Into"
+msgstr "قدم به درون"
+
+msgid "Step Over"
+msgstr "قدم برداشتن"
+
 msgid "Break"
-msgstr "Break"
+msgstr "وقفه"
 
 msgid "Continue"
 msgstr "ادامه"
 
+msgid "Thread:"
+msgstr "نخ:"
+
 msgid "Stack Frames"
 msgstr "روی هم چیدن فریم‌ها"
+
+msgid "Filter Stack Variables"
+msgstr "فیلتر متغیر های پشته"
+
+msgid "Breakpoints"
+msgstr "مکان های وقفه"
 
 msgid "Expand All"
 msgstr "بسط دادن همه"
@@ -1411,11 +1699,17 @@ msgstr "بستن همه"
 msgid "Profiler"
 msgstr "پروفایلر"
 
+msgid "Visual Profiler"
+msgstr "پروفایلر دیداری"
+
 msgid "List of Video Memory Usage by Resource:"
 msgstr "فهرست استفاده از حافظه ویدئویی بر اساس منبع:"
 
 msgid "Total:"
 msgstr "کل:"
+
+msgid "Export list to a CSV file"
+msgstr "صدور لیست در یک فایل CSV"
 
 msgid "Resource Path"
 msgstr "مسیر منبع"
@@ -1427,7 +1721,7 @@ msgid "Format"
 msgstr "قالب"
 
 msgid "Usage"
-msgstr "کاربرد:"
+msgstr "استفاده"
 
 msgid "Misc"
 msgstr "متفرقه"
@@ -1437,6 +1731,15 @@ msgstr "کنترل کلیک‌شده:"
 
 msgid "Clicked Control Type:"
 msgstr "گونهٔ کنترل کلیک‌شده:"
+
+msgid "Live Edit Root:"
+msgstr "ویرایش زنده Root:"
+
+msgid "Set From Tree"
+msgstr "تنظیم از Tree"
+
+msgid "Export measures as CSV"
+msgstr "صدور اندازه ها بعنوان CSV"
 
 msgid "Search Replacement For:"
 msgstr "جستجوی جایگزین برای:"
@@ -1479,8 +1782,22 @@ msgstr "ویرایشگر بستگی"
 msgid "Search Replacement Resource:"
 msgstr "منبع جایگزینی را جستجو کن:"
 
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "باز کردن صحنه"
+msgstr[1] "باز کردن صحنه ها"
+
 msgid "Open"
 msgstr "باز کن"
+
+msgid "Owners of: %s (Total: %d)"
+msgstr "صاحبان: %s (کل: %d)"
+
+msgid "Localization remap"
+msgstr "بومی‌سازی مجدد"
+
+msgid "Localization remap for path '%s' and locale '%s'."
+msgstr "بومی سازی مجدد برای مسیر '%s' و بومی '%s'."
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -1539,6 +1856,24 @@ msgstr "اموال"
 msgid "Resources Without Explicit Ownership:"
 msgstr "منابع بدون مالکیت صریح:"
 
+msgid "Folder name cannot be empty."
+msgstr "نام پوشه نمی‌تواند خالی باشد."
+
+msgid "Folder name contains invalid characters."
+msgstr "نام پوشه شامل کاراکترهای نامعتبر است."
+
+msgid "Folder name cannot begin or end with a space."
+msgstr "نام پوشه نمی‌تواند با جای خالی شروع یا تمام شود."
+
+msgid "Folder name cannot begin with a dot."
+msgstr "نام پوشه نمی‌تواند با نقطه شروع شود."
+
+msgid "File with that name already exists."
+msgstr "فایل با این نام در حال حاضر وجود دارد."
+
+msgid "Folder with that name already exists."
+msgstr "پوشه با این نام در حال حاضر وجود دارد."
+
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "استفاده از خط مورب در نام پوشه‌ها، زیرپوشه‌ها را به صورت بازگشتی ایجاد می‌کند."
@@ -1546,11 +1881,17 @@ msgstr ""
 msgid "Could not create folder."
 msgstr "ناتوان در ساختن پوشه."
 
+msgid "Create new folder in %s:"
+msgstr "ساخت پوشه جدید در %s:"
+
 msgid "Create Folder"
-msgstr "ایجاد پوشه"
+msgstr "ساخت پوشه"
+
+msgid "Folder name is valid."
+msgstr "نام پوشه معتبر است."
 
 msgid "Thanks from the Godot community!"
-msgstr "با تشکر از سوی جامعهٔ گودو!"
+msgstr "با تشکر از سوی جامعهٔ گودوت!"
 
 msgid "Click to copy."
 msgstr "برای کپی کردن کلیک کنید."
@@ -1563,6 +1904,10 @@ msgstr "بنیان‌گذاران پروژه"
 
 msgid "Lead Developer"
 msgstr "توسعه‌دهنده‌ی اصلی"
+
+msgctxt "Job Title"
+msgid "Project Manager"
+msgstr "مدیر پروژه"
 
 msgid "Developers"
 msgstr "توسعه دهندگان"
@@ -1578,21 +1923,6 @@ msgstr "حامیان طلایی"
 
 msgid "Silver Sponsors"
 msgstr "حامیان نقره ای"
-
-msgid "Bronze Sponsors"
-msgstr "حامیان برنزی"
-
-msgid "Mini Sponsors"
-msgstr "حامیان مینی"
-
-msgid "Gold Donors"
-msgstr "اهدا کنندگان طلایی"
-
-msgid "Silver Donors"
-msgstr "اهدا کنندگان نقره‌ای"
-
-msgid "Bronze Donors"
-msgstr "اهدا کنندگان برنزی"
 
 msgid "Donors"
 msgstr "اهدا کنندگان"
@@ -5762,13 +6092,6 @@ msgstr ""
 "عدم تطابق نسخهٔ ساخت اندروید: الگوی نصب شده: %s، نسخهٔ گودو: %s. لطفاً الگوی "
 "ساخت اندروید را از منوی «پروژه» دوباره نصب کنید."
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"ساخت پروژهٔ اندروید ناموفق بود، خروجی را برای وجود خطا بررسی کنید یا برای "
-"مستندات ساخت اندروید از docs.godotengine.org بازدید کنید."
-
 msgid "Adding files..."
 msgstr "افزودن فایل‌ها..."
 
@@ -5912,5 +6235,50 @@ msgstr "ثوابت قابل تغییر نیستند."
 msgid "Expected a function name."
 msgstr "نام تابع مورد انتظار است."
 
+msgid "Expected a '{' to begin function."
+msgstr "برای شروع یک تابع '{' انتظار میرود."
+
+msgid "Expected a '%s'."
+msgstr "%s انتظار میرود."
+
+msgid "Expected a '%s' or '%s'."
+msgstr "یک %s یا %s انتظار میرود."
+
+msgid "Expected a '%s' after '%s'."
+msgstr "%s بعد از %s انتظار میردود."
+
+msgid "Redefinition of '%s'."
+msgstr "تعریف دوباره از %s."
+
 msgid "Invalid argument name."
 msgstr "نام آرگومان نامعتبر."
+
+msgid "Missing condition."
+msgstr "نبود شرط."
+
+msgid "Condition evaluation error."
+msgstr "خطای ارزیابی شرط."
+
+msgid "Unmatched else."
+msgstr "else مچ نشده."
+
+msgid "Invalid else."
+msgstr "else نامعتبر."
+
+msgid "Shader include file does not exist:"
+msgstr "فایل سایه‌زن موجود نیست:"
+
+msgid "Invalid pragma directive."
+msgstr "دستورالعمل نامعتبر پراگما."
+
+msgid "Invalid undef."
+msgstr "undef نامعتبر."
+
+msgid "Invalid macro argument list."
+msgstr "لیست آرگومان های کوچک نامعتبر."
+
+msgid "Invalid macro argument."
+msgstr "آرگومان کوچک نامعتبر."
+
+msgid "Invalid macro argument count."
+msgstr "تعداد آرگومان کوچک نامعتبر."

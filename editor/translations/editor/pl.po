@@ -82,13 +82,14 @@
 # Eryk Michalak <gnu.ewm@protonmail.com>, 2023.
 # BorysBe <b.bobulski@wp.pl>, 2023.
 # johnny1029 <jkste07@gmail.com>, 2023.
+# Marcin Zieliński <czolgista83@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-07 01:15+0000\n"
-"Last-Translator: johnny1029 <jkste07@gmail.com>\n"
+"PO-Revision-Date: 2023-11-12 01:21+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
 "Language: pl\n"
@@ -1977,21 +1978,6 @@ msgstr "Złoci sponsorzy"
 msgid "Silver Sponsors"
 msgstr "Srebrni sponsorzy"
 
-msgid "Bronze Sponsors"
-msgstr "Brązowi sponsorzy"
-
-msgid "Mini Sponsors"
-msgstr "Mini-sponsorzy"
-
-msgid "Gold Donors"
-msgstr "Złoci darczyńcy"
-
-msgid "Silver Donors"
-msgstr "Srebrni darczyńcy"
-
-msgid "Bronze Donors"
-msgstr "Brązowi darczyńcy"
-
 msgid "Donors"
 msgstr "Darczyńcy"
 
@@ -2074,7 +2060,7 @@ msgid "Ignore asset root"
 msgstr "Ignoruj folder główny zasobu"
 
 msgid "No files conflict with your project"
-msgstr "Żaden plik nie konfliktuje z twoim projektem."
+msgstr "Żaden plik nie konfliktuje z twoim projektem"
 
 msgid "Show contents of the asset and conflicting files."
 msgstr "Pokaż zawartość zasobu i konfliktujące pliki."
@@ -2462,7 +2448,7 @@ msgid ""
 "%s."
 msgstr ""
 "Nie udało się wykonać komendy \"%s\":\n"
-"%s"
+"%s."
 
 msgid "Filter Commands"
 msgstr "Filtruj komendy"
@@ -2851,11 +2837,23 @@ msgstr "Opisy metod"
 msgid "Operator Descriptions"
 msgstr "Opisy operatorów"
 
+msgid "Metadata:"
+msgstr "Metadane:"
+
 msgid "Property:"
 msgstr "Właściwość:"
 
+msgid "Method:"
+msgstr "Metoda:"
+
 msgid "Signal:"
 msgstr "Sygnał:"
+
+msgid "Theme Item:"
+msgstr "Element motywu:"
+
+msgid "No description available."
+msgstr "Brak dostępnego opisu."
 
 msgid "%d match."
 msgstr "%d dopasowanie."
@@ -3759,7 +3757,7 @@ msgid "Choose a renderer."
 msgstr "Wybierz renderer."
 
 msgid "Forward+"
-msgstr "Przedni+"
+msgstr "W przód+"
 
 msgid "Mobile"
 msgstr "Mobilny"
@@ -3985,6 +3983,12 @@ msgstr ""
 
 msgid "Assign..."
 msgstr "Przypisz..."
+
+msgid "Copy as Text"
+msgstr "Skopiuj jako tekst"
+
+msgid "Show Node in Tree"
+msgstr "Pokaż węzeł w drzewie"
 
 msgid "Invalid RID"
 msgstr "Nieprawidłowy RID"
@@ -4547,6 +4551,9 @@ msgstr "Usunąć profil \"%s\"?"
 msgid "Resources to exclude:"
 msgstr "Zasoby do wykluczenia:"
 
+msgid "Resources to override export behavior:"
+msgstr "Zasoby do nadpisania zachowania eksportu:"
+
 msgid "Resources to export:"
 msgstr "Zasoby do eksportu:"
 
@@ -4849,6 +4856,9 @@ msgstr "Duplikowanie Folderu:"
 msgid "New Inherited Scene"
 msgstr "Nowa scena dziedzicząca"
 
+msgid "Set as Main Scene"
+msgstr "Ustaw jako scenę główną"
+
 msgid "Open Scenes"
 msgstr "Otwórz sceny"
 
@@ -4960,6 +4970,33 @@ msgstr "Zmień nazwę..."
 msgid "Open in External Program"
 msgstr "Otwórz w programie zewnętrznym"
 
+msgid "Red"
+msgstr "Czerwony"
+
+msgid "Orange"
+msgstr "Pomarańczowy"
+
+msgid "Yellow"
+msgstr "Żółty"
+
+msgid "Green"
+msgstr "Zielony"
+
+msgid "Teal"
+msgstr "Morski"
+
+msgid "Blue"
+msgstr "Niebieski"
+
+msgid "Purple"
+msgstr "Purpurowy"
+
+msgid "Pink"
+msgstr "Różowy"
+
+msgid "Gray"
+msgstr "Szary"
+
 msgid "Go to previous selected folder/file."
 msgstr "Przejdź do poprzednio zaznaczonego folderu/pliku."
 
@@ -4968,6 +5005,9 @@ msgstr "Przejdź do następnego wybranego folderu/pliku."
 
 msgid "Re-Scan Filesystem"
 msgstr "Przeskanuj system plików ponownie"
+
+msgid "Change Split Mode"
+msgstr "Przełącz tryb podziału"
 
 msgid "Filter Files"
 msgstr "Filtruj pliki"
@@ -5587,15 +5627,6 @@ msgstr "Dynamicznie renderowana czcionka TrueType/OpenType"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Wstępnie renderowane wielokanałowe(+true) znakowane pole odległości"
-
-msgid "Can't load font texture:"
-msgstr "Nie można wczytać tekstury czcionki:"
-
-msgid "Image margin too big."
-msgstr "Za duży margines obrazka."
-
-msgid "Character margin too big."
-msgstr "Za duży margines znaku."
 
 msgid "Pre-Import Scene"
 msgstr "Wstępne importowanie sceny"
@@ -6584,6 +6615,9 @@ msgstr "[Globalna] (utwórz)"
 
 msgid "Duplicated Animation Name:"
 msgstr "Nazwa duplikowanej animacji:"
+
+msgid "Onion skinning requires a RESET animation."
+msgstr "Tryb warstw cebuli wymaga animacji RESET."
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "Odtwórz zaznaczoną animację od tyłu z aktualnej pozycji. (A)"
@@ -7725,6 +7759,18 @@ msgstr ""
 "Jeśli ta opcja jest zaznaczona, kształty obiektów omijania, promienie i "
 "prędkości będą widoczne w uruchomionym projekcie."
 
+msgid "Debug CanvasItem Redraws"
+msgstr "Debugój generowanie CanvasItem"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"Kiedy ta opcja jest włączona, żądania przerysowania obiektów 2D będą widoczne "
+"(jako krótkie błyśnięcie) w uruchomionym projekcie.\n"
+"Użyteczne dla rozwiązywania problemów trybu niskiego zużycia procesora."
+
 msgid "Synchronize Scene Changes"
 msgstr "Synchronizuj zmiany na scenie"
 
@@ -8095,6 +8141,9 @@ msgstr "Utwórz siatkę nawigacyjną (Navigation Mesh)"
 msgid "Create Debug Tangents"
 msgstr "Utwórz debugowe styczne"
 
+msgid "No mesh to unwrap."
+msgstr "Brak siatki do rozwinięcia."
+
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -8121,6 +8170,15 @@ msgstr "Rozwiń UV2"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "Zawarta siatka nie jest typu ArrayMesh."
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "Nie można rozwinąć siatki bez kształtów mieszania."
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "Tylko trójkąty są wspierane dla rozwijania mapy światła."
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "Wymagane są normalne dla rozwijania mapy światła."
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "Rozwijanie UV nie powiodło się, siatka modelu może być nieróżnorodna?"
@@ -9849,6 +9907,12 @@ msgstr "Utwórz węzeł LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "Podgląd LightOccluder2D"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "Nie można przekonwertować sprite z innej sceny."
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "Nie można przekonwertować pustego sprite'a do siatki."
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -13565,8 +13629,18 @@ msgstr ""
 "Wyłączenie \"edytowalnej instancji\" sprawi, że wszystkie właściwości węzła "
 "zostaną przywrócone do domyślnych."
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"Włączenie \"Wczytaj jako zastępczy\" wyłączy \"Edytowalne dzieci\" i sprawi, "
+"że wszystkie właściwości węzła zostaną przywrócone do domyślnych."
+
 msgid "Make Local"
 msgstr "Uczyń lokalnym"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "Nie można przełączyć unikalnej nazwy dla węzłów w podscenie!"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "Włącz unikalne w scenie nazwy"
@@ -13619,16 +13693,6 @@ msgstr "Usuń węzeł(y)"
 msgid "Change type of node(s)"
 msgstr "Zmień typ węzła/ów"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "Usuwanie węzła ze zmiennej \"%s\" w węźle \"%s\"."
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr ""
-"Typ węzła jest niekompatybilny z eksportowaną zmienną (oczekiwano %s, ale typ "
-"to %s)."
-
 msgid "This operation requires a single selected node."
 msgstr "Ta operacja wymaga pojedynczego wybranego węzła."
 
@@ -13662,6 +13726,9 @@ msgstr "Wyczyść dziedziczenie"
 
 msgid "Editable Children"
 msgstr "Edytowalne dzieci"
+
+msgid "Load as Placeholder"
+msgstr "Wczytaj jako zastępczy"
 
 msgid "Auto Expand to Selected"
 msgstr "Automatycznie rozwijaj do wybranego"
@@ -13962,6 +14029,45 @@ msgstr "Nazwa \"%s\" jest zarezerwowanym słowem kluczowym języka shaderów."
 msgid "Add Shader Global Parameter"
 msgstr "Dodaj parametr globalny shadera"
 
+msgid ""
+"This project uses meshes with an outdated mesh format from previous Godot "
+"versions. The engine needs to update the format in order to use those "
+"meshes.\n"
+"\n"
+"Press 'Restart & Upgrade' to run the surface upgrade tool which will update "
+"and re-save all meshes and scenes. This update will restart the editor and "
+"may take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"Press 'Upgrade Only' to continue opening the scene as normal. The engine will "
+"update each mesh in memory, but the update will not be saved. Choosing this "
+"option will lead to slower load times every time this project is loaded."
+msgstr ""
+"Ten projekt używa siatek z nieaktualnym formatem siatek z poprzednich wersji "
+"Godota. Silnik potrzebuje zaktualizować format, żeby używać tych siatek.\n"
+"\n"
+"Wciśnij \"Zrestartuj i zaktualizuj\", by uruchomić narzędzie aktualizacji "
+"siatek, które zaktualizuje i zapisze ponownie wszystkie siatki i sceny. Ta "
+"aktualizacja zrestartuje edytor i może zająć kilka minut. Aktualizacja uczyni "
+"siatki niekompatybilnymi z poprzednimi wersjami Godota.\n"
+"\n"
+"Wciśnij \"Tylko zaktualizuj\", by otworzyć scenę normalnie. Silnik "
+"zaktualizuje każdą siatkę w pamięci, ale aktualizacja nie będzie zapisana. "
+"Wybranie tej opcji prowadzi do wolniejszego wczytywania przy każdym "
+"załadowaniu tego projektu."
+
+msgid "Restart & Upgrade"
+msgstr "Zrestartuj i zaktualizuj"
+
+msgid "Upgrade Only"
+msgstr "Tylko aktualizuj"
+
+msgid "Upgrading All Meshes in Project"
+msgstr "Aktualizacja wszystkich siatek w projekcie"
+
+msgid "Attempting to re-save "
+msgstr "Próba ponownego zapisania "
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Uczyń ten panel pływającym na ekranie %d."
 
@@ -13990,6 +14096,9 @@ msgstr "Zmień zewnętrzny promień torusa"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Niepoprawny typ argumentu funkcji convert(), użyj stałych TYPE_*."
 
+msgid "Cannot resize array."
+msgstr "Nie można zmienić rozmiaru tablicy."
+
 msgid "Step argument is zero!"
 msgstr "Argument kroku wynosi zero!"
 
@@ -14014,6 +14123,9 @@ msgstr "Niepoprawna instancja formatu słownika (niepoprawny skrypt w @path)"
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Niepoprawny słownik instancji (niepoprawne podklasy)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "Nie można zainicjować klasy GDScript."
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "Wartość typu \"%s\" nie może określać długości."
@@ -14221,6 +14333,9 @@ msgstr "Wykreśl bezpośrednie oświetlenie"
 msgid "Integrate indirect lighting"
 msgstr "Integruj pośrednie oświetlenie"
 
+msgid "Integrate indirect lighting %d%%"
+msgstr "Integruj pośrednie oświetlenie %d%%"
+
 msgid "Baking lightprobes"
 msgstr "Wypiekanie sond światła"
 
@@ -14267,7 +14382,7 @@ msgstr ""
 "Upewnij się, że katalog \"%s\" istnieje i zawiera zestawy .NET."
 
 msgid ".NET assemblies not found"
-msgstr "Nie znaleziono zestawów .NET."
+msgstr "Nie znaleziono zestawów .NET"
 
 msgid ""
 "Unable to load .NET runtime, specifically hostfxr.\n"
@@ -14643,6 +14758,9 @@ msgstr "Nie udało się uruchomić na urządzeniu."
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "Eksportowanie na Androida z użyciem C#/.NET jest eksperymentalne."
 
+msgid "Android architecture %s not supported in C# projects."
+msgstr "Architektura Androida %s nie jest wspierana w projektach C#."
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14803,23 +14921,8 @@ msgstr "Nie udało się zapisać pliku pakietu rozszerzenia!"
 msgid "Building Android Project (gradle)"
 msgstr "Budowanie projektu Androida (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Budowanie projektu Androida się nie powiodło, sprawdź dane wyjściowe błędu. "
-"Ewentualnie, odwiedź docs.godotengine.org po dokumentację budowania dla "
-"Androida."
-
 msgid "Moving output"
 msgstr "Przesuwam wyjście"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Nie udało się skopiować i przemianować pliku eksportu, sprawdź folder "
-"projektu gradle po informacje."
 
 msgid "Package not found: \"%s\"."
 msgstr "Nie znaleziono pakietu: \"%s\"."
@@ -14896,6 +14999,13 @@ msgid ""
 msgstr ""
 ".ipa można zbudować tylko w systemie macOS. Opuszczanie projektu Xcode bez "
 "budowania pakietu."
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr ""
+"Eksportowanie na iOS z użyciem C#/.NET jest eksperymentalne i wymaga macOS."
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "Eksportowanie na iOS z użyciem C#/.NET jest eksperymentalne."
 
 msgid "Identifier is missing."
 msgstr "Brakuje identyfikatora."
@@ -15062,6 +15172,13 @@ msgstr ""
 
 msgid "App sandbox is required for App Store distribution."
 msgstr "Piaskownica aplikacji jest wymagana do dystrybucji w App Store."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries (GDExtension or .NET)."
+msgstr ""
+"\"rcodesign\" nie wspiera podpisywania aplikacji z osadzonymi bibliotekami "
+"dynamicznymi (GDExtension lub .NET)."
 
 msgid "Code signing is required for App Store distribution."
 msgstr "Podpisanie kodu jest wymagane do dystrybucji w App Store."
@@ -15260,6 +15377,13 @@ msgid ""
 msgstr ""
 "Aplikacje podpisane ad-hoc wymagają uprawnienia \"Wyłącz walidację "
 "biblioteki\" do ładowania bibliotek dynamicznych."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries."
+msgstr ""
+"\"rcodesign\" nie wspiera podpisywania aplikacji z osadzonymi bibliotekami "
+"dynamicznymi."
 
 msgid "Could not create entitlements file."
 msgstr "Nie można utworzyć pliku uprawnień."
@@ -15624,8 +15748,8 @@ msgstr ""
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
-"Wielokąt przesłaniający musi być ustawiony (lub narysowany), aby ten "
-"przesłaniacz zadziałał."
+"Wielokąt przesłaniający musi być ustawiony (lub narysowany), aby ten occluder "
+"zadziałał."
 
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
@@ -15731,6 +15855,17 @@ msgid ""
 msgstr ""
 "Warstwa TileMap jest ustawiona jako posortowana Y, ale sortowanie Y nie jest "
 "włączone w samym węźle TileMap."
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"Węzeł TileMap ma włączone sortowanie Y, ale sortowanie Y nie jest ustawione "
+"na żadnej z warstw TileMapy.\n"
+"To może doprowadzić do niechcianych zachowań, gdyż warstwa nie sortowana po Y "
+"będzie sortowana jako całość."
 
 msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled for "
@@ -16375,6 +16510,13 @@ msgid "Automatically arrange selected nodes."
 msgstr "Automatycznie ułóż zaznaczone węzły."
 
 msgid ""
+"Labels with autowrapping enabled must have a custom minimum size configured "
+"to work correctly inside a container."
+msgstr ""
+"Labelki z włączonym autozawijaniem muszą mieć skonfigurowany własny minimalny "
+"rozmiar, by działać poprawnie w kontenerze."
+
+msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr ""
@@ -16497,15 +16639,6 @@ msgstr ""
 "ryzyka utraty danych."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"Ustawianie nazwy węzła \"%s\" by była unikalna w scenie dla \"%s\", ale jest "
-"już zajęta przez \"%s\".\n"
-"\"%s\" nie będzie już ustawiony jako posiadające unikalną nazwę."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -16519,13 +16652,6 @@ msgid ""
 msgstr ""
 "Ten węzeł jest oznaczony jako eksperymentalny i może podlegać usunięciu lub "
 "poważnym zmianom w przyszłych wersjach."
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"Domyślne środowisko określone w ustawieniu projektu \"rendering/environment/"
-"defaults/default_environment\" nie mogło zostać załadowane."
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -16551,27 +16677,6 @@ msgid ""
 msgstr ""
 "Wielkość Viewportu musi być większa lub równa 2 piksele w obu wymiarach, by "
 "cokolwiek renderować."
-
-msgid "Cannot open font from file: %s."
-msgstr "Nie można otworzyć czcionki z pliku: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "Wersja %d BMFont nie jest obsługiwana (powinna być 3)."
-
-msgid "Invalid BMFont info block size."
-msgstr "Nieprawidłowy rozmiar bloku informacyjnego BMFont."
-
-msgid "Invalid BMFont common block size."
-msgstr "Nieprawidłowy rozmiar bloku wspólnego BMFont."
-
-msgid "Can't load font texture: %s."
-msgstr "Nie można załadować tekstury czcionki: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Nieobsługiwany format tekstury BMFont."
-
-msgid "Invalid BMFont block type."
-msgstr "Nieprawidłowy typ bloku BMFont."
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

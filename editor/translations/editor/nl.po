@@ -1364,21 +1364,6 @@ msgstr "Gouden Sponsors"
 msgid "Silver Sponsors"
 msgstr "Zilveren Sponsors"
 
-msgid "Bronze Sponsors"
-msgstr "Bronzen Sponsors"
-
-msgid "Mini Sponsors"
-msgstr "Mini Sponsoren"
-
-msgid "Gold Donors"
-msgstr "Gouden Donors"
-
-msgid "Silver Donors"
-msgstr "Zilveren Donors"
-
-msgid "Bronze Donors"
-msgstr "Bronzen Donors"
-
 msgid "Donors"
 msgstr "Donoren"
 
@@ -7271,13 +7256,6 @@ msgstr "Bouwen van Android Project (gradle)"
 
 msgid "Moving output"
 msgstr "Output verplaatsen"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Niet in staat om het export bestand te kopiëren en hernoemen. Controleer de "
-"gradle project folder voor outputs."
 
 msgid "Invalid Identifier:"
 msgstr "Ongeldige identifier:"

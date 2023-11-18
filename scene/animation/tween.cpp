@@ -420,13 +420,8 @@ Variant Tween::interpolate_variant(const Variant &p_initial_val, const Variant &
 	ERR_FAIL_INDEX_V(p_trans, TransitionType::TRANS_MAX, Variant());
 	ERR_FAIL_INDEX_V(p_ease, EaseType::EASE_MAX, Variant());
 
-	// Special case for bool.
-	if (p_initial_val.get_type() == Variant::BOOL) {
-		return run_equation(p_trans, p_ease, p_time, p_initial_val, p_delta_val, p_duration) >= 0.5;
-	}
-
 	Variant ret = Animation::add_variant(p_initial_val, p_delta_val);
-	ret = Animation::interpolate_variant(p_initial_val, ret, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration));
+	ret = Animation::interpolate_variant(p_initial_val, ret, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration), p_initial_val.is_string());
 	return ret;
 }
 
