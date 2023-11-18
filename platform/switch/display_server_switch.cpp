@@ -82,7 +82,7 @@ Size2i DisplayServerSwitch::screen_get_size(int p_screen) const {
 	if (_window) {
 		unsigned int w, h;
 		nwindowGetDimensions(_window, &w, &h);
-		Size2i(w, h);
+		return Size2i(w, h);
 	}
 	return Size2i(0, 0);
 }
