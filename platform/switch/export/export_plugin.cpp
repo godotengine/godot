@@ -83,10 +83,9 @@ Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &
 		String bin_path = p_preset->get("devkitpro/tools_path");
 
 		int exit_code = 0;
-		String output;
 		{
 			List<String> args;
-			// build nacp file
+			String output;
 
 			String nacp_tool_path = bin_path.path_join(String(p_preset->get("devkitpro/nacp")));
 
@@ -98,6 +97,7 @@ Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &
 
 			err = OS::get_singleton()->execute(nacp_tool_path, args, &output, &exit_code, true);
 			ERR_FAIL_COND_V_MSG(exit_code != 0, err, output);
+			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("nacp OK"));
 		}
 
 		// make the romfs temp dir
@@ -105,7 +105,7 @@ Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		da->remove(romfs);
 		err = da->make_dir_recursive(romfs);
-		ERR_FAIL_COND_V_MSG(err != OK, err, output);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create romfs");
 
 		err = da->copy(pck_path, romfs.path_join(pck_file));
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot copy pck file");
@@ -116,8 +116,7 @@ Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &
 		//build the file nro
 		{
 			List<String> args;
-			// build nacp file
-
+			String output;
 			String elf2nro_path = bin_path.path_join(String(p_preset->get("devkitpro/nro")));
 
 			args.push_back(p_path);
@@ -128,6 +127,21 @@ Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &
 
 			err = OS::get_singleton()->execute(elf2nro_path, args, &output, &exit_code, true);
 			ERR_FAIL_COND_V_MSG(exit_code != 0, err, output);
+			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("elf2nro OK"));
+		}
+
+		//if nxlink is enabled send it
+		if ((bool)(p_preset->get("nxlink/enabled"))) {
+			List<String> args;
+			String output;
+			String nxlink_path = bin_path.path_join(String(p_preset->get("devkitpro/nxlink")));
+			String address = String(p_preset->get("nxlink/address"));
+			args.push_back("--address=" + address);
+			args.push_back(nro_path);
+
+			err = OS::get_singleton()->execute(nxlink_path, args, &output, &exit_code, true);
+			ERR_FAIL_COND_V_MSG(exit_code != 0, err, output);
+			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("nxlink OK"));
 		}
 	}
 
@@ -186,8 +200,7 @@ void EditorExportPlatformSwitch::get_export_options(List<ExportOption> *r_option
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "devkitpro/nxlink"), "nxlink"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "nxlink/enabled"), false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "nxlink/host"), "0.0.0.0"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "nxlink/port"), "28280"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "nxlink/address"), "0.0.0.0"));
 }
 
 Error EditorExportPlatformSwitch::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {

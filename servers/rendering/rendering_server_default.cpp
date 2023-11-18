@@ -398,42 +398,23 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 		server_thread = 0;
 	}
 
-	int i = 0;
-	print_line(i++);
 	RSG::threaded = p_create_thread;
-	print_line(i++);
 	RSG::canvas = memnew(RendererCanvasCull);
-	print_line(i++);
 	RSG::viewport = memnew(RendererViewport);
-	print_line(i++);
 	RendererSceneCull *sr = memnew(RendererSceneCull);
-	print_line(i++);
 	RSG::camera_attributes = memnew(RendererCameraAttributes);
-	print_line(i++);
 	RSG::scene = sr;
-	print_line(i++); //6
 	RSG::rasterizer = RendererCompositor::create();
-	print_line(i++);
 	RSG::utilities = RSG::rasterizer->get_utilities();
-	print_line(i++);
 	RSG::light_storage = RSG::rasterizer->get_light_storage();
-	print_line(i++);
 	RSG::material_storage = RSG::rasterizer->get_material_storage();
-	print_line(i++);
 	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
-	print_line(i++);
 	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
-	print_line(i++);
 	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
-	print_line(i++);
 	RSG::gi = RSG::rasterizer->get_gi();
-	print_line(i++);
 	RSG::fog = RSG::rasterizer->get_fog();
-	print_line(i++);
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
-	print_line(i++);
 	sr->set_scene_render(RSG::rasterizer->get_scene());
-	print_line(i++);
 
 	frame_profile_frame = 0;
 }

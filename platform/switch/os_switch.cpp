@@ -122,7 +122,6 @@ void OS_Switch::run() {
 		if (Main::iteration()) {
 			break;
 		}
-		print("++\n");
 	}
 
 	_main_loop->finalize();

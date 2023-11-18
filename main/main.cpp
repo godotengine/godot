@@ -3344,8 +3344,6 @@ bool Main::iteration() {
 
 	const uint64_t ticks_elapsed = ticks - last_ticks;
 
-	print_line(ticks_elapsed);
-
 	const int physics_ticks_per_second = Engine::get_singleton()->get_physics_ticks_per_second();
 	const double physics_step = 1.0 / physics_ticks_per_second;
 
@@ -3375,9 +3373,7 @@ bool Main::iteration() {
 	bool exit = false;
 
 	// process all our active interfaces
-	print_line("XRServer::get_singleton()->_process()");
 	XRServer::get_singleton()->_process();
-	print_line("OK XRServer::get_singleton()->_process()");
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
@@ -3388,11 +3384,9 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-		print_line("PhysicsServer3D::get_singleton()->sync()");
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
 
-		print_line("XPhysicsServer2D::get_singleton()->sync()");
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
 
@@ -3406,7 +3400,6 @@ bool Main::iteration() {
 
 		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
-		print_line("NavigationServer3D::get_singleton()->sync()");
 		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
 
 		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
@@ -3435,25 +3428,21 @@ bool Main::iteration() {
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
-	print_line("OS::get_singleton()->get_main_loop()->process()");
 	if (OS::get_singleton()->get_main_loop()->process(process_step * time_scale)) {
 		exit = true;
 	}
 	message_queue->flush();
 
-	print_line("RenderingServer::get_singleton()->sync()");
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
-				print_line("RenderingServer::get_singleton()->draw() forced");
 				RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 				Engine::get_singleton()->frames_drawn++;
 			}
 		} else {
-			print_line("RenderingServer::get_singleton()->draw()");
 			RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
@@ -3468,7 +3457,6 @@ bool Main::iteration() {
 		ScriptServer::get_language(i)->frame();
 	}
 
-	print_line("AudioServer::get_singleton()->update()");
 	AudioServer::get_singleton()->update();
 
 	if (EngineDebugger::is_active()) {
@@ -3506,7 +3494,6 @@ bool Main::iteration() {
 
 	iterating--;
 
-	print_line("Input::get_singleton()->flush_buffered_events()");
 	// Needed for OSs using input buffering regardless accumulation (like Android)
 	if (Input::get_singleton()->is_using_input_buffering() && !agile_input_event_flushing) {
 		Input::get_singleton()->flush_buffered_events();

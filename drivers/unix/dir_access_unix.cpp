@@ -311,36 +311,24 @@ bool DirAccessUnix::drives_are_shortcuts() {
 Error DirAccessUnix::make_dir(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
-	print_line("---");
-
 	if (p_dir.is_relative_path()) {
 		p_dir = get_current_dir().path_join(p_dir);
 	}
 
-	print_line("---");
-
 	p_dir = fix_path(p_dir);
-
-	print_line("mkdir");
 
 	print_line(p_dir.utf8().get_data());
 
 	bool success = (mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
 	int err = errno;
 
-	print_line("---");
-
 	if (success) {
 		return OK;
 	}
 
-	print_line("---");
-
 	if (err == EEXIST) {
 		return ERR_ALREADY_EXISTS;
 	}
-
-	print_line("---");
 
 	return ERR_CANT_CREATE;
 }
