@@ -1505,6 +1505,7 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 						new_anim->add_track(anim->track_get_type(j));
 						dtrack = new_anim->get_track_count() - 1;
 						new_anim->track_set_path(dtrack, anim->track_get_path(j));
+						new_anim->track_set_imported(dtrack, true);
 
 						if (kt > (from + 0.01) && k > 0) {
 							if (anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
@@ -1580,6 +1581,7 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 				new_anim->add_track(anim->track_get_type(j));
 				dtrack = new_anim->get_track_count() - 1;
 				new_anim->track_set_path(dtrack, anim->track_get_path(j));
+				new_anim->track_set_imported(dtrack, true);
 				if (anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
 					Vector3 p;
 					anim->try_position_track_interpolate(j, from, &p);
