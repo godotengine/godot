@@ -3217,6 +3217,9 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 		} else {
 			bool must_import = true;
 			Vector<uint8_t> img_data = p_image->get_data();
+			unsigned char md5_hash[16];
+			CryptoCore::md5(img_data.ptr(), img_data.size(), md5_hash);
+			String new_md5 = String::hex_encode_buffer(md5_hash, 16);
 			Dictionary generator_parameters;
 			String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + p_image->get_name();
 			file_path += p_file_extension.is_empty() ? ".png" : p_file_extension;
@@ -3229,14 +3232,8 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 				}
 				if (!generator_parameters.has("md5")) {
 					must_import = false; // Didn't come from a gltf document; don't overwrite.
-				}
-				String existing_md5 = generator_parameters["md5"];
-				unsigned char md5_hash[16];
-				CryptoCore::md5(img_data.ptr(), img_data.size(), md5_hash);
-				String new_md5 = String::hex_encode_buffer(md5_hash, 16);
-				generator_parameters["md5"] = new_md5;
-				if (new_md5 == existing_md5) {
-					must_import = false;
+				} else if (new_md5 == (String)generator_parameters["md5"]) {
+					must_import = false; //Image hasn't changed, don't reimport texture.
 				}
 			}
 			if (must_import) {
@@ -3255,11 +3252,12 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 				// ResourceLoader::import will crash if not is_editor_hint(), so this case is protected above and will fall through to uncompressed.
 				HashMap<StringName, Variant> custom_options;
 				custom_options[SNAME("mipmaps/generate")] = true;
+				generator_parameters["md5"] = new_md5;
 				// Will only use project settings defaults if custom_importer is empty.
 				EditorFileSystem::get_singleton()->update_file(file_path);
 				EditorFileSystem::get_singleton()->reimport_append(file_path, custom_options, String(), generator_parameters);
 			}
-			Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D");
+			Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D", must_import ? ResourceFormatLoader::CACHE_MODE_IGNORE : ResourceFormatLoader::CACHE_MODE_REUSE);
 			if (saved_image.is_valid()) {
 				p_state->images.push_back(saved_image);
 				p_state->source_images.push_back(saved_image->get_image());
