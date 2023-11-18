@@ -481,11 +481,11 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	//check import md5 matching
 
-	if (!p_only_imported_files) {
-		if (import_md5 == String()) {
-			return true; //lacks md5, so just reimport
-		}
+	if (import_md5 == String()) {
+		return true; //migrates .md5 file, to store .import hash
+	}
 
+	if (!p_only_imported_files) {
 		String md5 = FileAccess::get_md5(p_path + ".import");
 		if (md5 != import_md5) {
 			return true; // import configuration changed
