@@ -210,7 +210,7 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
-	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED || MOUSE_MODE_CAPTURED);
+	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CAPTURED);
 
 	// If the cursor is being shown while it's focusing the window we must send a
 	// mouse enter event.
