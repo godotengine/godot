@@ -1113,11 +1113,11 @@
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_FOCUS_IN" value="2016">
 			Notification received from the OS when the application is focused, i.e. when changing the focus from the OS desktop or a thirdparty application to any open window of the Godot instance.
-			Implemented on desktop platforms.
+			Implemented on desktop and Android platforms.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_FOCUS_OUT" value="2017">
 			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
-			Implemented on desktop platforms.
+			Implemented on desktop and Android platforms.
 		</constant>
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when text server is changed.
