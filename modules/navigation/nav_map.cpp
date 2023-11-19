@@ -207,14 +207,11 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 	// Create and add the start node to the discovered and frontier lists.
 	// And select it for the first iteration.
-	gd::Connection connection;
-	connection.pathway_start = start_point;
-	connection.pathway_end = start_point;
-
 	gd::Node start_node = gd::Node(start_polygon);
 	start_node.id = 0;
 	start_node.position = start_point;
-	start_node.last_connection = connection;
+	start_node.last_connection.pathway_start = start_point;
+	start_node.last_connection.pathway_end = start_point;
 
 	discovered_nodes.push_back(start_node);
 	frontier_node_ids.push_back(0);
@@ -986,8 +983,8 @@ void NavMap::_update_connections() {
 
 		for (uint32_t i = 0; i < polygons.size(); i++) {
 			gd::Polygon &polygon = polygons[i];
-			for (uint32_t i = 1; i < polygon.vertices.size() - 1; i += 1) {
-				const Face3 face(polygon.vertices[0], polygon.vertices[i], polygon.vertices[i + 1]);
+			for (uint32_t j = 1; j < polygon.vertices.size() - 1; j += 1) {
+				const Face3 face(polygon.vertices[0], polygon.vertices[j], polygon.vertices[j + 1]);
 
 				Vector3 vertex = face.get_closest_point_to(link_start_point);
 				real_t distance = vertex.distance_to(link_start_point);
@@ -1047,7 +1044,6 @@ void NavMap::_update_connections() {
 
 			// If the link is bi-directional, create connections from the end to the start.
 			if (link->is_bidirectional()) {
-				gd::Connection entry_connection;
 				entry_connection.polygon = &link_polygon;
 				entry_connection.edge = -1;
 				entry_connection.pathway_start = link_polygon.vertices[2];
@@ -1055,7 +1051,6 @@ void NavMap::_update_connections() {
 				entry_connection.is_external = true;
 				link_end_polygon->connections.push_back(entry_connection);
 
-				gd::Connection exit_connection;
 				exit_connection.polygon = link_start_polygon;
 				exit_connection.edge = -1;
 				exit_connection.pathway_start = link_polygon.vertices[0];
