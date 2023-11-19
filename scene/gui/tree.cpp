@@ -835,17 +835,23 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 
 	if (!prev_item) {
 		current = current->parent;
-		if (current == tree->root && tree->hide_root) {
-			return nullptr;
-		} else if (!current) {
-			if (p_wrap) {
+		if(p_wrap)
+		{
+			if ((current == tree->root && tree->hide_root) || !current)
+			{
 				current = this;
 				TreeItem *temp = this->get_next_visible();
-				while (temp) {
+				while (temp)
+				{
 					current = temp;
 					temp = temp->get_next_visible();
 				}
-			} else {
+			}
+		}
+		else
+		{
+			if((current == tree->root && tree->hide_root) || !current)
+			{
 				return nullptr;
 			}
 		}
