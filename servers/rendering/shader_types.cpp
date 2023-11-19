@@ -361,7 +361,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["RESTART_VELOCITY"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["RESTART_COLOR"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["RESTART_CUSTOM"] = constt(ShaderLanguage::TYPE_BOOL);
-	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["AMOUNT_RATIO"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["AMOUNT_RATIO"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].main_function = true;
 
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
@@ -394,7 +394,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["COLLISION_NORMAL"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["COLLISION_DEPTH"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["ATTRACTOR_FORCE"] = constt(ShaderLanguage::TYPE_VEC3);
-	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["AMOUNT_RATIO"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["AMOUNT_RATIO"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].main_function = true;
 
 	{
