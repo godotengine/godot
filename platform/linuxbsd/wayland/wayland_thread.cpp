@@ -990,7 +990,7 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("xdg surface on configure", ws->rect));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("xdg surface on configure width %d height %d", ws->rect.size.width, ws->rect.size.height));
 }
 
 void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
