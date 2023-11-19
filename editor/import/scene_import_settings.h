@@ -187,6 +187,11 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	MenuButton *action_menu = nullptr;
 
+	Button *open_scene_button = nullptr;
+	Button *open_scene_inherited_button = nullptr;
+
+	void _open_scene(bool p_set_inherited = false);
+
 	ConfirmationDialog *external_paths = nullptr;
 	Tree *external_path_tree = nullptr;
 	EditorFileDialog *save_path = nullptr;
