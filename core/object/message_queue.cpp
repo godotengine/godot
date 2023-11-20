@@ -147,7 +147,7 @@ Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant
 			if (ObjectDB::get_instance(p_id)) {
 				type = ObjectDB::get_instance(p_id)->get_class();
 			}
-			printf("Failed set: %s: %s target ID: %s. Message queue out of memory. %s\n", String(type).utf8().get_data(), String(p_prop).utf8().get_data(), String(itos(p_id)).utf8().get_data(), String(error_text).utf8().get_data());
+			printf("Failed set: %s: %s target ID: %s. Message queue out of memory. %s\n", type.utf8().get_data(), String(p_prop).utf8().get_data(), itos(p_id).utf8().get_data(), error_text.utf8().get_data());
 			statistics();
 
 			UNLOCK_MUTEX;

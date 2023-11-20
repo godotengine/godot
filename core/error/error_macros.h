@@ -403,6 +403,13 @@ void _err_flush_stdout();
 	} else                                                                                             \
 		((void)0)
 
+#define ERR_FAIL_COND_STDOUT(m_cond)                                                                          \
+	if (unlikely(m_cond)) {                                                                            \
+		printf(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true."); \
+		return;                                                                                        \
+	} else                                                                                             \
+		((void)0)
+
 /**
  * Ensures `m_cond` is false.
  * If `m_cond` is true, prints `m_msg` and the current function returns.
