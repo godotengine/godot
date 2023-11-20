@@ -31,7 +31,7 @@
 #ifndef SURFACE_UPGRADE_TOOL_H
 #define SURFACE_UPGRADE_TOOL_H
 
-#include "scene/main/node.h"
+#include "scene/gui/dialogs.h"
 
 class EditorFileSystemDirectory;
 
@@ -57,11 +57,22 @@ public:
 	bool is_show_requested() const { return show_requested; };
 	void show_popup() { _show_popup(); }
 
+	void prepare_upgrade();
 	void begin_upgrade();
 	void finish_upgrade();
 
 	SurfaceUpgradeTool();
 	~SurfaceUpgradeTool();
+};
+
+class SurfaceUpgradeDialog : public ConfirmationDialog {
+	GDCLASS(SurfaceUpgradeDialog, ConfirmationDialog);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	SurfaceUpgradeDialog();
 };
 
 #endif // SURFACE_UPGRADE_TOOL_H
