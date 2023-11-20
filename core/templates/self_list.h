@@ -77,6 +77,11 @@ public:
 		}
 
 		void remove(SelfList<T> *p_elem) {
+			if (p_elem->root != this)
+			{
+				return;
+			}
+
 			if (p_elem->_next) {
 				p_elem->_next->_prev = p_elem->_prev;
 			}

@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+
+#include <stdio.h>
+
+
 #include "message_queue.h"
 
 #include "core/config/project_settings.h"
@@ -93,6 +97,7 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 
 	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
+			printf((const char*)("Failed method: " + p_callable + ". Message queue out of memory. " + error_text).get_data());
 			statistics();
 			UNLOCK_MUTEX;
 			return ERR_OUT_OF_MEMORY;
