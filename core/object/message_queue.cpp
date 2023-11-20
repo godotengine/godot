@@ -96,7 +96,7 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 
 	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
-			std::cout << (wchar_t)("Failed method: " + p_callable + ". Message queue out of memory. " + error_text).get_data();
+			std::cout << (char32_t*)("Failed method: " + p_callable + ". Message queue out of memory. " + error_text + "\n").get_data();
 			statistics();
 			UNLOCK_MUTEX;
 			return ERR_OUT_OF_MEMORY;
@@ -147,7 +147,7 @@ Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant
 			if (ObjectDB::get_instance(p_id)) {
 				type = ObjectDB::get_instance(p_id)->get_class();
 			}
-			std::cout << (wchar_t)("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id) + ". Message queue out of memory. " + error_text).get_data();
+			std::cout << (char32_t*)("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id) + ". Message queue out of memory. " + error_text + "\n").get_data();
 			statistics();
 
 			UNLOCK_MUTEX;
@@ -184,7 +184,7 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 
 	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
-			std::cout << (wchar_t)("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id) + ". Message queue out of memory. " + error_text).get_data();
+			std::cout << (char32_t*)("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id) + ". Message queue out of memory. " + error_text + "\n").get_data();
 			statistics();
 			UNLOCK_MUTEX;
 			return ERR_OUT_OF_MEMORY;
