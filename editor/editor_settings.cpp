@@ -821,6 +821,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("run/output/always_open_output_on_play", true);
 	_initial_set("run/output/always_close_output_on_stop", false);
 
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/output/max_lines", 10000, "100,100000,1")
+
 	// Platform
 	_initial_set("run/platforms/linuxbsd/prefer_wayland", false);
 	set_restart_if_changed("run/platforms/linuxbsd/prefer_wayland", true);
