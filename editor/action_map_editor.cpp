@@ -37,6 +37,7 @@
 #include "editor/input_event_configuration_dialog.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/tree.h"
+#include "scene/gui/menu_button.h"
 #include "scene/scene_string_names.h"
 
 static bool _is_action_name_valid(const String &p_name) {
@@ -70,14 +71,6 @@ void ActionMapEditor::_event_config_confirmed() {
 
 void ActionMapEditor::_add_action_pressed() {
 	_add_action(add_edit->get_text());
-}
-
-void ActionMapEditor::_import_action_pressed() {
-	emit_signal(SNAME("action_import"));
-}
-
-void ActionMapEditor::_export_action_pressed() {
-	emit_signal(SNAME("action_export"));
 }
 
 String ActionMapEditor::_check_new_action_name(const String &p_name) {
@@ -233,7 +226,10 @@ void ActionMapEditor::_tree_item_activated() {
 
 void ActionMapEditor::set_show_builtin_actions(bool p_show) {
 	show_builtin_actions = p_show;
-	show_builtin_actions_checkbutton->set_pressed(p_show);
+
+	int show_builtin_idx = advanced_actions_menu->get_popup()->get_item_index(ADVANCED_ACTIONS_MENU_SHOW_BUILTIN);
+	advanced_actions_menu->get_popup()->set_item_checked(show_builtin_idx, p_show);
+
 	EditorSettings::get_singleton()->set_project_metadata("project_settings", "show_builtin_actions", show_builtin_actions);
 
 	// Prevent unnecessary updates of action list when cache is empty.
@@ -365,6 +361,7 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			advanced_actions_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}
@@ -531,6 +528,28 @@ void ActionMapEditor::_on_filter_unfocused() {
 	emit_signal(SNAME("filter_unfocused"));
 }
 
+void ActionMapEditor::_advanced_actions_menu_action(int p_action) {
+	switch (p_action) {
+		case ADVANCED_ACTIONS_MENU_IMPORT: {
+			emit_signal(SNAME("action_import"));
+		} break;
+		case ADVANCED_ACTIONS_MENU_EXPORT: {
+			emit_signal(SNAME("action_export"));
+		} break;
+		case ADVANCED_ACTIONS_MENU_SHOW_BUILTIN: {
+			set_show_builtin_actions(!show_builtin_actions);
+		} break;
+		case ADVANCED_ACTIONS_MENU_REMOVE_BUILTIN: {
+			//emit_signal(SNAME("action_remove_builtin"));
+		} break;
+		case ADVANCED_ACTIONS_MENU_RESET_BUILTIN: {
+			//emit_signal(SNAME("action_reset_builtin"));
+		} break;
+		default:
+			break;
+	}
+}
+
 ActionMapEditor::ActionMapEditor() {
 	// Main Vbox Container
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
@@ -580,23 +599,22 @@ ActionMapEditor::ActionMapEditor() {
 	// Disable the button and set its tooltip.
 	_add_edit_text_changed(add_edit->get_text());
 
-	import_button = memnew(Button);
-	import_button->set_text(TTR("Import"));
-	import_button->connect("pressed", callable_mp(this, &ActionMapEditor::_import_action_pressed));
-	add_hbox->add_child(import_button);
-	export_button = memnew(Button);
-
-	export_button->set_text(TTR("Export"));
-	export_button->connect("pressed", callable_mp(this, &ActionMapEditor::_export_action_pressed));
-	add_hbox->add_child(export_button);
-
-	show_builtin_actions_checkbutton = memnew(CheckButton);
-	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
-	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
-	add_hbox->add_child(show_builtin_actions_checkbutton);
-
 	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
-	show_builtin_actions_checkbutton->set_pressed(show_builtin_actions);
+
+	advanced_actions_menu = memnew(MenuButton);
+	advanced_actions_menu->set_flat(true);
+	advanced_actions_menu->get_popup()->set_hide_on_checkable_item_selection(false);
+	advanced_actions_menu->get_popup()->add_item(TTR("Import Custom Actions"), ADVANCED_ACTIONS_MENU_IMPORT);
+	advanced_actions_menu->get_popup()->add_item(TTR("Export Custom Actions"), ADVANCED_ACTIONS_MENU_EXPORT);
+	advanced_actions_menu->get_popup()->add_separator();
+	advanced_actions_menu->get_popup()->add_check_item(TTR("Show Built-in Actions"), ADVANCED_ACTIONS_MENU_SHOW_BUILTIN);
+	advanced_actions_menu->get_popup()->set_item_checked(-1, show_builtin_actions);
+	advanced_actions_menu->get_popup()->add_item(TTR("Remove Built-in Actions"), ADVANCED_ACTIONS_MENU_REMOVE_BUILTIN);
+	advanced_actions_menu->get_popup()->set_item_disabled(-1, true);
+	advanced_actions_menu->get_popup()->add_item(TTR("Reset Built-in Actions"), ADVANCED_ACTIONS_MENU_RESET_BUILTIN);
+	advanced_actions_menu->get_popup()->set_item_disabled(-1, true);
+	advanced_actions_menu->get_popup()->connect("id_pressed", callable_mp(this, &ActionMapEditor::_advanced_actions_menu_action));
+	add_hbox->add_child(advanced_actions_menu);
 
 	main_vbox->add_child(add_hbox);
 
