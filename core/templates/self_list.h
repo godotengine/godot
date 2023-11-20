@@ -77,8 +77,7 @@ public:
 		}
 
 		void remove(SelfList<T> *p_elem) {
-			if (p_elem->root != this)
-			{
+			if (p_elem->root != this) {
 				return;
 			}
 
