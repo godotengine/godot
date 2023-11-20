@@ -114,6 +114,7 @@ class RunSettingsDialog;
 class SceneImportSettings;
 class ScriptCreateDialog;
 class SurfaceUpgradeTool;
+class SurfaceUpgradeDialog;
 class WindowWrapper;
 
 class EditorNode : public Node {
@@ -192,6 +193,7 @@ private:
 		EDIT_RELOAD_SAVED_SCENE,
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_BUILD_PROFILE_MANAGER,
+		TOOLS_SURFACE_UPGRADE,
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
@@ -496,6 +498,7 @@ private:
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
 
 	SurfaceUpgradeTool *surface_upgrade_tool = nullptr;
+	SurfaceUpgradeDialog *surface_upgrade_dialog = nullptr;
 	bool run_surface_upgrade_tool = false;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
@@ -875,6 +878,7 @@ public:
 	void _copy_warning(const String &p_str);
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
+	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }
 
