@@ -2037,6 +2037,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			RenderListParameters render_list_params(render_list[RENDER_LIST_MOTION].elements.ptr(), render_list[RENDER_LIST_MOTION].element_info.ptr(), render_list[RENDER_LIST_MOTION].elements.size(), reverse_cull, PASS_MODE_COLOR, color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 			_render_list_with_threads(&render_list_params, color_framebuffer, RD::INITIAL_ACTION_CONTINUE, final_color_action, RD::INITIAL_ACTION_CONTINUE, final_depth_action);
 
+			RD::get_singleton()->draw_command_end_label();
+
 			if (will_continue_color) {
 				// Close the motion vectors framebuffer as it'll no longer be used.
 				RD::get_singleton()->draw_list_begin(rb_data->get_velocity_only_fb(), RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_CONTINUE);
@@ -2050,8 +2052,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			RD::get_singleton()->draw_list_end();
 		}
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 
 	if (debug_voxelgis) {
 		//debug voxelgis
