@@ -406,9 +406,9 @@ void _err_flush_stdout();
 #define ERR_FAIL_COND_STDOUT(m_cond)                                                                          \
 	if (unlikely(m_cond)) {                                                                            \
 		printf(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true."); \
-		return;                                                                                        \
-	} else                                                                                             \
-		((void)0)
+		return;                                                                              \
+	} else                                                                                   \
+ 		((void)0)
 
 /**
  * Ensures `m_cond` is false.
