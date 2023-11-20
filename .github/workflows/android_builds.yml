@@ -26,6 +26,13 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Install Android NDK r23c
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r23c
+          link-to-sdk: true
+          local-cache: true
+
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
         continue-on-error: true
