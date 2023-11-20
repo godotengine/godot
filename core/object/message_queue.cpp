@@ -184,7 +184,7 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 
 	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
-			printf("Failed notification: %s target ID: %s. Message queue out of memory. %s\n", String(itos(p_notification)).utf8().get_data(), String(itos(p_id)).utf8().get_data(), String(error_text).utf8().get_data());
+			printf("Failed notification: %s target ID: %s. Message queue out of memory. %s\n", itos(p_notification).utf8().get_data(), itos(p_id).utf8().get_data(), error_text.utf8().get_data());
 			std::cout << (char32_t *)("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id) + ". Message queue out of memory. " + error_text + "\n").get_data();
 			statistics();
 			UNLOCK_MUTEX;
