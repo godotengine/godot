@@ -1731,15 +1731,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
 	{
-		String driver_hints = "";
 #ifdef VULKAN_ENABLED
-		driver_hints = "vulkan";
+		String driver_hints = "Vulkan:vulkan";
+		String default_driver = "vulkan";
+#else
+		String driver_hints = "";
+		String default_driver = "";
 #endif
 
-		String default_driver = driver_hints.get_slice(",", 0);
-
 		// For now everything defaults to vulkan when available. This can change in future updates.
-		GLOBAL_DEF_RST_NOVAL("rendering/rendering_device/driver", default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
@@ -1748,19 +1749,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	{
+#ifdef GLES3_ENABLED
+		String driver_hints = "OpenGL 3:opengl3";
+		String driver_hints_angle = "OpenGL 3:opengl3,OpenGLES 3 (ANGLE):opengl3_angle"; // macOS, Windows.
+		String driver_hints_egl = "OpenGL 3:opengl3,OpenGLES 3:opengl3_es"; // Linux.
+		String default_driver = "opengl3";
+		String default_driver_macos = "opengl3_angle";
+#else
 		String driver_hints = "";
 		String driver_hints_angle = "";
 		String driver_hints_egl = "";
-#ifdef GLES3_ENABLED
-		driver_hints = "opengl3";
-		driver_hints_angle = "opengl3,opengl3_angle"; // macOS, Windows.
-		driver_hints_egl = "opengl3,opengl3_es"; // Linux.
+		String default_driver = "";
+		String default_driver_macos = "";
 #endif
 
-		String default_driver = driver_hints.get_slice(",", 0);
-		String default_driver_macos = driver_hints_angle.get_slice(",", 1);
-
-		GLOBAL_DEF_RST_NOVAL("rendering/gl_compatibility/driver", default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints_egl), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints), default_driver);
@@ -2427,7 +2430,7 @@ Error Main::setup2() {
 
 	{
 		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver", "");
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"), "");
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "Wacom WinTab:wintab,Windows Ink:winink"), "");
 	}
 
 	if (tablet_driver.is_empty()) { // specified in project.godot

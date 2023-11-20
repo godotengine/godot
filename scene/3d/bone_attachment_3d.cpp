@@ -48,7 +48,7 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 				if (i > 0) {
 					names += ",";
 				}
-				names += parent->get_bone_name(i);
+				names += parent->get_bone_name(i).enum_hint_escape();
 			}
 
 			p_property.hint = PROPERTY_HINT_ENUM;

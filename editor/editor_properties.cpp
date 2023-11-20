@@ -262,7 +262,11 @@ void EditorPropertyTextEnum::_emit_changed_value(String p_string) {
 }
 
 void EditorPropertyTextEnum::_option_selected(int p_which) {
-	_emit_changed_value(option_button->get_item_text(p_which));
+	if (p_which < values.size()) {
+		_emit_changed_value(values[p_which]);
+	} else {
+		_emit_changed_value("");
+	}
 }
 
 void EditorPropertyTextEnum::_edit_custom_value() {
@@ -292,7 +296,7 @@ void EditorPropertyTextEnum::_custom_value_canceled() {
 
 void EditorPropertyTextEnum::update_property() {
 	String current_value = get_edited_property_value();
-	int default_option = options.find(current_value);
+	int default_option = values.find(current_value);
 
 	// The list can change in the loose mode.
 	if (loose_mode) {
@@ -311,8 +315,15 @@ void EditorPropertyTextEnum::update_property() {
 		option_button->add_item("", options.size() + 1000);
 
 		for (int i = 0; i < options.size(); i++) {
-			option_button->add_item(options[i], i);
-			if (options[i] == current_value) {
+			Vector<String> text_split = options[i].split(":");
+			if (text_split.size() == 2) {
+				option_button->add_item(text_split[0].enum_hint_unescape(), i);
+				values.append(text_split[1]);
+			} else {
+				option_button->add_item(options[i].enum_hint_unescape(), i);
+				values.append(options[i]);
+			}
+			if (values[i] == current_value) {
 				option_button->select(option_button->get_item_count() - 1);
 			}
 		}
@@ -326,6 +337,7 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_strin
 	loose_mode = p_loose_mode;
 
 	options.clear();
+	values.clear();
 
 	if (loose_mode) {
 		// Add an explicit empty value for clearing the property in the loose mode.
@@ -333,8 +345,15 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_strin
 	}
 
 	for (int i = 0; i < p_options.size(); i++) {
+		Vector<String> text_split = p_options[i].split(":");
 		options.append(p_options[i]);
-		option_button->add_item(p_options[i], i);
+		if (text_split.size() == 2) {
+			option_button->add_item(text_split[0].enum_hint_unescape(), i);
+			values.append(text_split[1]);
+		} else {
+			option_button->add_item(p_options[i].enum_hint_unescape(), i);
+			values.append(p_options[i]);
+		}
 	}
 
 	if (loose_mode) {
@@ -710,7 +729,7 @@ void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
 		}
-		options->add_item(text_split[0]);
+		options->add_item(text_split[0].enum_hint_escape());
 		options->set_item_metadata(i, current_val);
 		current_val += 1;
 	}

@@ -4112,6 +4112,24 @@ String String::c_escape_multiline() const {
 	return escaped;
 }
 
+String String::enum_hint_escape() const {
+	String escaped = *this;
+	escaped = escaped.replace("\\", "\\\\");
+	escaped = escaped.replace(",", "\\C");
+	escaped = escaped.replace(":", "\\S");
+
+	return escaped;
+}
+
+String String::enum_hint_unescape() const {
+	String escaped = *this;
+	escaped = escaped.replace("\\C", ",");
+	escaped = escaped.replace("\\S", ":");
+	escaped = escaped.replace("\\\\", "\\");
+
+	return escaped;
+}
+
 String String::json_escape() const {
 	String escaped = *this;
 	escaped = escaped.replace("\\", "\\\\");
