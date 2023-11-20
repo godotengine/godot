@@ -31,12 +31,11 @@
 #include "message_queue.h"
 
 #include "core/config/project_settings.h"
-
 #include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
-#include <iostream>
-#include <uchar.h>
+
+#include <stdio.h>
 
 #ifdef DEV_ENABLED
 // Includes safety checks to ensure that a queue set as a thread singleton override
@@ -96,7 +95,7 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 
 	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
-			printf("Failed method: %s. Message queue out of memory. %s\n", String(p_callable).utf8().get_data(), error_text.utf8().get_data());
+			fprintf(stderr, "Failed method: %s. Message queue out of memory. %s\n", String(p_callable).utf8().get_data(), error_text.utf8().get_data());
 			statistics();
 			UNLOCK_MUTEX;
 			return ERR_OUT_OF_MEMORY;
@@ -147,7 +146,7 @@ Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant
 			if (ObjectDB::get_instance(p_id)) {
 				type = ObjectDB::get_instance(p_id)->get_class();
 			}
-			printf("Failed set: %s: %s target ID: %s. Message queue out of memory. %s\n", type.utf8().get_data(), String(p_prop).utf8().get_data(), itos(p_id).utf8().get_data(), error_text.utf8().get_data());
+			fprintf(stderr, "Failed set: %s: %s target ID: %s. Message queue out of memory. %s\n", type.utf8().get_data(), String(p_prop).utf8().get_data(), itos(p_id).utf8().get_data(), error_text.utf8().get_data());
 			statistics();
 
 			UNLOCK_MUTEX;
@@ -184,7 +183,7 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 
 	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
-			printf("Failed notification: %s target ID: %s. Message queue out of memory. %s\n", itos(p_notification).utf8().get_data(), itos(p_id).utf8().get_data(), error_text.utf8().get_data());
+			fprintf(stderr, "Failed notification: %s target ID: %s. Message queue out of memory. %s\n", itos(p_notification).utf8().get_data(), itos(p_id).utf8().get_data(), error_text.utf8().get_data());
 			statistics();
 			UNLOCK_MUTEX;
 			return ERR_OUT_OF_MEMORY;
