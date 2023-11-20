@@ -77,7 +77,7 @@ public:
 		}
 
 		void remove(SelfList<T> *p_elem) {
-			ERR_FAIL_COND_STDOUT(p_elem->root != this);
+			ERR_FAIL_COND_STDOUT(p_elem->root != this); // stdout version of ERR_FAIL_COND
 
 			if (p_elem->_next) {
 				p_elem->_next->_prev = p_elem->_prev;
