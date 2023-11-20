@@ -2282,7 +2282,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					pr.step(reimport_files[i].path.get_file(), i);
 					_reimport_file(reimport_files[i].path);
 				} else {
-					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
+					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[i].importer);
 					ERR_CONTINUE(!importer.is_valid());
 
 					importer->import_threaded_begin();
