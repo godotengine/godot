@@ -5386,23 +5386,8 @@ msgstr "Файлът с пакета за разширение не може д�
 msgid "Building Android Project (gradle)"
 msgstr "Компилиране на проект за Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Компилирането на проекта за Android беше неуспешно. Вижте изхода за грешката. "
-"Може също да разгледате документацията за компилиране за Android на docs."
-"godotengine.org."
-
 msgid "Moving output"
 msgstr "Преместване на изходящите данни"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Изнесеният файл не може да бъде копиран и преименуван. Потърсете резултатите "
-"в папката на проекта на gradle."
 
 msgid "Package not found: \"%s\"."
 msgstr "Пакетът не е намерен: „%s“."
@@ -5611,9 +5596,6 @@ msgstr "Моля, потвърдете..."
 
 msgid "(Other)"
 msgstr "(Други)"
-
-msgid "Unsupported BMFont texture format."
-msgstr "Неподдържан формат за текстури BMFont."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

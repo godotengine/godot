@@ -1105,21 +1105,6 @@ msgstr "Kuldsponsorid"
 msgid "Silver Sponsors"
 msgstr "Hõbesponsorid"
 
-msgid "Bronze Sponsors"
-msgstr "Pronkssponsorid"
-
-msgid "Mini Sponsors"
-msgstr "Väikesponsorid"
-
-msgid "Gold Donors"
-msgstr "Kuldannetajad"
-
-msgid "Silver Donors"
-msgstr "Hõbennetajad"
-
-msgid "Bronze Donors"
-msgstr "Pronksannetajad"
-
 msgid "Donors"
 msgstr "Annetajad"
 
@@ -4164,12 +4149,6 @@ msgstr ""
 
 msgid "Dynamically rendered TrueType/OpenType font"
 msgstr "Dünaamiliselt renderdatud TrueType/OpenType font"
-
-msgid "Can't load font texture:"
-msgstr "Fondi tekstuuri ei saa laadida:"
-
-msgid "Image margin too big."
-msgstr "Pildi veeris liiga suur."
 
 msgid "Pre-Import Scene"
 msgstr "Eel-Impordi Stseen"
@@ -9860,12 +9839,6 @@ msgstr "Sisesta Juhtmärk"
 
 msgid "(Other)"
 msgstr "(Muu)"
-
-msgid "Cannot open font from file: %s."
-msgstr "Fonti ei saa avada failist: %s."
-
-msgid "Invalid BMFont block type."
-msgstr "Vale BMFont-ploki tüüp."
 
 msgid "Invalid source for preview."
 msgstr "Vigane eelvaate lähe."

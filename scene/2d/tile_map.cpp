@@ -686,6 +686,8 @@ void TileMapLayer::_physics_update() {
 
 void TileMapLayer::_physics_notify_tilemap_change(TileMapLayer::DirtyFlags p_what) {
 	Transform2D gl_transform = tile_map_node->get_global_transform();
+	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
+
 	bool in_editor = false;
 #ifdef TOOLS_ENABLED
 	in_editor = Engine::get_singleton()->is_editor_hint();
@@ -693,6 +695,7 @@ void TileMapLayer::_physics_notify_tilemap_change(TileMapLayer::DirtyFlags p_wha
 
 	if (p_what == DIRTY_FLAGS_TILE_MAP_XFORM) {
 		if (tile_map_node->is_inside_tree() && (!tile_map_node->is_collision_animatable() || in_editor)) {
+			// Move the collisison shapes along with the TileMap.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
 				const CellData &cell_data = kv.value;
 
@@ -700,12 +703,13 @@ void TileMapLayer::_physics_notify_tilemap_change(TileMapLayer::DirtyFlags p_wha
 					if (body.is_valid()) {
 						Transform2D xform(0, tile_map_node->map_to_local(bodies_coords[body]));
 						xform = gl_transform * xform;
-						PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 					}
 				}
 			}
 		}
 	} else if (p_what == DIRTY_FLAGS_TILE_MAP_LOCAL_XFORM) {
+		// With collisions animatable, move the collisison shapes along with the TileMap only on local xform change (they are synchornized on physics tick instead).
 		if (tile_map_node->is_inside_tree() && tile_map_node->is_collision_animatable() && !in_editor) {
 			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
 				const CellData &cell_data = kv.value;
@@ -714,7 +718,22 @@ void TileMapLayer::_physics_notify_tilemap_change(TileMapLayer::DirtyFlags p_wha
 					if (body.is_valid()) {
 						Transform2D xform(0, tile_map_node->map_to_local(bodies_coords[body]));
 						xform = gl_transform * xform;
-						PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+					}
+				}
+			}
+		}
+	} else if (p_what == DIRTY_FLAGS_TILE_MAP_IN_TREE) {
+		// Changes in the tree may cause the space to change (e.g. when reparenting to a SubViewport).
+		if (tile_map_node->is_inside_tree()) {
+			RID space = tile_map_node->get_world_2d()->get_space();
+
+			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
+				const CellData &cell_data = kv.value;
+
+				for (RID body : cell_data.bodies) {
+					if (body.is_valid()) {
+						ps->body_set_space(body, space);
 					}
 				}
 			}

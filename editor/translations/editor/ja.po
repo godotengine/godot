@@ -68,8 +68,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-31 19:10+0000\n"
-"Last-Translator: Koji Horaguchi <koji.horaguchi@gmail.com>\n"
+"PO-Revision-Date: 2023-11-12 18:58+0000\n"
+"Last-Translator: ueshita <nalto32@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -161,37 +161,37 @@ msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
 msgstr "ジョイパッドモーション 軸:%d (%s) 値:%.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
-msgstr "下アクション。Sony ✕、Xbox A、Nintendo B"
+msgstr "下アクション、Sony ✕、Xbox A、Nintendo B"
 
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "右アクション。Sony ○、Xbox B，Nintendo A"
+msgstr "右アクション、Sony ○、Xbox B，Nintendo A"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "左アクション。Sony □、Xbox X、Nintendo Y"
+msgstr "左アクション、Sony □、Xbox X、Nintendo Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "上アクション。Sony △、Xbox Y、Nintendo X"
+msgstr "上アクション、Sony △、Xbox Y、Nintendo X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
-msgstr "Back。Sony Select、Xbox Back、Nintendo -"
+msgstr "Back、Sony Select、Xbox Back、Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
-msgstr "Guide。Sony PS、Xbox Home"
+msgstr "Guide、Sony PS、Xbox Home"
 
 msgid "Start, Xbox Menu, Nintendo +"
-msgstr "スタート、Xbox、任天堂 ＋"
+msgstr "Start、Xbox Menu、Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
-msgstr "左スティック。Sony L3、Xbox L/LS"
+msgstr "左スティック、Sony L3、Xbox L/LS"
 
 msgid "Right Stick, Sony R3, Xbox R/RS"
-msgstr "右スティック。Sony R3、Xbox R/RS"
+msgstr "右スティック、Sony R3、Xbox R/RS"
 
 msgid "Left Shoulder, Sony L1, Xbox LB"
-msgstr "左ショルダー、PSコンのL1ボタン、XboxコンのLBボタン"
+msgstr "左ショルダー、Sony L1、Xbox LB"
 
 msgid "Right Shoulder, Sony R1, Xbox RB"
-msgstr "右ショルダー、PSコンのR1ボタン、Xbox RBボタン"
+msgstr "右ショルダー、Sony R1、Xbox RB"
 
 msgid "D-pad Up"
 msgstr "D-pad 上"
@@ -206,7 +206,7 @@ msgid "D-pad Right"
 msgstr "D-pad 右"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
-msgstr "Xbox シェア, PS5 マイク, Nintendo キャプチャ"
+msgstr "Xbox シェア、PS5 マイク、Nintendo キャプチャ"
 
 msgid "Xbox Paddle 1"
 msgstr "Xbox パドル 1"
@@ -1949,21 +1949,6 @@ msgstr "ゴールドスポンサー"
 msgid "Silver Sponsors"
 msgstr "シルバースポンサー"
 
-msgid "Bronze Sponsors"
-msgstr "ブロンズスポンサー"
-
-msgid "Mini Sponsors"
-msgstr "ミニスポンサー"
-
-msgid "Gold Donors"
-msgstr "ゴールドドナー"
-
-msgid "Silver Donors"
-msgstr "シルバードナー"
-
-msgid "Bronze Donors"
-msgstr "ブロンズドナー"
-
 msgid "Donors"
 msgstr "ドナー"
 
@@ -2827,11 +2812,23 @@ msgstr "メソッドの説明"
 msgid "Operator Descriptions"
 msgstr "オペレーターの説明"
 
+msgid "Metadata:"
+msgstr "メタデータ:"
+
 msgid "Property:"
 msgstr "プロパティ:"
 
+msgid "Method:"
+msgstr "メソッド:"
+
 msgid "Signal:"
 msgstr "シグナル:"
+
+msgid "Theme Item:"
+msgstr "テーマアイテム:"
+
+msgid "No description available."
+msgstr "説明はありません。"
 
 msgid "%d match."
 msgstr "%d件の一致が見つかりました。"
@@ -3952,6 +3949,12 @@ msgstr ""
 msgid "Assign..."
 msgstr "割り当て..."
 
+msgid "Copy as Text"
+msgstr "パスをコピー"
+
+msgid "Show Node in Tree"
+msgstr "ツリーでノードを表示"
+
 msgid "Invalid RID"
 msgstr "無効なRID"
 
@@ -4933,6 +4936,33 @@ msgstr "名前を変更..."
 msgid "Open in External Program"
 msgstr "外部プログラムで開く"
 
+msgid "Red"
+msgstr "赤色"
+
+msgid "Orange"
+msgstr "オレンジ色"
+
+msgid "Yellow"
+msgstr "黄色"
+
+msgid "Green"
+msgstr "緑色"
+
+msgid "Teal"
+msgstr "水色"
+
+msgid "Blue"
+msgstr "青色"
+
+msgid "Purple"
+msgstr "紫色"
+
+msgid "Pink"
+msgstr "ピンク色"
+
+msgid "Gray"
+msgstr "灰色"
+
 msgid "Go to previous selected folder/file."
 msgstr "前に選択したフォルダ/ファイルに移動します。"
 
@@ -5552,15 +5582,6 @@ msgstr "動的にレンダリングされるTrueType/OpenTypeフォント"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "プリレンダリングされたマルチチャンネル(+true) 符号付き距離フィールド"
-
-msgid "Can't load font texture:"
-msgstr "フォントテクスチャを読み込むことができません。"
-
-msgid "Image margin too big."
-msgstr "画像の余白が大きすぎます。"
-
-msgid "Character margin too big."
-msgstr "文字の余白が大きすぎます。"
 
 msgid "Pre-Import Scene"
 msgstr "シーンを事前インポート"
@@ -11610,7 +11631,7 @@ msgid "Light"
 msgstr "ライト"
 
 msgid "Process"
-msgstr "プロセス"
+msgstr "インポートプロセス"
 
 msgid "Collide"
 msgstr "衝突"
@@ -13517,16 +13538,6 @@ msgstr "ノードを除去"
 msgid "Change type of node(s)"
 msgstr "ノードのタイプを変更"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "次の変数からノードを削除します。変数 \"%s\" を持つノード \"%s\" 。"
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr ""
-"ノードの新しい型はエクスポートされた変数と互換性がありません (%s が予想されま"
-"すが、型は %s)。"
-
 msgid "This operation requires a single selected node."
 msgstr "この操作には選択されたノードが1つ必要です。"
 
@@ -14703,23 +14714,8 @@ msgstr "拡張パッケージファイルを書き込めませんでした！"
 msgid "Building Android Project (gradle)"
 msgstr "Androidプロジェクトの構築(gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Androidプロジェクトのビルドに失敗しました。エラーの出力を確認してください。\n"
-"また、Androidビルドについてのドキュメントは docs.godotengine.org をご覧くださ"
-"い。"
-
 msgid "Moving output"
 msgstr "出力結果の移動中"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"エクスポートファイルのコピーと名前の変更ができません。出力結果をみるにはgradle"
-"のプロジェクトディレクトリを確認してください。"
 
 msgid "Package not found: \"%s\"."
 msgstr "パッケージが見つかりません: \"%s\"。"
@@ -16376,15 +16372,6 @@ msgstr ""
 "す。"
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"ノード名 '%s' を '%s' のシーン内で一意になるように設定していますが、すでに "
-"'%s' によって要求されています。\n"
-"「%s」は一意の名前として設定されなくなりました。"
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -16398,13 +16385,6 @@ msgid ""
 msgstr ""
 "このノードは実験的ノードとしてマークされており、将来のバージョンでは削除または"
 "大幅な変更が行われる可能性があります。"
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"プロジェクト設定「rendering/environment/defaults/default_environment」で指定さ"
-"れたデフォルト環境をロードできませんでした。"
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -16429,28 +16409,6 @@ msgid ""
 "dimensions to render anything."
 msgstr ""
 "レンダーするにはViewportの縦横それぞれが2ピクセル以上である必要があります。"
-
-msgid "Cannot open font from file: %s."
-msgstr "ファイルからフォントを開けません: %s。"
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr ""
-"BMFont のバージョン %d はサポートされていません (3 である必要があります)。"
-
-msgid "Invalid BMFont info block size."
-msgstr "BMFont 情報ブロック サイズが無効です。"
-
-msgid "Invalid BMFont common block size."
-msgstr "BMFont 共通ブロック サイズが無効です。"
-
-msgid "Can't load font texture: %s."
-msgstr "フォント テクスチャを読み込めません: %s。"
-
-msgid "Unsupported BMFont texture format."
-msgstr "サポートされていない BMFont テクスチャ形式です。"
-
-msgid "Invalid BMFont block type."
-msgstr "無効な BMFont ブロック タイプです。"
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

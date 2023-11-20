@@ -1695,21 +1695,6 @@ msgstr "Золоті спонсори"
 msgid "Silver Sponsors"
 msgstr "Срібні донори"
 
-msgid "Bronze Sponsors"
-msgstr "Бронзові донори"
-
-msgid "Mini Sponsors"
-msgstr "Міні-спонсори"
-
-msgid "Gold Donors"
-msgstr "Золоті донори"
-
-msgid "Silver Donors"
-msgstr "Срібні донори"
-
-msgid "Bronze Donors"
-msgstr "Бронзові донори"
-
 msgid "Donors"
 msgstr "Донори"
 
@@ -4976,12 +4961,6 @@ msgstr "Динамічно відрендерений шрифт TrueType/OpenTy
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Попередньо відрендерене багатоканальне (+true) поле відстані зі знаком"
-
-msgid "Can't load font texture:"
-msgstr "Не вдається завантажити текстуру шрифту:"
-
-msgid "Image margin too big."
-msgstr "Занадто велике поле зображення."
 
 msgid "Pre-Import Scene"
 msgstr "Попередній імпорт сцени"
@@ -13256,23 +13235,8 @@ msgstr "Не вдалося записати файл пакунка розши�
 msgid "Building Android Project (gradle)"
 msgstr "Збирання проєкту Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Не вдалося виконати збирання проєкту для Android. Ознайомтеся із виведеними "
-"даними, щоб визначити причину помилки. Крім того, можете відвідати docs."
-"godotengine.org і ознайомитися із документацією щодо збирання для Android."
-
 msgid "Moving output"
 msgstr "Пересування виведених даних"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Не вдалося скопіювати і перейменувати файл експортованих даних. Виведені дані "
-"можна знайти у каталозі проєкту gradle."
 
 msgid "Package not found: \"%s\"."
 msgstr "Пакунок не знайдено: \"%s\"."
@@ -14673,15 +14637,6 @@ msgstr ""
 "ризику втрати даних."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"Встановлення назви вузла '%s' як унікального у сцені для '%s', але на неї вже "
-"претендує '%s'.\n"
-"'%s' більше не визначено як унікальну назву."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -14720,27 +14675,6 @@ msgid ""
 msgstr ""
 "Щоб програма могла хоч щось показати, розмір поля перегляду має бути більшим "
 "або рівним 2 пікселям в обох вимірах."
-
-msgid "Cannot open font from file: %s."
-msgstr "Не вдалося відкрити шрифт із файлу: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "Версія %d BMFont не підтримується (має бути 3)."
-
-msgid "Invalid BMFont info block size."
-msgstr "Некоректний розмір інформаційного блоку BMFont."
-
-msgid "Invalid BMFont common block size."
-msgstr "Неправильний загальний розмір блоку BMFont."
-
-msgid "Can't load font texture: %s."
-msgstr "Не вдається завантажити текстуру шрифту: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Непідтримуваний формат текстури BMFont."
-
-msgid "Invalid BMFont block type."
-msgstr "Недійсний тип блоку BMFont."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

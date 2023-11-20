@@ -194,7 +194,7 @@ namespace GodotTools.Export
                     BundleOutputs = false,
                     IncludeDebugSymbols = publishConfig.IncludeDebugSymbols,
                     RidOS = OS.DotNetOS.iOSSimulator,
-                    UseTempDir = true,
+                    UseTempDir = false,
                 });
             }
 
@@ -361,7 +361,7 @@ namespace GodotTools.Export
                 }
 
                 var xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig,
-                    $"{GodotSharpDirs.ProjectAssemblyName}.xcframework");
+                    $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
                 if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths,
                         Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, xcFrameworkPath)))
                 {

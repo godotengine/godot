@@ -1441,21 +1441,6 @@ msgstr "Zlatí sponzoři"
 msgid "Silver Sponsors"
 msgstr "Stříbrní sponzoři"
 
-msgid "Bronze Sponsors"
-msgstr "Bronzoví sponzoři"
-
-msgid "Mini Sponsors"
-msgstr "Mini sponzoři"
-
-msgid "Gold Donors"
-msgstr "Zlatí dárci"
-
-msgid "Silver Donors"
-msgstr "Stříbrní dárci"
-
-msgid "Bronze Donors"
-msgstr "Bronzoví dárci"
-
 msgid "Donors"
 msgstr "Dárci"
 
@@ -7943,22 +7928,8 @@ msgstr "Nelze zapsat soubor rozšiřujícího balíčku!"
 msgid "Building Android Project (gradle)"
 msgstr "Buildování projektu pro Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Buildování projektu pro Android se nezdařilo, zkontrolujte chybový výstup. "
-"Případně navštivte dokumentaci o build pro Android na docs.godotengine.org."
-
 msgid "Moving output"
 msgstr "Přesunout výstup"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Nelze kopírovat či přejmenovat exportovaný soubor, zkontrolujte výstupy v "
-"adresáři projektu gradle."
 
 msgid "Creating APK..."
 msgstr "Vytvářím APK..."
@@ -8255,9 +8226,6 @@ msgstr ""
 
 msgid "(Other)"
 msgstr "(Ostatní)"
-
-msgid "Unsupported BMFont texture format."
-msgstr "Nepodporovaný formát textury BMFont."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

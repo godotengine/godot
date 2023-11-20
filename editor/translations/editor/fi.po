@@ -18,13 +18,14 @@
 # Sami <sami@httpster.io>, 2023.
 # Kasper <kasper.bjorkgren@gmail.com>, 2023.
 # Mitja <mitja.leino@hotmail.com>, 2023.
+# Aku <akulaku.ap@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-20 09:04+0000\n"
-"Last-Translator: Mitja <mitja.leino@hotmail.com>\n"
+"PO-Revision-Date: 2023-11-12 18:58+0000\n"
+"Last-Translator: Aku <akulaku.ap@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -32,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 msgid "Main Thread"
 msgstr "Pää Säie"
@@ -569,6 +570,24 @@ msgstr "Animaatio: Muuta avainruudun arvoa"
 msgid "Animation Change Call"
 msgstr "Animaatio: Muuta Kutsua"
 
+msgid "Animation Multi Change Transition"
+msgstr "Animaatio: muuta monta siirtymää"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Animaatio: muuta monta 3D-sijaintia"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Animaatio: muuta monta 3D-kiertoa"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Animaatio: muuta monta 3D-skaalausta"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Animaatio: muuta monen avainruudun arvoa"
+
+msgid "Animation Multi Change Call"
+msgstr "Animaatio: muuta monta funktiokutsua"
+
 msgid "Change Animation Length"
 msgstr "Muuta animaation pituutta"
 
@@ -596,6 +615,9 @@ msgstr "3D Kierto Raita"
 
 msgid "3D Scale Track"
 msgstr "3D Koko Raita"
+
+msgid "Blend Shape Track"
+msgstr "Muodonsulautusraita"
 
 msgid "Call Method Track"
 msgstr "Metodikutsuraita"
@@ -810,6 +832,9 @@ msgstr "Vaihda animaation askelta"
 msgid "Rearrange Tracks"
 msgstr "Järjestele uudelleen raidat"
 
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "Muodonsulautusraitojen muunnos toimii vain MeshInstance3D-solmuille."
+
 msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
 msgstr ""
 "Sijainti/Kierto/Koko 3D raidat vaikuttavat ainoastaan 3D-pohjaisilla "
@@ -840,6 +865,9 @@ msgstr "Lisää Bezier-raita"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "Raidan polku on virheellinen, joten ei voida lisätä avainruutua."
+
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "Raita ei ole Node3D-tyyppinen, joten ei voida lisätä avainruutua"
 
 msgid "Add Position Key"
 msgstr "Lisää Sijainti Avain"
@@ -874,6 +902,9 @@ msgstr "Kierto"
 msgid "Scale"
 msgstr "Skaalaa"
 
+msgid "BlendShape"
+msgstr "Muodonsulautus"
+
 msgid "Methods"
 msgstr "Metodit"
 
@@ -889,9 +920,21 @@ msgstr "Leikepöytä on tyhjä!"
 msgid "Paste Tracks"
 msgstr "Liitä raidat"
 
+msgid "Animation Scale Keys"
+msgstr "Animaatio: Skaalaa avaimia"
+
+msgid "Make Easing Keys"
+msgstr "Tee sulavan siirtymän avaimia"
+
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr "Tämä valinta ei käy Bezier-editoinnille, koska se on vain yksi raita."
+
+msgid "Animation Add RESET Keys"
+msgstr "Animaatio: Lisää RESET avaimet"
+
+msgid "Bake Animation as Linear Keys"
+msgstr "Animaatio: Tallenna lineaarisina avainruutuina"
 
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
@@ -948,7 +991,10 @@ msgid "Inactive Player"
 msgstr "Ei-aktiivinen soitin"
 
 msgid "Warning: AnimationPlayer is inactive"
-msgstr "Varoitus: AnimaatioSoitin on ei-aktiivinen"
+msgstr "Varoitus: AnimationPlayer ei ole aktiivinen"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Vaihda käyrä- ja raitamuokkaimen välillä."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Näytä raidat vain puussa valituista solmuista."
@@ -1818,21 +1864,6 @@ msgstr "Kultasponsorit"
 
 msgid "Silver Sponsors"
 msgstr "Hopeasponsorit"
-
-msgid "Bronze Sponsors"
-msgstr "Pronssisponsorit"
-
-msgid "Mini Sponsors"
-msgstr "Minisponsorit"
-
-msgid "Gold Donors"
-msgstr "Kultalahjoittajat"
-
-msgid "Silver Donors"
-msgstr "Hopealahjoittajat"
-
-msgid "Bronze Donors"
-msgstr "Pronssilahjoittajat"
 
 msgid "Donors"
 msgstr "Lahjoittajat"
@@ -4914,15 +4945,6 @@ msgstr "Konfiguraatio:"
 
 msgid "Add configuration"
 msgstr "Lisää konfiguraatio"
-
-msgid "Can't load font texture:"
-msgstr "Ei voida ladata fontti tekstuuria:"
-
-msgid "Image margin too big."
-msgstr "Kuva marginaali on liian iso."
-
-msgid "Character margin too big."
-msgstr "Merkin marginaali on liian iso."
 
 msgid "Importing Scene..."
 msgstr "Tuodaan kohtausta..."
@@ -10658,23 +10680,8 @@ msgstr "Ei voitu kirjoittaa laajennuspakettitiedostoa!"
 msgid "Building Android Project (gradle)"
 msgstr "Käännetään Android-projektia (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Android-projektin käännös epäonnistui, tarkista virhe tulosteesta. "
-"Vaihtoehtoisesti, lue docs.godotengine.org sivustolta Androidin "
-"käännösdokumentaatio."
-
 msgid "Moving output"
 msgstr "Siirretään tulostetta"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Vientitiedoston kopiointi ja uudelleennimeäminen ei onnistu, tarkista "
-"tulosteet gradle-projektin hakemistosta."
 
 msgid "Package not found: \"%s\"."
 msgstr "Pakettia ei löytynyt: \"%s\"."
@@ -11197,12 +11204,6 @@ msgid ""
 msgstr ""
 "Näyttöruudun koko on oltava suurempi tai yhtä suuri kuin kaksi pikseliä "
 "kummassakin suunnassa, jotta mitään renderöidään."
-
-msgid "Cannot open font from file: %s."
-msgstr "Ei voitu avata fonttia tiedostosta: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Ei tuettu BMFont tekstuuri formaatti."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

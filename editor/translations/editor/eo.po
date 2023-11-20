@@ -980,21 +980,6 @@ msgstr "Oraj Sponsoroj"
 msgid "Silver Sponsors"
 msgstr "Arĝentaj Sponsoroj"
 
-msgid "Bronze Sponsors"
-msgstr "Bronzaj Sponsoroj"
-
-msgid "Mini Sponsors"
-msgstr "Minisponsoroj"
-
-msgid "Gold Donors"
-msgstr "Oraj Donacantoj"
-
-msgid "Silver Donors"
-msgstr "Arĝentaj Donacantoj"
-
-msgid "Bronze Donors"
-msgstr "Bronzaj Donacantoj"
-
 msgid "Donors"
 msgstr "Donacantoj"
 

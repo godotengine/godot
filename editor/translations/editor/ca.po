@@ -1521,21 +1521,6 @@ msgstr "Patrocinadors Gold"
 msgid "Silver Sponsors"
 msgstr "Donants Plata"
 
-msgid "Bronze Sponsors"
-msgstr "Donants Bronze"
-
-msgid "Mini Sponsors"
-msgstr "Mini Patrocinadors"
-
-msgid "Gold Donors"
-msgstr "Donants Gold"
-
-msgid "Silver Donors"
-msgstr "Donants Silver"
-
-msgid "Bronze Donors"
-msgstr "Donants Bronze"
-
 msgid "Donors"
 msgstr "Donants"
 

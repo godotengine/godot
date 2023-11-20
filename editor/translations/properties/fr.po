@@ -119,13 +119,14 @@
 # Vivalzar <gillespeyroux@hotmail.com>, 2023.
 # Gouvernon Stan <stany@gouvernon.org>, 2023.
 # Rertsyd <rertsyd@outlook.com>, 2023.
+# Roskai <angel.du.2558@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-26 13:04+0000\n"
-"Last-Translator: Rertsyd <rertsyd@outlook.com>\n"
+"PO-Revision-Date: 2023-11-16 07:53+0000\n"
+"Last-Translator: Roskai <angel.du.2558@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -133,7 +134,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.1.1\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Application"
 msgstr "Application"
@@ -4926,6 +4927,9 @@ msgstr "Mode différé"
 msgid "Presets Visible"
 msgstr "Préréglages visibles"
 
+msgid "Styles"
+msgstr "Styles"
+
 msgid "Grow Direction"
 msgstr "Direction d'expansion"
 
@@ -6683,6 +6687,9 @@ msgstr "Utiliser le filtre Mipmap le plus proche"
 
 msgid "Buffer Size"
 msgstr "Taille de tampon"
+
+msgid "OpenGL"
+msgstr "OpenGL"
 
 msgid "Shaders"
 msgstr "Shaders"
