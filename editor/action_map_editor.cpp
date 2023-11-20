@@ -377,6 +377,8 @@ void ActionMapEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_reordered", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::STRING, "relative_to"), PropertyInfo(Variant::BOOL, "before")));
 	ADD_SIGNAL(MethodInfo(SNAME("action_import")));
 	ADD_SIGNAL(MethodInfo(SNAME("action_export")));
+	ADD_SIGNAL(MethodInfo(SNAME("action_remove_builtin")));
+	ADD_SIGNAL(MethodInfo(SNAME("action_restore_builtin")));
 	ADD_SIGNAL(MethodInfo(SNAME("filter_focused")));
 	ADD_SIGNAL(MethodInfo(SNAME("filter_unfocused")));
 }
@@ -540,10 +542,10 @@ void ActionMapEditor::_advanced_actions_menu_action(int p_action) {
 			set_show_builtin_actions(!show_builtin_actions);
 		} break;
 		case ADVANCED_ACTIONS_MENU_REMOVE_BUILTIN: {
-			//emit_signal(SNAME("action_remove_builtin"));
+			emit_signal(SNAME("action_remove_builtin"));
 		} break;
 		case ADVANCED_ACTIONS_MENU_RESTORE_BUILTIN: {
-			//emit_signal(SNAME("action_restore_builtin"));
+			emit_signal(SNAME("action_restore_builtin"));
 		} break;
 		default:
 			break;
@@ -610,9 +612,7 @@ ActionMapEditor::ActionMapEditor() {
 	advanced_actions_menu->get_popup()->add_check_item(TTR("Show Built-in Actions"), ADVANCED_ACTIONS_MENU_SHOW_BUILTIN);
 	advanced_actions_menu->get_popup()->set_item_checked(-1, show_builtin_actions);
 	advanced_actions_menu->get_popup()->add_item(TTR("Remove Built-in Actions"), ADVANCED_ACTIONS_MENU_REMOVE_BUILTIN);
-	advanced_actions_menu->get_popup()->set_item_disabled(-1, true);
 	advanced_actions_menu->get_popup()->add_item(TTR("Restore Built-in Actions"), ADVANCED_ACTIONS_MENU_RESTORE_BUILTIN);
-	advanced_actions_menu->get_popup()->set_item_disabled(-1, true);
 	advanced_actions_menu->get_popup()->connect("id_pressed", callable_mp(this, &ActionMapEditor::_advanced_actions_menu_action));
 	add_hbox->add_child(advanced_actions_menu);
 

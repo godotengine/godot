@@ -109,6 +109,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
 	void _action_import();
 	void _action_export();
+	void _action_remove_builtin();
+	void _action_restore_builtin();
 	void _update_action_map_editor();
 	void _update_theme();
 

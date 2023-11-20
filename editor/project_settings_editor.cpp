@@ -31,6 +31,7 @@
 #include "project_settings_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input_map.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -371,6 +372,95 @@ void ProjectSettingsEditor::_action_export() {
 	export_file_dialog->popup_file_dialog();
 }
 
+void ProjectSettingsEditor::_action_remove_builtin() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Remove Built-in Actions"));
+
+	List<PropertyInfo> props;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	for (const PropertyInfo &E : props) {
+		const String property_name = E.name;
+
+		if (!property_name.begins_with("input/")) {
+			continue;
+		}
+
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(property_name) != nullptr;
+		if (!is_builtin_input) {
+			continue;
+		}
+
+		Dictionary old_action = GLOBAL_GET(property_name);
+		Dictionary new_action;
+		new_action["deadzone"] = old_action["deadzone"];	// keep deadzone value
+		new_action["events"] = Array();						// clear built-in events
+
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, new_action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_action);
+	}
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_restore_builtin() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Restore Built-in Actions"));
+
+	HashMap<String, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
+
+	List<PropertyInfo> props;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	for (const PropertyInfo &E : props) {
+		const String property_name = E.name;
+
+		if (!property_name.begins_with("input/")) {
+			continue;
+		}
+
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(property_name) != nullptr;
+		if (!is_builtin_input) {
+			continue;
+		}
+
+		Array events;
+		String builtin_key = property_name.substr(String("input/").size() - 1);
+
+		// Convert list of input events into array
+		for (const Ref<InputEvent> &default_event : builtins[builtin_key]) {
+			if (default_event.is_valid()) {
+				events.append(default_event);
+			}
+		}
+
+		Dictionary old_action = GLOBAL_GET(property_name);
+		Dictionary new_action;
+		new_action["events"] = events;
+		new_action["deadzone"] = Variant(0.5f);
+
+		// Don't reset if same as default.
+		bool sameEvents = Shortcut::is_event_array_equal(old_action["events"], new_action["events"]);
+		bool sameDeadzone = old_action["deadzone"] == new_action["deadzone"];
+		if (sameEvents && sameDeadzone) {
+			continue;
+		}
+
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, new_action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_action);
+	}
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
 Error ProjectSettingsEditor::_import_file_callback(const String &p_file) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_file, FileAccess::READ, &err);
@@ -430,7 +520,6 @@ Error ProjectSettingsEditor::_export_file_callback(const String &p_file) {
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
-	const Ref<Texture2D> builtin_icon = get_editor_theme_icon(SNAME("PinPressed"));
 	for (const PropertyInfo &E : props) {
 		const String property_name = E.name;
 
@@ -804,6 +893,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_map_editor->connect("action_reordered", callable_mp(this, &ProjectSettingsEditor::_action_reordered));
 	action_map_editor->connect("action_import", callable_mp(this, &ProjectSettingsEditor::_action_import));
 	action_map_editor->connect("action_export", callable_mp(this, &ProjectSettingsEditor::_action_export));
+	action_map_editor->connect("action_remove_builtin", callable_mp(this, &ProjectSettingsEditor::_action_remove_builtin));
+	action_map_editor->connect("action_restore_builtin", callable_mp(this, &ProjectSettingsEditor::_action_restore_builtin));
 	action_map_editor->connect(SNAME("filter_focused"), callable_mp(this, &ProjectSettingsEditor::_input_filter_focused));
 	action_map_editor->connect(SNAME("filter_unfocused"), callable_mp(this, &ProjectSettingsEditor::_input_filter_unfocused));
 	tab_container->add_child(action_map_editor);
