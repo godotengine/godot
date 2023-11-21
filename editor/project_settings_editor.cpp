@@ -496,8 +496,15 @@ Error ProjectSettingsEditor::_import_file_callback(const String &p_file) {
 
 		if (section == "input" && !assign.is_empty()) {
 			const String property_name = "input/" + assign;
+
 			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, value);
-			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", property_name);
+
+			if (ProjectSettings::get_singleton()->has_setting(property_name)) {
+				Dictionary old_action = GLOBAL_GET(property_name);
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_action);
+			} else {
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", property_name);
+			}
 		}
 
 		if (!next_tag.name.is_empty()) {
