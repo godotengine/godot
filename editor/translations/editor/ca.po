@@ -2722,6 +2722,9 @@ msgstr "Carrega Rapida"
 msgid "Make Unique"
 msgstr "Fes-lo Únic"
 
+msgid "Save As..."
+msgstr "Anomena i Desa..."
+
 msgid "Show in FileSystem"
 msgstr "Mostrar en el Sistema de Fitxers"
 
@@ -3425,9 +3428,6 @@ msgstr "Carrega un recurs des del disc i edita'l."
 
 msgid "Save the currently edited resource."
 msgstr "Desa el recurs editat ara."
-
-msgid "Save As..."
-msgstr "Anomena i Desa..."
 
 msgid "Copy Resource"
 msgstr "Copia el Recurs"

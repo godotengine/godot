@@ -1991,6 +1991,9 @@ msgstr "Cheie Nouă:"
 msgid "New Value:"
 msgstr "Valoare Nouă:"
 
+msgid "Save As..."
+msgstr "Salvează Ca..."
+
 msgid "Show in FileSystem"
 msgstr "Afișare în FileSystem"
 
@@ -2451,9 +2454,6 @@ msgstr "Încarcă o resursă existentă de pe disc si editeaz-o."
 
 msgid "Save the currently edited resource."
 msgstr "Salvează resursa editată curentă."
-
-msgid "Save As..."
-msgstr "Salvează Ca..."
 
 msgid "Copy Resource"
 msgstr "Copiați Resursa"

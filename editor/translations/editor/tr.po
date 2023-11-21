@@ -111,7 +111,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-16 16:21+0000\n"
+"PO-Revision-Date: 2023-11-17 02:03+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -1988,6 +1988,9 @@ msgstr "Geliştiriciler"
 msgid "Authors"
 msgstr "Yazarlar"
 
+msgid "Patrons"
+msgstr "Velinimetler"
+
 msgid "Platinum Sponsors"
 msgstr "Platin Sponsorlar"
 
@@ -1996,6 +1999,18 @@ msgstr "Altın Sponsorlar"
 
 msgid "Silver Sponsors"
 msgstr "Gümüş Bağışçılar"
+
+msgid "Diamond Members"
+msgstr "Elmas Üyeler"
+
+msgid "Titanium Members"
+msgstr "Titanyum Üyeler"
+
+msgid "Platinum Members"
+msgstr "Platin Üyeler"
+
+msgid "Gold Members"
+msgstr "Altın Üyeler"
 
 msgid "Donors"
 msgstr "Bağışçılar"
@@ -4111,6 +4126,9 @@ msgstr "Benzersiz Yap"
 msgid "Make Unique (Recursive)"
 msgstr "Benzersiz Yap (Özyinelemeli)"
 
+msgid "Save As..."
+msgstr "Farklı Kaydet..."
+
 msgid "Show in FileSystem"
 msgstr "DosyaSistemi'nde Göster"
 
@@ -6040,9 +6058,6 @@ msgstr "Var olan bir kaynağı diskten yükle ve düzenle."
 
 msgid "Save the currently edited resource."
 msgstr "Şu anda düzenlenen kaynağı kaydet."
-
-msgid "Save As..."
-msgstr "Farklı Kaydet..."
 
 msgid "Extra resource options."
 msgstr "Kaynak ek seçenekleri."
@@ -14990,8 +15005,16 @@ msgstr "Genişletme paketi dosyası yazılamadı!"
 msgid "Building Android Project (gradle)"
 msgstr "Android Projesi Oluşturuluyor (gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr ""
+"Android projesinin oluşturulması başarısız oldu, hata için çıktıları kontrol "
+"edin:"
+
 msgid "Moving output"
 msgstr "Çıktı taşınıyor"
+
+msgid "Unable to copy and rename export file:"
+msgstr "Dışa aktarma dosyası kopyalanamıyor ve yeniden adlandırılamıyor:"
 
 msgid "Package not found: \"%s\"."
 msgstr "Paket bulunamadı: \"%s\"."

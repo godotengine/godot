@@ -2185,6 +2185,9 @@ msgstr "מחרוזת ניתנת לתרגום (גודל %d)"
 msgid "Make Unique"
 msgstr "הפוך לייחודי"
 
+msgid "Save As..."
+msgstr "שמירה בשם…"
+
 msgid "Show in FileSystem"
 msgstr "הצגה בחלון הקבצים"
 
@@ -2651,9 +2654,6 @@ msgstr "טעינת משאב קיים מהכונן ועריכתו."
 
 msgid "Save the currently edited resource."
 msgstr "שמירת המשאב שנערך כרגע."
-
-msgid "Save As..."
-msgstr "שמירה בשם…"
 
 msgid "Copy Resource"
 msgstr "העתקת משאב"

@@ -170,7 +170,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-11 19:11+0000\n"
+"PO-Revision-Date: 2023-11-18 06:21+0000\n"
 "Last-Translator: Ilia Brykin <brykin.ilia@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -180,7 +180,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "Главный поток"
@@ -2055,6 +2055,9 @@ msgstr "Разработчики"
 msgid "Authors"
 msgstr "Авторы"
 
+msgid "Patrons"
+msgstr "Покровители"
+
 msgid "Platinum Sponsors"
 msgstr "Платиновые спонсоры"
 
@@ -2063,6 +2066,18 @@ msgstr "Золотые спонсоры"
 
 msgid "Silver Sponsors"
 msgstr "Серебряные спонсоры"
+
+msgid "Diamond Members"
+msgstr "Члены Алмазного уровня"
+
+msgid "Titanium Members"
+msgstr "Члены Титанового уровня"
+
+msgid "Platinum Members"
+msgstr "Члены Платинового уровня"
+
+msgid "Gold Members"
+msgstr "Члены золотого уровня"
 
 msgid "Donors"
 msgstr "Доноры"
@@ -4170,6 +4185,9 @@ msgstr "Сделать уникальным"
 msgid "Make Unique (Recursive)"
 msgstr "Сделать уникальным (рекурсивно)"
 
+msgid "Save As..."
+msgstr "Сохранить как..."
+
 msgid "Show in FileSystem"
 msgstr "Показать в файловой системе"
 
@@ -6088,9 +6106,6 @@ msgstr "Загрузить существующий ресурс с диска �
 
 msgid "Save the currently edited resource."
 msgstr "Сохранить текущий редактируемый ресурс."
-
-msgid "Save As..."
-msgstr "Сохранить как..."
 
 msgid "Extra resource options."
 msgstr "Дополнительные параметры ресурса."
@@ -15021,8 +15036,14 @@ msgstr "Не удалось записать расширение файла п�
 msgid "Building Android Project (gradle)"
 msgstr "Сборка проекта Android (gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr "Сборка проекта Android не удалась, проверьте вывод для ошибки:"
+
 msgid "Moving output"
 msgstr "Перемещение выходных данных"
+
+msgid "Unable to copy and rename export file:"
+msgstr "Не удается скопировать и переименовать файл экспорта:"
 
 msgid "Package not found: \"%s\"."
 msgstr "Пакет не найден: \"%s\"."

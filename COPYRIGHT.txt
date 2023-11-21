@@ -328,6 +328,11 @@ Comment: meshoptimizer
 Copyright: 2016-2022, Arseny Kapoulkine
 License: Expat
 
+Files: ./thirdparty/mingw-std-threads/
+Comment: mingw-std-threads
+Copyright: 2016, Mega Limited
+License: BSD-2-clause
+
 Files: ./thirdparty/minimp3/
 Comment: MiniMP3
 Copyright: lieff

@@ -12,7 +12,7 @@
 # Reza Hidayat Bayu Prabowo <rh.bayu.prabowo@gmail.com>, 2018, 2019.
 # Romi Kusuma Bakti <romikusumab@gmail.com>, 2017, 2018, 2021.
 # Sofyan Sugianto <sofyanartem@gmail.com>, 2017-2018, 2019, 2020, 2021.
-# Tito <ijavadroid@gmail.com>, 2018.
+# Tito <ijavadroid@gmail.com>, 2018, 2023.
 # Tom My <tom.asadinawan@gmail.com>, 2017.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
 # Evan Hyacinth <muhammad.ivan669@gmail.com>, 2018, 2019.
@@ -55,13 +55,14 @@
 # Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
 # Avirur Rahman <avirahmandev@gmail.com>, 2023.
 # Nazan <121859424+nazhard@users.noreply.github.com>, 2023.
+# ekaknl22 <2200018407@webmail.uad.ac.id>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-15 10:05+0000\n"
-"Last-Translator: Nazan <121859424+nazhard@users.noreply.github.com>\n"
+"PO-Revision-Date: 2023-11-21 15:04+0000\n"
+"Last-Translator: Tito <ijavadroid@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -69,7 +70,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -323,7 +324,7 @@ msgid "Dedent"
 msgstr "Dedentasi"
 
 msgid "Backspace"
-msgstr "Kembali"
+msgstr "Backspace"
 
 msgid "Backspace Word"
 msgstr "Hapus Word"
@@ -592,8 +593,14 @@ msgstr "Batalkan Pilihan Semua Kunci"
 msgid "Animation Change Transition"
 msgstr "Ubah Transisi Animasi"
 
+msgid "Animation Change Position3D"
+msgstr "Ubah Transisi Animasi3D"
+
 msgid "Animation Change Rotation3D"
 msgstr "Ubah Transisi Animasi 3D"
+
+msgid "Animation Change Scale3D"
+msgstr "Ubah Animasi Skala3D"
 
 msgid "Animation Change Keyframe Value"
 msgstr "Ubah Nilai Keyframe Animasi"
@@ -603,6 +610,15 @@ msgstr "Ubah Panggilan Animasi"
 
 msgid "Animation Multi Change Transition"
 msgstr "Ubah Beberapa Transisi Animasi"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Ubah Beberapa Posisi3D Animasi"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Ubah Beberapa Rotasi Animasi3D"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Ubah Beberapa Skala3D Animasi"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Ubah Beberapa Nilai Keyframe Animasi"
@@ -818,6 +834,9 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Hapus Trek Anim"
 
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "Tahan Shift saat mengklik ikon kunci untuk melewati dialog ini."
+
 msgid "Create new track for %s and insert key?"
 msgstr "Buat track baru untuk %s dan sisipkan kunci?"
 
@@ -919,7 +938,7 @@ msgid "Scale"
 msgstr "Skala"
 
 msgid "BlendShape"
-msgstr "BlendShape"
+msgstr "BentukCampuran"
 
 msgid "Methods"
 msgstr "Metode"
@@ -949,6 +968,9 @@ msgstr "Opsi ini tidak bisa untuk mengedit Bezier, karena hanya satu track."
 msgid "Animation Add RESET Keys"
 msgstr "Animasi Tambahkan Kunci RESET"
 
+msgid "Bake Animation as Linear Keys"
+msgstr "Bake Animasi sebagai Kunci Linier"
+
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
 "will not be saved.\n"
@@ -968,14 +990,42 @@ msgstr ""
 "khusus, aktifkan \"Simpan Ke File\" dan\n"
 "\"Simpan Trek Khusus\"."
 
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"Beberapa opsi AnimationPlayerEditor dinonaktifkan karena ini adalah "
+"AnimationPlayer tiruan untuk pratinjau.\n"
+"\n"
+"Pemain tiruan dipaksa aktif, non-deterministik dan tidak memiliki jalur gerak "
+"root. Selain itu, node asli tidak aktif sementara."
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "AnimationPlayer mati. Putar ulang tidak akan diproses."
+
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr "Lokasi untuk node AnimationPlayer yang mengandung animasi belum diatur."
+msgstr "Pilih node AnimationPlayer untuk membuat dan mengedit animasi."
 
 msgid "Imported Scene"
 msgstr "Adegan yang Diimpor"
 
 msgid "Warning: Editing imported animation"
 msgstr "Peringatan: Menyunting animasi yang diimpor"
+
+msgid "Dummy Player"
+msgstr "Pemain Tiruan"
+
+msgid "Warning: Editing dummy AnimationPlayer"
+msgstr "Peringatan: Sedang menyunting tiruan AnimationPlayer"
+
+msgid "Inactive Player"
+msgstr "Player Nonaktif"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "Peringatan: AnimationPlayer tidak aktif"
 
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Beralih antara editor kurva bezier dan editor trek."
@@ -984,13 +1034,13 @@ msgid "Only show tracks from nodes selected in tree."
 msgstr "Hanya tampilkan track dari node terpilih dalam tree."
 
 msgid "Group tracks by node or display them as plain list."
-msgstr "Susun Track-track dengan node atau tampilkan sebagai daftar biasa."
+msgstr "Susun track berdasarkan node atau tampilkan sebagai daftar biasa."
 
 msgid "Snap:"
-msgstr "Senap:"
+msgstr "Tangkapan:"
 
 msgid "Animation step value."
-msgstr "Nilai Langkah Animasi."
+msgstr "Nilai langkah animasi."
 
 msgid "Seconds"
 msgstr "Detik"
@@ -1002,7 +1052,7 @@ msgid "Edit"
 msgstr "Sunting"
 
 msgid "Animation properties."
-msgstr "Properti Animasi."
+msgstr "Properti animasi."
 
 msgid "Copy Tracks"
 msgstr "Salin Trek-trek"
@@ -1035,7 +1085,7 @@ msgid "Apply Reset"
 msgstr "Terapkan Reset"
 
 msgid "Bake Animation"
-msgstr "Bake Animasi"
+msgstr "Ubah Animasi"
 
 msgid "Optimize Animation (no undo)"
 msgstr "Optimalkan Animasi (tanpa undo)"
@@ -1068,7 +1118,7 @@ msgid "Optimize"
 msgstr "Optimalkan"
 
 msgid "Remove invalid keys"
-msgstr "Hapus Tombol-tombol yang tidak sah"
+msgstr "Hapus Tombol-tombol yang tidak valid"
 
 msgid "Remove unresolved and empty tracks"
 msgstr "Hapus tracks yang kosong dan belum diselesaikan"
@@ -1741,7 +1791,7 @@ msgstr "Cari Resource Pengganti:"
 
 msgid "Open Scene"
 msgid_plural "Open Scenes"
-msgstr[0] "Buka Skene"
+msgstr[0] "Buka Skena"
 
 msgid "Open"
 msgstr "Buka"
@@ -2327,7 +2377,7 @@ msgid "Asset Library"
 msgstr "Pustaka Aset"
 
 msgid "Scene Tree Editing"
-msgstr "Menyunting Pohon Skena"
+msgstr "Menyunting Daftar Skena"
 
 msgid "Node Dock"
 msgstr "Dok Node"
@@ -2342,7 +2392,7 @@ msgid "History Dock"
 msgstr "Dok Sejarah"
 
 msgid "Allows to view and edit 3D scenes."
-msgstr "Memungkinkan untuk melihat dan mengedit scene 3D."
+msgstr "Memungkinkan untuk melihat dan mengedit adegan 3D."
 
 msgid "Allows to edit scripts using the integrated script editor."
 msgstr ""
@@ -2352,7 +2402,7 @@ msgid "Provides built-in access to the Asset Library."
 msgstr "Menyediakan akses bawaan ke Perpustakaan Aset."
 
 msgid "Allows editing the node hierarchy in the Scene dock."
-msgstr "Memungkinkan pengeditan hierarki node di dock Scene."
+msgstr "Memungkinkan pengeditan hierarki node di dock adegan."
 
 msgid ""
 "Allows to work with signals and groups of the node selected in the Scene dock."
@@ -2997,7 +3047,7 @@ msgid "Error while loading file '%s'."
 msgstr "Kesalahan saat memuat file '%s'."
 
 msgid "Saving Scene"
-msgstr "Menyimpan Skena"
+msgstr "Menyimpan Adegan"
 
 msgid "Analyzing"
 msgstr "Menganalisis"
@@ -3012,8 +3062,9 @@ msgid ""
 "This scene can't be saved because there is a cyclic instance inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
-"Scene ini tidak bisa disimpan karena ada inklusi penginstansian yang siklik.\n"
-"Mohon betulkan dan coba simpan lagi."
+"Adegan ini tidak bisa disimpan karena ada inklusi penginstansian yang "
+"siklik.\n"
+"Mohon perbaiki dan coba simpan lagi."
 
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
@@ -3023,16 +3074,16 @@ msgstr ""
 "tidak terpenuhi."
 
 msgid "Save scene before running..."
-msgstr "Simpan skena sebelum menjalankan..."
+msgstr "Simpan adegan sebelum menjalankan..."
 
 msgid "Could not save one or more scenes!"
-msgstr "Tidak dapat menyimpan satu atau lebih skena!"
+msgstr "Tidak dapat menyimpan satu atau beberapa adegan!"
 
 msgid "Save All Scenes"
-msgstr "Simpan Semua Skena"
+msgstr "Simpan Semua Adegan"
 
 msgid "Can't overwrite scene that is still open!"
-msgstr "Tidak bisa menimpa skena yang masih terbuka!"
+msgstr "Tidak bisa menimpa adegan yang masih terbuka!"
 
 msgid "Can't load MeshLibrary for merging!"
 msgstr "Tidak dapat memuat MeshLibrary untuk menggabungkan!"
@@ -3070,17 +3121,16 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"Resource ini milik skena yang telah diimpor, jadi tidak dapat disunting.\n"
-"Harap baca dokumentasi yang relevan dalam mengimpor skena untuk lebih "
+"Resource ini milik adegan yang telah diimpor, jadi tidak dapat disunting.\n"
+"Harap baca dokumentasi yang relevan dalam mengimpor adegan untuk lebih "
 "memahami alur kerjanya."
 
 msgid ""
 "This resource belongs to a scene that was instantiated or inherited.\n"
 "Changes to it must be made inside the original scene."
 msgstr ""
-"Sumber daya ini termasuk dalam scene yang telah di-instansiasi atau "
-"diwarisi.\n"
-"Perubahan harus dilakukan di dalam scene asli."
+"Resource ini termasuk dalam adegan yang telah di-instansiasi atau diwarisi.\n"
+"Perubahan harus dilakukan di dalam adegan asli."
 
 msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
@@ -3098,7 +3148,7 @@ msgstr ""
 "Adegan ini diimpor, jadi perubahan pada adegan ini tidak akan disimpan.\n"
 "Menginstansiasi atau mewarisinya akan memungkinkan Anda untuk membuat "
 "perubahan padanya.\n"
-"Silakan baca dokumentasi yang relevan dengan mengimpor scene untuk lebih "
+"Silakan baca dokumentasi yang relevan dengan mengimpor adegan untuk lebih "
 "memahami alur kerja ini."
 
 msgid "Changes may be lost!"
@@ -3108,13 +3158,13 @@ msgid "This object is read-only."
 msgstr "Objek ini hanya dapat dibaca."
 
 msgid "Open Base Scene"
-msgstr "Buka Skena Dasar"
+msgstr "Buka Adegan Dasar"
 
 msgid "Quick Open..."
 msgstr "Buka Cepat..."
 
 msgid "Quick Open Scene..."
-msgstr "Buka Cepat Skenario..."
+msgstr "Buka Cepat Adegan..."
 
 msgid "Quick Open Script..."
 msgstr "Buka Cepat Skrip..."
@@ -3126,21 +3176,21 @@ msgid ""
 "The current scene has no root node, but %d modified external resource(s) were "
 "saved anyway."
 msgstr ""
-"Scene saat ini tidak memiliki node root, tetapi %d sumber daya eksternal yang "
+"Adegan saat ini tidak memiliki node root, tetapi %d resource eksternal yang "
 "diubah tetap disimpan."
 
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
-"Node root diperlukan untuk menyimpan scene. Anda dapat menambahkan node root "
-"menggunakan dok pohon Scene."
+"Node root diperlukan untuk menyimpan adegan. Anda dapat menambahkan node root "
+"menggunakan dok pohon Adegan."
 
 msgid "Save Scene As..."
-msgstr "Simpan Skena Sebagai..."
+msgstr "Simpan Adegan Sebagai..."
 
 msgid "Current scene not saved. Open anyway?"
-msgstr "Skena saat ini belum disimpan. Buka saja?"
+msgstr "Adegan saat ini belum disimpan. Buka saja?"
 
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Tidak bisa membatalkan ketika tombol mouse ditekan."
@@ -3170,20 +3220,20 @@ msgid "Remote Redo: %s"
 msgstr "Undo Remote: %s"
 
 msgid "Scene Redo: %s"
-msgstr "Adegan Redo: %s"
+msgstr "Redo Adegan: %s"
 
 msgid "Can't reload a scene that was never saved."
-msgstr "Tidak bisa memuat ulang skena yang belum pernah disimpan."
+msgstr "Tidak bisa memuat ulang adegan yang belum pernah disimpan."
 
 msgid "Reload Saved Scene"
-msgstr "Muat ulang scene yang sudah disimpan"
+msgstr "Muat ulang adegan yang sudah disimpan"
 
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
-"Skena saat ini mempunyai perubahan yang belum tersimpan.\n"
-"Tetap muat ulang skena yang tersimpan? Aksi ini tidak dapat dibatalkan."
+"Adegan saat ini mempunyai perubahan yang belum tersimpan.\n"
+"Tetap muat ulang adegan yang tersimpan? Tindakan ini tidak dapat dibatalkan."
 
 msgid "Save & Reload"
 msgstr "Simpan & Mulai Ulang"
@@ -3201,10 +3251,10 @@ msgid "Save changes to the following scene(s) before reloading?"
 msgstr "Menyimpan perubahan pada adegan berikut sebelum memuat ulang?"
 
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Simpan perubahan skena saat ini sebelum keluar?"
+msgstr "Simpan perubahan adegan saat ini sebelum keluar?"
 
 msgid "Save changes to the following scene(s) before opening Project Manager?"
-msgstr "Simpan perubahan skena saat ini sebelum membuka Manajer Proyek?"
+msgstr "Simpan perubahan adegan saat ini sebelum membuka Manajer Proyek?"
 
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
@@ -3214,10 +3264,10 @@ msgstr ""
 "sebagai bug. Tolong laporkan."
 
 msgid "Pick a Main Scene"
-msgstr "Pilih Skena Utama"
+msgstr "Pilih Adegan Utama"
 
 msgid "This operation can't be done without a scene."
-msgstr "Operasi ini tidak dapat diselesaikan tanpa skena."
+msgstr "Operasi ini tidak dapat diselesaikan tanpa adegan."
 
 msgid "Export Mesh Library"
 msgstr "Ekspor Pustaka Mesh"
@@ -3257,24 +3307,24 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"Skena '%s' terimpor otomatis, jadi tidak dapat dimodifikasi.\n"
-"Untuk melakukan perubahan, skena warisan baru dapat dibuat."
+"Adegan '%s' terimpor otomatis, jadi tidak dapat dimodifikasi.\n"
+"Untuk melakukan perubahan, adegan warisan baru dapat dibuat."
 
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to open "
 "the scene, then save it inside the project path."
 msgstr ""
-"Gagal memuat skena, harus dalam lokasi proyek. Gunakan 'Impor\" untuk membuka "
-"skena tersebut, kemudian simpan di dalam lokasi proyek."
+"Gagal memuat adegan, harus dalam lokasi proyek. Gunakan 'Impor\" untuk "
+"membuka adegan tersebut, kemudian simpan di dalam lokasi proyek."
 
 msgid "Scene '%s' has broken dependencies:"
-msgstr "Skena '%s' memiliki dependensi yang rusak:"
+msgstr "Adegan '%s' memiliki dependensi yang rusak:"
 
 msgid "Clear Recent Scenes"
-msgstr "Bersihkan Scenes baru-baru ini"
+msgstr "Bersihkan Adegan baru-baru ini"
 
 msgid "There is no defined scene to run."
-msgstr "Tidak ada skena yang didefinisikan untuk dijalankan."
+msgstr "Tidak ada adegan yang didefinisikan untuk dijalankan."
 
 msgid "%s - Godot Engine"
 msgstr "%s - Godot Engine"
@@ -3284,7 +3334,7 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Tidak ada skena utama yang pernah didefinisikan, pilih satu?\n"
+"Tidak ada adegan utama yang pernah didefinisikan, pilih satu?\n"
 "Anda dapat mengubahnya nanti di \"Pengaturan Proyek\" di bawah kategori "
 "'aplikasi'."
 
@@ -3293,7 +3343,7 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Skena '%s' tidak ada, pilih yang valid?\n"
+"Adegan '%s' tidak ada, pilih yang valid?\n"
 "Anda dapat mengubahnya nanti di \"Pengaturan Proyek\" di bawah kategori "
 "'aplikasi'."
 
@@ -3302,7 +3352,7 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Skena yang dipilih '%s' bukanlah berkas skena, pilih yang valid?\n"
+"Adegan yang dipilih '%s' bukanlah berkas adegan, pilih yang valid?\n"
 "Anda dapat menggantinya nanti di \"Pengaturan Proyek\" di bawah kategori "
 "'aplikasi'."
 
@@ -3314,6 +3364,16 @@ msgstr "Hapus Penampilan"
 
 msgid "Default"
 msgstr "Bawaan"
+
+msgid "This scene was never saved."
+msgstr "Tidak bisa memuat ulang adegan yang belum pernah disimpan."
+
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"Last saved: %s."
+msgstr ""
+"Adegan \"%s\" memiliki perubahan yang belum disimpan.\n"
+"Terakhir disimpan: %s."
 
 msgid "Save & Close"
 msgstr "Simpan & Tutup"
@@ -3352,7 +3412,7 @@ msgid "Scene"
 msgstr "Adegan"
 
 msgid "Operations with scene files."
-msgstr "Operasi dengan berkas skena."
+msgstr "Operasi dengan berkas adegan."
 
 msgid "Copy Text"
 msgstr "Salin Teks"
@@ -3370,22 +3430,22 @@ msgid "Command Palette"
 msgstr "Palet Perintah"
 
 msgid "New Scene"
-msgstr "Skena Baru"
+msgstr "Adegan Baru"
 
 msgid "New Inherited Scene..."
-msgstr "Skena Warisan Baru..."
+msgstr "Adegan Turunan Baru..."
 
 msgid "Open Scene..."
-msgstr "Buka Skena..."
+msgstr "Buka Adegan..."
 
 msgid "Reopen Closed Scene"
-msgstr "Buka Kembali Skena yang Ditutup"
+msgstr "Buka Kembali Adegan yang Ditutup"
 
 msgid "Open Recent"
 msgstr "Buka baru-baru ini"
 
 msgid "Save Scene"
-msgstr "Simpan Skena"
+msgstr "Simpan Adegan"
 
 msgid "Export As..."
 msgstr "Ekspor Sebagai..."
@@ -3394,7 +3454,7 @@ msgid "MeshLibrary..."
 msgstr "PerpustakaanMesh..."
 
 msgid "Close Scene"
-msgstr "Tutup Skena"
+msgstr "Tutup Adegan"
 
 msgid "Quit"
 msgstr "Keluar"
@@ -3746,7 +3806,7 @@ msgid ""
 msgstr ""
 "Tidak dapat membuat ViewportTexture pada resource yang disimpan sebagai "
 "berkas.\n"
-"Resource harus dimiliki oleh sebuah skena."
+"Resource harus dimiliki oleh sebuah adegan."
 
 msgid ""
 "Can't create a ViewportTexture on this resource because it's not set as local "
@@ -3755,7 +3815,7 @@ msgid ""
 "containing it up to a node)."
 msgstr ""
 "Tidak dapat membuat ViewportTexture pada resource ini karena tidak dibuat "
-"lokal ke skena.\n"
+"lokal ke adegan.\n"
 "Silakan aktifkan properti 'lokal ke skena' di atasnya (dan semua resource "
 "yang memuatnya sampai node)."
 
@@ -3822,6 +3882,9 @@ msgstr "Jadikan Unik"
 
 msgid "Make Unique (Recursive)"
 msgstr "Jadikan Unik (Rekursif)"
+
+msgid "Save As..."
+msgstr "Simpan Sebagai..."
 
 msgid "Show in FileSystem"
 msgstr "Tampilkan dalam FileSystem"
@@ -5646,9 +5709,6 @@ msgstr "Muat resource yang ada dari diska dan mengubahnya."
 msgid "Save the currently edited resource."
 msgstr "Simpan resource yang sedang disunting saat ini."
 
-msgid "Save As..."
-msgstr "Simpan Sebagai..."
-
 msgid "Extra resource options."
 msgstr "Opsi resource tambahan."
 
@@ -6276,7 +6336,7 @@ msgid "Force White Modulate"
 msgstr "Paksa Modulasi Putih"
 
 msgid "Include Gizmos (3D)"
-msgstr "Masukkan Gizmo (3D)"
+msgstr "Sertakan Gizmo (3D)"
 
 msgid "Pin AnimationPlayer"
 msgstr "Sematkan AnimationPlayer"
@@ -6909,7 +6969,7 @@ msgid "Show Group And Lock Icons"
 msgstr "Tampilkan Ikon Kunci Dan Grup"
 
 msgid "Show Transformation Gizmos"
-msgstr "Tampilkan Gizmos Transformasi"
+msgstr "Tampilkan Transformasi Gismos"
 
 msgid "Center Selection"
 msgstr "Seleksi Tengah"
@@ -12142,6 +12202,9 @@ msgstr "Konstanta tidak dapat dimodifikasi."
 msgid "Invalid argument name."
 msgstr "Nama argumen tidak valid."
 
+msgid "Invalid undef."
+msgstr "Tidak valid."
+
 msgid "Invalid macro argument list."
 msgstr "Daftar Argumen Macro Tidak Valid."
 
@@ -12150,3 +12213,6 @@ msgstr "Argumen makro tidak sah."
 
 msgid "Invalid macro argument count."
 msgstr "Daftar Argumen Macro Tidak Valid"
+
+msgid "Unmatched conditional statement."
+msgstr "Pernyataan kondisi tidak cocok."

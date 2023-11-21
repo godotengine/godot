@@ -19,6 +19,7 @@ generous deed immortalized in the next stable release of Godot Engine.
 
     Heroic Labs <https://heroiclabs.com>
     Ramatak <https://ramatak.com>
+    V-Sekai <https://github.com/V-Sekai>
     W4 Games <https://w4games.com>
 
 ## Gold sponsors
@@ -40,8 +41,9 @@ generous deed immortalized in the next stable release of Godot Engine.
 
 ## Diamond members
 
+    Sealow
     Sylv <https://rankith.itch.io/unnamed-space-idle-prototype>
-    And 4 anonymous donors
+    And 5 anonymous donors
 
 ## Titanium members
 
@@ -63,7 +65,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Sunshower <https://github.com/Phanterm>
     TrampolineTales <https://trampolinetales.com/>
     Wilfred James <https://twitter.com/0430agi>
-    And 7 anonymous donors
+    And 8 anonymous donors
 
 ## Platinum members
 
@@ -74,6 +76,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Christoph Woinke
     Christopher Shifflett
     Darrin Massena
+    Druvsaft
     Edward Flick
     F*ckedByUnity
     Golden Skull Art
@@ -82,6 +85,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Justin McGettigan
     Justo Delgado Baudí
     Marek Belski
+    Matthew Ekenstedt
     Mike King
     Nassor Paulino da Silva
     Neal Gompa (Conan Kudo)
@@ -99,11 +103,12 @@ generous deed immortalized in the next stable release of Godot Engine.
     Vladimír Chvátil
     iCommitGames
     nate-wilkins
-    And 16 anonymous donors
+    And 18 anonymous donors
 
 ## Gold members
 
     @reilaos
+    Antti Vesanen
     Artur Ilkaev
     Asher Glick
     Ashtreighlia
@@ -116,8 +121,10 @@ generous deed immortalized in the next stable release of Godot Engine.
     Bernd Barsuhn
     Blake Farnsworth
     Brian Ernst
+    Brian Levinsen
     Brut
     Chen-Pang He (jdh8)
+    ClarkThyLord
     Cosmin Munteanu
     Coy Humphrey
     Daniel James
@@ -130,6 +137,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Ed Morley
     ElektroFox
     Enclusa Games
+    Ends
     Eric Phy
     Faisal Al-Kubaisi (QatariGameDev)
     FeralBytes
@@ -137,8 +145,12 @@ generous deed immortalized in the next stable release of Godot Engine.
     GlassBrick
     Grau
     Guangzhou Lingchan
+    HTML5onMobilePLZ
     Hammster
+    Hendrik Mans
+    Here's my 20 cents
     Iggy Zuk
+    Illyan
     Jacob (HACKhalo2 Studios)
     Jam
     James Green
@@ -162,6 +174,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     MHDante
     Malcolm Nixon
     Manuel Requena
+    Mark Schramm
     Martin Agnar Dahl
     Martin Šenkeřík
     Matheus Gritz
@@ -190,6 +203,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     ThePolyglotProgrammer
     Tim Nedvyga
     Tom Langwaldt
+    Trevor Slocum
     Vincent Foulon
     Weasel Games
     WuotanStudios.com
@@ -197,10 +211,13 @@ generous deed immortalized in the next stable release of Godot Engine.
     albinaask
     endaye
     getIntoGameDev
+    hiulit
+    korinVR
     nezticle
     ohanaya3
     re:thinc
     tukon
+    zikes
     杨烈胜(zedrun)
 
     Alexander Erlemann
@@ -589,7 +606,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     ケルベロス
     貴宏 小松
 
-    And 194 anonymous donors
+    And 241 anonymous donors
 
 ## Silver and bronze donors
 

@@ -3230,6 +3230,9 @@ msgstr "Rýchle načítanie"
 msgid "Make Unique"
 msgstr "Spraviť Jedinečným"
 
+msgid "Save As..."
+msgstr "Uložiť Ako..."
+
 msgid "Show in FileSystem"
 msgstr "Ukázať v FileSystéme"
 
@@ -4278,9 +4281,6 @@ msgstr "Načítať existujúci prostriedok z disku a upraviť ho."
 
 msgid "Save the currently edited resource."
 msgstr "Uložiť aktuálne upravený prostriedok."
-
-msgid "Save As..."
-msgstr "Uložiť Ako..."
 
 msgid "Copy Resource"
 msgstr "Skopírovať Prostriedok"

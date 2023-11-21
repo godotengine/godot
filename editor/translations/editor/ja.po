@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-12 18:58+0000\n"
+"PO-Revision-Date: 2023-11-18 06:21+0000\n"
 "Last-Translator: ueshita <nalto32@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -77,7 +77,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "メインスレッド"
@@ -1940,6 +1940,9 @@ msgstr "開発者"
 msgid "Authors"
 msgstr "作者"
 
+msgid "Patrons"
+msgstr "パトロン"
+
 msgid "Platinum Sponsors"
 msgstr "プラチナスポンサー"
 
@@ -1948,6 +1951,18 @@ msgstr "ゴールドスポンサー"
 
 msgid "Silver Sponsors"
 msgstr "シルバースポンサー"
+
+msgid "Diamond Members"
+msgstr "ダイヤモンドメンバー"
+
+msgid "Titanium Members"
+msgstr "チタニウムメンバー"
+
+msgid "Platinum Members"
+msgstr "プレミアムメンバー"
+
+msgid "Gold Members"
+msgstr "ゴールドメンバー"
 
 msgid "Donors"
 msgstr "ドナー"
@@ -4042,6 +4057,9 @@ msgstr "ユニーク化"
 msgid "Make Unique (Recursive)"
 msgstr "ユニーク化 (再帰的)"
 
+msgid "Save As..."
+msgstr "名前を付けて保存..."
+
 msgid "Show in FileSystem"
 msgstr "ファイルシステム上で表示"
 
@@ -4516,6 +4534,9 @@ msgstr "プリセット '%s' を削除しますか？"
 msgid "Resources to exclude:"
 msgstr "除外するリソース:"
 
+msgid "Resources to override export behavior:"
+msgstr "エクスポート処理を上書きするリソース:"
+
 msgid "Resources to export:"
 msgstr "エクスポートするリソース:"
 
@@ -4825,6 +4846,9 @@ msgstr "フォルダーを複製:"
 msgid "New Inherited Scene"
 msgstr "新しい継承シーン"
 
+msgid "Set as Main Scene"
+msgstr "メインシーンとして設定"
+
 msgid "Open Scenes"
 msgstr "シーンを開く"
 
@@ -4971,6 +4995,9 @@ msgstr "次に選択したフォルダ/ファイルに移動します。"
 
 msgid "Re-Scan Filesystem"
 msgstr "ファイルシステムを再スキャン"
+
+msgid "Change Split Mode"
+msgstr "分割モードの変更"
 
 msgid "Filter Files"
 msgstr "ファイルをフィルタ"
@@ -5946,9 +5973,6 @@ msgstr "既存のリソースをディスクから読み込み編集する。"
 msgid "Save the currently edited resource."
 msgstr "現在編集中のリソースを保存する。"
 
-msgid "Save As..."
-msgstr "名前を付けて保存..."
-
 msgid "Extra resource options."
 msgstr "追加のリソースオプション。"
 
@@ -6560,6 +6584,9 @@ msgstr "[グローバル](作成)"
 
 msgid "Duplicated Animation Name:"
 msgstr "複製されたアニメーション名:"
+
+msgid "Onion skinning requires a RESET animation."
+msgstr "オニオン スキニングには RESET アニメーションが必要です。"
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "選択したアニメーションを現在の位置から逆再生する。(A)"
@@ -7692,6 +7719,18 @@ msgid ""
 msgstr ""
 "このオプションを有効にすると、回避形状、大きさおよびベロシティが、ゲーム実行中"
 "にも表示されるようになります。"
+
+msgid "Debug CanvasItem Redraws"
+msgstr "CanvasItem の再描画をデバッグする"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"このオプションを有効にすると、2D オブジェクトの再描画リクエストが実行中のプロ"
+"ジェクトに (短いフラッシュとして) 表示されるようになります。 これは低プロセッ"
+"サ モードのトラブルシューティングに役立ちます。"
 
 msgid "Synchronize Scene Changes"
 msgstr "シーン変更を同期"
@@ -9817,6 +9856,12 @@ msgstr "LightOccluder2Dを作成"
 
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D プレビュー"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "外部シーンからのスプライトを変換できません。"
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "空のスプライトをメッシュに変換できません。"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "アニメーションフレームを使用してスプライトをメッシュに変換できません。"
@@ -13484,8 +13529,18 @@ msgstr ""
 "\"editable_instance\" を無効にすると、ノードのすべてのプロパティがデフォルトに"
 "戻ります。"
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"「プレースホルダーとしてロード」を有効にすると、「編集可能な子」が無効になり、"
+"ノードのすべてのプロパティがデフォルトに戻ります。"
+
 msgid "Make Local"
 msgstr "ローカルにする"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "サブシーン内のノードの固有名を切り替えることができません！"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "シーン固有名を有効にする"
@@ -13571,6 +13626,9 @@ msgstr "継承をクリア"
 
 msgid "Editable Children"
 msgstr "編集可能な子"
+
+msgid "Load as Placeholder"
+msgstr "プレースホルダーとしてロード"
 
 msgid "Auto Expand to Selected"
 msgstr "選択対象へ自動拡張"
@@ -13862,7 +13920,7 @@ msgid "Please specify a valid shader uniform identifier name."
 msgstr "有効なシェーダーuniform識別子名を指定してください。"
 
 msgid "Global shader parameter '%s' already exists'"
-msgstr "グローバルシェーダーパラメーター '%s' は存在しています"
+msgstr "グローバルシェーダーパラメーター '%s' は既に存在しています"
 
 msgid "Name '%s' is a reserved shader language keyword."
 msgstr "名前 '%s' は予約されたシェーダー言語キーワードです。"
@@ -13898,6 +13956,9 @@ msgstr "トーラスの外半径を変更"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "convert() の引数の型が無効です。TYPE_* 定数を使用してください。"
 
+msgid "Cannot resize array."
+msgstr "配列のサイズを変更できません。"
+
 msgid "Step argument is zero!"
 msgstr "ステップ引数はゼロです！"
 
@@ -13921,6 +13982,9 @@ msgstr "無効なインスタンス辞書形式です(@path で無効なスク�
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "無効なインスタンス辞書です(無効なサブクラス)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "GDScriptクラスをインスタンス化できません。"
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "'%s'型のオブジェクトは長さを提供できません。"
