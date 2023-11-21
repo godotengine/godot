@@ -125,6 +125,7 @@ public:
 	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
 	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;
 	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
+	virtual PackedVector3Array get_play_area() const override;
 
 	float get_display_refresh_rate() const;
 	void set_display_refresh_rate(float p_refresh_rate);

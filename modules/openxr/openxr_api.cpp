@@ -87,7 +87,7 @@ String OpenXRAPI::get_default_action_map_resource_name() {
 	return name;
 }
 
-String OpenXRAPI::get_error_string(XrResult result) {
+String OpenXRAPI::get_error_string(XrResult result) const {
 	if (XR_SUCCEEDED(result)) {
 		return String("Succeeded");
 	}
@@ -1261,6 +1261,7 @@ bool OpenXRAPI::resolve_instance_openxr_symbols() {
 	OPENXR_API_INIT_XR_FUNC_V(xrGetActionStateFloat);
 	OPENXR_API_INIT_XR_FUNC_V(xrGetActionStateVector2f);
 	OPENXR_API_INIT_XR_FUNC_V(xrGetCurrentInteractionProfile);
+	OPENXR_API_INIT_XR_FUNC_V(xrGetReferenceSpaceBoundsRect);
 	OPENXR_API_INIT_XR_FUNC_V(xrGetSystem);
 	OPENXR_API_INIT_XR_FUNC_V(xrGetSystemProperties);
 	OPENXR_API_INIT_XR_FUNC_V(xrLocateViews);
@@ -2070,6 +2071,25 @@ void OpenXRAPI::set_foveation_dynamic(bool p_foveation_dynamic) {
 	if (fov_ext != nullptr && fov_ext->is_enabled()) {
 		fov_ext->set_foveation_dynamic(p_foveation_dynamic ? XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_FB : XR_FOVEATION_DYNAMIC_DISABLED_FB);
 	}
+}
+
+Size2 OpenXRAPI::get_play_space_bounds() const {
+	Size2 ret;
+
+	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, Size2());
+
+	XrExtent2Df extents;
+
+	XrResult result = xrGetReferenceSpaceBoundsRect(session, reference_space, &extents);
+	if (XR_FAILED(result)) {
+		print_line("OpenXR: failed to get play space bounds! [", get_error_string(result), "]");
+		return ret;
+	}
+
+	ret.width = extents.width;
+	ret.height = extents.height;
+
+	return ret;
 }
 
 OpenXRAPI::OpenXRAPI() {

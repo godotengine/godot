@@ -690,6 +690,42 @@ bool OpenXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return false;
 }
 
+PackedVector3Array OpenXRInterface::get_play_area() const {
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, PackedVector3Array());
+	PackedVector3Array arr;
+
+	Vector3 sides[4] = {
+		Vector3(-0.5f, 0.0f, -0.5f),
+		Vector3(0.5f, 0.0f, -0.5f),
+		Vector3(0.5f, 0.0f, 0.5f),
+		Vector3(-0.5f, 0.0f, 0.5f),
+	};
+
+	if (openxr_api != nullptr && openxr_api->is_initialized()) {
+		Size2 extents = openxr_api->get_play_space_bounds();
+		if (extents.width != 0.0 && extents.height != 0.0) {
+			Transform3D reference_frame = xr_server->get_reference_frame();
+
+			for (int i = 0; i < 4; i++) {
+				Vector3 coord = sides[i];
+
+				// Scale it up.
+				coord.x *= extents.width;
+				coord.z *= extents.height;
+
+				// Now apply our reference.
+				Vector3 out = reference_frame.xform(coord);
+				arr.push_back(out);
+			}
+		} else {
+			WARN_PRINT_ONCE("OpenXR: No extents available.");
+		}
+	}
+
+	return arr;
+}
+
 float OpenXRInterface::get_display_refresh_rate() const {
 	if (openxr_api == nullptr) {
 		return 0.0;
