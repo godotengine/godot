@@ -153,6 +153,9 @@ gmon.out
 # Kdevelop
 *.kdev4
 
+# Mypy
+.mypy_cache
+
 # Qt Creator
 *.config
 *.creator
