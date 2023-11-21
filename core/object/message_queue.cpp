@@ -34,7 +34,8 @@
 #include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
-#include <cstdio>
+
+#include <stdio.h>
 
 #ifdef DEV_ENABLED
 // Includes safety checks to ensure that a queue set as a thread singleton override
