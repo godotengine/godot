@@ -134,8 +134,8 @@ class GDScript : public Script {
 	List<UpdatableFuncPtrElement> func_ptrs_to_update_elems;
 	Mutex func_ptrs_to_update_mutex;
 
-	UpdatableFuncPtrElement *_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
-	static void _remove_func_ptr_to_update(const UpdatableFuncPtrElement *p_func_ptr_element);
+	List<UpdatableFuncPtrElement>::Element *_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
+	static void _remove_func_ptr_to_update(List<UpdatableFuncPtrElement>::Element *p_func_ptr_element);
 
 	static void _fixup_thread_function_bookkeeping();
 
