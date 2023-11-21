@@ -40,6 +40,9 @@
 
 #include <stdarg.h>
 #include <thread>
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#endif
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
@@ -359,7 +362,46 @@ String OS::get_unique_id() const {
 }
 
 int OS::get_processor_count() const {
+#if defined(_WIN32) || defined(_WIN64)
+	DWORD length = 0;
+	int concurrency = 0;
+	const auto validConcurrency = [&concurrency]() noexcept -> int {
+		if (concurrency == 0)
+			return std::thread::hardware_concurrency();
+		else
+			return concurrency;
+	};
+	if (GetLogicalProcessorInformationEx(RelationAll, nullptr, &length) != FALSE) {
+		return validConcurrency();
+	}
+	if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+		return validConcurrency();
+	}
+	std::unique_ptr<void, void (*)(void *)> buffer(std::malloc(length), std::free);
+	if (!buffer) {
+		return validConcurrency();
+	}
+	auto *mem = reinterpret_cast<unsigned char *>(buffer.get());
+	if (GetLogicalProcessorInformationEx(
+				RelationAll, reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(mem), &length) == false) {
+		return validConcurrency();
+	}
+	DWORD i = 0;
+	while (i < length) {
+		const auto *proc = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(mem + i);
+		if (proc->Relationship == RelationProcessorCore) {
+			for (WORD group = 0; group < proc->Processor.GroupCount; ++group) {
+				for (KAFFINITY mask = proc->Processor.GroupMask[group].Mask; mask != 0; mask >>= 1) {
+					concurrency += mask & 1;
+				}
+			}
+		}
+		i += proc->Size;
+	}
+	return validConcurrency();
+#else
 	return std::thread::hardware_concurrency();
+#endif
 }
 
 String OS::get_processor_name() const {
