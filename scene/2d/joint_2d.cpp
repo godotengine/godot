@@ -436,6 +436,10 @@ void GrooveJoint2D::_configure_joint(RID p_joint, PhysicsBody2D *body_a, Physics
 void GrooveJoint2D::set_length(real_t p_length) {
 	length = p_length;
 	queue_redraw();
+	if (is_configured()) {
+		_disconnect_signals();
+		_update_joint(false);
+	}
 }
 
 real_t GrooveJoint2D::get_length() const {
@@ -445,6 +449,10 @@ real_t GrooveJoint2D::get_length() const {
 void GrooveJoint2D::set_initial_offset(real_t p_initial_offset) {
 	initial_offset = p_initial_offset;
 	queue_redraw();
+	if (is_configured()) {
+		_disconnect_signals();
+		_update_joint(false);
+	}
 }
 
 real_t GrooveJoint2D::get_initial_offset() const {
