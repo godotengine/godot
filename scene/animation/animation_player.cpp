@@ -183,7 +183,9 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 			if (next_pos > len && cd.pos <= len) {
 				looped_flag = Animation::LOOPED_FLAG_END;
 			}
-			next_pos = Math::fposmod(next_pos, (double)len);
+			if (!p_seeked) {
+				next_pos = Math::fposmod(next_pos, (double)len);
+			}
 		} break;
 
 		case Animation::LOOP_PINGPONG: {
