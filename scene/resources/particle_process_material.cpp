@@ -1136,9 +1136,9 @@ void ParticleProcessMaterial::_update_shader() {
 				code += "	if (COLLIDED) emit_count = sub_emitter_amount_at_collision;\n";
 			} break;
 			case SUB_EMITTER_AT_END: {
-				code += "	float unit_delta = DELTA/LIFETIME;\n";
-				code += "	float end_time = CUSTOM.w * 0.95;\n"; // if we do at the end we might miss it, as it can just get deactivated by emitter
-				code += "	if (CUSTOM.y < end_time && (CUSTOM.y + unit_delta) >= end_time) emit_count = sub_emitter_amount_at_end;\n";
+				code += "	if ((CUSTOM.y / CUSTOM.w * LIFETIME) > (LIFETIME - DELTA)) {\n";
+				code += "		emit_count = sub_emitter_amount_at_end;\n";
+				code += "	}\n";
 			} break;
 			default: {
 			}
