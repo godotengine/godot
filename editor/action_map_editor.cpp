@@ -228,7 +228,9 @@ void ActionMapEditor::set_show_builtin_actions(bool p_show) {
 	show_builtin_actions = p_show;
 
 	int show_builtin_idx = advanced_actions_menu->get_popup()->get_item_index(ADVANCED_ACTIONS_MENU_SHOW_BUILTIN);
+	StringName show_builtin_icon = show_builtin_actions ? SNAME("GuiVisibilityVisible") : SNAME("GuiVisibilityHidden");
 	advanced_actions_menu->get_popup()->set_item_checked(show_builtin_idx, p_show);
+	advanced_actions_menu->get_popup()->set_item_icon(show_builtin_idx, get_editor_theme_icon(show_builtin_icon));
 
 	EditorSettings::get_singleton()->set_project_metadata("project_settings", "show_builtin_actions", show_builtin_actions);
 
@@ -361,7 +363,7 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			advanced_actions_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			_advanced_actions_menu_icons();
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}
@@ -528,6 +530,17 @@ void ActionMapEditor::_on_filter_focused() {
 
 void ActionMapEditor::_on_filter_unfocused() {
 	emit_signal(SNAME("filter_unfocused"));
+}
+
+void ActionMapEditor::_advanced_actions_menu_icons() {
+	PopupMenu *popup = advanced_actions_menu->get_popup();
+	advanced_actions_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+
+	StringName show_builtin_icon = show_builtin_actions ? SNAME("GuiVisibilityVisible") : SNAME("GuiVisibilityHidden");
+	popup->set_item_icon(popup->get_item_index(ADVANCED_ACTIONS_MENU_SHOW_BUILTIN), get_editor_theme_icon(show_builtin_icon));
+
+	popup->set_item_icon(popup->get_item_index(ADVANCED_ACTIONS_MENU_REMOVE_BUILTIN), get_editor_theme_icon(SNAME("Remove")));
+	popup->set_item_icon(popup->get_item_index(ADVANCED_ACTIONS_MENU_RESTORE_BUILTIN), get_editor_theme_icon(SNAME("Reload")));
 }
 
 void ActionMapEditor::_advanced_actions_menu_action(int p_action) {

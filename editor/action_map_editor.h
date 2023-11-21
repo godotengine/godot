@@ -103,6 +103,7 @@ private:
 
 	void _add_action_pressed();
 	void _add_edit_text_changed(const String &p_name);
+	void _advanced_actions_menu_icons();
 	void _advanced_actions_menu_action(int p_action);
 	String _check_new_action_name(const String &p_name);
 	bool _has_action(const String &p_name) const;
