@@ -63,7 +63,7 @@ private:
 	bool dirty = false;
 
 	bool jumping_enabled = false;
-	int64_t max_traversals = -1;
+	int64_t max_traversals = 0;
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
 	Heuristic default_compute_heuristic = HEURISTIC_EUCLIDEAN;
 	Heuristic default_estimate_heuristic = HEURISTIC_EUCLIDEAN;

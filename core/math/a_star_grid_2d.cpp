@@ -451,10 +451,10 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 		}
 
 		// If we have a limit on traversals, increment and stop once we reach the threshold.
-		if (max_traversals != -1 && traversal_count >= max_traversals) {
+		if (max_traversals != 0 && traversal_count >= max_traversals) {
 			break;
 		}
-	
+
 		// Increment traversals for each node we process.
 		traversal_count++;
 
