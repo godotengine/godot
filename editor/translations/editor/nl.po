@@ -69,13 +69,14 @@
 # Raymon Zutekouw <me@raymon.dev>, 2023.
 # Nicolai Van der Storm <nicolai@nvds.be>, 2023.
 # Gaetan Deglorie <gaetan@rhinox.training>, 2023.
+# Bert Heymans <bert.heymans@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-08 00:04+0000\n"
-"Last-Translator: Raymon <me@raymon.dev>\n"
+"PO-Revision-Date: 2023-11-18 06:21+0000\n"
+"Last-Translator: Bert Heymans <bert.heymans@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -83,7 +84,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Unset"
 msgstr "Niet ingesteld"
@@ -956,7 +957,7 @@ msgstr ""
 "Weet je zeker dat je alle verbindingen met signaal \"%s\" wilt verwijderen?"
 
 msgid "Signals"
-msgstr "Signalen"
+msgstr "Signaal:"
 
 msgid "Filter Signals"
 msgstr "Filter Signalen"
@@ -2645,6 +2646,9 @@ msgstr "Snel Laden"
 msgid "Make Unique"
 msgstr "Maak Uniek"
 
+msgid "Save As..."
+msgstr "Opslaan Als..."
+
 msgid "Show in FileSystem"
 msgstr "Weergeven in Bestandssysteem"
 
@@ -3424,9 +3428,6 @@ msgstr "Laad een bestaande bron van de schijf en bewerk het."
 
 msgid "Save the currently edited resource."
 msgstr "De zojuist bewerkte bron opslaan."
-
-msgid "Save As..."
-msgstr "Opslaan Als..."
 
 msgid "Copy Resource"
 msgstr "Bron kopiëren"

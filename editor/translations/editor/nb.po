@@ -1907,6 +1907,9 @@ msgstr "Legg Til Nøkkel/Verdi Par"
 msgid "Make Unique"
 msgstr "Gjør Unik"
 
+msgid "Save As..."
+msgstr "Lagre Som..."
+
 msgid "New %s"
 msgstr "Ny %s"
 
@@ -2347,9 +2350,6 @@ msgstr "Last inn en eksisterende ressurs fra disk og rediger den."
 
 msgid "Save the currently edited resource."
 msgstr "Lagre den nylige redigerte ressursen."
-
-msgid "Save As..."
-msgstr "Lagre Som..."
 
 msgid "Copy Resource"
 msgstr "Kopier Ressurs"

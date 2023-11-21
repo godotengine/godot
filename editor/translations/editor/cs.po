@@ -2802,6 +2802,9 @@ msgstr "Rychlé načtení"
 msgid "Make Unique"
 msgstr "Vytvořit unikátní"
 
+msgid "Save As..."
+msgstr "Uložit jako..."
+
 msgid "Show in FileSystem"
 msgstr "Zobrazit v souborovém systému"
 
@@ -3718,9 +3721,6 @@ msgstr "Nahrát existující zdroj z disku a editovat ho."
 
 msgid "Save the currently edited resource."
 msgstr "Uložit právě editovaný zdroj."
-
-msgid "Save As..."
-msgstr "Uložit jako..."
 
 msgid "Extra resource options."
 msgstr "Další možnosti zdrojů."

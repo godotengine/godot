@@ -3801,6 +3801,9 @@ msgstr "유일하게 만들기"
 msgid "Make Unique (Recursive)"
 msgstr "유일하게 만들기 (재귀적으로)"
 
+msgid "Save As..."
+msgstr "다른 이름으로 저장..."
+
 msgid "Show in FileSystem"
 msgstr "파일시스템에서 보기"
 
@@ -5586,9 +5589,6 @@ msgstr "디스크에서 기존 리소스를 불러오고 편집합니다."
 
 msgid "Save the currently edited resource."
 msgstr "현재 편집하는 리소스를 저장합니다."
-
-msgid "Save As..."
-msgstr "다른 이름으로 저장..."
 
 msgid "Extra resource options."
 msgstr "다른 리소스 옵션입니다."

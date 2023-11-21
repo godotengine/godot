@@ -2366,6 +2366,9 @@ msgstr "Carga Rápida"
 msgid "Make Unique"
 msgstr "Convertir en Unico"
 
+msgid "Save As..."
+msgstr "Guardar Como..."
+
 msgid "Show in FileSystem"
 msgstr "Mostrar en Sistema de Archivos"
 
@@ -3223,9 +3226,6 @@ msgstr "Cargar un recurso existente desde disco y editarlo."
 
 msgid "Save the currently edited resource."
 msgstr "Guardar el recurso editado actualmente."
-
-msgid "Save As..."
-msgstr "Guardar Como..."
 
 msgid "Extra resource options."
 msgstr "Opciones de recursos extra."

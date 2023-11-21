@@ -88,7 +88,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-12 01:21+0000\n"
+"PO-Revision-Date: 2023-11-21 15:04+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -98,7 +98,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "Główny wątek"
@@ -1969,6 +1969,9 @@ msgstr "Deweloperzy"
 msgid "Authors"
 msgstr "Autorzy"
 
+msgid "Patrons"
+msgstr "Sponsorzy"
+
 msgid "Platinum Sponsors"
 msgstr "Platynowi sponsorzy"
 
@@ -1977,6 +1980,18 @@ msgstr "Złoci sponsorzy"
 
 msgid "Silver Sponsors"
 msgstr "Srebrni sponsorzy"
+
+msgid "Diamond Members"
+msgstr "Diamentowi członkowie"
+
+msgid "Titanium Members"
+msgstr "Tytanowi członkowie"
+
+msgid "Platinum Members"
+msgstr "Platynowi członkowie"
+
+msgid "Gold Members"
+msgstr "Złoci członkowie"
 
 msgid "Donors"
 msgstr "Darczyńcy"
@@ -3763,7 +3778,7 @@ msgid "Mobile"
 msgstr "Mobilny"
 
 msgid "Compatibility"
-msgstr "Kompatybilność"
+msgstr "Kompatybilny"
 
 msgid "Changing the renderer requires restarting the editor."
 msgstr "Zmiana renderera wymaga restartu edytora."
@@ -4077,6 +4092,9 @@ msgstr "Zrób unikalny"
 
 msgid "Make Unique (Recursive)"
 msgstr "Zrób unikalny (rekurencyjnie)"
+
+msgid "Save As..."
+msgstr "Zapisz jako..."
 
 msgid "Show in FileSystem"
 msgstr "Pokaż w systemie plików"
@@ -4989,7 +5007,7 @@ msgid "Blue"
 msgstr "Niebieski"
 
 msgid "Purple"
-msgstr "Purpurowy"
+msgstr "Fioletowy"
 
 msgid "Pink"
 msgstr "Różowy"
@@ -5997,9 +6015,6 @@ msgstr "Wczytaj istniejący zasób i edytuj go."
 
 msgid "Save the currently edited resource."
 msgstr "Zapisz aktualnie edytowany zasób."
-
-msgid "Save As..."
-msgstr "Zapisz jako..."
 
 msgid "Extra resource options."
 msgstr "Dodatkowe opcje zasobów."
@@ -14921,8 +14936,14 @@ msgstr "Nie udało się zapisać pliku pakietu rozszerzenia!"
 msgid "Building Android Project (gradle)"
 msgstr "Budowanie projektu Androida (gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr "Budowanie projektu Androida nie powiodło się, sprawdź błędy w konsoli."
+
 msgid "Moving output"
 msgstr "Przesuwam wyjście"
+
+msgid "Unable to copy and rename export file:"
+msgstr "Nie udało się skopiować i zmienić nazwy pliku eksportu:"
 
 msgid "Package not found: \"%s\"."
 msgstr "Nie znaleziono pakietu: \"%s\"."
@@ -16491,7 +16512,7 @@ msgid ""
 "refactoring in a future 4.x version involving compatibility-breaking API "
 "changes."
 msgstr ""
-"Miej na uwadze, że GraphEdit i GraphNode przejdą obszerne refaktorowanie w "
+"Miej na uwadze, że GraphEdit i GraphNode przejdą obszerną refaktoryzację w "
 "przyszłej wersji 4.x, obejmujące zmiany API łamiące kompatybilność."
 
 msgid "Toggle the visual grid."

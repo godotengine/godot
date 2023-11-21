@@ -2118,6 +2118,9 @@ msgstr ""
 msgid "Make Unique"
 msgstr "Farigi unikan"
 
+msgid "Save As..."
+msgstr "Konservi kiel..."
+
 msgid "Show in FileSystem"
 msgstr "Montri en dosiersistemo"
 
@@ -2691,9 +2694,6 @@ msgstr "Ŝargi ekzistantan risurcon el disko kaj redakti ĝin."
 
 msgid "Save the currently edited resource."
 msgstr "Konservi la aktuale redaktantan risurcon."
-
-msgid "Save As..."
-msgstr "Konservi kiel..."
 
 msgid "Copy Resource"
 msgstr "Kopii risurcon"

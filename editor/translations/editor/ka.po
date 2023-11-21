@@ -1650,6 +1650,9 @@ msgstr "თარგმნადი სტრიქონი (ზომა %d)"
 msgid "Inspect"
 msgstr "შეამოწმეთ"
 
+msgid "Save As..."
+msgstr "შეინახვა &როგორც..."
+
 msgid "Convert to %s"
 msgstr "%s-ში გადაყვანა"
 
@@ -2121,9 +2124,6 @@ msgstr "თვისებების კოპირება"
 
 msgid "Paste Properties"
 msgstr "თვისებების ჩასმა"
-
-msgid "Save As..."
-msgstr "შეინახვა &როგორც..."
 
 msgid "Go to previous edited object in history."
 msgstr "ისტორიაში წინა ჩასწორებულ ობიექტზე გადასვლა."

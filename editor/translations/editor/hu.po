@@ -2191,6 +2191,9 @@ msgstr "Kulcs/érték pár hozzáadása"
 msgid "Make Unique"
 msgstr "Egyedivé tétel"
 
+msgid "Save As..."
+msgstr "Mentés Másként..."
+
 msgid "Show in FileSystem"
 msgstr "Megjelenítés a fájlrendszerben"
 
@@ -2702,9 +2705,6 @@ msgstr "Meglévő erőforrás betöltése a lemezről, majd annak szerkesztése.
 
 msgid "Save the currently edited resource."
 msgstr "A jelenleg szerkesztett erőforrás elmentése."
-
-msgid "Save As..."
-msgstr "Mentés Másként..."
 
 msgid "Copy Resource"
 msgstr "Erőforrás Másolása"

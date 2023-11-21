@@ -3524,6 +3524,9 @@ msgstr "Lokaliserbar sträng (storlek %d)"
 msgid "Make Unique"
 msgstr "Gör Unik"
 
+msgid "Save As..."
+msgstr "Spara Som..."
+
 msgid "Show in FileSystem"
 msgstr "Visa i filsystemet"
 
@@ -4464,9 +4467,6 @@ msgstr "Ladda en befintlig resurs från disken och redigera den."
 
 msgid "Save the currently edited resource."
 msgstr "Spara den nuvarande redigerade resursen."
-
-msgid "Save As..."
-msgstr "Spara Som..."
 
 msgid "Copy Resource"
 msgstr "Kopiera Resurs"
