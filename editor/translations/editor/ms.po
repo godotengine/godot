@@ -1159,21 +1159,6 @@ msgstr "Penaja Emas"
 msgid "Silver Sponsors"
 msgstr "Penderma Perak"
 
-msgid "Bronze Sponsors"
-msgstr "Penderma Gangsa"
-
-msgid "Mini Sponsors"
-msgstr "Penaja Mini"
-
-msgid "Gold Donors"
-msgstr "Penderma Emas"
-
-msgid "Silver Donors"
-msgstr "Penderma Perak"
-
-msgid "Bronze Donors"
-msgstr "Penderma Gangsa"
-
 msgid "Donors"
 msgstr "Penderma"
 

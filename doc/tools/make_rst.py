@@ -1536,8 +1536,9 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
     else:
         f = open(os.path.join(output_dir, "index.rst"), "w", encoding="utf-8")
 
-    # Remove the "Edit on Github" button from the online docs page.
-    f.write(":github_url: hide\n\n")
+    # Remove the "Edit on Github" button from the online docs page, and disallow user-contributed notes
+    # on the index page. User-contributed notes are allowed on individual class pages.
+    f.write(":github_url: hide\n:allow_comments: False\n\n")
 
     # Warn contributors not to edit this file directly.
     # Also provide links to the source files for reference.

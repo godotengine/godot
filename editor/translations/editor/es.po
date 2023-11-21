@@ -122,13 +122,15 @@
 # Jorge Julio Torres <jjulio.tlg.89@gmail.com>, 2023.
 # kxnzen <polcondalgarcia@gmail.com>, 2023.
 # simomi 073 <arcemoyanomanuel@gmail.com>, 2023.
+# "Hendrick Y. Rodríguez V. (NoVa)" <theyuniorytrodriguez04@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-31 10:40+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2023-11-16 07:52+0000\n"
+"Last-Translator: \"Hendrick Y. Rodríguez V. (NoVa)\" "
+"<theyuniorytrodriguez04@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -136,7 +138,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "Hilo principal"
@@ -2024,21 +2026,6 @@ msgstr "Patrocinadores Oro"
 msgid "Silver Sponsors"
 msgstr "Patrocinadores Plata"
 
-msgid "Bronze Sponsors"
-msgstr "Patrocinadores Bronce"
-
-msgid "Mini Sponsors"
-msgstr "Mini Patrocinadores"
-
-msgid "Gold Donors"
-msgstr "Donantes Oro"
-
-msgid "Silver Donors"
-msgstr "Donantes Plata"
-
-msgid "Bronze Donors"
-msgstr "Donantes Bronce"
-
 msgid "Donors"
 msgstr "Donantes"
 
@@ -2922,8 +2909,14 @@ msgstr "Descripciones de Operador"
 msgid "Property:"
 msgstr "Propiedad:"
 
+msgid "Method:"
+msgstr "Método:"
+
 msgid "Signal:"
 msgstr "Señal:"
+
+msgid "Theme Item:"
+msgstr "Elemento del Tema:"
 
 msgid "%d match."
 msgstr "%d coincidencia."
@@ -5688,15 +5681,6 @@ msgstr "Fuente TrueType/OpenType renderizada dinámicamente"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Campo de distancia con signo preprocesado multicanal(+true)"
-
-msgid "Can't load font texture:"
-msgstr "No se puede cargar la textura de la fuente:"
-
-msgid "Image margin too big."
-msgstr "Margen de imagen demasiado grande."
-
-msgid "Character margin too big."
-msgstr "Margen de carácter demasiado grande."
 
 msgid "Pre-Import Scene"
 msgstr "Pre-Importar Escena"
@@ -13794,16 +13778,6 @@ msgstr "Eliminar Nodo(s)"
 msgid "Change type of node(s)"
 msgstr "Cambiar tipo de nodo(s)"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "Quita el nodo de la variable \"%s\" en el nodo \"%s\"."
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr ""
-"El nuevo tipo de nodo es incompatible con el tipo de variable exportada (se "
-"esperaba %s, pero el tipo es %s)."
-
 msgid "This operation requires a single selected node."
 msgstr "Esta operación requiere un solo nodo seleccionado."
 
@@ -14994,23 +14968,8 @@ msgstr "¡No se pudo escribir el archivo del paquete de expansión!"
 msgid "Building Android Project (gradle)"
 msgstr "Construir Proyecto Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"La compilación del proyecto Android ha fallado, comprueba la salida del "
-"error. También puedes visitar docs.godotengine.org para ver la documentación "
-"de compilación de Android."
-
 msgid "Moving output"
 msgstr "Moviendo salida"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"No se puede copiar y renombrar el archivo de exportación, comprueba el "
-"directorio del proyecto de gradle para ver los resultados."
 
 msgid "Package not found: \"%s\"."
 msgstr "Paquete no encontrado: \"%s\"."
@@ -16720,15 +16679,6 @@ msgstr ""
 "guardarse sin riesgo de pérdida de datos."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"Se está estableciendo el nombre del nodo '%s' para que sea único dentro de la "
-"escena para '%s', pero ya está reclamado por '%s'.\n"
-"'%s' ya no está establecido como un nombre único."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -16742,13 +16692,6 @@ msgid ""
 msgstr ""
 "Este nodo está marcado como experimental y es propenso a ser removido o "
 "sufrir cambios importantes en futuras versiones."
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"El entorno predeterminado especificado en la configuración del proyecto "
-"\"rendering/environment/defaults/default_environment\" no se pudo cargar."
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -16775,27 +16718,6 @@ msgid ""
 msgstr ""
 "El tamaño del Viewport debe ser mayor o igual a 2 píxeles en ambas "
 "dimensiones para renderizar cualquier cosa."
-
-msgid "Cannot open font from file: %s."
-msgstr "No se puede abrir la fuente desde el archivo: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "La versión %d de BMFont no es compatible (debería ser la 3)."
-
-msgid "Invalid BMFont info block size."
-msgstr "Tamaño del bloque de información BMFont inválido."
-
-msgid "Invalid BMFont common block size."
-msgstr "Tamaño de bloque común BMFont inválido."
-
-msgid "Can't load font texture: %s."
-msgstr "No se puede cargar la textura de la fuente: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Formato de textura BMFont no compatible."
-
-msgid "Invalid BMFont block type."
-msgstr "Tipo de bloque BMFont inválido."
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

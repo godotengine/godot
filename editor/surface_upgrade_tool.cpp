@@ -32,6 +32,7 @@
 
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
@@ -75,28 +76,36 @@ void SurfaceUpgradeTool::_try_show_popup() {
 
 void SurfaceUpgradeTool::_show_popup() {
 	MutexLock lock(mutex);
+	if (EditorNode::get_singleton()->is_project_exporting()) {
+		return; // We suppress the tool during the export routine, because the immediate dialog breaks everything.
+	}
 	if (!show_requested || popped_up) {
 		return;
 	}
 	show_requested = false;
 	popped_up = true;
 
-	bool accepted = EditorNode::immediate_confirmation_dialog(TTR("This project uses meshes with an outdated mesh format from previous Godot versions. The engine needs to update the format in order to use those meshes.\n\nPress 'Restart & Upgrade' to run the surface upgrade tool which will update and re-save all meshes and scenes. This update will restart the editor and may take several minutes. Upgrading will make the meshes incompatible with previous versions of Godot.\n\nPress 'Upgrade Only' to continue opening the scene as normal. The engine will update each mesh in memory, but the update will not be saved. Choosing this option will lead to slower load times every time this project is loaded."), TTR("Restart & Upgrade"), TTR("Upgrade Only"), 500);
+	const String confirmation_message = TTR("This project uses meshes with an outdated mesh format from previous Godot versions. The engine needs to update the format in order to use those meshes.\n\nPress 'Restart & Upgrade' to run the surface upgrade tool which will update and re-save all meshes and scenes. This update will restart the editor and may take several minutes. Upgrading will make the meshes incompatible with previous versions of Godot.\n\nPress 'Upgrade Only' to continue opening the scene as normal. The engine will update each mesh in memory, but the update will not be saved. Choosing this option will lead to slower load times every time this project is loaded.");
+	bool accepted = EditorNode::immediate_confirmation_dialog(confirmation_message, TTR("Restart & Upgrade"), TTR("Upgrade Only"), 500);
 	if (accepted) {
-		EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "run_on_restart", true);
-
-		Vector<String> reimport_paths;
-		Vector<String> resave_paths;
-		_add_files(EditorFileSystem::get_singleton()->get_filesystem(), reimport_paths, resave_paths);
-
-		EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "reimport_paths", reimport_paths);
-		EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "resave_paths", resave_paths);
-
-		// Delay to avoid deadlocks, since this dialog can be triggered by loading a scene.
-		MessageQueue::get_singleton()->push_callable(callable_mp(EditorNode::get_singleton(), &EditorNode::restart_editor));
+		prepare_upgrade();
 	} else {
 		RS::get_singleton()->set_warn_on_surface_upgrade(true);
 	}
+}
+
+void SurfaceUpgradeTool::prepare_upgrade() {
+	EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "run_on_restart", true);
+
+	Vector<String> reimport_paths;
+	Vector<String> resave_paths;
+	_add_files(EditorFileSystem::get_singleton()->get_filesystem(), reimport_paths, resave_paths);
+
+	EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "reimport_paths", reimport_paths);
+	EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "resave_paths", resave_paths);
+
+	// Delay to avoid deadlocks, since this dialog can be triggered by loading a scene.
+	MessageQueue::get_singleton()->push_callable(callable_mp(EditorNode::get_singleton(), &EditorNode::restart_editor));
 }
 
 // Ensure that the warnings and popups are skipped.
@@ -162,3 +171,19 @@ SurfaceUpgradeTool::SurfaceUpgradeTool() {
 }
 
 SurfaceUpgradeTool::~SurfaceUpgradeTool() {}
+
+void SurfaceUpgradeDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY:
+			// Can't do it in the constructor because it doesn't know that the signal exists.
+			connect("confirmed", callable_mp(SurfaceUpgradeTool::get_singleton(), &SurfaceUpgradeTool::prepare_upgrade));
+			break;
+	}
+}
+
+SurfaceUpgradeDialog::SurfaceUpgradeDialog() {
+	const String confirmation_message = TTR("The mesh format has changed in Godot 4.2, which affects both imported meshes and meshes authored inside of Godot. The engine needs to update the format in order to use those meshes.\n\nIf your project predates Godot 4.2 and contains meshes we recommend you run this one time conversion tool. This update will restart the editor and may take several minutes. Upgrading will make the meshes incompatible with previous versions of Godot.\n\nYou can still use your existing meshes as is. The engine will update each mesh in memory, but the update will not be saved. Choosing this option will lead to slower load times every time this project is loaded.");
+	set_text(confirmation_message);
+	set_autowrap(true);
+	get_label()->set_custom_minimum_size(Size2(750 * EDSCALE, 0));
+}

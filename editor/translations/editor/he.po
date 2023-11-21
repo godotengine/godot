@@ -1050,21 +1050,6 @@ msgstr "מממני זהב"
 msgid "Silver Sponsors"
 msgstr "תורמים בדרגת כסף"
 
-msgid "Bronze Sponsors"
-msgstr "תורמים בדרגת ארד"
-
-msgid "Mini Sponsors"
-msgstr "מממנים קטנים"
-
-msgid "Gold Donors"
-msgstr "תורמים בדרגת זהב"
-
-msgid "Silver Donors"
-msgstr "תורמים בדרגת כסף"
-
-msgid "Bronze Donors"
-msgstr "תורמים בדרגת ארד"
-
 msgid "Donors"
 msgstr "תורמים"
 

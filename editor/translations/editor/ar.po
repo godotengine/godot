@@ -93,7 +93,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-06 00:35+0000\n"
+"PO-Revision-Date: 2023-11-16 16:21+0000\n"
 "Last-Translator: Emad Alhaddad <emad142240@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
@@ -103,7 +103,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "ثريد رئيسي"
@@ -1990,21 +1990,6 @@ msgstr "الرعاة الذهبيين"
 msgid "Silver Sponsors"
 msgstr "المانحين الفضيين"
 
-msgid "Bronze Sponsors"
-msgstr "المانحين البرنزيين"
-
-msgid "Mini Sponsors"
-msgstr "الرعاة الصغار"
-
-msgid "Gold Donors"
-msgstr "المانحين الذهبيين"
-
-msgid "Silver Donors"
-msgstr "المانحين الفضيين"
-
-msgid "Bronze Donors"
-msgstr "المانحين البرنزيين"
-
 msgid "Donors"
 msgstr "مانحين"
 
@@ -2864,11 +2849,23 @@ msgstr "أوصاف الدوال"
 msgid "Operator Descriptions"
 msgstr "أوصاف العمليات"
 
+msgid "Metadata:"
+msgstr "أضف البيانات الوصفية:"
+
 msgid "Property:"
 msgstr "خاصية:"
 
+msgid "Method:"
+msgstr "دالة:"
+
 msgid "Signal:"
 msgstr "إشارة:"
+
+msgid "Theme Item:"
+msgstr "إضافة عنصر مظهر واجهة المستخدم:"
+
+msgid "No description available."
+msgstr "لا يوجد وصف متاح."
 
 msgid "%d match."
 msgstr "تطابق %d."
@@ -3993,6 +3990,12 @@ msgstr ""
 msgid "Assign..."
 msgstr "إلحاق..."
 
+msgid "Copy as Text"
+msgstr "نسخ كنص"
+
+msgid "Show Node in Tree"
+msgstr "إظهار العقدة في الشجرة"
+
 msgid "Invalid RID"
 msgstr "RID غير صالح"
 
@@ -4548,6 +4551,9 @@ msgstr "حذف المُعد مُسبقاً '%s'؟"
 msgid "Resources to exclude:"
 msgstr "الموارد المستثناة:"
 
+msgid "Resources to override export behavior:"
+msgstr "الموارد اللازمة لتجاوز سلوك التصدير:"
+
 msgid "Resources to export:"
 msgstr "الموارد المُعدّة للتصدير:"
 
@@ -4840,6 +4846,9 @@ msgstr "تكرار مجلد:"
 msgid "New Inherited Scene"
 msgstr "مشهد مُوّرَث جديد"
 
+msgid "Set as Main Scene"
+msgstr "تعيين كمشهد رئيسي"
+
 msgid "Open Scenes"
 msgstr "فتح المَشاهِد"
 
@@ -4951,6 +4960,33 @@ msgstr "إعادة تسمية..."
 msgid "Open in External Program"
 msgstr "افتح في برنامج خارجي"
 
+msgid "Red"
+msgstr "أحمر"
+
+msgid "Orange"
+msgstr "برتقالي"
+
+msgid "Yellow"
+msgstr "أصفر"
+
+msgid "Green"
+msgstr "أخضر"
+
+msgid "Teal"
+msgstr "تركواز"
+
+msgid "Blue"
+msgstr "أزرق"
+
+msgid "Purple"
+msgstr "أرجواني"
+
+msgid "Pink"
+msgstr "وردي"
+
+msgid "Gray"
+msgstr "رمادي"
+
 msgid "Go to previous selected folder/file."
 msgstr "ارجع إلى المجلد/الملف السابق."
 
@@ -4959,6 +4995,9 @@ msgstr "اذهب إلى المجلد/الملف التالي."
 
 msgid "Re-Scan Filesystem"
 msgstr "إعادة فحص نظام الملفات"
+
+msgid "Change Split Mode"
+msgstr "تغيير وضع الانقسام"
 
 msgid "Filter Files"
 msgstr "تصفية الملفات"
@@ -5572,15 +5611,6 @@ msgstr "يتم تحميل خط TrueType/OpenType ديناميكيًا"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "مجال مسافة موقعة متعدد القنوات (+صحيح) تم تحميلها مسبقًا"
-
-msgid "Can't load font texture:"
-msgstr "لا يمكن تحميل جلد الخط:"
-
-msgid "Image margin too big."
-msgstr "حافة الصورة كبيرة جدا."
-
-msgid "Character margin too big."
-msgstr "هامش الأحرف كبير جدًا."
 
 msgid "Pre-Import Scene"
 msgstr "قبل-استيراد المشهد"
@@ -6550,6 +6580,9 @@ msgstr "(إنشاء) [عمومي]"
 
 msgid "Duplicated Animation Name:"
 msgstr "أسماء التحريك المتكرر:"
+
+msgid "Onion skinning requires a RESET animation."
+msgstr "يتطلب سلخ البصل لإعادة الضبط الرسوم المتحركة."
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "تشغيل الرسم المتحرك المختار بشكل عكسي من الموقع الحالي. (زر A)"
@@ -7673,6 +7706,18 @@ msgstr ""
 "عند تفعيل هذا الخيار، فإن أجسام التجنب، وأنصاف قُطرها، وسرعاتها، ستكون ظاهرة "
 "في المشروع المشغل."
 
+msgid "Debug CanvasItem Redraws"
+msgstr "تصحيح أخطاء إعادة رسم عنصر اللوحة القماشية"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"عند تمكين هذا الخيار، ستصبح طلبات إعادة رسم الكائنات ثنائية الأبعاد مرئية "
+"(كومضة قصيرة) في المشروع قيد التشغيل.\n"
+"يعد هذا مفيدًا لاستكشاف أخطاء وضع المعالج المنخفض وإصلاحها."
+
 msgid "Synchronize Scene Changes"
 msgstr "مزامنة تغييرات المشهد"
 
@@ -8040,6 +8085,9 @@ msgstr "أنشئ سطح Mesh التنقل"
 msgid "Create Debug Tangents"
 msgstr "إنشاء ملامِسات التنقيح"
 
+msgid "No mesh to unwrap."
+msgstr "لا يوجد مجسم لفكه."
+
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -8064,6 +8112,15 @@ msgstr "نشر نقشة الطبقة الثانية (الطول والعرض)"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "السطح المتضمن ليس نوعاً من مصفوفة السطوح ArrayMesh."
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "لا يمكن فك مجسمات ذات الأشكال الممزوجة."
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "يتم دعم المثلثات فقط لإلغاء تغليف الخريطة الضوئية."
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "المعايير مطلوبة لإلغاء تغليف الخريطة الضوئية."
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "نشر Unwrap فشل، الميش ربما لا يكون متعدد؟"
@@ -8938,11 +8995,17 @@ msgstr "اللون الأرض"
 msgid "Sky Energy"
 msgstr "قوة السماء"
 
+msgid "AO"
+msgstr "الانسداد المحيط"
+
 msgid "Glow"
 msgstr "توهُّج"
 
 msgid "Tonemap"
 msgstr "خريطة تناغم الألوان"
+
+msgid "GI"
+msgstr "الإضاءة العالمية"
 
 msgid "Post Process"
 msgstr "مرحلة ما بعد المعالجة"
@@ -9778,6 +9841,12 @@ msgstr "إنشاء LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "معاينة LightOccluder2D"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "لا يمكن تحويل الرسوم من مشهد أجنبي."
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "لا يمكن تحويل كائن فارغ إلى مجسم."
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -13456,8 +13525,18 @@ msgid ""
 msgstr ""
 "تعطيل \"المثيل_المُحرر\" سيجعل كل خصائص العقدة ترجع إلى الحالة الافتراضية."
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"سيؤدي تمكين \"التحميل كعنصر نائب\" إلى تعطيل \"العناصر الفرعية القابلة "
+"للتحرير\" ويتسبب في إعادة كافة خصائص العقدة إلى وضعها الافتراضي."
+
 msgid "Make Local"
 msgstr "اجعله محلياً"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "لا يمكن تبديل الاسم الفريد للعقد في المشهد الفرعي!"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "تفعيل اسم المشهد الفريد"
@@ -13510,16 +13589,6 @@ msgstr "إزالة عُقدة (عُقد)"
 msgid "Change type of node(s)"
 msgstr "تغيير نوع العُقدة(العُقد)"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "إزالة العقدة من المتغير \"%s\" الموجود على العقدة \"%s\"."
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr ""
-"النوع الجديد للعقدة غير متوافق مع متغير تم تصديره (%s متوقع، ولكن النوع هو "
-"%s)."
-
 msgid "This operation requires a single selected node."
 msgstr "هذه العملية تتطلب عقدة واحدة محددة."
 
@@ -13551,6 +13620,9 @@ msgstr "مسح الميراث"
 
 msgid "Editable Children"
 msgstr "فروع قابلة للتعديل"
+
+msgid "Load as Placeholder"
+msgstr "تحميله كعنصر نائب"
 
 msgid "Auto Expand to Selected"
 msgstr "التوسيع التلقائي للمختارة"
@@ -13848,6 +13920,44 @@ msgstr "الاسم '%s' هو كلمة أساسية محجوزة في لغة ال
 msgid "Add Shader Global Parameter"
 msgstr "إضافة معلمة تظليل العالمية"
 
+msgid ""
+"This project uses meshes with an outdated mesh format from previous Godot "
+"versions. The engine needs to update the format in order to use those "
+"meshes.\n"
+"\n"
+"Press 'Restart & Upgrade' to run the surface upgrade tool which will update "
+"and re-save all meshes and scenes. This update will restart the editor and "
+"may take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"Press 'Upgrade Only' to continue opening the scene as normal. The engine will "
+"update each mesh in memory, but the update will not be saved. Choosing this "
+"option will lead to slower load times every time this project is loaded."
+msgstr ""
+"يستخدم هذا المشروع مجسمات ذات تنسيق مجسمي قديم من إصدارات جودات السابقة. "
+"يحتاج المحرك إلى تحديث التنسيق لاستخدام تلك المجسمات.\n"
+"\n"
+"اضغط على \"إعادة التشغيل والترقية\" لتشغيل أداة ترقية السطح التي ستقوم بتحديث "
+"جميع المجسمات والمشاهد وإعادة حفظها. سيقوم هذا التحديث بإعادة تشغيل المحرر "
+"وقد يستغرق عدة دقائق. ستؤدي الترقية إلى جعل المجسمات غير متوافقة مع الإصدارات "
+"السابقة من جودات.\n"
+"\n"
+"اضغط على \"ترقية فقط\" لمواصلة فتح المشهد كالمعتاد. سيقوم المحرك بتحديث كل "
+"مجسم في الذاكرة، ولكن لن يتم حفظ التحديث. سيؤدي اختيار هذا الخيار إلى إبطاء "
+"أوقات التحميل في كل مرة يتم فيها تحميل هذا المشروع."
+
+msgid "Restart & Upgrade"
+msgstr "إعادة التشغيل والترقية"
+
+msgid "Upgrade Only"
+msgstr "ترقية فقط"
+
+msgid "Upgrading All Meshes in Project"
+msgstr "ترقية كافة المجسمات في المشروع"
+
+msgid "Attempting to re-save "
+msgstr "محاولة إعادة الحفظ. "
+
 msgid "Make this panel floating in the screen %d."
 msgstr "اجعل هذه اللوحة عائمة على الشاشة %d."
 
@@ -13876,6 +13986,9 @@ msgstr "تعديل نصف القطر الخارجي للمسنن"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "معامل خاطئ لدالة ()Convert، استخدم احدى الثوابت من مجموعة TYPE_*."
 
+msgid "Cannot resize array."
+msgstr "لا يمكن تغيير المصفوفة."
+
 msgid "Step argument is zero!"
 msgstr "معامل الخطوة تساوي صفر!"
 
@@ -13899,6 +14012,9 @@ msgstr "نموذج الشكل القاموسي غير صالح ( النص الب
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "نموذج القاموس غير صالح (أصناف فرعية غير صالحة)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "لا يمكن إنشاء قالب لفئة GDScript."
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "لا يمكن لقيمة النوع '%s' توفير طول."
@@ -14105,6 +14221,9 @@ msgstr "تحديد الإضاءة المباشرة"
 
 msgid "Integrate indirect lighting"
 msgstr "دمج الإضاءة غير المباشرة"
+
+msgid "Integrate indirect lighting %d%%"
+msgstr "دمج الإضاءة غير المباشرة %d%%"
 
 msgid "Baking lightprobes"
 msgstr "خبز مجسات الضوء"
@@ -14510,6 +14629,9 @@ msgstr "لا يمكن التنفيذ على الجهاز."
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "يعد التصدير إلى الاندرويد عند استخدام C#/.NET أمرًا تجريبيًا."
 
+msgid "Android architecture %s not supported in C# projects."
+msgstr "بنية الاندرويد %s غير مدعومة في مشاريع C#."
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14669,20 +14791,8 @@ msgstr "لا يمكن كتابة ملف الحزمة الإضافية!"
 msgid "Building Android Project (gradle)"
 msgstr "بناء مشروع الأندرويد (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"أخفق بناء مشروع الأندرويد، تفقد المُخرجات للإطلاع على الخطأ. بصورة بديلة يمكنك "
-"زيارة docs.godotengine.org لأجل مستندات البناء للأندرويد."
-
 msgid "Moving output"
 msgstr "جاري تحريك المخرجات"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr "تعذر نسخ وإعادة تسمية الملف المصدر، تفقد ملف مشروع gradle للمخرجات."
 
 msgid "Package not found: \"%s\"."
 msgstr "لم نجد الحزمة: \"%s\"."
@@ -14753,6 +14863,14 @@ msgid ""
 msgstr ""
 "لا يمكن إنشاء .ipa إلا على نظام التشغيل macOS. ترك مشروع اكس كود دون إنشاء "
 "الحزمة."
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr ""
+"يعد التصدير إلى iOS عند استخدام C#/.NET أمرًا تجريبيًا ويتطلب نظام التشغيل "
+"macOS."
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "يعد التصدير إلى iOS عند استخدام C#/.NET أمرًا تجريبيًا."
 
 msgid "Identifier is missing."
 msgstr "المُحدد مفقود."
@@ -14833,6 +14951,9 @@ msgstr "جارٍ رفع البرامج النصية..."
 msgid "Starting project..."
 msgstr "بدء المشروع..."
 
+msgid "All Files"
+msgstr "كل الملفات"
+
 msgid "Can't get filesystem access."
 msgstr "لم يتكمن من الحصول على حَقّ الدّخُول لملف النظام."
 
@@ -14910,6 +15031,13 @@ msgstr "مطلوب هوية توقيع المثبت لتوزيع متجر الت
 
 msgid "App sandbox is required for App Store distribution."
 msgstr "مطلوب وضع حماية التطبيق لتوزيع متجر التطبيقات."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries (GDExtension or .NET)."
+msgstr ""
+"لا يدعم 'rcodesign' توقيع التطبيقات ذات المكتبات الديناميكية المضمنة "
+"(GDExtension أو .NET)."
 
 msgid "Code signing is required for App Store distribution."
 msgstr "توقيع الرمز مطلوب لتوزيع متجر التطبيقات."
@@ -14996,6 +15124,12 @@ msgstr "لم يتم تثبيت أدوات سطر أوامر إكس كود."
 msgid "Could not start xcrun executable."
 msgstr "تعذر بدء تشغيل xcrun."
 
+msgid "Built-in CodeSign failed with error \"%s\"."
+msgstr "فشلت علامة الكود المضمن بسبب الخطأ \"%s\"."
+
+msgid "Built-in CodeSign require regex module."
+msgstr "يتطلب علامة الكود المدمج وحدة regex."
+
 msgid ""
 "Xrcodesign path is not set. Configure rcodesign path in the Editor Settings "
 "(Export > macOS > rcodesign)."
@@ -15003,14 +15137,43 @@ msgstr ""
 "‪‪لم يتم تعيين مسار Xrcodesign. قم بتكوين مسار rcodesign في إعدادات المحرر "
 "(Export > macOS > rcodesign)."
 
+msgid ""
+"Could not start codesign executable, make sure Xcode command line tools are "
+"installed."
+msgstr ""
+"تعذر بدء تشغيل برنامج علامة الكود القابل للتنفيذ، تأكد من تثبيت أدوات سطر "
+"أوامر كود إكس."
+
 msgid "Cannot sign file %s."
 msgstr "خطأ في تسجيل الملف %s."
+
+msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
+msgstr ""
+"الارتباطات الرمزية النسبية غير مدعومة، ربما يكون \"%s\" الذي تم تصديره معطلاً!"
+
+msgid "PKG Creation"
+msgstr "إنشاء PKG"
+
+msgid "Could not start productbuild executable."
+msgstr "تعذر بدء إنشاء المنتج القابل للتنفيذ."
+
+msgid "`productbuild` failed."
+msgstr "فشل \"بناء المنتج\"."
 
 msgid "DMG Creation"
 msgstr "إنشاء ال DMG"
 
 msgid "Could not start hdiutil executable."
 msgstr "تعذر بدء الملف التنفيذي hdiutil."
+
+msgid "`hdiutil create` failed - file exists."
+msgstr "فشل '' إنشاء hdiutil '' - الملف موجود."
+
+msgid "`hdiutil create` failed."
+msgstr "فشل إنشاء hdiutil."
+
+msgid "Exporting for macOS"
+msgstr "تصدير الكُلالتصدير لنظام التشغيل MacOS"
 
 msgid "Creating app bundle"
 msgstr "إنشاء حزمة البرنامج"
@@ -15021,8 +15184,55 @@ msgstr "لا يُوجد \"تطبيق القالب\" لتصديره: \"%s\"."
 msgid "Invalid export format."
 msgstr "صيغة التصدير لا تصلح"
 
+msgid "Could not create directory: \"%s\"."
+msgstr "تعذر إنشاء مجلد: \"%s\"."
+
+msgid "Could not create directory \"%s\"."
+msgstr "تعذر إنشاء الدليل \"%s\"."
+
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might be "
+"broken!"
+msgstr ""
+"الارتباطات الرمزية النسبية غير مدعومة على نظام التشغيل هذا، وقد يكون المشروع "
+"الذي تم تصديره معطلاً!"
+
+msgid "Could not created symlink \"%s\" -> \"%s\"."
+msgstr "تعذر إنشاء الارتباط الرمزي \"%s\" -> \"%s\"."
+
+msgid "Could not open \"%s\"."
+msgstr "تعذر فتح \"%s\"."
+
+msgid ""
+"Requested template binary \"%s\" not found. It might be missing from your "
+"template archive."
+msgstr ""
+"لم يتم العثور على القالب الثنائي المطلوب \"%s\". ربما يكون مفقودًا من أرشيف "
+"القالب الخاص بك."
+
 msgid "Making PKG"
 msgstr "إنشاء PKG"
+
+msgid "Entitlements Modified"
+msgstr "تم تعديل الاستحقاقات"
+
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr ""
+"تتطلب التطبيقات الموقعة المخصصة استحقاق \"تعطيل التحقق من صحة المكتبة\" "
+"لتحميل المكتبات الديناميكية."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries."
+msgstr "لا يدعم \"rcodesign\" توقيع التطبيقات ذات المكتبات الديناميكية المضمنة."
+
+msgid "Could not create entitlements file."
+msgstr "لا يمكن إنشاء ملف الاستحقاقات."
+
+msgid "Could not create helper entitlements file."
+msgstr "لا يمكن إنشاء ملف استحقاقات المساعد."
 
 msgid "Code signing bundle"
 msgstr "حزمة توقيع الكود"
@@ -15032,6 +15242,9 @@ msgstr "إنشاء DMG"
 
 msgid "Code signing DMG"
 msgstr "توقيع ال DMG"
+
+msgid "Making PKG installer"
+msgstr "صنع مثبت PKG"
 
 msgid "Making ZIP"
 msgstr "إنشاء ZIP"
@@ -15044,6 +15257,9 @@ msgstr ""
 
 msgid "Sending archive for notarization"
 msgstr "إرسال الأرشيف من اجل التوثيق"
+
+msgid "Notarization: Xcode command line tools are not installed."
+msgstr "التوثيق: لم يتم تثبيت أدوات سطر أوامر كود إكس."
 
 msgid ""
 "Notarization: rcodesign path is not set. Configure rcodesign path in the "
@@ -15067,11 +15283,27 @@ msgstr ""
 "تم تمكين Gatekeeper وأجهزة Mac التي تعمل بتقنية Apple Silicon عليها."
 
 msgid ""
+"Code signing: Using ad-hoc signature. The exported project will be blocked by "
+"Gatekeeper"
+msgstr ""
+"توقيع الكود: استخدام التوقيع المخصص. سيتم حظر المشروع المصدر بواسطة حارس "
+"البوابة"
+
+msgid "Code signing: Xcode command line tools are not installed."
+msgstr "توقيع التعليمات البرمجية: لم يتم تثبيت أدوات سطر أوامر كود إكس."
+
+msgid ""
 "Code signing: rcodesign path is not set. Configure rcodesign path in the "
 "Editor Settings (Export > macOS > rcodesign)."
 msgstr ""
 "توقيع الكود: لم يتم تعيين مسار rcodesign. قم بتكوين مسار rcodesign في إعدادات "
 "المحرر (Export > macOS > rcodesign)."
+
+msgid "Run on remote macOS system"
+msgstr "التشغيل على نظام macOS عن بعد"
+
+msgid "Run exported project on remote macOS system"
+msgstr "قم بتشغيل المشروع الذي تم تصديره على نظام macOS عن بعد"
 
 msgid "Could not open template for export: \"%s\"."
 msgstr "لا يمكن فتح القالب للتصدير: \"%s\"."
@@ -15126,8 +15358,29 @@ msgstr "شغل ملف HTML المُصدر في المتصفح الإفتراضي
 msgid "Resources Modification"
 msgstr "تعديل المصادر"
 
+msgid "Icon size \"%d\" is missing."
+msgstr "حجم ايقونة \"%d\" مفقود."
+
 msgid "Failed to rename temporary file \"%s\"."
 msgstr "فشل تسمية الملف المؤقت \"%s\"."
+
+msgid "Invalid icon path."
+msgstr "مسار الأيقونة غير صالح."
+
+msgid "Invalid file version."
+msgstr "نسخة غير صالحة للملف."
+
+msgid "Invalid product version."
+msgstr "إصدار المنتج غير صالح."
+
+msgid "Could not find rcedit executable at \"%s\"."
+msgstr "تعذر العثور على rcedit القابل للتنفيذ على \"%s\"."
+
+msgid "Could not find wine executable at \"%s\"."
+msgstr "تعذر العثور على طبقة المعالجة القابل للتنفيذ في \"%s\"."
+
+msgid "Invalid icon file \"%s\"."
+msgstr "ملف أيقونه \"%s\" غير صالح."
 
 msgid ""
 "Could not start rcedit executable. Configure rcedit path in the Editor "
@@ -15138,11 +15391,23 @@ msgstr ""
 "(تصدير > ويندوز> rcedit)، أو قم بتعطيل \"التطبيق > تعديل الموارد\" في الإعداد "
 "المسبق للتصدير."
 
+msgid "rcedit failed to modify executable: %s."
+msgstr "فشل rcedit في تعديل الملف القابل للتنفيذ: %s."
+
+msgid "Could not find signtool executable at \"%s\"."
+msgstr "تعذر العثور على أداة التوقيع القابلة للتنفيذ على \"%s\"."
+
+msgid "Could not find osslsigncode executable at \"%s\"."
+msgstr "تعذر العثور على رمز تسجيل ossl القابل للتنفيذ على \"%s\"."
+
 msgid "No identity found."
 msgstr "لم توجد هوية."
 
 msgid "Invalid identity type."
 msgstr "نوع الهوية أو المعرِّف غير صالح."
+
+msgid "Invalid timestamp server."
+msgstr "خادم الطابع الزمني غير صالح."
 
 msgid ""
 "Could not start signtool executable. Configure signtool path in the Editor "
@@ -15162,6 +15427,9 @@ msgstr ""
 "إعدادات المحرر (تصدير > ويندوز> osslsigncode)، أو قم بتعطيل \"Codesign\" في "
 "الإعداد المسبق للتصدير."
 
+msgid "Signtool failed to sign executable: %s."
+msgstr "فشلت أداة التوقيع في التوقيع على الملف القابل للتنفيذ: %s."
+
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "فشل حذف الملف المؤقت \"%s\"."
 
@@ -15171,6 +15439,15 @@ msgid ""
 msgstr ""
 "يجب تكوين أداة rcedit في إعدادات المحرر (تصدير > ويندوز > rcedit) لتغيير "
 "الرمز أو بيانات معلومات التطبيق."
+
+msgid "Windows executables cannot be >= 4 GiB."
+msgstr "لا يمكن أن تكون ملفات ويندوز القابلة للتنفيذ >= 4 جيجا بايت."
+
+msgid "Run on remote Windows system"
+msgstr "تشغيل على نظام ويندوز عن بعد"
+
+msgid "Run exported project on remote Windows system"
+msgstr "تشغيل المشروع المُصدَّر على نظام ويندوز عن بعد"
 
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
@@ -15279,6 +15556,20 @@ msgstr ""
 "تتطلب الرسوم المتحركة للجسيمات-ثنائية-البُعد (Particles2D) استخدام لوحة-مادة-"
 "العنصر (CanvasItemMaterial) مع تمكين \"الرسوم المتحركة للجسيمات\"."
 
+msgid ""
+"Particle trails are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr ""
+"تتوفر مسارات الجسيمات فقط عند استخدام الواجهات الخلفية للعرض تقدم+ أو الهاتف "
+"المحمول."
+
+msgid ""
+"Particle sub-emitters are not available when using the GL Compatibility "
+"rendering backend."
+msgstr ""
+"لا تتوفر بواعث الجسيمات الفرعية عند استخدام الواجهة الخلفية للعرض المتوافق مع "
+"GL."
+
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr ""
 "يجب على العقدة A والعقدة B أن يكونا PhysicsBody2Ds (جسم فيزيائي ثنائي البُعد)"
@@ -15311,6 +15602,19 @@ msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "المُضلع المُغلق لهذا الغَلق فارغ. الرجاء رسم مُضلع."
 
 msgid ""
+"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
+msgstr ""
+"يمكن استخدام وكيل التنقل ثنائي الأبعاد فقط ضمن العقدة الأصلية الوارثة لـ عقدة "
+"ثنائية الأبعاد."
+
+msgid ""
+"NavigationLink2D start position should be different than the end position to "
+"be useful."
+msgstr ""
+"يجب أن يكون موضع بداية رابط التنقل ثنائي الأبعاد مختلفًا عن موضع النهاية ليكون "
+"مفيدًا."
+
+msgid ""
 "A NavigationMesh resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
@@ -15327,6 +15631,13 @@ msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr ""
 "لا يعمل اتباع-المسار-ثنائي-البُعد (PathFollow2D) إلا عند جعل عقدة مسار-ثنائي-"
 "البُعد (Path2D) تابعًا له."
+
+msgid ""
+"A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
+"parent node!"
+msgstr ""
+"يعمل عظم-ثنائي-البُعد فيزيائي فقط مع هيكلية-ثنائية-البُعد أو عظم-ثنائي-البُعد "
+"فيزيائي آخر كعقدة رئيسية!"
 
 msgid ""
 "A PhysicalBone2D needs to be assigned to a Bone2D node in order to function! "
@@ -15353,6 +15664,12 @@ msgstr ""
 
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "يجب أن تشير خاصية المسار إلى عُقدة-ثنائية-البُعد (Node2D) صالحة لكي تعمل."
+
+msgid ""
+"This node cannot interact with other objects unless a Shape2D is assigned."
+msgstr ""
+"لا يمكن لهذه العقدة أن تتفاعل مع كائنات أخرى ما لم يتم تعيين شكل ثنائي "
+"الأبعاد."
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr ""
@@ -15842,15 +16159,6 @@ msgid ""
 msgstr ""
 "يتم الاحتفاظ بالبيانات من العقدة الأصلية كعنصر نائب حتى يتوفر هذا النوع من "
 "العقد مرة أخرى. ومن ثم يمكن إعادة حفظها بأمان دون التعرض لخطر فقدان البيانات."
-
-msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"تعيين اسم العقدة '%s' ليكون فريدًا داخل المشهد لـ '%s'، ولكن تمت المطالبة به "
-"بالفعل بواسطة '%s'.\n"
-"لم يعد يتم تعيين '%s' كاسم فريد."
 
 msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"

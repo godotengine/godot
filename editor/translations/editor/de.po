@@ -113,7 +113,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-10 08:03+0000\n"
+"PO-Revision-Date: 2023-11-11 00:20+0000\n"
 "Last-Translator: Cerno_b <cerno.b@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
@@ -789,7 +789,7 @@ msgid "(Invalid, expected type: %s)"
 msgstr "(Ungültig, erwarteter Typ: %s)"
 
 msgid "Easing:"
-msgstr "Glätten:"
+msgstr "Easing:"
 
 msgid "In-Handle:"
 msgstr "Eingehender Handle:"
@@ -1019,7 +1019,7 @@ msgid "Animation Scale Keys"
 msgstr "Animations-Keys skalieren"
 
 msgid "Make Easing Keys"
-msgstr "Glättungs-Key erzeugen"
+msgstr "Easing-Key erzeugen"
 
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
@@ -1130,7 +1130,7 @@ msgid "Scale From Cursor"
 msgstr "Vom Mauszeiger skalieren"
 
 msgid "Make Easing Selection"
-msgstr "Auswahl zum Glätten erstellen"
+msgstr "Easing-Auswahl erzeugen"
 
 msgid "Duplicate Selection"
 msgstr "Auswahl duplizieren"
@@ -1202,7 +1202,7 @@ msgid "Scale Ratio:"
 msgstr "Skalierungsverhältnis:"
 
 msgid "Select Transition and Easing"
-msgstr "Übergang und Glättung auswählen"
+msgstr "Übergang und Easing auswählen"
 
 msgctxt "Transition Type"
 msgid "Linear"
@@ -2013,21 +2013,6 @@ msgstr "Gold-Sponsoren"
 
 msgid "Silver Sponsors"
 msgstr "Silber-Sponsoren"
-
-msgid "Bronze Sponsors"
-msgstr "Bronze-Sponsoren"
-
-msgid "Mini Sponsors"
-msgstr "Mini-Sponsoren"
-
-msgid "Gold Donors"
-msgstr "Gold-Unterstützer"
-
-msgid "Silver Donors"
-msgstr "Silber-Unterstützer"
-
-msgid "Bronze Donors"
-msgstr "Bronze-Unterstützer"
 
 msgid "Donors"
 msgstr "Unterstützer"
@@ -2915,11 +2900,23 @@ msgstr "Methoden-Beschreibung"
 msgid "Operator Descriptions"
 msgstr "Operatorbeschreibungen"
 
+msgid "Metadata:"
+msgstr "Metadaten:"
+
 msgid "Property:"
 msgstr "Eigenschaft:"
 
+msgid "Method:"
+msgstr "Methode:"
+
 msgid "Signal:"
 msgstr "Signale:"
+
+msgid "Theme Item:"
+msgstr "Theme-Element:"
+
+msgid "No description available."
+msgstr "Keine Beschreibung verfügbar."
 
 msgid "%d match."
 msgstr "%d Übereinstimmung gefunden."
@@ -4064,6 +4061,12 @@ msgstr ""
 msgid "Assign..."
 msgstr "Zuweisen …"
 
+msgid "Copy as Text"
+msgstr "Als Text kopieren"
+
+msgid "Show Node in Tree"
+msgstr "Node im Baum zeigen"
+
 msgid "Invalid RID"
 msgstr "Ungültige RID"
 
@@ -4630,6 +4633,9 @@ msgstr "Vorgabe ‚%s‘ löschen?"
 msgid "Resources to exclude:"
 msgstr "Auszuschließende Ressourcen:"
 
+msgid "Resources to override export behavior:"
+msgstr "Exportverhalten auszuschließende Ressourcen:"
+
 msgid "Resources to export:"
 msgstr "Zu exportierende Ressourcen:"
 
@@ -4933,6 +4939,9 @@ msgstr "Dupliziere Ordner:"
 msgid "New Inherited Scene"
 msgstr "Neue geerbte Szene"
 
+msgid "Set as Main Scene"
+msgstr "Als Hauptszene setzen"
+
 msgid "Open Scenes"
 msgstr "Szenen öffnen"
 
@@ -5044,6 +5053,33 @@ msgstr "Umbenennen …"
 msgid "Open in External Program"
 msgstr "In externem Programm öffnen"
 
+msgid "Red"
+msgstr "Rot"
+
+msgid "Orange"
+msgstr "Orange"
+
+msgid "Yellow"
+msgstr "Gelb"
+
+msgid "Green"
+msgstr "Grün"
+
+msgid "Teal"
+msgstr "Türkis"
+
+msgid "Blue"
+msgstr "Blau"
+
+msgid "Purple"
+msgstr "Lila"
+
+msgid "Pink"
+msgstr "Pink"
+
+msgid "Gray"
+msgstr "Grau"
+
 msgid "Go to previous selected folder/file."
 msgstr "Zur vorigen ausgewählten Datei/Ordner springen."
 
@@ -5052,6 +5088,9 @@ msgstr "Zur nächsten ausgewählten Datei/Ordner springen."
 
 msgid "Re-Scan Filesystem"
 msgstr "Dateisystem erneut einlesen"
+
+msgid "Change Split Mode"
+msgstr "Geteilten Modus ändern"
 
 msgid "Filter Files"
 msgstr "Dateien filtern"
@@ -5676,15 +5715,6 @@ msgstr "Dynamisch gerenderte TrueType/OpenType-Schriftart"
 
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Vorgerendertes Mehrkanal(+true) vorzeichenbehaftetes Distanzfeld"
-
-msgid "Can't load font texture:"
-msgstr "Schriftart-Textur konnte nicht geladen werden:"
-
-msgid "Image margin too big."
-msgstr "Bildrand zu groß."
-
-msgid "Character margin too big."
-msgstr "Zeichenabstand ist zu groß."
 
 msgid "Pre-Import Scene"
 msgstr "Szene vorimportieren"
@@ -6691,6 +6721,9 @@ msgstr "[Global] (erstellen)"
 msgid "Duplicated Animation Name:"
 msgstr "Duplizierter Animationsname:"
 
+msgid "Onion skinning requires a RESET animation."
+msgstr "Onion-Skinning benötigt eine RESET-Animation."
+
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "Spiele ausgewählte Animation rückwärts von aktueller Position. (A)"
 
@@ -6728,7 +6761,7 @@ msgid "Display list of animations in player."
 msgstr "Liste der Animationen im Player anzeigen."
 
 msgid "Autoplay on Load"
-msgstr "Beim Laden automatisch abspielen"
+msgstr "Autoplay beim Laden"
 
 msgid "Enable Onion Skinning"
 msgstr "Zwiebelhaut aktivieren"
@@ -7836,6 +7869,18 @@ msgstr ""
 "Wenn diese Option aktiviert ist, werden Vermeidungs-Objekt-Shapes, -Radien "
 "und -Geschwindigkeiten im laufenden Projekt sichtbar sein."
 
+msgid "Debug CanvasItem Redraws"
+msgstr "CanvasItems-Redraws debuggen"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"Wenn diese Option aktiviert ist, werden Redraw-Anforderungen von 2D-Objekten "
+"im laufenden Projekt sichtbar (als kurzes Blinken).\n"
+"Dies ist nützlich bei der Fehlersuche im Prozessorenergiesparmodus."
+
 msgid "Synchronize Scene Changes"
 msgstr "Szenenänderungen synchronisieren"
 
@@ -8211,6 +8256,9 @@ msgstr "Navigations-Mesh erzeugen"
 msgid "Create Debug Tangents"
 msgstr "Debug-Tangenten generieren"
 
+msgid "No mesh to unwrap."
+msgstr "Kein Mesh zu entpacken."
+
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -8238,6 +8286,15 @@ msgstr "UV2 entfalten"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "Beinhaltetes Mesh ist nicht vom Typ ArrayMesh."
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "Kann Mesh mit Blend-Shapes nicht entpacken."
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "Nur Dreiecke werden für Lightmap-Entpacken unterstützt."
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "Normalen werden für Lightmap-Entpacken benötigt."
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr ""
@@ -9982,6 +10039,12 @@ msgstr "LightOccluder2D erzeugen"
 
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D-Vorschau"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "Kann keinen Sprite aus einer fremden Szene konvertieren."
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "Kann kein leeres Sprite zu Mesh konvertieren."
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -13742,8 +13805,19 @@ msgstr ""
 "Wenn „Editierbare Instanz“ deaktiviert wird, werden alle Eigenschaften dieses "
 "Nodes wieder in ihren Default-Zustand zurückgesetzt."
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"Wenn Sie die Option \"Als Platzhalter laden\" aktivieren, wird die Option "
+"\"Bearbeitbare Children\" deaktiviert und alle Eigenschaften des Nodes werden "
+"auf ihre Defaultwerte zurückgesetzt."
+
 msgid "Make Local"
 msgstr "Lokal machen"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "Kann keine eindeutigen Namen für Nodes in Unterszenen umschalten!"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "Szenen-eindeutige(n) Namen aktivieren"
@@ -13798,16 +13872,6 @@ msgstr "Entferne Node(s)"
 msgid "Change type of node(s)"
 msgstr "Node-Typ(en) ändern"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "Entferne Node von Variable „%s“ bei Node „%s“."
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr ""
-"Der neue Typ des Nodes ist nicht kompatibel mit einer exportieren Variable "
-"(erwarte %s, aber Typ ist %s)."
-
 msgid "This operation requires a single selected node."
 msgstr "Diese Aktion benötigt einen einzelnen ausgewählten Node."
 
@@ -13841,6 +13905,9 @@ msgstr "Löse Vererbung"
 
 msgid "Editable Children"
 msgstr "Bearbeitbare Child-Objekte"
+
+msgid "Load as Placeholder"
+msgstr "Als Platzhalter laden"
 
 msgid "Auto Expand to Selected"
 msgstr "Automatisch auf Auswahl vergrößern"
@@ -14141,6 +14208,47 @@ msgstr "Der Name ‚%s‘ ist ein reserviertes Schlüsselwort der Shader-Sprache
 msgid "Add Shader Global Parameter"
 msgstr "Globalen Parameter für Shader hinzufügen"
 
+msgid ""
+"This project uses meshes with an outdated mesh format from previous Godot "
+"versions. The engine needs to update the format in order to use those "
+"meshes.\n"
+"\n"
+"Press 'Restart & Upgrade' to run the surface upgrade tool which will update "
+"and re-save all meshes and scenes. This update will restart the editor and "
+"may take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"Press 'Upgrade Only' to continue opening the scene as normal. The engine will "
+"update each mesh in memory, but the update will not be saved. Choosing this "
+"option will lead to slower load times every time this project is loaded."
+msgstr ""
+"Dieses Projekt verwendet Meshes mit einem veralteten Mesh-Format aus früheren "
+"Godot-Versionen. Die Engine muss das Format aktualisieren, um diese Meshes "
+"verwenden zu können.\n"
+"\n"
+"Drücken Sie \"Neustart & Upgrade\", um das Oberflächen-Upgrade-Tool "
+"auszuführen, das alle Meshes und Szenen aktualisiert und neu speichert. Diese "
+"Aktualisierung führt zu einem Neustart des Editors und kann einige Minuten "
+"dauern. Durch die Aktualisierung werden die Meshes mit früheren Godot-"
+"Versionen inkompatibel.\n"
+"\n"
+"Drücken Sie auf \"Nur Upgraden\", um die Szene wie gewohnt zu öffnen. Die "
+"Engine wird jedes Mesh im Speicher aktualisieren, aber die Aktualisierung "
+"wird nicht gespeichert. Wenn Sie diese Option wählen, werden die Ladezeiten "
+"bei jedem Laden des Projekts länger."
+
+msgid "Restart & Upgrade"
+msgstr "Neustart & Upgrade"
+
+msgid "Upgrade Only"
+msgstr "Nur Upgrade"
+
+msgid "Upgrading All Meshes in Project"
+msgstr "Upgrade alle Meshes im Projekt"
+
+msgid "Attempting to re-save "
+msgstr "Versuche neuzuspeichern "
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Dieses Panel schwebend machen auf Bildschirm %d."
 
@@ -14169,6 +14277,9 @@ msgstr "Äußeren Torusradius ändern"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Ungültiger Argument-Typ in convert(), TYPE_*-Konstanten benötigt."
 
+msgid "Cannot resize array."
+msgstr "Kann Arraygröße nicht anpassen."
+
 msgid "Step argument is zero!"
 msgstr "Schrittargument ist null!"
 
@@ -14194,6 +14305,9 @@ msgstr "Ungültiges Instanz-Dictionary-Format (ungültiges Skript in @path)"
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Ungültiges Instanz-Dictionary-Format (ungültige Unterklasse)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "Kann GDScript-Klasse nicht instanziieren."
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "Ein Wert des Typs ‚%s‘ kann keine Länge beinhalten."
@@ -14405,6 +14519,9 @@ msgstr "Indirektes Licht aufzeichnen"
 msgid "Integrate indirect lighting"
 msgstr "Indirektes Licht integrieren"
 
+msgid "Integrate indirect lighting %d%%"
+msgstr "Indirekte Beleuchtung integrieren %d%%"
+
 msgid "Baking lightprobes"
 msgstr "Backe Lightprobes"
 
@@ -14412,7 +14529,7 @@ msgid "Integrating light probes %d%%"
 msgstr "Integriere Lightprobes %d%%"
 
 msgid "Denoising"
-msgstr "Entrauschen"
+msgstr "Rauschunterdrückung"
 
 msgid "Retrieving textures"
 msgstr "Am Textur-Laden"
@@ -14526,7 +14643,7 @@ msgid "Add from path"
 msgstr "Aus Pfad hinzufügen"
 
 msgid "Spawn"
-msgstr "Spawnen"
+msgstr "Spawn"
 
 msgid "Replicate"
 msgstr "Nachbilden"
@@ -14830,6 +14947,9 @@ msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr ""
 "Exportieren nach Android bei Verwendung von C#/.NET ist noch experimentell."
 
+msgid "Android architecture %s not supported in C# projects."
+msgstr "Keine Unterstützung von Android-Architektur %s in C#-Projekten."
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14999,23 +15119,8 @@ msgstr "Konnte Expansion-Package-Datei nicht schreiben!"
 msgid "Building Android Project (gradle)"
 msgstr "Baue Android-Projekt (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Bauen des Android-Projekts fehlgeschlagen, Fehlerdetails befinden ich in der "
-"Textausgabe. Alternativ befindet sich die Android-Build-Dokumentation auf "
-"docs.godotengine.org."
-
 msgid "Moving output"
 msgstr "Verschiebe Ausgabe"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Exportdatei kann nicht kopiert und umbenannt werden. Ausgaben sollten im "
-"Gradle Projektverzeichnis erscheinen."
 
 msgid "Package not found: \"%s\"."
 msgstr "Paket nicht gefunden: „%s“."
@@ -15089,6 +15194,14 @@ msgid ""
 msgstr ""
 ".ipa können nur unter MacOS gebaut werden. Das Xcode-Projekt wird verlassen "
 "ohne das Paket zu bauen."
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr ""
+"Exportieren nach iOS bei Verwendung von C#/.NET ist noch experimentell und "
+"benötigt macOS."
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "Exportieren nach iOS bei Verwendung von C#/.NET ist noch experimentell."
 
 msgid "Identifier is missing."
 msgstr "Bezeichner fehlt."
@@ -15252,6 +15365,13 @@ msgstr "Installer-Signing-Identity wird benötigt für App-Store-Verteilung."
 
 msgid "App sandbox is required for App Store distribution."
 msgstr "App-Sandbox wird benötigt für App-Store-Verteilung."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries (GDExtension or .NET)."
+msgstr ""
+"‚rcodesign‘ unterstützt nicht das Signieren von Anwendungen mit eingebetteten "
+"dynamischen Bibliotheken (GDExtension oder .NET)."
 
 msgid "Code signing is required for App Store distribution."
 msgstr "Code-Signatur wird benötigt für App-Store-Verteilung."
@@ -15449,6 +15569,13 @@ msgid ""
 msgstr ""
 "Ad-hoc signierte Anwendungen benötigen die ‚Disable Library Validation‘-"
 "Berechtigung, um dynamische Bibliotheken zu laden."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries."
+msgstr ""
+"‚rcodesign‘ unterstützt das Signieren von Anwendungen mit eingebetteten "
+"dynamischen Bibliotheken nicht."
 
 msgid "Could not create entitlements file."
 msgstr "Berechtigungsdatei konnte nicht erstellt werden."
@@ -15929,6 +16056,17 @@ msgstr ""
 "nicht im TileMap-Node aktiviert."
 
 msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"Der TileMap-Node ist als Y-sortiert festgelegt, aber Y-Sortierung ist für "
+"keine der Ebenen der TileMap aktiviert.\n"
+"Dies kann zu unerwünschtem Verhalten führen, da eine Ebene, die nicht Y-"
+"sortiert ist, als Ganzes Y-sortiert wird."
+
+msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled for "
 "the TileMap and all of its layers."
 msgstr ""
@@ -16338,7 +16476,7 @@ msgstr ""
 "Kollisionen gemeldet."
 
 msgid "This body will be ignored until you set a mesh."
-msgstr "Diese Körper wird ignoriert werden bis ein Mesh zugewiesen wurde."
+msgstr "Dieser Körper wird ignoriert bis Sie ein Mesh zuweisen."
 
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
@@ -16587,6 +16725,14 @@ msgid "Automatically arrange selected nodes."
 msgstr "Automatisch ausgewählte Nodes anordnen."
 
 msgid ""
+"Labels with autowrapping enabled must have a custom minimum size configured "
+"to work correctly inside a container."
+msgstr ""
+"Für Labels mit aktiviertem automatischen Zeilenumbruch muss eine "
+"benutzerdefinierte Mindestgröße konfiguriert sein, damit sie in einem "
+"Container korrekt funktionieren."
+
+msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr ""
@@ -16710,15 +16856,6 @@ msgstr ""
 "Datenverlust problemlos möglich."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"Der verwendete Node-Name ‚%s‘ wurde als einzigartig in der Szene für ‚%s‘ "
-"festgelegt, jedoch wurde der Name bereits von ‚%s‘ verwendet.\n"
-"‚%s‘ wird nicht mehr als einzigartig geführt."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -16732,13 +16869,6 @@ msgid ""
 msgstr ""
 "Dieser Node ist als experimentell markiert und könnte in zukünftigen "
 "Versionen entfernt oder stark umgeändert werden."
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"Die Default-Environment wie festgelegt in den Projekteinstellungen (Rendering/"
-"Umgebung/Defaults/Default-Umgebung) konnte nicht geladen werden."
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -16764,27 +16894,6 @@ msgid ""
 msgstr ""
 "Die Größe des Viewports muss mindestens 2 Pixel in beiden Dimensionen "
 "betragen, um überhaupt irgendetwas rendern zu können."
-
-msgid "Cannot open font from file: %s."
-msgstr "Schriftart aus Datei „%s“ konnte nicht geöffnet werden."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "Version %d von BMFont wird nicht unterstützt (sollte 3 sein)."
-
-msgid "Invalid BMFont info block size."
-msgstr "Ungültige BMFont-Infoblockgröße."
-
-msgid "Invalid BMFont common block size."
-msgstr "Ungültige BMFont Common-Blockgröße."
-
-msgid "Can't load font texture: %s."
-msgstr "Schriftarttextur kann nicht geladen werden: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Nicht unterstütztes BMFont-Texturformat."
-
-msgid "Invalid BMFont block type."
-msgstr "Ungültiger BMFont-Blocktyp."
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "
