@@ -53,7 +53,14 @@ class ScriptServer {
 	static ScriptLanguage *_languages[MAX_LANGUAGES];
 	static int _language_count;
 	static bool languages_ready;
-	static Mutex languages_mutex;
+	static SpinLock languages_lock;
+
+	// RAII-style SpinLock, for convenience in a temporary workaround.
+	class LanguagesSpinLockHolder {
+	public:
+		LanguagesSpinLockHolder() { languages_lock.lock(); }
+		~LanguagesSpinLockHolder() { languages_lock.unlock(); }
+	};
 
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
