@@ -1394,7 +1394,7 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 thread_local GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_thread_local;
 GDScript::UpdatableFuncPtr *GDScript::func_ptrs_to_update_main_thread = &func_ptrs_to_update_thread_local;
 
-GDScript::UpdatableFuncPtrElement *GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
+List<GDScript::UpdatableFuncPtrElement>::Element *GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
 	MutexLock lock(func_ptrs_to_update_mutex);
 
 	List<UpdatableFuncPtrElement>::Element *result = func_ptrs_to_update_elems.push_back(UpdatableFuncPtrElement());
@@ -1405,7 +1405,7 @@ GDScript::UpdatableFuncPtrElement *GDScript::_add_func_ptr_to_update(GDScriptFun
 		result->get().mutex = &func_ptrs_to_update_thread_local.mutex;
 
 		if (likely(func_ptrs_to_update_thread_local.initialized)) {
-			return &result->get();
+			return result;
 		}
 
 		func_ptrs_to_update_thread_local.initialized = true;
@@ -1413,18 +1413,20 @@ GDScript::UpdatableFuncPtrElement *GDScript::_add_func_ptr_to_update(GDScriptFun
 
 	func_ptrs_to_update.push_back(&func_ptrs_to_update_thread_local);
 
-	return &result->get();
+	return result;
 }
 
-void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement *p_func_ptr_element) {
+void GDScript::_remove_func_ptr_to_update(List<UpdatableFuncPtrElement>::Element *p_func_ptr_element) {
 	// None of these checks should ever fail, unless there's a bug.
 	// They can be removed once we are sure they never catch anything.
 	// Left here now due to extra safety needs late in the release cycle.
 	ERR_FAIL_NULL(p_func_ptr_element);
-	MutexLock lock(*p_func_ptr_element->mutex);
-	ERR_FAIL_NULL(p_func_ptr_element->element);
-	ERR_FAIL_NULL(p_func_ptr_element->mutex);
-	p_func_ptr_element->element->erase();
+	MutexLock lock(func_ptrs_to_update_thread_local.mutex);
+	ERR_FAIL_NULL(p_func_ptr_element->get().element);
+	ERR_FAIL_NULL(p_func_ptr_element->get().mutex);
+	MutexLock lock2(*p_func_ptr_element->get().mutex);
+	p_func_ptr_element->get().element->erase();
+	p_func_ptr_element->erase();
 }
 
 void GDScript::_fixup_thread_function_bookkeeping() {
