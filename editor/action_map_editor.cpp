@@ -36,8 +36,8 @@
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/tree.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/tree.h"
 #include "scene/scene_string_names.h"
 
 static bool _is_action_name_valid(const String &p_name) {

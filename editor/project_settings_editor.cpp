@@ -393,8 +393,8 @@ void ProjectSettingsEditor::_action_remove_builtin() {
 
 		Dictionary old_action = GLOBAL_GET(property_name);
 		Dictionary new_action;
-		new_action["deadzone"] = old_action["deadzone"];	// keep deadzone value
-		new_action["events"] = Array();						// clear built-in events
+		new_action["deadzone"] = old_action["deadzone"]; // keep deadzone value
+		new_action["events"] = Array(); // clear built-in events
 
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, new_action);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_action);
