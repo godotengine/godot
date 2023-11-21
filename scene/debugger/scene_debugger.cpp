@@ -72,6 +72,11 @@ void SceneDebugger::deinitialize() {
 	}
 }
 
+#ifdef MINGW_ENABLED
+#undef near
+#undef far
+#endif
+
 #ifdef DEBUG_ENABLED
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
