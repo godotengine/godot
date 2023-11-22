@@ -27,7 +27,7 @@ jobs:
           java-version: 17
 
       - name: Install Android NDK r23c
-        uses: nttld/setup-ndk@v1
+        uses: nttld/setup-ndk@v1.4.2
         with:
           ndk-version: r23c
           link-to-sdk: true
