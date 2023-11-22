@@ -481,6 +481,7 @@ private:
 	String _tmp_import_path;
 	String external_file;
 	String open_navigate;
+	String saving_scene;
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
