@@ -204,6 +204,9 @@ public:
 
 	void on_focus_out();
 	void on_focus_in();
+
+	void on_enter_background();
+	void on_exit_background();
 };
 
 #endif // IPHONE_ENABLED
