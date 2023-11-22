@@ -52,13 +52,14 @@ TEST_CASE("[GradientTexture1D] Create gradienttexture1D") {
 
 	CHECK(
 		graident_texture.set_use_hdr(true);
-		graident_texture.get_use_hdr() == true;
+		graident_texture.get_using_hdr() == true;
 	)
 
 	CHECK(
 		
 	)
-
+}
+}
 
 
     
