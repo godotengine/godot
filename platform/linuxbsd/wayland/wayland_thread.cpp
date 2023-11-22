@@ -888,7 +888,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 }
 
 void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
-	if (!wl_proxy_is_godot((struct wl_proxy *)wl_output)) {
+	if (!wl_output || !wl_proxy_is_godot((struct wl_proxy *)wl_output)) {
 		// This won't have the right data bound to it. Not worth it and would probably
 		// just break everything.
 		return;
@@ -1250,7 +1250,7 @@ void WaylandThread::_cursor_frame_callback_on_done(void *data, struct wl_callbac
 }
 
 void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-	if (!wl_proxy_is_godot((struct wl_proxy *)surface)) {
+	if (!surface || !wl_proxy_is_godot((struct wl_proxy *)surface)) {
 		return;
 	}
 
@@ -1274,7 +1274,7 @@ void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_point
 }
 
 void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
-	if (!wl_proxy_is_godot((struct wl_proxy *)surface)) {
+	if (!surface || !wl_proxy_is_godot((struct wl_proxy *)surface)) {
 		return;
 	}
 
