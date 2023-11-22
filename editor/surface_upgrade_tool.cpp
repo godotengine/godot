@@ -31,9 +31,11 @@
 #include "surface_upgrade_tool.h"
 
 #include "editor/editor_file_system.h"
+#include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_toaster.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
@@ -58,40 +60,38 @@ void SurfaceUpgradeTool::_add_files(EditorFileSystemDirectory *p_dir, Vector<Str
 }
 
 void SurfaceUpgradeTool::_try_show_popup() {
-	if (singleton->show_requested || singleton->popped_up) {
+	if (singleton->show_requested || singleton->updating) {
 		return;
 	}
+
 	singleton->show_requested = true;
 
-	RS::get_singleton()->set_warn_on_surface_upgrade(false);
+	if (!EditorNode::get_singleton()->is_editor_ready()) {
+		// EditorNode may not be ready yet. It will call this tool when it is.
+		return;
+	}
 
 	if (EditorFileSystem::get_singleton()->is_importing()) {
 		EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(singleton, &SurfaceUpgradeTool::_show_popup), CONNECT_ONE_SHOT);
-	} else if (EditorNode::get_singleton()->is_inside_tree()) {
+	} else {
 		singleton->_show_popup();
 	}
-
-	// EditorNode may not be ready yet. It will call this tool when it is.
 }
 
 void SurfaceUpgradeTool::_show_popup() {
 	MutexLock lock(mutex);
-	if (EditorNode::get_singleton()->is_project_exporting()) {
-		return; // We suppress the tool during the export routine, because the immediate dialog breaks everything.
-	}
-	if (!show_requested || popped_up) {
-		return;
+	if (!show_requested) {
+		return; // We only show the dialog if it was previously requested.
 	}
 	show_requested = false;
-	popped_up = true;
 
-	const String confirmation_message = TTR("This project uses meshes with an outdated mesh format from previous Godot versions. The engine needs to update the format in order to use those meshes.\n\nPress 'Restart & Upgrade' to run the surface upgrade tool which will update and re-save all meshes and scenes. This update will restart the editor and may take several minutes. Upgrading will make the meshes incompatible with previous versions of Godot.\n\nPress 'Upgrade Only' to continue opening the scene as normal. The engine will update each mesh in memory, but the update will not be saved. Choosing this option will lead to slower load times every time this project is loaded.");
-	bool accepted = EditorNode::immediate_confirmation_dialog(confirmation_message, TTR("Restart & Upgrade"), TTR("Upgrade Only"), 500);
-	if (accepted) {
-		prepare_upgrade();
-	} else {
-		RS::get_singleton()->set_warn_on_surface_upgrade(true);
-	}
+	// These messages are supposed to be translated as they are critical to users migrating their projects.
+
+	const String confirmation_message = TTR("This project uses meshes with an outdated mesh format from previous Godot versions. The engine needs to update the format in order to use those meshes. Please use the 'Upgrade Mesh Surfaces' tool from the 'Project > Tools' menu. You can ignore this message and keep using outdated meshes, but keep in mind that this leads to increased load times every time you load the project.");
+	EditorNode::get_log()->add_message(confirmation_message, EditorLog::MSG_TYPE_WARNING);
+
+	const String toast_message = TTR("This project uses meshes with an outdated mesh format. Check the output log.");
+	EditorToaster::get_singleton()->popup_str(toast_message, EditorToaster::SEVERITY_WARNING);
 }
 
 void SurfaceUpgradeTool::prepare_upgrade() {
@@ -110,10 +110,11 @@ void SurfaceUpgradeTool::prepare_upgrade() {
 
 // Ensure that the warnings and popups are skipped.
 void SurfaceUpgradeTool::begin_upgrade() {
+	updating = true;
+
 	EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "run_on_restart", false);
 	RS::get_singleton()->set_surface_upgrade_callback(nullptr);
 	RS::get_singleton()->set_warn_on_surface_upgrade(false);
-	popped_up = true;
 }
 
 void SurfaceUpgradeTool::finish_upgrade() {
@@ -170,7 +171,17 @@ SurfaceUpgradeTool::SurfaceUpgradeTool() {
 	RS::get_singleton()->set_surface_upgrade_callback(_try_show_popup);
 }
 
-SurfaceUpgradeTool::~SurfaceUpgradeTool() {}
+SurfaceUpgradeTool::~SurfaceUpgradeTool() {
+	singleton = nullptr;
+}
+
+void SurfaceUpgradeDialog::popup_on_demand() {
+	const String confirmation_message = TTR("The mesh format has changed in Godot 4.2, which affects both imported meshes and meshes authored inside of Godot. The engine needs to update the format in order to use those meshes.\n\nIf your project predates Godot 4.2 and contains meshes, we recommend you run this one time conversion tool. This update will restart the editor and may take several minutes. Upgrading will make the meshes incompatible with previous versions of Godot.\n\nYou can still use your existing meshes as is. The engine will update each mesh in memory, but the update will not be saved. Choosing this option will lead to slower load times every time this project is loaded.");
+	set_text(confirmation_message);
+	get_ok_button()->set_text(TTR("Restart & Upgrade"));
+
+	popup_centered(Size2(750 * EDSCALE, 0));
+}
 
 void SurfaceUpgradeDialog::_notification(int p_what) {
 	switch (p_what) {
@@ -182,8 +193,6 @@ void SurfaceUpgradeDialog::_notification(int p_what) {
 }
 
 SurfaceUpgradeDialog::SurfaceUpgradeDialog() {
-	const String confirmation_message = TTR("The mesh format has changed in Godot 4.2, which affects both imported meshes and meshes authored inside of Godot. The engine needs to update the format in order to use those meshes.\n\nIf your project predates Godot 4.2 and contains meshes we recommend you run this one time conversion tool. This update will restart the editor and may take several minutes. Upgrading will make the meshes incompatible with previous versions of Godot.\n\nYou can still use your existing meshes as is. The engine will update each mesh in memory, but the update will not be saved. Choosing this option will lead to slower load times every time this project is loaded.");
-	set_text(confirmation_message);
 	set_autowrap(true);
 	get_label()->set_custom_minimum_size(Size2(750 * EDSCALE, 0));
 }
