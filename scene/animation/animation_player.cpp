@@ -534,10 +534,17 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 		}
 	}
 
+	playback.started = false; // Start has already gone by seeking, delta does not need to be 0 in the internal process.
 	playback.seeked = true;
 	if (p_update) {
 		_process_animation(0, p_update_only);
+		playback.seeked = false; // If animation was proceeded here, no more seek in internal process.
 	}
+}
+
+void AnimationPlayer::advance(double p_time) {
+	playback.started = false; // Start has already gone by advancing, delta does not need to be 0 in the internal process.
+	AnimationMixer::advance(p_time);
 }
 
 bool AnimationPlayer::is_valid() const {
