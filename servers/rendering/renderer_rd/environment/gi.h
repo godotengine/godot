@@ -262,23 +262,37 @@ private:
 
 	struct SDFGIShader {
 		enum SDFGIPreprocessShaderVersion {
+			PRE_PROCESS_REGION_STORE,
 			PRE_PROCESS_SDF_SCROLL,
+			PRE_PROCESS_SDF_SCROLL_HALF,
+			PRE_PROCESS_SDF_SCROLL_QUARTER,
 			PRE_PROCESS_JUMP_FLOOD_OPTIMIZED,
 			PRE_PROCESS_LIGHT_STORE,
 			PRE_PROCESS_LIGHT_SCROLL,
 			PRE_PROCESS_LIGHT_SCROLL_STORE,
+			PRE_PROCESS_OCCLUSION,
+			PRE_PROCESS_OCCLUSION_STORE,
 			PRE_PROCESS_MAX
 		};
 
 		struct PreprocessPushConstant {
+			int32_t grid_size[3];
+			uint32_t pad;
+
 			int32_t scroll[3];
-			int32_t grid_size;
+			uint32_t pad2;
 
 			int32_t offset[3];
 			int32_t step_size;
 
 			int32_t limit[3];
 			uint32_t cascade;
+
+			int32_t region_world_pos[3];
+			uint32_t probe_cells;
+
+			int32_t probe_axis_size[3];
+			uint32_t occ_oct_size;
 		};
 
 		SdfgiPreprocessShaderRD preprocess;
@@ -308,8 +322,8 @@ private:
 		enum ProbeDebugMode {
 			PROBE_DEBUG_PROBES,
 			PROBE_DEBUG_PROBES_MULTIVIEW,
-			PROBE_DEBUG_VISIBILITY,
-			PROBE_DEBUG_VISIBILITY_MULTIVIEW,
+			PROBE_DEBUG_OCCLUSION,
+			PROBE_DEBUG_OCCLUSION_MULTIVIEW,
 			PROBE_DEBUG_MAX
 		};
 
@@ -326,16 +340,18 @@ private:
 			float grid_size[3];
 			uint32_t cascade;
 
-			uint32_t pad;
+			int32_t oct_size;
 			float y_mult;
 			int32_t probe_debug_index;
-			int32_t probe_axis_size;
+			uint32_t pad;
+
+			int32_t probe_axis_size[3];
+			uint32_t pad2;
 		};
 
 		SdfgiDebugProbesShaderRD debug_probes;
 		RID debug_probes_shader;
-		RID debug_probes_shader_version;
-
+		RID debug_probes_shader_version[PROBE_DEBUG_MAX];
 		PipelineCacheRD debug_probes_pipeline[PROBE_DEBUG_MAX];
 
 		struct Light {
@@ -363,13 +379,13 @@ private:
 			uint32_t process_offset;
 			uint32_t process_increment;
 
-			int32_t probe_axis_size;
 			float bounce_feedback;
 			float y_mult;
 			uint32_t use_occlusion;
+			uint32_t probe_cell_size;
 
+			int32_t probe_axis_size[3];
 			uint32_t dirty_dynamic_update;
-			uint32_t pad[3];
 		};
 
 		enum {
@@ -396,14 +412,10 @@ private:
 			float grid_size[3];
 			uint32_t max_cascades;
 
-			uint32_t probe_axis_size;
+			float ray_bias;
 			uint32_t cascade;
 			uint32_t history_index;
 			uint32_t history_size;
-
-			uint32_t ray_count;
-			float ray_bias;
-			int32_t image_size[2];
 
 			int32_t world_offset[3];
 			uint32_t sky_mode;
@@ -414,8 +426,8 @@ private:
 			float sky_color[3];
 			float y_mult;
 
+			uint32_t probe_axis_size[3];
 			uint32_t store_ambient_texture;
-			uint32_t pad[3];
 		};
 
 		SdfgiIntegrateShaderRD integrate;
@@ -544,16 +556,21 @@ public:
 	public:
 		enum {
 			MAX_CASCADES = 8,
-			CASCADE_SIZE = 128,
-			PROBE_DIVISOR = 16,
+			CASCADE_H_SIZE = 128,
+			CASCADE_V_SIZE = 64,
+			PROBE_CELLS = 8,
+			REGION_CELLS = 8,
 			SDF_REGION_SIZE = 8,
 			ANISOTROPY_SIZE = 6,
 			MAX_DYNAMIC_LIGHTS = 128,
 			MAX_STATIC_LIGHTS = 1024,
-			LIGHTPROBE_OCT_SIZE = 5,
-			LIGHTPROBE_RAY_FRAMES = 4,
+			LIGHTPROBE_OCT_SIZE = 4,
+			LIGHTPROBE_RAY_FRAMES = 6,
+			OCCLUSION_OCT_SIZE = 14,
 			SH_SIZE = 16
 		};
+
+		static const Vector3i CASCADE_SIZE;
 
 		struct Cascade {
 			struct UBO {
@@ -574,7 +591,6 @@ public:
 			RID light_process_buffer;
 			RID light_process_dispatch_buffer;
 			RID light_process_dispatch_buffer_copy;
-			RID light_process_grid;
 
 			RID light_position_bufer;
 
@@ -623,6 +639,8 @@ public:
 		GI *gi = nullptr;
 
 		RID sdf_tex;
+		RID voxel_bits_tex;
+		RID voxel_region_tex;
 		RID light_tex;
 		RID light_tex_data;
 		RID render_albedo; //x6, anisotropic
@@ -636,12 +654,15 @@ public:
 		RID light_process_dispatch_buffer_render_copy;
 		RID light_copy_buffer;
 
-		RID lightprobe_compute_tex;
-		RID lightprobe_filtered_tex;
-		RID lightprobe_tex;
-		RID lightprobe_ambient_write_tex;
+		RID lightprobe_specular_tex;
+		RID lightprobe_diffuse_data;
+		RID lightprobe_diffuse_tex;
+		RID lightprobe_ambient_data;
 		RID lightprobe_ambient_tex;
-		RID lightprobe_sampling_cache_buffer;
+		RID lightprobe_hit_cache_data;
+
+		RID occlusion_process;
+		RID occlusion_tex;
 
 		LocalVector<Cascade> cascades;
 
@@ -687,12 +708,7 @@ public:
 #endif
 		int num_cascades = 6;
 		float min_cell_size = 0;
-		uint32_t probe_axis_count = 0; //amount of probes per axis, this is an odd number because it encloses endpoints
 
-#if 0
-		RID debug_probes_scene_data_ubo;
-		RID debug_probes_uniform_set;
-#endif
 		RID cascades_ubo;
 
 		bool uses_occlusion = false;
@@ -709,9 +725,9 @@ public:
 		uint32_t render_pass = 0;
 
 		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
-#if 0
-		RID integrate_sky_uniform_set;
-#endif
+
+		RID debug_probes_scene_data_ubo;
+
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
 		virtual void free_data() override;
 		~SDFGI();
@@ -722,7 +738,7 @@ public:
 		void update_probes(RID p_env, RendererRD::SkyRD::Sky *p_sky);
 		void store_probes();
 		int get_pending_region_count() const;
-		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds, Vector3i &r_scroll) const;
+		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds, Vector3i &r_scroll, Vector3i &r_region_world) const;
 		void update_cascades();
 
 		void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
@@ -737,7 +753,7 @@ public:
 	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_30_FRAMES;
 	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
 
-	float sdfgi_solid_cell_ratio = 0.25;
+	float sdfgi_solid_cell_ratio = 0.5;
 	Vector3 sdfgi_debug_probe_pos;
 	Vector3 sdfgi_debug_probe_dir;
 	bool sdfgi_debug_probe_enabled = false;
@@ -754,10 +770,11 @@ public:
 		float grid_size[3];
 		uint32_t max_cascades;
 
-		uint32_t use_occlusion;
-		int32_t probe_axis_size;
-		float probe_to_uvw;
-		float normal_bias;
+		float probe_to_uvw[3];
+		uint32_t pad1;
+
+		int32_t probe_axis_size[3];
+		uint32_t pad2;
 
 		float lightprobe_tex_pixel_size[3];
 		float energy;
@@ -765,21 +782,22 @@ public:
 		float lightprobe_uv_offset[3];
 		float y_mult;
 
-		float occlusion_clamp[3];
-		uint32_t pad3;
+		uint32_t pad;
+		uint32_t use_occlusion;
 
 		float occlusion_renormalize[3];
-		uint32_t pad4;
+		float normal_bias;
 
 		float cascade_probe_size[3];
 		uint32_t pad5;
 
 		struct ProbeCascadeData {
 			float position[3]; //offset of (0,0,0) in world coordinates
-			float to_probe; // 1/bounds * grid_size
+			uint32_t pad;
 			int32_t probe_world_offset[3];
 			float to_cell; // 1/bounds * grid_size
-			float pad[3];
+
+			float to_probe[3]; // 1/bounds * grid_size
 			float exposure_normalization;
 		};
 

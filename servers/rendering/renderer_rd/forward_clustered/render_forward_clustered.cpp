@@ -3555,13 +3555,14 @@ AABB RenderForwardClustered::sdfgi_get_pending_region_bounds(const Ref<RenderSce
 	Vector3i from;
 	Vector3i size;
 	Vector3i scroll;
+	Vector3i region_ofs;
 
 	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
 	ERR_FAIL_COND_V(rb.is_null(), AABB());
 	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
 	ERR_FAIL_COND_V(sdfgi.is_null(), AABB());
 
-	int c = sdfgi->get_pending_region_data(p_region, from, size, bounds, scroll);
+	int c = sdfgi->get_pending_region_data(p_region, from, size, bounds, scroll, region_ofs);
 	ERR_FAIL_COND_V(c == -1, AABB());
 	return bounds;
 }
@@ -3571,13 +3572,14 @@ uint32_t RenderForwardClustered::sdfgi_get_pending_region_cascade(const Ref<Rend
 	Vector3i from;
 	Vector3i size;
 	Vector3i scroll;
+	Vector3i region_ofs;
 
 	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
 	ERR_FAIL_COND_V(rb.is_null(), -1);
 	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
 	ERR_FAIL_COND_V(sdfgi.is_null(), -1);
 
-	return sdfgi->get_pending_region_data(p_region, from, size, bounds, scroll);
+	return sdfgi->get_pending_region_data(p_region, from, size, bounds, scroll, region_ofs);
 }
 
 void RenderForwardClustered::GeometryInstanceForwardClustered::_mark_dirty() {

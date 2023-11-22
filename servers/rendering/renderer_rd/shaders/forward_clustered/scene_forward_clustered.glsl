@@ -2212,14 +2212,14 @@ void fragment_shader(in SceneData scene_data) {
 		vec3 ddy_vertex = dFdy(vertex);
 		vec3 geometric_normal = normalize(cross(ddx_vertex, ddy_vertex));
 
-		if (abs(dot(vec3(0,0,1),geometric_normal)) < 0.55) {
+		/*if (abs(dot(vec3(0,0,1),geometric_normal)) < 0.55) {
 			// Conservative value to discard this fragment if not belonging to this view
 			discard;
 		}
 
 		if (gl_HelperInvocation) {
 			return;
-		}
+		}*/
 
 
 		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normalize(normal_interp);
@@ -2261,7 +2261,6 @@ void fragment_shader(in SceneData scene_data) {
 		// Subgroup merge and store solid and normal bits
 
 
-
 		{
 
 
@@ -2282,7 +2281,7 @@ void fragment_shader(in SceneData scene_data) {
 			}
 
 #ifdef MOLTENVK_USED
-			imageStore(geom_solid_bits[1], igrid_pos, uvec4(imageLoad(geom_solid_bits[1], igrid_pos).r | (1<<bit_ofs))); //store solid bits
+			imageStore(geom_normal_bits, igrid_pos, uvec4(imageLoad(geom_normal_bits, igrid_pos).r | (1<<bit_ofs))); //store solid bits
 #else
 			imageAtomicOr(geom_normal_bits, igrid_pos, bit_normal); //store solid bits
 #endif
