@@ -653,7 +653,11 @@ int OSIPhone::get_screen_dpi(int p_screen) const {
 }
 
 float OSIPhone::get_screen_refresh_rate(int p_screen) const {
-	return [UIScreen mainScreen].maximumFramesPerSecond;
+	float fps = [UIScreen mainScreen].maximumFramesPerSecond;
+	if ([NSProcessInfo processInfo].lowPowerModeEnabled) {
+		fps = 60;
+	}
+	return fps;
 }
 
 Rect2 OSIPhone::get_window_safe_area() const {
