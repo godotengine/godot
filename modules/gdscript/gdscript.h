@@ -125,16 +125,17 @@ class GDScript : public Script {
 	};
 	struct UpdatableFuncPtrElement {
 		List<GDScriptFunction **>::Element *element = nullptr;
-		Mutex *mutex = nullptr;
+		List<UpdatableFuncPtrElement>::Element **element_ptr = nullptr;
+		Mutex *thread_mutex = nullptr;
+		Mutex *script_mutex = nullptr;
 	};
 	static thread_local UpdatableFuncPtr func_ptrs_to_update_thread_local;
-	static thread_local LocalVector<List<UpdatableFuncPtr *>::Element> func_ptrs_to_update_entries_thread_local;
 	static UpdatableFuncPtr *func_ptrs_to_update_main_thread;
 	List<UpdatableFuncPtr *> func_ptrs_to_update;
 	List<UpdatableFuncPtrElement> func_ptrs_to_update_elems;
 	Mutex func_ptrs_to_update_mutex;
 
-	List<UpdatableFuncPtrElement>::Element *_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
+	void _add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr, List<UpdatableFuncPtrElement>::Element **r_element_ptr);
 	static void _remove_func_ptr_to_update(List<UpdatableFuncPtrElement>::Element *p_func_ptr_element);
 
 	static void _fixup_thread_function_bookkeeping();

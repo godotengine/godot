@@ -148,11 +148,13 @@ GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptF
 
 	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 
-	updatable_func_ptr_element = p_script->_add_func_ptr_to_update(&function);
+	p_script->_add_func_ptr_to_update(&function, &updatable_func_ptr_element);
 }
 
 GDScriptLambdaCallable::~GDScriptLambdaCallable() {
-	GDScript::_remove_func_ptr_to_update(updatable_func_ptr_element);
+	if (updatable_func_ptr_element) {
+		GDScript::_remove_func_ptr_to_update(updatable_func_ptr_element);
+	}
 }
 
 bool GDScriptLambdaSelfCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -276,7 +278,7 @@ GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, G
 
 	GDScript *gds = p_function->get_script();
 	if (gds != nullptr) {
-		updatable_func_ptr_element = gds->_add_func_ptr_to_update(&function);
+		gds->_add_func_ptr_to_update(&function, &updatable_func_ptr_element);
 	}
 }
 
@@ -291,7 +293,7 @@ GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptF
 
 	GDScript *gds = p_function->get_script();
 	if (gds != nullptr) {
-		updatable_func_ptr_element = gds->_add_func_ptr_to_update(&function);
+		gds->_add_func_ptr_to_update(&function, &updatable_func_ptr_element);
 	}
 }
 
