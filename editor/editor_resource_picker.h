@@ -146,8 +146,8 @@ class EditorScriptPicker : public EditorResourcePicker {
 	GDCLASS(EditorScriptPicker, EditorResourcePicker);
 
 	enum ExtraMenuOption {
-		OBJ_MENU_NEW_SCRIPT = 10,
-		OBJ_MENU_EXTEND_SCRIPT = 11
+		OBJ_MENU_NEW_SCRIPT = 50,
+		OBJ_MENU_EXTEND_SCRIPT = 51
 	};
 
 	Node *script_owner = nullptr;
@@ -169,7 +169,7 @@ class EditorShaderPicker : public EditorResourcePicker {
 	GDCLASS(EditorShaderPicker, EditorResourcePicker);
 
 	enum ExtraMenuOption {
-		OBJ_MENU_NEW_SHADER = 10,
+		OBJ_MENU_NEW_SHADER = 50,
 	};
 
 	ShaderMaterial *edited_material = nullptr;
