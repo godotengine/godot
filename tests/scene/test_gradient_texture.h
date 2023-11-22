@@ -47,17 +47,43 @@ TEST_CASE("[GradientTexture1D] Create gradienttexture1D") {
 	)
 
 	CHECK(
-		gradient_texture.get_width() == 256;
+		gradient_texture.set_width(82)
+		gradient_texture.get_width() == 82;
 	)
 
 	CHECK(
 		graident_texture.set_use_hdr(true);
 		graident_texture.get_using_hdr() == true;
 	)
+}
+
+TEST_CASE("[GradientTexture1D] Update") {
+	Ref<GradientTexture1D> gradient_texture = memnew(GradientTexture1D);
+	Ref<Gradient> test_gradient = memnew(Gradient);
+	gradient_texture.set_gradient(test_gradient);
+	gradient_texture.update_now();
+
+	REQUIRE_FALSE(
+		gradient_texture.is_null();
+	)
 
 	CHECK(
-		
+		gradient_texture.get_gradient() == test_gradient;
 	)
+
+	CHECK(
+		gradient_texture.get_width() == 256;
+	)
+
+	CHECK(
+		graident_texture.get_using_hdr() == false;
+	)
+}
+
+TEST_CASE("[GradientTexture2D] Create gradienttexture2D"){
+	Ref<GradientTexture2D> gradient_texture = memnew(GradientTexture2D);
+
+	CHECK()
 }
 }
 
