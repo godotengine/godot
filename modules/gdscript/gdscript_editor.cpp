@@ -552,6 +552,19 @@ static int _get_property_location(const StringName &p_class, const StringName &p
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
+static int _get_property_location(Ref<Script> p_script, const StringName &p_property) {
+	int depth = 0;
+	Ref<Script> scr = p_script;
+	while (scr.is_valid()) {
+		if (scr->get_member_line(p_property) != -1) {
+			return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+		}
+		depth++;
+		scr = scr->get_base_script();
+	}
+	return depth + _get_property_location(p_script->get_instance_base_type(), p_property);
+}
+
 static int _get_constant_location(const StringName &p_class, const StringName &p_constant) {
 	if (!ClassDB::has_integer_constant(p_class, p_constant)) {
 		return ScriptLanguage::LOCATION_OTHER;
@@ -565,6 +578,19 @@ static int _get_constant_location(const StringName &p_class, const StringName &p
 	}
 
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+}
+
+static int _get_constant_location(Ref<Script> p_script, const StringName &p_constant) {
+	int depth = 0;
+	Ref<Script> scr = p_script;
+	while (scr.is_valid()) {
+		if (scr->get_member_line(p_constant) != -1) {
+			return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+		}
+		depth++;
+		scr = scr->get_base_script();
+	}
+	return depth + _get_constant_location(p_script->get_instance_base_type(), p_constant);
 }
 
 static int _get_signal_location(const StringName &p_class, const StringName &p_signal) {
@@ -582,6 +608,19 @@ static int _get_signal_location(const StringName &p_class, const StringName &p_s
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
+static int _get_signal_location(Ref<Script> p_script, const StringName &p_signal) {
+	int depth = 0;
+	Ref<Script> scr = p_script;
+	while (scr.is_valid()) {
+		if (scr->get_member_line(p_signal) != -1) {
+			return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+		}
+		depth++;
+		scr = scr->get_base_script();
+	}
+	return depth + _get_signal_location(p_script->get_instance_base_type(), p_signal);
+}
+
 static int _get_method_location(const StringName &p_class, const StringName &p_method) {
 	if (!ClassDB::has_method(p_class, p_method)) {
 		return ScriptLanguage::LOCATION_OTHER;
@@ -595,6 +634,19 @@ static int _get_method_location(const StringName &p_class, const StringName &p_m
 	}
 
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+}
+
+static int _get_method_location(Ref<Script> p_script, const StringName &p_method) {
+	int depth = 0;
+	Ref<Script> scr = p_script;
+	while (scr.is_valid()) {
+		if (scr->get_member_line(p_method) != -1) {
+			return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+		}
+		depth++;
+		scr = scr->get_base_script();
+	}
+	return depth + _get_method_location(p_script->get_instance_base_type(), p_method);
 }
 
 static int _get_enum_constant_location(const StringName &p_class, const StringName &p_enum_constant) {
@@ -1089,7 +1141,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 								if (E.name.contains("/")) {
 									continue;
 								}
-								int location = p_recursion_depth + _get_property_location(scr->get_class_name(), E.name);
+								int location = p_recursion_depth + _get_property_location(scr, E.name);
 								ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
 								r_result.insert(option.display, option);
 							}
@@ -1097,7 +1149,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							List<MethodInfo> signals;
 							scr->get_script_signal_list(&signals);
 							for (const MethodInfo &E : signals) {
-								int location = p_recursion_depth + _get_signal_location(scr->get_class_name(), E.name);
+								int location = p_recursion_depth + _get_signal_location(scr, E.name);
 								ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL, location);
 								r_result.insert(option.display, option);
 							}
@@ -1105,7 +1157,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						HashMap<StringName, Variant> constants;
 						scr->get_constants(&constants);
 						for (const KeyValue<StringName, Variant> &E : constants) {
-							int location = p_recursion_depth + _get_constant_location(scr->get_class_name(), E.key);
+							int location = p_recursion_depth + _get_constant_location(scr, E.key);
 							ScriptLanguage::CodeCompletionOption option(E.key.operator String(), ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
 							r_result.insert(option.display, option);
 						}
@@ -1117,7 +1169,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						if (E.name.begins_with("@")) {
 							continue;
 						}
-						int location = p_recursion_depth + _get_method_location(scr->get_class_name(), E.name);
+						int location = p_recursion_depth + _get_method_location(scr, E.name);
 						ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 						if (E.arguments.size()) {
 							option.insert_text += "(";
