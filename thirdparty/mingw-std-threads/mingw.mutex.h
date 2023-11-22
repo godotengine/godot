@@ -480,7 +480,7 @@ namespace std
 //  was none. Direct specification (std::), however, would be unaffected.
 //    Take the safe option, and include only in the presence of MinGW's win32
 //  implementation.
-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
+#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
 using mingw_stdthread::recursive_mutex;
 using mingw_stdthread::mutex;
 using mingw_stdthread::recursive_timed_mutex;
