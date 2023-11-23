@@ -388,14 +388,13 @@ class AnimatedValuesBackup : public RefCounted {
 	HashMap<NodePath, AnimationMixer::TrackCache *> data;
 
 public:
-	void set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> p_data) { data = p_data; };
-	HashMap<NodePath, AnimationMixer::TrackCache *> get_data() const { return data; };
+	void set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> p_data);
+	HashMap<NodePath, AnimationMixer::TrackCache *> get_data() const;
+	void clear_data();
 
-	~AnimatedValuesBackup() {
-		for (KeyValue<NodePath, AnimationMixer::TrackCache *> &K : data) {
-			memdelete(K.value);
-		}
-	}
+	AnimationMixer::TrackCache *get_cache_copy(AnimationMixer::TrackCache *p_cache) const;
+
+	~AnimatedValuesBackup() { clear_data(); }
 };
 
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeProcess);
