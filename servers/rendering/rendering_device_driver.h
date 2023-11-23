@@ -192,6 +192,11 @@ public:
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) = 0;
 	virtual uint8_t *buffer_map(BufferID p_buffer) = 0;
 	virtual void buffer_unmap(BufferID p_buffer) = 0;
+	// <TF>
+	// @ShadyTF
+	// adding UMA feature, when possible a valid persistent address is returned and can be used directly
+	virtual uint8_t* buffer_get_persistent_address(BufferID p_buffer) = 0;
+	// </TF>
 
 	/*****************/
 	/**** TEXTURE ****/
