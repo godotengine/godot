@@ -372,7 +372,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 		// Stores the further reachable end polygon, in case our goal is not reachable.
 		if (is_reachable) {
-			real_t d = navigation_polys[least_cost_id].entry.distance_to(p_destination) * navigation_polys[least_cost_id].poly->owner->get_travel_cost();
+			real_t d = navigation_polys[least_cost_id].entry.distance_to(p_destination);
 			if (reachable_d > d) {
 				reachable_d = d;
 				reachable_end = navigation_polys[least_cost_id].poly;
