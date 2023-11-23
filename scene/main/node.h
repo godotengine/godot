@@ -208,6 +208,7 @@ private:
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);
 	void _propagate_groups_dirty();
+	void _propagate_pause_change_notification(int p_notification);
 	Array _get_node_and_resource(const NodePath &p_path);
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
