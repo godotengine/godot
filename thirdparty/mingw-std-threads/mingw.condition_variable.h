@@ -58,7 +58,7 @@
 
 namespace mingw_stdthread
 {
-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
+#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
 enum class cv_status { no_timeout, timeout };
 #else
 using std::cv_status;
@@ -547,7 +547,7 @@ namespace std
 //  was none. Direct specification (std::), however, would be unaffected.
 //    Take the safe option, and include only in the presence of MinGW's win32
 //  implementation.
-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
+#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
 using mingw_stdthread::cv_status;
 using mingw_stdthread::condition_variable;
 using mingw_stdthread::condition_variable_any;
