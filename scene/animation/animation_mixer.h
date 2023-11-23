@@ -38,14 +38,12 @@
 #include "scene/resources/animation_library.h"
 #include "scene/resources/audio_stream_polyphonic.h"
 
-#ifdef TOOLS_ENABLED
 class AnimatedValuesBackup;
-#endif // TOOLS_ENABLED
 
 class AnimationMixer : public Node {
 	GDCLASS(AnimationMixer, Node);
-#ifdef TOOLS_ENABLED
 	friend AnimatedValuesBackup;
+#ifdef TOOLS_ENABLED
 	bool editing = false;
 	bool dummy = false;
 #endif // TOOLS_ENABLED
@@ -364,25 +362,26 @@ public:
 	void set_reset_on_save_enabled(bool p_enabled);
 	bool is_reset_on_save_enabled() const;
 
+	bool can_apply_reset() const;
+	void _build_backup_track_cache();
+	Ref<AnimatedValuesBackup> make_backup();
+	void restore(const Ref<AnimatedValuesBackup> &p_backup);
+	void reset();
+
 #ifdef TOOLS_ENABLED
+	Ref<AnimatedValuesBackup> apply_reset(bool p_user_initiated = false);
+
 	void set_editing(bool p_editing);
 	bool is_editing() const;
 
 	void set_dummy(bool p_dummy);
 	bool is_dummy() const;
-
-	bool can_apply_reset() const;
-	void _build_backup_track_cache();
-	Ref<AnimatedValuesBackup> make_backup();
-	Ref<AnimatedValuesBackup> apply_reset(bool p_user_initiated = false);
-	void restore(const Ref<AnimatedValuesBackup> &p_backup);
-	void reset();
 #endif // TOOLS_ENABLED
+
 	AnimationMixer();
 	~AnimationMixer();
 };
 
-#ifdef TOOLS_ENABLED
 class AnimatedValuesBackup : public RefCounted {
 	GDCLASS(AnimatedValuesBackup, RefCounted);
 
@@ -398,7 +397,6 @@ public:
 		}
 	}
 };
-#endif
 
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeProcess);
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeMethod);
