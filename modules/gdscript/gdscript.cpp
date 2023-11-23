@@ -1391,108 +1391,51 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 }
 #endif
 
-thread_local GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_thread_local;
-GDScript::UpdatableFuncPtr *GDScript::func_ptrs_to_update_main_thread = &func_ptrs_to_update_thread_local;
+GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_main_thread;
+thread_local GDScript::UpdatableFuncPtr *GDScript::func_ptrs_to_update_thread_local = nullptr;
 
-List<GDScript::UpdatableFuncPtrElement>::Element *GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
-	MutexLock lock(func_ptrs_to_update_mutex);
-
-	List<UpdatableFuncPtrElement>::Element *result = func_ptrs_to_update_elems.push_back(UpdatableFuncPtrElement());
+GDScript::UpdatableFuncPtrElement GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
+	UpdatableFuncPtrElement result = {};
 
 	{
-		MutexLock lock2(func_ptrs_to_update_thread_local.mutex);
-		result->get().element = func_ptrs_to_update_thread_local.ptrs.push_back(p_func_ptr_ptr);
-		result->get().mutex = &func_ptrs_to_update_thread_local.mutex;
+		MutexLock lock(func_ptrs_to_update_thread_local->mutex);
+		result.element = func_ptrs_to_update_thread_local->ptrs.push_back(p_func_ptr_ptr);
+		result.func_ptr = func_ptrs_to_update_thread_local;
 
-		if (likely(func_ptrs_to_update_thread_local.initialized)) {
+		if (likely(func_ptrs_to_update_thread_local->initialized)) {
 			return result;
 		}
 
-		func_ptrs_to_update_thread_local.initialized = true;
+		func_ptrs_to_update_thread_local->initialized = true;
 	}
 
-	func_ptrs_to_update.push_back(&func_ptrs_to_update_thread_local);
+	MutexLock lock(func_ptrs_to_update_mutex);
+	func_ptrs_to_update.push_back(func_ptrs_to_update_thread_local);
+	func_ptrs_to_update_thread_local->rc++;
 
 	return result;
 }
 
-void GDScript::_remove_func_ptr_to_update(List<UpdatableFuncPtrElement>::Element *p_func_ptr_element) {
-	// None of these checks should ever fail, unless there's a bug.
-	// They can be removed once we are sure they never catch anything.
-	// Left here now due to extra safety needs late in the release cycle.
-	ERR_FAIL_NULL(p_func_ptr_element);
-	MutexLock lock(func_ptrs_to_update_thread_local.mutex);
-	ERR_FAIL_NULL(p_func_ptr_element->get().element);
-	ERR_FAIL_NULL(p_func_ptr_element->get().mutex);
-	MutexLock lock2(*p_func_ptr_element->get().mutex);
-	p_func_ptr_element->get().element->erase();
-	p_func_ptr_element->erase();
+void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement &p_func_ptr_element) {
+	ERR_FAIL_NULL(p_func_ptr_element.element);
+	ERR_FAIL_NULL(p_func_ptr_element.func_ptr);
+	MutexLock lock(p_func_ptr_element.func_ptr->mutex);
+	p_func_ptr_element.element->erase();
 }
 
 void GDScript::_fixup_thread_function_bookkeeping() {
 	// Transfer the ownership of these update items to the main thread,
 	// because the current one is dying, leaving theirs orphan, dangling.
 
-	HashSet<GDScript *> scripts;
-
 	DEV_ASSERT(!Thread::is_main_thread());
-	MutexLock lock(func_ptrs_to_update_main_thread->mutex);
 
-	{
-		MutexLock lock2(func_ptrs_to_update_thread_local.mutex);
+	MutexLock lock(func_ptrs_to_update_main_thread.mutex);
+	MutexLock lock2(func_ptrs_to_update_thread_local->mutex);
 
-		while (!func_ptrs_to_update_thread_local.ptrs.is_empty()) {
-			// Transfer the thread-to-script records from the dying thread to the main one.
-
-			List<GDScriptFunction **>::Element *E = func_ptrs_to_update_thread_local.ptrs.front();
-			List<GDScriptFunction **>::Element *new_E = func_ptrs_to_update_main_thread->ptrs.push_front(E->get());
-
-			GDScript *script = (*E->get())->get_script();
-			if (!scripts.has(script)) {
-				scripts.insert(script);
-
-				// Replace dying thread by the main thread in the script-to-thread records.
-
-				MutexLock lock3(script->func_ptrs_to_update_mutex);
-				DEV_ASSERT(script->func_ptrs_to_update.find(&func_ptrs_to_update_thread_local));
-				{
-					for (List<UpdatableFuncPtrElement>::Element *F = script->func_ptrs_to_update_elems.front(); F; F = F->next()) {
-						bool is_dying_thread_entry = F->get().mutex == &func_ptrs_to_update_thread_local.mutex;
-						if (is_dying_thread_entry) {
-							// This may lead to multiple main-thread entries, but that's not a problem
-							// and allows to reuse the element, which is needed, since it's tracked by pointer.
-							F->get().element = new_E;
-							F->get().mutex = &func_ptrs_to_update_main_thread->mutex;
-						}
-					}
-				}
-			}
-
-			E->erase();
-		}
-	}
-	func_ptrs_to_update_main_thread->initialized = true;
-
-	{
-		// Remove orphan thread-to-script entries from every script.
-		// FIXME: This involves iterating through every script whenever a thread dies.
-		//        While it's OK that thread creation/destruction are heavy operations,
-		//        additional bookkeeping can be used to outperform this brute-force approach.
-
-		GDScriptLanguage *gd_lang = GDScriptLanguage::get_singleton();
-
-		MutexLock lock2(gd_lang->mutex);
-
-		for (SelfList<GDScript> *s = gd_lang->script_list.first(); s; s = s->next()) {
-			GDScript *script = s->self();
-			for (List<UpdatableFuncPtr *>::Element *E = script->func_ptrs_to_update.front(); E; E = E->next()) {
-				bool is_dying_thread_entry = &E->get()->mutex == &func_ptrs_to_update_thread_local.mutex;
-				if (is_dying_thread_entry) {
-					E->erase();
-					break;
-				}
-			}
-		}
+	while (!func_ptrs_to_update_thread_local->ptrs.is_empty()) {
+		List<GDScriptFunction **>::Element *E = func_ptrs_to_update_thread_local->ptrs.front();
+		E->transfer_to_back(&func_ptrs_to_update_main_thread.ptrs);
+		func_ptrs_to_update_thread_local->transferred = true;
 	}
 }
 
@@ -1516,12 +1459,29 @@ void GDScript::clear(ClearData *p_clear_data) {
 	{
 		MutexLock outer_lock(func_ptrs_to_update_mutex);
 		for (UpdatableFuncPtr *updatable : func_ptrs_to_update) {
-			MutexLock inner_lock(updatable->mutex);
-			for (GDScriptFunction **func_ptr_ptr : updatable->ptrs) {
-				*func_ptr_ptr = nullptr;
+			bool destroy = false;
+			{
+				MutexLock inner_lock(updatable->mutex);
+				if (updatable->transferred) {
+					func_ptrs_to_update_main_thread.mutex.lock();
+				}
+				for (GDScriptFunction **func_ptr_ptr : updatable->ptrs) {
+					*func_ptr_ptr = nullptr;
+				}
+				DEV_ASSERT(updatable->rc != 0);
+				updatable->rc--;
+				if (updatable->rc == 0) {
+					destroy = true;
+				}
+				if (updatable->transferred) {
+					func_ptrs_to_update_main_thread.mutex.unlock();
+				}
+			}
+			if (destroy) {
+				DEV_ASSERT(updatable != &func_ptrs_to_update_main_thread);
+				memdelete(updatable);
 			}
 		}
-		func_ptrs_to_update_elems.clear();
 	}
 
 	RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();
@@ -2141,8 +2101,25 @@ void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	named_globals.erase(p_name);
 }
 
+void GDScriptLanguage::thread_enter() {
+	GDScript::func_ptrs_to_update_thread_local = memnew(GDScript::UpdatableFuncPtr);
+}
+
 void GDScriptLanguage::thread_exit() {
 	GDScript::_fixup_thread_function_bookkeeping();
+
+	bool destroy = false;
+	{
+		MutexLock lock(GDScript::func_ptrs_to_update_thread_local->mutex);
+		DEV_ASSERT(GDScript::func_ptrs_to_update_thread_local->rc != 0);
+		GDScript::func_ptrs_to_update_thread_local->rc--;
+		if (GDScript::func_ptrs_to_update_thread_local->rc == 0) {
+			destroy = true;
+		}
+	}
+	if (destroy) {
+		memdelete(GDScript::func_ptrs_to_update_thread_local);
+	}
 }
 
 void GDScriptLanguage::init() {
@@ -2176,6 +2153,8 @@ void GDScriptLanguage::init() {
 	for (const Engine::Singleton &E : singletons) {
 		_add_global(E.name, E.ptr);
 	}
+
+	GDScript::func_ptrs_to_update_thread_local = &GDScript::func_ptrs_to_update_main_thread;
 
 #ifdef TESTS_ENABLED
 	GDScriptTests::GDScriptTestRunner::handle_cmdline();
@@ -2226,6 +2205,8 @@ void GDScriptLanguage::finish() {
 	}
 	script_list.clear();
 	function_list.clear();
+
+	DEV_ASSERT(GDScript::func_ptrs_to_update_main_thread.rc == 1);
 }
 
 void GDScriptLanguage::profiling_start() {
