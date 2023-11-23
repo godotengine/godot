@@ -5485,10 +5485,10 @@ msgid "Shape RID"
 msgstr "RID форми"
 
 msgid "Default Gravity"
-msgstr "Типове зображення перегляду"
+msgstr "Типове тяжіння"
 
 msgid "Default Gravity Vector"
-msgstr "Типове зображення перегляду"
+msgstr "Типовий вектор тяжіння"
 
 msgid "Principal Inertia Axes"
 msgstr "Головні вісі інерції"
