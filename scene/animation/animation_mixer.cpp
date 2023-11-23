@@ -1868,7 +1868,6 @@ bool AnimationMixer::is_reset_on_save_enabled() const {
 	return reset_on_save;
 }
 
-#ifdef TOOLS_ENABLED
 bool AnimationMixer::can_apply_reset() const {
 	return has_animation(SceneStringNames::get_singleton()->RESET);
 }
@@ -1929,7 +1928,6 @@ void AnimationMixer::_build_backup_track_cache() {
 				if (asp) {
 					t->object->call(SNAME("set_stream"), Ref<AudioStream>());
 				}
-				track = memnew(TrackCache); // Make disable this track cache.
 			} break;
 			default: {
 			} // The rest don't matter.
@@ -1959,29 +1957,6 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 	return backup;
 }
 
-Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
-	if (!p_user_initiated && dummy) {
-		return Ref<AnimatedValuesBackup>();
-	}
-	ERR_FAIL_COND_V(!can_apply_reset(), Ref<AnimatedValuesBackup>());
-
-	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
-	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
-
-	Ref<AnimatedValuesBackup> backup_current = make_backup();
-	if (p_user_initiated) {
-		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Animation Apply Reset"));
-		ur->add_do_method(this, "_reset");
-		ur->add_undo_method(this, "_restore", backup_current);
-		ur->commit_action();
-	} else {
-		reset();
-	}
-
-	return backup_current;
-}
-
 void AnimationMixer::reset() {
 	ERR_FAIL_COND(!can_apply_reset());
 
@@ -2009,6 +1984,30 @@ void AnimationMixer::restore(const Ref<AnimatedValuesBackup> &p_backup) {
 	_blend_apply();
 	track_cache = HashMap<NodePath, AnimationMixer::TrackCache *>();
 	cache_valid = false;
+}
+
+#ifdef TOOLS_ENABLED
+Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
+	if (!p_user_initiated && dummy) {
+		return Ref<AnimatedValuesBackup>();
+	}
+	ERR_FAIL_COND_V(!can_apply_reset(), Ref<AnimatedValuesBackup>());
+
+	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
+	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
+
+	Ref<AnimatedValuesBackup> backup_current = make_backup();
+	if (p_user_initiated) {
+		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+		ur->create_action(TTR("Animation Apply Reset"));
+		ur->add_do_method(this, "_reset");
+		ur->add_undo_method(this, "_restore", backup_current);
+		ur->commit_action();
+	} else {
+		reset();
+	}
+
+	return backup_current;
 }
 #endif // TOOLS_ENABLED
 
@@ -2128,6 +2127,9 @@ void AnimationMixer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SNAME("animation_finished"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("animation_started"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("caches_cleared")));
+
+	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
+	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
 }
 
 AnimationMixer::AnimationMixer() {
