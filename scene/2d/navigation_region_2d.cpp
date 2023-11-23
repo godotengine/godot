@@ -169,6 +169,7 @@ void NavigationRegion2D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			set_physics_process_internal(false);
+			_region_update_transform();
 		} break;
 
 		case NOTIFICATION_DRAW: {
