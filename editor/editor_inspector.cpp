@@ -4047,7 +4047,11 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
 		if (valid) {
-			undo_redo->add_undo_property(object, p_name, value);
+			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
+				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
+			} else {
+				undo_redo->add_undo_property(object, p_name, value);
+			}
 		}
 
 		List<StringName> linked_properties;
