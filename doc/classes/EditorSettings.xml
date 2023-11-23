@@ -220,6 +220,9 @@
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
 		</member>
+		<member name="dotnet/editor/external_editor" type="int" setter="" getter="">
+			External text editor for C# scripts.
+		</member>
 		<member name="editors/2d/bone_color1" type="Color" setter="" getter="">
 			The "start" stop of the color gradient to use for bones in the 2D skeleton editor.
 		</member>
@@ -876,6 +879,17 @@
 		</member>
 		<member name="text_editor/completion/use_single_quotes" type="bool" setter="" getter="">
 			If [code]true[/code], performs string autocompletion with single quotes. If [code]false[/code], performs string autocompletion with double quotes (which matches the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url]).
+		</member>
+		<member name="text_editor/external/exec_flags" type="String" setter="" getter="">
+			Arguments passed to the external test editor on execution.
+		</member>
+		<member name="text_editor/external/exec_path" type="String" setter="" getter="">
+			File path of the external text editor binary.
+		</member>
+		<member name="text_editor/external/use_external_editor" type="bool" setter="" getter="">
+			If [code]true[/code], an external text editor will be used for editing script files.
+			[b]Note:[/b] If setting an external editor for C#, set [member dotnet/editor/external_editor] instead.
+			[b]Note:[/b] For Visual Studio Code on Windows, you must point to the [code]code.cmd[/code] file.
 		</member>
 		<member name="text_editor/help/class_reference_examples" type="int" setter="" getter="">
 			Controls which multi-line code blocks should be displayed in the editor help. This setting does not affect single-line code literals in the editor help.
