@@ -2138,3 +2138,73 @@ AnimationMixer::AnimationMixer() {
 
 AnimationMixer::~AnimationMixer() {
 }
+
+void AnimatedValuesBackup::set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> p_data) {
+	clear_data();
+
+	for (const KeyValue<NodePath, AnimationMixer::TrackCache *> &E : p_data) {
+		data.insert(E.key, get_cache_copy(E.value));
+	}
+}
+
+HashMap<NodePath, AnimationMixer::TrackCache *> AnimatedValuesBackup::get_data() const {
+	HashMap<NodePath, AnimationMixer::TrackCache *> ret;
+	for (const KeyValue<NodePath, AnimationMixer::TrackCache *> &E : data) {
+		ret.insert(E.key, get_cache_copy(E.value));
+	}
+	return ret;
+}
+
+void AnimatedValuesBackup::clear_data() {
+	for (KeyValue<NodePath, AnimationMixer::TrackCache *> &K : data) {
+		memdelete(K.value);
+	}
+	data.clear();
+}
+
+AnimationMixer::TrackCache *AnimatedValuesBackup::get_cache_copy(AnimationMixer::TrackCache *p_cache) const {
+	switch (p_cache->type) {
+		case Animation::TYPE_VALUE: {
+			AnimationMixer::TrackCacheValue *src = static_cast<AnimationMixer::TrackCacheValue *>(p_cache);
+			AnimationMixer::TrackCacheValue *tc = memnew(AnimationMixer::TrackCacheValue);
+			memcpy((void *)tc, (void *)src, sizeof(AnimationMixer::TrackCacheValue));
+			return tc;
+		}
+
+		case Animation::TYPE_POSITION_3D:
+		case Animation::TYPE_ROTATION_3D:
+		case Animation::TYPE_SCALE_3D: {
+			AnimationMixer::TrackCacheTransform *src = static_cast<AnimationMixer::TrackCacheTransform *>(p_cache);
+			AnimationMixer::TrackCacheTransform *tc = memnew(AnimationMixer::TrackCacheTransform);
+			memcpy((void *)tc, (void *)src, sizeof(AnimationMixer::TrackCacheTransform));
+			return tc;
+		}
+
+		case Animation::TYPE_BLEND_SHAPE: {
+			AnimationMixer::TrackCacheBlendShape *src = static_cast<AnimationMixer::TrackCacheBlendShape *>(p_cache);
+			AnimationMixer::TrackCacheBlendShape *tc = memnew(AnimationMixer::TrackCacheBlendShape);
+			memcpy((void *)tc, (void *)src, sizeof(AnimationMixer::TrackCacheBlendShape));
+			return tc;
+		}
+
+		case Animation::TYPE_BEZIER: {
+			AnimationMixer::TrackCacheBezier *src = static_cast<AnimationMixer::TrackCacheBezier *>(p_cache);
+			AnimationMixer::TrackCacheBezier *tc = memnew(AnimationMixer::TrackCacheBezier);
+			memcpy((void *)tc, (void *)src, sizeof(AnimationMixer::TrackCacheBezier));
+			return tc;
+		}
+
+		case Animation::TYPE_AUDIO: {
+			AnimationMixer::TrackCacheAudio *src = static_cast<AnimationMixer::TrackCacheAudio *>(p_cache);
+			AnimationMixer::TrackCacheAudio *tc = memnew(AnimationMixer::TrackCacheAudio);
+			memcpy((void *)tc, (void *)src, sizeof(AnimationMixer::TrackCacheAudio));
+			return tc;
+		}
+
+		case Animation::TYPE_METHOD:
+		case Animation::TYPE_ANIMATION: {
+			// Nothing to do here.
+		} break;
+	}
+	return nullptr;
+}
