@@ -450,6 +450,14 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
 			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
 
+	// <TF>
+	// @ShadyTF - if persistent UMA is available, copy and skip the barrier
+	uint8_t *persistent_data_ptr = driver->buffer_get_persistent_address(buffer->driver_id);
+	if (persistent_data_ptr ) {
+		memcpy(persistent_data_ptr + p_offset, p_data, p_size);
+		return OK;
+	}
+	// </TF>
 	return _buffer_update(buffer, p_buffer, p_offset, (uint8_t *)p_data, p_size, true);
 }
 
@@ -2103,7 +2111,21 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const Vector<ui
 	}
 
 	if (p_data.size()) {
+		uint64_t data_size = p_data.size();
+		const uint8_t *r = p_data.ptr();
+
+		// <TF>
+		// @ShadyTF - if persistent UMA is available, copy and skip the barrier
+		uint8_t *persistent_data_ptr = driver->buffer_get_persistent_address(buffer.driver_id);
+		if (persistent_data_ptr ) {
+			memcpy(persistent_data_ptr, p_data.ptr(), p_data.size());
+		} else {
+		// </TF>
 		_buffer_update(&buffer, RID(), 0, p_data.ptr(), p_data.size());
+		// <TF>
+		// @ShadyTF 
+		}
+		// </TF>
 	}
 
 	buffer_memory += buffer.size;
@@ -2267,7 +2289,20 @@ RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferForm
 	}
 
 	if (p_data.size()) {
+		uint64_t data_size = p_data.size();
+		const uint8_t *r = p_data.ptr();
+		uint8_t *persistent_data_ptr = driver->buffer_get_persistent_address(index_buffer.driver_id);
+		// <TF>
+		// @ShadyTF - if persistent UMA is available, copy and skip the barrier
+		if (persistent_data_ptr ) {
+			memcpy(persistent_data_ptr, p_data.ptr(), p_data.size());
+		} else {
+		// </TF>
 		_buffer_update(&index_buffer, RID(), 0, p_data.ptr(), p_data.size());
+		// <TF>
+		// @ShadyTF 
+		}
+		// </TF>
 	}
 
 	buffer_memory += index_buffer.size;
