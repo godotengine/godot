@@ -2332,7 +2332,6 @@ RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueue
 	VkCommandPoolCreateInfo cmd_pool_info = {};
 	cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	cmd_pool_info.queueFamilyIndex = family_index;
-	cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	VkCommandPool vk_command_pool = VK_NULL_HANDLE;
 	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, nullptr, &vk_command_pool);
@@ -2342,6 +2341,16 @@ RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueue
 	command_pool->vk_command_pool = vk_command_pool;
 	command_pool->buffer_type = p_cmd_buffer_type;
 	return CommandPoolID(command_pool);
+}
+
+bool RenderingDeviceDriverVulkan::command_pool_reset(CommandPoolID p_cmd_pool) {
+	DEV_ASSERT(p_cmd_pool);
+
+	CommandPool *command_pool = (CommandPool *)(p_cmd_pool.id);
+	VkResult err = vkResetCommandPool(vk_device, command_pool->vk_command_pool, 0);
+	ERR_FAIL_COND_V_MSG(err, false, "vkResetCommandPool failed with error " + itos(err) + ".");
+
+	return true;
 }
 
 void RenderingDeviceDriverVulkan::command_pool_free(CommandPoolID p_cmd_pool) {
@@ -2377,8 +2386,6 @@ RDD::CommandBufferID RenderingDeviceDriverVulkan::command_buffer_create(CommandP
 }
 
 bool RenderingDeviceDriverVulkan::command_buffer_begin(CommandBufferID p_cmd_buffer) {
-	// Reset is implicit (VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT).
-
 	VkCommandBufferBeginInfo cmd_buf_begin_info = {};
 	cmd_buf_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	cmd_buf_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -2390,8 +2397,6 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin(CommandBufferID p_cmd_buf
 }
 
 bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) {
-	// Reset is implicit (VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT).
-
 	VkCommandBufferInheritanceInfo inheritance_info = {};
 	inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
 	inheritance_info.renderPass = (VkRenderPass)p_render_pass.id;
@@ -4161,6 +4166,10 @@ void RenderingDeviceDriverVulkan::command_bind_render_uniform_set(CommandBufferI
 	const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_set.id;
 	vkCmdBindDescriptorSets((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
 }
+
+void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+}
+
 
 void RenderingDeviceDriverVulkan::command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) {
 	vkCmdDraw((VkCommandBuffer)p_cmd_buffer.id, p_vertex_count, p_instance_count, p_base_vertex, p_first_instance);

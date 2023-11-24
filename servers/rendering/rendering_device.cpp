@@ -4834,6 +4834,10 @@ void RenderingDevice::_begin_frame() {
 		frames[frame].draw_fence_signaled = false;
 	}
 
+	// Reset command pool for this frame
+	bool reset = driver->command_pool_reset(frames[frame].command_pool);
+	ERR_FAIL_COND(!reset);
+	
 	// Begin recording on the frame's command buffers.
 	driver->begin_segment(frame, frames_drawn++);
 	driver->command_buffer_begin(frames[frame].setup_command_buffer);

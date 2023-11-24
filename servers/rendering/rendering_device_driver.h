@@ -411,7 +411,7 @@ public:
 	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) = 0;
 	virtual void command_queue_free(CommandQueueID p_cmd_queue) = 0;
 
-	// ----- POOL -----
+	// ----- BUFFER -----
 
 	enum CommandBufferType {
 		COMMAND_BUFFER_TYPE_PRIMARY,
@@ -419,6 +419,7 @@ public:
 	};
 
 	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) = 0;
+	virtual bool command_pool_reset(CommandPoolID p_cmd_pool) = 0;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) = 0;
 
 	// ----- BUFFER -----
@@ -627,6 +628,7 @@ public:
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
 	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) = 0;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) = 0;
