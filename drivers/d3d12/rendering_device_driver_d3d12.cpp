@@ -5162,6 +5162,20 @@ void RenderingDeviceDriverD3D12::command_timestamp_write(CommandBufferID p_cmd_b
 	cmd_buf_info->cmd_list->ResolveQueryData(tqp_info->query_heap.Get(), D3D12_QUERY_TYPE_TIMESTAMP, p_index, tqp_info->query_count, results_buffer, p_index * sizeof(uint64_t));
 }
 
+void RenderingDeviceDriverD3D12::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
+#ifdef PIX_ENABLED
+	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	PIXBeginEvent(cmd_buf_info->cmd_list.Get(), p_color.to_argb32(), p_label_name);
+#endif
+}
+
+void RenderingDeviceDriverD3D12::command_end_label(CommandBufferID p_cmd_buffer) {
+#ifdef PIX_ENABLED
+	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	PIXEndEvent(cmd_buf_info->cmd_list.Get());
+#endif
+}
+
 /****************/
 /**** SCREEN ****/
 /****************/

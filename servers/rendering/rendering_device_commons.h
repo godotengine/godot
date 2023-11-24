@@ -379,6 +379,7 @@ public:
 		TEXTURE_SLICE_CUBEMAP,
 		TEXTURE_SLICE_3D,
 		TEXTURE_SLICE_2D_ARRAY,
+		TEXTURE_SLICE_MAX
 	};
 
 	/*****************/
@@ -910,6 +911,7 @@ protected:
 
 		Vector<Vector<ShaderUniform>> uniform_sets;
 		Vector<ShaderSpecializationConstant> specialization_constants;
+		Vector<ShaderStage> stages;
 	};
 
 	struct ShaderReflection : public ShaderDescription {
