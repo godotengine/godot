@@ -3770,17 +3770,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	int prev = editor_data.get_edited_scene();
-	int idx = editor_data.add_edited_scene(-1);
-
-	if (!editor_data.get_edited_scene_root() && editor_data.get_edited_scene_count() == 2) {
-		_remove_edited_scene();
-	} else if (p_silent_change_tab) {
-		_set_current_scene_nocheck(idx);
-	} else {
-		_set_current_scene(idx);
-	}
-
 	dependency_errors.clear();
 
 	Error err;
@@ -3795,11 +3784,18 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		dependency_error->show(DependencyErrorDialog::MODE_SCENE, lpath, errors);
 		opening_prev = false;
 
-		if (prev != -1) {
-			_set_current_scene(prev);
-			editor_data.remove_scene(idx);
-		}
 		return ERR_FILE_MISSING_DEPENDENCIES;
+	}
+
+	int prev = editor_data.get_edited_scene();
+	int idx = editor_data.add_edited_scene(-1);
+
+	if (!editor_data.get_edited_scene_root() && editor_data.get_edited_scene_count() == 2) {
+		_remove_edited_scene();
+	} else if (p_silent_change_tab) {
+		_set_current_scene_nocheck(idx);
+	} else {
+		_set_current_scene(idx);
 	}
 
 	if (!sdata.is_valid()) {
