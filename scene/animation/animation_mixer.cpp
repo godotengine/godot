@@ -2143,14 +2143,22 @@ void AnimatedValuesBackup::set_data(const HashMap<NodePath, AnimationMixer::Trac
 	clear_data();
 
 	for (const KeyValue<NodePath, AnimationMixer::TrackCache *> &E : p_data) {
-		data.insert(E.key, get_cache_copy(E.value));
+		AnimationMixer::TrackCache *track = get_cache_copy(E.value);
+		if (!track) {
+			continue; // Some types of tracks do not get a copy and must be ignored.
+		}
+
+		data.insert(E.key, track);
 	}
 }
 
 HashMap<NodePath, AnimationMixer::TrackCache *> AnimatedValuesBackup::get_data() const {
 	HashMap<NodePath, AnimationMixer::TrackCache *> ret;
 	for (const KeyValue<NodePath, AnimationMixer::TrackCache *> &E : data) {
-		ret.insert(E.key, get_cache_copy(E.value));
+		AnimationMixer::TrackCache *track = get_cache_copy(E.value);
+		ERR_CONTINUE(!track); // Backup shouldn't contain tracks that cannot be copied, this is a mistake.
+
+		ret.insert(E.key, track);
 	}
 	return ret;
 }
