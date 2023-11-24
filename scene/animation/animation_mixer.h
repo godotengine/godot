@@ -142,6 +142,15 @@ protected:
 		ObjectID object_id;
 		real_t total_weight = 0.0;
 
+		TrackCache() = default;
+		TrackCache(const TrackCache &p_other) :
+				root_motion(p_other.root_motion),
+				setup_pass(p_other.setup_pass),
+				type(p_other.type),
+				object(p_other.object),
+				object_id(p_other.object_id),
+				total_weight(p_other.total_weight) {}
+
 		virtual ~TrackCache() {}
 	};
 
@@ -161,6 +170,24 @@ protected:
 		Quaternion rot;
 		Vector3 scale;
 
+		TrackCacheTransform(const TrackCacheTransform &p_other) :
+				TrackCache(p_other),
+#ifndef _3D_DISABLED
+				node_3d(p_other.node_3d),
+				skeleton(p_other.skeleton),
+#endif
+				bone_idx(p_other.bone_idx),
+				loc_used(p_other.loc_used),
+				rot_used(p_other.rot_used),
+				scale_used(p_other.scale_used),
+				init_loc(p_other.init_loc),
+				init_rot(p_other.init_rot),
+				init_scale(p_other.init_scale),
+				loc(p_other.loc),
+				rot(p_other.rot),
+				scale(p_other.scale) {
+		}
+
 		TrackCacheTransform() {
 			type = Animation::TYPE_POSITION_3D;
 		}
@@ -178,6 +205,14 @@ protected:
 		float init_value = 0;
 		float value = 0;
 		int shape_index = -1;
+
+		TrackCacheBlendShape(const TrackCacheBlendShape &p_other) :
+				TrackCache(p_other),
+				mesh_3d(p_other.mesh_3d),
+				init_value(p_other.init_value),
+				value(p_other.value),
+				shape_index(p_other.shape_index) {}
+
 		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
 		~TrackCacheBlendShape() {}
 	};
@@ -189,6 +224,16 @@ protected:
 		bool is_continuous = false;
 		bool is_using_angle = false;
 		Variant element_size;
+
+		TrackCacheValue(const TrackCacheValue &p_other) :
+				TrackCache(p_other),
+				init_value(p_other.init_value),
+				value(p_other.value),
+				subpath(p_other.subpath),
+				is_continuous(p_other.is_continuous),
+				is_using_angle(p_other.is_using_angle),
+				element_size(p_other.element_size) {}
+
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
 		~TrackCacheValue() {
 			// Clear ref to avoid leaking.
@@ -206,6 +251,13 @@ protected:
 		real_t init_value = 0.0;
 		real_t value = 0.0;
 		Vector<StringName> subpath;
+
+		TrackCacheBezier(const TrackCacheBezier &p_other) :
+				TrackCache(p_other),
+				init_value(p_other.init_value),
+				value(p_other.value),
+				subpath(p_other.subpath) {}
+
 		TrackCacheBezier() {
 			type = Animation::TYPE_BEZIER;
 		}
@@ -234,6 +286,12 @@ protected:
 		Ref<AudioStreamPolyphonic> audio_stream;
 		Ref<AudioStreamPlaybackPolyphonic> audio_stream_playback;
 		HashMap<ObjectID, PlayingAudioTrackInfo> playing_streams; // Key is Animation resource ObjectID.
+
+		TrackCacheAudio(const TrackCacheAudio &p_other) :
+				TrackCache(p_other),
+				audio_stream(p_other.audio_stream),
+				audio_stream_playback(p_other.audio_stream_playback),
+				playing_streams(p_other.playing_streams) {}
 
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
