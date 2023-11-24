@@ -87,6 +87,14 @@
 				If [code]true[/code], this [HTTPClient] has a response that is chunked.
 			</description>
 		</method>
+		<method name="load_default_proxies">
+			<return type="void" />
+			<description>
+				Sets HTTP and HTTPS proxies according to environment variables. Does not override existing proxies.
+				[b]Note:[/b] HTTP proxy is detected from [code]http_proxy[/code], [code]HTTP_PROXY[/code], [code]all_proxy[/code], [code]ALL_PROXY[/code] environment variables. HTTPS proxy is detected from [code]https_proxy[/code], [code]HTTPS_PROXY[/code], [code]all_proxy[/code], [code]ALL_PROXY[/code] environment variables.
+				[b]Note:[/b] This method is not supported on the web platform. It does nothing.
+			</description>
+		</method>
 		<method name="poll">
 			<return type="int" enum="Error" />
 			<description>

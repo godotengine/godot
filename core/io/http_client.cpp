@@ -57,6 +57,10 @@ void HTTPClient::set_https_proxy(const String &p_host, int p_port) {
 	WARN_PRINT("HTTPS proxy feature is not available");
 }
 
+void HTTPClient::load_default_proxies() {
+	// Do nothing if not implemented.
+}
+
 Error HTTPClient::_request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
 	int size = p_body.size();
 	return request(p_method, p_url, p_headers, size > 0 ? p_body.ptr() : nullptr, size);
@@ -164,6 +168,7 @@ void HTTPClient::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPClient::set_http_proxy);
 	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPClient::set_https_proxy);
+	ClassDB::bind_method(D_METHOD("load_default_proxies"), &HTTPClient::load_default_proxies);
 
 	ClassDB::bind_method(D_METHOD("query_string_from_dict", "fields"), &HTTPClient::query_string_from_dict);
 

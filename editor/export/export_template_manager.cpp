@@ -155,6 +155,9 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 	const int proxy_port = EDITOR_GET("network/http_proxy/port");
 	download_templates->set_http_proxy(proxy_host, proxy_port);
 	download_templates->set_https_proxy(proxy_host, proxy_port);
+	if (EDITOR_GET("network/http_proxy/auto_detect")) {
+		download_templates->load_default_proxies();
+	}
 
 	Error err = download_templates->request(p_url);
 	if (err != OK) {

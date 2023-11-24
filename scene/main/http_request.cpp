@@ -30,6 +30,7 @@
 
 #include "http_request.h"
 #include "core/io/compression.h"
+#include "scene/main/node.h"
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
@@ -493,6 +494,12 @@ void HTTPRequest::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_READY: {
+			if (auto_detect_proxies) {
+				load_default_proxies();
+			}
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (requesting) {
 				cancel_request();
@@ -576,6 +583,22 @@ void HTTPRequest::set_https_proxy(const String &p_host, int p_port) {
 	client->set_https_proxy(p_host, p_port);
 }
 
+void HTTPRequest::load_default_proxies() {
+	client->load_default_proxies();
+}
+
+void HTTPRequest::set_auto_detect_proxies(bool p_enable) {
+	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
+		WARN_PRINT("Setting proxy auto detection after the node has been added to the scene has no effect.");
+	}
+
+	auto_detect_proxies = p_enable;
+}
+
+bool HTTPRequest::get_auto_detect_proxies() const {
+	return auto_detect_proxies;
+}
+
 void HTTPRequest::set_timeout(double p_timeout) {
 	ERR_FAIL_COND(p_timeout < 0);
 	timeout = p_timeout;
@@ -631,6 +654,9 @@ void HTTPRequest::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPRequest::set_http_proxy);
 	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPRequest::set_https_proxy);
+	ClassDB::bind_method(D_METHOD("load_default_proxies"), &HTTPRequest::load_default_proxies);
+	ClassDB::bind_method(D_METHOD("get_auto_detect_proxies"), &HTTPRequest::get_auto_detect_proxies);
+	ClassDB::bind_method(D_METHOD("set_auto_detect_proxies", "enable"), &HTTPRequest::set_auto_detect_proxies);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216,suffix:B"), "set_download_chunk_size", "get_download_chunk_size");
@@ -639,6 +665,7 @@ void HTTPRequest::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000,suffix:B"), "set_body_size_limit", "get_body_size_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "timeout", PROPERTY_HINT_RANGE, "0,3600,0.1,or_greater,suffix:s"), "set_timeout", "get_timeout");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_detect_proxies"), "set_auto_detect_proxies", "get_auto_detect_proxies");
 
 	ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "headers"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "body")));
 

@@ -700,13 +700,17 @@
 		<member name="network/debug/remote_port" type="int" setter="" getter="">
 			The port to listen to when starting the remote debugger. Godot will try to use port numbers above the configured number if the configured number is already taken by another application.
 		</member>
+		<member name="network/http_proxy/auto_detect" type="bool" setter="" getter="">
+			If [code]true[/code], detects system proxy settings (for the asset library and export template downloads).
+			[b]Note:[/b] Godot currently supports loading proxy settings from environment variables. See [method HTTPClient.load_default_proxies].
+		</member>
 		<member name="network/http_proxy/host" type="String" setter="" getter="">
 			The host to use to contact the HTTP and HTTPS proxy in the editor (for the asset library and export template downloads). See also [member network/http_proxy/port].
-			[b]Note:[/b] Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.
+			[b]Note:[/b] This overrides the system proxy settings detected by [member network/http_proxy/auto_detect].
 		</member>
 		<member name="network/http_proxy/port" type="int" setter="" getter="">
 			The port number to use to contact the HTTP and HTTPS proxy in the editor (for the asset library and export template downloads). See also [member network/http_proxy/host].
-			[b]Note:[/b] Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.
+			[b]Note:[/b] This overrides the system proxy settings detected by [member network/http_proxy/auto_detect].
 		</member>
 		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
 			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.

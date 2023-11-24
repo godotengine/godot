@@ -197,6 +197,7 @@ public:
 	// Use empty string or -1 to unset
 	virtual void set_http_proxy(const String &p_host, int p_port);
 	virtual void set_https_proxy(const String &p_host, int p_port);
+	virtual void load_default_proxies();
 
 	HTTPClient() {}
 	virtual ~HTTPClient() {}

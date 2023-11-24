@@ -776,6 +776,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "debugger/remote_inspect_refresh_interval", 0.2, "0.02,10,0.01,or_greater")
 
 	// HTTP Proxy
+	_initial_set("network/http_proxy/auto_detect", true);
 	_initial_set("network/http_proxy/host", "");
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/http_proxy/port", 8080, "1,65535,1")
 

@@ -52,6 +52,10 @@ static inline void setup_http_request(HTTPRequest *request) {
 	const int proxy_port = EDITOR_GET("network/http_proxy/port");
 	request->set_http_proxy(proxy_host, proxy_port);
 	request->set_https_proxy(proxy_host, proxy_port);
+
+	if (EDITOR_GET("network/http_proxy/auto_detect")) {
+		request->load_default_proxies();
+	}
 }
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {

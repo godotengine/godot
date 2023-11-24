@@ -787,6 +787,58 @@ void HTTPClientTCP::set_https_proxy(const String &p_host, int p_port) {
 	}
 }
 
+void _load_default_proxy(const char *envs[], String &r_host, int &r_port) {
+	String content;
+	for (const char **current = envs; *current && content.is_empty(); current++) {
+		content = OS::get_singleton()->get_environment(*current);
+	}
+	if (content.is_empty()) {
+		return;
+	}
+
+	String scheme, host, path;
+	int port;
+	if (content.parse_url(scheme, host, port, path) != OK) {
+		WARN_PRINT_ONCE(vformat("Unsupported proxy syntax: %s", content));
+		return;
+	}
+
+	if (!scheme.is_empty() && scheme != "http://") {
+		WARN_PRINT_ONCE(vformat("Unsupported proxy scheme: %s", scheme));
+		return;
+	}
+
+	if (port == 0) {
+		port = 80;
+	}
+
+	r_host = host;
+	r_port = port;
+}
+
+void HTTPClientTCP::load_default_proxies() {
+	if (http_proxy_host.is_empty() || http_proxy_port == -1) {
+		const char *envs[] = {
+			"http_proxy",
+			"HTTP_PROXY",
+			"all_proxy",
+			"ALL_PROXY",
+			nullptr
+		};
+		_load_default_proxy(envs, http_proxy_host, http_proxy_port);
+	}
+	if (https_proxy_host.is_empty() || https_proxy_port == -1) {
+		const char *envs[] = {
+			"https_proxy",
+			"HTTPS_PROXY",
+			"all_proxy",
+			"ALL_PROXY",
+			nullptr
+		};
+		_load_default_proxy(envs, https_proxy_host, https_proxy_port);
+	}
+}
+
 HTTPClientTCP::HTTPClientTCP() {
 	tcp_connection.instantiate();
 	request_buffer.instantiate();
