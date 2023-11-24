@@ -178,8 +178,6 @@ private:
 	TypedArray<Node> _get_nodes_in_group(const StringName &p_group);
 
 	Node *current_scene = nullptr;
-	Node *prev_scene = nullptr;
-	Node *pending_new_scene = nullptr;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
@@ -190,7 +188,7 @@ private:
 	Ref<Material> collision_material;
 	int collision_debug_contacts;
 
-	void _flush_scene_change();
+	void _change_scene(Node *p_to);
 
 	List<Ref<SceneTreeTimer>> timers;
 	List<Ref<Tween>> tweens;
