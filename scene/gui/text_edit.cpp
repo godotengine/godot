@@ -1779,6 +1779,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 
+				_push_current_op();
 				set_caret_line(row, false, true, 0, caret);
 				set_caret_column(col, false, caret);
 				selection_drag_attempt = false;
@@ -1861,6 +1862,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 
 			if (mb->get_button_index() == MouseButton::RIGHT && (context_menu_enabled || is_move_caret_on_right_click_enabled())) {
+				_push_current_op();
 				_reset_caret_blink_timer();
 				apply_ime();
 
@@ -2179,6 +2181,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		// MISC.
 		if (k->is_action("ui_menu", true)) {
+			_push_current_op();
 			if (context_menu_enabled) {
 				_update_context_menu();
 				adjust_viewport_to_caret();
@@ -2343,6 +2346,7 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 }
 
 void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
+	_push_current_op();
 	for (int i = 0; i < carets.size(); i++) {
 		// Handle selection.
 		if (p_select) {
@@ -2402,6 +2406,7 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 }
 
 void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
+	_push_current_op();
 	for (int i = 0; i < carets.size(); i++) {
 		// Handle selection.
 		if (p_select) {
@@ -2461,6 +2466,7 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 }
 
 void TextEdit::_move_caret_up(bool p_select) {
+	_push_current_op();
 	for (int i = 0; i < carets.size(); i++) {
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -2490,6 +2496,7 @@ void TextEdit::_move_caret_up(bool p_select) {
 }
 
 void TextEdit::_move_caret_down(bool p_select) {
+	_push_current_op();
 	for (int i = 0; i < carets.size(); i++) {
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -2515,6 +2522,7 @@ void TextEdit::_move_caret_down(bool p_select) {
 }
 
 void TextEdit::_move_caret_to_line_start(bool p_select) {
+	_push_current_op();
 	for (int i = 0; i < carets.size(); i++) {
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -2549,6 +2557,7 @@ void TextEdit::_move_caret_to_line_start(bool p_select) {
 }
 
 void TextEdit::_move_caret_to_line_end(bool p_select) {
+	_push_current_op();
 	for (int i = 0; i < carets.size(); i++) {
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -2579,6 +2588,7 @@ void TextEdit::_move_caret_to_line_end(bool p_select) {
 }
 
 void TextEdit::_move_caret_page_up(bool p_select) {
+	_push_current_op();
 	for (int i = 0; i < carets.size(); i++) {
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -2598,6 +2608,7 @@ void TextEdit::_move_caret_page_up(bool p_select) {
 }
 
 void TextEdit::_move_caret_page_down(bool p_select) {
+	_push_current_op();
 	for (int i = 0; i < carets.size(); i++) {
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -2891,6 +2902,7 @@ void TextEdit::_move_caret_document_end(bool p_select) {
 }
 
 bool TextEdit::_clear_carets_and_selection() {
+	_push_current_op();
 	if (get_caret_count() > 1) {
 		remove_secondary_carets();
 		return true;
@@ -5067,6 +5079,7 @@ TextEdit::SelectionMode TextEdit::get_selection_mode() const {
 }
 
 void TextEdit::select_all() {
+	_push_current_op();
 	if (!selecting_enabled) {
 		return;
 	}
@@ -5087,6 +5100,7 @@ void TextEdit::select_all() {
 void TextEdit::select_word_under_caret(int p_caret) {
 	ERR_FAIL_COND(p_caret > carets.size());
 
+	_push_current_op();
 	if (!selecting_enabled) {
 		return;
 	}
@@ -5140,6 +5154,7 @@ void TextEdit::add_selection_for_next_occurrence() {
 		return;
 	}
 
+	_push_current_op();
 	// Always use the last caret, to correctly search for
 	// the next occurrence that comes after this caret.
 	int caret = get_caret_count() - 1;
@@ -7762,28 +7777,9 @@ void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r
 	}
 	op.end_carets = carets;
 
-	// See if it should just be set as current op.
-	if (current_op.type != op.type) {
-		op.prev_version = get_version();
-		_push_current_op();
-		current_op = op;
-
-		return; // Set as current op, return.
-	}
-	// See if it can be merged.
-	if (current_op.to_line != p_line || current_op.to_column != p_char) {
-		op.prev_version = get_version();
-		_push_current_op();
-		current_op = op;
-		return; // Set as current op, return.
-	}
-	// Merge current op.
-
-	current_op.text += p_text;
-	current_op.to_column = retchar;
-	current_op.to_line = retline;
-	current_op.version = op.version;
-	current_op.end_carets = carets;
+	op.prev_version = get_version();
+	_push_current_op();
+	current_op = op;
 }
 
 void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
@@ -7820,23 +7816,6 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 		op.start_carets = carets;
 	}
 	op.end_carets = carets;
-
-	// See if it should just be set as current op.
-	if (current_op.type != op.type) {
-		op.prev_version = get_version();
-		_push_current_op();
-		current_op = op;
-		return; // Set as current op, return.
-	}
-	// See if it can be merged.
-	if (current_op.from_line == p_to_line && current_op.from_column == p_to_column) {
-		// Backspace or similar.
-		current_op.text = txt + current_op.text;
-		current_op.from_line = p_from_line;
-		current_op.from_column = p_from_column;
-		current_op.end_carets = carets;
-		return; // Update current op.
-	}
 
 	op.prev_version = get_version();
 	_push_current_op();
