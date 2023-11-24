@@ -153,6 +153,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_SHOW_IN_FILE_SYSTEM);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_unique_name", p_event)) {
 		_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME);
+	} else if (ED_IS_SHORTCUT("scene_tree/toggle_exposed_node", p_event)) {
+		_tool_selected(TOOL_TOGGLE_SCENE_EXPOSED);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	} else {
@@ -1253,6 +1255,54 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					}
 					undo_redo->add_do_method(node, "set_unique_name_in_owner", false);
 					undo_redo->add_undo_method(node, "set_unique_name_in_owner", true);
+				}
+				undo_redo->commit_action();
+			}
+		} break;
+		case TOOL_TOGGLE_SCENE_EXPOSED: {
+			// Enabling/disabling based on the same node based on which the checkbox in the menu is checked/unchecked.
+			List<Node *>::Element *first_selected = editor_selection->get_selected_node_list().front();
+			if (first_selected == nullptr) {
+				return;
+			}
+			if (first_selected->get() == EditorNode::get_singleton()->get_edited_scene()) {
+				// Exclude Root Node. It should never be unique name in its own scene!
+				editor_selection->remove_node(first_selected->get());
+				first_selected = editor_selection->get_selected_node_list().front();
+				if (first_selected == nullptr) {
+					return;
+				}
+			}
+			bool enabling = !first_selected->get()->is_exposed_in_owner();
+
+			List<Node *> full_selection = editor_selection->get_full_selected_node_list();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+			if (enabling) {
+				_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME, p_confirm_override);
+				Vector<Node *> new_exposed_nodes;
+				for (Node *node : full_selection) {
+					if (node->is_exposed_in_owner()) {
+						continue;
+					}
+					new_exposed_nodes.push_back(node);
+				}
+				if (new_exposed_nodes.size()) {
+					undo_redo->create_action("Enable Exposed Node(s)");
+					for (Node *node : new_exposed_nodes) {
+						undo_redo->add_do_method(node, "set_exposed_in_owner", true);
+						undo_redo->add_undo_method(node, "set_exposed_in_owner", false);
+					}
+					undo_redo->commit_action();
+				}
+			} else { // Disabling.
+				undo_redo->create_action(TTR("Disable Exposed Node(s)"));
+				for (Node *node : full_selection) {
+					if (!node->is_unique_name_in_owner()) {
+						continue;
+					}
+					undo_redo->add_do_method(node, "set_exposed_in_owner", false);
+					undo_redo->add_undo_method(node, "set_exposed_in_owner", true);
 				}
 				undo_redo->commit_action();
 			}
@@ -3247,6 +3297,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			Node *node = full_selection[0];
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("SceneUniqueName")), ED_GET_SHORTCUT("scene_tree/toggle_unique_name"), TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 			menu->set_item_text(menu->get_item_index(TOOL_TOGGLE_SCENE_UNIQUE_NAME), node->is_unique_name_in_owner() ? TTR("Revoke Unique Name") : TTR("Access as Unique Name"));
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("SceneExposedNode")), ED_GET_SHORTCUT("scene_tree/toggle_exposed_node"), TOOL_TOGGLE_SCENE_EXPOSED);
+			menu->set_item_text(menu->get_item_index(TOOL_TOGGLE_SCENE_EXPOSED), node->is_exposed_in_owner() ? TTR("Hide Node in Instantiated Scenes") : TTR("Expose Node in Instantiated Scenes"));
 		}
 	}
 
@@ -3995,6 +4047,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTR("Show In FileSystem"));
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTR("Toggle Access as Unique Name"));
+	ED_SHORTCUT("scene_tree/toggle_exposed_node", TTR("Toggle Exposure of Node"));
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KeyModifierMask::SHIFT | Key::KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), Key::KEY_DELETE);
 

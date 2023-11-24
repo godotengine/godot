@@ -155,6 +155,7 @@ private:
 		mutable LocalVector<Node *> children_cache;
 		HashMap<StringName, Node *> owned_unique_nodes;
 		bool unique_name_in_owner = false;
+		bool exposed_in_owner = false;
 		InternalMode internal_mode = INTERNAL_MODE_DISABLED;
 		mutable int internal_children_front_count_cache = 0;
 		mutable int internal_children_back_count_cache = 0;
@@ -399,6 +400,9 @@ public:
 	Node *get_node_or_null(const NodePath &p_path) const;
 	Node *find_child(const String &p_pattern, bool p_recursive = true, bool p_owned = true) const;
 	TypedArray<Node> find_children(const String &p_pattern, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
+	bool is_child_of_exposed_node(const Node *p_owner = nullptr) const;
+	bool contains_exposed_nodes() const;
+	TypedArray<Node> get_exposed_children(bool p_recursive = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
@@ -444,6 +448,9 @@ public:
 
 	void set_unique_name_in_owner(bool p_enabled);
 	bool is_unique_name_in_owner() const;
+
+	void set_exposed_in_owner(bool p_enabled);
+	bool is_exposed_in_owner() const;
 
 	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
 		// p_include_internal = false doesn't make sense if the node is internal.
