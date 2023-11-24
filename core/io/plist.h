@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MACOS_PLIST_H
-#define MACOS_PLIST_H
+#ifndef PLIST_H
+#define PLIST_H
 
 // Property list file format (application/x-plist) parser, property list ASN-1 serialization.
 
@@ -125,4 +125,4 @@ public:
 	~PListNode() {}
 };
 
-#endif // MACOS_PLIST_H
+#endif // PLIST_H

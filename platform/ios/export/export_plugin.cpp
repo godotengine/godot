@@ -34,6 +34,7 @@
 #include "run_icon_svg.gen.h"
 
 #include "core/io/json.h"
+#include "core/io/plist.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -976,7 +977,7 @@ struct ExportLibsData {
 	String dest_dir;
 };
 
-void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets) {
+void EditorExportPlatformIOS::_add_assets_to_project(const String &p_out_dir, const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets) {
 	// that is just a random number, we just need Godot IDs not to clash with
 	// existing IDs in the project.
 	PbxId current_id = { 0x58938401, 0, 0 };
@@ -1009,7 +1010,40 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 
 			type = "wrapper.framework";
 		} else if (asset.exported_path.ends_with(".xcframework")) {
-			if (asset.should_embed) {
+			int static_libs = 0;
+			int total_libs = 1;
+
+			Ref<PList> plist;
+			plist.instantiate();
+			plist->load_file(p_out_dir.path_join(asset.exported_path).path_join("Info.plist"));
+			Ref<PListNode> root_node = plist->get_root();
+			if (root_node.is_valid()) {
+				Dictionary root = root_node->get_value();
+				if (root.has("AvailableLibraries")) {
+					Ref<PListNode> libs_node = root["AvailableLibraries"];
+					if (libs_node.is_valid()) {
+						Array libs = libs_node->get_value();
+						total_libs = libs.size();
+						for (int j = 0; j < libs.size(); j++) {
+							Ref<PListNode> lib_node = libs[j];
+							if (lib_node.is_valid()) {
+								Dictionary lib = lib_node->get_value();
+								if (lib.has("BinaryPath")) {
+									Ref<PListNode> path_node = lib["BinaryPath"];
+									if (path_node.is_valid()) {
+										String path = path_node->get_value();
+										if (path.ends_with(".a")) {
+											static_libs++;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if (asset.should_embed && (static_libs != total_libs)) {
 				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
 				framework_id = (++current_id).str();
 				pbx_embeded_frameworks += framework_id + ",\n";
@@ -1838,7 +1872,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 
 	print_line("Exporting additional assets");
 	_export_additional_assets(dest_dir + binary_name, libraries, assets);
-	_add_assets_to_project(p_preset, project_file_data, assets);
+	_add_assets_to_project(dest_dir, p_preset, project_file_data, assets);
 	String project_file_name = dest_dir + binary_name + ".xcodeproj/project.pbxproj";
 	{
 		Ref<FileAccess> f = FileAccess::open(project_file_name, FileAccess::WRITE);
