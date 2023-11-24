@@ -3799,6 +3799,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			_set_current_scene(prev);
 			editor_data.remove_scene(idx);
 		}
+		scene_tabs->update_scene_tabs();
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
 
