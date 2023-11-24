@@ -2451,6 +2451,14 @@ void Viewport::_gui_update_mouse_over() {
 		return;
 	}
 
+	if (gui.sending_mouse_enter_exit_notifications) {
+		// If notifications are already being sent, delay call to next frame.
+		if (get_tree() && !get_tree()->is_connected(SNAME("process_frame"), callable_mp(this, &Viewport::_gui_update_mouse_over))) {
+			get_tree()->connect(SNAME("process_frame"), callable_mp(this, &Viewport::_gui_update_mouse_over), CONNECT_ONE_SHOT);
+		}
+		return;
+	}
+
 	// Rebuild the mouse over hierarchy.
 	LocalVector<Control *> new_mouse_over_hierarchy;
 	LocalVector<Control *> needs_enter;
@@ -2507,6 +2515,8 @@ void Viewport::_gui_update_mouse_over() {
 		return;
 	}
 
+	gui.sending_mouse_enter_exit_notifications = true;
+
 	// Send Mouse Exit Self notification.
 	if (gui.mouse_over && !needs_exit.is_empty() && needs_exit[0] == (int)gui.mouse_over_hierarchy.size() - 1) {
 		gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT_SELF);
@@ -2528,6 +2538,8 @@ void Viewport::_gui_update_mouse_over() {
 	for (int i = needs_enter.size() - 1; i >= 0; i--) {
 		needs_enter[i]->notification(Control::NOTIFICATION_MOUSE_ENTER);
 	}
+
+	gui.sending_mouse_enter_exit_notifications = false;
 }
 
 Window *Viewport::get_base_window() const {
@@ -3200,16 +3212,20 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			gui.mouse_over = over;
 			gui.mouse_over_hierarchy.reserve(gui.mouse_over_hierarchy.size() + over_ancestors.size());
 
+			gui.sending_mouse_enter_exit_notifications = true;
+
 			// Send Mouse Enter notifications to parents first.
 			for (int i = over_ancestors.size() - 1; i >= 0; i--) {
-				over_ancestors[i]->notification(Control::NOTIFICATION_MOUSE_ENTER);
 				gui.mouse_over_hierarchy.push_back(over_ancestors[i]);
+				over_ancestors[i]->notification(Control::NOTIFICATION_MOUSE_ENTER);
 			}
 
 			// Send Mouse Enter Self notification.
 			if (gui.mouse_over) {
 				gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_ENTER_SELF);
 			}
+
+			gui.sending_mouse_enter_exit_notifications = false;
 
 			notify_embedded_viewports = true;
 		}
@@ -3252,6 +3268,12 @@ void Viewport::_mouse_leave_viewport() {
 }
 
 void Viewport::_drop_mouse_over(Control *p_until_control) {
+	if (gui.sending_mouse_enter_exit_notifications) {
+		// If notifications are already being sent, defer call.
+		callable_mp(this, &Viewport::_drop_mouse_over).call_deferred(p_until_control);
+		return;
+	}
+
 	_gui_cancel_tooltip();
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(gui.mouse_over);
 	if (c) {
@@ -3263,6 +3285,8 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 			v->_mouse_leave_viewport();
 		}
 	}
+
+	gui.sending_mouse_enter_exit_notifications = true;
 	if (gui.mouse_over && gui.mouse_over->is_inside_tree()) {
 		gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT_SELF);
 	}
@@ -3276,6 +3300,7 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 		}
 	}
 	gui.mouse_over_hierarchy.resize(notification_until);
+	gui.sending_mouse_enter_exit_notifications = false;
 }
 
 void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
