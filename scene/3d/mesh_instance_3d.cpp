@@ -167,8 +167,12 @@ void MeshInstance3D::set_blend_shape_value(int p_blend_shape, float p_value) {
 void MeshInstance3D::_resolve_skeleton_path() {
 	Ref<SkinReference> new_skin_reference;
 
-	if (!skeleton_path.is_empty()) {
-		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node(skeleton_path));
+	// attempt to resolve skeleton from parent as default fallback for imported scenes
+	NodePath resolve_path = skeleton_path.is_empty() ? NodePath("..") : skeleton_path;
+
+	Node *skeleton_node = get_node_or_null(skeleton_path);
+	if (skeleton_node) {
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(skeleton_node);
 		if (skeleton) {
 			if (skin_internal.is_null()) {
 				new_skin_reference = skeleton->register_skin(skeleton->create_skin_from_rest_transforms());
