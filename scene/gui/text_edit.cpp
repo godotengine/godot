@@ -3338,6 +3338,14 @@ bool TextEdit::is_middle_mouse_paste_enabled() const {
 	return middle_mouse_paste_enabled;
 }
 
+void TextEdit::set_cut_line_on_empty_selection_enabled(bool p_enabled) {
+	cut_line_on_empty_selection = p_enabled;
+}
+
+bool TextEdit::is_cut_line_on_empty_selection_enabled() const {
+	return cut_line_on_empty_selection;
+}
+
 // Text manipulation
 void TextEdit::clear() {
 	setting_text = true;
@@ -6663,6 +6671,10 @@ void TextEdit::_cut_internal(int p_caret) {
 		DisplayServer::get_singleton()->clipboard_set(get_selected_text(p_caret));
 		delete_selection(p_caret);
 		cut_copy_line = "";
+		return;
+	}
+
+	if (!cut_line_on_empty_selection) {
 		return;
 	}
 

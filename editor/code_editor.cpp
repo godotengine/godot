@@ -1060,6 +1060,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_smooth_scroll_enabled(EDITOR_GET("text_editor/behavior/navigation/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EDITOR_GET("text_editor/behavior/navigation/v_scroll_speed"));
 	text_editor->set_drag_and_drop_selection_enabled(EDITOR_GET("text_editor/behavior/navigation/drag_and_drop_selection"));
+	text_editor->set_cut_line_on_empty_selection_enabled(EDITOR_GET("text_editor/behavior/navigation/cut_line_on_empty_selection"));
 
 	// Behavior: indent
 	text_editor->set_indent_using_spaces(EDITOR_GET("text_editor/behavior/indent/type"));

@@ -299,6 +299,7 @@ private:
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
 	bool middle_mouse_paste_enabled = true;
+	bool cut_line_on_empty_selection = true;
 
 	// Overridable actions.
 	String cut_copy_line = "";
@@ -729,6 +730,9 @@ public:
 
 	void set_middle_mouse_paste_enabled(bool p_enabled);
 	bool is_middle_mouse_paste_enabled() const;
+
+	void set_cut_line_on_empty_selection_enabled(bool p_enabled);
+	bool is_cut_line_on_empty_selection_enabled() const;
 
 	// Text manipulation
 	void clear();
