@@ -101,7 +101,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-11-11 03:41+0000\n"
+"PO-Revision-Date: 2023-11-18 06:21+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -110,7 +110,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "主线程"
@@ -1950,6 +1950,9 @@ msgstr "开发人员"
 msgid "Authors"
 msgstr "作者"
 
+msgid "Patrons"
+msgstr "赞助人"
+
 msgid "Platinum Sponsors"
 msgstr "白金赞助"
 
@@ -1958,6 +1961,18 @@ msgstr "黄金赞助"
 
 msgid "Silver Sponsors"
 msgstr "白银赞助"
+
+msgid "Diamond Members"
+msgstr "钻石会员"
+
+msgid "Titanium Members"
+msgstr "钛金会员"
+
+msgid "Platinum Members"
+msgstr "白金会员"
+
+msgid "Gold Members"
+msgstr "黄金会员"
 
 msgid "Donors"
 msgstr "捐助者"
@@ -3983,6 +3998,9 @@ msgstr "唯一化"
 msgid "Make Unique (Recursive)"
 msgstr "唯一化（递归）"
 
+msgid "Save As..."
+msgstr "另存为..."
+
 msgid "Show in FileSystem"
 msgstr "在文件系统中显示"
 
@@ -5821,9 +5839,6 @@ msgstr "从磁盘中加载资源并编辑。"
 
 msgid "Save the currently edited resource."
 msgstr "保存当前编辑的资源。"
-
-msgid "Save As..."
-msgstr "另存为..."
 
 msgid "Extra resource options."
 msgstr "更多资源选项。"
@@ -14401,8 +14416,14 @@ msgstr "无法写入扩展包文件！"
 msgid "Building Android Project (gradle)"
 msgstr "构建 Android 项目 (Gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr "Android 项目构建失败，请检查输出中显示的错误："
+
 msgid "Moving output"
 msgstr "移动输出"
+
+msgid "Unable to copy and rename export file:"
+msgstr "无法复制并更名导出文件："
 
 msgid "Package not found: \"%s\"."
 msgstr "包不存在：“%s”。"

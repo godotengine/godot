@@ -3743,6 +3743,9 @@ msgstr "Tee yksilölliseksi"
 msgid "Make Unique (Recursive)"
 msgstr "Tee yksilölliseksi (Rekursiivisesti)"
 
+msgid "Save As..."
+msgstr "Tallenna nimellä..."
+
 msgid "Show in FileSystem"
 msgstr "Näytä tiedostojärjestelmässä"
 
@@ -5148,9 +5151,6 @@ msgstr "Lataa olemassaoleva resurssi levyltä ja muokkaa sitä."
 
 msgid "Save the currently edited resource."
 msgstr "Tallenna tällä hetkellä muokattu resurssi."
-
-msgid "Save As..."
-msgstr "Tallenna nimellä..."
 
 msgid "Extra resource options."
 msgstr "Ylimääräiset resurssivalinnat."

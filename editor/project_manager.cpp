@@ -727,9 +727,12 @@ void ProjectDialog::show_dialog() {
 			project_path->set_text(d->get_current_dir());
 			fdialog->set_current_dir(d->get_current_dir());
 		}
-		String proj = TTR("New Game Project");
-		project_name->set_text(proj);
-		_text_changed(proj);
+
+		if (project_name->get_text().is_empty()) {
+			String proj = TTR("New Game Project");
+			project_name->set_text(proj);
+			_text_changed(proj);
+		}
 
 		project_path->set_editable(true);
 		browse->set_disabled(false);

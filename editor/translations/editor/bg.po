@@ -1922,6 +1922,9 @@ msgstr "Размер:"
 msgid "New Value:"
 msgstr "Нова стойност:"
 
+msgid "Save As..."
+msgstr "Запазване като..."
+
 msgid "Show in FileSystem"
 msgstr "Показване във файловата система"
 
@@ -2543,9 +2546,6 @@ msgstr "Поставяне на свойствата"
 
 msgid "Save the currently edited resource."
 msgstr "Запазване на текущо редактирания ресурс."
-
-msgid "Save As..."
-msgstr "Запазване като..."
 
 msgid "Extra resource options."
 msgstr "Допълнителни настройки на ресурса."

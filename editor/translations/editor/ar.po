@@ -4083,6 +4083,9 @@ msgstr "اجعلْه فريدًا"
 msgid "Make Unique (Recursive)"
 msgstr "اجعلْه فريدا (متكرر)"
 
+msgid "Save As..."
+msgstr "حفظ بنوع..."
+
 msgid "Show in FileSystem"
 msgstr "أظهر في نظام الملفات"
 
@@ -5968,9 +5971,6 @@ msgstr "تحميل مورد موجود مسبقا من الذاكرة وتعدي
 
 msgid "Save the currently edited resource."
 msgstr "حفظ المورد الذي يتم تعديله حاليا."
-
-msgid "Save As..."
-msgstr "حفظ بنوع..."
 
 msgid "Extra resource options."
 msgstr "أختيارات اضافية للمورد."

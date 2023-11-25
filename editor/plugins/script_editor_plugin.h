@@ -204,6 +204,10 @@ class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
 class FindInFilesPanel;
 
+#ifdef MINGW_ENABLED
+#undef FILE_OPEN
+#endif
+
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
 

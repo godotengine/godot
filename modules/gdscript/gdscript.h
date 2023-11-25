@@ -121,21 +121,23 @@ class GDScript : public Script {
 	struct UpdatableFuncPtr {
 		List<GDScriptFunction **> ptrs;
 		Mutex mutex;
-		bool initialized = false;
+		bool initialized : 1;
+		bool transferred : 1;
+		uint32_t rc = 1;
+		UpdatableFuncPtr() :
+				initialized(false), transferred(false) {}
 	};
 	struct UpdatableFuncPtrElement {
 		List<GDScriptFunction **>::Element *element = nullptr;
-		Mutex *mutex = nullptr;
+		UpdatableFuncPtr *func_ptr = nullptr;
 	};
-	static thread_local UpdatableFuncPtr func_ptrs_to_update_thread_local;
-	static thread_local LocalVector<List<UpdatableFuncPtr *>::Element> func_ptrs_to_update_entries_thread_local;
-	static UpdatableFuncPtr *func_ptrs_to_update_main_thread;
+	static UpdatableFuncPtr func_ptrs_to_update_main_thread;
+	static thread_local UpdatableFuncPtr *func_ptrs_to_update_thread_local;
 	List<UpdatableFuncPtr *> func_ptrs_to_update;
-	List<UpdatableFuncPtrElement> func_ptrs_to_update_elems;
 	Mutex func_ptrs_to_update_mutex;
 
-	UpdatableFuncPtrElement *_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
-	static void _remove_func_ptr_to_update(const UpdatableFuncPtrElement *p_func_ptr_element);
+	UpdatableFuncPtrElement _add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
+	static void _remove_func_ptr_to_update(const UpdatableFuncPtrElement &p_func_ptr_element);
 
 	static void _fixup_thread_function_bookkeeping();
 
@@ -561,6 +563,7 @@ public:
 
 	/* MULTITHREAD FUNCTIONS */
 
+	virtual void thread_enter() override;
 	virtual void thread_exit() override;
 
 	/* DEBUGGER FUNCTIONS */

@@ -2392,6 +2392,9 @@ msgstr "Muatan Cepat"
 msgid "Make Unique"
 msgstr "Buat Unik"
 
+msgid "Save As..."
+msgstr "Simpan Sebagai..."
+
 msgid "Show in FileSystem"
 msgstr "Tunjukkan dalam FileSystem"
 
@@ -3054,9 +3057,6 @@ msgstr "Muatkan sumber sedia ada dari cakera dan suntingnya."
 
 msgid "Save the currently edited resource."
 msgstr "Simpan sumber yang sedang disunting."
-
-msgid "Save As..."
-msgstr "Simpan Sebagai..."
 
 msgid "Extra resource options."
 msgstr "Pilihan sumber tambahan."

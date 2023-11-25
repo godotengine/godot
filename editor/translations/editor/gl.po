@@ -2739,6 +2739,9 @@ msgstr ""
 msgid "Make Unique"
 msgstr "Facer Único"
 
+msgid "Save As..."
+msgstr "Gardar Como..."
+
 msgid "Show in FileSystem"
 msgstr "Amosar no Sistema de Arquivos"
 
@@ -3243,9 +3246,6 @@ msgstr "Fallou a carga do Recurso."
 
 msgid "Raw"
 msgstr "Sen Procesar (Raw)"
-
-msgid "Save As..."
-msgstr "Gardar Como..."
 
 msgid "Copy Resource"
 msgstr "Copiar Recurso"

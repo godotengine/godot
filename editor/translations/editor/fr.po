@@ -160,8 +160,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-16 07:52+0000\n"
-"Last-Translator: Clément <clement.vaugoyeau@gmail.com>\n"
+"PO-Revision-Date: 2023-11-18 06:21+0000\n"
+"Last-Translator: Roskai <angel.du.2558@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -712,6 +712,15 @@ msgstr "Changer l’appel d'animation"
 
 msgid "Animation Multi Change Transition"
 msgstr "Changements multiple d'animations de Transition"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Changements multiple d'animations de Position3D"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Changements multiple d'animations de Rotation3D"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Changements multiple d'animations de Scale3D"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Changer la valeur de plusieurs images clés d’animation"
@@ -2047,6 +2056,9 @@ msgstr "Développeurs"
 msgid "Authors"
 msgstr "Auteurs"
 
+msgid "Patrons"
+msgstr "Modèles"
+
 msgid "Platinum Sponsors"
 msgstr "Sponsors Platine"
 
@@ -2055,6 +2067,18 @@ msgstr "Sponsors Or"
 
 msgid "Silver Sponsors"
 msgstr "Sponsors Argent"
+
+msgid "Diamond Members"
+msgstr "Membres Diamant"
+
+msgid "Titanium Members"
+msgstr "Membres Titane"
+
+msgid "Platinum Members"
+msgstr "Membres Platine"
+
+msgid "Gold Members"
+msgstr "Membres Or"
 
 msgid "Donors"
 msgstr "Donateurs"
@@ -4106,6 +4130,12 @@ msgstr ""
 msgid "Assign..."
 msgstr "Assigner..."
 
+msgid "Copy as Text"
+msgstr "Copier en tant que texte"
+
+msgid "Show Node in Tree"
+msgstr "Afficher le nœud dans l'arbre"
+
 msgid "Invalid RID"
 msgstr "RID invalide"
 
@@ -4194,6 +4224,9 @@ msgstr "Rendre unique"
 
 msgid "Make Unique (Recursive)"
 msgstr "Rendre unique (récursivement)"
+
+msgid "Save As..."
+msgstr "Enregistrer sous…"
 
 msgid "Show in FileSystem"
 msgstr "Montrer dans le système de fichiers"
@@ -6128,9 +6161,6 @@ msgstr "Charger une ressource existante depuis la disque et la modifier."
 
 msgid "Save the currently edited resource."
 msgstr "Enregistrer la ressource en cours d'édition."
-
-msgid "Save As..."
-msgstr "Enregistrer sous…"
 
 msgid "Extra resource options."
 msgstr "Options de ressource additionnelles."
@@ -14530,8 +14560,15 @@ msgstr "Impossible d'écrire le fichier du paquet d'expansion !"
 msgid "Building Android Project (gradle)"
 msgstr "Construire le Project Android (gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr ""
+"La construction du projet Android a échoué, vérifier la sortie pour l'erreur :"
+
 msgid "Moving output"
 msgstr "Déplacement du résultat"
+
+msgid "Unable to copy and rename export file:"
+msgstr "Impossible de copier et de renommer le fichier d'export :"
 
 msgid "Package not found: \"%s\"."
 msgstr "Paquet non trouvé : \"%s\"."
@@ -15387,10 +15424,48 @@ msgstr ""
 "Les volumes de brouillard sont seulement visible quand le moteur de rendu "
 "Forward+ est utilisé."
 
+msgid ""
+"Fog Volumes need volumetric fog to be enabled in the scene's Environment in "
+"order to be visible."
+msgstr ""
+"Pour être visibles, les volumes de brouillard doivent être activés dans "
+"l'environnement de la scène."
+
 msgid "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Rien n'est visible car les maillages n'ont pas été assignés au tirage des "
 "passes."
+
+msgid ""
+"Using Trail meshes with a skin causes Skin to override Trail poses. Suggest "
+"removing the Skin."
+msgstr ""
+"L'utilisation de Trail meshes avec un skin fait que le Skin prévaut sur les "
+"Trail poses. Il est suggéré de supprimer le skin."
+
+msgid "Trails active, but neither Trail meshes or a Skin were found."
+msgstr "Trails actifs, mais aucune maille de Trail ou Skin n'a été trouvée."
+
+msgid ""
+"Only one Trail mesh is supported. If you want to use more than a single mesh, "
+"a Skin is needed (see documentation)."
+msgstr ""
+"Une seule mesh Trail est prise en charge. Si vous souhaitez utiliser plus "
+"d'une maille, un Skin est nécessaire (voir la documentation)."
+
+msgid ""
+"Trails enabled, but one or more mesh materials are either missing or not set "
+"for trails rendering."
+msgstr ""
+"Trails activés, mais un ou plusieurs matériaux de mesh sont soit manquants, "
+"soit non définis pour le rendu des trails."
+
+msgid ""
+"Particle sub-emitters are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr ""
+"Les sous-émetteurs de particules ne sont disponibles que lors de "
+"l'utilisation des backends de rendu Forward+ ou Mobile."
 
 msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
@@ -15401,6 +15476,9 @@ msgstr ""
 "collision ne sera générée pour ce GPUParticlesCollisionSDF3D.\n"
 "Pour résoudre ce problème, activer au moins un bit dans la propriété du "
 "masque de précalcul."
+
+msgid "A light's scale does not affect the visual size of the light."
+msgstr "L'échelle d'un feu n'affecte pas la taille visuelle du feu."
 
 msgid "Projector texture only works with shadows active."
 msgstr "La texture du projecteur fonctionne uniquement avec les ombres actives."
@@ -15457,6 +15535,18 @@ msgstr ""
 "de fin pour être utile."
 
 msgid ""
+"Occlusion culling is disabled in the Project Settings, which means occlusion "
+"culling won't be performed in the root viewport.\n"
+"To resolve this, open the Project Settings and enable Rendering > Occlusion "
+"Culling > Use Occlusion Culling."
+msgstr ""
+"L'élagage de l'occlusion est désactivé dans les paramètres du projet, ce qui "
+"signifie que l'élagage de l'occlusion ne sera pas effectué dans la fenêtre "
+"racine.\n"
+"Pour résoudre ce problème, ouvrez les paramètres du projet et activez les "
+"options Rendu > Élagage de l'occlusion > Utiliser l'élagage de l'occlusion."
+
+msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
 "occluder meshes for this OccluderInstance3D.\n"
 "To resolve this, enable at least one bit in the Bake Mask property."
@@ -15465,6 +15555,21 @@ msgstr ""
 "maillage d'occulsion ne sera généré pour ce OccluderInstance3D.\n"
 "Pour résoudre ce problème, activer au moins un bit dans la propriété du "
 "masque de précalcul."
+
+msgid ""
+"No occluder mesh is defined in the Occluder property, so no occlusion culling "
+"will be performed using this OccluderInstance3D.\n"
+"To resolve this, set the Occluder property to one of the primitive occluder "
+"types or bake the scene meshes by selecting the OccluderInstance3D and "
+"pressing the Bake Occluders button at the top of the 3D editor viewport."
+msgstr ""
+"Aucun maillage d'occlusion n'est défini dans la propriété Occluder, de sorte "
+"qu'aucun filtrage d'occlusion ne sera effectué à l'aide de cette "
+"OccluderInstance3D.\n"
+"Pour résoudre ce problème, définissez la propriété Occluder sur l'un des "
+"types d'occluder primitifs ou faites cuire les maillages de la scène en "
+"sélectionnant l'OccluderInstance3D et en appuyant sur le bouton Calculer les "
+"occluders en haut de la fenêtre de l'éditeur 3D."
 
 msgid ""
 "This node cannot interact with other objects unless a Shape3D is assigned."

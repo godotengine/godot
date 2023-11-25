@@ -3914,6 +3914,9 @@ msgstr "唯一化"
 msgid "Make Unique (Recursive)"
 msgstr "獨立化(遞迴)"
 
+msgid "Save As..."
+msgstr "另存為..."
+
 msgid "Show in FileSystem"
 msgstr "在檔案系統中顯示"
 
@@ -5713,9 +5716,6 @@ msgstr "從磁碟中載入現有的資源並編輯。"
 
 msgid "Save the currently edited resource."
 msgstr "儲存目前編輯的資源。"
-
-msgid "Save As..."
-msgstr "另存為..."
 
 msgid "Extra resource options."
 msgstr "更多資源選項。"

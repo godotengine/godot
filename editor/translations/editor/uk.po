@@ -3582,6 +3582,9 @@ msgstr "Зробити унікальним"
 msgid "Make Unique (Recursive)"
 msgstr "Зробити унікальним (Рекурсивним)"
 
+msgid "Save As..."
+msgstr "Зберегти як..."
+
 msgid "Show in FileSystem"
 msgstr "Показати у файловій системі"
 
@@ -5307,9 +5310,6 @@ msgstr "Завантажити наявний ресурс із диска та 
 
 msgid "Save the currently edited resource."
 msgstr "Зберегти поточний редагований ресурс."
-
-msgid "Save As..."
-msgstr "Зберегти як..."
 
 msgid "Extra resource options."
 msgstr "Додаткові параметри ресурсу."

@@ -2829,6 +2829,9 @@ msgstr "Tee Unikaalseks"
 msgid "Make Unique (Recursive)"
 msgstr "Tee Unikaalseks (Rekursiivselt)"
 
+msgid "Save As..."
+msgstr "Salvesta kui..."
+
 msgid "Show in FileSystem"
 msgstr "Kuva failisüsteemis"
 
@@ -4428,9 +4431,6 @@ msgstr "Lae olemasolev resurss kettalt ning redigeeri seda."
 
 msgid "Save the currently edited resource."
 msgstr "Salvesta käesolevalt muudetud ressurss."
-
-msgid "Save As..."
-msgstr "Salvesta kui..."
 
 msgid "Extra resource options."
 msgstr "Ekstra resursi valikud."
