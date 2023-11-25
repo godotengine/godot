@@ -151,7 +151,7 @@ void AnimationPlayer::_notification(int p_what) {
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				set_active(true);
 				play(autoplay);
-				seek(0, true);
+				_check_immediately_after_start();
 			}
 		} break;
 	}
@@ -522,8 +522,9 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 		return;
 	}
 
-	playback.current.pos = p_time;
+	_check_immediately_after_start();
 
+	playback.current.pos = p_time;
 	if (!playback.current.from) {
 		if (playback.assigned) {
 			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
@@ -534,7 +535,6 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 		}
 	}
 
-	playback.started = false; // Start has already gone by seeking, delta does not need to be 0 in the internal process.
 	playback.seeked = true;
 	if (p_update) {
 		_process_animation(0, p_update_only);
@@ -543,8 +543,14 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 }
 
 void AnimationPlayer::advance(double p_time) {
-	playback.started = false; // Start has already gone by advancing, delta does not need to be 0 in the internal process.
+	_check_immediately_after_start();
 	AnimationMixer::advance(p_time);
+}
+
+void AnimationPlayer::_check_immediately_after_start() {
+	if (playback.started) {
+		_process_animation(0); // Force process current key for Discrete/Method/Audio/AnimationPlayback. Then, started flag is cleared.
+	}
 }
 
 bool AnimationPlayer::is_valid() const {
