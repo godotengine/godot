@@ -106,7 +106,7 @@ layout(set = 0, binding = 13) uniform sampler linear_sampler_with_mipmaps;
 struct SDFVoxelGICascadeData {
 	vec3 position;
 	float to_probe;
-	ivec3 probe_world_offset;
+	ivec3 region_world_offset;
 	float to_cell; // 1/bounds * grid_size
 	vec3 pad;
 	float exposure_normalization;
@@ -665,7 +665,7 @@ void main() {
 					// Compute lightprobe occlusion
 
 					if (sdfgi.use_occlusion) {
-						ivec3 occ_indexv = abs((sdfgi.cascades[i].probe_world_offset + probe_posi) & ivec3(1, 1, 1)) * ivec3(1, 2, 4);
+						ivec3 occ_indexv = abs((sdfgi.cascades[i].region_world_offset + probe_posi) & ivec3(1, 1, 1)) * ivec3(1, 2, 4);
 						vec4 occ_mask = mix(vec4(0.0), vec4(1.0), equal(ivec4(occ_indexv.x | occ_indexv.y), ivec4(0, 1, 2, 3)));
 
 						vec3 occ_pos = clamp(cascade_pos, probe_pos - sdfgi.occlusion_clamp, probe_pos + sdfgi.occlusion_clamp) * sdfgi.probe_to_uvw;

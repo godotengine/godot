@@ -133,7 +133,7 @@ global_shader_uniforms;
 struct SDFVoxelGICascadeData {
 	vec3 position;
 	float to_probe;
-	ivec3 probe_world_offset;
+	ivec3 region_world_offset;
 	float to_cell; // 1/bounds * grid_size
 	vec3 pad;
 	float exposure_normalization;

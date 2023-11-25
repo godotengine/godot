@@ -15,39 +15,40 @@
 #endif // MOLTENVK_USED
 
 
-#define OCT_SIZE 4
 #define REGION_SIZE 8
 
 #define CACHE_IS_VALID 0x80000000
 #define CACHE_IS_HIT 0x40000000
 
-layout(local_size_x = OCT_SIZE, local_size_y = OCT_SIZE, local_size_z = 1) in;
+layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, local_size_z = 1) in;
 
 #define MAX_CASCADES 8
 
-layout(set = 0, binding = 1) uniform texture3D sdf_cascades;
-layout(set = 0, binding = 2) uniform texture3D light_cascades;
-layout(set = 0, binding = 3) uniform sampler linear_sampler;
-layout(rgba16f, set = 0, binding = 4) uniform restrict image2DArray lightprobe_texture_data;
-layout(r32ui, set = 0, binding = 5) uniform restrict writeonly uimage2DArray lightprobe_diffuse_data;
-layout(r32ui, set = 0, binding = 6) uniform restrict writeonly uimage2DArray lightprobe_ambient_data;
-layout(r32ui, set = 0, binding = 7) uniform restrict uimage2DArray ray_hit_cache;
+layout(rg32ui, set = 0, binding = 1) uniform restrict readonly uimage3D voxel_cascades;
+layout(r8ui, set = 0, binding = 2) uniform restrict readonly uimage3D voxel_region_cascades;
+
+layout(set = 0, binding = 3) uniform texture3D light_cascades;
+layout(set = 0, binding = 4) uniform sampler linear_sampler;
+layout(rgba16f, set = 0, binding = 5) uniform restrict image2DArray lightprobe_texture_data;
+layout(r32ui, set = 0, binding = 6) uniform restrict writeonly uimage2DArray lightprobe_diffuse_data;
+layout(r32ui, set = 0, binding = 7) uniform restrict writeonly uimage2DArray lightprobe_ambient_data;
+layout(r32ui, set = 0, binding = 8) uniform restrict uimage2DArray ray_hit_cache;
+layout(r16ui, set = 0, binding = 9) uniform restrict uimage2DArray ray_hit_cache_version;
+layout(r16ui, set = 0, binding = 10) uniform restrict uimage3D region_versions;
 
 
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
 	float to_cell; // 1/bounds * grid_size
-	ivec3 probe_world_offset;
+	ivec3 region_world_offset;
 	uint pad;
 	vec4 pad2;
 };
 
-layout(set = 0, binding = 10, std140) uniform Cascades {
+layout(set = 0, binding = 12, std140) uniform Cascades {
 	CascadeData data[MAX_CASCADES];
 }
 cascades;
-
-
 
 #ifdef USE_CUBEMAP_ARRAY
 layout(set = 1, binding = 0) uniform textureCubeArray sky_irradiance;
@@ -82,6 +83,9 @@ layout(push_constant, std430) uniform Params {
 
 	ivec3 probe_axis_size;
 	bool store_ambient_texture;
+
+	uvec3 pad;
+	uint motion_accum; // Motion that happened since last update (bit 0 in X, bit 1 in Y, bit 2 in Z).
 }
 params;
 
@@ -150,349 +154,213 @@ vec3 rgbe_decode(uint p_rgbe) {
 }
 
 
-bool trace_ray(vec3 ray_pos, vec3 ray_dir, out ivec3 r_cell,out int r_cascade) {
+bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade, out ivec3 r_cell,out ivec3 r_side, out int r_cascade) {
 
-	// No interpolation
-	vec3 inv_dir = 1.0 / ray_dir;
+	const int LEVEL_CASCADE = -1;
+	const int LEVEL_REGION = 0;
+	const int LEVEL_BLOCK = 1;
+	const int LEVEL_VOXEL = 2;
+	const int MAX_LEVEL = 3;
 
+
+	const int fp_bits = 8;
+	const int fp_block_bits = fp_bits + 2;
+	const int fp_region_bits = fp_block_bits + 1;
+	const int fp_cascade_bits = fp_region_bits + 4;
+
+	bvec3 limit_dir = greaterThan(ray_dir,vec3(0.0));
+	ivec3 step = mix(ivec3(0),ivec3(1),limit_dir);
+	ivec3 ray_sign = ivec3(sign(ray_dir));
+
+	ivec3 ray_dir_fp = ivec3(ray_dir * float(1<<fp_bits));
+
+	bvec3 ray_zero = lessThan(abs(ray_dir),vec3(1.0/127.0));
+	ivec3 inv_ray_dir_fp = ivec3( float(1<<fp_bits) / ray_dir );
+
+	const ivec3 level_masks[MAX_LEVEL]=ivec3[](
+		ivec3(1<<fp_region_bits) - ivec3(1),
+		ivec3(1<<fp_block_bits) - ivec3(1),
+		ivec3(1<<fp_bits) - ivec3(1)
+	);
+
+	ivec3 region_offset_mask = (ivec3(params.grid_size) / REGION_SIZE) - ivec3(1);
+
+	ivec3 limits[MAX_LEVEL];
+
+	limits[LEVEL_REGION] = ((ivec3(params.grid_size) << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
+
+	// Initialize to cascade
+	int level = LEVEL_CASCADE;
+	int cascade = p_cascade - 1;
+
+	ivec3 cascade_base;
+	ivec3 region_base;
+	uvec2 block;
 	bool hit = false;
-	ivec3 hit_pos;
 
-	int prev_cascade = -1;
-	int cascade = 0;
+	ivec3 pos;
 
-	vec3 pos;
-	vec3 side;
-	vec3 delta;
-	ivec3 step;
-	ivec3 icell;
-	vec3 pos_to_uvw = 1.0 / (params.grid_size * vec3(1,float(params.max_cascades),1));
-	ivec3 iendcell;
-	float advance_remainder;
-
-	vec3 uvw;
-	uint iters = 0;
 	while(true) {
+		// This loop is written so there is only one single main interation.
+		// This ensures that different compute threads working on different
+		// levels can still run together without blocking each other.
 
-		if (cascade != prev_cascade) {
-			pos = ray_pos - cascades.data[cascade].offset;
-			pos *= cascades.data[cascade].to_cell;
+		if (level == LEVEL_VOXEL) {
+			// The first level should be (in a worst case scenario) the most used
+			// so it needs to appear first. The rest of the levels go from more to least used order.
 
-			if (any(lessThan(pos,vec3(0.0))) || any(greaterThanEqual(pos,params.grid_size))) {
-				cascade++;
-				if (cascade == params.max_cascades) {
+			ivec3 block_local = (pos & level_masks[LEVEL_BLOCK]) >> fp_bits;
+			uint block_index = uint(block_local.z * 16 + block_local.y * 4 + block_local.x);
+			if (block_index < 32) {
+				// Low 32 bits.
+				if (bool(block.x & uint(1<<block_index))) {
+					hit=true;
 					break;
 				}
+			} else {
+				// High 32 bits.
+				block_index-=32;
+				if (bool(block.y & uint(1<<block_index))) {
+					hit=true;
+					break;
+				}
+			}
+		} else if (level == LEVEL_BLOCK) {
+			ivec3 block_local = (pos & level_masks[LEVEL_REGION]) >> fp_block_bits;
+			block = imageLoad(voxel_cascades,region_base + block_local).rg;
+			if (block != uvec2(0)) {
+				// Have voxels inside
+				level = LEVEL_VOXEL;
+				limits[LEVEL_VOXEL]= pos - (pos & level_masks[LEVEL_BLOCK]) + step * (level_masks[LEVEL_BLOCK] + ivec3(1));
 				continue;
 			}
+		} else if (level == LEVEL_REGION) {
+			ivec3 region = pos >> fp_region_bits;
+			region = (cascades.data[cascade].region_world_offset + region) & region_offset_mask; // Scroll to world
+			region += cascade_base;
+			bool region_used = imageLoad(voxel_region_cascades,region).r > 0;
 
-			//find maximum advance distance (until reaching bounds)
-			vec3 t0 = -pos * inv_dir;
-			vec3 t1 = (params.grid_size - pos) * inv_dir;
-			vec3 tmax = max(t0, t1);
-			advance_remainder = max(0,min(tmax.x, min(tmax.y, tmax.z)) - 0.1);
-
-			vec3 from_cell = pos / float(REGION_SIZE);
-
-			icell = ivec3(from_cell);
-
-			delta = min(abs(1.0 / ray_dir), params.grid_size / float(REGION_SIZE)); // Use bake_params.grid_size as max to prevent infinity values.
-			step = ivec3(sign(ray_dir));
-			side = (sign(ray_dir) * (vec3(icell) - from_cell) + (sign(ray_dir) * 0.5) + 0.5) * delta;
-
-			prev_cascade = cascade;
-		}
-
-
-		vec3 lpos = pos - vec3(icell * REGION_SIZE);
-		vec3 tmax = (mix(vec3(REGION_SIZE),vec3(0.0),lessThan(ray_dir,vec3(0.0))) - lpos) * inv_dir;
-		float max_advance = max(0.0,min(tmax.x, min(tmax.y, tmax.z)));
-
-		vec3 clamp_min = vec3(icell * REGION_SIZE) + 0.5;
-		vec3 clamp_max = vec3((icell+ivec3(1)) * REGION_SIZE) - 0.5;
-
-		float advance = 0;
-
-		while (advance < max_advance) {
-
-			iters++;
-			if (iters>1000) {
-				break;
+			if (region_used) {
+				// The region has contents.
+				region_base = (region<<1);
+				level = LEVEL_BLOCK;
+				limits[LEVEL_BLOCK]= pos - (pos & level_masks[LEVEL_REGION]) + step * (level_masks[LEVEL_REGION] + ivec3(1));
+				continue;
+			}
+		} else if (level == LEVEL_CASCADE) {
+			// Return to global
+			if (cascade >= p_cascade) {
+				ray_pos = vec3(pos) / float(1<<fp_bits);
+				ray_pos /= cascades.data[cascade].to_cell;
+				ray_pos += cascades.data[cascade].offset;
 			}
 
-			vec3 posf = clamp(pos + ray_dir * advance,clamp_min,clamp_max);
-			posf.y+=float(cascade * params.grid_size.y);
-			uvw = posf * pos_to_uvw;
-			float d = texture(sampler3D(sdf_cascades, linear_sampler), uvw).r * 15.0 - 1.0;
-			if (d < -0.001) {
-
-				// Are we really inside of a voxel?
-				ivec3 posi = ivec3(posf);
-				float d2 = texelFetch(sampler3D(sdf_cascades, linear_sampler), posi,0).r * 15.0 - 1.0;
-				if (d2 < -0.01) {
-					// Yes, consider hit.
-					r_cell = posi;
-					r_cascade = cascade;
-					hit = true;
-					break;
-				} else {
-					// No, false positive, we are not, go past to the next voxel.
-					vec3 local_pos = posf - vec3(posi);
-
-					vec3 plane = mix(vec3(0.0),vec3(1.0),greaterThan(ray_dir,vec3(0.0)));
-					vec3 tv = mix( (plane - local_pos) / ray_dir, vec3(1e20), equal(ray_dir,vec3(0.0)));
-					float t = min(tv.x,min(tv.y,tv.z));
-
-					advance += t + 0.1;
-					continue;
-				}
-			}
-
-			advance += max(d, 0.01);
-		}
-
-
-		if (hit) {
-			break;
-		}
-
-		pos += ray_dir * max_advance;
-		advance_remainder -= max_advance;
-
-		if (advance_remainder <= 0.0) {
-			pos /= cascades.data[cascade].to_cell;
-			pos += cascades.data[cascade].offset;
-			ray_pos = pos;
 			cascade++;
 			if (cascade == params.max_cascades) {
 				break;
 			}
+
+			ray_pos -= cascades.data[cascade].offset;
+			ray_pos *= cascades.data[cascade].to_cell;
+			pos = ivec3(ray_pos * float(1<<fp_bits));
+			if (any(lessThan(pos,ivec3(0))) || any(greaterThanEqual(pos,ivec3(params.grid_size)<<fp_bits))) {
+				// Outside this cascade, go to next.
+				continue;
+			}
+
+			cascade_base = ivec3(0,int(params.grid_size.y/REGION_SIZE) * cascade , 0);
+			level = LEVEL_REGION;
 			continue;
 		}
 
+		// Fixed point, multi-level DDA.
 
-		bvec3 mask = lessThanEqual(side.xyz, min(side.yzx, side.zxy));
-		side += vec3(mask) * delta;
-		icell += ivec3(vec3(mask)) * step;
+		ivec3 mask = level_masks[level];
+		ivec3 box = mask * step;
+		ivec3 pos_diff = box - (pos & mask);
+		ivec3 tv = mix((pos_diff * inv_ray_dir_fp),ivec3(0x7FFFFFFF),ray_zero) >> fp_bits;
+		int t = min(tv.x,min(tv.y,tv.z));
 
-		iters++;
-		if (iters>1000) {
-			break;
+		// The general idea here is that we _always_ need to increment to the closest next cell
+		// (this is a DDA after all), so adv_box forces this increment for the minimum axis.
+
+		ivec3 adv_box = pos_diff + ray_sign;
+		ivec3 adv_t = (ray_dir_fp * t) >> fp_bits;
+
+		pos += mix(adv_t,adv_box,equal(ivec3(t),tv));
+
+		while(true) {
+			bvec3 limit = lessThan(pos,limits[level]);
+			bool inside = all(equal(limit,limit_dir));
+			if (inside) {
+				break;
+			}
+			level-=1;
+			if (level == LEVEL_CASCADE) {
+				break;
+			}
 		}
 	}
 
 	if (hit) {
 
-		const float EPSILON = 0.001;
-		vec3 hit_normal = normalize(vec3(
-				texture(sampler3D(sdf_cascades, linear_sampler), uvw + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_cascades, linear_sampler), uvw - vec3(EPSILON, 0.0, 0.0)).r,
-				texture(sampler3D(sdf_cascades, linear_sampler), uvw + vec3(0.0, EPSILON / float(params.max_cascades), 0.0)).r - texture(sampler3D(sdf_cascades, linear_sampler), uvw - vec3(0.0, EPSILON / float(params.max_cascades), 0.0)).r,
-				texture(sampler3D(sdf_cascades, linear_sampler), uvw + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_cascades, linear_sampler), uvw - vec3(0.0, 0.0, EPSILON)).r));
+		ivec3 mask = level_masks[LEVEL_VOXEL];
+		ivec3 box = mask * (step ^ ivec3(1));
+		ivec3 pos_diff = box - (pos & mask);
+		ivec3 tv = mix((pos_diff * -inv_ray_dir_fp),ivec3(0x7FFFFFFF),ray_zero);
 
-		const vec3 axes[3] = vec3[](
-			vec3(1,0,0),
-			vec3(0,1,0),
-			vec3(0,0,1)
-		);
-
-
-		ivec3 normal_ofs;
-		float longest_dist = 0.0;
-		for(uint i=0;i<3;i++) {
-			vec3 axis = axes[i]*hit_normal;
-			float d = length(axis);
-			if (d > longest_dist) {
-				normal_ofs=ivec3(axes[i]*sign(hit_normal));
-				longest_dist=d;
-			}
+		int m;
+		if (tv.x < tv.y) {
+			r_side = ivec3(1,0,0);
+			m = tv.x;
+		} else {
+			r_side = ivec3(0,1,0);
+			m = tv.y;
 		}
-		r_cell += normal_ofs;
-		r_cell.y-= params.cascade * int(params.grid_size.y);
+		if (tv.z < m) {
+			r_side = ivec3(0,0,1);
+		}
+
+		r_side *= -ray_sign;
+
+		r_cell = pos >> fp_bits;
+
 		r_cascade = cascade;
 	}
 
 	return hit;
 }
-#if 0
-bool trace_ray(vec3 ray_pos, vec3 ray_dir, out ivec3 r_cell,out int r_cascade) {
-
-	// No interpolation
-	vec3 inv_dir = 1.0 / ray_dir;
-
-	bool hit = false;
-	ivec3 hit_pos;
-
-	int prev_cascade = -1;
-	int cascade = params.cascade;
-
-	vec3 pos;
-	vec3 side;
-	vec3 delta;
-	ivec3 step;
-	ivec3 icell;
-	vec3 pos_to_uvw = 1.0 / (params.grid_size * vec3(1,float(params.max_cascades),1));
-	ivec3 iendcell;
-	float advance_remainder;
-	vec3 uvw;
-
-	uint iters = 0;
-	while(true) {
-
-		if (cascade != prev_cascade) {
-			pos = ray_pos - cascades.data[cascade].offset;
-			pos *= cascades.data[cascade].to_cell;
-
-			if (any(lessThan(pos,vec3(0.0))) || any(greaterThanEqual(pos,params.grid_size))) {
-				cascade++;
-				if (cascade == params.max_cascades) {
-					break;
-				}
-				continue;
-			}
-
-			//find maximum advance distance (until reaching bounds)
-			vec3 t0 = -pos * inv_dir;
-			vec3 t1 = (params.grid_size - pos) * inv_dir;
-			vec3 tmax = max(t0, t1);
-			advance_remainder = max(0,min(tmax.x, min(tmax.y, tmax.z)) - 0.1);
-
-			vec3 from_cell = pos / float(REGION_SIZE);
-
-			icell = ivec3(from_cell);
-
-			delta = min(abs(1.0 / ray_dir), params.grid_size / float(REGION_SIZE)); // Use bake_params.grid_size as max to prevent infinity values.
-			step = ivec3(sign(ray_dir));
-			side = (sign(ray_dir) * (vec3(icell) - from_cell) + (sign(ray_dir) * 0.5) + 0.5) * delta;
-
-			prev_cascade = cascade;
-		}
-
-
-		vec3 lpos = pos - vec3(icell * REGION_SIZE);
-		vec3 tmax = (mix(vec3(REGION_SIZE),vec3(0.0),lessThan(ray_dir,vec3(0.0))) - lpos) * inv_dir;
-		float max_advance = max(0.0,min(tmax.x, min(tmax.y, tmax.z)));
-
-		vec3 clamp_min = vec3(icell * REGION_SIZE) + 0.5;
-		vec3 clamp_max = vec3((icell+ivec3(1)) * REGION_SIZE) - 0.5;
-
-		float advance = 0;
-
-		while (advance < max_advance) {
-
-
-			iters++;
-			if (iters>1000) {
-				break;
-			}
-
-			vec3 posf = clamp(pos + ray_dir * advance,clamp_min,clamp_max);
-			posf.y+=float(cascade) * params.grid_size.y;
-			uvw = posf * pos_to_uvw;
-
-
-			float d = texture(sampler3D(sdf_cascades, linear_sampler), uvw).r * 15.0 - 1.0;
-			if (d < -0.001) {
-
-				// Are we really inside of a voxel?
-				ivec3 posi = ivec3(posf);
-				float d2 = texelFetch(sampler3D(sdf_cascades, linear_sampler), posi,0).r * 15.0 - 1.0;
-				if (d2 < -0.01) {
-					// Yes, consider hit.
-					icell = posi;
-					icell.y -= cascade * int(params.grid_size.y);
-					hit = true;
-					break;
-				} else {
-					// No, false positive, we are not, go past to the next voxel.
-					vec3 local_pos = posf - vec3(posi);
-
-					vec3 plane = mix(vec3(0.0),vec3(1.0),greaterThan(ray_dir,vec3(0.0)));
-					vec3 tv = mix( (plane - local_pos) / ray_dir, vec3(1e20), equal(ray_dir,vec3(0.0)));
-					float t = min(tv.x,min(tv.y,tv.z));
-
-					advance += t + 0.1;
-					continue;
-				}
-			}
-
-			advance += max(d, 0.01);
-
-		}
-
-
-		if (hit) {
-			break;
-		}
-
-		pos += ray_dir * max_advance;
-		advance_remainder -= max_advance;
-
-		if (advance_remainder <= 0.0) {
-			pos /= cascades.data[cascade].to_cell;
-			pos += cascades.data[cascade].offset;
-			ray_pos = pos;
-			cascade++;
-			if (cascade == params.max_cascades) {
-				break;
-			}
-			continue;
-		}
-
-
-		bvec3 mask = lessThanEqual(side.xyz, min(side.yzx, side.zxy));
-		side += vec3(mask) * delta;
-		icell += ivec3(vec3(mask)) * step;
-
-		iters++;
-		if (iters>1000) {
-			break;
-		}
-	}
-
-	if (hit) {
-
-		const float EPSILON = 0.001;
-		vec3 hit_normal = normalize(vec3(
-				texture(sampler3D(sdf_cascades, linear_sampler), uvw + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_cascades, linear_sampler), uvw - vec3(EPSILON, 0.0, 0.0)).r,
-				texture(sampler3D(sdf_cascades, linear_sampler), uvw + vec3(0.0, EPSILON / float(params.max_cascades), 0.0)).r - texture(sampler3D(sdf_cascades, linear_sampler), uvw - vec3(0.0, EPSILON / float(params.max_cascades), 0.0)).r,
-				texture(sampler3D(sdf_cascades, linear_sampler), uvw + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_cascades, linear_sampler), uvw - vec3(0.0, 0.0, EPSILON)).r));
-
-		const vec3 axes[3] = vec3[](
-			vec3(1,0,0),
-			vec3(0,1,0),
-			vec3(0,0,1)
-		);
-
-
-		ivec3 normal_ofs;
-		float longest_dist = 0.0;
-		for(uint i=0;i<3;i++) {
-			vec3 axis = axes[i]*hit_normal;
-			float d = length(axis);
-			if (d > longest_dist) {
-				normal_ofs=ivec3(axes[i]*sign(hit_normal));
-				longest_dist=d;
-			}
-		}
-
-		r_cell = icell + normal_ofs;
-		r_cascade = cascade;
-	}
-
-	return hit;
-}
-#endif
 
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
 	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
 }
 
+bool hit_ray_box(vec3 ray_pos, vec3 ray_dir, vec3 box_min, vec3 box_max) {
+	vec3 inv_dir = 1.0 / ray_dir;
+	vec3 t0 = (box_min - ray_pos) * inv_dir;
+	vec3 t1 = (box_max - ray_pos) * inv_dir;
 
+	vec3 tmin = min(t0, t1);
+	vec3 tmax = max(t0, t1);
+
+	float tminf = max(max(tmin.x, tmin.y), tmin.z);
+	float tmaxf = min(min(tmax.x, tmax.y), tmax.z);
+
+	return (tmaxf >= max(tminf, 0.0));
+}
+
+#if LIGHTPROBE_OCT_SIZE == 4
 const uint neighbour_max_weights = 8;
 const uint neighbour_weights[128]= uint[](15544, 73563, 135085, 206971, 270171, 528301, 796795, 988221, 8569, 82130, 144347, 200892, 272100, 336249, 397500, 0, 4284, 78811, 147666, 205177, 331964, 401785, 468708, 0, 10363, 69549, 139099, 212152, 466779, 724909, 791613, 993403, 8569, 75492, 278738, 336249, 537563, 594108, 790716, 0, 73563, 135085, 270171, 343224, 403579, 528301, 600187, 660541, 69549, 139099, 338043, 408760, 466779, 595005, 665723, 724909, 141028, 205177, 401785, 475346, 659644, 734171, 987324, 0, 4284, 275419, 331964, 540882, 598393, 795001, 861924, 0, 266157, 338043, 398397, 532315, 605368, 665723, 859995, 921517, 332861, 403579, 462765, 600187, 670904, 728923, 855981, 925531, 200892, 397500, 472027, 663929, 737490, 927460, 991609, 0, 10363, 201789, 266157, 532315, 801976, 859995, 921517, 993403, 534244, 598393, 659644, 795001, 868562, 930779, 987324, 0, 594108, 663929, 730852, 790716, 865243, 934098, 991609, 0, 5181, 206971, 462765, 728923, 796795, 855981, 925531, 998584);
+#endif
 
-shared vec3 neighbours[OCT_SIZE*OCT_SIZE];
+#if LIGHTPROBE_OCT_SIZE == 5
+const uint neighbour_max_weights = 15;
+const uint neighbour_weights[375]= uint[](11139, 72624, 131886, 201671, 271258, 334768, 394335, 590836, 656174, 988103, 1319834, 1377268, 1579952, 0, 0, 6839, 76283, 139717, 205401, 267029, 334519, 400776, 461448, 527528, 590801, 657717, 984017, 1311697, 0, 0, 778, 74103, 141723, 205175, 262922, 330016, 400965, 466633, 532037, 592160, 655986, 723045, 789015, 854117, 918130, 4885, 74329, 139717, 207355, 268983, 328657, 396456, 461448, 531848, 596663, 919861, 1246161, 1573841, 0, 0, 9114, 70599, 131886, 203696, 273283, 328692, 525407, 596912, 918318, 1250247, 1317808, 1508340, 1581978, 0, 0, 6839, 72375, 133429, 197585, 263121, 338427, 400776, 664005, 723592, 991833, 1051816, 1315605, 1377233, 0, 0, 1026, 72722, 138504, 199687, 334866, 403430, 465362, 525422, 662792, 727506, 789836, 986119, 1049710, 0, 0, 68049, 138485, 199121, 399699, 468771, 530771, 657381, 727832, 794768, 858904, 919525, 1117965, 0, 0, 0, 68615, 138504, 203794, 263170, 394350, 465362, 534502, 597010, 789836, 858578, 924936, 1180782, 1248263, 0, 0, 977, 66513, 133429, 203447, 268983, 531848, 600571, 854664, 926149, 1182888, 1253977, 1508305, 1577749, 0, 0, 778, 67872, 131698, 336247, 400965, 460901, 666011, 728777, 789015, 991607, 1056325, 1116261, 1311498, 1378592, 1442418, 133093, 330193, 399699, 465688, 662773, 730915, 794768, 855821, 985553, 1055059, 1121048, 1443813, 0, 0, 0, 133468, 396510, 466974, 527582, 657756, 729118, 796314, 860190, 919900, 1051870, 1122334, 1182942, 1444188, 0, 0, 133093, 465688, 530771, 592337, 724749, 794768, 861987, 924917, 1121048, 1186131, 1247697, 1443813, 0, 0, 0, 131698, 198944, 262922, 460901, 532037, 598391, 789015, 859849, 928155, 1116261, 1187397, 1253751, 1442418, 1509664, 1573642, 4885, 66513, 336473, 396456, 664005, 723592, 993787, 1056136, 1317559, 1383095, 1444149, 1508305, 1573841, 0, 0, 330759, 394350, 662792, 727506, 789836, 990226, 1058790, 1120722, 1180782, 1311746, 1383442, 1449224, 1510407, 0, 0, 462605, 657381, 727832, 794768, 858904, 919525, 1055059, 1124131, 1186131, 1378769, 1449205, 1509841, 0, 0, 0, 525422, 592903, 789836, 858578, 924936, 1049710, 1120722, 1189862, 1252370, 1379335, 1449224, 1514514, 1573890, 0, 0, 197585, 267029, 527528, 598617, 854664, 926149, 1187208, 1255931, 1311697, 1377233, 1444149, 1514167, 1579703, 0, 0, 9114, 66548, 269232, 332743, 656174, 990128, 1049695, 1246196, 1321859, 1383344, 1442606, 1512391, 1581978, 0, 0, 977, 328657, 657717, 989879, 1056136, 1116808, 1182888, 1246161, 1317559, 1387003, 1450437, 1516121, 1577749, 0, 0, 655986, 723045, 789015, 854117, 918130, 985376, 1056325, 1121993, 1187397, 1247520, 1311498, 1384823, 1452443, 1515895, 1573642, 263121, 590801, 919861, 984017, 1051816, 1116808, 1187208, 1252023, 1315605, 1385049, 1450437, 1518075, 1579703, 0, 0, 7088, 197620, 271258, 594887, 918318, 984052, 1180767, 1252272, 1319834, 1381319, 1442606, 1514416, 1584003, 0, 0);
+#endif
+
+shared vec3 neighbours[LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE];
 
 void main() {
 
@@ -500,7 +368,7 @@ void main() {
 
 	ivec2 pos = ivec2(gl_WorkGroupID.xy);
 	ivec2 local_pos = ivec2(gl_LocalInvocationID.xy);
-	uint probe_index = gl_LocalInvocationID.x + gl_LocalInvocationID.y * OCT_SIZE;
+	uint probe_index = gl_LocalInvocationID.x + gl_LocalInvocationID.y * LIGHTPROBE_OCT_SIZE;
 
 	float probe_cell_size = params.grid_size.x / float(params.probe_axis_size.x - 1) / cascades.data[params.cascade].to_cell;
 
@@ -514,11 +382,11 @@ void main() {
 	ivec3 probe_world_pos = params.world_offset + probe_cell;
 
 	// Ensure a unique hash that includes the probe world position, the local octahedron pixel, and the history frame index
-	uvec3 h3 = hash3(uvec3((uvec3(probe_world_pos) * OCT_SIZE * OCT_SIZE + uvec3(probe_index)) * uvec3(params.history_size) + uvec3(params.history_index)));
+	uvec3 h3 = hash3(uvec3((uvec3(probe_world_pos) * LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE + uvec3(probe_index)) * uvec3(params.history_size) + uvec3(params.history_index)));
 	uint h = (h3.x ^ h3.y) ^ h3.z;
 	vec2 sample_ofs = vec2(ivec2(h>>16,h&0xFFFF)) / vec2(0xFFFF);
 
-	vec3 ray_dir = octahedron_decode( (vec2(local_pos) + sample_ofs) / vec2(OCT_SIZE) );
+	vec3 ray_dir = octahedron_decode( (vec2(local_pos) + sample_ofs) / vec2(LIGHTPROBE_OCT_SIZE) );
 	ray_dir.y *= params.y_mult;
 	ray_dir = normalize(ray_dir);
 
@@ -529,20 +397,50 @@ void main() {
 
 	ivec3 probe_scroll_pos = modi(probe_world_pos, params.probe_axis_size);
 	ivec3 probe_texture_pos = ivec3( (probe_scroll_pos.xy + ivec2(0,probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
-	ivec3 cache_texture_pos = ivec3(probe_texture_pos.xy * OCT_SIZE + local_pos, probe_texture_pos.z + params.max_cascades * params.history_index);
+	ivec3 cache_texture_pos = ivec3(probe_texture_pos.xy * LIGHTPROBE_OCT_SIZE + local_pos, probe_texture_pos.z + params.max_cascades * params.history_index);
 	uint cache_entry = imageLoad(ray_hit_cache,cache_texture_pos).r;
 
 	bool hit;
 	ivec3 hit_cell;
 	int hit_cascade;
 
-	if (false && bool(cache_entry & CACHE_IS_VALID)) {
+	bool cache_valid = bool(cache_entry & CACHE_IS_VALID);
+
+	vec3 cache_invalidated_debug = vec3(0.0);
+
+	if (cache_valid) {
+		// Make sure the cache is really valid
 		hit = bool(cache_entry & CACHE_IS_HIT);
 		uvec4 uhit = (uvec4(cache_entry) >> uvec4(0,8,16,24)) & uvec4(0xFF,0xFF,0xFF,0x7);
 		hit_cell = ivec3(uhit.xyz);
 		hit_cascade = int(uhit.w);
-	} else {
-		hit = trace_ray(ray_pos, ray_dir,hit_cell,hit_cascade);
+		uint axis = (cache_entry >> 27) & 0x3;
+		if (bool((1<<axis) & params.motion_accum)) {
+			// There was motion in this axis, cache is no longer valid.
+			cache_valid=false;
+			cache_invalidated_debug = vec3(0,0,4.0);
+		} else if (hit) {
+			// Check if the region pointed to is still valid.
+			uint version = imageLoad(ray_hit_cache_version,cache_texture_pos).r;
+			uint region_version = imageLoad(region_versions, (hit_cell / REGION_SIZE) + ivec3(0,hit_cascade * (params.grid_size.y / REGION_SIZE),0)).r;
+
+			if (region_version != version) {
+				cache_valid = false;
+				cache_invalidated_debug = (hit_cascade==params.cascade) ? vec3(0.0,4.00,0.0) : vec3(4.0,0,0.0);
+			}
+		}
+	}
+
+
+	if (!cache_valid) {
+		ivec3 hit_face;
+		hit = trace_ray_hdda(ray_pos, ray_dir,params.cascade, hit_cell,hit_face, hit_cascade);
+		if (hit) {
+			hit_cell += hit_face;
+
+			ivec3 reg_cell_offset = cascades.data[hit_cascade].region_world_offset * REGION_SIZE;
+			hit_cell = (hit_cell + reg_cell_offset) & (ivec3(params.grid_size)-1); // Read from wrapped world cordinates
+		}
 	}
 
 	vec3 light;
@@ -565,7 +463,8 @@ void main() {
 		light = vec3(0);
 	}
 
-	if (!bool(cache_entry & CACHE_IS_VALID)) {
+
+	if (!cache_valid) {
 
 		cache_entry = CACHE_IS_VALID;
 		if (hit) {
@@ -578,15 +477,26 @@ void main() {
 			vec3 t1 = (params.grid_size - unit_pos) / ray_dir;
 			vec3 tmax = max(t0, t1);
 
-			vec3 idxv = (tmax.x < tmax.y) ? vec3(0,tmax.x,ray_dir.x) : vec3(1,tmax.y,ray_dir.y);
-			if (tmax.z < idxv.y) {
-				idxv.xz = vec2(2,ray_dir.z);
+			uint axis;
+			float m;
+			if (tmax.x < tmax.y) {
+				axis = 0;
+				m=tmax.x;
+			} else {
+				axis = 1;
+				m=tmax.y;
+			}
+			if (tmax.z < m) {
+				axis = 2;
 			}
 
-			uint face_idx = uint(idxv.x) * 2 + ( idxv.z > 0.0 ? uint(1) : uint(2) );
-
 			uvec3 ucell = (uvec3(hit_cell) & uvec3(0xFF)) << uvec3(0,8,16);
-			cache_entry |= CACHE_IS_HIT | ucell.x | ucell.y | ucell.z | (uint(min(7,hit_cascade))<<24) | (face_idx << 27);
+			cache_entry |= CACHE_IS_HIT | ucell.x | ucell.y | ucell.z | (uint(min(7,hit_cascade))<<24) | (axis << 27);
+
+			uint region_version = imageLoad(region_versions, (hit_cell >> REGION_SIZE) + ivec3(0,hit_cascade * (params.grid_size.y / REGION_SIZE),0)).r;
+
+			imageStore(ray_hit_cache_version, cache_texture_pos, uvec4(region_version));
+
 		}
 
 		imageStore(ray_hit_cache, cache_texture_pos, uvec4(cache_entry));
@@ -595,11 +505,11 @@ void main() {
 
 	// Blend with existing light
 
-	probe_texture_pos = ivec3(probe_texture_pos.xy * (OCT_SIZE + 2) + ivec2(1),probe_texture_pos.z);
+	probe_texture_pos = ivec3(probe_texture_pos.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1),probe_texture_pos.z);
 	ivec3 probe_read_pos = probe_texture_pos + ivec3(local_pos,0);
 	vec3 prev_light = imageLoad(lightprobe_texture_data,probe_read_pos).rgb;
 
-	light = mix(prev_light,light,0.05);
+	light = mix(light,prev_light,0.97);
 	neighbours[ probe_index ] = light;
 
 
@@ -615,18 +525,22 @@ void main() {
 		diffuse_light += neighbours[index] * weight;
 	}
 
+	//if (cache_invalidated_debug!=vec3(0.0)) {
+	//	diffuse_light = cache_invalidated_debug;
+	//}
+
 	vec3 ambient_light = vec3(0);
 	if (params.store_ambient_texture) {
 #ifdef USE_SUBGROUPS
-		ambient_light = subgroupAdd(diffuse_light) / float(OCT_SIZE*OCT_SIZE);
+		ambient_light = subgroupAdd(diffuse_light) / float(LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE);
 #else
 		neighbours[ probe_index ] = diffuse_light;
 		groupMemoryBarrier();
 		barrier();
-		for(uint i=0;i<OCT_SIZE*OCT_SIZE;i++) {
+		for(uint i=0;i<LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE;i++) {
 			ambient_light+=neighbours[ i ];
 		}
-		ambient_light /= float(OCT_SIZE*OCT_SIZE);
+		ambient_light /= float(LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE);
 #endif
 	}
 
@@ -638,29 +552,29 @@ void main() {
 	copy_to[0] = probe_read_pos;
 
 	if (local_pos == ivec2(0, 0)) {
-		copy_to[1] = probe_texture_pos + ivec3(OCT_SIZE - 1, -1, 0);
-		copy_to[2] = probe_texture_pos + ivec3(-1, OCT_SIZE - 1, 0);
-		copy_to[3] = probe_texture_pos + ivec3(OCT_SIZE, OCT_SIZE, 0);
-	} else if (local_pos == ivec2(OCT_SIZE - 1, 0)) {
+		copy_to[1] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - 1, -1, 0);
+		copy_to[2] = probe_texture_pos + ivec3(-1, LIGHTPROBE_OCT_SIZE - 1, 0);
+		copy_to[3] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, LIGHTPROBE_OCT_SIZE, 0);
+	} else if (local_pos == ivec2(LIGHTPROBE_OCT_SIZE - 1, 0)) {
 		copy_to[1] = probe_texture_pos + ivec3(0, -1, 0);
-		copy_to[2] = probe_texture_pos + ivec3(OCT_SIZE, OCT_SIZE - 1, 0);
-		copy_to[3] = probe_texture_pos + ivec3(-1, OCT_SIZE, 0);
-	} else if (local_pos == ivec2(0, OCT_SIZE - 1)) {
+		copy_to[2] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, LIGHTPROBE_OCT_SIZE - 1, 0);
+		copy_to[3] = probe_texture_pos + ivec3(-1, LIGHTPROBE_OCT_SIZE, 0);
+	} else if (local_pos == ivec2(0, LIGHTPROBE_OCT_SIZE - 1)) {
 		copy_to[1] = probe_texture_pos + ivec3(-1, 0, 0);
-		copy_to[2] = probe_texture_pos + ivec3(OCT_SIZE - 1, OCT_SIZE, 0);
-		copy_to[3] = probe_texture_pos + ivec3(OCT_SIZE, -1, 0);
-	} else if (local_pos == ivec2(OCT_SIZE - 1, OCT_SIZE - 1)) {
-		copy_to[1] = probe_texture_pos + ivec3(0, OCT_SIZE, 0);
-		copy_to[2] = probe_texture_pos + ivec3(OCT_SIZE, 0, 0);
+		copy_to[2] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - 1, LIGHTPROBE_OCT_SIZE, 0);
+		copy_to[3] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, -1, 0);
+	} else if (local_pos == ivec2(LIGHTPROBE_OCT_SIZE - 1, LIGHTPROBE_OCT_SIZE - 1)) {
+		copy_to[1] = probe_texture_pos + ivec3(0, LIGHTPROBE_OCT_SIZE, 0);
+		copy_to[2] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, 0, 0);
 		copy_to[3] = probe_texture_pos + ivec3(-1, -1, 0);
 	} else if (local_pos.y == 0) {
-		copy_to[1] = probe_texture_pos + ivec3(OCT_SIZE - local_pos.x - 1, local_pos.y - 1, 0);
+		copy_to[1] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - local_pos.x - 1, local_pos.y - 1, 0);
 	} else if (local_pos.x == 0) {
-		copy_to[1] = probe_texture_pos + ivec3(local_pos.x - 1, OCT_SIZE - local_pos.y - 1, 0);
-	} else if (local_pos.y == OCT_SIZE - 1) {
-		copy_to[1] = probe_texture_pos + ivec3(OCT_SIZE - local_pos.x - 1, local_pos.y + 1, 0);
-	} else if (local_pos.x == OCT_SIZE - 1) {
-		copy_to[1] = probe_texture_pos + ivec3(local_pos.x + 1, OCT_SIZE - local_pos.y - 1, 0);
+		copy_to[1] = probe_texture_pos + ivec3(local_pos.x - 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
+	} else if (local_pos.y == LIGHTPROBE_OCT_SIZE - 1) {
+		copy_to[1] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - local_pos.x - 1, local_pos.y + 1, 0);
+	} else if (local_pos.x == LIGHTPROBE_OCT_SIZE - 1) {
+		copy_to[1] = probe_texture_pos + ivec3(local_pos.x + 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
 	}
 
 	for (int i = 0; i < 4; i++) {

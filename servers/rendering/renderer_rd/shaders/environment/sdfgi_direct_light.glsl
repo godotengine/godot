@@ -8,10 +8,12 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 #define MAX_CASCADES 8
 
-layout(set = 0, binding = 1) uniform texture3D sdf_cascades;
-layout(set = 0, binding = 2) uniform sampler linear_sampler;
+layout(rg32ui, set = 0, binding = 1) uniform restrict readonly uimage3D voxel_cascades;
+layout(r8ui, set = 0, binding = 2) uniform restrict readonly uimage3D voxel_region_cascades;
 
-layout(set = 0, binding = 3, std430) restrict readonly buffer DispatchData {
+layout(set = 0, binding = 3) uniform sampler linear_sampler;
+
+layout(set = 0, binding = 4, std430) restrict readonly buffer DispatchData {
 	uint x;
 	uint y;
 	uint z;
@@ -30,22 +32,22 @@ struct ProcessVoxel {
 #define PROCESS_DYNAMIC_PENDING_BIT 0x40000000
 
 // Can always write, because it needs to set off dirty bits
-layout(set = 0, binding = 4, std430) restrict buffer ProcessVoxels {
+layout(set = 0, binding = 5, std430) restrict buffer ProcessVoxels {
 	ProcessVoxel data[];
 }
 process_voxels;
 
-layout(r32ui, set = 0, binding = 5) uniform restrict writeonly uimage3D dst_light;
+layout(r32ui, set = 0, binding = 6) uniform restrict writeonly uimage3D dst_light;
 
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
 	float to_cell; // 1/bounds * grid_size
-	ivec3 probe_world_offset;
+	ivec3 region_world_offset;
 	uint pad;
 	vec4 pad2;
 };
 
-layout(set = 0, binding = 8, std140) uniform Cascades {
+layout(set = 0, binding = 7, std140) uniform Cascades {
 	CascadeData data[MAX_CASCADES];
 }
 cascades;
@@ -71,20 +73,20 @@ struct Light {
 
 };
 
-layout(set = 0, binding = 9, std140) buffer restrict readonly Lights {
+layout(set = 0, binding = 8, std140) buffer restrict readonly Lights {
 	Light data[];
 }
 lights;
 
 #ifndef MODE_PROCESS_STATIC
-layout(set = 0, binding = 10) uniform texture2DArray lightprobe_texture;
+layout(set = 0, binding = 9) uniform texture2DArray lightprobe_texture;
 #endif
 
 layout(push_constant, std430) uniform Params {
 	vec3 grid_size;
-	uint max_cascades;
+	int max_cascades;
 
-	uint cascade;
+	int cascade;
 	uint light_count;
 	uint process_offset;
 	uint process_increment;
@@ -220,7 +222,7 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
 			}
 		} else if (level == LEVEL_REGION) {
 			ivec3 region = pos >> fp_region_bits;
-			region = (cascades.data[cascade].probe_world_offset + region) & region_offset_mask; // Scroll to world
+			region = (cascades.data[cascade].region_world_offset + region) & region_offset_mask; // Scroll to world
 			region += cascade_base;
 			bool region_used = imageLoad(voxel_region_cascades,region).r > 0;
 
@@ -330,11 +332,9 @@ ivec3 modi(ivec3 value, ivec3 p_y) {
 
 ivec2 probe_to_tex(ivec3 local_probe) {
 
-	ivec3 cell = modi( cascades.data[params.cascade].probe_world_offset + local_probe,params.probe_axis_size);
+	ivec3 cell = modi( cascades.data[params.cascade].region_world_offset + local_probe,params.probe_axis_size);
 	return cell.xy + ivec2(0,cell.z * int(params.probe_axis_size.y));
 }
-
-#define OCT_SIZE 4
 
 void main() {
 	uint voxel_index = uint(gl_GlobalInvocationID.x);
@@ -394,7 +394,7 @@ void main() {
 
 		vec3 feedback = albedo * params.bounce_feedback;
 		ivec3 base_probe = positioni / params.probe_cell_size;
-		vec2 probe_tex_to_uv = 1.0 / vec2( (OCT_SIZE+2) * params.probe_axis_size.x, (OCT_SIZE+2) * params.probe_axis_size.y * params.probe_axis_size.z );
+		vec2 probe_tex_to_uv = 1.0 / vec2( (LIGHTPROBE_OCT_SIZE+2) * params.probe_axis_size.x, (LIGHTPROBE_OCT_SIZE+2) * params.probe_axis_size.y * params.probe_axis_size.z );
 
 		for(int i=0;i<8;i++) {
 			float weight = float((occlusionu >> (i*4)) & 0xF) / float(0xF); //precached occlusion
@@ -404,7 +404,7 @@ void main() {
 			}
 			ivec3 probe = base_probe + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1));
 			ivec2 tex_pos = probe_to_tex(probe);
-			vec2 tex_uv = vec2(ivec2(tex_pos * (OCT_SIZE+2) + ivec2(1))) + normal_oct * float(OCT_SIZE);
+			vec2 tex_uv = vec2(ivec2(tex_pos * (LIGHTPROBE_OCT_SIZE+2) + ivec2(1))) + normal_oct * float(LIGHTPROBE_OCT_SIZE);
 			tex_uv *= probe_tex_to_uv;
 			vec3 light = texture(sampler2DArray(lightprobe_texture,linear_sampler),vec3(tex_uv,float(params.cascade))).rgb;
 			light_accum += light * weight;
@@ -483,6 +483,20 @@ void main() {
 
 	light_accum += emission;
 
+#if 0
+	vec3 an = normal;
+	if (an.x < 0) {
+		an.x = an.x * -0.25;
+	}
+	if (an.y < 0) {
+		an.y = an.y * -0.25;
+	}
+	if (an.z < 0) {
+		an.z = an.z * -0.25;
+	}
+	light_accum = an;
+#endif
+
 #ifdef MODE_PROCESS_STATIC
 	// Add to self, since its static.
 	process_voxels.data[voxel_index].emission=rgbe_encode(light_accum.rgb);
@@ -490,6 +504,7 @@ void main() {
 #else
 
 	// Store to light texture
+	positioni = (positioni + cascades.data[params.cascade].region_world_offset * REGION_SIZE) & (ivec3(params.grid_size) - 1 );
 	positioni.y+=int(params.cascade) * int(params.grid_size.y);
 	imageStore(dst_light, positioni, uvec4(rgbe_encode(light_accum.rgb)));
 

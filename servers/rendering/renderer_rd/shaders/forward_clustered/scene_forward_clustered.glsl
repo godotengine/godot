@@ -2223,6 +2223,10 @@ void fragment_shader(in SceneData scene_data) {
 
 
 		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normalize(normal_interp);
+		vec3 cam_geom_normal = mat3(scene_data.inv_view_matrix) * normalize(geometric_normal);
+		if (gl_FrontFacing) {
+			cam_geom_normal = -cam_geom_normal;
+		}
 
 		vec3 local_pos = (implementation_data.sdf_to_bounds * vec4(vertex, 1.0)).xyz;
 		vec3 grid_pos = vec3(implementation_data.sdf_offset) + local_pos * vec3(implementation_data.sdf_size);
@@ -2235,27 +2239,31 @@ void fragment_shader(in SceneData scene_data) {
 		uint bit_ofs = 16 * isubgrid_pos.z + 4 * isubgrid_pos.y + isubgrid_pos.x;
 
 
-		// Compute normal bits
+		// Compute normal bits.
+		// Lower 6 are inclusive (depending on axis vector.
 
 
-		const float normal_treshold = 0.001;
+		// upper 26 are exclusive (With some margin), used to save something closer to the normal.
+
+		const int facing_direction_count =  26 ;
+		const vec3 facing_directions[ 26 ]=vec3[]( vec3(-1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 0.0, 1.0), vec3(-0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, -0.7071067811865475, 0.0), vec3(-0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(-0.7071067811865475, 0.0, -0.7071067811865475), vec3(-0.7071067811865475, 0.0, 0.7071067811865475), vec3(-0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, 0.7071067811865475, 0.0), vec3(-0.5773502691896258, 0.5773502691896258, 0.5773502691896258), vec3(0.0, -0.7071067811865475, -0.7071067811865475), vec3(0.0, -0.7071067811865475, 0.7071067811865475), vec3(0.0, 0.7071067811865475, -0.7071067811865475), vec3(0.0, 0.7071067811865475, 0.7071067811865475), vec3(0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, -0.7071067811865475, 0.0), vec3(0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(0.7071067811865475, 0.0, -0.7071067811865475), vec3(0.7071067811865475, 0.0, 0.7071067811865475), vec3(0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, 0.7071067811865475, 0.0), vec3(0.5773502691896258, 0.5773502691896258, 0.5773502691896258) );
+
 		uint bit_normal = 0;
-		if (cam_normal.x < -normal_treshold) {
-			bit_normal|=1<<0;
-		} else if (cam_normal.x > normal_treshold) {
-			bit_normal|=1<<1;
-		}
 
-		if (cam_normal.y < -normal_treshold) {
-			bit_normal|=1<<2;
-		} else if (cam_normal.y > normal_treshold) {
-			bit_normal|=1<<3;
-		}
+		//const float exclusive_threshold = 0.86; // given min cos is 0.70710676908493
+		const float exclusive_threshold = 0.7; // given min cos is 0.70710676908493
+		const float inclusive_threshold = 0.001;
 
-		if (cam_normal.z < -normal_treshold) {
-			bit_normal|=1<<4;
-		} else if (cam_normal.z > normal_treshold) {
-			bit_normal|=1<<5;
+		for(int i=0;i<facing_direction_count;i++) {
+			float dp = dot(cam_geom_normal,facing_directions[i]);
+
+			if ( i < 6 && dp > inclusive_threshold) {
+				bit_normal |= uint(1<<i);
+			}
+
+			if (dp > exclusive_threshold ) {
+				bit_normal |= uint(1<<(i+6));
+			}
 		}
 
 		// Subgroup merge and store solid and normal bits

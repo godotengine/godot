@@ -263,24 +263,20 @@ private:
 	struct SDFGIShader {
 		enum SDFGIPreprocessShaderVersion {
 			PRE_PROCESS_REGION_STORE,
-			PRE_PROCESS_SDF_SCROLL,
-			PRE_PROCESS_SDF_SCROLL_HALF,
-			PRE_PROCESS_SDF_SCROLL_QUARTER,
-			PRE_PROCESS_JUMP_FLOOD_OPTIMIZED,
 			PRE_PROCESS_LIGHT_STORE,
 			PRE_PROCESS_LIGHT_SCROLL,
-			PRE_PROCESS_LIGHT_SCROLL_STORE,
 			PRE_PROCESS_OCCLUSION,
 			PRE_PROCESS_OCCLUSION_STORE,
+			PRE_PROCESS_LIGHTPROBE_SCROLL,
 			PRE_PROCESS_MAX
 		};
 
 		struct PreprocessPushConstant {
 			int32_t grid_size[3];
-			uint32_t pad;
+			uint32_t region_version;
 
 			int32_t scroll[3];
-			uint32_t pad2;
+			uint32_t cascade_count;
 
 			int32_t offset[3];
 			int32_t step_size;
@@ -292,7 +288,7 @@ private:
 			uint32_t probe_cells;
 
 			int32_t probe_axis_size[3];
-			uint32_t occ_oct_size;
+			uint32_t ray_hit_cache_frames;
 		};
 
 		SdfgiPreprocessShaderRD preprocess;
@@ -324,6 +320,8 @@ private:
 			PROBE_DEBUG_PROBES_MULTIVIEW,
 			PROBE_DEBUG_OCCLUSION,
 			PROBE_DEBUG_OCCLUSION_MULTIVIEW,
+			PROBE_DEBUG_LINES,
+			PROBE_DEBUG_LINES_MULTIVIEW,
 			PROBE_DEBUG_MAX
 		};
 
@@ -428,6 +426,9 @@ private:
 
 			uint32_t probe_axis_size[3];
 			uint32_t store_ambient_texture;
+
+			uint32_t pad[3];
+			uint32_t motion_accum; // Motion that happened since last update (bit 0 in X, bit 1 in Y, bit 2 in Z).
 		};
 
 		SdfgiIntegrateShaderRD integrate;
@@ -565,7 +566,7 @@ public:
 			MAX_DYNAMIC_LIGHTS = 128,
 			MAX_STATIC_LIGHTS = 1024,
 			LIGHTPROBE_OCT_SIZE = 4,
-			LIGHTPROBE_RAY_FRAMES = 6,
+			LIGHTPROBE_RAY_FRAMES = 10,
 			OCCLUSION_OCT_SIZE = 14,
 			SH_SIZE = 16
 		};
@@ -576,7 +577,7 @@ public:
 			struct UBO {
 				float offset[3];
 				float to_cell;
-				int32_t probe_offset[3];
+				int32_t region_world_offset[3];
 				uint32_t pad;
 				float pad2[4];
 			};
@@ -603,6 +604,9 @@ public:
 				uint32_t emission;
 				uint32_t normal;
 			};
+
+			uint32_t motion_accum = 0;
+			uint16_t latest_version = 0;
 
 #if 0
 
@@ -638,21 +642,20 @@ public:
 		// access to our containers
 		GI *gi = nullptr;
 
-		RID sdf_tex;
-		RID voxel_bits_tex;
-		RID voxel_region_tex;
-		RID light_tex;
-		RID light_tex_data;
 		RID render_albedo; //x6, anisotropic
 		RID render_solid_bits[2];
 		RID render_aniso_normals;
 		RID render_emission;
 		RID render_emission_aniso;
 
+		RID voxel_bits_tex;
+		RID voxel_region_tex;
+		RID light_tex;
+		RID light_tex_data;
+		RID region_version_data;
+
 		RID light_process_buffer_render;
 		RID light_process_dispatch_buffer_render;
-		RID light_process_dispatch_buffer_render_copy;
-		RID light_copy_buffer;
 
 		RID lightprobe_specular_tex;
 		RID lightprobe_diffuse_data;
@@ -660,6 +663,7 @@ public:
 		RID lightprobe_ambient_data;
 		RID lightprobe_ambient_tex;
 		RID lightprobe_hit_cache_data;
+		RID lightprobe_hit_cache_version_data;
 
 		RID occlusion_process;
 		RID occlusion_tex;
@@ -670,9 +674,7 @@ public:
 		uint32_t solid_cell_count = 0;
 		uint32_t sampling_cache_buffer_cascade_size = 0;
 
-		Vector<RID> cascade_sdf_textures_cache;
-		Vector<RID> cascade_light_textures_cache;
-
+		uint32_t update_frame = 0;
 #if 0
 		// used for rendering (voxelization)
 		RID render_albedo;
@@ -767,38 +769,30 @@ public:
 	virtual void sdfgi_reset() override;
 
 	struct SDFGIData {
-		float grid_size[3];
-		uint32_t max_cascades;
+		int32_t grid_size[3];
+		int32_t max_cascades;
 
-		float probe_to_uvw[3];
-		uint32_t pad1;
+		float normal_bias;
+		float energy;
+		float y_mult;
+		uint32_t pad;
 
 		int32_t probe_axis_size[3];
 		uint32_t pad2;
 
-		float lightprobe_tex_pixel_size[3];
-		float energy;
-
-		float lightprobe_uv_offset[3];
-		float y_mult;
-
-		uint32_t pad;
-		uint32_t use_occlusion;
-
-		float occlusion_renormalize[3];
-		float normal_bias;
-
-		float cascade_probe_size[3];
-		uint32_t pad5;
+		uint32_t pad3[4];
 
 		struct ProbeCascadeData {
 			float position[3]; //offset of (0,0,0) in world coordinates
-			uint32_t pad;
-			int32_t probe_world_offset[3];
+			float to_probe;
+
+			int32_t region_world_offset[3];
 			float to_cell; // 1/bounds * grid_size
 
-			float to_probe[3]; // 1/bounds * grid_size
+			uint32_t pad[3];
 			float exposure_normalization;
+
+			uint32_t pad2[4];
 		};
 
 		ProbeCascadeData cascades[SDFGI::MAX_CASCADES];
