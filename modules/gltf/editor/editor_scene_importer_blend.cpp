@@ -134,7 +134,19 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 
 	// Get global paths for source and sink.
 	// Escape paths to be valid Python strings to embed in the script.
-	const String source_global = ProjectSettings::get_singleton()->globalize_path(p_path).c_escape();
+	String source_global = ProjectSettings::get_singleton()->globalize_path(p_path);
+
+#ifdef WINDOWS_ENABLED
+	// On Windows, when using a network share path, the above will return a path starting with "//"
+	// which once handed to Blender will be treated like a relative path. So we need to replace the
+	// first two characters with "\\" to make it absolute again.
+	if (source_global.is_network_share_path()) {
+		source_global = "\\\\" + source_global.substr(2);
+	}
+#endif
+
+	source_global = source_global.c_escape();
+
 	const String blend_basename = p_path.get_file().get_basename();
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(
 			vformat("%s-%s.gltf", blend_basename, p_path.md5_text()));
