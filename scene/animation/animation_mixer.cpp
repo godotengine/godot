@@ -629,12 +629,12 @@ bool AnimationMixer::_update_caches() {
 			if (!track) {
 				Ref<Resource> resource;
 				Vector<StringName> leftover_path;
-				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
-				if (!child) {
+				if (!parent->has_node_and_resource(path)) {
 					ERR_PRINT("AnimationMixer: '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'.");
 					continue;
 				}
+				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
 				switch (track_type) {
 					case Animation::TYPE_VALUE: {
