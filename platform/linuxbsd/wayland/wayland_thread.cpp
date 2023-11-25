@@ -903,10 +903,13 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 
 	ws->wl_output = wl_output;
 
-	// This event gets sent _after_ the initial creation of a window, so a new
-	// window has always a buffer scale of 1. While this isn't ideal, the easiest
-	// solution is just to rescale it ourselves.
-	window_state_update_size(ws, ws->rect.size.width, ws->rect.size.height);
+	// Workaround for buffer scaling as there's no guaranteed way of knowing the
+	// preferred scale.
+	// TODO: Skip this branch for newer `wl_surface`s once we add support for
+	// `wl_surface::preferred_buffer_scale`
+	if (ws->preferred_fractional_scale == 0) {
+		window_state_update_size(ws, ws->rect.size.width, ws->rect.size.height);
+	}
 }
 
 void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *wl_callback, uint32_t callback_data) {
@@ -1908,6 +1911,8 @@ void WaylandThread::_wp_fractional_scale_on_preferred_scale(void *data, struct w
 	ERR_FAIL_NULL(ws);
 
 	ws->preferred_fractional_scale = (double)scale / 120;
+
+	window_state_update_size(ws, ws->rect.size.width, ws->rect.size.height);
 }
 
 void WaylandThread::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
