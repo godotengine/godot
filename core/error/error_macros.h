@@ -405,19 +405,6 @@ void _err_flush_stdout();
 
 /**
  * Ensures `m_cond` is false.
- * If `m_cond` is true, the current function returns, and the error is printed directly
- * to stderr, bypassing the MessageQueue. This is useful to use in core templates
- * used by MessageQueue itself, to prevent infinite error loops.
- */
-#define ERR_FAIL_COND_STDOUT(m_cond)                                                                          \
-	if (unlikely(m_cond)) {                                                                            \
-		fprintf(stderr, "ERROR: Condition \"%s\" is true.\n   at: %s (%s:%i)\n", _STR(m_cond), FUNCTION_STR, __FILE__, __LINE__); \
-		return;                                                                              \
-	} else                                                                                   \
- 		((void)0)
-
-/**
- * Ensures `m_cond` is false.
  * If `m_cond` is true, prints `m_msg` and the current function returns.
  *
  * If checking for null use ERR_FAIL_NULL_MSG instead.
