@@ -492,5 +492,14 @@ namespace Godot.SourceGenerators
                 classSyntax.GetLocation(),
                 classSyntax.SyntaxTree.FilePath));
         }
+
+        public static readonly DiagnosticDescriptor ExportedMemberMustNotBeDuplicateRule =
+            new DiagnosticDescriptor(id: "GD0501",
+                title: "Duplicate exported member in class",
+                messageFormat: "Duplicate exported {0} '{1}' in: {2} and {3}",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                description: "The same member is exported multiple times, this will lead to serialization inconsistencies. Remove or rename one.");
     }
 }
