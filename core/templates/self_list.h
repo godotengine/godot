@@ -77,7 +77,7 @@ public:
 		}
 
 		void remove(SelfList<T> *p_elem) {
-			DEV_ASSERT(p_elem->_root == this);
+			ERR_FAIL_COND(p_elem->_root != this);
 
 			if (p_elem->_next) {
 				p_elem->_next->_prev = p_elem->_prev;
