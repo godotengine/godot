@@ -255,13 +255,15 @@ void MultiMeshEditor::edit(MultiMeshInstance3D *p_multimesh) {
 
 void MultiMeshEditor::_browse(bool p_source) {
 	browsing_source = p_source;
-	std->get_scene_tree()->set_marked(node, false);
-	std->popup_scenetree_dialog();
+	Node *browsed_node = nullptr;
 	if (p_source) {
+		browsed_node = node->get_node_or_null(mesh_source->get_text());
 		std->set_title(TTR("Select a Source Mesh:"));
 	} else {
+		browsed_node = node->get_node_or_null(surface_source->get_text());
 		std->set_title(TTR("Select a Target Surface:"));
 	}
+	std->popup_scenetree_dialog(browsed_node);
 }
 
 void MultiMeshEditor::_bind_methods() {

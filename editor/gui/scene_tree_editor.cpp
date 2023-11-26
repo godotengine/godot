@@ -925,6 +925,27 @@ void SceneTreeEditor::_notification(int p_what) {
 
 			_update_tree();
 		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				TreeItem *item = nullptr;
+				if (selected) {
+					// Scroll to selected node.
+					item = _find(tree->get_root(), selected->get_path());
+				} else if (marked.size() == 1) {
+					// Scroll to a single marked node.
+					Node *marked_node = *marked.begin();
+					if (marked_node) {
+						item = _find(tree->get_root(), marked_node->get_path());
+					}
+				}
+
+				if (item) {
+					// Must wait until tree is properly sized before scrolling.
+					callable_mp(tree, &Tree::scroll_to_item).call_deferred(item, true);
+				}
+			}
+		} break;
 	}
 }
 
@@ -1567,7 +1588,9 @@ SceneTreeEditor::~SceneTreeEditor() {
 
 /******** DIALOG *********/
 
-void SceneTreeDialog::popup_scenetree_dialog() {
+void SceneTreeDialog::popup_scenetree_dialog(Node *p_selected_node, Node *p_marked_node, bool p_marked_node_selectable, bool p_marked_node_children_selectable) {
+	get_scene_tree()->set_marked(p_marked_node, p_marked_node_selectable, p_marked_node_children_selectable);
+	get_scene_tree()->set_selected(p_selected_node);
 	popup_centered_clamped(Size2(350, 700) * EDSCALE);
 }
 
