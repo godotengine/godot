@@ -4811,6 +4811,8 @@ void AnimationTrackEditor::_add_track(int p_type) {
 		return;
 	}
 	adding_track_type = p_type;
+	pick_track->get_scene_tree()->set_marked(root, true);
+	pick_track->get_scene_tree()->set_selected(nullptr);
 	pick_track->popup_scenetree_dialog();
 	pick_track->get_filter_line_edit()->clear();
 	pick_track->get_filter_line_edit()->grab_focus();

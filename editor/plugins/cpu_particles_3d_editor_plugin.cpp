@@ -55,6 +55,8 @@ void CPUParticles3DEditor::_notification(int p_notification) {
 void CPUParticles3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
+			emission_tree_dialog->get_scene_tree()->set_marked(node, true);
+			emission_tree_dialog->get_scene_tree()->set_selected(nullptr);
 			emission_tree_dialog->popup_scenetree_dialog();
 
 		} break;

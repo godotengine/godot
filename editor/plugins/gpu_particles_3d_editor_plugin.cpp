@@ -264,6 +264,8 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
+			emission_tree_dialog->get_scene_tree()->set_marked(node, true);
+			emission_tree_dialog->get_scene_tree()->set_selected(nullptr);
 			emission_tree_dialog->popup_scenetree_dialog();
 
 		} break;
