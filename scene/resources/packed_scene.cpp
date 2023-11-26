@@ -836,7 +836,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			print_verbose(vformat("Generating new scene local id for Node '%s'.", p_node->get_name()));
 			int32_t allocated_id = get_scene_local_id_offset() + 1;
 			while (true) { // Find unassigned value.
-				if (allocated_id >= _I32_MAX) { // This case shouldn't happen, but to be safe.
+				if (allocated_id >= INT32_MAX) { // This case shouldn't happen, but to be safe.
 					allocated_id = 0;
 					ERR_PRINT(vformat("Unable to allocate scene local id for '%s'.", p_node->get_name()));
 					break;
