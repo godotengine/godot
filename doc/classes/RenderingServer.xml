@@ -2427,9 +2427,9 @@
 				    Vector3 row_y; float origin_y;
 				};
 				struct InstanceTransform3D {
-				    Basis basis_x; float origin_x;
-				    Basis basis_y; float origin_y;
-				    Basis basis_z; float origin_z;
+				    Vector3 basis_x; float origin_x;
+				    Vector3 basis_y; float origin_y;
+				    Vector3 basis_z; float origin_z;
 				};
 				2D:
 				  - Position: 8 floats (8 floats for InstanceTransform2D)
