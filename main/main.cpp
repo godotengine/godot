@@ -195,7 +195,7 @@ static bool single_threaded_scene = false;
 // Display
 
 static DisplayServer::WindowMode window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
-static DisplayServer::ScreenOrientation window_orientation = DisplayServer::SCREEN_LANDSCAPE;
+static DisplayServer::ScreenOrientation window_orientation = DisplayServer::SCREEN_SENSOR;
 static DisplayServer::VSyncMode window_vsync_mode = DisplayServer::VSYNC_ENABLED;
 static uint32_t window_flags = 0;
 static Size2i window_size = Size2i(1152, 648);
@@ -2290,7 +2290,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	{
-		window_orientation = DisplayServer::ScreenOrientation(int(GLOBAL_DEF_BASIC("display/window/handheld/orientation", DisplayServer::ScreenOrientation::SCREEN_LANDSCAPE)));
+		window_orientation = DisplayServer::ScreenOrientation(int(GLOBAL_DEF_BASIC("display/window/handheld/orientation", DisplayServer::ScreenOrientation::SCREEN_SENSOR)));
 	}
 	{
 		window_vsync_mode = DisplayServer::VSyncMode(int(GLOBAL_DEF_BASIC("display/window/vsync/vsync_mode", DisplayServer::VSyncMode::VSYNC_ENABLED)));
