@@ -131,7 +131,7 @@ void ReplicationEditor::_pick_new_property() {
 		EditorNode::get_singleton()->show_warning(TTR("Not possible to add a new property to synchronize without a root."));
 		return;
 	}
-	pick_node->popup_scenetree_dialog();
+	pick_node->popup_scenetree_dialog(nullptr, current);
 	pick_node->get_filter_line_edit()->clear();
 	pick_node->get_filter_line_edit()->grab_focus();
 }

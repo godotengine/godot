@@ -616,7 +616,7 @@ void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_
 	signal_args = p_signal_args;
 
 	tree->set_selected(nullptr);
-	tree->set_marked(source, true);
+	tree->set_marked(source);
 
 	if (p_cd.target) {
 		set_dst_node(static_cast<Node *>(p_cd.target));
