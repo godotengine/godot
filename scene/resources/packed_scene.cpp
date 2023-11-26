@@ -149,7 +149,7 @@ NodePath SceneState::adjust_if_replaced_path(NodePath p_path, const NodePath *p_
 }
 
 bool SceneState::adjust_if_replaced_path_recursive(const StringName *p_property_name, const NodePath *p_node_source_path, const List<NodePathRemapData> &p_remapped_paths, Variant &value, int p_current_depth) const {
-	ERR_FAIL_COND_V_MSG(p_current_depth > 5, value, vformat("Property depth limit of 5 exceeded in '%s', further NodePath adjustments will be skipped", p_property_name));
+	ERR_FAIL_COND_V_MSG(p_current_depth > 5, value, vformat("Property depth limit of 5 exceeded in '%s', further NodePath adjustments will be skipped", *p_property_name));
 	if (value.get_type() == Variant::NODE_PATH) {
 		value = adjust_if_replaced_path(value, p_node_source_path, p_remapped_paths);
 	} else if (value.get_type() == Variant::ARRAY) {
