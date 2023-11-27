@@ -1361,21 +1361,6 @@ msgstr "ผู้สนับสนุนระดับทอง"
 msgid "Silver Sponsors"
 msgstr "ผู้บริจาคระดับเงิน"
 
-msgid "Bronze Sponsors"
-msgstr "ผู้บริจาคระดับทองแดง"
-
-msgid "Mini Sponsors"
-msgstr "ผู้สนับสนุน"
-
-msgid "Gold Donors"
-msgstr "ผู้บริจาคระดับทอง"
-
-msgid "Silver Donors"
-msgstr "ผู้บริจาคระดับเงิน"
-
-msgid "Bronze Donors"
-msgstr "ผู้บริจาคระดับทองแดง"
-
 msgid "Donors"
 msgstr "ผู้บริจาค"
 
@@ -2450,6 +2435,9 @@ msgstr "ทรัพยากรที่เลือก (%s) มีประเ
 msgid "Make Unique"
 msgstr "ไม่ใช้ร่วมกับวัตถุอื่น"
 
+msgid "Save As..."
+msgstr "บันทึกเป็น..."
+
 msgid "Show in FileSystem"
 msgstr "แสดงในรูปแบบไฟล์"
 
@@ -3107,9 +3095,6 @@ msgstr "โหลดรีซอร์สที่มีอยู่แล้ว
 
 msgid "Save the currently edited resource."
 msgstr "บันทึกรีซอร์สที่กำลังปรับแต่ง"
-
-msgid "Save As..."
-msgstr "บันทึกเป็น..."
 
 msgid "Copy Resource"
 msgstr "คัดลอกรีซอร์ส"
@@ -6786,12 +6771,6 @@ msgstr "กำลังสร้างโปรเจคแอนดรอยด
 
 msgid "Moving output"
 msgstr "กำลังย้ายเอาต์พุต"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"ไม่สามารถคัดลอกและเปลี่ยนชื่อไฟล์ส่งออก ตรวจสอบไดเร็กทอรีโปรเจ็กต์ gradle สำหรับเอาต์พุต"
 
 msgid "Aligning APK..."
 msgstr "จัดเรียง APK..."

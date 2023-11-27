@@ -1103,18 +1103,6 @@ msgstr "პლატინის სპონსორები"
 msgid "Gold Sponsors"
 msgstr "ოქროს სპონსორები"
 
-msgid "Mini Sponsors"
-msgstr "მინი სპონსორები"
-
-msgid "Gold Donors"
-msgstr "ოქროს დონატორები"
-
-msgid "Silver Donors"
-msgstr "ვერცხლის დონატორები"
-
-msgid "Bronze Donors"
-msgstr "ბრინჯაოს დონატორები"
-
 msgid "Donors"
 msgstr "დონატორები"
 
@@ -1662,6 +1650,9 @@ msgstr "თარგმნადი სტრიქონი (ზომა %d)"
 msgid "Inspect"
 msgstr "შეამოწმეთ"
 
+msgid "Save As..."
+msgstr "შეინახვა &როგორც..."
+
 msgid "Convert to %s"
 msgstr "%s-ში გადაყვანა"
 
@@ -2133,9 +2124,6 @@ msgstr "თვისებების კოპირება"
 
 msgid "Paste Properties"
 msgstr "თვისებების ჩასმა"
-
-msgid "Save As..."
-msgstr "შეინახვა &როგორც..."
 
 msgid "Go to previous edited object in history."
 msgstr "ისტორიაში წინა ჩასწორებულ ობიექტზე გადასვლა."
@@ -3866,9 +3854,6 @@ msgstr "მარცხნიდან-მარჯვნივ"
 
 msgid "Right-to-Left"
 msgstr "მარჯვნიდან-მარცხნივ"
-
-msgid "Cannot open font from file: %s."
-msgstr "ფაილიდან ფონტის გახსნის შეცდომა: %s."
 
 msgid "Default Color"
 msgstr "ნაგულისხმები ფერი"

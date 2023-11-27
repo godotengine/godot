@@ -6833,9 +6833,6 @@ msgstr ""
 msgid "Particles are drawn in the order emitted."
 msgstr "Las partículas se dibujan en el orden en que se emiten."
 
-msgid "Particles are drawn in order of remaining lifetime."
-msgstr "Las partículas se dibujan en orden según el tiempo de vida restante."
-
 msgid "Represents the size of the [enum Parameter] enum."
 msgstr "Representa el tamaño del enumerado [enum Parameter]."
 
@@ -10386,27 +10383,14 @@ msgstr "Carga una imagen del contenido binario de un archivo JPEG."
 msgid "Loads an image from the binary contents of a PNG file."
 msgstr "Carga una imagen del contenido binario de un archivo PNG."
 
-msgid "Loads an image from the binary contents of a TGA file."
-msgstr "Carga una imagen del contenido binario de un archivo TGA."
-
 msgid "Loads an image from the binary contents of a WebP file."
 msgstr "Carga una imagen del contenido binario de un archivo WebP."
-
-msgid ""
-"Multiplies color values with alpha values. Resulting color values for a pixel "
-"are [code](color * alpha)/256[/code]."
-msgstr ""
-"Multiplica los valores de color por los valores alfa. Los valores de color "
-"resultantes para un píxel son [code](color * alfa)/256[/code]."
 
 msgid ""
 "Converts a standard RGBE (Red Green Blue Exponent) image to an sRGB image."
 msgstr ""
 "Convierte una imagen estándar RGBE (Red Green Blue Exponent) en una imagen "
 "sRGB."
-
-msgid "Shrinks the image by a factor of 2."
-msgstr "Reduce la imagen en un factor de 2."
 
 msgid "Converts the raw data from the sRGB colorspace to a linear scale."
 msgstr ""
@@ -12629,9 +12613,6 @@ msgid ""
 msgstr ""
 "Devuelve [code]true[/code] si se trata de un marcador de posición de carga de "
 "instancia. Ver [InstancePlaceholder]."
-
-msgid "Returns the [SceneTree] that contains this node."
-msgstr "Devuelve el [SceneTree] que contiene este nodo."
 
 msgid "Returns the node's [Viewport]."
 msgstr "Devuelve el [Viewport] del nodo."
@@ -15058,13 +15039,6 @@ msgstr ""
 "Administrador de Proyectos cuando se pasa el cursor por encima del proyecto."
 
 msgid ""
-"Forces a delay between frames in the main loop (in milliseconds). This may be "
-"useful if you plan to disable vertical synchronization."
-msgstr ""
-"Fuerza un retardo entre fotogramas en el bucle principal (en milisegundos). "
-"Esto puede ser útil si planea deshabilitar la sincronización vertical."
-
-msgid ""
 "If [code]true[/code], enables low-processor usage mode. This setting only "
 "works on desktop platforms. The screen is not redrawn if nothing changes "
 "visually. This is meant for writing applications and editors, but is pretty "
@@ -16514,9 +16488,6 @@ msgstr ""
 msgid "Draw particles in the order that they appear in the particles array."
 msgstr ""
 "Dibuja las partículas en el orden en que aparecen en el array de partículas."
-
-msgid "Sort particles based on their lifetime."
-msgstr "Clasificar las partículas en función de su vida útil."
 
 msgid "Sort particles based on their distance to the camera."
 msgstr "Clasifica las partículas según su distancia a la cámara."

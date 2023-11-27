@@ -296,7 +296,5 @@ GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptF
 }
 
 GDScriptLambdaSelfCallable::~GDScriptLambdaSelfCallable() {
-	if (updatable_func_ptr_element) {
-		GDScript::_remove_func_ptr_to_update(updatable_func_ptr_element);
-	}
+	GDScript::_remove_func_ptr_to_update(updatable_func_ptr_element);
 }

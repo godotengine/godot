@@ -35,13 +35,14 @@
 # Deolindo <deolindojvn@gmail.com>, 2023.
 # Hevinis <meauriocardoso@gmail.com>, 2023.
 # Ricardo Caetano <ricardofilipecaetano@gmail.com>, 2023.
+# Henricky Corazza Serrão <henrickyserrao@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-10 08:17+0000\n"
-"Last-Translator: Ricardo Caetano <ricardofilipecaetano@gmail.com>\n"
+"PO-Revision-Date: 2023-11-16 16:21+0000\n"
+"Last-Translator: Henricky Corazza Serrão <henrickyserrao@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -49,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -192,6 +193,12 @@ msgstr "Script"
 msgid "Search in File Extensions"
 msgstr "Pesquisar em Extensões de Arquivo"
 
+msgid "Subwindows"
+msgstr "Subjanelas"
+
+msgid "Embed Subwindows"
+msgstr "Incorporar subjanelas"
+
 msgid "Physics"
 msgstr "Física"
 
@@ -224,6 +231,9 @@ msgstr "Compressão"
 
 msgid "Zstd"
 msgstr "Zstd"
+
+msgid "Compression Level"
+msgstr "Nível de Compressão"
 
 msgid "Zlib"
 msgstr "Zlib"

@@ -1250,21 +1250,6 @@ msgstr "Χρυσοί Χορυγοί"
 msgid "Silver Sponsors"
 msgstr "Αργυροί Δωρητές"
 
-msgid "Bronze Sponsors"
-msgstr "Χάλκινοι Δωρητές"
-
-msgid "Mini Sponsors"
-msgstr "Μικροί Χορηγοί"
-
-msgid "Gold Donors"
-msgstr "Χρυσοί Δωρητές"
-
-msgid "Silver Donors"
-msgstr "Αργυροί Δωρητές"
-
-msgid "Bronze Donors"
-msgstr "Χάλκινοι Δωρητές"
-
 msgid "Donors"
 msgstr "Δωρητές"
 
@@ -2437,6 +2422,9 @@ msgstr ""
 msgid "Make Unique"
 msgstr "Κάνε μοναδικό"
 
+msgid "Save As..."
+msgstr "Αποθήκευση ως..."
+
 msgid "Show in FileSystem"
 msgstr "Εμφάνιση στο Σύστημα Αρχείων"
 
@@ -3128,9 +3116,6 @@ msgstr "Φόρτωσε υπάρχων πόρο στη μνήμη και επεξ
 
 msgid "Save the currently edited resource."
 msgstr "Αποθήκευσε το τρέχων επεξεργαζόμενο πόρο."
-
-msgid "Save As..."
-msgstr "Αποθήκευση ως..."
 
 msgid "Copy Resource"
 msgstr "Αντιγραφή πόρου"

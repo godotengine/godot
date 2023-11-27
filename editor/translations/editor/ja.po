@@ -68,8 +68,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-31 19:10+0000\n"
-"Last-Translator: Koji Horaguchi <koji.horaguchi@gmail.com>\n"
+"PO-Revision-Date: 2023-11-18 06:21+0000\n"
+"Last-Translator: ueshita <nalto32@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -77,7 +77,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "メインスレッド"
@@ -161,37 +161,37 @@ msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
 msgstr "ジョイパッドモーション 軸:%d (%s) 値:%.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
-msgstr "下アクション。Sony ✕、Xbox A、Nintendo B"
+msgstr "下アクション、Sony ✕、Xbox A、Nintendo B"
 
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "右アクション。Sony ○、Xbox B，Nintendo A"
+msgstr "右アクション、Sony ○、Xbox B，Nintendo A"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "左アクション。Sony □、Xbox X、Nintendo Y"
+msgstr "左アクション、Sony □、Xbox X、Nintendo Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "上アクション。Sony △、Xbox Y、Nintendo X"
+msgstr "上アクション、Sony △、Xbox Y、Nintendo X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
-msgstr "Back。Sony Select、Xbox Back、Nintendo -"
+msgstr "Back、Sony Select、Xbox Back、Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
-msgstr "Guide。Sony PS、Xbox Home"
+msgstr "Guide、Sony PS、Xbox Home"
 
 msgid "Start, Xbox Menu, Nintendo +"
-msgstr "スタート、Xbox、任天堂 ＋"
+msgstr "Start、Xbox Menu、Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
-msgstr "左スティック。Sony L3、Xbox L/LS"
+msgstr "左スティック、Sony L3、Xbox L/LS"
 
 msgid "Right Stick, Sony R3, Xbox R/RS"
-msgstr "右スティック。Sony R3、Xbox R/RS"
+msgstr "右スティック、Sony R3、Xbox R/RS"
 
 msgid "Left Shoulder, Sony L1, Xbox LB"
-msgstr "左ショルダー、PSコンのL1ボタン、XboxコンのLBボタン"
+msgstr "左ショルダー、Sony L1、Xbox LB"
 
 msgid "Right Shoulder, Sony R1, Xbox RB"
-msgstr "右ショルダー、PSコンのR1ボタン、Xbox RBボタン"
+msgstr "右ショルダー、Sony R1、Xbox RB"
 
 msgid "D-pad Up"
 msgstr "D-pad 上"
@@ -206,7 +206,7 @@ msgid "D-pad Right"
 msgstr "D-pad 右"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
-msgstr "Xbox シェア, PS5 マイク, Nintendo キャプチャ"
+msgstr "Xbox シェア、PS5 マイク、Nintendo キャプチャ"
 
 msgid "Xbox Paddle 1"
 msgstr "Xbox パドル 1"
@@ -1940,6 +1940,9 @@ msgstr "開発者"
 msgid "Authors"
 msgstr "作者"
 
+msgid "Patrons"
+msgstr "パトロン"
+
 msgid "Platinum Sponsors"
 msgstr "プラチナスポンサー"
 
@@ -1949,20 +1952,17 @@ msgstr "ゴールドスポンサー"
 msgid "Silver Sponsors"
 msgstr "シルバースポンサー"
 
-msgid "Bronze Sponsors"
-msgstr "ブロンズスポンサー"
+msgid "Diamond Members"
+msgstr "ダイヤモンドメンバー"
 
-msgid "Mini Sponsors"
-msgstr "ミニスポンサー"
+msgid "Titanium Members"
+msgstr "チタニウムメンバー"
 
-msgid "Gold Donors"
-msgstr "ゴールドドナー"
+msgid "Platinum Members"
+msgstr "プレミアムメンバー"
 
-msgid "Silver Donors"
-msgstr "シルバードナー"
-
-msgid "Bronze Donors"
-msgstr "ブロンズドナー"
+msgid "Gold Members"
+msgstr "ゴールドメンバー"
 
 msgid "Donors"
 msgstr "ドナー"
@@ -2827,11 +2827,23 @@ msgstr "メソッドの説明"
 msgid "Operator Descriptions"
 msgstr "オペレーターの説明"
 
+msgid "Metadata:"
+msgstr "メタデータ:"
+
 msgid "Property:"
 msgstr "プロパティ:"
 
+msgid "Method:"
+msgstr "メソッド:"
+
 msgid "Signal:"
 msgstr "シグナル:"
+
+msgid "Theme Item:"
+msgstr "テーマアイテム:"
+
+msgid "No description available."
+msgstr "説明はありません。"
 
 msgid "%d match."
 msgstr "%d件の一致が見つかりました。"
@@ -3952,6 +3964,12 @@ msgstr ""
 msgid "Assign..."
 msgstr "割り当て..."
 
+msgid "Copy as Text"
+msgstr "パスをコピー"
+
+msgid "Show Node in Tree"
+msgstr "ツリーでノードを表示"
+
 msgid "Invalid RID"
 msgstr "無効なRID"
 
@@ -4038,6 +4056,9 @@ msgstr "ユニーク化"
 
 msgid "Make Unique (Recursive)"
 msgstr "ユニーク化 (再帰的)"
+
+msgid "Save As..."
+msgstr "名前を付けて保存..."
 
 msgid "Show in FileSystem"
 msgstr "ファイルシステム上で表示"
@@ -4513,6 +4534,9 @@ msgstr "プリセット '%s' を削除しますか？"
 msgid "Resources to exclude:"
 msgstr "除外するリソース:"
 
+msgid "Resources to override export behavior:"
+msgstr "エクスポート処理を上書きするリソース:"
+
 msgid "Resources to export:"
 msgstr "エクスポートするリソース:"
 
@@ -4822,6 +4846,9 @@ msgstr "フォルダーを複製:"
 msgid "New Inherited Scene"
 msgstr "新しい継承シーン"
 
+msgid "Set as Main Scene"
+msgstr "メインシーンとして設定"
+
 msgid "Open Scenes"
 msgstr "シーンを開く"
 
@@ -4933,6 +4960,33 @@ msgstr "名前を変更..."
 msgid "Open in External Program"
 msgstr "外部プログラムで開く"
 
+msgid "Red"
+msgstr "赤色"
+
+msgid "Orange"
+msgstr "オレンジ色"
+
+msgid "Yellow"
+msgstr "黄色"
+
+msgid "Green"
+msgstr "緑色"
+
+msgid "Teal"
+msgstr "水色"
+
+msgid "Blue"
+msgstr "青色"
+
+msgid "Purple"
+msgstr "紫色"
+
+msgid "Pink"
+msgstr "ピンク色"
+
+msgid "Gray"
+msgstr "灰色"
+
 msgid "Go to previous selected folder/file."
 msgstr "前に選択したフォルダ/ファイルに移動します。"
 
@@ -4941,6 +4995,9 @@ msgstr "次に選択したフォルダ/ファイルに移動します。"
 
 msgid "Re-Scan Filesystem"
 msgstr "ファイルシステムを再スキャン"
+
+msgid "Change Split Mode"
+msgstr "分割モードの変更"
 
 msgid "Filter Files"
 msgstr "ファイルをフィルタ"
@@ -5553,15 +5610,6 @@ msgstr "動的にレンダリングされるTrueType/OpenTypeフォント"
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "プリレンダリングされたマルチチャンネル(+true) 符号付き距離フィールド"
 
-msgid "Can't load font texture:"
-msgstr "フォントテクスチャを読み込むことができません。"
-
-msgid "Image margin too big."
-msgstr "画像の余白が大きすぎます。"
-
-msgid "Character margin too big."
-msgstr "文字の余白が大きすぎます。"
-
 msgid "Pre-Import Scene"
 msgstr "シーンを事前インポート"
 
@@ -5924,9 +5972,6 @@ msgstr "既存のリソースをディスクから読み込み編集する。"
 
 msgid "Save the currently edited resource."
 msgstr "現在編集中のリソースを保存する。"
-
-msgid "Save As..."
-msgstr "名前を付けて保存..."
 
 msgid "Extra resource options."
 msgstr "追加のリソースオプション。"
@@ -6539,6 +6584,9 @@ msgstr "[グローバル](作成)"
 
 msgid "Duplicated Animation Name:"
 msgstr "複製されたアニメーション名:"
+
+msgid "Onion skinning requires a RESET animation."
+msgstr "オニオン スキニングには RESET アニメーションが必要です。"
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "選択したアニメーションを現在の位置から逆再生する。(A)"
@@ -7671,6 +7719,18 @@ msgid ""
 msgstr ""
 "このオプションを有効にすると、回避形状、大きさおよびベロシティが、ゲーム実行中"
 "にも表示されるようになります。"
+
+msgid "Debug CanvasItem Redraws"
+msgstr "CanvasItem の再描画をデバッグする"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"このオプションを有効にすると、2D オブジェクトの再描画リクエストが実行中のプロ"
+"ジェクトに (短いフラッシュとして) 表示されるようになります。 これは低プロセッ"
+"サ モードのトラブルシューティングに役立ちます。"
 
 msgid "Synchronize Scene Changes"
 msgstr "シーン変更を同期"
@@ -9797,6 +9857,12 @@ msgstr "LightOccluder2Dを作成"
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D プレビュー"
 
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "外部シーンからのスプライトを変換できません。"
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "空のスプライトをメッシュに変換できません。"
+
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "アニメーションフレームを使用してスプライトをメッシュに変換できません。"
 
@@ -11610,7 +11676,7 @@ msgid "Light"
 msgstr "ライト"
 
 msgid "Process"
-msgstr "プロセス"
+msgstr "インポートプロセス"
 
 msgid "Collide"
 msgstr "衝突"
@@ -13463,8 +13529,18 @@ msgstr ""
 "\"editable_instance\" を無効にすると、ノードのすべてのプロパティがデフォルトに"
 "戻ります。"
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"「プレースホルダーとしてロード」を有効にすると、「編集可能な子」が無効になり、"
+"ノードのすべてのプロパティがデフォルトに戻ります。"
+
 msgid "Make Local"
 msgstr "ローカルにする"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "サブシーン内のノードの固有名を切り替えることができません！"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "シーン固有名を有効にする"
@@ -13517,16 +13593,6 @@ msgstr "ノードを除去"
 msgid "Change type of node(s)"
 msgstr "ノードのタイプを変更"
 
-msgid "Removing the node from variable \"%s\" on node \"%s\"."
-msgstr "次の変数からノードを削除します。変数 \"%s\" を持つノード \"%s\" 。"
-
-msgid ""
-"The node's new type is incompatible with an exported variable (expected %s, "
-"but type is %s)."
-msgstr ""
-"ノードの新しい型はエクスポートされた変数と互換性がありません (%s が予想されま"
-"すが、型は %s)。"
-
 msgid "This operation requires a single selected node."
 msgstr "この操作には選択されたノードが1つ必要です。"
 
@@ -13560,6 +13626,9 @@ msgstr "継承をクリア"
 
 msgid "Editable Children"
 msgstr "編集可能な子"
+
+msgid "Load as Placeholder"
+msgstr "プレースホルダーとしてロード"
 
 msgid "Auto Expand to Selected"
 msgstr "選択対象へ自動拡張"
@@ -13851,7 +13920,7 @@ msgid "Please specify a valid shader uniform identifier name."
 msgstr "有効なシェーダーuniform識別子名を指定してください。"
 
 msgid "Global shader parameter '%s' already exists'"
-msgstr "グローバルシェーダーパラメーター '%s' は存在しています"
+msgstr "グローバルシェーダーパラメーター '%s' は既に存在しています"
 
 msgid "Name '%s' is a reserved shader language keyword."
 msgstr "名前 '%s' は予約されたシェーダー言語キーワードです。"
@@ -13887,6 +13956,9 @@ msgstr "トーラスの外半径を変更"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "convert() の引数の型が無効です。TYPE_* 定数を使用してください。"
 
+msgid "Cannot resize array."
+msgstr "配列のサイズを変更できません。"
+
 msgid "Step argument is zero!"
 msgstr "ステップ引数はゼロです！"
 
@@ -13910,6 +13982,9 @@ msgstr "無効なインスタンス辞書形式です(@path で無効なスク�
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "無効なインスタンス辞書です(無効なサブクラス)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "GDScriptクラスをインスタンス化できません。"
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "'%s'型のオブジェクトは長さを提供できません。"
@@ -14703,23 +14778,8 @@ msgstr "拡張パッケージファイルを書き込めませんでした！"
 msgid "Building Android Project (gradle)"
 msgstr "Androidプロジェクトの構築(gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Androidプロジェクトのビルドに失敗しました。エラーの出力を確認してください。\n"
-"また、Androidビルドについてのドキュメントは docs.godotengine.org をご覧くださ"
-"い。"
-
 msgid "Moving output"
 msgstr "出力結果の移動中"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"エクスポートファイルのコピーと名前の変更ができません。出力結果をみるにはgradle"
-"のプロジェクトディレクトリを確認してください。"
 
 msgid "Package not found: \"%s\"."
 msgstr "パッケージが見つかりません: \"%s\"。"
@@ -16376,15 +16436,6 @@ msgstr ""
 "す。"
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"ノード名 '%s' を '%s' のシーン内で一意になるように設定していますが、すでに "
-"'%s' によって要求されています。\n"
-"「%s」は一意の名前として設定されなくなりました。"
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -16398,13 +16449,6 @@ msgid ""
 msgstr ""
 "このノードは実験的ノードとしてマークされており、将来のバージョンでは削除または"
 "大幅な変更が行われる可能性があります。"
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"プロジェクト設定「rendering/environment/defaults/default_environment」で指定さ"
-"れたデフォルト環境をロードできませんでした。"
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -16429,28 +16473,6 @@ msgid ""
 "dimensions to render anything."
 msgstr ""
 "レンダーするにはViewportの縦横それぞれが2ピクセル以上である必要があります。"
-
-msgid "Cannot open font from file: %s."
-msgstr "ファイルからフォントを開けません: %s。"
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr ""
-"BMFont のバージョン %d はサポートされていません (3 である必要があります)。"
-
-msgid "Invalid BMFont info block size."
-msgstr "BMFont 情報ブロック サイズが無効です。"
-
-msgid "Invalid BMFont common block size."
-msgstr "BMFont 共通ブロック サイズが無効です。"
-
-msgid "Can't load font texture: %s."
-msgstr "フォント テクスチャを読み込めません: %s。"
-
-msgid "Unsupported BMFont texture format."
-msgstr "サポートされていない BMFont テクスチャ形式です。"
-
-msgid "Invalid BMFont block type."
-msgstr "無効な BMFont ブロック タイプです。"
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "

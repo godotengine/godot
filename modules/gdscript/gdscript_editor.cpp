@@ -2745,8 +2745,6 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(p_call);
 	GDScriptParser::Node::Type callee_type = call->get_callee_type();
 
-	GDScriptCompletionIdentifier connect_base;
-
 	if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);
 
