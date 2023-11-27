@@ -1817,7 +1817,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		}
 	}
 
-	{
+	if (p_format.shareable_formats.size() == 0) {
 		// Validate that this image is supported for the intended use.
 		VkFormatProperties properties;
 		vkGetPhysicalDeviceFormatProperties(context->get_physical_device(), image_create_info.format, &properties);

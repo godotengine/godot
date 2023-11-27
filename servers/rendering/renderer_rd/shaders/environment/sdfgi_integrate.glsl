@@ -24,18 +24,33 @@ layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, l
 
 #define MAX_CASCADES 8
 
+#ifdef MODE_PROCESS
+
 layout(rg32ui, set = 0, binding = 1) uniform restrict readonly uimage3D voxel_cascades;
 layout(r8ui, set = 0, binding = 2) uniform restrict readonly uimage3D voxel_region_cascades;
 
 layout(set = 0, binding = 3) uniform texture3D light_cascades;
 layout(set = 0, binding = 4) uniform sampler linear_sampler;
-layout(rgba16f, set = 0, binding = 5) uniform restrict image2DArray lightprobe_texture_data;
+layout(r32ui, set = 0, binding = 5) uniform restrict uimage2DArray lightprobe_texture_data;
 layout(r32ui, set = 0, binding = 6) uniform restrict writeonly uimage2DArray lightprobe_diffuse_data;
 layout(r32ui, set = 0, binding = 7) uniform restrict writeonly uimage2DArray lightprobe_ambient_data;
 layout(r32ui, set = 0, binding = 8) uniform restrict uimage2DArray ray_hit_cache;
 layout(r16ui, set = 0, binding = 9) uniform restrict uimage2DArray ray_hit_cache_version;
 layout(r16ui, set = 0, binding = 10) uniform restrict uimage3D region_versions;
+layout(rgba16ui, set = 0, binding = 11) uniform restrict uimage2DArray lightprobe_moving_average_history;
+layout(rgba16ui, set = 0, binding = 12) uniform restrict uimage2DArray lightprobe_moving_average;
 
+
+#ifdef USE_CUBEMAP_ARRAY
+layout(set = 1, binding = 0) uniform textureCubeArray sky_irradiance;
+#else
+layout(set = 1, binding = 0) uniform textureCube sky_irradiance;
+#endif
+layout(set = 1, binding = 1) uniform sampler linear_sampler_mipmaps;
+
+#define SKY_MODE_DISABLED 0
+#define SKY_MODE_COLOR 1
+#define SKY_MODE_SKY 2
 
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
@@ -45,26 +60,25 @@ struct CascadeData {
 	vec4 pad2;
 };
 
-layout(set = 0, binding = 12, std140) uniform Cascades {
+layout(set = 0, binding = 13, std140) uniform Cascades {
 	CascadeData data[MAX_CASCADES];
 }
 cascades;
 
-#ifdef USE_CUBEMAP_ARRAY
-layout(set = 1, binding = 0) uniform textureCubeArray sky_irradiance;
-#else
-layout(set = 1, binding = 0) uniform textureCube sky_irradiance;
+// MODE_PROCESS
 #endif
-layout(set = 1, binding = 1) uniform sampler linear_sampler_mipmaps;
 
-#define HISTORY_BITS 10
 
-#define SKY_MODE_DISABLED 0
-#define SKY_MODE_COLOR 1
-#define SKY_MODE_SKY 2
+#ifdef MODE_FILTER
+
+layout(r32ui, set = 0, binding = 1) uniform restrict readonly uimage2DArray lightprobe_src_diffuse_data;
+layout(r32ui, set = 0, binding = 2) uniform restrict writeonly uimage2DArray lightprobe_dst_diffuse_data;
+layout(r8ui, set = 0, binding = 3) uniform restrict readonly uimage2DArray lightprobe_neighbours;
+
+#endif
 
 layout(push_constant, std430) uniform Params {
-	vec3 grid_size;
+	ivec3 grid_size;
 	int max_cascades;
 
 	float ray_bias;
@@ -89,6 +103,32 @@ layout(push_constant, std430) uniform Params {
 }
 params;
 
+#define HISTORY_FRACT_BITS 10
+#define HISTORY_BITS 16
+
+uvec3 history_encode_16(vec3 p_color) {
+	return uvec3(clamp(p_color * float(1<<HISTORY_FRACT_BITS),vec3(0.0),vec3(float((1<<HISTORY_BITS)-1))));
+}
+
+vec3 history_decode_16(uvec3 p_color) {
+	return vec3(p_color) / vec3(1<<HISTORY_FRACT_BITS);
+}
+
+uvec4 history_encode_21(uvec3 p_color16) {
+	uvec4 enc;
+	const uint mask = ((1<<HISTORY_BITS)-1);
+	p_color16 = min(p_color16,uvec3( (1<<21) -1 ));
+	enc.rgb = p_color16 & uvec3(mask); // lower 16
+	enc.a = (p_color16.r >> HISTORY_BITS) | ((p_color16.g&~mask) >> (HISTORY_BITS-5)) | ((p_color16.b&~mask) >> (HISTORY_BITS-10));
+	return enc;
+}
+
+uvec3 history_decode_21(uvec4 p_color21) {
+	uvec3 dec;
+	dec = p_color21.rgb;
+	dec |= ((uvec3(p_color21.a) >> uvec3(0,5,10)) & uvec3(0x1F)) << uvec3(16);
+	return dec;
+}
 
 uvec3 hash3(uvec3 x) {
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
@@ -153,6 +193,7 @@ vec3 rgbe_decode(uint p_rgbe) {
 	return rgbef.rgb * pow( 2.0, rgbef.a - 15.0 - 9.0 );
 }
 
+#ifdef MODE_PROCESS
 
 bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade, out ivec3 r_cell,out ivec3 r_side, out int r_cascade) {
 
@@ -183,11 +224,11 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade, out ivec3 r_cell,o
 		ivec3(1<<fp_bits) - ivec3(1)
 	);
 
-	ivec3 region_offset_mask = (ivec3(params.grid_size) / REGION_SIZE) - ivec3(1);
+	ivec3 region_offset_mask = (params.grid_size / REGION_SIZE) - ivec3(1);
 
 	ivec3 limits[MAX_LEVEL];
 
-	limits[LEVEL_REGION] = ((ivec3(params.grid_size) << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
+	limits[LEVEL_REGION] = ((params.grid_size << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
 
 	// Initialize to cascade
 	int level = LEVEL_CASCADE;
@@ -263,12 +304,12 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade, out ivec3 r_cell,o
 			ray_pos -= cascades.data[cascade].offset;
 			ray_pos *= cascades.data[cascade].to_cell;
 			pos = ivec3(ray_pos * float(1<<fp_bits));
-			if (any(lessThan(pos,ivec3(0))) || any(greaterThanEqual(pos,ivec3(params.grid_size)<<fp_bits))) {
+			if (any(lessThan(pos,ivec3(0))) || any(greaterThanEqual(pos,params.grid_size<<fp_bits))) {
 				// Outside this cascade, go to next.
 				continue;
 			}
 
-			cascade_base = ivec3(0,int(params.grid_size.y/REGION_SIZE) * cascade , 0);
+			cascade_base = ivec3(0,params.grid_size.y/REGION_SIZE * cascade , 0);
 			level = LEVEL_REGION;
 			continue;
 		}
@@ -331,25 +372,6 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade, out ivec3 r_cell,o
 	return hit;
 }
 
-
-ivec3 modi(ivec3 value, ivec3 p_y) {
-	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
-}
-
-bool hit_ray_box(vec3 ray_pos, vec3 ray_dir, vec3 box_min, vec3 box_max) {
-	vec3 inv_dir = 1.0 / ray_dir;
-	vec3 t0 = (box_min - ray_pos) * inv_dir;
-	vec3 t1 = (box_max - ray_pos) * inv_dir;
-
-	vec3 tmin = min(t0, t1);
-	vec3 tmax = max(t0, t1);
-
-	float tminf = max(max(tmin.x, tmin.y), tmin.z);
-	float tmaxf = min(min(tmax.x, tmax.y), tmax.z);
-
-	return (tmaxf >= max(tminf, 0.0));
-}
-
 #if LIGHTPROBE_OCT_SIZE == 4
 const uint neighbour_max_weights = 8;
 const uint neighbour_weights[128]= uint[](15544, 73563, 135085, 206971, 270171, 528301, 796795, 988221, 8569, 82130, 144347, 200892, 272100, 336249, 397500, 0, 4284, 78811, 147666, 205177, 331964, 401785, 468708, 0, 10363, 69549, 139099, 212152, 466779, 724909, 791613, 993403, 8569, 75492, 278738, 336249, 537563, 594108, 790716, 0, 73563, 135085, 270171, 343224, 403579, 528301, 600187, 660541, 69549, 139099, 338043, 408760, 466779, 595005, 665723, 724909, 141028, 205177, 401785, 475346, 659644, 734171, 987324, 0, 4284, 275419, 331964, 540882, 598393, 795001, 861924, 0, 266157, 338043, 398397, 532315, 605368, 665723, 859995, 921517, 332861, 403579, 462765, 600187, 670904, 728923, 855981, 925531, 200892, 397500, 472027, 663929, 737490, 927460, 991609, 0, 10363, 201789, 266157, 532315, 801976, 859995, 921517, 993403, 534244, 598393, 659644, 795001, 868562, 930779, 987324, 0, 594108, 663929, 730852, 790716, 865243, 934098, 991609, 0, 5181, 206971, 462765, 728923, 796795, 855981, 925531, 998584);
@@ -362,6 +384,13 @@ const uint neighbour_weights[375]= uint[](11139, 72624, 131886, 201671, 271258, 
 
 shared vec3 neighbours[LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE];
 
+#endif
+
+ivec3 modi(ivec3 value, ivec3 p_y) {
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
+}
+
+
 void main() {
 
 #ifdef MODE_PROCESS
@@ -370,7 +399,7 @@ void main() {
 	ivec2 local_pos = ivec2(gl_LocalInvocationID.xy);
 	uint probe_index = gl_LocalInvocationID.x + gl_LocalInvocationID.y * LIGHTPROBE_OCT_SIZE;
 
-	float probe_cell_size = params.grid_size.x / float(params.probe_axis_size.x - 1) / cascades.data[params.cascade].to_cell;
+	float probe_cell_size = float(params.grid_size.x) / float(params.probe_axis_size.x - 1) / cascades.data[params.cascade].to_cell;
 
 	ivec3 probe_cell;
 	probe_cell.x = pos.x;
@@ -397,7 +426,7 @@ void main() {
 
 	ivec3 probe_scroll_pos = modi(probe_world_pos, params.probe_axis_size);
 	ivec3 probe_texture_pos = ivec3( (probe_scroll_pos.xy + ivec2(0,probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
-	ivec3 cache_texture_pos = ivec3(probe_texture_pos.xy * LIGHTPROBE_OCT_SIZE + local_pos, probe_texture_pos.z + params.max_cascades * params.history_index);
+	ivec3 cache_texture_pos = ivec3(probe_texture_pos.xy * LIGHTPROBE_OCT_SIZE + local_pos, probe_texture_pos.z * params.history_size + params.history_index);
 	uint cache_entry = imageLoad(ray_hit_cache,cache_texture_pos).r;
 
 	bool hit;
@@ -439,7 +468,7 @@ void main() {
 			hit_cell += hit_face;
 
 			ivec3 reg_cell_offset = cascades.data[hit_cascade].region_world_offset * REGION_SIZE;
-			hit_cell = (hit_cell + reg_cell_offset) & (ivec3(params.grid_size)-1); // Read from wrapped world cordinates
+			hit_cell = (hit_cell + reg_cell_offset) & (params.grid_size-1); // Read from wrapped world cordinates
 		}
 	}
 
@@ -447,7 +476,7 @@ void main() {
 
 	if (hit) {
 		ivec3 spos = hit_cell;
-		spos.y += hit_cascade * int(params.grid_size.y);
+		spos.y += hit_cascade * params.grid_size.y;
 		light = texelFetch(sampler3D(light_cascades, linear_sampler), spos,0).rgb;
 	} else if (params.sky_mode == SKY_MODE_SKY) {
 #ifdef USE_CUBEMAP_ARRAY
@@ -474,7 +503,7 @@ void main() {
 			unit_pos *= cascades.data[params.cascade].to_cell;
 
 			vec3 t0 = -unit_pos / ray_dir;
-			vec3 t1 = (params.grid_size - unit_pos) / ray_dir;
+			vec3 t1 = (vec3(params.grid_size) - unit_pos) / ray_dir;
 			vec3 tmax = max(t0, t1);
 
 			uint axis;
@@ -505,11 +534,23 @@ void main() {
 
 	// Blend with existing light
 
+
+	{
+		// Do moving average
+
+		uvec3 moving_avg = history_decode_21( imageLoad(lightprobe_moving_average,ivec3(cache_texture_pos.xy,params.cascade)) );
+		uvec3 prev_val16 = imageLoad(lightprobe_moving_average_history,cache_texture_pos).rgb;
+		moving_avg -= prev_val16;
+		uvec3 new_val = history_encode_16(light);
+		imageStore(lightprobe_moving_average_history,cache_texture_pos,uvec4(new_val,0));
+		moving_avg+=new_val;
+		imageStore(lightprobe_moving_average,ivec3(cache_texture_pos.xy,params.cascade), history_encode_21(moving_avg) );
+		light = history_decode_16( moving_avg / uvec3(params.history_size) );
+	}
+
 	probe_texture_pos = ivec3(probe_texture_pos.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1),probe_texture_pos.z);
 	ivec3 probe_read_pos = probe_texture_pos + ivec3(local_pos,0);
-	vec3 prev_light = imageLoad(lightprobe_texture_data,probe_read_pos).rgb;
 
-	light = mix(light,prev_light,0.97);
 	neighbours[ probe_index ] = light;
 
 
@@ -577,16 +618,122 @@ void main() {
 		copy_to[1] = probe_texture_pos + ivec3(local_pos.x + 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
 	}
 
+	uint light_rgbe = rgbe_encode(light);
+	uint diffuse_rgbe = rgbe_encode(diffuse_light);
+	uint ambient_rgbe;
+	if (params.store_ambient_texture) {
+		ambient_rgbe = rgbe_encode(ambient_light);
+	}
 	for (int i = 0; i < 4; i++) {
 		if (copy_to[i] == ivec3(-2, -2, -2)) {
 			continue;
 		}
-		imageStore(lightprobe_texture_data, copy_to[i], vec4(light,1.0));
-		imageStore(lightprobe_diffuse_data, copy_to[i], uvec4(rgbe_encode(diffuse_light)));
+		imageStore(lightprobe_texture_data, copy_to[i], uvec4(light_rgbe));
+		imageStore(lightprobe_diffuse_data, copy_to[i], uvec4(diffuse_rgbe));
 		if (params.store_ambient_texture) {
-			imageStore(lightprobe_ambient_data, copy_to[i], uvec4(rgbe_encode(ambient_light)));
+			imageStore(lightprobe_ambient_data, copy_to[i], uvec4(ambient_rgbe));
 		}
 		// also to diffuse
+	}
+
+#endif
+
+#ifdef MODE_FILTER
+
+
+	ivec2 pos = ivec2(gl_WorkGroupID.xy);
+	ivec2 local_pos = ivec2(gl_LocalInvocationID.xy);
+
+	ivec3 probe_cell;
+	probe_cell.x = pos.x;
+	probe_cell.y = pos.y % params.probe_axis_size.y;
+	probe_cell.z = pos.y / params.probe_axis_size.y;
+
+	ivec3 probe_world_pos = params.world_offset + probe_cell;
+
+	ivec3 probe_scroll_pos = modi(probe_world_pos, params.probe_axis_size);
+	ivec3 probe_base_pos = ivec3( (probe_scroll_pos.xy + ivec2(0,probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
+
+	ivec3 probe_texture_pos = ivec3(probe_base_pos.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1),probe_base_pos.z);
+	ivec3 probe_read_pos = probe_texture_pos + ivec3(local_pos,0);
+
+	vec4 light;
+	light.rgb = rgbe_decode(imageLoad(lightprobe_src_diffuse_data,probe_read_pos).r);
+	light.a = 1.0;
+
+	const vec3 aniso_dir[6] = vec3[](
+			vec3(-1, 0, 0),
+			vec3(1, 0, 0),
+			vec3(0, -1, 0),
+			vec3(0, 1, 0),
+			vec3(0, 0, -1),
+			vec3(0, 0, 1));
+
+	uint neighbours = imageLoad( lightprobe_neighbours,probe_base_pos ).r;
+
+	for(int i=0;i<6;i++) {
+
+		if (!bool(neighbours & (1<<i))) {
+			continue; // un-neighboured
+		}
+
+		ivec3 neighbour_probe = probe_cell + ivec3(aniso_dir[i]);
+		if (any(lessThan(neighbour_probe,ivec3(0))) || any(greaterThanEqual(neighbour_probe,params.probe_axis_size))) {
+			continue; // Outside range.
+		}
+
+		ivec3 probe_world_pos2 = params.world_offset + neighbour_probe;
+		ivec3 probe_scroll_pos2 = modi(probe_world_pos2, params.probe_axis_size);
+		ivec3 probe_base_pos2 = ivec3( (probe_scroll_pos2.xy + ivec2(0,probe_scroll_pos2.z * params.probe_axis_size.y)), params.cascade);
+
+		ivec3 probe_texture_pos2 = ivec3(probe_base_pos2.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1),probe_base_pos2.z);
+		ivec3 probe_read_pos2 = probe_texture_pos2 + ivec3(local_pos,0);
+
+		vec4 light2;
+		light2.rgb = rgbe_decode(imageLoad(lightprobe_src_diffuse_data,probe_read_pos2).r);
+		light2.a = 1.0;
+
+		light += light2 * 0.7;
+	}
+
+	light.rgb /= light.a;
+
+	ivec3 copy_to[4] = ivec3[](ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2));
+	copy_to[0] = probe_read_pos;
+
+	if (local_pos == ivec2(0, 0)) {
+		copy_to[1] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - 1, -1, 0);
+		copy_to[2] = probe_texture_pos + ivec3(-1, LIGHTPROBE_OCT_SIZE - 1, 0);
+		copy_to[3] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, LIGHTPROBE_OCT_SIZE, 0);
+	} else if (local_pos == ivec2(LIGHTPROBE_OCT_SIZE - 1, 0)) {
+		copy_to[1] = probe_texture_pos + ivec3(0, -1, 0);
+		copy_to[2] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, LIGHTPROBE_OCT_SIZE - 1, 0);
+		copy_to[3] = probe_texture_pos + ivec3(-1, LIGHTPROBE_OCT_SIZE, 0);
+	} else if (local_pos == ivec2(0, LIGHTPROBE_OCT_SIZE - 1)) {
+		copy_to[1] = probe_texture_pos + ivec3(-1, 0, 0);
+		copy_to[2] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - 1, LIGHTPROBE_OCT_SIZE, 0);
+		copy_to[3] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, -1, 0);
+	} else if (local_pos == ivec2(LIGHTPROBE_OCT_SIZE - 1, LIGHTPROBE_OCT_SIZE - 1)) {
+		copy_to[1] = probe_texture_pos + ivec3(0, LIGHTPROBE_OCT_SIZE, 0);
+		copy_to[2] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, 0, 0);
+		copy_to[3] = probe_texture_pos + ivec3(-1, -1, 0);
+	} else if (local_pos.y == 0) {
+		copy_to[1] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - local_pos.x - 1, local_pos.y - 1, 0);
+	} else if (local_pos.x == 0) {
+		copy_to[1] = probe_texture_pos + ivec3(local_pos.x - 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
+	} else if (local_pos.y == LIGHTPROBE_OCT_SIZE - 1) {
+		copy_to[1] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - local_pos.x - 1, local_pos.y + 1, 0);
+	} else if (local_pos.x == LIGHTPROBE_OCT_SIZE - 1) {
+		copy_to[1] = probe_texture_pos + ivec3(local_pos.x + 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
+	}
+
+	uint light_rgbe = rgbe_encode(light.rgb);
+
+	for (int i = 0; i < 4; i++) {
+		if (copy_to[i] == ivec3(-2, -2, -2)) {
+			continue;
+		}
+		imageStore(lightprobe_dst_diffuse_data, copy_to[i], uvec4(light_rgbe));
 	}
 
 #endif

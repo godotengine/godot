@@ -83,7 +83,7 @@ layout(set = 0, binding = 9) uniform texture2DArray lightprobe_texture;
 #endif
 
 layout(push_constant, std430) uniform Params {
-	vec3 grid_size;
+	ivec3 grid_size;
 	int max_cascades;
 
 	int cascade;
@@ -169,11 +169,11 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
 		ivec3(1<<fp_bits) - ivec3(1)
 	);
 
-	ivec3 region_offset_mask = (ivec3(params.grid_size) / REGION_SIZE) - ivec3(1);
+	ivec3 region_offset_mask = (params.grid_size / REGION_SIZE) - ivec3(1);
 
 	ivec3 limits[MAX_LEVEL];
 
-	limits[LEVEL_REGION] = ((ivec3(params.grid_size) << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
+	limits[LEVEL_REGION] = ((params.grid_size << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
 
 	// Initialize to cascade
 	int level = LEVEL_CASCADE;
@@ -249,7 +249,7 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
 			ray_pos -= cascades.data[cascade].offset;
 			ray_pos *= cascades.data[cascade].to_cell;
 			pos = ivec3(ray_pos * float(1<<fp_bits));
-			if (any(lessThan(pos,ivec3(0))) || any(greaterThanEqual(pos,ivec3(params.grid_size)<<fp_bits))) {
+			if (any(lessThan(pos,ivec3(0))) || any(greaterThanEqual(pos,params.grid_size<<fp_bits))) {
 				// Outside this cascade, go to next.
 				continue;
 			}
@@ -327,7 +327,7 @@ vec3 rgbe_decode(uint p_rgbe) {
 
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
-	return ((value % p_y) + p_y) % p_y;
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
 }
 
 ivec2 probe_to_tex(ivec3 local_probe) {
@@ -504,8 +504,8 @@ void main() {
 #else
 
 	// Store to light texture
-	positioni = (positioni + cascades.data[params.cascade].region_world_offset * REGION_SIZE) & (ivec3(params.grid_size) - 1 );
-	positioni.y+=int(params.cascade) * int(params.grid_size.y);
+	positioni = (positioni + cascades.data[params.cascade].region_world_offset * REGION_SIZE) & (params.grid_size - 1 );
+	positioni.y+=int(params.cascade) * params.grid_size.y;
 	imageStore(dst_light, positioni, uvec4(rgbe_encode(light_accum.rgb)));
 
 #endif

@@ -289,6 +289,9 @@ private:
 
 			int32_t probe_axis_size[3];
 			uint32_t ray_hit_cache_frames;
+
+			uint32_t upper_region_world_pos[3];
+			uint pad;
 		};
 
 		SdfgiPreprocessShaderRD preprocess;
@@ -369,7 +372,7 @@ private:
 		};
 
 		struct DirectLightPushConstant {
-			float grid_size[3];
+			int32_t grid_size[3];
 			uint32_t max_cascades;
 
 			uint32_t cascade;
@@ -398,6 +401,7 @@ private:
 
 		enum {
 			INTEGRATE_MODE_PROCESS,
+			INTEGRATE_MODE_FILTER,
 			INTEGRATE_MODE_MAX
 		};
 		struct IntegratePushConstant {
@@ -407,7 +411,7 @@ private:
 				SKY_MODE_SKY,
 			};
 
-			float grid_size[3];
+			int32_t grid_size[3];
 			uint32_t max_cascades;
 
 			float ray_bias;
@@ -566,7 +570,7 @@ public:
 			MAX_DYNAMIC_LIGHTS = 128,
 			MAX_STATIC_LIGHTS = 1024,
 			LIGHTPROBE_OCT_SIZE = 4,
-			LIGHTPROBE_RAY_FRAMES = 10,
+			LIGHTPROBE_HISTORY_FRAMES = 6,
 			OCCLUSION_OCT_SIZE = 14,
 			SH_SIZE = 16
 		};
@@ -658,12 +662,18 @@ public:
 		RID light_process_dispatch_buffer_render;
 
 		RID lightprobe_specular_tex;
+		RID lightprobe_specular_data;
 		RID lightprobe_diffuse_data;
 		RID lightprobe_diffuse_tex;
 		RID lightprobe_ambient_data;
 		RID lightprobe_ambient_tex;
+		RID lightprobe_diffuse_filter_data;
+		RID lightprobe_diffuse_filter_tex;
 		RID lightprobe_hit_cache_data;
 		RID lightprobe_hit_cache_version_data;
+		RID lightprobe_moving_average;
+		RID lightprobe_moving_average_history;
+		RID lightprobe_neighbour_map;
 
 		RID occlusion_process;
 		RID occlusion_tex;
@@ -675,6 +685,8 @@ public:
 		uint32_t sampling_cache_buffer_cascade_size = 0;
 
 		uint32_t update_frame = 0;
+
+		bool using_filter = true;
 #if 0
 		// used for rendering (voxelization)
 		RID render_albedo;
@@ -743,6 +755,22 @@ public:
 		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds, Vector3i &r_scroll, Vector3i &r_region_world) const;
 		void update_cascades();
 
+		RID get_lightprobe_diffuse_texture() {
+			if (using_filter) {
+				return lightprobe_diffuse_filter_tex;
+			} else {
+				return lightprobe_diffuse_tex;
+			}
+		}
+
+		RID get_lightprobe_specular_texture() {
+			return lightprobe_specular_tex;
+		}
+
+		RID get_lightprobe_occlusion_texture() {
+			return occlusion_tex;
+		}
+
 		void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
 		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
 
@@ -765,6 +793,7 @@ public:
 	/* SDFGI UPDATE */
 
 	int sdfgi_get_lightprobe_octahedron_size() const { return SDFGI::LIGHTPROBE_OCT_SIZE; }
+	int sdfgi_get_occlusion_octahedron_size() const { return SDFGI::OCCLUSION_OCT_SIZE; }
 
 	virtual void sdfgi_reset() override;
 

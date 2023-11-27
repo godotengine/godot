@@ -192,7 +192,7 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
-	return ((value % p_y) + p_y) % p_y;
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
 }
 
 ivec2 probe_to_tex(ivec3 local_probe,int p_cascade) {
@@ -345,41 +345,47 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 		float blend;
 		vec3 diffuse, specular;
 		sdfvoxel_gi_process(cascade, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse, specular);
-#if 0
+
 		{
 			//process blend
-			vec3 blend_from = ((vec3(sdfgi.probe_axis_size) - 1) / 2.0) - 2.5;
-			float blend_to = blend_from + 2.0;
+			vec3 blend_from = ((vec3(sdfgi.probe_axis_size) - 1) / 2.0);
 
 			vec3 inner_pos = cam_pos * sdfgi.cascades[cascade].to_probe;
 
-			float len = length(inner_pos);
+			vec3 inner_dist = blend_from - abs(inner_pos);
 
-			inner_pos = abs(normalize(inner_pos));
-			len *= max(inner_pos.x, max(inner_pos.y, inner_pos.z));
+			float min_d = min(inner_dist.x,min(inner_dist.y,inner_dist.z));
 
-			if (len >= blend_from) {
-				blend = smoothstep(blend_from, blend_to, len);
-			} else {
-				blend = 0.0;
-			}
+			blend = clamp(1.0 - smoothstep(0.5,2.5,min_d),0,1);
 		}
 
 		if (blend > 0.0) {
-			//blend
+
+#if 0
+// debug
+			const vec3 to_color[SDFGI_MAX_CASCADES] = vec3[] (
+				vec3(1,0,0),vec3(0,1,0),vec3(0,0,1),vec3(1,1,0),vec3(1,0,1),vec3(0,1,1),vec3(0,0,0),vec3(1,1,1) );
+
+			diffuse = mix(diffuse,to_color[cascade],blend);
+			specular = mix(specular,to_color[cascade],blend);
+#else
+
 			if (cascade == sdfgi.max_cascades - 1) {
 				ambient_light.a = 1.0 - blend;
 				reflection_light.a = 1.0 - blend;
 
 			} else {
 				vec3 diffuse2, specular2;
-				cascade_pos = (cam_pos - sdfgi.cascades[cascade + 1].position) * sdfgi.cascades[cascade + 1].to_probe;
+				cascade_pos = (cam_pos - sdfgi.cascades[cascade + 1].position) * sdfgi.cascades[cascade + 1].to_cell;
+
 				sdfvoxel_gi_process(cascade + 1, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse2, specular2);
+
 				diffuse = mix(diffuse, diffuse2, blend);
 				specular = mix(specular, specular2, blend);
 			}
-		}
 #endif
+		}
+
 		ambient_light.rgb = diffuse;
 #if 0
 		if (roughness < 0.2) {

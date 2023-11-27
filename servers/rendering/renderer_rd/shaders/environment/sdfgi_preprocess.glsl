@@ -136,6 +136,7 @@ shared uint loaded_regions;
 
 layout(r8, set = 0, binding = 1) uniform restrict readonly image2DArray src_occlusion;
 layout(rg16, set = 0, binding = 2) uniform restrict writeonly image2DArray dst_occlusion;
+layout(r8ui, set = 0, binding = 3) uniform restrict writeonly uimage2DArray dst_neighbours;
 
 shared vec3 neighbours[OCCLUSION_OCT_SIZE * OCCLUSION_OCT_SIZE];
 shared int invalid_rays;
@@ -146,28 +147,15 @@ shared int invalid_rays;
 
 layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, local_size_z = 1) in;
 
-layout(rgba16f, set = 0, binding = 1) uniform restrict image2DArray lightprobe_specular_data;
+layout(r32ui, set = 0, binding = 1) uniform restrict uimage2DArray lightprobe_specular_data;
 layout(r32ui, set = 0, binding = 2) uniform restrict uimage2DArray lightprobe_diffuse_data;
 layout(r32ui, set = 0, binding = 3) uniform restrict uimage2DArray lightprobe_ambient_data;
 layout(r32ui, set = 0, binding = 4) uniform restrict uimage2DArray ray_hit_cache;
-layout(set = 0, binding = 5) uniform texture2DArray occlusion_probes;
-layout(set = 0, binding = 6) uniform sampler linear_sampler;
+layout(rgba16ui, set = 0, binding = 5) uniform restrict uimage2DArray lightprobe_moving_average_history;
+layout(rgba16ui, set = 0, binding = 6) uniform restrict uimage2DArray lightprobe_moving_average;
 
-
-#define MAX_CASCADES 8
-
-struct CascadeData {
-	vec3 offset; //offset of (0,0,0) in world coordinates
-	float to_cell; // 1/bounds * grid_size
-	ivec3 region_world_offset;
-	uint pad;
-	vec4 pad2;
-};
-
-layout(set = 0, binding = 7, std140) uniform Cascades {
-	CascadeData data[MAX_CASCADES];
-}
-cascades;
+layout(set = 0, binding = 7) uniform texture2DArray occlusion_probes;
+layout(set = 0, binding = 8) uniform sampler linear_sampler;
 
 shared float occlusion[8];
 
@@ -192,6 +180,10 @@ layout(push_constant, std430) uniform Params {
 
 	ivec3 probe_axis_size;
 	int ray_hit_cache_frames;
+
+	ivec3 upper_region_world_pos;
+	uint pad;
+
 }
 params;
 
@@ -282,7 +274,7 @@ vec3 rgbe_decode(uint p_rgbe) {
 
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
-	return ((value % p_y) + p_y) % p_y;
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
 }
 
 ivec2 probe_to_tex(ivec3 local_probe) {
@@ -292,16 +284,31 @@ ivec2 probe_to_tex(ivec3 local_probe) {
 
 }
 
-#ifdef MODE_LIGHTPROBE_SCROLL
 
-ivec2 probe_to_texc(ivec3 local_probe,int cascade) {
+ivec2 probe_to_texp(ivec3 local_probe) {
 
-	ivec3 cell = modi( cascades.data[cascade].region_world_offset + local_probe,ivec3(params.probe_axis_size));
+	ivec3 cell = modi( params.upper_region_world_pos + local_probe,ivec3(params.probe_axis_size));
 	return cell.xy + ivec2(0,cell.z * int(params.probe_axis_size.y));
 
 }
 
-#endif
+
+#define HISTORY_FRACT_BITS 10
+#define HISTORY_BITS 16
+
+uvec3 history_encode_16(vec3 p_color) {
+	return uvec3(clamp(p_color * float(1<<HISTORY_FRACT_BITS),vec3(0.0),vec3(float((1<<HISTORY_BITS)-1))));
+}
+
+uvec4 history_encode_21(uvec3 p_color16) {
+	uvec4 enc;
+	const uint mask = ((1<<HISTORY_BITS)-1);
+	p_color16 = min(p_color16,uvec3( (1<<21) -1 ));
+	enc.rgb = p_color16 & uvec3(mask); // lower 16
+	enc.a = (p_color16.r >> HISTORY_BITS) | ((p_color16.g&~mask) >> (HISTORY_BITS-5)) | ((p_color16.b&~mask) >> (HISTORY_BITS-10));
+	return enc;
+}
+
 
 void main() {
 
@@ -1028,6 +1035,36 @@ void main() {
 		imageStore(dst_occlusion, copy_to[i], vec4(occlusion,vec2(0.0)));
 	}
 
+	if (local_pos == ivec2(0, 0)) {
+		// Store neighbours for filtering.
+		const vec3 aniso_dir[6] = vec3[](
+				vec3(-1, 0, 0),
+				vec3(1, 0, 0),
+				vec3(0, -1, 0),
+				vec3(0, 1, 0),
+				vec3(0, 0, -1),
+				vec3(0, 0, 1));
+
+		uint neighbours = 0;
+		for(int i=0;i<6;i++) {
+			ivec3 neighbour_probe = base_probe + ivec3(aniso_dir[i]);
+			if (any(lessThan(neighbour_probe,ivec3(0))) || any(greaterThanEqual(neighbour_probe,params.probe_axis_size))) {
+				continue; // Outside range.
+			}
+			ivec3 test_uv = src_tex_uv + ivec3(octahedron_encode(aniso_dir[i]) * OCCLUSION_OCT_SIZE,0);
+			o = imageLoad(src_occlusion, test_uv ).r * OCC8_DISTANCE_MAX;
+
+			if (o >= PROBE_CELLS - 0.5) {
+				// Reaches neighbour.
+				neighbours |= (1<<i);
+			}
+
+		}
+
+		imageStore(dst_neighbours, ivec3(probe_tex_pos, params.cascade), uvec4(neighbours));
+	}
+
+
 #endif
 
 
@@ -1035,24 +1072,20 @@ void main() {
 
 	ivec2 local_pos = ivec2(gl_LocalInvocationID).xy;
 
-	ivec3 base_probe = (params.offset / PROBE_CELLS) + ivec3(gl_WorkGroupID.xyz);
-	ivec2 probe_tex_pos = probe_to_tex(base_probe);
-
-	vec3 posf = vec3(base_probe) * PROBE_CELLS;
-
 	vec3 specular_light = vec3(0.0);
 	vec3 diffuse_light = vec3(0.0);
 	vec3 ambient_light = vec3(0.0);
 
-	if (params.cascade < (params.cascade_count -1)) {
+	int upper_cascade = params.cascade + 1;
 
-		// map to parent cascade space
-		posf /= cascades.data[params.cascade].to_cell;
-		posf += cascades.data[params.cascade].offset;
+	if (upper_cascade < params.cascade_count) {
 
-		int upper_cascade = params.cascade + 1;
-		posf -= cascades.data[upper_cascade].offset;
-		posf *= cascades.data[upper_cascade].to_cell;
+		vec3 posi = params.offset + ivec3(gl_WorkGroupID.xyz) * PROBE_CELLS;
+		// Convert cell to world
+		posi += params.region_world_pos * REGION_SIZE - params.grid_size/2;
+		posi -= (params.upper_region_world_pos * REGION_SIZE - params.grid_size/2)*2;
+
+		vec3 posf = vec3(posi) / 2.0;
 
 		ivec3 base_probe = ivec3(posf / PROBE_CELLS);
 
@@ -1073,40 +1106,47 @@ void main() {
 
 				float weight = 1.0;
 
-				ivec2 tex_pos = probe_to_texc(probe,upper_cascade);
-				vec2 tex_uv = vec2(ivec2(tex_pos * (OCCLUSION_OCT_SIZE+2) + ivec2(1))) + octahedron_encode(n) * float(OCCLUSION_OCT_SIZE);
-				tex_uv *= occ_probe_tex_to_uv;
-				vec2 o_o2 = texture(sampler2DArray(occlusion_probes,linear_sampler),vec3(tex_uv,float(upper_cascade))).rg * OCC16_DISTANCE_MAX;
+				if (d > 0.001) {
 
-				float mean = o_o2.x;
-				float variance = abs((mean*mean) - o_o2.y);
+					ivec2 tex_pos = probe_to_texp(probe);
+					vec2 tex_uv = vec2(ivec2(tex_pos * (OCCLUSION_OCT_SIZE+2) + ivec2(1))) + octahedron_encode(n) * float(OCCLUSION_OCT_SIZE);
+					tex_uv *= occ_probe_tex_to_uv;
+					vec2 o_o2 = texture(sampler2DArray(occlusion_probes,linear_sampler),vec3(tex_uv,float(upper_cascade))).rg * OCC16_DISTANCE_MAX;
 
-				 // http://www.punkuser.net/vsm/vsm_paper.pdf; equation 5
-				 // Need the max in the denominator because biasing can cause a negative displacement
-				float dmean = max(d - mean, 0.0);
-				float chebyshev_weight = variance / (variance + dmean*dmean);
+					float mean = o_o2.x;
+					float variance = abs((mean*mean) - o_o2.y);
 
-				chebyshev_weight = max(pow(chebyshev_weight,3.0), 0.0);
+					 // http://www.punkuser.net/vsm/vsm_paper.pdf; equation 5
+					 // Need the max in the denominator because biasing can cause a negative displacement
+					float dmean = max(d - mean, 0);
+					float chebyshev_weight = variance / (variance + dmean*dmean);
 
-				weight *= (d <= mean) ? 1.0 : chebyshev_weight;
+					chebyshev_weight = max(pow(chebyshev_weight,3.0), 0.0);
 
-				weight = max(0.000001, weight); // make sure not zero (only trilinear can be zero)
+					weight *= (d <= mean) ? 1.0 : chebyshev_weight;
 
-				const float crushThreshold = 0.2;
-				if (weight < crushThreshold) {
-				      weight *= weight * weight * (1.0 / pow(crushThreshold,2.0));
+					weight = max(0.000001, weight); // make sure not zero (only trilinear can be zero)
+
+					const float crushThreshold = 0.2;
+					if (weight < crushThreshold) {
+					      weight *= weight * weight * (1.0 / pow(crushThreshold,2.0));
+					}
+
+					vec3 trilinear = vec3(1.0) - abs(probe_to_pos / float(PROBE_CELLS));
+
+					weight *= trilinear.x * trilinear.y * trilinear.z;
+
 				}
-
-				vec3 trilinear = vec3(1.0) - abs(probe_to_pos / float(PROBE_CELLS));
-
-				weight *= trilinear.x * trilinear.y * trilinear.z;
-
 				occlusion[i]=weight;
 				occlusion_total+=weight;
 			}
 
 			for(int i=0;i<8;i++) {
-				occlusion[i]/=occlusion_total;
+				if (occlusion_total == 0.0) {
+					occlusion[i] = 0;
+				} else {
+					occlusion[i]/=occlusion_total;
+				}
 			}
 
 		}
@@ -1116,10 +1156,10 @@ void main() {
 
 		for(int i=0;i<8;i++) {
 			ivec3 probe = base_probe + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1));
-			ivec2 base_tex_pos = probe_to_texc(probe,upper_cascade);
+			ivec2 base_tex_pos = probe_to_texp(probe);
 			ivec2 tex_pos = base_tex_pos * (LIGHTPROBE_OCT_SIZE+2) + ivec2(1) + local_pos;
 			ivec3 tex_array_pos = ivec3(tex_pos,upper_cascade);
-			specular_light += imageLoad(lightprobe_specular_data,tex_array_pos).rgb * occlusion[i];
+			specular_light += rgbe_decode(imageLoad(lightprobe_specular_data,tex_array_pos).r) * occlusion[i];
 			diffuse_light += rgbe_decode(imageLoad(lightprobe_diffuse_data,tex_array_pos).r) * occlusion[i];
 
 			if (local_pos == ivec2(0)) {
@@ -1128,6 +1168,9 @@ void main() {
 			}
 		}
 	}
+
+	ivec3 probe_from = (params.offset / PROBE_CELLS) + ivec3(gl_WorkGroupID.xyz);
+	ivec2 probe_tex_pos = probe_to_tex(probe_from);
 
 	ivec3 dst_tex_uv = ivec3(probe_tex_pos * (LIGHTPROBE_OCT_SIZE+2) + ivec2(1), params.cascade);
 
@@ -1160,26 +1203,37 @@ void main() {
 		copy_to[1] = dst_tex_uv + ivec3(local_pos.x + 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
 	}
 
+	uint specular_rgbe = rgbe_encode(specular_light);
+	uint diffuse_rgbe = rgbe_encode(diffuse_light);
+
 	for (int i = 0; i < 4; i++) {
 		if (copy_to[i] == ivec3(-2, -2, -2)) {
 			continue;
 		}
-		imageStore(lightprobe_specular_data,copy_to[i],vec4(specular_light,1.0));
-		imageStore(lightprobe_diffuse_data,copy_to[i],uvec4(rgbe_encode(diffuse_light)));
+		imageStore(lightprobe_specular_data,copy_to[i],uvec4(specular_rgbe));
+		imageStore(lightprobe_diffuse_data,copy_to[i],uvec4(diffuse_rgbe));
 	}
+
 
 	if (local_pos == ivec2(0)) {
 		imageStore(lightprobe_ambient_data,ivec3(probe_tex_pos,params.cascade),uvec4(rgbe_encode(ambient_light)));
 	}
 
-	// Cache invalidation
+	// Cache and history invalidation
 	probe_tex_pos = probe_tex_pos * LIGHTPROBE_OCT_SIZE + local_pos;
+
+	uvec3 color16 = history_encode_16(specular_light);
 	for(int i=0;i<params.ray_hit_cache_frames;i++) {
 		ivec3 history_pos = ivec3(probe_tex_pos, params.cascade * params.ray_hit_cache_frames + i);
 		// Completely invalidate cache frame.
 		imageStore(ray_hit_cache,history_pos,uvec4(0));
+		imageStore(lightprobe_moving_average_history,history_pos,uvec4(color16,0));
 	}
 
+	uvec3 average = color16 * params.ray_hit_cache_frames;
+
+	// recompute moving average
+	imageStore(lightprobe_moving_average,ivec3(probe_tex_pos,params.cascade),history_encode_21(average));
 
 
 #endif
