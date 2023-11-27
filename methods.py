@@ -1095,7 +1095,7 @@ def show_progress(env):
                 # Print the progress percentage
                 node_count += node_count_interval
                 if node_count_max > 0 and node_count <= node_count_max:
-                    screen.write("\r[%3d%%] " % (node_count * 100 / node_count_max))
+                    screen.write(f"\r[{node_count / node_count_max:4.0%}] ")
                     screen.flush()
                 elif node_count_max > 0 and node_count > node_count_max:
                     screen.write("\r[100%] ")
