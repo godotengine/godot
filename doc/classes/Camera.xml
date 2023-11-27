@@ -137,6 +137,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="affect_lod" type="bool" setter="set_affect_lod" getter="get_affect_lod" default="true">
+			If [code]true[/code], the camera will be used to calculate the level of detail in [LOD] nodes.
+			Objects further from the camera will select lower levels of detail than those closer to the camera.
+			[b]Note:[/b] This property has no effect if [member projection] is set to [constant PROJECTION_ORTHOGONAL].
+		</member>
 		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1048575">
 			The culling mask that describes which 3D render layers are rendered by this camera.
 		</member>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LOD" inherits="Spatial" version="3.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides discrete level of detail.
+	</brief_description>
+	<description>
+		Automatically hides and shows [Spatial] children depending on the distance from the closest [Camera] to the [LOD] node. Child nodes that don't inherit from [Spatial] are ignored by the LOD system.
+		Children are shown in order with the first children shown when closest to the [Camera], and the latter children shown when further away.
+		The threshold distances for changes are determined by [member Spatial.lod_range].
+		For example, a first child with a range of [code]2[/code] will be shown from distance 0 to 2. A second child with a range of [code]5[/code] will be shown from distance 2 to 7, etc.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="hysteresis" type="float" setter="set_hysteresis" getter="get_hysteresis" default="1.0">
+			To prevent flickering at borders, a hysteresis distance will be added to threshold distances when the object is moving away from the [Camera].
+		</member>
+		<member name="lod_priority" type="int" setter="set_lod_priority" getter="get_lod_priority" default="0">
+			Determines the rate at which level of detail will be updated.
+			Higher priorities will update faster, but use more CPU.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  world.h                                                               */
+/*  lod_manager.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,74 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef LOD_MANAGER_H
+#define LOD_MANAGER_H
 
-#include "core/resource.h"
-#include "scene/resources/environment.h"
-#include "servers/physics_server.h"
-#include "servers/visual_server.h"
+#include "core/local_vector.h"
+#include "core/os/mutex.h"
 
 class Camera;
-class VisibilityNotifier;
 class LOD;
-struct SpatialIndexer;
-class LODManager;
+struct Vector3;
 
-class World : public Resource {
-	GDCLASS(World, Resource);
-	RES_BASE_EXTENSION("world");
-
-private:
-	RID space;
-	RID scenario;
-	RID navigation_map;
-
-	SpatialIndexer *indexer;
-	LODManager *lod_manager = nullptr;
-	Ref<Environment> environment;
-	Ref<Environment> fallback_environment;
-
-protected:
-	static void _bind_methods();
-
-	friend class Camera;
-	friend class VisibilityNotifier;
-	friend class LOD;
-
-	void _register_camera(Camera *p_camera);
-	void _update_camera(Camera *p_camera);
-	void _remove_camera(Camera *p_camera);
-
-	void _register_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect);
-	void _update_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect);
-	void _remove_notifier(VisibilityNotifier *p_notifier);
-
-	void _register_lod(LOD *p_lod, uint32_t p_queue_id);
-	void _unregister_lod(LOD *p_lod, uint32_t p_queue_id);
-
-	friend class Viewport;
-	void _update(uint64_t p_frame);
-
+class LODManager {
 public:
-	RID get_space() const;
-	RID get_scenario() const;
-	RID get_navigation_map() const;
+	enum { NUM_LOD_QUEUES = 5 };
 
-	void set_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_environment() const;
-
-	void set_fallback_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_fallback_environment() const;
-
-	void get_camera_list(List<Camera *> *r_cameras);
-
-	PhysicsDirectSpaceState *get_direct_space_state();
+	void register_camera(Camera *p_camera);
+	void remove_camera(Camera *p_camera);
+	void register_lod(LOD *p_lod, uint32_t p_queue_id);
+	void unregister_lod(LOD *p_lod, uint32_t p_queue_id);
+	void update();
 
 	void notify_saving(bool p_active);
 
-	World();
-	~World();
+	static void set_enabled(bool p_enabled) { _enabled = p_enabled; }
+	static bool is_enabled() { return _enabled; }
+
+private:
+	void _update_queue(uint32_t p_queue_id, const Vector3 *p_camera_positions, uint32_t p_num_cameras);
+
+	struct Queue {
+		LocalVector<LOD *> lods;
+		uint32_t lod_iterator = 0;
+	};
+
+	struct Data {
+		LocalVector<Camera *> cameras;
+		Queue queues[NUM_LOD_QUEUES];
+		BinaryMutex mutex;
+		bool saving = false;
+	} data;
+
+	static bool _enabled;
 };
 
-#endif // WORLD_H
+#endif // LOD_MANAGER_H

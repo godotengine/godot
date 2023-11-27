@@ -45,22 +45,6 @@
 		<member name="lightmap_scale" type="int" setter="set_lightmap_scale" getter="get_lightmap_scale" enum="GeometryInstance.LightmapScale" default="0">
 			Scale factor for the generated baked lightmap. Useful for adding detail to certain mesh instances.
 		</member>
-		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance" default="0.0">
-			The GeometryInstance's max LOD distance.
-			[b]Note:[/b] This property currently has no effect.
-		</member>
-		<member name="lod_max_hysteresis" type="float" setter="set_lod_max_hysteresis" getter="get_lod_max_hysteresis" default="0.0">
-			The GeometryInstance's max LOD margin.
-			[b]Note:[/b] This property currently has no effect.
-		</member>
-		<member name="lod_min_distance" type="float" setter="set_lod_min_distance" getter="get_lod_min_distance" default="0.0">
-			The GeometryInstance's min LOD distance.
-			[b]Note:[/b] This property currently has no effect.
-		</member>
-		<member name="lod_min_hysteresis" type="float" setter="set_lod_min_hysteresis" getter="get_lod_min_hysteresis" default="0.0">
-			The GeometryInstance's min LOD margin.
-			[b]Note:[/b] This property currently has no effect.
-		</member>
 		<member name="material_overlay" type="Material" setter="set_material_overlay" getter="get_material_overlay">
 			The material overlay for the whole geometry.
 			If a material is assigned to this property, it will be rendered on top of any other active material for all the surfaces.

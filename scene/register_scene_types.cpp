@@ -194,6 +194,7 @@
 #include "scene/3d/label_3d.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
+#include "scene/3d/lod.h"
 #include "scene/3d/merge_group.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/multimesh_instance.h"
@@ -441,6 +442,7 @@ void register_scene_types() {
 	ClassDB::register_class<ARVROrigin>();
 	ClassDB::register_class<InterpolatedCamera>();
 	ClassDB::register_class<MeshInstance>();
+	ClassDB::register_class<LOD>();
 	ClassDB::register_class<ImmediateGeometry>();
 	ClassDB::register_virtual_class<SpriteBase3D>();
 	ClassDB::register_class<Sprite3D>();

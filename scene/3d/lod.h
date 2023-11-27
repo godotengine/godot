@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  world.h                                                               */
+/*  lod.h                                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,74 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef LOD_H
+#define LOD_H
 
-#include "core/resource.h"
-#include "scene/resources/environment.h"
-#include "servers/physics_server.h"
-#include "servers/visual_server.h"
+#include "spatial.h"
 
-class Camera;
-class VisibilityNotifier;
-class LOD;
-struct SpatialIndexer;
-class LODManager;
+class LOD : public Spatial {
+	GDCLASS(LOD, Spatial);
 
-class World : public Resource {
-	GDCLASS(World, Resource);
-	RES_BASE_EXTENSION("world");
+	struct LODChild {
+		float distance;
+		int32_t child_id;
+	};
 
-private:
-	RID space;
-	RID scenario;
-	RID navigation_map;
+	struct Data {
+		LocalVector<LODChild> lod_children;
+		int32_t current_lod_child = 0;
+		float hysteresis = 1.0f;
+		int32_t queue_id = 0;
+		const Spatial *current_lod_node = nullptr;
+		bool registered = false;
+	} data;
 
-	SpatialIndexer *indexer;
-	LODManager *lod_manager = nullptr;
-	Ref<Environment> environment;
-	Ref<Environment> fallback_environment;
+	friend class LODManager;
+	bool _lod_update(float p_camera_dist_squared);
+	void _lod_pre_save();
+	void _update_child_distances();
+
+	void _lod_register();
+	void _lod_unregister();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
-	friend class Camera;
-	friend class VisibilityNotifier;
-	friend class LOD;
-
-	void _register_camera(Camera *p_camera);
-	void _update_camera(Camera *p_camera);
-	void _remove_camera(Camera *p_camera);
-
-	void _register_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect);
-	void _update_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect);
-	void _remove_notifier(VisibilityNotifier *p_notifier);
-
-	void _register_lod(LOD *p_lod, uint32_t p_queue_id);
-	void _unregister_lod(LOD *p_lod, uint32_t p_queue_id);
-
-	friend class Viewport;
-	void _update(uint64_t p_frame);
-
 public:
-	RID get_space() const;
-	RID get_scenario() const;
-	RID get_navigation_map() const;
+	void set_hysteresis(real_t p_distance);
+	real_t get_hysteresis() const { return data.hysteresis; }
 
-	void set_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_environment() const;
-
-	void set_fallback_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_fallback_environment() const;
-
-	void get_camera_list(List<Camera *> *r_cameras);
-
-	PhysicsDirectSpaceState *get_direct_space_state();
-
-	void notify_saving(bool p_active);
-
-	World();
-	~World();
+	void set_lod_priority(int p_priority);
+	int get_lod_priority() const { return data.queue_id; }
 };
 
-#endif // WORLD_H
+#endif // LOD_H

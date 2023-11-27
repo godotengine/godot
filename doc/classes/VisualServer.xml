@@ -1462,31 +1462,12 @@
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
 			</description>
 		</method>
-		<method name="instance_geometry_set_as_instance_lod">
-			<return type="void" />
-			<argument index="0" name="instance" type="RID" />
-			<argument index="1" name="as_lod_of_instance" type="RID" />
-			<description>
-				Not implemented in Godot 3.x.
-			</description>
-		</method>
 		<method name="instance_geometry_set_cast_shadows_setting">
 			<return type="void" />
 			<argument index="0" name="instance" type="RID" />
 			<argument index="1" name="shadow_casting_setting" type="int" enum="VisualServer.ShadowCastingSetting" />
 			<description>
 				Sets the shadow casting setting to one of [enum ShadowCastingSetting]. Equivalent to [member GeometryInstance.cast_shadow].
-			</description>
-		</method>
-		<method name="instance_geometry_set_draw_range">
-			<return type="void" />
-			<argument index="0" name="instance" type="RID" />
-			<argument index="1" name="min" type="float" />
-			<argument index="2" name="max" type="float" />
-			<argument index="3" name="min_margin" type="float" />
-			<argument index="4" name="max_margin" type="float" />
-			<description>
-				Not implemented in Godot 3.x.
 			</description>
 		</method>
 		<method name="instance_geometry_set_flag">

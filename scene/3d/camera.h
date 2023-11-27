@@ -88,6 +88,7 @@ private:
 
 	DopplerTracking doppler_tracking;
 	Ref<SpatialVelocityTracker> velocity_tracker;
+	bool affect_lod = true;
 
 protected:
 	void _update_camera();
@@ -169,6 +170,9 @@ public:
 	DopplerTracking get_doppler_tracking() const;
 
 	Vector3 get_doppler_tracked_velocity() const;
+
+	void set_affect_lod(bool p_enable) { affect_lod = p_enable; }
+	bool get_affect_lod() const { return affect_lod; }
 
 	Camera();
 	~Camera();
