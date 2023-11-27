@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma optimize("", off)
+
 #include "rendering_device.h"
 #include "rendering_device.compat.inc"
 
