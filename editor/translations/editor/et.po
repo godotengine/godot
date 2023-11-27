@@ -8600,7 +8600,7 @@ msgstr ""
 "sama maastikuga."
 
 msgid ""
-"Path mode: paints a terrain, thens connects it to the previous tile painted "
+"Path mode: paints a terrain, then connects it to the previous tile painted "
 "within the same stroke."
 msgstr ""
 "Tee režiim: maalib maastiku, siid ühendab selle eelmise sama käigu jooksul "
