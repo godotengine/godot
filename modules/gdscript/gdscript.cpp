@@ -2106,6 +2106,12 @@ void GDScriptLanguage::thread_enter() {
 }
 
 void GDScriptLanguage::thread_exit() {
+	// This thread may have been created before GDScript was up
+	// (which also means it can't have run any GDScript code at all).
+	if (!GDScript::func_ptrs_to_update_thread_local) {
+		return;
+	}
+
 	GDScript::_fixup_thread_function_bookkeeping();
 
 	bool destroy = false;
