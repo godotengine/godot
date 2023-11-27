@@ -1540,6 +1540,20 @@
 				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RenderingServer directly.
 			</description>
 		</method>
+		<method name="get_current_rendering_driver_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the current rendering driver. This can be [code]vulkan[/code], [code]d3d12[/code], [code]metal[/code], [code]opengl3[/code], [code]opengl3_es[/code], or [code]opengl3_angle[/code]. See also [method get_current_rendering_method].
+				The rendering driver is determined by [member ProjectSettings.rendering/rendering_device/driver], the [code]--rendering-driver[/code] command line argument that overrides this project setting, or an automatic fallback that is applied depending on the hardware.
+			</description>
+		</method>
+		<method name="get_current_rendering_method" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the current rendering method. This can be [code]forward_plus[/code], [code]mobile[/code], or [code]gl_compatibility[/code]. See also [method get_current_rendering_driver_name].
+				The rendering method is determined by [member ProjectSettings.rendering/renderer/rendering_method], the [code]--rendering-method[/code] command line argument that overrides this project setting, or an automatic fallback that is applied depending on the hardware.
+			</description>
+		</method>
 		<method name="get_default_clear_color">
 			<return type="Color" />
 			<description>
