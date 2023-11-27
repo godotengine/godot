@@ -2913,10 +2913,12 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 		ws.xdg_toplevel = xdg_surface_get_toplevel(ws.xdg_surface);
 		xdg_toplevel_add_listener(ws.xdg_toplevel, &xdg_toplevel_listener, &ws);
 
-		ws.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(registry.xdg_decoration_manager, ws.xdg_toplevel);
-		zxdg_toplevel_decoration_v1_add_listener(ws.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &ws);
+		if (registry.xdg_decoration_manager) {
+			ws.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(registry.xdg_decoration_manager, ws.xdg_toplevel);
+			zxdg_toplevel_decoration_v1_add_listener(ws.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &ws);
 
-		decorated = true;
+			decorated = true;
+		}
 	}
 
 	ws.frame_callback = wl_surface_frame(ws.wl_surface);
