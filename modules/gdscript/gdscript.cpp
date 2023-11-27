@@ -1383,11 +1383,17 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 
 GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_main_thread;
 thread_local GDScript::UpdatableFuncPtr *GDScript::func_ptrs_to_update_thread_local = nullptr;
+PagedAllocator<GDScript::UpdatableFuncPtr> GDScript::updatable_func_ptrs_allocator;
 
 GDScript::UpdatableFuncPtrElement GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
 	UpdatableFuncPtrElement result = {};
 
 	{
+		if (!func_ptrs_to_update_thread_local) {
+			// Creating it lazily here instead of at thread_enter() because non-GDScript threads can live without it.
+			func_ptrs_to_update_thread_local = updatable_func_ptrs_allocator.alloc();
+		}
+
 		MutexLock lock(func_ptrs_to_update_thread_local->mutex);
 		result.element = func_ptrs_to_update_thread_local->ptrs.push_back(p_func_ptr_ptr);
 		result.func_ptr = func_ptrs_to_update_thread_local;
@@ -2091,13 +2097,10 @@ void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	named_globals.erase(p_name);
 }
 
-void GDScriptLanguage::thread_enter() {
-	GDScript::func_ptrs_to_update_thread_local = memnew(GDScript::UpdatableFuncPtr);
-}
-
 void GDScriptLanguage::thread_exit() {
 	// This thread may have been created before GDScript was up
-	// (which also means it can't have run any GDScript code at all).
+	// (which also means it can't have run any GDScript code at all),
+	// or may not even have had the need to allocate this at all.
 	if (!GDScript::func_ptrs_to_update_thread_local) {
 		return;
 	}
@@ -2114,7 +2117,7 @@ void GDScriptLanguage::thread_exit() {
 		}
 	}
 	if (destroy) {
-		memdelete(GDScript::func_ptrs_to_update_thread_local);
+		GDScript::updatable_func_ptrs_allocator.free(GDScript::func_ptrs_to_update_thread_local);
 	}
 }
 
@@ -2203,6 +2206,7 @@ void GDScriptLanguage::finish() {
 	function_list.clear();
 
 	DEV_ASSERT(GDScript::func_ptrs_to_update_main_thread.rc == 1);
+	GDScript::updatable_func_ptrs_allocator.reset();
 }
 
 void GDScriptLanguage::profiling_start() {

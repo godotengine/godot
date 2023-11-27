@@ -39,6 +39,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
+#include "core/templates/paged_allocator.h"
 #include "core/templates/rb_set.h"
 
 class GDScriptNativeClass : public RefCounted {
@@ -133,6 +134,7 @@ class GDScript : public Script {
 	};
 	static UpdatableFuncPtr func_ptrs_to_update_main_thread;
 	static thread_local UpdatableFuncPtr *func_ptrs_to_update_thread_local;
+	static PagedAllocator<UpdatableFuncPtr> updatable_func_ptrs_allocator;
 	List<UpdatableFuncPtr *> func_ptrs_to_update;
 	Mutex func_ptrs_to_update_mutex;
 
@@ -564,7 +566,6 @@ public:
 
 	/* MULTITHREAD FUNCTIONS */
 
-	virtual void thread_enter() override;
 	virtual void thread_exit() override;
 
 	/* DEBUGGER FUNCTIONS */
