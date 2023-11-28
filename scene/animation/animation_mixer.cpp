@@ -1708,7 +1708,12 @@ void AnimationMixer::_blend_apply() {
 						}
 					}
 				}
-				t->object->set_indexed(t->subpath, Animation::cast_from_blendwise(t->value, t->init_value.get_type()));
+
+				// t->object isn't safe here, get instance from id (GH-85365).
+				Object *obj = ObjectDB::get_instance(t->object_id);
+				if (obj) {
+					obj->set_indexed(t->subpath, Animation::cast_from_blendwise(t->value, t->init_value.get_type()));
+				}
 
 			} break;
 			case Animation::TYPE_BEZIER: {
