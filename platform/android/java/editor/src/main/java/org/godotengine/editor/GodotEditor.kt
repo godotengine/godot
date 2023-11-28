@@ -221,16 +221,9 @@ open class GodotEditor : GodotActivity() {
 		val runningProcesses = activityManager.runningAppProcesses
 		for (runningProcess in runningProcesses) {
 			if (runningProcess.processName.endsWith(processNameSuffix)) {
-				if (targetClass == null) {
-					// Killing process directly
-					Log.v(TAG, "Killing Godot process ${runningProcess.processName}")
-					Process.killProcess(runningProcess.pid)
-				} else {
-					// Activity is running; sending a request for self termination.
-					Log.v(TAG, "Sending force quit request to $targetClass running on process ${runningProcess.processName}")
-					val forceQuitIntent = Intent(this, targetClass).putExtra(EXTRA_FORCE_QUIT, true)
-					startActivity(forceQuitIntent)
-				}
+				// Killing process directly
+				Log.v(TAG, "Killing Godot process ${runningProcess.processName}")
+				Process.killProcess(runningProcess.pid)
 				return true
 			}
 		}
