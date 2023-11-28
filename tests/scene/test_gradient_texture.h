@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #ifndef TEST_GRADIENT_TEXTURE_H
-#define TEST_GRADIENT_IEXTURE_H
+#define TEST_GRADIENT_TEXTURE_H
 
 #include "scene/resources/gradient_texture.h"
 
@@ -37,55 +37,108 @@
 
 namespace TestGradientTexture {
 
-TEST_CASE("[GradientTexture1D] Create gradienttexture1D") {
+TEST_CASE("[GradientTexture1D] Create gradienttexture1D"){
 	Ref<GradientTexture1D> gradient_texture = memnew(GradientTexture1D);
+	Ref<Gradient> test_gradient = memnew(Gradient);
 
-	CHECK(
-		Ref<Gradient> test_gradient = memnew(Gradient);
-		gradient_texture.set_gradient(test_gradient);
-		gradient_texture.get_gradient() == test_gradient;
-	)
+	gradient_texture->set_gradient(test_gradient);
+	CHECK_MESSAGE(
+		gradient_texture->get_gradient() == test_gradient,
+		"Not the right gradient";
+	);
 
-	CHECK(
-		gradient_texture.set_width(82)
-		gradient_texture.get_width() == 82;
-	)
+	gradient_texture->set_width(82);
+	CHECK_MESSAGE(
+		gradient_texture->get_width() == 82,
+		"Not the right width";
+	);
 
-	CHECK(
-		graident_texture.set_use_hdr(true);
-		graident_texture.get_using_hdr() == true;
-	)
+	gradient_texture->set_use_hdr(true);
+	CHECK_MESSAGE(
+		gradient_texture->is_using_hdr() == true,
+		"Not the right use_hdr";
+	);
 }
-
+#if false
 TEST_CASE("[GradientTexture1D] Update") {
 	Ref<GradientTexture1D> gradient_texture = memnew(GradientTexture1D);
 	Ref<Gradient> test_gradient = memnew(Gradient);
-	gradient_texture.set_gradient(test_gradient);
-	gradient_texture.update_now();
+	gradient_texture->set_gradient(test_gradient);
+	gradient_texture->update_now();
 
 	REQUIRE_FALSE(
-		gradient_texture.is_null();
-	)
+		gradient_texture.is_valid(),
+	);
 
-	CHECK(
-		gradient_texture.get_gradient() == test_gradient;
-	)
+	CHECK_MESSAGE(
+		gradient_texture->get_gradient() == test_gradient,
+		"Not the right gradient"
+	);
 
-	CHECK(
-		gradient_texture.get_width() == 256;
-	)
+	CHECK_MESSAGE(
+		gradient_texture->get_width() == 256,
+		"Not the right width"
+	);
 
-	CHECK(
-		graident_texture.get_using_hdr() == false;
-	)
+	CHECK_MESSAGE(
+		gradient_texture->is_using_hdr() == false,
+		"Not the right use_hdr"
+	);
 }
 
 TEST_CASE("[GradientTexture2D] Create gradienttexture2D"){
 	Ref<GradientTexture2D> gradient_texture = memnew(GradientTexture2D);
+	Ref<Gradient> test_gradient = memnew(Gradient);
+	Vector2 vector = Vector2();
 
-	CHECK()
+	gradient_texture->set_gradient(test_gradient);
+	CHECK_MESSAGE(
+		gradient_texture->get_gradient() == test_gradient,
+		"Not the right gradient"
+	);
+
+	gradient_texture->set_width(82);
+	CHECK_MESSAGE(
+		gradient_texture->get_width() == 82,
+		"Not the right width"
+	);
+
+	gradient_texture->set_height(82);
+	CHECK_MESSAGE(
+		gradient_texture->get_height() == 82,
+		"Not the right height"
+	);
+
+	gradient_texture->set_use_hdr(true);
+	CHECK_MESSAGE(
+		gradient_texture->is_using_hdr() == true,
+		"Not the right use_hdr"
+	);
+
+	gradient_texture->set_fill(GradientTexture2D::Fill::FILL_SQUARE);
+	CHECK_MESSAGE(
+		gradient_texture->get_fill() == GradientTexture2D::Fill::FILL_SQUARE,
+		"Not the right fill"
+	);
+
+	gradient_texture->set_fill_from(vector);
+	CHECK_MESSAGE(
+		gradient_texture->get_fill_from().operator== (vector),
+		"Not the right fill_from"
+	);
+
+	gradient_texture->set_fill_to(vector);
+	CHECK_MESSAGE(
+		(gradient_texture->get_fill_to().operator== (vector)),
+		"Not the right fill_to"
+	);
+
+	gradient_texture->set_repeat(GradientTexture2D::Repeat::REPEAT);
+	CHECK_MESSAGE(
+		gradient_texture->get_repeat() == GradientTexture2D::Repeat::REPEAT,
+		"Not the right repeat"
+	);
 }
+#endif
 }
-
-
-    
+#endif
