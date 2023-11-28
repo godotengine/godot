@@ -674,6 +674,15 @@ struct _VariantCall {
 	VARCALL_PACKED_GETTER(PackedVector3Array, Vector3)
 	VARCALL_PACKED_GETTER(PackedVector4Array, Vector4)
 
+	static uint64_t func_PackedByteArray_unsafe_get_ptr(PackedByteArray *p_instance) {
+		return (uint64_t)(void *)(p_instance->ptrw());
+	}
+
+	static void func_PackedByteArray_unsafe_from_ptr(PackedByteArray *p_instance, uint64_t p_ptr, uint64_t p_size) {
+		p_instance->resize(p_size);
+		memcpy(p_instance->ptrw(), (void *)p_ptr, p_size);
+	}
+
 	static String func_PackedByteArray_get_string_from_ascii(PackedByteArray *p_instance) {
 		String s;
 		if (p_instance->size() > 0) {
@@ -2430,6 +2439,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_function(PackedByteArray, compress, _VariantCall::func_PackedByteArray_compress, sarray("compression_mode"), varray(0));
 	bind_function(PackedByteArray, decompress, _VariantCall::func_PackedByteArray_decompress, sarray("buffer_size", "compression_mode"), varray(0));
 	bind_function(PackedByteArray, decompress_dynamic, _VariantCall::func_PackedByteArray_decompress_dynamic, sarray("max_output_size", "compression_mode"), varray(0));
+
+	bind_functionnc(PackedByteArray, unsafe_get_ptr, _VariantCall::func_PackedByteArray_unsafe_get_ptr, sarray(), varray());
+	bind_functionnc(PackedByteArray, unsafe_from_ptr, _VariantCall::func_PackedByteArray_unsafe_from_ptr, sarray("ptr", "size"), varray());
 
 	bind_function(PackedByteArray, decode_u8, _VariantCall::func_PackedByteArray_decode_u8, sarray("byte_offset"), varray());
 	bind_function(PackedByteArray, decode_s8, _VariantCall::func_PackedByteArray_decode_s8, sarray("byte_offset"), varray());

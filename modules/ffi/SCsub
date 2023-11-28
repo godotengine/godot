@@ -1,0 +1,238 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+import subprocess
+from SCons.Defaults import _defines, _concat
+
+env_ffi = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+
+def mscv_preprocess_and_assemble_file_x86(target, source, env):
+    for x in range(len(source)):
+        try:
+            defs = _defines(env["CPPDEFPREFIX"], env["CPPDEFINES"], env["CPPDEFSUFFIX"], env, target, source)
+            incs = _concat(env["INCPREFIX"], env["CPPPATH"], env["INCSUFFIX"], env)
+
+            cmd = str(env["CC"]) + " /FA /P /EP /nologo"
+            for d in defs:
+                cmd += " " + d
+            for i in incs:
+                cmd += " " + i.replace("#", "./")
+            cmd += " " + str(source[x]) + " /Fi" + str(target[x]) + ".i"
+            subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+
+            cmd = str(env["AS"])
+            for i in incs:
+                cmd += " " + i.replace("#", "./")
+            cmd += " /Fo" + str(target[x]) + " /c " + str(target[x]) + ".i"
+            subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+        except Exception:
+            return -1
+
+    return 0
+
+
+def mscv_preprocess_and_assemble_file_arm(target, source, env):
+    for x in range(len(source)):
+        defs = _defines(env["CPPDEFPREFIX"], env["CPPDEFINES"], env["CPPDEFSUFFIX"], env, target, source)
+        incs = _concat(env["INCPREFIX"], env["CPPPATH"], env["INCSUFFIX"], env)
+
+        cmd = str(env["CC"]) + " /FA /P /EP /nologo"
+        for d in defs:
+            cmd += " " + d
+        for i in incs:
+            cmd += " " + i.replace("#", "./")
+        cmd += " " + str(source[x]) + " /Fi" + str(target[x]) + ".i"
+        subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+
+        cmd = str(env["AS"])
+        cmd += " " + str(target[x]) + ".i" + " -o " + str(target[x])
+        subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+
+    return 0
+
+
+if env["builtin_libffi"]:
+    thirdparty_dir = "#thirdparty/libffi/"
+    thirdparty_sources = [
+        "src/closures.c",
+        "src/prep_cif.c",
+        "src/types.c",
+        "src/tramp.c",
+    ]
+
+    env_ffi.Prepend(CPPPATH=[thirdparty_dir + "include/"])
+    env_ffi.Prepend(CPPPATH=[thirdparty_dir + "src/"])
+    env_ffi.Append(CPPDEFINES=["FFI_STATIC_BUILD"])
+
+    if env["platform"] == "web":
+        env_ffi.Prepend(CPPPATH=[thirdparty_dir + "src/wasm32/"])
+        thirdparty_sources += ["src/wasm32/ffi.c"]
+    elif env["arch"] == "arm64":
+        env_ffi.Prepend(CPPPATH=[thirdparty_dir + "src/aarch64/"])
+        thirdparty_sources += ["src/aarch64/ffi.c"]
+        if env["platform"] == "windows":
+            if env.msvc:
+                env_ffi_asm = env_ffi.Clone()
+                env_ffi_asm["AS"] = "armasm64"
+                env_ffi_asm.Append(CPPDEFINES=["_M_ARM64", "_MSC_VER"])
+                env_ffi_asm.Append(
+                    BUILDERS={
+                        "ASPP": env.Builder(action=mscv_preprocess_and_assemble_file_arm, suffix=".o", src_suffix=".S")
+                    }
+                )
+                env.modules_sources += env_ffi_asm.ASPP(
+                    thirdparty_dir + "src/aarch64/win64_armasm" + env["OBJSUFFIX"],
+                    thirdparty_dir + "src/aarch64/win64_armasm.S",
+                )
+            else:
+                env_ffi["AS"] = env["CC"]
+                env_ffi["ASFLAGS"] += [
+                    "-c",
+                    "-Ithirdparty/libffi/src/aarch64/",
+                    "-Ithirdparty/libffi/src/",
+                    "-Ithirdparty/libffi/include/",
+                ]
+                thirdparty_sources += ["src/aarch64/win64_armasm.S"]
+        else:
+            if env["platform"] == "macos" or env["platform"] == "ios":
+                env_ffi.Append(CPPDEFINES=["FFI_EXEC_TRAMPOLINE_TABLE"])
+            thirdparty_sources += ["src/aarch64/sysv.S"]
+    elif env["arch"] == "arm32":
+        env_ffi.Prepend(CPPPATH=[thirdparty_dir + "src/arm/"])
+        thirdparty_sources += ["src/arm/ffi.c"]
+        if env["platform"] == "windows":
+            if env.msvc:
+                env_ffi_asm = env_ffi.Clone()
+                env_ffi_asm["AS"] = "armasm"
+                env_ffi_asm.Append(CPPDEFINES=["_M_ARM", "_MSC_VER"])
+                env_ffi_asm.Append(
+                    BUILDERS={
+                        "ASPP": env.Builder(action=mscv_preprocess_and_assemble_file_arm, suffix=".o", src_suffix=".S")
+                    }
+                )
+                env.modules_sources += env_ffi_asm.ASPP(
+                    thirdparty_dir + "src/arm/sysv_msvc_arm32" + env["OBJSUFFIX"],
+                    thirdparty_dir + "src/arm/sysv_msvc_arm32.S",
+                )
+            else:
+                env_ffi["AS"] = env["CC"]
+                env_ffi["ASFLAGS"] += [
+                    "-c",
+                    "-Ithirdparty/libffi/src/arm/",
+                    "-Ithirdparty/libffi/src/",
+                    "-Ithirdparty/libffi/include/",
+                ]
+                thirdparty_sources += ["src/arm/sysv_msvc_arm32.S"]
+        else:
+            thirdparty_sources += ["src/arm/sysv.S"]
+    elif env["arch"] == "x86_64":
+        env_ffi.Prepend(CPPPATH=[thirdparty_dir + "src/x86/"])
+        if env["platform"] == "windows":
+            env_ffi.Append(CPPDEFINES=["X86_WIN64"])
+        else:
+            if env["platform"] == "macos" or env["platform"] == "ios":
+                env_ffi.Append(CPPDEFINES=["X86_DARWIN"])
+            else:
+                env_ffi.Append(CPPDEFINES=["X86_64"])
+            thirdparty_sources += ["src/x86/ffi64.c"]
+            thirdparty_sources += ["src/x86/unix64.S"]
+        thirdparty_sources += ["src/x86/ffiw64.c"]
+        if env.msvc:
+            env_ffi_asm = env_ffi.Clone()
+            env_ffi_asm["AS"] = "ml64"
+            env_ffi_asm.Append(CPPDEFINES=["__x86_64__", "_MSC_VER"])
+            env_ffi_asm.Append(
+                BUILDERS={
+                    "ASPP": env.Builder(action=mscv_preprocess_and_assemble_file_x86, suffix=".o", src_suffix=".S")
+                }
+            )
+            env.modules_sources += env_ffi_asm.ASPP(
+                thirdparty_dir + "src/x86/win64" + env["OBJSUFFIX"], thirdparty_dir + "src/x86/win64_intel.S"
+            )
+        else:
+            env_ffi.Append(CPPDEFINES=["HAVE_AS_X86_PCREL"])
+            env_ffi["AS"] = env["CC"]
+            env_ffi["ASFLAGS"] += [
+                "-c",
+                "-Ithirdparty/libffi/src/x86/",
+                "-Ithirdparty/libffi/src/",
+                "-Ithirdparty/libffi/include/",
+            ]
+            thirdparty_sources += ["src/x86/win64.S"]
+    elif env["arch"] == "x86_32":
+        env_ffi.Prepend(CPPPATH=[thirdparty_dir + "src/x86/"])
+        env_ffi.Append(CPPDEFINES=[("EH_FRAME_FLAGS", '\\"a\\"')])
+        if env["platform"] == "windows":
+            env_ffi.Append(CPPDEFINES=["X86_WIN32"])
+        thirdparty_sources += ["src/x86/ffi.c"]
+        if env.msvc:
+            env_ffi_asm = env_ffi.Clone()
+            env_ffi_asm["AS"] = "ml"
+            env_ffi_asm.Append(CPPDEFINES=["__i386__", "_MSC_VER"])
+            env_ffi_asm.Append(
+                BUILDERS={
+                    "ASPP": env.Builder(action=mscv_preprocess_and_assemble_file_x86, suffix=".o", src_suffix=".S")
+                }
+            )
+            env.modules_sources += env_ffi_asm.ASPP(
+                thirdparty_dir + "src/x86/sysv" + env["OBJSUFFIX"], thirdparty_dir + "src/x86/sysv_intel.S"
+            )
+        else:
+            env_ffi.Append(CPPDEFINES=["HAVE_AS_X86_PCREL"])
+            env_ffi["AS"] = env["CC"]
+            env_ffi["ASFLAGS"] += [
+                "-c",
+                "-Ithirdparty/libffi/src/x86/",
+                "-Ithirdparty/libffi/src/",
+                "-Ithirdparty/libffi/include/",
+            ]
+            thirdparty_sources += ["src/x86/sysv.S"]
+    elif env["arch"] == "rv64":
+        env_ffi.Prepend(CPPPATH=[thirdparty_dir + "src/riscv/"])
+        thirdparty_sources += ["src/riscv/ffi.c"]
+        env_ffi["AS"] = env["CC"]
+        env_ffi["ASFLAGS"] += [
+            "-c",
+            "-Ithirdparty/libffi/src/riscv/",
+            "-Ithirdparty/libffi/src/",
+            "-Ithirdparty/libffi/include/",
+        ]
+        thirdparty_sources += ["src/riscv/sysv.S"]
+    elif env["arch"] == "ppc32" or env["arch"] == "ppc64":
+        env_ffi.Prepend(CPPPATH=[thirdparty_dir + "src/powerpc/"])
+        thirdparty_sources += ["src/powerpc/ffi.c"]
+        thirdparty_sources += ["src/powerpc/ffi_sysv.c"]
+        thirdparty_sources += ["src/powerpc/ffi_linux64.c"]
+        env_ffi["AS"] = env["CC"]
+        env_ffi["ASFLAGS"] += [
+            "-c",
+            "-Ithirdparty/libffi/src/powerpc/",
+            "-Ithirdparty/libffi/src/",
+            "-Ithirdparty/libffi/include/",
+        ]
+        thirdparty_sources += ["src/powerpc/sysv.S"]
+        thirdparty_sources += ["src/powerpc/linux64.S"]
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_thirdparty = env_ffi.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_ffi.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

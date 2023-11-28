@@ -304,6 +304,11 @@ Comment: libbacktrace
 Copyright: 2012-2021, Free Software Foundation, Inc.
 License: BSD-3-clause
 
+Files: ./thirdparty/libffi/
+Comment: libffi
+Copyright: 1996-2022 Anthony Green, Red Hat, Inc and others.
+License: Expat
+
 Files: ./thirdparty/libktx/
 Comment: KTX
 Copyright: 2013-2020, Mark Callow

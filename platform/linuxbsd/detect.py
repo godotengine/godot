@@ -251,6 +251,9 @@ def configure(env: "SConsEnvironment"):
     if not env["builtin_enet"]:
         env.ParseConfig("pkg-config libenet --cflags --libs")
 
+    if not env["builtin_libffi"]:
+        env.ParseConfig("pkg-config libffi --cflags --libs")
+
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
 
