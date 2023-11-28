@@ -725,7 +725,8 @@ void DisplayServerMacOS::update_mouse_pos(DisplayServerMacOS::WindowData &p_wd, 
 }
 
 void DisplayServerMacOS::pop_last_key_event() {
-	if (key_event_pos > 0) {
+	// Does not pop last key event when it is an IME key event.
+	if (key_event_pos > 0 && key_event_buffer[key_event_pos - 1].raw) {
 		key_event_pos--;
 	}
 }
