@@ -68,7 +68,8 @@ class PopupMenu : public Popup {
 		bool dirty = true;
 		int id = 0;
 		Variant metadata;
-		String submenu;
+		String submenu_name; // Compatibility.
+		PopupMenu *submenu = nullptr;
 		String tooltip;
 		Key accel = Key::NONE;
 		int _ofs_cache = 0;
@@ -254,6 +255,7 @@ public:
 	void add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 
 	void add_submenu_item(const String &p_label, const String &p_submenu, int p_id = -1);
+	void add_submenu_node_item(const String &p_label, PopupMenu *p_submenu, int p_id = -1);
 
 	void set_item_text(int p_idx, const String &p_text);
 
@@ -268,6 +270,7 @@ public:
 	void set_item_metadata(int p_idx, const Variant &p_meta);
 	void set_item_disabled(int p_idx, bool p_disabled);
 	void set_item_submenu(int p_idx, const String &p_submenu);
+	void set_item_submenu_node(int p_idx, PopupMenu *p_submenu);
 	void set_item_as_separator(int p_idx, bool p_separator);
 	void set_item_as_checkable(int p_idx, bool p_checkable);
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
@@ -296,6 +299,7 @@ public:
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
 	String get_item_submenu(int p_idx) const;
+	PopupMenu *get_item_submenu_node(int p_idx) const;
 	bool is_item_separator(int p_idx) const;
 	bool is_item_checkable(int p_idx) const;
 	bool is_item_radio_checkable(int p_idx) const;
