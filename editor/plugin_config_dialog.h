@@ -59,6 +59,8 @@ class PluginConfigDialog : public ConfirmationDialog {
 	LineEdit *script_edit = nullptr;
 	CheckBox *active_edit = nullptr;
 
+	LocalVector<Control *> plugin_edit_hidden_controls;
+
 	EditorValidationPanel *validation_panel = nullptr;
 
 	bool _edit_mode = false;
