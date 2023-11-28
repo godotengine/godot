@@ -563,7 +563,7 @@ void AnimationMixer::_clear_audio_streams() {
 void AnimationMixer::_clear_playing_caches() {
 	for (const TrackCache *E : playing_caches) {
 		if (ObjectDB::get_instance(E->object_id)) {
-			E->object->call(SNAME("stop"));
+			E->object->call(SNAME("stop"), true);
 		}
 	}
 	playing_caches.clear();
