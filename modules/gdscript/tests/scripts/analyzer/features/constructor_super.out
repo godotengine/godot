@@ -1,0 +1,11 @@
+GDTEST_OK
+>> WARNING
+>> Line: 14
+>> UNSAFE_CALL_ARGUMENT
+>> The argument 1 of the function "_init()" requires the subtype "Variant" but the supertype "Variant" was provided.
+SubClass1 init test
+SuperClass1 init test
+SubClass2 init
+SuperClass2 init super
+SubClass3 init
+SuperClass3 init
