@@ -164,7 +164,7 @@ void depth_test_min(uvec2 pos, inout float min_depth, inout uvec2 min_pos) {
 	}
 }
 
-// Returns velocity with closest depth (3x3 neighborhood)
+// Returns velocity with closest depth (3x3 neighborhood) - Currently horribly broken, DO NOT USE!
 void get_closest_pixel_velocity_3x3(in uvec2 group_pos, uvec2 group_top_left, out vec2 velocity) {
 	float min_depth = 1.0;
 	uvec2 min_pos = group_pos;
@@ -268,7 +268,7 @@ vec3 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec3 p, vec3 q) {
 }
 
 // Clip history to the neighbourhood of the current sample
-vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history, vec2 velocity_closest) {
+vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history) {
 	// Sample a 3x3 neighbourhood
 	vec3 s1 = load_color(group_pos + kOffsets3x3[0]);
 	vec3 s2 = load_color(group_pos + kOffsets3x3[1]);
@@ -280,11 +280,10 @@ vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history, vec2 velocity_closest
 	vec3 s8 = load_color(group_pos + kOffsets3x3[7]);
 	vec3 s9 = load_color(group_pos + kOffsets3x3[8]);
 
-	// Compute min and max (with an adaptive box size, which greatly reduces ghosting)
+	// Compute min and max
 	vec3 color_avg = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
 	vec3 color_avg2 = ((s1 * s1) + (s2 * s2) + (s3 * s3) + (s4 * s4) + (s5 * s5) + (s6 * s6) + (s7 * s7) + (s8 * s8) + (s9 * s9)) * RPC_9;
-	float box_size = mix(0.0f, 2.5f, smoothstep(0.02f, 0.0f, length(velocity_closest)));
-	vec3 dev = sqrt(abs(color_avg2 - (color_avg * color_avg))) * box_size;
+	vec3 dev = sqrt(abs(color_avg2 - (color_avg * color_avg)));
 	vec3 color_min = color_avg - dev;
 	vec3 color_max = color_avg + dev;
 
@@ -329,22 +328,10 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	vec3 color_history = sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb;
 
 	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
-	vec2 velocity_closest = vec2(0.0); // This is best done by using the velocity with the closest depth.
-	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity_closest);
-	color_history = clip_history_3x3(pos_group, color_history, velocity_closest);
+	color_history = clip_history_3x3(pos_group, color_history);
 
 	// Compute blend factor
-	float blend_factor = RPC_16; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
-	{
-		// If re-projected UV is out of screen, converge to current color immediatel
-		float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
-
-		// Increase blend factor when there is disocclusion (fixes a lot of the remaining ghosting).
-		float factor_disocclusion = get_factor_disocclusion(uv_reprojected, velocity);
-
-		// Add to the blend factor
-		blend_factor = clamp(blend_factor + factor_screen + factor_disocclusion, 0.0, 1.0);
-	}
+	float blend_factor = clamp(RPC_16 + get_factor_disocclusion(uv_reprojected, velocity), 0.0, 1.0); // We want to be able to accumulate as many jitter samples as we generated, that is, 16. We also increase the blend factor when there is disocclusion to reduce ghosting
 
 	// Resolve
 	vec3 color_resolved = vec3(0.0);
@@ -360,6 +347,10 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 		diff = 1.0 - diff;
 		diff = diff * diff;
 		blend_factor = mix(0.0, blend_factor, diff);
+
+		// If re-projected UV is out of screen, converge to current color immediately
+		float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
+		blend_factor = clamp(blend_factor + factor_screen, 0.0, 1.0);
 
 		// Lerp/blend
 		color_resolved = mix(color_history, color_input, blend_factor);
