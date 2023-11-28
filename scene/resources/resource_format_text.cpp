@@ -199,9 +199,9 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			int name = -1;
 			int instance = -1;
 			int index = -1;
-			int local_id = 0;
-			int parent_id = 0;
-			int parent_owner_id = 0;
+			int32_t local_id = 0;
+			int32_t parent_id = 0;
+			int32_t parent_owner_id = 0;
 			//int base_scene=-1;
 
 			if (next_tag.fields.has("name")) {
@@ -2243,9 +2243,9 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			StringName type = state->get_node_type(i);
 			StringName name = state->get_node_name(i);
 			int index = state->get_node_index(i);
-			int local_id = state->get_node_local_id(i);
-			int parent_owner_id = state->get_node_local_parent_owner_id(i);
-			int parent_id = state->get_node_parent_local_id(i);
+			int32_t local_id = state->get_node_local_id(i);
+			int32_t parent_owner_id = state->get_node_local_parent_owner_id(i);
+			int32_t parent_id = state->get_node_parent_local_id(i);
 			NodePath path = state->get_node_path(i, true);
 			NodePath owner = state->get_node_owner_path(i);
 			Ref<PackedScene> instance = state->get_node_instance(i);

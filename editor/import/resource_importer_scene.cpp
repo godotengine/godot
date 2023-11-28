@@ -2648,7 +2648,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		// Ensure scene local ids for all contained nodes.
 		List<Node *> id_assign_queue; // Maybe another collection type (queue) might be better suited.
 		id_assign_queue.push_back(scene);
-		scene->set_local_id(INT_MAX); // As root is generated, it gets assigned a default id,
+		scene->set_local_id(INT32_MAX); // As root is generated, it gets assigned a default id,
 		// which is unlikely to occur in post import scripts
 		while (!id_assign_queue.is_empty()) {
 			Node *item = id_assign_queue[0];

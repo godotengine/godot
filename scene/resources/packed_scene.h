@@ -45,7 +45,7 @@ class SceneState : public RefCounted {
 	mutable HashMap<int, int> base_scene_node_remap;
 
 	int base_scene_idx = -1;
-	int local_node_id_offset = 0;
+	int32_t local_node_id_offset = 0;
 
 	enum {
 		NO_PARENT_SAVED = 0x7FFFFFFF,
@@ -213,7 +213,7 @@ public:
 	int add_name(const StringName &p_name);
 	int add_value(const Variant &p_value);
 	int add_node_path(const NodePath &p_path);
-	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index, int p_local_id, int p_parent_id, int p_parent_owner_id);
+	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index, int32_t p_local_id, int32_t p_parent_id, int32_t p_parent_owner_id);
 	void add_node_property(int p_node, int p_name, int p_value, bool p_deferred_node_path = false);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);
