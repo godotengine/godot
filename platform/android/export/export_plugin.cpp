@@ -2932,7 +2932,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		Vector<String> android_libraries;
 		Vector<String> android_dependencies;
-		Vector<String> android_dependencies_maven_repos;
+		Vector<Dictionary> android_dependencies_maven_repos;
 
 #ifndef DISABLE_DEPRECATED
 		Vector<PluginConfigAndroid> enabled_plugins = get_enabled_plugins(p_preset);
@@ -2956,14 +2956,18 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				android_dependencies.append_array(export_plugin_android_dependencies);
 
 				PackedStringArray export_plugin_android_dependencies_maven_repos = export_plugins[i]->get_android_dependencies_maven_repos(Ref<EditorExportPlatform>(this), p_debug);
-				android_dependencies_maven_repos.append_array(export_plugin_android_dependencies_maven_repos);
+				for (int k = 0; k < export_plugin_android_dependencies_maven_repos.size(); k++) {
+					Dictionary android_maven_dependency_definition;
+					android_maven_dependency_definition["url"] = export_plugin_android_dependencies_maven_repos[k];
+					android_dependencies_maven_repos.push_back(android_maven_dependency_definition);
+				}
 			}
 		}
 
 		bool clean_build_required = _is_clean_build_required(p_preset);
 		String combined_android_libraries = String("|").join(android_libraries);
 		String combined_android_dependencies = String("|").join(android_dependencies);
-		String combined_android_dependencies_maven_repos = String("|").join(android_dependencies_maven_repos);
+		String combined_android_dependencies_maven_repos = _serialize_android_dependencies_maven_repos(android_dependencies_maven_repos);
 
 		List<String> cmdline;
 		if (clean_build_required) {
@@ -3406,6 +3410,26 @@ void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features
 
 void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
 }
+
+String EditorExportPlatformAndroid::_serialize_android_dependencies_maven_repos(const Vector<Dictionary> &p_maven_repos_definitions) const {
+	// serialize a custom maven repo into: "url=<url>,username=<username>,password=<password>"
+	Vector<String> serialized_android_custom_maves_repos;
+	for (const auto &android_dependencies_maven_repo : p_maven_repos_definitions) {
+		String android_dependency_maven_repo_string =
+				String("url=") + String(android_dependencies_maven_repo["url"]);
+		if (android_dependencies_maven_repo.has("credentials") && android_dependencies_maven_repo["credentials"].get_type() == Variant::DICTIONARY) {
+			// check for credentials, this is a private repo definition
+			const Dictionary &credentials = android_dependencies_maven_repo["credentials"];
+			if (credentials.has("username") && credentials.has("password")) {
+				android_dependency_maven_repo_string +=
+						String(",username=") + String(credentials["username"]) + String(",password=") + String(credentials["password"]);
+			}
+		}
+		serialized_android_custom_maves_repos.append(android_dependency_maven_repo_string);
+	}
+	return String("|").join(serialized_android_custom_maves_repos);
+}
+
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	if (EditorNode::get_singleton()) {

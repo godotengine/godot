@@ -82,7 +82,7 @@ struct PluginConfigAndroid {
 	// Optional dependencies section
 	Vector<String> local_dependencies;
 	Vector<String> remote_dependencies;
-	Vector<String> custom_maven_repos;
+	Vector<Dictionary> custom_maven_repos;
 
 	static String resolve_local_dependency_path(String plugin_config_dir, String dependency_path);
 
@@ -98,7 +98,7 @@ struct PluginConfigAndroid {
 
 	static void get_plugins_binaries(String binary_type, Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result);
 
-	static void get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result);
+	static void get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs, Vector<Dictionary> &r_result);
 
 	static void get_plugins_names(Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result);
 };

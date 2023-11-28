@@ -235,14 +235,17 @@ ext.getExportFilename = {
  * of maven repos.
  */
 ext.getGodotPluginsMavenRepos = { ->
-    Set<String> mavenRepos = []
+    List<Map<String, String>> mavenRepos = []
 
     // Retrieve the list of maven repos.
     if (project.hasProperty("plugins_maven_repos")) {
         String mavenReposProperty = project.property("plugins_maven_repos")
         if (mavenReposProperty != null && !mavenReposProperty.trim().isEmpty()) {
-            for (String mavenRepoUrl : mavenReposProperty.split(VALUE_SEPARATOR_REGEX)) {
-                mavenRepos += mavenRepoUrl.trim()
+            for (String mavenRepoData : mavenReposProperty.split(VALUE_SEPARATOR_REGEX)) {
+                mavenRepos += Arrays.stream(mavenRepoData.split(","))
+                     .map(s -> s.split("=", 2))
+                     .filter(arr -> arr.length == 2)
+                     .collect(Collectors.toMap(arr -> arr[0].trim(), arr -> arr[1].trim()));
             }
         }
     }

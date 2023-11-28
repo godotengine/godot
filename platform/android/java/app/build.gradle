@@ -25,11 +25,20 @@ allprojects {
         mavenCentral()
 
         // Godot user plugins custom maven repos
-        String[] mavenRepos = getGodotPluginsMavenRepos()
-        if (mavenRepos != null && mavenRepos.size() > 0) {
-            for (String repoUrl : mavenRepos) {
+        Map<String, String>[] mavenRepos = getGodotPluginsMavenRepos()
+        if (mavenRepos != null && mavenRepos.length > 0) {
+            mavenRepos.each { repo ->
+                String url = repo.get("url")
+                String username = repo.get("username")
+                String password = repo.get("password")
                 maven {
-                    url repoUrl
+                    url url
+                    if (username && password) {
+                        credentials {
+                            username username
+                            password password
+                        }
+                    }
                 }
             }
         }

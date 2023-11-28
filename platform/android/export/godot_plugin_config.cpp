@@ -136,7 +136,10 @@ PluginConfigAndroid PluginConfigAndroid::load_plugin_config(Ref<ConfigFile> conf
 				}
 
 				plugin_config.remote_dependencies = config_file->get_value(PluginConfigAndroid::DEPENDENCIES_SECTION, PluginConfigAndroid::DEPENDENCIES_REMOTE_KEY, Vector<String>());
-				plugin_config.custom_maven_repos = config_file->get_value(PluginConfigAndroid::DEPENDENCIES_SECTION, PluginConfigAndroid::DEPENDENCIES_CUSTOM_MAVEN_REPOS_KEY, Vector<String>());
+				Vector<Variant> custom_maven_repos_variant = config_file->get_value(PluginConfigAndroid::DEPENDENCIES_SECTION, PluginConfigAndroid::DEPENDENCIES_CUSTOM_MAVEN_REPOS_KEY, Vector<Variant>());
+				for (int k = 0; k < custom_maven_repos_variant.size(); k++) {
+					plugin_config.custom_maven_repos.push_back(Dictionary(custom_maven_repos_variant[k]));
+				}
 			}
 
 			plugin_config.valid_config = is_plugin_config_valid(plugin_config);
@@ -170,7 +173,7 @@ void PluginConfigAndroid::get_plugins_binaries(String binary_type, Vector<Plugin
 	}
 }
 
-void PluginConfigAndroid::get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result) {
+void PluginConfigAndroid::get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs, Vector<Dictionary> &r_result) {
 	if (!plugins_configs.is_empty()) {
 		for (int i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];

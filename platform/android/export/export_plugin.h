@@ -235,6 +235,8 @@ public:
 
 	String _resolve_export_plugin_android_library_path(const String &p_android_library_path) const;
 
+	String _serialize_android_dependencies_maven_repos(const Vector<Dictionary> &p_maven_repos_definitions) const;
+
 	bool _is_clean_build_required(const Ref<EditorExportPreset> &p_preset);
 
 	String get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path);
