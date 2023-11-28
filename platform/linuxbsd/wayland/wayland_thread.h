@@ -800,11 +800,6 @@ private:
 	};
 #endif // LIBDECOR_ENABLED
 
-public:
-	Mutex &mutex = thread_data.mutex;
-
-	// TODO: Make all the methods starting with "_" actually private.
-
 	static Vector<uint8_t> _read_fd(int fd);
 	static int _allocate_shm_file(size_t size);
 
@@ -821,6 +816,9 @@ public:
 	bool _load_cursor_theme(int p_cursor_size);
 
 	void _update_scale(int p_scale);
+
+public:
+	Mutex &mutex = thread_data.mutex;
 
 	struct wl_display *get_wl_display() const;
 
