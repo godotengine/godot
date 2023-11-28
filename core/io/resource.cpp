@@ -489,12 +489,14 @@ RWLock ResourceCache::path_cache_lock;
 #endif
 
 void ResourceCache::clear() {
-	if (resources.size()) {
-		ERR_PRINT("Resources still in use at exit (run with --verbose for details).");
+	if (!resources.is_empty()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT(vformat("%d resources still in use at exit.", resources.size()));
 			for (const KeyValue<String, Resource *> &E : resources) {
 				print_line(vformat("Resource still in use: %s (%s)", E.key, E.value->get_class()));
 			}
+		} else {
+			ERR_PRINT(vformat("%d resources still in use at exit (run with --verbose for details).", resources.size()));
 		}
 	}
 
