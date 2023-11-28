@@ -153,13 +153,7 @@ String dict_to_xmlrpc(const Dictionary &p_dict) {
 }
 
 Error EditorImportBlendRunner::start_blender(const String &p_python_script, bool p_blocking) {
-	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
-
-#ifdef WINDOWS_ENABLED
-	blender_path = blender_path.path_join("blender.exe");
-#else
-	blender_path = blender_path.path_join("blender");
-#endif
+	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 
 	List<String> args;
 	args.push_back("--background");
