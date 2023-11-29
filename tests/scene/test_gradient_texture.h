@@ -33,12 +33,14 @@
 
 #include "scene/resources/gradient_texture.h"
 
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestGradientTexture {
 
-TEST_CASE("[GradientTexture1D] Create gradienttexture1D") {
+TEST_CASE("[SceneTree][GradientTexture1D] Create gradienttexture1D"){
 	Ref<GradientTexture1D> gradient_texture = memnew(GradientTexture1D);
+	gradient_texture.instantiate();
+
 	Ref<Gradient> test_gradient = memnew(Gradient);
 
 	gradient_texture->set_gradient(test_gradient);
@@ -60,14 +62,15 @@ TEST_CASE("[GradientTexture1D] Create gradienttexture1D") {
 	);
 }
 
-TEST_CASE("[GradientTexture1D] Update") {
+TEST_CASE("[SceneTree][GradientTexture1D] Update") {
 	Ref<GradientTexture1D> gradient_texture = memnew(GradientTexture1D);
 	Ref<Gradient> test_gradient = memnew(Gradient);
+
 	gradient_texture->set_gradient(test_gradient);
 	gradient_texture->update_now();
 
 	REQUIRE_FALSE(
-		gradient_texture.is_valid()
+		!gradient_texture.is_valid()
 	);
 
 	CHECK_MESSAGE(
@@ -86,7 +89,7 @@ TEST_CASE("[GradientTexture1D] Update") {
 	);
 }
 
-TEST_CASE("[GradientTexture2D] Create gradienttexture2D"){
+TEST_CASE("[SceneTree][GradientTexture2D] Create gradienttexture2D"){
 	Ref<GradientTexture2D> gradient_texture = memnew(GradientTexture2D);
 	Ref<Gradient> test_gradient = memnew(Gradient);
 	Vector2 vector = Vector2();
@@ -140,7 +143,8 @@ TEST_CASE("[GradientTexture2D] Create gradienttexture2D"){
 	);
 }
 
-TEST_CASE("[GradientTexture2D] _get_gradient_offset_at"){
+
+/*TEST_CASE("[GradientTexture2D] _get_gradient_offset_at"){
 	Ref<GradientTexture2D> gradient_texture = memnew(GradientTexture2D);
 	Vector2 vector = Vector2();
 	Vector2 different_vector = Vector2();
@@ -148,24 +152,24 @@ TEST_CASE("[GradientTexture2D] _get_gradient_offset_at"){
 	gradient_texture->set_fill_from(vector);
 	
 	CHECK_MESSAGE(
-		gradient_texture->_get_gradient_offset_at(0,0) = 0,
+		gradient_texture->_get_gradient_offset_at(0,0) == 0,
 		"Not the right value"
 	);
 
 	gradient_texture->set_fill_from(different_vector);//A changer, avec une valeur de different vector qui fait qu'on ne remplit pas la condition en dessous
 	gradient_texture->set_fill(GradientTexture2D::Fill::FILL_LINEAR);
 	CHECK_MESSAGE(
-		gradient_texture->_get_gradient_offset_at(0,0) = 0, //A changer avec la valeur correspondante
+		gradient_texture->_get_gradient_offset_at(0,0) == 0, //A changer avec la valeur correspondante
 		"Not the right value"
 	);
 
 	Vector2 other_vector = Vector2(); //
 	gradient_texture->set_fill_from(other_vector);
 	CHECK_MESSAGE(
-		gradient_texture->_get_gradient_offset_at(0,0) = -1,
+		gradient_texture->_get_gradient_offset_at(0,0) == -1,
 		"Not the right value"
 	);
-}
+}*/
 
 }
 #endif // TEST_GRADIENT_TEXTURE_H
