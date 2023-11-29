@@ -153,13 +153,15 @@
 # Daniil Zimchuk <danrus228zk@gmail.com>, 2023.
 # Иван Жиляк <zilakivan2008@gmail.com>, 2023.
 # Ilia Brykin <brykin.ilia@gmail.com>, 2023.
+# DLushin <dmiyashyt@gmail.com>, 2023.
+# Ruslan <vovavalenkov15@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-15 10:06+0000\n"
-"Last-Translator: Ilia Brykin <brykin.ilia@gmail.com>\n"
+"PO-Revision-Date: 2023-11-28 04:14+0000\n"
+"Last-Translator: DLushin <dmiyashyt@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -168,7 +170,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -231,7 +233,7 @@ msgid "Size"
 msgstr "Размер"
 
 msgid "Viewport Width"
-msgstr "Ширина окна предпросмотра"
+msgstr "Ширина экрана"
 
 msgid "Viewport Height"
 msgstr "Высота экрана"
@@ -301,6 +303,9 @@ msgstr "Сила панорамирования 3D"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Session Category"
+msgstr "Категория приложения"
 
 msgid "Mix With Others"
 msgstr "Смешивание с другими"
@@ -487,6 +492,9 @@ msgstr "Использовать Ambient"
 
 msgid "Low Processor Usage Mode"
 msgstr "Режим низкой нагрузки процессора"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "Задержка в режиме низкой нагрузки процессора (мсек)"
 
 msgid "Delta Smoothing"
 msgstr "Дельта сглаживание"
@@ -911,6 +919,9 @@ msgstr "Локализация"
 msgid "Scene Tabs"
 msgstr "Вкладки сцен"
 
+msgid "Restore Scenes on Load"
+msgstr "Восстанавливать сцены при загрузке"
+
 msgid "Inspector"
 msgstr "Инспектор"
 
@@ -932,10 +943,16 @@ msgstr "Горизонтальное редактирование Vector2"
 msgid "Horizontal Vector Types Editing"
 msgstr "Горизонтальных редактирование векторных типов"
 
+msgid "Open Resources in Current Inspector"
+msgstr "Открывать ресурсы в текущем инспекторе"
+
 msgid "Resources to Open in New Inspector"
 msgstr "Ресурсы для Открытия в новом экземпляре Инспектора"
 
 msgid "Default Color Picker Mode"
+msgstr "Режим выбора цвета по умолчанию"
+
+msgid "Default Color Picker Shape"
 msgstr "Режим выбора цвета по умолчанию"
 
 msgid "Base Type"
@@ -952,6 +969,12 @@ msgstr "Язык редактора"
 
 msgid "Display Scale"
 msgstr "Масштаб отображения"
+
+msgid "Editor Screen"
+msgstr "Сторона редактора"
+
+msgid "Project Manager Screen"
+msgstr "Экран менеджера проекта"
 
 msgid "Enable Pseudolocalization"
 msgstr "Включить псевдолокализацию"
@@ -4168,6 +4191,9 @@ msgstr "HDR маcштаб"
 
 msgid "Fog"
 msgstr "Туман"
+
+msgid "Volumetric Fog"
+msgstr "Объемный туман"
 
 msgid "Anisotropy"
 msgstr "Анизотропия"

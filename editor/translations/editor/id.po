@@ -61,7 +61,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-21 15:04+0000\n"
+"PO-Revision-Date: 2023-11-28 04:14+0000\n"
 "Last-Translator: Tito <ijavadroid@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
@@ -70,7 +70,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -1276,6 +1276,14 @@ msgstr "Ganti Semua"
 msgid "Selection Only"
 msgstr "Hanya yang Dipilih"
 
+msgctxt "Indentation"
+msgid "Spaces"
+msgstr "Sepasi"
+
+msgctxt "Indentation"
+msgid "Tabs"
+msgstr "Tab"
+
 msgid "Toggle Scripts Panel"
 msgstr "Jungkitkan Panel Skrip"
 
@@ -1688,6 +1696,9 @@ msgstr "Putuskan"
 msgid "Continue"
 msgstr "Lanjutkan"
 
+msgid "Thread:"
+msgstr "Untai:"
+
 msgid "Stack Frames"
 msgstr "Stack Frame"
 
@@ -1869,6 +1880,12 @@ msgstr "Nama folder tidak boleh kosong."
 msgid "Folder name contains invalid characters."
 msgstr "Nama folder berisi karakter yang tidak valid."
 
+msgid "Folder name cannot begin or end with a space."
+msgstr "Nama folder tidak boleh dimulai atau di akhiri dengan spasi."
+
+msgid "Folder name cannot begin with a dot."
+msgstr "Nama folder tidak boleh dimulai atau di akhiri dengan titik."
+
 msgid "File with that name already exists."
 msgstr "File dengan nama itu sudah ada."
 
@@ -1917,6 +1934,9 @@ msgstr "Pengembang"
 msgid "Authors"
 msgstr "Pengarang"
 
+msgid "Patrons"
+msgstr "Patron"
+
 msgid "Platinum Sponsors"
 msgstr "Sponsor Platinum"
 
@@ -1925,6 +1945,15 @@ msgstr "Sponsor Emas"
 
 msgid "Silver Sponsors"
 msgstr "Donatur Perak"
+
+msgid "Diamond Members"
+msgstr "Donatur Bertingkat Diamon"
+
+msgid "Titanium Members"
+msgstr "Donatur Bertingkat Titanium"
+
+msgid "Gold Members"
+msgstr "Donatur Bertingkat Gold"
 
 msgid "Donors"
 msgstr "Donatur"
@@ -1961,6 +1990,19 @@ msgstr "Gagal saat membuka berkas aset untuk \"%s\" (tidak dalam format ZIP)."
 msgid "%s (already exists)"
 msgstr "%s (sudah ada)"
 
+msgid "%d file conflicts with your project and won't be installed"
+msgid_plural "%d files conflict with your project and won't be installed"
+msgstr[0] "%d file konflik denfan proyek anda dan tidak mau di pasang"
+
+msgid "This asset doesn't have a root directory, so it can't be ignored."
+msgstr "Aset ini tidak memiliki folder akar, jadi tudak dapat di abaikan."
+
+msgid "Ignore the root directory when extracting files."
+msgstr "Abaikan direktori akar ketika meng ekstrak file."
+
+msgid "Select Install Folder"
+msgstr "Pilih Folder Pemasangan"
+
 msgid "Uncompressing Assets"
 msgstr "Membuka Aset Terkompresi"
 
@@ -1975,6 +2017,38 @@ msgstr "Aset \"%s\" sukses terpasang!"
 
 msgid "Success!"
 msgstr "Sukses!"
+
+msgid "Asset:"
+msgstr "Aset:"
+
+msgid "Open the list of the asset contents and select which files to install."
+msgstr ""
+"Buka daftar konten dalam pustaka aset dan pilih file mana yang akan di pasang."
+
+msgid "Change Install Folder"
+msgstr "Ganti Folder Pemasangan"
+
+msgid ""
+"Change the folder where the contents of the asset are going to be installed."
+msgstr "Ganti folder dimana konten aset yang akan di pasang."
+
+msgid "Ignore asset root"
+msgstr "Lewati direktori akar"
+
+msgid "No files conflict with your project"
+msgstr "Tidak ada konflik dengan proyek anda"
+
+msgid "Show contents of the asset and conflicting files."
+msgstr "Tampilkan konten aset dan file-file yang konflik."
+
+msgid "Contents of the asset:"
+msgstr "Konten-konten dari aset:"
+
+msgid "Installation preview:"
+msgstr "Pratinjau pemasangan:"
+
+msgid "Configure Asset Before Installing"
+msgstr "Atur aset terlebih dahulu sebelum pemasangan"
 
 msgid "Install"
 msgstr "Pasang"
@@ -2346,6 +2420,14 @@ msgstr "Paksa kelas ssat terdeteksi:"
 msgid "Edit Build Configuration Profile"
 msgstr "Edit Konfigurasi Build Profil"
 
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"Gagal mengeksekusi perintah \"\n"
+"%s\":\n"
+"%s."
+
 msgid "Filter Commands"
 msgstr "Perintah Filter"
 
@@ -2577,6 +2659,29 @@ msgstr ""
 msgid "Error codes returned:"
 msgstr "Kode kesalahan dikembalikan:"
 
+msgid "There is currently no description for this method."
+msgstr "Saat ini tidak ada deskripsi untuk fungsi ini."
+
+msgid "There is currently no description for this constructor."
+msgstr "Saat ini tidak ada deskripsi untuk konstruktor ini."
+
+msgid "There is currently no description for this operator."
+msgstr "Saat ini belum ada deskripsi untuk properti ini."
+
+msgid ""
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Saat ini belum ada deskripsi untuk fungsi ini. Tolong bantu kami dengan "
+"[color=$color][url=$url]kontribusi[/url][/color]!"
+
+msgid ""
+"There is currently no description for this constructor. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Saat ini belum ada deskripsi untuk konstruktor ini. Tolong bantu kami dengan "
+"[color=$color][url=$url]kontribusi[/url][/color]!"
+
 msgid "Top"
 msgstr "Atas"
 
@@ -2614,6 +2719,17 @@ msgid ""
 msgstr ""
 "Saat ini belum ada deskripsi untuk kelas ini. Tolong bantu kami dengan "
 "[color=$color][url=$url]kontribusi[/url][/color]!"
+
+msgid "Note:"
+msgstr "Catatan:"
+
+msgid ""
+"There are notable differences when using this API with C#. See [url=%s]C# API "
+"differences to GDScript[/url] for more information."
+msgstr ""
+"Tidak ada catatan perbedaan ketika menggunakan API ini dengan C#. Lihat "
+"[url=%s]Perbedaan Antara C# API dan GDScript[/url] untuk informasi lebih "
+"lanjut."
 
 msgid "Online Tutorials"
 msgstr "Tutorial Daring"
@@ -2698,11 +2814,23 @@ msgstr "Deskripsi Method"
 msgid "Operator Descriptions"
 msgstr "Deskripsi Operator"
 
+msgid "Metadata:"
+msgstr "Metadata:"
+
 msgid "Property:"
 msgstr "Properti:"
 
+msgid "Method:"
+msgstr "Fungsi:"
+
 msgid "Signal:"
 msgstr "Sinyal:"
+
+msgid "Theme Item:"
+msgstr "Item Tema:"
+
+msgid "No description available."
+msgstr "Tidak ada deskripsi yang tersedia."
 
 msgid "%d match."
 msgstr "Ditemukan %d kecocokan."
@@ -3368,6 +3496,18 @@ msgstr "Bawaan"
 msgid "This scene was never saved."
 msgstr "Tidak bisa memuat ulang adegan yang belum pernah disimpan."
 
+msgid "%d second ago"
+msgid_plural "%d seconds ago"
+msgstr[0] "%d detik yang lalu"
+
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] "%d menit yang lalu"
+
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] "%d jam yang lalu"
+
 msgid ""
 "Scene \"%s\" has unsaved changes.\n"
 "Last saved: %s."
@@ -3377,6 +3517,9 @@ msgstr ""
 
 msgid "Save & Close"
 msgstr "Simpan & Tutup"
+
+msgid "Save before closing?"
+msgstr "Simpan perubahan sebelum menutupnya?"
 
 msgid "%d more files or folders"
 msgstr "%d file atau folder lagi"
@@ -3488,6 +3631,9 @@ msgstr "Alat-alat"
 
 msgid "Orphan Resource Explorer..."
 msgstr "Penjelajah Resource Orphan..."
+
+msgid "Upgrade Mesh Surfaces..."
+msgstr "Tingkatkan Permukaan Mesh..."
 
 msgid "Reload Current Project"
 msgstr "Muat Ulang Project Saat Ini"
@@ -3684,6 +3830,9 @@ msgstr "Muat Ulang"
 msgid "Resave"
 msgstr "Simpan Ulang"
 
+msgid "Version Control Settings..."
+msgstr "Pengaturan Kontrol Versi..."
+
 msgid "New Inherited"
 msgstr "Turunan Baru"
 
@@ -3794,6 +3943,12 @@ msgstr ""
 msgid "Assign..."
 msgstr "Terapkan.."
 
+msgid "Copy as Text"
+msgstr "Salin sebagai Teks"
+
+msgid "Show Node in Tree"
+msgstr "Tampilkan Node dalam Daftar"
+
 msgid "Invalid RID"
 msgstr "RID tidak valid"
 
@@ -3892,6 +4047,9 @@ msgstr "Tampilkan dalam FileSystem"
 msgid "Convert to %s"
 msgstr "Konversi ke %s"
 
+msgid "Select resources to make unique:"
+msgstr "Pilih berkas untuk membuatnya unik:"
+
 msgid "New %s"
 msgstr "%s baru"
 
@@ -3938,6 +4096,12 @@ msgstr "Urungkan: %s"
 
 msgid "Redo: %s"
 msgstr "Ulangi: %s"
+
+msgid "Edit Built-in Action: %s"
+msgstr "Edit Tindakan Bawaan:%s"
+
+msgid "Edit Shortcut: %s"
+msgstr "Edit Pintasan:%s"
 
 msgid "Common"
 msgstr "Umum"
@@ -4121,6 +4285,9 @@ msgstr "Penyematan PCK"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Pada ekspor 32-bit PCK yang ditanamkan tidak boleh lebih dari 4GiB."
+
+msgid "Plugin \"%s\" is not supported on \"%s\""
+msgstr "Plugin \"%s\" tidak didukung pada \"%s\""
 
 msgid "Open the folder containing these templates."
 msgstr "Buka folder yang berisi template ini."
@@ -11121,6 +11288,9 @@ msgstr "Pengaturan Proyek (project.godot)"
 
 msgid "Advanced Settings"
 msgstr "Setelan Lanjutan"
+
+msgid "Select a Setting or Type its Name"
+msgstr "Pilih Pengaturan atau Ketik Namanya"
 
 msgid "Input Map"
 msgstr "Pemetaan Input"

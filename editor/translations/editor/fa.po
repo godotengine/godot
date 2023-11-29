@@ -48,8 +48,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-18 06:21+0000\n"
-"Last-Translator: theBSH <bloodshot1387@hotmail.com>\n"
+"PO-Revision-Date: 2023-11-26 13:51+0000\n"
+"Last-Translator: John Smith <pkafsharix@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -57,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.2.1-rc\n"
 
 msgid "Main Thread"
 msgstr "موضوع اصلی"
@@ -2295,6 +2295,32 @@ msgstr "جهت‌یابی، هم دوبعدی هم سه‌بعدی."
 msgid "XR (AR and VR)."
 msgstr "اکس‌آر (ای‌آر و وی‌آر)."
 
+msgid ""
+"RenderingDevice based rendering (if disabled, the OpenGL back-end is "
+"required)."
+msgstr "رندر بر پایه دستگاه Render (اگر غیرفعال باشد بک اند OpenGL نیاز است)."
+
+msgid "OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
+msgstr "بک اند OpenGL (اگر غیر فعال باشد بک اند دستگاه Render مورد نیاز است)."
+
+msgid "Vulkan back-end of RenderingDevice."
+msgstr "بک اند Vulkan از دستگاه Render."
+
+msgid ""
+"Fallback implementation of Text Server\n"
+"Supports basic text layouts."
+msgstr ""
+"پیاده سازی Fallback از سرویس دهنده متن\n"
+"از چیدمان های ساده متن پشتیبانی می کند."
+
+msgid ""
+"Text Server implementation powered by ICU and HarfBuzz libraries.\n"
+"Supports complex text layouts, BiDi, and contextual OpenType font features."
+msgstr ""
+"پیاده سازی سرویس دهنده متن با کمک کتابخانه های ICU و HarfBuzz.\n"
+"از چیدمان های پیچیده متن، BiDi و قابلیت های بافتی OpenType فونت پشتیبانی "
+"میکند."
+
 msgid "Text Rendering and Font Options:"
 msgstr "گزینه‌های رندر متن و فونت:"
 
@@ -3867,6 +3893,9 @@ msgstr "وارد کردن شناسه: %s"
 msgid "Error opening scene"
 msgstr "خطا در باز کردن صحنه"
 
+msgid "Warning: File exists"
+msgstr "هشدار: پرونده وجود دارد"
+
 msgid "Actions..."
 msgstr "فعالیت‌ها"
 
@@ -4387,6 +4416,9 @@ msgstr "مرکز"
 msgid "Load Curve Preset"
 msgstr "بارگیری منحنی ذخیره‌شده"
 
+msgid "Add Curve Point"
+msgstr "اضافه کردن نقطه منحنی"
+
 msgid "Remove Curve Point"
 msgstr "حذف نقطهٔ منحنی"
 
@@ -4513,7 +4545,7 @@ msgid "Create Outline"
 msgstr "ساخت طرح کلی"
 
 msgid "Mesh"
-msgstr "مِش"
+msgstr "مش"
 
 msgid "Outline Size:"
 msgstr "اندازه طرح کلی:"
@@ -4556,6 +4588,9 @@ msgstr "اندازه تصادفی:"
 
 msgid "Amount:"
 msgstr "مقدار:"
+
+msgid "Set NavigationObstacle3D Vertices"
+msgstr "تنظیم رئوس NavigationObstacle3D"
 
 msgid "Edit Poly"
 msgstr "ویرایش چندضلعی"
@@ -5032,6 +5067,9 @@ msgstr "انتخاب فریم‌ها"
 msgid "Frame Order"
 msgstr "ترتیب فریم"
 
+msgid "Toggle Settings Panel"
+msgstr "تغییر وضعیت تنظیمات پنل"
+
 msgid "Size"
 msgstr "اندازه"
 
@@ -5330,11 +5368,38 @@ msgstr "مرتب‌سازی منابع"
 msgid "Patterns"
 msgstr "الگوها"
 
+msgid "From Source"
+msgstr "از منبع"
+
+msgid "From Coords"
+msgstr "از مختصات"
+
+msgid "To Source"
+msgstr "به منبع"
+
+msgid "Atlas"
+msgstr "اطلس"
+
+msgid "Modulate"
+msgstr "میزان‌سازی"
+
 msgid "Z Index"
 msgstr "اندیس Z"
 
 msgid "Physics Layer %d"
 msgstr "لایه فیزیک %d"
+
+msgid "Navigation Layer %d"
+msgstr "لایه ناوبری %d"
+
+msgid "Custom Data"
+msgstr "داده سفارشی"
+
+msgid "Custom Data %d"
+msgstr "داده سفارشی %d"
+
+msgid "No custom data layers"
+msgstr "بدون لایه داده سفارشی"
 
 msgid "Setup"
 msgstr "آماده‌سازی"
@@ -5897,6 +5962,9 @@ msgstr "(همه)"
 
 msgid "Add Input Action"
 msgstr "افزودن عمل ورودی"
+
+msgid "Rename Input Action"
+msgstr "تغییر نام اکشن ورودی"
 
 msgid "Project Settings (project.godot)"
 msgstr "تنظیمات پروژه (project.godot)"
