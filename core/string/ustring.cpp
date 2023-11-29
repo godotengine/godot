@@ -305,7 +305,11 @@ void String::copy_from(const char *p_cstr) {
 	char32_t *dst = this->ptrw();
 
 	for (size_t i = 0; i <= len; i++) {
+#if CHAR_MIN == 0
+		uint8_t c = p_cstr[i];
+#else
 		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
+#endif
 		if (c == 0 && i < len) {
 			print_unicode_error("NUL character", true);
 			dst[i] = _replacement_char;
@@ -338,7 +342,11 @@ void String::copy_from(const char *p_cstr, const int p_clip_to) {
 	char32_t *dst = this->ptrw();
 
 	for (int i = 0; i < len; i++) {
+#if CHAR_MIN == 0
+		uint8_t c = p_cstr[i];
+#else
 		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
+#endif
 		if (c == 0) {
 			print_unicode_error("NUL character", true);
 			dst[i] = _replacement_char;
@@ -544,7 +552,11 @@ String &String::operator+=(const char *p_str) {
 	char32_t *dst = ptrw() + lhs_len;
 
 	for (size_t i = 0; i <= rhs_len; i++) {
+#if CHAR_MIN == 0
+		uint8_t c = p_str[i];
+#else
 		uint8_t c = p_str[i] >= 0 ? p_str[i] : uint8_t(256 + p_str[i]);
+#endif
 		if (c == 0 && i < rhs_len) {
 			print_unicode_error("NUL character", true);
 			dst[i] = _replacement_char;
@@ -1814,7 +1826,11 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 		int skip = 0;
 		uint8_t c_start = 0;
 		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+#if CHAR_MIN == 0
+			uint8_t c = *ptrtmp;
+#else
 			uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
+#endif
 
 			if (skip == 0) {
 				if (p_skip_cr && c == '\r') {
@@ -1882,7 +1898,11 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	int skip = 0;
 	uint32_t unichar = 0;
 	while (cstr_size) {
+#if CHAR_MIN == 0
+		uint8_t c = *p_utf8;
+#else
 		uint8_t c = *p_utf8 >= 0 ? *p_utf8 : uint8_t(256 + *p_utf8);
+#endif
 
 		if (skip == 0) {
 			if (p_skip_cr && c == '\r') {
