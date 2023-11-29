@@ -4168,6 +4168,17 @@ void RenderingDeviceDriverVulkan::command_bind_render_uniform_set(CommandBufferI
 }
 
 void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+	if (p_set_count == 0) {
+		return;
+	}
+	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
+	VkDescriptorSet *sets = (VkDescriptorSet *)alloca(sizeof(VkDescriptorSet) * p_set_count);
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		sets[i] = ((const UniformSetInfo *)p_uniform_sets[i].id)->vk_descriptor_set;
+	}
+
+	vkCmdBindDescriptorSets((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_info->vk_pipeline_layout, p_first_set_index, p_set_count, &sets[0], 0, nullptr);
 }
 
 
@@ -4582,6 +4593,20 @@ void RenderingDeviceDriverVulkan::command_bind_compute_uniform_set(CommandBuffer
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
 	const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_set.id;
 	vkCmdBindDescriptorSets((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_COMPUTE, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
+}
+
+void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+	if (p_set_count == 0) {
+		return;
+	}
+	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
+	VkDescriptorSet *sets = (VkDescriptorSet *)alloca(sizeof(VkDescriptorSet) * p_set_count);
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		sets[i] = ((const UniformSetInfo *)p_uniform_sets[i].id)->vk_descriptor_set;
+	}
+
+	vkCmdBindDescriptorSets((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_COMPUTE, shader_info->vk_pipeline_layout, p_first_set_index, p_set_count, &sets[0], 0, nullptr);
 }
 
 void RenderingDeviceDriverVulkan::command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {

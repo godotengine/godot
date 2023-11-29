@@ -610,6 +610,11 @@ void RenderingDeviceGraph::_run_compute_list_command(RDD::CommandBufferID p_comm
 				driver->command_bind_compute_uniform_set(p_command_buffer, bind_uniform_set_instruction->uniform_set, bind_uniform_set_instruction->shader, bind_uniform_set_instruction->set_index);
 				instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction);
 			} break;
+			case ComputeListInstruction::TYPE_BIND_UNIFORM_SETS: {
+				const ComputeListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const ComputeListBindUniformSetsInstruction *>(instruction);
+				driver->command_bind_compute_uniform_sets(p_command_buffer, VectorView<RDD::UniformSetID>(bind_uniform_sets_instruction->uniform_set_ids(), bind_uniform_sets_instruction->set_count), bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->set_count);
+				instruction_data_cursor += sizeof(ComputeListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
+			} break;
 			case ComputeListInstruction::TYPE_DISPATCH: {
 				const ComputeListDispatchInstruction *dispatch_instruction = reinterpret_cast<const ComputeListDispatchInstruction *>(instruction);
 				driver->command_compute_dispatch(p_command_buffer, dispatch_instruction->x_groups, dispatch_instruction->y_groups, dispatch_instruction->z_groups);
@@ -660,6 +665,11 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 				const DrawListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const DrawListBindUniformSetInstruction *>(instruction);
 				driver->command_bind_render_uniform_set(p_command_buffer, bind_uniform_set_instruction->uniform_set, bind_uniform_set_instruction->shader, bind_uniform_set_instruction->set_index);
 				instruction_data_cursor += sizeof(DrawListBindUniformSetInstruction);
+			} break;
+			case DrawListInstruction::TYPE_BIND_UNIFORM_SETS: {
+				const DrawListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const DrawListBindUniformSetsInstruction *>(instruction);
+				driver->command_bind_render_uniform_sets(p_command_buffer, VectorView<RDD::UniformSetID>(bind_uniform_sets_instruction->uniform_set_ids(), bind_uniform_sets_instruction->set_count), bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->set_count);
+				instruction_data_cursor += sizeof(DrawListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
 			case DrawListInstruction::TYPE_BIND_VERTEX_BUFFERS: {
 				const DrawListBindVertexBuffersInstruction *bind_vertex_buffers_instruction = reinterpret_cast<const DrawListBindVertexBuffersInstruction *>(instruction);
@@ -1113,6 +1123,15 @@ void RenderingDeviceGraph::_print_draw_list(const uint8_t *p_instruction_data, u
 				print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_set_instruction->uniform_set.id), "SET INDEX", bind_uniform_set_instruction->set_index);
 				instruction_data_cursor += sizeof(DrawListBindUniformSetInstruction);
 			} break;
+			case DrawListInstruction::TYPE_BIND_UNIFORM_SETS: {
+				const DrawListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const DrawListBindUniformSetsInstruction *>(instruction);
+				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
+				for (uint32_t i = 0; i < bind_uniform_sets_instruction->set_count; i++) {
+					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i]), "START INDEX", bind_uniform_sets_instruction->first_set_index);
+					instruction_data_cursor += sizeof(DrawListBindUniformSetInstruction);
+				}
+				instruction_data_cursor += sizeof(DrawListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
+			} break;
 			case DrawListInstruction::TYPE_BIND_VERTEX_BUFFERS: {
 				const DrawListBindVertexBuffersInstruction *bind_vertex_buffers_instruction = reinterpret_cast<const DrawListBindVertexBuffersInstruction *>(instruction);
 				print_line("\tBIND VERTEX BUFFERS COUNT", bind_vertex_buffers_instruction->vertex_buffers_count);
@@ -1199,6 +1218,15 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 				const ComputeListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const ComputeListBindUniformSetInstruction *>(instruction);
 				print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_set_instruction->uniform_set.id), "SHADER ID", itos(bind_uniform_set_instruction->shader.id));
 				instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction);
+			} break;
+			case ComputeListInstruction::TYPE_BIND_UNIFORM_SETS: {
+				const ComputeListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const ComputeListBindUniformSetsInstruction *>(instruction);
+				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
+				for (uint32_t i = 0; i < bind_uniform_sets_instruction->set_count; i++) {
+					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i]), "START INDEX", bind_uniform_sets_instruction->first_set_index);
+					instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction);
+				}
+				instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
 			case ComputeListInstruction::TYPE_DISPATCH: {
 				const ComputeListDispatchInstruction *dispatch_instruction = reinterpret_cast<const ComputeListDispatchInstruction *>(instruction);
@@ -1379,6 +1407,20 @@ void RenderingDeviceGraph::add_compute_list_bind_uniform_set(RDD::ShaderID p_sha
 	instruction->set_index = set_index;
 }
 
+void RenderingDeviceGraph::add_compute_list_bind_uniform_sets(RDD::ShaderID p_shader, VectorView<RDD::UniformSetID> p_uniform_sets, uint32_t first_set_index, uint32_t set_count) {
+	uint32_t instruction_size = sizeof(ComputeListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * set_count;
+	ComputeListBindUniformSetsInstruction *instruction = reinterpret_cast<ComputeListBindUniformSetsInstruction *>(_allocate_draw_list_instruction(instruction_size));
+	instruction->type = ComputeListInstruction::TYPE_BIND_UNIFORM_SETS;
+	instruction->shader = p_shader;
+	instruction->first_set_index = first_set_index;
+	instruction->set_count = set_count;
+
+	RDD::UniformSetID *ids = instruction->uniform_set_ids();
+	for (uint32_t i = 0; i < p_uniform_sets.size(); i++) {
+		ids[i] = p_uniform_sets[i];
+	}
+}
+
 void RenderingDeviceGraph::add_compute_list_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
 	ComputeListDispatchInstruction *instruction = reinterpret_cast<ComputeListDispatchInstruction *>(_allocate_compute_list_instruction(sizeof(ComputeListDispatchInstruction)));
 	instruction->type = ComputeListInstruction::TYPE_DISPATCH;
@@ -1496,6 +1538,20 @@ void RenderingDeviceGraph::add_draw_list_bind_uniform_set(RDD::ShaderID p_shader
 	instruction->shader = p_shader;
 	instruction->uniform_set = p_uniform_set;
 	instruction->set_index = set_index;
+}
+
+void RenderingDeviceGraph::add_draw_list_bind_uniform_sets(RDD::ShaderID p_shader, VectorView<RDD::UniformSetID> p_uniform_sets, uint32_t first_set_index, uint32_t set_count) {
+	uint32_t instruction_size = sizeof(DrawListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * set_count;
+	DrawListBindUniformSetsInstruction *instruction = reinterpret_cast<DrawListBindUniformSetsInstruction *>(_allocate_draw_list_instruction(instruction_size));
+	instruction->type = DrawListInstruction::TYPE_BIND_UNIFORM_SETS;
+	instruction->shader = p_shader;
+	instruction->first_set_index = first_set_index;
+	instruction->set_count = set_count;
+
+	RDD::UniformSetID *ids = instruction->uniform_set_ids();
+	for (uint32_t i = 0; i < p_uniform_sets.size(); i++) {
+		ids[i] = p_uniform_sets[i];
+	}
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_vertex_buffers(VectorView<RDD::BufferID> p_vertex_buffers, VectorView<uint64_t> p_vertex_buffer_offsets) {
