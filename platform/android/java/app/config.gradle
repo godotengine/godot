@@ -241,11 +241,19 @@ ext.getGodotPluginsMavenRepos = { ->
     if (project.hasProperty("plugins_maven_repos")) {
         String mavenReposProperty = project.property("plugins_maven_repos")
         if (mavenReposProperty != null && !mavenReposProperty.trim().isEmpty()) {
+            // parse maven repo definitions... url=<url>,password=<password>...|...
             for (String mavenRepoData : mavenReposProperty.split(VALUE_SEPARATOR_REGEX)) {
-                mavenRepos += Arrays.stream(mavenRepoData.split(","))
-                     .map(s -> s.split("=", 2))
-                     .filter(arr -> arr.length == 2)
-                     .collect(Collectors.toMap(arr -> arr[0].trim(), arr -> arr[1].trim()));
+                List<String> entries = mavenRepoData.split(",");
+                def repoDefinition = [:];
+                for (String entry : entries) {
+                    List<String> keyValue = entry.split("=", 2);
+                    if (keyValue.size() == 2) {
+                        String key   = keyValue[0].trim();
+                        String value = keyValue[1].trim();
+                        repoDefinition[key] = value;
+                    }
+                }
+                mavenRepos += repoDefinition;
             }
         }
     }

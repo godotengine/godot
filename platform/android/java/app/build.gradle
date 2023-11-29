@@ -28,15 +28,15 @@ allprojects {
         Map<String, String>[] mavenRepos = getGodotPluginsMavenRepos()
         if (mavenRepos != null && mavenRepos.length > 0) {
             mavenRepos.each { repo ->
-                String url = repo.get("url")
-                String username = repo.get("username")
-                String password = repo.get("password")
+                String repoUrl = repo.get("url")
+                String repoUsername = repo.get("username")
+                String repoPassword = repo.get("password")
                 maven {
-                    url url
-                    if (username && password) {
+                    url repoUrl
+                    if (repoUsername && repoPassword) {
                         credentials {
-                            username username
-                            password password
+                            username repoUsername
+                            password repoPassword
                         }
                     }
                 }
