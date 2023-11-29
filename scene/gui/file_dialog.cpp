@@ -53,7 +53,7 @@ void FileDialog::_focus_file_text() {
 	int lp = file->get_text().rfind(".");
 	if (lp != -1) {
 		file->select(0, lp);
-		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file)) {
+		if (file->is_inside_tree() && !is_part_of_edited_scene()) {
 			file->grab_focus();
 		}
 	}

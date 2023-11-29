@@ -197,7 +197,7 @@ void Node3D::_notification(int p_what) {
 			}
 
 #ifdef TOOLS_ENABLED
-			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
+			if (is_part_of_edited_scene()) {
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SNAME("_request_gizmo_for_id"), get_instance_id());
 			}
 #endif
@@ -582,7 +582,7 @@ void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transfor
 		return;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
+	if (is_part_of_edited_scene()) {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_set_subgizmo_selection, this, p_gizmo, p_id, p_transform);
 	}
 #endif
@@ -599,7 +599,7 @@ void Node3D::clear_subgizmo_selection() {
 		return;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
+	if (is_part_of_edited_scene()) {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_clear_subgizmo_selection, this);
 	}
 #endif
