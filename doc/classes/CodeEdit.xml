@@ -519,6 +519,15 @@
 		<member name="delimiter_strings" type="String[]" setter="set_string_delimiters" getter="get_string_delimiters" default="[&quot;&apos; &apos;&quot;, &quot;\&quot; \&quot;&quot;]">
 			Sets the string delimiters. All existing string delimiters will be removed.
 		</member>
+		<member name="fold_blocks_enable" type="bool" setter="set_fold_blocks_enabled" getter="is_fold_blocks_enabled" default="false">
+			Sets whether code blocks folding enabled, this code blocks are added [member fold_blocks_prefixes].
+		</member>
+		<member name="fold_blocks_minimum_size" type="int" setter="set_fold_blocks_minimum_size" getter="get_fold_blocks_minimum_size" default="0">
+			Sets minimum size of a code block before it is considered foldable.
+		</member>
+		<member name="fold_blocks_prefixes" type="PackedStringArray" setter="set_fold_blocks_prefixes" getter="get_fold_blocks_prefixes" default="PackedStringArray(&quot;#&quot;, &quot;##&quot;)">
+			Sets prefixes that will identify code blocks that can be fold/unfold, [member fold_blocks_enable] should be set to [code]true[/code] to take affect.
+		</member>
 		<member name="gutters_draw_bookmarks" type="bool" setter="set_draw_bookmarks_gutter" getter="is_drawing_bookmarks_gutter" default="false">
 			Sets if bookmarked should be drawn in the gutter. This gutter is shared with breakpoints and executing lines.
 		</member>

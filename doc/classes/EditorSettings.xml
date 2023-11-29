@@ -805,6 +805,12 @@
 		<member name="text_editor/appearance/whitespace/line_spacing" type="int" setter="" getter="">
 			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying fewer lines on screen.
 		</member>
+		<member name="text_editor/behavior/comments/foldable" type="bool" setter="" getter="">
+			If [code]true[/code], allows foldable comments, include documentation comments.
+		</member>
+		<member name="text_editor/behavior/comments/minimum_foldable_size" type="int" setter="" getter="">
+			Sets minimum size of comments before it is considered foldable.
+		</member>
 		<member name="text_editor/behavior/files/auto_reload_scripts_on_external_change" type="bool" setter="" getter="">
 			If [code]true[/code], automatically reloads scripts in the editor when they have been modified and saved by external editors.
 		</member>

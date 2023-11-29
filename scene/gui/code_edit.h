@@ -62,6 +62,15 @@ public:
 	};
 
 private:
+	/* Folding Block*/
+	bool enable_fold_blocks = false;
+	PackedStringArray fold_blocks_prefixes;
+	int fold_blocks_minimum_size = 0;
+
+	String _get_fold_block_prefix(int p_line) const;
+	int _size_fold_block(int p_start_line) const;
+	bool _is_fold_blocks_start(int p_line) const;
+
 	/* Indent management */
 	int indent_size = 4;
 	String indent_text = "\t";
@@ -319,6 +328,16 @@ protected:
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _filter_code_completion_candidates, TypedArray<Dictionary>)
 
 public:
+	/* Folding Block*/
+	void set_fold_blocks_enabled(bool p_enabled);
+	bool is_fold_blocks_enabled() const;
+
+	void set_fold_blocks_prefixes(const PackedStringArray &p_prefixes);
+	PackedStringArray get_fold_blocks_prefixes() const;
+
+	void set_fold_blocks_minimum_size(int size);
+	int get_fold_blocks_minimum_size();
+
 	/* General overrides */
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;

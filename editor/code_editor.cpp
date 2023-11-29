@@ -1066,6 +1066,10 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_indent_size(EDITOR_GET("text_editor/behavior/indent/size"));
 	text_editor->set_auto_indent_enabled(EDITOR_GET("text_editor/behavior/indent/auto_indent"));
 
+	// Behavior: Folding Block
+	text_editor->set_fold_blocks_enabled(EDITOR_GET("text_editor/behavior/comments/foldable"));
+	text_editor->set_fold_blocks_minimum_size(EDITOR_GET("text_editor/behavior/comments/minimum_foldable_size"));
+
 	// Completion
 	text_editor->set_auto_brace_completion_enabled(EDITOR_GET("text_editor/completion/auto_brace_complete"));
 

@@ -742,6 +742,85 @@ void CodeEdit::_backspace_internal(int p_caret) {
 	end_complex_operation();
 }
 
+/* Folding Block*/
+String CodeEdit::_get_fold_block_prefix(int p_line) const {
+	// "#" and "##" ,prefix are  different blocks
+	PackedStringArray matching_prefixes;
+	for (const String &prefix : fold_blocks_prefixes) {
+		if (!prefix.is_empty() && get_line(p_line).begins_with(prefix)) {
+			matching_prefixes.append(prefix);
+		}
+	}
+	String fold_blocks_prefix;
+	for (const String &prefix : matching_prefixes) {
+		if (prefix.length() > fold_blocks_prefix.length()) {
+			fold_blocks_prefix = prefix;
+		}
+	}
+	return fold_blocks_prefix;
+}
+
+int CodeEdit::_size_fold_block(int p_start_line) const {
+	int size = 0;
+	String prefix = _get_fold_block_prefix(p_start_line);
+	if (prefix.is_empty()) {
+		// Empty string prefix will always return true when begins_with is checked
+		return size;
+	}
+	for (int i = p_start_line; i < get_line_count(); i++) {
+		if (_get_fold_block_prefix(i) == prefix) {
+			size++;
+		} else {
+			break;
+		}
+	}
+	return size;
+}
+
+bool CodeEdit::_is_fold_blocks_start(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
+	if (is_line_code_region_start(p_line)) {
+		return false;
+	}
+	// this line and next  but not previous begins with fold block prefix
+	int fold_block_size = _size_fold_block(p_line);
+	if ((fold_block_size > 1) && (fold_block_size >= fold_blocks_minimum_size)) {
+		String prefix = _get_fold_block_prefix(p_line);
+		return !(_get_fold_block_prefix(p_line - 1) == prefix);
+	}
+	return false;
+}
+
+void CodeEdit::set_fold_blocks_enabled(bool p_enabled) {
+	enable_fold_blocks = p_enabled;
+}
+
+bool CodeEdit::is_fold_blocks_enabled() const {
+	return enable_fold_blocks;
+}
+
+void CodeEdit::set_fold_blocks_prefixes(const PackedStringArray &p_prefixes) {
+	fold_blocks_prefixes.clear();
+	for (const String &prefix : p_prefixes) {
+		if (fold_blocks_prefixes.has(prefix)) {
+			continue;
+		}
+		fold_blocks_prefixes.append(prefix);
+	}
+}
+
+PackedStringArray CodeEdit::get_fold_blocks_prefixes() const {
+	return fold_blocks_prefixes;
+}
+
+void CodeEdit::set_fold_blocks_minimum_size(int size) {
+	fold_blocks_minimum_size = size;
+}
+
+int CodeEdit::get_fold_blocks_minimum_size() {
+	return fold_blocks_minimum_size;
+}
+
 /* Indent management */
 void CodeEdit::set_indent_size(const int p_size) {
 	ERR_FAIL_COND_MSG(p_size <= 0, "Indend size must be greater than 0.");
@@ -1576,6 +1655,11 @@ bool CodeEdit::can_fold_line(int p_line) const {
 		return false;
 	}
 
+	/* check if  line is start of folding block */
+	if (enable_fold_blocks && _is_fold_blocks_start(p_line)) {
+		return true;
+	}
+
 	/* Check for full multiline line or block strings / comments. */
 	int in_comment = is_in_comment(p_line);
 	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
@@ -1617,6 +1701,15 @@ bool CodeEdit::can_fold_line(int p_line) const {
 void CodeEdit::fold_line(int p_line) {
 	ERR_FAIL_INDEX(p_line, get_line_count());
 	if (!is_line_folding_enabled() || !can_fold_line(p_line)) {
+		return;
+	}
+
+	// fold Folding Block
+	if (_is_fold_blocks_start(p_line)) {
+		int foldable_size = _size_fold_block(p_line) + p_line;
+		for (int i = p_line + 1; i < foldable_size; i++) {
+			_set_line_as_hidden(i, true);
+		}
 		return;
 	}
 
@@ -2464,6 +2557,16 @@ Ref<Texture2D> CodeEdit::_get_folded_eol_icon() const {
 }
 
 void CodeEdit::_bind_methods() {
+	/* Folding Block*/
+	ClassDB::bind_method(D_METHOD("set_fold_blocks_enabled", "enable"), &CodeEdit::set_fold_blocks_enabled);
+	ClassDB::bind_method(D_METHOD("is_fold_blocks_enabled"), &CodeEdit::is_fold_blocks_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_fold_blocks_prefixes", "prefixes"), &CodeEdit::set_fold_blocks_prefixes);
+	ClassDB::bind_method(D_METHOD("get_fold_blocks_prefixes"), &CodeEdit::get_fold_blocks_prefixes);
+
+	ClassDB::bind_method(D_METHOD("set_fold_blocks_minimum_size", "minimum_size"), &CodeEdit::set_fold_blocks_minimum_size);
+	ClassDB::bind_method(D_METHOD("get_fold_blocks_minimum_size"), &CodeEdit::get_fold_blocks_minimum_size);
+
 	/* Indent management */
 	ClassDB::bind_method(D_METHOD("set_indent_size", "size"), &CodeEdit::set_indent_size);
 	ClassDB::bind_method(D_METHOD("get_indent_size"), &CodeEdit::get_indent_size);
@@ -2657,6 +2760,11 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
+
+	ADD_GROUP("Fold Block", "fold_blocks_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fold_blocks_enable"), "set_fold_blocks_enabled", "is_fold_blocks_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "fold_blocks_prefixes"), "set_fold_blocks_prefixes", "get_fold_blocks_prefixes");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fold_blocks_minimum_size"), "set_fold_blocks_minimum_size", "get_fold_blocks_minimum_size");
 
 	ADD_GROUP("Gutters", "gutters_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
@@ -3564,6 +3672,12 @@ void CodeEdit::_text_changed() {
 }
 
 CodeEdit::CodeEdit() {
+	/* Folding Block*/
+	// gdscript comments
+	fold_blocks_prefixes.append("#");
+	// documentation comments
+	fold_blocks_prefixes.append("##");
+
 	/* Indent management */
 	auto_indent_prefixes.insert(':');
 	auto_indent_prefixes.insert('{');
