@@ -661,6 +661,13 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	state.current_tex = RID();
 
 	for (uint32_t i = 0; i <= state.current_batch_index; i++) {
+		// Ignoring CLIP_IGNORE command.
+		// Normally this type of command should not exist in here, but
+		// in some cases it will exist as the debris of prior canvas item.
+		if (state.canvas_instance_batches[i].command_type == Item::Command::TYPE_CLIP_IGNORE) {
+			continue;
+		}
+
 		//setup clip
 		if (current_clip != state.canvas_instance_batches[i].clip) {
 			current_clip = state.canvas_instance_batches[i].clip;
@@ -1204,6 +1211,8 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 				if (current_clip) {
 					if (ci->ignore != reclip) {
 						_new_batch(r_batch_broken);
+						state.canvas_instance_batches[state.current_batch_index].command = c;
+						state.canvas_instance_batches[state.current_batch_index].command_type = Item::Command::TYPE_CLIP_IGNORE;
 						if (ci->ignore) {
 							state.canvas_instance_batches[state.current_batch_index].clip = nullptr;
 							reclip = true;
