@@ -25,9 +25,7 @@ foreach glsl_file : _module_gles3_shaders_raw_shaders
     _module_gles3_shaders_src += [_raw_target]
 endforeach
 
-lib_module_gles3_shaders = library('module_gles3_shaders', _module_gles3_shaders_src, dependencies: [godotcore_dep])
-
-DEP_MODULE_GLES3_SHADERS = declare_dependency(link_with: lib_module_gles3_shaders)
+DEP_MODULE_GLES3_SHADERS = declare_dependency(sources: _module_gles3_shaders_src)
 
 MODULE_DEPENDENCIES += DEP_MODULE_GLES3_SHADERS
 MODULES_ENABLED += 'gles3_shaders'
