@@ -55,12 +55,18 @@ LightStorage::LightStorage() {
 
 		if (textures_per_stage <= 256) {
 			lightmap_textures.resize(32);
+			shadowmask_textures.resize(32);
 		} else {
 			lightmap_textures.resize(1024);
+			shadowmask_textures.resize(1024);
 		}
 
-		for (int i = 0; i < lightmap_textures.size(); i++) {
-			lightmap_textures.write[i] = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+		for (RID &lightmap_texture : lightmap_textures) {
+			lightmap_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+		}
+
+		for (RID &shadowmask_texture : shadowmask_textures) {
+			shadowmask_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 		}
 	}
 
@@ -2001,6 +2007,64 @@ AABB LightStorage::lightmap_get_aabb(RID p_lightmap) const {
 	const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_NULL_V(lm, AABB());
 	return lm->bounds;
+}
+
+void LightStorage::lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) {
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+
+	// Erase lightmap users from shadow texture.
+	if (lm->shadow_texture.is_valid()) {
+		TextureStorage::Texture *t = texture_storage->get_texture(lm->shadow_texture);
+		if (t) {
+			t->lightmap_users.erase(p_lightmap);
+		}
+	}
+
+	TextureStorage::Texture *t = texture_storage->get_texture(p_shadow);
+	lm->shadow_texture = p_shadow;
+
+	RID default_2d_array = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+	if (!t) {
+		if (lm->array_index >= 0) {
+			shadowmask_textures.write[lm->array_index] = default_2d_array;
+			lm->array_index = -1;
+		}
+
+		return;
+	}
+
+	t->lightmap_users.insert(p_lightmap);
+
+	if (lm->array_index < 0) {
+		// Not in array, try to put in array.
+		for (int i = 0; i < shadowmask_textures.size(); i++) {
+			if (shadowmask_textures[i] == default_2d_array) {
+				lm->array_index = i;
+				break;
+			}
+		}
+	}
+
+	ERR_FAIL_COND_MSG(lm->array_index < 0, vformat("Maximum amount of shadowmasks in use (%d) has been exceeded, shadowmask will not display properly.", shadowmask_textures.size()));
+
+	shadowmask_textures.write[lm->array_index] = t->rd_texture;
+}
+
+RS::ShadowmaskMode LightStorage::lightmap_get_shadowmask_mode(RID p_lightmap) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lm, RS::SHADOWMASK_MODE_NONE);
+
+	return lm->shadowmask_mode;
+}
+
+void LightStorage::lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+
+	lm->shadowmask_mode = p_mode;
 }
 
 /* LIGHTMAP INSTANCE */
