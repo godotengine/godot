@@ -683,7 +683,7 @@ void GDScript::_restore_old_static_data() {
 
 #endif
 
-Error GDScript::reload(bool p_keep_state) {
+Error GDScript::reload(bool p_keep_state, bool p_show_error) {
 	if (reloading) {
 		return OK;
 	}
@@ -740,11 +740,13 @@ Error GDScript::reload(bool p_keep_state) {
 	GDScriptParser parser;
 	Error err = parser.parse(source, path, false);
 	if (err) {
-		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+		if (p_show_error) {
+			if (EngineDebugger::is_active()) {
+				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			}
+			// TODO: Show all error messages.
+			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		}
-		// TODO: Show all error messages.
-		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		reloading = false;
 		return ERR_PARSE_ERROR;
 	}
