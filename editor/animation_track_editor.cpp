@@ -5878,6 +5878,57 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			undo_redo->commit_action();
 		} break;
 
+		case EDIT_SET_START_OFFSET: {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Animation Set Start Offset"), UndoRedo::MERGE_ENDS);
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				if (animation->track_get_type(E.key.track) != Animation::TYPE_AUDIO) {
+					continue;
+				}
+				undo_redo->create_action(TTR("Animation Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+				Ref<AudioStream> stream = animation->audio_track_get_key_stream(E.key.track, E.key.key);
+				real_t len = stream->get_length() - animation->audio_track_get_key_end_offset(E.key.track, E.key.key);
+				real_t prev_offset = animation->audio_track_get_key_start_offset(E.key.track, E.key.key);
+				real_t prev_time = animation->track_get_key_time(E.key.track, E.key.key);
+				real_t cur_time = timeline->get_play_position();
+				real_t diff = prev_offset + cur_time - prev_time;
+				if (diff >= len) {
+					break;
+				}
+				undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_start_offset", E.key.track, E.key.key, diff);
+				undo_redo->add_do_method(animation.ptr(), "track_set_key_time", E.key.track, E.key.key, cur_time - MIN(0, diff));
+				undo_redo->add_undo_method(animation.ptr(), "track_set_key_time", E.key.track, E.key.key, prev_time);
+				undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_start_offset", E.key.track, E.key.key, prev_offset);
+			}
+			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->commit_action();
+		} break;
+		case EDIT_SET_END_OFFSET: {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Animation Set End Offset"), UndoRedo::MERGE_ENDS);
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				if (animation->track_get_type(E.key.track) != Animation::TYPE_AUDIO) {
+					continue;
+				}
+				undo_redo->create_action(TTR("Animation Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+				Ref<AudioStream> stream = animation->audio_track_get_key_stream(E.key.track, E.key.key);
+				real_t len = stream->get_length() - animation->audio_track_get_key_start_offset(E.key.track, E.key.key);
+				real_t prev_offset = animation->audio_track_get_key_end_offset(E.key.track, E.key.key);
+				real_t prev_time = animation->track_get_key_time(E.key.track, E.key.key);
+				real_t cur_time = timeline->get_play_position();
+				real_t diff = prev_time + len - cur_time;
+				if (diff >= len) {
+					break;
+				}
+				undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_end_offset", E.key.track, E.key.key, diff);
+				undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_end_offset", E.key.track, E.key.key, prev_offset);
+			}
+			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->commit_action();
+		} break;
+
 		case EDIT_EASE_SELECTION: {
 			ease_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
@@ -5987,6 +6038,36 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				break;
 			}
 			_anim_duplicate_keys(true);
+		} break;
+		case EDIT_MOVE_IN_POINT_SELECTION: {
+			if (moving_selection || !selection.size()) {
+				break;
+			}
+			real_t from_t = 1e20;
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				real_t t = animation->track_get_key_time(E.key.track, E.key.key);
+				if (t < from_t) {
+					from_t = t;
+				}
+			}
+			_move_selection_begin();
+			_move_selection(timeline->get_play_position() - from_t);
+			_move_selection_commit();
+		} break;
+		case EDIT_MOVE_OUT_POINT_SELECTION: {
+			if (moving_selection || !selection.size()) {
+				break;
+			}
+			real_t to_t = -1e20;
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				real_t t = animation->track_get_key_time(E.key.track, E.key.key);
+				if (t > to_t) {
+					to_t = t;
+				}
+			}
+			_move_selection_begin();
+			_move_selection(timeline->get_play_position() - to_t);
+			_move_selection_commit();
 		} break;
 		case EDIT_ADD_RESET_KEY: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -6619,11 +6700,17 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_item(TTR("Scale Selection"), EDIT_SCALE_SELECTION);
 	edit->get_popup()->add_item(TTR("Scale From Cursor"), EDIT_SCALE_FROM_CURSOR);
 	edit->get_popup()->add_separator();
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_start_offset", TTR("Set Start Offset"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETLEFT), EDIT_SET_START_OFFSET);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_end_offset", TTR("Set End Offset"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETRIGHT), EDIT_SET_END_OFFSET);
+	edit->get_popup()->add_separator();
 	edit->get_popup()->add_item(TTR("Make Easing Selection"), EDIT_EASE_SELECTION);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::CMD_OR_CTRL | Key::D), EDIT_DUPLICATE_SELECTION);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selection_transposed", TTR("Duplicate Transposed"), KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL | Key::D), EDIT_DUPLICATE_TRANSPOSED);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/add_reset_value", TTR("Add RESET Value(s)")));
+	edit->get_popup()->add_separator();
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_in_point_selection", TTR("Move In-Point Selection"), Key::BRACKETLEFT), EDIT_MOVE_IN_POINT_SELECTION);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_out_point_selection", TTR("Move Out-Point Selection"), Key::BRACKETRIGHT), EDIT_MOVE_OUT_POINT_SELECTION);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/delete_selection", TTR("Delete Selection"), Key::KEY_DELETE), EDIT_DELETE_SELECTION);
 
