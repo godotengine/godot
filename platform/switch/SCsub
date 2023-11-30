@@ -8,6 +8,10 @@ Import("env")
 
 files = [
     "godot_switch.cpp",
+    "joypad_switch.cpp",
+    "keyboard_switch.cpp",
+    "touch_screen_switch.cpp",
+    "audio_driver_switch.cpp",
     "os_switch.cpp",
     "gl_manager_switch.cpp",
     "display_server_switch.cpp"
