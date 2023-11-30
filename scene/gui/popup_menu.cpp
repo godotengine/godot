@@ -155,7 +155,6 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 
 	float max_w = 0.0;
 	float icon_w = 0.0;
-	int check_w = MAX(theme_cache.checked->get_width(), theme_cache.radio_checked->get_width()) + theme_cache.h_separation;
 	int accel_max_w = 0;
 	bool has_check = false;
 
@@ -195,7 +194,20 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	minsize.width += max_w + icon_w + accel_max_w + item_side_padding;
 
 	if (has_check) {
-		minsize.width += check_w;
+		// float computed_height = minsize.height - margin_size_height - (margin_container->get_margin_size(SIDE_TOP) + margin_container->get_margin_size(SIDE_BOTTOM));
+		// float computed_width = 0.0;
+
+		// if (theme_cache.checked->get_height() > theme_cache.radio_checked->get_height()) {
+		// 	float texture_scale = computed_height / theme_cache.checked->get_height();
+
+		// 	computed_width = theme_cache.checked->get_width() * texture_scale;
+		// } else {
+		// 	float texture_scale = computed_height / theme_cache.radio_checked->get_height();
+
+		// 	computed_width = theme_cache.radio_checked->get_width() * texture_scale;
+		// }
+
+		minsize.width += theme_cache.h_separation;
 	}
 
 	if (is_inside_tree()) {
@@ -211,13 +223,11 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 int PopupMenu::_get_item_height(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), 0);
 
+	// Note:
+	// Disable the checkbox size since we want it to scale DUH
 	Size2 icon_size = _get_item_icon_size(p_idx);
-	int icon_height = icon_size.height;
-	if (items[p_idx].checkable_type && !items[p_idx].separator) {
-		icon_height = MAX(icon_height, MAX(theme_cache.checked->get_height(), theme_cache.radio_checked->get_height()));
-	}
-
 	int text_height = items[p_idx].text_buf->get_size().height;
+
 	if (text_height == 0 && !items[p_idx].separator) {
 		text_height = theme_cache.font->get_height(theme_cache.font_size);
 	}
@@ -227,7 +237,7 @@ int PopupMenu::_get_item_height(int p_idx) const {
 		separator_height = MAX(theme_cache.separator_style->get_minimum_size().height, MAX(theme_cache.labeled_separator_left->get_minimum_size().height, theme_cache.labeled_separator_right->get_minimum_size().height));
 	}
 
-	return MAX(separator_height, MAX(text_height, icon_height));
+	return MAX(separator_height, MAX(text_height, icon_size.height));
 }
 
 int PopupMenu::_get_items_total_height() const {
@@ -676,14 +686,26 @@ void PopupMenu::_draw_items() {
 		icon_ofs += theme_cache.h_separation;
 	}
 
-	float check_ofs = 0.0;
-	if (has_check) {
-		for (int i = 0; i < 4; i++) {
-			check_ofs = MAX(check_ofs, check[i]->get_width());
-			check_ofs = MAX(check_ofs, uncheck[i]->get_width());
+	float texture_scale = 0.0;
+	for (int i = 0; i < items.size(); i++) {
+		float item_height = _get_item_height(i);
+
+		if (items[i].checkable_type && !items[i].separator) {
+			int disabled = int(items[i].disabled) * 2;
+			Texture2D *icon = (items[i].checked ? check[items[i].checkable_type - 1 + disabled] : uncheck[items[i].checkable_type - 1 + disabled]).ptr();
+
+			texture_scale = MAX(texture_scale, (item_height - margin_size.height) / icon->get_height());
 		}
-		check_ofs += theme_cache.h_separation;
 	}
+
+  float check_ofs = 0.0;
+  if (has_check) {
+    for (int i = 0; i < 4; i++) {
+      check_ofs = MAX(check_ofs, check[i]->get_width() * texture_scale);
+      check_ofs = MAX(check_ofs, uncheck[i]->get_width() * texture_scale);
+    }
+    check_ofs += theme_cache.h_separation;
+  }
 
 	Point2 ofs;
 
@@ -750,11 +772,16 @@ void PopupMenu::_draw_items() {
 		if (items[i].checkable_type && !items[i].separator) {
 			int disabled = int(items[i].disabled) * 2;
 			Texture2D *icon = (items[i].checked ? check[items[i].checkable_type - 1 + disabled] : uncheck[items[i].checkable_type - 1 + disabled]).ptr();
+			Size2 computed_texture_size = icon->get_size() * texture_scale;
+			Vector2 computed_offset;
+
 			if (rtl) {
-				icon->draw(ci, Size2(control->get_size().width - item_ofs.x - icon->get_width(), item_ofs.y) + Point2(0, Math::floor((h - icon->get_height()) / 2.0)), icon_color);
+				computed_offset = Size2(control->get_size().width - item_ofs.x - computed_texture_size.x, item_ofs.y) + Point2(0, Math::floor((h - computed_texture_size.y) / 2.0));
 			} else {
-				icon->draw(ci, item_ofs + Point2(0, Math::floor((h - icon->get_height()) / 2.0)), icon_color);
+				computed_offset = item_ofs + Point2(0, Math::floor((h - computed_texture_size.y) / 2.0));
 			}
+
+			icon->draw_rect(ci, Rect2(computed_offset, computed_texture_size), false, icon_color);
 		}
 
 		int separator_ofs = (display_width - items[i].text_buf->get_size().width) / 2;
