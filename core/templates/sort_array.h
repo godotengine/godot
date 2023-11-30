@@ -60,7 +60,49 @@ class SortArray {
 public:
 	Comparator compare;
 
-	inline const T &median_of_3(const T &a, const T &b, const T &c) const {
+	void push_heap(int p_first, int p_last, T *p_array) const {
+		_push_heap(p_first, p_last - 1, p_first, p_array[p_last - 1], p_array);
+	}
+
+	void pop_heap(int p_first, int p_last, T *p_array) const {
+		_pop_heap(p_first, p_last - 1, p_last - 1, p_array[p_last - 1], p_array);
+	}
+
+	/**
+	 * Sort using the introsort algorithm (in-place, not stable).
+	 */
+	void sort_range(int p_first, int p_last, T *p_array) const {
+		if (p_first != p_last) {
+			_introsort(p_first, p_last, p_array, _bitlog(p_last - p_first) * 2);
+			_final_insertion_sort(p_first, p_last, p_array);
+		}
+	}
+
+	void sort(T *p_array, int p_len) const {
+		sort_range(0, p_len, p_array);
+	}
+
+	/**
+	 * Partially sort the array so that the element at the `p_nth` index has the value it would have
+	 * if the array were sorted.
+	 */
+	void nth_element(int p_first, int p_last, int p_nth, T *p_array) const {
+		if (p_first == p_last || p_nth == p_last) {
+			return;
+		}
+		_introselect(p_first, p_nth, p_last, p_array, _bitlog(p_last - p_first) * 2);
+	}
+
+private:
+	int _bitlog(int n) const {
+		int k;
+		for (k = 0; n != 1; n >>= 1) {
+			++k;
+		}
+		return k;
+	}
+
+	const T &_median_of_3(const T &a, const T &b, const T &c) const {
 		if (compare(a, b)) {
 			if (compare(b, c)) {
 				return b;
@@ -78,17 +120,7 @@ public:
 		}
 	}
 
-	inline int bitlog(int n) const {
-		int k;
-		for (k = 0; n != 1; n >>= 1) {
-			++k;
-		}
-		return k;
-	}
-
-	/* Heap / Heapsort functions */
-
-	inline void push_heap(int p_first, int p_hole_idx, int p_top_index, T p_value, T *p_array) const {
+	void _push_heap(int p_first, int p_hole_idx, int p_top_index, T p_value, T *p_array) const {
 		int parent = (p_hole_idx - 1) / 2;
 		while (p_hole_idx > p_top_index && compare(p_array[p_first + parent], p_value)) {
 			p_array[p_first + p_hole_idx] = p_array[p_first + parent];
@@ -98,15 +130,12 @@ public:
 		p_array[p_first + p_hole_idx] = p_value;
 	}
 
-	inline void pop_heap(int p_first, int p_last, int p_result, T p_value, T *p_array) const {
+	void _pop_heap(int p_first, int p_last, int p_result, T p_value, T *p_array) const {
 		p_array[p_result] = p_array[p_first];
-		adjust_heap(p_first, 0, p_last - p_first, p_value, p_array);
-	}
-	inline void pop_heap(int p_first, int p_last, T *p_array) const {
-		pop_heap(p_first, p_last - 1, p_last - 1, p_array[p_last - 1], p_array);
+		_adjust_heap(p_first, 0, p_last - p_first, p_value, p_array);
 	}
 
-	inline void adjust_heap(int p_first, int p_hole_idx, int p_len, T p_value, T *p_array) const {
+	void _adjust_heap(int p_first, int p_hole_idx, int p_len, T p_value, T *p_array) const {
 		int top_index = p_hole_idx;
 		int second_child = 2 * p_hole_idx + 2;
 
@@ -124,16 +153,16 @@ public:
 			p_array[p_first + p_hole_idx] = p_array[p_first + (second_child - 1)];
 			p_hole_idx = second_child - 1;
 		}
-		push_heap(p_first, p_hole_idx, top_index, p_value, p_array);
+		_push_heap(p_first, p_hole_idx, top_index, p_value, p_array);
 	}
 
-	inline void sort_heap(int p_first, int p_last, T *p_array) const {
+	void _sort_heap(int p_first, int p_last, T *p_array) const {
 		while (p_last - p_first > 1) {
 			pop_heap(p_first, p_last--, p_array);
 		}
 	}
 
-	inline void make_heap(int p_first, int p_last, T *p_array) const {
+	void _make_heap(int p_first, int p_last, T *p_array) const {
 		if (p_last - p_first < 2) {
 			return;
 		}
@@ -141,7 +170,7 @@ public:
 		int parent = (len - 2) / 2;
 
 		while (true) {
-			adjust_heap(p_first, parent, len, p_array[p_first + parent], p_array);
+			_adjust_heap(p_first, parent, len, p_array[p_first + parent], p_array);
 			if (parent == 0) {
 				return;
 			}
@@ -149,26 +178,26 @@ public:
 		}
 	}
 
-	inline void partial_sort(int p_first, int p_last, int p_middle, T *p_array) const {
-		make_heap(p_first, p_middle, p_array);
+	void _partial_sort(int p_first, int p_last, int p_middle, T *p_array) const {
+		_make_heap(p_first, p_middle, p_array);
 		for (int i = p_middle; i < p_last; i++) {
 			if (compare(p_array[i], p_array[p_first])) {
-				pop_heap(p_first, p_middle, i, p_array[i], p_array);
+				_pop_heap(p_first, p_middle, i, p_array[i], p_array);
 			}
 		}
-		sort_heap(p_first, p_middle, p_array);
+		_sort_heap(p_first, p_middle, p_array);
 	}
 
-	inline void partial_select(int p_first, int p_last, int p_middle, T *p_array) const {
-		make_heap(p_first, p_middle, p_array);
+	void _partial_select(int p_first, int p_last, int p_middle, T *p_array) const {
+		_make_heap(p_first, p_middle, p_array);
 		for (int i = p_middle; i < p_last; i++) {
 			if (compare(p_array[i], p_array[p_first])) {
-				pop_heap(p_first, p_middle, i, p_array[i], p_array);
+				_pop_heap(p_first, p_middle, i, p_array[i], p_array);
 			}
 		}
 	}
 
-	inline int partitioner(int p_first, int p_last, T p_pivot, T *p_array) const {
+	int _partitioner(int p_first, int p_last, T p_pivot, T *p_array) const {
 		const int unmodified_first = p_first;
 		const int unmodified_last = p_last;
 
@@ -196,43 +225,43 @@ public:
 		}
 	}
 
-	inline void introsort(int p_first, int p_last, T *p_array, int p_max_depth) const {
+	void _introsort(int p_first, int p_last, T *p_array, int p_max_depth) const {
 		while (p_last - p_first > INTROSORT_THRESHOLD) {
 			if (p_max_depth == 0) {
-				partial_sort(p_first, p_last, p_last, p_array);
+				_partial_sort(p_first, p_last, p_last, p_array);
 				return;
 			}
 
 			p_max_depth--;
 
-			int cut = partitioner(
+			int cut = _partitioner(
 					p_first,
 					p_last,
-					median_of_3(
+					_median_of_3(
 							p_array[p_first],
 							p_array[p_first + (p_last - p_first) / 2],
 							p_array[p_last - 1]),
 					p_array);
 
-			introsort(cut, p_last, p_array, p_max_depth);
+			_introsort(cut, p_last, p_array, p_max_depth);
 			p_last = cut;
 		}
 	}
 
-	inline void introselect(int p_first, int p_nth, int p_last, T *p_array, int p_max_depth) const {
+	void _introselect(int p_first, int p_nth, int p_last, T *p_array, int p_max_depth) const {
 		while (p_last - p_first > 3) {
 			if (p_max_depth == 0) {
-				partial_select(p_first, p_nth + 1, p_last, p_array);
+				_partial_select(p_first, p_nth + 1, p_last, p_array);
 				SWAP(p_first, p_nth);
 				return;
 			}
 
 			p_max_depth--;
 
-			int cut = partitioner(
+			int cut = _partitioner(
 					p_first,
 					p_last,
-					median_of_3(
+					_median_of_3(
 							p_array[p_first],
 							p_array[p_first + (p_last - p_first) / 2],
 							p_array[p_last - 1]),
@@ -245,10 +274,10 @@ public:
 			}
 		}
 
-		insertion_sort(p_first, p_last, p_array);
+		_insertion_sort(p_first, p_last, p_array);
 	}
 
-	inline void unguarded_linear_insert(int p_last, T p_value, T *p_array) const {
+	void _unguarded_linear_insert(int p_last, T p_value, T *p_array) const {
 		int next = p_last - 1;
 		while (compare(p_value, p_array[next])) {
 			if (Validate) {
@@ -261,7 +290,7 @@ public:
 		p_array[p_last] = p_value;
 	}
 
-	inline void linear_insert(int p_first, int p_last, T *p_array) const {
+	void _linear_insert(int p_first, int p_last, T *p_array) const {
 		T val = p_array[p_last];
 		if (compare(val, p_array[p_first])) {
 			for (int i = p_last; i > p_first; i--) {
@@ -270,50 +299,32 @@ public:
 
 			p_array[p_first] = val;
 		} else {
-			unguarded_linear_insert(p_last, val, p_array);
+			_unguarded_linear_insert(p_last, val, p_array);
 		}
 	}
 
-	inline void insertion_sort(int p_first, int p_last, T *p_array) const {
+	void _insertion_sort(int p_first, int p_last, T *p_array) const {
 		if (p_first == p_last) {
 			return;
 		}
 		for (int i = p_first + 1; i != p_last; i++) {
-			linear_insert(p_first, i, p_array);
+			_linear_insert(p_first, i, p_array);
 		}
 	}
 
-	inline void unguarded_insertion_sort(int p_first, int p_last, T *p_array) const {
+	void _unguarded_insertion_sort(int p_first, int p_last, T *p_array) const {
 		for (int i = p_first; i != p_last; i++) {
-			unguarded_linear_insert(i, p_array[i], p_array);
+			_unguarded_linear_insert(i, p_array[i], p_array);
 		}
 	}
 
-	inline void final_insertion_sort(int p_first, int p_last, T *p_array) const {
+	void _final_insertion_sort(int p_first, int p_last, T *p_array) const {
 		if (p_last - p_first > INTROSORT_THRESHOLD) {
-			insertion_sort(p_first, p_first + INTROSORT_THRESHOLD, p_array);
-			unguarded_insertion_sort(p_first + INTROSORT_THRESHOLD, p_last, p_array);
+			_insertion_sort(p_first, p_first + INTROSORT_THRESHOLD, p_array);
+			_unguarded_insertion_sort(p_first + INTROSORT_THRESHOLD, p_last, p_array);
 		} else {
-			insertion_sort(p_first, p_last, p_array);
+			_insertion_sort(p_first, p_last, p_array);
 		}
-	}
-
-	inline void sort_range(int p_first, int p_last, T *p_array) const {
-		if (p_first != p_last) {
-			introsort(p_first, p_last, p_array, bitlog(p_last - p_first) * 2);
-			final_insertion_sort(p_first, p_last, p_array);
-		}
-	}
-
-	inline void sort(T *p_array, int p_len) const {
-		sort_range(0, p_len, p_array);
-	}
-
-	inline void nth_element(int p_first, int p_last, int p_nth, T *p_array) const {
-		if (p_first == p_last || p_nth == p_last) {
-			return;
-		}
-		introselect(p_first, p_nth, p_last, p_array, bitlog(p_last - p_first) * 2);
 	}
 };
 

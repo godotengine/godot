@@ -370,9 +370,9 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
 
 			if (new_point) { // The position of the new points is already known.
-				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.size(), open_list.ptr());
 			} else {
-				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.find(e) + 1, open_list.ptr());
 			}
 		}
 	}
@@ -837,9 +837,9 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
 
 			if (new_point) { // The position of the new points is already known.
-				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.size(), open_list.ptr());
 			} else {
-				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.find(e) + 1, open_list.ptr());
 			}
 		}
 	}
