@@ -755,14 +755,16 @@ Error GDScript::reload(bool p_keep_state, bool p_show_error) {
 	err = analyzer.analyze();
 
 	if (err) {
-		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
-		}
+		if (p_show_error) {
+			if (EngineDebugger::is_active()) {
+				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			}
 
-		const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
-		while (e != nullptr) {
-			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
-			e = e->next();
+			const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
+			while (e != nullptr) {
+				_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+				e = e->next();
+			}
 		}
 		reloading = false;
 		return ERR_PARSE_ERROR;
@@ -774,9 +776,12 @@ Error GDScript::reload(bool p_keep_state, bool p_show_error) {
 	err = compiler.compile(&parser, this, p_keep_state);
 
 	if (err) {
-		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		if (p_show_error) {
+			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		}
+
 		if (can_run) {
-			if (EngineDebugger::is_active()) {
+			if (p_show_error && EngineDebugger::is_active()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
 			reloading = false;
