@@ -70,13 +70,14 @@
 # Nicolai Van der Storm <nicolai@nvds.be>, 2023.
 # Gaetan Deglorie <gaetan@rhinox.training>, 2023.
 # Bert Heymans <bert.heymans@gmail.com>, 2023.
+# Gert-dev <Gert-dev@users.noreply.hosted.weblate.org>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-18 06:21+0000\n"
-"Last-Translator: Bert Heymans <bert.heymans@gmail.com>\n"
+"PO-Revision-Date: 2023-11-27 01:40+0000\n"
+"Last-Translator: Gert-dev <Gert-dev@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -84,7 +85,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.2.1-rc\n"
+
+msgid "Main Thread"
+msgstr "Hoofdthread"
 
 msgid "Unset"
 msgstr "Niet ingesteld"
@@ -93,121 +97,121 @@ msgid "Physical"
 msgstr "Fysiek"
 
 msgid "Left Mouse Button"
-msgstr "Linker Muis Knop"
+msgstr "Linkermuisknop"
 
 msgid "Right Mouse Button"
-msgstr "Rechter Muis Knop"
+msgstr "Rechtermuisknop"
 
 msgid "Middle Mouse Button"
-msgstr "Middelste Muis Knop"
+msgstr "Middelmuisknop"
 
 msgid "Mouse Wheel Up"
-msgstr "Scrollwiel Omhoog"
+msgstr "Scrollwiel omhoog"
 
 msgid "Mouse Wheel Down"
-msgstr "Scrollwiel Omlaag"
+msgstr "Scrollwiel omlaag"
 
 msgid "Mouse Wheel Left"
-msgstr "Muiswielknop Links"
+msgstr "Muiswielknop links"
 
 msgid "Mouse Wheel Right"
-msgstr "Muiswielknop Rechts"
+msgstr "Muiswielknop rechts"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Muis Duim Knop 1"
+msgstr "Duimknop muis 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Muisduimknop 2"
+msgstr "Duimknop muis 2"
 
 msgid "Button"
 msgstr "Knop"
 
 msgid "Double Click"
-msgstr "Dubbel Klik"
+msgstr "Dubbelklik"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
-msgstr "Muis beweging op positie (%s) met snelheid (%s)"
+msgstr "Muisbeweging op positie (%s) met snelheid (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Linker Pook X-As, Joystick 0 X-As"
+msgstr "Linkerpook x-as, Joystick 0 x-as"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Linker Pook Y-As, Joystick 0 Y-As"
+msgstr "Linkerpook y-as, Joystick 0 y-as"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "Rechter Pook X-As, Joystick 1 X-As"
+msgstr "Rechterpook x-as, Joystick 1 x-as"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
-msgstr "Rechter Pook Y-As, Joystick 1 Y-As"
+msgstr "Rechterpook y-as, Joystick 1 y-as"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "Joystick 2 X-As, Linker Trekker, Sony L2, Xbox LT"
+msgstr "Joystick 2 x-as, Linkse trekker, Sony L2, Xbox LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "Joystick 2 Y-As, Rechter Trekker, Sony R2, Xbox RT"
+msgstr "Joystick 2 y-as, Rechtse trekker, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
-msgstr "Joystick 3 X-As"
+msgstr "Joystick 3 x-as"
 
 msgid "Joystick 3 Y-Axis"
-msgstr "Joystick 3 Y-As"
+msgstr "Joystick 3 y-as"
 
 msgid "Joystick 4 X-Axis"
-msgstr "Joystick 4 X-As"
+msgstr "Joystick 4 x-as"
 
 msgid "Joystick 4 Y-Axis"
-msgstr "Joystick 4 Y-As"
+msgstr "Joystick 4 y-as"
 
 msgid "Unknown Joypad Axis"
-msgstr "Onbekende Joypad As"
+msgstr "Onbekende Joypad-as"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
-msgstr "Joypad Beweging op As %d (%s) met Waarde %.2f"
+msgstr "Joypad-beweging op as %d (%s) met waarde %.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
-msgstr "Onderste Actie, Sony Kruisje, Xbox A, Nintendo B"
+msgstr "Onderste actie, Sony kruisje, Xbox A, Nintendo B"
 
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "Rechter Actie, Sony Cirkel, Xbox B, Nintendo A"
+msgstr "Rechtse Actie, Sony cirkel, Xbox B, Nintendo A"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "Linker Actie, Sony Vierkantje, Xbox X, Nintendo Y"
+msgstr "Linkse actie, Sony vierkantje, Xbox X, Nintendo Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "Bovenste Actie, Sony Driehoekje, Xbox Y, Nintendo X"
+msgstr "Bovenste actie, Sony driehoekje, Xbox Y, Nintendo X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
-msgstr "Terug, Sony Selecteer, Xbox Terug, Nintendo -"
+msgstr "Terug, Sony selecteer, Xbox terug, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
-msgstr "Gids, Sony PS, Xbox Thuis"
+msgstr "Gids, Sony PS, Xbox Home"
 
 msgid "Start, Xbox Menu, Nintendo +"
-msgstr "Start, Xbox Menu, Nintendo +"
+msgstr "Start, Xbox menu, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
-msgstr "Linker Joystick, Sony L3, Xbox L/LS"
+msgstr "Linkse pook, Sony L3, Xbox L/LS"
 
 msgid "Right Stick, Sony R3, Xbox R/RS"
-msgstr "Rechter Joystick, Sony R3, Xbox R/RS"
+msgstr "Rechtse pook, Sony R3, Xbox R/RS"
 
 msgid "Left Shoulder, Sony L1, Xbox LB"
-msgstr "Linker Schouder, Sony L1, Xbox LB"
+msgstr "Linkse schouder, Sony L1, Xbox LB"
 
 msgid "Right Shoulder, Sony R1, Xbox RB"
-msgstr "Rechter Schouder, Sony R1, Xbox RB"
+msgstr "Rechtse schouder, Sony R1, Xbox RB"
 
 msgid "D-pad Up"
-msgstr "D-pad Boven"
+msgstr "D-pad omhoog"
 
 msgid "D-pad Down"
-msgstr "D-pad Onder"
+msgstr "D-pad omlaag"
 
 msgid "D-pad Left"
-msgstr "D-pad Links"
+msgstr "D-pad links"
 
 msgid "D-pad Right"
-msgstr "D-pad Rechts"
+msgstr "D-pad rechts"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Delen, PS5 Microfoon, Nintendo Opname"
@@ -225,10 +229,10 @@ msgid "Xbox Paddle 4"
 msgstr "Xbox Paddle 4"
 
 msgid "PS4/5 Touchpad"
-msgstr "PS4/5 Touchpad"
+msgstr "PS4-/5-touchpad"
 
 msgid "Joypad Button %d"
-msgstr "Controllerknop %d"
+msgstr "Joypad-knop %d"
 
 msgid "Pressure:"
 msgstr "Druk:"
@@ -255,28 +259,28 @@ msgid "Magnify Gesture at (%s) with factor %s"
 msgstr "Vergrotingsgebaar op (%s) met factor %s"
 
 msgid "Pan Gesture at (%s) with delta (%s)"
-msgstr "Pan-gebaar op (%s) met delta (%s)"
+msgstr "Verplaatsingsgebaar op (%s) met delta (%s)"
 
 msgid "MIDI Input on Channel=%s Message=%s"
-msgstr "MIDI Input op kanaal=%s Bericht=%s"
+msgstr "MIDI-invoer op kanaal=%s Bericht=%s"
 
 msgid "Input Event with Shortcut=%s"
-msgstr "Input Gebeurtenis met sneltoets=%s"
+msgstr "Invoergebeurtenis met sneltoets=%s"
 
 msgid "Accept"
-msgstr "Accepteren"
+msgstr "Aanvaarden"
 
 msgid "Select"
-msgstr "Selecteer"
+msgstr "Selecteren"
 
 msgid "Cancel"
-msgstr "Annuleer"
+msgstr "Annuleren"
 
 msgid "Focus Next"
-msgstr "Focus Volgende"
+msgstr "Volgende focussen"
 
 msgid "Focus Prev"
-msgstr "Focus Vorige"
+msgstr "Vorige focussen"
 
 msgid "Left"
 msgstr "Links"
@@ -291,10 +295,10 @@ msgid "Down"
 msgstr "Omlaag"
 
 msgid "Page Up"
-msgstr "Pagina Omhoog"
+msgstr "Pagina omhoog"
 
 msgid "Page Down"
-msgstr "Pagina Omlaag"
+msgstr "Pagina omlaag"
 
 msgid "Home"
 msgstr "Home"
@@ -315,7 +319,10 @@ msgid "Undo"
 msgstr "Ongedaan maken"
 
 msgid "Redo"
-msgstr "Opnieuw"
+msgstr "Opnieuw uitvoeren"
+
+msgid "Completion Query"
+msgstr "Aanvullings-query"
 
 msgid "New Line"
 msgstr "Nieuwe regel"
@@ -323,61 +330,138 @@ msgstr "Nieuwe regel"
 msgid "New Blank Line"
 msgstr "Nieuwe lege regel"
 
+msgid "New Line Above"
+msgstr "Nieuwe regel boven invoegen"
+
 msgid "Indent"
 msgstr "Inspringen"
 
+msgid "Dedent"
+msgstr "Inspringing weghalen"
+
+msgid "Backspace"
+msgstr "Voorgaand karakter verwijderen"
+
+msgid "Backspace Word"
+msgstr "Voorgaand woord verwijderen"
+
+msgid "Backspace all to Left"
+msgstr "Alles links verwijderen"
+
 msgid "Delete"
-msgstr "Verwijder"
+msgstr "Verwijderen"
 
 msgid "Delete Word"
-msgstr "Woord Verwijderen"
+msgstr "Woord verwijderen"
+
+msgid "Delete all to Right"
+msgstr "Alles rechts verwijderen"
+
+msgid "Caret Left"
+msgstr "Cursor naar links verplaatsen"
+
+msgid "Caret Word Left"
+msgstr "Cursor woord naar links verplaatsen"
+
+msgid "Caret Right"
+msgstr "Cursor naar rechts verplaatsen"
+
+msgid "Caret Word Right"
+msgstr "Cursor woord naar rechts verplaatsen"
+
+msgid "Caret Up"
+msgstr "Cursor omhoog verplaatsen"
+
+msgid "Caret Down"
+msgstr "Cursor omlaag verplaatsen"
+
+msgid "Caret Line Start"
+msgstr "Cursor naar begin lijn verplaatsen"
+
+msgid "Caret Line End"
+msgstr "Cursor naar einde lijn verplaatsen"
 
 msgid "Caret Page Up"
-msgstr "Caret Pagina Omhoog"
+msgstr "Cursor pagina omhoog verplaatsen"
 
 msgid "Caret Page Down"
-msgstr "Caret Pagina Omlaag"
+msgstr "Caret pagina omlaag verplaatsen"
+
+msgid "Caret Document Start"
+msgstr "Cursor naar documenthoofd verplaatsen"
+
+msgid "Caret Document End"
+msgstr "Cursor naar documenteinde verplaatsen"
+
+msgid "Caret Add Below"
+msgstr "Cursor boven toevoegen"
+
+msgid "Caret Add Above"
+msgstr "Cursor onder toevoegen"
 
 msgid "Scroll Up"
-msgstr "Scroll Omhoog"
+msgstr "Omhoog scrollen"
 
 msgid "Scroll Down"
-msgstr "Scroll Omlaag"
+msgstr "Omlaag scrollen"
 
 msgid "Select All"
 msgstr "Alles selecteren"
+
+msgid "Select Word Under Caret"
+msgstr "Woord onder cursor selecteren"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Volgende herkomst mee selecteren"
+
+msgid "Clear Carets and Selection"
+msgstr "Cursors en selectie wissen"
+
+msgid "Toggle Insert Mode"
+msgstr "Invoermodus wisselen"
+
+msgid "Submit Text"
+msgstr "Tekst versturen"
 
 msgid "Duplicate Nodes"
 msgstr "Knopen dupliceren"
 
 msgid "Delete Nodes"
-msgstr "VisualShader-knoop/knopen verwijderen"
+msgstr "Knopen verwijderen"
 
 msgid "Go Up One Level"
-msgstr "Ga Een Niveau Omhoog"
+msgstr "Één niveau omhoog gaan"
 
 msgid "Refresh"
-msgstr "Verversen"
+msgstr "Herladen"
+
+msgid "Show Hidden"
+msgstr "Verborgen tonen"
+
+msgid "Swap Input Direction"
+msgstr "Invoerrichting wisselen"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "Ongeldige invoer %d (niet doorgegeven) in uitdrukking"
 
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
-"'self' kan niet gebruikt worden omdat de instantie 'null' is (niet "
-"doorgegeven)"
+"'self' kan niet gebruikt worden omdat instantie 'null' is (niet doorgegeven)"
 
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Ongeldige operanden %s en %s voor operator %s."
+msgstr "Ongeldige operanden voor operator %s: %s en %s."
 
 msgid "Invalid index of type %s for base type %s"
-msgstr "Ongeldige index in type %s voor basis-type %s"
+msgstr "Ongeldige index van type %s voor basis-type %s"
 
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Ongeldige indexnaam %s voor basis-type %s"
+msgstr "Ongeldige benoemde index '%s' voor basis-type %s"
 
 msgid "Invalid arguments to construct '%s'"
-msgstr "Ongeldig argument in constructie '%s'"
+msgstr "Ongeldige argumenten in constructie '%s'"
 
 msgid "On call to '%s':"
-msgstr "Tijdens invocatie van '%s':"
+msgstr "Bij oproepen van '%s':"
 
 msgid "Built-in script"
 msgstr "Ingebouwd script"
@@ -409,6 +493,11 @@ msgstr "EiB"
 msgid "Example: %s"
 msgstr "Voorbeeld: %s"
 
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d item"
+msgstr[1] "%d items"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -417,31 +506,43 @@ msgstr ""
 "'\"' bevatten"
 
 msgid "An action with the name '%s' already exists."
-msgstr "Action '%s' bestaat al."
+msgstr "Actie '%s' bestaat al."
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Kan niet ongedaan maken - actie is identiek aan de oorspronkelijke"
+
+msgid "Revert Action"
+msgstr "Actie ongedaan maken"
 
 msgid "Add Event"
-msgstr "Event Toevoegen"
+msgstr "Gebeurtenis toevoegen"
 
 msgid "Remove Action"
-msgstr "Verwijder Actie"
+msgstr "Actie verwijderen"
 
 msgid "Cannot Remove Action"
-msgstr "Kan Actie Niet Verwijderen"
+msgstr "Kan actie niet verwijderen"
+
+msgid "Edit Event"
+msgstr "Gebeurtenis bewerken"
 
 msgid "Remove Event"
-msgstr "Remote Event"
+msgstr "Gebeurtenis verwijderen"
 
 msgid "Filter by name..."
-msgstr "Filter op naam..."
+msgstr "Op naam filteren..."
+
+msgid "Clear All"
+msgstr "Alles verwijderen"
 
 msgid "Add New Action"
-msgstr "Nieuwe Actie Toevoegen"
+msgstr "Nieuwe actie toevoegen"
 
 msgid "Add"
 msgstr "Toevoegen"
 
 msgid "Show Built-in Actions"
-msgstr "Weergeef Ingebouwde Acties"
+msgstr "Ingebouwde acties weergeven"
 
 msgid "Action"
 msgstr "Actie"
@@ -455,8 +556,11 @@ msgstr "Tijd:"
 msgid "Value:"
 msgstr "Waarde:"
 
+msgid "Update Selected Key Handles"
+msgstr "Geselecteerde sleutel-handles bijwerken"
+
 msgid "Insert Key Here"
-msgstr "Hier Key invoegen"
+msgstr "Sleutel hier toevoegen"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Geselecteerde sleutel(s) dupliceren"
@@ -464,35 +568,122 @@ msgstr "Geselecteerde sleutel(s) dupliceren"
 msgid "Delete Selected Key(s)"
 msgstr "Geselecteerde sleutel(s) verwijderen"
 
+msgid "Make Handles Free"
+msgstr "Handgrepen vrij manipuleerbaar maken"
+
+msgid "Make Handles Linear"
+msgstr "Handgrepen lineair maken"
+
+msgid "Make Handles Balanced"
+msgstr "Handgrepen gebalanceerd maken"
+
+msgid "Make Handles Mirrored"
+msgstr "Handgrepen gespiegeld maken"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Handgrepen gebalanceerd maken (automatische tangent)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Handgrepen gespiegeld maken (automatische tangent)"
+
 msgid "Add Bezier Point"
-msgstr "Bézierpunt toevoegen"
+msgstr "Bézier-punt toevoegen"
 
 msgid "Move Bezier Points"
-msgstr "Beweeg Bézierpunten"
+msgstr "Bézier-punten verplaatsen"
+
+msgid "Animation Duplicate Keys"
+msgstr "Animatiesleutels dupliceren"
+
+msgid "Animation Delete Keys"
+msgstr "Animatiesleutels verwijderen"
 
 msgid "Focus"
 msgstr "Focus"
 
+msgid "Select All Keys"
+msgstr "Alle sleutels selecteren"
+
+msgid "Deselect All Keys"
+msgstr "Alle sleutels deselecteren"
+
+msgid "Animation Change Transition"
+msgstr "Animatietransitie wijzigen"
+
+msgid "Animation Change Position3D"
+msgstr "3D-positie animatie wijzigen"
+
+msgid "Animation Change Rotation3D"
+msgstr "3D-rotatie animatie wijzigen"
+
+msgid "Animation Change Scale3D"
+msgstr "3D-schaal animatie wijzigen"
+
+msgid "Animation Change Keyframe Value"
+msgstr "Keyframe-waarde animatie wijzigen"
+
+msgid "Animation Change Call"
+msgstr "Aanroep animatie wijzigen"
+
+msgid "Animation Multi Change Transition"
+msgstr "Meerdere animatietransities wijzigen"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Meerdere 3D-posities animatie wijzigen"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Meerdere 3D-rotaties animatie wijzigen"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Meerdere 3D-schalen animatie wijzigen"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Meerdere keyframe-waarden animatie wijzigen"
+
+msgid "Animation Multi Change Call"
+msgstr "Meerdere aanroepen animatie wijzigen"
+
 msgid "Change Animation Length"
-msgstr "Verander Animatielengte"
+msgstr "Animatielengte wijzigen"
 
 msgid "Change Animation Loop"
-msgstr "Animatielus veranderen"
+msgstr "Animatielus wijzigen"
+
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr ""
+"Kan lusmodus niet wijzigen voor animatie die geïnstantieerd is vanuit "
+"geïmporteerde scène."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr ""
+"Kan lusmodus niet wijzigen voor animatie die ingebed is in een andere scène."
 
 msgid "Property Track"
-msgstr "Eigenschap Track"
+msgstr "Eigenschappen-track"
+
+msgid "3D Position Track"
+msgstr "3D-positie-track"
+
+msgid "3D Rotation Track"
+msgstr "3D-rotatie-track"
+
+msgid "3D Scale Track"
+msgstr "3D-schaal-track"
+
+msgid "Blend Shape Track"
+msgstr "Blend-vorm-track"
 
 msgid "Call Method Track"
-msgstr "Methode Invocatie Track"
+msgstr "Methode-oproep-track"
 
 msgid "Bezier Curve Track"
-msgstr "Bezier-curve Track"
+msgstr "Bézier-curve-track"
 
 msgid "Audio Playback Track"
-msgstr "Audio Terugspelen Track"
+msgstr "Audio-afspelen-track"
 
 msgid "Animation Playback Track"
-msgstr "Animatie Terugspelen Track"
+msgstr "Animatie-afspelen-track"
 
 msgid "Animation length (frames)"
 msgstr "Animatielengte (frames)"
@@ -501,7 +692,7 @@ msgid "Animation length (seconds)"
 msgstr "Animatielengte (seconden)"
 
 msgid "Add Track"
-msgstr "Track Toevoegen"
+msgstr "Track toevoegen"
 
 msgid "Animation Looping"
 msgstr "Animatie herhalen"
@@ -516,22 +707,25 @@ msgid "Animation Clips:"
 msgstr "Animatieclips:"
 
 msgid "Change Track Path"
-msgstr "Verander Track pad"
+msgstr "Track-pad veranderen"
 
 msgid "Toggle this track on/off."
-msgstr "Schakel deze track aan/uit."
+msgstr "Deze track in-/uitschakelen."
+
+msgid "Use Blend"
+msgstr "Mengen gebruiken"
 
 msgid "Update Mode (How this property is set)"
-msgstr "Bijwerkmodus (hoe de eigenschap ingesteld wordt)"
+msgstr "Bijwerk-modus (hoe deze eigenschap ingesteld wordt)"
 
 msgid "Interpolation Mode"
 msgstr "Interpolatiemodus"
 
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "Naadloze-lusmodus (interpoleert einde met begin van lus)"
+msgstr "Naadloze-lus-modus (interpoleert einde met begin van lus)"
 
 msgid "Remove this track."
-msgstr "Verwijder deze track."
+msgstr "Deze track verwijderen."
 
 msgid "Time (s):"
 msgstr "Tijd (s):"
@@ -545,23 +739,53 @@ msgstr "Rotatie:"
 msgid "Scale:"
 msgstr "Schaal:"
 
+msgid "Blend Shape:"
+msgstr "Mengvorm:"
+
 msgid "Type:"
 msgstr "Type:"
 
 msgid "(Invalid, expected type: %s)"
-msgstr "(Ongeldig, verwachtte type: %s)"
+msgstr "(Ongeldig, verwacht type: %s)"
+
+msgid "Easing:"
+msgstr "Verzachting:"
+
+msgid "In-Handle:"
+msgstr "In-handgreep:"
+
+msgid "Out-Handle:"
+msgstr "Uit-handgreep:"
+
+msgid "Handle mode: Free\n"
+msgstr "Handgreep-modus: Vrij\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Handgreep-modus: Lineair\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Handgreep-modus: Gebalanceerd\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Handgreep-modus: Gespiegeld\n"
+
+msgid "Stream:"
+msgstr "Stroom:"
 
 msgid "Start (s):"
 msgstr "Start (s):"
 
 msgid "End (s):"
-msgstr "Eind (s):"
+msgstr "Einde (s):"
 
 msgid "Animation Clip:"
-msgstr "Animatie Clip:"
+msgstr "Animatieclip:"
 
 msgid "Toggle Track Enabled"
-msgstr "Track in-/uit schakelen"
+msgstr "Track in-/uitschakelen"
+
+msgid "Don't Use Blend"
+msgstr "Mengen niet gebruiken"
 
 msgid "Continuous"
 msgstr "Doorlopend"
@@ -570,7 +794,7 @@ msgid "Discrete"
 msgstr "Discreet"
 
 msgid "Capture"
-msgstr "Vastleggen"
+msgstr "Opnemen"
 
 msgid "Nearest"
 msgstr "Dichtstbijzijnde"
@@ -581,56 +805,94 @@ msgstr "Lineair"
 msgid "Cubic"
 msgstr "Kubiek"
 
+msgid "Linear Angle"
+msgstr "Lineaire hoek"
+
+msgid "Cubic Angle"
+msgstr "Kubieke hoek"
+
 msgid "Clamp Loop Interp"
-msgstr "Klem lusinterpolatie"
+msgstr "Lusinterpolatie begrenzen"
 
 msgid "Wrap Loop Interp"
-msgstr "Naadloze lusinterpolatie"
+msgstr "Lusinterpolatie naadloos maken"
 
 msgid "Insert Key"
-msgstr "Sleutel invoeren"
+msgstr "Sleutel invoegen"
 
 msgid "Duplicate Key(s)"
 msgstr "Sleutel(s) dupliceren"
 
 msgid "Add RESET Value(s)"
-msgstr "Voeg RESET Waarde(s) toe"
+msgstr "RESET-waarden toevoegen"
 
 msgid "Delete Key(s)"
 msgstr "Sleutel(s) verwijderen"
 
 msgid "Change Animation Update Mode"
-msgstr "Animatiebijwerkmodus veranderen"
+msgstr "Bijwerk-modus animaties wijzigen"
 
 msgid "Change Animation Interpolation Mode"
-msgstr "Animatieinterpolatiemodus veranderen"
+msgstr "Interpolatiemodus animaties wijzigen"
 
 msgid "Change Animation Loop Mode"
-msgstr "Animatielusmodus veranderen"
+msgstr "Lusmodus animaties wijzigen"
+
+msgid "Change Animation Use Blend"
+msgstr "'Mengen gebruiken' animaties wijzigen"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Gecomprimeerde track kunnen niet bewerkt of verwijderd worden. Importeer de "
+"animatie opnieuw met compressie uitgeschakeld om deze te bewerken."
 
 msgid "Remove Anim Track"
-msgstr "Verwijder Anim Track"
+msgstr "Animatie-track verwijderen"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Houd shift ingedrukt bij het klikken op het sleutel-icoontje om dit venster "
+"over te slaan."
+
+msgid "Create new track for %s and insert key?"
+msgstr "Nieuw spoor aanmaken voor %s en sleutel invoegen?"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "%d nieuwe sporen aanmaken en sleutels invoeren?"
 
 msgid "Create"
-msgstr "Maken"
+msgstr "Aanmaken"
+
+msgid "Animation Insert Key"
+msgstr "Animatiesleutel toevoegen"
 
 msgid "node '%s'"
-msgstr "node '%s'"
+msgstr "knoop '%s'"
 
 msgid "animation"
 msgstr "animatie"
 
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr "Animatie-Speler kan zichzelf niet animeren, alleen andere spelers."
+msgstr "AnimationPlayer kan enkel andere spelers animeren, maar niet zichzelf."
 
 msgid "property '%s'"
-msgstr "Eigenschap '%s'"
+msgstr "eigenschap '%s'"
 
 msgid "Change Animation Step"
-msgstr "Verander Animatiestappen"
+msgstr "Animatiestap wijzigen"
 
 msgid "Rearrange Tracks"
-msgstr "Herschik Tracks"
+msgstr "Sporen herordenen"
+
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "Mengvorm-sporen zijn enkel van toepassing op MeshInstance3D-knopen."
+
+msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
+msgstr ""
+"3D-Positie-/-Rotatie-/-Schaal-sporen zijn enkel van toepassing op 3D-"
+"gebaseerde knopen."
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -638,37 +900,52 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"Audiosporen kunnen alleen verwijzen naar de volgende knopen:\n"
+"Audio-sporen kunnen enkel verwijzen naar het volgende type knopen:\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr "Animatiesporen kunnen alleen verwijzen naar AnimatiePlayer-knopen."
+msgstr "Animatie-sporen kunnen enkel verwijzen naar AnimationPlayer-knopen."
 
 msgid "Not possible to add a new track without a root"
-msgstr "Niet mogelijk om een nieuwe track toe te voegen zonder een root"
+msgstr "Nieuwe sporen kunnen niet toegevoegd worden zonder een root"
 
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr "Ongeldig spoor voor Bezier (geen geschikte sub-eigenschappen)"
+msgstr "Ongeldig spoor voor Bézier (geen geschikte sub-eigenschappen)"
 
 msgid "Add Bezier Track"
-msgstr "Voeg Bézierbaan Toe"
+msgstr "Bézier-spoor toevoegen"
 
 msgid "Track path is invalid, so can't add a key."
-msgstr "Spoorpad is ongeldig, dus sleutel kan niet toevoegt worden."
+msgstr "Sleutel kan niet toegevoegd worden omdat spoorpad ongeldig is."
+
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "Sleutel kan niet ingevoegd worden omdat spoor niet van type Node3D is"
+
+msgid "Add Position Key"
+msgstr "Positie-sleutel toevoegen"
+
+msgid "Add Rotation Key"
+msgstr "Rotatie-sleutel toevoegen"
+
+msgid "Add Scale Key"
+msgstr "Schaal-sleutel toevoegen"
 
 msgid "Add Track Key"
-msgstr "Voeg Track sleutel toe"
+msgstr "Spoor-sleutel toevoegen"
 
 msgid "Track path is invalid, so can't add a method key."
-msgstr "Track path is niet geldig, dus kan geen methode key toevoegen."
+msgstr "Methodesleutel kan niet toegevoegd worden omdat spoorpad ongeldig is."
 
 msgid "Add Method Track Key"
-msgstr "Voeg Methode Track sleutel toe"
+msgstr "Methode-spoor-sleutel toevoegen"
 
 msgid "Method not found in object:"
-msgstr "Methode niet gevonden in object:"
+msgstr "Methode niet teruggevonden in object:"
+
+msgid "Animation Move Keys"
+msgstr "Animatie-verplaatsingssleutels"
 
 msgid "Position"
 msgstr "Positie"
@@ -679,39 +956,105 @@ msgstr "Rotatie"
 msgid "Scale"
 msgstr "Schaal"
 
+msgid "BlendShape"
+msgstr "Meng-vorm"
+
 msgid "Methods"
 msgstr "Methoden"
 
 msgid "Bezier"
-msgstr "Bezier"
+msgstr "Bézier"
 
 msgid "Audio"
 msgstr "Audio"
 
 msgid "Clipboard is empty!"
-msgstr "Plakbord is leeg!"
+msgstr "Klembord is leeg!"
 
 msgid "Paste Tracks"
-msgstr "Plak sporen"
+msgstr "Sporen plakken"
+
+msgid "Animation Scale Keys"
+msgstr "Animatie-schaal-sleutels"
+
+msgid "Make Easing Keys"
+msgstr "Verzachtingssleutels toevoegen"
 
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
-"Deze optie is nu niet mogelijk bij Bezier bewerken omdat slechts een spoor "
-"aanwezig is."
+"Deze optie werkt niet in de Bézier-bewerkmodus omdat deze slechts uit één "
+"spoor bestaat."
+
+msgid "Animation Add RESET Keys"
+msgstr "Animatie-RESET-sleutels toevoegen"
+
+msgid "Bake Animation as Linear Keys"
+msgstr "Animatie bakken als lineaire sleutels"
+
+msgid ""
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To modify this animation, navigate to the scene's Advanced Import settings "
+"and select the animation.\n"
+"Some options, including looping, are available here. To add custom tracks, "
+"enable \"Save To File\" and\n"
+"\"Keep Custom Tracks\"."
+msgstr ""
+"Deze animatie komt van een geïmporteerde scène, waardoor veranderingen aan "
+"geïmporteerde tracks niet opgeslagen worden.\n"
+"\n"
+"Om deze animatie te kunnen bewerken, navigeer naar de geavanceerde import-"
+"instellingen van de scène en selecteer daar de animatie.\n"
+"Sommige opties, waaronder de lusmodus, zijn hier ook beschikbaar. Om "
+"aangepaste tracks toe te voegen, schakel je \"Naar bestand opslaan\"\n"
+"en \"Aangepaste tracks behouden\" in."
+
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"Sommige opties voor de AnimationPlayerEditor zijn uitgeschakeld omdat dit een "
+"dummy AnimationPlayer ter voorbeeld is.\n"
+"\n"
+"De dummy-speler wordt geforceerd actief gezet, is niet-deterministisch en "
+"heeft geen root-bewegings-spoor. Hiernaast is de oorspronkelijke knoop "
+"tijdelijk inactief."
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "AnimationPlayer is inactief. Het afspelen ervan wordt niet uitgevoerd."
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
-"Selecteer een AnimationPlayer uit de Scene Tree om animaties te wijzigen."
+"Selecteer een AnimationPlayer-knoop om animaties aan te maken en te bewerken."
 
 msgid "Imported Scene"
-msgstr "Geïmporteerde Scene"
+msgstr "Geïmporteerde scène"
 
 msgid "Warning: Editing imported animation"
-msgstr "Waarschuwing: Er wordt een geïmporteerde animatie bewerkt"
+msgstr "Waarschuwing: Je bewerkt een geïmporteerde animatie"
+
+msgid "Dummy Player"
+msgstr "Dummy-speler"
+
+msgid "Warning: Editing dummy AnimationPlayer"
+msgstr "Waarschuwing: Je bewerkt een dummy-AnimationPlayer"
+
+msgid "Inactive Player"
+msgstr "Inactieve speler"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "Waarschuwing: AnimationPlayer is niet actief"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Schakel tussen de bewerker voor bézier-curves en die voor sporen."
 
 msgid "Only show tracks from nodes selected in tree."
-msgstr "Alleen sporen van geselecteerde knopen tonen."
+msgstr "Alleen sporen van in boomstructuur geselecteerde knopen tonen."
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "Sporen groeperen op knoop of als een normale lijst tonen."
@@ -720,7 +1063,7 @@ msgid "Snap:"
 msgstr "Uitlijnen:"
 
 msgid "Animation step value."
-msgstr "Animatie stap waarde."
+msgstr "Animatiestapwaarde."
 
 msgid "Seconds"
 msgstr "Seconden"
@@ -732,58 +1075,76 @@ msgid "Edit"
 msgstr "Bewerken"
 
 msgid "Animation properties."
-msgstr "Animatie eigenschappen."
+msgstr "Animatie-eigenschappen."
 
 msgid "Copy Tracks"
-msgstr "Kopieer sporen"
+msgstr "Sporen kopiëren"
 
 msgid "Scale Selection"
-msgstr "Schaal selectie"
+msgstr "Selectie schalen"
 
 msgid "Scale From Cursor"
-msgstr "Schaal Vanaf Cursor"
+msgstr "Schalen vanuit cursor"
+
+msgid "Make Easing Selection"
+msgstr "Verzachtingsselectie maken"
 
 msgid "Duplicate Selection"
 msgstr "Selectie dupliceren"
 
 msgid "Duplicate Transposed"
-msgstr "Dupliceer Getransponeerde"
+msgstr "Getransponeerde dupliceren"
 
 msgid "Delete Selection"
-msgstr "Verwijder Selectie"
+msgstr "Selectie verwijderen"
 
 msgid "Go to Next Step"
-msgstr "Ga naar Volgende Stap"
+msgstr "Naar volgende stap gaan"
 
 msgid "Go to Previous Step"
-msgstr "Ga naar Vorige Stap"
+msgstr "Naar vorige stap gaan"
 
 msgid "Apply Reset"
-msgstr "Reset"
+msgstr "Reset doorvoeren"
+
+msgid "Bake Animation"
+msgstr "Animatie bakken"
 
 msgid "Optimize Animation (no undo)"
-msgstr "Optimaliseer Animatie (Onomkeerbaar)"
+msgstr "Animatie optimaliseren (onomkeerbaar)"
 
 msgid "Clean-Up Animation (no undo)"
-msgstr "Animatie Opschonen (Onomkeerbaar)"
+msgstr "Animatie opschonen (onomkeerbaar)"
 
 msgid "Pick a node to animate:"
-msgstr "Kies een node om te animeren:"
+msgstr "Kies een knoop om te animeren:"
 
 msgid "Use Bezier Curves"
-msgstr "Gebruik Bezier Curves"
+msgstr "Bézier-curves gebruiken"
 
 msgid "Create RESET Track(s)"
-msgstr "Creëer RESET Track(s)"
+msgstr "RESET-spo(o)r(en) creëren"
+
+msgid "Animation Optimizer"
+msgstr "Animatie-optimalisator"
+
+msgid "Max Velocity Error:"
+msgstr "Maximale foutmarge snelheid:"
+
+msgid "Max Angular Error:"
+msgstr "Maximale foutmarge hoek:"
+
+msgid "Max Precision Error:"
+msgstr "Maximale foutmarge precisie:"
 
 msgid "Optimize"
 msgstr "Optimaliseren"
 
 msgid "Remove invalid keys"
-msgstr "Verwijder ongeldige sleutels"
+msgstr "Ongeldige sleutels verwijderen"
 
 msgid "Remove unresolved and empty tracks"
-msgstr "Verwijder onopgeloste en lege sporen"
+msgstr "Onopgeloste en lege sporen verwijderen"
 
 msgid "Clean-up all animations"
 msgstr "Alle animaties opruimen"
@@ -795,31 +1156,125 @@ msgid "Clean-Up"
 msgstr "Opruimen"
 
 msgid "Scale Ratio:"
-msgstr "Schaal Ratio:"
+msgstr "Schaal-verhouding:"
+
+msgid "Select Transition and Easing"
+msgstr "Transitie en verzachting selecteren"
+
+msgctxt "Transition Type"
+msgid "Linear"
+msgstr "Lineair"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sinus"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Quint"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Quart"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Quad"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "Exponent"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elastisch"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "Kubiek"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Cirkel"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Tutsen"
+
+msgctxt "Transition Type"
+msgid "Back"
+msgstr "Terug"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Veer"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "In"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Uit"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "InUit"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "UitIn"
+
+msgid "Transition Type:"
+msgstr "Type overgang:"
+
+msgid "Ease Type:"
+msgstr "Verzachtingstype:"
+
+msgid "FPS:"
+msgstr "FPS:"
+
+msgid "Animation Baker"
+msgstr "Animatie-bakker"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "3D-Pos.-/-Rot.-/-Sch.-spoor"
+
+msgid "Blendshape Track:"
+msgstr "Mengvorm-spoor:"
+
+msgid "Value Track:"
+msgstr "Waarde-spoor:"
 
 msgid "Select Tracks to Copy"
-msgstr "Selecteer sporen om te kopieren"
+msgstr "Sporen om te kopiëren selecteren"
 
 msgid "Select All/None"
 msgstr "Alles/niets selecteren"
 
+msgid "Animation Change Keyframe Time"
+msgstr "Animatie sleutelframe-tijd wijzigen"
+
 msgid "Add Audio Track Clip"
-msgstr "Voeg audiospoor clip toe"
+msgstr "Audiotrack-clip toevoegen"
 
 msgid "Change Audio Track Clip Start Offset"
-msgstr "Wijzig startverschuiving van audiospoorclip"
+msgstr "Startverschuiving van audiospoorclip wijzigen"
 
 msgid "Change Audio Track Clip End Offset"
-msgstr "Wijzig eindverschuiving van audiospoorclip"
+msgstr "Eindverschuiving van audiospoorclip wijzigen"
 
 msgid "Go to Line"
-msgstr "Ga naar Regel"
+msgstr "Naar regel gaan"
 
 msgid "Line Number:"
 msgstr "Regelnummer:"
 
 msgid "%d replaced."
-msgstr "%d vervangingen."
+msgstr "%d vervangen."
+
+msgid "No match"
+msgstr "Geen overeenkomsten teruggevonden"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -828,8 +1283,8 @@ msgstr[1] "%d overeenkomsten gevonden"
 
 msgid "%d of %d match"
 msgid_plural "%d of %d matches"
-msgstr[0] "%d overeenkomst gevonden"
-msgstr[1] "%d overeenkomsten gevonden"
+msgstr[0] "%d van %d overeenkomst"
+msgstr[1] "%d van %d overeenkomsten"
 
 msgid "Match Case"
 msgstr "Hoofdlettergevoelig"
@@ -844,10 +1299,18 @@ msgid "Replace All"
 msgstr "Alles vervangen"
 
 msgid "Selection Only"
-msgstr "Alleen selectie"
+msgstr "Enkel selectie"
+
+msgctxt "Indentation"
+msgid "Spaces"
+msgstr "Spaties"
+
+msgctxt "Indentation"
+msgid "Tabs"
+msgstr "Tabs"
 
 msgid "Toggle Scripts Panel"
-msgstr "Schakel Scripten Paneel"
+msgstr "Script-paneel in-/uitschakelen"
 
 msgid "Zoom In"
 msgstr "Inzoomen"
@@ -856,7 +1319,7 @@ msgid "Zoom Out"
 msgstr "Uitzoomen"
 
 msgid "Reset Zoom"
-msgstr "Herstel Zoom"
+msgstr "Zoom herstellen"
 
 msgid "Errors"
 msgstr "Fouten"
@@ -868,20 +1331,23 @@ msgid "Line and column numbers."
 msgstr "Regel- en kolomnummers."
 
 msgid "Method in target node must be specified."
-msgstr "Methode in doelknoop moet gespecificeerd worden."
+msgstr "Methode in doelknoop moet opgegeven worden."
 
 msgid "Method name must be a valid identifier."
-msgstr "Methodenaam is geen geldige naam."
+msgstr "Methodenaam voldoet niet aan de naamregels."
 
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Doelmethode niet gevonden. Specificeer een geldige methode of koppel een "
-"script aan de doelknoop."
+"Doelmethode niet gevonden. Geef een geldige methode op of koppel een script "
+"aan de doelknoop."
+
+msgid "Attached Script"
+msgstr "Bijgevoegd script"
 
 msgid "Connect to Node:"
-msgstr "Aan Node verbinden:"
+msgstr "Met knoop verbinden:"
 
 msgid "Connect to Script:"
 msgstr "Met script verbinden:"
@@ -889,20 +1355,38 @@ msgstr "Met script verbinden:"
 msgid "From Signal:"
 msgstr "Vanuit signaal:"
 
+msgid "Filter Nodes"
+msgstr "Knopen filteren"
+
+msgid "Go to Source"
+msgstr "Naar bron navigeren"
+
 msgid "Scene does not contain any script."
-msgstr "Scene bevat geen script."
+msgstr "Scene bevat geen scripts."
 
 msgid "Select Method"
-msgstr "Selecteer Method"
+msgstr "Methode selecteren"
+
+msgid "Filter Methods"
+msgstr "Methodes filteren"
+
+msgid "No method found matching given filters."
+msgstr "Geen methode gevonden die aan de opgegeven filters voldoet."
+
+msgid "Script Methods Only"
+msgstr "Enkel script-methoden"
+
+msgid "Compatible Methods Only"
+msgstr "Enkel compatibele methoden"
 
 msgid "Remove"
 msgstr "Verwijderen"
 
 msgid "Add Extra Call Argument:"
-msgstr "Aanvullende aanroepparameter toevoegen:"
+msgstr "Bijkomende aanroep-parameter toevoegen:"
 
 msgid "Extra Call Arguments:"
-msgstr "Aanroepparameters:"
+msgstr "Bijkomende aanroep-parameters:"
 
 msgid "Receiver Method:"
 msgstr "Ontvangende methode:"

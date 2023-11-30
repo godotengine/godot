@@ -123,14 +123,15 @@
 # kxnzen <polcondalgarcia@gmail.com>, 2023.
 # simomi 073 <arcemoyanomanuel@gmail.com>, 2023.
 # "Hendrick Y. Rodríguez V. (NoVa)" <theyuniorytrodriguez04@gmail.com>, 2023.
+# Chimi <tximi.sysaad@gmail.com>, 2023.
+# gallegonovato <fran-carro@hotmail.es>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-16 07:52+0000\n"
-"Last-Translator: \"Hendrick Y. Rodríguez V. (NoVa)\" "
-"<theyuniorytrodriguez04@gmail.com>\n"
+"PO-Revision-Date: 2023-11-29 09:42+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -138,7 +139,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo principal"
@@ -2017,6 +2018,9 @@ msgstr "Desarrolladores"
 msgid "Authors"
 msgstr "Autores"
 
+msgid "Patrons"
+msgstr "Patrocinadores"
+
 msgid "Platinum Sponsors"
 msgstr "Patrocinadores Platino"
 
@@ -2025,6 +2029,18 @@ msgstr "Patrocinadores Oro"
 
 msgid "Silver Sponsors"
 msgstr "Patrocinadores Plata"
+
+msgid "Diamond Members"
+msgstr "Miembros Diamante"
+
+msgid "Titanium Members"
+msgstr "Miembros Titanio"
+
+msgid "Platinum Members"
+msgstr "Miembros Platino"
+
+msgid "Gold Members"
+msgstr "Miembros Oro"
 
 msgid "Donors"
 msgstr "Donantes"
@@ -2845,7 +2861,7 @@ msgid "Operators"
 msgstr "Operadores"
 
 msgid "Theme Properties"
-msgstr "Propiedades del Tema"
+msgstr "Propiedades del Theme"
 
 msgid "Colors"
 msgstr "Colores"
@@ -2906,6 +2922,9 @@ msgstr "Descripciones de Métodos"
 msgid "Operator Descriptions"
 msgstr "Descripciones de Operador"
 
+msgid "Metadata:"
+msgstr "Metadata:"
+
 msgid "Property:"
 msgstr "Propiedad:"
 
@@ -2916,7 +2935,10 @@ msgid "Signal:"
 msgstr "Señal:"
 
 msgid "Theme Item:"
-msgstr "Elemento del Tema:"
+msgstr "Ítem del Theme:"
+
+msgid "No description available."
+msgstr "No hay descripción disponible."
 
 msgid "%d match."
 msgstr "%d coincidencia."
@@ -3745,6 +3767,9 @@ msgstr "Herramientas"
 msgid "Orphan Resource Explorer..."
 msgstr "Explorador de Recursos Huérfanos..."
 
+msgid "Upgrade Mesh Surfaces..."
+msgstr "Actualizar Superficies de Malla..."
+
 msgid "Reload Current Project"
 msgstr "Recargar proyecto actual"
 
@@ -4062,6 +4087,12 @@ msgstr ""
 
 msgid "Assign..."
 msgstr "Asignar..."
+
+msgid "Copy as Text"
+msgstr "Copiar como Texto"
+
+msgid "Show Node in Tree"
+msgstr "Mostrar Nodo en Árbol"
 
 msgid "Invalid RID"
 msgstr "RID inválido"
@@ -4636,6 +4667,9 @@ msgstr "¿Eliminar preajuste '%s'?"
 msgid "Resources to exclude:"
 msgstr "Recursos a excluir:"
 
+msgid "Resources to override export behavior:"
+msgstr "Recursos para anular el comportamiento de exportación:"
+
 msgid "Resources to export:"
 msgstr "Recursos a exportar:"
 
@@ -4941,6 +4975,9 @@ msgstr "Duplicando carpeta:"
 msgid "New Inherited Scene"
 msgstr "Nueva Escena Heredada"
 
+msgid "Set as Main Scene"
+msgstr "Establecer como Escena Principal"
+
 msgid "Open Scenes"
 msgstr "Abrir Escenas"
 
@@ -5052,6 +5089,33 @@ msgstr "Renombrar..."
 msgid "Open in External Program"
 msgstr "Abrir en un Programa Externo"
 
+msgid "Red"
+msgstr "Rojo"
+
+msgid "Orange"
+msgstr "Naranja"
+
+msgid "Yellow"
+msgstr "Amarillo"
+
+msgid "Green"
+msgstr "Verde"
+
+msgid "Teal"
+msgstr "Verde Azulado"
+
+msgid "Blue"
+msgstr "Azul"
+
+msgid "Purple"
+msgstr "Morado"
+
+msgid "Pink"
+msgstr "Rosa"
+
+msgid "Gray"
+msgstr "Gris"
+
 msgid "Go to previous selected folder/file."
 msgstr "Ir a la carpeta/archivo previamente seleccionado."
 
@@ -5060,6 +5124,9 @@ msgstr "Ir a la siguiente carpeta/archivo seleccionado."
 
 msgid "Re-Scan Filesystem"
 msgstr "Re-escanear Sistema de Archivos"
+
+msgid "Change Split Mode"
+msgstr "Cambiar Modo de División"
 
 msgid "Filter Files"
 msgstr "Filtrar Archivos"
@@ -6684,6 +6751,9 @@ msgstr "[Global] (crear)"
 msgid "Duplicated Animation Name:"
 msgstr "Nombre de Animación Duplicado:"
 
+msgid "Onion skinning requires a RESET animation."
+msgstr "Onion skinning requiere una animación RESET."
+
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr ""
 "Reproducir hacia atrás la animación seleccionada desde la posición actual (A)"
@@ -7427,13 +7497,13 @@ msgid "Preview Canvas Scale"
 msgstr "Previsualizar Escala de Canvas"
 
 msgid "Project theme"
-msgstr "Tema del proyecto"
+msgstr "Theme del proyecto"
 
 msgid "Editor theme"
 msgstr "Editor de Theme"
 
 msgid "Default theme"
-msgstr "Theme Predeterminado"
+msgstr "Theme predeterminado"
 
 msgid "Preview Theme"
 msgstr "Vista Previa del Theme"
@@ -7832,6 +7902,18 @@ msgstr ""
 "Cuando esta opción está activada, las formas, radios y velocidades de los "
 "objetos de evasión serán visibles en el proyecto en ejecución."
 
+msgid "Debug CanvasItem Redraws"
+msgstr "Depurar Redibujado de CanvasItems"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"Cuando se habilita esta opción, las solicitudes de redibujo de objetos 2D se "
+"vuelven visibles (como un breve destello) en el proyecto en ejecución.\n"
+"Esto es útil para solucionar problemas en el modo de procesador bajo."
+
 msgid "Synchronize Scene Changes"
 msgstr "Sincronizar Cambios de Escena"
 
@@ -8209,6 +8291,9 @@ msgstr "Crear Malla de Navegación"
 msgid "Create Debug Tangents"
 msgstr "Crear Tangentes de Depuración"
 
+msgid "No mesh to unwrap."
+msgstr "No hay malla que desenvolver."
+
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -8235,6 +8320,15 @@ msgstr "Desenvolver UV2"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "La Malla contenedora no es del tipo ArrayMesh."
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "No se puede desenvolver la malla con formas de mezcla."
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "Sólo se admiten triángulos para desenvolver lightmaps."
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "Las normales son necesarias para desenvolver lightmaps."
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "Fallo del UV Unwrap ¿la malla podría no ser múltiple?"
@@ -9972,6 +10066,12 @@ msgstr "Crear LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "Vista Previa de LightOccluder2D"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "No se puede convertir un sprite de una escena externa."
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "No se puede convertir un sprite vacío en malla."
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -13724,8 +13824,18 @@ msgstr ""
 "Desactivar \"editable_instance\" causará que todas las propiedades del nodo "
 "vuelvan a sus valores predeterminados."
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"Al activar \"Cargar como Placeholder\" se desactivará \"Hijos editables\" y "
+"todas las propiedades del nodo volverán a sus valores por defecto."
+
 msgid "Make Local"
 msgstr "Crear Local"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "¡No se puede cambiar el nombre único de los nodos en la subescena!"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "Activar Nombre(s) Único(s) de Escena"
@@ -13811,6 +13921,9 @@ msgstr "Limpiar Heredado"
 
 msgid "Editable Children"
 msgstr "Hijos Editables"
+
+msgid "Load as Placeholder"
+msgstr "Cargar como Placeholder"
 
 msgid "Auto Expand to Selected"
 msgstr "Auto Expandir a Seleccionado"
@@ -14112,6 +14225,15 @@ msgstr "El nombre '%s' es una palabra reservada del lenguaje del shader."
 msgid "Add Shader Global Parameter"
 msgstr "Añadir Parámetro Global en el Shader"
 
+msgid "Upgrading All Meshes in Project"
+msgstr "Actualizar Todas las Mallas del Proyecto"
+
+msgid "Attempting to re-save "
+msgstr "Intentar volver a guardar "
+
+msgid "Restart & Upgrade"
+msgstr "Reiniciar y Actualizar"
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Haz que este panel flote en pantalla %d."
 
@@ -14140,6 +14262,9 @@ msgstr "Cambiar Radio Externo de Torus"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Tipo de argumento inválido para 'convert()', utiliza constantes TYPE_*."
 
+msgid "Cannot resize array."
+msgstr "No se puede redimensionar el array."
+
 msgid "Step argument is zero!"
 msgstr "¡El argumento step es cero!"
 
@@ -14167,6 +14292,9 @@ msgstr ""
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "El diccionario de instancias no es correcto (subclases erróneas)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "No se puede instanciar la clase GDScript."
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "El valor del tipo '%s' no puede proporcionar una longitud."
@@ -14375,6 +14503,9 @@ msgstr "Trazar iluminación directa"
 
 msgid "Integrate indirect lighting"
 msgstr "Integrar iluminación indirecta"
+
+msgid "Integrate indirect lighting %d%%"
+msgstr "Integrar iluminación indirecta %d%%"
 
 msgid "Baking lightprobes"
 msgstr "Bakear lightprobes"
@@ -14797,6 +14928,9 @@ msgstr "No se ha podido ejecutar en el dispositivo."
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "Exportar a Android usando C#/.NET es una opción experimental."
 
+msgid "Android architecture %s not supported in C# projects."
+msgstr "Arquitectura Android %s no soportada en proyectos C#."
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14968,8 +15102,15 @@ msgstr "¡No se pudo escribir el archivo del paquete de expansión!"
 msgid "Building Android Project (gradle)"
 msgstr "Construir Proyecto Android (gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr ""
+"La construcción del proyecto Android falló, comprueba la salida del error:"
+
 msgid "Moving output"
 msgstr "Moviendo salida"
+
+msgid "Unable to copy and rename export file:"
+msgstr "No se puede copiar y renombrar el archivo de exportación:"
 
 msgid "Package not found: \"%s\"."
 msgstr "Paquete no encontrado: \"%s\"."
@@ -15045,6 +15186,12 @@ msgid ""
 msgstr ""
 ".ipa sólo se puede construir en macOS. Salir del proyecto Xcode sin construir "
 "el paquete."
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr "La exportación a iOS con C#/.NET es experimental y requiere macOS."
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "La exportación a iOS con C#/.NET es experimental."
 
 msgid "Identifier is missing."
 msgstr "Falta el identificador."
@@ -15216,6 +15363,13 @@ msgstr ""
 msgid "App sandbox is required for App Store distribution."
 msgstr ""
 "Se requiere un sandbox de aplicación para la distribución en la App Store."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries (GDExtension or .NET)."
+msgstr ""
+"‘rcodesign’ no admite la firma de aplicaciones con bibliotecas dinámicas "
+"incrustadas (GDExtension o .NET)."
 
 msgid "Code signing is required for App Store distribution."
 msgstr "Se requiere la firma de código para la distribución en la App Store."
@@ -15421,6 +15575,13 @@ msgid ""
 msgstr ""
 "Las aplicaciones firmadas ad-hoc requieren la autorización 'Desactivar "
 "Validación de Librería' para cargar librerías dinámicas."
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries."
+msgstr ""
+"‘rcodesign’ no admite la firma de aplicaciones con bibliotecas dinámicas "
+"incrustadas."
 
 msgid "Could not create entitlements file."
 msgstr "No se pudo crear el archivo de entitlements."
@@ -15897,6 +16058,17 @@ msgid ""
 msgstr ""
 "Una capa TileMap está configurada como ordenada en Y, pero la ordenación en Y "
 "no está activada en el propio nodo TileMap."
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"El nodo TileMap está configurado como ordenado en Y, pero el ordenado en Y no "
+"está activado en ninguna de las capas del TileMap.\n"
+"Esto puede dar lugar a comportamientos no deseados, ya que una capa que no "
+"esté ordenada en Y se ordenará en Y en su totalidad."
 
 msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled for "
@@ -16555,6 +16727,14 @@ msgid "Automatically arrange selected nodes."
 msgstr "Ordena automáticamente los nodos seleccionados."
 
 msgid ""
+"Labels with autowrapping enabled must have a custom minimum size configured "
+"to work correctly inside a container."
+msgstr ""
+"Las etiquetas con el ajuste automático habilitado deben tener un tamaño "
+"mínimo personalizado configurado para funcionar correctamente dentro de un "
+"contenedor."
+
+msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr ""
@@ -16674,9 +16854,9 @@ msgid ""
 "Data from the original node is kept as a placeholder until this type of node "
 "is available again. It can hence be safely re-saved without risk of data loss."
 msgstr ""
-"Los datos del nodo original se conservan como marcador de posición hasta que "
-"este tipo de nodo vuelva a estar disponible. De este modo, pueden volver a "
-"guardarse sin riesgo de pérdida de datos."
+"Los datos del nodo original se conservan como placeholder hasta que este tipo "
+"de nodo vuelva a estar disponible. De este modo, pueden volver a guardarse "
+"sin riesgo de pérdida de datos."
 
 msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"

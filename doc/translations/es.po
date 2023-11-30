@@ -80,6 +80,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1.1\n"
 
+msgid "Resources"
+msgstr "Recursos"
+
 msgid "Description"
 msgstr "Descripción"
 
@@ -16646,9 +16649,6 @@ msgid ""
 msgstr ""
 "El hardware soporta el multihilo. Este enum no se usa actualmente en Godot 3."
 "x."
-
-msgid "Resources"
-msgstr "Recursos"
 
 msgid "Loads a specific resource type from a file."
 msgstr "Carga un tipo de recurso específico de un archivo."

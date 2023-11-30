@@ -17,13 +17,14 @@
 # Tengado <tenda151002@gmail.com>, 2023.
 # Lukáš Ševc <sevclukas0@gmail.com>, 2023.
 # Milan Šalka <salka.milan@googlemail.com>, 2023.
+# Mikuláš Suchanovský <mikulassuchanovsky@protonmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-06 12:19+0000\n"
-"Last-Translator: Milan Šalka <salka.milan@googlemail.com>\n"
+"PO-Revision-Date: 2023-11-26 04:03+0000\n"
+"Last-Translator: Mikuláš Suchanovský <mikulassuchanovsky@protonmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -31,7 +32,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2.1-rc\n"
+
+msgid "Main Thread"
+msgstr "Hlavné vlákno"
 
 msgid "Unset"
 msgstr "Nenastavené"

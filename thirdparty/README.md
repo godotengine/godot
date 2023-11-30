@@ -584,6 +584,8 @@ Important: Some files have Godot-made changes for use in core/io.
 They are marked with `/* GODOT start */` and `/* GODOT end */`
 comments and a patch is provided in the `patches` folder.
 
+Another patch is included to fix CVE-2023-45853.
+
 
 ## misc
 
