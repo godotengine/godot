@@ -101,7 +101,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-11-11 03:41+0000\n"
+"PO-Revision-Date: 2023-11-22 04:14+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -110,7 +110,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Main Thread"
 msgstr "主线程"
@@ -1950,6 +1950,9 @@ msgstr "开发人员"
 msgid "Authors"
 msgstr "作者"
 
+msgid "Patrons"
+msgstr "赞助人"
+
 msgid "Platinum Sponsors"
 msgstr "白金赞助"
 
@@ -1958,6 +1961,18 @@ msgstr "黄金赞助"
 
 msgid "Silver Sponsors"
 msgstr "白银赞助"
+
+msgid "Diamond Members"
+msgstr "钻石会员"
+
+msgid "Titanium Members"
+msgstr "钛金会员"
+
+msgid "Platinum Members"
+msgstr "白金会员"
+
+msgid "Gold Members"
+msgstr "黄金会员"
 
 msgid "Donors"
 msgstr "捐助者"
@@ -3588,6 +3603,9 @@ msgstr "工具"
 msgid "Orphan Resource Explorer..."
 msgstr "孤立资源浏览器..."
 
+msgid "Upgrade Mesh Surfaces..."
+msgstr "升级网格表面..."
+
 msgid "Reload Current Project"
 msgstr "重新加载当前项目"
 
@@ -3982,6 +4000,9 @@ msgstr "唯一化"
 
 msgid "Make Unique (Recursive)"
 msgstr "唯一化（递归）"
+
+msgid "Save As..."
+msgstr "另存为..."
 
 msgid "Show in FileSystem"
 msgstr "在文件系统中显示"
@@ -5821,9 +5842,6 @@ msgstr "从磁盘中加载资源并编辑。"
 
 msgid "Save the currently edited resource."
 msgstr "保存当前编辑的资源。"
-
-msgid "Save As..."
-msgstr "另存为..."
 
 msgid "Extra resource options."
 msgstr "更多资源选项。"
@@ -13566,40 +13584,14 @@ msgstr "名称“%s”是为着色器语言保留的关键字。"
 msgid "Add Shader Global Parameter"
 msgstr "添加着色器全局参数"
 
-msgid ""
-"This project uses meshes with an outdated mesh format from previous Godot "
-"versions. The engine needs to update the format in order to use those "
-"meshes.\n"
-"\n"
-"Press 'Restart & Upgrade' to run the surface upgrade tool which will update "
-"and re-save all meshes and scenes. This update will restart the editor and "
-"may take several minutes. Upgrading will make the meshes incompatible with "
-"previous versions of Godot.\n"
-"\n"
-"Press 'Upgrade Only' to continue opening the scene as normal. The engine will "
-"update each mesh in memory, but the update will not be saved. Choosing this "
-"option will lead to slower load times every time this project is loaded."
-msgstr ""
-"这个项目使用了以前版本 Godot 的过时网格格式。引擎需要对格式进行升级才能使用这"
-"些网格。\n"
-"\n"
-"点击“重启并升级”运行表面升级工具，会将所有网格和场景进行更新并重新保存。升级时"
-"将会重启编辑器，可能需要几分钟时间。更新后的网格不再兼容以前版本的 Godot。\n"
-"\n"
-"点击“仅升级”继续正常打开场景。引擎会在内存中升级各个网格，但是不会保存更新。选"
-"择这个选项将会使得每次加载这个项目的时间变长。"
-
-msgid "Restart & Upgrade"
-msgstr "重启并升级"
-
-msgid "Upgrade Only"
-msgstr "仅升级"
-
 msgid "Upgrading All Meshes in Project"
 msgstr "正在升级项目中的所有网格"
 
 msgid "Attempting to re-save "
 msgstr "正在尝试重新保存 "
+
+msgid "Restart & Upgrade"
+msgstr "重启并升级"
 
 msgid "Make this panel floating in the screen %d."
 msgstr "让这个面板在屏幕 %d 中浮动。"
@@ -14401,8 +14393,14 @@ msgstr "无法写入扩展包文件！"
 msgid "Building Android Project (gradle)"
 msgstr "构建 Android 项目 (Gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr "Android 项目构建失败，请检查输出中显示的错误："
+
 msgid "Moving output"
 msgstr "移动输出"
+
+msgid "Unable to copy and rename export file:"
+msgstr "无法复制并更名导出文件："
 
 msgid "Package not found: \"%s\"."
 msgstr "包不存在：“%s”。"

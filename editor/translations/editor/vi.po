@@ -2198,6 +2198,9 @@ msgstr "Nạp nhanh"
 msgid "Make Unique"
 msgstr "Duy nhất"
 
+msgid "Save As..."
+msgstr "Lưu thành ..."
+
 msgid "Show in FileSystem"
 msgstr "Hiện trong Hệ thống tệp tin"
 
@@ -2879,9 +2882,6 @@ msgstr "Tải tài nguyên có sẵn trong đĩa rồi chỉnh sửa."
 
 msgid "Save the currently edited resource."
 msgstr "Lưu tài nguyên đã chỉnh sửa hiện tại."
-
-msgid "Save As..."
-msgstr "Lưu thành ..."
 
 msgid "Copy Resource"
 msgstr "Sao chép Tài nguyên"

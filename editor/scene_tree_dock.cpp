@@ -1762,6 +1762,8 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			}
 		} break;
 
+// FIXME: This approach causes a significant performance regression, see GH-84910.
+#if 0
 		case Variant::OBJECT: {
 			Resource *resource = Object::cast_to<Resource>(r_variant);
 			if (!resource) {
@@ -1792,6 +1794,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			}
 			break;
 		};
+#endif
 
 		default: {
 		}

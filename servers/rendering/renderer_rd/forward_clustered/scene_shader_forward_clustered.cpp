@@ -853,7 +853,6 @@ void SceneShaderForwardClustered::set_default_specialization_constants(const Vec
 void SceneShaderForwardClustered::enable_advanced_shader_group(bool p_needs_multiview) {
 	if (p_needs_multiview || RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 		shader.enable_group(SHADER_GROUP_ADVANCED_MULTIVIEW);
-	} else {
-		shader.enable_group(SHADER_GROUP_ADVANCED);
 	}
+	shader.enable_group(SHADER_GROUP_ADVANCED);
 }

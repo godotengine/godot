@@ -335,7 +335,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 	}
 
 	AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
-	_animation_key_editor_seek(timeline_position, false);
+	_animation_key_editor_seek(timeline_position);
 
 	emit_signal("animation_selected", current);
 }
@@ -1231,7 +1231,7 @@ Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
 	return new_anim;
 }
 
-void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool p_timeline_only) {
+void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_only) {
 	if (updating || !player || player->is_playing()) {
 		return;
 	};
@@ -1247,22 +1247,14 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 	Ref<Animation> anim;
 	anim = player->get_animation(current);
 
-	float pos = CLAMP((double)anim->get_length() * (p_value / frame->get_max()), 0, (double)anim->get_length());
+	double pos = CLAMP((double)anim->get_length() * (p_value / frame->get_max()), 0, (double)anim->get_length());
 	if (track_editor->is_snap_enabled()) {
 		pos = Math::snapped(pos, _get_editor_step());
 	}
+	pos = CLAMP(pos, 0, (double)anim->get_length() - CMP_EPSILON2); // Hack: Avoid fposmod with LOOP_LINEAR.
 
-	if (!p_timeline_only) {
-		if (player->is_valid() && !p_set) {
-			double delta = player->get_current_animation_position();
-			player->seek(pos, true, true);
-			player->seek(pos + delta, true, true);
-		} else {
-			if (player->is_playing()) {
-				player->stop();
-			}
-			player->seek(pos, true, true);
-		}
+	if (!p_timeline_only && anim.is_valid()) {
+		player->seek(pos, true, true);
 	}
 
 	track_editor->set_anim_pos(pos);
@@ -1313,7 +1305,7 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 	frame->set_max(p_len);
 }
 
-void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only) {
+void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timeline_only) {
 	timeline_position = p_pos;
 
 	if (!is_visible_in_tree()) {
@@ -1335,7 +1327,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag,
 	updating = true;
 	frame->set_value(Math::snapped(p_pos, _get_editor_step()));
 	updating = false;
-	_seek_value_changed(p_pos, !p_drag, p_timeline_only);
+	_seek_value_changed(p_pos, p_timeline_only);
 }
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
@@ -2006,7 +1998,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	animation->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
-	frame->connect(SNAME("value_changed"), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(true, false));
+	frame->connect(SNAME("value_changed"), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(false));
 	scale->connect(SNAME("text_submitted"), callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	add_child(track_editor);

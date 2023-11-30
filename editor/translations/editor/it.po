@@ -3906,6 +3906,9 @@ msgstr "Rendi Unico"
 msgid "Make Unique (Recursive)"
 msgstr "Rendi unica (ricorsivo)"
 
+msgid "Save As..."
+msgstr "Salva Come..."
+
 msgid "Show in FileSystem"
 msgstr "Mostra nel filesystem"
 
@@ -5774,9 +5777,6 @@ msgstr "Carica una risorsa esistente dal disco e modificala."
 
 msgid "Save the currently edited resource."
 msgstr "Salva la risorsa attualmente in modifica."
-
-msgid "Save As..."
-msgstr "Salva Come..."
 
 msgid "Extra resource options."
 msgstr "Ulteriori opzioni di risorsa."

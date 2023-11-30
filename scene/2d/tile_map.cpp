@@ -3623,8 +3623,9 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 			format = (TileMapLayer::DataFormat)(p_value.operator int64_t()); // Set format used for loading.
 			return true;
 		}
+	}
 #ifndef DISABLE_DEPRECATED
-	} else if (p_name == "tile_data") { // Kept for compatibility reasons.
+	else if (p_name == "tile_data") { // Kept for compatibility reasons.
 		if (p_value.is_array()) {
 			if (layers.size() == 0) {
 				Ref<TileMapLayer> new_layer;
@@ -3638,10 +3639,12 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 			return true;
 		}
 		return false;
-	} else if (p_name == "rendering_quadrant_size") {
+	} else if (p_name == "cell_quadrant_size") {
 		set_rendering_quadrant_size(p_value);
+		return true;
+	}
 #endif // DISABLE_DEPRECATED
-	} else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
+	else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
 		int index = components[0].trim_prefix("layer_").to_int();
 		if (index < 0) {
 			return false;
@@ -3698,7 +3701,14 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "format") {
 		r_ret = TileMapLayer::FORMAT_MAX - 1; // When saving, always save highest format.
 		return true;
-	} else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
+	}
+#ifndef DISABLE_DEPRECATED
+	else if (p_name == "cell_quadrant_size") { // Kept for compatibility reasons.
+		r_ret = get_rendering_quadrant_size();
+		return true;
+	}
+#endif
+	else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
 		int index = components[0].trim_prefix("layer_").to_int();
 		if (index < 0 || index >= (int)layers.size()) {
 			return false;

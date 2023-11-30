@@ -2071,6 +2071,22 @@ bool EditorExportPlatformIOS::is_package_name_valid(const String &p_package, Str
 }
 
 #ifdef MACOS_ENABLED
+bool EditorExportPlatformIOS::_check_xcode_install() {
+	static bool xcode_found = false;
+	if (!xcode_found) {
+		String xcode_path;
+		List<String> args;
+		args.push_back("-p");
+		int ec = 0;
+		Error err = OS::get_singleton()->execute("xcode-select", args, &xcode_path, &ec, true);
+		if (err != OK || ec != 0) {
+			return false;
+		}
+		xcode_found = DirAccess::dir_exists_absolute(xcode_path.strip_edges());
+	}
+	return xcode_found;
+}
+
 void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformIOS *ea = static_cast<EditorExportPlatformIOS *>(ud);
 
@@ -2138,7 +2154,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 		}
 
 		// Enum simulators
-		if (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun")) {
+		if (_check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
 			String devices;
 			List<String> args;
 			args.push_back("simctl");

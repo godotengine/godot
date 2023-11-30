@@ -165,13 +165,15 @@
 # Daniil Zimchuk <danrus228zk@gmail.com>, 2023.
 # Иван Жиляк <zilakivan2008@gmail.com>, 2023.
 # Ilia Brykin <brykin.ilia@gmail.com>, 2023.
+# Ruslan <vovavalenkov15@gmail.com>, 2023.
+# DLushin <dmiyashyt@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-11 19:11+0000\n"
-"Last-Translator: Ilia Brykin <brykin.ilia@gmail.com>\n"
+"PO-Revision-Date: 2023-11-28 04:14+0000\n"
+"Last-Translator: DLushin <dmiyashyt@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -180,7 +182,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Главный поток"
@@ -2055,6 +2057,9 @@ msgstr "Разработчики"
 msgid "Authors"
 msgstr "Авторы"
 
+msgid "Patrons"
+msgstr "Покровители"
+
 msgid "Platinum Sponsors"
 msgstr "Платиновые спонсоры"
 
@@ -2063,6 +2068,18 @@ msgstr "Золотые спонсоры"
 
 msgid "Silver Sponsors"
 msgstr "Серебряные спонсоры"
+
+msgid "Diamond Members"
+msgstr "Члены Алмазного уровня"
+
+msgid "Titanium Members"
+msgstr "Члены Титанового уровня"
+
+msgid "Platinum Members"
+msgstr "Члены Платинового уровня"
+
+msgid "Gold Members"
+msgstr "Члены золотого уровня"
 
 msgid "Donors"
 msgstr "Доноры"
@@ -3764,6 +3781,9 @@ msgstr "Инструменты"
 msgid "Orphan Resource Explorer..."
 msgstr "Обзор ресурсов-сирот..."
 
+msgid "Upgrade Mesh Surfaces..."
+msgstr "Обновление сетчатых поверхностей..."
+
 msgid "Reload Current Project"
 msgstr "Перезагрузить текущий проект"
 
@@ -3847,7 +3867,7 @@ msgid "Choose a renderer."
 msgstr "Выберите отрисовщик."
 
 msgid "Forward+"
-msgstr "Вперед+"
+msgstr "Forward+"
 
 msgid "Mobile"
 msgstr "Мобильные устройства"
@@ -4169,6 +4189,9 @@ msgstr "Сделать уникальным"
 
 msgid "Make Unique (Recursive)"
 msgstr "Сделать уникальным (рекурсивно)"
+
+msgid "Save As..."
+msgstr "Сохранить как..."
 
 msgid "Show in FileSystem"
 msgstr "Показать в файловой системе"
@@ -6088,9 +6111,6 @@ msgstr "Загрузить существующий ресурс с диска �
 
 msgid "Save the currently edited resource."
 msgstr "Сохранить текущий редактируемый ресурс."
-
-msgid "Save As..."
-msgstr "Сохранить как..."
 
 msgid "Extra resource options."
 msgstr "Дополнительные параметры ресурса."
@@ -14134,44 +14154,14 @@ msgstr "Имя '%s' является зарезервированным слов
 msgid "Add Shader Global Parameter"
 msgstr "Добавить глобальный параметр шейдера"
 
-msgid ""
-"This project uses meshes with an outdated mesh format from previous Godot "
-"versions. The engine needs to update the format in order to use those "
-"meshes.\n"
-"\n"
-"Press 'Restart & Upgrade' to run the surface upgrade tool which will update "
-"and re-save all meshes and scenes. This update will restart the editor and "
-"may take several minutes. Upgrading will make the meshes incompatible with "
-"previous versions of Godot.\n"
-"\n"
-"Press 'Upgrade Only' to continue opening the scene as normal. The engine will "
-"update each mesh in memory, but the update will not be saved. Choosing this "
-"option will lead to slower load times every time this project is loaded."
-msgstr ""
-"Этот проект использует сетки с устаревшим форматом из предыдущих версий "
-"Godot. Для использования этих сеток необходимо обновить формат.\n"
-"\n"
-"Нажмите 'Перезапустить и обновить', чтобы запустить инструмент обновления "
-"поверхности, который обновит и пересохранил все сетки и сцены. Это обновление "
-"перезапустит редактор и может занять несколько минут. После обновления сетки "
-"станут несовместимыми с предыдущими версиями Godot.\n"
-"\n"
-"Нажмите 'Только обновление', чтобы продолжить открытие сцены как обычно. "
-"Движок обновит каждую сетку в памяти, но обновление не будет сохранено. Выбор "
-"этой опции приведет к более медленным временам загрузки при каждом открытии "
-"проекта."
-
-msgid "Restart & Upgrade"
-msgstr "Перезапустить и обновить"
-
-msgid "Upgrade Only"
-msgstr "Только обновление"
-
 msgid "Upgrading All Meshes in Project"
 msgstr "Обновление всех сеток в проекте"
 
 msgid "Attempting to re-save "
 msgstr "Попытка повторного сохранения "
+
+msgid "Restart & Upgrade"
+msgstr "Перезапустить и обновить"
 
 msgid "Make this panel floating in the screen %d."
 msgstr "Сделать эту панель плавающей на экране %d."
@@ -15021,8 +15011,14 @@ msgstr "Не удалось записать расширение файла п�
 msgid "Building Android Project (gradle)"
 msgstr "Сборка проекта Android (gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr "Сборка проекта Android не удалась, проверьте вывод для ошибки:"
+
 msgid "Moving output"
 msgstr "Перемещение выходных данных"
+
+msgid "Unable to copy and rename export file:"
+msgstr "Не удается скопировать и переименовать файл экспорта:"
 
 msgid "Package not found: \"%s\"."
 msgstr "Пакет не найден: \"%s\"."

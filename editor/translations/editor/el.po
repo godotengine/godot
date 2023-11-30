@@ -2422,6 +2422,9 @@ msgstr ""
 msgid "Make Unique"
 msgstr "Κάνε μοναδικό"
 
+msgid "Save As..."
+msgstr "Αποθήκευση ως..."
+
 msgid "Show in FileSystem"
 msgstr "Εμφάνιση στο Σύστημα Αρχείων"
 
@@ -3113,9 +3116,6 @@ msgstr "Φόρτωσε υπάρχων πόρο στη μνήμη και επεξ
 
 msgid "Save the currently edited resource."
 msgstr "Αποθήκευσε το τρέχων επεξεργαζόμενο πόρο."
-
-msgid "Save As..."
-msgstr "Αποθήκευση ως..."
 
 msgid "Copy Resource"
 msgstr "Αντιγραφή πόρου"

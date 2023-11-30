@@ -68,8 +68,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-12 18:58+0000\n"
-"Last-Translator: ueshita <nalto32@gmail.com>\n"
+"PO-Revision-Date: 2023-11-26 13:51+0000\n"
+"Last-Translator: Koji Horaguchi <koji.horaguchi@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -77,7 +77,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2.1-rc\n"
 
 msgid "Main Thread"
 msgstr "メインスレッド"
@@ -1940,6 +1940,9 @@ msgstr "開発者"
 msgid "Authors"
 msgstr "作者"
 
+msgid "Patrons"
+msgstr "パトロン"
+
 msgid "Platinum Sponsors"
 msgstr "プラチナスポンサー"
 
@@ -1948,6 +1951,18 @@ msgstr "ゴールドスポンサー"
 
 msgid "Silver Sponsors"
 msgstr "シルバースポンサー"
+
+msgid "Diamond Members"
+msgstr "ダイヤモンドメンバー"
+
+msgid "Titanium Members"
+msgstr "チタニウムメンバー"
+
+msgid "Platinum Members"
+msgstr "プレミアムメンバー"
+
+msgid "Gold Members"
+msgstr "ゴールドメンバー"
 
 msgid "Donors"
 msgstr "ドナー"
@@ -3638,6 +3653,9 @@ msgstr "ツール"
 msgid "Orphan Resource Explorer..."
 msgstr "孤立リソースエクスプローラー..."
 
+msgid "Upgrade Mesh Surfaces..."
+msgstr "メッシュサーフェスをアップグレード..."
+
 msgid "Reload Current Project"
 msgstr "現在のプロジェクトをリロード"
 
@@ -4041,6 +4059,9 @@ msgstr "ユニーク化"
 
 msgid "Make Unique (Recursive)"
 msgstr "ユニーク化 (再帰的)"
+
+msgid "Save As..."
+msgstr "名前を付けて保存..."
 
 msgid "Show in FileSystem"
 msgstr "ファイルシステム上で表示"
@@ -4516,6 +4537,9 @@ msgstr "プリセット '%s' を削除しますか？"
 msgid "Resources to exclude:"
 msgstr "除外するリソース:"
 
+msgid "Resources to override export behavior:"
+msgstr "エクスポート処理を上書きするリソース:"
+
 msgid "Resources to export:"
 msgstr "エクスポートするリソース:"
 
@@ -4825,6 +4849,9 @@ msgstr "フォルダーを複製:"
 msgid "New Inherited Scene"
 msgstr "新しい継承シーン"
 
+msgid "Set as Main Scene"
+msgstr "メインシーンとして設定"
+
 msgid "Open Scenes"
 msgstr "シーンを開く"
 
@@ -4971,6 +4998,9 @@ msgstr "次に選択したフォルダ/ファイルに移動します。"
 
 msgid "Re-Scan Filesystem"
 msgstr "ファイルシステムを再スキャン"
+
+msgid "Change Split Mode"
+msgstr "分割モードの変更"
 
 msgid "Filter Files"
 msgstr "ファイルをフィルタ"
@@ -5946,9 +5976,6 @@ msgstr "既存のリソースをディスクから読み込み編集する。"
 msgid "Save the currently edited resource."
 msgstr "現在編集中のリソースを保存する。"
 
-msgid "Save As..."
-msgstr "名前を付けて保存..."
-
 msgid "Extra resource options."
 msgstr "追加のリソースオプション。"
 
@@ -6560,6 +6587,9 @@ msgstr "[グローバル](作成)"
 
 msgid "Duplicated Animation Name:"
 msgstr "複製されたアニメーション名:"
+
+msgid "Onion skinning requires a RESET animation."
+msgstr "オニオン スキニングには RESET アニメーションが必要です。"
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "選択したアニメーションを現在の位置から逆再生する。(A)"
@@ -7693,6 +7723,18 @@ msgstr ""
 "このオプションを有効にすると、回避形状、大きさおよびベロシティが、ゲーム実行中"
 "にも表示されるようになります。"
 
+msgid "Debug CanvasItem Redraws"
+msgstr "CanvasItem の再描画をデバッグする"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"このオプションを有効にすると、2D オブジェクトの再描画リクエストが実行中のプロ"
+"ジェクトに (短いフラッシュとして) 表示されるようになります。\n"
+"これは、低プロセッサモードのトラブルシューティングに役立ちます。"
+
 msgid "Synchronize Scene Changes"
 msgstr "シーン変更を同期"
 
@@ -8062,6 +8104,9 @@ msgstr "ナビゲーションメッシュを生成"
 msgid "Create Debug Tangents"
 msgstr "デバッグ接線を生成"
 
+msgid "No mesh to unwrap."
+msgstr "アンラップするメッシュがありません。"
+
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -8088,6 +8133,15 @@ msgstr "UV2のアンラップ"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "含まれているメッシュがArrayMesh型ではありません。"
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "メッシュはブレンドシェイプとアンラップできません。"
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "ライトマップのアンラップでは三角形のみがサポートされます。"
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "ライトマップのアンラップには法線が必要です。"
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "UV展開に失敗しました。メッシュが非多様体ではありませんか？"
@@ -9817,6 +9871,12 @@ msgstr "LightOccluder2Dを作成"
 
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D プレビュー"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "外部シーンからのスプライトを変換できません。"
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "空のスプライトをメッシュに変換できません。"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "アニメーションフレームを使用してスプライトをメッシュに変換できません。"
@@ -13484,8 +13544,18 @@ msgstr ""
 "\"editable_instance\" を無効にすると、ノードのすべてのプロパティがデフォルトに"
 "戻ります。"
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"「プレースホルダーとしてロード」を有効にすると、「編集可能な子」が無効になり、"
+"ノードのすべてのプロパティがデフォルトに戻ります。"
+
 msgid "Make Local"
 msgstr "ローカルにする"
+
+msgid "Can't toggle unique name for nodes in subscene!"
+msgstr "サブシーン内のノードの固有名を切り替えることができません！"
 
 msgid "Enable Scene Unique Name(s)"
 msgstr "シーン固有名を有効にする"
@@ -13571,6 +13641,9 @@ msgstr "継承をクリア"
 
 msgid "Editable Children"
 msgstr "編集可能な子"
+
+msgid "Load as Placeholder"
+msgstr "プレースホルダーとしてロード"
 
 msgid "Auto Expand to Selected"
 msgstr "選択対象へ自動拡張"
@@ -13862,13 +13935,22 @@ msgid "Please specify a valid shader uniform identifier name."
 msgstr "有効なシェーダーuniform識別子名を指定してください。"
 
 msgid "Global shader parameter '%s' already exists'"
-msgstr "グローバルシェーダーパラメーター '%s' は存在しています"
+msgstr "グローバルシェーダーパラメーター '%s' は既に存在しています"
 
 msgid "Name '%s' is a reserved shader language keyword."
 msgstr "名前 '%s' は予約されたシェーダー言語キーワードです。"
 
 msgid "Add Shader Global Parameter"
 msgstr "シェーダーグローバルパラメーターを追加"
+
+msgid "Upgrading All Meshes in Project"
+msgstr "プロジェクト内のすべてのメッシュをアップグレード中"
+
+msgid "Attempting to re-save "
+msgstr "再保存を思考中 "
+
+msgid "Restart & Upgrade"
+msgstr "再起動とアップグレード"
 
 msgid "Make this panel floating in the screen %d."
 msgstr "このパネルを画面%dにフローティングさせます。"
@@ -13898,6 +13980,9 @@ msgstr "トーラスの外半径を変更"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "convert() の引数の型が無効です。TYPE_* 定数を使用してください。"
 
+msgid "Cannot resize array."
+msgstr "配列のサイズを変更できません。"
+
 msgid "Step argument is zero!"
 msgstr "ステップ引数はゼロです！"
 
@@ -13921,6 +14006,9 @@ msgstr "無効なインスタンス辞書形式です(@path で無効なスク�
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "無効なインスタンス辞書です(無効なサブクラス)"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "GDScriptクラスをインスタンス化できません。"
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "'%s'型のオブジェクトは長さを提供できません。"
@@ -14132,6 +14220,9 @@ msgstr "ダイレクトライティングをプロットする"
 
 msgid "Integrate indirect lighting"
 msgstr "間接ライティングを統合する"
+
+msgid "Integrate indirect lighting %d%%"
+msgstr "間接照明を統合します %d%%"
 
 msgid "Baking lightprobes"
 msgstr "ライトプローブをベイク"
@@ -14554,6 +14645,10 @@ msgstr "デバイスで実行できませんでした。"
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "C#/.NET を使用する場合の Android へのエクスポートは実験的です。"
 
+msgid "Android architecture %s not supported in C# projects."
+msgstr ""
+"Android アーキテクチャ %s は C# プロジェクトではサポートされていません。"
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14714,8 +14809,15 @@ msgstr "拡張パッケージファイルを書き込めませんでした！"
 msgid "Building Android Project (gradle)"
 msgstr "Androidプロジェクトの構築(gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr ""
+"Android プロジェクトのビルドに失敗しました。エラー出力を確認してください:"
+
 msgid "Moving output"
 msgstr "出力結果の移動中"
+
+msgid "Unable to copy and rename export file:"
+msgstr "エクスポートファイルのコピーと名前変更ができません:"
 
 msgid "Package not found: \"%s\"."
 msgstr "パッケージが見つかりません: \"%s\"。"
@@ -14789,6 +14891,14 @@ msgid ""
 "package."
 msgstr ""
 ".ipa は macOS でしかビルドできません。パッケージをビルドせずに終了します。"
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr ""
+"C#/.NET を使用する場合の iOS へのエクスポートは実験的であり、macOS が必要で"
+"す。"
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "C#/.NET を使用する場合の iOS へのエクスポートは実験的です。"
 
 msgid "Identifier is missing."
 msgstr "識別子がありません。"
@@ -14952,6 +15062,13 @@ msgstr "App Store の配布には、インストーラーの署名 ID が必要�
 
 msgid "App sandbox is required for App Store distribution."
 msgstr "App Store の配布にはアプリサンドボックスが必要です。"
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries (GDExtension or .NET)."
+msgstr ""
+"「rcodesign」は、組み込み動的ライブラリ (GDExtension または .NET) を使用したア"
+"プリケーションの署名をサポートしていません。"
 
 msgid "Code signing is required for App Store distribution."
 msgstr "App Storeでの配布にはコード署名が必要です。"
@@ -15144,6 +15261,13 @@ msgid ""
 msgstr ""
 "アドホック署名付きアプリケーションでは、動的ライブラリを読み込むために「ライブ"
 "ラリ検証を無効にする」の権限が必要です。"
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries."
+msgstr ""
+"「rcodesign」は、組み込み動的ライブラリを使用したアプリケーションの署名をサ"
+"ポートしていません。"
 
 msgid "Could not create entitlements file."
 msgstr "資格ファイルを作成できませんでした。"
@@ -15608,6 +15732,17 @@ msgid ""
 msgstr ""
 "TileMap レイヤーは Y ソートとして設定されていますが、TileMap ノード自体では Y "
 "ソートが有効になっていません。"
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"TileMap ノードは Y ソートとして設定されていますが、TileMap のどのレイヤーでも "
+"Y ソートが有効になっていません。\n"
+"Y ソートされていないレイヤーも含め全体として Y ソートされるため、望ましくない"
+"動作が発生する可能性があります。"
 
 msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled for "
@@ -16148,6 +16283,9 @@ msgstr ""
 msgid "New Code Region"
 msgstr "新しいコード領域"
 
+msgid "Copy this constructor in a script."
+msgstr "このコンストラクターをスクリプトにコピーします。"
+
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "16進コード (「#ff0000」) または名前付きの色 (「red」) を入力します。"
 
@@ -16247,6 +16385,13 @@ msgstr "グラフのミニマップを切り替えます。"
 
 msgid "Automatically arrange selected nodes."
 msgstr "選択したノードを自動的に配置します。"
+
+msgid ""
+"Labels with autowrapping enabled must have a custom minimum size configured "
+"to work correctly inside a container."
+msgstr ""
+"コンテナ内で正しく動作させるため、自動ラッピングが有効になっているラベルには、"
+"カスタム最小サイズの設定が必要です。"
 
 msgid ""
 "The current font does not support rendering one or more characters used in "
@@ -16721,6 +16866,9 @@ msgstr "メンバーとして識別子が必要です。"
 
 msgid "Cannot combine symbols from different sets in expression '.%s'."
 msgstr "式 '.%s' では異なるセットのシンボルを結合できません。"
+
+msgid "Invalid member for '%s' expression: '.%s'."
+msgstr "無効なメンバ '%s' が '.%s' 式にあります。"
 
 msgid "An object of type '%s' can't be indexed."
 msgstr "型「%s」のオブジェクトはインデックスできません。"

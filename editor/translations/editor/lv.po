@@ -2382,6 +2382,9 @@ msgstr "Jauna atslēga:"
 msgid "New Value:"
 msgstr "Jauna vērtība:"
 
+msgid "Save As..."
+msgstr "Saglabāt kā..."
+
 msgid "Show in FileSystem"
 msgstr "Parādīt failu sistēmā"
 
@@ -2787,9 +2790,6 @@ msgstr "Kopēt iestatījumus"
 
 msgid "Paste Properties"
 msgstr "Ielīmēt iestatījumus"
-
-msgid "Save As..."
-msgstr "Saglabāt kā..."
 
 msgid "Open documentation for this object."
 msgstr "Atvērt dokumentāciju šim objektam."

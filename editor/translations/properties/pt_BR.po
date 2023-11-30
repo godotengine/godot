@@ -161,13 +161,14 @@
 # Romildo Franco <rtfranco@gmail.com>, 2023.
 # Felipe Bertola <eduardodelphinodepaula@gmail.com>, 2023.
 # Vittor Paulo Vieira da Costa <vittorpaulovc@gmail.com>, 2023.
+# Matheus Macedo <mmanganelidemacedo@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-11-03 04:56+0000\n"
-"Last-Translator: Vittor Paulo Vieira da Costa <vittorpaulovc@gmail.com>\n"
+"PO-Revision-Date: 2023-11-18 06:21+0000\n"
+"Last-Translator: Matheus Macedo <mmanganelidemacedo@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -175,7 +176,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -308,6 +309,9 @@ msgstr "Intensidade da Panorâmica 3D"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Mix With Others"
+msgstr "Misturar com Outros"
 
 msgid "Editor"
 msgstr "Editor"

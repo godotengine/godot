@@ -563,7 +563,7 @@ void AnimationMixer::_clear_audio_streams() {
 void AnimationMixer::_clear_playing_caches() {
 	for (const TrackCache *E : playing_caches) {
 		if (ObjectDB::get_instance(E->object_id)) {
-			E->object->call(SNAME("stop"));
+			E->object->call(SNAME("stop"), true);
 		}
 	}
 	playing_caches.clear();
@@ -1708,7 +1708,12 @@ void AnimationMixer::_blend_apply() {
 						}
 					}
 				}
-				t->object->set_indexed(t->subpath, Animation::cast_from_blendwise(t->value, t->init_value.get_type()));
+
+				// t->object isn't safe here, get instance from id (GH-85365).
+				Object *obj = ObjectDB::get_instance(t->object_id);
+				if (obj) {
+					obj->set_indexed(t->subpath, Animation::cast_from_blendwise(t->value, t->init_value.get_type()));
+				}
 
 			} break;
 			case Animation::TYPE_BEZIER: {
@@ -1868,7 +1873,6 @@ bool AnimationMixer::is_reset_on_save_enabled() const {
 	return reset_on_save;
 }
 
-#ifdef TOOLS_ENABLED
 bool AnimationMixer::can_apply_reset() const {
 	return has_animation(SceneStringNames::get_singleton()->RESET);
 }
@@ -1929,7 +1933,6 @@ void AnimationMixer::_build_backup_track_cache() {
 				if (asp) {
 					t->object->call(SNAME("set_stream"), Ref<AudioStream>());
 				}
-				track = memnew(TrackCache); // Make disable this track cache.
 			} break;
 			default: {
 			} // The rest don't matter.
@@ -1959,29 +1962,6 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 	return backup;
 }
 
-Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
-	if (!p_user_initiated && dummy) {
-		return Ref<AnimatedValuesBackup>();
-	}
-	ERR_FAIL_COND_V(!can_apply_reset(), Ref<AnimatedValuesBackup>());
-
-	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
-	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
-
-	Ref<AnimatedValuesBackup> backup_current = make_backup();
-	if (p_user_initiated) {
-		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Animation Apply Reset"));
-		ur->add_do_method(this, "_reset");
-		ur->add_undo_method(this, "_restore", backup_current);
-		ur->commit_action();
-	} else {
-		reset();
-	}
-
-	return backup_current;
-}
-
 void AnimationMixer::reset() {
 	ERR_FAIL_COND(!can_apply_reset());
 
@@ -2009,6 +1989,30 @@ void AnimationMixer::restore(const Ref<AnimatedValuesBackup> &p_backup) {
 	_blend_apply();
 	track_cache = HashMap<NodePath, AnimationMixer::TrackCache *>();
 	cache_valid = false;
+}
+
+#ifdef TOOLS_ENABLED
+Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
+	if (!p_user_initiated && dummy) {
+		return Ref<AnimatedValuesBackup>();
+	}
+	ERR_FAIL_COND_V(!can_apply_reset(), Ref<AnimatedValuesBackup>());
+
+	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
+	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
+
+	Ref<AnimatedValuesBackup> backup_current = make_backup();
+	if (p_user_initiated) {
+		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+		ur->create_action(TTR("Animation Apply Reset"));
+		ur->add_do_method(this, "_reset");
+		ur->add_undo_method(this, "_restore", backup_current);
+		ur->commit_action();
+	} else {
+		reset();
+	}
+
+	return backup_current;
 }
 #endif // TOOLS_ENABLED
 
@@ -2128,6 +2132,9 @@ void AnimationMixer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SNAME("animation_finished"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("animation_started"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("caches_cleared")));
+
+	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
+	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
 }
 
 AnimationMixer::AnimationMixer() {
@@ -2135,4 +2142,77 @@ AnimationMixer::AnimationMixer() {
 }
 
 AnimationMixer::~AnimationMixer() {
+}
+
+void AnimatedValuesBackup::set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> p_data) {
+	clear_data();
+
+	for (const KeyValue<NodePath, AnimationMixer::TrackCache *> &E : p_data) {
+		AnimationMixer::TrackCache *track = get_cache_copy(E.value);
+		if (!track) {
+			continue; // Some types of tracks do not get a copy and must be ignored.
+		}
+
+		data.insert(E.key, track);
+	}
+}
+
+HashMap<NodePath, AnimationMixer::TrackCache *> AnimatedValuesBackup::get_data() const {
+	HashMap<NodePath, AnimationMixer::TrackCache *> ret;
+	for (const KeyValue<NodePath, AnimationMixer::TrackCache *> &E : data) {
+		AnimationMixer::TrackCache *track = get_cache_copy(E.value);
+		ERR_CONTINUE(!track); // Backup shouldn't contain tracks that cannot be copied, this is a mistake.
+
+		ret.insert(E.key, track);
+	}
+	return ret;
+}
+
+void AnimatedValuesBackup::clear_data() {
+	for (KeyValue<NodePath, AnimationMixer::TrackCache *> &K : data) {
+		memdelete(K.value);
+	}
+	data.clear();
+}
+
+AnimationMixer::TrackCache *AnimatedValuesBackup::get_cache_copy(AnimationMixer::TrackCache *p_cache) const {
+	switch (p_cache->type) {
+		case Animation::TYPE_VALUE: {
+			AnimationMixer::TrackCacheValue *src = static_cast<AnimationMixer::TrackCacheValue *>(p_cache);
+			AnimationMixer::TrackCacheValue *tc = memnew(AnimationMixer::TrackCacheValue(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_POSITION_3D:
+		case Animation::TYPE_ROTATION_3D:
+		case Animation::TYPE_SCALE_3D: {
+			AnimationMixer::TrackCacheTransform *src = static_cast<AnimationMixer::TrackCacheTransform *>(p_cache);
+			AnimationMixer::TrackCacheTransform *tc = memnew(AnimationMixer::TrackCacheTransform(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_BLEND_SHAPE: {
+			AnimationMixer::TrackCacheBlendShape *src = static_cast<AnimationMixer::TrackCacheBlendShape *>(p_cache);
+			AnimationMixer::TrackCacheBlendShape *tc = memnew(AnimationMixer::TrackCacheBlendShape(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_BEZIER: {
+			AnimationMixer::TrackCacheBezier *src = static_cast<AnimationMixer::TrackCacheBezier *>(p_cache);
+			AnimationMixer::TrackCacheBezier *tc = memnew(AnimationMixer::TrackCacheBezier(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_AUDIO: {
+			AnimationMixer::TrackCacheAudio *src = static_cast<AnimationMixer::TrackCacheAudio *>(p_cache);
+			AnimationMixer::TrackCacheAudio *tc = memnew(AnimationMixer::TrackCacheAudio(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_METHOD:
+		case Animation::TYPE_ANIMATION: {
+			// Nothing to do here.
+		} break;
+	}
+	return nullptr;
 }

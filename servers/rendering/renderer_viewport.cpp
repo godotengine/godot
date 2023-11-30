@@ -622,6 +622,11 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
 	}
 
+	if (RSG::texture_storage->render_target_get_msaa_needs_resolve(p_viewport->render_target)) {
+		WARN_PRINT_ONCE("2D MSAA is enabled while there is no 2D content. Disable 2D MSAA for better performance.");
+		RSG::texture_storage->render_target_do_msaa_resolve(p_viewport->render_target);
+	}
+
 	if (p_viewport->measure_render_time) {
 		String rt_id = "vp_end_" + itos(p_viewport->self.get_id());
 		RSG::utilities->capture_timestamp(rt_id);

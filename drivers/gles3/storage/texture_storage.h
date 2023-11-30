@@ -619,6 +619,9 @@ public:
 	void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
+	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override {}
+	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override { return false; }
+	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override {}
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override { return false; }
 

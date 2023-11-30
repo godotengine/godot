@@ -88,7 +88,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-12 01:21+0000\n"
+"PO-Revision-Date: 2023-11-28 16:10+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -98,7 +98,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Główny wątek"
@@ -1969,6 +1969,9 @@ msgstr "Deweloperzy"
 msgid "Authors"
 msgstr "Autorzy"
 
+msgid "Patrons"
+msgstr "Sponsorzy"
+
 msgid "Platinum Sponsors"
 msgstr "Platynowi sponsorzy"
 
@@ -1977,6 +1980,18 @@ msgstr "Złoci sponsorzy"
 
 msgid "Silver Sponsors"
 msgstr "Srebrni sponsorzy"
+
+msgid "Diamond Members"
+msgstr "Diamentowi członkowie"
+
+msgid "Titanium Members"
+msgstr "Tytanowi członkowie"
+
+msgid "Platinum Members"
+msgstr "Platynowi członkowie"
+
+msgid "Gold Members"
+msgstr "Złoci członkowie"
 
 msgid "Donors"
 msgstr "Darczyńcy"
@@ -3675,6 +3690,9 @@ msgstr "Narzędzia"
 msgid "Orphan Resource Explorer..."
 msgstr "Eksplorator osieroconych zasobów..."
 
+msgid "Upgrade Mesh Surfaces..."
+msgstr "Aktualizuj powierzchnie siatek..."
+
 msgid "Reload Current Project"
 msgstr "Wczytaj ponownie aktualny projekt"
 
@@ -3757,13 +3775,13 @@ msgid "Choose a renderer."
 msgstr "Wybierz renderer."
 
 msgid "Forward+"
-msgstr "W przód+"
+msgstr "Przedni+"
 
 msgid "Mobile"
 msgstr "Mobilny"
 
 msgid "Compatibility"
-msgstr "Kompatybilność"
+msgstr "Kompatybilny"
 
 msgid "Changing the renderer requires restarting the editor."
 msgstr "Zmiana renderera wymaga restartu edytora."
@@ -4077,6 +4095,9 @@ msgstr "Zrób unikalny"
 
 msgid "Make Unique (Recursive)"
 msgstr "Zrób unikalny (rekurencyjnie)"
+
+msgid "Save As..."
+msgstr "Zapisz jako..."
 
 msgid "Show in FileSystem"
 msgstr "Pokaż w systemie plików"
@@ -4989,7 +5010,7 @@ msgid "Blue"
 msgstr "Niebieski"
 
 msgid "Purple"
-msgstr "Purpurowy"
+msgstr "Fioletowy"
 
 msgid "Pink"
 msgstr "Różowy"
@@ -5997,9 +6018,6 @@ msgstr "Wczytaj istniejący zasób i edytuj go."
 
 msgid "Save the currently edited resource."
 msgstr "Zapisz aktualnie edytowany zasób."
-
-msgid "Save As..."
-msgstr "Zapisz jako..."
 
 msgid "Extra resource options."
 msgstr "Dodatkowe opcje zasobów."
@@ -14029,44 +14047,14 @@ msgstr "Nazwa \"%s\" jest zarezerwowanym słowem kluczowym języka shaderów."
 msgid "Add Shader Global Parameter"
 msgstr "Dodaj parametr globalny shadera"
 
-msgid ""
-"This project uses meshes with an outdated mesh format from previous Godot "
-"versions. The engine needs to update the format in order to use those "
-"meshes.\n"
-"\n"
-"Press 'Restart & Upgrade' to run the surface upgrade tool which will update "
-"and re-save all meshes and scenes. This update will restart the editor and "
-"may take several minutes. Upgrading will make the meshes incompatible with "
-"previous versions of Godot.\n"
-"\n"
-"Press 'Upgrade Only' to continue opening the scene as normal. The engine will "
-"update each mesh in memory, but the update will not be saved. Choosing this "
-"option will lead to slower load times every time this project is loaded."
-msgstr ""
-"Ten projekt używa siatek z nieaktualnym formatem siatek z poprzednich wersji "
-"Godota. Silnik potrzebuje zaktualizować format, żeby używać tych siatek.\n"
-"\n"
-"Wciśnij \"Zrestartuj i zaktualizuj\", by uruchomić narzędzie aktualizacji "
-"siatek, które zaktualizuje i zapisze ponownie wszystkie siatki i sceny. Ta "
-"aktualizacja zrestartuje edytor i może zająć kilka minut. Aktualizacja uczyni "
-"siatki niekompatybilnymi z poprzednimi wersjami Godota.\n"
-"\n"
-"Wciśnij \"Tylko zaktualizuj\", by otworzyć scenę normalnie. Silnik "
-"zaktualizuje każdą siatkę w pamięci, ale aktualizacja nie będzie zapisana. "
-"Wybranie tej opcji prowadzi do wolniejszego wczytywania przy każdym "
-"załadowaniu tego projektu."
-
-msgid "Restart & Upgrade"
-msgstr "Zrestartuj i zaktualizuj"
-
-msgid "Upgrade Only"
-msgstr "Tylko aktualizuj"
-
 msgid "Upgrading All Meshes in Project"
 msgstr "Aktualizacja wszystkich siatek w projekcie"
 
 msgid "Attempting to re-save "
 msgstr "Próba ponownego zapisania "
+
+msgid "Restart & Upgrade"
+msgstr "Zrestartuj i zaktualizuj"
 
 msgid "Make this panel floating in the screen %d."
 msgstr "Uczyń ten panel pływającym na ekranie %d."
@@ -14921,8 +14909,14 @@ msgstr "Nie udało się zapisać pliku pakietu rozszerzenia!"
 msgid "Building Android Project (gradle)"
 msgstr "Budowanie projektu Androida (gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr "Budowanie projektu Androida nie powiodło się, sprawdź błędy w konsoli:"
+
 msgid "Moving output"
 msgstr "Przesuwam wyjście"
+
+msgid "Unable to copy and rename export file:"
+msgstr "Nie udało się skopiować i zmienić nazwy pliku eksportu:"
 
 msgid "Package not found: \"%s\"."
 msgstr "Nie znaleziono pakietu: \"%s\"."
@@ -16491,7 +16485,7 @@ msgid ""
 "refactoring in a future 4.x version involving compatibility-breaking API "
 "changes."
 msgstr ""
-"Miej na uwadze, że GraphEdit i GraphNode przejdą obszerne refaktorowanie w "
+"Miej na uwadze, że GraphEdit i GraphNode przejdą obszerną refaktoryzację w "
 "przyszłej wersji 4.x, obejmujące zmiany API łamiące kompatybilność."
 
 msgid "Toggle the visual grid."
