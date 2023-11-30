@@ -60,11 +60,14 @@ Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &
 	p_preset->set("debug/export_console_wrapper", 0);
 
 	String export_folder = p_path.get_base_dir();
-	String nacp_file = p_path.get_basename().get_file() + ".nacp";
+	String base_name = p_path.get_basename().get_file();
+	String nacp_file = base_name + ".nacp";
 	String nacp_path = export_folder.path_join(nacp_file);
-	String pck_file = p_path.get_basename().get_file() + ".pck";
+	String pck_file = base_name + ".pck";
 	String pck_path = export_folder.path_join(pck_file);
-	String nro_path = export_folder.path_join(p_path.get_basename().get_file() + ".nro");
+	String nro_path = export_folder.path_join(base_name + ".nro");
+
+	ERR_FAIL_COND_V_MSG(base_name.contains(" "), ERR_INVALID_DATA, "Export file \"" + base_name + "\" cannot contain space character.");
 
 	String current_version = VERSION_FULL_CONFIG;
 	String template_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version);
@@ -93,7 +96,7 @@ Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &
 			args.push_back(p_preset->get("app/title"));
 			args.push_back(p_preset->get("app/author"));
 			args.push_back(p_preset->get("app/version"));
-			args.push_back(nacp_path);
+			args.push_back("\"" + nacp_path + "\"");
 
 			err = OS::get_singleton()->execute(nacp_tool_path, args, &output, &exit_code, true);
 			ERR_FAIL_COND_V_MSG(exit_code != 0, err, output);
@@ -201,6 +204,12 @@ void EditorExportPlatformSwitch::get_export_options(List<ExportOption> *r_option
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "nxlink/enabled"), false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "nxlink/address"), "0.0.0.0"));
+}
+
+String EditorExportPlatformSwitch::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
+		if (p_preset) {
+		//TODO test if devkits path exists
+	}
 }
 
 Error EditorExportPlatformSwitch::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {

@@ -50,6 +50,7 @@ public:
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 	virtual String get_template_file_name(const String &p_target, const String &p_arch) const override;
+	String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) override;
 
 	virtual Ref<Texture2D> get_run_icon() const override;

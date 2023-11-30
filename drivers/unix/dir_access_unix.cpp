@@ -317,8 +317,6 @@ Error DirAccessUnix::make_dir(String p_dir) {
 
 	p_dir = fix_path(p_dir);
 
-	print_line(p_dir.utf8().get_data());
-
 	bool success = (mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
 	int err = errno;
 
