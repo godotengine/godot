@@ -70,6 +70,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String name;
 		bool simulator = false;
 		bool wifi = false;
+		bool use_ios_deploy = false;
 	};
 
 	Vector<Device> devices;
@@ -139,7 +140,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_ios_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets, bool p_debug);
 
-	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags, bool p_simulator, bool p_skip_ipa);
+	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags, bool p_simulator, bool p_oneclick);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
 
