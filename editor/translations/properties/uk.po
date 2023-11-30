@@ -30,13 +30,15 @@
 # Maksym <maksym@mowemax.com>, 2023.
 # Dan <jonweblin2205@protonmail.com>, 2023.
 # Siked Siked <siked3@gmail.com>, 2023.
+# Вадим Коваль <vadimkoval571@gmail.com>, 2023.
+# Volodymyr Mikhav <mihaw.wolodymyr@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-21 15:42+0000\n"
-"Last-Translator: Siked Siked <siked3@gmail.com>\n"
+"PO-Revision-Date: 2023-11-23 17:10+0000\n"
+"Last-Translator: Volodymyr Mikhav <mihaw.wolodymyr@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -45,7 +47,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2.1-rc\n"
 
 msgid "Application"
 msgstr "Застосунок"
@@ -169,6 +171,9 @@ msgstr "Сила 2D панорамування"
 
 msgid "3D Panning Strength"
 msgstr "Сила 3D панорамування"
+
+msgid "iOS"
+msgstr "iOS"
 
 msgid "Editor"
 msgstr "Редактор"
@@ -357,7 +362,7 @@ msgid "Time Scale"
 msgstr "Шкала часу"
 
 msgid "Physics Jitter Fix"
-msgstr "Фізичний кадр %"
+msgstr "Корекція джитеру фізики"
 
 msgid "Mouse Mode"
 msgstr "Режим миші"
@@ -964,6 +969,9 @@ msgstr "Розмір мініатюр"
 
 msgid "Import"
 msgstr "Імпорт"
+
+msgid "Blender 3 Path"
+msgstr "Шлях до Blender 3"
 
 msgid "FBX"
 msgstr "FBX"
@@ -1746,7 +1754,7 @@ msgid "Channel Pack"
 msgstr "Пакет каналів"
 
 msgid "Mipmaps"
-msgstr "Множинне відтворення"
+msgstr "MIP-текстурування"
 
 msgid "Generate"
 msgstr "Створити"
@@ -2132,6 +2140,9 @@ msgstr "Використання кількох потоків"
 msgid "Convert Text Resources to Binary"
 msgstr "Перетворювати текстові ресурси на двійкові"
 
+msgid "Plugin Name"
+msgstr "Назва додатка"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Показувати кореневе позначення ієрархії сцени"
 
@@ -2149,6 +2160,9 @@ msgstr "Шлях до журналу"
 
 msgid "Driver"
 msgstr "Драйвер"
+
+msgid "Renderer"
+msgstr "Рендерер"
 
 msgid "DPI"
 msgstr "Роздільність"
@@ -2177,8 +2191,11 @@ msgstr "Орієнтація"
 msgid "V-Sync"
 msgstr "Верт. синхронізація"
 
+msgid "V-Sync Mode"
+msgstr "Режим верт. синхронізації"
+
 msgid "Output Latency"
-msgstr "Результат"
+msgstr "Затримка виведення"
 
 msgid "stdout"
 msgstr "stdout"
@@ -2186,20 +2203,38 @@ msgstr "stdout"
 msgid "Print FPS"
 msgstr "Виводити частоту кадрів"
 
+msgid "Print GPU Profile"
+msgstr "Виводити профілювання GPU"
+
 msgid "Verbose stdout"
-msgstr "Докладно до stdout"
+msgstr "Детальне виведення до stdout"
 
 msgid "Low Processor Mode"
 msgstr "Режим низького споживання процесора"
-
-msgid "iOS"
-msgstr "iOS"
 
 msgid "Hide Home Indicator"
 msgstr "Приховати індикатор домівки"
 
 msgid "XR"
 msgstr "XR"
+
+msgid "Form Factor"
+msgstr "Форм-фактор"
+
+msgid "View Configuration"
+msgstr "Конфігурація подання"
+
+msgid "Reference Space"
+msgstr "Опорний простір"
+
+msgid "Environment Blend Mode"
+msgstr "Режим змішування середовища"
+
+msgid "Foveation Level"
+msgstr "Рівень фовеації"
+
+msgid "Foveation Dynamic"
+msgstr "Динамічна фовеація"
 
 msgid "Boot Splash"
 msgstr "Вітання системи"
@@ -2243,6 +2278,9 @@ msgstr "Емулювати дотик з миші"
 msgid "Emulate Mouse From Touch"
 msgstr "Емулювати мишу з дотику"
 
+msgid "Android"
+msgstr "Android"
+
 msgid "Mouse Cursor"
 msgstr "Курсор миші"
 
@@ -2251,6 +2289,12 @@ msgstr "Нетипова активна ділянка зображення"
 
 msgid "Tooltip Position Offset"
 msgstr "Відступ позиції підказки"
+
+msgid "Minimum Display Time"
+msgstr "Мінімальний час показу"
+
+msgid "Dotnet"
+msgstr "Dotnet"
 
 msgid "Project"
 msgstr "Проєкт"
@@ -2592,7 +2636,7 @@ msgid "Mesh Library"
 msgstr "Бібліотека сітки"
 
 msgid "Physics Material"
-msgstr "Фізичний кадр %"
+msgstr "Матеріал фізики"
 
 msgid "Cell"
 msgstr "Мобільний"
@@ -2627,6 +2671,9 @@ msgstr "Висока якість підрахунку променів"
 msgid "Ultra Quality Ray Count"
 msgstr "Кількість променів високої якості"
 
+msgid "Max Rays per Pass"
+msgstr "Макс. променів за прохід"
+
 msgid "Loop Offset"
 msgstr "Зміщення циклу"
 
@@ -2637,7 +2684,7 @@ msgid "IOD"
 msgstr "IOD"
 
 msgid "Display Width"
-msgstr "Перегляд каркасу"
+msgstr "Ширина екрану"
 
 msgid "Oversample"
 msgstr "Надвибірка"
@@ -2743,9 +2790,6 @@ msgstr "Необов'язкові можливості"
 
 msgid "Visibility State"
 msgstr "Перемкнути видимість"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Шлях Android SDK"
@@ -3237,7 +3281,7 @@ msgid "Tweaks"
 msgstr "Коригування"
 
 msgid "Use Mipmaps"
-msgstr "Множинне відтворення"
+msgstr "Використовувати MIP-текстурування"
 
 msgid "Input"
 msgstr "Введення"
@@ -3575,6 +3619,9 @@ msgstr "Монітор контакту"
 msgid "Linear"
 msgstr "Лінійний"
 
+msgid "Damp Mode"
+msgstr "Режим прилипання"
+
 msgid "Damp"
 msgstr "В’язкість"
 
@@ -3854,6 +3901,9 @@ msgstr "Шрифт"
 msgid "Uppercase"
 msgstr "ВЕРХНІЙ РЕГІСТР"
 
+msgid "Temperature"
+msgstr "Температура"
+
 msgid "Indirect Energy"
 msgstr "Опосередкована енергія"
 
@@ -4085,6 +4135,9 @@ msgstr "Поза"
 msgid "World Scale"
 msgstr "Масштаб світу"
 
+msgid "Play Mode"
+msgstr "Режим гри"
+
 msgid "Sync"
 msgstr "Синхронізувати"
 
@@ -4134,7 +4187,7 @@ msgid "Expression"
 msgstr "Вираз"
 
 msgid "Current Animation"
-msgstr "Встановити анімацію"
+msgstr "Поточна анімація"
 
 msgid "Playback Options"
 msgstr "Параметри відтворення"
@@ -4195,6 +4248,9 @@ msgstr "Відкладений режим"
 
 msgid "Presets Visible"
 msgstr "Видимі набори"
+
+msgid "Constants"
+msgstr "Константи"
 
 msgid "Grow Direction"
 msgstr "Напрямки"
@@ -4310,12 +4366,6 @@ msgstr "Видимі символи"
 msgid "Max Length"
 msgstr "Максимальна довжина"
 
-msgid "Secret"
-msgstr "Пароль"
-
-msgid "Secret Character"
-msgstr "Символ пароля"
-
 msgid "Context Menu Enabled"
 msgstr "Увімкнено контекстне меню"
 
@@ -4339,6 +4389,12 @@ msgstr "Права кнопка"
 
 msgid "Blink"
 msgstr "Блимання"
+
+msgid "Secret"
+msgstr "Пароль"
+
+msgid "Secret Character"
+msgstr "Символ пароля"
 
 msgid "Underline"
 msgstr "Підкреслений"
@@ -4451,14 +4507,14 @@ msgstr "Гортання увімкнено"
 msgid "Tabs Visible"
 msgstr "Вкладки видимі"
 
-msgid "Syntax Highlighter"
-msgstr "Засіб підсвічування синтаксису"
-
 msgid "Fit Content Height"
 msgstr "Висота підбирання за вмістом"
 
 msgid "Draw"
 msgstr "Креслення"
+
+msgid "Syntax Highlighter"
+msgstr "Засіб підсвічування синтаксису"
 
 msgid "Hover"
 msgstr "Наведення"
@@ -4991,18 +5047,6 @@ msgstr "Розміри планки"
 msgid "Bundled"
 msgstr "З'єднане"
 
-msgid "Point Texture"
-msgstr "Точкова текстура"
-
-msgid "Normal Texture"
-msgstr "Нормальна текстура"
-
-msgid "Color Texture"
-msgstr "Кольорова текстура"
-
-msgid "Point Count"
-msgstr "Кількість точок"
-
 msgid "Scale Curve"
 msgstr "Крива масштабування"
 
@@ -5075,6 +5119,9 @@ msgstr "Місцевості"
 msgid "Custom Data"
 msgstr "Спеціальні дані"
 
+msgid "Physics Layers"
+msgstr "Шари фізики"
+
 msgid "Scene"
 msgstr "Сцена"
 
@@ -5089,6 +5136,9 @@ msgstr "Файл"
 
 msgid "Input Name"
 msgstr "Карта введення"
+
+msgid "Parameter Name"
+msgstr "Назва параметру"
 
 msgid "Constant"
 msgstr "Сталий"
@@ -5396,6 +5446,9 @@ msgstr "Діяльність"
 msgid "Node"
 msgstr "Вузол"
 
+msgid "Playback Mode"
+msgstr "Режим відтворення"
+
 msgid "Random Pitch"
 msgstr "Випадковий тон"
 
@@ -5493,10 +5546,10 @@ msgid "Shape RID"
 msgstr "RID форми"
 
 msgid "Default Gravity"
-msgstr "Типове зображення перегляду"
+msgstr "Типове тяжіння"
 
 msgid "Default Gravity Vector"
-msgstr "Типове зображення перегляду"
+msgstr "Типовий вектор тяжіння"
 
 msgid "Principal Inertia Axes"
 msgstr "Головні вісі інерції"
@@ -5506,6 +5559,9 @@ msgstr "Вершина"
 
 msgid "Fragment"
 msgstr "Фрагмент"
+
+msgid "Base Error"
+msgstr "Основна помилка"
 
 msgid "Cull"
 msgstr "Вибракування"
@@ -5530,6 +5586,9 @@ msgstr "Примусово записати"
 
 msgid "Shadow Atlas"
 msgstr "Новий атлас"
+
+msgid "Shader Cache"
+msgstr "Кеш шейдерів"
 
 msgid "Reflections"
 msgstr "Відбиття"

@@ -494,7 +494,7 @@ void ShaderCreateDialog::_update_dialog() {
 	if (!is_built_in && !is_path_valid) {
 		validation_panel->set_message(MSG_ID_SHADER, TTR("Invalid path."), EditorValidationPanel::MSG_ERROR);
 	}
-	if (!path_error.is_empty()) {
+	if (!is_built_in && !path_error.is_empty()) {
 		validation_panel->set_message(MSG_ID_PATH, path_error, EditorValidationPanel::MSG_ERROR);
 	} else if (validation_panel->is_valid() && !is_new_shader_created) {
 		validation_panel->set_message(MSG_ID_SHADER, TTR("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
@@ -647,6 +647,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	file_path->connect("text_changed", callable_mp(this, &ShaderCreateDialog::_path_changed));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
+	register_text_enter(file_path);
 	path_button = memnew(Button);
 	path_button->connect("pressed", callable_mp(this, &ShaderCreateDialog::_browse_path));
 	hb->add_child(path_button);

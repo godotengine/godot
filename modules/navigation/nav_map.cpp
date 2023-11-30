@@ -953,6 +953,9 @@ void NavMap::sync() {
 
 		// Search for polygons within range of a nav link.
 		for (const NavLink *link : links) {
+			if (!link->get_enabled()) {
+				continue;
+			}
 			const Vector3 start = link->get_start_position();
 			const Vector3 end = link->get_end_position();
 
@@ -1122,6 +1125,7 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 		rvo_2d_vertices.reserve(_obstacle_vertices.size());
 
 		uint32_t _obstacle_avoidance_layers = obstacle->get_avoidance_layers();
+		real_t _obstacle_height = obstacle->get_height();
 
 		for (const Vector3 &_obstacle_vertex : _obstacle_vertices) {
 			rvo_2d_vertices.push_back(RVO2D::Vector2(_obstacle_vertex.x + _obstacle_position.x, _obstacle_vertex.z + _obstacle_position.z));
@@ -1132,6 +1136,9 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 		for (size_t i = 0; i < rvo_2d_vertices.size(); i++) {
 			RVO2D::Obstacle2D *rvo_2d_obstacle = new RVO2D::Obstacle2D();
 			rvo_2d_obstacle->point_ = rvo_2d_vertices[i];
+			rvo_2d_obstacle->height_ = _obstacle_height;
+			rvo_2d_obstacle->elevation_ = _obstacle_position.y;
+
 			rvo_2d_obstacle->avoidance_layers_ = _obstacle_avoidance_layers;
 
 			if (i != 0) {

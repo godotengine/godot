@@ -156,7 +156,7 @@ Mesh::BlendShapeMode ImporterMesh::get_blend_shape_mode() const {
 	return blend_shape_mode;
 }
 
-void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint32_t p_flags) {
+void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint64_t p_flags) {
 	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != Mesh::ARRAY_MAX);
 	Surface s;
@@ -240,7 +240,7 @@ float ImporterMesh::get_surface_lod_size(int p_surface, int p_lod) const {
 	return surfaces[p_surface].lods[p_lod].distance;
 }
 
-uint32_t ImporterMesh::get_surface_format(int p_surface) const {
+uint64_t ImporterMesh::get_surface_format(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), 0);
 	return surfaces[p_surface].flags;
 }
@@ -868,7 +868,7 @@ void ImporterMesh::_set_data(const Dictionary &p_data) {
 			if (s.has("material")) {
 				material = s["material"];
 			}
-			uint32_t flags = 0;
+			uint64_t flags = 0;
 			if (s.has("flags")) {
 				flags = s["flags"];
 			}
@@ -909,9 +909,7 @@ Dictionary ImporterMesh::_get_data() const {
 			d["name"] = surfaces[i].name;
 		}
 
-		if (surfaces[i].flags != 0) {
-			d["flags"] = surfaces[i].flags;
-		}
+		d["flags"] = surfaces[i].flags;
 
 		surface_arr.push_back(d);
 	}
@@ -1105,7 +1103,7 @@ struct EditorSceneFormatImporterMeshLightmapSurface {
 	Ref<Material> material;
 	LocalVector<SurfaceTool::Vertex> vertices;
 	Mesh::PrimitiveType primitive = Mesh::PrimitiveType::PRIMITIVE_MAX;
-	uint32_t format = 0;
+	uint64_t format = 0;
 	String name;
 };
 

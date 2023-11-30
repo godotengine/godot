@@ -794,6 +794,8 @@ void register_global_constants() {
 
 void unregister_global_constants() {
 	_global_constants.clear();
+	_global_constants_map.clear();
+	_global_enums.clear();
 }
 
 int CoreConstants::get_global_constant_count() {

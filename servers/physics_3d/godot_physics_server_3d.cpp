@@ -912,7 +912,7 @@ void GodotPhysicsServer3D::body_set_ray_pickable(RID p_body, bool p_enable) {
 bool GodotPhysicsServer3D::body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, false);
-	ERR_FAIL_COND_V(!body->get_space(), false);
+	ERR_FAIL_NULL_V(body->get_space(), false);
 	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
 
 	_update_shapes();
@@ -1225,7 +1225,7 @@ void GodotPhysicsServer3D::joint_make_pin(RID p_joint, RID p_body_A, const Vecto
 	ERR_FAIL_NULL(body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND(!body_A->get_space());
+		ERR_FAIL_NULL(body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
@@ -1297,7 +1297,7 @@ void GodotPhysicsServer3D::joint_make_hinge(RID p_joint, RID p_body_A, const Tra
 	ERR_FAIL_NULL(body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND(!body_A->get_space());
+		ERR_FAIL_NULL(body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
@@ -1321,7 +1321,7 @@ void GodotPhysicsServer3D::joint_make_hinge_simple(RID p_joint, RID p_body_A, co
 	ERR_FAIL_NULL(body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND(!body_A->get_space());
+		ERR_FAIL_NULL(body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
@@ -1422,7 +1422,7 @@ void GodotPhysicsServer3D::joint_make_slider(RID p_joint, RID p_body_A, const Tr
 	ERR_FAIL_NULL(body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND(!body_A->get_space());
+		ERR_FAIL_NULL(body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
@@ -1462,7 +1462,7 @@ void GodotPhysicsServer3D::joint_make_cone_twist(RID p_joint, RID p_body_A, cons
 	ERR_FAIL_NULL(body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND(!body_A->get_space());
+		ERR_FAIL_NULL(body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 
@@ -1502,7 +1502,7 @@ void GodotPhysicsServer3D::joint_make_generic_6dof(RID p_joint, RID p_body_A, co
 	ERR_FAIL_NULL(body_A);
 
 	if (!p_body_B.is_valid()) {
-		ERR_FAIL_COND(!body_A->get_space());
+		ERR_FAIL_NULL(body_A->get_space());
 		p_body_B = body_A->get_space()->get_static_global_body();
 	}
 

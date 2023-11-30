@@ -289,7 +289,7 @@ bool OpenXRAPI::create_instance() {
 	for (KeyValue<String, bool *> &requested_extension : requested_extensions) {
 		if (!is_extension_supported(requested_extension.key)) {
 			if (requested_extension.value == nullptr) {
-				// Null means this is a manditory extension so we fail.
+				// Null means this is a mandatory extension so we fail.
 				ERR_FAIL_V_MSG(false, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.key + String(" extension!"));
 			} else {
 				// Set this extension as not supported.
@@ -804,6 +804,7 @@ bool OpenXRAPI::create_swapchains() {
 	*/
 
 	Size2 recommended_size = get_recommended_target_size();
+	uint32_t sample_count = 1;
 
 	// We start with our color swapchain...
 	{
@@ -827,7 +828,7 @@ bool OpenXRAPI::create_swapchains() {
 			print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(swapchain_format_to_use));
 		}
 
-		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
+		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, sample_count, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
 			return false;
 		}
 	}
@@ -863,7 +864,7 @@ bool OpenXRAPI::create_swapchains() {
 
 			// Note, if VK_FORMAT_D32_SFLOAT is used here but we're using the forward+ renderer, we should probably output a warning.
 
-			if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain, &swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data)) {
+			if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, sample_count, view_count, swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain, &swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data)) {
 				return false;
 			}
 
@@ -1683,14 +1684,27 @@ bool OpenXRAPI::acquire_image(OpenXRSwapChainInfo &p_swapchain) {
 	ERR_FAIL_COND_V(p_swapchain.image_acquired, true); // This was not released when it should be, error out and reuse...
 
 	XrResult result;
-	XrSwapchainImageAcquireInfo swapchain_image_acquire_info = {
-		XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, // type
-		nullptr // next
-	};
-	result = xrAcquireSwapchainImage(p_swapchain.swapchain, &swapchain_image_acquire_info, &p_swapchain.image_index);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to acquire swapchain image [", get_error_string(result), "]");
-		return false;
+
+	if (!p_swapchain.skip_acquire_swapchain) {
+		XrSwapchainImageAcquireInfo swapchain_image_acquire_info = {
+			XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, // type
+			nullptr // next
+		};
+
+		result = xrAcquireSwapchainImage(p_swapchain.swapchain, &swapchain_image_acquire_info, &p_swapchain.image_index);
+		if (!XR_UNQUALIFIED_SUCCESS(result)) {
+			// Make sure end_frame knows we need to submit an empty frame
+			frame_state.shouldRender = false;
+
+			if (XR_FAILED(result)) {
+				// Unexpected failure, log this!
+				print_line("OpenXR: failed to acquire swapchain image [", get_error_string(result), "]");
+				return false;
+			} else {
+				// In this scenario we silently fail, the XR runtime is simply not ready yet to acquire the swapchain.
+				return false;
+			}
+		}
 	}
 
 	XrSwapchainImageWaitInfo swapchain_image_wait_info = {
@@ -1700,9 +1714,21 @@ bool OpenXRAPI::acquire_image(OpenXRSwapChainInfo &p_swapchain) {
 	};
 
 	result = xrWaitSwapchainImage(p_swapchain.swapchain, &swapchain_image_wait_info);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to wait for swapchain image [", get_error_string(result), "]");
-		return false;
+	if (!XR_UNQUALIFIED_SUCCESS(result)) {
+		// Make sure end_frame knows we need to submit an empty frame
+		frame_state.shouldRender = false;
+
+		if (XR_FAILED(result)) {
+			// Unexpected failure, log this!
+			print_line("OpenXR: failed to wait for swapchain image [", get_error_string(result), "]");
+			return false;
+		} else {
+			// Make sure to skip trying to acquire the swapchain image in the next frame
+			p_swapchain.skip_acquire_swapchain = true;
+			return false;
+		}
+	} else {
+		p_swapchain.skip_acquire_swapchain = false;
 	}
 
 	return true;

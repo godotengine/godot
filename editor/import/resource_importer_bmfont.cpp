@@ -63,12 +63,14 @@ void ResourceImporterBMFont::get_import_options(const String &p_path, List<Impor
 	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "scaling_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled (Integer),Enabled (Fractional)"), TextServer::FIXED_SIZE_SCALE_ENABLED));
 }
 
 Error ResourceImporterBMFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing BMFont font from: " + p_source_file);
 
 	Array fallbacks = p_options["fallbacks"];
+	TextServer::FixedSizeScaleMode smode = (TextServer::FixedSizeScaleMode)p_options["scaling_mode"].operator int();
 
 	Ref<FontFile> font;
 	font.instantiate();
@@ -78,6 +80,7 @@ Error ResourceImporterBMFont::import(const String &p_source_file, const String &
 
 	font->set_allow_system_fallback(false);
 	font->set_fallbacks(fallbacks);
+	font->set_fixed_size_scale_mode(smode);
 
 	int flg = 0;
 	if ((bool)p_options["compress"]) {

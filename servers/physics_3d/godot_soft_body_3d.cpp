@@ -967,7 +967,7 @@ Vector3 GodotSoftBody3D::_compute_area_windforce(const GodotArea3D *p_area, cons
 void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	const real_t inv_delta = 1.0 / p_delta;
 
-	ERR_FAIL_COND(!get_space());
+	ERR_FAIL_NULL(get_space());
 
 	bool gravity_done = false;
 	Vector3 gravity;

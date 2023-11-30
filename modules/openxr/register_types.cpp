@@ -105,20 +105,24 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 #endif
 
 			// register our other extensions
-			if (GLOBAL_GET("xr/openxr/extensions/eye_gaze_interaction") && (!OS::get_singleton()->has_feature("mobile") || OS::get_singleton()->has_feature(XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME))) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXREyeGazeInteractionExtension));
-			}
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPalmPoseExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPicoControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRCompositionLayerDepthExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHuaweiControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandTrackingExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRDisplayRefreshRateExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRWMRControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRML2ControllerExtension));
+
+			// register gated extensions
+			if (GLOBAL_GET("xr/openxr/extensions/eye_gaze_interaction") && (!OS::get_singleton()->has_feature("mobile") || OS::get_singleton()->has_feature(XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME))) {
+				OpenXRAPI::register_extension_wrapper(memnew(OpenXREyeGazeInteractionExtension));
+			}
+			if (GLOBAL_GET("xr/openxr/extensions/hand_tracking")) {
+				OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandTrackingExtension));
+			}
 		}
 
 		if (OpenXRAPI::openxr_is_enabled()) {

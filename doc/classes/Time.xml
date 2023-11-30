@@ -48,8 +48,8 @@
 			<param index="0" name="datetime" type="String" />
 			<param index="1" name="weekday" type="bool" />
 			<description>
-				Converts the given ISO 8601 date and time string (YYYY-MM-DDTHH:MM:SS) to a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]hour[/code], [code]minute[/code], and [code]second[/code].
-				If [param weekday] is [code]false[/code], then the [code]weekday[/code] entry is excluded (the calculation is relatively expensive).
+				Converts the given ISO 8601 date and time string (YYYY-MM-DDTHH:MM:SS) to a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code skip-lint]weekday[/code], [code]hour[/code], [code]minute[/code], and [code]second[/code].
+				If [param weekday] is [code]false[/code], then the [code skip-lint]weekday[/code] entry is excluded (the calculation is relatively expensive).
 				[b]Note:[/b] Any decimal fraction in the time string will be ignored silently.
 			</description>
 		</method>
@@ -152,7 +152,9 @@
 		<method name="get_time_zone_from_system" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns the current time zone as a dictionary of keys: [code]bias[/code] and [code]name[/code]. The [code]bias[/code] value is the offset from UTC in minutes, since not all time zones are multiples of an hour from UTC.
+				Returns the current time zone as a dictionary of keys: [code]bias[/code] and [code]name[/code]. 
+				- [code]bias[/code] is the offset from UTC in minutes, since not all time zones are multiples of an hour from UTC.
+				- [code]name[/code] is the localized name of the time zone, according to the OS locale settings of the current user.
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime_dict" qualifiers="const">

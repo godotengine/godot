@@ -97,10 +97,12 @@ void EditorLog::_update_theme() {
 	log->add_theme_constant_override("text_highlight_v_padding", 0);
 
 	const int font_size = get_theme_font_size(SNAME("output_source_size"), EditorStringName(EditorFonts));
+	log->begin_bulk_theme_override();
 	log->add_theme_font_size_override("normal_font_size", font_size);
 	log->add_theme_font_size_override("bold_font_size", font_size);
 	log->add_theme_font_size_override("italics_font_size", font_size);
 	log->add_theme_font_size_override("mono_font_size", font_size);
+	log->end_bulk_theme_override();
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Popup")));
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));

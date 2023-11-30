@@ -759,20 +759,29 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				}
 			} else {
 				if (uv_drag && !uv_create) {
-					if (uv_edit_mode[0]->is_pressed()) { // Edit UV.
+					if (uv_edit_mode[0]->is_pressed()) {
 						undo_redo->create_action(TTR("Transform UV Map"));
 						undo_redo->add_do_method(node, "set_uv", node->get_uv());
 						undo_redo->add_undo_method(node, "set_uv", points_prev);
 						undo_redo->add_do_method(uv_edit_draw, "queue_redraw");
 						undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
 						undo_redo->commit_action();
-					} else if (uv_edit_mode[1]->is_pressed() && uv_move_current == UV_MODE_EDIT_POINT) { // Edit polygon.
-						undo_redo->create_action(TTR("Transform Polygon"));
-						undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
-						undo_redo->add_undo_method(node, "set_polygon", points_prev);
-						undo_redo->add_do_method(uv_edit_draw, "queue_redraw");
-						undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
-						undo_redo->commit_action();
+					} else if (uv_edit_mode[1]->is_pressed()) {
+						switch (uv_move_current) {
+							case UV_MODE_EDIT_POINT:
+							case UV_MODE_MOVE:
+							case UV_MODE_ROTATE:
+							case UV_MODE_SCALE: {
+								undo_redo->create_action(TTR("Transform Polygon"));
+								undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
+								undo_redo->add_undo_method(node, "set_polygon", points_prev);
+								undo_redo->add_do_method(uv_edit_draw, "queue_redraw");
+								undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
+								undo_redo->commit_action();
+							} break;
+							default: {
+							} break;
+						}
 					}
 
 					uv_drag = false;
@@ -1161,7 +1170,7 @@ void Polygon2DEditor::_uv_draw() {
 
 						found_child = true;
 
-						Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
+						Transform2D bone_xform = node->get_global_transform().affine_inverse().translated(-node->get_offset()) * (skeleton->get_global_transform() * bone->get_skeleton_rest());
 						Transform2D endpoint_xform = bone_xform * n->get_transform();
 
 						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
@@ -1171,7 +1180,7 @@ void Polygon2DEditor::_uv_draw() {
 
 					if (!found_child) {
 						//draw normally
-						Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
+						Transform2D bone_xform = node->get_global_transform().affine_inverse().translated(-node->get_offset()) * (skeleton->get_global_transform() * bone->get_skeleton_rest());
 						Transform2D endpoint_xform = bone_xform * Transform2D(0, Vector2(bone->get_length(), 0));
 
 						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);

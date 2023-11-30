@@ -7,7 +7,7 @@ func test():
 	test_builtin_call_validated(Vector2.UP, false)
 	test_object_call(RefCounted.new(), false)
 	test_object_call_method_bind(Resource.new(), false)
-	test_object_call_ptrcall(RefCounted.new(), false)
+	test_object_call_method_bind_validated(RefCounted.new(), false)
 
 	print("end")
 
@@ -40,7 +40,7 @@ func test_object_call_method_bind(v: Resource, f):
 	v.duplicate() # Native type method call with MethodBind.
 	assert(not f) # Test unary operator reading from `nil`.
 
-func test_object_call_ptrcall(v: RefCounted, f):
+func test_object_call_method_bind_validated(v: RefCounted, f):
 	@warning_ignore("return_value_discarded")
-	v.get_reference_count() # Native type method call with ptrcall.
+	v.get_reference_count() # Native type method call with validated MethodBind.
 	assert(not f) # Test unary operator reading from `nil`.

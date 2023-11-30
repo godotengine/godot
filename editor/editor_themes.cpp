@@ -55,7 +55,7 @@ void EditorColorMap::add_conversion_color_pair(const String p_from_color, const 
 	color_conversion_map[Color::html(p_from_color)] = Color::html(p_to_color);
 }
 
-void EditorColorMap::add_conversion_exception(const StringName p_icon_name) {
+void EditorColorMap::add_conversion_exception(const StringName &p_icon_name) {
 	color_conversion_exceptions.insert(p_icon_name);
 }
 
@@ -63,12 +63,15 @@ void EditorColorMap::create() {
 	// Some of the colors below are listed for completeness sake.
 	// This can be a basis for proper palette validation later.
 
-	// Convert:    FROM       TO
+	// Convert:               FROM       TO
 	add_conversion_color_pair("#478cbf", "#478cbf"); // Godot Blue
 	add_conversion_color_pair("#414042", "#414042"); // Godot Gray
 
 	add_conversion_color_pair("#ffffff", "#414141"); // Pure white
+	add_conversion_color_pair("#fefefe", "#fefefe"); // Forced light color
 	add_conversion_color_pair("#000000", "#bfbfbf"); // Pure black
+	add_conversion_color_pair("#010101", "#010101"); // Forced dark color
+
 	// Keep pure RGB colors as is, but list them for explicitness.
 	add_conversion_color_pair("#ff0000", "#ff0000"); // Pure red
 	add_conversion_color_pair("#00ff00", "#00ff00"); // Pure green
@@ -76,7 +79,6 @@ void EditorColorMap::create() {
 
 	// GUI Colors
 	add_conversion_color_pair("#e0e0e0", "#5a5a5a"); // Common icon color
-	add_conversion_color_pair("#fefefe", "#fefefe"); // Forced light color
 	add_conversion_color_pair("#808080", "#808080"); // GUI disabled color
 	add_conversion_color_pair("#b3b3b3", "#363636"); // GUI disabled light color
 	add_conversion_color_pair("#699ce8", "#699ce8"); // GUI highlight color
@@ -84,7 +86,6 @@ void EditorColorMap::create() {
 
 	add_conversion_color_pair("#c38ef1", "#a85de9"); // Animation
 	add_conversion_color_pair("#8da5f3", "#3d64dd"); // 2D
-	add_conversion_color_pair("#4b70ea", "#1a3eac"); // 2D Dark
 	add_conversion_color_pair("#7582a8", "#6d83c8"); // 2D Abstract
 	add_conversion_color_pair("#fc7f7f", "#cd3838"); // 3D
 	add_conversion_color_pair("#b56d6d", "#be6a6a"); // 3D Abstract
@@ -215,6 +216,11 @@ void EditorColorMap::create() {
 	add_conversion_exception("Breakpoint");
 }
 
+void EditorColorMap::finish() {
+	color_conversion_map.clear();
+	color_conversion_exceptions.clear();
+}
+
 Vector<StringName> EditorTheme::editor_theme_types;
 
 // TODO: Refactor these and corresponding Theme methods to use the bool get_xxx(r_value) pattern internally.
@@ -301,13 +307,15 @@ Ref<StyleBox> EditorTheme::get_stylebox(const StringName &p_name, const StringNa
 	}
 }
 
-EditorTheme::EditorTheme() {
-	if (editor_theme_types.is_empty()) {
-		editor_theme_types.append(EditorStringName(Editor));
-		editor_theme_types.append(EditorStringName(EditorFonts));
-		editor_theme_types.append(EditorStringName(EditorIcons));
-		editor_theme_types.append(EditorStringName(EditorStyles));
-	}
+void EditorTheme::initialize() {
+	editor_theme_types.append(EditorStringName(Editor));
+	editor_theme_types.append(EditorStringName(EditorFonts));
+	editor_theme_types.append(EditorStringName(EditorIcons));
+	editor_theme_types.append(EditorStringName(EditorStyles));
+}
+
+void EditorTheme::finalize() {
+	editor_theme_types.clear();
 }
 
 // Editor theme generatior.
@@ -1801,7 +1809,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "HScrollBar", make_line_stylebox(separator_color, 50));
 	} else {
-		theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
+		theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, -5, 1, -5, 1));
 	}
 	theme->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
 	theme->set_stylebox("grabber", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
@@ -1819,7 +1827,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "VScrollBar", make_line_stylebox(separator_color, 50, 1, 1, true));
 	} else {
-		theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
+		theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, -5, 1, -5));
 	}
 	theme->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
 	theme->set_stylebox("grabber", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
@@ -2039,12 +2047,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphn_sb_panel_selected->set_corner_radius_individual(0, 0, corner_radius * EDSCALE, corner_radius * EDSCALE);
 	graphn_sb_panel_selected->set_expand_margin(SIDE_TOP, 17 * EDSCALE);
 
-	const int gn_titlebar_margin_side = 12;
-	Ref<StyleBoxFlat> graphn_sb_titlebar = make_flat_stylebox(graphnode_bg, gn_titlebar_margin_side, gn_margin_top, gn_titlebar_margin_side, 0, corner_width);
+	const int gn_titlebar_margin_left = 12;
+	const int gn_titlebar_margin_right = 4; // The rest is for the close button.
+	Ref<StyleBoxFlat> graphn_sb_titlebar = make_flat_stylebox(graphnode_bg, gn_titlebar_margin_left, gn_margin_top, gn_titlebar_margin_right, 0, corner_width);
 	graphn_sb_titlebar->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
 	graphn_sb_titlebar->set_corner_radius_individual(corner_radius * EDSCALE, corner_radius * EDSCALE, 0, 0);
 
-	Ref<StyleBoxFlat> graphn_sb_titlebar_selected = make_flat_stylebox(graph_node_selected_border_color, gn_titlebar_margin_side, gn_margin_top, gn_titlebar_margin_side, 0, corner_width);
+	Ref<StyleBoxFlat> graphn_sb_titlebar_selected = make_flat_stylebox(graph_node_selected_border_color, gn_titlebar_margin_left, gn_margin_top, gn_titlebar_margin_right, 0, corner_width);
 	graphn_sb_titlebar_selected->set_corner_radius_individual(corner_radius * EDSCALE, corner_radius * EDSCALE, 0, 0);
 	graphn_sb_titlebar_selected->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
 	Ref<StyleBoxEmpty> graphn_sb_slot = make_empty_stylebox(12, 0, 12, 0);
@@ -2215,7 +2224,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// adaptive script theme constants
 	// for comments and elements with lower relevance
-	const Color dim_color = Color(font_color.r, font_color.g, font_color.b, 0.5);
+	const Color dim_color = Color(font_color, 0.5);
 
 	const float mono_value = mono_color.r;
 	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
@@ -2229,6 +2238,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color engine_type_color = dark_theme ? Color(0.56, 1, 0.86) : Color(0.11, 0.55, 0.4);
 	const Color user_type_color = dark_theme ? Color(0.78, 1, 0.93) : Color(0.18, 0.45, 0.4);
 	const Color comment_color = dark_theme ? dim_color : Color(0.08, 0.08, 0.08, 0.5);
+	const Color doc_comment_color = dark_theme ? Color(0.6, 0.7, 0.8, 0.8) : Color(0.15, 0.15, 0.4, 0.7);
 	const Color string_color = dark_theme ? Color(1, 0.93, 0.63) : Color(0.6, 0.42, 0);
 
 	// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
@@ -2272,6 +2282,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/theme/highlighting/engine_type_color", engine_type_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/user_type_color", user_type_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/comment_color", comment_color, true);
+		setting->set_initial_value("text_editor/theme/highlighting/doc_comment_color", doc_comment_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/string_color", string_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/background_color", te_background_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/completion_background_color", completion_background_color, true);

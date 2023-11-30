@@ -497,20 +497,18 @@ void NavigationRegion2D::_region_enter_navigation_map() {
 		return;
 	}
 
-	if (enabled) {
-		if (map_override.is_valid()) {
-			NavigationServer2D::get_singleton()->region_set_map(region, map_override);
-			for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-				if (constrain_avoidance_obstacles[i].is_valid()) {
-					NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], map_override);
-				}
+	if (map_override.is_valid()) {
+		NavigationServer2D::get_singleton()->region_set_map(region, map_override);
+		for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
+			if (constrain_avoidance_obstacles[i].is_valid()) {
+				NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], map_override);
 			}
-		} else {
-			NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
-			for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-				if (constrain_avoidance_obstacles[i].is_valid()) {
-					NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], get_world_2d()->get_navigation_map());
-				}
+		}
+	} else {
+		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+		for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
+			if (constrain_avoidance_obstacles[i].is_valid()) {
+				NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], get_world_2d()->get_navigation_map());
 			}
 		}
 	}
@@ -522,6 +520,8 @@ void NavigationRegion2D::_region_enter_navigation_map() {
 			NavigationServer2D::get_singleton()->obstacle_set_position(constrain_avoidance_obstacles[i], get_global_position());
 		}
 	}
+
+	NavigationServer2D::get_singleton()->region_set_enabled(region, enabled);
 
 	queue_redraw();
 }

@@ -598,7 +598,7 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 			// Determine slot height.
 			int slot_index = graph_node->get_input_port_slot(j);
-			Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+			Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 
 			port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
@@ -612,7 +612,7 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 			// Determine slot height.
 			int slot_index = graph_node->get_output_port_slot(j);
-			Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+			Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 			port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 			if (is_in_output_hotzone(graph_node, j, p_point / zoom, port_size)) {
@@ -643,7 +643,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 				// Determine slot height.
 				int slot_index = graph_node->get_output_port_slot(j);
-				Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+				Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 				port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 				if (is_in_output_hotzone(graph_node, j, click_pos, port_size)) {
@@ -700,7 +700,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 				// Determine slot height.
 				int slot_index = graph_node->get_input_port_slot(j);
-				Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+				Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 				port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 				if (is_in_input_hotzone(graph_node, j, click_pos, port_size)) {
@@ -777,7 +777,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						// Determine slot height.
 						int slot_index = graph_node->get_output_port_slot(j);
-						Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+						Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 						port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 						int type = graph_node->get_output_port_type(j);
@@ -801,7 +801,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						// Determine slot height.
 						int slot_index = graph_node->get_input_port_slot(j);
-						Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+						Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 						port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 						int type = graph_node->get_input_port_type(j);
@@ -1409,7 +1409,7 @@ void GraphEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputE
 void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity) {
 	for (Connection &E : connections) {
 		if (E.from_node == p_from && E.from_port == p_from_port && E.to_node == p_to && E.to_port == p_to_port) {
-			if (Math::is_equal_approx(E.activity, p_activity)) {
+			if (!Math::is_equal_approx(E.activity, p_activity)) {
 				// Update only if changed.
 				top_layer->queue_redraw();
 				minimap->queue_redraw();
@@ -2015,7 +2015,7 @@ GraphEdit::GraphEdit() {
 	top_layer->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	connections_layer = memnew(Control);
-	add_child(connections_layer, false);
+	add_child(connections_layer, false, INTERNAL_MODE_FRONT);
 	connections_layer->connect("draw", callable_mp(this, &GraphEdit::_connections_layer_draw));
 	connections_layer->set_name("_connection_layer");
 	connections_layer->set_disable_visibility_clip(true); // Necessary, so it can draw freely and be offset.

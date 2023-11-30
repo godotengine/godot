@@ -479,19 +479,8 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			accept_event();
 			return;
 		}
-		if (k->is_action("ui_home", true)) {
-			code_completion_current_selected = 0;
-			code_completion_force_item_center = -1;
-			queue_redraw();
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_end", true)) {
-			code_completion_current_selected = code_completion_options.size() - 1;
-			code_completion_force_item_center = -1;
-			queue_redraw();
-			accept_event();
-			return;
+		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true)) {
+			cancel_code_completion();
 		}
 		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
 			confirm_code_completion(k->is_action("ui_text_completion_replace", true));
@@ -2873,7 +2862,8 @@ void CodeEdit::_update_code_region_tags() {
 		return;
 	}
 
-	for (int i = 0; i < delimiters.size(); i++) {
+	// A shorter delimiter has higher priority.
+	for (int i = delimiters.size() - 1; i >= 0; i--) {
 		if (delimiters[i].type != DelimiterType::TYPE_COMMENT) {
 			continue;
 		}
@@ -3115,6 +3105,8 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 		ERR_FAIL_COND_MSG(delimiters[i].start_key == p_start_key, "delimiter with start key '" + p_start_key + "' already exists.");
 		if (p_start_key.length() < delimiters[i].start_key.length()) {
 			at++;
+		} else {
+			break;
 		}
 	}
 

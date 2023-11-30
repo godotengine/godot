@@ -681,6 +681,9 @@ void Window::_propagate_window_notification(Node *p_node, int p_notification) {
 void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 	switch (p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
+			if (!is_inside_tree()) {
+				return;
+			}
 			Window *root = get_tree()->get_root();
 			if (root->gui.windowmanager_window_over) {
 #ifdef DEV_ENABLED
@@ -696,6 +699,9 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			}
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
+			if (!is_inside_tree()) {
+				return;
+			}
 			Window *root = get_tree()->get_root();
 			if (!root->gui.windowmanager_window_over) {
 #ifdef DEV_ENABLED
@@ -779,7 +785,7 @@ void Window::set_visible(bool p_visible) {
 		return;
 	}
 
-	ERR_FAIL_COND_MSG(get_parent() == nullptr, "Can't change visibility of main window.");
+	ERR_FAIL_NULL_MSG(get_parent(), "Can't change visibility of main window.");
 
 	visible = p_visible;
 

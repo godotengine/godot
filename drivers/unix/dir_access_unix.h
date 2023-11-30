@@ -82,6 +82,8 @@ public:
 	virtual String read_link(String p_file) override;
 	virtual Error create_link(String p_source, String p_target) override;
 
+	virtual bool is_case_sensitive(const String &p_path) const override;
+
 	virtual uint64_t get_space_left() override;
 
 	virtual String get_filesystem_type() const override;

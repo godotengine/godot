@@ -1808,7 +1808,7 @@ real_t Curve3D::_sample_baked_tilt(Interval p_interval) const {
 }
 
 // Internal method for getting posture at a baked point. Assuming caller
-// make all sanity checks.
+// make all safety checks.
 Basis Curve3D::_compose_posture(int p_index) const {
 	Vector3 forward = baked_forward_vector_cache[p_index];
 

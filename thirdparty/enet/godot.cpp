@@ -458,7 +458,7 @@ int enet_host_dtls_client_setup(ENetHost *host, const char *p_for_hostname, void
 }
 
 void enet_host_refuse_new_connections(ENetHost *host, int p_refuse) {
-	ERR_FAIL_COND(!host->socket);
+	ERR_FAIL_NULL(host->socket);
 	((ENetGodotSocket *)host->socket)->set_refuse_new_connections(p_refuse);
 }
 

@@ -828,10 +828,12 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	Ref<StyleBoxEmpty> sbempty = memnew(StyleBoxEmpty);
 	for (int i = 0; i < hbc->get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(hbc->get_child(i));
+		child->begin_bulk_theme_override();
 		child->add_theme_style_override("normal", sbempty);
 		child->add_theme_style_override("hover", sbempty);
 		child->add_theme_style_override("focus", sbempty);
 		child->add_theme_style_override("pressed", sbempty);
+		child->end_bulk_theme_override();
 	}
 
 	HSeparator *separator = memnew(HSeparator);

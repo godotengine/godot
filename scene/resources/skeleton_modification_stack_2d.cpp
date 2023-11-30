@@ -37,7 +37,7 @@ void SkeletonModificationStack2D::_get_property_list(List<PropertyInfo> *p_list)
 				PropertyInfo(Variant::OBJECT, "modifications/" + itos(i),
 						PROPERTY_HINT_RESOURCE_TYPE,
 						"SkeletonModification2D",
-						PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_ALWAYS_DUPLICATE));
+						PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 	}
 }
 
@@ -49,7 +49,7 @@ bool SkeletonModificationStack2D::_set(const StringName &p_path, const Variant &
 		set_modification(mod_idx, p_value);
 		return true;
 	}
-	return true;
+	return false;
 }
 
 bool SkeletonModificationStack2D::_get(const StringName &p_path, Variant &r_ret) const {
@@ -60,7 +60,7 @@ bool SkeletonModificationStack2D::_get(const StringName &p_path, Variant &r_ret)
 		r_ret = get_modification(mod_idx);
 		return true;
 	}
-	return true;
+	return false;
 }
 
 void SkeletonModificationStack2D::setup() {

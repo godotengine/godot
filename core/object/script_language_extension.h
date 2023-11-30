@@ -99,6 +99,7 @@ public:
 #endif // TOOLS_ENABLED
 
 	EXBIND1RC(bool, has_method, const StringName &)
+	EXBIND1RC(bool, has_static_method, const StringName &)
 
 	GDVIRTUAL1RC(Dictionary, _get_method_info, const StringName &)
 	virtual MethodInfo get_method_info(const StringName &p_method) const override {
@@ -240,6 +241,16 @@ public:
 		}
 	}
 
+	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
+
+	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
+		Vector<String> ret;
+		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
+		for (int i = 0; i < ret.size(); i++) {
+			p_words->push_back(ret[i]);
+		}
+	}
+
 	GDVIRTUAL0RC(Vector<String>, _get_string_delimiters)
 
 	virtual void get_string_delimiters(List<String> *p_words) const override {
@@ -302,6 +313,9 @@ public:
 				ERR_CONTINUE(!err.has("message"));
 
 				ScriptError serr;
+				if (err.has("path")) {
+					serr.path = err["path"];
+				}
 				serr.line = err["line"];
 				serr.column = err["column"];
 				serr.message = err["message"];

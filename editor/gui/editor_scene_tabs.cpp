@@ -341,6 +341,8 @@ void EditorSceneTabs::_bind_methods() {
 EditorSceneTabs::EditorSceneTabs() {
 	singleton = this;
 
+	set_process_shortcut_input(true);
+
 	tabbar_panel = memnew(PanelContainer);
 	add_child(tabbar_panel);
 	tabbar_container = memnew(HBoxContainer);

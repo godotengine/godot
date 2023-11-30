@@ -1006,15 +1006,6 @@ msgstr "Zavřít"
 msgid "Connect"
 msgstr "Připojit"
 
-msgid "Class:"
-msgstr "Třída:"
-
-msgid "Signal:"
-msgstr "Signál:"
-
-msgid "No description."
-msgstr "Bez popisu."
-
 msgid "Connect '%s' to '%s'"
 msgstr "Připojit '%s' k '%s'"
 
@@ -1449,21 +1440,6 @@ msgstr "Zlatí sponzoři"
 
 msgid "Silver Sponsors"
 msgstr "Stříbrní sponzoři"
-
-msgid "Bronze Sponsors"
-msgstr "Bronzoví sponzoři"
-
-msgid "Mini Sponsors"
-msgstr "Mini sponzoři"
-
-msgid "Gold Donors"
-msgstr "Zlatí dárci"
-
-msgid "Silver Donors"
-msgstr "Stříbrní dárci"
-
-msgid "Bronze Donors"
-msgstr "Bronzoví dárci"
 
 msgid "Donors"
 msgstr "Dárci"
@@ -1913,6 +1889,9 @@ msgstr "Vráceny chybové kódy:"
 msgid "Top"
 msgstr "Horní"
 
+msgid "Class:"
+msgstr "Třída:"
+
 msgid "Inherits:"
 msgstr "Dědí z:"
 
@@ -1990,6 +1969,12 @@ msgstr "Popisy metod"
 msgid "Operator Descriptions"
 msgstr "Popisy operátorů"
 
+msgid "Property:"
+msgstr "Vlastnost:"
+
+msgid "Signal:"
+msgstr "Signál:"
+
 msgid "%d match."
 msgstr "%d shoda."
 
@@ -2049,9 +2034,6 @@ msgstr "Vlastnost"
 
 msgid "Theme Property"
 msgstr "Vlastnost motivu"
-
-msgid "Property:"
-msgstr "Vlastnost:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -2820,6 +2802,9 @@ msgstr "Rychlé načtení"
 msgid "Make Unique"
 msgstr "Vytvořit unikátní"
 
+msgid "Save As..."
+msgstr "Uložit jako..."
+
 msgid "Show in FileSystem"
 msgstr "Zobrazit v souborovém systému"
 
@@ -3117,11 +3102,11 @@ msgstr ""
 msgid "Runnable"
 msgstr "Spustitelný"
 
-msgid "Resources to export:"
-msgstr "Zdroje k exportu:"
-
 msgid "Delete preset '%s'?"
 msgstr "Odstranit předvolbu '%s'?"
+
+msgid "Resources to export:"
+msgstr "Zdroje k exportu:"
 
 msgid "Release"
 msgstr "Vydání"
@@ -3282,9 +3267,6 @@ msgstr "Duplikace složky:"
 msgid "New Inherited Scene"
 msgstr "Nová zděděná scéna"
 
-msgid "Set As Main Scene"
-msgstr "Nastavit jako hlavní scénu"
-
 msgid "Open Scenes"
 msgstr "Otevřít scény"
 
@@ -3347,9 +3329,6 @@ msgstr "Přejmenovat..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Znovu skenovat souborový systém"
-
-msgid "Toggle Split Mode"
-msgstr "Přepnout režim rozdělení"
 
 msgid ""
 "Scanning Files,\n"
@@ -3742,9 +3721,6 @@ msgstr "Nahrát existující zdroj z disku a editovat ho."
 
 msgid "Save the currently edited resource."
 msgstr "Uložit právě editovaný zdroj."
-
-msgid "Save As..."
-msgstr "Uložit jako..."
 
 msgid "Extra resource options."
 msgstr "Další možnosti zdrojů."
@@ -4142,14 +4118,14 @@ msgstr "Připnout AnimationPlayer"
 msgid "Error!"
 msgstr "Chyba!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Přechodové časy prolnutí animací"
+
 msgid "Blend Times:"
 msgstr "Blend časy:"
 
 msgid "Next (Auto Queue):"
 msgstr "Další (Automatická řada):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Přechodové časy prolnutí animací"
 
 msgid "Move Node"
 msgstr "Přesunout uzel"
@@ -7484,14 +7460,6 @@ msgstr ""
 "Zakázání \"upravitelné instance“ obnoví výchozí nastavení všech vlastností "
 "uzlu."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Povolení možnosti \"Načíst jako placeholder\" zakáže možnost \"Upravitelní "
-"potomci\" a způsobí, že všechny vlastnosti uzlu budou vráceny na výchozí "
-"hodnoty."
-
 msgid "Make Local"
 msgstr "Změnit na lokální"
 
@@ -7548,9 +7516,6 @@ msgstr "Vymazat dědičnost"
 
 msgid "Editable Children"
 msgstr "Upravitelní potomci"
-
-msgid "Load As Placeholder"
-msgstr "Načíst jako placeholder"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
@@ -7963,22 +7928,8 @@ msgstr "Nelze zapsat soubor rozšiřujícího balíčku!"
 msgid "Building Android Project (gradle)"
 msgstr "Buildování projektu pro Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Buildování projektu pro Android se nezdařilo, zkontrolujte chybový výstup. "
-"Případně navštivte dokumentaci o build pro Android na docs.godotengine.org."
-
 msgid "Moving output"
 msgstr "Přesunout výstup"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Nelze kopírovat či přejmenovat exportovaný soubor, zkontrolujte výstupy v "
-"adresáři projektu gradle."
 
 msgid "Creating APK..."
 msgstr "Vytvářím APK..."
@@ -8000,6 +7951,9 @@ msgstr "Chybí identifikátor."
 
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Znak '%s' není dovolen v identifikátoru."
+
+msgid "All Files"
+msgstr "Všechny soubory"
 
 msgid "Invalid executable file."
 msgstr "Neplatný spouštěcí soubor."
@@ -8257,9 +8211,6 @@ msgstr "Pozor!"
 msgid "Please Confirm..."
 msgstr "Potvrďte prosím..."
 
-msgid "All Files"
-msgstr "Všechny soubory"
-
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr ""
 "Pokud má \"Exp Edit\" hodnotu true, pak \"Min Value\" musí být větší než 0."
@@ -8275,9 +8226,6 @@ msgstr ""
 
 msgid "(Other)"
 msgstr "(Ostatní)"
-
-msgid "Unsupported BMFont texture format."
-msgstr "Nepodporovaný formát textury BMFont."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

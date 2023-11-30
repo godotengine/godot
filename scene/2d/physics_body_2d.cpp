@@ -75,7 +75,7 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_t
 
 bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
 	if (is_only_update_transform_changes_enabled()) {
-		ERR_PRINT("Move functions do not work together with 'sync to physics' option. Please read the documentation.");
+		ERR_PRINT("Move functions do not work together with 'sync to physics' option. See the documentation for details.");
 	}
 
 	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_parameters, &r_result);
@@ -431,7 +431,9 @@ struct _RigidBody2DInOut {
 
 void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
+		set_block_transform_notify(true);
 		set_global_transform(p_state->get_transform());
+		set_block_transform_notify(false);
 	}
 
 	linear_velocity = p_state->get_linear_velocity();
@@ -446,13 +448,20 @@ void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	lock_callback();
 
-	set_block_transform_notify(true); // don't want notify (would feedback loop)
-	_sync_body_state(p_state);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
+		_sync_body_state(p_state);
 
-	GDVIRTUAL_CALL(_integrate_forces, p_state);
+		Transform2D old_transform = get_global_transform();
+		GDVIRTUAL_CALL(_integrate_forces, p_state);
+		Transform2D new_transform = get_global_transform();
+
+		if (new_transform != old_transform) {
+			// Update the physics server with the new transform, to prevent it from being overwritten at the sync below.
+			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
+		}
+	}
 
 	_sync_body_state(p_state);
-	set_block_transform_notify(false); // want it back
 
 	if (contact_monitor) {
 		contact_monitor->locked = true;

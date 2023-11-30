@@ -31,6 +31,7 @@
 #include "animation_track_editor.h"
 
 #include "animation_track_editor_plugins.h"
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
 #include "editor/animation_bezier_editor.h"
 #include "editor/editor_node.h"
@@ -330,6 +331,7 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				undo_redo->commit_action();
 
 				setting = false;
+				notify_change(); // To update limits for `start_offset`/`end_offset` sliders (they depend on the stream length).
 				return true;
 			}
 
@@ -586,8 +588,10 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 		} break;
 		case Animation::TYPE_AUDIO: {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("stream"), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("start_offset"), PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("end_offset"), PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
+			Ref<AudioStream> audio_stream = animation->audio_track_get_key_stream(track, key);
+			String hint_string = vformat("0,%.4f,0.0001,or_greater", audio_stream.is_valid() ? audio_stream->get_length() : 3600.0);
+			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("start_offset"), PROPERTY_HINT_RANGE, hint_string));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("end_offset"), PROPERTY_HINT_RANGE, hint_string));
 
 		} break;
 		case Animation::TYPE_ANIMATION: {
@@ -1679,7 +1683,7 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			int x = mb->get_position().x - get_name_limit();
 
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal(SNAME("timeline_changed"), ofs, false, mb->is_alt_pressed());
+			emit_signal(SNAME("timeline_changed"), ofs, mb->is_alt_pressed());
 			dragging_timeline = true;
 		}
 	}
@@ -1701,7 +1705,7 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_timeline) {
 			int x = mm->get_position().x - get_name_limit();
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal(SNAME("timeline_changed"), ofs, false, mm->is_alt_pressed());
+			emit_signal(SNAME("timeline_changed"), ofs, mm->is_alt_pressed());
 		}
 	}
 }
@@ -1744,7 +1748,7 @@ void AnimationTimelineEdit::_track_added(int p_track) {
 void AnimationTimelineEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("zoom_changed"));
 	ADD_SIGNAL(MethodInfo("name_limit_changed"));
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
+	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("track_added", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("length_changed", PropertyInfo(Variant::FLOAT, "size")));
 
@@ -2695,18 +2699,25 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					AnimationPlayer *ap = ape->get_player();
 					if (ap) {
 						NodePath npath = animation->track_get_path(track);
-						Node *nd = ap->get_node(ap->get_root_node())->get_node(NodePath(npath.get_concatenated_names()));
-						StringName prop = npath.get_concatenated_subnames();
-						PropertyInfo prop_info;
-						ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
+						Node *a_ap_root_node = ap->get_node(ap->get_root_node());
+						Node *nd = nullptr;
+						// We must test that we have a valid a_ap_root_node before trying to access its content to init the nd Node.
+						if (a_ap_root_node) {
+							nd = a_ap_root_node->get_node(NodePath(npath.get_concatenated_names()));
+						}
+						if (nd) {
+							StringName prop = npath.get_concatenated_subnames();
+							PropertyInfo prop_info;
+							ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
 #ifdef DISABLE_DEPRECATED
-						bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians_as_degrees") != -1;
+							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians_as_degrees") != -1;
 #else
-						bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians") != -1;
+							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians") != -1;
 #endif // DISABLE_DEPRECATED
-						if (is_angle) {
-							menu->add_icon_item(get_editor_theme_icon(SNAME("InterpLinearAngle")), TTR("Linear Angle"), MENU_INTERPOLATION_LINEAR_ANGLE);
-							menu->add_icon_item(get_editor_theme_icon(SNAME("InterpCubicAngle")), TTR("Cubic Angle"), MENU_INTERPOLATION_CUBIC_ANGLE);
+							if (is_angle) {
+								menu->add_icon_item(get_editor_theme_icon(SNAME("InterpLinearAngle")), TTR("Linear Angle"), MENU_INTERPOLATION_LINEAR_ANGLE);
+								menu->add_icon_item(get_editor_theme_icon(SNAME("InterpCubicAngle")), TTR("Cubic Angle"), MENU_INTERPOLATION_CUBIC_ANGLE);
+							}
 						}
 					}
 				}
@@ -3137,7 +3148,7 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselect
 }
 
 void AnimationTrackEdit::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
+	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("remove_request", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("dropped", PropertyInfo(Variant::INT, "from_track"), PropertyInfo(Variant::INT, "to_track")));
 	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::FLOAT, "offset")));
@@ -3169,26 +3180,7 @@ AnimationTrackEdit::AnimationTrackEdit() {
 
 AnimationTrackEdit *AnimationTrackEditPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
 	if (get_script_instance()) {
-		Variant args[6] = {
-			p_object,
-			p_type,
-			p_property,
-			p_hint,
-			p_hint_string,
-			p_usage
-		};
-
-		Variant *argptrs[6] = {
-			&args[0],
-			&args[1],
-			&args[2],
-			&args[3],
-			&args[4],
-			&args[5]
-		};
-
-		Callable::CallError ce;
-		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->callp("create_value_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_value_track_edit", p_object, p_type, p_property, p_hint, p_hint_string, p_usage));
 	}
 	return nullptr;
 }
@@ -3476,8 +3468,8 @@ void AnimationTrackEditor::_name_limit_changed() {
 	_redraw_tracks();
 }
 
-void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only) {
-	emit_signal(SNAME("timeline_changed"), p_new_pos, p_drag, p_timeline_only);
+void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_timeline_only) {
+	emit_signal(SNAME("timeline_changed"), p_new_pos, p_timeline_only);
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
@@ -3922,7 +3914,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND(history->get_path_size() == 0);
 	Object *obj = ObjectDB::get_instance(history->get_path_object(0));
-	ERR_FAIL_COND(!Object::cast_to<Node>(obj));
+	ERR_FAIL_NULL(Object::cast_to<Node>(obj));
 
 	// Let's build a node path.
 	Node *node = Object::cast_to<Node>(obj);
@@ -4114,6 +4106,12 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	for (int i = 0; i < leftover_path.size() - 1; i++) {
 		bool valid;
 		property_info_base = property_info_base.get_named(leftover_path[i], valid);
+	}
+
+	if (property_info_base.is_null()) {
+		WARN_PRINT(vformat("Could not determine track hint for '%s:%s' because its base property is null.",
+				String(path.get_concatenated_names()), String(path.get_concatenated_subnames())));
+		return PropertyInfo();
 	}
 
 	List<PropertyInfo> pinfo;
@@ -5577,7 +5575,7 @@ void AnimationTrackEditor::goto_prev_step(bool p_from_mouse_event) {
 		pos = 0;
 	}
 	set_anim_pos(pos);
-	emit_signal(SNAME("timeline_changed"), pos, true, false);
+	emit_signal(SNAME("timeline_changed"), pos, false);
 }
 
 void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event, bool p_timeline_only) {
@@ -5604,7 +5602,7 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event, bool p_timeli
 	}
 	set_anim_pos(pos);
 
-	emit_signal(SNAME("timeline_changed"), pos, true, p_timeline_only);
+	emit_signal(SNAME("timeline_changed"), pos, p_timeline_only);
 }
 
 void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
@@ -6376,7 +6374,7 @@ void AnimationTrackEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_bezier_track_set_key_handle_mode", "animation", "track_idx", "key_idx", "key_handle_mode", "key_handle_set_mode"), &AnimationTrackEditor::_bezier_track_set_key_handle_mode, DEFVAL(Animation::HANDLE_SET_MODE_NONE));
 
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
+	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("keying_changed"));
 	ADD_SIGNAL(MethodInfo("animation_len_changed", PropertyInfo(Variant::FLOAT, "len")));
 	ADD_SIGNAL(MethodInfo("animation_step_changed", PropertyInfo(Variant::FLOAT, "step")));

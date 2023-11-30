@@ -121,16 +121,16 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
 #endif
 
-	gdmono = memnew(GDMono);
-	gdmono->initialize();
-
 #ifdef TOOLS_ENABLED
-	if (gdmono->is_runtime_initialized()) {
-		gdmono->initialize_load_assemblies();
-	}
-
 	EditorNode::add_init_callback(&_editor_init_callback);
 #endif
+
+	gdmono = memnew(GDMono);
+
+	// Initialize only if the project uses C#.
+	if (gdmono->should_initialize()) {
+		gdmono->initialize();
+	}
 }
 
 void CSharpLanguage::finish() {
@@ -140,6 +140,10 @@ void CSharpLanguage::finish() {
 void CSharpLanguage::finalize() {
 	if (finalized) {
 		return;
+	}
+
+	if (gdmono && gdmono->is_runtime_initialized() && GDMonoCache::godot_api_cache_updated) {
+		GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
 	}
 
 	finalizing = true;
@@ -326,6 +330,11 @@ bool CSharpLanguage::is_control_flow_keyword(String p_keyword) const {
 void CSharpLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("//"); // single-line comment
 	p_delimiters->push_back("/* */"); // delimited comment
+}
+
+void CSharpLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) const {
+	p_delimiters->push_back("///"); // single-line doc comment
+	p_delimiters->push_back("/** */"); // delimited doc comment
 }
 
 void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
@@ -1980,24 +1989,31 @@ const Variant CSharpInstance::get_rpc_config() const {
 
 void CSharpInstance::notification(int p_notification, bool p_reversed) {
 	if (p_notification == Object::NOTIFICATION_PREDELETE) {
-		// When NOTIFICATION_PREDELETE is sent, we also take the chance to call Dispose().
-		// It's safe to call Dispose() multiple times and NOTIFICATION_PREDELETE is guaranteed
+		if (base_ref_counted) {
+			// At this point, Dispose() was already called (manually or from the finalizer).
+			// The RefCounted wouldn't have reached 0 otherwise, since the managed side
+			// references it and Dispose() needs to be called to release it.
+			// However, this means C# RefCounted scripts can't receive NOTIFICATION_PREDELETE, but
+			// this is likely the case with GDScript as well: https://github.com/godotengine/godot/issues/6784
+			return;
+		}
+	} else if (p_notification == Object::NOTIFICATION_PREDELETE_CLEANUP) {
+		// When NOTIFICATION_PREDELETE_CLEANUP is sent, we also take the chance to call Dispose().
+		// It's safe to call Dispose() multiple times and NOTIFICATION_PREDELETE_CLEANUP is guaranteed
 		// to be sent at least once, which happens right before the call to the destructor.
 
 		predelete_notified = true;
 
 		if (base_ref_counted) {
-			// It's not safe to proceed if the owner derives RefCounted and the refcount reached 0.
-			// At this point, Dispose() was already called (manually or from the finalizer) so
-			// that's not a problem. The refcount wouldn't have reached 0 otherwise, since the
-			// managed side references it and Dispose() needs to be called to release it.
-			// However, this means C# RefCounted scripts can't receive NOTIFICATION_PREDELETE, but
-			// this is likely the case with GDScript as well: https://github.com/godotengine/godot/issues/6784
+			// At this point, Dispose() was already called (manually or from the finalizer).
+			// The RefCounted wouldn't have reached 0 otherwise, since the managed side
+			// references it and Dispose() needs to be called to release it.
 			return;
 		}
 
-		_call_notification(p_notification, p_reversed);
-
+		// NOTIFICATION_PREDELETE_CLEANUP is not sent to scripts.
+		// After calling Dispose() the C# instance can no longer be used,
+		// so it should be the last thing we do.
 		GDMonoCache::managed_callbacks.CSharpInstanceBridge_CallDispose(
 				gchandle.get_intptr(), /* okIfNull */ false);
 
@@ -2604,12 +2620,12 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 }
 
 Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	ERR_FAIL_COND_V(!valid, Variant());
-
-	Variant ret;
-	bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
-	if (ok) {
-		return ret;
+	if (valid) {
+		Variant ret;
+		bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
+		if (ok) {
+			return ret;
+		}
 	}
 
 	return Script::callp(p_method, p_args, p_argcount, r_error);

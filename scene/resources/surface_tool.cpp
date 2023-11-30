@@ -422,7 +422,7 @@ Array SurfaceTool::commit_to_arrays() {
 	a.resize(Mesh::ARRAY_MAX);
 
 	for (int i = 0; i < Mesh::ARRAY_MAX; i++) {
-		if (!(format & (1 << i))) {
+		if (!(format & (1ULL << i))) {
 			continue; //not in format
 		}
 
@@ -711,7 +711,7 @@ Array SurfaceTool::commit_to_arrays() {
 	return a;
 }
 
-Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_compress_flags) {
+Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint64_t p_compress_flags) {
 	Ref<ArrayMesh> mesh;
 	if (p_existing.is_valid()) {
 		mesh = p_existing;
@@ -729,11 +729,11 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 
 	Array a = commit_to_arrays();
 
-	uint32_t compress_flags = (p_compress_flags >> RS::ARRAY_COMPRESS_FLAGS_BASE) << RS::ARRAY_COMPRESS_FLAGS_BASE;
-	static const uint32_t shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
+	uint64_t compress_flags = (p_compress_flags >> RS::ARRAY_COMPRESS_FLAGS_BASE) << RS::ARRAY_COMPRESS_FLAGS_BASE;
+	static const uint64_t shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
 		if (last_custom_format[i] != CUSTOM_MAX) {
-			compress_flags |= last_custom_format[i] << shift[i];
+			compress_flags |= uint64_t(last_custom_format[i]) << shift[i];
 		}
 	}
 
@@ -787,7 +787,7 @@ void SurfaceTool::deindex() {
 	index_array.clear();
 }
 
-void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat) {
+void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat) {
 	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::_create_list() must be a valid object of type Mesh");
 
 	Array arr = p_existing->surface_get_arrays(p_surface);
@@ -798,7 +798,7 @@ void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, Local
 const uint32_t SurfaceTool::custom_mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
 const uint32_t SurfaceTool::custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 
-void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<SurfaceTool::Vertex> &ret, uint32_t *r_format) {
+void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<SurfaceTool::Vertex> &ret, uint64_t *r_format) {
 	ret.clear();
 
 	Vector<Vector3> varr = p_arrays[RS::ARRAY_VERTEX];
@@ -819,7 +819,7 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 		return;
 	}
 
-	int lformat = 0;
+	uint64_t lformat = 0;
 	if (varr.size()) {
 		lformat |= RS::ARRAY_FORMAT_VERTEX;
 	}
@@ -927,7 +927,7 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 	}
 }
 
-void SurfaceTool::_create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat) {
+void SurfaceTool::_create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat) {
 	create_vertex_array_from_triangle_arrays(arr, *r_vertex, &lformat);
 	ERR_FAIL_COND(r_vertex->size() == 0);
 
@@ -1020,7 +1020,7 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 		format = 0;
 	}
 
-	uint32_t nformat = 0;
+	uint64_t nformat = 0;
 	LocalVector<Vertex> nvertices;
 	LocalVector<int> nindices;
 	_create_list(p_existing, p_surface, &nvertices, &nindices, nformat);

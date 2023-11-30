@@ -67,7 +67,6 @@ class EditorHelpSearch : public ConfirmationDialog {
 	class Runner;
 	Ref<Runner> search;
 
-	void _update_icons();
 	void _update_results();
 
 	void _search_box_gui_input(const Ref<InputEvent> &p_event);

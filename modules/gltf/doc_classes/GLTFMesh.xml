@@ -5,6 +5,7 @@
 	<description>
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<members>
 		<member name="blend_weights" type="PackedFloat32Array" setter="set_blend_weights" getter="get_blend_weights" default="PackedFloat32Array()">

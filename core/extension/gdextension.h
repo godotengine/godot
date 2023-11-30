@@ -90,7 +90,8 @@ class GDExtension : public Resource {
 	int32_t level_initialized = -1;
 
 #ifdef TOOLS_ENABLED
-	uint64_t last_modified_time = 0;
+	uint64_t resource_last_modified_time = 0;
+	uint64_t library_last_modified_time = 0;
 	bool is_reloading = false;
 	Vector<GDExtensionMethodBind *> invalid_methods;
 	Vector<ObjectID> instance_bindings;
@@ -106,11 +107,15 @@ class GDExtension : public Resource {
 	void clear_instance_bindings();
 #endif
 
+	static HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
+
 protected:
 	static void _bind_methods();
 
 public:
 	HashMap<String, String> class_icon_paths;
+
+	virtual bool editor_can_reload_from_file() override { return false; } // Reloading is handled in a special way.
 
 	static String get_extension_list_config_file();
 	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
@@ -136,8 +141,9 @@ public:
 	void set_reloadable(bool p_reloadable) { reloadable = p_reloadable; }
 
 	bool has_library_changed() const;
-	void update_last_modified_time(uint64_t p_last_modified_time) {
-		last_modified_time = MAX(last_modified_time, p_last_modified_time);
+	void update_last_modified_time(uint64_t p_resource_last_modified_time, uint64_t p_library_last_modified_time) {
+		resource_last_modified_time = p_resource_last_modified_time;
+		library_last_modified_time = p_library_last_modified_time;
 	}
 
 	void track_instance_binding(Object *p_object);
@@ -151,6 +157,7 @@ public:
 	static void register_interface_function(StringName p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer);
 	static GDExtensionInterfaceFunctionPtr get_interface_function(StringName p_function_name);
 	static void initialize_gdextensions();
+	static void finalize_gdextensions();
 
 	GDExtension();
 	~GDExtension();

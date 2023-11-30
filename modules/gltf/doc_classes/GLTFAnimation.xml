@@ -5,6 +5,7 @@
 	<description>
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<members>
 		<member name="loop" type="bool" setter="set_loop" getter="get_loop" default="false">

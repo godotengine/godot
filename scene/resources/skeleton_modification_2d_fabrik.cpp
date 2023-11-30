@@ -51,7 +51,11 @@ bool SkeletonModification2DFABRIK::_set(const StringName &p_path, const Variant 
 			set_fabrik_joint_magnet_position(which, p_value);
 		} else if (what == "use_target_rotation") {
 			set_fabrik_joint_use_target_rotation(which, p_value);
+		} else {
+			return false;
 		}
+	} else {
+		return false;
 	}
 
 	return true;
@@ -73,8 +77,11 @@ bool SkeletonModification2DFABRIK::_get(const StringName &p_path, Variant &r_ret
 			r_ret = get_fabrik_joint_magnet_position(which);
 		} else if (what == "use_target_rotation") {
 			r_ret = get_fabrik_joint_use_target_rotation(which);
+		} else {
+			return false;
 		}
-		return true;
+	} else {
+		return false;
 	}
 	return true;
 }

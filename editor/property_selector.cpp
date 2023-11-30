@@ -370,46 +370,15 @@ void PropertySelector::_item_selected() {
 		class_type = instance->get_class();
 	}
 
-	DocTools *dd = EditorHelp::get_doc_data();
 	String text;
-	if (properties) {
-		while (!class_type.is_empty()) {
-			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
-			if (E) {
-				for (int i = 0; i < E->value.properties.size(); i++) {
-					if (E->value.properties[i].name == name) {
-						text = DTR(E->value.properties[i].description);
-						break;
-					}
-				}
-			}
-
-			if (!text.is_empty()) {
-				break;
-			}
-
-			// The property may be from a parent class, keep looking.
-			class_type = ClassDB::get_parent_class(class_type);
+	while (!class_type.is_empty()) {
+		text = properties ? help_bit->get_property_description(class_type, name) : help_bit->get_method_description(class_type, name);
+		if (!text.is_empty()) {
+			break;
 		}
-	} else {
-		while (!class_type.is_empty()) {
-			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
-			if (E) {
-				for (int i = 0; i < E->value.methods.size(); i++) {
-					if (E->value.methods[i].name == name) {
-						text = DTR(E->value.methods[i].description);
-						break;
-					}
-				}
-			}
 
-			if (!text.is_empty()) {
-				break;
-			}
-
-			// The method may be from a parent class, keep looking.
-			class_type = ClassDB::get_parent_class(class_type);
-		}
+		// It may be from a parent class, keep looking.
+		class_type = ClassDB::get_parent_class(class_type);
 	}
 
 	if (!text.is_empty()) {
@@ -600,5 +569,7 @@ PropertySelector::PropertySelector() {
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
+	help_bit->get_rich_text()->set_fit_content(false);
+	help_bit->get_rich_text()->set_custom_minimum_size(Size2(help_bit->get_rich_text()->get_minimum_size().x, 135 * EDSCALE));
 	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 }

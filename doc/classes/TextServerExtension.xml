@@ -144,6 +144,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_font_get_fixed_size_scale_mode" qualifiers="virtual const">
+			<return type="int" enum="TextServer.FixedSizeScaleMode" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_get_generate_mipmaps" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
@@ -587,6 +593,13 @@
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="fixed_size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_fixed_size_scale_mode" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="fixed_size_scale_mode" type="int" enum="TextServer.FixedSizeScaleMode" />
 			<description>
 			</description>
 		</method>

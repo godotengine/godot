@@ -963,13 +963,13 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 	for (List<Connection>::Element *E = g->connections.front(); E;) {
 		List<Connection>::Element *N = E->next();
 		if (E->get().from_node == p_id || E->get().to_node == p_id) {
-			g->connections.erase(E);
 			if (E->get().from_node == p_id) {
 				g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
 				g->nodes[E->get().to_node].node->set_input_port_connected(E->get().to_port, false);
 			} else if (E->get().to_node == p_id) {
 				g->nodes[E->get().from_node].next_connected_nodes.erase(p_id);
 			}
+			g->connections.erase(E);
 		}
 		E = N;
 	}
@@ -2454,9 +2454,6 @@ void VisualShader::_update_shader() const {
 					global_code += "vec4 ";
 					break;
 				case VaryingType::VARYING_TYPE_BOOLEAN:
-					if (E.value.mode == VaryingMode::VARYING_MODE_VERTEX_TO_FRAG_LIGHT) {
-						global_code += "flat ";
-					}
 					global_code += "bool ";
 					break;
 				case VaryingType::VARYING_TYPE_TRANSFORM:
@@ -2574,7 +2571,7 @@ void VisualShader::_update_shader() const {
 
 		if (varying_setters.has(i)) {
 			for (int &E : varying_setters[i]) {
-				err = _write_node(Type(i), nullptr, nullptr, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
+				err = _write_node(Type(i), &global_code, nullptr, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
 				ERR_FAIL_COND(err != OK);
 			}
 		}

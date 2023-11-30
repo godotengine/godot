@@ -55,6 +55,7 @@ public:
 	virtual bool handles(const String &p_type) const;
 	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const;
 	virtual Ref<Texture2D> generate_from_path(const String &p_path, const Size2 &p_size, Dictionary &p_metadata) const;
+	virtual void abort(){};
 
 	virtual bool generate_small_preview_automatically() const;
 	virtual bool can_generate_small_preview() const;
@@ -80,7 +81,7 @@ class EditorResourcePreview : public Node {
 	Mutex preview_mutex;
 	Semaphore preview_sem;
 	Thread thread;
-	SafeFlag exit;
+	SafeFlag exiting;
 	SafeFlag exited;
 
 	struct Item {

@@ -91,9 +91,10 @@ public:
 	String get_executable_path() const override;
 	Error shell_open(String p_uri) override;
 	String get_name() const override;
+
 	// Override default OS implementation which would block the main thread with delay_usec.
 	// Implemented in web_main.cpp loop callback instead.
-	void add_frame_delay(bool p_can_draw) override {}
+	void add_frame_delay(bool p_can_draw) override;
 
 	void vibrate_handheld(int p_duration_ms) override;
 

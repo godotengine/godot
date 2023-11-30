@@ -43,10 +43,11 @@ class TabContainer : public Container {
 	bool all_tabs_in_front = false;
 	bool menu_hovered = false;
 	mutable ObjectID popup_obj_id;
-	bool drag_to_rearrange_enabled = false;
 	bool use_hidden_tabs_for_min_size = false;
 	bool theme_changing = false;
 	Vector<Control *> children_removing;
+	bool drag_to_rearrange_enabled = false;
+	int setup_current_tab = -1;
 
 	struct ThemeCache {
 		int side_margin = 0;
@@ -97,10 +98,13 @@ class TabContainer : public Container {
 	void _on_tab_hovered(int p_tab);
 	void _on_tab_selected(int p_tab);
 	void _on_tab_button_pressed(int p_tab);
+	void _on_active_tab_rearranged(int p_tab);
 
 	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control);
+	void _drag_move_tab(int p_from_index, int p_to_index);
+	void _drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -165,6 +169,8 @@ public:
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;
+
+	void move_tab_from_tab_container(TabContainer *p_from, int p_from_index, int p_to_index = -1);
 
 	void set_drag_to_rearrange_enabled(bool p_enabled);
 	bool get_drag_to_rearrange_enabled() const;

@@ -233,6 +233,7 @@ void EditorResourcePicker::_update_menu_items() {
 			}
 
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
 		}
 
 		if (edited_resource->get_path().is_resource_file()) {
@@ -398,6 +399,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				return;
 			}
 			EditorNode::get_singleton()->save_resource(edited_resource);
+		} break;
+
+		case OBJ_MENU_SAVE_AS: {
+			if (edited_resource.is_null()) {
+				return;
+			}
+			EditorNode::get_singleton()->save_resource_as(edited_resource);
 		} break;
 
 		case OBJ_MENU_COPY: {

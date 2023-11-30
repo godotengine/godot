@@ -184,11 +184,11 @@
 		</member>
 		<member name="distance_fade_max_distance" type="float" setter="set_distance_fade_max_distance" getter="get_distance_fade_max_distance" default="10.0">
 			Distance at which the object appears fully opaque.
-			[b]Note:[/b] If [code]distance_fade_max_distance[/code] is less than [code]distance_fade_min_distance[/code], the behavior will be reversed. The object will start to fade away at [code]distance_fade_max_distance[/code] and will fully disappear once it reaches [code]distance_fade_min_distance[/code].
+			[b]Note:[/b] If [member distance_fade_max_distance] is less than [member distance_fade_min_distance], the behavior will be reversed. The object will start to fade away at [member distance_fade_max_distance] and will fully disappear once it reaches [member distance_fade_min_distance].
 		</member>
 		<member name="distance_fade_min_distance" type="float" setter="set_distance_fade_min_distance" getter="get_distance_fade_min_distance" default="0.0">
 			Distance at which the object starts to become visible. If the object is less than this distance away, it will be invisible.
-			[b]Note:[/b] If [code]distance_fade_min_distance[/code] is greater than [code]distance_fade_max_distance[/code], the behavior will be reversed. The object will start to fade away at [code]distance_fade_max_distance[/code] and will fully disappear once it reaches [code]distance_fade_min_distance[/code].
+			[b]Note:[/b] If [member distance_fade_min_distance] is greater than [member distance_fade_max_distance], the behavior will be reversed. The object will start to fade away at [member distance_fade_max_distance] and will fully disappear once it reaches [member distance_fade_min_distance].
 		</member>
 		<member name="distance_fade_mode" type="int" setter="set_distance_fade" getter="get_distance_fade" enum="BaseMaterial3D.DistanceFadeMode" default="0">
 			Specifies which type of fade to use. Can be any of the [enum DistanceFadeMode]s.
@@ -737,7 +737,7 @@
 			The object's X axis will always face the camera.
 		</constant>
 		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
-			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes. Enables [code]particles_anim_*[/code] properties.
+			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes (flipbook animation). Enables [code]particles_anim_*[/code] properties.
 			The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.
 		</constant>
 		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">

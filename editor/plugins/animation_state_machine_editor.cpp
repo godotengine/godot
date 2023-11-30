@@ -76,6 +76,11 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 		_update_graph();
 	}
 
+	if (read_only) {
+		tool_create->set_pressed(false);
+		tool_connect->set_pressed(false);
+	}
+
 	tool_create->set_disabled(read_only);
 	tool_connect->set_disabled(read_only);
 }
@@ -563,7 +568,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 
 	List<StringName> animation_names;
 	tree->get_animation_list(&animation_names);
-	menu->add_submenu_item(TTR("Add Animation"), "animations");
+	menu->add_submenu_item(TTR("Add Animation"), "AddAnimations");
 	if (animation_names.is_empty()) {
 		menu->set_item_disabled(menu->get_item_idx_from_text(TTR("Add Animation")), true);
 	} else {
@@ -1591,6 +1596,11 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 		selection_tools_hb->hide();
 	}
 
+	if (read_only) {
+		tool_create->set_pressed(false);
+		tool_connect->set_pressed(false);
+	}
+
 	if (tool_connect->is_pressed()) {
 		transition_tools_hb->show();
 	} else {
@@ -1774,7 +1784,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	animations_menu = memnew(PopupMenu);
 	menu->add_child(animations_menu);
-	animations_menu->set_name("animations");
+	animations_menu->set_name("AddAnimations");
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_animation_type));
 
 	connect_menu = memnew(PopupMenu);

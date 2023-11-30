@@ -212,9 +212,6 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 		for (int i = 0; i < spans; i++) {
 			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, font->get_opentype_features());
 		}
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(r, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-		}
 	}
 
 	// Apply tab align.
@@ -1072,12 +1069,7 @@ void TextEdit::_notification(int p_what) {
 										if (rtl) {
 											gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
 										}
-
-										Variant args[3] = { line, g, Rect2(gutter_rect) };
-										const Variant *argp[] = { &args[0], &args[1], &args[2] };
-										Callable::CallError ce;
-										Variant ret;
-										gutter.custom_draw_callback.callp(argp, 3, ret, ce);
+										gutter.custom_draw_callback.call(line, g, Rect2(gutter_rect));
 									}
 								} break;
 							}
@@ -1693,10 +1685,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 				} else if (mb->is_alt_pressed()) {
 					// Scroll 5 times as fast as normal (like in Visual Studio Code).
-					_scroll_up(15 * mb->get_factor());
+					_scroll_up(15 * mb->get_factor(), true);
 				} else if (v_scroll->is_visible()) {
 					// Scroll 3 lines.
-					_scroll_up(3 * mb->get_factor());
+					_scroll_up(3 * mb->get_factor(), true);
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
@@ -1704,10 +1696,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 				} else if (mb->is_alt_pressed()) {
 					// Scroll 5 times as fast as normal (like in Visual Studio Code).
-					_scroll_down(15 * mb->get_factor());
+					_scroll_down(15 * mb->get_factor(), true);
 				} else if (v_scroll->is_visible()) {
 					// Scroll 3 lines.
-					_scroll_down(3 * mb->get_factor());
+					_scroll_down(3 * mb->get_factor(), true);
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
@@ -1941,9 +1933,9 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	if (pan_gesture.is_valid()) {
 		const real_t delta = pan_gesture->get_delta().y;
 		if (delta < 0) {
-			_scroll_up(-delta);
+			_scroll_up(-delta, false);
 		} else {
-			_scroll_down(delta);
+			_scroll_down(delta, false);
 		}
 		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
@@ -2956,6 +2948,8 @@ void TextEdit::_update_placeholder() {
 		return; // Not in tree?
 	}
 
+	const String placeholder_translated = atr(placeholder_text);
+
 	// Placeholder is generally smaller then text documents, and updates less so this should be fast enough for now.
 	placeholder_data_buf->clear();
 	placeholder_data_buf->set_width(text.get_width());
@@ -2966,9 +2960,9 @@ void TextEdit::_update_placeholder() {
 		placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
 	}
 	placeholder_data_buf->set_preserve_control(draw_control_chars);
-	placeholder_data_buf->add_string(placeholder_text, theme_cache.font, theme_cache.font_size, language);
+	placeholder_data_buf->add_string(placeholder_translated, theme_cache.font, theme_cache.font_size, language);
 
-	placeholder_bidi_override = structured_text_parser(st_parser, st_args, placeholder_text);
+	placeholder_bidi_override = structured_text_parser(st_parser, st_args, placeholder_translated);
 	if (placeholder_bidi_override.is_empty()) {
 		TS->shaped_text_set_bidi_override(placeholder_data_buf->get_rid(), placeholder_bidi_override);
 	}
@@ -2993,7 +2987,7 @@ void TextEdit::_update_placeholder() {
 	placeholder_wraped_rows.clear();
 	for (int i = 0; i <= wrap_amount; i++) {
 		Vector2i line_range = placeholder_data_buf->get_line_range(i);
-		placeholder_wraped_rows.push_back(placeholder_text.substr(line_range.x, line_range.y - line_range.x));
+		placeholder_wraped_rows.push_back(placeholder_translated.substr(line_range.x, line_range.y - line_range.x));
 	}
 }
 
@@ -4112,6 +4106,9 @@ Point2i TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_fro
 	int line = p_from_line;
 	int pos = -1;
 
+	bool key_start_is_symbol = is_symbol(p_key[0]);
+	bool key_end_is_symbol = is_symbol(p_key[p_key.length() - 1]);
+
 	for (int i = 0; i < text.size() + 1; i++) {
 		if (line < 0) {
 			line = text.size() - 1;
@@ -4175,9 +4172,9 @@ Point2i TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_fro
 
 			if (pos != -1 && (p_search_flags & SEARCH_WHOLE_WORDS)) {
 				// Validate for whole words.
-				if (pos > 0 && !is_symbol(text_line[pos - 1])) {
+				if (!key_start_is_symbol && pos > 0 && !is_symbol(text_line[pos - 1])) {
 					is_match = false;
-				} else if (pos + p_key.length() < text_line.length() && !is_symbol(text_line[pos + p_key.length()])) {
+				} else if (!key_end_is_symbol && pos + p_key.length() < text_line.length() && !is_symbol(text_line[pos + p_key.length()])) {
 					is_match = false;
 				}
 			}
@@ -5473,7 +5470,7 @@ void TextEdit::set_line_as_last_visible(int p_line, int p_wrap_index) {
 		set_v_scroll(0);
 		return;
 	}
-	set_v_scroll(get_scroll_pos_for_line(first_line, next_line.y) + _get_visible_lines_offset());
+	set_v_scroll(Math::round(get_scroll_pos_for_line(first_line, next_line.y) + _get_visible_lines_offset()));
 }
 
 int TextEdit::get_last_full_visible_line() const {
@@ -6433,14 +6430,6 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Arbitrary:1,Word:2,Word (Smart):3"), "set_autowrap_mode", "get_autowrap_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_tabs"), "set_draw_tabs", "is_drawing_tabs");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_spaces"), "set_draw_spaces", "is_drawing_spaces");
-
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "syntax_highlighter", PROPERTY_HINT_RESOURCE_TYPE, "SyntaxHighlighter", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE), "set_syntax_highlighter", "get_syntax_highlighter");
-
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_smooth"), "set_smooth_scroll_enabled", "is_smooth_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_v_scroll_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_v_scroll_speed", "get_v_scroll_speed");
@@ -6461,6 +6450,16 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_move_on_right_click"), "set_move_caret_on_right_click_enabled", "is_move_caret_on_right_click_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_multiple"), "set_multiple_carets_enabled", "is_multiple_carets_enabled");
+
+	ADD_GROUP("Highlighting", "");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "syntax_highlighter", PROPERTY_HINT_RESOURCE_TYPE, "SyntaxHighlighter", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE), "set_syntax_highlighter", "get_syntax_highlighter");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
+
+	ADD_GROUP("Visual Whitespace", "draw_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_tabs"), "set_draw_tabs", "is_drawing_tabs");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_spaces"), "set_draw_spaces", "is_drawing_spaces");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
@@ -7020,6 +7019,9 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 			p_from_column = 0;
 		}
 
+		bool key_start_is_symbol = is_symbol(p_key[0]);
+		bool key_end_is_symbol = is_symbol(p_key[p_key.length() - 1]);
+
 		while (col == -1 && p_from_column <= p_search.length()) {
 			if (p_search_flags & SEARCH_MATCH_CASE) {
 				col = p_search.find(p_key, p_from_column);
@@ -7036,9 +7038,9 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 			if (col != -1 && p_search_flags & SEARCH_WHOLE_WORDS) {
 				p_from_column = col;
 
-				if (col > 0 && !is_symbol(p_search[col - 1])) {
+				if (!key_start_is_symbol && col > 0 && !is_symbol(p_search[col - 1])) {
 					col = -1;
-				} else if ((col + p_key.length()) < p_search.length() && !is_symbol(p_search[col + p_key.length()])) {
+				} else if (!key_end_is_symbol && (col + p_key.length()) < p_search.length() && !is_symbol(p_search[col + p_key.length()])) {
 					col = -1;
 				}
 			}
@@ -7340,7 +7342,7 @@ void TextEdit::_update_scrollbars() {
 	}
 
 	int visible_width = size.width - theme_cache.style_normal->get_minimum_size().width;
-	int total_width = (draw_placeholder ? placeholder_max_width : text.get_max_width()) + vmin.x + gutters_width + gutter_padding;
+	int total_width = (draw_placeholder ? placeholder_max_width : text.get_max_width()) + gutters_width + gutter_padding;
 
 	if (draw_minimap) {
 		total_width += minimap_width;
@@ -7357,11 +7359,6 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->show();
 		v_scroll->set_max(total_rows + _get_visible_lines_offset());
 		v_scroll->set_page(visible_rows + _get_visible_lines_offset());
-		if (smooth_scroll_enabled) {
-			v_scroll->set_step(0.25);
-		} else {
-			v_scroll->set_step(1);
-		}
 		set_v_scroll(get_v_scroll());
 
 	} else {
@@ -7455,7 +7452,7 @@ double TextEdit::_get_v_scroll_offset() const {
 	return CLAMP(val, 0, 1);
 }
 
-void TextEdit::_scroll_up(real_t p_delta) {
+void TextEdit::_scroll_up(real_t p_delta, bool p_animate) {
 	if (scrolling && smooth_scroll_enabled && SIGN(target_v_scroll - v_scroll->get_value()) != SIGN(-p_delta)) {
 		scrolling = false;
 		minimap_clicked = false;
@@ -7471,7 +7468,7 @@ void TextEdit::_scroll_up(real_t p_delta) {
 		if (target_v_scroll <= 0) {
 			target_v_scroll = 0;
 		}
-		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+		if (!p_animate || Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
@@ -7482,7 +7479,7 @@ void TextEdit::_scroll_up(real_t p_delta) {
 	}
 }
 
-void TextEdit::_scroll_down(real_t p_delta) {
+void TextEdit::_scroll_down(real_t p_delta, bool p_animate) {
 	if (scrolling && smooth_scroll_enabled && SIGN(target_v_scroll - v_scroll->get_value()) != SIGN(p_delta)) {
 		scrolling = false;
 		minimap_clicked = false;
@@ -7499,7 +7496,7 @@ void TextEdit::_scroll_down(real_t p_delta) {
 		if (target_v_scroll > max_v_scroll) {
 			target_v_scroll = max_v_scroll;
 		}
-		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+		if (!p_animate || Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
@@ -7605,9 +7602,9 @@ void TextEdit::_update_minimap_click() {
 	int first_line = row - next_line.x + 1;
 	double delta = get_scroll_pos_for_line(first_line, next_line.y) - get_v_scroll();
 	if (delta < 0) {
-		_scroll_up(-delta);
+		_scroll_up(-delta, true);
 	} else {
-		_scroll_down(delta);
+		_scroll_down(delta, true);
 	}
 }
 

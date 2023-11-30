@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "mesh_data_tool.h"
+#include "mesh_data_tool.compat.inc"
 
 void MeshDataTool::clear() {
 	vertices.clear();
@@ -190,7 +191,7 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	return OK;
 }
 
-Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
+Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh, uint64_t p_compression_flags) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
 	Array arr;
 	arr.resize(Mesh::ARRAY_MAX);
@@ -327,13 +328,13 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 
 	Ref<ArrayMesh> ncmesh = p_mesh;
 	int sc = ncmesh->get_surface_count();
-	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr);
+	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr, TypedArray<Array>(), Dictionary(), p_compression_flags);
 	ncmesh->surface_set_material(sc, material);
 
 	return OK;
 }
 
-int MeshDataTool::get_format() const {
+uint64_t MeshDataTool::get_format() const {
 	return format;
 }
 
@@ -521,7 +522,7 @@ void MeshDataTool::set_material(const Ref<Material> &p_material) {
 void MeshDataTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &MeshDataTool::clear);
 	ClassDB::bind_method(D_METHOD("create_from_surface", "mesh", "surface"), &MeshDataTool::create_from_surface);
-	ClassDB::bind_method(D_METHOD("commit_to_surface", "mesh"), &MeshDataTool::commit_to_surface);
+	ClassDB::bind_method(D_METHOD("commit_to_surface", "mesh", "compression_flags"), &MeshDataTool::commit_to_surface, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("get_format"), &MeshDataTool::get_format);
 

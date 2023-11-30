@@ -32,14 +32,11 @@
 
 #include "../gdscript.h"
 
-using GDP = GDScriptParser;
-using GDType = GDP::DataType;
-
-static String _get_script_path(const String &p_path) {
+String GDScriptDocGen::_get_script_path(const String &p_path) {
 	return p_path.trim_prefix("res://").quote();
 }
 
-static String _get_class_name(const GDP::ClassNode &p_class) {
+String GDScriptDocGen::_get_class_name(const GDP::ClassNode &p_class) {
 	const GDP::ClassNode *curr_class = &p_class;
 	if (!curr_class->identifier) { // All inner classes have an identifier, so this is the outer class.
 		return _get_script_path(curr_class->fqcn);
@@ -56,7 +53,7 @@ static String _get_class_name(const GDP::ClassNode &p_class) {
 	return full_name;
 }
 
-static void _doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String &r_enum, bool p_is_return = false) {
+void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String &r_enum, bool p_is_return) {
 	if (!p_gdtype.is_hard_type()) {
 		r_type = "Variant";
 		return;
@@ -82,9 +79,18 @@ static void _doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String 
 			r_type = Variant::get_type_name(p_gdtype.builtin_type);
 			return;
 		case GDType::NATIVE:
+			if (p_gdtype.is_meta_type) {
+				//r_type = GDScriptNativeClass::get_class_static();
+				r_type = "Object"; // "GDScriptNativeClass" refers to a blank page.
+				return;
+			}
 			r_type = p_gdtype.native_type;
 			return;
 		case GDType::SCRIPT:
+			if (p_gdtype.is_meta_type) {
+				r_type = p_gdtype.script_type.is_valid() ? p_gdtype.script_type->get_class() : Script::get_class_static();
+				return;
+			}
 			if (p_gdtype.script_type.is_valid()) {
 				if (p_gdtype.script_type->get_global_name() != StringName()) {
 					r_type = p_gdtype.script_type->get_global_name();
@@ -102,9 +108,17 @@ static void _doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String 
 			r_type = "Object";
 			return;
 		case GDType::CLASS:
+			if (p_gdtype.is_meta_type) {
+				r_type = GDScript::get_class_static();
+				return;
+			}
 			r_type = _get_class_name(*p_gdtype.class_type);
 			return;
 		case GDType::ENUM:
+			if (p_gdtype.is_meta_type) {
+				r_type = "Dictionary";
+				return;
+			}
 			r_type = "int";
 			r_enum = String(p_gdtype.native_type).replace("::", ".");
 			if (r_enum.begins_with("res://")) {
@@ -120,6 +134,90 @@ static void _doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String 
 		case GDType::UNRESOLVED:
 			r_type = "Variant";
 			return;
+	}
+}
+
+String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_recursion_level) {
+	constexpr int MAX_RECURSION_LEVEL = 2;
+
+	switch (p_variant.get_type()) {
+		case Variant::STRING:
+			return String(p_variant).c_escape().quote();
+		case Variant::OBJECT:
+			return "<Object>";
+		case Variant::DICTIONARY: {
+			const Dictionary dict = p_variant;
+
+			if (dict.is_empty()) {
+				return "{}";
+			}
+
+			if (p_recursion_level > MAX_RECURSION_LEVEL) {
+				return "{...}";
+			}
+
+			List<Variant> keys;
+			dict.get_key_list(&keys);
+			keys.sort();
+
+			String data;
+			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+				if (E->prev()) {
+					data += ", ";
+				}
+				data += _docvalue_from_variant(E->get(), p_recursion_level + 1) + ": " + _docvalue_from_variant(dict[E->get()], p_recursion_level + 1);
+			}
+
+			return "{" + data + "}";
+		} break;
+		case Variant::ARRAY: {
+			const Array array = p_variant;
+			String result;
+
+			if (array.get_typed_builtin() != Variant::NIL) {
+				result += "Array[";
+
+				Ref<Script> script = array.get_typed_script();
+				if (script.is_valid()) {
+					if (script->get_global_name() != StringName()) {
+						result += script->get_global_name();
+					} else if (!script->get_path().get_file().is_empty()) {
+						result += script->get_path().get_file();
+					} else {
+						result += array.get_typed_class_name();
+					}
+				} else if (array.get_typed_class_name() != StringName()) {
+					result += array.get_typed_class_name();
+				} else {
+					result += Variant::get_type_name((Variant::Type)array.get_typed_builtin());
+				}
+
+				result += "](";
+			}
+
+			if (array.is_empty()) {
+				result += "[]";
+			} else if (p_recursion_level > MAX_RECURSION_LEVEL) {
+				result += "[...]";
+			} else {
+				result += "[";
+				for (int i = 0; i < array.size(); i++) {
+					if (i > 0) {
+						result += ", ";
+					}
+					result += _docvalue_from_variant(array[i], p_recursion_level + 1);
+				}
+				result += "]";
+			}
+
+			if (array.get_typed_builtin() != Variant::NIL) {
+				result += ")";
+			}
+
+			return result;
+		} break;
+		default:
+			return p_variant.get_construct_string();
 	}
 }
 
@@ -183,7 +281,10 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				p_script->member_lines[const_name] = m_const->start_line;
 
 				DocData::ConstantDoc const_doc;
-				DocData::constant_doc_from_variant(const_doc, const_name, m_const->initializer->reduced_value, m_const->doc_data.description);
+				const_doc.name = const_name;
+				const_doc.value = _docvalue_from_variant(m_const->initializer->reduced_value);
+				const_doc.is_value_valid = true;
+				const_doc.description = m_const->doc_data.description;
 				const_doc.is_deprecated = m_const->doc_data.is_deprecated;
 				const_doc.is_experimental = m_const->doc_data.is_experimental;
 				doc.constants.push_back(const_doc);
@@ -203,7 +304,8 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				method_doc.qualifiers = m_func->is_static ? "static" : "";
 
 				if (m_func->return_type) {
-					_doctype_from_gdtype(m_func->return_type->get_datatype(), method_doc.return_type, method_doc.return_enum, true);
+					// `m_func->return_type->get_datatype()` is a metatype.
+					_doctype_from_gdtype(m_func->get_datatype(), method_doc.return_type, method_doc.return_enum, true);
 				} else if (!m_func->body->has_return) {
 					// If no `return` statement, then return type is `void`, not `Variant`.
 					method_doc.return_type = "void";
@@ -217,7 +319,7 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
 					if (p->initializer != nullptr) {
 						if (p->initializer->is_constant) {
-							arg_doc.default_value = p->initializer->reduced_value.get_construct_string().replace("\n", "\\n");
+							arg_doc.default_value = _docvalue_from_variant(p->initializer->reduced_value);
 						} else {
 							arg_doc.default_value = "<unknown>";
 						}
@@ -286,7 +388,7 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				if (m_var->initializer) {
 					if (m_var->initializer->is_constant) {
-						prop_doc.default_value = m_var->initializer->reduced_value.get_construct_string().replace("\n", "\\n");
+						prop_doc.default_value = _docvalue_from_variant(m_var->initializer->reduced_value);
 					} else {
 						prop_doc.default_value = "<unknown>";
 					}
@@ -312,7 +414,7 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				for (const GDP::EnumNode::Value &val : m_enum->values) {
 					DocData::ConstantDoc const_doc;
 					const_doc.name = val.identifier->name;
-					const_doc.value = String(Variant(val.value));
+					const_doc.value = _docvalue_from_variant(val.value);
 					const_doc.is_value_valid = true;
 					const_doc.enumeration = name;
 					const_doc.description = val.doc_data.description;
@@ -331,8 +433,11 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				p_script->member_lines[name] = m_enum_val.identifier->start_line;
 
 				DocData::ConstantDoc const_doc;
-				DocData::constant_doc_from_variant(const_doc, name, m_enum_val.value, m_enum_val.doc_data.description);
+				const_doc.name = name;
+				const_doc.value = _docvalue_from_variant(m_enum_val.value);
+				const_doc.is_value_valid = true;
 				const_doc.enumeration = "@unnamed_enums";
+				const_doc.description = m_enum_val.doc_data.description;
 				const_doc.is_deprecated = m_enum_val.doc_data.is_deprecated;
 				const_doc.is_experimental = m_enum_val.doc_data.is_experimental;
 				doc.constants.push_back(const_doc);

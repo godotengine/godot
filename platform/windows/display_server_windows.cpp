@@ -222,17 +222,36 @@ void DisplayServerWindows::tts_stop() {
 Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+
 	Vector<Char16String> filter_names;
 	Vector<Char16String> filter_exts;
 	for (const String &E : p_filters) {
 		Vector<String> tokens = E.split(";");
-		if (tokens.size() == 2) {
-			filter_exts.push_back(tokens[0].strip_edges().utf16());
-			filter_names.push_back(tokens[1].strip_edges().utf16());
-		} else if (tokens.size() == 1) {
-			filter_exts.push_back(tokens[0].strip_edges().utf16());
-			filter_names.push_back(tokens[0].strip_edges().utf16());
+		if (tokens.size() >= 1) {
+			String flt = tokens[0].strip_edges();
+			int filter_slice_count = flt.get_slice_count(",");
+			Vector<String> exts;
+			for (int j = 0; j < filter_slice_count; j++) {
+				String str = (flt.get_slice(",", j).strip_edges());
+				if (!str.is_empty()) {
+					exts.push_back(str);
+				}
+			}
+			if (!exts.is_empty()) {
+				String str = String(";").join(exts);
+				filter_exts.push_back(str.utf16());
+				if (tokens.size() == 2) {
+					filter_names.push_back(tokens[1].strip_edges().utf16());
+				} else {
+					filter_names.push_back(str.utf16());
+				}
+			}
 		}
+	}
+	if (filter_names.is_empty()) {
+		filter_exts.push_back(String("*.*").utf16());
+		filter_names.push_back(RTR("All Files").utf16());
 	}
 
 	Vector<COMDLG_FILTERSPEC> filters;
@@ -287,6 +306,9 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		}
 
 		hr = pfd->Show(windows[window_id].hWnd);
+		UINT index = 0;
+		pfd->GetFileTypeIndex(&index);
+
 		if (SUCCEEDED(hr)) {
 			Vector<String> file_names;
 
@@ -324,21 +346,31 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 				}
 			}
 			if (!p_callback.is_null()) {
-				Variant v_status = true;
+				Variant v_result = true;
 				Variant v_files = file_names;
-				Variant *v_args[2] = { &v_status, &v_files };
+				Variant v_index = index;
 				Variant ret;
 				Callable::CallError ce;
-				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+				const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+				p_callback.callp(args, 3, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+				}
 			}
 		} else {
 			if (!p_callback.is_null()) {
-				Variant v_status = false;
+				Variant v_result = false;
 				Variant v_files = Vector<String>();
-				Variant *v_args[2] = { &v_status, &v_files };
+				Variant v_index = index;
 				Variant ret;
 				Callable::CallError ce;
-				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+				const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+				p_callback.callp(args, 3, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+				}
 			}
 		}
 		pfd->Release();
@@ -1660,7 +1692,9 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
 			restore_mouse_trails = 0;
 		}
-	} else if (p_mode == WINDOW_MODE_WINDOWED) {
+	}
+
+	if (p_mode == WINDOW_MODE_WINDOWED) {
 		ShowWindow(wd.hWnd, SW_RESTORE);
 		wd.maximized = false;
 		wd.minimized = false;
@@ -2641,12 +2675,9 @@ void DisplayServerWindows::_drag_event(WindowID p_window, float p_x, float p_y, 
 }
 
 void DisplayServerWindows::_send_window_event(const WindowData &wd, WindowEvent p_event) {
-	if (!wd.event_callback.is_null()) {
+	if (wd.event_callback.is_valid()) {
 		Variant event = int(p_event);
-		Variant *eventp = &event;
-		Variant ret;
-		Callable::CallError ce;
-		wd.event_callback.callp((const Variant **)&eventp, 1, ret, ce);
+		wd.event_callback.call(event);
 	}
 }
 
@@ -2659,12 +2690,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	if (in_dispatch_input_event) {
 		return;
 	}
-
 	in_dispatch_input_event = true;
-	Variant ev = p_event;
-	Variant *evp = &ev;
-	Variant ret;
-	Callable::CallError ce;
 
 	{
 		List<WindowID>::Element *E = popup_list.back();
@@ -2673,7 +2699,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			if (windows.has(E->get())) {
 				Callable callable = windows[E->get()].input_event_callback;
 				if (callable.is_valid()) {
-					callable.callp((const Variant **)&evp, 1, ret, ce);
+					callable.call(p_event);
 				}
 			}
 			in_dispatch_input_event = false;
@@ -2687,7 +2713,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		if (windows.has(event_from_window->get_window_id())) {
 			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 			if (callable.is_valid()) {
-				callable.callp((const Variant **)&evp, 1, ret, ce);
+				callable.call(p_event);
 			}
 		}
 	} else {
@@ -2695,7 +2721,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		for (const KeyValue<WindowID, WindowData> &E : windows) {
 			const Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.callp((const Variant **)&evp, 1, ret, ce);
+				callable.call(p_event);
 			}
 		}
 	}
@@ -3758,11 +3784,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (rect_changed) {
 				if (!window.rect_changed_callback.is_null()) {
-					Variant size = Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height);
-					const Variant *args[] = { &size };
-					Variant ret;
-					Callable::CallError ce;
-					window.rect_changed_callback.callp(args, 1, ret, ce);
+					window.rect_changed_callback.call(Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height));
 				}
 
 				// Update cursor clip region after window rect has changed.
@@ -3979,11 +4001,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (files.size() && !windows[window_id].drop_files_callback.is_null()) {
-				Variant v = files;
-				Variant *vp = &v;
-				Variant ret;
-				Callable::CallError ce;
-				windows[window_id].drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
+				windows[window_id].drop_files_callback.call(files);
 			}
 		} break;
 		default: {
@@ -4640,7 +4658,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
 		for (int i = 0; i < device_list.size(); i++) {
 			const Dictionary &device = device_list[i];
-			if (device.has("vendor") && device.has("name") && device["vendor"].operator String().to_upper() == gl_info["vendor"].operator String().to_upper() && (device["name"] == "*" || device["name"].operator String().to_upper() == gl_info["name"].operator String().to_upper())) {
+			if (device.has("vendor") && device.has("name") && gl_info["vendor"].operator String().to_upper().contains(device["vendor"].operator String().to_upper()) && (device["name"] == "*" || gl_info["name"].operator String().to_upper().contains(device["name"].operator String().to_upper()))) {
 				force_angle = true;
 				break;
 			}

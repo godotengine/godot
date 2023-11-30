@@ -2944,15 +2944,15 @@ TEST_CASE("[SceneTree][CodeEdit] region folding") {
 		CHECK(code_edit->is_line_code_region_end(2));
 
 		// Update code region delimiter when removing comment delimiter.
-		code_edit->set_text("//region region_name\nline2\n//endregion\n#region region_name\nline2\n#endregion");
+		code_edit->set_text("#region region_name\nline2\n#endregion\n//region region_name\nline2\n//endregion");
 		code_edit->clear_comment_delimiters();
 		code_edit->add_comment_delimiter("//", "");
-		code_edit->add_comment_delimiter("#", "");
+		code_edit->add_comment_delimiter("#", ""); // A shorter delimiter has higher priority.
 		CHECK(code_edit->is_line_code_region_start(0));
 		CHECK(code_edit->is_line_code_region_end(2));
 		CHECK_FALSE(code_edit->is_line_code_region_start(3));
 		CHECK_FALSE(code_edit->is_line_code_region_end(5));
-		code_edit->remove_comment_delimiter("//");
+		code_edit->remove_comment_delimiter("#");
 		CHECK_FALSE(code_edit->is_line_code_region_start(0));
 		CHECK_FALSE(code_edit->is_line_code_region_end(2));
 		CHECK(code_edit->is_line_code_region_start(3));
@@ -3364,7 +3364,9 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 			/* After update, pending add should not be counted, */
 			/* also does not work on col 0                      */
+			int before_text_caret_column = code_edit->get_caret_column();
 			code_edit->insert_text_at_caret("i");
+
 			code_edit->update_code_completion_options();
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0", Color(1, 0, 0), Ref<Resource>(), Color(1, 0, 0));
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "item_1.", "item_1");
@@ -3400,12 +3402,40 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			/* Set size for mouse input. */
 			code_edit->set_size(Size2(100, 100));
 
-			/* Check input. */
-			SEND_GUI_ACTION("ui_end");
-			CHECK(code_edit->get_code_completion_selected_index() == 2);
+			/* Test home and end keys close the completion and move the caret */
+			/* => ui_text_caret_line_start */
+			code_edit->set_caret_column(before_text_caret_column + 1);
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0", Color(1, 0, 0), Ref<Resource>(), Color(1, 0, 0));
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "item_1.", "item_1");
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "item_2.", "item_2");
 
-			SEND_GUI_ACTION("ui_home");
-			CHECK(code_edit->get_code_completion_selected_index() == 0);
+			code_edit->update_code_completion_options();
+
+			SEND_GUI_ACTION("ui_text_caret_line_start");
+			code_edit->update_code_completion_options();
+			CHECK(code_edit->get_code_completion_selected_index() == -1);
+			CHECK(code_edit->get_caret_column() == 0);
+
+			/* => ui_text_caret_line_end */
+			code_edit->set_caret_column(before_text_caret_column + 1);
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0", Color(1, 0, 0), Ref<Resource>(), Color(1, 0, 0));
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "item_1.", "item_1");
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "item_2.", "item_2");
+
+			code_edit->update_code_completion_options();
+
+			SEND_GUI_ACTION("ui_text_caret_line_end");
+			code_edit->update_code_completion_options();
+			CHECK(code_edit->get_code_completion_selected_index() == -1);
+			CHECK(code_edit->get_caret_column() == before_text_caret_column + 1);
+
+			/* Check input. */
+			code_edit->set_caret_column(before_text_caret_column + 1);
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0", Color(1, 0, 0), Ref<Resource>(), Color(1, 0, 0));
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "item_1.", "item_1");
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "item_2.", "item_2");
+
+			code_edit->update_code_completion_options();
 
 			SEND_GUI_ACTION("ui_page_down");
 			CHECK(code_edit->get_code_completion_selected_index() == 2);

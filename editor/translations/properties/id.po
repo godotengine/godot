@@ -49,13 +49,14 @@
 # GID <ghavind12345@gmail.com>, 2023.
 # Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
 # Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
+# Avirur Rahman <avirahmandev@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-16 17:47+0000\n"
-"Last-Translator: Bayu Satiyo <itsyuukunz@gmail.com>\n"
+"PO-Revision-Date: 2023-10-11 22:02+0000\n"
+"Last-Translator: Avirur Rahman <avirahmandev@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/id/>\n"
 "Language: id\n"
@@ -63,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0.2\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "Aplikasi"
@@ -193,6 +194,9 @@ msgstr "Kekuatan Panning 2D"
 
 msgid "3D Panning Strength"
 msgstr "Kekuatan Panning 3D"
+
+msgid "iOS"
+msgstr "iOS"
 
 msgid "Editor"
 msgstr "Editor"
@@ -2220,7 +2224,7 @@ msgid "Max Rate Hz"
 msgstr "Tingkat Maks Hz"
 
 msgid "Edit"
-msgstr "Ubah"
+msgstr "Sunting"
 
 msgid "Trim"
 msgstr "Pangkas"
@@ -2321,6 +2325,9 @@ msgstr "Tampilkan Viewport Rotasi Gizmo"
 msgid "Show Viewport Navigation Gizmo"
 msgstr "Tampilkan Viewport Navigasi Gizmo"
 
+msgid "Gizmo Settings"
+msgstr "Pengaturan Gizmo"
+
 msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Muat Ulang Otomatis dan Tata Skrip Saat Disimpan"
 
@@ -2359,9 +2366,6 @@ msgstr "Kerangka"
 
 msgid "Selected Bone"
 msgstr "Tulang yang Dipilih"
-
-msgid "Gizmo Settings"
-msgstr "Pengaturan Gizmo"
 
 msgid "Bone Axis Length"
 msgstr "Panjang Sumbu Tulang"
@@ -2558,9 +2562,6 @@ msgstr "Penundaan Frame Milidetik"
 msgid "Low Processor Mode"
 msgstr "Mode Processor Rendah"
 
-msgid "iOS"
-msgstr "iOS"
-
 msgid "Allow High Refresh Rate"
 msgstr "Izinkan Kecepatan Refresh Tinggi"
 
@@ -2653,6 +2654,9 @@ msgstr "Emulasi Sentuhan Dari Mouse"
 
 msgid "Emulate Mouse From Touch"
 msgstr "Emulasi Mouse Dari Sentuhan"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Text Driver"
 msgstr "Driver Teks"
@@ -3436,9 +3440,6 @@ msgstr "Jenis Ruang Referensi"
 
 msgid "Visibility State"
 msgstr "Status Visibilitas"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Jalur Android SDK"
@@ -6383,12 +6384,6 @@ msgstr "Teks Placeholder"
 msgid "Max Length"
 msgstr "Panjang Maks"
 
-msgid "Secret"
-msgstr "Rahasia"
-
-msgid "Secret Character"
-msgstr "Karakter Rahasia"
-
 msgid "Expand to Text Length"
 msgstr "Perluas ke Panjang Teks"
 
@@ -6442,6 +6437,12 @@ msgstr "Paksa Ditampilkan"
 
 msgid "Mid Grapheme"
 msgstr "Skema Pertengahan"
+
+msgid "Secret"
+msgstr "Rahasia"
+
+msgid "Secret Character"
+msgstr "Karakter Rahasia"
 
 msgid "Underline"
 msgstr "Garis Bawah"
@@ -6632,6 +6633,9 @@ msgstr "Visibilitas Penyeret"
 msgid "Stretch Shrink"
 msgstr "Peregangan Menyusut"
 
+msgid "Tabs"
+msgstr "Tab"
+
 msgid "Current Tab"
 msgstr "Tab Saat Ini"
 
@@ -6662,9 +6666,6 @@ msgstr "Gulir ke Dipilih"
 msgid "Select With RMB"
 msgstr "Pilih Dengan RMB"
 
-msgid "Tabs"
-msgstr "Tab"
-
 msgid "Tabs Visible"
 msgstr "Tab Terlihat"
 
@@ -6676,9 +6677,6 @@ msgstr "Gunakan Tab Tersembunyi untuk Ukuran Min"
 
 msgid "Wrap Mode"
 msgstr "Mode Bungkus"
-
-msgid "Syntax Highlighter"
-msgstr "Penyorot Sintaks"
 
 msgid "Smooth"
 msgstr "Mulus"
@@ -6700,6 +6698,9 @@ msgstr "Pindah ke Klik Kanan"
 
 msgid "Multiple"
 msgstr "Beberapa"
+
+msgid "Syntax Highlighter"
+msgstr "Penyorot Sintaks"
 
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Edit Teks Deteksi Idle (detik)"
@@ -7859,17 +7860,8 @@ msgstr "Jarak Baking AABB"
 msgid "Bundled"
 msgstr "Dikemas Bersama"
 
-msgid "Point Texture"
-msgstr "Tekstur Titik"
-
-msgid "Normal Texture"
-msgstr "Texture Normal"
-
-msgid "Color Texture"
-msgstr "Warna Tekstur"
-
-msgid "Point Count"
-msgstr "Jumlah Titik"
+msgid "Attractor Interaction"
+msgstr "Interaksi Penarik"
 
 msgid "Scale Min"
 msgstr "Skala Minimal"
@@ -7910,6 +7902,9 @@ msgstr "Perpindahan Awal Maksimum"
 msgid "Influence over Life"
 msgstr "Pengaruh terhadap Kehidupan"
 
+msgid "Use Scale"
+msgstr "Gunakan Skala"
+
 msgid "Amount at End"
 msgstr "Jumlah di Akhir"
 
@@ -7918,12 +7913,6 @@ msgstr "Jumlah saat Tabrakan"
 
 msgid "Keep Velocity"
 msgstr "Pertahankan Kecepatan"
-
-msgid "Attractor Interaction"
-msgstr "Interaksi Penarik"
-
-msgid "Use Scale"
-msgstr "Gunakan Skala"
 
 msgid "Rough"
 msgstr "Kasar"

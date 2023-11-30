@@ -485,7 +485,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 			continue;
 		}
 
-		push_constant.flags = base_flags | (push_constant.flags & (FLAGS_DEFAULT_NORMAL_MAP_USED | FLAGS_DEFAULT_SPECULAR_MAP_USED)); //reset on each command for sanity, keep canvastexture binding config
+		push_constant.flags = base_flags | (push_constant.flags & (FLAGS_DEFAULT_NORMAL_MAP_USED | FLAGS_DEFAULT_SPECULAR_MAP_USED)); // Reset on each command for safety, keep canvastexture binding config.
 
 		switch (c->type) {
 			case Item::Command::TYPE_RECT: {
@@ -894,7 +894,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					RS::PrimitiveType primitive = mesh_storage->mesh_surface_get_primitive(surface);
 					ERR_CONTINUE(primitive < 0 || primitive >= RS::PRIMITIVE_MAX);
 
-					uint32_t input_mask = pipeline_variants->variants[light_mode][variant[primitive]].get_vertex_input_mask();
+					uint64_t input_mask = pipeline_variants->variants[light_mode][variant[primitive]].get_vertex_input_mask();
 
 					RID vertex_array;
 					RD::VertexFormatID vertex_format = RD::INVALID_FORMAT_ID;
@@ -957,7 +957,48 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 		c = c->next;
 	}
+#ifdef DEBUG_ENABLED
+	if (debug_redraw && p_item->debug_redraw_time > 0.0) {
+		Color dc = debug_redraw_color;
+		dc.a *= p_item->debug_redraw_time / debug_redraw_time;
 
+		RID pipeline = pipeline_variants->variants[PIPELINE_LIGHT_MODE_DISABLED][PIPELINE_VARIANT_QUAD].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
+		RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
+
+		//bind textures
+
+		_bind_canvas_texture(p_draw_list, RID(), current_filter, current_repeat, last_texture, push_constant, texpixel_size);
+
+		Rect2 src_rect;
+		Rect2 dst_rect;
+
+		dst_rect = Rect2(Vector2(), p_item->rect.size);
+		src_rect = Rect2(0, 0, 1, 1);
+
+		push_constant.modulation[0] = dc.r;
+		push_constant.modulation[1] = dc.g;
+		push_constant.modulation[2] = dc.b;
+		push_constant.modulation[3] = dc.a;
+
+		push_constant.src_rect[0] = src_rect.position.x;
+		push_constant.src_rect[1] = src_rect.position.y;
+		push_constant.src_rect[2] = src_rect.size.width;
+		push_constant.src_rect[3] = src_rect.size.height;
+
+		push_constant.dst_rect[0] = dst_rect.position.x;
+		push_constant.dst_rect[1] = dst_rect.position.y;
+		push_constant.dst_rect[2] = dst_rect.size.width;
+		push_constant.dst_rect[3] = dst_rect.size.height;
+
+		RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
+		RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);
+		RD::get_singleton()->draw_list_draw(p_draw_list, true);
+
+		p_item->debug_redraw_time -= RSG::rasterizer->get_frame_delta_time();
+
+		RenderingServerDefault::redraw_request();
+	}
+#endif
 	if (current_clip && reclip) {
 		//will make it re-enable clipping if needed afterwards
 		current_clip = nullptr;
@@ -1075,6 +1116,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 		fb_uniform_set = texture_storage->render_target_get_backbuffer_uniform_set(p_to_render_target);
 	} else {
 		framebuffer = texture_storage->render_target_get_rd_framebuffer(p_to_render_target);
+		texture_storage->render_target_set_msaa_needs_resolve(p_to_render_target, false); // If MSAA is enabled, our framebuffer will be resolved!
 
 		if (texture_storage->render_target_is_clear_requested(p_to_render_target)) {
 			clear = true;
@@ -2718,7 +2760,7 @@ bool RendererCanvasRenderRD::free(RID p_rid) {
 }
 
 void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
-	p_size = nearest_power_of_2_templated(p_size);
+	p_size = MAX(1, nearest_power_of_2_templated(p_size));
 	if (p_size == state.shadow_texture_size) {
 		return;
 	}
@@ -2740,6 +2782,12 @@ void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
 			state.shadow_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
 	}
+}
+
+void RendererCanvasRenderRD::set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) {
+	debug_redraw = p_enabled;
+	debug_redraw_time = p_time;
+	debug_redraw_color = p_color;
 }
 
 RendererCanvasRenderRD::~RendererCanvasRenderRD() {

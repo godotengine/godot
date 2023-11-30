@@ -322,7 +322,7 @@
 			Particles are drawn in the order emitted.
 		</constant>
 		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
-			Particles are drawn in order of remaining lifetime.
+			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
 		</constant>
 		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2" enum="DrawOrder">
 			Particles are drawn in order of depth.

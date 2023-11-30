@@ -99,7 +99,7 @@ typedef struct hb_glyph_info_t {
  * 				   layout, by avoiding re-shaping of each line
  * 				   after line-breaking, by limiting the
  * 				   reshaping to a small piece around the
- * 				   breaking positin only, even if the breaking
+ * 				   breaking position only, even if the breaking
  * 				   position carries the
  * 				   #HB_GLYPH_FLAG_UNSAFE_TO_BREAK or when
  * 				   hyphenation or other text transformation
