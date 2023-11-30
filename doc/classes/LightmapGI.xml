@@ -69,6 +69,11 @@
 			The quality preset to use when baking lightmaps. This affects bake times, but output file sizes remain mostly identical across quality levels.
 			To further speed up bake times, decrease [member bounces], disable [member use_denoiser] and increase the lightmap texel size on 3D scenes in the Import dock.
 		</member>
+		<member name="shadowmask_mode" type="int" setter="set_shadowmask_mode" getter="get_shadowmask_mode" enum="LightmapGIData.ShadowmaskMode" default="0" experimental="">
+			The shadowmasking policy to use for directional shadows on static objects that are baked with this [LightmapGI] instance.
+			Shadowmasking allows [DirectionalLight3D] nodes to cast shadows even outside the range defined by their [member DirectionalLight3D.directional_shadow_max_distance] property. This is done by baking a texture that contains a shadowmap for the directional light, then using this texture according to the current shadowmask mode.
+			[b]Note:[/b] The shadowmask texture is only created if [member shadowmask_mode] is not [constant LightmapGIData.SHADOWMASK_MODE_NONE]. To see a difference, you need to bake lightmaps again after switching from [constant LightmapGIData.SHADOWMASK_MODE_NONE] to any other mode.
+		</member>
 		<member name="texel_scale" type="float" setter="set_texel_scale" getter="get_texel_scale" default="1.0">
 			Scales the lightmap texel density of all meshes for the current bake. This is a multiplier that builds upon the existing lightmap texel size defined in each imported 3D scene, along with the per-mesh density multiplier (which is designed to be used when the same mesh is used at different scales). Lower values will result in faster bake times.
 			For example, doubling [member texel_scale] doubles the lightmap texture resolution for all objects [i]on each axis[/i], so it will [i]quadruple[/i] the texel count.

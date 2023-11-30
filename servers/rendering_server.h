@@ -709,6 +709,13 @@ public:
 
 	/* LIGHTMAP */
 
+	enum ShadowmaskMode {
+		SHADOWMASK_MODE_NONE,
+		SHADOWMASK_MODE_REPLACE,
+		SHADOWMASK_MODE_OVERLAY,
+		SHADOWMASK_MODE_ONLY,
+	};
+
 	virtual RID lightmap_create() = 0;
 
 	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) = 0;
@@ -722,8 +729,11 @@ public:
 	virtual PackedInt32Array lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const = 0;
 
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
-
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
+
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) = 0;
+	virtual ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) = 0;
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, ShadowmaskMode p_mode) = 0;
 
 	/* PARTICLES API */
 

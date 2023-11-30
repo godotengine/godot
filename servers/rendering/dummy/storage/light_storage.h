@@ -191,6 +191,10 @@ public:
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override {}
 	virtual float lightmap_get_probe_capture_update_speed() const override { return 0; }
 
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override {}
+	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override { return RS::SHADOWMASK_MODE_NONE; }
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override {}
+
 	/* LIGHTMAP INSTANCE */
 
 	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); }
