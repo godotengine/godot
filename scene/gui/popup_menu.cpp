@@ -768,7 +768,7 @@ void PopupMenu::_draw_items() {
 			int disabled = int(items[i].disabled) * 2;
 			Texture2D *icon = (items[i].checked ? check[items[i].checkable_type - 1 + disabled] : uncheck[items[i].checkable_type - 1 + disabled]).ptr();
 
-			texture_scale = MAX(texture_scale, (item_height - margin_size.height) / icon->get_height());
+			texture_scale = MAX(texture_scale, MIN(item_height, 16.0) / icon->get_height());
 		}
 	}
 
