@@ -272,10 +272,10 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			float sdf_to_bounds[16];
 
 			int32_t sdf_offset[3];
-			uint32_t pad2;
+			uint32_t gi_upscale_shift;
 
 			int32_t sdf_size[3];
-			uint32_t gi_upscale_for_msaa;
+			uint32_t gi_upscale;
 
 			uint32_t volumetric_fog_enabled;
 			float volumetric_fog_inv_length;

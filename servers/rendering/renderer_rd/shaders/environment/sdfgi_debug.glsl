@@ -83,7 +83,7 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade, out ivec3 r_cell,o
 #ifdef HQ_RAY
 	const int fp_bits = 16;
 #else
-	const int fp_bits = 8;
+	const int fp_bits = 10;
 #endif
 	const int fp_block_bits = fp_bits + 2;
 	const int fp_region_bits = fp_block_bits + 1;

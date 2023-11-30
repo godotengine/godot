@@ -34,6 +34,8 @@ layout(r32ui, set = 0, binding = 4) uniform restrict readonly uimage3D src_norma
 layout(set = 0, binding = 7) uniform texture2DArray occlusion;
 layout(set = 0, binding = 8) uniform sampler linear_sampler;
 
+layout(r8ui, set = 0, binding = 9) uniform restrict writeonly uimage3D dst_disocclusion;
+
 #endif
 
 #if defined(MODE_LIGHT_STORE) || defined(MODE_LIGHT_SCROLL)
@@ -161,7 +163,6 @@ shared float occlusion[8];
 
 #endif
 
-
 layout(push_constant, std430) uniform Params {	
 	ivec3 grid_size;
 	uint region_version;
@@ -238,34 +239,21 @@ vec3 octahedron_decode(vec2 f) {
 }
 
 
-uint rgbe_encode(vec3 color) {
-	const float pow2to9 = 512.0f;
-	const float B = 15.0f;
-	const float N = 9.0f;
-	const float LN2 = 0.6931471805599453094172321215;
+uint rgbe_encode(vec3 rgb) {
 
-	float cRed = clamp(color.r, 0.0, 65408.0);
-	float cGreen = clamp(color.g, 0.0, 65408.0);
-	float cBlue = clamp(color.b, 0.0, 65408.0);
+    const float rgbe_max = uintBitsToFloat(0x477F8000);
+    const float rgbe_min = uintBitsToFloat(0x37800000);
 
-	float cMax = max(cRed, max(cGreen, cBlue));
+    rgb = clamp(rgb, 0, rgbe_max);
 
-	float expp = max(-B - 1.0f, floor(log(cMax) / LN2)) + 1.0f + B;
+    float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
 
-	float sMax = floor((cMax / pow(2.0f, expp - B - N)) + 0.5f);
+    float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
 
-	float exps = expp + 1.0f;
-
-	if (0.0 <= sMax && sMax < pow2to9) {
-		exps = expp;
-	}
-
-	float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
-	float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
-	float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-	return (uint(sRed) & 0x1FF) | ((uint(sGreen) & 0x1FF) << 9) | ((uint(sBlue) & 0x1FF) << 18) | ((uint(exps) & 0x1F) << 27);
+    uvec3 urgb = floatBitsToUint(rgb + bias);
+    uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
+    return e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
 }
-
 
 vec3 rgbe_decode(uint p_rgbe) {
 	vec4 rgbef = vec4((uvec4(p_rgbe) >> uvec4(0,9,18,27)) & uvec4(0x1FF,0x1FF,0x1FF,0x1F));
@@ -368,7 +356,6 @@ void main() {
 		// Store region version
 	}
 
-
 #endif
 
 #ifdef MODE_LIGHT_SCROLL
@@ -447,6 +434,12 @@ void main() {
 
 	ivec3 local = ivec3(gl_LocalInvocationID.xyz);
 	ivec3 pos = ivec3(gl_GlobalInvocationID.xyz) + params.offset;
+
+	if (any(greaterThanEqual(pos,params.limit))) {
+		// Storing is not a multiple of the workgroup, so invalid threads can happen.
+		return;
+	}
+
 	uint solid = imageLoad(src_normal_bits, pos).r;
 
 	if (local == ivec3(0)) {
@@ -458,9 +451,6 @@ void main() {
 		}
 	}
 
-	if (solid!=0) {
-		return; // solid pixel, nothing to do.
-	}
 
 	vec4 albedo_accum = vec4(0.0);
 	vec4 emission_accum = vec4(0.0);
@@ -493,8 +483,16 @@ void main() {
 		(1<<4),
 		(1<<5) );
 
+	const uint aniso_offset_mask[6] = uint[](
+		(1<<1),
+		(1<<0),
+		(1<<3),
+		(1<<2),
+		(1<<5),
+		(1<<4) );
 
 	bool voxels_found=false;
+	uint disocclusion = 0;
 
 	for(int i=0;i<6;i++) {
 
@@ -506,22 +504,26 @@ void main() {
 
 
 		uint n = imageLoad(src_normal_bits, ofs).r;
-		if (!bool(n & aniso_mask[i])) {
+		if (n == 0) {
+			disocclusion|=aniso_offset_mask[i];
+		}
+
+		if (solid != 0 || !bool(n & aniso_mask[i])) {
 			// Not solid, continue.
 			continue;
 		}
 
 		voxels_found = true;
 
-		/*const int facing_direction_count =  26 ;
+		const int facing_direction_count =  26 ;
 		const vec3 facing_directions[ 26 ]=vec3[]( vec3(-1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 0.0, 1.0), vec3(-0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, -0.7071067811865475, 0.0), vec3(-0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(-0.7071067811865475, 0.0, -0.7071067811865475), vec3(-0.7071067811865475, 0.0, 0.7071067811865475), vec3(-0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, 0.7071067811865475, 0.0), vec3(-0.5773502691896258, 0.5773502691896258, 0.5773502691896258), vec3(0.0, -0.7071067811865475, -0.7071067811865475), vec3(0.0, -0.7071067811865475, 0.7071067811865475), vec3(0.0, 0.7071067811865475, -0.7071067811865475), vec3(0.0, 0.7071067811865475, 0.7071067811865475), vec3(0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, -0.7071067811865475, 0.0), vec3(0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(0.7071067811865475, 0.0, -0.7071067811865475), vec3(0.7071067811865475, 0.0, 0.7071067811865475), vec3(0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, 0.7071067811865475, 0.0), vec3(0.5773502691896258, 0.5773502691896258, 0.5773502691896258) );
 		for(int j=0;j<facing_direction_count;j++) {
 			if (bool(n & uint((1<<(j+6))))) {
 				normal_accum += facing_directions[j];
 			}
-		}*/
+		}
 
-		normal_accum += aniso_dir[i];
+		//normal_accum += aniso_dir[i];
 
 		ivec3 albedo_ofs = ofs>>1;
 		albedo_ofs.z *= 6;
@@ -538,6 +540,42 @@ void main() {
 		float strength = ((rgbe_aniso >> (i * 5)) & 0x1F) / float(0x1F);
 		emission_accum += vec4(emission * strength,1.0);
 	}
+
+
+	ivec3 dst_pos = (pos + params.region_world_pos * REGION_SIZE) & (params.grid_size -1 );
+	dst_pos.y += params.grid_size.y * params.cascade;
+	imageStore(dst_disocclusion,dst_pos,uvec4(disocclusion));
+
+	if (solid!=0) {
+		return; // No further use for this.
+	}
+	groupMemoryBarrier();
+	barrier();
+
+	uint index;
+
+	if (voxels_found) {
+		index = atomicAdd(store_position_count, 1);
+	}
+
+	groupMemoryBarrier();
+	barrier();
+
+	if (!voxels_found || store_position_count==0) {
+		return;
+	}
+
+	// global increment only once per group, to reduce pressure
+
+	if (index == 0) {
+		store_from_index = atomicAdd(dispatch_data.total_count, store_position_count);
+		uint group_count = (store_from_index + store_position_count - 1) / 64 + 1;
+		atomicMax(dispatch_data.x, group_count);
+
+	}
+
+	groupMemoryBarrier();
+	barrier();
 
 	{
 		// compute occlusion
@@ -587,33 +625,6 @@ void main() {
 		}
 
 	}
-	groupMemoryBarrier();
-	barrier();
-
-	uint index;
-
-	if (voxels_found) {
-		index = atomicAdd(store_position_count, 1);
-	}
-
-	groupMemoryBarrier();
-	barrier();
-
-	if (!voxels_found || store_position_count==0) {
-		return;
-	}
-
-	// global increment only once per group, to reduce pressure
-
-	if (index == 0) {
-		store_from_index = atomicAdd(dispatch_data.total_count, store_position_count);
-		uint group_count = (store_from_index + store_position_count - 1) / 64 + 1;
-		atomicMax(dispatch_data.x, group_count);
-
-	}
-
-	groupMemoryBarrier();
-	barrier();
 
 
 	index += store_from_index;
@@ -622,7 +633,7 @@ void main() {
 	albedo_accum.rgb /= albedo_accum.a;
 	emission_accum.rgb /= emission_accum.a;
 
-	dst_process_voxels.data[index].position = uint(pos.x | (pos.y << 10) | (pos.z << 20)) | (PROCESS_STATIC_PENDING_BIT|PROCESS_DYNAMIC_PENDING_BIT);
+	dst_process_voxels.data[index].position = uint(pos.x | (pos.y << 10) | (pos.z << 20)) | PROCESS_STATIC_PENDING_BIT | PROCESS_DYNAMIC_PENDING_BIT;
 
 	uint albedo_norm = 0;
 	albedo_norm |= clamp(uint(albedo_accum.r * 31.0), 0, 31) << 0;

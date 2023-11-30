@@ -3443,7 +3443,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size.mobile", 128);
 	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_count", 64);
 
-	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
+	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/voxel_gi/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"), 0);
 

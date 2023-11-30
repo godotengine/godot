@@ -33,6 +33,8 @@ layout(set = 0, binding = 6) uniform texture2DArray occlusion_probes;
 layout(set = 0, binding = 7) uniform sampler linear_sampler;
 layout(set = 0, binding = 8) uniform sampler linear_sampler_with_mipmaps;
 
+layout(r8ui, set = 0, binding = 9) uniform restrict readonly uimage3D voxel_disocclusion;
+
 struct ProbeCascadeData {
 	vec3 position;
 	float to_probe;
@@ -106,11 +108,12 @@ layout(set = 0, binding = 18, std140) uniform SceneData {
 }
 scene_data;
 
-
+#ifdef USE_VRS
 layout(r8ui, set = 0, binding = 19) uniform restrict readonly uimage2D vrs_buffer;
-
-layout(rgba16f,set = 0, binding = 20) uniform restrict writeonly image2D ambient_buffer;
-layout(rgba16f,set = 0, binding = 21) uniform restrict writeonly image2D reflection_buffer;
+#endif
+layout(r32ui,set = 0, binding = 20) uniform restrict writeonly uimage2D ambient_buffer;
+layout(r32ui,set = 0, binding = 21) uniform restrict writeonly uimage2D reflection_buffer;
+layout(rg8,set = 0, binding = 22) uniform restrict writeonly image2D blend_buffer;
 
 
 layout(push_constant, std430) uniform Params {
@@ -123,7 +126,7 @@ layout(push_constant, std430) uniform Params {
 
 	float z_near;
 	float z_far;
-	float pad2;
+	uint frame_index;
 	float pad3;
 }
 params;
@@ -153,6 +156,23 @@ vec4 blend_color(vec4 src, vec4 dst) {
 		res.rgb = (dst.rgb * dst.a * sa + src.rgb * src.a) / res.a;
 	}
 	return res;
+}
+
+
+uint rgbe_encode(vec3 rgb) {
+
+    const float rgbe_max = uintBitsToFloat(0x477F8000);
+    const float rgbe_min = uintBitsToFloat(0x37800000);
+
+    rgb = clamp(rgb, 0, rgbe_max);
+
+    float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
+
+    float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
+
+    uvec3 urgb = floatBitsToUint(rgb + bias);
+    uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
+    return e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
 }
 
 vec3 reconstruct_position(ivec2 screen_pos) {
@@ -189,6 +209,7 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 
 #define PROBE_CELLS 8
 #define OCC16_DISTANCE_MAX 256.0
+#define REGION_SIZE 8
 
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
@@ -201,7 +222,281 @@ ivec2 probe_to_tex(ivec3 local_probe,int p_cascade) {
 	return cell.xy + ivec2(0,cell.z * int(sdfgi.probe_axis_size.y));
 }
 
-#define ROUGHNESS_TO_REFLECTION_TRESHOOLD 0.2
+#define ROUGHNESS_TO_REFLECTION_TRESHOOLD 0.3
+
+bool bayer_dither(float value) {
+	uvec2 dt = gl_GlobalInvocationID.xy & 0x3;
+	uint index = dt.x + dt.y * 4;
+
+	const float table[16] = float[](  0.0625, 0.5625, 0.1875, 0.6875, 0.8125, 0.3125, 0.9375, 0.4375, 0.25, 0.75, 0.125, 0.625, 1.0, 0.5, 0.875, 0.375 );
+
+	return value > table[index];
+ }
+
+uint hash(uint x) {
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = (x >> 16) ^ x;
+	return x;
+}
+
+
+float dist_to_box(vec3 min_bound, vec3 max_bound, bvec3 step, vec3 pos, vec3 inv_dir) {
+
+	vec3 box = (mix(min_bound,max_bound,step) - pos) * inv_dir;
+	return  min(box.x,min(box.y,box.z));
+}
+
+bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade,float roughness_cells, out ivec3 r_cell,out ivec3 r_side, out int r_cascade) {
+
+	const int LEVEL_CASCADE = -1;
+	const int LEVEL_REGION = 0;
+	const int LEVEL_BLOCK = 1;
+	const int LEVEL_VOXEL = 2;
+	const int MAX_LEVEL = 3;
+
+//#define HQ_RAY
+
+#ifdef HQ_RAY
+	const int fp_bits = 16;
+#else
+	const int fp_bits = 10;
+#endif
+	const int fp_block_bits = fp_bits + 2;
+	const int fp_region_bits = fp_block_bits + 1;
+	const int fp_cascade_bits = fp_region_bits + 4;
+
+	bvec3 limit_dir = greaterThan(ray_dir,vec3(0.0));
+	ivec3 step = mix(ivec3(0),ivec3(1),limit_dir);
+	ivec3 ray_sign = ivec3(sign(ray_dir));
+
+	ivec3 ray_dir_fp = ivec3(ray_dir * float(1<<fp_bits));
+
+#ifdef HQ_RAY
+	const float limit = 1.0/65535.0;
+#else
+	const float limit = 1.0/127.0;
+#endif
+	bvec3 ray_zero = lessThan(abs(ray_dir),vec3(limit));
+	ivec3 inv_ray_dir_fp = ivec3( float(1<<fp_bits) / ray_dir );
+
+	const ivec3 level_masks[MAX_LEVEL]=ivec3[](
+		ivec3(1<<fp_region_bits) - ivec3(1),
+		ivec3(1<<fp_block_bits) - ivec3(1),
+		ivec3(1<<fp_bits) - ivec3(1)
+	);
+
+	ivec3 region_offset_mask = (ivec3(sdfgi.grid_size) / REGION_SIZE) - ivec3(1);
+
+	ivec3 limits[MAX_LEVEL];
+
+	limits[LEVEL_REGION] = ((ivec3(sdfgi.grid_size) << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
+	ivec3 scroll_limit;
+
+	// Initialize to cascade
+	int level = LEVEL_CASCADE;
+	int cascade = p_cascade - 1;
+
+	ivec3 cascade_base;
+	ivec3 region_base;
+	uvec2 block;
+	bool hit = false;
+	ivec3 pos;
+
+	while(true) {
+		// This loop is written so there is only one single main interation.
+		// This ensures that different compute threads working on different
+		// levels can still run together without blocking each other.
+
+		if (level == LEVEL_VOXEL) {
+			// The first level should be (in a worst case scenario) the most used
+			// so it needs to appear first. The rest of the levels go from more to least used order.
+
+			ivec3 block_local = (pos & level_masks[LEVEL_BLOCK]) >> fp_bits;
+			uint block_index = uint(block_local.z * 16 + block_local.y * 4 + block_local.x);
+			if (block_index < 32) {
+				// Low 32 bits.
+				if (bool(block.x & uint(1<<block_index))) {
+					hit=true;
+					break;
+				}
+			} else {
+				// High 32 bits.
+				block_index-=32;
+				if (bool(block.y & uint(1<<block_index))) {
+					hit=true;
+					break;
+				}
+			}
+		} else if (level == LEVEL_BLOCK) {
+			ivec3 block_local = (pos & level_masks[LEVEL_REGION]) >> fp_block_bits;
+			block = imageLoad(voxel_cascades,region_base + block_local).rg;
+			if (block != uvec2(0)) {
+				// Have voxels inside
+				level = LEVEL_VOXEL;
+				limits[LEVEL_VOXEL]= pos - (pos & level_masks[LEVEL_BLOCK]) + step * (level_masks[LEVEL_BLOCK] + ivec3(1));
+				continue;
+			}
+		} else if (level == LEVEL_REGION) {
+			ivec3 region = pos >> fp_region_bits;
+			region = (sdfgi.cascades[cascade].region_world_offset + region) & region_offset_mask; // Scroll to world
+			region += cascade_base;
+			bool region_used = imageLoad(voxel_region_cascades,region).r > 0;
+
+			if (region_used) {
+				// The region has contents.
+				region_base = (region<<1);
+				level = LEVEL_BLOCK;
+				limits[LEVEL_BLOCK]= pos - (pos & level_masks[LEVEL_REGION]) + step * (level_masks[LEVEL_REGION] + ivec3(1));
+				continue;
+			}
+		} else if (level == LEVEL_CASCADE) {
+			// Return to global
+			if (cascade >= p_cascade) {
+				ray_pos = vec3(pos) / float(1<<fp_bits);
+				ray_pos /= sdfgi.cascades[cascade].to_cell;
+				ray_pos += sdfgi.cascades[cascade].position;
+			}
+
+			cascade++;
+			if (cascade == sdfgi.max_cascades) {
+				break;
+			}
+
+			ray_pos -= sdfgi.cascades[cascade].position;
+			ray_pos *= sdfgi.cascades[cascade].to_cell;
+			pos = ivec3(ray_pos * float(1<<fp_bits));
+			if (any(lessThan(pos,ivec3(0))) || any(greaterThanEqual(pos,ivec3(sdfgi.grid_size)<<fp_bits))) {
+				// Outside this cascade, go to next.
+				continue;
+			}
+
+			cascade_base = ivec3(0,int(sdfgi.grid_size.y/REGION_SIZE) * cascade , 0);
+			level = LEVEL_REGION;
+
+			// Put a limit so the jump to the next level is not so strong
+
+			{
+				vec3 box = (vec3(sdfgi.grid_size * step) - ray_pos) / ray_dir;
+				vec3 axis = vec3(1,0,0);
+				float m = box.x;
+				if (box.y < m) {
+					m = box.y;
+					axis = vec3(0,1,0);
+				}
+
+				if (box.z < m) {
+					axis = vec3(0,0,1);
+				}
+
+				vec3 half_size = vec3(sdfgi.grid_size) / 2.0;
+				vec3 inner_pos = -sdfgi.cascades[cascade].position * sdfgi.cascades[cascade].to_cell - half_size;
+
+				float inner_dir = dot(axis,inner_pos);
+				float blend = abs(inner_dir) / float(REGION_SIZE * 0.5);
+
+				scroll_limit = limits[LEVEL_REGION];
+				if (bayer_dither(blend)) {
+					scroll_limit += (ivec3(axis * sign(inner_dir)) * REGION_SIZE) << fp_bits;
+				}
+			}
+
+			// Put a further limit based on roughness.
+
+			if (roughness_cells < 1000.0){
+				vec3 abs_ray_dir = abs(ray_dir);
+				float cell_limit = max(abs_ray_dir.x,max(abs_ray_dir.y,abs_ray_dir.z)) * roughness_cells;
+
+				ivec3 limit = pos + ray_sign * ivec3(cell_limit * (1<<fp_bits));
+
+				scroll_limit = mix(max(limit,scroll_limit),min(limit,scroll_limit),limit_dir);
+			}
+
+			continue;
+		}
+
+		// Fixed point, multi-level DDA.
+
+		ivec3 mask = level_masks[level];
+		ivec3 box = mask * step;
+		ivec3 pos_diff = box - (pos & mask);
+#ifdef HQ_RAY
+		ivec3 mul_res = mul64(pos_diff,inv_ray_dir_fp,fp_bits);
+#else
+		ivec3 mul_res = (pos_diff * inv_ray_dir_fp) >> fp_bits;
+#endif
+		ivec3 tv = mix(mul_res,ivec3(0x7FFFFFFF),ray_zero);
+		int t = min(tv.x,min(tv.y,tv.z));
+
+		// The general idea here is that we _always_ need to increment to the closest next cell
+		// (this is a DDA after all), so adv_box forces this increment for the minimum axis.
+
+		ivec3 adv_box = pos_diff + ray_sign;
+#ifdef HQ_RAY
+		ivec3 adv_t = mul64(ray_dir_fp, ivec3(t), fp_bits);
+#else
+		ivec3 adv_t = (ray_dir_fp * t) >> fp_bits;
+#endif
+		pos += mix(adv_t,adv_box,equal(ivec3(t),tv));
+
+		{  // Test against scroll limit.
+			bvec3 limit = lessThan(pos,scroll_limit);
+			bvec3 eq = equal(limit,limit_dir);
+			if (!all(eq)) {
+				// Hit scroll limit, clamp limit and go to next cascade.
+				level = LEVEL_CASCADE;
+				pos = mix(scroll_limit,pos,eq);
+				continue;
+			}
+		}
+
+		while(true) {
+			bvec3 limit = lessThan(pos,limits[level]);
+			bool inside = all(equal(limit,limit_dir));
+			if (inside) {
+				break;
+			}
+			level-=1;
+			if (level == LEVEL_CASCADE) {
+				break;
+			}
+		}
+	}
+
+	if (hit) {
+
+		ivec3 mask = level_masks[LEVEL_VOXEL];
+		ivec3 box = mask * (step ^ ivec3(1));
+		ivec3 pos_diff = box - (pos & mask);
+#ifdef HQ_RAY
+		ivec3 mul_res = mul64(pos_diff,-inv_ray_dir_fp,fp_bits);
+#else
+		ivec3 mul_res = (pos_diff * -inv_ray_dir_fp);
+#endif
+
+		ivec3 tv = mix(mul_res,ivec3(0x7FFFFFFF),ray_zero);
+
+		int m;
+		if (tv.x < tv.y) {
+			r_side = ivec3(1,0,0);
+			m = tv.x;
+		} else {
+			r_side = ivec3(0,1,0);
+			m = tv.y;
+		}
+		if (tv.z < m) {
+			r_side = ivec3(0,0,1);
+		}
+
+		r_side *= -ray_sign;
+
+		r_cell = pos >> fp_bits;
+
+		r_cascade = cascade;
+	}
+
+	return hit;
+}
 
 void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, float roughness, out vec3 diffuse_light, out vec3 specular_light) {
 
@@ -342,10 +637,8 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 		ambient_light = vec4(0, 0, 0, 1);
 		reflection_light = vec4(0, 0, 0, 1);
 
-		float blend;
 		vec3 diffuse, specular;
-		sdfvoxel_gi_process(cascade, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse, specular);
-
+		float blend;
 		{
 			//process blend
 			vec3 blend_from = ((vec3(sdfgi.probe_axis_size) - 1) / 2.0);
@@ -357,144 +650,147 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 			float min_d = min(inner_dist.x,min(inner_dist.y,inner_dist.z));
 
 			blend = clamp(1.0 - smoothstep(0.5,2.5,min_d),0,1);
-		}
 
-		if (blend > 0.0) {
+			if (cascade < sdfgi.max_cascades - 1) {
 
-#if 0
-// debug
-			const vec3 to_color[SDFGI_MAX_CASCADES] = vec3[] (
-				vec3(1,0,0),vec3(0,1,0),vec3(0,0,1),vec3(1,1,0),vec3(1,0,1),vec3(0,1,1),vec3(0,0,0),vec3(1,1,1) );
-
-			diffuse = mix(diffuse,to_color[cascade],blend);
-			specular = mix(specular,to_color[cascade],blend);
-#else
-
-			if (cascade == sdfgi.max_cascades - 1) {
-				ambient_light.a = 1.0 - blend;
-				reflection_light.a = 1.0 - blend;
-
-			} else {
-				vec3 diffuse2, specular2;
-				cascade_pos = (cam_pos - sdfgi.cascades[cascade + 1].position) * sdfgi.cascades[cascade + 1].to_cell;
-
-				sdfvoxel_gi_process(cascade + 1, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse2, specular2);
-
-				diffuse = mix(diffuse, diffuse2, blend);
-				specular = mix(specular, specular2, blend);
+				if (bayer_dither(blend)) {
+					cascade++;
+					cascade_pos = (cam_pos - sdfgi.cascades[cascade].position) * sdfgi.cascades[cascade].to_cell;
+				}
+				blend = 0.0;
 			}
-#endif
 		}
+
+		sdfvoxel_gi_process(cascade, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse, specular);
 
 		ambient_light.rgb = diffuse;
-#if 0
-		if (roughness < 0.2) {
-			vec3 pos_to_uvw = 1.0 / sdfgi.grid_size;
-			vec4 light_accum = vec4(0.0);
+		ambient_light.a = 1.0 - blend;
 
-			float blend_size = (sdfgi.grid_size.x / float(sdfgi.probe_axis_size - 1)) * 0.5;
+		if (roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
 
-			float radius_sizes[SDFGI_MAX_CASCADES];
-			cascade = 0xFFFF;
+			ivec3 hit_cell;
+			ivec3 hit_face;
+			int hit_cascade;
+			vec4 light = vec4(0);
 
-			float base_distance = length(cam_pos);
-			for (uint i = 0; i < sdfgi.max_cascades; i++) {
-				radius_sizes[i] = (1.0 / sdfgi.cascades[i].to_cell) * (sdfgi.grid_size.x * 0.5 - blend_size);
-				if (cascade == 0xFFFF && base_distance < radius_sizes[i]) {
-					cascade = i;
-				}
-			}
-
-			cascade = min(cascade, sdfgi.max_cascades - 1);
-
-			float max_distance = radius_sizes[sdfgi.max_cascades - 1];
 			vec3 ray_pos = cam_pos;
 			vec3 ray_dir = reflection;
 
-			{
-				float prev_radius = cascade > 0 ? radius_sizes[cascade - 1] : 0.0;
-				float base_blend = (base_distance - prev_radius) / (radius_sizes[cascade] - prev_radius);
-				float bias = (1.0 + base_blend) * 1.1;
-				vec3 abs_ray_dir = abs(ray_dir);
-				//ray_pos += ray_dir * (bias / sdfgi.cascades[cascade].to_cell); //bias to avoid self occlusion
-				ray_pos += (ray_dir * 1.0 / max(abs_ray_dir.x, max(abs_ray_dir.y, abs_ray_dir.z)) + cam_normal * 1.4) * bias / sdfgi.cascades[cascade].to_cell;
+			vec3 start_cell = (ray_pos - sdfgi.cascades[cascade].position) * sdfgi.cascades[cascade].to_cell;
+
+			{ // Bias ray
+
+				vec3 abs_cam_normal = abs(cam_normal);
+				vec3 ray_bias = cam_normal * 1.0 / max(abs_cam_normal.x, max(abs_cam_normal.y, abs_cam_normal.z));
+
+				start_cell += ray_bias * 2.0; // large bias to pass through the reflector cell.
+				ray_pos = start_cell / sdfgi.cascades[cascade].to_cell + sdfgi.cascades[cascade].position;
 			}
-			float softness = 0.2 + min(1.0, roughness * 5.0) * 4.0; //approximation to roughness so it does not seem like a hard fade
-			uint i = 0;
-			bool found = false;
-			while (true) {
-				if (length(ray_pos) >= max_distance || light_accum.a > 0.99) {
-					break;
-				}
-				if (!found && i >= cascade && length(ray_pos) < radius_sizes[i]) {
-					uint next_i = min(i + 1, sdfgi.max_cascades - 1);
-					cascade = max(i, cascade); //never go down
 
-					vec3 pos = ray_pos - sdfgi.cascades[i].position;
-					pos *= sdfgi.cascades[i].to_cell * pos_to_uvw;
+			float r = sqrt(roughness); // perceptual roughness to roughness.
+			r *= float(hash( (gl_GlobalInvocationID.x&0x3) + (gl_GlobalInvocationID.y&0x3) * 4 )&0xF) / float(0xF);
+			float t = min(1000,1.0/tan(asin(r))); // How many cells to advance before size duplicates.
 
-					float fdistance = textureLod(sampler3D(sdf_cascades[i], linear_sampler), pos, 0.0).r * 255.0 - 1.1;
+			if (trace_ray_hdda(ray_pos, ray_dir, cascade,t, hit_cell, hit_face, hit_cascade)) {
 
-					vec4 hit_light = vec4(0.0);
-					if (fdistance < softness) {
-						hit_light.rgb = textureLod(sampler3D(light_cascades[i], linear_sampler), pos, 0.0).rgb;
-						hit_light.rgb *= 0.5; //approximation given value read is actually meant for anisotropy
-						hit_light.a = clamp(1.0 - (fdistance / softness), 0.0, 1.0);
-						hit_light.rgb *= hit_light.a;
-					}
+				bool valid = true;
+				if (hit_cascade == cascade) {
+					if (ivec3(start_cell) == hit_cell) {
+						// self hit the start cell, ouch, load the disocclusion
 
-					fdistance /= sdfgi.cascades[i].to_cell;
+						ivec3 read_cell = (hit_cell + (sdfgi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(sdfgi.grid_size) - 1);
+						uint disocc = imageLoad(voxel_disocclusion,read_cell + ivec3(0,(sdfgi.grid_size.y * hit_cascade),0)).r;
 
-					if (i < (sdfgi.max_cascades - 1)) {
-						pos = ray_pos - sdfgi.cascades[next_i].position;
-						pos *= sdfgi.cascades[next_i].to_cell * pos_to_uvw;
+						if (disocc == 0) {
 
-						float fdistance2 = textureLod(sampler3D(sdf_cascades[next_i], linear_sampler), pos, 0.0).r * 255.0 - 1.1;
+							// Can happen.. guess.
+							vec3 abs_normal = abs(cam_normal);
+							// Find closest normal to cam normal.
+							int ni = 0;
+							float m = abs_normal.x;
+							if (abs_normal.y > m) {
+								m = abs_normal.y;
+								ni=1;
+							}
+							if (abs_normal.z > m) {
+								ni = 2;
+							}
 
-						vec4 hit_light2 = vec4(0.0);
-						if (fdistance2 < softness) {
-							hit_light2.rgb = textureLod(sampler3D(light_cascades[next_i], linear_sampler), pos, 0.0).rgb;
-							hit_light2.rgb *= 0.5; //approximation given value read is actually meant for anisotropy
-							hit_light2.a = clamp(1.0 - (fdistance2 / softness), 0.0, 1.0);
-							hit_light2.rgb *= hit_light2.a;
+							vec3 local = fract(start_cell) - 0.5; // create local cell.
+
+							const vec3 axes[5]=vec3[](vec3(1,0,0),vec3(0,1,0),vec3(0,0,1),vec3(1,0,0),vec3(0,1,0));
+							// Find the closest axis to push.
+							vec3 ax_a = axes[ni+1];
+							vec3 ax_b = axes[ni+2];
+
+							vec3 advance;
+							if (abs(dot(ax_a,local)) > abs(dot(ax_b,local))) {
+								advance = ax_a * sign(local);
+							} else {
+								advance = ax_b * sign(local);
+							}
+
+							start_cell += advance;
+							hit_cell += ivec3(advance);
+
+							read_cell = (hit_cell + (sdfgi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(sdfgi.grid_size) - 1);
+							disocc = imageLoad(voxel_disocclusion,read_cell ).r;
+
 						}
 
-						float prev_radius = i == 0 ? 0.0 : radius_sizes[max(0, i - 1)];
-						float blend = clamp((length(ray_pos) - prev_radius) / (radius_sizes[i] - prev_radius), 0.0, 1.0);
+						// find best disocclusion direction.
 
-						fdistance2 /= sdfgi.cascades[next_i].to_cell;
+						vec3 local = fract(start_cell) - 0.5; // create local cell.
 
-						hit_light = mix(hit_light, hit_light2, blend);
-						fdistance = mix(fdistance, fdistance2, blend);
+						const vec3 aniso_dir[6] = vec3[](
+								vec3(-1, 0, 0),
+								vec3(1, 0, 0),
+								vec3(0, -1, 0),
+								vec3(0, 1, 0),
+								vec3(0, 0, -1),
+								vec3(0, 0, 1));
+
+						int best_axis = 0;
+						float best_d=-20;
+						for(int i=0;i<6;i++) {
+							if (bool(disocc & (1<<i))) {
+								float d = dot(local,aniso_dir[i]);
+								if (d > best_d) {
+									best_axis = i;
+									best_d=d;
+								}
+							}
+						}
+
+						hit_face = ivec3(aniso_dir[best_axis]);
+
+						/*
+						if (disocc == 0) {
+							light.rgb = vec3(1,0,0);
+						} else {
+							light.rgb = vec3(0,1,0);
+						}
+						light.rgb = aniso_dir[best_axis] * 0.5 + 0.5;
+						light.a = 1;
+						valid=false;*/
 					}
-
-					light_accum += hit_light;
-					ray_pos += ray_dir * fdistance;
-					found = true;
 				}
-				i++;
-				if (i == sdfgi.max_cascades) {
-					i = 0;
-					found = false;
+				if (valid) {
+					ivec3 read_cell = (hit_cell + hit_face + (sdfgi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(sdfgi.grid_size) - 1);
+					light.rgb = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0,(sdfgi.grid_size.y * hit_cascade),0), 0).rgb;
+					light.a = 1;
+				} else {
+					//light = vec4(0,0,0,1);
 				}
 			}
 
-			vec3 light = light_accum.rgb / max(light_accum.a, 0.00001);
-			float alpha = min(1.0, light_accum.a);
+			reflection_light = mix(light,vec4(specular,1.0 - blend), smoothstep(0,0.2,roughness));
+		} else {
 
-			float b = min(1.0, roughness * 5.0);
-
-			float sa = 1.0 - b;
-
-			reflection_light.a = alpha * sa + b;
-			if (reflection_light.a == 0) {
-				specular = vec3(0.0);
-			} else {
-				specular = (light * alpha * sa + specular * b) / reflection_light.a;
-			}
+			reflection_light.rgb = specular;
+			reflection_light.a = 1.0 - blend;
 		}
-#endif
-		reflection_light.rgb = specular;
+
 
 		ambient_light.rgb *= sdfgi.energy;
 		reflection_light.rgb *= sdfgi.energy;
@@ -502,8 +798,6 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 		ambient_light = vec4(0);
 		reflection_light = vec4(0);
 	}
-
-
 }
 
 //standard voxel cone trace
@@ -742,66 +1036,92 @@ void main() {
 		pos >>= 1;
 	}
 
-	imageStore(ambient_buffer, pos, ambient_light);
-	imageStore(reflection_buffer, pos, reflection_light);
+	uint ambient_rgbe = rgbe_encode(ambient_light.rgb);
+	uint reflection_rgbe = rgbe_encode(reflection_light.rgb);
+	uint blend = uint(clamp(reflection_light.a * 0xF,0,0xF))| (uint(clamp(ambient_light.a * 0xF,0,0xF))<<4);
+
+	imageStore(ambient_buffer, pos, uvec4(ambient_rgbe));
+	imageStore(reflection_buffer, pos, uvec4(reflection_rgbe));
+	imageStore(blend_buffer, pos, vec4(ambient_light.a,reflection_light.a,0,0));
 
 #ifdef USE_VRS
 	if (sc_use_vrs) {
 		if (vrs_x > 1) {
-			imageStore(ambient_buffer, pos + ivec2(1, 0), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(1, 0), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(1, 0), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(1, 0), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(1, 0), uvec4(blend));
 		}
 
 		if (vrs_x > 2) {
-			imageStore(ambient_buffer, pos + ivec2(2, 0), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(2, 0), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(2, 0), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(2, 0), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(2, 0), uvec4(blend));
 
-			imageStore(ambient_buffer, pos + ivec2(3, 0), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(3, 0), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(3, 0), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(3, 0), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(3, 0), uvec4(blend));
 		}
 
 		if (vrs_y > 1) {
-			imageStore(ambient_buffer, pos + ivec2(0, 1), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(0, 1), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(0, 1), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(0, 1), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(0, 1), uvec4(blend));
 		}
 
 		if (vrs_y > 1 && vrs_x > 1) {
-			imageStore(ambient_buffer, pos + ivec2(1, 1), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(1, 1), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(1, 1), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(1, 1), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(1, 1), uvec4(blend));
 		}
 
 		if (vrs_y > 1 && vrs_x > 2) {
-			imageStore(ambient_buffer, pos + ivec2(2, 1), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(2, 1), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(2, 1), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(2, 1), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(2, 1), uvec4(blend));
 
-			imageStore(ambient_buffer, pos + ivec2(3, 1), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(3, 1), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(3, 1), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(3, 1), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(3, 1), uvec4(blend));
 		}
 
 		if (vrs_y > 2) {
-			imageStore(ambient_buffer, pos + ivec2(0, 2), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(0, 2), reflection_light);
-			imageStore(ambient_buffer, pos + ivec2(0, 3), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(0, 3), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(0, 2), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(0, 2), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(0, 2), uvec4(blend));
+
+			imageStore(ambient_buffer, pos + ivec2(0, 3), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(0, 3), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(0, 3), uvec4(blend));
 		}
 
 		if (vrs_y > 2 && vrs_x > 1) {
-			imageStore(ambient_buffer, pos + ivec2(1, 2), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(1, 2), reflection_light);
-			imageStore(ambient_buffer, pos + ivec2(1, 3), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(1, 3), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(1, 2), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(1, 2), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(1, 2), uvec4(blend));
+
+			imageStore(ambient_buffer, pos + ivec2(1, 3), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(1, 3), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(1, 3), uvec4(blend));
 		}
 
 		if (vrs_y > 2 && vrs_x > 2) {
-			imageStore(ambient_buffer, pos + ivec2(2, 2), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(2, 2), reflection_light);
-			imageStore(ambient_buffer, pos + ivec2(2, 3), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(2, 3), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(2, 2), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(2, 2), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(2, 2), uvec4(blend));
 
-			imageStore(ambient_buffer, pos + ivec2(3, 2), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(3, 2), reflection_light);
-			imageStore(ambient_buffer, pos + ivec2(3, 3), ambient_light);
-			imageStore(reflection_buffer, pos + ivec2(3, 3), reflection_light);
+
+			imageStore(ambient_buffer, pos + ivec2(2, 3), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(2, 3), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(2, 3), uvec4(blend));
+
+			imageStore(ambient_buffer, pos + ivec2(3, 2), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(3, 2), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(3, 2), uvec4(blend));
+
+
+			imageStore(ambient_buffer, pos + ivec2(3, 3), uvec4(ambient_rgbe));
+			imageStore(reflection_buffer, pos + ivec2(3, 3), uvec4(reflection_rgbe));
+			imageStore(blend_buffer, pos + ivec2(3, 3), uvec4(blend));
 		}
 	}
 #endif

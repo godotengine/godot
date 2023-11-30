@@ -291,34 +291,21 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
 	return hit;
 }
 
-uint rgbe_encode(vec3 color) {
-	const float pow2to9 = 512.0f;
-	const float B = 15.0f;
-	const float N = 9.0f;
-	const float LN2 = 0.6931471805599453094172321215;
+uint rgbe_encode(vec3 rgb) {
 
-	float cRed = clamp(color.r, 0.0, 65408.0);
-	float cGreen = clamp(color.g, 0.0, 65408.0);
-	float cBlue = clamp(color.b, 0.0, 65408.0);
+    const float rgbe_max = uintBitsToFloat(0x477F8000);
+    const float rgbe_min = uintBitsToFloat(0x37800000);
 
-	float cMax = max(cRed, max(cGreen, cBlue));
+    rgb = clamp(rgb, 0, rgbe_max);
 
-	float expp = max(-B - 1.0f, floor(log(cMax) / LN2)) + 1.0f + B;
+    float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
 
-	float sMax = floor((cMax / pow(2.0f, expp - B - N)) + 0.5f);
+    float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
 
-	float exps = expp + 1.0f;
-
-	if (0.0 <= sMax && sMax < pow2to9) {
-		exps = expp;
-	}
-
-	float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
-	float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
-	float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-	return (uint(sRed) & 0x1FF) | ((uint(sGreen) & 0x1FF) << 9) | ((uint(sBlue) & 0x1FF) << 18) | ((uint(exps) & 0x1F) << 27);
+    uvec3 urgb = floatBitsToUint(rgb + bias);
+    uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
+    return e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
 }
-
 
 vec3 rgbe_decode(uint p_rgbe) {
 	vec4 rgbef = vec4((uvec4(p_rgbe) >> uvec4(0,9,18,27)) & uvec4(0x1FF,0x1FF,0x1FF,0x1F));
@@ -354,7 +341,6 @@ void main() {
 	if (params.process_increment > 1) {
 		if ( ( (voxel_index + params.process_offset) % params.process_increment) != 0 ) {
 
-			bool still_render = false;
 			if (params.dirty_dynamic_update && bool(process_voxels.data[voxel_index].position & PROCESS_DYNAMIC_PENDING_BIT)) {
 				//saved	because it still needs dynamic update
 			} else {

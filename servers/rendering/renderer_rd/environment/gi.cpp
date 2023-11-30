@@ -421,7 +421,8 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	num_cascades = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_cascades(p_env);
 	min_cell_size = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_min_cell_size(p_env);
 	uses_occlusion = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_use_occlusion(p_env);
-	using_filter = uses_occlusion;
+	//using_probe_filter = uses_occlusion;
+	using_image_filter = uses_occlusion;
 	y_scale_mode = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_y_scale(p_env);
 	static const float y_scale[3] = { 2.0, 1.5, 1.0 };
 	y_mult = y_scale[y_scale_mode];
@@ -449,7 +450,6 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		tf_voxel.depth /= 4;
 		tf_voxel.texture_type = RD::TEXTURE_TYPE_3D;
 		tf_voxel.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		RD::TextureFormat tf_sdf = tf_base;
 
 		tf_voxel.height *= cascades.size();
 		voxel_bits_tex = create_clear_texture(tf_voxel, "SDFGI Voxel Field");
@@ -465,6 +465,15 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		tf_voxel.texture_type = RD::TEXTURE_TYPE_3D;
 		tf_voxel.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		region_version_data = create_clear_texture(tf_voxel, "SDFGI Region Version");
+	}
+
+	{
+		RD::TextureFormat tf_disocc = tf_base;
+		tf_disocc.format = RD::DATA_FORMAT_R8_UINT; // 4x4 region in a cache friendly format
+		tf_disocc.texture_type = RD::TEXTURE_TYPE_3D;
+		tf_disocc.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		tf_disocc.height *= cascades.size();
+		voxel_disocclusion_tex = create_clear_texture(tf_disocc, "SDFGI Voxel Disocclusion");
 	}
 
 	{
@@ -1544,7 +1553,8 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, light_process_dispatch_buffer_render),
 				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 6, light_process_buffer_render),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 7, occlusion_tex), // read as texture since we need to sample
-				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 8, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 8, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, voxel_disocclusion_tex));
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 
@@ -2161,7 +2171,7 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count.x * LIGHTPROBE_OCT_SIZE, probe_axis_count.y * probe_axis_count.z * LIGHTPROBE_OCT_SIZE, 1);
 	}
 
-	if (using_filter) {
+	if (using_probe_filter) {
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_FILTER]);
@@ -3898,6 +3908,42 @@ void GI::init(SkyRD *p_sky) {
 		sdfgi_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGIData));
 	}
 	{
+		String defines;
+		//calculate tables
+		if (RendererSceneRenderRD::get_singleton()->is_vrs_supported()) {
+			defines += "\n#define USE_VRS\n";
+		}
+		Vector<String> filter_modes;
+		filter_modes.push_back("\n#define MODE_BILATERAL_FILTER\n");
+		filter_modes.push_back("\n#define MODE_BILATERAL_FILTER\n#define HALF_SIZE\n");
+		filter_shader.initialize(filter_modes, defines);
+		filter_shader_version = filter_shader.version_create();
+
+		Vector<RD::PipelineSpecializationConstant> specialization_constants;
+
+		{
+			RD::PipelineSpecializationConstant sc;
+			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			sc.constant_id = 0; // FILTER_SHADER_SPECIALIZATION_HALF_RES
+			sc.bool_value = false;
+			specialization_constants.push_back(sc);
+
+			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			sc.constant_id = 1; // FILTER_SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX
+			sc.bool_value = false;
+			specialization_constants.push_back(sc);
+		}
+
+		for (int v = 0; v < FILTER_SHADER_SPECIALIZATION_VARIATIONS; v++) {
+			specialization_constants.ptrw()[0].bool_value = (v & FILTER_SHADER_SPECIALIZATION_HALF_RES) ? true : false;
+			specialization_constants.ptrw()[1].bool_value = (v & FILTER_SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX) ? true : false;
+			for (int i = 0; i < FILTER_MODE_MAX; i++) {
+				filter_pipelines[v][i] = RD::get_singleton()->compute_pipeline_create(filter_shader.version_get_shader(filter_shader_version, i), specialization_constants);
+			}
+		}
+	}
+
+	{
 		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(SDFGI::OCCLUSION_OCT_SIZE) + "\n";
 		Vector<String> debug_modes;
 		debug_modes.push_back("");
@@ -4147,15 +4193,45 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 
 	if (!p_render_buffers->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT)) {
 		Size2i size = internal_size;
-		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		if (half_resolution) {
 			size.x >>= 1;
 			size.y >>= 1;
 		}
 
-		p_render_buffers->create_texture(RB_SCOPE_GI, RB_TEX_AMBIENT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1, size);
-		p_render_buffers->create_texture(RB_SCOPE_GI, RB_TEX_REFLECTION, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1, size);
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+		tf.width = size.x;
+		tf.height = size.y;
+		tf.depth = 1;
+		tf.array_layers = 1;
+		tf.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
+		tf.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+
+		RD::TextureFormat tf_blend;
+		tf_blend.format = RD::DATA_FORMAT_R8G8_UNORM;
+
+		tf_blend.width = size.x;
+		tf_blend.height = size.y;
+		tf_blend.depth = 1;
+		tf_blend.array_layers = 1;
+		tf_blend.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_AMBIENT, tf);
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_REFLECTION, tf);
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND, tf_blend);
+
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_AMBIENT_FILTERED, tf);
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_REFLECTION_FILTERED, tf);
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND_FILTERED, tf_blend);
+
+		RD::TextureView tv;
+		tv.format_override = RD::DATA_FORMAT_R32_UINT;
+		p_render_buffers->create_texture_view(RB_SCOPE_GI, RB_TEX_AMBIENT, RB_TEX_AMBIENT_U32, tv);
+		p_render_buffers->create_texture_view(RB_SCOPE_GI, RB_TEX_REFLECTION, RB_TEX_REFLECTION_U32, tv);
+		p_render_buffers->create_texture_view(RB_SCOPE_GI, RB_TEX_AMBIENT_FILTERED, RB_TEX_AMBIENT_U32_FILTERED, tv);
+		p_render_buffers->create_texture_view(RB_SCOPE_GI, RB_TEX_REFLECTION_FILTERED, RB_TEX_REFLECTION_U32_FILTERED, tv);
 
 		rbgi->using_half_size_gi = half_resolution;
 	}
@@ -4202,6 +4278,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 	push_constant.orthogonal = p_projections[0].is_orthogonal();
 	push_constant.z_near = p_projections[0].get_z_near();
 	push_constant.z_far = p_projections[0].get_z_far();
+	push_constant.frame_index = RSG::rasterizer->get_frame_number();
 
 	// these are only used if we have 1 view, else we use the projections in our scene data
 	push_constant.proj_info[0] = -2.0f / (internal_size.x * p_projections[0].columns[0][0]);
@@ -4250,10 +4327,11 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, sdfgi->voxel_region_tex),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, sdfgi->light_tex),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 4, sdfgi->lightprobe_specular_tex),
-					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, sdfgi->using_filter ? sdfgi->lightprobe_diffuse_filter_tex : sdfgi->lightprobe_diffuse_tex),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, sdfgi->using_probe_filter ? sdfgi->lightprobe_diffuse_filter_tex : sdfgi->lightprobe_diffuse_tex),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, sdfgi->occlusion_tex),
 					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 7, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 8, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, sdfgi->voxel_disocclusion_tex),
 
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 10, p_render_buffers->get_depth_texture(v)),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 11, p_normal_roughness_slices[v]),
@@ -4265,8 +4343,9 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 18, rbgi->scene_data_ubo),
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 19, has_vrs_texture ? p_render_buffers->get_texture_slice(RB_SCOPE_VRS, RB_TEXTURE, v, 0) : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_VRS)),
 
-					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 20, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_AMBIENT, v, 0)),
-					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 21, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_REFLECTION, v, 0))
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 20, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_AMBIENT_U32, v, 0)),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 21, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_REFLECTION_U32, v, 0)),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 22, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND, v, 0))
 
 			);
 		}
@@ -4282,6 +4361,57 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 		}
 	}
 
+	if (sdfgi->using_image_filter) {
+		uint32_t filter_pipeline_specialization = 0;
+		if (rbgi->using_half_size_gi) {
+			filter_pipeline_specialization |= FILTER_SHADER_SPECIALIZATION_HALF_RES;
+		}
+		if (p_view_count > 1) {
+			filter_pipeline_specialization |= FILTER_SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX;
+		}
+
+		FilterPushConstant filter_push_constant;
+		filter_push_constant.orthogonal = push_constant.orthogonal;
+		filter_push_constant.z_near = push_constant.z_near;
+		filter_push_constant.z_far = push_constant.z_far;
+		filter_push_constant.proj_info[0] = push_constant.proj_info[0];
+		filter_push_constant.proj_info[1] = push_constant.proj_info[1];
+		filter_push_constant.proj_info[2] = push_constant.proj_info[2];
+		filter_push_constant.proj_info[3] = push_constant.proj_info[3];
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, filter_pipelines[filter_pipeline_specialization][rbgi->using_half_size_gi ? FILTER_MODE_BILATERAL_HALF_SIZE : FILTER_MODE_BILATERAL]);
+
+		for (int i = 0; i < 2; i++) {
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+			filter_push_constant.filter_dir[1] = i & 1;
+			filter_push_constant.filter_dir[0] = (i + 1) & 1;
+
+			for (uint32_t v = 0; v < p_view_count; v++) {
+				RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+						filter_shader.version_get_shader(filter_shader_version, 0),
+						0,
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_render_buffers->get_depth_texture(v)),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_normal_roughness_slices[v]),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, p_render_buffers->get_texture_slice(RB_SCOPE_GI, i == 0 ? RB_TEX_REFLECTION : RB_TEX_REFLECTION_FILTERED, v, 0)),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_render_buffers->get_texture_slice(RB_SCOPE_GI, i == 0 ? RB_TEX_AMBIENT_REFLECTION_BLEND : RB_TEX_AMBIENT_REFLECTION_BLEND_FILTERED, v, 0)),
+						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, p_render_buffers->get_texture_slice(RB_SCOPE_GI, i == 0 ? RB_TEX_REFLECTION_U32_FILTERED : RB_TEX_REFLECTION_U32, v, 0)),
+						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, p_render_buffers->get_texture_slice(RB_SCOPE_GI, i == 0 ? RB_TEX_AMBIENT_REFLECTION_BLEND_FILTERED : RB_TEX_AMBIENT_REFLECTION_BLEND, v, 0)),
+						RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 6, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+						RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, rbgi->scene_data_ubo));
+
+				filter_push_constant.view_index = v;
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &filter_push_constant, sizeof(FilterPushConstant));
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+				if (rbgi->using_half_size_gi) {
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, internal_size.x >> 1, internal_size.y >> 1, 1);
+				} else {
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, internal_size.x, internal_size.y, 1);
+				}
+			}
+		}
+	}
 	//do barrier later to allow oeverlap
 	//RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER); //no barriers, let other compute, raster and transfer happen at the same time
 	RD::get_singleton()->draw_command_end_label();

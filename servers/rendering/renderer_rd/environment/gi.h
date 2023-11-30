@@ -40,6 +40,7 @@
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug_probes.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_direct_light.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/sdfgi_filter.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_integrate.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_preprocess.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi.glsl.gen.h"
@@ -54,6 +55,17 @@
 
 #define RB_TEX_AMBIENT SNAME("ambient")
 #define RB_TEX_REFLECTION SNAME("reflection")
+#define RB_TEX_AMBIENT_REFLECTION_BLEND SNAME("ambient_reflection_blend")
+
+#define RB_TEX_AMBIENT_U32 SNAME("ambient_u32")
+#define RB_TEX_REFLECTION_U32 SNAME("reflection_u32")
+
+#define RB_TEX_AMBIENT_FILTERED SNAME("ambient_filtered")
+#define RB_TEX_REFLECTION_FILTERED SNAME("reflection_filtered")
+#define RB_TEX_AMBIENT_REFLECTION_BLEND_FILTERED SNAME("ambient_reflection_blend_filtered")
+
+#define RB_TEX_AMBIENT_U32_FILTERED SNAME("ambient_u32_filtered")
+#define RB_TEX_REFLECTION_U32_FILTERED SNAME("reflection_u32_filtered")
 
 // Forward declare RenderDataRD and RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
 struct RenderDataRD;
@@ -291,7 +303,7 @@ private:
 			uint32_t ray_hit_cache_frames;
 
 			uint32_t upper_region_world_pos[3];
-			uint pad;
+			uint32_t pad;
 		};
 
 		SdfgiPreprocessShaderRD preprocess;
@@ -654,6 +666,7 @@ public:
 
 		RID voxel_bits_tex;
 		RID voxel_region_tex;
+		RID voxel_disocclusion_tex;
 		RID light_tex;
 		RID light_tex_data;
 		RID region_version_data;
@@ -686,7 +699,8 @@ public:
 
 		uint32_t update_frame = 0;
 
-		bool using_filter = true;
+		bool using_probe_filter = true;
+		bool using_image_filter = true;
 #if 0
 		// used for rendering (voxelization)
 		RID render_albedo;
@@ -756,7 +770,7 @@ public:
 		void update_cascades();
 
 		RID get_lightprobe_diffuse_texture() {
-			if (using_filter) {
+			if (using_probe_filter) {
 				return lightprobe_diffuse_filter_tex;
 			} else {
 				return lightprobe_diffuse_tex;
@@ -862,7 +876,7 @@ public:
 
 		float z_near;
 		float z_far;
-		float pad2;
+		uint32_t frame_index;
 		float pad3;
 	};
 
@@ -888,6 +902,33 @@ public:
 	GiShaderRD shader;
 	RID shader_version;
 	RID pipelines[SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
+
+	enum FilterMode {
+		FILTER_MODE_BILATERAL,
+		FILTER_MODE_BILATERAL_HALF_SIZE,
+		FILTER_MODE_MAX
+	};
+	enum FilterShaderSpecializations {
+		FILTER_SHADER_SPECIALIZATION_HALF_RES = 1 << 0,
+		FILTER_SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX = 1 << 1,
+		FILTER_SHADER_SPECIALIZATION_VARIATIONS = 4
+	};
+
+	struct FilterPushConstant {
+		uint32_t orthogonal;
+		float z_near;
+		float z_far;
+		uint32_t view_index;
+
+		float proj_info[4];
+
+		int32_t filter_dir[2];
+		uint32_t pad[2];
+	};
+
+	SdfgiFilterShaderRD filter_shader;
+	RID filter_shader_version;
+	RID filter_pipelines[FILTER_SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
 
 	GI();
 	~GI();

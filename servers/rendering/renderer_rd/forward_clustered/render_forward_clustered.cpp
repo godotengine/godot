@@ -632,12 +632,19 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		scene_state.ubo.cluster_width = cluster_screen_width;
 	}
 
-	scene_state.ubo.gi_upscale_for_msaa = false;
+	scene_state.ubo.gi_upscale = false;
 	scene_state.ubo.volumetric_fog_enabled = false;
 
 	if (rd.is_valid()) {
-		if (rd->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
-			scene_state.ubo.gi_upscale_for_msaa = true;
+		Ref<RendererRD::GI::RenderBuffersGI> rbgi = rd->get_custom_data(RB_SCOPE_GI);
+
+		if (rd->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED || rbgi->using_half_size_gi) {
+			scene_state.ubo.gi_upscale = true;
+			if (rbgi->using_half_size_gi) {
+				scene_state.ubo.gi_upscale_shift = 1;
+			} else {
+				scene_state.ubo.gi_upscale_shift = 0;
+			}
 		}
 
 		if (rd->has_custom_data(RB_SCOPE_FOG)) {
@@ -3244,6 +3251,14 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RD::Uniform u;
 		u.binding = 16;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		RID texture = rb_data.is_valid() && rb->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND) ? rb->get_texture(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND) : texture_storage->texture_rd_get_default(is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+		u.append_id(texture);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 17;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID t;
 		if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_SDFGI)) {
 			Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
@@ -3257,7 +3272,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 	}
 	{
 		RD::Uniform u;
-		u.binding = 17;
+		u.binding = 18;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID t;
 		if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_SDFGI)) {
@@ -3272,7 +3287,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 	}
 	{
 		RD::Uniform u;
-		u.binding = 18;
+		u.binding = 19;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID t;
 		if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_SDFGI)) {
@@ -3288,7 +3303,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 
 	{
 		RD::Uniform u;
-		u.binding = 19;
+		u.binding = 20;
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 		RID voxel_gi;
 		if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_GI)) {
@@ -3300,7 +3315,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 	}
 	{
 		RD::Uniform u;
-		u.binding = 20;
+		u.binding = 21;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID vfog;
 		if (rb_data.is_valid() && rb->has_custom_data(RB_SCOPE_FOG)) {
@@ -3317,7 +3332,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 	}
 	{
 		RD::Uniform u;
-		u.binding = 21;
+		u.binding = 22;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID ssil = rb.is_valid() && rb->has_texture(RB_SCOPE_SSIL, RB_FINAL) ? rb->get_texture(RB_SCOPE_SSIL, RB_FINAL) : RID();
 		RID texture = ssil.is_valid() ? ssil : texture_storage->texture_rd_get_default(is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);

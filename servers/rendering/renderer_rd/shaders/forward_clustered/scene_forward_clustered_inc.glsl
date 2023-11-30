@@ -184,10 +184,10 @@ struct ImplementationData {
 	mat4 sdf_to_bounds;
 
 	ivec3 sdf_offset;
-	uint pad2;
+	int gi_upscale_shift;
 
 	ivec3 sdf_size;
-	bool gi_upscale_for_msaa;
+	bool gi_upscale;
 
 	bool volumetric_fog_enabled;
 	float volumetric_fog_inv_length;
@@ -268,6 +268,8 @@ layout(set = 1, binding = 12) uniform texture2DArray normal_roughness_buffer;
 layout(set = 1, binding = 13) uniform texture2DArray ao_buffer;
 layout(set = 1, binding = 14) uniform texture2DArray ambient_buffer;
 layout(set = 1, binding = 15) uniform texture2DArray reflection_buffer;
+layout(set = 1, binding = 16) uniform texture2DArray ambient_reflection_blend_buffer;
+
 #define multiviewSampler sampler2DArray
 #else // USE_MULTIVIEW
 layout(set = 1, binding = 10) uniform texture2D depth_buffer;
@@ -276,12 +278,13 @@ layout(set = 1, binding = 12) uniform texture2D normal_roughness_buffer;
 layout(set = 1, binding = 13) uniform texture2D ao_buffer;
 layout(set = 1, binding = 14) uniform texture2D ambient_buffer;
 layout(set = 1, binding = 15) uniform texture2D reflection_buffer;
+layout(set = 1, binding = 16) uniform texture2D ambient_reflection_blend_buffer;
 #define multiviewSampler sampler2D
 #endif
 
-layout(set = 1, binding = 16) uniform texture2DArray sdfgi_lightprobe_specular;
-layout(set = 1, binding = 17) uniform texture2DArray sdfgi_lightprobe_diffuse;
-layout(set = 1, binding = 18) uniform texture2DArray sdfgi_occlusion_probes;
+layout(set = 1, binding = 17) uniform texture2DArray sdfgi_lightprobe_specular;
+layout(set = 1, binding = 18) uniform texture2DArray sdfgi_lightprobe_diffuse;
+layout(set = 1, binding = 19) uniform texture2DArray sdfgi_occlusion_probes;
 
 struct VoxelGIData {
 	mat4 xform; // 64 - 64
@@ -298,17 +301,17 @@ struct VoxelGIData {
 	float exposure_normalization; // 4 - 112
 };
 
-layout(set = 1, binding = 19, std140) uniform VoxelGIs {
+layout(set = 1, binding = 20, std140) uniform VoxelGIs {
 	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
 }
 voxel_gi_instances;
 
-layout(set = 1, binding = 20) uniform texture3D volumetric_fog_texture;
+layout(set = 1, binding = 21) uniform texture3D volumetric_fog_texture;
 
 #ifdef USE_MULTIVIEW
-layout(set = 1, binding = 21) uniform texture2DArray ssil_buffer;
+layout(set = 1, binding = 22) uniform texture2DArray ssil_buffer;
 #else
-layout(set = 1, binding = 21) uniform texture2D ssil_buffer;
+layout(set = 1, binding = 22) uniform texture2D ssil_buffer;
 #endif // USE_MULTIVIEW
 
 #endif

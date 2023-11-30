@@ -1458,47 +1458,61 @@ void fragment_shader(in SceneData scene_data) {
 
 	if (!sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { //use GI buffers
 
-		vec2 coord;
+		ivec2 coord = ivec2(gl_FragCoord.xy);
 
-		if (implementation_data.gi_upscale_for_msaa) {
-			vec2 base_coord = screen_uv;
-			vec2 closest_coord = base_coord;
+		if (implementation_data.gi_upscale) {
+
+
+			if (implementation_data.gi_upscale_shift>0) {
+				coord-=coord&1;
+			}
+
+			ivec2 closest_coord = coord;
+
 #ifdef USE_MULTIVIEW
-			float closest_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(base_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+			vec4 closest_nr = texelFetch(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), ivec3(coord, ViewIndex), 0);
 #else // USE_MULTIVIEW
-			float closest_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), base_coord, 0.0).xyz * 2.0 - 1.0);
+			vec4 closest_nr = texelFetch(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), coord, 0);
 #endif // USE_MULTIVIEW
+
+			float closest_r = closest_nr.a;
+			float closest_ang = dot(normal, closest_nr.xyz * 2.0 - 1.0);
+			closest_ang -= abs(closest_r - roughness) * 0.5;
 
 			for (int i = 0; i < 4; i++) {
-				const vec2 neighbors[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
-				vec2 neighbour_coord = base_coord + neighbors[i] * scene_data.screen_pixel_size;
+				const ivec2 neighbours[4]=ivec2[](ivec2(1,0),ivec2(0,1),ivec2(-1,0),ivec2(0,-1));
+				ivec2 neighbour_coord = coord + (neighbours[i] << implementation_data.gi_upscale_shift);
 #ifdef USE_MULTIVIEW
-				float neighbour_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+				closest_nr = texelFetch(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), ivec3(neighbour_coord, ViewIndex), 0);
 #else // USE_MULTIVIEW
-				float neighbour_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), neighbour_coord, 0.0).xyz * 2.0 - 1.0);
+				closest_nr = texelFetch(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), neighbour_coord, 0);
 #endif // USE_MULTIVIEW
-				if (neighbour_ang > closest_ang) {
-					closest_ang = neighbour_ang;
+
+				float r = closest_nr.a;
+				float ang = dot(normal, closest_nr.xyz * 2.0 - 1.0);
+				ang -= abs(r - roughness) * 0.5;
+
+				if (ang > closest_ang) {
+					closest_ang = ang;
 					closest_coord = neighbour_coord;
 				}
 			}
 
-			coord = closest_coord;
-
-		} else {
-			coord = screen_uv;
+			coord = closest_coord >> implementation_data.gi_upscale_shift;
 		}
 
 #ifdef USE_MULTIVIEW
-		vec4 buffer_ambient = textureLod(sampler2DArray(ambient_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
-		vec4 buffer_reflection = textureLod(sampler2DArray(reflection_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
+		vec3 buffer_ambient = texelFetch(sampler2DArray(ambient_buffer, SAMPLER_LINEAR_CLAMP), ivec3(coord, ViewIndex), 0).rgb;
+		vec3 buffer_reflection = texelFetch(sampler2DArray(reflection_buffer, SAMPLER_LINEAR_CLAMP), ivec3(coord, ViewIndex), 0).rgb;
+		vec2 buffer_blend = texelFetch(sampler2DArray(ambient_reflection_blend_buffer, SAMPLER_LINEAR_CLAMP), ivec3(coord, ViewIndex), 0).rg;
 #else // USE_MULTIVIEW
-		vec4 buffer_ambient = textureLod(sampler2D(ambient_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
-		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
+		vec3 buffer_ambient = texelFetch(sampler2D(ambient_buffer, SAMPLER_LINEAR_CLAMP), coord, 0).rgb;
+		vec3 buffer_reflection = texelFetch(sampler2D(reflection_buffer, SAMPLER_LINEAR_CLAMP), coord, 0).rgb;
+		vec2 buffer_blend = texelFetch(sampler2D(ambient_reflection_blend_buffer, SAMPLER_LINEAR_CLAMP), coord, 0).rg;
 #endif // USE_MULTIVIEW
 
-		ambient_light = mix(ambient_light, buffer_ambient.rgb, buffer_ambient.a);
-		specular_light = mix(specular_light, buffer_reflection.rgb, buffer_reflection.a);
+		ambient_light = mix(ambient_light, buffer_ambient, buffer_blend.r);
+		specular_light = mix(specular_light, buffer_reflection, buffer_blend.g);
 	}
 #endif // !USE_LIGHTMAP
 
@@ -2288,31 +2302,25 @@ void fragment_shader(in SceneData scene_data) {
 
 			//compress to RGBE9995 to save space
 
-			const float pow2to9 = 512.0f;
-			const float B = 15.0f;
-			const float N = 9.0f;
-			const float LN2 = 0.6931471805599453094172321215;
+			uint light_rgbe;
 
-			float cRed = clamp(light_total.r, 0.0, 65408.0);
-			float cGreen = clamp(light_total.g, 0.0, 65408.0);
-			float cBlue = clamp(light_total.b, 0.0, 65408.0);
+			{
 
-			float cMax = max(cRed, max(cGreen, cBlue));
+				vec3 rgb = light_total.rgb;
 
-			float expp = max(-B - 1.0f, floor(log(cMax) / LN2)) + 1.0f + B;
+				const float rgbe_max = uintBitsToFloat(0x477F8000);
+				const float rgbe_min = uintBitsToFloat(0x37800000);
 
-			float sMax = floor((cMax / pow(2.0f, expp - B - N)) + 0.5f);
+				rgb = clamp(rgb, 0, rgbe_max);
 
-			float exps = expp + 1.0f;
+				float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
 
-			if (0.0 <= sMax && sMax < pow2to9) {
-				exps = expp;
+				float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
+
+				uvec3 urgb = floatBitsToUint(rgb + bias);
+				uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
+				light_rgbe = e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
 			}
-
-			float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
-			float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
-			float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-			uint light_rgbe = (uint(sRed) & 0x1FFu) | ((uint(sGreen) & 0x1FFu) << 9) | ((uint(sBlue) & 0x1FFu) << 18) | ((uint(exps) & 0x1Fu) << 27);
 
 			imageStore(emission_grid, igrid_pos>>1, uvec4(light_rgbe));
 			imageStore(emission_aniso_grid, igrid_pos>>1, uvec4(light_aniso));
