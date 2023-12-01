@@ -1565,13 +1565,16 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 }
 
 void RenderForwardMobile::base_uniforms_changed() {
-	for (int i = 0; i < BASE_UNIFORM_SET_CACHE_MAX; i++) {
-		if (!render_base_uniform_set_cache[i].is_null() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set_cache[i])) {
-			RD::get_singleton()->free(render_base_uniform_set_cache[i]);
-		}
-		render_base_uniform_set_cache[i] = RID();
-	}
+    RD* renderer = RD::get_singleton();
+
+    for (int i = 0; i < BASE_UNIFORM_SET_CACHE_MAX; i++) {
+        if (!render_base_uniform_set_cache[i].is_null() && renderer->uniform_set_is_valid(render_base_uniform_set_cache[i])) {
+            renderer->free(render_base_uniform_set_cache[i]);
+            render_base_uniform_set_cache[i] = RID(); // Set to RID() after freeing
+        }
+    }
 }
+
 
 void RenderForwardMobile::_update_render_base_uniform_set(const RendererRD::MaterialStorage::Samplers &p_samplers, BaseUniformSetCache p_cache_index) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
