@@ -914,6 +914,9 @@ vec3 encode24(vec3 v) {
 void fragment_shader(in SceneData scene_data) {
 	uint instance_index = instance_index_interp;
 
+#ifdef PREMULT_ALPHA_USED
+	float premult_alpha = 1.0;
+#endif // PREMULT_ALPHA_USED
 	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
 #ifdef USE_MULTIVIEW
@@ -2458,6 +2461,10 @@ void fragment_shader(in SceneData scene_data) {
 
 	motion_vector = prev_position_uv - position_uv;
 #endif
+
+#if defined(PREMULT_ALPHA_USED) && !defined(MODE_RENDER_DEPTH)
+	frag_color.rgb *= premult_alpha;
+#endif //PREMULT_ALPHA_USED
 }
 
 void main() {

@@ -3041,6 +3041,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							}
 
 						} break;
+						case GLES3::SceneShaderData::BLEND_MODE_PREMULT_ALPHA: {
+							glBlendEquation(GL_FUNC_ADD);
+							glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+						} break;
 						case GLES3::SceneShaderData::BLEND_MODE_ALPHA_TO_COVERAGE: {
 							// Do nothing for now.
 						} break;
