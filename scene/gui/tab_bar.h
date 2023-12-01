@@ -55,7 +55,6 @@ public:
 private:
 	struct Tab {
 		String text;
-		String xl_text;
 
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
@@ -107,6 +106,10 @@ private:
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
 
+	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
+	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
+	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+
 	struct ThemeCache {
 		int h_separation = 0;
 		int icon_max_width = 0;
@@ -115,6 +118,7 @@ private:
 		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
+		Ref<StyleBox> tab_focus_style;
 
 		Ref<Texture2D> increment_icon;
 		Ref<Texture2D> increment_hl_icon;
@@ -143,12 +147,12 @@ private:
 	void _ensure_no_over_offset();
 
 	void _update_hover();
-	void _update_cache();
+	void _update_cache(bool p_update_hover = true);
 
 	void _on_mouse_exited();
 
 	void _shape(int p_tab);
-	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x);
+	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -162,8 +166,13 @@ protected:
 	Variant get_drag_data(const Point2 &p_point) override;
 	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
+	void _move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
 public:
+	Variant _handle_get_drag_data(const String &p_type, const Point2 &p_point);
+	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
+	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
+
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
 	void set_tab_title(int p_tab, const String &p_title);
@@ -213,6 +222,9 @@ public:
 	int get_current_tab() const;
 	int get_previous_tab() const;
 	int get_hovered_tab() const;
+
+	bool select_previous_available();
+	bool select_next_available();
 
 	int get_tab_offset() const;
 	bool get_offset_buttons_visible() const;

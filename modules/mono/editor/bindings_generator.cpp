@@ -94,6 +94,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 #define ICALL_PREFIX "godot_icall_"
 #define ICALL_CLASSDB_GET_METHOD "ClassDB_get_method"
+#define ICALL_CLASSDB_GET_METHOD_WITH_COMPATIBILITY "ClassDB_get_method_with_compatibility"
 #define ICALL_CLASSDB_GET_CONSTRUCTOR "ClassDB_get_constructor"
 
 #define C_LOCAL_RET "ret"
@@ -263,7 +264,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		} else if (code_tag) {
 			xml_output.append("[");
 			pos = brk_pos + 1;
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
 			const int tag_end = tag.find(" ");
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
@@ -297,6 +298,12 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			if (link_tag == "method") {
 				_append_xml_method(xml_output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "constructor") {
+				// TODO: Support constructors?
+				_append_xml_undeclared(xml_output, link_target);
+			} else if (link_tag == "operator") {
+				// TODO: Support operators?
+				_append_xml_undeclared(xml_output, link_target);
 			} else if (link_tag == "member") {
 				_append_xml_member(xml_output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "signal") {
@@ -400,29 +407,29 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag == "code") {
+		} else if (tag == "code" || tag.begins_with("code ")) {
 			xml_output.append("<c>");
 
 			code_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
-		} else if (tag == "codeblock") {
+			tag_stack.push_front("code");
+		} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
 			xml_output.append("<code>");
 
 			code_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("codeblock");
 		} else if (tag == "codeblocks") {
 			line_del = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag == "csharp") {
+		} else if (tag == "csharp" || tag.begins_with("csharp ")) {
 			xml_output.append("<code>");
 
 			line_del = false;
 			code_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("csharp");
 		} else if (tag == "kbd") {
 			// keyboard combinations are not supported in xml comments
 			pos = brk_end + 1;
@@ -1398,6 +1405,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 
 	output.append("using System;\n"); // IntPtr
+	output.append("using System.ComponentModel;\n"); // EditorBrowsable
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
 	output.append("using Godot.NativeInterop;\n");
 
@@ -1865,7 +1873,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
+	HashMap<String, StringName> method_names;
 	for (const MethodInterface &imethod : itype.methods) {
+		if (method_names.has(imethod.proxy_name)) {
+			ERR_FAIL_COND_V_MSG(method_names[imethod.proxy_name] != imethod.cname, ERR_BUG, "Method name '" + imethod.proxy_name + "' already exists with a different value.");
+			continue;
+		}
+		method_names[imethod.proxy_name] = imethod.cname;
 		output << INDENT2 "/// <summary>\n"
 			   << INDENT2 "/// Cached name for the '" << imethod.cname << "' method.\n"
 			   << INDENT2 "/// </summary>\n"
@@ -2114,7 +2128,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			arguments_sig += iarg.name;
 
-			if (iarg.default_argument.size()) {
+			if (!p_imethod.is_compat && iarg.default_argument.size()) {
 				if (iarg.def_param_mode != ArgumentInterface::CONSTANT) {
 					arguments_sig += " = null";
 				} else {
@@ -2202,8 +2216,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				p_output << "GodotObject.";
 			}
 
-			p_output << ICALL_CLASSDB_GET_METHOD "(" BINDINGS_NATIVE_NAME_FIELD ", MethodName."
-					 << p_imethod.proxy_name
+			p_output << ICALL_CLASSDB_GET_METHOD_WITH_COMPATIBILITY "(" BINDINGS_NATIVE_NAME_FIELD ", MethodName."
+					 << p_imethod.proxy_name << ", " << itos(p_imethod.hash) << "ul"
 					 << ");\n";
 		}
 
@@ -2240,6 +2254,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
 			p_output.append(p_imethod.deprecation_message);
 			p_output.append("\")]");
+		}
+
+		if (p_imethod.is_compat) {
+			p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
 		}
 
 		p_output.append(MEMBER_BEGIN);
@@ -2958,6 +2976,12 @@ bool method_has_ptr_parameter(MethodInfo p_method_info) {
 	return false;
 }
 
+struct SortMethodWithHashes {
+	_FORCE_INLINE_ bool operator()(const Pair<MethodInfo, uint32_t> &p_a, const Pair<MethodInfo, uint32_t> &p_b) const {
+		return p_a.first < p_b.first;
+	}
+};
+
 bool BindingsGenerator::_populate_object_type_interfaces() {
 	obj_types.clear();
 
@@ -3085,11 +3109,15 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<MethodInfo> virtual_method_list;
 		ClassDB::get_virtual_methods(type_cname, &virtual_method_list, true);
 
-		List<MethodInfo> method_list;
-		ClassDB::get_method_list(type_cname, &method_list, true);
-		method_list.sort();
+		List<Pair<MethodInfo, uint32_t>> method_list_with_hashes;
+		ClassDB::get_method_list_with_compatibility(type_cname, &method_list_with_hashes, true);
+		method_list_with_hashes.sort_custom_inplace<SortMethodWithHashes>();
 
-		for (const MethodInfo &method_info : method_list) {
+		List<MethodInterface> compat_methods;
+		for (const Pair<MethodInfo, uint32_t> &E : method_list_with_hashes) {
+			const MethodInfo &method_info = E.first;
+			const uint32_t hash = E.second;
+
 			int argc = method_info.arguments.size();
 
 			if (method_info.name.is_empty()) {
@@ -3111,6 +3139,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			MethodInterface imethod;
 			imethod.name = method_info.name;
 			imethod.cname = cname;
+			imethod.hash = hash;
 
 			if (method_info.flags & METHOD_FLAG_STATIC) {
 				imethod.is_static = true;
@@ -3123,7 +3152,17 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			PropertyInfo return_info = method_info.return_val;
 
-			MethodBind *m = imethod.is_virtual ? nullptr : ClassDB::get_method(type_cname, method_info.name);
+			MethodBind *m = nullptr;
+
+			if (!imethod.is_virtual) {
+				bool method_exists = false;
+				m = ClassDB::get_method_with_compatibility(type_cname, method_info.name, hash, &method_exists, &imethod.is_compat);
+
+				if (unlikely(!method_exists)) {
+					ERR_FAIL_COND_V_MSG(!virtual_method_list.find(method_info), false,
+							"Missing MethodBind for non-virtual method: '" + itype.name + "." + imethod.name + "'.");
+				}
+			}
 
 			imethod.is_vararg = m && m->is_vararg();
 
@@ -3244,6 +3283,14 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			ERR_FAIL_COND_V_MSG(itype.find_property_by_name(imethod.cname), false,
 					"Method name conflicts with property: '" + itype.name + "." + imethod.name + "'.");
 
+			// Compat methods aren't added to the type yet, they need to be checked for conflicts
+			// after all the non-compat methods have been added. The compat methods are added in
+			// reverse so the most recently added ones take precedence over older compat methods.
+			if (imethod.is_compat) {
+				compat_methods.push_front(imethod);
+				continue;
+			}
+
 			// Methods starting with an underscore are ignored unless they're used as a property setter or getter
 			if (!imethod.is_virtual && imethod.name[0] == '_') {
 				for (const PropertyInterface &iprop : itype.properties) {
@@ -3256,6 +3303,15 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			} else {
 				itype.methods.push_back(imethod);
 			}
+		}
+
+		// Add compat methods that don't conflict with other methods in the type.
+		for (const MethodInterface &imethod : compat_methods) {
+			if (_method_has_conflicting_signature(imethod, itype)) {
+				WARN_PRINT("Method '" + imethod.name + "' conflicts with an already existing method in type '" + itype.name + "' and has been ignored.");
+				continue;
+			}
+			itype.methods.push_back(imethod);
 		}
 
 		// Populate signals
@@ -4037,6 +4093,50 @@ void BindingsGenerator::_populate_global_constants() {
 		TypeInterface::postsetup_enum_type(enum_itype);
 		enum_types.insert(enum_itype.cname, enum_itype);
 	}
+}
+
+bool BindingsGenerator::_method_has_conflicting_signature(const MethodInterface &p_imethod, const TypeInterface &p_itype) {
+	// Compare p_imethod with all the methods already registered in p_itype.
+	for (const MethodInterface &method : p_itype.methods) {
+		if (method.proxy_name == p_imethod.proxy_name) {
+			if (_method_has_conflicting_signature(p_imethod, method)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool BindingsGenerator::_method_has_conflicting_signature(const MethodInterface &p_imethod_left, const MethodInterface &p_imethod_right) {
+	// Check if a method already exists in p_itype with a method signature that would conflict with p_imethod.
+	// The return type is ignored because only changing the return type is not enough to avoid conflicts.
+	// The const keyword is also ignored since it doesn't generate different C# code.
+
+	if (p_imethod_left.arguments.size() != p_imethod_right.arguments.size()) {
+		// Different argument count, so no conflict.
+		return false;
+	}
+
+	for (int i = 0; i < p_imethod_left.arguments.size(); i++) {
+		const ArgumentInterface &iarg_left = p_imethod_left.arguments[i];
+		const ArgumentInterface &iarg_right = p_imethod_right.arguments[i];
+
+		if (iarg_left.type.cname != iarg_right.type.cname) {
+			// Different types for arguments in the same position, so no conflict.
+			return false;
+		}
+
+		if (iarg_left.def_param_mode != iarg_right.def_param_mode) {
+			// If the argument is a value type and nullable, it will be 'Nullable<T>' instead of 'T'
+			// and will not create a conflict.
+			if (iarg_left.def_param_mode == ArgumentInterface::NULLABLE_VAL || iarg_right.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 void BindingsGenerator::_initialize_blacklisted_methods() {

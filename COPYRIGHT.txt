@@ -63,6 +63,13 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
+Files: ./modules/lightmapper_rd/lm_compute.glsl
+Comment: Joint Non-Local Means (JNLM) denoiser
+Copyright: 2020, Manuel Prandini
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
 Files: ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
  ./platform/android/java/lib/src/com/google/android/*
@@ -83,6 +90,11 @@ Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
  2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
+Files: ./servers/physics_2d/godot_joints_2d.cpp
+Comment: Chipmunk2D Joint Constraints
+Copyright: 2007, Scott Lembcke
 License: Expat
 
 Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
@@ -141,6 +153,11 @@ Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.
 License: Expat
 
+Files: ./thirdparty/amd-fsr2/
+Comment: AMD FidelityFX Super Resolution 2
+Copyright: 2022-2023, Advanced Micro Devices, Inc.
+License: Expat
+
 Files: ./thirdparty/angle/
 Comment: ANGLE
 Copyright: 2018, The ANGLE Project Authors.
@@ -165,6 +182,11 @@ Files: ./thirdparty/certs/ca-certificates.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0
+
+Files: ./thirdparty/clipper2/
+Comment: Clipper2
+Copyright: 2010-2013, Angus Johnson
+License: BSL-1.0
 
 Files: ./thirdparty/cvtt/
 Comment: Convection Texture Tools Stand-Alone Kernels
@@ -306,6 +328,11 @@ Comment: meshoptimizer
 Copyright: 2016-2022, Arseny Kapoulkine
 License: Expat
 
+Files: ./thirdparty/mingw-std-threads/
+Comment: mingw-std-threads
+Copyright: 2016, Mega Limited
+License: BSD-2-clause
+
 Files: ./thirdparty/minimp3/
 Comment: MiniMP3
 Copyright: lieff
@@ -361,7 +388,7 @@ License: Expat
 Files: ./thirdparty/noise/FastNoiseLite.h
 Comment: FastNoise Lite
 Copyright: 2020, Jordan Peck and contributors
-License: MIT
+License: Expat
 
 Files: ./thirdparty/misc/pcg.cpp
  ./thirdparty/misc/pcg.h
@@ -406,17 +433,12 @@ License: BSD-2-clause
 Files: ./thirdparty/msdfgen/
 Comment: Multi-channel signed distance field generator
 Copyright: 2016-2022, Viktor Chlumsky
-License: MIT
+License: Expat
 
 Files: ./thirdparty/nvapi/nvapi_minimal.h
 Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK
 Copyright: 2019-2022, NVIDIA Corporation
 License: Expat
-
-Files: ./thirdparty/oidn/
-Comment: Intel Open Image Denoise
-Copyright: 2009-2019, Intel Corporation
-License: Apache-2.0
 
 Files: ./thirdparty/openxr/
 Comment: OpenXR Loader
@@ -451,7 +473,7 @@ License: Expat
 
 Files: ./thirdparty/thorvg/
 Comment: ThorVG
-Copyright: 2020-2022, Samsung Electronics Co., Ltd.
+Copyright: 2020-2023, The ThorVG Project
 License: Expat
 
 Files: ./thirdparty/tinyexr/

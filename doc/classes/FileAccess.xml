@@ -39,6 +39,7 @@
 	</description>
 	<tutorials>
 		<link title="File system">$DOCS_URL/tutorials/scripting/filesystem.html</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
@@ -155,6 +156,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the whole [param path] file contents as a [PackedByteArray] without any decoding.
+				Returns an empty [PackedByteArray] if an error occurred while opening the file. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="get_file_as_string" qualifiers="static">
@@ -162,6 +164,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the whole [param path] file contents as a [String]. Text is interpreted as being UTF-8 encoded.
+				Returns an empty [String] if an error occurred while opening the file. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="get_float" qualifiers="const">
@@ -341,7 +344,7 @@
 			<param index="0" name="file" type="String" />
 			<param index="1" name="hidden" type="bool" />
 			<description>
-				Sets file [code]hidden[/code] attribute.
+				Sets file [b]hidden[/b] attribute.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -350,7 +353,7 @@
 			<param index="0" name="file" type="String" />
 			<param index="1" name="ro" type="bool" />
 			<description>
-				Sets file [code]read only[/code] attribute.
+				Sets file [b]read only[/b] attribute.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>

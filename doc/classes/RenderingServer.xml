@@ -2210,6 +2210,15 @@
 			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
+				Returns the stride of the attribute buffer for a mesh with given [param format].
+			</description>
+		</method>
+		<method name="mesh_surface_get_format_normal_tangent_stride" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
+			<param index="1" name="vertex_count" type="int" />
+			<description>
+				Returns the stride of the combined normals and tangents for a mesh with given [param format]. Note importantly that, while normals and tangents are in the vertex buffer with vertices, they are only interleaved with each other and so have a different stride than vertex positions.
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_offset" qualifiers="const">
@@ -2218,6 +2227,7 @@
 			<param index="1" name="vertex_count" type="int" />
 			<param index="2" name="array_index" type="int" />
 			<description>
+				Returns the offset of a given attribute by [param array_index] in the start of its respective buffer.
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_skin_stride" qualifiers="const">
@@ -2225,6 +2235,7 @@
 			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
+				Returns the stride of the skin buffer for a mesh with given [param format].
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_vertex_stride" qualifiers="const">
@@ -2232,6 +2243,7 @@
 			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
+				Returns the stride of the vertex positions for a mesh with given [param format]. Note importantly that vertex positions are stored consecutively and are not interleaved with the other attributes in the vertex buffer (normals and tangents).
 			</description>
 		</method>
 		<method name="mesh_surface_get_material" qualifiers="const">
@@ -2615,6 +2627,14 @@
 				Sets the number of particles to be drawn and allocates the memory for them. Equivalent to [member GPUParticles3D.amount].
 			</description>
 		</method>
+		<method name="particles_set_amount_ratio">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="ratio" type="float" />
+			<description>
+				Sets the amount ratio for particles to be emitted. Equivalent to [member GPUParticles3D.amount_ratio].
+			</description>
+		</method>
 		<method name="particles_set_collision_base_size">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
@@ -2663,6 +2683,14 @@
 				Sets the [Transform3D] that will be used by the particles when they first emit.
 			</description>
 		</method>
+		<method name="particles_set_emitter_velocity">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="velocity" type="Vector3" />
+			<description>
+				Sets the velocity of a particle node, that will be used by [member ParticleProcessMaterial.inherit_velocity_ratio].
+			</description>
+		</method>
 		<method name="particles_set_emitting">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
@@ -2693,6 +2721,14 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], uses fractional delta which smooths the movement of the particles. Equivalent to [member GPUParticles3D.fract_delta].
+			</description>
+		</method>
+		<method name="particles_set_interp_to_end">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="factor" type="float" />
+			<description>
+				Sets the value that informs a [ParticleProcessMaterial] to rush all particles towards the end of their lifetime.
 			</description>
 		</method>
 		<method name="particles_set_interpolate">
@@ -4187,6 +4223,28 @@
 			Flag used to mark that the array uses 8 bone weights instead of 4.
 		</constant>
 		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that the mesh does not have a vertex array and instead will infer vertex positions in the shader using indices and other information.
+		</constant>
+		<constant name="ARRAY_FLAG_COMPRESS_ATTRIBUTES" value="536870912" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that a mesh is using compressed attributes (vertices, normals, tangents, UVs). When this form of compression is enabled, vertex positions will be packed into an RGBA16UNORM attribute and scaled in the vertex shader. The normal and tangent will be packed into an RG16UNORM representing an axis, and a 16-bit float stored in the A-channel of the vertex. UVs will use 16-bit normalized floats instead of full 32-bit signed floats. When using this compression mode you must use either vertices, normals, and tangents or only vertices. You cannot use normals without tangents. Importers will automatically enable this compression if they can.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_BASE" value="35" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark the start of the bits used to store the mesh version.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_SHIFT" value="35" enum="ArrayFormat" is_bitfield="true">
+			Flag used to shift a mesh format int to bring the version into the lowest digits.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_1" value="0" enum="ArrayFormat" is_bitfield="true">
+			Flag used to record the format used by prior mesh versions before the introduction of a version.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_2" value="34359738368" enum="ArrayFormat" is_bitfield="true">
+			Flag used to record the second iteration of the mesh version flag. The primary difference between this and [constant ARRAY_FLAG_FORMAT_VERSION_1] is that this version supports [constant ARRAY_FLAG_COMPRESS_ATTRIBUTES] and in this version vertex positions are de-interleaved from normals and tangents.
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_CURRENT_VERSION" value="34359738368" enum="ArrayFormat" is_bitfield="true">
+			Flag used to record the current version that the engine expects. Currently this is the same as [constant ARRAY_FLAG_FORMAT_VERSION_2].
+		</constant>
+		<constant name="ARRAY_FLAG_FORMAT_VERSION_MASK" value="255" enum="ArrayFormat" is_bitfield="true">
+			Flag used to isolate the bits used for mesh version after using [constant ARRAY_FLAG_FORMAT_VERSION_SHIFT] to shift them into place.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.
@@ -4447,9 +4505,10 @@
 			Draw particles in the order that they appear in the particles array.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_LIFETIME" value="1" enum="ParticlesDrawOrder">
-			Sort particles based on their lifetime.
+			Sort particles based on their lifetime. In other words, the particle with the highest lifetime is drawn at the front.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="ParticlesDrawOrder">
+			Sort particles based on the inverse of their lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="3" enum="ParticlesDrawOrder">
 			Sort particles based on their distance to the camera.
@@ -4507,7 +4566,10 @@
 		<constant name="VIEWPORT_SCALING_3D_MODE_FSR" value="1" enum="ViewportScaling3DMode">
 			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
-		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="2" enum="ViewportScaling3DMode">
+		<constant name="VIEWPORT_SCALING_3D_MODE_FSR2" value="2" enum="ViewportScaling3DMode">
+			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
+		</constant>
+		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="3" enum="ViewportScaling3DMode">
 			Represents the size of the [enum ViewportScaling3DMode] enum.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
@@ -4707,6 +4769,9 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="25" enum="ViewportDebugDraw">
 			Draws the motion vectors buffer. This is used by temporal antialiasing to correct for motion that occurs during gameplay.
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="ViewportDebugDraw">
+			Internal buffer is drawn instead of regular scene so you can see the per-pixel output that will be used by post-processing effects.
 		</constant>
 		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
 			Variable rate shading is disabled.

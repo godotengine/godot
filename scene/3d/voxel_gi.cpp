@@ -314,9 +314,21 @@ Ref<CameraAttributes> VoxelGI::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+static bool is_node_voxel_bakeable(Node3D *p_node) {
+	if (!p_node->is_visible_in_tree()) {
+		return false;
+	}
+
+	GeometryInstance3D *geometry = Object::cast_to<GeometryInstance3D>(p_node);
+	if (geometry != nullptr && geometry->get_gi_mode() != GeometryInstance3D::GI_MODE_STATIC) {
+		return false;
+	}
+	return true;
+}
+
 void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
-	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_STATIC && mi->is_visible_in_tree()) {
+	if (mi && is_node_voxel_bakeable(mi)) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 			AABB aabb = mesh->get_aabb();
@@ -338,8 +350,15 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 	Node3D *s = Object::cast_to<Node3D>(p_at_node);
 	if (s) {
-		if (s->is_visible_in_tree()) {
-			Array meshes = p_at_node->call("get_meshes");
+		if (is_node_voxel_bakeable(s)) {
+			Array meshes;
+			MultiMeshInstance3D *multi_mesh = Object::cast_to<MultiMeshInstance3D>(p_at_node);
+			if (multi_mesh) {
+				meshes = multi_mesh->get_meshes();
+			} else {
+				meshes = p_at_node->call("get_meshes");
+			}
+
 			for (int i = 0; i < meshes.size(); i += 2) {
 				Transform3D mxf = meshes[i];
 				Ref<Mesh> mesh = meshes[i + 1];

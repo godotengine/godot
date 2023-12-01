@@ -73,7 +73,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 		}
 	}
 
-	ERR_FAIL_COND_V(!compile_to_spirv_function, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(compile_to_spirv_function, Vector<uint8_t>());
 
 	return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, this);
 }
@@ -643,7 +643,7 @@ Error RenderingDevice::_reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spir
 
 					for (uint32_t j = 0; j < iv_count; j++) {
 						if (input_vars[j] && input_vars[j]->decoration_flags == 0) { // Regular input.
-							r_reflection_data.vertex_input_mask |= (1 << uint32_t(input_vars[j]->location));
+							r_reflection_data.vertex_input_mask |= (1ULL << uint32_t(input_vars[j]->location));
 						}
 					}
 				}
@@ -716,6 +716,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create", "format", "view", "data"), &RenderingDevice::_texture_create, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);
 	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "mipmaps", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(1), DEFVAL(TEXTURE_SLICE_2D));
+	ClassDB::bind_method(D_METHOD("texture_create_from_extension", "type", "format", "samples", "usage_flags", "image", "width", "height", "depth", "layers"), &RenderingDevice::texture_create_from_extension);
 
 	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data", "post_barrier"), &RenderingDevice::texture_update, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);

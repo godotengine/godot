@@ -42,7 +42,7 @@
 			<description>
 				Changes the running scene to the one at the given [param path], after loading it into a [PackedScene] and creating a new instance.
 				Returns [constant OK] on success, [constant ERR_CANT_OPEN] if the [param path] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if that scene cannot be instantiated.
-				[b]Note:[/b] The new scene node is added to the tree at the end of the frame. This ensures that both scenes aren't running at the same time, while still freeing the previous scene in a safe way similar to [method Node.queue_free]. As such, you won't be able to access the loaded scene immediately after the [method change_scene_to_file] call.
+				[b]Note:[/b] See [method change_scene_to_packed] for details on the order of operations.
 			</description>
 		</method>
 		<method name="change_scene_to_packed">
@@ -51,7 +51,10 @@
 			<description>
 				Changes the running scene to a new instance of the given [PackedScene] (which must be valid).
 				Returns [constant OK] on success, [constant ERR_CANT_CREATE] if the scene cannot be instantiated, or [constant ERR_INVALID_PARAMETER] if the scene is invalid.
-				[b]Note:[/b] The new scene node is added to the tree at the end of the frame. You won't be able to access it immediately after the [method change_scene_to_packed] call.
+				[b]Note:[/b] Operations happen in the following order when [method change_scene_to_packed] is called:
+				1. The current scene node is immediately removed from the tree. From that point, [method Node.get_tree] called on the current (outgoing) scene will return [code]null[/code]. [member current_scene] will be [code]null[/code], too, because the new scene is not available yet.
+				2. At the end of the frame, the formerly current scene, already removed from the tree, will be deleted (freed from memory) and then the new scene will be instantiated and added to the tree. [method Node.get_tree] and [member current_scene] will be back to working as usual.
+				This ensures that both scenes aren't running at the same time, while still freeing the previous scene in a safe way similar to [method Node.queue_free].
 			</description>
 		</method>
 		<method name="create_timer">
@@ -110,8 +113,7 @@
 			<return type="MultiplayerAPI" />
 			<param index="0" name="for_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
-				Return the [MultiplayerAPI] configured for the given path, or the default one if [param for_path] is empty.
-				[b]Note:[/b] Only one [MultiplayerAPI] may be configured for any subpath. If one is configured for [code]"/root/Foo"[/code] then calling this for [code]"/root/Foo/Bar"[/code] will return the one configured for [code]"/root/Foo"[/code], regardless if one is configured for that path.
+				Searches for the [MultiplayerAPI] configured for the given path, if one does not exist it searches the parent paths until one is found. If the path is empty, or none is found, the default one is returned. See [method set_multiplayer].
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const">
@@ -211,7 +213,7 @@
 			<param index="1" name="root_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
 				Sets a custom [MultiplayerAPI] with the given [param root_path] (controlling also the relative subpaths), or override the default one if [param root_path] is empty.
-				[b]Note:[/b] Only one [MultiplayerAPI] may be configured for any subpath. If one is configured for [code]"/root/Foo"[/code] setting one for [code]"/root/Foo/Bar"[/code] will be ignored. See [method get_multiplayer].
+				[b]Note:[/b] No [MultiplayerAPI] must be configured for the subpath containing [param root_path], nested custom multiplayers are not allowed. I.e. if one is configured for [code]"/root/Foo"[/code] setting one for [code]"/root/Foo/Bar"[/code] will cause an error.
 			</description>
 		</method>
 		<method name="unload_current_scene">

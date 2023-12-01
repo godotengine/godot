@@ -1716,7 +1716,7 @@ TEST_CASE("[String] validate_identifier") {
 	CHECK(empty_string.validate_identifier() == "_");
 
 	String numeric_only = "12345";
-	CHECK(numeric_only.validate_identifier() == "_2345");
+	CHECK(numeric_only.validate_identifier() == "_12345");
 
 	String name_with_spaces = "Name with spaces";
 	CHECK(name_with_spaces.validate_identifier() == "Name_with_spaces");

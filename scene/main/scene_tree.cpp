@@ -515,6 +515,10 @@ bool SceneTree::process(double p_time) {
 
 	_flush_delete_queue();
 
+	if (unlikely(pending_new_scene)) {
+		_flush_scene_change();
+	}
+
 	process_timers(p_time, false); //go through timers
 
 	process_tweens(p_time, false);
@@ -549,10 +553,6 @@ bool SceneTree::process(double p_time) {
 	}
 #endif // _3D_DISABLED
 #endif // TOOLS_ENABLED
-
-	if (unlikely(pending_new_scene)) {
-		_flush_scene_change();
-	}
 
 	return _quit;
 }
@@ -789,6 +789,7 @@ Ref<Material> SceneTree::get_debug_paths_material() {
 	_debug_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	_debug_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	_debug_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	_debug_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	_debug_material->set_albedo(get_debug_paths_color());
 
 	debug_paths_material = _debug_material;
@@ -808,6 +809,7 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	line_material->set_albedo(get_debug_collisions_color());
 
 	collision_material = line_material;
@@ -829,6 +831,7 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	mat->set_albedo(get_debug_collision_contact_color());
 
 	Vector3 diamond[6] = {
@@ -1483,15 +1486,18 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 
 Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
-	Ref<MultiplayerAPI> out = multiplayer;
+	if (p_for_path.is_empty()) {
+		return multiplayer;
+	}
+
+	const Vector<StringName> tnames = p_for_path.get_names();
+	const StringName *nptr = tnames.ptr();
 	for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
 		const Vector<StringName> snames = E.key.get_names();
-		const Vector<StringName> tnames = p_for_path.get_names();
 		if (tnames.size() < snames.size()) {
 			continue;
 		}
 		const StringName *sptr = snames.ptr();
-		const StringName *nptr = tnames.ptr();
 		bool valid = true;
 		for (int i = 0; i < snames.size(); i++) {
 			if (sptr[i] != nptr[i]) {
@@ -1500,11 +1506,11 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const
 			}
 		}
 		if (valid) {
-			out = E.value;
-			break;
+			return E.value;
 		}
 	}
-	return out;
+
+	return multiplayer;
 }
 
 void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path) {
@@ -1519,10 +1525,30 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 	} else {
 		if (custom_multiplayers.has(p_root_path)) {
 			custom_multiplayers[p_root_path]->object_configuration_remove(nullptr, p_root_path);
+		} else if (p_multiplayer.is_valid()) {
+			const Vector<StringName> tnames = p_root_path.get_names();
+			const StringName *nptr = tnames.ptr();
+			for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
+				const Vector<StringName> snames = E.key.get_names();
+				if (tnames.size() < snames.size()) {
+					continue;
+				}
+				const StringName *sptr = snames.ptr();
+				bool valid = true;
+				for (int i = 0; i < snames.size(); i++) {
+					if (sptr[i] != nptr[i]) {
+						valid = false;
+						break;
+					}
+				}
+				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + p_root_path + "' in '" + E.key + "'.");
+			}
 		}
 		if (p_multiplayer.is_valid()) {
 			custom_multiplayers[p_root_path] = p_multiplayer;
 			p_multiplayer->object_configuration_add(nullptr, p_root_path);
+		} else {
+			custom_multiplayers.erase(p_root_path);
 		}
 	}
 }
@@ -1821,7 +1847,7 @@ SceneTree::SceneTree() {
 					ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 				} else {
 					// File was erased, notify user.
-					ERR_PRINT(RTR("Default Environment as specified in the project setting \"rendering/environment/defaults/default_environment\" could not be loaded."));
+					ERR_PRINT("Default Environment as specified in the project setting \"rendering/environment/defaults/default_environment\" could not be loaded.");
 				}
 			}
 		}

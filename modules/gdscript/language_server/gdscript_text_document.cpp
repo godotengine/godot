@@ -110,9 +110,11 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 		} else {
 			scr->reload(true);
 		}
+
 		scr->update_exports();
 		ScriptEditor::get_singleton()->reload_scripts(true);
 		ScriptEditor::get_singleton()->update_docs_from_script(scr);
+		ScriptEditor::get_singleton()->trigger_live_script_reload();
 	}
 }
 
@@ -343,6 +345,15 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		if (params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter && (params.context.triggerCharacter == "(")) {
 			const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 			item.insertText = item.label.quote(quote_style);
+		}
+	}
+
+	if (item.kind == lsp::CompletionItemKind::Method) {
+		bool is_trigger_character = params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter;
+		bool is_quote_character = params.context.triggerCharacter == "\"" || params.context.triggerCharacter == "'";
+
+		if (is_trigger_character && is_quote_character && item.insertText.is_quoted()) {
+			item.insertText = item.insertText.unquote();
 		}
 	}
 

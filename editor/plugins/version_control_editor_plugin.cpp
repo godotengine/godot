@@ -44,7 +44,7 @@
 #include "scene/gui/separator.h"
 
 #define CHECK_PLUGIN_INITIALIZED() \
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Plugin from Project menu.");
+	ERR_FAIL_NULL_MSG(EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Plugin from Project menu.");
 
 VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 
@@ -1160,7 +1160,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	refresh_button = memnew(Button);
 	refresh_button->set_tooltip_text(TTR("Detect new changes"));
-	refresh_button->set_flat(true);
+	refresh_button->set_theme_type_variation("FlatButton");
 	refresh_button->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 	refresh_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
 	refresh_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_refresh_commit_list));
@@ -1183,11 +1183,11 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	discard_all_button->set_tooltip_text(TTR("Discard all changes"));
 	discard_all_button->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 	discard_all_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_confirm_discard_all));
-	discard_all_button->set_flat(true);
+	discard_all_button->set_theme_type_variation("FlatButton");
 	unstage_title->add_child(discard_all_button);
 
 	stage_all_button = memnew(Button);
-	stage_all_button->set_flat(true);
+	stage_all_button->set_theme_type_variation("FlatButton");
 	stage_all_button->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveDown"), EditorStringName(EditorIcons)));
 	stage_all_button->set_tooltip_text(TTR("Stage all changes"));
 	unstage_title->add_child(stage_all_button);
@@ -1217,7 +1217,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_title->add_child(stage_label);
 
 	unstage_all_button = memnew(Button);
-	unstage_all_button->set_flat(true);
+	unstage_all_button->set_theme_type_variation("FlatButton");
 	unstage_all_button->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveUp"), EditorStringName(EditorIcons)));
 	unstage_all_button->set_tooltip_text(TTR("Unstage all changes"));
 	stage_title->add_child(unstage_all_button);
@@ -1411,21 +1411,21 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_create_hbc->add_child(remote_create_url_input);
 
 	fetch_button = memnew(Button);
-	fetch_button->set_flat(true);
+	fetch_button->set_theme_type_variation("FlatButton");
 	fetch_button->set_tooltip_text(TTR("Fetch"));
 	fetch_button->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 	fetch_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_fetch));
 	menu_bar->add_child(fetch_button);
 
 	pull_button = memnew(Button);
-	pull_button->set_flat(true);
+	pull_button->set_theme_type_variation("FlatButton");
 	pull_button->set_tooltip_text(TTR("Pull"));
 	pull_button->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveDown"), EditorStringName(EditorIcons)));
 	pull_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_pull));
 	menu_bar->add_child(pull_button);
 
 	push_button = memnew(Button);
-	push_button->set_flat(true);
+	push_button->set_theme_type_variation("FlatButton");
 	push_button->set_tooltip_text(TTR("Push"));
 	push_button->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveUp"), EditorStringName(EditorIcons)));
 	push_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_push));
@@ -1443,18 +1443,18 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	extra_options_remove_branch_list = memnew(PopupMenu);
 	extra_options_remove_branch_list->connect(SNAME("id_pressed"), callable_mp(this, &VersionControlEditorPlugin::_popup_branch_remove_confirm));
-	extra_options_remove_branch_list->set_name("Remove Branch");
+	extra_options_remove_branch_list->set_name("RemoveBranch");
 	extra_options->get_popup()->add_child(extra_options_remove_branch_list);
-	extra_options->get_popup()->add_submenu_item(TTR("Remove Branch"), "Remove Branch");
+	extra_options->get_popup()->add_submenu_item(TTR("Remove Branch"), "RemoveBranch");
 
 	extra_options->get_popup()->add_separator();
 	extra_options->get_popup()->add_item(TTR("Create New Remote"), EXTRA_OPTION_CREATE_REMOTE);
 
 	extra_options_remove_remote_list = memnew(PopupMenu);
 	extra_options_remove_remote_list->connect(SNAME("id_pressed"), callable_mp(this, &VersionControlEditorPlugin::_popup_remote_remove_confirm));
-	extra_options_remove_remote_list->set_name("Remove Remote");
+	extra_options_remove_remote_list->set_name("RemoveRemote");
 	extra_options->get_popup()->add_child(extra_options_remove_remote_list);
-	extra_options->get_popup()->add_submenu_item(TTR("Remove Remote"), "Remove Remote");
+	extra_options->get_popup()->add_submenu_item(TTR("Remove Remote"), "RemoveRemote");
 
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_NEW] = TTR("New");
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_MODIFIED] = TTR("Modified");

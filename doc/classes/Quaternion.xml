@@ -191,7 +191,7 @@
 			<param index="6" name="post_b_t" type="float" />
 			<description>
 				Performs a spherical cubic interpolation between quaternions [param pre_a], this vector, [param b], and [param post_b], by the given amount [param weight].
-				It can perform smoother interpolation than [code]spherical_cubic_interpolate()[/code] by the time values.
+				It can perform smoother interpolation than [method spherical_cubic_interpolate] by the time values.
 			</description>
 		</method>
 	</methods>

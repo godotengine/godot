@@ -257,7 +257,7 @@
 			<description>
 				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code]. If you want only the language code and not the fully specified locale from the OS, you can use [method get_locale_language].
 				[code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
-				[code]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
+				[code skip-lint]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
 				[code]COUNTRY[/code] - optional, 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
 				[code]VARIANT[/code] - optional, language variant, region and sort order. Variant can have any number of underscored keywords.
 				[code]extra[/code] - optional, semicolon separated list of additional key words. Currency, calendar, sort order and numbering system information.
@@ -334,7 +334,7 @@
 				    case "Linux":
 				    case "FreeBSD":
 				    case "NetBSD":
-				    case "OpenBSD"
+				    case "OpenBSD":
 				    case "BSD":
 				        GD.Print("Linux/BSD");
 				        break;
@@ -449,7 +449,7 @@
 			<description>
 				Returns a string that is unique to the device.
 				[b]Note:[/b] This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.
-				[b]Note:[/b] Returns an empty string on Web, as this method isn't implemented on this platform yet.
+				[b]Note:[/b] Returns an empty string and prints an error on Web, as this method cannot be implemented on this platform.
 			</description>
 		</method>
 		<method name="get_user_data_dir" qualifiers="const">
@@ -500,6 +500,7 @@
 				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 				[b]Note:[/b] On the web platform, one of the following additional tags is defined to indicate host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
+				[b]Note:[/b] On the iOS simulator, the additional [code]simulator[/code] tag is defined.
 			</description>
 		</method>
 		<method name="is_debug_build" qualifiers="const">

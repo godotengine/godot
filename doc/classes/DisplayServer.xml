@@ -119,8 +119,8 @@
 			<param index="6" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
-				Callbacks have the following arguments: [code]bool status, PackedStringArray selected_paths[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [code]FEATURE_NATIVE_DIALOG[/code] feature.
+				Callbacks have the following arguments: [code]bool status, PackedStringArray selected_paths, int selected_filter_index[/code].
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature.
 				[b]Note:[/b] This method is implemented on Linux, Windows and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] On Linux, [param show_hidden] is ignored.
@@ -577,6 +577,16 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="global_menu_is_item_hidden" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is hidden.
+				See [method global_menu_set_item_hidden] for more info on how to hide an item.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="global_menu_is_item_radio_checkable" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
@@ -645,6 +655,27 @@
 			<param index="2" name="disabled" type="bool" />
 			<description>
 				Enables/disables the item at index [param idx]. When it is disabled, it can't be selected and its action can't be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_hidden">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="hidden" type="bool" />
+			<description>
+				Hides/shows the item at index [param idx]. When it is hidden, an item does not appear in a menu and its action cannot be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_hover_callbacks">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Sets the callback of the item at index [param idx]. The callback is emitted when an item is hovered.
+				[b]Note:[/b] The [param callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the [code]tag[/code] parameter when the menu item was created.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
@@ -751,6 +782,15 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="global_menu_set_popup_callbacks">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="open_callback" type="Callable" />
+			<param index="2" name="close_callback" type="Callable" />
+			<description>
+				Registers callables to emit when the menu is respectively about to show or closed.
+			</description>
+		</method>
 		<method name="has_feature" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="DisplayServer.Feature" />
@@ -776,14 +816,14 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS is using dark mode.
-				[b]Note:[/b] This method is implemented on macOS, Windows and Linux (X11).
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11).
 			</description>
 		</method>
 		<method name="is_dark_mode_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS supports dark mode.
-				[b]Note:[/b] This method is implemented on macOS, Windows and Linux (X11).
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11).
 			</description>
 		</method>
 		<method name="is_touchscreen_available" qualifiers="const">
@@ -1055,7 +1095,7 @@
 				Each [Dictionary] contains two [String] entries:
 				- [code]name[/code] is voice name.
 				- [code]id[/code] is voice identifier.
-				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
+				- [code]language[/code] is language code in [code]lang_Variant[/code] format. The [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. The [code skip-lint]Variant[/code] part is an engine-dependent string describing country, region or/and dialect.
 				Note that Godot depends on system libraries for text-to-speech functionality. These libraries are installed by default on Windows and macOS, but not on all Linux distributions. If they are not present, this method will return an empty list. This applies to both Godot users on Linux, as well as end-users on Linux running Godot games that use text-to-speech.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
@@ -1291,6 +1331,15 @@
 				Returns the size of the window specified by [param window_id] (in pixels), including the borders drawn by the operating system. See also [method window_get_size].
 			</description>
 		</method>
+		<method name="window_get_title_size" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Returns the estimated window title bar size (including text and window buttons) for the window specified by [param window_id] (in pixels). This method does not change the window title.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="window_get_vsync_mode" qualifiers="const">
 			<return type="int" enum="DisplayServer.VSyncMode" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -1354,6 +1403,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that should be called when files are dropped from the operating system's file manager to the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 				[b]Note:[/b] This method is implemented on Windows, macOS, Linux (X11) and Web.
 			</description>
 		</method>
@@ -1398,6 +1448,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that should be called when any [InputEvent] is sent to the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 		<method name="window_set_input_text_callback">
@@ -1406,6 +1457,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that should be called when text is entered using the virtual keyboard to the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 		<method name="window_set_max_size">
@@ -1503,6 +1555,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that will be called when the window specified by [param window_id] is moved or resized.
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 		<method name="window_set_size">
@@ -1560,6 +1613,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the [param callback] that will be called when an event occurs in the window specified by [param window_id].
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
 	</methods>
@@ -1787,14 +1841,16 @@
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
 			Full screen mode with full multi-window support.
-			Full screen window cover the entire display area of a screen, have no border or decorations. Display video mode is not changed.
+			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
+			[b]On Windows:[/b] Multi-window full-screen mode has a 1px border of the [member ProjectSettings.rendering/environment/defaults/default_clear_color] color.
+			[b]On macOS:[/b] A new desktop is used to display the running project.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
 			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
-			Full screen window cover the entire display area of a screen, have no border or decorations. Display video mode is not changed.
+			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
 			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
-			[b]On macOS:[/b] Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
+			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
@@ -1831,30 +1887,30 @@
 			Max value of the [enum WindowFlags].
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
-			Sent when the mouse pointer enters the window, see [method window_set_window_event_callback].
+			Sent when the mouse pointer enters the window.
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_EXIT" value="1" enum="WindowEvent">
-			Sent when the mouse pointer exits the window, see [method window_set_window_event_callback].
+			Sent when the mouse pointer exits the window.
 		</constant>
 		<constant name="WINDOW_EVENT_FOCUS_IN" value="2" enum="WindowEvent">
-			Sent when the window grabs focus, see [method window_set_window_event_callback].
+			Sent when the window grabs focus.
 		</constant>
 		<constant name="WINDOW_EVENT_FOCUS_OUT" value="3" enum="WindowEvent">
-			Sent when the window loses focus, see [method window_set_window_event_callback].
+			Sent when the window loses focus.
 		</constant>
 		<constant name="WINDOW_EVENT_CLOSE_REQUEST" value="4" enum="WindowEvent">
-			Sent when the user has attempted to close the window (e.g. close button is pressed), see [method window_set_window_event_callback].
+			Sent when the user has attempted to close the window (e.g. close button is pressed).
 		</constant>
 		<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5" enum="WindowEvent">
-			Sent when the device "Back" button is pressed, see [method window_set_window_event_callback].
+			Sent when the device "Back" button is pressed.
 			[b]Note:[/b] This event is implemented only on Android.
 		</constant>
 		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
-			Sent when the window is moved to the display with different DPI, or display DPI is changed, see [method window_set_window_event_callback].
+			Sent when the window is moved to the display with different DPI, or display DPI is changed.
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
-			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode), see [method window_set_window_event_callback].
+			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode).
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">

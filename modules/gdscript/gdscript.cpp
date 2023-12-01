@@ -83,7 +83,7 @@ void GDScriptNativeClass::_bind_methods() {
 
 Variant GDScriptNativeClass::_new() {
 	Object *o = instantiate();
-	ERR_FAIL_COND_V_MSG(!o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
+	ERR_FAIL_NULL_V_MSG(o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
 
 	RefCounted *rc = Object::cast_to<RefCounted>(o);
 	if (rc) {
@@ -215,7 +215,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	} else {
 		owner = memnew(RefCounted); //by default, no base means use reference
 	}
-	ERR_FAIL_COND_V_MSG(!owner, Variant(), "Can't inherit from a virtual class.");
+	ERR_FAIL_NULL_V_MSG(owner, Variant(), "Can't inherit from a virtual class.");
 
 	RefCounted *r = Object::cast_to<RefCounted>(owner);
 	if (r) {
@@ -278,6 +278,7 @@ struct _GDScriptMemberSort {
 void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 	placeholders.erase(p_placeholder);
 }
+
 #endif
 
 void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const {
@@ -306,6 +307,9 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 	while (sptr) {
 		Vector<_GDScriptMemberSort> msort;
 		for (const KeyValue<StringName, MemberInfo> &E : sptr->member_indices) {
+			if (!sptr->members.has(E.key)) {
+				continue; // Skip base class members.
+			}
 			_GDScriptMemberSort ms;
 			ms.index = E.value.index;
 			ms.name = E.key;
@@ -341,6 +345,10 @@ void GDScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 
 bool GDScript::has_method(const StringName &p_method) const {
 	return member_functions.has(p_method);
+}
+
+bool GDScript::has_static_method(const StringName &p_method) const {
+	return member_functions.has(p_method) && member_functions[p_method]->is_static();
 }
 
 MethodInfo GDScript::get_method_info(const StringName &p_method) const {
@@ -461,7 +469,7 @@ String GDScript::get_class_icon_path() const {
 }
 #endif
 
-bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update) {
+bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update, bool p_base_exports_changed) {
 #ifdef TOOLS_ENABLED
 
 	static Vector<GDScript *> base_caches;
@@ -470,7 +478,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 	}
 	base_caches.append(this);
 
-	bool changed = false;
+	bool changed = p_base_exports_changed;
 
 	if (source_changed_cache) {
 		source_changed_cache = false;
@@ -597,9 +605,15 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 void GDScript::update_exports() {
 #ifdef TOOLS_ENABLED
+	_update_exports_down(false);
+#endif
+}
 
+#ifdef TOOLS_ENABLED
+void GDScript::_update_exports_down(bool p_base_exports_changed) {
 	bool cyclic_error = false;
-	_update_exports(&cyclic_error);
+	bool changed = _update_exports(&cyclic_error, false, nullptr, p_base_exports_changed);
+
 	if (cyclic_error) {
 		return;
 	}
@@ -609,14 +623,14 @@ void GDScript::update_exports() {
 	for (const ObjectID &E : copy) {
 		Object *id = ObjectDB::get_instance(E);
 		GDScript *s = Object::cast_to<GDScript>(id);
+
 		if (!s) {
 			continue;
 		}
-		s->update_exports();
+		s->_update_exports_down(p_base_exports_changed || changed);
 	}
-
-#endif
 }
+#endif
 
 String GDScript::_get_debug_path() const {
 	if (is_built_in() && !get_name().is_empty()) {
@@ -978,6 +992,7 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 
 	String old_path = path;
 	path = p_path;
+	path_valid = true;
 	GDScriptCache::move_script(old_path, p_path);
 
 	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
@@ -986,6 +1001,9 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 }
 
 String GDScript::get_script_path() const {
+	if (!path_valid && !get_path().is_empty()) {
+		return get_path();
+	}
 	return path;
 }
 
@@ -1021,6 +1039,7 @@ Error GDScript::load_source_code(const String &p_path) {
 
 	source = s;
 	path = p_path;
+	path_valid = true;
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
 	set_edited(false);
@@ -1372,6 +1391,54 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 }
 #endif
 
+GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_main_thread;
+thread_local GDScript::UpdatableFuncPtr *GDScript::func_ptrs_to_update_thread_local = nullptr;
+
+GDScript::UpdatableFuncPtrElement GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
+	UpdatableFuncPtrElement result = {};
+
+	{
+		MutexLock lock(func_ptrs_to_update_thread_local->mutex);
+		result.element = func_ptrs_to_update_thread_local->ptrs.push_back(p_func_ptr_ptr);
+		result.func_ptr = func_ptrs_to_update_thread_local;
+
+		if (likely(func_ptrs_to_update_thread_local->initialized)) {
+			return result;
+		}
+
+		func_ptrs_to_update_thread_local->initialized = true;
+	}
+
+	MutexLock lock(func_ptrs_to_update_mutex);
+	func_ptrs_to_update.push_back(func_ptrs_to_update_thread_local);
+	func_ptrs_to_update_thread_local->rc++;
+
+	return result;
+}
+
+void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement &p_func_ptr_element) {
+	ERR_FAIL_NULL(p_func_ptr_element.element);
+	ERR_FAIL_NULL(p_func_ptr_element.func_ptr);
+	MutexLock lock(p_func_ptr_element.func_ptr->mutex);
+	p_func_ptr_element.element->erase();
+}
+
+void GDScript::_fixup_thread_function_bookkeeping() {
+	// Transfer the ownership of these update items to the main thread,
+	// because the current one is dying, leaving theirs orphan, dangling.
+
+	DEV_ASSERT(!Thread::is_main_thread());
+
+	MutexLock lock(func_ptrs_to_update_main_thread.mutex);
+	MutexLock lock2(func_ptrs_to_update_thread_local->mutex);
+
+	while (!func_ptrs_to_update_thread_local->ptrs.is_empty()) {
+		List<GDScriptFunction **>::Element *E = func_ptrs_to_update_thread_local->ptrs.front();
+		E->transfer_to_back(&func_ptrs_to_update_main_thread.ptrs);
+		func_ptrs_to_update_thread_local->transferred = true;
+	}
+}
+
 void GDScript::clear(ClearData *p_clear_data) {
 	if (clearing) {
 		return;
@@ -1387,6 +1454,34 @@ void GDScript::clear(ClearData *p_clear_data) {
 	if (clear_data == nullptr) {
 		clear_data = &data;
 		is_root = true;
+	}
+
+	{
+		MutexLock outer_lock(func_ptrs_to_update_mutex);
+		for (UpdatableFuncPtr *updatable : func_ptrs_to_update) {
+			bool destroy = false;
+			{
+				MutexLock inner_lock(updatable->mutex);
+				if (updatable->transferred) {
+					func_ptrs_to_update_main_thread.mutex.lock();
+				}
+				for (GDScriptFunction **func_ptr_ptr : updatable->ptrs) {
+					*func_ptr_ptr = nullptr;
+				}
+				DEV_ASSERT(updatable->rc != 0);
+				updatable->rc--;
+				if (updatable->rc == 0) {
+					destroy = true;
+				}
+				if (updatable->transferred) {
+					func_ptrs_to_update_main_thread.mutex.unlock();
+				}
+			}
+			if (destroy) {
+				DEV_ASSERT(updatable != &func_ptrs_to_update_main_thread);
+				memdelete(updatable);
+			}
+		}
 	}
 
 	RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();
@@ -1648,15 +1743,11 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 }
 
 Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
-	const GDScript *sptr = script.ptr();
-	while (sptr) {
-		if (sptr->member_indices.has(p_name)) {
-			if (r_is_valid) {
-				*r_is_valid = true;
-			}
-			return sptr->member_indices[p_name].property_info.type;
+	if (script->member_indices.has(p_name)) {
+		if (r_is_valid) {
+			*r_is_valid = true;
 		}
-		sptr = sptr->_base;
+		return script->member_indices[p_name].property_info.type;
 	}
 
 	if (r_is_valid) {
@@ -1732,6 +1823,9 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 
 		Vector<_GDScriptMemberSort> msort;
 		for (const KeyValue<StringName, GDScript::MemberInfo> &F : sptr->member_indices) {
+			if (!sptr->members.has(F.key)) {
+				continue; // Skip base class members.
+			}
 			_GDScriptMemberSort ms;
 			ms.index = F.value.index;
 			ms.name = F.key;
@@ -2007,6 +2101,33 @@ void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	named_globals.erase(p_name);
 }
 
+void GDScriptLanguage::thread_enter() {
+	GDScript::func_ptrs_to_update_thread_local = memnew(GDScript::UpdatableFuncPtr);
+}
+
+void GDScriptLanguage::thread_exit() {
+	// This thread may have been created before GDScript was up
+	// (which also means it can't have run any GDScript code at all).
+	if (!GDScript::func_ptrs_to_update_thread_local) {
+		return;
+	}
+
+	GDScript::_fixup_thread_function_bookkeeping();
+
+	bool destroy = false;
+	{
+		MutexLock lock(GDScript::func_ptrs_to_update_thread_local->mutex);
+		DEV_ASSERT(GDScript::func_ptrs_to_update_thread_local->rc != 0);
+		GDScript::func_ptrs_to_update_thread_local->rc--;
+		if (GDScript::func_ptrs_to_update_thread_local->rc == 0) {
+			destroy = true;
+		}
+	}
+	if (destroy) {
+		memdelete(GDScript::func_ptrs_to_update_thread_local);
+	}
+}
+
 void GDScriptLanguage::init() {
 	//populate global constants
 	int gcc = CoreConstants::get_global_constant_count();
@@ -2038,6 +2159,8 @@ void GDScriptLanguage::init() {
 	for (const Engine::Singleton &E : singletons) {
 		_add_global(E.name, E.ptr);
 	}
+
+	GDScript::func_ptrs_to_update_thread_local = &GDScript::func_ptrs_to_update_main_thread;
 
 #ifdef TESTS_ENABLED
 	GDScriptTests::GDScriptTestRunner::handle_cmdline();
@@ -2088,6 +2211,8 @@ void GDScriptLanguage::finish() {
 	}
 	script_list.clear();
 	function_list.clear();
+
+	DEV_ASSERT(GDScript::func_ptrs_to_update_main_thread.rc == 1);
 }
 
 void GDScriptLanguage::profiling_start() {
@@ -2366,61 +2491,60 @@ void GDScriptLanguage::frame() {
 
 /* EDITOR FUNCTIONS */
 void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
-	// TODO: Add annotations here?
+	// Please keep alphabetical order within categories.
 	static const char *_reserved_words[] = {
-		// operators
-		"and",
-		"in",
-		"not",
-		"or",
-		// types and values
-		"false",
-		"float",
-		"int",
-		"bool",
-		"null",
-		"PI",
-		"TAU",
-		"INF",
-		"NAN",
-		"self",
-		"true",
-		"void",
-		// functions
-		"as",
-		"assert",
-		"await",
-		"breakpoint",
-		"class",
-		"class_name",
-		"extends",
-		"is",
-		"func",
-		"preload",
-		"signal",
-		"super",
-		// var
-		"const",
-		"enum",
-		"static",
-		"var",
-		// control flow
+		// Control flow.
 		"break",
 		"continue",
-		"if",
 		"elif",
 		"else",
 		"for",
+		"if",
+		"match",
 		"pass",
 		"return",
-		"match",
+		"when",
 		"while",
-		// These keywords are not implemented currently, but reserved for (potential) future use.
-		// We highlight them as keywords to make errors easier to understand.
-		"trait",
-		"namespace",
-		"yield",
-		nullptr
+		// Declarations.
+		"class",
+		"class_name",
+		"const",
+		"enum",
+		"extends",
+		"func",
+		"namespace", // Reserved for potential future use.
+		"signal",
+		"static",
+		"trait", // Reserved for potential future use.
+		"var",
+		// Other keywords.
+		"await",
+		"breakpoint",
+		"self",
+		"super",
+		"yield", // Reserved for potential future use.
+		// Operators.
+		"and",
+		"as",
+		"in",
+		"is",
+		"not",
+		"or",
+		// Special values (tokenizer treats them as literals, not as tokens).
+		"false",
+		"null",
+		"true",
+		// Constants.
+		"INF",
+		"NAN",
+		"PI",
+		"TAU",
+		// Functions (highlighter uses global function color instead).
+		"assert",
+		"preload",
+		// Types (highlighter uses type color instead).
+		"void",
+		nullptr,
 	};
 
 	const char **w = _reserved_words;
@@ -2429,25 +2553,20 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		p_words->push_back(*w);
 		w++;
 	}
-
-	List<StringName> functions;
-	GDScriptUtilityFunctions::get_function_list(&functions);
-
-	for (const StringName &E : functions) {
-		p_words->push_back(String(E));
-	}
 }
 
 bool GDScriptLanguage::is_control_flow_keyword(String p_keyword) const {
+	// Please keep alphabetical order.
 	return p_keyword == "break" ||
 			p_keyword == "continue" ||
 			p_keyword == "elif" ||
 			p_keyword == "else" ||
-			p_keyword == "if" ||
 			p_keyword == "for" ||
+			p_keyword == "if" ||
 			p_keyword == "match" ||
 			p_keyword == "pass" ||
 			p_keyword == "return" ||
+			p_keyword == "when" ||
 			p_keyword == "while";
 }
 

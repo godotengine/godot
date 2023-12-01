@@ -121,16 +121,16 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
 #endif
 
-	gdmono = memnew(GDMono);
-	gdmono->initialize();
-
 #ifdef TOOLS_ENABLED
-	if (gdmono->is_runtime_initialized()) {
-		gdmono->initialize_load_assemblies();
-	}
-
 	EditorNode::add_init_callback(&_editor_init_callback);
 #endif
+
+	gdmono = memnew(GDMono);
+
+	// Initialize only if the project uses C#.
+	if (gdmono->should_initialize()) {
+		gdmono->initialize();
+	}
 }
 
 void CSharpLanguage::finish() {
@@ -140,6 +140,10 @@ void CSharpLanguage::finish() {
 void CSharpLanguage::finalize() {
 	if (finalized) {
 		return;
+	}
+
+	if (gdmono && gdmono->is_runtime_initialized() && GDMonoCache::godot_api_cache_updated) {
+		GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
 	}
 
 	finalizing = true;
@@ -328,6 +332,11 @@ void CSharpLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("/* */"); // delimited comment
 }
 
+void CSharpLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) const {
+	p_delimiters->push_back("///"); // single-line doc comment
+	p_delimiters->push_back("/** */"); // delimited doc comment
+}
+
 void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("' '"); // character literal
 	p_delimiters->push_back("\" \""); // regular string literal
@@ -390,10 +399,6 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 
 Script *CSharpLanguage::create_script() const {
 	return memnew(CSharpScript);
-}
-
-bool CSharpLanguage::has_named_classes() const {
-	return false;
 }
 
 bool CSharpLanguage::supports_builtin_mode() const {
@@ -554,13 +559,13 @@ bool CSharpLanguage::handles_global_class_type(const String &p_type) const {
 
 String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
 	Ref<CSharpScript> scr = ResourceLoader::load(p_path, get_type());
-	if (!scr.is_valid() || !scr->valid || !scr->global_class) {
-		// Invalid script or the script is not a global class.
-		return String();
-	}
+	// Always assign r_base_type and r_icon_path, even if the script
+	// is not a global one. In the case that it is not a global script,
+	// return an empty string AFTER assigning the return parameters.
+	// See GDScriptLanguage::get_global_class_name() in modules/gdscript/gdscript.cpp
 
-	String name = scr->class_name;
-	if (unlikely(name.is_empty())) {
+	if (!scr.is_valid() || !scr->valid) {
+		// Invalid script.
 		return String();
 	}
 
@@ -587,7 +592,8 @@ String CSharpLanguage::get_global_class_name(const String &p_path, String *r_bas
 			*r_base_type = scr->get_instance_base_type();
 		}
 	}
-	return name;
+
+	return scr->global_class ? scr->class_name : String();
 }
 
 String CSharpLanguage::debug_get_error() const {
@@ -1983,24 +1989,31 @@ const Variant CSharpInstance::get_rpc_config() const {
 
 void CSharpInstance::notification(int p_notification, bool p_reversed) {
 	if (p_notification == Object::NOTIFICATION_PREDELETE) {
-		// When NOTIFICATION_PREDELETE is sent, we also take the chance to call Dispose().
-		// It's safe to call Dispose() multiple times and NOTIFICATION_PREDELETE is guaranteed
+		if (base_ref_counted) {
+			// At this point, Dispose() was already called (manually or from the finalizer).
+			// The RefCounted wouldn't have reached 0 otherwise, since the managed side
+			// references it and Dispose() needs to be called to release it.
+			// However, this means C# RefCounted scripts can't receive NOTIFICATION_PREDELETE, but
+			// this is likely the case with GDScript as well: https://github.com/godotengine/godot/issues/6784
+			return;
+		}
+	} else if (p_notification == Object::NOTIFICATION_PREDELETE_CLEANUP) {
+		// When NOTIFICATION_PREDELETE_CLEANUP is sent, we also take the chance to call Dispose().
+		// It's safe to call Dispose() multiple times and NOTIFICATION_PREDELETE_CLEANUP is guaranteed
 		// to be sent at least once, which happens right before the call to the destructor.
 
 		predelete_notified = true;
 
 		if (base_ref_counted) {
-			// It's not safe to proceed if the owner derives RefCounted and the refcount reached 0.
-			// At this point, Dispose() was already called (manually or from the finalizer) so
-			// that's not a problem. The refcount wouldn't have reached 0 otherwise, since the
-			// managed side references it and Dispose() needs to be called to release it.
-			// However, this means C# RefCounted scripts can't receive NOTIFICATION_PREDELETE, but
-			// this is likely the case with GDScript as well: https://github.com/godotengine/godot/issues/6784
+			// At this point, Dispose() was already called (manually or from the finalizer).
+			// The RefCounted wouldn't have reached 0 otherwise, since the managed side
+			// references it and Dispose() needs to be called to release it.
 			return;
 		}
 
-		_call_notification(p_notification, p_reversed);
-
+		// NOTIFICATION_PREDELETE_CLEANUP is not sent to scripts.
+		// After calling Dispose() the C# instance can no longer be used,
+		// so it should be the last thing we do.
 		GDMonoCache::managed_callbacks.CSharpInstanceBridge_CallDispose(
 				gchandle.get_intptr(), /* okIfNull */ false);
 
@@ -2300,6 +2313,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	bool tool = false;
 	bool global_class = false;
+	bool abstract_class = false;
 
 	// TODO: Use GDExtension godot_dictionary
 	Array methods_array;
@@ -2313,12 +2327,13 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	String icon_path;
 	Ref<CSharpScript> base_script;
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptClassInfo(
-			p_script.ptr(), &class_name, &tool, &global_class, &icon_path,
+			p_script.ptr(), &class_name, &tool, &global_class, &abstract_class, &icon_path,
 			&methods_array, &rpc_functions_dict, &signals_dict, &base_script);
 
 	p_script->class_name = class_name;
 	p_script->tool = tool;
 	p_script->global_class = global_class;
+	p_script->abstract_class = abstract_class;
 	p_script->icon_path = icon_path;
 
 	p_script->rpc_config.clear();
@@ -2408,7 +2423,7 @@ bool CSharpScript::can_instantiate() const {
 		ERR_FAIL_V_MSG(false, "Cannot instance script because the associated class could not be found. Script: '" + get_path() + "'. Make sure the script exists and contains a class definition with a name that matches the filename of the script exactly (it's case-sensitive).");
 	}
 
-	return valid && extra_cond;
+	return valid && !abstract_class && extra_cond;
 }
 
 StringName CSharpScript::get_instance_base_type() const {
@@ -2605,12 +2620,12 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 }
 
 Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	ERR_FAIL_COND_V(!valid, Variant());
-
-	Variant ret;
-	bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
-	if (ok) {
-		return ret;
+	if (valid) {
+		Variant ret;
+		bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
+		if (ok) {
+			return ret;
+		}
 	}
 
 	return Script::callp(p_method, p_args, p_argcount, r_error);

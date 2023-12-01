@@ -54,6 +54,8 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
+#include "servers/navigation_server_2d.h"
+
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::set_id(int p_id) {
 	ERR_FAIL_COND(p_id < 0);
 	if (source_id == p_id) {
@@ -833,6 +835,8 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		item->set_selectable(0, false);
 		item->set_custom_color(0, disabled_color);
 	}
+
+	tile_data_editors_tree->update_minimum_size();
 
 #undef ADD_TILE_DATA_EDITOR_GROUP
 #undef ADD_TILE_DATA_EDITOR
@@ -2491,7 +2495,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_setup_atlas_source_button = memnew(Button);
 	tool_setup_atlas_source_button->set_text(TTR("Setup"));
-	tool_setup_atlas_source_button->set_flat(true);
+	tool_setup_atlas_source_button->set_theme_type_variation("FlatButton");
 	tool_setup_atlas_source_button->set_toggle_mode(true);
 	tool_setup_atlas_source_button->set_pressed(true);
 	tool_setup_atlas_source_button->set_button_group(tools_button_group);
@@ -2500,7 +2504,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_select_button = memnew(Button);
 	tool_select_button->set_text(TTR("Select"));
-	tool_select_button->set_flat(true);
+	tool_select_button->set_theme_type_variation("FlatButton");
 	tool_select_button->set_toggle_mode(true);
 	tool_select_button->set_pressed(false);
 	tool_select_button->set_button_group(tools_button_group);
@@ -2509,7 +2513,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_paint_button = memnew(Button);
 	tool_paint_button->set_text(TTR("Paint"));
-	tool_paint_button->set_flat(true);
+	tool_paint_button->set_theme_type_variation("FlatButton");
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
 	tool_paint_button->set_tooltip_text(TTR("Paint properties."));
@@ -2592,14 +2596,15 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(tool_settings_tile_data_toolbar_container);
 
 	tools_settings_erase_button = memnew(Button);
-	tools_settings_erase_button->set_flat(true);
+	tools_settings_erase_button->set_theme_type_variation("FlatButton");
 	tools_settings_erase_button->set_toggle_mode(true);
 	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E));
 	tools_settings_erase_button->set_shortcut_context(this);
 	tool_settings->add_child(tools_settings_erase_button);
 
 	tool_advanced_menu_button = memnew(MenuButton);
-	tool_advanced_menu_button->set_flat(true);
+	tool_advanced_menu_button->set_flat(false);
+	tool_advanced_menu_button->set_theme_type_variation("FlatMenuButton");
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles Outside the Texture"), ADVANCED_CLEANUP_TILES);
@@ -2744,11 +2749,20 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 			Ref<NavigationPolygon> navigation_polygon;
 			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
 				navigation_polygon.instantiate();
-				for (int i = 0; i < generic_tile_polygon_editor->get_polygon_count(); i++) {
-					Vector<Vector2> polygon = generic_tile_polygon_editor->get_polygon(i);
-					navigation_polygon->add_outline(polygon);
+
+				if (generic_tile_polygon_editor->get_polygon_count() > 0) {
+					Ref<NavigationMeshSourceGeometryData2D> source_geometry_data;
+					source_geometry_data.instantiate();
+					for (int i = 0; i < generic_tile_polygon_editor->get_polygon_count(); i++) {
+						Vector<Vector2> polygon = generic_tile_polygon_editor->get_polygon(i);
+						navigation_polygon->add_outline(polygon);
+						source_geometry_data->add_traversable_outline(polygon);
+					}
+					navigation_polygon->set_agent_radius(0.0);
+					NavigationServer2D::get_singleton()->bake_from_source_geometry_data(navigation_polygon, source_geometry_data);
+				} else {
+					navigation_polygon->clear();
 				}
-				navigation_polygon->make_polygons_from_outlines();
 			}
 			emit_changed(get_edited_property(), navigation_polygon);
 		}

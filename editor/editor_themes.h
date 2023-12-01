@@ -45,12 +45,14 @@ class EditorColorMap {
 	static HashSet<StringName> color_conversion_exceptions;
 
 public:
-	static void create();
 	static void add_conversion_color_pair(const String p_from_color, const String p_to_color);
-	static void add_conversion_exception(const StringName p_icon_name);
+	static void add_conversion_exception(const StringName &p_icon_name);
 
 	static HashMap<Color, Color> &get_color_conversion_map() { return color_conversion_map; };
 	static HashSet<StringName> &get_color_conversion_exceptions() { return color_conversion_exceptions; };
+
+	static void create();
+	static void finish();
 };
 
 class EditorTheme : public Theme {
@@ -66,7 +68,8 @@ public:
 	virtual Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_theme_type) const override;
 	virtual Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_theme_type) const override;
 
-	EditorTheme();
+	static void initialize();
+	static void finalize();
 };
 
 Ref<Theme> create_editor_theme(Ref<Theme> p_theme = nullptr);

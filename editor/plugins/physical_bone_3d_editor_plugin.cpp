@@ -56,7 +56,7 @@ PhysicalBone3DEditor::PhysicalBone3DEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 
 	button_transform_joint = memnew(Button);
-	button_transform_joint->set_flat(true);
+	button_transform_joint->set_theme_type_variation("FlatButton");
 	spatial_editor_hb->add_child(button_transform_joint);
 
 	button_transform_joint->set_text(TTR("Move Joint"));

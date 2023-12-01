@@ -38,13 +38,16 @@
 # Matej Fary <farymatej@gmail.com>, 2023.
 # Petr Novák <novakpeta06@gmail.com>, 2023.
 # Erik Mičulek <erikmiculek@gmail.com>, 2023.
+# Michal Walach <misa17965@gmail.com>, 2023.
+# Marek Douběta <mrocklon420@gmail.com>, 2023.
+# Matěj Šroub <matejsroub@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-11 23:45+0000\n"
-"Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
+"PO-Revision-Date: 2023-09-25 08:36+0000\n"
+"Last-Translator: Marek Douběta <mrocklon420@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -52,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Nenastaveno"
@@ -150,6 +153,9 @@ msgstr "Zpět, Sony Vybrat, Xbox Zpět, Nintendo -"
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Průvodce, Sony PS, Xbox Home"
 
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Start, Xbox Menu a Nintendo +"
+
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Levá páčka, Sony L3, Xbox L/LS"
 
@@ -203,6 +209,9 @@ msgstr "zrušený"
 
 msgid "touched"
 msgstr "stisknutý"
+
+msgid "released"
+msgstr "uvolněný"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Obrazovka %s v (%s) s %s dotykovými body"
@@ -743,12 +752,12 @@ msgstr ""
 "Tato možnost nefunguje pro úpravy Beziérovy křivky, protože se jedná pouze o "
 "jednu stopu."
 
-msgid "Warning: Editing imported animation"
-msgstr "Upozornění: Upravuje se importovaná animace"
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
 "Pro přidání a úpravu animací vyberte ze stromu scény uzel AnimationPlayer."
+
+msgid "Warning: Editing imported animation"
+msgstr "Upozornění: Upravuje se importovaná animace"
 
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Přepnout mezi editorem bézierovy křivky a editorem stopy."
@@ -810,6 +819,9 @@ msgstr "Použít Bézierovy křivky"
 msgid "Create RESET Track(s)"
 msgstr "Vytvořit RESET stopu/stopy"
 
+msgid "Animation Optimizer"
+msgstr "Optimalizátor animace"
+
 msgid "Optimize"
 msgstr "Optimalizuj"
 
@@ -833,6 +845,26 @@ msgstr "Poměr zvětšení:"
 
 msgid "Select Transition and Easing"
 msgstr "Vybrat přechod a dynamiku"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sinus"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "Do"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Z"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "DoZ"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "ZDo"
 
 msgid "FPS:"
 msgstr "FPS:"
@@ -974,12 +1006,6 @@ msgstr "Zavřít"
 msgid "Connect"
 msgstr "Připojit"
 
-msgid "Signal:"
-msgstr "Signál:"
-
-msgid "No description."
-msgstr "Bez popisu."
-
 msgid "Connect '%s' to '%s'"
 msgstr "Připojit '%s' k '%s'"
 
@@ -1010,6 +1036,9 @@ msgstr "Signály"
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Jste si jistí, že chcete odstranit všechna připojení z tohoto signálu?"
 
+msgid "Open Documentation"
+msgstr "Otevřít dokumentaci"
+
 msgid "Disconnect All"
 msgstr "Odpojit vše"
 
@@ -1033,6 +1062,12 @@ msgstr "Vytvořit nový %s"
 
 msgid "No results for \"%s\"."
 msgstr "Žádné výsledky pro \"%s\"."
+
+msgid "This class is marked as deprecated."
+msgstr "Tato třída je označena jako zastaralá."
+
+msgid "This class is marked as experimental."
+msgstr "Tato třída je označena jako experimentální."
 
 msgid "No description available for %s."
 msgstr "Pro %s není dostupný popis."
@@ -1387,6 +1422,10 @@ msgstr "Zakladatelé projektu"
 msgid "Lead Developer"
 msgstr "Vedoucí vývojář"
 
+msgctxt "Job Title"
+msgid "Project Manager"
+msgstr "Manažer projektů"
+
 msgid "Developers"
 msgstr "Vývojáři"
 
@@ -1401,21 +1440,6 @@ msgstr "Zlatí sponzoři"
 
 msgid "Silver Sponsors"
 msgstr "Stříbrní sponzoři"
-
-msgid "Bronze Sponsors"
-msgstr "Bronzoví sponzoři"
-
-msgid "Mini Sponsors"
-msgstr "Mini sponzoři"
-
-msgid "Gold Donors"
-msgstr "Zlatí dárci"
-
-msgid "Silver Donors"
-msgstr "Stříbrní dárci"
-
-msgid "Bronze Donors"
-msgstr "Bronzoví dárci"
 
 msgid "Donors"
 msgstr "Dárci"
@@ -1452,13 +1476,6 @@ msgstr "Chyba při otevírání balíčku \"%s\" (není ve formátu ZIP)."
 msgid "%s (already exists)"
 msgstr "%s (již existuje)"
 
-msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr "Obsah balíčku \"%s\" - %d souborů koliduje s vaším projektem:"
-
-msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr ""
-"Obsah balíčku \"%s\" - Žádné soubory nejsou v konfliktu s vaším projektem:"
-
 msgid "Uncompressing Assets"
 msgstr "Dekomprese uživatelského obsahu"
 
@@ -1476,9 +1493,6 @@ msgstr "Úspěch!"
 
 msgid "Install"
 msgstr "Instalovat"
-
-msgid "Asset Installer"
-msgstr "Instalátor balíčků"
 
 msgid "Speakers"
 msgstr "Reproduktory"
@@ -1866,6 +1880,9 @@ msgstr "(Re)Importování assetů"
 msgid "Import resources of type: %s"
 msgstr "Importovat zdroje typu: %s"
 
+msgid "Experimental"
+msgstr "Experimentální"
+
 msgid "Error codes returned:"
 msgstr "Vráceny chybové kódy:"
 
@@ -1880,6 +1897,10 @@ msgstr "Dědí z:"
 
 msgid "Inherited by:"
 msgstr "Děděná z:"
+
+msgid ""
+"This class is marked as deprecated. It will be removed in future versions."
+msgstr "Třída je označena jako zastaralá. Bude odebrána v budoucích verzích."
 
 msgid "Description"
 msgstr "Popis"
@@ -1929,6 +1950,9 @@ msgstr "Popisy vlastnosti"
 msgid "(value)"
 msgstr "(hodnota)"
 
+msgid "There is currently no description for this property."
+msgstr "Momentálně zde není žádný popis pro tuto vlastnost."
+
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
@@ -1944,6 +1968,12 @@ msgstr "Popisy metod"
 
 msgid "Operator Descriptions"
 msgstr "Popisy operátorů"
+
+msgid "Property:"
+msgstr "Vlastnost:"
+
+msgid "Signal:"
+msgstr "Signál:"
 
 msgid "%d match."
 msgstr "%d shoda."
@@ -2005,15 +2035,9 @@ msgstr "Vlastnost"
 msgid "Theme Property"
 msgstr "Vlastnost motivu"
 
-msgid "Property:"
-msgstr "Vlastnost:"
-
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "Připnutí hodnoty vynutí její uložení, i když bude shodná s výchozí hodnotou."
-
-msgid "Open Documentation"
-msgstr "Otevřít dokumentaci"
 
 msgid "(%d change)"
 msgid_plural "(%d changes)"
@@ -2030,11 +2054,11 @@ msgstr "Přesunout dolů"
 msgid "Resize Array"
 msgstr "Změnit velikost pole"
 
+msgid "Add Metadata"
+msgstr "Přidat metadata"
+
 msgid "Set %s"
 msgstr "Nastav %s"
-
-msgid "Set Multiple:"
-msgstr "Nastavit více:"
 
 msgid "Remove metadata %s"
 msgstr "Odstranit metadata %s"
@@ -2044,6 +2068,12 @@ msgstr "Připnuté %s"
 
 msgid "Unpinned %s"
 msgstr "Nepřipnuté %s"
+
+msgid "Add metadata %s"
+msgstr "Přidat metadata %s"
+
+msgid "Metadata name can't be empty."
+msgstr "Název metadat nemůže být prázdný."
 
 msgid "Name:"
 msgstr "Jméno:"
@@ -2056,6 +2086,9 @@ msgstr "Náhled..."
 
 msgid "Select existing layout:"
 msgstr "Vybrat existující rozložení:"
+
+msgid "Or enter new layout name"
+msgstr "Nebo zadejte nový název rozložení"
 
 msgid "Changed Locale Filter Mode"
 msgstr "Změněn režim filtru pro nastavení jazyka"
@@ -2100,9 +2133,6 @@ msgstr "Vymazat výstup"
 
 msgid "Copy Selection"
 msgstr "Kopírovat výběr"
-
-msgid "New Window"
-msgstr "Nové okno"
 
 msgid "Unnamed Project"
 msgstr "Nepojmenovaný projekt"
@@ -2206,6 +2236,9 @@ msgstr "Jméno rozložení nenalezeno!"
 msgid "Restored the Default layout to its base settings."
 msgstr "Obnoveno výchozí rozložení na základní nastavení."
 
+msgid "This object is marked as read-only, so it's not editable."
+msgstr "Tento objekt slouží pouze pro čtení, proto ho nelze upravit."
+
 msgid ""
 "This resource belongs to a scene that was imported, so it's not editable.\n"
 "Please read the documentation relevant to importing scenes to better "
@@ -2224,6 +2257,9 @@ msgstr ""
 
 msgid "Changes may be lost!"
 msgstr "Změny mohou být ztraceny!"
+
+msgid "This object is read-only."
+msgstr "Tento objekt slouží pouze pro čtení."
 
 msgid "Open Base Scene"
 msgstr "Otevřít základní scénu"
@@ -2363,6 +2399,9 @@ msgstr "Vymazat nedávné scény"
 msgid "There is no defined scene to run."
 msgstr "Neexistuje žádná scéna pro spuštění."
 
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Engine"
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2399,30 +2438,6 @@ msgstr "Výchozí"
 msgid "Save & Close"
 msgstr "Uložit a zavřít"
 
-msgid "Save changes to '%s' before closing?"
-msgstr "Uložit změny '%s' před zavřením?"
-
-msgid "Show in FileSystem"
-msgstr "Zobrazit v souborovém systému"
-
-msgid "Play This Scene"
-msgstr "Spustit tuto scénu"
-
-msgid "Close Tab"
-msgstr "Zavřít záložku"
-
-msgid "Undo Close Tab"
-msgstr "Obnovit zavřenou záložku"
-
-msgid "Close Other Tabs"
-msgstr "Zavřít ostatní záložky"
-
-msgid "Close Tabs to the Right"
-msgstr "Zavřít záložky napravo"
-
-msgid "Close All Tabs"
-msgstr "Zavřít všechny záložky"
-
 msgid "%d more files or folders"
 msgstr "%d více souborů nebo složek"
 
@@ -2435,7 +2450,7 @@ msgstr "%d více souborů"
 msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
-"Není možné zapisovat do souboru '%s', soubour je používán, uzamčen nebo chybí "
+"Není možné zapisovat do souboru '%s', soubor je používán, uzamčen nebo chybí "
 "oprávnění."
 
 msgid "Pan View"
@@ -2443,9 +2458,6 @@ msgstr "Přesunout pohled"
 
 msgid "Dock Position"
 msgstr "Pozice doku"
-
-msgid "Add a new scene."
-msgstr "Přidat novou scénu."
 
 msgid "Distraction Free Mode"
 msgstr "Nerozptylující režitm"
@@ -2458,9 +2470,6 @@ msgstr "Scéna"
 
 msgid "Operations with scene files."
 msgstr "Možností scén."
-
-msgid "Go to previously opened scene."
-msgstr "Přejít na předchozí scénu."
 
 msgid "Copy Text"
 msgstr "Kopírovat text"
@@ -2564,6 +2573,9 @@ msgstr "Online dokumentace"
 msgid "Questions & Answers"
 msgstr "Otázky & odpovědi"
 
+msgid "Community"
+msgstr "Komunita"
+
 msgid "Report a Bug"
 msgstr "Nahlásit chybu"
 
@@ -2572,9 +2584,6 @@ msgstr "Navrhnout funkci"
 
 msgid "Send Docs Feedback"
 msgstr "Odeslat zpětnou vazbu dokumentace"
-
-msgid "Community"
-msgstr "Komunita"
 
 msgid "About Godot"
 msgstr "O aplikaci Godot"
@@ -2792,6 +2801,12 @@ msgstr "Rychlé načtení"
 
 msgid "Make Unique"
 msgstr "Vytvořit unikátní"
+
+msgid "Save As..."
+msgstr "Uložit jako..."
+
+msgid "Show in FileSystem"
+msgstr "Zobrazit v souborovém systému"
 
 msgid "Convert to %s"
 msgstr "Převést na %s"
@@ -3087,11 +3102,11 @@ msgstr ""
 msgid "Runnable"
 msgstr "Spustitelný"
 
-msgid "Resources to export:"
-msgstr "Zdroje k exportu:"
-
 msgid "Delete preset '%s'?"
 msgstr "Odstranit předvolbu '%s'?"
+
+msgid "Resources to export:"
+msgstr "Zdroje k exportu:"
 
 msgid "Release"
 msgstr "Vydání"
@@ -3214,9 +3229,6 @@ msgstr "Chyba přesouvání:"
 msgid "Error duplicating:"
 msgstr "Chyba duplikování:"
 
-msgid "Unable to update dependencies:"
-msgstr "Nepodařilo se aktualizovat závislosti:"
-
 msgid ""
 "This filename begins with a dot rendering the file invisible to the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager."
@@ -3255,9 +3267,6 @@ msgstr "Duplikace složky:"
 msgid "New Inherited Scene"
 msgstr "Nová zděděná scéna"
 
-msgid "Set As Main Scene"
-msgstr "Nastavit jako hlavní scénu"
-
 msgid "Open Scenes"
 msgstr "Otevřít scény"
 
@@ -3272,6 +3281,9 @@ msgstr "Přidat do oblíbených"
 
 msgid "Remove from Favorites"
 msgstr "Odebrat z oblíbených"
+
+msgid "Reimport"
+msgstr "Znovu importovat"
 
 msgid "Open in File Manager"
 msgstr "Otevřít ve správci souborů"
@@ -3317,9 +3329,6 @@ msgstr "Přejmenovat..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Znovu skenovat souborový systém"
-
-msgid "Toggle Split Mode"
-msgstr "Přepnout režim rozdělení"
 
 msgid ""
 "Scanning Files,\n"
@@ -3512,6 +3521,30 @@ msgstr "Rychle spustit scénu..."
 msgid "Run Project"
 msgstr "Spustit projekt"
 
+msgid "Play This Scene"
+msgstr "Spustit tuto scénu"
+
+msgid "Close Tab"
+msgstr "Zavřít záložku"
+
+msgid "Undo Close Tab"
+msgstr "Obnovit zavřenou záložku"
+
+msgid "Close Other Tabs"
+msgstr "Zavřít ostatní záložky"
+
+msgid "Close Tabs to the Right"
+msgstr "Zavřít záložky napravo"
+
+msgid "Close All Tabs"
+msgstr "Zavřít všechny záložky"
+
+msgid "New Window"
+msgstr "Nové okno"
+
+msgid "Add a new scene."
+msgstr "Přidat novou scénu."
+
 msgid ""
 "Hold %s to round to integers.\n"
 "Hold Shift for more precise changes."
@@ -3587,9 +3620,6 @@ msgstr "Varování konfigurace uzlu!"
 msgid "Select a Node"
 msgstr "Vybrat uzel"
 
-msgid "Reimport"
-msgstr "Znovu importovat"
-
 msgid "Offset:"
 msgstr "Offset(Posun):"
 
@@ -3623,9 +3653,6 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
-msgid "Select Importer"
-msgstr "Vybrat Importér"
-
 msgid "Importer:"
 msgstr "Importér:"
 
@@ -3657,18 +3684,6 @@ msgstr "Importovat jako:"
 
 msgid "Preset"
 msgstr "Předvolba"
-
-msgid "Save Scenes, Re-Import, and Restart"
-msgstr "Uložit scény, znovu importovat a restartovat"
-
-msgid "Changing the type of an imported file requires editor restart."
-msgstr "Změna typu importovaného souboru vyžaduje restart editoru."
-
-msgid ""
-"WARNING: Assets exist that use this resource, they may stop loading properly."
-msgstr ""
-"VAROVÁNÍ: Existují zdroje, který tento zdroj používají. Může se stát, že se "
-"přestanou správně načítat."
 
 msgid ""
 "Select a resource file in the filesystem or in the inspector to adjust import "
@@ -3706,9 +3721,6 @@ msgstr "Nahrát existující zdroj z disku a editovat ho."
 
 msgid "Save the currently edited resource."
 msgstr "Uložit právě editovaný zdroj."
-
-msgid "Save As..."
-msgstr "Uložit jako..."
 
 msgid "Extra resource options."
 msgstr "Další možnosti zdrojů."
@@ -3916,9 +3928,6 @@ msgstr "Odstranit body a trojúhelníky."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Vygenerovat blend trojúhelníky automaticky (ne manuálně)"
 
-msgid "Parameter Changed:"
-msgstr "Změněný parametr:"
-
 msgid "Output node can't be added to the blend tree."
 msgstr "Výstupní uzly nemohou být přidané do blend stromu."
 
@@ -3951,12 +3960,6 @@ msgstr "Aktivovat/Deaktivovat filtr"
 
 msgid "Change Filter"
 msgstr "Změnit filtr"
-
-msgid "No animation player set, so unable to retrieve track names."
-msgstr "Není nastavený přehrávač animací, takže nelze získat jména stop."
-
-msgid "Player path set is invalid, so unable to retrieve track names."
-msgstr "Cesta k přehrávači je nevalidní, takže nelze získat jména stop."
 
 msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
@@ -4115,14 +4118,14 @@ msgstr "Připnout AnimationPlayer"
 msgid "Error!"
 msgstr "Chyba!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Přechodové časy prolnutí animací"
+
 msgid "Blend Times:"
 msgstr "Blend časy:"
 
 msgid "Next (Auto Queue):"
 msgstr "Další (Automatická řada):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Přechodové časy prolnutí animací"
 
 msgid "Move Node"
 msgstr "Přesunout uzel"
@@ -4295,6 +4298,10 @@ msgstr "Testované"
 msgid "Loading..."
 msgstr "Načítání..."
 
+msgctxt "Pagination"
+msgid "Last"
+msgstr "Poslední"
+
 msgid "All"
 msgstr "všichni"
 
@@ -4339,9 +4346,6 @@ msgstr "Krok mřížky:"
 
 msgid "Primary Line Every:"
 msgstr "Hlavní řádek každý:"
-
-msgid "steps"
-msgstr "kroky"
 
 msgid "Rotation Offset:"
 msgstr "Offset rotace:"
@@ -4408,9 +4412,6 @@ msgstr "Zamčeno"
 
 msgid "Grouped"
 msgstr "Seskupené"
-
-msgid "Add Node Here"
-msgstr "Přidání uzlu sem"
 
 msgid "Scaling:"
 msgstr "Škálování:"
@@ -4579,6 +4580,9 @@ msgstr "Zobrazit kosti"
 msgid "View"
 msgstr "Zobrazení"
 
+msgid "Show"
+msgstr "Zobrazit"
+
 msgid "Show When Snapping"
 msgstr "Zobrazit při přichytávání"
 
@@ -4741,12 +4745,6 @@ msgstr "Hraniční pixely"
 msgid "Directed Border Pixels"
 msgstr "Pixely ohraničení"
 
-msgid "Capture from Pixel"
-msgstr "Snímání z pixelu"
-
-msgid "Emission Colors"
-msgstr "Emisní barvy"
-
 msgid "Create Emission Points From Node"
 msgstr "Vytvořit emisní body z uzlu"
 
@@ -4862,6 +4860,10 @@ msgstr[0] "Spustit %d instanci"
 msgstr[1] "Spustit %d instance"
 msgstr[2] "Spustit %d instancí"
 
+msgctxt "Locale"
+msgid "Add Script"
+msgstr "Přídat Skript"
+
 msgid " - Variation"
 msgstr " - Variace"
 
@@ -4942,9 +4944,6 @@ msgstr "Zdroj emisí:"
 
 msgid "Generate Visibility AABB"
 msgstr "Generovat viditelnostní AABB"
-
-msgid "Gradient Edited"
-msgstr "Gradient upraven"
 
 msgid "Create Occluder Polygon"
 msgstr "Vytvořit Occluder Polygon"
@@ -5560,23 +5559,17 @@ msgstr "Bod křivky #"
 msgid "Set Curve Point Position"
 msgstr "Nastavit pozici bodu křivky"
 
-msgid "Set Curve In Position"
-msgstr "Nastavit bod do křivky"
-
 msgid "Set Curve Out Position"
 msgstr "Nastavit bod z křivky"
+
+msgid "Set Curve In Position"
+msgstr "Nastavit bod do křivky"
 
 msgid "Split Path"
 msgstr "Rozdělit cestu"
 
 msgid "Remove Path Point"
 msgstr "Odstranit bod cesty"
-
-msgid "Remove Out-Control Point"
-msgstr "Odebrat výstupní kontrolní body"
-
-msgid "Remove In-Control Point"
-msgstr "Odebrat vstupní kontrolní body"
 
 msgid "Split Segment (in curve)"
 msgstr "Rozdělit segment (v křivce)"
@@ -5654,14 +5647,8 @@ msgstr "Kosti"
 msgid "Move Points"
 msgstr "Přesunout body"
 
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Otočit"
-
 msgid "Shift: Move All"
 msgstr "Shift: Přesunout vše"
-
-msgid "Shift+Ctrl: Scale"
-msgstr "Shift+Ctrl: Změnit měřítko"
 
 msgid "Move Polygon"
 msgstr "Přesunout polygon"
@@ -5753,12 +5740,6 @@ msgstr "Vložit zdroj"
 msgid "Load Resource"
 msgstr "Načíst zdroj"
 
-msgid "AnimationTree has no path set to an AnimationPlayer"
-msgstr "AnimationTree nemá nastavenou cestu k AnimstionPlayer"
-
-msgid "Path to AnimationPlayer is invalid"
-msgstr "Cesta k AnimationPlayer je neplatná"
-
 msgid "Clear Recent Files"
 msgstr "Vymazat nedávné soubory"
 
@@ -5797,21 +5778,6 @@ msgstr "Nelze načíst soubor:"
 
 msgid "Save File As..."
 msgstr "Uložit soubor jako..."
-
-msgid "Can't obtain the script for running."
-msgstr "Neexistuje žádný skript ke spuštění."
-
-msgid "Script is not in tool mode, will not be able to run."
-msgstr "Skript není v režimu nástroje, nelze jej spustit."
-
-msgid "Script failed reloading, check console for errors."
-msgstr "Načtení skriptu se nezdařilo, zkontrolujte chyby v konzoli."
-
-msgid ""
-"To run this script, it must inherit EditorScript and be set to tool mode."
-msgstr ""
-"Chcete-li spustit tento skript, musí zdědit EditorScript a musí být nastaven "
-"do režimu editoru."
 
 msgid "Import Theme"
 msgstr "Importovat motiv"
@@ -5946,12 +5912,6 @@ msgstr "Řádek"
 
 msgid "Go to Function"
 msgstr "Přejít na funkci"
-
-msgid "Only resources from filesystem can be dropped."
-msgstr "Sem lze přesunout pouze zdroje ze souborového systému."
-
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr "Nelze zrušit uzly, protože skript \"%s\" se v této scéně nepoužívá."
 
 msgid "Lookup Symbol"
 msgstr "Vyhledat symbol"
@@ -7045,9 +7005,6 @@ msgstr ""
 "portů. Toto je přímé vkládání kódu do funkcí vrcholů/fragmentů/osvětlení, "
 "nepoužívat k deklaraci funkcí."
 
-msgid "Edit Visual Property:"
-msgstr "Upravit vizuální vlastnost:"
-
 msgid "Visual Shader Mode Changed"
 msgstr "Změnit režim vizuálního shaderu"
 
@@ -7064,9 +7021,6 @@ msgstr "Neplatný soubor projektu \".zip\"; neobsahuje soubor \"project.godot\".
 msgid "Please choose an empty folder."
 msgstr "Zvolte prosím prázdnou složku."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Vyberte prosím soubor \"project.godot\" nebo \".zip\"."
-
 msgid "This directory already contains a Godot project."
 msgstr "Složka již obsahuje Godot projekt."
 
@@ -7075,6 +7029,9 @@ msgstr "Nový projekt hry"
 
 msgid "Imported Project"
 msgstr "Importovaný projekt"
+
+msgid "Please choose a \"project.godot\" or \".zip\" file."
+msgstr "Vyberte prosím soubor \"project.godot\" nebo \".zip\"."
 
 msgid "Invalid project name."
 msgstr "Neplatný název projektu."
@@ -7254,8 +7211,9 @@ msgstr ""
 "Opravdu hledat projekty Godot ve složce %s?\n"
 "Může to chvíli trvat."
 
-msgid "Loading, please wait..."
-msgstr "Načítání, prosím čekejte..."
+msgctxt "Application"
+msgid "Project Manager"
+msgstr "Správce projektů"
 
 msgid "New Project"
 msgstr "Nový projekt"
@@ -7265,6 +7223,9 @@ msgstr "Importovat projekt"
 
 msgid "Scan"
 msgstr "Skenovat"
+
+msgid "Loading, please wait..."
+msgstr "Načítání, prosím čekejte..."
 
 msgid "Edit Project"
 msgstr "Upravit projekt"
@@ -7499,14 +7460,6 @@ msgstr ""
 "Zakázání \"upravitelné instance“ obnoví výchozí nastavení všech vlastností "
 "uzlu."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Povolení možnosti \"Načíst jako placeholder\" zakáže možnost \"Upravitelní "
-"potomci\" a způsobí, že všechny vlastnosti uzlu budou vráceny na výchozí "
-"hodnoty."
-
 msgid "Make Local"
 msgstr "Změnit na lokální"
 
@@ -7518,6 +7471,9 @@ msgstr "Vytvořit kořenový uzel:"
 
 msgid "Other Node"
 msgstr "Jiný uzel"
+
+msgid "Filters"
+msgstr "Filtry"
 
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Nelze manipulovat s uzly z cizí scény!"
@@ -7561,9 +7517,6 @@ msgstr "Vymazat dědičnost"
 msgid "Editable Children"
 msgstr "Upravitelní potomci"
 
-msgid "Load As Placeholder"
-msgstr "Načíst jako placeholder"
-
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
 "This is probably because this editor was built with all language modules "
@@ -7575,15 +7528,6 @@ msgstr ""
 
 msgid "Can't paste root node into the same scene."
 msgstr "Nelze vložit kořenový uzel do stejné scény."
-
-msgid "Paste Node(s)"
-msgstr "Vložit uzly"
-
-msgid "Add Child Node"
-msgstr "Přidat uzel"
-
-msgid "Change Type"
-msgstr "Změnit typ"
 
 msgid "Reparent to New Node"
 msgstr "Změnit rodiče na nový uzel"
@@ -7642,38 +7586,14 @@ msgstr "Otevřít skript / Vybrat umístění"
 msgid "Open Script"
 msgstr "Otevřít skript"
 
-msgid "File exists, it will be reused."
-msgstr "Soubor již existuje, bude znovu použit."
-
 msgid "Invalid path."
 msgstr "Neplatná cesta."
-
-msgid "Invalid class name."
-msgstr "Neplatné jméno třídy."
 
 msgid "Invalid inherited parent name or path."
 msgstr "Neplatný název nebo cesta zděděné třídy."
 
-msgid "Script path/name is valid."
-msgstr "Cesta a jméno skriptu jsou validní."
-
-msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "Povoleno: a-z, A-Z, 0-9, _ a ."
-
-msgid "N/A"
-msgstr "N/A"
-
-msgid "Built-in script (into scene file)."
-msgstr "Vestavěný skript (v souboru scény)."
-
-msgid "Will create a new script file."
-msgstr "Vytvoří nový soubor skriptu."
-
-msgid "Will load an existing script file."
-msgstr "Načte existující soubor skriptu."
-
-msgid "Script file already exists."
-msgstr "Soubor skriptu již existuje."
+msgid "File exists, it will be reused."
+msgstr "Soubor již existuje, bude znovu použit."
 
 msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
@@ -7682,14 +7602,29 @@ msgstr ""
 "Poznámka: Vestavěné skripty mají určitá omezení a nelze je upravovat pomocí "
 "externího editoru."
 
-msgid "Class Name:"
-msgstr "Jméno třídy:"
+msgid "Built-in script (into scene file)."
+msgstr "Vestavěný skript (v souboru scény)."
+
+msgid "Will load an existing script file."
+msgstr "Načte existující soubor skriptu."
+
+msgid "Script file already exists."
+msgstr "Soubor skriptu již existuje."
+
+msgid "Script path/name is valid."
+msgstr "Cesta a jméno skriptu jsou validní."
+
+msgid "Will create a new script file."
+msgstr "Vytvoří nový soubor skriptu."
 
 msgid "Built-in Script:"
 msgstr "Vestavěný skript:"
 
 msgid "Attach Node Script"
 msgstr "Připojit script k uzlu"
+
+msgid "N/A"
+msgstr "N/A"
 
 msgid "Invalid base path."
 msgstr "Neplatná základní cesta."
@@ -7770,9 +7705,6 @@ msgstr "GridMap Vložit výběr"
 msgid "GridMap Paint"
 msgstr "Vykreslit GridMap"
 
-msgid "Grid Map"
-msgstr "Mřížková mapa"
-
 msgid "Edit X Axis"
 msgstr "Editovat osu X"
 
@@ -7815,6 +7747,9 @@ msgstr "Vymazat výběr"
 msgid "Fill Selection"
 msgstr "Vyplnit výběr"
 
+msgid "Grid Map"
+msgstr "Mřížková mapa"
+
 msgid "GridMap Settings"
 msgstr "Nastavení GridMap"
 
@@ -7835,6 +7770,14 @@ msgstr "Nedostatek bajtů pro dekódování bajtů, nebo neplatný formát."
 
 msgid "%s/s"
 msgstr "%s/s"
+
+msgctxt "Network"
+msgid "Down"
+msgstr "Dolů"
+
+msgctxt "Network"
+msgid "Up"
+msgstr "Nahoru"
 
 msgid "Incoming RPC"
 msgstr "Příchozí RPC"
@@ -7858,12 +7801,6 @@ msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
 "Aby tento uzel mohl fungovat, musí mít nastaven nebo vytvořen zdroj "
 "NavigationMesh."
-
-msgid "Bake NavMesh"
-msgstr "Zapéct NavMesh"
-
-msgid "Clear the navigation mesh."
-msgstr "Vymazat navigační model."
 
 msgid "Package name is missing."
 msgstr "Chybí jméno balíčku."
@@ -7991,22 +7928,8 @@ msgstr "Nelze zapsat soubor rozšiřujícího balíčku!"
 msgid "Building Android Project (gradle)"
 msgstr "Buildování projektu pro Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Buildování projektu pro Android se nezdařilo, zkontrolujte chybový výstup. "
-"Případně navštivte dokumentaci o build pro Android na docs.godotengine.org."
-
 msgid "Moving output"
 msgstr "Přesunout výstup"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Nelze kopírovat či přejmenovat exportovaný soubor, zkontrolujte výstupy v "
-"adresáři projektu gradle."
 
 msgid "Creating APK..."
 msgstr "Vytvářím APK..."
@@ -8029,6 +7952,9 @@ msgstr "Chybí identifikátor."
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Znak '%s' není dovolen v identifikátoru."
 
+msgid "All Files"
+msgstr "Všechny soubory"
+
 msgid "Invalid executable file."
 msgstr "Neplatný spouštěcí soubor."
 
@@ -8040,45 +7966,6 @@ msgstr "Nelze spustit program xcrun."
 
 msgid "Could not start hdiutil executable."
 msgstr "Nelze spustit program hdiutil."
-
-msgid "Invalid package short name."
-msgstr "Neplatné krátké jméno balíčku."
-
-msgid "Invalid package unique name."
-msgstr "Neplatný unikátní název balíčku."
-
-msgid "Invalid package publisher display name."
-msgstr "Neplatný unikátní název vydavatele balíčku."
-
-msgid "Invalid product GUID."
-msgstr "Neplatné GUID produktu."
-
-msgid "Invalid publisher GUID."
-msgstr "Neplatné GUID vydavatele."
-
-msgid "Invalid background color."
-msgstr "Neplatná barva pozadí."
-
-msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr "Neplatné rozměry Store Logo obrázku (měly by být 50x50)."
-
-msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr "Neplatné rozměry Square 44x44 Logo obrázku (měly by být 44x44)."
-
-msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr "Neplatné rozměry Square 71x71 Logo obrázku (měly by být 71x71)."
-
-msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr "Neplatné rozměry Square 150x150 Logo obrázku (měly by být 150x150)."
-
-msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr "Neplatné rozměry Square 310x310 Logo obrázku (měly by být 310x310)."
-
-msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr "Neplatné rozměry Square 310x150 Logo obrázku (měly by být 310x150)."
-
-msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr "Neplatné rozměry obrázku uvítací obrazovky (měly by být 620x300)."
 
 msgid "Could not open template for export: \"%s\"."
 msgstr "Nelze otevřít šablonu pro export: \"%s\"."
@@ -8282,26 +8169,11 @@ msgstr "Na uzlu BlendTree \"%s\" nebyla nalezena animace: \"%s\""
 msgid "Animation not found: '%s'"
 msgstr "Animace nenalezena: '%s'"
 
-msgid "In node '%s', invalid animation: '%s'."
-msgstr "V uzlu '%s', neplatná animace: '%s'."
-
-msgid "Invalid animation: '%s'."
-msgstr "Neplatná animace: '%s'."
-
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nic není připojeno do vstupu '%s' uzlu '%s'."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Není nastaven žádný kořen grafu AnimationNode."
-
-msgid "Path to an AnimationPlayer node containing animations is not set."
-msgstr "Cesta k uzlu AnimationPlayer obsahující animace není nastavena."
-
-msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
-msgstr "Cesta k AnimationPlayer nevede k uzlu AnimationPlayer."
-
-msgid "The AnimationPlayer root node is not a valid node."
-msgstr "Kořenový uzel AnimationPlayer není platný uzel."
 
 msgid ""
 "Color: #%s\n"
@@ -8339,12 +8211,6 @@ msgstr "Pozor!"
 msgid "Please Confirm..."
 msgstr "Potvrďte prosím..."
 
-msgid "All Files"
-msgstr "Všechny soubory"
-
-msgid "Enable grid minimap."
-msgstr "Povolit minimapu mřížky."
-
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr ""
 "Pokud má \"Exp Edit\" hodnotu true, pak \"Min Value\" musí být větší než 0."
@@ -8360,9 +8226,6 @@ msgstr ""
 
 msgid "(Other)"
 msgstr "(Ostatní)"
-
-msgid "Unsupported BMFont texture format."
-msgstr "Nepodporovaný formát textury BMFont."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

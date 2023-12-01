@@ -202,7 +202,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 	return OK;
 }
 
-static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, List<String> *r_missing_deps) {
+static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, bool p_disable_compression, List<String> *r_missing_deps) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
 
@@ -226,7 +226,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
 	Vector3 offset_mesh = p_offset_mesh;
-	int mesh_flags = 0;
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
@@ -287,7 +286,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			uv.x = v[1].to_float();
 			uv.y = 1.0 - v[2].to_float();
 			uvs.push_back(uv);
-
 		} else if (l.begins_with("vn ")) {
 			//normal
 			Vector<String> v = l.split(" ", false);
@@ -329,6 +327,17 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 						}
 						ERR_FAIL_INDEX_V(norm, normals.size(), ERR_FILE_CORRUPT);
 						surf_tool->set_normal(normals[norm]);
+						if (generate_tangents && uvs.is_empty()) {
+							// We can't generate tangents without UVs, so create dummy tangents.
+							Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[norm]);
+							surf_tool->set_tangent(Plane(tan.x, tan.y, tan.z, 1.0));
+						}
+					} else {
+						// No normals, use a dummy normal since normals will be generated.
+						if (generate_tangents && uvs.is_empty()) {
+							// We can't generate tangents without UVs, so create dummy tangents.
+							surf_tool->set_tangent(Plane(1.0, 0.0, 0.0, 1.0));
+						}
 					}
 
 					if (face[idx].size() >= 2 && !face[idx][1].is_empty()) {
@@ -371,6 +380,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				}
 			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
+			uint64_t mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+
+			if (p_disable_compression) {
+				mesh_flags = 0;
+			}
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
@@ -464,7 +478,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
 	List<Ref<Mesh>> meshes;
 
-	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, false, Vector3(1, 1, 1), Vector3(0, 0, 0), r_missing_deps);
+	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, false, Vector3(1, 1, 1), Vector3(0, 0, 0), p_flags & IMPORT_FORCE_DISABLE_MESH_COMPRESSION, r_missing_deps);
 
 	if (err != OK) {
 		if (r_err) {
@@ -480,7 +494,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, co
 		mesh.instantiate();
 		mesh->set_name(m->get_name());
 		for (int i = 0; i < m->get_surface_count(); i++) {
-			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
+			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i), String(), m->surface_get_format(i));
 		}
 
 		ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
@@ -511,7 +525,7 @@ String ResourceImporterOBJ::get_importer_name() const {
 }
 
 String ResourceImporterOBJ::get_visible_name() const {
-	return "OBJ As Mesh";
+	return "OBJ as Mesh";
 }
 
 void ResourceImporterOBJ::get_recognized_extensions(List<String> *p_extensions) const {
@@ -543,6 +557,7 @@ void ResourceImporterOBJ::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimize_mesh"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_disable_mesh_compression"), false));
 }
 
 bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
@@ -552,7 +567,7 @@ bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const Stri
 Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	List<Ref<Mesh>> meshes;
 
-	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], nullptr);
+	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], p_options["force_disable_mesh_compression"], nullptr);
 
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(meshes.size() != 1, ERR_BUG);

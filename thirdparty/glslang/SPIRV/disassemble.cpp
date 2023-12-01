@@ -515,7 +515,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
                 } else if (strcmp(spv::E_SPV_NV_sample_mask_override_coverage, name) == 0 ||
                           strcmp(spv::E_SPV_NV_geometry_shader_passthrough, name) == 0 ||
                           strcmp(spv::E_SPV_NV_viewport_array2, name) == 0 ||
-                          strcmp(spv::E_SPV_NVX_multiview_per_view_attributes, name) == 0 || 
+                          strcmp(spv::E_SPV_NVX_multiview_per_view_attributes, name) == 0 ||
                           strcmp(spv::E_SPV_NV_fragment_shader_barycentric, name) == 0 ||
                           strcmp(spv::E_SPV_NV_mesh_shader, name) == 0) {
                     extInstSet = GLSLextNVInst;

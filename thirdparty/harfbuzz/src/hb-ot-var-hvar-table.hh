@@ -134,6 +134,36 @@ struct index_map_subset_plan_t
     }
   }
 
+  bool remap_after_instantiation (const hb_subset_plan_t *plan,
+                                  const hb_map_t& varidx_map)
+  {
+    /* recalculate bit_count after remapping */
+    outer_bit_count = 1;
+    inner_bit_count = 1;
+
+    for (const auto &_ : plan->new_to_old_gid_list)
+    {
+      hb_codepoint_t new_gid = _.first;
+      if (unlikely (new_gid >= map_count)) break;
+
+      uint32_t v = output_map.arrayZ[new_gid];
+      uint32_t *new_varidx;
+      if (!varidx_map.has (v, &new_varidx))
+        return false;
+
+      output_map.arrayZ[new_gid] = *new_varidx;
+
+      unsigned outer = (*new_varidx) >> 16;
+      unsigned bit_count = (outer == 0) ? 1 : hb_bit_storage (outer);
+      outer_bit_count = hb_max (bit_count, outer_bit_count);
+      
+      unsigned inner = (*new_varidx) & 0xFFFF;
+      bit_count = (inner == 0) ? 1 : hb_bit_storage (inner);
+      inner_bit_count = hb_max (bit_count, inner_bit_count);
+    }
+    return true;
+  }
+
   unsigned int get_inner_bit_count () const { return inner_bit_count; }
   unsigned int get_width ()           const { return ((outer_bit_count + inner_bit_count + 7) / 8); }
   unsigned int get_map_count ()       const { return map_count; }
@@ -209,6 +239,16 @@ struct hvarvvar_subset_plan_t
 
     for (unsigned int i = 0; i < index_maps.length; i++)
       index_map_plans[i].remap (index_maps[i], outer_map, inner_maps, plan);
+  }
+
+  /* remap */
+  bool remap_index_map_plans (const hb_subset_plan_t *plan,
+                              const hb_map_t& varidx_map)
+  {
+    for (unsigned i = 0; i < index_map_plans.length; i++)
+      if (!index_map_plans[i].remap_after_instantiation (plan, varidx_map))
+        return false;
+    return true;
   }
 
   void fini ()
@@ -289,6 +329,9 @@ struct HVARVVAR
   bool _subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
+    if (c->plan->all_axes_pinned)
+      return_trace (false);
+
     hvarvvar_subset_plan_t	hvar_plan;
     hb_vector_t<const DeltaSetIndexMap *>
 				index_maps;
@@ -302,11 +345,37 @@ struct HVARVVAR
     out->version.major = 1;
     out->version.minor = 0;
 
-    if (unlikely (!out->varStore
-		      .serialize_serialize (c->serializer,
-					    hvar_plan.var_store,
-					    hvar_plan.inner_maps.as_array ())))
+    if (c->plan->normalized_coords)
+    {
+      item_variations_t item_vars;
+      if (!item_vars.instantiate (this+varStore, c->plan,
+                                  advMap == 0 ? false : true,
+                                  false, /* use_no_variation_idx = false */
+                                  hvar_plan.inner_maps.as_array ()))
+        return_trace (false);
+
+      if (!out->varStore.serialize_serialize (c->serializer,
+                                              item_vars.has_long_word (),
+                                              c->plan->axis_tags,
+                                              item_vars.get_region_list (),
+                                              item_vars.get_vardata_encodings ()))
+        return_trace (false);
+
+      /* if varstore is optimized, remap output_map */
+      if (advMap)
+      {
+        if (!hvar_plan.remap_index_map_plans (c->plan, item_vars.get_varidx_map ()))
+          return_trace (false);
+      }
+    }
+    else
+    {
+      if (unlikely (!out->varStore
+		    .serialize_serialize (c->serializer,
+					  hvar_plan.var_store,
+					  hvar_plan.inner_maps.as_array ())))
       return_trace (false);
+    }
 
     return_trace (out->T::serialize_index_maps (c->serializer,
 						hvar_plan.index_map_plans.as_array ()));

@@ -533,6 +533,11 @@ void BoneMapper::_clear_mapping_current_group() {
 }
 
 #ifdef MODULE_REGEX_ENABLED
+bool BoneMapper::is_match_with_bone_name(String p_bone_name, String p_word) {
+	RegEx re = RegEx(p_word);
+	return !re.search(p_bone_name.to_lower()).is_null();
+}
+
 int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_picklist, BoneSegregation p_segregation, int p_parent, int p_child, int p_children_count) {
 	// There may be multiple candidates hit by existing the subsidiary bone.
 	// The one with the shortest name is probably the original.
@@ -540,7 +545,6 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 	String shortest = "";
 
 	for (int word_idx = 0; word_idx < p_picklist.size(); word_idx++) {
-		RegEx re = RegEx(p_picklist[word_idx]);
 		if (p_child == -1) {
 			Vector<int> bones_to_process = p_parent == -1 ? p_skeleton->get_parentless_bones() : p_skeleton->get_bone_children(p_parent);
 			while (bones_to_process.size() > 0) {
@@ -559,7 +563,7 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 				}
 
 				String bn = skeleton->get_bone_name(idx);
-				if (!re.search(bn.to_lower()).is_null() && guess_bone_segregation(bn) == p_segregation) {
+				if (is_match_with_bone_name(bn, p_picklist[word_idx]) && guess_bone_segregation(bn) == p_segregation) {
 					hit_list.push_back(bn);
 				}
 			}
@@ -584,7 +588,7 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 				}
 
 				String bn = skeleton->get_bone_name(idx);
-				if (!re.search(bn.to_lower()).is_null() && guess_bone_segregation(bn) == p_segregation) {
+				if (is_match_with_bone_name(bn, p_picklist[word_idx]) && guess_bone_segregation(bn) == p_segregation) {
 					hit_list.push_back(bn);
 				}
 				idx = skeleton->get_bone_parent(idx);
@@ -654,6 +658,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	picklist.push_back("pelvis");
 	picklist.push_back("waist");
 	picklist.push_back("torso");
+	picklist.push_back("spine");
 	int hips = search_bone_by_name(skeleton, picklist);
 	if (hips == -1) {
 		WARN_PRINT("Auto Mapping couldn't guess Hips. Abort auto mapping.");
@@ -704,70 +709,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	bone_idx = -1;
 	search_path.clear();
 
-	// 3. Guess Neck
-	picklist.push_back("neck");
-	picklist.push_back("head"); // For no neck model.
-	picklist.push_back("face"); // Same above.
-	int neck = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, hips);
-	picklist.clear();
-
-	// 4. Guess Head
-	picklist.push_back("head");
-	picklist.push_back("face");
-	int head = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck);
-	if (head == -1) {
-		search_path = skeleton->get_bone_children(neck);
-		if (search_path.size() == 1) {
-			head = search_path[0]; // Maybe only one child of the Neck is Head.
-		}
-	}
-	if (head == -1) {
-		if (neck != -1) {
-			head = neck; // The head animation should have more movement.
-			neck = -1;
-			p_bone_map->_set_skeleton_bone_name("Head", skeleton->get_bone_name(head));
-		} else {
-			WARN_PRINT("Auto Mapping couldn't guess Neck or Head."); // Continued for guessing on the other bones. But abort when guessing spines step.
-		}
-	} else {
-		p_bone_map->_set_skeleton_bone_name("Neck", skeleton->get_bone_name(neck));
-		p_bone_map->_set_skeleton_bone_name("Head", skeleton->get_bone_name(head));
-	}
-	picklist.clear();
-	search_path.clear();
-
-	int neck_or_head = neck != -1 ? neck : (head != -1 ? head : -1);
-	if (neck_or_head != -1) {
-		// 4-1. Guess Eyes
-		picklist.push_back("eye(?!.*(brow|lash|lid))");
-		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, neck_or_head);
-		if (bone_idx == -1) {
-			WARN_PRINT("Auto Mapping couldn't guess LeftEye.");
-		} else {
-			p_bone_map->_set_skeleton_bone_name("LeftEye", skeleton->get_bone_name(bone_idx));
-		}
-
-		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, neck_or_head);
-		if (bone_idx == -1) {
-			WARN_PRINT("Auto Mapping couldn't guess RightEye.");
-		} else {
-			p_bone_map->_set_skeleton_bone_name("RightEye", skeleton->get_bone_name(bone_idx));
-		}
-		picklist.clear();
-
-		// 4-2. Guess Jaw
-		picklist.push_back("jaw");
-		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck_or_head);
-		if (bone_idx == -1) {
-			WARN_PRINT("Auto Mapping couldn't guess Jaw.");
-		} else {
-			p_bone_map->_set_skeleton_bone_name("Jaw", skeleton->get_bone_name(bone_idx));
-		}
-		bone_idx = -1;
-		picklist.clear();
-	}
-
-	// 5. Guess Foots
+	// 3. Guess Foots
 	picklist.push_back("foot");
 	picklist.push_back("ankle");
 	int left_foot = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, hips);
@@ -784,7 +726,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	}
 	picklist.clear();
 
-	// 5-1. Guess LowerLegs
+	// 3-1. Guess LowerLegs
 	picklist.push_back("(low|under).*leg");
 	picklist.push_back("knee");
 	picklist.push_back("shin");
@@ -810,7 +752,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	}
 	picklist.clear();
 
-	// 5-2. Guess UpperLegs
+	// 3-2. Guess UpperLegs
 	picklist.push_back("up.*leg");
 	picklist.push_back("thigh");
 	picklist.push_back("leg");
@@ -834,7 +776,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	bone_idx = -1;
 	picklist.clear();
 
-	// 5-3. Guess Toes
+	// 3-3. Guess Toes
 	picklist.push_back("toe");
 	picklist.push_back("ball");
 	if (left_foot != -1) {
@@ -871,7 +813,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	bone_idx = -1;
 	picklist.clear();
 
-	// 6. Guess Hands
+	// 4. Guess Hands
 	picklist.push_back("hand");
 	picklist.push_back("wrist");
 	picklist.push_back("palm");
@@ -916,7 +858,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	bone_idx = -1;
 	picklist.clear();
 
-	// 6-1. Guess Finger
+	// 4-1. Guess Finger
 	bool named_finger_is_found = false;
 	LocalVector<String> fingers;
 	fingers.push_back("thumb|pollex");
@@ -1106,7 +1048,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		}
 	}
 
-	// 7. Guess Arms
+	// 5. Guess Arms
 	picklist.push_back("shoulder");
 	picklist.push_back("clavicle");
 	picklist.push_back("collar");
@@ -1124,7 +1066,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	}
 	picklist.clear();
 
-	// 7-1. Guess LowerArms
+	// 5-1. Guess LowerArms
 	picklist.push_back("(low|fore).*arm");
 	picklist.push_back("elbow");
 	picklist.push_back("arm");
@@ -1148,7 +1090,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	}
 	picklist.clear();
 
-	// 7-2. Guess UpperArms
+	// 5-2. Guess UpperArms
 	picklist.push_back("up.*arm");
 	picklist.push_back("arm");
 	if (left_shoulder != -1 && left_lower_arm != -1) {
@@ -1170,6 +1112,99 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	}
 	bone_idx = -1;
 	picklist.clear();
+
+	// 6. Guess Neck
+	picklist.push_back("neck");
+	picklist.push_back("head"); // For no neck model.
+	picklist.push_back("face"); // Same above.
+	int neck = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, hips);
+	picklist.clear();
+	if (neck == -1) {
+		// If it can't expect by name, search child spine of where the right and left shoulders (or hands) cross.
+		int ls_idx = left_shoulder != -1 ? left_shoulder : (left_hand_or_palm != -1 ? left_hand_or_palm : -1);
+		int rs_idx = right_shoulder != -1 ? right_shoulder : (right_hand_or_palm != -1 ? right_hand_or_palm : -1);
+		if (ls_idx != -1 && rs_idx != -1) {
+			bool detect = false;
+			while (ls_idx != hips && ls_idx >= 0 && rs_idx != hips && rs_idx >= 0) {
+				ls_idx = skeleton->get_bone_parent(ls_idx);
+				rs_idx = skeleton->get_bone_parent(rs_idx);
+				if (ls_idx == rs_idx) {
+					detect = true;
+					break;
+				}
+			}
+			if (detect) {
+				Vector<int> children = skeleton->get_bone_children(ls_idx);
+				children.erase(ls_idx);
+				children.erase(rs_idx);
+				String word = "spine"; // It would be better to limit the search with "spine" because it could be mistaken with breast, wing and etc...
+				for (int i = 0; children.size(); i++) {
+					bone_idx = children[i];
+					if (is_match_with_bone_name(skeleton->get_bone_name(bone_idx), word)) {
+						neck = bone_idx;
+						break;
+					};
+				}
+				bone_idx = -1;
+			}
+		}
+	}
+
+	// 7. Guess Head
+	picklist.push_back("head");
+	picklist.push_back("face");
+	int head = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck);
+	if (head == -1) {
+		search_path = skeleton->get_bone_children(neck);
+		if (search_path.size() == 1) {
+			head = search_path[0]; // Maybe only one child of the Neck is Head.
+		}
+	}
+	if (head == -1) {
+		if (neck != -1) {
+			head = neck; // The head animation should have more movement.
+			neck = -1;
+			p_bone_map->_set_skeleton_bone_name("Head", skeleton->get_bone_name(head));
+		} else {
+			WARN_PRINT("Auto Mapping couldn't guess Neck or Head."); // Continued for guessing on the other bones. But abort when guessing spines step.
+		}
+	} else {
+		p_bone_map->_set_skeleton_bone_name("Neck", skeleton->get_bone_name(neck));
+		p_bone_map->_set_skeleton_bone_name("Head", skeleton->get_bone_name(head));
+	}
+	picklist.clear();
+	search_path.clear();
+
+	int neck_or_head = neck != -1 ? neck : (head != -1 ? head : -1);
+	if (neck_or_head != -1) {
+		// 7-1. Guess Eyes
+		picklist.push_back("eye(?!.*(brow|lash|lid))");
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, neck_or_head);
+		if (bone_idx == -1) {
+			WARN_PRINT("Auto Mapping couldn't guess LeftEye.");
+		} else {
+			p_bone_map->_set_skeleton_bone_name("LeftEye", skeleton->get_bone_name(bone_idx));
+		}
+
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, neck_or_head);
+		if (bone_idx == -1) {
+			WARN_PRINT("Auto Mapping couldn't guess RightEye.");
+		} else {
+			p_bone_map->_set_skeleton_bone_name("RightEye", skeleton->get_bone_name(bone_idx));
+		}
+		picklist.clear();
+
+		// 7-2. Guess Jaw
+		picklist.push_back("jaw");
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck_or_head);
+		if (bone_idx == -1) {
+			WARN_PRINT("Auto Mapping couldn't guess Jaw.");
+		} else {
+			p_bone_map->_set_skeleton_bone_name("Jaw", skeleton->get_bone_name(bone_idx));
+		}
+		bone_idx = -1;
+		picklist.clear();
+	}
 
 	// 8. Guess UpperChest or Chest
 	if (neck_or_head == -1) {

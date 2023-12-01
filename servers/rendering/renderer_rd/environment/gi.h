@@ -522,7 +522,7 @@ public:
 
 	_FORCE_INLINE_ RID voxel_gi_instance_get_texture(RID p_probe) {
 		VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
-		ERR_FAIL_COND_V(!voxel_gi, RID());
+		ERR_FAIL_NULL_V(voxel_gi, RID());
 		return voxel_gi->texture;
 	};
 
@@ -667,6 +667,7 @@ public:
 
 		float y_mult = 1.0;
 
+		uint32_t version = 0;
 		uint32_t render_pass = 0;
 
 		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
@@ -701,10 +702,13 @@ public:
 	Vector3 sdfgi_debug_probe_dir;
 	bool sdfgi_debug_probe_enabled = false;
 	Vector3i sdfgi_debug_probe_index;
+	uint32_t sdfgi_current_version = 0;
 
 	/* SDFGI UPDATE */
 
 	int sdfgi_get_lightprobe_octahedron_size() const { return SDFGI::LIGHTPROBE_OCT_SIZE; }
+
+	virtual void sdfgi_reset() override;
 
 	struct SDFGIData {
 		float grid_size[3];

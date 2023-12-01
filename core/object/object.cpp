@@ -31,6 +31,7 @@
 #include "object.h"
 
 #include "core/core_string_names.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
@@ -197,6 +198,7 @@ bool Object::_predelete() {
 	notification(NOTIFICATION_PREDELETE, true);
 	if (_predelete_ok) {
 		_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
+		notification(NOTIFICATION_PREDELETE_CLEANUP, true);
 	}
 	return _predelete_ok;
 }
@@ -616,7 +618,7 @@ void Object::get_method_list(List<MethodInfo> *p_list) const {
 Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Variant();
 	}
 
@@ -635,7 +637,7 @@ Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::Cal
 Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Variant();
 	}
 
@@ -665,8 +667,16 @@ bool Object::has_method(const StringName &p_method) const {
 	}
 
 	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
+	if (method != nullptr) {
+		return true;
+	}
 
-	return method != nullptr;
+	const Script *scr = Object::cast_to<Script>(this);
+	if (scr != nullptr) {
+		return scr->has_static_method(p_method);
+	}
+
+	return false;
 }
 
 Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
@@ -714,12 +724,11 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 //free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
 		if (p_argcount != 0) {
-			r_error.argument = 0;
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.expected = 0;
 			return Variant();
 		}
 		if (Object::cast_to<RefCounted>(this)) {
-			r_error.argument = 0;
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
 		}
@@ -880,7 +889,10 @@ void Object::set_script(const Variant &p_script) {
 	}
 
 	Ref<Script> s = p_script;
-	ERR_FAIL_COND_MSG(s.is_null() && !p_script.is_null(), "Invalid parameter, it should be a reference to a valid script (or null).");
+	if (!p_script.is_null()) {
+		ERR_FAIL_COND_MSG(s.is_null(), "Cannot set object script. Parameter should be null or a reference to a valid script.");
+		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
+	}
 
 	script = p_script;
 
@@ -1032,14 +1044,17 @@ struct _ObjectSignalDisconnectData {
 };
 
 Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+	if (unlikely(p_argcount < 1)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.expected = 1;
+		ERR_FAIL_V(Error::ERR_INVALID_PARAMETER);
+	}
 
-	ERR_FAIL_COND_V(p_argcount < 1, Error::ERR_INVALID_PARAMETER);
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (unlikely(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING)) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
-		ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING, Error::ERR_INVALID_PARAMETER);
+		ERR_FAIL_V(Error::ERR_INVALID_PARAMETER);
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -1095,8 +1110,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	Error err = OK;
 
 	for (const Connection &c : slot_conns) {
-		Object *target = c.callable.get_object();
-		if (!target) {
+		if (!c.callable.is_valid()) {
 			// Target might have been deleted during signal callback, this is expected and OK.
 			continue;
 		}
@@ -1119,7 +1133,8 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 					continue;
 				}
 #endif
-				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
+				Object *target = c.callable.get_object();
+				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINT("Error calling from signal '" + String(p_name) + "' to callable: " + Variant::get_callable_error_text(c.callable, args, argc, ce) + ".");
@@ -1299,8 +1314,14 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 Error Object::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is null.");
 
-	Object *target_object = p_callable.get_object();
-	ERR_FAIL_NULL_V_MSG(target_object, ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+	if (p_callable.is_standard()) {
+		// FIXME: This branch should probably removed in favor of the `is_valid()` branch, but there exist some classes
+		// that call `connect()` before they are fully registered with ClassDB. Until all such classes can be found
+		// and registered soon enough this branch is needed to allow `connect()` to succeed.
+		ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+	} else {
+		ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is not valid: " + p_callable);
+	}
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1338,6 +1359,8 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		}
 	}
 
+	Object *target_object = p_callable.get_object();
+
 	SignalData::Slot slot;
 
 	Connection conn;
@@ -1345,7 +1368,9 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	conn.signal = ::Signal(this, p_signal);
 	conn.flags = p_flags;
 	slot.conn = conn;
-	slot.cE = target_object->connections.push_back(conn);
+	if (target_object) {
+		slot.cE = target_object->connections.push_back(conn);
+	}
 	if (p_flags & CONNECT_REFERENCE_COUNTED) {
 		slot.reference_count = 1;
 	}
@@ -1384,9 +1409,6 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot disconnect from '" + p_signal + "': the provided callable is null.");
 
-	Object *target_object = p_callable.get_object();
-	ERR_FAIL_NULL_V_MSG(target_object, false, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
-
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
@@ -1406,7 +1428,13 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		}
 	}
 
-	target_object->connections.erase(slot->cE);
+	if (slot->cE) {
+		Object *target_object = p_callable.get_object();
+		if (target_object) {
+			target_object->connections.erase(slot->cE);
+		}
+	}
+
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
 	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
@@ -1791,14 +1819,17 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 }
 
 void Object::set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
-	// This is only meant to be used on creation by the binder.
-	ERR_FAIL_COND(_instance_bindings != nullptr);
-	_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
+	// This is only meant to be used on creation by the binder, but we also
+	// need to account for reloading (where the 'binding' will be cleared).
+	ERR_FAIL_COND(_instance_bindings != nullptr && _instance_bindings[0].binding != nullptr);
+	if (_instance_bindings == nullptr) {
+		_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
+		_instance_binding_count = 1;
+	}
 	_instance_bindings[0].binding = p_binding;
 	_instance_bindings[0].free_callback = p_callbacks->free_callback;
 	_instance_bindings[0].reference_callback = p_callbacks->reference_callback;
 	_instance_bindings[0].token = p_token;
-	_instance_binding_count = 1;
 }
 
 void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
@@ -1825,6 +1856,12 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 		binding = p_callbacks->create_callback(p_token, this);
 		_instance_bindings[_instance_binding_count].binding = binding;
 
+#ifdef TOOLS_ENABLED
+		if (!_extension && Engine::get_singleton()->is_extension_reloading_enabled()) {
+			GDExtensionManager::get_singleton()->track_instance_binding(p_token, this);
+		}
+#endif
+
 		_instance_binding_count++;
 	}
 
@@ -1847,6 +1884,71 @@ bool Object::has_instance_binding(void *p_token) {
 
 	return found;
 }
+
+void Object::free_instance_binding(void *p_token) {
+	bool found = false;
+	_instance_binding_mutex.lock();
+	for (uint32_t i = 0; i < _instance_binding_count; i++) {
+		if (!found && _instance_bindings[i].token == p_token) {
+			if (_instance_bindings[i].free_callback) {
+				_instance_bindings[i].free_callback(_instance_bindings[i].token, this, _instance_bindings[i].binding);
+			}
+			found = true;
+		}
+		if (found) {
+			if (i + 1 < _instance_binding_count) {
+				_instance_bindings[i] = _instance_bindings[i + 1];
+			} else {
+				_instance_bindings[i] = { nullptr };
+			}
+		}
+	}
+	if (found) {
+		_instance_binding_count--;
+	}
+	_instance_binding_mutex.unlock();
+}
+
+#ifdef TOOLS_ENABLED
+void Object::clear_internal_extension() {
+	ERR_FAIL_NULL(_extension);
+
+	// Free the instance inside the GDExtension.
+	if (_extension->free_instance) {
+		_extension->free_instance(_extension->class_userdata, _extension_instance);
+	}
+	_extension = nullptr;
+	_extension_instance = nullptr;
+
+	// Clear the instance bindings.
+	_instance_binding_mutex.lock();
+	if (_instance_bindings[0].free_callback) {
+		_instance_bindings[0].free_callback(_instance_bindings[0].token, this, _instance_bindings[0].binding);
+	}
+	_instance_bindings[0].binding = nullptr;
+	_instance_bindings[0].token = nullptr;
+	_instance_bindings[0].free_callback = nullptr;
+	_instance_bindings[0].reference_callback = nullptr;
+	_instance_binding_mutex.unlock();
+
+	// Clear the virtual methods.
+	while (virtual_method_list) {
+		(*virtual_method_list->method) = nullptr;
+		(*virtual_method_list->initialized) = false;
+		virtual_method_list = virtual_method_list->next;
+	}
+}
+
+void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
+	ERR_FAIL_COND(_extension != nullptr);
+
+	if (p_extension) {
+		_extension_instance = p_extension->recreate_instance ? p_extension->recreate_instance(p_extension->class_userdata, (GDExtensionObjectPtr)this) : nullptr;
+		ERR_FAIL_NULL_MSG(_extension_instance, "Unable to recreate GDExtension instance - does this extension support hot reloading?");
+		_extension = p_extension;
+	}
+}
+#endif
 
 void Object::_construct_object(bool p_reference) {
 	type_is_reference = p_reference;
@@ -1878,11 +1980,25 @@ Object::~Object() {
 	}
 	script_instance = nullptr;
 
-	if (_extension && _extension->free_instance) {
-		_extension->free_instance(_extension->class_userdata, _extension_instance);
+	if (_extension) {
+#ifdef TOOLS_ENABLED
+		if (_extension->untrack_instance) {
+			_extension->untrack_instance(_extension->tracking_userdata, this);
+		}
+#endif
+		if (_extension->free_instance) {
+			_extension->free_instance(_extension->class_userdata, _extension_instance);
+		}
 		_extension = nullptr;
 		_extension_instance = nullptr;
 	}
+#ifdef TOOLS_ENABLED
+	else if (_instance_bindings != nullptr && Engine::get_singleton()->is_extension_reloading_enabled()) {
+		for (uint32_t i = 0; i < _instance_binding_count; i++) {
+			GDExtensionManager::get_singleton()->untrack_instance_binding(_instance_bindings[i].token, this);
+		}
+	}
+#endif
 
 	if (_emitting) {
 		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before

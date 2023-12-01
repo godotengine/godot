@@ -1429,6 +1429,17 @@ struct CompletionParams : public TextDocumentPositionParams {
 		TextDocumentPositionParams::load(p_params);
 		context.load(p_params["context"]);
 	}
+
+	Dictionary to_json() {
+		Dictionary ctx;
+		ctx["triggerCharacter"] = context.triggerCharacter;
+		ctx["triggerKind"] = context.triggerKind;
+
+		Dictionary dict;
+		dict = TextDocumentPositionParams::to_json();
+		dict["context"] = ctx;
+		return dict;
+	}
 };
 
 /**

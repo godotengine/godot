@@ -2105,7 +2105,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 
 	VkImageViewUsageCreateInfo usage_info;
 	if (context->is_device_extension_enabled(VK_KHR_MAINTENANCE_2_EXTENSION_NAME)) {
-		// May need to make VK_KHR_maintenance2 manditory and thus has Vulkan 1.1 be our minimum supported version
+		// May need to make VK_KHR_maintenance2 mandatory and thus has Vulkan 1.1 be our minimum supported version
 		// if we require setting this information. Vulkan 1.0 may simply not care..
 
 		usage_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO;
@@ -2167,7 +2167,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	return id;
 }
 
-RID RenderingDeviceVulkan::texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) {
+RID RenderingDeviceVulkan::texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) {
 	_THREAD_SAFE_METHOD_
 	// This method creates a texture object using a VkImage created by an extension, module or other external source (OpenXR uses this).
 	VkImage image = (VkImage)p_image;
@@ -4499,6 +4499,7 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 			if (atf.frequency == VERTEX_FREQUENCY_VERTEX) {
 				// Validate size for regular drawing.
 				uint64_t total_size = uint64_t(atf.stride) * (p_vertex_count - 1) + atf.offset + element_size;
+
 				ERR_FAIL_COND_V_MSG(total_size > buffer->size, RID(),
 						"Attachment (" + itos(i) + ") will read past the end of the buffer.");
 
@@ -4638,8 +4639,9 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 // Version 1: initial.
 // Version 2: Added shader name.
 // Version 3: Added writable.
+// Version 4: 64-bit vertex input mask.
 
-#define SHADER_BINARY_VERSION 3
+#define SHADER_BINARY_VERSION 4
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
 	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);
@@ -4665,7 +4667,7 @@ struct RenderingDeviceVulkanShaderBinarySpecializationConstant {
 };
 
 struct RenderingDeviceVulkanShaderBinaryData {
-	uint32_t vertex_input_mask;
+	uint64_t vertex_input_mask;
 	uint32_t fragment_output_mask;
 	uint32_t specialization_constants_count;
 	uint32_t is_compute;
@@ -4881,7 +4883,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	push_constant.size = binary_data.push_constant_size;
 	push_constant.vk_stages_mask = binary_data.push_constant_vk_stages_mask;
 
-	uint32_t vertex_input_mask = binary_data.vertex_input_mask;
+	uint64_t vertex_input_mask = binary_data.vertex_input_mask;
 
 	uint32_t fragment_output_mask = binary_data.fragment_output_mask;
 
@@ -5054,6 +5056,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	}
 
 	Shader *shader = shader_owner.get_or_null(id);
+	ERR_FAIL_NULL_V(shader, RID());
 
 	shader->vertex_input_mask = vertex_input_mask;
 	shader->fragment_output_mask = fragment_output_mask;
@@ -5208,7 +5211,7 @@ RID RenderingDeviceVulkan::shader_create_placeholder() {
 	return shader_owner.make_rid(shader);
 }
 
-uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
+uint64_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
 	_THREAD_SAFE_METHOD_
 
 	const Shader *shader = shader_owner.get_or_null(p_shader);
@@ -5750,8 +5753,8 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Buffer *buffer = uniform_buffer_owner.get_or_null(uniform.get_id(0));
 				ERR_FAIL_NULL_V_MSG(buffer, RID(), "Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
-				ERR_FAIL_COND_V_MSG(buffer->size != (uint32_t)set_uniform.length, RID(),
-						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
+				ERR_FAIL_COND_V_MSG(buffer->size < (uint32_t)set_uniform.length, RID(),
+						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " is smaller than size of shader uniform: (" + itos(set_uniform.length) + ").");
 
 				write.dstArrayElement = 0;
 				write.descriptorCount = 1;
@@ -6151,8 +6154,8 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		pipeline_vertex_input_state_create_info = vd.create_info;
 
 		// Validate with inputs.
-		for (uint32_t i = 0; i < 32; i++) {
-			if (!(shader->vertex_input_mask & (1UL << i))) {
+		for (uint64_t i = 0; i < 64; i++) {
+			if (!(shader->vertex_input_mask & (1ULL << i))) {
 				continue;
 			}
 			bool found = false;
@@ -9561,6 +9564,14 @@ uint64_t RenderingDeviceVulkan::limit_get(Limit p_limit) const {
 		case LIMIT_SUBGROUP_SIZE: {
 			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
 			return subgroup_capabilities.size;
+		}
+		case LIMIT_SUBGROUP_MIN_SIZE: {
+			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+			return subgroup_capabilities.min_size;
+		}
+		case LIMIT_SUBGROUP_MAX_SIZE: {
+			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+			return subgroup_capabilities.max_size;
 		}
 		case LIMIT_SUBGROUP_IN_SHADERS: {
 			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();

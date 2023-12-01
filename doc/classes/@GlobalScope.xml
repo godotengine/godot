@@ -85,6 +85,14 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="angle_difference">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<description>
+				Returns the difference between the two angles, in the range of [code][-PI, +PI][/code]. When [param from] and [param to] are opposite, returns [code]-PI[/code] if [param from] is smaller than [param to], or [code]PI[/code] otherwise.
+			</description>
+		</method>
 		<method name="asin">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
@@ -112,7 +120,7 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Returns the arc tangent of [param x] in radians. Use it to get the angle from an angle's tangent in trigonometry.
-				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code]x[/code].
+				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code skip-lint]x[/code].
 				[codeblock]
 				var a = atan(0.5) # a is 0.463648
 				[/codeblock]
@@ -188,7 +196,7 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] upward (towards positive infinity), returning the smallest whole number that is not less than [param x]. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] upward (towards positive infinity), returning the smallest whole number that is not less than [param x]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var i = ceil(1.45) # i is 2.0
 				i = ceil(1.001)    # i is 2.0
@@ -330,7 +338,7 @@
 			<param index="7" name="post_t" type="float" />
 			<description>
 				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre] and [param post] values. See also [method lerp_angle].
-				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
 			</description>
 		</method>
 		<method name="cubic_interpolate_in_time">
@@ -413,7 +421,7 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x]. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				var a = floor(2.99) # a is 2.0
 				a = floor(-2.99)    # a is -3.0
@@ -871,10 +879,10 @@
 				URL tags only support URLs wrapped by a URL tag, not URLs with a different title.
 				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Support for ANSI escape codes varies across terminal emulators, especially for italic and strikethrough. In standard output, [code]code[/code] is represented with faint text but without any font change. Unsupported tags are left as-is in standard output.
 				[codeblocks]
-				[gdscript]
+				[gdscript skip-lint]
 				print_rich("[color=green][b]Hello world![/b][/color]") # Prints out "Hello world!" in green with a bold font
 				[/gdscript]
-				[csharp]
+				[csharp skip-lint]
 				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints out "Hello world!" in green with a bold font
 				[/csharp]
 				[/codeblocks]
@@ -1110,11 +1118,22 @@
 				Creates a RID from a [param base]. This is used mainly from native extensions to build servers.
 			</description>
 		</method>
+		<method name="rotate_toward">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="delta" type="float" />
+			<description>
+				Rotates [param from] toward [param to] by the [param delta] amount. Will not go past [param to].
+				Similar to [method move_toward], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
+				If [param delta] is negative, this function will rotate away from [param to], toward the opposite angle, and will not go past the opposite angle.
+			</description>
+		</method>
 		<method name="round">
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0. Supported types: [int], [float], [Vector2], [Vector3], [Vector4].
+				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				round(2.4) # Returns 2
 				round(2.5) # Returns 3
@@ -1373,7 +1392,7 @@
 			<param index="1" name="type" type="int" />
 			<description>
 				Converts the given [param variant] to the given [param type], using the [enum Variant.Type] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
-				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [code]Vector2.ZERO[/code]. This method will never show error messages as long as [param type] is a valid Variant type.
+				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [constant Vector2.ZERO]. This method will never show error messages as long as [param type] is a valid Variant type.
 				The returned value is a [Variant], but the data inside and the [enum Variant.Type] will be the same as the requested type.
 				[codeblock]
 				type_convert("Hi!", TYPE_INT) # Returns 0
@@ -1382,6 +1401,19 @@
 				type_convert(5, TYPE_VECTOR2) # Returns (0, 0)
 				type_convert("Hi!", TYPE_NIL) # Returns null
 				[/codeblock]
+			</description>
+		</method>
+		<method name="type_string">
+			<return type="String" />
+			<param index="0" name="type" type="int" />
+			<description>
+				Returns a human-readable name of the given [param type], using the [enum Variant.Type] values.
+				[codeblock]
+				print(TYPE_INT) # Prints 2.
+				print(type_string(TYPE_INT)) # Prints "int".
+				print(type_string(TYPE_STRING)) # Prints "String".
+				[/codeblock]
+				See also [method typeof].
 			</description>
 		</method>
 		<method name="typeof">
@@ -1398,6 +1430,7 @@
 				else:
 				    print("Unexpected result")
 				[/codeblock]
+				See also [method type_string].
 			</description>
 		</method>
 		<method name="var_to_bytes">
@@ -1444,7 +1477,7 @@
 			<return type="Variant" />
 			<param index="0" name="obj" type="Variant" />
 			<description>
-				Returns a weak reference to an object, or [code]null[/code] if [param obj] is invalid.
+				Returns a [WeakRef] instance holding a weak reference to [param obj]. Returns an empty [WeakRef] instance if [param obj] is [code]null[/code]. Prints an error and returns [code]null[/code] if [param obj] is neither [Object]-derived nor [code]null[/code].
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
@@ -1488,7 +1521,7 @@
 				angle = wrapf(angle + 0.1, -PI, PI)
 				[/codeblock]
 				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
-				[code]wrapf[/code] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
+				[method wrapf] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
 			</description>
 		</method>
 		<method name="wrapi">
@@ -2416,7 +2449,7 @@
 			Game controller SDL guide button. Corresponds to the Sony PS, Xbox Home button.
 		</constant>
 		<constant name="JOY_BUTTON_START" value="6" enum="JoyButton">
-			Game controller SDL start button. Corresponds to the Nintendo + button.
+			Game controller SDL start button. Corresponds to the Sony Options, Xbox Menu, Nintendo + button.
 		</constant>
 		<constant name="JOY_BUTTON_LEFT_STICK" value="7" enum="JoyButton">
 			Game controller SDL left stick button. Corresponds to the Sony L3, Xbox L/LS button.
@@ -2719,7 +2752,7 @@
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
 			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
 			[b]Example:[/b] [code]"-360,360,1,or_greater,or_less"[/code].
-			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians"[/code] for editing radian angles in degrees, [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
+			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians_as_degrees"[/code] for editing radian angles in degrees (the range values are also in degrees), [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
 			Hints that an [int] or [String] property is an enumerated value to pick in a list specified via a hint string.
@@ -2790,6 +2823,7 @@
 			Hints that a [Color] property should be edited without affecting its transparency ([member Color.a] is not editable).
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_ID" value="22" enum="PropertyHint">
+			Hints that the property's value is an object encoded as object ID, with its type specified in the hint string. Used by the debugger.
 		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
 			If a property is [String], hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
@@ -2848,21 +2882,30 @@
 			[/codeblocks]
 			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint" is_deprecated="true">
+			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
+			Hints that an object is too big to be sent via the debugger.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="26" enum="PropertyHint">
+			Hints that the hint string specifies valid node types for property of type [NodePath].
 		</constant>
 		<constant name="PROPERTY_HINT_SAVE_FILE" value="27" enum="PropertyHint">
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the project's directory. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the entire filesystem. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint" is_deprecated="true">
+			Hints that an [int] property is an object ID.
+			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="30" enum="PropertyHint">
+			Hints that an [int] property is a pointer. Used by GDExtension.
 		</constant>
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
+			Hints that a property is an [Array] with the stored type specified in the hint string.
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
@@ -2871,6 +2914,7 @@
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_TYPE" value="34" enum="PropertyHint">
+			Hints that a property is an instance of a [Node]-derived type, optionally specified via the hint string (e.g. [code]"Node2D"[/code]). Editing it will show a dialog for picking a node from the scene.
 		</constant>
 		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="35" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
@@ -2909,6 +2953,7 @@
 			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is a bitfield, i.e. it contains multiple flags represented as bits.
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags" is_bitfield="true">
 			The property does not save its state in [PackedScene].
@@ -2920,14 +2965,20 @@
 			The property is a script variable which should be serialized and saved in the scene file.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
+			The property value of type [Object] will be stored even if its value is [code]null[/code].
 		</constant>
 		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags" is_bitfield="true">
+			If this property is modified, all inspector fields will be refreshed.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" is_deprecated="true">
+			Signifies a default value from a placeholder script instance.
+			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is an enum, i.e. it only takes named integer constants from its associated enumeration.
 		</constant>
 		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags" is_bitfield="true">
+			If property has [code]nil[/code] as default value, its type will be [Variant].
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is an array.
@@ -2942,16 +2993,23 @@
 			The property is only shown in the editor if modern renderers are supported (the Compatibility rendering method is excluded).
 		</constant>
 		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags" is_bitfield="true">
+			The [NodePath] property will always be relative to the scene's root. Mostly useful for local resources.
 		</constant>
 		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags" is_bitfield="true">
+			Use when a resource is created on the fly, i.e. the getter will always return a different instance. [ResourceSaver] needs this information to properly save such resources.
 		</constant>
 		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags" is_bitfield="true">
+			Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true" is_deprecated="true">
+			When loading, the resource for this property can be set at the end of loading.
+			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags" is_bitfield="true">
+			When this property is a [Resource] and base object is a [Node], a resource instance will be automatically created whenever the node is created in the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is considered a basic setting and will appear even when advanced mode is disabled. Used for project settings.
 		</constant>
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].

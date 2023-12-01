@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "graph_edit.h"
+#include "graph_edit.compat.inc"
 
 #include "core/input/input.h"
 #include "core/math/math_funcs.h"
@@ -36,6 +37,10 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit_arranger.h"
+#include "scene/gui/label.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
@@ -507,11 +512,13 @@ void GraphEdit::_notification(int p_what) {
 			zoom_plus_button->set_icon(theme_cache.zoom_in);
 
 			toggle_snapping_button->set_icon(theme_cache.snapping_toggle);
-			show_grid_button->set_icon(theme_cache.grid_toggle);
+			toggle_grid_button->set_icon(theme_cache.grid_toggle);
 			minimap_button->set_icon(theme_cache.minimap_toggle);
-			layout_button->set_icon(theme_cache.layout);
+			arrange_button->set_icon(theme_cache.layout);
 
 			zoom_label->set_custom_minimum_size(Size2(48, 0) * theme_cache.base_scale);
+
+			menu_panel->add_theme_style_override("panel", theme_cache.menu_panel);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -591,7 +598,7 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 			// Determine slot height.
 			int slot_index = graph_node->get_input_port_slot(j);
-			Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+			Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 
 			port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
@@ -605,7 +612,7 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 			// Determine slot height.
 			int slot_index = graph_node->get_output_port_slot(j);
-			Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+			Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 			port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 			if (is_in_output_hotzone(graph_node, j, p_point / zoom, port_size)) {
@@ -636,7 +643,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 				// Determine slot height.
 				int slot_index = graph_node->get_output_port_slot(j);
-				Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+				Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 				port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 				if (is_in_output_hotzone(graph_node, j, click_pos, port_size)) {
@@ -693,7 +700,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 				// Determine slot height.
 				int slot_index = graph_node->get_input_port_slot(j);
-				Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+				Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 				port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 				if (is_in_input_hotzone(graph_node, j, click_pos, port_size)) {
@@ -770,7 +777,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						// Determine slot height.
 						int slot_index = graph_node->get_output_port_slot(j);
-						Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+						Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 						port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 						int type = graph_node->get_output_port_type(j);
@@ -794,7 +801,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						// Determine slot height.
 						int slot_index = graph_node->get_input_port_slot(j);
-						Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index));
+						Control *child = Object::cast_to<Control>(graph_node->get_child(slot_index, false));
 						port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 						int type = graph_node->get_input_port_type(j);
@@ -1384,7 +1391,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				}
 			}
 
-			emit_signal(SNAME("close_nodes_request"), nodes);
+			emit_signal(SNAME("delete_nodes_request"), nodes);
 			accept_event();
 		}
 	}
@@ -1402,7 +1409,7 @@ void GraphEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputE
 void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity) {
 	for (Connection &E : connections) {
 		if (E.from_node == p_from && E.from_port == p_from_port && E.to_node == p_to && E.to_port == p_to_port) {
-			if (Math::is_equal_approx(E.activity, p_activity)) {
+			if (!Math::is_equal_approx(E.activity, p_activity)) {
 				// Update only if changed.
 				top_layer->queue_redraw();
 				minimap->queue_redraw();
@@ -1528,18 +1535,6 @@ float GraphEdit::get_zoom_max() const {
 	return zoom_max;
 }
 
-void GraphEdit::set_show_zoom_label(bool p_enable) {
-	if (zoom_label->is_visible() == p_enable) {
-		return;
-	}
-
-	zoom_label->set_visible(p_enable);
-}
-
-bool GraphEdit::is_showing_zoom_label() const {
-	return zoom_label->is_visible();
-}
-
 void GraphEdit::set_right_disconnects(bool p_enable) {
 	right_disconnects = p_enable;
 }
@@ -1644,7 +1639,7 @@ void GraphEdit::set_show_grid(bool p_show) {
 	}
 
 	show_grid = p_show;
-	show_grid_button->set_pressed(p_show);
+	toggle_grid_button->set_pressed(p_show);
 	queue_redraw();
 }
 
@@ -1662,7 +1657,7 @@ void GraphEdit::_snapping_distance_changed(double) {
 }
 
 void GraphEdit::_show_grid_toggled() {
-	show_grid = show_grid_button->is_pressed();
+	show_grid = toggle_grid_button->is_pressed();
 	queue_redraw();
 }
 
@@ -1708,17 +1703,64 @@ bool GraphEdit::is_minimap_enabled() const {
 	return minimap_button->is_pressed();
 }
 
-void GraphEdit::set_arrange_nodes_button_hidden(bool p_enable) {
-	arrange_nodes_button_hidden = p_enable;
-	if (arrange_nodes_button_hidden) {
-		layout_button->hide();
-	} else {
-		layout_button->show();
-	}
+void GraphEdit::set_show_menu(bool p_hidden) {
+	show_menu = p_hidden;
+	menu_panel->set_visible(show_menu);
 }
 
-bool GraphEdit::is_arrange_nodes_button_hidden() const {
-	return arrange_nodes_button_hidden;
+bool GraphEdit::is_showing_menu() const {
+	return show_menu;
+}
+
+void GraphEdit::set_show_zoom_label(bool p_hidden) {
+	show_zoom_label = p_hidden;
+	zoom_label->set_visible(show_zoom_label);
+}
+
+bool GraphEdit::is_showing_zoom_label() const {
+	return show_zoom_label;
+}
+
+void GraphEdit::set_show_zoom_buttons(bool p_hidden) {
+	show_zoom_buttons = p_hidden;
+
+	zoom_minus_button->set_visible(show_zoom_buttons);
+	zoom_reset_button->set_visible(show_zoom_buttons);
+	zoom_plus_button->set_visible(show_zoom_buttons);
+}
+
+bool GraphEdit::is_showing_zoom_buttons() const {
+	return show_zoom_buttons;
+}
+
+void GraphEdit::set_show_grid_buttons(bool p_hidden) {
+	show_grid_buttons = p_hidden;
+
+	toggle_grid_button->set_visible(show_grid_buttons);
+	toggle_snapping_button->set_visible(show_grid_buttons);
+	snapping_distance_spinbox->set_visible(show_grid_buttons);
+}
+
+bool GraphEdit::is_showing_grid_buttons() const {
+	return show_grid_buttons;
+}
+
+void GraphEdit::set_show_minimap_button(bool p_hidden) {
+	show_minimap_button = p_hidden;
+	minimap_button->set_visible(show_minimap_button);
+}
+
+bool GraphEdit::is_showing_minimap_button() const {
+	return show_minimap_button;
+}
+
+void GraphEdit::set_show_arrange_button(bool p_hidden) {
+	show_arrange_button = p_hidden;
+	arrange_button->set_visible(show_arrange_button);
+}
+
+bool GraphEdit::is_showing_arrange_button() const {
+	return show_arrange_button;
 }
 
 void GraphEdit::_minimap_toggled() {
@@ -1814,9 +1856,6 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_zoom_step", "zoom_step"), &GraphEdit::set_zoom_step);
 	ClassDB::bind_method(D_METHOD("get_zoom_step"), &GraphEdit::get_zoom_step);
 
-	ClassDB::bind_method(D_METHOD("set_show_zoom_label", "enable"), &GraphEdit::set_show_zoom_label);
-	ClassDB::bind_method(D_METHOD("is_showing_zoom_label"), &GraphEdit::is_showing_zoom_label);
-
 	ClassDB::bind_method(D_METHOD("set_show_grid", "enable"), &GraphEdit::set_show_grid);
 	ClassDB::bind_method(D_METHOD("is_showing_grid"), &GraphEdit::is_showing_grid);
 
@@ -1843,8 +1882,23 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minimap_enabled", "enable"), &GraphEdit::set_minimap_enabled);
 	ClassDB::bind_method(D_METHOD("is_minimap_enabled"), &GraphEdit::is_minimap_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_arrange_nodes_button_hidden", "enable"), &GraphEdit::set_arrange_nodes_button_hidden);
-	ClassDB::bind_method(D_METHOD("is_arrange_nodes_button_hidden"), &GraphEdit::is_arrange_nodes_button_hidden);
+	ClassDB::bind_method(D_METHOD("set_show_menu", "hidden"), &GraphEdit::set_show_menu);
+	ClassDB::bind_method(D_METHOD("is_showing_menu"), &GraphEdit::is_showing_menu);
+
+	ClassDB::bind_method(D_METHOD("set_show_zoom_label", "enable"), &GraphEdit::set_show_zoom_label);
+	ClassDB::bind_method(D_METHOD("is_showing_zoom_label"), &GraphEdit::is_showing_zoom_label);
+
+	ClassDB::bind_method(D_METHOD("set_show_grid_buttons", "hidden"), &GraphEdit::set_show_grid_buttons);
+	ClassDB::bind_method(D_METHOD("is_showing_grid_buttons"), &GraphEdit::is_showing_grid_buttons);
+
+	ClassDB::bind_method(D_METHOD("set_show_zoom_buttons", "hidden"), &GraphEdit::set_show_zoom_buttons);
+	ClassDB::bind_method(D_METHOD("is_showing_zoom_buttons"), &GraphEdit::is_showing_zoom_buttons);
+
+	ClassDB::bind_method(D_METHOD("set_show_minimap_button", "hidden"), &GraphEdit::set_show_minimap_button);
+	ClassDB::bind_method(D_METHOD("is_showing_minimap_button"), &GraphEdit::is_showing_minimap_button);
+
+	ClassDB::bind_method(D_METHOD("set_show_arrange_button", "hidden"), &GraphEdit::set_show_arrange_button);
+	ClassDB::bind_method(D_METHOD("is_showing_arrange_button"), &GraphEdit::is_showing_arrange_button);
 
 	ClassDB::bind_method(D_METHOD("set_right_disconnects", "enable"), &GraphEdit::set_right_disconnects);
 	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"), &GraphEdit::is_right_disconnects_enabled);
@@ -1861,12 +1915,12 @@ void GraphEdit::_bind_methods() {
 	GDVIRTUAL_BIND(_get_connection_line, "from_position", "to_position")
 	GDVIRTUAL_BIND(_is_node_hover_valid, "from_node", "from_port", "to_node", "to_port");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_scroll_offset", "get_scroll_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_grid"), "set_show_grid", "is_showing_grid");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snapping_enabled"), "set_snapping_enabled", "is_snapping_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "snapping_distance", PROPERTY_HINT_NONE, "suffix:px"), "set_snapping_distance", "get_snapping_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 
 	ADD_GROUP("Connection Lines", "connection_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_curvature"), "set_connection_lines_curvature", "get_connection_lines_curvature");
@@ -1878,32 +1932,40 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_min"), "set_zoom_min", "get_zoom_min");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_max"), "set_zoom_max", "get_zoom_max");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_step"), "set_zoom_step", "get_zoom_step");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_zoom_label"), "set_show_zoom_label", "is_showing_zoom_label");
 
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
 
-	ADD_GROUP("UI", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arrange_nodes_button_hidden"), "set_arrange_nodes_button_hidden", "is_arrange_nodes_button_hidden");
+	ADD_GROUP("Toolbar Menu", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_menu"), "set_show_menu", "is_showing_menu");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_zoom_label"), "set_show_zoom_label", "is_showing_zoom_label");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_zoom_buttons"), "set_show_zoom_buttons", "is_showing_zoom_buttons");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_grid_buttons"), "set_show_grid_buttons", "is_showing_grid_buttons");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_minimap_button"), "set_show_minimap_button", "is_showing_minimap_button");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_arrange_button"), "set_show_arrange_button", "is_showing_arrange_button");
 
 	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::STRING_NAME, "to_node"), PropertyInfo(Variant::INT, "to_port")));
 	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::STRING_NAME, "to_node"), PropertyInfo(Variant::INT, "to_port")));
-	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "position")));
-	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
-	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
-	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
-	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING_NAME, "to_node"), PropertyInfo(Variant::INT, "to_port"), PropertyInfo(Variant::VECTOR2, "release_position")));
-	ADD_SIGNAL(MethodInfo("close_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
+
+	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
+	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
+	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
+	ADD_SIGNAL(MethodInfo("delete_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
+
+	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+
+	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "position")));
+
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "offset")));
-	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::BOOL, "is_output")));
-	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);
 	BIND_ENUM_CONSTANT(SCROLL_PANS);
@@ -1915,6 +1977,8 @@ void GraphEdit::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, GraphEdit, activity_color, "activity");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, selection_fill);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, selection_stroke);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphEdit, menu_panel);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, zoom_in);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, zoom_out);
@@ -1951,7 +2015,7 @@ GraphEdit::GraphEdit() {
 	top_layer->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	connections_layer = memnew(Control);
-	add_child(connections_layer, false);
+	add_child(connections_layer, false, INTERNAL_MODE_FRONT);
 	connections_layer->connect("draw", callable_mp(this, &GraphEdit::_connections_layer_draw));
 	connections_layer->set_name("_connection_layer");
 	connections_layer->set_disable_visibility_clip(true); // Necessary, so it can draw freely and be offset.
@@ -1975,84 +2039,106 @@ GraphEdit::GraphEdit() {
 	h_scrollbar->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
 	v_scrollbar->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
 
+	// Toolbar menu.
+
+	menu_panel = memnew(PanelContainer);
+	menu_panel->set_visible(show_menu);
+	top_layer->add_child(menu_panel);
+	menu_panel->set_position(Vector2(10, 10));
+
 	menu_hbox = memnew(HBoxContainer);
-	top_layer->add_child(menu_hbox);
-	menu_hbox->set_position(Vector2(10, 10));
+	menu_panel->add_child(menu_hbox);
+
+	// Zoom label and controls.
 
 	zoom_label = memnew(Label);
-	menu_hbox->add_child(zoom_label);
-	zoom_label->set_visible(false);
+	zoom_label->set_visible(show_zoom_label);
 	zoom_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	zoom_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	zoom_label->set_custom_minimum_size(Size2(48, 0));
+	menu_hbox->add_child(zoom_label);
 	_update_zoom_label();
 
 	zoom_minus_button = memnew(Button);
-	zoom_minus_button->set_flat(true);
-	menu_hbox->add_child(zoom_minus_button);
+	zoom_minus_button->set_theme_type_variation("FlatButton");
+	zoom_minus_button->set_visible(show_zoom_buttons);
 	zoom_minus_button->set_tooltip_text(RTR("Zoom Out"));
-	zoom_minus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_minus));
 	zoom_minus_button->set_focus_mode(FOCUS_NONE);
+	menu_hbox->add_child(zoom_minus_button);
+	zoom_minus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_minus));
 
 	zoom_reset_button = memnew(Button);
-	zoom_reset_button->set_flat(true);
-	menu_hbox->add_child(zoom_reset_button);
+	zoom_reset_button->set_theme_type_variation("FlatButton");
+	zoom_reset_button->set_visible(show_zoom_buttons);
 	zoom_reset_button->set_tooltip_text(RTR("Zoom Reset"));
-	zoom_reset_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_reset));
 	zoom_reset_button->set_focus_mode(FOCUS_NONE);
+	menu_hbox->add_child(zoom_reset_button);
+	zoom_reset_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_reset));
 
 	zoom_plus_button = memnew(Button);
-	zoom_plus_button->set_flat(true);
-	menu_hbox->add_child(zoom_plus_button);
+	zoom_plus_button->set_theme_type_variation("FlatButton");
+	zoom_plus_button->set_visible(show_zoom_buttons);
 	zoom_plus_button->set_tooltip_text(RTR("Zoom In"));
-	zoom_plus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_plus));
 	zoom_plus_button->set_focus_mode(FOCUS_NONE);
+	menu_hbox->add_child(zoom_plus_button);
+	zoom_plus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_plus));
 
-	show_grid_button = memnew(Button);
-	show_grid_button->set_flat(true);
-	show_grid_button->set_toggle_mode(true);
-	show_grid_button->set_tooltip_text(RTR("Toggle the visual grid."));
-	show_grid_button->connect("pressed", callable_mp(this, &GraphEdit::_show_grid_toggled));
-	show_grid_button->set_pressed(true);
-	show_grid_button->set_focus_mode(FOCUS_NONE);
-	menu_hbox->add_child(show_grid_button);
+	// Grid controls.
+
+	toggle_grid_button = memnew(Button);
+	toggle_grid_button->set_theme_type_variation("FlatButton");
+	toggle_grid_button->set_visible(show_grid_buttons);
+	toggle_grid_button->set_toggle_mode(true);
+	toggle_grid_button->set_pressed(true);
+	toggle_grid_button->set_tooltip_text(RTR("Toggle the visual grid."));
+	toggle_grid_button->set_focus_mode(FOCUS_NONE);
+	menu_hbox->add_child(toggle_grid_button);
+	toggle_grid_button->connect("pressed", callable_mp(this, &GraphEdit::_show_grid_toggled));
 
 	toggle_snapping_button = memnew(Button);
-	toggle_snapping_button->set_flat(true);
+	toggle_snapping_button->set_theme_type_variation("FlatButton");
+	toggle_snapping_button->set_visible(show_grid_buttons);
 	toggle_snapping_button->set_toggle_mode(true);
 	toggle_snapping_button->set_tooltip_text(RTR("Toggle snapping to the grid."));
-	toggle_snapping_button->connect("pressed", callable_mp(this, &GraphEdit::_snapping_toggled));
 	toggle_snapping_button->set_pressed(snapping_enabled);
 	toggle_snapping_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(toggle_snapping_button);
+	toggle_snapping_button->connect("pressed", callable_mp(this, &GraphEdit::_snapping_toggled));
 
 	snapping_distance_spinbox = memnew(SpinBox);
+	snapping_distance_spinbox->set_visible(show_grid_buttons);
 	snapping_distance_spinbox->set_min(GRID_MIN_SNAPPING_DISTANCE);
 	snapping_distance_spinbox->set_max(GRID_MAX_SNAPPING_DISTANCE);
 	snapping_distance_spinbox->set_step(1);
 	snapping_distance_spinbox->set_value(snapping_distance);
 	snapping_distance_spinbox->set_tooltip_text(RTR("Change the snapping distance."));
-	snapping_distance_spinbox->connect("value_changed", callable_mp(this, &GraphEdit::_snapping_distance_changed));
 	menu_hbox->add_child(snapping_distance_spinbox);
+	snapping_distance_spinbox->connect("value_changed", callable_mp(this, &GraphEdit::_snapping_distance_changed));
+
+	// Extra controls.
 
 	minimap_button = memnew(Button);
-	minimap_button->set_flat(true);
+	minimap_button->set_theme_type_variation("FlatButton");
+	minimap_button->set_visible(show_minimap_button);
 	minimap_button->set_toggle_mode(true);
 	minimap_button->set_tooltip_text(RTR("Toggle the graph minimap."));
-	minimap_button->connect("pressed", callable_mp(this, &GraphEdit::_minimap_toggled));
 	minimap_button->set_pressed(show_grid);
 	minimap_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(minimap_button);
+	minimap_button->connect("pressed", callable_mp(this, &GraphEdit::_minimap_toggled));
 
-	layout_button = memnew(Button);
-	layout_button->set_flat(true);
-	menu_hbox->add_child(layout_button);
-	layout_button->set_tooltip_text(RTR("Automatically arrange selected nodes."));
-	layout_button->connect("pressed", callable_mp(this, &GraphEdit::arrange_nodes));
-	layout_button->set_focus_mode(FOCUS_NONE);
+	arrange_button = memnew(Button);
+	arrange_button->set_theme_type_variation("FlatButton");
+	arrange_button->set_visible(show_arrange_button);
+	arrange_button->connect("pressed", callable_mp(this, &GraphEdit::arrange_nodes));
+	arrange_button->set_focus_mode(FOCUS_NONE);
+	menu_hbox->add_child(arrange_button);
+	arrange_button->set_tooltip_text(RTR("Automatically arrange selected nodes."));
 
-	Vector2 minimap_size = Vector2(240, 160);
-	float minimap_opacity = 0.65;
+	// Minimap.
+
+	const Vector2 minimap_size = Vector2(240, 160);
+	const float minimap_opacity = 0.65;
 
 	minimap = memnew(GraphEditMinimap(this));
 	top_layer->add_child(minimap);

@@ -163,7 +163,7 @@ struct PairPosFormat2_4
 
 
     /* Isolate simple kerning and apply it half to each side.
-     * Results in better cursor positinoing / underline drawing.
+     * Results in better cursor positioning / underline drawing.
      *
      * Disabled, because causes issues... :-(
      * https://github.com/harfbuzz/harfbuzz/issues/3408

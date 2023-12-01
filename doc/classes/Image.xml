@@ -5,11 +5,12 @@
 	</brief_description>
 	<description>
 		Native image datatype. Contains image data which can be converted to an [ImageTexture] and provides commonly used [i]image processing[/i] methods. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
-		An [Image] cannot be assigned to a [code]texture[/code] property of an object directly (such as [Sprite2D]), and has to be converted manually to an [ImageTexture] first.
+		An [Image] cannot be assigned to a texture property of an object directly (such as [member Sprite2D.texture]), and has to be converted manually to an [ImageTexture] first.
 		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images may fail to import.
 	</description>
 	<tutorials>
 		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
 		<method name="adjust_bcs">
@@ -201,8 +202,8 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="renormalize" type="bool" default="false" />
 			<description>
-				Generates mipmaps for the image. Mipmaps are precalculated lower-resolution copies of the image that are automatically used if the image needs to be scaled down when rendered. They help improve image quality and performance when rendering. This method returns an error if the image is compressed, in a custom format, or if the image's width/height is [code]0[/code]. Enabling [param renormalize] when generating mipmaps for normal textures will make sure all resulting vector values are normalized.
-				It is possible to check if the image has mipmaps by calling [method has_mipmaps] or [method get_mipmap_count].
+				Generates mipmaps for the image. Mipmaps are precalculated lower-resolution copies of the image that are automatically used if the image needs to be scaled down when rendered. They help improve image quality and performance when rendering. This method returns an error if the image is compressed, in a custom format, or if the image's width/height is [code]0[/code]. Enabling [param renormalize] when generating mipmaps for normal map textures will make sure all resulting vector values are normalized.
+				It is possible to check if the image has mipmaps by calling [method has_mipmaps] or [method get_mipmap_count]. Calling [method generate_mipmaps] on an image that already has mipmaps will replace existing mipmaps in the image.
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
@@ -233,7 +234,7 @@
 			<return type="int" />
 			<param index="0" name="mipmap" type="int" />
 			<description>
-				Returns the offset where the image's mipmap with index [param mipmap] is stored in the [code]data[/code] dictionary.
+				Returns the offset where the image's mipmap with index [param mipmap] is stored in the [member data] dictionary.
 			</description>
 		</method>
 		<method name="get_pixel" qualifiers="const">
@@ -317,6 +318,7 @@
 			<description>
 				Loads an image from the binary contents of a BMP file.
 				[b]Note:[/b] Godot's BMP module doesn't support 16-bit per pixel images. Only 1-bit, 4-bit, 8-bit, 24-bit, and 32-bit per pixel images are supported.
+				[b]Note:[/b] This method is only available in engine builds with the BMP module enabled. By default, the BMP module is enabled, but it can be disabled at build-time using the [code]module_bmp_enabled=no[/code] SCons option.
 			</description>
 		</method>
 		<method name="load_from_file" qualifiers="static">
@@ -337,7 +339,9 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />
 			<description>
-				Loads an image from the binary contents of a KTX file.
+				Loads an image from the binary contents of a [url=https://github.com/KhronosGroup/KTX-Software]KTX[/url] file. Unlike most image formats, KTX can store VRAM-compressed data and embed mipmaps.
+				[b]Note:[/b] Godot's libktx implementation only supports 2D images. Cubemaps, texture arrays, and de-padding are not supported.
+				[b]Note:[/b] This method is only available in engine builds with the KTX module enabled. By default, the KTX module is enabled, but it can be disabled at build-time using the [code]module_ktx_enabled=no[/code] SCons option.
 			</description>
 		</method>
 		<method name="load_png_from_buffer">
@@ -371,6 +375,7 @@
 			<param index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Loads an image from the binary contents of a TGA file.
+				[b]Note:[/b] This method is only available in engine builds with the TGA module enabled. By default, the TGA module is enabled, but it can be disabled at build-time using the [code]module_tga_enabled=no[/code] SCons option.
 			</description>
 		</method>
 		<method name="load_webp_from_buffer">
@@ -389,7 +394,7 @@
 		<method name="premultiply_alpha">
 			<return type="void" />
 			<description>
-				Multiplies color values with alpha values. Resulting color values for a pixel are [code](color * alpha)/256[/code].
+				Multiplies color values with alpha values. Resulting color values for a pixel are [code](color * alpha)/256[/code]. See also [member CanvasItemMaterial.blend_mode].
 			</description>
 		</method>
 		<method name="resize">
@@ -481,7 +486,8 @@
 			<param index="1" name="lossy" type="bool" default="false" />
 			<param index="2" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive).
+				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>
 		<method name="save_webp_to_buffer" qualifiers="const">
@@ -489,7 +495,8 @@
 			<param index="0" name="lossy" type="bool" default="false" />
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive).
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>
 		<method name="set_data">
@@ -559,7 +566,7 @@
 		<method name="shrink_x2">
 			<return type="void" />
 			<description>
-				Shrinks the image by a factor of 2.
+				Shrinks the image by a factor of 2 on each axis (this divides the pixel count by 4).
 			</description>
 		</method>
 		<method name="srgb_to_linear">
@@ -619,16 +626,16 @@
 			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 32-bit floating-point values.
 		</constant>
 		<constant name="FORMAT_RH" value="12" enum="Format">
-			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_R16F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGH" value="13" enum="Format">
-			OpenGL texture format [code]GL_RG32F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RG16F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBH" value="14" enum="Format">
-			OpenGL texture format [code]GL_RGB32F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RGB16F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBAH" value="15" enum="Format">
-			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RGBA16F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBE9995" value="16" enum="Format">
 			A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single 5-bit exponent.

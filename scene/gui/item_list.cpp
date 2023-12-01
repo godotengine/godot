@@ -1082,14 +1082,16 @@ void ItemList::_notification(int p_what) {
 				first_visible_separator = lo;
 			}
 
-			// Draw visible separators.
-			for (int i = first_visible_separator; i < separators.size(); i++) {
-				if (separators[i] > clip.position.y + clip.size.y) {
-					break; // done
-				}
+			// If not in thumbnails mode, draw visible separators.
+			if (icon_mode != ICON_MODE_TOP) {
+				for (int i = first_visible_separator; i < separators.size(); i++) {
+					if (separators[i] > clip.position.y + clip.size.y) {
+						break; // done
+					}
 
-				const int y = base_ofs.y + separators[i];
-				draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+					const int y = base_ofs.y + separators[i];
+					draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+				}
 			}
 
 			// Do a binary search to find the first item whose rect reaches below clip.position.y.
@@ -1429,11 +1431,11 @@ void ItemList::force_update_list_size() {
 			}
 		}
 
-		for (int j = items.size() - 1; j >= 0 && col > 0; j--, col--) {
-			items.write[j].rect_cache.size.y = max_h;
-		}
-
 		if (all_fit) {
+			for (int j = items.size() - 1; j >= 0 && col > 0; j--, col--) {
+				items.write[j].rect_cache.size.y = max_h;
+			}
+
 			float page = MAX(0, size.height - theme_cache.panel_style->get_minimum_size().height);
 			float max = MAX(page, ofs.y + max_h);
 			if (auto_height) {

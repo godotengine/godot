@@ -16,6 +16,13 @@
 		<link title="Using NavigationRegions">$DOCS_URL/tutorials/navigation/navigation_using_navigationregions.html</link>
 	</tutorials>
 	<methods>
+		<method name="bake_navigation_polygon">
+			<return type="void" />
+			<param index="0" name="on_thread" type="bool" default="true" />
+			<description>
+				Bakes the [NavigationPolygon]. If [param on_thread] is set to [code]true[/code] (default), the baking is done on a separate thread.
+			</description>
+		</method>
 		<method name="get_avoidance_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -78,7 +85,7 @@
 			Determines if the [NavigationRegion2D] is enabled or disabled.
 		</member>
 		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
-			When pathfinding enters this region's navigation mesh from another regions navigation mesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
+			When pathfinding enters this region's navigation mesh from another regions navigation mesh the [member enter_cost] value is added to the path distance for determining the shortest path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining all navigation layers the region belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer2D.map_get_path].
@@ -87,10 +94,22 @@
 			The [NavigationPolygon] resource to use.
 		</member>
 		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0">
-			When pathfinding moves inside this region's navigation mesh the traveled distances are multiplied with [code]travel_cost[/code] for determining the shortest path.
+			When pathfinding moves inside this region's navigation mesh the traveled distances are multiplied with [member travel_cost] for determining the shortest path.
 		</member>
 		<member name="use_edge_connections" type="bool" setter="set_use_edge_connections" getter="get_use_edge_connections" default="true">
 			If enabled the navigation region will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 		</member>
 	</members>
+	<signals>
+		<signal name="bake_finished">
+			<description>
+				Emitted when a navigation polygon bake operation is completed.
+			</description>
+		</signal>
+		<signal name="navigation_polygon_changed">
+			<description>
+				Emitted when the used navigation polygon is replaced or changes to the internals of the current navigation polygon are committed.
+			</description>
+		</signal>
+	</signals>
 </class>

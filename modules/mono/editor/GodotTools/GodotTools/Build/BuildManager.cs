@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
@@ -40,9 +41,6 @@ namespace GodotTools.Build
             plugin.MakeBottomPanelItemVisible(plugin.MSBuildPanel);
         }
 
-        public static void RestartBuild(BuildOutputView buildOutputView) => throw new NotImplementedException();
-        public static void StopBuild(BuildOutputView buildOutputView) => throw new NotImplementedException();
-
         private static string GetLogFilePath(BuildInfo buildInfo)
         {
             return Path.Combine(buildInfo.LogsDirPath, MsBuildLogFileName);
@@ -70,7 +68,7 @@ namespace GodotTools.Build
             {
                 BuildStarted?.Invoke(buildInfo);
 
-                // Required in order to update the build tasks list
+                // Required in order to update the build tasks list.
                 Internal.GodotMainIteration();
 
                 try
@@ -165,7 +163,7 @@ namespace GodotTools.Build
             {
                 BuildStarted?.Invoke(buildInfo);
 
-                // Required in order to update the build tasks list
+                // Required in order to update the build tasks list.
                 Internal.GodotMainIteration();
 
                 try
@@ -209,17 +207,19 @@ namespace GodotTools.Build
             if (!File.Exists(buildInfo.Project))
                 return true; // No project to build.
 
-            using var pr = new EditorProgress("dotnet_build_project", "Building .NET project...", 1);
-
-            pr.Step("Building project", 0);
-
-            if (!Build(buildInfo))
+            bool success;
+            using (var pr = new EditorProgress("dotnet_build_project", "Building .NET project...", 1))
             {
-                ShowBuildErrorDialog("Failed to build project");
-                return false;
+                pr.Step("Building project", 0);
+                success = Build(buildInfo);
             }
 
-            return true;
+            if (!success)
+            {
+                ShowBuildErrorDialog("Failed to build project");
+            }
+
+            return success;
         }
 
         private static bool CleanProjectBlocking(BuildInfo buildInfo)
@@ -227,32 +227,36 @@ namespace GodotTools.Build
             if (!File.Exists(buildInfo.Project))
                 return true; // No project to clean.
 
-            using var pr = new EditorProgress("dotnet_clean_project", "Cleaning .NET project...", 1);
-
-            pr.Step("Cleaning project", 0);
-
-            if (!Build(buildInfo))
+            bool success;
+            using (var pr = new EditorProgress("dotnet_clean_project", "Cleaning .NET project...", 1))
             {
-                ShowBuildErrorDialog("Failed to clean project");
-                return false;
+                pr.Step("Cleaning project", 0);
+                success = Build(buildInfo);
             }
 
-            return true;
+            if (!success)
+            {
+                ShowBuildErrorDialog("Failed to clean project");
+            }
+
+            return success;
         }
 
         private static bool PublishProjectBlocking(BuildInfo buildInfo)
         {
-            using var pr = new EditorProgress("dotnet_publish_project", "Publishing .NET project...", 1);
-
-            pr.Step("Running dotnet publish", 0);
-
-            if (!Publish(buildInfo))
+            bool success;
+            using (var pr = new EditorProgress("dotnet_publish_project", "Publishing .NET project...", 1))
             {
-                ShowBuildErrorDialog("Failed to publish .NET project");
-                return false;
+                pr.Step("Running dotnet publish", 0);
+                success = Publish(buildInfo);
             }
 
-            return true;
+            if (!success)
+            {
+                ShowBuildErrorDialog("Failed to publish .NET project");
+            }
+
+            return success;
         }
 
         private static BuildInfo CreateBuildInfo(
@@ -319,6 +323,45 @@ namespace GodotTools.Build
             bool includeDebugSymbols = true
         ) => PublishProjectBlocking(CreatePublishBuildInfo(configuration,
             platform, runtimeIdentifier, publishOutputDir, includeDebugSymbols));
+
+        public static bool GenerateXCFrameworkBlocking(
+            List<string> outputPaths,
+            string xcFrameworkPath)
+        {
+            using var pr = new EditorProgress("generate_xcframework", "Generating XCFramework...", 1);
+
+            pr.Step("Running xcodebuild -create-xcframework", 0);
+
+            if (!GenerateXCFramework(outputPaths, xcFrameworkPath))
+            {
+                ShowBuildErrorDialog("Failed to generate XCFramework");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool GenerateXCFramework(List<string> outputPaths, string xcFrameworkPath)
+        {
+            // Required in order to update the build tasks list.
+            Internal.GodotMainIteration();
+
+            try
+            {
+                int exitCode = BuildSystem.GenerateXCFramework(outputPaths, xcFrameworkPath, StdOutputReceived, StdErrorReceived);
+
+                if (exitCode != 0)
+                    PrintVerbose(
+                        $"xcodebuild create-xcframework exited with code: {exitCode}.");
+
+                return exitCode == 0;
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+                return false;
+            }
+        }
 
         public static bool EditorBuildCallback()
         {

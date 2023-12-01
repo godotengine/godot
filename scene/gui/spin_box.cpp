@@ -40,7 +40,7 @@ Size2 SpinBox::get_minimum_size() const {
 	return ms;
 }
 
-void SpinBox::_update_text() {
+void SpinBox::_update_text(bool p_keep_line_edit) {
 	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
 	if (is_localizing_numeral_system()) {
 		value = TS->format_number(value);
@@ -55,19 +55,36 @@ void SpinBox::_update_text() {
 		}
 	}
 
+	if (p_keep_line_edit && value == last_updated_text && value != line_edit->get_text()) {
+		return;
+	}
+
 	line_edit->set_text_with_selection(value);
+	last_updated_text = value;
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
 	Ref<Expression> expr;
 	expr.instantiate();
 
-	String num = TS->parse_number(p_string);
+	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
+	String text = p_string.replace(",", ".");
+	text = text.replace(";", ",");
+	text = TS->parse_number(text);
 	// Ignore the prefix and suffix in the expression.
-	Error err = expr->parse(num.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
+	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+
+	Error err = expr->parse(text);
 	if (err != OK) {
-		_update_text();
-		return;
+		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
+		text = p_string;
+		text = TS->parse_number(text);
+		text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+
+		err = expr->parse(text);
+		if (err != OK) {
+			return;
+		}
 	}
 
 	Variant value = expr->execute(Array(), nullptr, false, true);
@@ -233,7 +250,7 @@ inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 void SpinBox::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			_update_text();
+			_update_text(true);
 			_adjust_width_for_icon(theme_cache.updown_icon);
 
 			RID ci = get_canvas_item();
@@ -251,6 +268,9 @@ void SpinBox::_notification(int p_what) {
 			_update_text();
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED:
+			drag.allowed = false;
+			[[fallthrough]];
 		case NOTIFICATION_EXIT_TREE: {
 			_release_mouse();
 		} break;

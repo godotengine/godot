@@ -40,12 +40,6 @@ class GLTFDocument : public Resource {
 	static Vector<Ref<GLTFDocumentExtension>> all_document_extensions;
 	Vector<Ref<GLTFDocumentExtension>> document_extensions;
 
-private:
-	const float BAKE_FPS = 30.0f;
-	String _image_format = "PNG";
-	float _lossy_quality = 0.75f;
-	Ref<GLTFDocumentExtension> _image_save_extension;
-
 public:
 	const int32_t JOINT_GROUP_SIZE = 4;
 
@@ -71,6 +65,19 @@ public:
 		TEXTURE_TYPE_GENERIC = 0,
 		TEXTURE_TYPE_NORMAL = 1,
 	};
+	enum RootNodeMode {
+		ROOT_NODE_MODE_SINGLE_ROOT,
+		ROOT_NODE_MODE_KEEP_ROOT,
+		ROOT_NODE_MODE_MULTI_ROOT,
+	};
+
+private:
+	const float BAKE_FPS = 30.0f;
+	int _naming_version = 1;
+	String _image_format = "PNG";
+	float _lossy_quality = 0.75f;
+	Ref<GLTFDocumentExtension> _image_save_extension;
+	RootNodeMode _root_node_mode = RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT;
 
 protected:
 	static void _bind_methods();
@@ -80,10 +87,14 @@ public:
 	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
 	static void unregister_all_gltf_document_extensions();
 
+	void set_naming_version(int p_version);
+	int get_naming_version() const;
 	void set_image_format(const String &p_image_format);
 	String get_image_format() const;
 	void set_lossy_quality(float p_lossy_quality);
 	float get_lossy_quality() const;
+	void set_root_node_mode(RootNodeMode p_root_node_mode);
+	RootNodeMode get_root_node_mode() const;
 
 private:
 	void _build_parent_hierachy(Ref<GLTFState> p_state);
@@ -378,5 +389,7 @@ public:
 	Error _serialize(Ref<GLTFState> p_state);
 	Error _parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess> p_file);
 };
+
+VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);
 
 #endif // GLTF_DOCUMENT_H

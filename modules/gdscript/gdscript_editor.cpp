@@ -54,6 +54,10 @@ void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const 
 	p_delimiters->push_back("#");
 }
 
+void GDScriptLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) const {
+	p_delimiters->push_back("##");
+}
+
 void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("\" \"");
 	p_delimiters->push_back("' '");
@@ -76,19 +80,25 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 #endif
 	if (!type_hints) {
 		processed_template = processed_template.replace(": int", "")
+									 .replace(": Shader.Mode", "")
+									 .replace(": VisualShader.Type", "")
+									 .replace(": float", "")
 									 .replace(": String", "")
 									 .replace(": Array[String]", "")
-									 .replace(": float", "")
+									 .replace(": Node", "")
 									 .replace(": CharFXTransform", "")
 									 .replace(":=", "=")
-									 .replace(" -> String", "")
-									 .replace(" -> int", "")
+									 .replace(" -> void", "")
 									 .replace(" -> bool", "")
-									 .replace(" -> void", "");
+									 .replace(" -> int", "")
+									 .replace(" -> PortType", "")
+									 .replace(" -> String", "")
+									 .replace(" -> Object", "");
 	}
 
 	processed_template = processed_template.replace("_BASE_", p_base_class_name)
-								 .replace("_CLASS_", p_class_name.to_pascal_case())
+								 .replace("_CLASS_SNAKE_CASE_", p_class_name.to_snake_case().validate_identifier())
+								 .replace("_CLASS_", p_class_name.to_pascal_case().validate_identifier())
 								 .replace("_TS_", _get_indentation());
 	scr->set_source_code(processed_template);
 	return scr;
@@ -189,10 +199,6 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 #endif
 
 	return true;
-}
-
-bool GDScriptLanguage::has_named_classes() const {
-	return false;
 }
 
 bool GDScriptLanguage::supports_builtin_mode() const {
@@ -978,7 +984,7 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 				ScriptLanguage::CodeCompletionOption option;
 				switch (member.type) {
 					case GDScriptParser::ClassNode::Member::VARIABLE:
-						if (p_only_functions || outer || (p_static)) {
+						if (p_only_functions || outer || (p_static && !member.variable->is_static)) {
 							continue;
 						}
 						option = ScriptLanguage::CodeCompletionOption(member.variable->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
@@ -1120,6 +1126,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						base_type.script_type = base_script;
 					} else {
 						base_type.kind = GDScriptParser::DataType::NATIVE;
+						base_type.builtin_type = Variant::OBJECT;
 						base_type.native_type = scr->get_instance_base_type();
 					}
 				} else {
@@ -1286,7 +1293,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	static const char *_keywords_with_space[] = {
 		"and", "not", "or", "in", "as", "class", "class_name", "extends", "is", "func", "signal", "await",
-		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "while",
+		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "when", "while",
 		nullptr
 	};
 
@@ -1624,6 +1631,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 									native_type.script_type = parent;
 								} else {
 									native_type.kind = GDScriptParser::DataType::NATIVE;
+									native_type.builtin_type = Variant::OBJECT;
 									native_type.native_type = native_type.script_type->get_instance_base_type();
 									if (!ClassDB::class_exists(native_type.native_type)) {
 										native_type.kind = GDScriptParser::DataType::UNRESOLVED;
@@ -2153,6 +2161,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	if (ClassDB::class_exists(p_identifier->name) && ClassDB::is_class_exposed(p_identifier->name)) {
 		r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 		r_type.type.kind = GDScriptParser::DataType::NATIVE;
+		r_type.type.builtin_type = Variant::OBJECT;
 		r_type.type.native_type = p_identifier->name;
 		r_type.type.is_constant = true;
 		if (Engine::get_singleton()->has_singleton(p_identifier->name)) {
@@ -2189,7 +2198,7 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 							}
 							return true;
 						case GDScriptParser::ClassNode::Member::VARIABLE:
-							if (!is_static) {
+							if (!is_static || member.variable->is_static) {
 								if (member.variable->get_datatype().is_set() && !member.variable->get_datatype().is_variant()) {
 									r_type.type = member.variable->get_datatype();
 									return true;
@@ -2264,21 +2273,25 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 						return true;
 					}
 
-					if (!is_static) {
-						List<PropertyInfo> members;
+					List<PropertyInfo> members;
+					if (is_static) {
+						scr->get_property_list(&members);
+					} else {
 						scr->get_script_property_list(&members);
-						for (const PropertyInfo &prop : members) {
-							if (prop.name == p_identifier) {
-								r_type = _type_from_property(prop);
-								return true;
-							}
+					}
+					for (const PropertyInfo &prop : members) {
+						if (prop.name == p_identifier) {
+							r_type = _type_from_property(prop);
+							return true;
 						}
 					}
+
 					Ref<Script> parent = scr->get_base_script();
 					if (parent.is_valid()) {
 						base_type.script_type = parent;
 					} else {
 						base_type.kind = GDScriptParser::DataType::NATIVE;
+						base_type.builtin_type = Variant::OBJECT;
 						base_type.native_type = scr->get_instance_base_type();
 					}
 				} else {
@@ -2448,6 +2461,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 						base_type.script_type = base_script;
 					} else {
 						base_type.kind = GDScriptParser::DataType::NATIVE;
+						base_type.builtin_type = Variant::OBJECT;
 						base_type.native_type = scr->get_instance_base_type();
 					}
 				} else {
@@ -2703,8 +2717,8 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 			}
 			r_base_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 			r_base_type.kind = GDScriptParser::DataType::NATIVE;
-			r_base_type.native_type = node->get_class_name();
 			r_base_type.builtin_type = Variant::OBJECT;
+			r_base_type.native_type = node->get_class_name();
 			return true;
 		}
 	}
@@ -2730,8 +2744,6 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	bool _static = false;
 	const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(p_call);
 	GDScriptParser::Node::Type callee_type = call->get_callee_type();
-
-	GDScriptCompletionIdentifier connect_base;
 
 	if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);
@@ -3258,6 +3270,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 						base_type.script_type = base_script;
 					} else {
 						base_type.kind = GDScriptParser::DataType::NATIVE;
+						base_type.builtin_type = Variant::OBJECT;
 						base_type.native_type = scr->get_instance_base_type();
 					}
 				} else {
@@ -3392,6 +3405,12 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			r_result.class_name = Variant::get_type_name(t);
 			return OK;
 		}
+	}
+
+	if ("Variant" == p_symbol) {
+		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
+		r_result.class_name = "Variant";
+		return OK;
 	}
 
 	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol) {

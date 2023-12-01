@@ -58,12 +58,12 @@ private:
 		HashMap<int, NodeInfo> nodes;
 	};
 
-	HashMap<NodePath, PathSentCache> path_send_cache;
+	HashMap<ObjectID, PathSentCache> path_send_cache;
 	HashMap<int, PathGetCache> path_get_cache;
 	int last_send_cache_id = 1;
 
 protected:
-	Error _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, const List<int> &p_peers);
+	Error _send_confirm_path(Node *p_node, PathSentCache *psc, const List<int> &p_peers);
 
 public:
 	void clear();
@@ -75,7 +75,7 @@ public:
 	bool send_object_cache(Object *p_obj, int p_target, int &p_id);
 	int make_object_cache(Object *p_obj);
 	Object *get_cached_object(int p_from, uint32_t p_cache_id);
-	bool is_cache_confirmed(NodePath p_path, int p_peer);
+	bool is_cache_confirmed(Node *p_path, int p_peer);
 
 	SceneCacheInterface(SceneMultiplayer *p_multiplayer) { multiplayer = p_multiplayer; }
 };

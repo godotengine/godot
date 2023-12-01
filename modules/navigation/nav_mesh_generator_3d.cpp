@@ -149,7 +149,7 @@ void NavMeshGenerator3D::finish() {
 void NavMeshGenerator3D::parse_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 	ERR_FAIL_COND(!p_navigation_mesh.is_valid());
-	ERR_FAIL_COND(p_root_node == nullptr);
+	ERR_FAIL_NULL(p_root_node);
 	ERR_FAIL_COND(!p_root_node->is_inside_tree());
 	ERR_FAIL_COND(!p_source_geometry_data.is_valid());
 
@@ -384,33 +384,23 @@ void NavMeshGenerator3D::generator_parse_staticbody3d_node(const Ref<NavigationM
 							const Vector<real_t> &map_data = heightmap_shape->get_map_data();
 
 							Vector2 heightmap_gridsize(heightmap_width - 1, heightmap_depth - 1);
-							Vector2 start = heightmap_gridsize * -0.5;
+							Vector3 start = Vector3(heightmap_gridsize.x, 0, heightmap_gridsize.y) * -0.5;
 
 							Vector<Vector3> vertex_array;
 							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
-							int map_data_current_index = 0;
+							Vector3 *vertex_array_ptrw = vertex_array.ptrw();
+							const real_t *map_data_ptr = map_data.ptr();
+							int vertex_index = 0;
 
-							for (int d = 0; d < heightmap_depth; d++) {
-								for (int w = 0; w < heightmap_width; w++) {
-									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
-										float top_left_height = map_data[map_data_current_index];
-										float top_right_height = map_data[map_data_current_index + 1];
-										float bottom_left_height = map_data[map_data_current_index + heightmap_depth];
-										float bottom_right_height = map_data[map_data_current_index + 1 + heightmap_depth];
-
-										Vector3 top_left = Vector3(start.x + w, top_left_height, start.y + d);
-										Vector3 top_right = Vector3(start.x + w + 1.0, top_right_height, start.y + d);
-										Vector3 bottom_left = Vector3(start.x + w, bottom_left_height, start.y + d + 1.0);
-										Vector3 bottom_right = Vector3(start.x + w + 1.0, bottom_right_height, start.y + d + 1.0);
-
-										vertex_array.push_back(top_right);
-										vertex_array.push_back(bottom_left);
-										vertex_array.push_back(top_left);
-										vertex_array.push_back(top_right);
-										vertex_array.push_back(bottom_right);
-										vertex_array.push_back(bottom_left);
-									}
-									map_data_current_index += 1;
+							for (int d = 0; d < heightmap_depth - 1; d++) {
+								for (int w = 0; w < heightmap_width - 1; w++) {
+									vertex_array_ptrw[vertex_index] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + w], d);
+									vertex_array_ptrw[vertex_index + 1] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
+									vertex_array_ptrw[vertex_index + 2] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
+									vertex_array_ptrw[vertex_index + 3] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
+									vertex_array_ptrw[vertex_index + 4] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + heightmap_width + w + 1], d + 1);
+									vertex_array_ptrw[vertex_index + 5] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
+									vertex_index += 6;
 								}
 							}
 							if (vertex_array.size() > 0) {
@@ -540,33 +530,23 @@ void NavMeshGenerator3D::generator_parse_gridmap_node(const Ref<NavigationMesh> 
 							const Vector<real_t> &map_data = dict["heights"];
 
 							Vector2 heightmap_gridsize(heightmap_width - 1, heightmap_depth - 1);
-							Vector2 start = heightmap_gridsize * -0.5;
+							Vector3 start = Vector3(heightmap_gridsize.x, 0, heightmap_gridsize.y) * -0.5;
 
 							Vector<Vector3> vertex_array;
 							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
-							int map_data_current_index = 0;
+							Vector3 *vertex_array_ptrw = vertex_array.ptrw();
+							const real_t *map_data_ptr = map_data.ptr();
+							int vertex_index = 0;
 
-							for (int d = 0; d < heightmap_depth; d++) {
-								for (int w = 0; w < heightmap_width; w++) {
-									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
-										float top_left_height = map_data[map_data_current_index];
-										float top_right_height = map_data[map_data_current_index + 1];
-										float bottom_left_height = map_data[map_data_current_index + heightmap_depth];
-										float bottom_right_height = map_data[map_data_current_index + 1 + heightmap_depth];
-
-										Vector3 top_left = Vector3(start.x + w, top_left_height, start.y + d);
-										Vector3 top_right = Vector3(start.x + w + 1.0, top_right_height, start.y + d);
-										Vector3 bottom_left = Vector3(start.x + w, bottom_left_height, start.y + d + 1.0);
-										Vector3 bottom_right = Vector3(start.x + w + 1.0, bottom_right_height, start.y + d + 1.0);
-
-										vertex_array.push_back(top_right);
-										vertex_array.push_back(bottom_left);
-										vertex_array.push_back(top_left);
-										vertex_array.push_back(top_right);
-										vertex_array.push_back(bottom_right);
-										vertex_array.push_back(bottom_left);
-									}
-									map_data_current_index += 1;
+							for (int d = 0; d < heightmap_depth - 1; d++) {
+								for (int w = 0; w < heightmap_width - 1; w++) {
+									vertex_array_ptrw[vertex_index] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + w], d);
+									vertex_array_ptrw[vertex_index + 1] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
+									vertex_array_ptrw[vertex_index + 2] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
+									vertex_array_ptrw[vertex_index + 3] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
+									vertex_array_ptrw[vertex_index + 4] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + heightmap_width + w + 1], d + 1);
+									vertex_array_ptrw[vertex_index + 5] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
+									vertex_index += 6;
 								}
 							}
 							if (vertex_array.size() > 0) {
@@ -714,7 +694,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	bake_state = "Creating heightfield..."; // step #3
 	hf = rcAllocHeightfield();
 
-	ERR_FAIL_COND(!hf);
+	ERR_FAIL_NULL(hf);
 	ERR_FAIL_COND(!rcCreateHeightfield(&ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch));
 
 	bake_state = "Marking walkable triangles..."; // step #4
@@ -744,7 +724,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	chf = rcAllocCompactHeightfield();
 
-	ERR_FAIL_COND(!chf);
+	ERR_FAIL_NULL(chf);
 	ERR_FAIL_COND(!rcBuildCompactHeightfield(&ctx, cfg.walkableHeight, cfg.walkableClimb, *hf, *chf));
 
 	rcFreeHeightField(hf);
@@ -769,17 +749,17 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	cset = rcAllocContourSet();
 
-	ERR_FAIL_COND(!cset);
+	ERR_FAIL_NULL(cset);
 	ERR_FAIL_COND(!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset));
 
 	bake_state = "Creating polymesh..."; // step #9
 
 	poly_mesh = rcAllocPolyMesh();
-	ERR_FAIL_COND(!poly_mesh);
+	ERR_FAIL_NULL(poly_mesh);
 	ERR_FAIL_COND(!rcBuildPolyMesh(&ctx, *cset, cfg.maxVertsPerPoly, *poly_mesh));
 
 	detail_mesh = rcAllocPolyMeshDetail();
-	ERR_FAIL_COND(!detail_mesh);
+	ERR_FAIL_NULL(detail_mesh);
 	ERR_FAIL_COND(!rcBuildPolyMeshDetail(&ctx, *poly_mesh, *chf, cfg.detailSampleDist, cfg.detailSampleMaxError, *detail_mesh));
 
 	rcFreeCompactHeightfield(chf);

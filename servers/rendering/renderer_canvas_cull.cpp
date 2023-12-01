@@ -30,6 +30,7 @@
 
 #include "renderer_canvas_cull.h"
 
+#include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "renderer_viewport.h"
 #include "rendering_server_default.h"
@@ -416,9 +417,9 @@ void RendererCanvasCull::canvas_initialize(RID p_rid) {
 
 void RendererCanvasCull::canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring) {
 	Canvas *canvas = canvas_owner.get_or_null(p_canvas);
-	ERR_FAIL_COND(!canvas);
+	ERR_FAIL_NULL(canvas);
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	int idx = canvas->find_item(canvas_item);
 	ERR_FAIL_COND(idx == -1);
@@ -427,7 +428,7 @@ void RendererCanvasCull::canvas_set_item_mirroring(RID p_canvas, RID p_item, con
 
 void RendererCanvasCull::canvas_set_modulate(RID p_canvas, const Color &p_color) {
 	Canvas *canvas = canvas_owner.get_or_null(p_canvas);
-	ERR_FAIL_COND(!canvas);
+	ERR_FAIL_NULL(canvas);
 	canvas->modulate = p_color;
 }
 
@@ -437,7 +438,7 @@ void RendererCanvasCull::canvas_set_disable_scale(bool p_disable) {
 
 void RendererCanvasCull::canvas_set_parent(RID p_canvas, RID p_parent, float p_scale) {
 	Canvas *canvas = canvas_owner.get_or_null(p_canvas);
-	ERR_FAIL_COND(!canvas);
+	ERR_FAIL_NULL(canvas);
 
 	canvas->parent = p_parent;
 	canvas->parent_scale = p_scale;
@@ -452,7 +453,7 @@ void RendererCanvasCull::canvas_item_initialize(RID p_rid) {
 
 void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	if (canvas_item->parent.is_valid()) {
 		if (canvas_owner.owns(canvas_item->parent)) {
@@ -496,7 +497,7 @@ void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
 
 void RendererCanvasCull::canvas_item_set_visible(RID p_item, bool p_visible) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->visible = p_visible;
 
@@ -505,21 +506,21 @@ void RendererCanvasCull::canvas_item_set_visible(RID p_item, bool p_visible) {
 
 void RendererCanvasCull::canvas_item_set_light_mask(RID p_item, int p_mask) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->light_mask = p_mask;
 }
 
 void RendererCanvasCull::canvas_item_set_transform(RID p_item, const Transform2D &p_transform) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->xform = p_transform;
 }
 
 void RendererCanvasCull::canvas_item_set_visibility_layer(RID p_item, uint32_t p_visibility_layer) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->visibility_layer = p_visibility_layer;
 }
@@ -533,21 +534,21 @@ uint32_t RendererCanvasCull::canvas_item_get_visibility_layer(RID p_item) {
 
 void RendererCanvasCull::canvas_item_set_clip(RID p_item, bool p_clip) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->clip = p_clip;
 }
 
 void RendererCanvasCull::canvas_item_set_distance_field_mode(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->distance_field = p_enable;
 }
 
 void RendererCanvasCull::canvas_item_set_custom_rect(RID p_item, bool p_custom_rect, const Rect2 &p_rect) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->custom_rect = p_custom_rect;
 	canvas_item->rect = p_rect;
@@ -555,38 +556,38 @@ void RendererCanvasCull::canvas_item_set_custom_rect(RID p_item, bool p_custom_r
 
 void RendererCanvasCull::canvas_item_set_modulate(RID p_item, const Color &p_color) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->modulate = p_color;
 }
 
 void RendererCanvasCull::canvas_item_set_self_modulate(RID p_item, const Color &p_color) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->self_modulate = p_color;
 }
 
 void RendererCanvasCull::canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->behind = p_enable;
 }
 
 void RendererCanvasCull::canvas_item_set_update_when_visible(RID p_item, bool p_update) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->update_when_visible = p_update;
 }
 
 void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
-	ERR_FAIL_COND(!line);
+	ERR_FAIL_NULL(line);
 
 	Vector2 diff = (p_from - p_to);
 	Vector2 dir = diff.orthogonal().normalized();
@@ -640,7 +641,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 
 		{
 			Item::CommandPrimitive *left_border = canvas_item->alloc_command<Item::CommandPrimitive>();
-			ERR_FAIL_COND(!left_border);
+			ERR_FAIL_NULL(left_border);
 
 			left_border->points[0] = begin_left;
 			left_border->points[1] = begin_left + border;
@@ -656,7 +657,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		}
 		{
 			Item::CommandPrimitive *right_border = canvas_item->alloc_command<Item::CommandPrimitive>();
-			ERR_FAIL_COND(!right_border);
+			ERR_FAIL_NULL(right_border);
 
 			right_border->points[0] = begin_right;
 			right_border->points[1] = begin_right - border;
@@ -672,7 +673,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		}
 		{
 			Item::CommandPrimitive *top_border = canvas_item->alloc_command<Item::CommandPrimitive>();
-			ERR_FAIL_COND(!top_border);
+			ERR_FAIL_NULL(top_border);
 
 			top_border->points[0] = begin_left;
 			top_border->points[1] = begin_left + border2;
@@ -688,7 +689,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		}
 		{
 			Item::CommandPrimitive *bottom_border = canvas_item->alloc_command<Item::CommandPrimitive>();
-			ERR_FAIL_COND(!bottom_border);
+			ERR_FAIL_NULL(bottom_border);
 
 			bottom_border->points[0] = end_left;
 			bottom_border->points[1] = end_left - border2;
@@ -704,7 +705,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		}
 		{
 			Item::CommandPrimitive *top_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
-			ERR_FAIL_COND(!top_left_corner);
+			ERR_FAIL_NULL(top_left_corner);
 
 			top_left_corner->points[0] = begin_left;
 			top_left_corner->points[1] = begin_left + border2;
@@ -720,7 +721,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		}
 		{
 			Item::CommandPrimitive *top_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
-			ERR_FAIL_COND(!top_right_corner);
+			ERR_FAIL_NULL(top_right_corner);
 
 			top_right_corner->points[0] = begin_right;
 			top_right_corner->points[1] = begin_right + border2;
@@ -736,7 +737,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		}
 		{
 			Item::CommandPrimitive *bottom_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
-			ERR_FAIL_COND(!bottom_left_corner);
+			ERR_FAIL_NULL(bottom_left_corner);
 
 			bottom_left_corner->points[0] = end_left;
 			bottom_left_corner->points[1] = end_left - border2;
@@ -752,7 +753,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		}
 		{
 			Item::CommandPrimitive *bottom_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
-			ERR_FAIL_COND(!bottom_right_corner);
+			ERR_FAIL_NULL(bottom_right_corner);
 
 			bottom_right_corner->points[0] = end_right;
 			bottom_right_corner->points[1] = end_right - border2;
@@ -815,7 +816,7 @@ static Vector2 compute_polyline_edge_offset_clamped(const Vector2 &p_segment_dir
 void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
 	ERR_FAIL_COND(p_points.size() < 2);
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Color color = Color(1, 1, 1, 1);
 
@@ -823,7 +824,7 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	int point_count = p_points.size();
 
 	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
-	ERR_FAIL_COND(!pline);
+	ERR_FAIL_NULL(pline);
 
 	if (p_width < 0) {
 		if (p_antialiased) {
@@ -899,10 +900,10 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 		Color color2 = Color(1, 1, 1, 0);
 
 		Item::CommandPolygon *pline_left = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_left);
+		ERR_FAIL_NULL(pline_left);
 
 		Item::CommandPolygon *pline_right = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_right);
+		ERR_FAIL_NULL(pline_right);
 
 		PackedColorArray colors_left;
 		PackedVector2Array points_left;
@@ -1086,7 +1087,7 @@ void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Poin
 	// TODO: `canvas_item_add_line`(`multiline`, `polyline`) share logic, should factor out.
 	if (p_width < 0) {
 		Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-		ERR_FAIL_COND(!canvas_item);
+		ERR_FAIL_NULL(canvas_item);
 
 		Vector<Color> colors;
 		if (p_colors.size() == 1) {
@@ -1102,7 +1103,7 @@ void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Poin
 		}
 
 		Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline);
+		ERR_FAIL_NULL(pline);
 		pline->primitive = RS::PRIMITIVE_LINES;
 		pline->polygon.create(Vector<int>(), p_points, colors);
 	} else {
@@ -1128,20 +1129,20 @@ void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Poin
 
 void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
-	ERR_FAIL_COND(!rect);
+	ERR_FAIL_NULL(rect);
 	rect->modulate = p_color;
 	rect->rect = p_rect;
 }
 
 void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandPolygon *circle = canvas_item->alloc_command<Item::CommandPolygon>();
-	ERR_FAIL_COND(!circle);
+	ERR_FAIL_NULL(circle);
 
 	circle->primitive = RS::PRIMITIVE_TRIANGLES;
 
@@ -1177,10 +1178,10 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 
 void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
-	ERR_FAIL_COND(!rect);
+	ERR_FAIL_NULL(rect);
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
 	rect->flags = 0;
@@ -1208,10 +1209,10 @@ void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 
 void RendererCanvasCull::canvas_item_add_msdf_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, int p_outline_size, float p_px_range, float p_scale) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
-	ERR_FAIL_COND(!rect);
+	ERR_FAIL_NULL(rect);
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
 
@@ -1242,10 +1243,10 @@ void RendererCanvasCull::canvas_item_add_msdf_texture_rect_region(RID p_item, co
 
 void RendererCanvasCull::canvas_item_add_lcd_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
-	ERR_FAIL_COND(!rect);
+	ERR_FAIL_NULL(rect);
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
 
@@ -1274,10 +1275,10 @@ void RendererCanvasCull::canvas_item_add_lcd_texture_rect_region(RID p_item, con
 
 void RendererCanvasCull::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
-	ERR_FAIL_COND(!rect);
+	ERR_FAIL_NULL(rect);
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
 
@@ -1315,10 +1316,10 @@ void RendererCanvasCull::canvas_item_add_texture_rect_region(RID p_item, const R
 
 void RendererCanvasCull::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, RS::NinePatchAxisMode p_x_axis_mode, RS::NinePatchAxisMode p_y_axis_mode, bool p_draw_center, const Color &p_modulate) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandNinePatch *style = canvas_item->alloc_command<Item::CommandNinePatch>();
-	ERR_FAIL_COND(!style);
+	ERR_FAIL_NULL(style);
 
 	style->texture = p_texture;
 
@@ -1339,10 +1340,10 @@ void RendererCanvasCull::canvas_item_add_primitive(RID p_item, const Vector<Poin
 	ERR_FAIL_COND(pc == 0 || pc > 4);
 
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandPrimitive *prim = canvas_item->alloc_command<Item::CommandPrimitive>();
-	ERR_FAIL_COND(!prim);
+	ERR_FAIL_NULL(prim);
 
 	for (int i = 0; i < p_points.size(); i++) {
 		prim->points[i] = p_points[i];
@@ -1365,7 +1366,7 @@ void RendererCanvasCull::canvas_item_add_primitive(RID p_item, const Vector<Poin
 
 void RendererCanvasCull::canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 #ifdef DEBUG_ENABLED
 	int pointcount = p_points.size();
 	ERR_FAIL_COND(pointcount < 3);
@@ -1378,7 +1379,7 @@ void RendererCanvasCull::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	ERR_FAIL_COND_MSG(indices.is_empty(), "Invalid polygon data, triangulation failed.");
 
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
-	ERR_FAIL_COND(!polygon);
+	ERR_FAIL_NULL(polygon);
 	polygon->primitive = RS::PRIMITIVE_TRIANGLES;
 	polygon->texture = p_texture;
 	polygon->polygon.create(indices, p_points, p_colors, p_uvs);
@@ -1386,7 +1387,7 @@ void RendererCanvasCull::canvas_item_add_polygon(RID p_item, const Vector<Point2
 
 void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	int vertex_count = p_points.size();
 	ERR_FAIL_COND(vertex_count == 0);
@@ -1398,7 +1399,7 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 	Vector<int> indices = p_indices;
 
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
-	ERR_FAIL_COND(!polygon);
+	ERR_FAIL_NULL(polygon);
 
 	polygon->texture = p_texture;
 
@@ -1409,20 +1410,20 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 
 void RendererCanvasCull::canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandTransform *tr = canvas_item->alloc_command<Item::CommandTransform>();
-	ERR_FAIL_COND(!tr);
+	ERR_FAIL_NULL(tr);
 	tr->xform = p_transform;
 }
 
 void RendererCanvasCull::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 	ERR_FAIL_COND(!p_mesh.is_valid());
 
 	Item::CommandMesh *m = canvas_item->alloc_command<Item::CommandMesh>();
-	ERR_FAIL_COND(!m);
+	ERR_FAIL_NULL(m);
 	m->mesh = p_mesh;
 	if (canvas_item->skeleton.is_valid()) {
 		m->mesh_instance = RSG::mesh_storage->mesh_instance_create(p_mesh);
@@ -1437,10 +1438,10 @@ void RendererCanvasCull::canvas_item_add_mesh(RID p_item, const RID &p_mesh, con
 
 void RendererCanvasCull::canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandParticles *part = canvas_item->alloc_command<Item::CommandParticles>();
-	ERR_FAIL_COND(!part);
+	ERR_FAIL_NULL(part);
 	part->particles = p_particles;
 
 	part->texture = p_texture;
@@ -1451,10 +1452,10 @@ void RendererCanvasCull::canvas_item_add_particles(RID p_item, RID p_particles, 
 
 void RendererCanvasCull::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandMultiMesh *mm = canvas_item->alloc_command<Item::CommandMultiMesh>();
-	ERR_FAIL_COND(!mm);
+	ERR_FAIL_NULL(mm);
 	mm->multimesh = p_mesh;
 
 	mm->texture = p_texture;
@@ -1462,19 +1463,19 @@ void RendererCanvasCull::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p
 
 void RendererCanvasCull::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandClipIgnore *ci = canvas_item->alloc_command<Item::CommandClipIgnore>();
-	ERR_FAIL_COND(!ci);
+	ERR_FAIL_NULL(ci);
 	ci->ignore = p_ignore;
 }
 
 void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandAnimationSlice *as = canvas_item->alloc_command<Item::CommandAnimationSlice>();
-	ERR_FAIL_COND(!as);
+	ERR_FAIL_NULL(as);
 	as->animation_length = p_animation_length;
 	as->slice_begin = p_slice_begin;
 	as->slice_end = p_slice_end;
@@ -1483,7 +1484,7 @@ void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_an
 
 void RendererCanvasCull::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->sort_y = p_enable;
 
@@ -1494,21 +1495,21 @@ void RendererCanvasCull::canvas_item_set_z_index(RID p_item, int p_z) {
 	ERR_FAIL_COND(p_z < RS::CANVAS_ITEM_Z_MIN || p_z > RS::CANVAS_ITEM_Z_MAX);
 
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->z_index = p_z;
 }
 
 void RendererCanvasCull::canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->z_relative = p_enable;
 }
 
 void RendererCanvasCull::canvas_item_attach_skeleton(RID p_item, RID p_skeleton) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 	if (canvas_item->skeleton == p_skeleton) {
 		return;
 	}
@@ -1537,7 +1538,7 @@ void RendererCanvasCull::canvas_item_attach_skeleton(RID p_item, RID p_skeleton)
 
 void RendererCanvasCull::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 	if (p_enable && (canvas_item->copy_back_buffer == nullptr)) {
 		canvas_item->copy_back_buffer = memnew(RendererCanvasRender::Item::CopyBackBuffer);
 	}
@@ -1554,14 +1555,19 @@ void RendererCanvasCull::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_e
 
 void RendererCanvasCull::canvas_item_clear(RID p_item) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->clear();
+#ifdef DEBUG_ENABLED
+	if (debug_redraw) {
+		canvas_item->debug_redraw_time = debug_redraw_time;
+	}
+#endif
 }
 
 void RendererCanvasCull::canvas_item_set_draw_index(RID p_item, int p_index) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->index = p_index;
 
@@ -1580,21 +1586,21 @@ void RendererCanvasCull::canvas_item_set_draw_index(RID p_item, int p_index) {
 
 void RendererCanvasCull::canvas_item_set_material(RID p_item, RID p_material) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->material = p_material;
 }
 
 void RendererCanvasCull::canvas_item_set_use_parent_material(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->use_parent_material = p_enable;
 }
 
 void RendererCanvasCull::canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callable, const Callable &p_exit_callable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	if (p_enable) {
 		if (!canvas_item->visibility_notifier) {
@@ -1612,9 +1618,18 @@ void RendererCanvasCull::canvas_item_set_visibility_notifier(RID p_item, bool p_
 	}
 }
 
+void RendererCanvasCull::canvas_item_set_debug_redraw(bool p_enabled) {
+	debug_redraw = p_enabled;
+	RSG::canvas_render->set_debug_redraw(p_enabled, debug_redraw_time, debug_redraw_color);
+}
+
+bool RendererCanvasCull::canvas_item_get_debug_redraw() const {
+	return debug_redraw;
+}
+
 void RendererCanvasCull::canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin, bool p_fit_empty, float p_fit_margin, bool p_blur_mipmaps) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	if (p_mode == RS::CANVAS_GROUP_MODE_DISABLED) {
 		if (canvas_item->canvas_group != nullptr) {
@@ -1644,7 +1659,7 @@ void RendererCanvasCull::canvas_light_initialize(RID p_rid) {
 
 void RendererCanvasCull::canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	if (clight->mode == p_mode) {
 		return;
@@ -1665,7 +1680,7 @@ void RendererCanvasCull::canvas_light_set_mode(RID p_light, RS::CanvasLightMode 
 
 void RendererCanvasCull::canvas_light_attach_to_canvas(RID p_light, RID p_canvas) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	if (clight->canvas.is_valid()) {
 		Canvas *canvas = canvas_owner.get_or_null(clight->canvas);
@@ -1694,28 +1709,28 @@ void RendererCanvasCull::canvas_light_attach_to_canvas(RID p_light, RID p_canvas
 
 void RendererCanvasCull::canvas_light_set_enabled(RID p_light, bool p_enabled) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->enabled = p_enabled;
 }
 
 void RendererCanvasCull::canvas_light_set_texture_scale(RID p_light, float p_scale) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->scale = p_scale;
 }
 
 void RendererCanvasCull::canvas_light_set_transform(RID p_light, const Transform2D &p_transform) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->xform = p_transform;
 }
 
 void RendererCanvasCull::canvas_light_set_texture(RID p_light, RID p_texture) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	if (clight->texture == p_texture) {
 		return;
@@ -1727,35 +1742,35 @@ void RendererCanvasCull::canvas_light_set_texture(RID p_light, RID p_texture) {
 
 void RendererCanvasCull::canvas_light_set_texture_offset(RID p_light, const Vector2 &p_offset) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->texture_offset = p_offset;
 }
 
 void RendererCanvasCull::canvas_light_set_color(RID p_light, const Color &p_color) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->color = p_color;
 }
 
 void RendererCanvasCull::canvas_light_set_height(RID p_light, float p_height) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->height = p_height;
 }
 
 void RendererCanvasCull::canvas_light_set_energy(RID p_light, float p_energy) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->energy = p_energy;
 }
 
 void RendererCanvasCull::canvas_light_set_z_range(RID p_light, int p_min_z, int p_max_z) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->z_min = p_min_z;
 	clight->z_max = p_max_z;
@@ -1763,7 +1778,7 @@ void RendererCanvasCull::canvas_light_set_z_range(RID p_light, int p_min_z, int 
 
 void RendererCanvasCull::canvas_light_set_layer_range(RID p_light, int p_min_layer, int p_max_layer) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->layer_max = p_max_layer;
 	clight->layer_min = p_min_layer;
@@ -1771,35 +1786,35 @@ void RendererCanvasCull::canvas_light_set_layer_range(RID p_light, int p_min_lay
 
 void RendererCanvasCull::canvas_light_set_item_cull_mask(RID p_light, int p_mask) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->item_mask = p_mask;
 }
 
 void RendererCanvasCull::canvas_light_set_item_shadow_cull_mask(RID p_light, int p_mask) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->item_shadow_mask = p_mask;
 }
 
 void RendererCanvasCull::canvas_light_set_directional_distance(RID p_light, float p_distance) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->directional_distance = p_distance;
 }
 
 void RendererCanvasCull::canvas_light_set_blend_mode(RID p_light, RS::CanvasLightBlendMode p_mode) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->blend_mode = p_mode;
 }
 
 void RendererCanvasCull::canvas_light_set_shadow_enabled(RID p_light, bool p_enabled) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	if (clight->use_shadow == p_enabled) {
 		return;
@@ -1811,21 +1826,21 @@ void RendererCanvasCull::canvas_light_set_shadow_enabled(RID p_light, bool p_ena
 
 void RendererCanvasCull::canvas_light_set_shadow_filter(RID p_light, RS::CanvasLightShadowFilter p_filter) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->shadow_filter = p_filter;
 }
 
 void RendererCanvasCull::canvas_light_set_shadow_color(RID p_light, const Color &p_color) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 
 	clight->shadow_color = p_color;
 }
 
 void RendererCanvasCull::canvas_light_set_shadow_smooth(RID p_light, float p_smooth) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!clight);
+	ERR_FAIL_NULL(clight);
 	clight->shadow_smooth = p_smooth;
 }
 
@@ -1838,7 +1853,7 @@ void RendererCanvasCull::canvas_light_occluder_initialize(RID p_rid) {
 
 void RendererCanvasCull::canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas) {
 	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 
 	if (occluder->canvas.is_valid()) {
 		Canvas *canvas = canvas_owner.get_or_null(occluder->canvas);
@@ -1859,14 +1874,14 @@ void RendererCanvasCull::canvas_light_occluder_attach_to_canvas(RID p_occluder, 
 
 void RendererCanvasCull::canvas_light_occluder_set_enabled(RID p_occluder, bool p_enabled) {
 	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 
 	occluder->enabled = p_enabled;
 }
 
 void RendererCanvasCull::canvas_light_occluder_set_polygon(RID p_occluder, RID p_polygon) {
 	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 
 	if (occluder->polygon.is_valid()) {
 		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(occluder->polygon);
@@ -1882,7 +1897,7 @@ void RendererCanvasCull::canvas_light_occluder_set_polygon(RID p_occluder, RID p
 		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(p_polygon);
 		if (!occluder_poly) {
 			occluder->polygon = RID();
-			ERR_FAIL_COND(!occluder_poly);
+			ERR_FAIL_NULL(occluder_poly);
 		} else {
 			occluder_poly->owners.insert(occluder);
 			occluder->occluder = occluder_poly->occluder;
@@ -1894,19 +1909,19 @@ void RendererCanvasCull::canvas_light_occluder_set_polygon(RID p_occluder, RID p
 
 void RendererCanvasCull::canvas_light_occluder_set_as_sdf_collision(RID p_occluder, bool p_enable) {
 	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 }
 
 void RendererCanvasCull::canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform) {
 	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 
 	occluder->xform = p_xform;
 }
 
 void RendererCanvasCull::canvas_light_occluder_set_light_mask(RID p_occluder, int p_mask) {
 	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 
 	occluder->light_mask = p_mask;
 }
@@ -1922,7 +1937,7 @@ void RendererCanvasCull::canvas_occluder_polygon_initialize(RID p_rid) {
 
 void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed) {
 	LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(p_occluder_polygon);
-	ERR_FAIL_COND(!occluder_poly);
+	ERR_FAIL_NULL(occluder_poly);
 
 	uint32_t pc = p_shape.size();
 	ERR_FAIL_COND(pc < 2);
@@ -1946,7 +1961,7 @@ void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygo
 
 void RendererCanvasCull::canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon, RS::CanvasOccluderPolygonCullMode p_mode) {
 	LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(p_occluder_polygon);
-	ERR_FAIL_COND(!occluder_poly);
+	ERR_FAIL_NULL(occluder_poly);
 	occluder_poly->cull_mode = p_mode;
 	RSG::canvas_render->occluder_polygon_set_cull_mode(occluder_poly->occluder, p_mode);
 	for (RendererCanvasRender::LightOccluderInstance *E : occluder_poly->owners) {
@@ -1983,12 +1998,12 @@ void RendererCanvasCull::canvas_texture_set_texture_repeat(RID p_canvas_texture,
 
 void RendererCanvasCull::canvas_item_set_default_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) {
 	Item *ci = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!ci);
+	ERR_FAIL_NULL(ci);
 	ci->texture_filter = p_filter;
 }
 void RendererCanvasCull::canvas_item_set_default_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) {
 	Item *ci = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!ci);
+	ERR_FAIL_NULL(ci);
 	ci->texture_repeat = p_repeat;
 }
 
@@ -2005,9 +2020,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 				if (RSG::threaded) {
 					visibility_notifier->enter_callable.call_deferred();
 				} else {
-					Callable::CallError ce;
-					Variant ret;
-					visibility_notifier->enter_callable.callp(nullptr, 0, ret, ce);
+					visibility_notifier->enter_callable.call();
 				}
 			}
 		} else {
@@ -2018,9 +2031,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 					if (RSG::threaded) {
 						visibility_notifier->exit_callable.call_deferred();
 					} else {
-						Callable::CallError ce;
-						Variant ret;
-						visibility_notifier->exit_callable.callp(nullptr, 0, ret, ce);
+						visibility_notifier->exit_callable.call();
 					}
 				}
 			}
@@ -2033,11 +2044,11 @@ void RendererCanvasCull::update_visibility_notifiers() {
 bool RendererCanvasCull::free(RID p_rid) {
 	if (canvas_owner.owns(p_rid)) {
 		Canvas *canvas = canvas_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!canvas, false);
+		ERR_FAIL_NULL_V(canvas, false);
 
 		while (canvas->viewports.size()) {
 			RendererViewport::Viewport *vp = RSG::viewport->viewport_owner.get_or_null(*canvas->viewports.begin());
-			ERR_FAIL_COND_V(!vp, true);
+			ERR_FAIL_NULL_V(vp, true);
 
 			HashMap<RID, RendererViewport::Viewport::CanvasData>::Iterator E = vp->canvas_map.find(p_rid);
 			ERR_FAIL_COND_V(!E, true);
@@ -2062,7 +2073,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 	} else if (canvas_item_owner.owns(p_rid)) {
 		Item *canvas_item = canvas_item_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!canvas_item, true);
+		ERR_FAIL_NULL_V(canvas_item, true);
 
 		if (canvas_item->parent.is_valid()) {
 			if (canvas_owner.owns(canvas_item->parent)) {
@@ -2101,7 +2112,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 	} else if (canvas_light_owner.owns(p_rid)) {
 		RendererCanvasRender::Light *canvas_light = canvas_light_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!canvas_light, true);
+		ERR_FAIL_NULL_V(canvas_light, true);
 
 		if (canvas_light->canvas.is_valid()) {
 			Canvas *canvas = canvas_owner.get_or_null(canvas_light->canvas);
@@ -2116,7 +2127,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 	} else if (canvas_light_occluder_owner.owns(p_rid)) {
 		RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!occluder, true);
+		ERR_FAIL_NULL_V(occluder, true);
 
 		if (occluder->polygon.is_valid()) {
 			LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(occluder->polygon);
@@ -2134,7 +2145,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 	} else if (canvas_light_occluder_polygon_owner.owns(p_rid)) {
 		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!occluder_poly, true);
+		ERR_FAIL_NULL_V(occluder_poly, true);
 		RSG::canvas_render->free(occluder_poly->occluder);
 
 		while (occluder_poly->owners.size()) {
@@ -2155,6 +2166,9 @@ RendererCanvasCull::RendererCanvasCull() {
 	z_last_list = (RendererCanvasRender::Item **)memalloc(z_range * sizeof(RendererCanvasRender::Item *));
 
 	disable_scale = false;
+
+	debug_redraw_time = GLOBAL_DEF("debug/canvas_items/debug_redraw_time", 1.0);
+	debug_redraw_color = GLOBAL_DEF("debug/canvas_items/debug_redraw_color", Color(1.0, 0.2, 0.2, 0.5));
 }
 
 RendererCanvasCull::~RendererCanvasCull() {

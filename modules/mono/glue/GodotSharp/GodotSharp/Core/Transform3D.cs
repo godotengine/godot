@@ -105,7 +105,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the inverse of the transform, under the assumption that
-        /// the transformation is composed of rotation, scaling, and translation.
+        /// the basis is invertible (must have non-zero determinant).
         /// </summary>
         /// <seealso cref="Inverse"/>
         /// <returns>The inverse transformation matrix.</returns>
@@ -144,8 +144,9 @@ namespace Godot
 
         /// <summary>
         /// Returns the inverse of the transform, under the assumption that
-        /// the transformation is composed of rotation and translation
-        /// (no scaling, use <see cref="AffineInverse"/> for transforms with scaling).
+        /// the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not). Use <see cref="AffineInverse"/> for
+        /// non-orthonormal transforms (e.g. with scaling).
         /// </summary>
         /// <returns>The inverse matrix.</returns>
         public readonly Transform3D Inverse()
@@ -426,10 +427,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Vector3 transformed (multiplied) by the transposed transformation matrix.
-        ///
-        /// Note: This results in a multiplication by the inverse of the
-        /// transformation matrix only if it represents a rotation-reflection.
+        /// Returns a Vector3 transformed (multiplied) by the inverse transformation matrix,
+        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not).
+        /// <c>vector * transform</c> is equivalent to <c>transform.Inverse() * vector</c>. See <see cref="Inverse"/>.
+        /// For transforming by inverse of an affine transformation (e.g. with scaling) <c>transform.AffineInverse() * vector</c> can be used instead. See <see cref="AffineInverse"/>.
         /// </summary>
         /// <param name="vector">A Vector3 to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -482,7 +484,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns an AABB transformed (multiplied) by the inverse transformation matrix.
+        /// Returns an AABB transformed (multiplied) by the inverse transformation matrix,
+        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not).
+        /// <c>aabb * transform</c> is equivalent to <c>transform.Inverse() * aabb</c>. See <see cref="Inverse"/>.
+        /// For transforming by inverse of an affine transformation (e.g. with scaling) <c>transform.AffineInverse() * aabb</c> can be used instead. See <see cref="AffineInverse"/>.
         /// </summary>
         /// <param name="aabb">An AABB to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -523,6 +529,7 @@ namespace Godot
 
         /// <summary>
         /// Returns a Plane transformed (multiplied) by the inverse transformation matrix.
+        /// <c>plane * transform</c> is equivalent to <c>transform.AffineInverse() * plane</c>. See <see cref="AffineInverse"/>.
         /// </summary>
         /// <param name="plane">A Plane to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -568,7 +575,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the given Vector3[] transformed (multiplied) by the inverse transformation matrix.
+        /// Returns a copy of the given Vector3[] transformed (multiplied) by the inverse transformation matrix,
+        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not).
+        /// <c>array * transform</c> is equivalent to <c>transform.Inverse() * array</c>. See <see cref="Inverse"/>.
+        /// For transforming by inverse of an affine transformation (e.g. with scaling) <c>transform.AffineInverse() * array</c> can be used instead. See <see cref="AffineInverse"/>.
         /// </summary>
         /// <param name="array">A Vector3[] to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -653,7 +664,7 @@ namespace Godot
         /// <returns>A hash code for this transform.</returns>
         public override readonly int GetHashCode()
         {
-            return Basis.GetHashCode() ^ Origin.GetHashCode();
+            return HashCode.Combine(Basis, Origin);
         }
 
         /// <summary>

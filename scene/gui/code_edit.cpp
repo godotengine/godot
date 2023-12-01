@@ -479,19 +479,8 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			accept_event();
 			return;
 		}
-		if (k->is_action("ui_home", true)) {
-			code_completion_current_selected = 0;
-			code_completion_force_item_center = -1;
-			queue_redraw();
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_end", true)) {
-			code_completion_current_selected = code_completion_options.size() - 1;
-			code_completion_force_item_center = -1;
-			queue_redraw();
-			accept_event();
-			return;
+		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true)) {
+			cancel_code_completion();
 		}
 		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
 			confirm_code_completion(k->is_action("ui_text_completion_replace", true));
@@ -2399,6 +2388,68 @@ void CodeEdit::set_symbol_lookup_word_as_valid(bool p_valid) {
 	}
 }
 
+/* Text manipulation */
+void CodeEdit::duplicate_lines() {
+	begin_complex_operation();
+
+	Vector<int> caret_edit_order = get_caret_index_edit_order();
+	for (const int &caret_index : caret_edit_order) {
+		// The text that will be inserted. All lines in one string.
+		String insert_text;
+
+		// The new line position of the caret after the operation.
+		int new_caret_line = get_caret_line(caret_index);
+		// The new column position of the caret after the operation.
+		int new_caret_column = get_caret_column(caret_index);
+		// The caret positions of the selection. Stays -1 if there is no selection.
+		int select_from_line = -1;
+		int select_to_line = -1;
+		int select_from_column = -1;
+		int select_to_column = -1;
+		// Number of lines of the selection.
+		int select_num_lines = -1;
+
+		if (has_selection(caret_index)) {
+			select_from_line = get_selection_from_line(caret_index);
+			select_to_line = get_selection_to_line(caret_index);
+			select_from_column = get_selection_from_column(caret_index);
+			select_to_column = get_selection_to_column(caret_index);
+			select_num_lines = select_to_line - select_from_line + 1;
+
+			for (int i = select_from_line; i <= select_to_line; i++) {
+				insert_text += "\n" + get_line(i);
+				unfold_line(i);
+			}
+			new_caret_line = select_to_line + select_num_lines;
+		} else {
+			insert_text = "\n" + get_line(new_caret_line);
+			new_caret_line++;
+
+			unfold_line(get_caret_line(caret_index));
+		}
+
+		// The text will be inserted at the end of the current line.
+		set_caret_column(get_line(get_caret_line(caret_index)).length(), false, caret_index);
+
+		deselect(caret_index);
+
+		insert_text_at_caret(insert_text, caret_index);
+		set_caret_line(new_caret_line, false, true, 0, caret_index);
+		set_caret_column(new_caret_column, true, caret_index);
+
+		if (select_from_line != -1) {
+			// Advance the selection by the number of duplicated lines.
+			select_from_line += select_num_lines;
+			select_to_line += select_num_lines;
+
+			select(select_from_line, select_from_column, select_to_line, select_to_column, caret_index);
+		}
+	}
+
+	end_complex_operation();
+	queue_redraw();
+}
+
 /* Visual */
 Color CodeEdit::_get_brace_mismatch_color() const {
 	return theme_cache.brace_mismatch_color;
@@ -2597,6 +2648,9 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_with_cursor_char", "line", "column"), &CodeEdit::get_text_with_cursor_char);
 
 	ClassDB::bind_method(D_METHOD("set_symbol_lookup_word_as_valid", "valid"), &CodeEdit::set_symbol_lookup_word_as_valid);
+
+	/* Text manipulation */
+	ClassDB::bind_method(D_METHOD("duplicate_lines"), &CodeEdit::duplicate_lines);
 
 	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
@@ -2808,7 +2862,8 @@ void CodeEdit::_update_code_region_tags() {
 		return;
 	}
 
-	for (int i = 0; i < delimiters.size(); i++) {
+	// A shorter delimiter has higher priority.
+	for (int i = delimiters.size() - 1; i >= 0; i--) {
 		if (delimiters[i].type != DelimiterType::TYPE_COMMENT) {
 			continue;
 		}
@@ -3050,6 +3105,8 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 		ERR_FAIL_COND_MSG(delimiters[i].start_key == p_start_key, "delimiter with start key '" + p_start_key + "' already exists.");
 		if (p_start_key.length() < delimiters[i].start_key.length()) {
 			at++;
+		} else {
+			break;
 		}
 	}
 
@@ -3158,7 +3215,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	int line_height = get_line_height();
 
 	if (GDVIRTUAL_IS_OVERRIDDEN(_filter_code_completion_candidates)) {
-		code_completion_options.clear();
+		Vector<ScriptLanguage::CodeCompletionOption> code_completion_options_new;
 		code_completion_base = "";
 
 		/* Build options argument. */
@@ -3208,11 +3265,15 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			if (theme_cache.font.is_valid()) {
 				max_width = MAX(max_width, theme_cache.font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + offset);
 			}
-			code_completion_options.push_back(option);
+			code_completion_options_new.push_back(option);
 		}
 
+		if (_should_reset_selected_option_for_new_options(code_completion_options_new)) {
+			code_completion_current_selected = 0;
+		}
+		code_completion_options = code_completion_options_new;
+
 		code_completion_longest_line = MIN(max_width, theme_cache.code_completion_max_width * theme_cache.font_size);
-		code_completion_current_selected = 0;
 		code_completion_force_item_center = -1;
 		code_completion_active = true;
 		queue_redraw();
@@ -3287,7 +3348,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	/* For now handle only traditional quoted strings. */
 	bool single_quote = in_string != -1 && first_quote_col > 0 && delimiters[in_string].start_key == "'";
 
-	code_completion_options.clear();
+	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options_new;
 	code_completion_base = string_to_complete;
 
 	/* Don't autocomplete setting numerical values. */
@@ -3319,7 +3380,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 		if (string_to_complete.length() == 0) {
 			option.get_option_characteristics(string_to_complete);
-			code_completion_options.push_back(option);
+			code_completion_options_new.push_back(option);
+
 			if (theme_cache.font.is_valid()) {
 				max_width = MAX(max_width, theme_cache.font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + offset);
 			}
@@ -3394,7 +3456,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				}
 			}
 
-			code_completion_options.push_back(option);
+			code_completion_options_new.push_back(option);
 			if (theme_cache.font.is_valid()) {
 				max_width = MAX(max_width, theme_cache.font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + offset);
 			}
@@ -3402,24 +3464,44 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	}
 
 	/* No options to complete, cancel. */
-	if (code_completion_options.size() == 0) {
+	if (code_completion_options_new.size() == 0) {
 		cancel_code_completion();
 		return;
 	}
 
 	/* A perfect match, stop completion. */
-	if (code_completion_options.size() == 1 && string_to_complete == code_completion_options[0].display) {
+	if (code_completion_options_new.size() == 1 && string_to_complete == code_completion_options_new[0].display) {
 		cancel_code_completion();
 		return;
 	}
 
-	code_completion_options.sort_custom<CodeCompletionOptionCompare>();
+	code_completion_options_new.sort_custom<CodeCompletionOptionCompare>();
+	if (_should_reset_selected_option_for_new_options(code_completion_options_new)) {
+		code_completion_current_selected = 0;
+	}
+	code_completion_options = code_completion_options_new;
 
 	code_completion_longest_line = MIN(max_width, theme_cache.code_completion_max_width * theme_cache.font_size);
-	code_completion_current_selected = 0;
 	code_completion_force_item_center = -1;
 	code_completion_active = true;
 	queue_redraw();
+}
+
+// Assumes both the new_options and the code_completion_options are sorted.
+bool CodeEdit::_should_reset_selected_option_for_new_options(const Vector<ScriptLanguage::CodeCompletionOption> &p_new_options) {
+	if (code_completion_current_selected >= p_new_options.size()) {
+		return true;
+	}
+
+	for (int i = 0; i < code_completion_options.size() && i < p_new_options.size(); i++) {
+		if (i > code_completion_current_selected) {
+			return false;
+		}
+		if (code_completion_options[i].display != p_new_options[i].display) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {

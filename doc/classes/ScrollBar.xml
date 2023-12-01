@@ -21,4 +21,39 @@
 			</description>
 		</signal>
 	</signals>
+	<theme_items>
+		<theme_item name="decrement" data_type="icon" type="Texture2D">
+			Icon used as a button to scroll the [ScrollBar] left/up. Supports custom step using the [member ScrollBar.custom_step] property.
+		</theme_item>
+		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
+			Displayed when the mouse cursor hovers over the decrement button.
+		</theme_item>
+		<theme_item name="decrement_pressed" data_type="icon" type="Texture2D">
+			Displayed when the decrement button is being pressed.
+		</theme_item>
+		<theme_item name="increment" data_type="icon" type="Texture2D">
+			Icon used as a button to scroll the [ScrollBar] right/down. Supports custom step using the [member ScrollBar.custom_step] property.
+		</theme_item>
+		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
+			Displayed when the mouse cursor hovers over the increment button.
+		</theme_item>
+		<theme_item name="increment_pressed" data_type="icon" type="Texture2D">
+			Displayed when the increment button is being pressed.
+		</theme_item>
+		<theme_item name="grabber" data_type="style" type="StyleBox">
+			Used as texture for the grabber, the draggable element representing current scroll.
+		</theme_item>
+		<theme_item name="grabber_highlight" data_type="style" type="StyleBox">
+			Used when the mouse hovers over the grabber.
+		</theme_item>
+		<theme_item name="grabber_pressed" data_type="style" type="StyleBox">
+			Used when the grabber is being dragged.
+		</theme_item>
+		<theme_item name="scroll" data_type="style" type="StyleBox">
+			Used as background of this [ScrollBar].
+		</theme_item>
+		<theme_item name="scroll_focus" data_type="style" type="StyleBox">
+			Used as background when the [ScrollBar] has the GUI focus.
+		</theme_item>
+	</theme_items>
 </class>

@@ -131,6 +131,7 @@ public:
 		StringName name;
 		bool disabled = false;
 		bool exposed = false;
+		bool reloadable = false;
 		bool is_virtual = false;
 		Object *(*creation_func)() = nullptr;
 
@@ -228,7 +229,7 @@ public:
 	}
 
 	static void register_extension_class(ObjectGDExtension *p_extension);
-	static void unregister_extension_class(const StringName &p_class);
+	static void unregister_extension_class(const StringName &p_class, bool p_free_method_binds = true);
 
 	template <class T>
 	static Object *_create_ptr_func() {
@@ -250,6 +251,9 @@ public:
 	}
 
 	static void get_class_list(List<StringName> *p_classes);
+#ifdef TOOLS_ENABLED
+	static void get_extensions_class_list(List<StringName> *p_classes);
+#endif
 	static void get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);
@@ -398,6 +402,7 @@ public:
 	static void set_method_flags(const StringName &p_class, const StringName &p_method, int p_flags);
 
 	static void get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static void get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods_with_hash, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
 	static MethodBind *get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists = nullptr, bool *r_is_deprecated = nullptr);
@@ -426,6 +431,7 @@ public:
 	static bool is_class_enabled(const StringName &p_class);
 
 	static bool is_class_exposed(const StringName &p_class);
+	static bool is_class_reloadable(const StringName &p_class);
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);

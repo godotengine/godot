@@ -327,22 +327,22 @@ TileSet::TerrainsPattern::TerrainsPattern(const TileSet *p_tile_set, int p_terra
 const int TileSet::INVALID_SOURCE = -1;
 
 const char *TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[] = {
-	"right_side",
-	"right_corner",
-	"bottom_right_side",
-	"bottom_right_corner",
-	"bottom_side",
-	"bottom_corner",
-	"bottom_left_side",
-	"bottom_left_corner",
-	"left_side",
-	"left_corner",
-	"top_left_side",
-	"top_left_corner",
-	"top_side",
-	"top_corner",
-	"top_right_side",
-	"top_right_corner"
+	PNAME("right_side"),
+	PNAME("right_corner"),
+	PNAME("bottom_right_side"),
+	PNAME("bottom_right_corner"),
+	PNAME("bottom_side"),
+	PNAME("bottom_corner"),
+	PNAME("bottom_left_side"),
+	PNAME("bottom_left_corner"),
+	PNAME("left_side"),
+	PNAME("left_corner"),
+	PNAME("top_left_side"),
+	PNAME("top_left_corner"),
+	PNAME("top_side"),
+	PNAME("top_corner"),
+	PNAME("top_right_side"),
+	PNAME("top_right_corner"),
 };
 
 // -- Shape and layout --
@@ -4758,30 +4758,18 @@ void TileSetAtlasSource::_queue_update_padded_texture() {
 	call_deferred(SNAME("_update_padded_texture"));
 }
 
-void TileSetAtlasSource::_update_padded_texture() {
-	if (!padded_texture_needs_update) {
-		return;
-	}
-	padded_texture_needs_update = false;
-	padded_texture = Ref<ImageTexture>();
+Ref<ImageTexture> TileSetAtlasSource::_create_padded_image_texture(const Ref<Texture2D> &p_source) {
+	ERR_FAIL_COND_V(p_source.is_null(), Ref<ImageTexture>());
 
-	if (!texture.is_valid()) {
-		return;
-	}
-
-	if (!use_texture_padding) {
-		return;
+	Ref<Image> src_image = p_source->get_image();
+	if (src_image.is_null()) {
+		Ref<ImageTexture> ret;
+		ret.instantiate();
+		return ret;
 	}
 
 	Size2 size = get_atlas_grid_size() * (texture_region_size + Vector2i(2, 2));
-
-	Ref<Image> src = texture->get_image();
-
-	if (!src.is_valid()) {
-		return;
-	}
-
-	Ref<Image> image = Image::create_empty(size.x, size.y, false, src->get_format());
+	Ref<Image> image = Image::create_empty(size.x, size.y, false, src_image->get_format());
 
 	for (KeyValue<Vector2i, TileAlternativesData> kv : tiles) {
 		for (int frame = 0; frame < (int)kv.value.animation_frames_durations.size(); frame++) {
@@ -4797,24 +4785,80 @@ void TileSetAtlasSource::_update_padded_texture() {
 			Vector2i frame_coords = kv.key + (kv.value.size_in_atlas + kv.value.animation_separation) * ((kv.value.animation_columns > 0) ? Vector2i(frame % kv.value.animation_columns, frame / kv.value.animation_columns) : Vector2i(frame, 0));
 			Vector2i base_pos = frame_coords * (texture_region_size + Vector2i(2, 2)) + Vector2i(1, 1);
 
-			image->blit_rect(*src, src_rect, base_pos);
+			image->blit_rect(*src_image, src_rect, base_pos);
 
-			image->blit_rect(*src, top_src_rect, base_pos + Vector2i(0, -1));
-			image->blit_rect(*src, bottom_src_rect, base_pos + Vector2i(0, src_rect.size.y));
-			image->blit_rect(*src, left_src_rect, base_pos + Vector2i(-1, 0));
-			image->blit_rect(*src, right_src_rect, base_pos + Vector2i(src_rect.size.x, 0));
+			// Sides
+			image->blit_rect(*src_image, top_src_rect, base_pos + Vector2i(0, -1));
+			image->blit_rect(*src_image, bottom_src_rect, base_pos + Vector2i(0, src_rect.size.y));
+			image->blit_rect(*src_image, left_src_rect, base_pos + Vector2i(-1, 0));
+			image->blit_rect(*src_image, right_src_rect, base_pos + Vector2i(src_rect.size.x, 0));
 
-			image->set_pixelv(base_pos + Vector2i(-1, -1), src->get_pixelv(src_rect.position));
-			image->set_pixelv(base_pos + Vector2i(src_rect.size.x, -1), src->get_pixelv(src_rect.position + Vector2i(src_rect.size.x - 1, 0)));
-			image->set_pixelv(base_pos + Vector2i(-1, src_rect.size.y), src->get_pixelv(src_rect.position + Vector2i(0, src_rect.size.y - 1)));
-			image->set_pixelv(base_pos + Vector2i(src_rect.size.x, src_rect.size.y), src->get_pixelv(src_rect.position + Vector2i(src_rect.size.x - 1, src_rect.size.y - 1)));
+			// Corners
+			image->blit_rect(*src_image, Rect2i(src_rect.position, Vector2i(1, 1)), base_pos + Vector2i(-1, -1));
+			image->blit_rect(*src_image, Rect2i(src_rect.position + Vector2i(src_rect.size.x - 1, 0), Vector2i(1, 1)), base_pos + Vector2i(src_rect.size.x, -1));
+			image->blit_rect(*src_image, Rect2i(src_rect.position + Vector2i(0, src_rect.size.y - 1), Vector2i(1, 1)), base_pos + Vector2i(-1, src_rect.size.y));
+			image->blit_rect(*src_image, Rect2i(src_rect.position + Vector2i(src_rect.size.x - 1, src_rect.size.y - 1), Vector2i(1, 1)), base_pos + Vector2i(src_rect.size.x, src_rect.size.y));
 		}
 	}
 
-	if (!padded_texture.is_valid()) {
-		padded_texture.instantiate();
+	return ImageTexture::create_from_image(image);
+}
+
+void TileSetAtlasSource::_update_padded_texture() {
+	if (!padded_texture_needs_update) {
+		return;
 	}
-	padded_texture->set_image(image);
+	padded_texture_needs_update = false;
+
+	if (padded_texture.is_valid()) {
+		padded_texture->disconnect_changed(callable_mp(this, &TileSetAtlasSource::_queue_update_padded_texture));
+	}
+
+	padded_texture = Ref<CanvasTexture>();
+
+	if (texture.is_null()) {
+		return;
+	}
+
+	if (!use_texture_padding) {
+		return;
+	}
+
+	padded_texture.instantiate();
+
+	Ref<CanvasTexture> src_canvas_texture = texture;
+	if (src_canvas_texture.is_valid()) {
+		// Use all textures.
+		// Diffuse
+		Ref<Texture2D> src = src_canvas_texture->get_diffuse_texture();
+		Ref<ImageTexture> image_texture;
+		if (src.is_valid()) {
+			padded_texture->set_diffuse_texture(_create_padded_image_texture(src));
+		}
+
+		// Normal
+		src = src_canvas_texture->get_normal_texture();
+		if (src.is_valid()) {
+			padded_texture->set_normal_texture(_create_padded_image_texture(src));
+		}
+
+		// Specular
+		src = src_canvas_texture->get_specular_texture();
+		if (src.is_valid()) {
+			padded_texture->set_specular_texture(_create_padded_image_texture(src));
+		}
+
+		// Other properties.
+		padded_texture->set_specular_color(src_canvas_texture->get_specular_color());
+		padded_texture->set_specular_shininess(src_canvas_texture->get_specular_shininess());
+		padded_texture->set_texture_filter(src_canvas_texture->get_texture_filter());
+		padded_texture->set_texture_repeat(src_canvas_texture->get_texture_repeat());
+	} else {
+		// Use only diffuse.
+		Ref<ImageTexture> image_texture = _create_padded_image_texture(texture);
+		padded_texture->set_diffuse_texture(image_texture);
+	}
+	padded_texture->connect_changed(callable_mp(this, &TileSetAtlasSource::_queue_update_padded_texture));
 	emit_changed();
 }
 
@@ -5839,7 +5883,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 				if (is_valid_terrain_peering_bit(bit)) {
-					property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]));
+					property_info = PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("terrains_peering_bit"), TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]));
 					if (get_terrain_peering_bit(bit) == -1) {
 						property_info.usage ^= PROPERTY_USAGE_STORAGE;
 					}

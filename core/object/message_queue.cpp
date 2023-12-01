@@ -36,7 +36,7 @@
 #include "core/object/script_language.h"
 
 #ifdef DEV_ENABLED
-// Includes sanity checks to ensure that a queue set as a thread singleton override
+// Includes safety checks to ensure that a queue set as a thread singleton override
 // is only ever called from the thread it was set for.
 #define LOCK_MUTEX                                     \
 	if (this != MessageQueue::thread_singleton) {      \
@@ -537,7 +537,7 @@ CallQueue::~CallQueue() {
 	if (!allocator_is_custom) {
 		memdelete(allocator);
 	}
-	// This is done here to avoid a circular dependency between the sanity checks and the thread singleton pointer.
+	// This is done here to avoid a circular dependency between the safety checks and the thread singleton pointer.
 	if (this == MessageQueue::thread_singleton) {
 		MessageQueue::thread_singleton = nullptr;
 	}

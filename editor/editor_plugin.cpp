@@ -335,6 +335,10 @@ bool EditorPlugin::handles(Object *p_object) const {
 	return success;
 }
 
+bool EditorPlugin::can_auto_hide() const {
+	return true;
+}
+
 Dictionary EditorPlugin::get_state() const {
 	Dictionary state;
 	GDVIRTUAL_CALL(_get_state, state);

@@ -132,6 +132,10 @@ int OS_Web::get_processor_count() const {
 	return godot_js_os_hw_concurrency_get();
 }
 
+String OS_Web::get_unique_id() const {
+	ERR_FAIL_V_MSG("", "OS::get_unique_id() is not available on the Web platform.");
+}
+
 bool OS_Web::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "web") {
 		return true;
@@ -154,6 +158,12 @@ Error OS_Web::shell_open(String p_uri) {
 
 String OS_Web::get_name() const {
 	return "Web";
+}
+
+void OS_Web::add_frame_delay(bool p_can_draw) {
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	OS::add_frame_delay(p_can_draw);
+#endif
 }
 
 void OS_Web::vibrate_handheld(int p_duration_ms) {

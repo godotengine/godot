@@ -24,13 +24,15 @@
 # Edvard Ekrem Sæther <edvardekrem@gmail.com>, 2022.
 # Changry <c@changry.no>, 2022.
 # Karl-Robert Rønning <karlyarly@gmail.com>, 2023.
+# Simon <ratchetfan92@gmail.com>, 2023.
+# Fragment Ventures <lasse@fragmentventures.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-10 08:37+0000\n"
-"Last-Translator: Karl-Robert Rønning <karlyarly@gmail.com>\n"
+"PO-Revision-Date: 2023-11-06 00:35+0000\n"
+"Last-Translator: Fragment Ventures <lasse@fragmentventures.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -38,10 +40,189 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
+
+msgid "Main Thread"
+msgstr "Hovedtråden"
+
+msgid "Unset"
+msgstr "Deaktiver"
+
+msgid "Physical"
+msgstr "Fysisk"
+
+msgid "Left Mouse Button"
+msgstr "Venstre museknapp"
+
+msgid "Right Mouse Button"
+msgstr "Høyre museknapp"
+
+msgid "Middle Mouse Button"
+msgstr "Midterste museknapp"
+
+msgid "Mouse Wheel Up"
+msgstr "Musehjul opp"
+
+msgid "Mouse Wheel Down"
+msgstr "Musehjul ned"
+
+msgid "Mouse Wheel Left"
+msgstr "Musehjul venstre"
+
+msgid "Mouse Wheel Right"
+msgstr "Musehjul høyre"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Museknapp tommel 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Museknapp tommel 2"
 
 msgid "Button"
 msgstr "Knapp"
+
+msgid "Double Click"
+msgstr "Dobbeltklikk"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Musebevegelse ved posisjon (%s) med hastighet (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Venstre stikke X-akse, styrespake 0 X-akse"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Venstre stikke Y-akse, styrespake 0 Y-akse"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Høyre stikke X-akse, styrespake 1 X-akse"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Høyre stikke Y-akse, styrespake 1 Y-akse"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Styrespak 2 X-akse, venstre avtrekker, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Styrespak 2 Y-akse, høyre avtrekker, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Styrespake 3 X-akse"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Styrespake 3 Y-akse"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Styrespak 4 X-Aksen"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Styrespak 4 Y-Aksen"
+
+msgid "Unknown Joypad Axis"
+msgstr "Ukjent Joypad Akse"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Joypad Bevegelse på Akse %d (%s med Verdien %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Nedre handlingsknapp, Sony Cross, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Høyre handlingsknapp, Sony Circle, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Venstre handlingsknapp, Sony firkant, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Øvre handlingsknapp, Sony Trekant, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Tilbake, Sony Velg, Xbox Tilbake, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Guide, Sony PS, Xbox Hjem"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Start, Xbox Meny, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Venstre Stikke, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Høyre Stikke, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Venstre Skulder, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Høyre Skulder, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-pad Opp"
+
+msgid "D-pad Down"
+msgstr "D-pad Ned"
+
+msgid "D-pad Left"
+msgstr "D-pad Venstre"
+
+msgid "D-pad Right"
+msgstr "D-pad Høyre"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Del, PS5 Mikrofon, Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Paddle 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Trigger 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Trigger 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Trigger 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Berøringsflate"
+
+msgid "Joypad Button %d"
+msgstr "Joypad Knapp %d"
+
+msgid "Pressure:"
+msgstr "Trykk:"
+
+msgid "canceled"
+msgstr "Avbrutt"
+
+msgid "touched"
+msgstr "berørt"
+
+msgid "released"
+msgstr "sluppet"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Skjerm %s ved (%s) med %s berøringspunkter"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"Skjerm dratt med %s berøringspunkter på lokasjon (%s) med en hastighet på (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Forstørrelsesbevegelse ved (%s) med en faktor %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Pennebevegelse ved (%s) med delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "MIDI Input i Kanal=%s Beskjed=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Input Event med Snarvei=%s"
+
+msgid "Accept"
+msgstr "Aksepter"
 
 msgid "Select"
 msgstr "Velg"
@@ -49,11 +230,32 @@ msgstr "Velg"
 msgid "Cancel"
 msgstr "Avbryt"
 
+msgid "Focus Next"
+msgstr "Fokus Neste"
+
+msgid "Focus Prev"
+msgstr "Fokus Forrige"
+
+msgid "Left"
+msgstr "Venstre"
+
+msgid "Right"
+msgstr "Høyre"
+
 msgid "Up"
 msgstr "Opp"
 
 msgid "Down"
 msgstr "Ned"
+
+msgid "Page Up"
+msgstr "Side Opp"
+
+msgid "Page Down"
+msgstr "Side Ned"
+
+msgid "Home"
+msgstr "Hjem"
 
 msgid "End"
 msgstr "End"
@@ -73,14 +275,128 @@ msgstr "Angre"
 msgid "Redo"
 msgstr "Gjør om"
 
+msgid "Completion Query"
+msgstr "Fullføringsspørring"
+
+msgid "New Line"
+msgstr "Ny linje"
+
+msgid "New Blank Line"
+msgstr "Ny tom linje"
+
+msgid "New Line Above"
+msgstr "Ny linje over"
+
+msgid "Indent"
+msgstr "Innrykk"
+
+msgid "Dedent"
+msgstr "Fjern innrykk"
+
+msgid "Backspace"
+msgstr "Tilbake"
+
+msgid "Backspace Word"
+msgstr "Tilbake Ord"
+
+msgid "Backspace all to Left"
+msgstr "Tilbaketasten alt til Venstre"
+
 msgid "Delete"
 msgstr "Slett"
+
+msgid "Delete Word"
+msgstr "Slett Ord"
+
+msgid "Delete all to Right"
+msgstr "Slett alt til Høyre"
+
+msgid "Caret Left"
+msgstr "Markering Venstre"
+
+msgid "Caret Word Left"
+msgstr "Markering Ord Venstre"
+
+msgid "Caret Right"
+msgstr "Markering Høyre"
+
+msgid "Caret Word Right"
+msgstr "Markere Ord Høyre"
+
+msgid "Caret Up"
+msgstr "Markering Opp"
+
+msgid "Caret Down"
+msgstr "markering Ned"
+
+msgid "Caret Line Start"
+msgstr "Markere Linjestart"
+
+msgid "Caret Line End"
+msgstr "Markere Linjeslutt"
+
+msgid "Caret Page Up"
+msgstr "Makrere Side Opp"
+
+msgid "Caret Page Down"
+msgstr "Markere Side Ned"
+
+msgid "Caret Document Start"
+msgstr "Markere Dokumentstart"
+
+msgid "Caret Document End"
+msgstr "Markere Dokumentslutt"
+
+msgid "Caret Add Below"
+msgstr "Caret Legg til under"
+
+msgid "Caret Add Above"
+msgstr "Caret Legg til over"
+
+msgid "Scroll Up"
+msgstr "Rull Opp"
+
+msgid "Scroll Down"
+msgstr "Rull ned"
 
 msgid "Select All"
 msgstr "Velg alle"
 
+msgid "Select Word Under Caret"
+msgstr "Marker Ord Under Caret"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Legg til valgte ved neste hendelse"
+
+msgid "Clear Carets and Selection"
+msgstr "Fjern Markering"
+
+msgid "Toggle Insert Mode"
+msgstr "Velg innsettingsmodus"
+
+msgid "Submit Text"
+msgstr "Send inn Tekst"
+
+msgid "Duplicate Nodes"
+msgstr "Dupliser Noder"
+
+msgid "Delete Nodes"
+msgstr "Slett Noder"
+
+msgid "Go Up One Level"
+msgstr "Gå opp ett nivå"
+
 msgid "Refresh"
 msgstr "Oppdater"
+
+msgid "Show Hidden"
+msgstr "Vis skjulte"
+
+msgid "Swap Input Direction"
+msgstr "Bytt Input-retning"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "Ugyldig input %d (ikke bestått) i utrykket"
 
 msgid "self can't be used because instance is null (not passed)"
 msgstr "self kan ikke brukes fordi instansen er null (ikke bestått)"
@@ -99,6 +415,12 @@ msgstr "Ugyldige argumenter for å konstruere '%s'"
 
 msgid "On call to '%s':"
 msgstr "Når '%s' blir påkalt:"
+
+msgid "Built-in script"
+msgstr "Innebygd Skript"
+
+msgid "Built-in"
+msgstr "Innebygd"
 
 msgid "B"
 msgstr "B"
@@ -121,14 +443,59 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
+msgid "Example: %s"
+msgstr "Eksempel: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d element"
+msgstr[1] "%d elementer"
+
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
+"Ugyldig handlingsnavn. Kan ikke være tom, eller inneholde '/', ':', '=', '\\ "
+"eller '\"'"
+
 msgid "An action with the name '%s' already exists."
 msgstr "En handling med navnet '%s' finnes allerede."
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Kan ikke angre - Handlingen er den samme som nå"
+
+msgid "Revert Action"
+msgstr "Tilbakestill handling"
 
 msgid "Add Event"
 msgstr "Legg til hendelse"
 
+msgid "Remove Action"
+msgstr "Fjern handling"
+
+msgid "Cannot Remove Action"
+msgstr "Kan ikke fjerne handling"
+
+msgid "Edit Event"
+msgstr "Rediger Hendelse"
+
+msgid "Remove Event"
+msgstr "Fjern Hendelse"
+
+msgid "Filter by name..."
+msgstr "Filtrer etter navn..."
+
+msgid "Clear All"
+msgstr "Tøm alt"
+
+msgid "Add New Action"
+msgstr "Legg til handling"
+
 msgid "Add"
 msgstr "Legg til"
+
+msgid "Show Built-in Actions"
+msgstr "Vis Innebygde handlinger"
 
 msgid "Deadzone"
 msgstr "Dødsone"
@@ -142,11 +509,53 @@ msgstr "Verdi:"
 msgid "Insert Key Here"
 msgstr "Sett Inn Nøkkel Her"
 
+msgid "Duplicate Selected Key(s)"
+msgstr "Dupliser Valgte Nøkler"
+
+msgid "Make Handles Free"
+msgstr "Gjør håndtakene frie"
+
+msgid "Make Handles Linear"
+msgstr "Gjør håndtakene lineære"
+
+msgid "Make Handles Balanced"
+msgstr "Gjør håndtakene balanserte"
+
+msgid "Make Handles Mirrored"
+msgstr "Gjør håndtakene speilet"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Gjør håndtakene balanserte (Automatisk Håndtak)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Gjør håndtakene speilet (Automatiske Håndtak)"
+
 msgid "Add Bezier Point"
 msgstr "Legg Til Bezier-punkt"
 
 msgid "Move Bezier Points"
 msgstr "Flytt Bezier-punkt"
+
+msgid "Animation Duplicate Keys"
+msgstr "Animasjon Dupliser Knapper"
+
+msgid "Animation Delete Keys"
+msgstr "Animasjon Slette Knapper"
+
+msgid "Focus"
+msgstr "Fokuser"
+
+msgid "Select All Keys"
+msgstr "Velg alle Nøkler"
+
+msgid "Deselect All Keys"
+msgstr "Fjern markering på alle nøkler"
+
+msgid "Animation Change Transition"
+msgstr "Animasjon Velg Overgang"
+
+msgid "Animation Change Position3D"
+msgstr "Animasjon Endre Position3d"
 
 msgid "Change Animation Length"
 msgstr "Endre Animasjonslengde"
@@ -317,11 +726,11 @@ msgid ""
 msgstr ""
 "Dette valget virker ikke på Bézier-redigering, da det kun er ett enkelt spor."
 
-msgid "Warning: Editing imported animation"
-msgstr "Advarsel: Redigerer importert animasjon"
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Velg en AnimationPlayer-node for å lage og redigere animasjoner."
+
+msgid "Warning: Editing imported animation"
+msgstr "Advarsel: Redigerer importert animasjon"
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Vis kun spor fra noder valgt i treet."
@@ -490,9 +899,6 @@ msgstr "Lukk"
 
 msgid "Connect"
 msgstr "Koble til"
-
-msgid "Signal:"
-msgstr "Signal:"
 
 msgid "Connect '%s' to '%s'"
 msgstr "Koble '%s' til '%s'"
@@ -731,18 +1137,6 @@ msgstr "Platinasponsorer"
 
 msgid "Gold Sponsors"
 msgstr "Gullsponsorer"
-
-msgid "Mini Sponsors"
-msgstr "Minisponsorer"
-
-msgid "Gold Donors"
-msgstr "Gulldonorer"
-
-msgid "Silver Donors"
-msgstr "Sølvdonorer"
-
-msgid "Bronze Donors"
-msgstr "Bronsedonorer"
 
 msgid "Donors"
 msgstr "Donorer"
@@ -1036,6 +1430,12 @@ msgstr ""
 "Det finnes i øyeblikket ingen beskrivelse av denne egenskapen. Hjelp til ved "
 "å [colour=$color][url=$url]bidra med en[/url][/color]!"
 
+msgid "Property:"
+msgstr "Egenskap:"
+
+msgid "Signal:"
+msgstr "Signal:"
+
 msgid "%d match."
 msgstr "%d samsvarer."
 
@@ -1069,9 +1469,6 @@ msgstr "Konstant"
 msgid "Property"
 msgstr "Egenskap"
 
-msgid "Property:"
-msgstr "Egenskap:"
-
 msgid "Move Up"
 msgstr "Flytt opp"
 
@@ -1080,9 +1477,6 @@ msgstr "Flytt ned"
 
 msgid "Resize Array"
 msgstr "Endre størrelsen på Array"
-
-msgid "Set Multiple:"
-msgstr "Sett mange:"
 
 msgid "Name:"
 msgstr "Navn:"
@@ -1101,9 +1495,6 @@ msgstr "Språk:"
 
 msgid "Clear Output"
 msgstr "Nullstill Resultat"
-
-msgid "New Window"
-msgstr "Nytt vindu"
 
 msgid "Spins when the editor window redraws."
 msgstr "Snurrer når redigeringsvinduet tegner opp på nytt."
@@ -1299,21 +1690,6 @@ msgstr "Standard"
 msgid "Save & Close"
 msgstr "Lagre og Lukk"
 
-msgid "Save changes to '%s' before closing?"
-msgstr "Lagre endringer til '%s' før lukking?"
-
-msgid "Close Tab"
-msgstr "Lukk fanen"
-
-msgid "Close Other Tabs"
-msgstr "Lukk Andre Faner"
-
-msgid "Close Tabs to the Right"
-msgstr "Lukk faner til høyre"
-
-msgid "Close All Tabs"
-msgstr "Lukk alle faner"
-
 msgid "%d more files or folders"
 msgstr "%d flere filer eller mapper"
 
@@ -1329,9 +1705,6 @@ msgstr "Panoreringsvisning"
 msgid "Dock Position"
 msgstr "Dock-posisjon"
 
-msgid "Add a new scene."
-msgstr "Legg til ny scene."
-
 msgid "Distraction Free Mode"
 msgstr "Distraksjonsfri Modus"
 
@@ -1343,9 +1716,6 @@ msgstr "Scene"
 
 msgid "Operations with scene files."
 msgstr "Operasjoner med scene-filer."
-
-msgid "Go to previously opened scene."
-msgstr "Gå til forrige åpne scene."
 
 msgid "New Scene"
 msgstr "Ny Scene"
@@ -1537,6 +1907,9 @@ msgstr "Legg Til Nøkkel/Verdi Par"
 msgid "Make Unique"
 msgstr "Gjør Unik"
 
+msgid "Save As..."
+msgstr "Lagre Som..."
+
 msgid "New %s"
 msgstr "Ny %s"
 
@@ -1722,9 +2095,6 @@ msgstr "Kan ikke flytte en mappe inn i seg selv."
 msgid "Error moving:"
 msgstr "Feil ved flytting:"
 
-msgid "Unable to update dependencies:"
-msgstr "Kan ikke oppdatere avhengigheter:"
-
 msgid "A file or folder with this name already exists."
 msgstr "En fil eller mappe med dette navnet eksisterer allerede."
 
@@ -1739,6 +2109,9 @@ msgstr "Legg til i favoritter"
 
 msgid "Remove from Favorites"
 msgstr "Fjern fra favoritter"
+
+msgid "Reimport"
+msgstr "Reimporter"
 
 msgid "New Folder..."
 msgstr "Ny Mappe..."
@@ -1894,11 +2267,26 @@ msgstr "Hurtigkjør Scene..."
 msgid "Run Project"
 msgstr "Kjør prosjektet"
 
+msgid "Close Tab"
+msgstr "Lukk fanen"
+
+msgid "Close Other Tabs"
+msgstr "Lukk Andre Faner"
+
+msgid "Close Tabs to the Right"
+msgstr "Lukk faner til høyre"
+
+msgid "Close All Tabs"
+msgstr "Lukk alle faner"
+
+msgid "New Window"
+msgstr "Nytt vindu"
+
+msgid "Add a new scene."
+msgstr "Legg til ny scene."
+
 msgid "Open in Editor"
 msgstr "Åpne i Redigeringsverktøy"
-
-msgid "Reimport"
-msgstr "Reimporter"
 
 msgid "Offset:"
 msgstr "Avstand:"
@@ -1942,9 +2330,6 @@ msgstr "Importer Som:"
 msgid "Preset"
 msgstr "Forhåndsinnstilling"
 
-msgid "Changing the type of an imported file requires editor restart."
-msgstr "Å endre typen av en importert fil krever omstart av redigereren"
-
 msgid "Device:"
 msgstr "Enhet:"
 
@@ -1965,9 +2350,6 @@ msgstr "Last inn en eksisterende ressurs fra disk og rediger den."
 
 msgid "Save the currently edited resource."
 msgstr "Lagre den nylige redigerte ressursen."
-
-msgid "Save As..."
-msgstr "Lagre Som..."
 
 msgid "Copy Resource"
 msgstr "Kopier Ressurs"
@@ -2602,14 +2984,8 @@ msgstr "Åpne 2D-redigeringsverktøy for polygon-UV"
 msgid "Points"
 msgstr "Poeng"
 
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Roter"
-
 msgid "Shift: Move All"
 msgstr "Shift: Flytt Alle"
-
-msgid "Shift+Ctrl: Scale"
-msgstr "Shift+Ctrl: Skaler"
 
 msgid "Move Polygon"
 msgstr "Flytt Polygon"
@@ -2938,6 +3314,9 @@ msgstr "Lys"
 msgid "Add Node"
 msgstr "Legg til node"
 
+msgid "Bake VoxelGI"
+msgstr "Bak VoxelGI"
+
 msgid "Please choose an empty folder."
 msgstr "Velg en tom mappe."
 
@@ -3103,11 +3482,11 @@ msgstr "Opprett rot-node:"
 msgid "Other Node"
 msgstr "Andre noder"
 
-msgid "This operation requires a single selected node."
-msgstr "Denne operasjonen krever én valgt node."
-
 msgid "Filters"
 msgstr "Filter"
+
+msgid "This operation requires a single selected node."
+msgstr "Denne operasjonen krever én valgt node."
 
 msgid "Remote"
 msgstr "Ekstern"
@@ -3165,9 +3544,6 @@ msgstr "Velg enhet fra listen"
 
 msgid "Uninstalling..."
 msgstr "Avinstallerer …"
-
-msgid "Invalid animation: '%s'."
-msgstr "Ugyldig animasjon: '%s'."
 
 msgid "(Other)"
 msgstr "(Annet)"

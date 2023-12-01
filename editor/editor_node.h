@@ -113,6 +113,8 @@ class ProjectSettingsEditor;
 class RunSettingsDialog;
 class SceneImportSettings;
 class ScriptCreateDialog;
+class SurfaceUpgradeTool;
+class SurfaceUpgradeDialog;
 class WindowWrapper;
 
 class EditorNode : public Node {
@@ -156,6 +158,7 @@ public:
 
 private:
 	friend class EditorSceneTabs;
+	friend class SurfaceUpgradeTool;
 
 	enum MenuOptions {
 		FILE_NEW_SCENE,
@@ -190,6 +193,7 @@ private:
 		EDIT_RELOAD_SAVED_SCENE,
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_BUILD_PROFILE_MANAGER,
+		TOOLS_SURFACE_UPGRADE,
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
@@ -328,6 +332,7 @@ private:
 	bool exiting = false;
 	bool dimmed = false;
 
+	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	HBoxContainer *bottom_hb = nullptr;
@@ -354,8 +359,6 @@ private:
 	Timer *screenshot_timer = nullptr;
 
 	uint64_t started_timestamp = 0;
-
-	PluginConfigDialog *plugin_config_dialog = nullptr;
 
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
@@ -460,6 +463,8 @@ private:
 	bool opening_prev = false;
 	bool restoring_scenes = false;
 	bool unsaved_cache = true;
+
+	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 
 	int current_menu_option = 0;
@@ -477,6 +482,7 @@ private:
 	String _tmp_import_path;
 	String external_file;
 	String open_navigate;
+	String saving_scene;
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
@@ -492,6 +498,10 @@ private:
 	PrintHandlerList print_handler;
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
+
+	SurfaceUpgradeTool *surface_upgrade_tool = nullptr;
+	SurfaceUpgradeDialog *surface_upgrade_dialog = nullptr;
+	bool run_surface_upgrade_tool = false;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -550,6 +560,7 @@ private:
 
 	void _remove_plugin_from_enabled(const String &p_name);
 	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object);
+	void _plugin_over_self_own(EditorPlugin *p_plugin);
 
 	void _fs_changed();
 	void _resources_reimported(const Vector<String> &p_resources);
@@ -597,6 +608,7 @@ private:
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 
 	void _update_from_settings();
+	void _gdextensions_reloaded();
 
 	void _renderer_selected(int);
 	void _update_renderer_color();
@@ -687,6 +699,8 @@ private:
 
 	void _begin_first_scan();
 
+	void _notify_scene_updated(Node *p_node);
+
 protected:
 	friend class FileSystemDock;
 
@@ -701,6 +715,9 @@ public:
 	void set_visible_editor(EditorTable p_table) { editor_select(p_table); }
 
 	bool call_build();
+
+	// This is a very naive estimation, but we need something now. Will be reworked later.
+	bool is_editor_ready() const { return is_inside_tree() && !waiting_for_first_scan; }
 
 	static EditorNode *get_singleton() { return singleton; }
 
@@ -736,7 +753,7 @@ public:
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
 
-	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"));
+	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"), uint32_t p_wrap_width = 0);
 
 	static void cleanup();
 
@@ -866,6 +883,7 @@ public:
 	void _copy_warning(const String &p_str);
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
+	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }
 
@@ -907,7 +925,8 @@ public:
 	PopupMenu *get_export_as_menu();
 
 	void save_all_scenes();
-	void save_scene_list(Vector<String> p_scene_filenames);
+	void save_scene_if_open(const String &p_scene_path);
+	void save_scene_list(const HashSet<String> &p_scene_paths);
 	void save_before_run();
 	void try_autosave();
 	void restart_editor();
@@ -919,7 +938,7 @@ public:
 
 	bool has_scenes_in_session();
 
-	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false);
+	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr);
 
 	EditorNode();
 	~EditorNode();

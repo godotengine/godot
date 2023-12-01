@@ -233,6 +233,7 @@ void EditorResourcePicker::_update_menu_items() {
 			}
 
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
 		}
 
 		if (edited_resource->get_path().is_resource_file()) {
@@ -400,6 +401,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			EditorNode::get_singleton()->save_resource(edited_resource);
 		} break;
 
+		case OBJ_MENU_SAVE_AS: {
+			if (edited_resource.is_null()) {
+				return;
+			}
+			EditorNode::get_singleton()->save_resource_as(edited_resource);
+		} break;
+
 		case OBJ_MENU_COPY: {
 			EditorSettings::get_singleton()->set_resource_clipboard(edited_resource);
 		} break;
@@ -510,7 +518,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 				}
 			}
 
-			if (!is_custom_resource && !(ScriptServer::is_global_class(t) || ClassDB::can_instantiate(t))) {
+			if (!is_custom_resource && !ClassDB::can_instantiate(t)) {
 				continue;
 			}
 

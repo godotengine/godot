@@ -32,15 +32,17 @@
 #define GRAPH_EDIT_H
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
 #include "scene/gui/graph_node.h"
-#include "scene/gui/label.h"
-#include "scene/gui/scroll_bar.h"
-#include "scene/gui/spin_box.h"
 
+class Button;
 class GraphEdit;
 class GraphEditArranger;
+class HScrollBar;
+class Label;
+class PanelContainer;
+class SpinBox;
 class ViewPanner;
+class VScrollBar;
 
 class GraphEditFilter : public Control {
 	GDCLASS(GraphEditFilter, Control);
@@ -154,10 +156,9 @@ private:
 
 	Button *toggle_snapping_button = nullptr;
 	SpinBox *snapping_distance_spinbox = nullptr;
-	Button *show_grid_button = nullptr;
+	Button *toggle_grid_button = nullptr;
 	Button *minimap_button = nullptr;
-
-	Button *layout_button = nullptr;
+	Button *arrange_button = nullptr;
 
 	HScrollBar *h_scrollbar = nullptr;
 	VScrollBar *v_scrollbar = nullptr;
@@ -165,7 +166,12 @@ private:
 	Ref<ViewPanner> panner;
 	bool warped_panning = true;
 
-	bool arrange_nodes_button_hidden = false;
+	bool show_menu = true;
+	bool show_zoom_label = false;
+	bool show_grid_buttons = true;
+	bool show_zoom_buttons = true;
+	bool show_minimap_button = true;
+	bool show_arrange_button = true;
 
 	bool snapping_enabled = true;
 	int snapping_distance = 20;
@@ -216,6 +222,7 @@ private:
 	float lines_curvature = 0.5f;
 	bool lines_antialiased = true;
 
+	PanelContainer *menu_panel = nullptr;
 	HBoxContainer *menu_hbox = nullptr;
 	Control *connections_layer = nullptr;
 	GraphEditFilter *top_layer = nullptr;
@@ -237,6 +244,8 @@ private:
 		Color activity_color;
 		Color selection_fill;
 		Color selection_stroke;
+
+		Ref<StyleBox> menu_panel;
 
 		Ref<Texture2D> zoom_in;
 		Ref<Texture2D> zoom_out;
@@ -293,6 +302,11 @@ private:
 
 	bool _check_clickable_control(Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset);
 
+#ifndef DISABLE_DEPRECATED
+	bool _is_arrange_nodes_button_hidden_bind_compat_81582() const;
+	void _set_arrange_nodes_button_hidden_bind_compat_81582(bool p_enable);
+#endif
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
@@ -301,6 +315,9 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
 
 	virtual bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
 	virtual bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
@@ -346,9 +363,6 @@ public:
 	void set_zoom_step(float p_zoom_step);
 	float get_zoom_step() const;
 
-	void set_show_zoom_label(bool p_enable);
-	bool is_showing_zoom_label() const;
-
 	void set_minimap_size(Vector2 p_size);
 	Vector2 get_minimap_size() const;
 	void set_minimap_opacity(float p_opacity);
@@ -357,8 +371,18 @@ public:
 	void set_minimap_enabled(bool p_enable);
 	bool is_minimap_enabled() const;
 
-	void set_arrange_nodes_button_hidden(bool p_enable);
-	bool is_arrange_nodes_button_hidden() const;
+	void set_show_menu(bool p_hidden);
+	bool is_showing_menu() const;
+	void set_show_zoom_label(bool p_hidden);
+	bool is_showing_zoom_label() const;
+	void set_show_grid_buttons(bool p_hidden);
+	bool is_showing_grid_buttons() const;
+	void set_show_zoom_buttons(bool p_hidden);
+	bool is_showing_zoom_buttons() const;
+	void set_show_minimap_button(bool p_hidden);
+	bool is_showing_minimap_button() const;
+	void set_show_arrange_button(bool p_hidden);
+	bool is_showing_arrange_button() const;
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	GraphEditMinimap *get_minimap() const { return minimap; }

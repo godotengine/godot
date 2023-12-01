@@ -121,6 +121,10 @@ struct CellData {
 	// List elements.
 	SelfList<CellData> dirty_list_element;
 
+	bool operator<(const CellData &p_other) const {
+		return coords < p_other.coords;
+	}
+
 	// For those, copy everything but SelfList elements.
 	void operator=(const CellData &p_other) {
 		coords = p_other.coords;
@@ -149,6 +153,13 @@ struct CellData {
 			debug_quadrant_list_element(this),
 			rendering_quadrant_list_element(this),
 			dirty_list_element(this) {
+	}
+};
+
+// For compatibility reasons, we use another comparator for Y-sorted layers.
+struct CellDataYSortedComparator {
+	_FORCE_INLINE_ bool operator()(const CellData &p_a, const CellData &p_b) const {
+		return p_a.coords.x == p_b.coords.x ? (p_a.coords.y < p_b.coords.y) : (p_a.coords.x > p_b.coords.x);
 	}
 };
 
@@ -199,6 +210,7 @@ public:
 	Vector2i quadrant_coords;
 	SelfList<CellData>::List cells;
 	List<RID> canvas_items;
+	Vector2 canvas_items_position;
 
 	SelfList<RenderingQuadrant> dirty_quadrant_list_element;
 
@@ -236,6 +248,7 @@ public:
 		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
+		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
 		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE,
 		DIRTY_FLAGS_TILE_MAP_IN_TREE,
 		DIRTY_FLAGS_TILE_MAP_IN_CANVAS,
@@ -266,6 +279,7 @@ private:
 	bool y_sort_enabled = false;
 	int y_sort_origin = 0;
 	int z_index = 0;
+	bool navigation_enabled = true;
 	RID navigation_map;
 	bool uses_world_navigation_map = false;
 
@@ -304,7 +318,6 @@ private:
 #endif // DEBUG_ENABLED
 
 	HashMap<Vector2i, Ref<RenderingQuadrant>> rendering_quadrant_map;
-	Vector2i _coords_to_rendering_quadrant_coords(const Vector2i &p_coords) const;
 	bool _rendering_was_cleaned_up = false;
 	void _rendering_update();
 	void _rendering_quadrants_update_cell(CellData &r_cell_data, SelfList<RenderingQuadrant>::List &r_dirty_rendering_quadrant_list);
@@ -361,7 +374,6 @@ public:
 
 	// Not exposed to users.
 	TileMapCell get_cell(const Vector2i &p_coords, bool p_use_proxies = false) const;
-	int get_effective_quadrant_size() const;
 
 	// For TileMap node's use.
 	void set_tile_data(DataFormat p_format, const Vector<int> &p_data);
@@ -407,6 +419,8 @@ public:
 	int get_y_sort_origin() const;
 	void set_z_index(int p_z_index);
 	int get_z_index() const;
+	void set_navigation_enabled(bool p_enabled);
+	bool is_navigation_enabled() const;
 	void set_navigation_map(RID p_map);
 	RID get_navigation_map() const;
 
@@ -447,6 +461,7 @@ private:
 
 	// Layers.
 	LocalVector<Ref<TileMapLayer>> layers;
+	Ref<TileMapLayer> default_layer; // Dummy layer to fetch default values.
 	int selected_layer = -1;
 	bool pending_update = false;
 
@@ -454,6 +469,8 @@ private:
 	Transform2D new_transform;
 
 	void _tile_set_changed();
+
+	void _update_notify_local_transform();
 
 	// Polygons.
 	HashMap<Pair<Ref<Resource>, int>, Ref<Resource>, PairHash<Ref<Resource>, int>> polygon_cache;
@@ -463,6 +480,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -516,7 +535,8 @@ public:
 	int get_layer_y_sort_origin(int p_layer) const;
 	void set_layer_z_index(int p_layer, int p_z_index);
 	int get_layer_z_index(int p_layer) const;
-
+	void set_layer_navigation_enabled(int p_layer, bool p_enabled);
+	bool is_layer_navigation_enabled(int p_layer) const;
 	void set_layer_navigation_map(int p_layer, RID p_map);
 	RID get_layer_navigation_map(int p_layer) const;
 

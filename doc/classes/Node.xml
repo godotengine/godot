@@ -93,7 +93,7 @@
 				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callbacks get triggered first, and the parent node will receive the ready notification afterwards.
 				Corresponds to the [constant NOTIFICATION_READY] notification in [method Object._notification]. See also the [code]@onready[/code] annotation for variables.
 				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. See also [method _enter_tree].
-				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [code]_ready[/code] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
+				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [method _ready] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
 			</description>
 		</method>
 		<method name="_shortcut_input" qualifiers="virtual">
@@ -444,7 +444,37 @@
 		<method name="get_tree" qualifiers="const">
 			<return type="SceneTree" />
 			<description>
-				Returns the [SceneTree] that contains this node.
+				Returns the [SceneTree] that contains this node. Returns [code]null[/code] and prints an error if this node is not inside the scene tree. See also [method is_inside_tree].
+			</description>
+		</method>
+		<method name="get_tree_string">
+			<return type="String" />
+			<description>
+				Returns the tree as a [String]. Used mainly for debugging purposes. This version displays the path relative to the current node, and is good for copy/pasting into the [method get_node] function. It also can be used in game UI/UX.
+				[b]Example output:[/b]
+				[codeblock]
+				TheGame
+				TheGame/Menu
+				TheGame/Menu/Label
+				TheGame/Menu/Camera2D
+				TheGame/SplashScreen
+				TheGame/SplashScreen/Camera2D
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_tree_string_pretty">
+			<return type="String" />
+			<description>
+				Similar to [method get_tree_string], this returns the tree as a [String]. This version displays a more graphical representation similar to what is displayed in the Scene Dock. It is useful for inspecting larger trees.
+				[b]Example output:[/b]
+				[codeblock]
+				 ┖╴TheGame
+				    ┠╴Menu
+				    ┃  ┠╴Label
+				    ┃  ┖╴Camera2D
+				    ┖╴SplashScreen
+				       ┖╴Camera2D
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_viewport" qualifiers="const">
@@ -696,7 +726,7 @@
 		<method name="request_ready">
 			<return type="void" />
 			<description>
-				Requests that [code]_ready[/code] be called again. Note that the method won't be called immediately, but is scheduled for when the node is added to the scene tree again (see [method _ready]). [code]_ready[/code] is called only for the node which requested it, which means that you need to request ready for each child if you want them to call [code]_ready[/code] too (in which case, [code]_ready[/code] will be called in the same order as it would normally).
+				Requests that [method _ready] be called again. Note that the method won't be called immediately, but is scheduled for when the node is added to the scene tree again. [method _ready] is called only for the node which requested it, which means that you need to request ready for each child if you want them to call [method _ready] too (in which case, [method _ready] will be called in the same order as it would normally).
 			</description>
 		</method>
 		<method name="rpc" qualifiers="vararg">
@@ -851,6 +881,7 @@
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. See [method SceneTree.get_multiplayer].
+			[b]Note:[/b] Renaming the node, or moving it in the tree, will not move the [MultiplayerAPI] to the new path, you will have to update this manually.
 		</member>
 		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.
@@ -1003,16 +1034,13 @@
 			Notification received every frame when the internal physics process flag is set (see [method set_physics_process_internal]).
 		</constant>
 		<constant name="NOTIFICATION_POST_ENTER_TREE" value="27">
-			Notification received when the node is ready, just before [constant NOTIFICATION_READY] is received. Unlike the latter, it's sent every time the node enters tree, instead of only once.
+			Notification received when the node is ready, just before [constant NOTIFICATION_READY] is received. Unlike the latter, it's sent every time the node enters the tree, instead of only once.
 		</constant>
 		<constant name="NOTIFICATION_DISABLED" value="28">
 			Notification received when the node is disabled. See [constant PROCESS_MODE_DISABLED].
 		</constant>
 		<constant name="NOTIFICATION_ENABLED" value="29">
 			Notification received when the node is enabled again after being disabled. See [constant PROCESS_MODE_DISABLED].
-		</constant>
-		<constant name="NOTIFICATION_NODE_RECACHE_REQUESTED" value="30">
-			Notification received when other nodes in the tree may have been removed/replaced and node pointers may require re-caching.
 		</constant>
 		<constant name="NOTIFICATION_EDITOR_PRE_SAVE" value="9001">
 			Notification received right before the scene with the node is saved in the editor. This notification is only sent in the Godot editor and will not occur in exported projects.

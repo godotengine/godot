@@ -355,20 +355,27 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	return default_value;
 }
 
-void DocTools::generate(bool p_basic_types) {
+void DocTools::generate(BitField<GenerateFlags> p_flags) {
+	// This may involve instantiating classes that are only usable from the main thread
+	// (which is in fact the case of the core API).
+	ERR_FAIL_COND(!Thread::is_main_thread());
+
 	// Add ClassDB-exposed classes.
 	{
 		List<StringName> classes;
-		ClassDB::get_class_list(&classes);
-		classes.sort_custom<StringName::AlphCompare>();
-		// Move ProjectSettings, so that other classes can register properties there.
-		classes.move_to_back(classes.find("ProjectSettings"));
+		if (p_flags.has_flag(GENERATE_FLAG_EXTENSION_CLASSES_ONLY)) {
+			ClassDB::get_extensions_class_list(&classes);
+		} else {
+			ClassDB::get_class_list(&classes);
+			// Move ProjectSettings, so that other classes can register properties there.
+			classes.move_to_back(classes.find("ProjectSettings"));
+		}
 
 		bool skip_setter_getter_methods = true;
 
 		// Populate documentation data for each exposed class.
 		while (classes.size()) {
-			String name = classes.front()->get();
+			const String &name = classes.front()->get();
 			if (!ClassDB::is_class_exposed(name)) {
 				print_verbose(vformat("Class '%s' is not exposed, skipping.", name));
 				classes.pop_front();
@@ -624,66 +631,47 @@ void DocTools::generate(bool p_basic_types) {
 
 			// Theme items.
 			{
-				List<StringName> l;
+				List<ThemeDB::ThemeItemBind> theme_items;
+				ThemeDB::get_singleton()->get_class_own_items(cname, &theme_items);
+				Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
 
-				ThemeDB::get_singleton()->get_default_theme()->get_color_list(cname, &l);
-				for (const StringName &E : l) {
+				for (const ThemeDB::ThemeItemBind &theme_item : theme_items) {
 					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "Color";
-					tid.data_type = "color";
-					tid.default_value = DocData::get_default_value_string(ThemeDB::get_singleton()->get_default_theme()->get_color(E, cname));
-					c.theme_properties.push_back(tid);
-				}
+					tid.name = theme_item.item_name;
 
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_constant_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "int";
-					tid.data_type = "constant";
-					tid.default_value = itos(ThemeDB::get_singleton()->get_default_theme()->get_constant(E, cname));
-					c.theme_properties.push_back(tid);
-				}
+					switch (theme_item.data_type) {
+						case Theme::DATA_TYPE_COLOR:
+							tid.type = "Color";
+							tid.data_type = "color";
+							break;
+						case Theme::DATA_TYPE_CONSTANT:
+							tid.type = "int";
+							tid.data_type = "constant";
+							break;
+						case Theme::DATA_TYPE_FONT:
+							tid.type = "Font";
+							tid.data_type = "font";
+							break;
+						case Theme::DATA_TYPE_FONT_SIZE:
+							tid.type = "int";
+							tid.data_type = "font_size";
+							break;
+						case Theme::DATA_TYPE_ICON:
+							tid.type = "Texture2D";
+							tid.data_type = "icon";
+							break;
+						case Theme::DATA_TYPE_STYLEBOX:
+							tid.type = "StyleBox";
+							tid.data_type = "style";
+							break;
+						case Theme::DATA_TYPE_MAX:
+							break; // Can't happen, but silences warning.
+					}
 
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_font_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "Font";
-					tid.data_type = "font";
-					c.theme_properties.push_back(tid);
-				}
+					if (theme_item.data_type == Theme::DATA_TYPE_COLOR || theme_item.data_type == Theme::DATA_TYPE_CONSTANT) {
+						tid.default_value = DocData::get_default_value_string(default_theme->get_theme_item(theme_item.data_type, theme_item.item_name, cname));
+					}
 
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_font_size_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "int";
-					tid.data_type = "font_size";
-					c.theme_properties.push_back(tid);
-				}
-
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_icon_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "Texture2D";
-					tid.data_type = "icon";
-					c.theme_properties.push_back(tid);
-				}
-
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_stylebox_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "StyleBox";
-					tid.data_type = "style";
 					c.theme_properties.push_back(tid);
 				}
 
@@ -694,17 +682,16 @@ void DocTools::generate(bool p_basic_types) {
 		}
 	}
 
+	if (p_flags.has_flag(GENERATE_FLAG_SKIP_BASIC_TYPES)) {
+		return;
+	}
+
 	// Add a dummy Variant entry.
 	{
 		// This allows us to document the concept of Variant even though
 		// it's not a ClassDB-exposed class.
 		class_list["Variant"] = DocData::ClassDoc();
 		class_list["Variant"].name = "Variant";
-	}
-
-	// If we don't want to populate basic types, break here.
-	if (!p_basic_types) {
-		return;
 	}
 
 	// Add Variant data types.

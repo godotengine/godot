@@ -1,7 +1,7 @@
 /**
  * \file md.c
  *
- * \brief Generic message digest wrapper for mbed TLS
+ * \brief Generic message digest wrapper for Mbed TLS
  *
  * \author Adriaan de Jong <dejong@fox-it.com>
  *

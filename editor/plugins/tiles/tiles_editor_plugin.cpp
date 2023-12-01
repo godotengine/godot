@@ -134,11 +134,7 @@ void TilesEditorUtils::_thread() {
 				Ref<Image> image = viewport->get_texture()->get_image();
 
 				// Find the index for the given pattern. TODO: optimize.
-				Variant args[] = { item.pattern, ImageTexture::create_from_image(image) };
-				const Variant *args_ptr[] = { &args[0], &args[1] };
-				Variant r;
-				Callable::CallError error;
-				item.callback.callp(args_ptr, 2, r, error);
+				item.callback.call(item.pattern, ImageTexture::create_from_image(image));
 
 				viewport->queue_free();
 			}
@@ -417,7 +413,9 @@ bool TileMapEditorPlugin::is_editor_visible() const {
 }
 
 TileMapEditorPlugin::TileMapEditorPlugin() {
-	memnew(TilesEditorUtils);
+	if (!TilesEditorUtils::get_singleton()) {
+		memnew(TilesEditorUtils);
+	}
 	tile_map_plugin_singleton = this;
 
 	editor = memnew(TileMapEditor);
@@ -466,7 +464,9 @@ ObjectID TileSetEditorPlugin::get_edited_tileset() const {
 }
 
 TileSetEditorPlugin::TileSetEditorPlugin() {
-	DEV_ASSERT(tile_map_plugin_singleton);
+	if (!TilesEditorUtils::get_singleton()) {
+		memnew(TilesEditorUtils);
+	}
 	tile_set_plugin_singleton = this;
 
 	editor = memnew(TileSetEditor);

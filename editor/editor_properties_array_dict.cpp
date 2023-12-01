@@ -255,7 +255,7 @@ void EditorPropertyArray::update_property() {
 		array_type_name = vformat("%s[%s]", array_type_name, type_name);
 	}
 
-	if (array.get_type() == Variant::NIL) {
+	if (!array.is_array()) {
 		edit->set_text(vformat(TTR("(Nil) %s"), array_type_name));
 		edit->set_pressed(false);
 		if (container) {
@@ -287,6 +287,7 @@ void EditorPropertyArray::update_property() {
 		if (!container) {
 			container = memnew(MarginContainer);
 			container->set_theme_type_variation("MarginContainer4px");
+			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
 

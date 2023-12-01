@@ -343,6 +343,14 @@
 				Finds the previous (above in the tree) [Control] that can receive the focus.
 			</description>
 		</method>
+		<method name="find_valid_focus_neighbor" qualifiers="const">
+			<return type="Control" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<description>
+				Finds the next [Control] that can receive the focus on the specified [enum Side].
+				[b]Note:[/b] This is different from [method get_focus_neighbor], which returns the path of a specified focus neighbor.
+			</description>
+		</method>
 		<method name="force_drag">
 			<return type="void" />
 			<param index="0" name="data" type="Variant" />
@@ -389,6 +397,7 @@
 			<param index="0" name="side" type="int" enum="Side" />
 			<description>
 				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
+				[b]Note:[/b] To find the next [Control] on the specific [enum Side], even if a neighbor is not assigned, use [method find_valid_focus_neighbor].
 			</description>
 		</method>
 		<method name="get_global_rect" qualifiers="const">
@@ -1043,7 +1052,7 @@
 			[b]Note:[/b] [Window] styles will have no effect unless the window is embedded.
 		</member>
 		<member name="theme_type_variation" type="StringName" setter="set_theme_type_variation" getter="get_theme_type_variation" default="&amp;&quot;&quot;">
-			The name of a theme type variation used by this [Control] to look up its own theme items. When empty, the class name of the node is used (e.g. [code]Button[/code] for the [Button] control), as well as the class names of all parent classes (in order of inheritance).
+			The name of a theme type variation used by this [Control] to look up its own theme items. When empty, the class name of the node is used (e.g. [code skip-lint]Button[/code] for the [Button] control), as well as the class names of all parent classes (in order of inheritance).
 			When set, this property gives the highest priority to the type of the specified name. This type can in turn extend another type, forming a dependency chain. See [method Theme.set_type_variation]. If the theme item cannot be found using this type or its base types, lookup falls back on the class names.
 			[b]Note:[/b] To look up [Control]'s own items use various [code]get_theme_*[/code] methods without specifying [code]theme_type[/code].
 			[b]Note:[/b] Theme items are looked for in the tree order, from branch to root, where each [Control] node is checked for its [member theme] property. The earliest match against any type/class name is returned. The project-level Theme and the default Theme are checked last.
@@ -1095,13 +1104,13 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse cursor enters the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+				Emitted when the mouse cursor enters the control's (or any child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
 				[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the signal.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse cursor leaves the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+				Emitted when the mouse cursor leaves the control's (and all child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
 				[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the signal.
 				[b]Note:[/b] If you want to check whether the mouse truly left the area, ignoring any top nodes, you can use code like this:
 				[codeblock]
@@ -1141,12 +1150,24 @@
 			Sent when the node changes size. Use [member size] to get the new size.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_ENTER" value="41">
-			Sent when the mouse cursor enters the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
-			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the notification.
+			Sent when the mouse cursor enters the control's (or any child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_ENTER_SELF].
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_EXIT" value="42">
+			Sent when the mouse cursor leaves the control's (and all child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_EXIT_SELF].
+		</constant>
+		<constant name="NOTIFICATION_MOUSE_ENTER_SELF" value="60" is_experimental="true">
+			Sent when the mouse cursor enters the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_ENTER].
+		</constant>
+		<constant name="NOTIFICATION_MOUSE_EXIT_SELF" value="61" is_experimental="true">
 			Sent when the mouse cursor leaves the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
-			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the notification.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_EXIT].
 		</constant>
 		<constant name="NOTIFICATION_FOCUS_ENTER" value="43">
 			Sent when the node grabs focus.
@@ -1163,10 +1184,12 @@
 			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
-			Sent when this node is inside a [ScrollContainer] which has begun being scrolled.
+			Sent when this node is inside a [ScrollContainer] which has begun being scrolled when dragging the scrollable area [i]with a touch event[/i]. This notification is [i]not[/i] sent when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+			[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_END" value="48">
-			Sent when this node is inside a [ScrollContainer] which has stopped being scrolled.
+			Sent when this node is inside a [ScrollContainer] which has stopped being scrolled when dragging the scrollable area [i]with a touch event[/i]. This notification is [i]not[/i] sent when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+			[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 		</constant>
 		<constant name="NOTIFICATION_LAYOUT_DIRECTION_CHANGED" value="49">
 			Sent when control layout direction is changed.
@@ -1309,6 +1332,7 @@
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
 			The control will not receive mouse movement input events and mouse button input events if clicked on through [method _gui_input]. The control will also not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Ignored events will not be handled automatically.
+			[b]Note:[/b] If the control has received [signal mouse_entered] but not [signal mouse_exited], changing the [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] will cause [signal mouse_exited] to be emitted.
 		</constant>
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 			The control will grow to the left or top to make up if its minimum size is changed to be greater than its current size on the respective axis.

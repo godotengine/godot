@@ -262,6 +262,13 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
+		<method name="is_layer_navigation_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns if a layer's built-in navigation regions generation is enabled.
+			</description>
+		</method>
 		<method name="is_layer_y_sort_enabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer" type="int" />
@@ -390,6 +397,14 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
+		<method name="set_layer_navigation_enabled">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Enables or disables a layer's built-in navigation regions generation. Disable this if you need to bake navigation regions from a TileMap using a [NavigationRegion2D] node.
+			</description>
+		</method>
 		<method name="set_layer_navigation_map">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
@@ -469,7 +484,9 @@
 			Show or hide the TileMap's navigation meshes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
 		</member>
 		<member name="rendering_quadrant_size" type="int" setter="set_rendering_quadrant_size" getter="get_rendering_quadrant_size" default="16">
-			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
+			The TileMap's quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quandrant size groups together [code]16 * 16 = 256[/code] tiles.
+			The quadrant size does not apply on Y-sorted layers, as tiles are be grouped by Y position instead in that case.
+			[b]Note:[/b] As quadrants are created according to the map's coordinate system, the quadrant's "square shape" might not look like square in the TileMap's local coordinate system.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].

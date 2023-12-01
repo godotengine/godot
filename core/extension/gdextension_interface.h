@@ -267,6 +267,7 @@ typedef void (*GDExtensionClassUnreference)(GDExtensionClassInstancePtr p_instan
 typedef void (*GDExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret);
 typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance)(void *p_class_userdata);
 typedef void (*GDExtensionClassFreeInstance)(void *p_class_userdata, GDExtensionClassInstancePtr p_instance);
+typedef GDExtensionClassInstancePtr (*GDExtensionClassRecreateInstance)(void *p_class_userdata, GDExtensionObjectPtr p_object);
 typedef GDExtensionClassCallVirtual (*GDExtensionClassGetVirtual)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name);
 typedef void *(*GDExtensionClassGetVirtualCallData)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name);
 typedef void (*GDExtensionClassCallVirtualWithData)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, void *p_virtual_call_userdata, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret);
@@ -308,6 +309,7 @@ typedef struct {
 	GDExtensionClassUnreference unreference_func;
 	GDExtensionClassCreateInstance create_instance_func; // (Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract.
 	GDExtensionClassFreeInstance free_instance_func; // Destructor; mandatory.
+	GDExtensionClassRecreateInstance recreate_instance_func;
 	// Queries a virtual function by name and returns a callback to invoke the requested virtual function.
 	GDExtensionClassGetVirtual get_virtual_func;
 	// Paired with `call_virtual_with_data_func`, this is an alternative to `get_virtual_func` for extensions that
@@ -390,7 +392,7 @@ typedef GDExtensionBool (*GDExtensionCallableCustomLessThan)(void *callable_user
 typedef void (*GDExtensionCallableCustomToString)(void *callable_userdata, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out);
 
 typedef struct {
-	/* Only `call_func` and `token` are strictly required, however, `object` should be passed if its not a static method.
+	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
 	 *
 	 * `token` should point to an address that uniquely identifies the GDExtension (for example, the
 	 * `GDExtensionClassLibraryPtr` passed to the entry symbol function.
@@ -407,7 +409,7 @@ typedef struct {
 	void *callable_userdata;
 	void *token;
 
-	GDExtensionObjectPtr object;
+	GDObjectInstanceID object_id;
 
 	GDExtensionCallableCustomCall call_func;
 	GDExtensionCallableCustomIsValid is_valid_func;
@@ -428,6 +430,8 @@ typedef GDExtensionBool (*GDExtensionScriptInstanceSet)(GDExtensionScriptInstanc
 typedef GDExtensionBool (*GDExtensionScriptInstanceGet)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
 typedef const GDExtensionPropertyInfo *(*GDExtensionScriptInstanceGetPropertyList)(GDExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
 typedef void (*GDExtensionScriptInstanceFreePropertyList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionPropertyInfo *p_list);
+typedef GDExtensionBool (*GDExtensionScriptInstanceGetClassCategory)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionPropertyInfo *p_class_category);
+
 typedef GDExtensionVariantType (*GDExtensionScriptInstanceGetPropertyType)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionBool *r_is_valid);
 typedef GDExtensionBool (*GDExtensionScriptInstanceValidateProperty)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionPropertyInfo *p_property);
 
@@ -506,6 +510,7 @@ typedef struct {
 	GDExtensionScriptInstanceGet get_func;
 	GDExtensionScriptInstanceGetPropertyList get_property_list_func;
 	GDExtensionScriptInstanceFreePropertyList free_property_list_func;
+	GDExtensionScriptInstanceGetClassCategory get_class_category_func; // Optional. Set to NULL for the default behavior.
 
 	GDExtensionScriptInstancePropertyCanRevert property_can_revert_func;
 	GDExtensionScriptInstancePropertyGetRevert property_get_revert_func;
@@ -585,7 +590,10 @@ typedef GDExtensionInterfaceFunctionPtr (*GDExtensionInterfaceGetProcAddress)(co
  *
  * For example:
  *
- *   GDExtensionInterfaceGetGodotVersion *get_godot_version = (GDExtensionInterfaceGetGodotVersion)p_get_proc_address("get_godot_version");
+ *   GDExtensionInterfaceGetGodotVersion get_godot_version = (GDExtensionInterfaceGetGodotVersion)p_get_proc_address("get_godot_version");
+ *
+ * (Note that snippet may cause "cast between incompatible function types" on some compilers, you can
+ * silence this by adding an intermediary `void*` cast.)
  *
  * You can then call it like a normal function:
  *
@@ -1432,7 +1440,7 @@ typedef void (*GDExtensionInterfaceStringNewWithWideChars)(GDExtensionUninitiali
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a Latin-1 encoded C string.
- * @param p_size The number of characters.
+ * @param p_size The number of characters (= number of bytes).
  */
 typedef void (*GDExtensionInterfaceStringNewWithLatin1CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size);
 
@@ -1444,7 +1452,7 @@ typedef void (*GDExtensionInterfaceStringNewWithLatin1CharsAndLen)(GDExtensionUn
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a UTF-8 encoded C string.
- * @param p_size The number of characters.
+ * @param p_size The number of bytes (not code units).
  */
 typedef void (*GDExtensionInterfaceStringNewWithUtf8CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size);
 
@@ -1456,9 +1464,9 @@ typedef void (*GDExtensionInterfaceStringNewWithUtf8CharsAndLen)(GDExtensionUnin
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a UTF-16 encoded C string.
- * @param p_size The number of characters.
+ * @param p_size The number of characters (not bytes).
  */
-typedef void (*GDExtensionInterfaceStringNewWithUtf16CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_size);
+typedef void (*GDExtensionInterfaceStringNewWithUtf16CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count);
 
 /**
  * @name string_new_with_utf32_chars_and_len
@@ -1468,9 +1476,9 @@ typedef void (*GDExtensionInterfaceStringNewWithUtf16CharsAndLen)(GDExtensionUni
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a UTF-32 encoded C string.
- * @param p_size The number of characters.
+ * @param p_size The number of characters (not bytes).
  */
-typedef void (*GDExtensionInterfaceStringNewWithUtf32CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_size);
+typedef void (*GDExtensionInterfaceStringNewWithUtf32CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count);
 
 /**
  * @name string_new_with_wide_chars_and_len
@@ -1480,9 +1488,9 @@ typedef void (*GDExtensionInterfaceStringNewWithUtf32CharsAndLen)(GDExtensionUni
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a wide C string.
- * @param p_size The number of characters.
+ * @param p_size The number of characters (not bytes).
  */
-typedef void (*GDExtensionInterfaceStringNewWithWideCharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_size);
+typedef void (*GDExtensionInterfaceStringNewWithWideCharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count);
 
 /**
  * @name string_to_latin1_chars
@@ -1663,6 +1671,50 @@ typedef void (*GDExtensionInterfaceStringOperatorPlusEqC32str)(GDExtensionString
  * @return Error code signifying if the operation successful.
  */
 typedef GDExtensionInt (*GDExtensionInterfaceStringResize)(GDExtensionStringPtr p_self, GDExtensionInt p_resize);
+
+/* INTERFACE: StringName Utilities */
+
+/**
+ * @name string_name_new_with_latin1_chars
+ * @since 4.2
+ *
+ * Creates a StringName from a Latin-1 encoded C string.
+ *
+ * If `p_is_static` is true, then:
+ * - The StringName will reuse the `p_contents` buffer instead of copying it.
+ *   You must guarantee that the buffer remains valid for the duration of the application (e.g. string literal).
+ * - You must not call a destructor for this StringName. Incrementing the initial reference once should achieve this.
+ *
+ * `p_is_static` is purely an optimization and can easily introduce undefined behavior if used wrong. In case of doubt, set it to false.
+ *
+ * @param r_dest A pointer to uninitialized storage, into which the newly created StringName is constructed.
+ * @param p_contents A pointer to a C string (null terminated and Latin-1 or ASCII encoded).
+ * @param p_is_static Whether the StringName reuses the buffer directly (see above).
+ */
+typedef void (*GDExtensionInterfaceStringNameNewWithLatin1Chars)(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static);
+
+/**
+ * @name string_name_new_with_utf8_chars
+ * @since 4.2
+ *
+ * Creates a StringName from a UTF-8 encoded C string.
+ *
+ * @param r_dest A pointer to uninitialized storage, into which the newly created StringName is constructed.
+ * @param p_contents A pointer to a C string (null terminated and UTF-8 encoded).
+ */
+typedef void (*GDExtensionInterfaceStringNameNewWithUtf8Chars)(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents);
+
+/**
+ * @name string_name_new_with_utf8_chars_and_len
+ * @since 4.2
+ *
+ * Creates a StringName from a UTF-8 encoded string with a given number of characters.
+ *
+ * @param r_dest A pointer to uninitialized storage, into which the newly created StringName is constructed.
+ * @param p_contents A pointer to a C string (null terminated and UTF-8 encoded).
+ * @param p_size The number of bytes (not UTF-8 code points).
+ */
+typedef void (*GDExtensionInterfaceStringNameNewWithUtf8CharsAndLen)(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size);
 
 /* INTERFACE: XMLParser Utilities */
 
@@ -2141,6 +2193,17 @@ typedef void *(*GDExtensionInterfaceObjectGetInstanceBinding)(GDExtensionObjectP
  * @param p_callbacks A pointer to a GDExtensionInstanceBindingCallbacks struct.
  */
 typedef void (*GDExtensionInterfaceObjectSetInstanceBinding)(GDExtensionObjectPtr p_o, void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks);
+
+/**
+ * @name object_free_instance_binding
+ * @since 4.2
+ *
+ * Free an Object's instance binding.
+ *
+ * @param p_o A pointer to the Object.
+ * @param p_library A token the library received by the GDExtension's entry point function.
+ */
+typedef void (*GDExtensionInterfaceObjectFreeInstanceBinding)(GDExtensionObjectPtr p_o, void *p_token);
 
 /**
  * @name object_set_instance

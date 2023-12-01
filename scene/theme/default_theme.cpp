@@ -191,7 +191,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("hover", "MenuBar", button_hover);
 	theme->set_stylebox("pressed", "MenuBar", button_pressed);
 	theme->set_stylebox("disabled", "MenuBar", button_disabled);
-	theme->set_stylebox("focus", "MenuBar", focus);
 
 	theme->set_font("font", "MenuBar", Ref<Font>());
 	theme->set_font_size("font_size", "MenuBar", -1);
@@ -360,6 +359,28 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("check_v_offset", "CheckButton", 0);
 	theme->set_constant("outline_size", "CheckButton", 0);
 
+	// Button variations
+
+	theme->set_type_variation("FlatButton", "Button");
+	theme->set_type_variation("FlatMenuButton", "MenuButton");
+
+	Ref<StyleBoxEmpty> flat_button_normal = make_empty_stylebox();
+	for (int i = 0; i < 4; i++) {
+		flat_button_normal->set_content_margin((Side)i, button_normal->get_margin((Side)i) + button_normal->get_border_width((Side)i));
+	}
+	Ref<StyleBoxFlat> flat_button_pressed = button_pressed->duplicate();
+	flat_button_pressed->set_bg_color(style_pressed_color * Color(1, 1, 1, 0.85));
+
+	theme->set_stylebox("normal", "FlatButton", flat_button_normal);
+	theme->set_stylebox("hover", "FlatButton", flat_button_normal);
+	theme->set_stylebox("pressed", "FlatButton", flat_button_pressed);
+	theme->set_stylebox("disabled", "FlatButton", flat_button_normal);
+
+	theme->set_stylebox("normal", "FlatMenuButton", flat_button_normal);
+	theme->set_stylebox("hover", "FlatMenuButton", flat_button_normal);
+	theme->set_stylebox("pressed", "FlatMenuButton", flat_button_pressed);
+	theme->set_stylebox("disabled", "FlatMenuButton", flat_button_normal);
+
 	// Label
 
 	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
@@ -429,7 +450,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "ProgressBar", -1);
 
 	theme->set_color("font_color", "ProgressBar", control_font_hover_color);
-	theme->set_color("font_shadow_color", "ProgressBar", Color(0, 0, 0));
 	theme->set_color("font_outline_color", "ProgressBar", Color(1, 1, 1));
 
 	theme->set_constant("outline_size", "ProgressBar", 0);
@@ -478,8 +498,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("executing_line", "CodeEdit", icons["arrow_right"]);
 	theme->set_icon("can_fold", "CodeEdit", icons["arrow_down"]);
 	theme->set_icon("folded", "CodeEdit", icons["arrow_right"]);
-	theme->set_icon("can_fold_code_region", "CodeEdit", icons["folder_down_arrow"]);
-	theme->set_icon("folded_code_region", "CodeEdit", icons["folder_right_arrow"]);
+	theme->set_icon("can_fold_code_region", "CodeEdit", icons["region_unfolded"]);
+	theme->set_icon("folded_code_region", "CodeEdit", icons["region_folded"]);
 	theme->set_icon("folded_eol_icon", "CodeEdit", icons["text_edit_ellipsis"]);
 
 	theme->set_font("font", "CodeEdit", Ref<Font>());
@@ -491,7 +511,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
 	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.29));
 	theme->set_color("completion_scroll_hovered_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.4));
-	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "CodeEdit", control_font_color);
 	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
@@ -658,11 +677,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxFlat> style_popup_panel = make_flat_stylebox(style_popup_color);
 	style_popup_panel->set_border_width_all(2);
 	style_popup_panel->set_border_color(style_popup_border_color);
-	Ref<StyleBoxFlat> style_popup_panel_disabled = style_popup_panel->duplicate();
-	style_popup_panel_disabled->set_bg_color(style_disabled_color);
 
 	theme->set_stylebox("panel", "PopupMenu", style_popup_panel);
-	theme->set_stylebox("panel_disabled", "PopupMenu", style_popup_panel_disabled);
 	theme->set_stylebox("hover", "PopupMenu", make_flat_stylebox(style_popup_hover_color));
 	theme->set_stylebox("separator", "PopupMenu", separator_horizontal);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", separator_horizontal);
@@ -845,11 +861,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	style_tab_disabled->set_bg_color(style_disabled_color);
 	Ref<StyleBoxFlat> style_tab_hovered = style_tab_unselected->duplicate();
 	style_tab_hovered->set_bg_color(Color(0.1, 0.1, 0.1, 0.3));
+	Ref<StyleBoxFlat> style_tab_focus = focus->duplicate();
 
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
 	theme->set_stylebox("tab_hovered", "TabContainer", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
+	theme->set_stylebox("tab_focus", "TabContainer", style_tab_focus);
 	theme->set_stylebox("panel", "TabContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 	theme->set_stylebox("tabbar_background", "TabContainer", make_empty_stylebox(0, 0, 0, 0));
 
@@ -882,6 +900,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("tab_hovered", "TabBar", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
+	theme->set_stylebox("tab_focus", "TabBar", style_tab_focus);
 	theme->set_stylebox("button_pressed", "TabBar", button_pressed);
 	theme->set_stylebox("button_highlight", "TabBar", button_normal);
 
@@ -1128,6 +1147,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("layout", "GraphEdit", icons["grid_layout"]);
 
 	theme->set_stylebox("panel", "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+
+	Ref<StyleBoxFlat> graph_toolbar_style = make_flat_stylebox(Color(0.24, 0.24, 0.24, 0.6), 4, 2, 4, 2);
+	theme->set_stylebox("menu_panel", "GraphEdit", graph_toolbar_style);
 
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));

@@ -90,6 +90,10 @@ String Resource::get_path() const {
 	return path_cache;
 }
 
+void Resource::set_path_cache(const String &p_path) {
+	path_cache = p_path;
+}
+
 String Resource::generate_scene_unique_id() {
 	// Generate a unique enough hash, but still user-readable.
 	// If it's not unique it does not matter because the saver will try again.
@@ -379,8 +383,8 @@ Node *Resource::get_local_scene() const {
 }
 
 void Resource::setup_local_to_scene() {
-	// Can't use GDVIRTUAL in Resource, so this will have to be done with a signal
 	emit_signal(SNAME("setup_local_to_scene_requested"));
+	GDVIRTUAL_CALL(_setup_local_to_scene);
 }
 
 void Resource::reset_local_to_scene() {
@@ -460,6 +464,7 @@ void Resource::_bind_methods() {
 	get_rid_bind.return_val.type = Variant::RID;
 
 	::ClassDB::add_virtual_method(get_class_static(), get_rid_bind, true, Vector<String>(), true);
+	GDVIRTUAL_BIND(_setup_local_to_scene);
 }
 
 Resource::Resource() :

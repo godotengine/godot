@@ -37,18 +37,6 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 
-void EditorHelpSearch::_update_icons() {
-	search_box->set_right_icon(results_tree->get_editor_theme_icon(SNAME("Search")));
-	search_box->set_clear_button_enabled(true);
-	search_box->add_theme_icon_override("right_icon", results_tree->get_editor_theme_icon(SNAME("Search")));
-	case_sensitive_button->set_icon(results_tree->get_editor_theme_icon(SNAME("MatchCase")));
-	hierarchy_button->set_icon(results_tree->get_editor_theme_icon(SNAME("ClassList")));
-
-	if (is_visible()) {
-		_update_results();
-	}
-}
-
 void EditorHelpSearch::_update_results() {
 	String term = search_box->get_text();
 
@@ -114,16 +102,24 @@ void EditorHelpSearch::_notification(int p_what) {
 			}
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			_update_icons();
-		} break;
-
 		case NOTIFICATION_READY: {
 			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 		} break;
 
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_icons();
+			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+			results_tree->add_theme_constant_override("icon_max_width", icon_width);
+
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			search_box->add_theme_icon_override("right_icon", get_editor_theme_icon(SNAME("Search")));
+
+			case_sensitive_button->set_icon(get_editor_theme_icon(SNAME("MatchCase")));
+			hierarchy_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
+
+			if (is_visible()) {
+				_update_results();
+			}
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -204,13 +200,14 @@ EditorHelpSearch::EditorHelpSearch() {
 	search_box = memnew(LineEdit);
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_box->set_clear_button_enabled(true);
 	search_box->connect("gui_input", callable_mp(this, &EditorHelpSearch::_search_box_gui_input));
 	search_box->connect("text_changed", callable_mp(this, &EditorHelpSearch::_search_box_text_changed));
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(Button);
-	case_sensitive_button->set_flat(true);
+	case_sensitive_button->set_theme_type_variation("FlatButton");
 	case_sensitive_button->set_tooltip_text(TTR("Case Sensitive"));
 	case_sensitive_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
@@ -218,7 +215,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(Button);
-	hierarchy_button->set_flat(true);
+	hierarchy_button->set_theme_type_variation("FlatButton");
 	hierarchy_button->set_tooltip_text(TTR("Show Hierarchy"));
 	hierarchy_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);

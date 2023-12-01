@@ -1291,7 +1291,13 @@ void Variant::zero() {
 			break;
 
 		default:
+			Type prev_type = type;
 			this->clear();
+			if (type != prev_type) {
+				// clear() changes type to NIL, so it needs to be restored.
+				Callable::CallError ce;
+				Variant::construct(prev_type, *this, nullptr, 0, ce);
+			}
 			break;
 	}
 }
@@ -2117,7 +2123,7 @@ Variant::operator ::RID() const {
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
-			ERR_FAIL_COND_V_MSG(ObjectDB::get_instance(_get_obj().id) == nullptr, ::RID(), "Invalid pointer (object was freed).");
+			ERR_FAIL_NULL_V_MSG(ObjectDB::get_instance(_get_obj().id), ::RID(), "Invalid pointer (object was freed).");
 		}
 #endif
 		Callable::CallError ce;
@@ -3235,8 +3241,11 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 	return 0;
 }
 
+#define hash_compare_scalar_base(p_lhs, p_rhs, semantic_comparison) \
+	(((p_lhs) == (p_rhs)) || (semantic_comparison && Math::is_nan(p_lhs) && Math::is_nan(p_rhs)))
+
 #define hash_compare_scalar(p_lhs, p_rhs) \
-	(((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs)))
+	(hash_compare_scalar_base(p_lhs, p_rhs, true))
 
 #define hash_compare_vector2(p_lhs, p_rhs)        \
 	(hash_compare_scalar((p_lhs).x, (p_rhs).x) && \
@@ -3282,7 +3291,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
                                                                         \
 	return true
 
-bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const {
+bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool semantic_comparison) const {
 	if (type != p_variant.type) {
 		return false;
 	}
@@ -3293,7 +3302,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 		} break;
 
 		case FLOAT: {
-			return hash_compare_scalar(_data._float, p_variant._data._float);
+			return hash_compare_scalar_base(_data._float, p_variant._data._float, semantic_comparison);
 		} break;
 
 		case STRING: {

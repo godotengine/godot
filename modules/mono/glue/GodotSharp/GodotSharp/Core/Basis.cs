@@ -239,7 +239,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the basis's rotation in the form of Euler angles.
-        /// The Euler order depends on the [param order] parameter,
+        /// The Euler order depends on the <paramref name="order"/> parameter,
         /// by default it uses the YXZ convention: when decomposing,
         /// first Z, then X, and Y last. The returned vector contains
         /// the rotation angles in the format (X angle, Y angle, Z angle).
@@ -1037,10 +1037,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Vector3 transformed (multiplied) by the transposed basis matrix.
-        ///
-        /// Note: This results in a multiplication by the inverse of the
-        /// basis matrix only if it represents a rotation-reflection.
+        /// Returns a Vector3 transformed (multiplied) by the inverse basis matrix,
+        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not).
+        /// <c>vector * basis</c> is equivalent to <c>basis.Transposed() * vector</c>. See <see cref="Transposed"/>.
+        /// For transforming by inverse of a non-orthonormal basis (e.g. with scaling) <c>basis.Inverse() * vector</c> can be used instead. See <see cref="Inverse"/>.
         /// </summary>
         /// <param name="vector">A Vector3 to inversely transform.</param>
         /// <param name="basis">The basis matrix transformation to apply.</param>
@@ -1123,7 +1124,7 @@ namespace Godot
         /// <returns>A hash code for this basis.</returns>
         public override readonly int GetHashCode()
         {
-            return Row0.GetHashCode() ^ Row1.GetHashCode() ^ Row2.GetHashCode();
+            return HashCode.Combine(Row0, Row1, Row2);
         }
 
         /// <summary>

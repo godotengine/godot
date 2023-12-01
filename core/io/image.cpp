@@ -1930,8 +1930,7 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 }
 
 Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map) {
-	Vector<double> normal_sat_vec; //summed area table
-	double *normal_sat = nullptr; //summed area table for normal map
+	LocalVector<double> normal_sat_vec; //summed area table
 	int normal_w = 0, normal_h = 0;
 
 	ERR_FAIL_COND_V_MSG(p_normal_map.is_null() || p_normal_map->is_empty(), ERR_INVALID_PARAMETER, "Must provide a valid normal map for roughness mipmaps");
@@ -1945,8 +1944,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 	normal_h = nm->get_height();
 
 	normal_sat_vec.resize(normal_w * normal_h * 3);
-
-	normal_sat = normal_sat_vec.ptrw();
+	double *normal_sat = normal_sat_vec.ptr();
 
 	//create summed area table
 
@@ -2021,24 +2019,26 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 					avg[2] += normal_sat[tofs + 2];
 				}
 
-				if (from_y > 0) {
+				if (from_y > 0 && to_x > 0) {
 					uint32_t tofs = ((from_y - 1) * normal_w + to_x) * 3;
 					avg[0] -= normal_sat[tofs + 0];
 					avg[1] -= normal_sat[tofs + 1];
 					avg[2] -= normal_sat[tofs + 2];
 				}
 
-				if (from_x > 0) {
+				if (from_x > 0 && to_y > 0) {
 					uint32_t tofs = (to_y * normal_w + (from_x - 1)) * 3;
 					avg[0] -= normal_sat[tofs + 0];
 					avg[1] -= normal_sat[tofs + 1];
 					avg[2] -= normal_sat[tofs + 2];
 				}
 
-				uint32_t tofs = (to_y * normal_w + to_x) * 3;
-				avg[0] += normal_sat[tofs + 0];
-				avg[1] += normal_sat[tofs + 1];
-				avg[2] += normal_sat[tofs + 2];
+				if (to_y > 0 && to_x > 0) {
+					uint32_t tofs = (to_y * normal_w + to_x) * 3;
+					avg[0] += normal_sat[tofs + 0];
+					avg[1] += normal_sat[tofs + 1];
+					avg[2] += normal_sat[tofs + 2];
+				}
 
 				double div = double(size_x * size_y);
 				Vector3 vec(avg[0] / div, avg[1] / div, avg[2] / div);
@@ -3773,7 +3773,7 @@ void Image::fix_alpha_edges() {
 			}
 
 			int closest_dist = max_dist;
-			uint8_t closest_color[3];
+			uint8_t closest_color[3] = { 0 };
 
 			int from_x = MAX(0, j - max_radius);
 			int to_x = MIN(width - 1, j + max_radius);

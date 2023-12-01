@@ -207,6 +207,7 @@ opts.Add(BoolVariable("progress", "Show a progress indicator during compilation"
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
+opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
@@ -226,6 +227,7 @@ opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determine
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
+opts.Add(BoolVariable("builtin_clipper2", "Use the built-in Clipper2 library", True))
 opts.Add(BoolVariable("builtin_embree", "Use the built-in Embree library", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
 opts.Add(BoolVariable("builtin_freetype", "Use the built-in FreeType library", True))
@@ -374,6 +376,8 @@ for name, path in modules_detected.items():
     else:
         enabled = False
 
+    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
+
     # Add module-specific options.
     try:
         for opt in config.get_opts(selected_platform):
@@ -383,7 +387,6 @@ for name, path in modules_detected.items():
 
     sys.path.remove(path)
     sys.modules.pop("config")
-    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
 
 methods.write_modules(modules_detected)
 
@@ -562,7 +565,7 @@ if selected_platform in platform_list:
         if read_scu_limit != 0:
             max_includes_per_scu = read_scu_limit
 
-        methods.set_scu_folders(scu_builders.generate_scu_files(env["verbose"], max_includes_per_scu))
+        methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
 
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.
@@ -719,9 +722,9 @@ if selected_platform in platform_list:
         if env.msvc:
             env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
         else:
-            env.Append(CCFLAGS=["-fno-exceptions"])
+            env.Append(CXXFLAGS=["-fno-exceptions"])
     elif env.msvc:
-        env.Append(CCFLAGS=["/EHsc"])
+        env.Append(CXXFLAGS=["/EHsc"])
 
     # Configure compiler warnings
     if env.msvc:  # MSVC
@@ -892,6 +895,9 @@ if selected_platform in platform_list:
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
+    env["OBJPREFIX"] = env["object_prefix"]
+    env["SHOBJPREFIX"] = env["object_prefix"]
+
     if env["disable_3d"]:
         if env.editor_build:
             print("Build option 'disable_3d=yes' cannot be used for editor builds, only for export template builds.")
@@ -986,9 +992,10 @@ if selected_platform in platform_list:
     # Check for the existence of headers
     conf = Configure(env)
     if "check_c_headers" in env:
-        for header in env["check_c_headers"]:
-            if conf.CheckCHeader(header[0]):
-                env.AppendUnique(CPPDEFINES=[header[1]])
+        headers = env["check_c_headers"]
+        for header in headers:
+            if conf.CheckCHeader(header):
+                env.AppendUnique(CPPDEFINES=[headers[header]])
 
 elif selected_platform != "":
     if selected_platform == "list":

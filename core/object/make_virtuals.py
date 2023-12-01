@@ -22,6 +22,7 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
         } else if (_get_extension()->get_virtual) {\\
             _gdvirtual_##m_name = (void *)_get_extension()->get_virtual(_get_extension()->class_userdata, &_gdvirtual_##m_name##_sn);\\
         }\\
+        GDVIRTUAL_TRACK(_gdvirtual_##m_name, _gdvirtual_##m_name##_initialized); \\
         _gdvirtual_##m_name##_initialized = true;\\
     }\\
 	if (_gdvirtual_##m_name) {\\
@@ -46,8 +47,8 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 }\\
 _FORCE_INLINE_ bool _gdvirtual_##m_name##_overridden() const { \\
 	ScriptInstance *_script_instance = ((Object*)(this))->get_script_instance();\\
-	if (_script_instance) {\\
-	    return _script_instance->has_method(_gdvirtual_##m_name##_sn);\\
+	if (_script_instance && _script_instance->has_method(_gdvirtual_##m_name##_sn)) {\\
+		return true;\\
 	}\\
     if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
          _gdvirtual_##m_name = nullptr;\\
@@ -56,6 +57,7 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_overridden() const { \\
         } else if (_get_extension()->get_virtual) {\\
              _gdvirtual_##m_name = (void *)_get_extension()->get_virtual(_get_extension()->class_userdata, &_gdvirtual_##m_name##_sn);\\
         }\\
+        GDVIRTUAL_TRACK(_gdvirtual_##m_name, _gdvirtual_##m_name##_initialized); \\
         _gdvirtual_##m_name##_initialized = true;\\
     }\\
 	if (_gdvirtual_##m_name) {\\
@@ -175,6 +177,18 @@ def run(target, source, env):
 
 #include "core/object/script_instance.h"
 
+#ifdef TOOLS_ENABLED
+#define GDVIRTUAL_TRACK(m_virtual, m_initialized) \\
+    if (_get_extension()->reloadable) {\\
+        VirtualMethodTracker *tracker = memnew(VirtualMethodTracker);\\
+        tracker->method = (void **)&m_virtual;\\
+        tracker->initialized = &m_initialized;\\
+        tracker->next = virtual_method_list;\\
+        virtual_method_list = tracker;\\
+    }
+#else
+#define GDVIRTUAL_TRACK(m_virtual, m_initialized)
+#endif
 
 """
 

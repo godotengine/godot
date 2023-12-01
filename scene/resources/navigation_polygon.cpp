@@ -32,6 +32,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
+#include "servers/navigation_server_2d.h"
 
 #include "thirdparty/misc/polypartition.h"
 
@@ -229,7 +230,11 @@ void NavigationPolygon::clear_outlines() {
 	rect_cache_dirty = true;
 }
 
+#ifndef DISABLE_DEPRECATED
 void NavigationPolygon::make_polygons_from_outlines() {
+	WARN_PRINT("Function make_polygons_from_outlines() is deprecated."
+			   "\nUse NavigationServer2D.parse_source_geometry_data() and NavigationServer2D.bake_from_source_geometry_data() instead.");
+
 	{
 		MutexLock lock(navigation_mesh_generation);
 		navigation_mesh.unref();
@@ -331,6 +336,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	emit_changed();
 }
+#endif // DISABLE_DEPRECATED
 
 void NavigationPolygon::set_cell_size(real_t p_cell_size) {
 	cell_size = p_cell_size;
@@ -339,6 +345,69 @@ void NavigationPolygon::set_cell_size(real_t p_cell_size) {
 
 real_t NavigationPolygon::get_cell_size() const {
 	return cell_size;
+}
+
+void NavigationPolygon::set_parsed_geometry_type(ParsedGeometryType p_geometry_type) {
+	ERR_FAIL_INDEX(p_geometry_type, PARSED_GEOMETRY_MAX);
+	parsed_geometry_type = p_geometry_type;
+	notify_property_list_changed();
+}
+
+NavigationPolygon::ParsedGeometryType NavigationPolygon::get_parsed_geometry_type() const {
+	return parsed_geometry_type;
+}
+
+void NavigationPolygon::set_parsed_collision_mask(uint32_t p_mask) {
+	parsed_collision_mask = p_mask;
+}
+
+uint32_t NavigationPolygon::get_parsed_collision_mask() const {
+	return parsed_collision_mask;
+}
+
+void NavigationPolygon::set_parsed_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
+	uint32_t mask = get_parsed_collision_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_parsed_collision_mask(mask);
+}
+
+bool NavigationPolygon::get_parsed_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_parsed_collision_mask() & (1 << (p_layer_number - 1));
+}
+
+void NavigationPolygon::set_source_geometry_mode(SourceGeometryMode p_geometry_mode) {
+	ERR_FAIL_INDEX(p_geometry_mode, SOURCE_GEOMETRY_MAX);
+	source_geometry_mode = p_geometry_mode;
+	notify_property_list_changed();
+}
+
+NavigationPolygon::SourceGeometryMode NavigationPolygon::get_source_geometry_mode() const {
+	return source_geometry_mode;
+}
+
+void NavigationPolygon::set_source_geometry_group_name(StringName p_group_name) {
+	source_geometry_group_name = p_group_name;
+}
+
+StringName NavigationPolygon::get_source_geometry_group_name() const {
+	return source_geometry_group_name;
+}
+
+void NavigationPolygon::set_agent_radius(real_t p_value) {
+	ERR_FAIL_COND(p_value < 0);
+	agent_radius = p_value;
+}
+
+real_t NavigationPolygon::get_agent_radius() const {
+	return agent_radius;
 }
 
 void NavigationPolygon::_bind_methods() {
@@ -358,7 +427,9 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_outline", "idx"), &NavigationPolygon::get_outline);
 	ClassDB::bind_method(D_METHOD("remove_outline", "idx"), &NavigationPolygon::remove_outline);
 	ClassDB::bind_method(D_METHOD("clear_outlines"), &NavigationPolygon::clear_outlines);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("make_polygons_from_outlines"), &NavigationPolygon::make_polygons_from_outlines);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationPolygon::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationPolygon::_get_polygons);
@@ -369,10 +440,67 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &NavigationPolygon::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &NavigationPolygon::get_cell_size);
 
+	ClassDB::bind_method(D_METHOD("set_parsed_geometry_type", "geometry_type"), &NavigationPolygon::set_parsed_geometry_type);
+	ClassDB::bind_method(D_METHOD("get_parsed_geometry_type"), &NavigationPolygon::get_parsed_geometry_type);
+
+	ClassDB::bind_method(D_METHOD("set_parsed_collision_mask", "mask"), &NavigationPolygon::set_parsed_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_parsed_collision_mask"), &NavigationPolygon::get_parsed_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_parsed_collision_mask_value", "layer_number", "value"), &NavigationPolygon::set_parsed_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_parsed_collision_mask_value", "layer_number"), &NavigationPolygon::get_parsed_collision_mask_value);
+
+	ClassDB::bind_method(D_METHOD("set_source_geometry_mode", "geometry_mode"), &NavigationPolygon::set_source_geometry_mode);
+	ClassDB::bind_method(D_METHOD("get_source_geometry_mode"), &NavigationPolygon::get_source_geometry_mode);
+
+	ClassDB::bind_method(D_METHOD("set_source_geometry_group_name", "group_name"), &NavigationPolygon::set_source_geometry_group_name);
+	ClassDB::bind_method(D_METHOD("get_source_geometry_group_name"), &NavigationPolygon::get_source_geometry_group_name);
+
+	ClassDB::bind_method(D_METHOD("set_agent_radius", "agent_radius"), &NavigationPolygon::set_agent_radius);
+	ClassDB::bind_method(D_METHOD("get_agent_radius"), &NavigationPolygon::get_agent_radius);
+
 	ClassDB::bind_method(D_METHOD("clear"), &NavigationPolygon::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:px"), "set_cell_size", "get_cell_size");
+
+	ADD_GROUP("Geometry", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Meshes and Static Colliders"), "set_parsed_geometry_type", "get_parsed_geometry_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_parsed_collision_mask", "get_parsed_collision_mask");
+	ADD_PROPERTY_DEFAULT("parsed_collision_mask", 0xFFFFFFFF);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_geometry_group_name"), "set_source_geometry_group_name", "get_source_geometry_group_name");
+	ADD_PROPERTY_DEFAULT("source_geometry_group_name", StringName("navigation_polygon_source_geometry_group"));
+	ADD_GROUP("Cells", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "1.0,50.0,1.0,or_greater,suffix:px"), "set_cell_size", "get_cell_size");
+	ADD_GROUP("Agents", "agent_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:px"), "set_agent_radius", "get_agent_radius");
+
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MESH_INSTANCES);
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_BOTH);
+	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MAX);
+
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_ROOT_NODE_CHILDREN);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_EXPLICIT);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_MAX);
 }
+
+void NavigationPolygon::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "parsed_collision_mask") {
+		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+			return;
+		}
+	}
+
+	if (p_property.name == "parsed_source_group_name") {
+		if (source_geometry_mode == SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+			return;
+		}
+	}
+}
+
+NavigationPolygon::NavigationPolygon() {}

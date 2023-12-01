@@ -373,6 +373,11 @@ real_t CameraAttributesPhysical::get_fov() const {
 	return frustum_fov;
 }
 
+#ifdef MINGW_ENABLED
+#undef near
+#undef far
+#endif
+
 void CameraAttributesPhysical::_update_frustum() {
 	//https://en.wikipedia.org/wiki/Circle_of_confusion#Circle_of_confusion_diameter_limit_based_on_d/1500
 	Vector2i sensor_size = Vector2i(36, 24); // Matches high-end DSLR, could be made variable if there is demand.

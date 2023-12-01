@@ -52,9 +52,11 @@ class ScriptServer {
 
 	static ScriptLanguage *_languages[MAX_LANGUAGES];
 	static int _language_count;
+	static bool languages_ready;
+	static Mutex languages_mutex;
+
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
-	static SafeFlag languages_finished; // Used until GH-76581 is fixed properly.
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -98,8 +100,7 @@ public:
 
 	static void init_languages();
 	static void finish_languages();
-
-	static bool are_languages_finished() { return languages_finished.is_set(); }
+	static bool are_languages_initialized();
 };
 
 class PlaceHolderScriptInstance;
@@ -145,11 +146,15 @@ public:
 	virtual PropertyInfo get_class_category() const;
 #endif // TOOLS_ENABLED
 
+	// TODO: In the next compat breakage rename to `*_script_*` to disambiguate from `Object::has_method()`.
 	virtual bool has_method(const StringName &p_method) const = 0;
+	virtual bool has_static_method(const StringName &p_method) const { return false; }
+
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
 	virtual bool is_valid() const = 0;
+	virtual bool is_abstract() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
 
@@ -235,6 +240,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
 	virtual bool is_control_flow_keyword(String p_string) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
+	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) { return Vector<ScriptTemplate>(); }
@@ -242,7 +248,9 @@ public:
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;
+#ifndef DISABLE_DEPRECATED
 	virtual bool has_named_classes() const = 0;
+#endif
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() const { return false; }

@@ -368,6 +368,8 @@ public:
 		NOTIFICATION_SCROLL_BEGIN = 47,
 		NOTIFICATION_SCROLL_END = 48,
 		NOTIFICATION_LAYOUT_DIRECTION_CHANGED = 49,
+		NOTIFICATION_MOUSE_ENTER_SELF = 60,
+		NOTIFICATION_MOUSE_EXIT_SELF = 61,
 	};
 
 	// Editor plugin interoperability.
@@ -527,6 +529,7 @@ public:
 
 	Control *find_next_valid_focus() const;
 	Control *find_prev_valid_focus() const;
+	Control *find_valid_focus_neighbor(Side p_size) const;
 
 	void set_focus_neighbor(Side p_side, const NodePath &p_neighbor);
 	NodePath get_focus_neighbor(Side p_side) const;

@@ -88,6 +88,7 @@ typedef int(__cdecl *NvAPI_DRS_CreateApplication_t)(NvDRSSessionHandle, NvDRSPro
 typedef int(__cdecl *NvAPI_DRS_SaveSettings_t)(NvDRSSessionHandle);
 typedef int(__cdecl *NvAPI_DRS_SetSetting_t)(NvDRSSessionHandle, NvDRSProfileHandle, NVDRS_SETTING *);
 typedef int(__cdecl *NvAPI_DRS_FindProfileByName_t)(NvDRSSessionHandle, NvAPI_UnicodeString, NvDRSProfileHandle *);
+typedef int(__cdecl *NvAPI_DRS_FindApplicationByName_t)(NvDRSSessionHandle, NvAPI_UnicodeString, NvDRSProfileHandle *, NVDRS_APPLICATION *);
 NvAPI_GetErrorMessage_t NvAPI_GetErrorMessage__;
 
 static bool nvapi_err_check(const char *msg, int status) {
@@ -103,8 +104,8 @@ static bool nvapi_err_check(const char *msg, int status) {
 }
 
 // On windows we have to disable threaded optimization when using NVIDIA graphics cards
-// to avoid stuttering, see https://github.com/microsoft/vscode-cpptools/issues/6592
-// also see https://github.com/Ryujinx/Ryujinx/blob/master/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
+// to avoid stuttering, see https://stackoverflow.com/questions/36959508/nvidia-graphics-driver-causing-noticeable-frame-stuttering/37632948
+// also see https://github.com/Ryujinx/Ryujinx/blob/master/src/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
 void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	HMODULE nvapi = 0;
 #ifdef _WIN64
@@ -138,6 +139,7 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	NvAPI_DRS_SaveSettings_t NvAPI_DRS_SaveSettings = (NvAPI_DRS_SaveSettings_t)NvAPI_QueryInterface(0xFCBC7E14);
 	NvAPI_DRS_SetSetting_t NvAPI_DRS_SetSetting = (NvAPI_DRS_SetSetting_t)NvAPI_QueryInterface(0x577DD202);
 	NvAPI_DRS_FindProfileByName_t NvAPI_DRS_FindProfileByName = (NvAPI_DRS_FindProfileByName_t)NvAPI_QueryInterface(0x7E4A9A0B);
+	NvAPI_DRS_FindApplicationByName_t NvAPI_DRS_FindApplicationByName = (NvAPI_DRS_FindApplicationByName_t)NvAPI_QueryInterface(0xEEE566B2);
 
 	if (!nvapi_err_check("NVAPI: Init failed", NvAPI_Initialize())) {
 		return;
@@ -146,6 +148,10 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	print_verbose("NVAPI: Init OK!");
 
 	NvDRSSessionHandle session_handle;
+
+	if (NvAPI_DRS_CreateSession == nullptr) {
+		return;
+	}
 
 	if (!nvapi_err_check("NVAPI: Error creating DRS session", NvAPI_DRS_CreateSession(&session_handle))) {
 		NvAPI_Unload();
@@ -172,9 +178,9 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 
 	NvDRSProfileHandle profile_handle = 0;
 
-	int status = NvAPI_DRS_FindProfileByName(session_handle, (NvU16 *)(app_profile_name_u16.ptrw()), &profile_handle);
+	int profile_status = NvAPI_DRS_FindProfileByName(session_handle, (NvU16 *)(app_profile_name_u16.ptrw()), &profile_handle);
 
-	if (status != 0) {
+	if (profile_status != 0) {
 		print_verbose("NVAPI: Profile not found, creating....");
 
 		NVDRS_PROFILE profile_info;
@@ -187,9 +193,17 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 			NvAPI_Unload();
 			return;
 		}
+	}
 
-		NVDRS_APPLICATION_V4 app;
-		app.version = NVDRS_APPLICATION_VER_V4;
+	NvDRSProfileHandle app_profile_handle = 0;
+	NVDRS_APPLICATION_V4 app;
+	app.version = NVDRS_APPLICATION_VER_V4;
+
+	int app_status = NvAPI_DRS_FindApplicationByName(session_handle, (NvU16 *)(app_executable_name_u16.ptrw()), &app_profile_handle, &app);
+
+	if (app_status != 0) {
+		print_verbose("NVAPI: Application not found, adding to profile...");
+
 		app.isPredefined = 0;
 		app.isMetro = 1;
 		app.isCommandLine = 1;

@@ -37,6 +37,12 @@
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
+#ifdef MINGW_ENABLED
+#undef CONST
+#undef IN
+#undef VOID
+#endif
+
 class GDScriptTokenizer {
 public:
 	enum CursorPlace {
@@ -105,6 +111,7 @@ public:
 			PASS,
 			RETURN,
 			MATCH,
+			WHEN,
 			// Keywords
 			AS,
 			ASSERT,

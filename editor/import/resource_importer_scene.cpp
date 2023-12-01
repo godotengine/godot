@@ -112,6 +112,7 @@ void EditorSceneFormatImporter::_bind_methods() {
 	BIND_CONSTANT(IMPORT_GENERATE_TANGENT_ARRAYS);
 	BIND_CONSTANT(IMPORT_USE_NAMED_SKIN_BINDS);
 	BIND_CONSTANT(IMPORT_DISCARD_MESHES_AND_MATERIALS);
+	BIND_CONSTANT(IMPORT_FORCE_DISABLE_MESH_COMPRESSION);
 }
 
 /////////////////////////////////
@@ -390,7 +391,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 		Dictionary lods;
 		String name;
 		Ref<Material> mat;
-		int fmt_compress_flags = 0;
+		uint64_t fmt_compress_flags = 0;
 	};
 
 	Vector<LocalSurfData> surf_data_by_mesh;
@@ -402,7 +403,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 
 	for (int surf_idx = 0; surf_idx < surf_count; surf_idx++) {
 		Mesh::PrimitiveType prim = p_mesh->get_surface_primitive_type(surf_idx);
-		const int fmt_compress_flags = p_mesh->get_surface_format(surf_idx);
+		const uint64_t fmt_compress_flags = p_mesh->get_surface_format(surf_idx);
 		Array arr = p_mesh->get_surface_arrays(surf_idx);
 		String name = p_mesh->get_surface_name(surf_idx);
 		Dictionary lods;
@@ -449,7 +450,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 		const Array arr = surf_data_by_mesh[surf_idx].arr;
 		const Array bsarr = surf_data_by_mesh[surf_idx].bsarr;
 		const Dictionary lods = surf_data_by_mesh[surf_idx].lods;
-		const int fmt_compress_flags = surf_data_by_mesh[surf_idx].fmt_compress_flags;
+		const uint64_t fmt_compress_flags = surf_data_by_mesh[surf_idx].fmt_compress_flags;
 		const String name = surf_data_by_mesh[surf_idx].name;
 		const Ref<Material> mat = surf_data_by_mesh[surf_idx].mat;
 
@@ -595,7 +596,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		// Node paths in animation tracks are relative to the following path (this is used to fix node paths below).
-		Node *ap_root = ap->get_node(ap->get_root());
+		Node *ap_root = ap->get_node(ap->get_root_node());
 		NodePath path_prefix = p_root->get_path_to(ap_root);
 
 		bool nodes_were_renamed = r_node_renames.size() != 0;
@@ -668,7 +669,11 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			fixed_name = _fixstr(name, "convcolonly");
 		}
 
-		ERR_FAIL_COND_V(fixed_name.is_empty(), nullptr);
+		if (fixed_name.is_empty()) {
+			p_node->set_owner(nullptr);
+			memdelete(p_node);
+			ERR_FAIL_V_MSG(nullptr, vformat("Skipped node `%s` because its name is empty after removing the suffix.", name));
+		}
 
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 		if (mi) {
@@ -960,38 +965,6 @@ Node *ResourceImporterScene::_pre_fix_animations(Node *p_node, Node *p_root, con
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
 
-		for (const StringName &name : anims) {
-			Ref<Animation> anim = ap->get_animation(name);
-			Array animation_slices;
-
-			if (p_animation_data.has(name)) {
-				Dictionary anim_settings = p_animation_data[name];
-				int slices_count = anim_settings["slices/amount"];
-
-				for (int i = 0; i < slices_count; i++) {
-					String slice_name = anim_settings["slice_" + itos(i + 1) + "/name"];
-					int from_frame = anim_settings["slice_" + itos(i + 1) + "/start_frame"];
-					int end_frame = anim_settings["slice_" + itos(i + 1) + "/end_frame"];
-					Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)anim_settings["slice_" + itos(i + 1) + "/loop_mode"]);
-					bool save_to_file = anim_settings["slice_" + itos(i + 1) + "/save_to_file/enabled"];
-					bool save_to_path = anim_settings["slice_" + itos(i + 1) + "/save_to_file/path"];
-					bool save_to_file_keep_custom = anim_settings["slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
-
-					animation_slices.push_back(slice_name);
-					animation_slices.push_back(from_frame / p_animation_fps);
-					animation_slices.push_back(end_frame / p_animation_fps);
-					animation_slices.push_back(loop_mode);
-					animation_slices.push_back(save_to_file);
-					animation_slices.push_back(save_to_path);
-					animation_slices.push_back(save_to_file_keep_custom);
-				}
-			}
-
-			if (animation_slices.size() > 0) {
-				_create_slices(ap, anim, animation_slices, true);
-			}
-		}
-
 		AnimationImportTracks import_tracks_mode[TRACK_CHANNEL_MAX] = {
 			AnimationImportTracks(int(node_settings["import_tracks/position"])),
 			AnimationImportTracks(int(node_settings["import_tracks/rotation"])),
@@ -1058,8 +1031,36 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 		ap->get_animation_list(&anims);
 		for (const StringName &name : anims) {
 			Ref<Animation> anim = ap->get_animation(name);
+			Array animation_slices;
+
 			if (p_animation_data.has(name)) {
 				Dictionary anim_settings = p_animation_data[name];
+
+				{
+					int slices_count = anim_settings["slices/amount"];
+
+					for (int i = 0; i < slices_count; i++) {
+						String slice_name = anim_settings["slice_" + itos(i + 1) + "/name"];
+						int from_frame = anim_settings["slice_" + itos(i + 1) + "/start_frame"];
+						int end_frame = anim_settings["slice_" + itos(i + 1) + "/end_frame"];
+						Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)anim_settings["slice_" + itos(i + 1) + "/loop_mode"]);
+						bool save_to_file = anim_settings["slice_" + itos(i + 1) + "/save_to_file/enabled"];
+						String save_to_path = anim_settings["slice_" + itos(i + 1) + "/save_to_file/path"];
+						bool save_to_file_keep_custom = anim_settings["slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
+
+						animation_slices.push_back(slice_name);
+						animation_slices.push_back(from_frame / p_animation_fps);
+						animation_slices.push_back(end_frame / p_animation_fps);
+						animation_slices.push_back(loop_mode);
+						animation_slices.push_back(save_to_file);
+						animation_slices.push_back(save_to_path);
+						animation_slices.push_back(save_to_file_keep_custom);
+					}
+
+					if (animation_slices.size() > 0) {
+						_create_slices(ap, anim, animation_slices, true);
+					}
+				}
 				{
 					//fill with default values
 					List<ImportOption> iopts;
@@ -1374,6 +1375,40 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		}
 	}
 
+	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+
+		if (node_settings.has("mesh_instance/layers")) {
+			mi->set_layer_mask(node_settings["mesh_instance/layers"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_begin")) {
+			mi->set_visibility_range_begin(node_settings["mesh_instance/visibility_range_begin"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_begin_margin")) {
+			mi->set_visibility_range_begin_margin(node_settings["mesh_instance/visibility_range_begin_margin"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_end")) {
+			mi->set_visibility_range_end(node_settings["mesh_instance/visibility_range_end"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_end_margin")) {
+			mi->set_visibility_range_end_margin(node_settings["mesh_instance/visibility_range_end_margin"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_fade_mode")) {
+			const GeometryInstance3D::VisibilityRangeFadeMode range_fade_mode = (GeometryInstance3D::VisibilityRangeFadeMode)node_settings["mesh_instance/visibility_range_fade_mode"].operator int();
+			mi->set_visibility_range_fade_mode(range_fade_mode);
+		}
+
+		if (node_settings.has("mesh_instance/cast_shadow")) {
+			const GeometryInstance3D::ShadowCastingSetting cast_shadows = (GeometryInstance3D::ShadowCastingSetting)node_settings["mesh_instance/cast_shadow"].operator int();
+			mi->set_cast_shadows_setting(cast_shadows);
+		}
+	}
+
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
@@ -1624,6 +1659,14 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
+
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mesh_instance/layers", PROPERTY_HINT_LAYERS_3D_RENDER), 1));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mesh_instance/visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), 0.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mesh_instance/visibility_range_begin_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), 0.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mesh_instance/visibility_range_end", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), 0.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mesh_instance/visibility_range_end_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), 0.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mesh_instance/visibility_range_fade_mode", PROPERTY_HINT_ENUM, "Disabled,Self,Dependencies"), GeometryInstance3D::VISIBILITY_RANGE_FADE_DISABLED));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mesh_instance/cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), GeometryInstance3D::SHADOW_CASTING_SETTING_ON));
 
 			// Decomposition
 			Ref<MeshConvexDecompositionSettings> decomposition_default = Ref<MeshConvexDecompositionSettings>();
@@ -1892,6 +1935,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI),Static Lightmaps (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI only)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/force_disable_compression"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 30));
@@ -1907,6 +1951,12 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 
 	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
 		importer_elem->get_import_options(p_path, r_options);
+	}
+}
+
+void ResourceImporterScene::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+		importer_elem->handle_compatibility_options(p_import_params);
 	}
 }
 
@@ -1954,7 +2004,7 @@ Array ResourceImporterScene::_get_skinned_pose_transforms(ImporterMeshInstance3D
 	return skin_pose_transform_array;
 }
 
-void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches) {
+Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches) {
 	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
 	if (src_mesh_node) {
 		//is mesh
@@ -2118,6 +2168,14 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 			} break;
 		}
 
+		mesh_node->set_layer_mask(src_mesh_node->get_layer_mask());
+		mesh_node->set_cast_shadows_setting(src_mesh_node->get_cast_shadows_setting());
+		mesh_node->set_visibility_range_begin(src_mesh_node->get_visibility_range_begin());
+		mesh_node->set_visibility_range_begin_margin(src_mesh_node->get_visibility_range_begin_margin());
+		mesh_node->set_visibility_range_end(src_mesh_node->get_visibility_range_end());
+		mesh_node->set_visibility_range_end_margin(src_mesh_node->get_visibility_range_end_margin());
+		mesh_node->set_visibility_range_fade_mode(src_mesh_node->get_visibility_range_fade_mode());
+
 		p_node->replace_by(mesh_node);
 		p_node->set_owner(nullptr);
 		memdelete(p_node);
@@ -2127,6 +2185,8 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_generate_meshes(p_node->get_child(i), p_mesh_data, p_generate_lods, p_create_shadow_meshes, p_light_bake_mode, p_lightmap_texel_size, p_src_lightmap_cache, r_lightmap_caches);
 	}
+
+	return p_node;
 }
 
 void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes) {
@@ -2319,7 +2379,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	Error err = OK;
 	HashMap<StringName, Variant> options_dupe = p_options;
 
-	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, options_dupe, nullptr, &err);
+	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS | EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION, options_dupe, nullptr, &err);
 	if (!scene || err != OK) {
 		return nullptr;
 	}
@@ -2376,6 +2436,11 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	bool ensure_tangents = p_options["meshes/ensure_tangents"];
 	if (ensure_tangents) {
 		import_flags |= EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
+	}
+
+	bool force_disable_compression = p_options["meshes/force_disable_compression"];
+	if (force_disable_compression) {
+		import_flags |= EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
 	}
 
 	Error err = OK;
@@ -2501,7 +2566,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	if (subresources.has("meshes")) {
 		mesh_data = subresources["meshes"];
 	}
-	_generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, mesh_lightmap_caches);
+	scene = _generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, mesh_lightmap_caches);
 
 	if (mesh_lightmap_caches.size()) {
 		Ref<FileAccess> f = FileAccess::open(p_source_file + ".unwrap_cache", FileAccess::WRITE);
@@ -2601,10 +2666,10 @@ ResourceImporterScene *ResourceImporterScene::animation_singleton = nullptr;
 Vector<Ref<EditorSceneFormatImporter>> ResourceImporterScene::importers;
 Vector<Ref<EditorScenePostImportPlugin>> ResourceImporterScene::post_importer_plugins;
 
-bool ResourceImporterScene::ResourceImporterScene::has_advanced_options() const {
+bool ResourceImporterScene::has_advanced_options() const {
 	return true;
 }
-void ResourceImporterScene::ResourceImporterScene::show_advanced_options(const String &p_path) {
+void ResourceImporterScene::show_advanced_options(const String &p_path) {
 	SceneImportSettings::get_singleton()->open_settings(p_path, animation_importer);
 }
 

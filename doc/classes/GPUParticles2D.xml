@@ -48,10 +48,16 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
-			Number of particles emitted in one emission cycle.
+			The number of particles to emit in one emission cycle. The effective emission rate is [code](amount * amount_ratio) / lifetime[/code] particles per second. Higher values will increase GPU requirements, even if not all particles are visible at a given time or if [member amount_ratio] is decreased.
+			[b]Note:[/b] Changing this value will cause the particle system to restart. To avoid this, change [member amount_ratio] instead.
+		</member>
+		<member name="amount_ratio" type="float" setter="set_amount_ratio" getter="get_amount_ratio" default="1.0">
+			The ratio of particles that should actually be emitted. If set to a value lower than [code]1.0[/code], this will set the amount of emitted particles throughout the lifetime to [code]amount * amount_ratio[/code]. Unlike changing [member amount], changing [member amount_ratio] while emitting does not affect already-emitted particles and doesn't cause the particle system to restart. [member amount_ratio] can be used to create effects that make the number of emitted particles vary over time.
+			[b]Note:[/b] Reducing the [member amount_ratio] has no performance benefit, since resources need to be allocated and processed for the total [member amount] of particles regardless of the [member amount_ratio]. If you don't intend to change the number of particles emitted while the particles are emitting, make sure [member amount_ratio] is set to [code]1[/code] and change [member amount] to your liking instead.
 		</member>
 		<member name="collision_base_size" type="float" setter="set_collision_base_size" getter="get_collision_base_size" default="1.0">
-			Multiplier for particle's collision radius. [code]1.0[/code] corresponds to the size of the sprite.
+			Multiplier for particle's collision radius. [code]1.0[/code] corresponds to the size of the sprite. If particles appear to sink into the ground when colliding, increase this value. If particles appear to float when colliding, decrease this value. Only effective if [member ParticleProcessMaterial.collision_mode] is [constant ParticleProcessMaterial.COLLISION_RIGID] or [constant ParticleProcessMaterial.COLLISION_HIDE_ON_CONTACT].
+			[b]Note:[/b] Particles always have a spherical collision shape.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles2D.DrawOrder" default="1">
 			Particle draw order. Uses [enum DrawOrder] values.
@@ -68,11 +74,15 @@
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
 		</member>
+		<member name="interp_to_end" type="float" setter="set_interp_to_end" getter="get_interp_to_end" default="0.0">
+			Causes all the particles in this node to interpolate towards the end of their lifetime.
+			[b]Note:[/b] This only works when used with a [ParticleProcessMaterial]. It needs to be manually implemented for custom process shaders.
+		</member>
 		<member name="interpolate" type="bool" setter="set_interpolate" getter="get_interpolate" default="true">
 			Enables particle interpolation, which makes the particle movement smoother when their [member fixed_fps] is lower than the screen refresh rate.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
-			Amount of time each particle will exist.
+			The amount of time each particle will exist (in seconds). The effective emission rate is [code](amount * amount_ratio) / lifetime[/code] particles per second.
 		</member>
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="false">
 			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [GPUParticles2D] node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the [GPUParticles2D] node (and its parents) when it is moved or rotated.
@@ -93,10 +103,12 @@
 			Particle system's running speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
 		</member>
 		<member name="sub_emitter" type="NodePath" setter="set_sub_emitter" getter="get_sub_emitter" default="NodePath(&quot;&quot;)">
-			The [NodePath] to the [GPUParticles2D] used for sub-emissions.
+			Path to another [GPUParticles2D] node that will be used as a subemitter (see [member ParticleProcessMaterial.sub_emitter_mode]). Subemitters can be used to achieve effects such as fireworks, sparks on collision, bubbles popping into water drops, and more.
+			[b]Note:[/b] When [member sub_emitter] is set, the target [GPUParticles2D] node will no longer emit particles on its own.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			Particle texture. If [code]null[/code], particles will be squares.
+			Particle texture. If [code]null[/code], particles will be squares with a size of 1×1 pixels.
+			[b]Note:[/b] To use a flipbook texture, assign a new [CanvasItemMaterial] to the [GPUParticles2D]'s [member CanvasItem.material] property, then enable [member CanvasItemMaterial.particles_animation] and set [member CanvasItemMaterial.particles_anim_h_frames], [member CanvasItemMaterial.particles_anim_v_frames], and [member CanvasItemMaterial.particles_anim_loop] to match the flipbook texture.
 		</member>
 		<member name="trail_enabled" type="bool" setter="set_trail_enabled" getter="is_trail_enabled" default="false">
 			If [code]true[/code], enables particle trails using a mesh skinning system.
@@ -129,9 +141,10 @@
 			Particles are drawn in the order emitted.
 		</constant>
 		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
-			Particles are drawn in order of remaining lifetime.
+			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
 		</constant>
 		<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="DrawOrder">
+			Particles are drawn in reverse order of remaining lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
 		</constant>
 		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">
 			Particle starts at the specified position.

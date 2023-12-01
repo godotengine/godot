@@ -103,6 +103,9 @@ public:
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
 
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual bool clipboard_has() const override;

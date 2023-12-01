@@ -15,6 +15,13 @@
 				Creates a new, empty font cache entry resource. To free the resulting resource, use the [method free_rid] method.
 			</description>
 		</method>
+		<method name="create_font_linked_variation">
+			<return type="RID" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Creates a new variation existing font which is reusing the same glyph cache and font data. To free the resulting resource, use the [method free_rid] method.
+			</description>
+		</method>
 		<method name="create_shaped_text">
 			<return type="RID" />
 			<param index="0" name="direction" type="int" enum="TextServer.Direction" default="0" />
@@ -148,7 +155,7 @@
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Recturns an active face index in the TrueType / OpenType collection.
+				Returns an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="font_get_fixed_size" qualifiers="const">
@@ -156,6 +163,13 @@
 			<param index="0" name="font_rid" type="RID" />
 			<description>
 				Returns bitmap font fixed size.
+			</description>
+		</method>
+		<method name="font_get_fixed_size_scale_mode" qualifiers="const">
+			<return type="int" enum="TextServer.FixedSizeScaleMode" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns bitmap font scaling mode.
 			</description>
 		</method>
 		<method name="font_get_generate_mipmaps" qualifiers="const">
@@ -187,7 +201,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="index" type="int" />
 			<description>
-				Returns outline contours of the glyph as a [code]Dictionary[/code] with the following contents:
+				Returns outline contours of the glyph as a [Dictionary] with the following contents:
 				[code]points[/code]         - [PackedVector3Array], containing outline points. [code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is the type of the point, using the [enum ContourPointTag] values.
 				[code]contours[/code]       - [PackedInt32Array], containing indices the end points of each contour.
 				[code]orientation[/code]    - [bool], contour orientation. If [code]true[/code], clockwise contours must be filled.
@@ -375,7 +389,7 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [Vector2i] with font size and outline size.
 			</description>
 		</method>
 		<method name="font_get_spacing" qualifiers="const">
@@ -665,6 +679,14 @@
 			<param index="1" name="fixed_size" type="int" />
 			<description>
 				Sets bitmap font fixed size. If set to value greater than zero, same cache entry will be used for all font sizes.
+			</description>
+		</method>
+		<method name="font_set_fixed_size_scale_mode">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="fixed_size_scale_mode" type="int" enum="TextServer.FixedSizeScaleMode" />
+			<description>
+				Sets bitmap font scaling mode. This property is used only if [code]fixed_size[/code] is greater than zero.
 			</description>
 		</method>
 		<method name="font_set_force_autohinter">
@@ -1991,14 +2013,22 @@
 			BiDi override for email.
 		</constant>
 		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
-			BiDi override for lists.
-			Structured text options: list separator [code]String[/code].
+			BiDi override for lists. Structured text options: list separator [String].
 		</constant>
 		<constant name="STRUCTURED_TEXT_GDSCRIPT" value="5" enum="StructuredTextParser">
 			BiDi override for GDScript.
 		</constant>
 		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
 			User defined structured text BiDi override function.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_DISABLE" value="0" enum="FixedSizeScaleMode">
+			Bitmap font is not scaled.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_INTEGER_ONLY" value="1" enum="FixedSizeScaleMode">
+			Bitmap font is scaled to the closest integer multiple of the font's fixed size. This is the recommended option for pixel art fonts.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_ENABLED" value="2" enum="FixedSizeScaleMode">
+			Bitmap font is scaled to an arbitrary (fractional) size. This is the recommended option for non-pixel art fonts.
 		</constant>
 	</constants>
 </class>

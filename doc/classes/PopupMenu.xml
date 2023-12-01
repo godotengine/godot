@@ -186,14 +186,15 @@
 			<param index="1" name="submenu" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
 			<description>
-				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument is the name of the child [PopupMenu] node that will be shown when the item is clicked.
+				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument must be the name of an existing [PopupMenu] that has been added as a child to this node. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
+			<param index="0" name="free_submenus" type="bool" default="false" />
 			<description>
-				Removes all items from the [PopupMenu].
+				Removes all items from the [PopupMenu]. If [param free_submenus] is [code]true[/code], the submenu nodes are automatically freed.
 			</description>
 		</method>
 		<method name="get_focused_item" qualifiers="const">
@@ -689,12 +690,6 @@
 		</theme_item>
 		<theme_item name="labeled_separator_right" data_type="style" type="StyleBox">
 			[StyleBox] for the right side of labeled separator. See [method add_separator].
-		</theme_item>
-		<theme_item name="panel" data_type="style" type="StyleBox">
-			Default [StyleBox] of the [PopupMenu] items.
-		</theme_item>
-		<theme_item name="panel_disabled" data_type="style" type="StyleBox">
-			[StyleBox] used when the [PopupMenu] item is disabled.
 		</theme_item>
 		<theme_item name="separator" data_type="style" type="StyleBox">
 			[StyleBox] used for the separators. See [method add_separator].

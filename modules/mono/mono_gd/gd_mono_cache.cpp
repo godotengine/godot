@@ -42,7 +42,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 
 #define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method)                             \
 	{                                                                                      \
-		ERR_FAIL_COND_MSG(m_var == nullptr,                                                \
+		ERR_FAIL_NULL_MSG(m_var,                                                           \
 				"Mono Cache: Managed callback for '" #m_class "_" #m_method "' is null."); \
 		checked_count += 1;                                                                \
 	}

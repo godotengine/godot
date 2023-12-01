@@ -74,6 +74,7 @@
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
+#include "scene/animation/animation_mixer.h"
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
@@ -172,6 +173,7 @@
 #include "scene/resources/mesh_texture.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/navigation_mesh.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
@@ -453,8 +455,6 @@ void register_scene_types() {
 #endif
 
 	/* REGISTER ANIMATION */
-
-	GDREGISTER_CLASS(AnimationPlayer);
 	GDREGISTER_CLASS(Tween);
 	GDREGISTER_ABSTRACT_CLASS(Tweener);
 	GDREGISTER_CLASS(PropertyTweener);
@@ -462,6 +462,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CallbackTweener);
 	GDREGISTER_CLASS(MethodTweener);
 
+	GDREGISTER_ABSTRACT_CLASS(AnimationMixer);
+	GDREGISTER_CLASS(AnimationPlayer);
 	GDREGISTER_CLASS(AnimationTree);
 	GDREGISTER_CLASS(AnimationNode);
 	GDREGISTER_CLASS(AnimationRootNode);
@@ -956,6 +958,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PathFollow2D);
 
 	GDREGISTER_CLASS(NavigationMesh);
+	GDREGISTER_CLASS(NavigationMeshSourceGeometryData2D);
 	GDREGISTER_CLASS(NavigationMeshSourceGeometryData3D);
 	GDREGISTER_CLASS(NavigationPolygon);
 	GDREGISTER_CLASS(NavigationRegion2D);
@@ -1217,6 +1220,7 @@ void unregister_scene_types() {
 	PhysicalSkyMaterial::cleanup_shader();
 	PanoramaSkyMaterial::cleanup_shader();
 	ProceduralSkyMaterial::cleanup_shader();
+	FogMaterial::cleanup_shader();
 #endif // _3D_DISABLED
 
 	ParticleProcessMaterial::finish_shaders();

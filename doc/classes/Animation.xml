@@ -257,7 +257,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="to_animation" type="Animation" />
 			<description>
-				Adds a new track that is a copy of the given track from [param to_animation].
+				Adds a new track to [param to_animation] that is a copy of the given track from this animation.
 			</description>
 		</method>
 		<method name="find_track" qualifiers="const">

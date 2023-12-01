@@ -46,7 +46,7 @@
 		<method name="get_skeleton_rest" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the node's [member rest] [code]Transform2D[/code] if it doesn't have a parent, or its rest pose relative to its parent.
+				Returns the node's [member rest] [Transform2D] if it doesn't have a parent, or its rest pose relative to its parent.
 			</description>
 		</method>
 		<method name="set_autocalculate_length_and_angle">

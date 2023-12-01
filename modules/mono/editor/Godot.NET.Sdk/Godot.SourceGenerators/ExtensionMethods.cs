@@ -32,7 +32,7 @@ namespace Godot.SourceGenerators
             disabledGenerators != null &&
             disabledGenerators.Split(';').Contains(generatorName));
 
-        public static bool InheritsFrom(this INamedTypeSymbol? symbol, string assemblyName, string typeFullName)
+        public static bool InheritsFrom(this ITypeSymbol? symbol, string assemblyName, string typeFullName)
         {
             while (symbol != null)
             {
@@ -303,11 +303,6 @@ namespace Godot.SourceGenerators
         {
             foreach (var property in properties)
             {
-                // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
-                // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
-                if (property.IsWriteOnly || property.IsReadOnly || property.SetMethod!.IsInitOnly)
-                    continue;
-
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(property.Type, typeCache);
 
                 if (marshalType == null)
@@ -325,10 +320,6 @@ namespace Godot.SourceGenerators
             foreach (var field in fields)
             {
                 // TODO: We should still restore read-only fields after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
-                // Ignore properties without a getter or without a setter. Godot properties must be both readable and writable.
-                if (field.IsReadOnly)
-                    continue;
-
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(field.Type, typeCache);
 
                 if (marshalType == null)

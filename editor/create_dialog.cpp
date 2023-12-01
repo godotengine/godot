@@ -279,6 +279,7 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category) {
 	bool script_type = ScriptServer::is_global_class(p_type);
+	bool is_abstract = false;
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		r_item->set_text(0, p_type);
 	} else if (p_type_category == TypeCategory::PATH_TYPE) {
@@ -286,14 +287,19 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
-		r_item->set_suffix(0, "(" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+		String script_path = ScriptServer::get_global_class_path(p_type);
+		r_item->set_suffix(0, "(" + script_path.get_file() + ")");
+
+		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
+		ERR_FAIL_COND(!scr.is_valid());
+		is_abstract = scr->is_abstract();
 	} else {
 		r_item->set_metadata(0, custom_type_parents[p_type]);
 		r_item->set_text(0, p_type);
 	}
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
-			p_type_category == TypeCategory::OTHER_TYPE;
+			(p_type_category == TypeCategory::OTHER_TYPE && !is_abstract);
 	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
 
 	r_item->set_meta(SNAME("__instantiable"), instantiable);
@@ -303,8 +309,10 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	}
 
-	bool is_deprecated = EditorHelp::get_doc_data()->class_list[p_type].is_deprecated;
-	bool is_experimental = EditorHelp::get_doc_data()->class_list[p_type].is_experimental;
+	HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(p_type);
+
+	bool is_deprecated = (class_doc && class_doc->value.is_deprecated);
+	bool is_experimental = (class_doc && class_doc->value.is_experimental);
 
 	if (is_deprecated) {
 		r_item->add_button(0, get_editor_theme_icon("StatusError"), 0, false, TTR("This class is marked as deprecated."));
@@ -324,7 +332,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_collapsed(should_collapse);
 	}
 
-	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
+	const String &description = DTR(class_doc ? class_doc->value.brief_description : "");
 	r_item->set_tooltip_text(0, description);
 
 	if (p_type_category == TypeCategory::OTHER_TYPE && !script_type) {
@@ -494,10 +502,11 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	to_select->select(0);
 	search_options->scroll_to_item(to_select, p_center_on_item);
 
-	if (EditorHelp::get_doc_data()->class_list.has(p_type) && !DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description).is_empty()) {
+	String text = help_bit->get_class_description(p_type);
+	if (!text.is_empty()) {
 		// Display both class name and description, since the help bit may be displayed
 		// far away from the location (especially if the dialog was resized to be taller).
-		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description)));
+		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, text));
 		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
 	} else {
 		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.

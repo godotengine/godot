@@ -70,7 +70,6 @@ public:
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);
 
-private:
 	TabContainer *sections = nullptr;
 
 	MenuButton *add_preset = nullptr;
@@ -118,6 +117,8 @@ private:
 
 	String default_filename;
 
+	bool exporting = false;
+
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
@@ -135,6 +136,7 @@ private:
 
 	void _export_type_changed(int p_which);
 	void _filter_changed(const String &p_filter);
+	String _get_resource_export_header(EditorExportPreset::ExportFilter p_filter) const;
 	void _fill_resource_tree();
 	void _setup_item_for_file_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_mode);
 	bool _fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, EditorExportPreset::ExportFilter p_export_filter);
@@ -197,6 +199,8 @@ public:
 	String get_export_path();
 
 	Ref<EditorExportPreset> get_current_preset() const;
+
+	bool is_exporting() const { return exporting; };
 
 	ProjectExportDialog();
 	~ProjectExportDialog();

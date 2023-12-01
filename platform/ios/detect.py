@@ -103,13 +103,14 @@ def configure(env: "Environment"):
 
     if env["ios_simulator"]:
         detect_darwin_sdk_path("iossimulator", env)
-        env.Append(ASFLAGS=["-mios-simulator-version-min=11.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=11.0"])
+        env.Append(ASFLAGS=["-mios-simulator-version-min=12.0"])
+        env.Append(CCFLAGS=["-mios-simulator-version-min=12.0"])
+        env.Append(CPPDEFINES=["IOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         detect_darwin_sdk_path("ios", env)
-        env.Append(ASFLAGS=["-miphoneos-version-min=11.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=11.0"])
+        env.Append(ASFLAGS=["-miphoneos-version-min=12.0"])
+        env.Append(CCFLAGS=["-miphoneos-version-min=12.0"])
 
     if env["arch"] == "x86_64":
         if not env["ios_simulator"]:
@@ -154,7 +155,7 @@ def configure(env: "Environment"):
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
 
     if env["opengl3"]:
-        env.Append(CPPDEFINES=["GLES3_ENABLED"])
+        env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])
         env.Prepend(
             CPPPATH=[
                 "$IOS_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",

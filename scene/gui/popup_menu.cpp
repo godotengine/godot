@@ -40,6 +40,86 @@
 #include "scene/gui/menu_bar.h"
 #include "scene/theme/theme_db.h"
 
+String PopupMenu::bind_global_menu() {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		return String();
+	}
+#endif
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+		return String();
+	}
+
+	if (!global_menu_name.is_empty()) {
+		return global_menu_name; // Already bound;
+	}
+
+	DisplayServer *ds = DisplayServer::get_singleton();
+	global_menu_name = "__PopupMenu#" + itos(get_instance_id());
+	ds->global_menu_set_popup_callbacks(global_menu_name, callable_mp(this, &PopupMenu::_about_to_popup), callable_mp(this, &PopupMenu::_about_to_close));
+	for (int i = 0; i < items.size(); i++) {
+		Item &item = items.write[i];
+		if (item.separator) {
+			ds->global_menu_add_separator(global_menu_name);
+		} else {
+			int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), i);
+			if (!item.submenu.is_empty()) {
+				PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu));
+				if (pm) {
+					String submenu_name = pm->bind_global_menu();
+					ds->global_menu_set_item_submenu(global_menu_name, index, submenu_name);
+					item.submenu_bound = true;
+				}
+			}
+			if (item.checkable_type == Item::CHECKABLE_TYPE_CHECK_BOX) {
+				ds->global_menu_set_item_checkable(global_menu_name, index, true);
+			} else if (item.checkable_type == Item::CHECKABLE_TYPE_RADIO_BUTTON) {
+				ds->global_menu_set_item_radio_checkable(global_menu_name, index, true);
+			}
+			ds->global_menu_set_item_checked(global_menu_name, index, item.checked);
+			ds->global_menu_set_item_disabled(global_menu_name, index, item.disabled);
+			ds->global_menu_set_item_max_states(global_menu_name, index, item.max_states);
+			ds->global_menu_set_item_icon(global_menu_name, index, item.icon);
+			ds->global_menu_set_item_state(global_menu_name, index, item.state);
+			ds->global_menu_set_item_indentation_level(global_menu_name, index, item.indent);
+			ds->global_menu_set_item_tooltip(global_menu_name, index, item.tooltip);
+			if (!item.shortcut_is_disabled && item.shortcut.is_valid() && item.shortcut->has_valid_event()) {
+				Array events = item.shortcut->get_events();
+				for (int j = 0; j < events.size(); j++) {
+					Ref<InputEventKey> ie = events[j];
+					if (ie.is_valid()) {
+						ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+						break;
+					}
+				}
+			} else if (item.accel != Key::NONE) {
+				ds->global_menu_set_item_accelerator(global_menu_name, index, item.accel);
+			}
+		}
+	}
+	return global_menu_name;
+}
+
+void PopupMenu::unbind_global_menu() {
+	if (global_menu_name.is_empty()) {
+		return;
+	}
+
+	for (int i = 0; i < items.size(); i++) {
+		Item &item = items.write[i];
+		if (!item.submenu.is_empty()) {
+			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu));
+			if (pm) {
+				pm->unbind_global_menu();
+			}
+			item.submenu_bound = false;
+		}
+	}
+	DisplayServer::get_singleton()->global_menu_clear(global_menu_name);
+
+	global_menu_name = String();
+}
+
 String PopupMenu::_get_accel_text(const Item &p_item) const {
 	if (p_item.shortcut.is_valid()) {
 		return p_item.shortcut->get_as_text();
@@ -631,9 +711,9 @@ void PopupMenu::_draw_items() {
 		// Separator
 		item_ofs.x += items[i].indent * theme_cache.indent;
 		if (items[i].separator) {
-			if (!text.is_empty() || !items[i].icon.is_null()) {
+			if (!text.is_empty() || items[i].icon.is_valid()) {
 				int content_size = items[i].text_buf->get_size().width + theme_cache.h_separation * 2;
-				if (!items[i].icon.is_null()) {
+				if (items[i].icon.is_valid()) {
 					content_size += icon_size.width + theme_cache.h_separation;
 				}
 
@@ -662,7 +742,9 @@ void PopupMenu::_draw_items() {
 		icon_color *= items[i].icon_modulate;
 
 		// For non-separator items, add some padding for the content.
-		item_ofs.x += theme_cache.item_start_padding;
+		if (!items[i].separator) {
+			item_ofs.x += theme_cache.item_start_padding;
+		}
 
 		// Checkboxes
 		if (items[i].checkable_type && !items[i].separator) {
@@ -678,7 +760,7 @@ void PopupMenu::_draw_items() {
 		int separator_ofs = (display_width - items[i].text_buf->get_size().width) / 2;
 
 		// Icon
-		if (!items[i].icon.is_null()) {
+		if (items[i].icon.is_valid()) {
 			const Point2 icon_offset = Point2(0, Math::floor((h - icon_size.height) / 2.0));
 			Point2 icon_pos;
 
@@ -689,6 +771,7 @@ void PopupMenu::_draw_items() {
 					icon_pos = Size2(control->get_size().width - item_ofs.x - separator_ofs - icon_size.width, item_ofs.y);
 				} else {
 					icon_pos = item_ofs + Size2(separator_ofs, 0);
+					separator_ofs += icon_size.width + theme_cache.h_separation;
 				}
 			} else {
 				if (rtl) {
@@ -714,9 +797,6 @@ void PopupMenu::_draw_items() {
 		if (items[i].separator) {
 			if (!text.is_empty()) {
 				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
-				if (!rtl && !items[i].icon.is_null()) {
-					text_pos.x += icon_size.width + theme_cache.h_separation;
-				}
 
 				if (theme_cache.font_separator_outline_size > 0 && theme_cache.font_separator_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_separator_outline_size, theme_cache.font_separator_outline_color);
@@ -821,11 +901,17 @@ void PopupMenu::_menu_changed() {
 void PopupMenu::add_child_notify(Node *p_child) {
 	Window::add_child_notify(p_child);
 
-	PopupMenu *pm = Object::cast_to<PopupMenu>(p_child);
-	if (!pm) {
-		return;
+	if (Object::cast_to<PopupMenu>(p_child) && !global_menu_name.is_empty()) {
+		String node_name = p_child->get_name();
+		PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(node_name));
+		for (int i = 0; i < items.size(); i++) {
+			if (items[i].submenu == node_name) {
+				String submenu_name = pm->bind_global_menu();
+				DisplayServer::get_singleton()->global_menu_set_item_submenu(global_menu_name, i, submenu_name);
+				items.write[i].submenu_bound = true;
+			}
+		}
 	}
-	p_child->connect("menu_changed", callable_mp(this, &PopupMenu::_menu_changed));
 	_menu_changed();
 }
 
@@ -836,7 +922,16 @@ void PopupMenu::remove_child_notify(Node *p_child) {
 	if (!pm) {
 		return;
 	}
-	p_child->disconnect("menu_changed", callable_mp(this, &PopupMenu::_menu_changed));
+	if (Object::cast_to<PopupMenu>(p_child) && !global_menu_name.is_empty()) {
+		String node_name = p_child->get_name();
+		for (int i = 0; i < items.size(); i++) {
+			if (items[i].submenu == node_name) {
+				DisplayServer::get_singleton()->global_menu_set_item_submenu(global_menu_name, i, String());
+				items.write[i].submenu_bound = false;
+			}
+		}
+		pm->unbind_global_menu();
+	}
 	_menu_changed();
 }
 
@@ -857,9 +952,15 @@ void PopupMenu::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			DisplayServer *ds = DisplayServer::get_singleton();
+			bool is_global = !global_menu_name.is_empty();
 			for (int i = 0; i < items.size(); i++) {
-				items.write[i].xl_text = atr(items[i].text);
-				items.write[i].dirty = true;
+				Item &item = items.write[i];
+				item.xl_text = atr(item.text);
+				item.dirty = true;
+				if (is_global) {
+					ds->global_menu_set_item_text(global_menu_name, i, item.xl_text);
+				}
 				_shape_item(i);
 			}
 
@@ -1007,10 +1108,12 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				// Set margin on the margin container
+				margin_container->begin_bulk_theme_override();
 				margin_container->add_theme_constant_override("margin_left", theme_cache.panel_style->get_margin(Side::SIDE_LEFT));
 				margin_container->add_theme_constant_override("margin_top", theme_cache.panel_style->get_margin(Side::SIDE_TOP));
 				margin_container->add_theme_constant_override("margin_right", theme_cache.panel_style->get_margin(Side::SIDE_RIGHT));
 				margin_container->add_theme_constant_override("margin_bottom", theme_cache.panel_style->get_margin(Side::SIDE_BOTTOM));
+				margin_container->end_bulk_theme_override();
 			}
 		} break;
 	}
@@ -1031,6 +1134,14 @@ void PopupMenu::add_item(const String &p_label, int p_id, Key p_accel) {
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (item.accel != Key::NONE) {
+			ds->global_menu_set_item_accelerator(global_menu_name, index, item.accel);
+		}
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
@@ -1044,6 +1155,15 @@ void PopupMenu::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_labe
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.icon = p_icon;
 	items.push_back(item);
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (item.accel != Key::NONE) {
+			ds->global_menu_set_item_accelerator(global_menu_name, index, item.accel);
+		}
+		ds->global_menu_set_item_icon(global_menu_name, index, item.icon);
+	}
 
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
@@ -1059,10 +1179,20 @@ void PopupMenu::add_check_item(const String &p_label, int p_id, Key p_accel) {
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (item.accel != Key::NONE) {
+			ds->global_menu_set_item_accelerator(global_menu_name, index, item.accel);
+		}
+		ds->global_menu_set_item_checkable(global_menu_name, index, true);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
@@ -1073,10 +1203,22 @@ void PopupMenu::add_icon_check_item(const Ref<Texture2D> &p_icon, const String &
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (item.accel != Key::NONE) {
+			ds->global_menu_set_item_accelerator(global_menu_name, index, item.accel);
+		}
+		ds->global_menu_set_item_icon(global_menu_name, index, item.icon);
+		ds->global_menu_set_item_checkable(global_menu_name, index, true);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
+	_menu_changed();
 }
 
 void PopupMenu::add_radio_check_item(const String &p_label, int p_id, Key p_accel) {
@@ -1085,10 +1227,20 @@ void PopupMenu::add_radio_check_item(const String &p_label, int p_id, Key p_acce
 	item.checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (item.accel != Key::NONE) {
+			ds->global_menu_set_item_accelerator(global_menu_name, index, item.accel);
+		}
+		ds->global_menu_set_item_radio_checkable(global_menu_name, index, true);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
@@ -1099,10 +1251,21 @@ void PopupMenu::add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const St
 	item.checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (item.accel != Key::NONE) {
+			ds->global_menu_set_item_accelerator(global_menu_name, index, item.accel);
+		}
+		ds->global_menu_set_item_icon(global_menu_name, index, item.icon);
+		ds->global_menu_set_item_radio_checkable(global_menu_name, index, true);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
@@ -1113,11 +1276,22 @@ void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int
 	item.state = p_default_state;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (item.accel != Key::NONE) {
+			ds->global_menu_set_item_accelerator(global_menu_name, index, item.accel);
+		}
+		ds->global_menu_set_item_max_states(global_menu_name, index, item.max_states);
+		ds->global_menu_set_item_state(global_menu_name, index, item.state);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
 	_menu_changed();
+	notify_property_list_changed();
 }
 
 #define ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, p_allow_echo)             \
@@ -1135,10 +1309,26 @@ void PopupMenu::add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id, bool p_g
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, p_allow_echo);
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (!item.shortcut_is_disabled && item.shortcut.is_valid() && item.shortcut->has_valid_event()) {
+			Array events = item.shortcut->get_events();
+			for (int j = 0; j < events.size(); j++) {
+				Ref<InputEventKey> ie = events[j];
+				if (ie.is_valid()) {
+					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+					break;
+				}
+			}
+		}
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
@@ -1148,10 +1338,27 @@ void PopupMenu::add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortc
 	item.icon = p_icon;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (!item.shortcut_is_disabled && item.shortcut.is_valid() && item.shortcut->has_valid_event()) {
+			Array events = item.shortcut->get_events();
+			for (int j = 0; j < events.size(); j++) {
+				Ref<InputEventKey> ie = events[j];
+				if (ie.is_valid()) {
+					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+					break;
+				}
+			}
+		}
+		ds->global_menu_set_item_icon(global_menu_name, index, item.icon);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
@@ -1161,10 +1368,27 @@ void PopupMenu::add_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id, bo
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (!item.shortcut_is_disabled && item.shortcut.is_valid() && item.shortcut->has_valid_event()) {
+			Array events = item.shortcut->get_events();
+			for (int j = 0; j < events.size(); j++) {
+				Ref<InputEventKey> ie = events[j];
+				if (ie.is_valid()) {
+					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+					break;
+				}
+			}
+		}
+		ds->global_menu_set_item_checkable(global_menu_name, index, true);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
@@ -1175,10 +1399,28 @@ void PopupMenu::add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (!item.shortcut_is_disabled && item.shortcut.is_valid() && item.shortcut->has_valid_event()) {
+			Array events = item.shortcut->get_events();
+			for (int j = 0; j < events.size(); j++) {
+				Ref<InputEventKey> ie = events[j];
+				if (ie.is_valid()) {
+					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+					break;
+				}
+			}
+		}
+		ds->global_menu_set_item_icon(global_menu_name, index, item.icon);
+		ds->global_menu_set_item_checkable(global_menu_name, index, true);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
@@ -1188,10 +1430,27 @@ void PopupMenu::add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_
 	item.checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (!item.shortcut_is_disabled && item.shortcut.is_valid() && item.shortcut->has_valid_event()) {
+			Array events = item.shortcut->get_events();
+			for (int j = 0; j < events.size(); j++) {
+				Ref<InputEventKey> ie = events[j];
+				if (ie.is_valid()) {
+					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+					break;
+				}
+			}
+		}
+		ds->global_menu_set_item_radio_checkable(global_menu_name, index, true);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
@@ -1202,14 +1461,37 @@ void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, cons
 	item.checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		if (!item.shortcut_is_disabled && item.shortcut.is_valid() && item.shortcut->has_valid_event()) {
+			Array events = item.shortcut->get_events();
+			for (int j = 0; j < events.size(); j++) {
+				Ref<InputEventKey> ie = events[j];
+				if (ie.is_valid()) {
+					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+					break;
+				}
+			}
+		}
+		ds->global_menu_set_item_icon(global_menu_name, index, item.icon);
+		ds->global_menu_set_item_radio_checkable(global_menu_name, index, true);
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
 void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu, int p_id) {
+	String submenu_name_safe = p_submenu.replace("@", "_"); // Allow special characters for auto-generated names.
+	if (submenu_name_safe.validate_node_name() != submenu_name_safe) {
+		ERR_FAIL_MSG(vformat("Invalid node name '%s' for a submenu, the following characters are not allowed:\n%s", p_submenu, String::get_invalid_node_name_characters(true)));
+	}
+
 	Item item;
 	item.text = p_label;
 	item.xl_text = atr(p_label);
@@ -1217,10 +1499,22 @@ void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu,
 	item.submenu = p_submenu;
 	items.push_back(item);
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
+		PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu)); // Find first menu with this name.
+		if (pm) {
+			String submenu_name = pm->bind_global_menu();
+			ds->global_menu_set_item_submenu(global_menu_name, index, submenu_name);
+			items.write[index].submenu_bound = true;
+		}
+	}
+
 	_shape_item(items.size() - 1);
 	control->queue_redraw();
 
 	child_controls_changed();
+	notify_property_list_changed();
 	_menu_changed();
 }
 
@@ -1240,6 +1534,10 @@ void PopupMenu::set_item_text(int p_idx, const String &p_text) {
 	items.write[p_idx].text = p_text;
 	items.write[p_idx].xl_text = atr(p_text);
 	items.write[p_idx].dirty = true;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_text(global_menu_name, p_idx, items[p_idx].xl_text);
+	}
 	_shape_item(p_idx);
 
 	control->queue_redraw();
@@ -1283,6 +1581,10 @@ void PopupMenu::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	}
 
 	items.write[p_idx].icon = p_icon;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_icon(global_menu_name, p_idx, items[p_idx].icon);
+	}
 
 	control->queue_redraw();
 	child_controls_changed();
@@ -1332,6 +1634,10 @@ void PopupMenu::set_item_checked(int p_idx, bool p_checked) {
 
 	items.write[p_idx].checked = p_checked;
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_checked(global_menu_name, p_idx, p_checked);
+	}
+
 	control->queue_redraw();
 	child_controls_changed();
 	_menu_changed();
@@ -1348,6 +1654,10 @@ void PopupMenu::set_item_id(int p_idx, int p_id) {
 	}
 
 	items.write[p_idx].id = p_id;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_tag(global_menu_name, p_idx, p_id);
+	}
 
 	control->queue_redraw();
 	child_controls_changed();
@@ -1367,6 +1677,10 @@ void PopupMenu::set_item_accelerator(int p_idx, Key p_accel) {
 	items.write[p_idx].accel = p_accel;
 	items.write[p_idx].dirty = true;
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_accelerator(global_menu_name, p_idx, p_accel);
+	}
+
 	control->queue_redraw();
 	child_controls_changed();
 	_menu_changed();
@@ -1383,7 +1697,6 @@ void PopupMenu::set_item_metadata(int p_idx, const Variant &p_meta) {
 	}
 
 	items.write[p_idx].metadata = p_meta;
-	control->queue_redraw();
 	child_controls_changed();
 	_menu_changed();
 }
@@ -1399,6 +1712,11 @@ void PopupMenu::set_item_disabled(int p_idx, bool p_disabled) {
 	}
 
 	items.write[p_idx].disabled = p_disabled;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_disabled(global_menu_name, p_idx, p_disabled);
+	}
+
 	control->queue_redraw();
 	child_controls_changed();
 	_menu_changed();
@@ -1414,7 +1732,30 @@ void PopupMenu::set_item_submenu(int p_idx, const String &p_submenu) {
 		return;
 	}
 
+	if (!global_menu_name.is_empty()) {
+		if (items[p_idx].submenu_bound) {
+			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(items[p_idx].submenu));
+			if (pm) {
+				DisplayServer::get_singleton()->global_menu_set_item_submenu(global_menu_name, p_idx, String());
+				pm->unbind_global_menu();
+			}
+			items.write[p_idx].submenu_bound = false;
+		}
+	}
+
 	items.write[p_idx].submenu = p_submenu;
+
+	if (!global_menu_name.is_empty()) {
+		if (!items[p_idx].submenu.is_empty()) {
+			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(items[p_idx].submenu));
+			if (pm) {
+				String submenu_name = pm->bind_global_menu();
+				DisplayServer::get_singleton()->global_menu_set_item_submenu(global_menu_name, p_idx, submenu_name);
+				items.write[p_idx].submenu_bound = true;
+			}
+		}
+	}
+
 	control->queue_redraw();
 	child_controls_changed();
 	_menu_changed();
@@ -1423,6 +1764,11 @@ void PopupMenu::set_item_submenu(int p_idx, const String &p_submenu) {
 void PopupMenu::toggle_item_checked(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items.write[p_idx].checked = !items[p_idx].checked;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_checked(global_menu_name, p_idx, items[p_idx].checked);
+	}
+
 	control->queue_redraw();
 	child_controls_changed();
 	_menu_changed();
@@ -1569,6 +1915,11 @@ void PopupMenu::set_item_as_checkable(int p_idx, bool p_checkable) {
 	}
 
 	items.write[p_idx].checkable_type = p_checkable ? Item::CHECKABLE_TYPE_CHECK_BOX : Item::CHECKABLE_TYPE_NONE;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_checkable(global_menu_name, p_idx, p_checkable);
+	}
+
 	control->queue_redraw();
 	_menu_changed();
 }
@@ -1585,6 +1936,11 @@ void PopupMenu::set_item_as_radio_checkable(int p_idx, bool p_radio_checkable) {
 	}
 
 	items.write[p_idx].checkable_type = p_radio_checkable ? Item::CHECKABLE_TYPE_RADIO_BUTTON : Item::CHECKABLE_TYPE_NONE;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_radio_checkable(global_menu_name, p_idx, p_radio_checkable);
+	}
+
 	control->queue_redraw();
 	_menu_changed();
 }
@@ -1600,6 +1956,11 @@ void PopupMenu::set_item_tooltip(int p_idx, const String &p_tooltip) {
 	}
 
 	items.write[p_idx].tooltip = p_tooltip;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_tooltip(global_menu_name, p_idx, p_tooltip);
+	}
+
 	control->queue_redraw();
 	_menu_changed();
 }
@@ -1625,6 +1986,21 @@ void PopupMenu::set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bo
 		_ref_shortcut(items[p_idx].shortcut);
 	}
 
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		ds->global_menu_set_item_accelerator(global_menu_name, p_idx, Key::NONE);
+		if (!items[p_idx].shortcut_is_disabled && items[p_idx].shortcut.is_valid() && items[p_idx].shortcut->has_valid_event()) {
+			Array events = items[p_idx].shortcut->get_events();
+			for (int j = 0; j < events.size(); j++) {
+				Ref<InputEventKey> ie = events[j];
+				if (ie.is_valid()) {
+					ds->global_menu_set_item_accelerator(global_menu_name, p_idx, ie->get_keycode_with_modifiers());
+					break;
+				}
+			}
+		}
+	}
+
 	control->queue_redraw();
 	_menu_changed();
 }
@@ -1639,6 +2015,10 @@ void PopupMenu::set_item_indent(int p_idx, int p_indent) {
 		return;
 	}
 	items.write[p_idx].indent = p_indent;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_indentation_level(global_menu_name, p_idx, p_indent);
+	}
 
 	control->queue_redraw();
 	child_controls_changed();
@@ -1656,6 +2036,11 @@ void PopupMenu::set_item_multistate(int p_idx, int p_state) {
 	}
 
 	items.write[p_idx].state = p_state;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_state(global_menu_name, p_idx, p_state);
+	}
+
 	control->queue_redraw();
 	_menu_changed();
 }
@@ -1671,6 +2056,22 @@ void PopupMenu::set_item_shortcut_disabled(int p_idx, bool p_disabled) {
 	}
 
 	items.write[p_idx].shortcut_is_disabled = p_disabled;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		ds->global_menu_set_item_accelerator(global_menu_name, p_idx, Key::NONE);
+		if (!items[p_idx].shortcut_is_disabled && items[p_idx].shortcut.is_valid() && items[p_idx].shortcut->has_valid_event()) {
+			Array events = items[p_idx].shortcut->get_events();
+			for (int j = 0; j < events.size(); j++) {
+				Ref<InputEventKey> ie = events[j];
+				if (ie.is_valid()) {
+					ds->global_menu_set_item_accelerator(global_menu_name, p_idx, ie->get_keycode_with_modifiers());
+					break;
+				}
+			}
+		}
+	}
+
 	control->queue_redraw();
 	_menu_changed();
 }
@@ -1684,6 +2085,10 @@ void PopupMenu::toggle_item_multistate(int p_idx) {
 	++items.write[p_idx].state;
 	if (items.write[p_idx].max_states <= items[p_idx].state) {
 		items.write[p_idx].state = 0;
+	}
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_state(global_menu_name, p_idx, items[p_idx].state);
 	}
 
 	control->queue_redraw();
@@ -1739,11 +2144,23 @@ void PopupMenu::set_item_count(int p_count) {
 		return;
 	}
 
+	DisplayServer *ds = DisplayServer::get_singleton();
+	bool is_global = !global_menu_name.is_empty();
+
+	if (is_global && prev_size > p_count) {
+		for (int i = prev_size - 1; i >= p_count; i--) {
+			ds->global_menu_remove_item(global_menu_name, i);
+		}
+	}
+
 	items.resize(p_count);
 
 	if (prev_size < p_count) {
 		for (int i = prev_size; i < p_count; i++) {
 			items.write[i].id = i;
+			if (is_global) {
+				ds->global_menu_add_item(global_menu_name, String(), callable_mp(this, &PopupMenu::activate_item), Callable(), i);
+			}
 		}
 	}
 
@@ -1760,18 +2177,21 @@ int PopupMenu::get_item_count() const {
 void PopupMenu::scroll_to_item(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	// Scroll item into view (upwards).
-	if (items[p_idx]._ofs_cache - scroll_container->get_v_scroll() < -control->get_position().y) {
-		scroll_container->set_v_scroll(items[p_idx]._ofs_cache + control->get_position().y);
-	}
+	// Calculate the position of the item relative to the visible area.
+	int item_y = items[p_idx]._ofs_cache;
+	int visible_height = scroll_container->get_size().height;
+	int relative_y = item_y - scroll_container->get_v_scroll();
 
-	// Scroll item into view (downwards).
-	if (items[p_idx]._ofs_cache + items[p_idx]._height_cache - scroll_container->get_v_scroll() > -control->get_position().y + scroll_container->get_size().height) {
-		scroll_container->set_v_scroll(items[p_idx]._ofs_cache + items[p_idx]._height_cache + control->get_position().y);
+	// If item is not fully visible, adjust scroll.
+	if (relative_y < 0) {
+		scroll_container->set_v_scroll(item_y);
+	} else if (relative_y + items[p_idx]._height_cache > visible_height) {
+		scroll_container->set_v_scroll(item_y + items[p_idx]._height_cache - visible_height);
 	}
 }
 
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
+	ERR_FAIL_COND_V(p_event.is_null(), false);
 	Key code = Key::NONE;
 	Ref<InputEventKey> k = p_event;
 
@@ -1826,6 +2246,16 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 		}
 	}
 	return false;
+}
+
+void PopupMenu::_about_to_popup() {
+	ERR_MAIN_THREAD_GUARD;
+	emit_signal(SNAME("about_to_popup"));
+}
+
+void PopupMenu::_about_to_close() {
+	ERR_MAIN_THREAD_GUARD;
+	emit_signal(SNAME("popup_hide"));
 }
 
 void PopupMenu::activate_item(int p_idx) {
@@ -1890,6 +2320,11 @@ void PopupMenu::remove_item(int p_idx) {
 	}
 
 	items.remove_at(p_idx);
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_remove_item(global_menu_name, p_idx);
+	}
+
 	control->queue_redraw();
 	child_controls_changed();
 	_menu_changed();
@@ -1904,17 +2339,45 @@ void PopupMenu::add_separator(const String &p_text, int p_id) {
 		sep.xl_text = atr(p_text);
 	}
 	items.push_back(sep);
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_add_separator(global_menu_name);
+	}
+
 	control->queue_redraw();
 	_menu_changed();
 }
 
-void PopupMenu::clear() {
-	for (int i = 0; i < items.size(); i++) {
-		if (items[i].shortcut.is_valid()) {
-			_unref_shortcut(items[i].shortcut);
+void PopupMenu::clear(bool p_free_submenus) {
+	for (const Item &I : items) {
+		if (I.shortcut.is_valid()) {
+			_unref_shortcut(I.shortcut);
+		}
+
+		if (p_free_submenus && !I.submenu.is_empty()) {
+			Node *submenu = get_node_or_null(I.submenu);
+			if (submenu) {
+				remove_child(submenu);
+				submenu->queue_free();
+			}
 		}
 	}
+
+	if (!global_menu_name.is_empty()) {
+		for (int i = 0; i < items.size(); i++) {
+			Item &item = items.write[i];
+			if (!item.submenu.is_empty()) {
+				PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu));
+				if (pm) {
+					pm->unbind_global_menu();
+				}
+				item.submenu_bound = false;
+			}
+		}
+		DisplayServer::get_singleton()->global_menu_clear(global_menu_name);
+	}
 	items.clear();
+
 	mouse_over = -1;
 	control->queue_redraw();
 	child_controls_changed();
@@ -2236,7 +2699,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_item", "index"), &PopupMenu::remove_item);
 
 	ClassDB::bind_method(D_METHOD("add_separator", "label", "id"), &PopupMenu::add_separator, DEFVAL(String()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("clear"), &PopupMenu::clear);
+	ClassDB::bind_method(D_METHOD("clear", "free_submenus"), &PopupMenu::clear, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_hide_on_item_selection", "enable"), &PopupMenu::set_hide_on_item_selection);
 	ClassDB::bind_method(D_METHOD("is_hide_on_item_selection"), &PopupMenu::is_hide_on_item_selection);

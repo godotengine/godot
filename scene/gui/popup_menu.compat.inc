@@ -31,16 +31,21 @@
 #ifndef DISABLE_DEPRECATED
 
 void PopupMenu::_add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id, bool p_global) {
-	return add_shortcut(p_shortcut, p_id, p_global, false);
+	add_shortcut(p_shortcut, p_id, p_global, false);
 }
 
 void PopupMenu::_add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id, bool p_global) {
-	return add_icon_shortcut(p_icon, p_shortcut, p_id, p_global, false);
+	add_icon_shortcut(p_icon, p_shortcut, p_id, p_global, false);
+}
+
+void PopupMenu::_clear_bind_compat_79965() {
+	clear(false);
 }
 
 void PopupMenu::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("add_shortcut", "shortcut", "id", "global"), &PopupMenu::_add_shortcut_bind_compat_36493, DEFVAL(-1), DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("add_icon_shortcut", "texture", "shortcut", "id", "global"), &PopupMenu::_add_icon_shortcut_bind_compat_36493, DEFVAL(-1), DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("clear"), &PopupMenu::_clear_bind_compat_79965);
 }
 
 #endif

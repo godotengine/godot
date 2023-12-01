@@ -187,8 +187,7 @@ public:
 
 //////////////////////////////////////////
 
-// Custom Tree needed to use a RichTextLabel as tooltip control
-// when display signal documentation.
+// Custom `Tree` needed to use `EditorHelpTooltip` to display signal documentation.
 class ConnectionsDockTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };
@@ -230,8 +229,6 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *signal_menu = nullptr;
 	PopupMenu *slot_menu = nullptr;
 	LineEdit *search_box = nullptr;
-
-	HashMap<StringName, HashMap<StringName, String>> descr_cache;
 
 	void _filter_changed(const String &p_text);
 

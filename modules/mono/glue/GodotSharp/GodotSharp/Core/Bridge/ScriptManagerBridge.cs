@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -131,6 +132,8 @@ namespace Godot.Bridge
                 // Performance is not critical here as this will be replaced with source generators.
                 Type scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
 
+                Debug.Assert(!scriptType.IsAbstract, $"Cannot create script instance. The class '{scriptType.FullName}' is abstract.");
+
                 var ctor = scriptType
                     .GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                     .Where(c => c.GetParameters().Length == argCount)
@@ -146,7 +149,7 @@ namespace Godot.Bridge
                     else
                     {
                         throw new MissingMemberException(
-                            $"The class '{scriptType.FullName}' does not define a constructor that takes x parameters.");
+                            $"The class '{scriptType.FullName}' does not define a constructor that takes {argCount} parameters.");
                     }
                 }
 
@@ -277,7 +280,7 @@ namespace Godot.Bridge
             if (wrapperType != null && IsStatic(wrapperType))
             {
                 // A static class means this is a Godot singleton class. Try to get the Instance proxy type.
-                wrapperType = TypeGetProxyClass($"{nativeTypeNameStr}Instance");
+                wrapperType = TypeGetProxyClass($"{wrapperType.Name}Instance");
                 if (wrapperType == null)
                 {
                     // Otherwise, fallback to GodotObject.
@@ -597,7 +600,7 @@ namespace Godot.Bridge
 
         [UnmanagedCallersOnly]
         internal static unsafe void UpdateScriptClassInfo(IntPtr scriptPtr, godot_string* outClassName,
-            godot_bool* outTool, godot_bool* outGlobal, godot_string* outIconPath,
+            godot_bool* outTool, godot_bool* outGlobal, godot_bool* outAbstract, godot_string* outIconPath,
             godot_array* outMethodsDest, godot_dictionary* outRpcFunctionsDest,
             godot_dictionary* outEventSignalsDest, godot_ref* outBaseScript)
         {
@@ -631,8 +634,9 @@ namespace Godot.Bridge
                 var iconAttr = scriptType.GetCustomAttributes(inherit: false)
                     .OfType<IconAttribute>()
                     .FirstOrDefault();
-
                 *outIconPath = Marshaling.ConvertStringToNative(iconAttr?.Path);
+
+                *outAbstract = scriptType.IsAbstract.ToGodotBool();
 
                 // Methods
 
@@ -799,6 +803,7 @@ namespace Godot.Bridge
                 *outClassName = default;
                 *outTool = godot_bool.False;
                 *outGlobal = godot_bool.False;
+                *outAbstract = godot_bool.False;
                 *outIconPath = default;
                 *outMethodsDest = NativeFuncs.godotsharp_array_new();
                 *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new();

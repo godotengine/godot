@@ -3193,7 +3193,7 @@ TEST_CASE("[SceneTree][TextEdit] search") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
-	text_edit->set_text("hay needle, hay\nHAY NEEDLE, HAY");
+	text_edit->set_text("hay needle, hay\nHAY NEEDLE, HAY\nwordword.word.word");
 	int length = text_edit->get_line(1).length();
 
 	CHECK(text_edit->search("test", 0, 0, 0) == Point2i(-1, -1));
@@ -3224,6 +3224,11 @@ TEST_CASE("[SceneTree][TextEdit] search") {
 
 	CHECK(text_edit->search("need", TextEdit::SEARCH_WHOLE_WORDS | TextEdit::SEARCH_MATCH_CASE, 0, 0) == Point2i(-1, -1));
 	CHECK(text_edit->search("need", TextEdit::SEARCH_WHOLE_WORDS | TextEdit::SEARCH_MATCH_CASE | TextEdit::SEARCH_BACKWARDS, 0, 0) == Point2i(-1, -1));
+
+	CHECK(text_edit->search("word", TextEdit::SEARCH_WHOLE_WORDS, 2, 0) == Point2i(9, 2));
+	CHECK(text_edit->search("word", TextEdit::SEARCH_WHOLE_WORDS, 2, 10) == Point2i(14, 2));
+	CHECK(text_edit->search(".word", TextEdit::SEARCH_WHOLE_WORDS, 2, 0) == Point2i(8, 2));
+	CHECK(text_edit->search("word.", TextEdit::SEARCH_WHOLE_WORDS, 2, 0) == Point2i(9, 2));
 
 	ERR_PRINT_OFF;
 	CHECK(text_edit->search("", 0, 0, 0) == Point2i(-1, -1));
@@ -3908,7 +3913,8 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_h_scroll() == 0);
 
 	text_edit->set_h_scroll(10000000);
-	CHECK(text_edit->get_h_scroll() == 314);
+	CHECK(text_edit->get_h_scroll() == 306);
+	CHECK(text_edit->get_h_scroll_bar()->get_combined_minimum_size().x == 8);
 
 	text_edit->set_h_scroll(-100);
 	CHECK(text_edit->get_h_scroll() == 0);

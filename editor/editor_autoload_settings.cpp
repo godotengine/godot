@@ -339,8 +339,7 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 			undo_redo->add_do_property(ProjectSettings::get_singleton(), name, Variant());
 
 			undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
-			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_persisting", name, true);
-			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", order);
+			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", name, order);
 
 			undo_redo->add_do_method(this, "update_autoload");
 			undo_redo->add_undo_method(this, "update_autoload");
@@ -796,8 +795,7 @@ void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, Variant());
 
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_persisting", name, true);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", order);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", name, order);
 
 	undo_redo->add_do_method(this, "update_autoload");
 	undo_redo->add_undo_method(this, "update_autoload");

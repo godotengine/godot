@@ -107,9 +107,9 @@ class AudioStreamOggVorbis : public AudioStream {
 	friend class AudioStreamPlaybackOggVorbis;
 
 	int channels = 1;
-	float length = 0.0;
+	double length = 0.0;
 	bool loop = false;
-	float loop_offset = 0.0;
+	double loop_offset = 0.0;
 
 	// Performs a seek to the beginning of the stream, should not be called during playback!
 	// Also causes allocation and deallocation.
