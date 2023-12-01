@@ -91,7 +91,7 @@ vec3 reinhard_inverse(vec3 sdr) {
 const vec3 lumCoeff = vec3(0.299f, 0.587f, 0.114f);
 
 float luminance(vec3 color) {
-	return max(dot(reinhard(color), lumCoeff), 0.0001f);
+	return max(dot(color, lumCoeff), 0.0001f);
 }
 
 float get_depth(ivec2 thread_id) {
@@ -319,21 +319,21 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	vec2 uv_reprojected = uv + velocity;
 
 	// Sample a 3x3 neighbourhood
-	vec3 s1 = load_color(pos_group + kOffsets3x3[0]);
-	vec3 s2 = load_color(pos_group + kOffsets3x3[1]);
-	vec3 s3 = load_color(pos_group + kOffsets3x3[2]);
-	vec3 s4 = load_color(pos_group + kOffsets3x3[3]);
-	vec3 s5 = load_color(pos_group + kOffsets3x3[4]);
-	vec3 s6 = load_color(pos_group + kOffsets3x3[5]);
-	vec3 s7 = load_color(pos_group + kOffsets3x3[6]);
-	vec3 s8 = load_color(pos_group + kOffsets3x3[7]);
-	vec3 s9 = load_color(pos_group + kOffsets3x3[8]);
+	vec3 s1 = reinhard(load_color(pos_group + kOffsets3x3[0]));
+	vec3 s2 = reinhard(load_color(pos_group + kOffsets3x3[1]));
+	vec3 s3 = reinhard(load_color(pos_group + kOffsets3x3[2]));
+	vec3 s4 = reinhard(load_color(pos_group + kOffsets3x3[3]));
+	vec3 s5 = reinhard(load_color(pos_group + kOffsets3x3[4]));
+	vec3 s6 = reinhard(load_color(pos_group + kOffsets3x3[5]));
+	vec3 s7 = reinhard(load_color(pos_group + kOffsets3x3[6]));
+	vec3 s8 = reinhard(load_color(pos_group + kOffsets3x3[7]));
+	vec3 s9 = reinhard(load_color(pos_group + kOffsets3x3[8]));
 
 	// Get input color
 	vec3 color_input = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
 
 	// Get history color (catmull-rom reduces a lot of the blurring that you get under motion)
-	vec3 color_history = sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb;
+	vec3 color_history = reinhard(sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb);
 
 	// Compute disoccusion
 	float disocclusion = get_factor_disocclusion(uv_reprojected, velocity);
@@ -347,8 +347,8 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	// Compute blend factor
 	float blend_factor = clamp(1.0 - RPC_16 - disocclusion - off_screen - luminance_check, 0.0, 1.0);
 
-	// Resolve
-	return mix(color_input, color_history, blend_factor);
+	// Resolve, all colors are processed with reinhard to prevent specular pixelization, so you have to convert it back here.
+	return reinhard_inverse(mix(color_input, color_history, blend_factor));
 }
 
 void main() {
