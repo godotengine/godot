@@ -31,9 +31,7 @@
 #ifndef ANIMATION_MIXER_H
 #define ANIMATION_MIXER_H
 
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
+#include "scene/main/node.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/animation_library.h"
 #include "scene/resources/audio_stream_polyphonic.h"
@@ -138,7 +136,6 @@ protected:
 		bool root_motion = false;
 		uint64_t setup_pass = 0;
 		Animation::TrackType type = Animation::TrackType::TYPE_ANIMATION;
-		Object *object = nullptr;
 		ObjectID object_id;
 		real_t total_weight = 0.0;
 
@@ -147,7 +144,6 @@ protected:
 				root_motion(p_other.root_motion),
 				setup_pass(p_other.setup_pass),
 				type(p_other.type),
-				object(p_other.object),
 				object_id(p_other.object_id),
 				total_weight(p_other.total_weight) {}
 
@@ -156,8 +152,7 @@ protected:
 
 	struct TrackCacheTransform : public TrackCache {
 #ifndef _3D_DISABLED
-		Node3D *node_3d = nullptr;
-		Skeleton3D *skeleton = nullptr;
+		ObjectID skeleton_id;
 #endif // _3D_DISABLED
 		int bone_idx = -1;
 		bool loc_used = false;
@@ -173,8 +168,7 @@ protected:
 		TrackCacheTransform(const TrackCacheTransform &p_other) :
 				TrackCache(p_other),
 #ifndef _3D_DISABLED
-				node_3d(p_other.node_3d),
-				skeleton(p_other.skeleton),
+				skeleton_id(p_other.skeleton_id),
 #endif
 				bone_idx(p_other.bone_idx),
 				loc_used(p_other.loc_used),
@@ -201,14 +195,12 @@ protected:
 	};
 
 	struct TrackCacheBlendShape : public TrackCache {
-		MeshInstance3D *mesh_3d = nullptr;
 		float init_value = 0;
 		float value = 0;
 		int shape_index = -1;
 
 		TrackCacheBlendShape(const TrackCacheBlendShape &p_other) :
 				TrackCache(p_other),
-				mesh_3d(p_other.mesh_3d),
 				init_value(p_other.init_value),
 				value(p_other.value),
 				shape_index(p_other.shape_index) {}
@@ -351,9 +343,9 @@ protected:
 
 	/* ---- Blending processor ---- */
 	virtual void _process_animation(double p_delta, bool p_update_only = false);
-	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx = -1);
-	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx = -1);
-	GDVIRTUAL5RC(Variant, _post_process_key_value, Ref<Animation>, int, Variant, Object *, int);
+	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
+	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
+	GDVIRTUAL5RC(Variant, _post_process_key_value, Ref<Animation>, int, Variant, ObjectID, int);
 
 	void _blend_init();
 	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map);
@@ -361,7 +353,7 @@ protected:
 	void _blend_process(double p_delta, bool p_update_only = false);
 	void _blend_apply();
 	virtual void _blend_post_process();
-	void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred);
+	void _call_object(ObjectID p_object_id, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred);
 
 public:
 	/* ---- Data lists ---- */

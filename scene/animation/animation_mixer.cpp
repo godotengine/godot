@@ -31,6 +31,9 @@
 #include "animation_mixer.h"
 
 #include "core/config/engine.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
@@ -562,8 +565,9 @@ void AnimationMixer::_clear_audio_streams() {
 
 void AnimationMixer::_clear_playing_caches() {
 	for (const TrackCache *E : playing_caches) {
-		if (ObjectDB::get_instance(E->object_id)) {
-			E->object->call(SNAME("stop"), true);
+		Object *t_obj = ObjectDB::get_instance(E->object_id);
+		if (t_obj) {
+			t_obj->call(SNAME("stop"), true);
 		}
 	}
 	playing_caches.clear();
@@ -645,16 +649,15 @@ bool AnimationMixer::_update_caches() {
 						TrackCacheValue *track_value = memnew(TrackCacheValue);
 
 						if (resource.is_valid()) {
-							track_value->object = resource.ptr();
+							track_value->object_id = resource->get_instance_id();
 						} else {
-							track_value->object = child;
+							track_value->object_id = child->get_instance_id();
 						}
 
 						track_value->is_continuous = anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE;
 						track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 						track_value->subpath = leftover_path;
-						track_value->object_id = track_value->object->get_instance_id();
 
 						track = track_value;
 
@@ -684,14 +687,12 @@ bool AnimationMixer::_update_caches() {
 						TrackCacheTransform *track_xform = memnew(TrackCacheTransform);
 						track_xform->type = Animation::TYPE_POSITION_3D;
 
-						track_xform->node_3d = node_3d;
-						track_xform->skeleton = nullptr;
 						track_xform->bone_idx = -1;
 
 						bool has_rest = false;
-						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton3D>(node_3d)) {
-							Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
-							track_xform->skeleton = sk;
+						Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
+						if (sk && path.get_subname_count() == 1) {
+							track_xform->skeleton_id = sk->get_instance_id();
 							int bone_idx = sk->find_bone(path.get_subname(0));
 							if (bone_idx != -1) {
 								has_rest = true;
@@ -703,8 +704,7 @@ bool AnimationMixer::_update_caches() {
 							}
 						}
 
-						track_xform->object = node_3d;
-						track_xform->object_id = track_xform->object->get_instance_id();
+						track_xform->object_id = node_3d->get_instance_id();
 
 						track = track_xform;
 
@@ -765,10 +765,7 @@ bool AnimationMixer::_update_caches() {
 
 						TrackCacheBlendShape *track_bshape = memnew(TrackCacheBlendShape);
 
-						track_bshape->mesh_3d = mesh_3d;
 						track_bshape->shape_index = blend_shape_idx;
-
-						track_bshape->object = mesh_3d;
 						track_bshape->object_id = mesh_3d->get_instance_id();
 						track = track_bshape;
 
@@ -784,12 +781,10 @@ bool AnimationMixer::_update_caches() {
 						TrackCacheMethod *track_method = memnew(TrackCacheMethod);
 
 						if (resource.is_valid()) {
-							track_method->object = resource.ptr();
+							track_method->object_id = resource->get_instance_id();
 						} else {
-							track_method->object = child;
+							track_method->object_id = child->get_instance_id();
 						}
-
-						track_method->object_id = track_method->object->get_instance_id();
 
 						track = track_method;
 
@@ -798,13 +793,12 @@ bool AnimationMixer::_update_caches() {
 						TrackCacheBezier *track_bezier = memnew(TrackCacheBezier);
 
 						if (resource.is_valid()) {
-							track_bezier->object = resource.ptr();
+							track_bezier->object_id = resource->get_instance_id();
 						} else {
-							track_bezier->object = child;
+							track_bezier->object_id = child->get_instance_id();
 						}
 
 						track_bezier->subpath = leftover_path;
-						track_bezier->object_id = track_bezier->object->get_instance_id();
 
 						track = track_bezier;
 
@@ -819,8 +813,7 @@ bool AnimationMixer::_update_caches() {
 					case Animation::TYPE_AUDIO: {
 						TrackCacheAudio *track_audio = memnew(TrackCacheAudio);
 
-						track_audio->object = child;
-						track_audio->object_id = track_audio->object->get_instance_id();
+						track_audio->object_id = child->get_instance_id();
 						track_audio->audio_stream.instantiate();
 						track_audio->audio_stream->set_polyphony(audio_max_polyphony);
 
@@ -830,8 +823,7 @@ bool AnimationMixer::_update_caches() {
 					case Animation::TYPE_ANIMATION: {
 						TrackCacheAnimation *track_animation = memnew(TrackCacheAnimation);
 
-						track_animation->object = child;
-						track_animation->object_id = track_animation->object->get_instance_id();
+						track_animation->object_id = child->get_instance_id();
 
 						track = track_animation;
 
@@ -944,21 +936,23 @@ void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 	clear_animation_instances();
 }
 
-Variant AnimationMixer::post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx) {
+Variant AnimationMixer::post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx) {
 	Variant res;
-	if (GDVIRTUAL_CALL(_post_process_key_value, p_anim, p_track, p_value, const_cast<Object *>(p_object), p_object_idx, res)) {
+	if (GDVIRTUAL_CALL(_post_process_key_value, p_anim, p_track, p_value, p_object_id, p_object_sub_idx, res)) {
 		return res;
 	}
-	return _post_process_key_value(p_anim, p_track, p_value, p_object, p_object_idx);
+	return _post_process_key_value(p_anim, p_track, p_value, p_object_id, p_object_sub_idx);
 }
 
-Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx) {
+Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx) {
 	switch (p_anim->track_get_type(p_track)) {
 #ifndef _3D_DISABLED
 		case Animation::TYPE_POSITION_3D: {
-			if (p_object_idx >= 0) {
-				const Skeleton3D *skel = Object::cast_to<Skeleton3D>(p_object);
-				return Vector3(p_value) * skel->get_motion_scale();
+			if (p_object_sub_idx >= 0) {
+				Skeleton3D *skel = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(p_object_id));
+				if (skel) {
+					return Vector3(p_value) * skel->get_motion_scale();
+				}
 			}
 			return p_value;
 		} break;
@@ -1158,9 +1152,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								if (err != OK) {
 									continue;
 								}
-								loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
+								loc[0] = post_process_key_value(a, i, loc[0], t->object_id, t->bone_idx);
 								a->try_position_track_interpolate(i, (double)a->get_length(), &loc[1]);
-								loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
+								loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 								root_motion_cache.loc += (loc[1] - loc[0]) * blend;
 								prev_time = 0;
 							}
@@ -1170,9 +1164,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								if (err != OK) {
 									continue;
 								}
-								loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
+								loc[0] = post_process_key_value(a, i, loc[0], t->object_id, t->bone_idx);
 								a->try_position_track_interpolate(i, 0, &loc[1]);
-								loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
+								loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 								root_motion_cache.loc += (loc[1] - loc[0]) * blend;
 								prev_time = (double)a->get_length();
 							}
@@ -1181,9 +1175,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (err != OK) {
 							continue;
 						}
-						loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
+						loc[0] = post_process_key_value(a, i, loc[0], t->object_id, t->bone_idx);
 						a->try_position_track_interpolate(i, time, &loc[1]);
-						loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
+						loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 						root_motion_cache.loc += (loc[1] - loc[0]) * blend;
 						prev_time = !backward ? 0 : (double)a->get_length();
 					}
@@ -1193,7 +1187,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (err != OK) {
 							continue;
 						}
-						loc = post_process_key_value(a, i, loc, t->object, t->bone_idx);
+						loc = post_process_key_value(a, i, loc, t->object_id, t->bone_idx);
 						t->loc += (loc - t->init_loc) * blend;
 					}
 #endif // _3D_DISABLED
@@ -1246,9 +1240,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								if (err != OK) {
 									continue;
 								}
-								rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
+								rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
 								a->try_rotation_track_interpolate(i, (double)a->get_length(), &rot[1]);
-								rot[1] = post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
+								rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
 								root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 								prev_time = 0;
 							}
@@ -1258,7 +1252,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								if (err != OK) {
 									continue;
 								}
-								rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
+								rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
 								a->try_rotation_track_interpolate(i, 0, &rot[1]);
 								root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 								prev_time = (double)a->get_length();
@@ -1268,9 +1262,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (err != OK) {
 							continue;
 						}
-						rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
+						rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
 						a->try_rotation_track_interpolate(i, time, &rot[1]);
-						rot[1] = post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
+						rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
 						root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 						prev_time = !backward ? 0 : (double)a->get_length();
 					}
@@ -1280,7 +1274,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (err != OK) {
 							continue;
 						}
-						rot = post_process_key_value(a, i, rot, t->object, t->bone_idx);
+						rot = post_process_key_value(a, i, rot, t->object_id, t->bone_idx);
 						t->rot = (t->rot * Quaternion().slerp(t->init_rot.inverse() * rot, blend)).normalized();
 					}
 #endif // _3D_DISABLED
@@ -1333,10 +1327,10 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								if (err != OK) {
 									continue;
 								}
-								scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
+								scale[0] = post_process_key_value(a, i, scale[0], t->object_id, t->bone_idx);
 								a->try_scale_track_interpolate(i, (double)a->get_length(), &scale[1]);
 								root_motion_cache.scale += (scale[1] - scale[0]) * blend;
-								scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
+								scale[1] = post_process_key_value(a, i, scale[1], t->object_id, t->bone_idx);
 								prev_time = 0;
 							}
 						} else {
@@ -1345,9 +1339,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								if (err != OK) {
 									continue;
 								}
-								scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
+								scale[0] = post_process_key_value(a, i, scale[0], t->object_id, t->bone_idx);
 								a->try_scale_track_interpolate(i, 0, &scale[1]);
-								scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
+								scale[1] = post_process_key_value(a, i, scale[1], t->object_id, t->bone_idx);
 								root_motion_cache.scale += (scale[1] - scale[0]) * blend;
 								prev_time = (double)a->get_length();
 							}
@@ -1356,9 +1350,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (err != OK) {
 							continue;
 						}
-						scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
+						scale[0] = post_process_key_value(a, i, scale[0], t->object_id, t->bone_idx);
 						a->try_scale_track_interpolate(i, time, &scale[1]);
-						scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
+						scale[1] = post_process_key_value(a, i, scale[1], t->object_id, t->bone_idx);
 						root_motion_cache.scale += (scale[1] - scale[0]) * blend;
 						prev_time = !backward ? 0 : (double)a->get_length();
 					}
@@ -1368,7 +1362,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (err != OK) {
 							continue;
 						}
-						scale = post_process_key_value(a, i, scale, t->object, t->bone_idx);
+						scale = post_process_key_value(a, i, scale, t->object_id, t->bone_idx);
 						t->scale += (scale - t->init_scale) * blend;
 					}
 #endif // _3D_DISABLED
@@ -1385,7 +1379,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					if (err != OK) {
 						continue;
 					}
-					value = post_process_key_value(a, i, value, t->object, t->shape_index);
+					value = post_process_key_value(a, i, value, t->object_id, t->shape_index);
 					t->value += (value - t->init_value) * blend;
 #endif // _3D_DISABLED
 				} break;
@@ -1396,7 +1390,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 					if (t->is_continuous) {
 						Variant value = a->value_track_interpolate(i, time);
-						value = post_process_key_value(a, i, value, t->object);
+						value = post_process_key_value(a, i, value, t->object_id);
 						if (value == Variant()) {
 							continue;
 						}
@@ -1436,15 +1430,21 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								continue;
 							}
 							Variant value = a->track_get_key_value(i, idx);
-							value = post_process_key_value(a, i, value, t->object);
-							t->object->set_indexed(t->subpath, value);
+							value = post_process_key_value(a, i, value, t->object_id);
+							Object *t_obj = ObjectDB::get_instance(t->object_id);
+							if (t_obj) {
+								t_obj->set_indexed(t->subpath, value);
+							}
 						} else {
 							List<int> indices;
 							a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 							for (int &F : indices) {
 								Variant value = a->track_get_key_value(i, F);
-								value = post_process_key_value(a, i, value, t->object);
-								t->object->set_indexed(t->subpath, value);
+								value = post_process_key_value(a, i, value, t->object_id);
+								Object *t_obj = ObjectDB::get_instance(t->object_id);
+								if (t_obj) {
+									t_obj->set_indexed(t->subpath, value);
+								}
 							}
 						}
 					}
@@ -1466,14 +1466,14 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 						StringName method = a->method_track_get_name(i, idx);
 						Vector<Variant> params = a->method_track_get_params(i, idx);
-						_call_object(t->object, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
+						_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
 					} else {
 						List<int> indices;
 						a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 						for (int &F : indices) {
 							StringName method = a->method_track_get_name(i, F);
 							Vector<Variant> params = a->method_track_get_params(i, F);
-							_call_object(t->object, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
+							_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
 						}
 					}
 				} break;
@@ -1483,14 +1483,15 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 					TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 					real_t bezier = a->bezier_track_interpolate(i, time);
-					bezier = post_process_key_value(a, i, bezier, t->object);
+					bezier = post_process_key_value(a, i, bezier, t->object_id);
 					t->value += (bezier - t->init_value) * blend;
 				} break;
 				case Animation::TYPE_AUDIO: {
 					// The end of audio should be observed even if the blend value is 0, build up the information and store to the cache for that.
 					TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
-					Node *asp = Object::cast_to<Node>(t->object);
-					if (!asp) {
+					Object *t_obj = ObjectDB::get_instance(t->object_id);
+					Node *asp = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
+					if (!t_obj || !asp) {
 						t->playing_streams.clear();
 						continue;
 					}
@@ -1540,22 +1541,22 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (seeked) {
 							start_ofs += time - a->track_get_key_time(i, idx);
 						}
-						if (t->object->call(SNAME("get_stream")) != t->audio_stream) {
-							t->object->call(SNAME("set_stream"), t->audio_stream);
+						if (t_obj->call(SNAME("get_stream")) != t->audio_stream) {
+							t_obj->call(SNAME("set_stream"), t->audio_stream);
 							t->audio_stream_playback.unref();
 							if (!playing_audio_stream_players.has(asp)) {
 								playing_audio_stream_players.push_back(asp);
 							}
 						}
-						if (!t->object->call(SNAME("is_playing"))) {
-							t->object->call(SNAME("play"));
+						if (!t_obj->call(SNAME("is_playing"))) {
+							t_obj->call(SNAME("play"));
 						}
-						if (!t->object->call(SNAME("has_stream_playback"))) {
+						if (!t_obj->call(SNAME("has_stream_playback"))) {
 							t->audio_stream_playback.unref();
 							continue;
 						}
 						if (t->audio_stream_playback.is_null()) {
-							t->audio_stream_playback = t->object->call(SNAME("get_stream_playback"));
+							t->audio_stream_playback = t_obj->call(SNAME("get_stream_playback"));
 						}
 						PlayingAudioStreamInfo pasi;
 						pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs);
@@ -1573,7 +1574,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						continue;
 					}
 					TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
-					AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t->object);
+					Object *t_obj = ObjectDB::get_instance(t->object_id);
+					if (!t_obj) {
+						continue;
+					}
+					AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t_obj);
 					if (!player2) {
 						continue;
 					}
@@ -1657,26 +1662,34 @@ void AnimationMixer::_blend_apply() {
 					root_motion_position_accumulator = t->loc;
 					root_motion_rotation_accumulator = t->rot;
 					root_motion_scale_accumulator = t->scale;
-				} else if (t->skeleton && t->bone_idx >= 0) {
+				} else if (t->skeleton_id.is_valid() && t->bone_idx >= 0) {
+					Skeleton3D *t_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(t->skeleton_id));
+					if (!t_skeleton) {
+						return;
+					}
 					if (t->loc_used) {
-						t->skeleton->set_bone_pose_position(t->bone_idx, t->loc);
+						t_skeleton->set_bone_pose_position(t->bone_idx, t->loc);
 					}
 					if (t->rot_used) {
-						t->skeleton->set_bone_pose_rotation(t->bone_idx, t->rot);
+						t_skeleton->set_bone_pose_rotation(t->bone_idx, t->rot);
 					}
 					if (t->scale_used) {
-						t->skeleton->set_bone_pose_scale(t->bone_idx, t->scale);
+						t_skeleton->set_bone_pose_scale(t->bone_idx, t->scale);
 					}
 
-				} else if (!t->skeleton) {
+				} else if (!t->skeleton_id.is_valid()) {
+					Node3D *t_node_3d = Object::cast_to<Node3D>(ObjectDB::get_instance(t->object_id));
+					if (!t_node_3d) {
+						return;
+					}
 					if (t->loc_used) {
-						t->node_3d->set_position(t->loc);
+						t_node_3d->set_position(t->loc);
 					}
 					if (t->rot_used) {
-						t->node_3d->set_rotation(t->rot.get_euler());
+						t_node_3d->set_rotation(t->rot.get_euler());
 					}
 					if (t->scale_used) {
-						t->node_3d->set_scale(t->scale);
+						t_node_3d->set_scale(t->scale);
 					}
 				}
 #endif // _3D_DISABLED
@@ -1685,8 +1698,9 @@ void AnimationMixer::_blend_apply() {
 #ifndef _3D_DISABLED
 				TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
 
-				if (t->mesh_3d) {
-					t->mesh_3d->set_blend_shape_value(t->shape_index, t->value);
+				MeshInstance3D *t_mesh_3d = Object::cast_to<MeshInstance3D>(ObjectDB::get_instance(t->object_id));
+				if (t_mesh_3d) {
+					t_mesh_3d->set_blend_shape_value(t->shape_index, t->value);
 				}
 #endif // _3D_DISABLED
 			} break;
@@ -1710,17 +1724,19 @@ void AnimationMixer::_blend_apply() {
 					}
 				}
 
-				// t->object isn't safe here, get instance from id (GH-85365).
-				Object *obj = ObjectDB::get_instance(t->object_id);
-				if (obj) {
-					obj->set_indexed(t->subpath, Animation::cast_from_blendwise(t->value, t->init_value.get_type()));
+				Object *t_obj = ObjectDB::get_instance(t->object_id);
+				if (t_obj) {
+					t_obj->set_indexed(t->subpath, Animation::cast_from_blendwise(t->value, t->init_value.get_type()));
 				}
 
 			} break;
 			case Animation::TYPE_BEZIER: {
 				TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 
-				t->object->set_indexed(t->subpath, t->value);
+				Object *t_obj = ObjectDB::get_instance(t->object_id);
+				if (t_obj) {
+					t_obj->set_indexed(t->subpath, t->value);
+				}
 
 			} break;
 			case Animation::TYPE_AUDIO: {
@@ -1787,7 +1803,7 @@ void AnimationMixer::_blend_apply() {
 	}
 }
 
-void AnimationMixer::_call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
+void AnimationMixer::_call_object(ObjectID p_object_id, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
 	// Separate function to use alloca() more efficiently
 	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * p_params.size());
 	const Variant *args = p_params.ptr();
@@ -1795,11 +1811,15 @@ void AnimationMixer::_call_object(Object *p_object, const StringName &p_method, 
 	for (uint32_t i = 0; i < argcount; i++) {
 		argptrs[i] = &args[i];
 	}
+	Object *t_obj = ObjectDB::get_instance(p_object_id);
+	if (!t_obj) {
+		return;
+	}
 	if (p_deferred) {
-		MessageQueue::get_singleton()->push_callp(p_object, p_method, argptrs, argcount);
+		MessageQueue::get_singleton()->push_callp(t_obj, p_method, argptrs, argcount);
 	} else {
 		Callable::CallError ce;
-		p_object->callp(p_method, argptrs, argcount, ce);
+		t_obj->callp(p_method, argptrs, argcount, ce);
 	}
 }
 
@@ -1888,25 +1908,33 @@ void AnimationMixer::_build_backup_track_cache() {
 				TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 				if (t->root_motion) {
 					// Do nothing.
-				} else if (t->skeleton && t->bone_idx >= 0) {
+				} else if (t->skeleton_id.is_valid() && t->bone_idx >= 0) {
+					Skeleton3D *t_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(t->skeleton_id));
+					if (!t_skeleton) {
+						return;
+					}
 					if (t->loc_used) {
-						t->loc = t->skeleton->get_bone_pose_position(t->bone_idx);
+						t->loc = t_skeleton->get_bone_pose_position(t->bone_idx);
 					}
 					if (t->rot_used) {
-						t->rot = t->skeleton->get_bone_pose_rotation(t->bone_idx);
+						t->rot = t_skeleton->get_bone_pose_rotation(t->bone_idx);
 					}
 					if (t->scale_used) {
-						t->scale = t->skeleton->get_bone_pose_scale(t->bone_idx);
+						t->scale = t_skeleton->get_bone_pose_scale(t->bone_idx);
 					}
-				} else if (!t->skeleton) {
+				} else if (!t->skeleton_id.is_valid()) {
+					Node3D *t_node_3d = Object::cast_to<Node3D>(ObjectDB::get_instance(t->object_id));
+					if (!t_node_3d) {
+						return;
+					}
 					if (t->loc_used) {
-						t->loc = t->node_3d->get_position();
+						t->loc = t_node_3d->get_position();
 					}
 					if (t->rot_used) {
-						t->rot = t->node_3d->get_quaternion();
+						t->rot = t_node_3d->get_quaternion();
 					}
 					if (t->scale_used) {
-						t->scale = t->node_3d->get_scale();
+						t->scale = t_node_3d->get_scale();
 					}
 				}
 #endif // _3D_DISABLED
@@ -1914,25 +1942,35 @@ void AnimationMixer::_build_backup_track_cache() {
 			case Animation::TYPE_BLEND_SHAPE: {
 #ifndef _3D_DISABLED
 				TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
-				if (t->mesh_3d) {
-					t->value = t->mesh_3d->get_blend_shape_value(t->shape_index);
+				MeshInstance3D *t_mesh_3d = Object::cast_to<MeshInstance3D>(ObjectDB::get_instance(t->object_id));
+				if (t_mesh_3d) {
+					t->value = t_mesh_3d->get_blend_shape_value(t->shape_index);
 				}
 #endif // _3D_DISABLED
 			} break;
 			case Animation::TYPE_VALUE: {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
-				t->value = t->object->get_indexed(t->subpath);
+				Object *t_obj = ObjectDB::get_instance(t->object_id);
+				if (t_obj) {
+					t->value = t_obj->get_indexed(t->subpath);
+				}
 				t->is_continuous = true;
 			} break;
 			case Animation::TYPE_BEZIER: {
 				TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
-				t->value = t->object->get_indexed(t->subpath);
+				Object *t_obj = ObjectDB::get_instance(t->object_id);
+				if (t_obj) {
+					t->value = t_obj->get_indexed(t->subpath);
+				}
 			} break;
 			case Animation::TYPE_AUDIO: {
 				TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
-				Node *asp = Object::cast_to<Node>(t->object);
-				if (asp) {
-					t->object->call(SNAME("set_stream"), Ref<AudioStream>());
+				Object *t_obj = ObjectDB::get_instance(t->object_id);
+				if (t_obj) {
+					Node *asp = Object::cast_to<Node>(t_obj);
+					if (asp) {
+						asp->call(SNAME("set_stream"), Ref<AudioStream>());
+					}
 				}
 			} break;
 			default: {
@@ -2100,7 +2138,7 @@ void AnimationMixer::_bind_methods() {
 	/* ---- Blending processor ---- */
 	ClassDB::bind_method(D_METHOD("clear_caches"), &AnimationMixer::clear_caches);
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationMixer::advance);
-	GDVIRTUAL_BIND(_post_process_key_value, "animation", "track", "value", "object", "object_idx");
+	GDVIRTUAL_BIND(_post_process_key_value, "animation", "track", "value", "object_id", "object_sub_idx");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
