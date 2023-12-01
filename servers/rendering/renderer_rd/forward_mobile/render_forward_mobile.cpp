@@ -2435,18 +2435,23 @@ void RenderForwardMobile::GeometryInstanceForwardMobile::pair_light_instances(co
 }
 
 void RenderForwardMobile::GeometryInstanceForwardMobile::pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) {
-	reflection_probe_count = p_reflection_probe_instance_count < (uint32_t)MAX_RDL_CULL ? p_reflection_probe_instance_count : (uint32_t)MAX_RDL_CULL;
-	for (uint32_t i = 0; i < reflection_probe_count; i++) {
-		reflection_probes[i] = RendererRD::LightStorage::get_singleton()->reflection_probe_instance_get_forward_id(p_reflection_probe_instances[i]);
-	}
+    reflection_probe_count = MIN(p_reflection_probe_instance_count, static_cast<uint32_t>(MAX_RDL_CULL));
+    
+    RendererRD::LightStorage* light_storage = RendererRD::LightStorage::get_singleton();
+    for (uint32_t i = 0; i < reflection_probe_count; i++) {
+        reflection_probes[i] = light_storage->reflection_probe_instance_get_forward_id(p_reflection_probe_instances[i]);
+    }
 }
 
 void RenderForwardMobile::GeometryInstanceForwardMobile::pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) {
-	decals_count = p_decal_instance_count < (uint32_t)MAX_RDL_CULL ? p_decal_instance_count : (uint32_t)MAX_RDL_CULL;
-	for (uint32_t i = 0; i < decals_count; i++) {
-		decals[i] = RendererRD::TextureStorage::get_singleton()->decal_instance_get_forward_id(p_decal_instances[i]);
-	}
+    decals_count = MIN(p_decal_instance_count, static_cast<uint32_t>(MAX_RDL_CULL));
+
+    RendererRD::TextureStorage* texture_storage = RendererRD::TextureStorage::get_singleton();
+    for (uint32_t i = 0; i < decals_count; i++) {
+        decals[i] = texture_storage->decal_instance_get_forward_id(p_decal_instances[i]);
+    }
 }
+
 
 void RenderForwardMobile::GeometryInstanceForwardMobile::set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) {
 	use_projector = p_projector;
@@ -2454,23 +2459,25 @@ void RenderForwardMobile::GeometryInstanceForwardMobile::set_softshadow_projecto
 }
 
 void RenderForwardMobile::GeometryInstanceForwardMobile::_mark_dirty() {
-	if (dirty_list_element.in_list()) {
-		return;
-	}
+    if (dirty_list_element.in_list()) {
+        return;
+    }
 
-	//clear surface caches
-	GeometryInstanceSurfaceDataCache *surf = surface_caches;
+    // Clear surface caches
+    GeometryInstanceSurfaceDataCache *surf = surface_caches;
+    while (surf) {
+        GeometryInstanceSurfaceDataCache *next = surf->next;
+        RenderForwardMobile::get_singleton()->geometry_instance_surface_alloc.free(surf);
+        surf = next;
+    }
 
-	while (surf) {
-		GeometryInstanceSurfaceDataCache *next = surf->next;
-		RenderForwardMobile::get_singleton()->geometry_instance_surface_alloc.free(surf);
-		surf = next;
-	}
+    surface_caches = nullptr;
 
-	surface_caches = nullptr;
-
-	RenderForwardMobile::get_singleton()->geometry_instance_dirty_list.add(&dirty_list_element);
+    if (!dirty_list_element.in_list()) {
+        RenderForwardMobile::get_singleton()->geometry_instance_dirty_list.add(&dirty_list_element);
+    }
 }
+
 
 void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
