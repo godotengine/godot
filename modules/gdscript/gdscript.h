@@ -254,7 +254,7 @@ public:
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 
 	RBSet<GDScript *> get_dependencies();
-	RBSet<GDScript *> get_inverted_dependencies();
+	HashMap<GDScript *, RBSet<GDScript *>> get_all_dependencies();
 	RBSet<GDScript *> get_must_clear_dependencies();
 
 	virtual bool has_script_signal(const StringName &p_signal) const override;
