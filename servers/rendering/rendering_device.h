@@ -206,6 +206,21 @@ private:
 	Buffer *_get_buffer_from_owner(RID p_buffer);
 	Error _buffer_update(Buffer *p_buffer, RID p_buffer_id, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_queue = false, uint32_t p_required_align = 32);
 
+	// <TF>
+	// @ShadyTF persistently mapped buffers
+	struct PersistentBufferSet {
+		int usage_index;
+		Vector<Buffer> buffers;
+	};
+	struct PersistentBuffer {
+		uint32_t size;
+		BitField<RDD::BufferUsageBits> usage;
+		Vector<PersistentBufferSet> buffer_set;
+	};
+	RID_Owner<PersistentBuffer, true> persistent_buffer_owner;
+	void persistent_uniform_buffer_advance(RID p_buffer);
+	void persistent_uniform_buffers_reset();
+	// </TF>
 	RID_Owner<Buffer> uniform_buffer_owner;
 	RID_Owner<Buffer> storage_buffer_owner;
 	RID_Owner<Buffer> texture_buffer_owner;
@@ -852,6 +867,10 @@ public:
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
 	};
 
+	// <TF>
+	// @ShadyTF
+	RID persistent_uniform_buffer_create(uint32_t p_size_bytes);
+	// <TF>
 	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0);
 	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());

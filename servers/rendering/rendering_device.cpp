@@ -160,6 +160,15 @@ RenderingDevice::Buffer *RenderingDevice::_get_buffer_from_owner(RID p_buffer) {
 		buffer = vertex_buffer_owner.get_or_null(p_buffer);
 	} else if (index_buffer_owner.owns(p_buffer)) {
 		buffer = index_buffer_owner.get_or_null(p_buffer);
+		// <TF>
+		// @ShadyTF persistently mapped buffers
+	} else if (persistent_buffer_owner.owns(p_buffer)) {
+		PersistentBuffer* linear_buffer = persistent_buffer_owner.get_or_null(p_buffer);
+		if (linear_buffer) {
+			PersistentBufferSet *curr_buffer = linear_buffer->buffer_set.ptrw() + frame;
+			buffer = curr_buffer->buffers.ptrw() + curr_buffer->usage_index;
+		}
+		// </TF>
 	} else if (uniform_buffer_owner.owns(p_buffer)) {
 		buffer = uniform_buffer_owner.get_or_null(p_buffer);
 	} else if (texture_buffer_owner.owns(p_buffer)) {
@@ -442,6 +451,11 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
 			"Updating buffers is forbidden during creation of a compute list");
 
+	// <TF>
+	// @ShadyTF
+	persistent_uniform_buffer_advance(p_buffer);
+	// </TF>
+
 	Buffer *buffer = _get_buffer_from_owner(p_buffer);
 	if (!buffer) {
 		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Buffer argument is not a valid buffer of any type.");
@@ -461,6 +475,34 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 	return _buffer_update(buffer, p_buffer, p_offset, (uint8_t *)p_data, p_size, true);
 }
 
+
+// <TF>
+// @ShadyTF
+void RenderingDevice::persistent_uniform_buffer_advance(RID p_buffer) {
+	PersistentBuffer *linear_buffer = persistent_buffer_owner.get_or_null(p_buffer);
+	if (linear_buffer) {
+		PersistentBufferSet* curr_buffer = linear_buffer->buffer_set.ptrw() + frame;
+		if (curr_buffer->buffers.size() <= (curr_buffer->usage_index + 1)) {
+			Buffer buffer;
+			buffer.size = linear_buffer->size;
+			buffer.usage = linear_buffer->usage;
+			buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
+			buffer_memory += buffer.size;
+			curr_buffer->buffers.append(buffer);
+		}
+		curr_buffer->usage_index++;
+	}
+}
+
+void RenderingDevice::persistent_uniform_buffers_reset() {
+	List<RID> owned;
+	persistent_buffer_owner.get_owned_list(&owned);
+	for (const RID& curr : owned) {
+		PersistentBuffer* curr_linear_buffer = persistent_buffer_owner.get_or_null(curr);
+		curr_linear_buffer->buffer_set.ptrw()[frame].usage_index = -1;
+	}
+}
+// </TF>
 Error RenderingDevice::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size) {
 	_THREAD_SAFE_METHOD_
 
@@ -2495,7 +2537,37 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 #endif
 	return id;
 }
+// <TF>
+// @ShadyTF
+RID RenderingDevice::persistent_uniform_buffer_create(uint32_t p_size_bytes) {
+	_THREAD_SAFE_METHOD_
 
+	PersistentBuffer linear_buffer;
+	linear_buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT | RDD::BUFFER_USAGE_PERSISTENT_BIT);
+
+	for (int i = 0; i < frame_count; i++) {
+		Buffer buffer;
+		buffer.size = p_size_bytes;
+		buffer.usage = linear_buffer.usage;
+		buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
+		ERR_FAIL_COND_V(!buffer.driver_id, RID());
+		buffer_memory += buffer.size;
+		PersistentBufferSet buffer_set;
+		buffer_set.buffers.append(buffer);
+		buffer_set.usage_index = -1;
+		linear_buffer.buffer_set.append(buffer_set);
+	}
+	
+	linear_buffer.size = p_size_bytes;
+	
+	RID id = persistent_buffer_owner.make_rid(linear_buffer);
+
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
+}
+// </TF>
 RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
 	_THREAD_SAFE_METHOD_
 
@@ -2748,6 +2820,14 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 
 				RID buffer_id = uniform.get_id(0);
 				Buffer *buffer = uniform_buffer_owner.get_or_null(buffer_id);
+				// <TF>
+				// @ShadyTF persistently mapped buffers
+				if (buffer == nullptr) {
+					PersistentBuffer* linear_buffer = persistent_buffer_owner.get_or_null(uniform.get_id(0));
+					PersistentBufferSet *curr_buffer = linear_buffer->buffer_set.ptrw() + frame;
+					buffer = curr_buffer->buffers.ptrw() + curr_buffer->usage_index;
+				}
+				// </TF>
 				ERR_FAIL_NULL_V_MSG(buffer, RID(), "Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
 				ERR_FAIL_COND_V_MSG(buffer->size < (uint32_t)set_uniform.length, RID(),
@@ -4466,6 +4546,17 @@ void RenderingDevice::_free_internal(RID p_id) {
 		RDG::resource_tracker_free(uniform_buffer->draw_tracker);
 		frames[frame].buffers_to_dispose_of.push_back(*uniform_buffer);
 		uniform_buffer_owner.free(p_id);
+		// <TF>
+		// @ShadyTF persistently mapped buffers
+	} else if (persistent_buffer_owner.owns(p_id)) {
+		PersistentBuffer *linear_uniform_buffer = persistent_buffer_owner.get_or_null(p_id);
+		for (const PersistentBufferSet& buffer_set : linear_uniform_buffer->buffer_set) {
+			for (const Buffer &buffer : buffer_set.buffers) {
+				frames[frame].buffers_to_dispose_of.push_back(buffer);
+			}
+		}
+		persistent_buffer_owner.free(p_id);
+		// </TF>
 	} else if (texture_buffer_owner.owns(p_id)) {
 		Buffer *texture_buffer = texture_buffer_owner.get_or_null(p_id);
 		RDG::resource_tracker_free(texture_buffer->draw_tracker);
@@ -4525,6 +4616,12 @@ void RenderingDevice::set_resource_name(RID p_id, const String &p_name) {
 	} else if (uniform_buffer_owner.owns(p_id)) {
 		Buffer *uniform_buffer = uniform_buffer_owner.get_or_null(p_id);
 		driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, uniform_buffer->driver_id, p_name);
+		// <TF>
+		// @ShadyTF persistently mapped buffers
+	} else if (persistent_buffer_owner.owns(p_id)) {
+		PersistentBuffer *linear_uniform_buffer = persistent_buffer_owner.get_or_null(p_id);
+		driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, linear_uniform_buffer->buffer_set[0].buffers[0].driver_id, p_name);
+		// </TF>
 	} else if (texture_buffer_owner.owns(p_id)) {
 		Buffer *texture_buffer = texture_buffer_owner.get_or_null(p_id);
 		driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, texture_buffer->driver_id, p_name);
@@ -4615,6 +4712,11 @@ void RenderingDevice::_begin_frame() {
 	// Erase pending resources.
 	_free_pending_resources(frame);
 
+	// <TF>
+	// @ShadyTF persistently mapped buffers
+	// reset linear uniform buffers
+	persistent_uniform_buffers_reset();
+	// </TF>
 	// Create setup command buffer and set as the setup buffer.
 
 	{
@@ -5100,6 +5202,13 @@ uint64_t RenderingDevice::get_driver_resource(DriverResource p_resource, RID p_r
 				buffer = index_buffer_owner.get_or_null(p_rid);
 			} else if (uniform_buffer_owner.owns(p_rid)) {
 				buffer = uniform_buffer_owner.get_or_null(p_rid);
+			// <TF>
+			// @ShadyTF persistently mapped buffers
+			} else if (persistent_buffer_owner.owns(p_rid)) {
+				PersistentBuffer* linear_buffer = persistent_buffer_owner.get_or_null(p_rid);
+				PersistentBufferSet* linear_buffer_frame = linear_buffer->buffer_set.ptrw() + frame;
+				buffer = linear_buffer_frame->buffers.ptrw() + linear_buffer_frame->usage_index;
+			// </TF>
 			} else if (texture_buffer_owner.owns(p_rid)) {
 				buffer = texture_buffer_owner.get_or_null(p_rid);
 			} else if (storage_buffer_owner.owns(p_rid)) {
