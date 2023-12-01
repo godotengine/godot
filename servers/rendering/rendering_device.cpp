@@ -2542,6 +2542,9 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 RID RenderingDevice::persistent_uniform_buffer_create(uint32_t p_size_bytes) {
 	_THREAD_SAFE_METHOD_
 
+	if (persistent_buffer_enabled == false) {
+		return uniform_buffer_create(p_size_bytes);
+	}
 	PersistentBuffer linear_buffer;
 	linear_buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT | RDD::BUFFER_USAGE_PERSISTENT_BIT);
 

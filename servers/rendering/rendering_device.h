@@ -220,6 +220,9 @@ private:
 	RID_Owner<PersistentBuffer, true> persistent_buffer_owner;
 	void persistent_uniform_buffer_advance(RID p_buffer);
 	void persistent_uniform_buffers_reset();
+
+	// flag for using persistent buffers;
+	bool persistent_buffer_enabled = true;
 	// </TF>
 	RID_Owner<Buffer> uniform_buffer_owner;
 	RID_Owner<Buffer> storage_buffer_owner;
