@@ -2344,22 +2344,26 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 /* Geometry instance */
 
 RenderGeometryInstance *RenderForwardMobile::geometry_instance_create(RID p_base) {
-	RS::InstanceType type = RSG::utilities->get_base_type(p_base);
-	ERR_FAIL_COND_V(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr);
+    RS::InstanceType type = RSG::utilities->get_base_type(p_base);
+    ERR_FAIL_COND_V_MSG(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr, "Invalid geometry instance type");
 
-	GeometryInstanceForwardMobile *ginstance = geometry_instance_alloc.alloc();
-	ginstance->data = memnew(GeometryInstanceForwardMobile::Data);
+    GeometryInstanceForwardMobile *ginstance = geometry_instance_alloc.alloc();
+    ERR_FAIL_NULL_V_MSG(ginstance, nullptr, "Failed to allocate GeometryInstanceForwardMobile");
 
-	ginstance->data->base = p_base;
-	ginstance->data->base_type = type;
-	ginstance->data->dependency_tracker.userdata = ginstance;
-	ginstance->data->dependency_tracker.changed_callback = _geometry_instance_dependency_changed;
-	ginstance->data->dependency_tracker.deleted_callback = _geometry_instance_dependency_deleted;
+    ginstance->data = memnew(GeometryInstanceForwardMobile::Data);
+    ERR_FAIL_NULL_V_MSG(ginstance->data, nullptr, "Failed to allocate GeometryInstanceForwardMobile::Data");
 
-	ginstance->_mark_dirty();
+    ginstance->data->base = p_base;
+    ginstance->data->base_type = type;
+    ginstance->data->dependency_tracker.userdata = ginstance;
+    ginstance->data->dependency_tracker.changed_callback = _geometry_instance_dependency_changed;
+    ginstance->data->dependency_tracker.deleted_callback = _geometry_instance_dependency_deleted;
 
-	return ginstance;
+    ginstance->_mark_dirty();
+
+    return ginstance;
 }
+
 
 void RenderForwardMobile::GeometryInstanceForwardMobile::set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
 	lightmap_instance = p_lightmap_instance;
