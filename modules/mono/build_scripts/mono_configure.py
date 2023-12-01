@@ -2,19 +2,19 @@ import os
 import os.path
 
 
-def is_desktop(platform):
+def is_desktop(platform: str) -> bool:
     return platform in ["windows", "macos", "linuxbsd"]
 
 
-def is_unix_like(platform):
+def is_unix_like(platform: str) -> bool:
     return platform in ["macos", "linuxbsd", "android", "ios"]
 
 
-def module_supports_tools_on(platform):
+def module_supports_tools_on(platform: str) -> bool:
     return is_desktop(platform)
 
 
-def configure(env, env_mono):
+def configure(env, env_mono) -> None:
     # is_android = env["platform"] == "android"
     # is_web = env["platform"] == "web"
     # is_ios = env["platform"] == "ios"

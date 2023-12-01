@@ -3,12 +3,11 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 """
 import zlib
+from typing import Dict, List, Tuple, Union
 
-from platform_methods import subprocess_main
 
-
-def escape_string(s):
-    def charcode_to_c_escapes(c):
+def escape_string(s: str) -> str:
+    def charcode_to_c_escapes(c: int) -> str:
         rev_result = []
         while c >= 256:
             c, low = (c // 256, c % 256)
@@ -17,9 +16,7 @@ def escape_string(s):
         return "".join(reversed(rev_result))
 
     result = ""
-    if isinstance(s, str):
-        s = s.encode("utf-8")
-    for c in s:
+    for c in s.encode("utf-8"):
         if not (32 <= c < 127) or c in (ord("\\"), ord('"')):
             result += charcode_to_c_escapes(c)
         else:
@@ -27,7 +24,7 @@ def escape_string(s):
     return result
 
 
-def make_certs_header(target, source, env):
+def make_certs_header(target, source, env) -> None:
     src = source[0]
     dst = target[0]
     f = open(src, "rb")
@@ -61,7 +58,7 @@ def make_certs_header(target, source, env):
     f.close()
 
 
-def make_authors_header(target, source, env):
+def make_authors_header(target, source, env) -> None:
     sections = [
         "Project Founders",
         "Lead Developer",
@@ -115,7 +112,7 @@ def make_authors_header(target, source, env):
     f.close()
 
 
-def make_donors_header(target, source, env):
+def make_donors_header(target, source, env) -> None:
     sections = [
         "Patrons",
         "Platinum sponsors",
@@ -177,18 +174,20 @@ def make_donors_header(target, source, env):
     f.close()
 
 
-def make_license_header(target, source, env):
+def make_license_header(target, source, env) -> None:
     src_copyright = source[0]
     src_license = source[1]
     dst = target[0]
 
     class LicenseReader:
-        def __init__(self, license_file):
+        from io import TextIOWrapper
+
+        def __init__(self, license_file: TextIOWrapper) -> None:
             self._license_file = license_file
             self.line_num = 0
             self.current = self.next_line()
 
-        def next_line(self):
+        def next_line(self) -> str:
             line = self._license_file.readline()
             self.line_num += 1
             while line.startswith("#"):
@@ -197,7 +196,7 @@ def make_license_header(target, source, env):
             self.current = line
             return line
 
-        def next_tag(self):
+        def next_tag(self) -> Tuple[str, List[str]]:
             if not ":" in self.current:
                 return ("", [])
             tag, line = self.current.split(":", 1)
@@ -208,12 +207,12 @@ def make_license_header(target, source, env):
 
     from collections import OrderedDict
 
-    projects: dict = OrderedDict()
-    license_list = []
+    projects: Dict[str, List[Dict[str, Union[str, List[str]]]]] = OrderedDict()
+    license_list: List[Union[str, List[str]]] = []
 
     with open(src_copyright, "r", encoding="utf-8") as copyright_file:
         reader = LicenseReader(copyright_file)
-        part = {}
+        part: Dict[str, Union[str, List[str]]] = {}
         while reader.current:
             tag, content = reader.next_tag()
             if tag in ("Files", "Copyright", "License"):
@@ -230,12 +229,12 @@ def make_license_header(target, source, env):
                 part = {}
                 reader.next_line()
 
-    data_list: list = []
+    data_list: List[str] = []
     for project in iter(projects.values()):
         for part in project:
-            part["file_index"] = len(data_list)
+            part["file_index"] = str(len(data_list))
             data_list += part["Files"]
-            part["copyright_index"] = len(data_list)
+            part["copyright_index"] = str(len(data_list))
             data_list += part["Copyright"]
 
     with open(dst, "w", encoding="utf-8") as f:
@@ -275,7 +274,7 @@ def make_license_header(target, source, env):
 
         f.write("const ComponentCopyrightPart COPYRIGHT_PROJECT_PARTS[] = {\n")
         part_index = 0
-        part_indexes = {}
+        part_indexes: Dict[str, int] = {}
         for project_name, project in iter(projects.items()):
             part_indexes[project_name] = part_index
             for part in project:
@@ -334,4 +333,6 @@ def make_license_header(target, source, env):
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())

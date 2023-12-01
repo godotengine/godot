@@ -4,12 +4,11 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 
 """
 import os.path
-from typing import Optional, Iterable
 
-from platform_methods import subprocess_main
+from typing import Optional, Iterable, List
 
 
-def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True):
+def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True) -> str:
     """Take header data and generate inline code
 
     :param: input_lines: values for shared inline code
@@ -26,20 +25,20 @@ def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True
 
 
 class RDHeaderStruct:
-    def __init__(self):
-        self.vertex_lines = []
-        self.fragment_lines = []
-        self.compute_lines = []
+    def __init__(self) -> None:
+        self.vertex_lines: List[str] = []
+        self.fragment_lines: List[str] = []
+        self.compute_lines: List[str] = []
 
-        self.vertex_included_files = []
-        self.fragment_included_files = []
-        self.compute_included_files = []
+        self.vertex_included_files: List[str] = []
+        self.fragment_included_files: List[str] = []
+        self.compute_included_files: List[str] = []
 
-        self.reading = ""
-        self.line_offset = 0
-        self.vertex_offset = 0
-        self.fragment_offset = 0
-        self.compute_offset = 0
+        self.reading: str = ""
+        self.line_offset: int = 0
+        self.vertex_offset: int = 0
+        self.fragment_offset: int = 0
+        self.compute_offset: int = 0
 
 
 def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth: int) -> RDHeaderStruct:
@@ -168,14 +167,14 @@ public:
         fd.write(shader_template)
 
 
-def build_rd_headers(target, source, env):
+def build_rd_headers(target, source, env) -> None:
     for x in source:
         build_rd_header(filename=str(x))
 
 
 class RAWHeaderStruct:
-    def __init__(self):
-        self.code = ""
+    def __init__(self) -> None:
+        self.code: str = ""
 
 
 def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, depth: int) -> None:
@@ -199,7 +198,7 @@ def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, dept
 
 def build_raw_header(
     filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RAWHeaderStruct] = None
-):
+) -> None:
     header_data = header_data or RAWHeaderStruct()
     include_file_in_raw_header(filename, header_data, 0)
 
@@ -227,10 +226,12 @@ static const char {out_file_base}[] = {{
         f.write(shader_template)
 
 
-def build_raw_headers(target, source, env):
+def build_raw_headers(target, source, env) -> None:
     for x in source:
         build_raw_header(filename=str(x))
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())

@@ -5,6 +5,8 @@ import platform
 import uuid
 import functools
 import subprocess
+from typing import List, Dict, Any
+
 
 # NOTE: The multiprocessing module is not compatible with SCons due to conflict on cPickle
 
@@ -25,7 +27,7 @@ def run_in_subprocess(builder_function):
         # Identify module
         module_name = builder_function.__module__
         function_name = builder_function.__name__
-        module_path = sys.modules[module_name].__file__
+        module_path = str(sys.modules[module_name].__file__)
         if module_path.endswith(".pyc") or module_path.endswith(".pyo"):
             module_path = module_path[:-1]
 
@@ -70,7 +72,7 @@ def run_in_subprocess(builder_function):
     return wrapper
 
 
-def subprocess_main(namespace):
+def subprocess_main(namespace: Dict[str, Any]) -> None:
     with open(sys.argv[1]) as json_file:
         data = json.load(json_file)
 
@@ -79,8 +81,8 @@ def subprocess_main(namespace):
 
 
 # CPU architecture options.
-architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32"]
-architecture_aliases = {
+architectures: List[str] = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32"]
+architecture_aliases: Dict[str, str] = {
     "x86": "x86_32",
     "x64": "x86_64",
     "amd64": "x86_64",
@@ -97,7 +99,7 @@ architecture_aliases = {
 }
 
 
-def detect_arch():
+def detect_arch() -> str:
     host_machine = platform.machine().lower()
     if host_machine in architectures:
         return host_machine
@@ -112,12 +114,12 @@ def detect_arch():
         return "x86_64"
 
 
-def generate_export_icons(platform_path, platform_name):
+def generate_export_icons(platform_path: str, platform_name: str) -> None:
     """
     Generate headers for logo and run icon for the export plugin.
     """
     export_path = platform_path + "/export"
-    svg_names = []
+    svg_names: List[str] = []
     if os.path.isfile(export_path + "/logo.svg"):
         svg_names.append("logo")
     if os.path.isfile(export_path + "/run_icon.svg"):

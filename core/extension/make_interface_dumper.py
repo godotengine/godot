@@ -1,7 +1,7 @@
 import zlib
 
 
-def run(target, source, env):
+def run(target, source, env) -> None:
     src = source[0]
     dst = target[0]
     f = open(src, "rb")

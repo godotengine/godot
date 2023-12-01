@@ -4,7 +4,6 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 
 """
 import os
-from platform_methods import subprocess_main
 
 
 def make_debug_macos(target, source, env):
@@ -18,4 +17,6 @@ def make_debug_macos(target, source, env):
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())

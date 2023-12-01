@@ -3,10 +3,9 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
-from platform_methods import subprocess_main
 
 
-def make_splash(target, source, env):
+def make_splash(target, source, env) -> None:
     src = source[0]
     dst = target[0]
 
@@ -26,7 +25,7 @@ def make_splash(target, source, env):
         g.write("#endif")
 
 
-def make_splash_editor(target, source, env):
+def make_splash_editor(target, source, env) -> None:
     src = source[0]
     dst = target[0]
 
@@ -47,7 +46,7 @@ def make_splash_editor(target, source, env):
         g.write("#endif")
 
 
-def make_app_icon(target, source, env):
+def make_app_icon(target, source, env) -> None:
     src = source[0]
     dst = target[0]
 
@@ -66,4 +65,6 @@ def make_app_icon(target, source, env):
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())

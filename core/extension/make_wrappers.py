@@ -7,7 +7,7 @@ _FORCE_INLINE_ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 """
 
 
-def generate_mod_version(argcount, const=False, returns=False):
+def generate_mod_version(argcount: int, const: bool = False, returns: bool = False) -> str:
     s = proto_mod
     sproto = str(argcount)
     method_info = ""
@@ -65,7 +65,7 @@ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 """
 
 
-def generate_ex_version(argcount, const=False, returns=False):
+def generate_ex_version(argcount: int, const: bool = False, returns: bool = False) -> str:
     s = proto_ex
     sproto = str(argcount)
     method_info = ""
@@ -118,7 +118,7 @@ def generate_ex_version(argcount, const=False, returns=False):
     return s
 
 
-def run(target, source, env):
+def run(target, source, env) -> None:
     max_versions = 12
 
     txt = """

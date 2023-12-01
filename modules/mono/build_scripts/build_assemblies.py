@@ -5,17 +5,17 @@ import os.path
 import shlex
 import subprocess
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import NoReturn, Optional, List
 
 
-def find_dotnet_cli():
+def find_dotnet_cli() -> Optional[str]:
     if os.name == "nt":
         for hint_dir in os.environ["PATH"].split(os.pathsep):
             hint_dir = hint_dir.strip('"')
             hint_path = os.path.join(hint_dir, "dotnet")
             if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
                 return hint_path
-            if os.path.isfile(hint_path + ".exe") and os.access(hint_path + ".exe", os.X_OK):
+            elif os.path.isfile(hint_path + ".exe") and os.access(hint_path + ".exe", os.X_OK):
                 return hint_path + ".exe"
     else:
         for hint_dir in os.environ["PATH"].split(os.pathsep):
@@ -24,8 +24,10 @@ def find_dotnet_cli():
             if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
                 return hint_path
 
+    return None
 
-def find_msbuild_standalone_windows():
+
+def find_msbuild_standalone_windows() -> Optional[str]:
     msbuild_tools_path = find_msbuild_tools_path_reg()
 
     if msbuild_tools_path:
@@ -34,7 +36,7 @@ def find_msbuild_standalone_windows():
     return None
 
 
-def find_msbuild_mono_windows(mono_prefix):
+def find_msbuild_mono_windows(mono_prefix: str) -> Optional[str]:
     assert mono_prefix is not None
 
     mono_bin_dir = os.path.join(mono_prefix, "bin")
@@ -46,10 +48,10 @@ def find_msbuild_mono_windows(mono_prefix):
     return None
 
 
-def find_msbuild_mono_unix():
+def find_msbuild_mono_unix() -> Optional[str]:
     import sys
 
-    hint_dirs = []
+    hint_dirs: List[str] = []
     if sys.platform == "darwin":
         hint_dirs[:0] = [
             "/Library/Frameworks/Mono.framework/Versions/Current/bin",
@@ -74,13 +76,13 @@ def find_msbuild_mono_unix():
     return None
 
 
-def find_msbuild_tools_path_reg():
+def find_msbuild_tools_path_reg() -> Optional[str]:
     import subprocess
 
     program_files = os.getenv("PROGRAMFILES(X86)")
     if not program_files:
         program_files = os.getenv("PROGRAMFILES")
-    vswhere = os.path.join(program_files, "Microsoft Visual Studio", "Installer", "vswhere.exe")
+    vswhere = os.path.join(str(program_files), "Microsoft Visual Studio", "Installer", "vswhere.exe")
 
     vswhere_args = ["-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"]
 
@@ -114,6 +116,8 @@ def find_msbuild_tools_path_reg():
     except (subprocess.CalledProcessError, OSError):
         pass
 
+    return None
+
 
 @dataclass
 class ToolsLocation:
@@ -123,7 +127,7 @@ class ToolsLocation:
     mono_bin_dir: str = ""
 
 
-def find_any_msbuild_tool(mono_prefix):
+def find_any_msbuild_tool(mono_prefix: Optional[str]) -> Optional[ToolsLocation]:
     # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild
 
     # Find dotnet CLI
@@ -151,7 +155,7 @@ def find_any_msbuild_tool(mono_prefix):
     return None
 
 
-def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]] = None):
+def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]] = None) -> int:
     using_msbuild_mono = False
 
     # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild
@@ -193,7 +197,13 @@ def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]
     return subprocess.call(args, env=msbuild_env)
 
 
-def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision):
+def build_godot_api(
+    msbuild_tool: ToolsLocation,
+    module_dir: str,
+    output_dir: str,
+    push_nupkgs_local: Optional[str],
+    precision: Optional[str],
+) -> int:
     target_filenames = [
         "GodotSharp.dll",
         "GodotSharp.pdb",
@@ -256,7 +266,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
     return 0
 
 
-def generate_sdk_package_versions():
+def generate_sdk_package_versions() -> None:
     # I can't believe importing files in Python is so convoluted when not
     # following the golden standard for packages/modules.
     import os
@@ -274,7 +284,7 @@ def generate_sdk_package_versions():
     sys.path.remove(root_path)
 
     version_str = "{major}.{minor}.{patch}".format(**version_info)
-    version_status = version_info["status"]
+    version_status = str(version_info["status"])
     if version_status != "stable":  # Pre-release
         # If version was overridden to be e.g. "beta3", we insert a dot between
         # "beta" and "3" to follow SemVer 2.0.
@@ -343,7 +353,15 @@ def generate_sdk_package_versions():
         f.close()
 
 
-def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision):
+def build_all(
+    msbuild_tool: ToolsLocation,
+    module_dir: str,
+    output_dir: str,
+    godot_platform: Optional[str],
+    dev_debug: Optional[str],
+    push_nupkgs_local: Optional[str],
+    precision: Optional[str],
+) -> int:
     # Generate SdkPackageVersions.props and VersionDocsUrl constant
     generate_sdk_package_versions()
 
@@ -379,7 +397,7 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
     return 0
 
 
-def main():
+def main() -> NoReturn:
     import argparse
     import sys
 

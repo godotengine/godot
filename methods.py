@@ -5,26 +5,27 @@ import glob
 import subprocess
 from collections import OrderedDict
 from collections.abc import Mapping
-from typing import Iterator
+from typing import Iterator, Optional, Union, List, Dict, Set, Any
 from pathlib import Path
 from os.path import normpath, basename
+
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
-_scu_folders = set()
+_scu_folders: Set[str] = set()
 
 
-def set_scu_folders(scu_folders):
+def set_scu_folders(scu_folders: Set[str]) -> None:
     global _scu_folders
     _scu_folders = scu_folders
 
 
-def add_source_files_orig(self, sources, files, allow_gen=False):
+def add_source_files_orig(self, sources: List[str], files: Union[str, List[str]], allow_gen: bool = False) -> None:
     # Convert string to list of absolute paths (including expanding wildcard)
-    if isinstance(files, (str, bytes)):
+    if isinstance(files, str):
         # Keep SCons project-absolute path as they are (no wildcard support)
         if files.startswith("#"):
             if "*" in files:
@@ -53,7 +54,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
 # the hash table to see whether the folder
 # is included in the SCU build.
 # It will be something like "core/math".
-def _find_scu_section_name(subdir):
+def _find_scu_section_name(subdir: str) -> str:
     section_path = os.path.abspath(subdir) + "/"
 
     folders = []
@@ -78,7 +79,7 @@ def _find_scu_section_name(subdir):
     return section_name
 
 
-def add_source_files_scu(self, sources, files, allow_gen=False):
+def add_source_files_scu(self, sources: List[str], files: Union[str, List[str]], allow_gen: bool = False) -> bool:
     if self["scu_build"] and isinstance(files, str):
         if "*." not in files:
             return False
@@ -104,7 +105,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
 
 # Either builds the folder using the SCU system,
 # or reverts to regular build.
-def add_source_files(self, sources, files, allow_gen=False):
+def add_source_files(self, sources: List[str], files: Union[str, List[str]], allow_gen: bool = False) -> bool:
     if not add_source_files_scu(self, sources, files, allow_gen):
         # Wraps the original function when scu build is not active.
         add_source_files_orig(self, sources, files, allow_gen)
@@ -112,7 +113,7 @@ def add_source_files(self, sources, files, allow_gen=False):
     return True
 
 
-def disable_warnings(self):
+def disable_warnings(self) -> None:
     # 'self' is the environment
     if self.msvc:
         # We have to remove existing warning level defines before appending /w,
@@ -125,7 +126,7 @@ def disable_warnings(self):
         self.AppendUnique(CCFLAGS=["-w"])
 
 
-def force_optimization_on_debug(self):
+def force_optimization_on_debug(self) -> None:
     # 'self' is the environment
     if self["target"] == "template_release":
         return
@@ -141,11 +142,11 @@ def force_optimization_on_debug(self):
         self.AppendUnique(CCFLAGS=["-O3"])
 
 
-def add_module_version_string(self, s):
+def add_module_version_string(self, s: str) -> None:
     self.module_version_string += "." + s
 
 
-def get_version_info(module_version_string="", silent=False):
+def get_version_info(module_version_string: str = "", silent: bool = False) -> Dict[str, Union[str, int]]:
     build_name = "custom_build"
     if os.getenv("BUILD_NAME") != None:
         build_name = str(os.getenv("BUILD_NAME"))
@@ -154,7 +155,7 @@ def get_version_info(module_version_string="", silent=False):
 
     import version
 
-    version_info = {
+    version_info: Dict[str, Union[str, int]] = {
         "short_name": str(version.short_name),
         "name": str(version.name),
         "major": int(version.major),
@@ -214,7 +215,7 @@ def get_version_info(module_version_string="", silent=False):
     return version_info
 
 
-def generate_version_header(module_version_string=""):
+def generate_version_header(module_version_string: str = "") -> None:
     version_info = get_version_info(module_version_string)
 
     # NOTE: It is safe to generate these files here, since this is still executed serially.
@@ -285,7 +286,7 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
     fs.close()
 
 
-def get_cmdline_bool(option, default):
+def get_cmdline_bool(option: str, default: bool) -> bool:
     """We use `ARGUMENTS.get()` to check if options were manually overridden on the command line,
     and SCons' _text2bool helper to convert them to booleans, otherwise they're handled as strings.
     """
@@ -294,12 +295,12 @@ def get_cmdline_bool(option, default):
 
     cmdline_val = ARGUMENTS.get(option)
     if cmdline_val is not None:
-        return _text2bool(cmdline_val)
+        return bool(_text2bool(cmdline_val))
     else:
         return default
 
 
-def detect_modules(search_path, recursive=False):
+def detect_modules(search_path: str, recursive: bool = False) -> Dict[str, str]:
     """Detects and collects a list of C++ modules at specified path
 
     `search_path` - a directory path containing modules. The path may point to
@@ -315,14 +316,14 @@ def detect_modules(search_path, recursive=False):
     values. If a path is relative, then it is a built-in module. If a path is
     absolute, then it is a custom module collected outside of the engine source.
     """
-    modules = OrderedDict()
+    modules: Dict[str, str] = OrderedDict()
 
-    def add_module(path):
+    def add_module(path: str) -> None:
         module_name = os.path.basename(path)
         module_path = path.replace("\\", "/")  # win32
         modules[module_name] = module_path
 
-    def is_engine(path):
+    def is_engine(path) -> bool:
         # Prevent recursively detecting modules in self and other
         # Godot sources when using `custom_modules` build option.
         version_path = os.path.join(path, "version.py")
@@ -332,7 +333,7 @@ def detect_modules(search_path, recursive=False):
                     return True
         return False
 
-    def get_files(path):
+    def get_files(path) -> List[str]:
         files = glob.glob(os.path.join(path, "*"))
         # Sort so that `register_module_types` does not change that often,
         # and plugins are registered in alphabetic order as well.
@@ -362,7 +363,7 @@ def detect_modules(search_path, recursive=False):
     return modules
 
 
-def is_module(path):
+def is_module(path: str) -> bool:
     if not os.path.isdir(path):
         return False
     must_exist = ["register_types.h", "SCsub", "config.py"]
@@ -372,7 +373,7 @@ def is_module(path):
     return True
 
 
-def write_disabled_classes(class_list):
+def write_disabled_classes(class_list: List[str]) -> None:
     f = open("core/disabled_classes.gen.h", "w")
     f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     f.write("#ifndef DISABLED_CLASSES_GEN_H\n")
@@ -384,7 +385,7 @@ def write_disabled_classes(class_list):
     f.write("\n#endif\n")
 
 
-def write_modules(modules):
+def write_modules(modules: Dict[str, str]) -> None:
     includes_cpp = ""
     initialize_cpp = ""
     uninitialize_cpp = ""
@@ -428,7 +429,7 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {
         f.write(modules_cpp)
 
 
-def convert_custom_modules_path(path):
+def convert_custom_modules_path(path: str) -> str:
     if not path:
         return path
     path = os.path.realpath(os.path.expanduser(os.path.expandvars(path)))
@@ -440,11 +441,11 @@ def convert_custom_modules_path(path):
     return path
 
 
-def disable_module(self):
+def disable_module(self) -> None:
     self.disabled_modules.append(self.current_module)
 
 
-def module_add_dependencies(self, module, dependencies, optional=False):
+def module_add_dependencies(self, module: str, dependencies: List[str], optional: bool = False) -> None:
     """
     Adds dependencies for a given module.
     Meant to be used in module `can_build` methods.
@@ -457,7 +458,7 @@ def module_add_dependencies(self, module, dependencies, optional=False):
         self.module_dependencies[module][0].extend(dependencies)
 
 
-def module_check_dependencies(self, module):
+def module_check_dependencies(self, module: str) -> bool:
     """
     Checks if module dependencies are enabled for a given module,
     and prints a warning if they aren't.
@@ -482,8 +483,7 @@ def module_check_dependencies(self, module):
         return True
 
 
-def sort_module_list(env):
-    out = OrderedDict()
+def sort_module_list(env) -> None:
     deps = {k: v[0] + list(filter(lambda x: x in env.module_list, v[1])) for k, v in env.module_dependencies.items()}
 
     frontier = list(env.module_list.keys())
@@ -500,7 +500,7 @@ def sort_module_list(env):
         env.module_list.move_to_end(k)
 
 
-def use_windows_spawn_fix(self, platform=None):
+def use_windows_spawn_fix(self, platform: Optional[str] = None) -> None:
     if os.name != "nt":
         return  # not needed, only for windows
 
@@ -556,7 +556,7 @@ def use_windows_spawn_fix(self, platform=None):
     self["SPAWN"] = mySpawn
 
 
-def no_verbose(sys, env):
+def no_verbose(sys, env) -> None:
     colors = {}
 
     # Colors are disabled in non-TTY environments such as pipes. This means
@@ -609,7 +609,7 @@ def no_verbose(sys, env):
     env.Append(JAVACCOMSTR=[java_compile_source_message])
 
 
-def detect_visual_c_compiler_version(tools_env):
+def detect_visual_c_compiler_version(tools_env) -> str:
     # tools_env is the variable scons uses to call tools that execute tasks, SCons's env['ENV'] that executes tasks...
     # (see the SCons documentation for more information on what it does)...
     # in order for this function to be well encapsulated i choose to force it to receive SCons's TOOLS env (env['ENV']
@@ -707,7 +707,7 @@ def detect_visual_c_compiler_version(tools_env):
     return vc_chosen_compiler_str
 
 
-def find_visual_c_batch_file(env):
+def find_visual_c_batch_file(env) -> str:
     from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file, find_vc_pdir
 
     # Syntax changed in SCons 4.4.0.
@@ -723,16 +723,16 @@ def find_visual_c_batch_file(env):
         (host_platform, target_platform, _) = get_host_target(env)
 
     if scons_ver < (4, 6, 0):
-        return find_batch_file(env, msvc_version, host_platform, target_platform)[0]
+        return str(find_batch_file(env, msvc_version, host_platform, target_platform)[0])
 
     # Scons 4.6.0+ removed passing env, so we need to get the product_dir ourselves first,
     # then pass that as the last param instead of env as the first param as before.
     # We should investigate if we can avoid relying on SCons internals here.
     product_dir = find_vc_pdir(env, msvc_version)
-    return find_batch_file(msvc_version, host_platform, target_platform, product_dir)[0]
+    return str(find_batch_file(msvc_version, host_platform, target_platform, product_dir)[0])
 
 
-def generate_cpp_hint_file(filename):
+def generate_cpp_hint_file(filename: str) -> None:
     if os.path.isfile(filename):
         # Don't overwrite an existing hint file since the user may have customized it.
         pass
@@ -744,7 +744,7 @@ def generate_cpp_hint_file(filename):
             print("Could not write cpp.hint file.")
 
 
-def glob_recursive(pattern, node="."):
+def glob_recursive(pattern: str, node: str = ".") -> List[str]:
     from SCons import Node
     from SCons.Script import Glob
 
@@ -756,7 +756,7 @@ def glob_recursive(pattern, node="."):
     return results
 
 
-def add_to_vs_project(env, sources):
+def add_to_vs_project(env, sources) -> None:
     for x in sources:
         if type(x) == type(""):
             fname = env.File(x).path
@@ -776,7 +776,7 @@ def add_to_vs_project(env, sources):
                 env.vs_srcs += [basename + ".cpp"]
 
 
-def generate_vs_project(env, original_args, project_name="godot"):
+def generate_vs_project(env, original_args: Dict[str, Any], project_name: str = "godot") -> None:
     batch_file = find_visual_c_batch_file(env)
     filtered_args = original_args.copy()
     # Ignore the "vsproj" option to not regenerate the VS project on every build
@@ -790,7 +790,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
     if batch_file:
 
-        class ModuleConfigs(Mapping):
+        class ModuleConfigs(Mapping[str, Any]):
             # This version information (Win32, x64, Debug, Release) seems to be
             # required for Visual Studio to understand that it needs to generate an NMAKE
             # project. Do not modify without knowing what you are doing.
@@ -803,10 +803,10 @@ def generate_vs_project(env, original_args, project_name="godot"):
             def for_every_variant(value):
                 return [value for _ in range(len(ModuleConfigs.CONFIGURATIONS) * len(ModuleConfigs.PLATFORMS))]
 
-            def __init__(self):
-                shared_targets_array = []
-                self.names = []
-                self.arg_dict = {
+            def __init__(self) -> None:
+                shared_targets_array: List[str] = []
+                self.names: List[str] = []
+                self.arg_dict: Dict[str, List[str]] = {
                     "variant": [],
                     "runfile": shared_targets_array,
                     "buildtarget": shared_targets_array,
@@ -822,7 +822,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 includes: str = "",
                 cli_args: str = "",
                 defines=None,
-            ):
+            ) -> None:
                 if defines is None:
                     defines = []
                 self.names.append(name)
@@ -840,7 +840,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(list(env["CPPDEFINES"]) + defines)
                 self.arg_dict["cmdargs"] += ModuleConfigs.for_every_variant(cli_args)
 
-            def build_commandline(self, commands):
+            def build_commandline(self, commands) -> str:
                 configuration_getter = (
                     "$(Configuration"
                     + "".join([f'.Replace("{name}", "")' for name in self.names[1:]])
@@ -937,19 +937,19 @@ def precious_program(env, program, sources, **args):
     return program
 
 
-def add_shared_library(env, name, sources, **args):
+def add_shared_library(env, name: str, sources, **args):
     library = env.SharedLibrary(name, sources, **args)
     env.NoCache(library)
     return library
 
 
-def add_library(env, name, sources, **args):
+def add_library(env, name: str, sources, **args):
     library = env.Library(name, sources, **args)
     env.NoCache(library)
     return library
 
 
-def add_program(env, name, sources, **args):
+def add_program(env, name: str, sources, **args):
     program = env.Program(name, sources, **args)
     env.NoCache(program)
     return program
@@ -961,7 +961,7 @@ def CommandNoCache(env, target, sources, command, **args):
     return result
 
 
-def Run(env, function, short_message, subprocess=True):
+def Run(env, function, short_message: str, subprocess: bool = True):
     from SCons.Script import Action
     from platform_methods import run_in_subprocess
 
@@ -972,7 +972,7 @@ def Run(env, function, short_message, subprocess=True):
         return Action(run_in_subprocess(function), output_print)
 
 
-def detect_darwin_sdk_path(platform, env):
+def detect_darwin_sdk_path(platform: str, env) -> None:
     sdk_name = ""
     if platform == "macos":
         sdk_name = "macosx"
@@ -996,7 +996,7 @@ def detect_darwin_sdk_path(platform, env):
             raise
 
 
-def is_vanilla_clang(env):
+def is_vanilla_clang(env) -> bool:
     if not using_clang(env):
         return False
     try:
@@ -1007,7 +1007,7 @@ def is_vanilla_clang(env):
     return not version.startswith("Apple")
 
 
-def get_compiler_version(env):
+def get_compiler_version(env) -> Dict[str, Union[int, str, None]]:
     """
     Returns a dictionary with various version information:
 
@@ -1015,7 +1015,7 @@ def get_compiler_version(env):
     - metadata1, metadata2: Extra information
     - date: Date of the build
     """
-    ret = {
+    ret: Dict[str, Union[int, str, None]] = {
         "major": -1,
         "minor": -1,
         "patch": -1,
@@ -1055,19 +1055,19 @@ def get_compiler_version(env):
     return ret
 
 
-def using_gcc(env):
+def using_gcc(env) -> bool:
     return "gcc" in os.path.basename(env["CC"])
 
 
-def using_clang(env):
+def using_clang(env) -> bool:
     return "clang" in os.path.basename(env["CC"])
 
 
-def using_emcc(env):
+def using_emcc(env) -> bool:
     return "emcc" in os.path.basename(env["CC"])
 
 
-def show_progress(env):
+def show_progress(env) -> None:
     import sys
     from SCons.Script import Progress, Command, AlwaysBuild
 
@@ -1084,19 +1084,19 @@ def show_progress(env):
 
     class cache_progress:
         # The default is 1 GB cache and 12 hours half life
-        def __init__(self, path=None, limit=1073741824, half_life=43200):
+        def __init__(self, path: Optional[str] = None, limit: float = 1073741824, half_life: float = 43200) -> None:
             self.path = path
             self.limit = limit
             self.exponent_scale = math.log(2) / half_life
             if env["verbose"] and path != None:
                 screen.write(
                     "Current cache limit is {} (used: {})\n".format(
-                        self.convert_size(limit), self.convert_size(self.get_size(path))
+                        self.convert_size(limit), self.convert_size(self.get_size(str(path)))
                     )
                 )
             self.delete(self.file_list())
 
-        def __call__(self, node, *args, **kw):
+        def __call__(self, node, *args, **kw) -> None:
             nonlocal node_count, node_count_max, node_count_interval, node_count_fname, show_progress
             if show_progress:
                 # Print the progress percentage
@@ -1111,15 +1111,16 @@ def show_progress(env):
                     screen.write("\r[Initial build] ")
                     screen.flush()
 
-        def delete(self, files):
+        def delete(self, files) -> None:
             if len(files) == 0:
                 return
             if env["verbose"]:
                 # Utter something
                 screen.write("\rPurging %d %s from cache...\n" % (len(files), len(files) > 1 and "files" or "file"))
-            [os.remove(f) for f in files]
+            for f in files:
+                os.remove(f)
 
-        def file_list(self):
+        def file_list(self) -> List[str]:
             if self.path is None:
                 # Nothing to do
                 return []
@@ -1134,13 +1135,13 @@ def show_progress(env):
             # decay since the ctime, and return a list with the entries
             # (filename, size, weight).
             current_time = time.time()
-            file_stat = [(x[0], x[1][0], (current_time - x[1][1])) for x in file_stat]
+            weight_stat = [(x[0], x[1][0], (current_time - x[1][1])) for x in file_stat]
             # Sort by the most recently accessed files (most sensible to keep) first
-            file_stat.sort(key=lambda x: x[2])
+            weight_stat.sort(key=lambda x: x[2])
             # Search for the first entry where the storage limit is
             # reached
             sum, mark = 0, None
-            for i, x in enumerate(file_stat):
+            for i, x in enumerate(weight_stat):
                 sum += x[1]
                 if sum > self.limit:
                     mark = i
@@ -1150,7 +1151,7 @@ def show_progress(env):
             else:
                 return [x[0] for x in file_stat[mark:]]
 
-        def convert_size(self, size_bytes):
+        def convert_size(self, size_bytes: float) -> str:
             if size_bytes == 0:
                 return "0 bytes"
             size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -1159,7 +1160,7 @@ def show_progress(env):
             s = round(size_bytes / p, 2)
             return "%s %s" % (int(s) if i == 0 else s, size_name[i])
 
-        def get_size(self, start_path="."):
+        def get_size(self, start_path: str = ".") -> float:
             total_size = 0
             for dirpath, dirnames, filenames in os.walk(start_path):
                 for f in filenames:

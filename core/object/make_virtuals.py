@@ -73,7 +73,7 @@ proto = """#define GDVIRTUAL$VER($RET m_name $ARG)\\
 """
 
 
-def generate_version(argcount, const=False, returns=False):
+def generate_version(argcount: int, const: bool = False, returns: bool = False) -> str:
     s = proto
     sproto = str(argcount)
     method_info = ""
@@ -168,7 +168,7 @@ def generate_version(argcount, const=False, returns=False):
     return s
 
 
-def run(target, source, env):
+def run(target, source, env) -> None:
     max_versions = 12
 
     txt = """/* THIS FILE IS GENERATED DO NOT EDIT */

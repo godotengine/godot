@@ -5,37 +5,35 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 """
 import os.path
 
-from typing import Optional
-
-from platform_methods import subprocess_main
+from typing import Optional, List, Tuple
 
 
 class GLES3HeaderStruct:
-    def __init__(self):
-        self.vertex_lines = []
-        self.fragment_lines = []
-        self.uniforms = []
-        self.fbos = []
-        self.texunits = []
-        self.texunit_names = []
-        self.ubos = []
-        self.ubo_names = []
-        self.feedbacks = []
+    def __init__(self) -> None:
+        self.vertex_lines: List[str] = []
+        self.fragment_lines: List[str] = []
+        self.uniforms: List[str] = []
+        self.fbos: List[str] = []
+        self.texunits: List[Tuple[str, str]] = []
+        self.texunit_names: List[str] = []
+        self.ubos: List[Tuple[str, str]] = []
+        self.ubo_names: List[str] = []
+        self.feedbacks: List[Tuple[str, str]] = []
 
-        self.vertex_included_files = []
-        self.fragment_included_files = []
+        self.vertex_included_files: List[str] = []
+        self.fragment_included_files: List[str] = []
 
-        self.reading = ""
-        self.line_offset = 0
-        self.vertex_offset = 0
-        self.fragment_offset = 0
-        self.variant_defines = []
-        self.variant_names = []
-        self.specialization_names = []
-        self.specialization_values = []
+        self.reading: str = ""
+        self.line_offset: int = 0
+        self.vertex_offset: int = 0
+        self.fragment_offset: int = 0
+        self.variant_defines: List[str] = []
+        self.variant_names: List[str] = []
+        self.specialization_names: List[str] = []
+        self.specialization_values: List[str] = []
 
 
-def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, depth: int):
+def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, depth: int) -> GLES3HeaderStruct:
     fs = open(filename, "r")
     line = fs.readline()
 
@@ -201,7 +199,7 @@ def build_gles3_header(
     class_suffix: str,
     optional_output_filename: Optional[str] = None,
     header_data: Optional[GLES3HeaderStruct] = None,
-):
+) -> None:
     header_data = header_data or GLES3HeaderStruct()
     include_file_in_gles3_header(filename, header_data, 0)
 
@@ -509,16 +507,16 @@ def build_gles3_header(
 
     if header_data.texunits:
         fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
-        for x in header_data.texunits:
-            fd.write('\t\t\t{"' + x[0] + '",' + x[1] + "},\n")
+        for x, y in header_data.texunits:
+            fd.write('\t\t\t{"' + x + '",' + y + "},\n")
         fd.write("\t\t};\n\n")
     else:
         fd.write("\t\tstatic TexUnitPair *_texunit_pairs=nullptr;\n")
 
     if header_data.ubos:
         fd.write("\t\tstatic UBOPair _ubo_pairs[]={\n")
-        for x in header_data.ubos:
-            fd.write('\t\t\t{"' + x[0] + '",' + x[1] + "},\n")
+        for x, y in header_data.ubos:
+            fd.write('\t\t\t{"' + x + '",' + y + "},\n")
         fd.write("\t\t};\n\n")
     else:
         fd.write("\t\tstatic UBOPair *_ubo_pairs=nullptr;\n")
@@ -544,9 +542,7 @@ def build_gles3_header(
 
     if header_data.feedbacks:
         fd.write("\t\tstatic const Feedback _feedbacks[]={\n")
-        for x in header_data.feedbacks:
-            name = x[0]
-            spec = x[1]
+        for name, spec in header_data.feedbacks:
             if spec in specializations_found:
                 fd.write('\t\t\t{"' + name + '",' + str(1 << specializations_found.index(spec)) + "},\n")
             else:
@@ -599,10 +595,12 @@ def build_gles3_header(
     fd.close()
 
 
-def build_gles3_headers(target, source, env):
+def build_gles3_headers(target, source, env) -> None:
     for x in source:
         build_gles3_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3")
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())

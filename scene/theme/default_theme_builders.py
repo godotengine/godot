@@ -5,10 +5,9 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 """
 import os
 import os.path
-from platform_methods import subprocess_main
 
 
-def make_fonts_header(target, source, env):
+def make_fonts_header(target, source, env) -> None:
     dst = target[0]
 
     g = open(dst, "w", encoding="utf-8")
@@ -37,4 +36,6 @@ def make_fonts_header(target, source, env):
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())
