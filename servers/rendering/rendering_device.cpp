@@ -2168,6 +2168,7 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const Vector<ui
 		// @ShadyTF 
 		}
 		// </TF>
+
 	}
 
 	buffer_memory += buffer.size;
@@ -2333,6 +2334,7 @@ RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferForm
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
+
 		uint8_t *persistent_data_ptr = driver->buffer_get_persistent_address(index_buffer.driver_id);
 		// <TF>
 		// @ShadyTF - if persistent UMA is available, copy and skip the barrier
