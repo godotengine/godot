@@ -2106,24 +2106,28 @@ void RenderForwardMobile::_render_list_thread_function(uint32_t p_thread, Render
 }
 
 void RenderForwardMobile::_render_list_with_threads(RenderListParameters *p_params, RID p_framebuffer, RD::InitialAction p_initial_color_action, RD::FinalAction p_final_color_action, RD::InitialAction p_initial_depth_action, RD::FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
-	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(p_framebuffer);
-	p_params->framebuffer_format = fb_format;
+    RD* renderer = RD::get_singleton();
+    RD::FramebufferFormatID fb_format = renderer->framebuffer_get_format(p_framebuffer);
+    p_params->framebuffer_format = fb_format;
 
-	if ((uint32_t)p_params->element_count > render_list_thread_threshold && false) { // secondary command buffers need more testing at this time
-		//multi threaded
-		thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
-		RD::get_singleton()->draw_list_begin_split(p_framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
-		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, p_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
-		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+    const uint32_t element_count = static_cast<uint32_t>(p_params->element_count);
 
-		RD::get_singleton()->draw_list_end(p_params->barrier);
-	} else {
-		//single threaded
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
-		_render_list(draw_list, fb_format, p_params, 0, p_params->element_count);
-		RD::get_singleton()->draw_list_end(p_params->barrier);
-	}
+    if (element_count > render_list_thread_threshold && false) { // Secondary command buffers need more testing at this time
+        // Multi-threaded
+        thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
+        renderer->draw_list_begin_split(p_framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
+        WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, p_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+        WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
+        renderer->draw_list_end(p_params->barrier);
+    } else {
+        // Single-threaded
+        RD::DrawListID draw_list = renderer->draw_list_begin(p_framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
+        _render_list(draw_list, fb_format, p_params, 0, element_count);
+        renderer->draw_list_end(p_params->barrier);
+    }
 }
+
 
 template <RenderForwardMobile::PassMode p_pass_mode>
 void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
