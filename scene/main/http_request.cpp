@@ -503,7 +503,9 @@ void HTTPRequest::_notification(int p_what) {
 
 void HTTPRequest::set_use_threads(bool p_use) {
 	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
+#ifdef THREADS_ENABLED
 	use_threads.set_to(p_use);
+#endif
 }
 
 bool HTTPRequest::is_using_threads() const {
