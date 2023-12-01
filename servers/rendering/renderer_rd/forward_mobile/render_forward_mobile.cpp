@@ -2042,19 +2042,35 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 }
 
 void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_pancake_shadows, int p_index) {
-	RID env = is_environment(p_render_data->environment) ? p_render_data->environment : RID();
-	RID reflection_probe_instance = p_render_data->reflection_probe.is_valid() ? RendererRD::LightStorage::get_singleton()->reflection_probe_instance_get_probe(p_render_data->reflection_probe) : RID();
+    const RID env = is_environment(p_render_data->environment) ? p_render_data->environment : RID();
+    const RID reflection_probe_instance = p_render_data->reflection_probe.is_valid() ? RendererRD::LightStorage::get_singleton()->reflection_probe_instance_get_probe(p_render_data->reflection_probe) : RID();
 
-	// May do this earlier in RenderSceneRenderRD::render_scene
-	if (p_index >= (int)scene_state.uniform_buffers.size()) {
-		uint32_t from = scene_state.uniform_buffers.size();
-		scene_state.uniform_buffers.resize(p_index + 1);
-		for (uint32_t i = from; i < scene_state.uniform_buffers.size(); i++) {
-			scene_state.uniform_buffers[i] = p_render_data->scene_data->create_uniform_buffer();
-		}
-	}
+    const int uniform_buffers_size = static_cast<int>(scene_state.uniform_buffers.size());
+    if (p_index >= uniform_buffers_size) {
+        const uint32_t from = static_cast<uint32_t>(uniform_buffers_size);
+        scene_state.uniform_buffers.resize(p_index + 1);
+        for (uint32_t i = from; i < scene_state.uniform_buffers.size(); i++) {
+            scene_state.uniform_buffers[i] = p_render_data->scene_data->create_uniform_buffer();
+        }
+    }
 
-	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_flip_y, p_pancake_shadows, p_screen_size, p_default_bg_color, _render_buffers_get_luminance_multiplier(), p_opaque_render_buffers, false);
+    // Ensure that p_render_data->scene_data is non-null before calling update_ubo
+    if (p_render_data->scene_data) {
+        p_render_data->scene_data->update_ubo(
+            scene_state.uniform_buffers[p_index],
+            get_debug_draw_mode(),
+            env,
+            reflection_probe_instance,
+            p_render_data->camera_attributes,
+            p_flip_y,
+            p_pancake_shadows,
+            p_screen_size,
+            p_default_bg_color,
+            _render_buffers_get_luminance_multiplier(),
+            p_opaque_render_buffers,
+            false
+        );
+    }
 }
 
 /// RENDERING ///
