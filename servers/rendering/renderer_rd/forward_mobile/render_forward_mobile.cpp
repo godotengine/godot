@@ -2942,21 +2942,23 @@ RenderForwardMobile::RenderForwardMobile() {
 }
 
 RenderForwardMobile::~RenderForwardMobile() {
-	RSG::light_storage->directional_shadow_atlas_set_size(0);
+    RSG::light_storage->directional_shadow_atlas_set_size(0);
 
-	//clear base uniform set if still valid
-	for (uint32_t i = 0; i < render_pass_uniform_sets.size(); i++) {
-		if (render_pass_uniform_sets[i].is_valid() && RD::get_singleton()->uniform_set_is_valid(render_pass_uniform_sets[i])) {
-			RD::get_singleton()->free(render_pass_uniform_sets[i]);
-		}
-	}
+    // Clear base uniform set if still valid
+    for (uint32_t i = 0; i < render_pass_uniform_sets.size(); i++) {
+        if (render_pass_uniform_sets[i].is_valid() && RD::get_singleton()->uniform_set_is_valid(render_pass_uniform_sets[i])) {
+            RD::get_singleton()->free(render_pass_uniform_sets[i]);
+        }
+    }
 
-	{
-		for (const RID &rid : scene_state.uniform_buffers) {
-			RD::get_singleton()->free(rid);
-		}
-		RD::get_singleton()->free(scene_state.lightmap_buffer);
-		RD::get_singleton()->free(scene_state.lightmap_capture_buffer);
-		memdelete_arr(scene_state.lightmap_captures);
-	}
+    // Free scene state resources
+    for (const RID &rid : scene_state.uniform_buffers) {
+        RD::get_singleton()->free(rid);
+    }
+    scene_state.uniform_buffers.clear();
+
+    RD* renderer = RD::get_singleton();
+    renderer->free(scene_state.lightmap_buffer);
+    renderer->free(scene_state.lightmap_capture_buffer);
+    memdelete_arr(scene_state.lightmap_captures);
 }
