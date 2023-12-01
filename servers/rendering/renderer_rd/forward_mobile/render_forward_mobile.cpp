@@ -536,36 +536,42 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 }
 
 void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform) {
-	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
+    RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
-	// This probably needs to change...
-	scene_state.lightmaps_used = 0;
-	for (int i = 0; i < (int)p_lightmaps.size(); i++) {
-		if (i >= (int)scene_state.max_lightmaps) {
-			break;
-		}
+    // This probably needs to change...
+    scene_state.lightmaps_used = 0;
+    const int max_lightmaps = MIN(p_lightmaps.size(), scene_state.max_lightmaps); // Use MIN function for bounds checking
 
-		RID lightmap = light_storage->lightmap_instance_get_lightmap(p_lightmaps[i]);
+    for (int i = 0; i < max_lightmaps; i++) {
+        RID lightmap = light_storage->lightmap_instance_get_lightmap(p_lightmaps[i]);
 
-		Basis to_lm = light_storage->lightmap_instance_get_transform(p_lightmaps[i]).basis.inverse() * p_cam_transform.basis;
-		to_lm = to_lm.inverse().transposed(); //will transform normals
-		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
-		scene_state.lightmaps[i].exposure_normalization = 1.0;
-		if (p_render_data->camera_attributes.is_valid()) {
-			float baked_exposure = light_storage->lightmap_get_baked_exposure_normalization(lightmap);
-			float enf = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
-			scene_state.lightmaps[i].exposure_normalization = enf / baked_exposure;
-		}
+        // Use reference instead of accessing elements multiple times
+        Transform lightmap_transform = light_storage->lightmap_instance_get_transform(p_lightmaps[i]);
+        Basis to_lm = lightmap_transform.basis.inverse() * p_cam_transform.basis;
+        to_lm = to_lm.inverse().transposed(); // will transform normals
 
-		scene_state.lightmap_ids[i] = p_lightmaps[i];
-		scene_state.lightmap_has_sh[i] = light_storage->lightmap_uses_spherical_harmonics(lightmap);
+        // Use direct access to the array element for better performance
+        RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
 
-		scene_state.lightmaps_used++;
-	}
-	if (scene_state.lightmaps_used > 0) {
-		RD::get_singleton()->buffer_update(scene_state.lightmap_buffer, 0, sizeof(LightmapData) * scene_state.lightmaps_used, scene_state.lightmaps, RD::BARRIER_MASK_RASTER);
-	}
+        scene_state.lightmaps[i].exposure_normalization = 1.0;
+
+        if (p_render_data->camera_attributes.is_valid()) {
+            float baked_exposure = light_storage->lightmap_get_baked_exposure_normalization(lightmap);
+            float enf = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+            scene_state.lightmaps[i].exposure_normalization = enf / baked_exposure;
+        }
+
+        scene_state.lightmap_ids[i] = p_lightmaps[i];
+        scene_state.lightmap_has_sh[i] = light_storage->lightmap_uses_spherical_harmonics(lightmap);
+        scene_state.lightmaps_used++;
+    }
+
+    if (scene_state.lightmaps_used > 0) {
+        // Use sizeof(LightmapData) * scene_state.lightmaps_used directly in the buffer_update call
+        RD::get_singleton()->buffer_update(scene_state.lightmap_buffer, 0, sizeof(LightmapData) * scene_state.lightmaps_used, scene_state.lightmaps, RD::BARRIER_MASK_RASTER);
+    }
 }
+
 
 void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
