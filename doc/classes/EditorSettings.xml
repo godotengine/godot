@@ -665,6 +665,9 @@
 		<member name="interface/theme/custom_theme" type="String" setter="" getter="">
 			The custom theme resource to use for the editor. Must be a Godot theme resource in [code].tres[/code] or [code].res[/code] format.
 		</member>
+		<member name="interface/theme/default_margin_size" type="int" setter="" getter="">
+			Sets the default margin size for components used in the editor.
+		</member>
 		<member name="interface/theme/draw_extra_borders" type="bool" setter="" getter="">
 			If [code]true[/code], draws additional borders around interactive UI elements in the editor. This is automatically enabled when using the [b]Black (OLED)[/b] theme preset, as this theme preset uses a fully black background.
 		</member>
@@ -683,6 +686,12 @@
 		</member>
 		<member name="interface/theme/relationship_line_opacity" type="float" setter="" getter="">
 			The opacity to use when drawing relationship lines in the editor's [Tree]-based GUIs (such as the Scene tree dock).
+		</member>
+		<member name="interface/theme/top_bar_separation" type="int" setter="" getter="">
+			The margin between the top bar and the rest of the editor.
+		</member>
+		<member name="interface/theme/window_border_margin" type="int" setter="" getter="">
+			The margins between the window border and the content of an editor window.
 		</member>
 		<member name="interface/touchscreen/enable_long_press_as_right_click" type="bool" setter="" getter="">
 			If [code]true[/code], long press on touchscreen is treated as right click.

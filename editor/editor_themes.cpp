@@ -743,14 +743,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	}
 
 	const int thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
+
 	theme->set_constant("scale", EditorStringName(Editor), EDSCALE);
 	theme->set_constant("thumb_size", EditorStringName(Editor), thumb_size);
 	theme->set_constant("class_icon_size", EditorStringName(Editor), 16 * EDSCALE);
 	theme->set_constant("dark_theme", EditorStringName(Editor), dark_theme);
 	theme->set_constant("color_picker_button_height", EditorStringName(Editor), 28 * EDSCALE);
 	theme->set_constant("gizmo_handle_scale", EditorStringName(Editor), gizmo_handle_scale);
-	theme->set_constant("window_border_margin", EditorStringName(Editor), 8);
-	theme->set_constant("top_bar_separation", EditorStringName(Editor), 8 * EDSCALE);
+	theme->set_constant("window_border_margin", EditorStringName(Editor), (int)EDITOR_GET("interface/theme/window_border_margin"));
+	theme->set_constant("top_bar_separation", EditorStringName(Editor), (int)EDITOR_GET("interface/theme/top_bar_separation") * EDSCALE);
 
 	// Register editor icons.
 	// If the settings are comparable to the old theme, then just copy them over.
@@ -800,7 +801,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Ensure borders are visible when using an editor scale below 100%.
 	const int border_width = CLAMP(border_size, 0, 2) * MAX(1, EDSCALE);
 	const int corner_width = CLAMP(corner_radius, 0, 6);
-	const int default_margin_size = 4;
+	int default_margin_size = EDITOR_GET("interface/theme/default_margin_size");
+
 	const int margin_size_extra = default_margin_size + CLAMP(border_size, 0, 2);
 
 	// Styleboxes
