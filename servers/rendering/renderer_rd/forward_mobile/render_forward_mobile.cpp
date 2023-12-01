@@ -1575,7 +1575,6 @@ void RenderForwardMobile::base_uniforms_changed() {
     }
 }
 
-
 void RenderForwardMobile::_update_render_base_uniform_set(const RendererRD::MaterialStorage::Samplers &p_samplers, BaseUniformSetCache p_cache_index) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
@@ -1747,18 +1746,25 @@ RID RenderForwardMobile::_render_buffers_get_velocity_texture(Ref<RenderSceneBuf
 }
 
 void RenderForwardMobile::_update_instance_data_buffer(RenderListType p_render_list) {
-	if (scene_state.instance_data[p_render_list].size() > 0) {
-		if (scene_state.instance_buffer[p_render_list] == RID() || scene_state.instance_buffer_size[p_render_list] < scene_state.instance_data[p_render_list].size()) {
-			if (scene_state.instance_buffer[p_render_list] != RID()) {
-				RD::get_singleton()->free(scene_state.instance_buffer[p_render_list]);
-			}
-			uint32_t new_size = nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), scene_state.instance_data[p_render_list].size()));
-			scene_state.instance_buffer[p_render_list] = RD::get_singleton()->storage_buffer_create(new_size * sizeof(SceneState::InstanceData));
-			scene_state.instance_buffer_size[p_render_list] = new_size;
-		}
-		RD::get_singleton()->buffer_update(scene_state.instance_buffer[p_render_list], 0, sizeof(SceneState::InstanceData) * scene_state.instance_data[p_render_list].size(), scene_state.instance_data[p_render_list].ptr(), RD::BARRIER_MASK_RASTER);
-	}
+    const auto& instance_data = scene_state.instance_data[p_render_list];
+    auto& instance_buffer = scene_state.instance_buffer[p_render_list];
+    auto& buffer_size = scene_state.instance_buffer_size[p_render_list];
+
+    if (instance_data.size() > 0) {
+        if (instance_buffer == RID() || buffer_size < instance_data.size()) {
+            if (instance_buffer != RID()) {
+                RD::get_singleton()->free(instance_buffer);
+            }
+
+            const uint32_t new_size = nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), instance_data.size()));
+            instance_buffer = RD::get_singleton()->storage_buffer_create(new_size * sizeof(SceneState::InstanceData));
+            buffer_size = new_size;
+        }
+
+        RD::get_singleton()->buffer_update(instance_buffer, 0, sizeof(SceneState::InstanceData) * instance_data.size(), instance_data.ptr(), RD::BARRIER_MASK_RASTER);
+    }
 }
+
 
 void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint32_t p_offset, int32_t p_max_elements, bool p_update_buffer) {
 	RenderList *rl = &render_list[p_render_list];
