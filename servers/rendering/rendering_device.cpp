@@ -2540,7 +2540,7 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 	return id;
 }
 // <TF>
-// @ShadyTF
+// @ShadyTF : persistent buffers
 RID RenderingDevice::persistent_uniform_buffer_create(uint32_t p_size_bytes) {
 	_THREAD_SAFE_METHOD_
 
