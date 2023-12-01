@@ -4954,6 +4954,11 @@ void RenderingDevice::_flush(bool p_current_frame) {
 }
 
 void RenderingDevice::initialize(ApiContextRD *p_context, bool p_local_device) {
+
+	// <TF>
+	// @ShadyTF persistently mapped buffers
+	persistent_buffer_enabled = false;
+	// </TF>
 	context = p_context;
 
 	device_capabilities = p_context->get_device_capabilities();
