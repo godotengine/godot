@@ -343,8 +343,8 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 			alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 			// <TF>
 			// @ShadyTF
-			// condition to use persistent memory, UMA, condition would be passed in 
-			if (p_usage & BUFFER_USAGE_INDEX_BIT) {
+			// condition to use persistent memory, UMA, condition would be passed in
+			if (p_usage & BUFFER_USAGE_PERSISTENT_BIT ) {
 				alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 			}

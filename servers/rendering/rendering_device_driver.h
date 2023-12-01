@@ -179,6 +179,10 @@ public:
 		BUFFER_USAGE_INDEX_BIT = (1 << 6),
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
+		// <TF>
+		// @ShadyTF : bit for persistenly mapped buffers
+		BUFFER_USAGE_PERSISTENT_BIT = (1 << 9)
+		// </TF>
 	};
 
 	enum {
