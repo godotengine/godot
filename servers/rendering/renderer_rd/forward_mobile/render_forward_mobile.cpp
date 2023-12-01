@@ -1367,17 +1367,32 @@ void RenderForwardMobile::_render_shadow_process() {
 }
 
 void RenderForwardMobile::_render_shadow_end(uint32_t p_barrier) {
-	RD::get_singleton()->draw_command_begin_label("Shadow Render");
+    RD* renderer = RD::get_singleton();
+    renderer->draw_command_begin_label("Shadow Render");
 
-	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
-		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from, RD::BARRIER_MASK_NO_BARRIER);
-		_render_list_with_threads(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, shadow_pass.final_depth_action, Vector<Color>(), 1.0, 0, shadow_pass.rect);
-	}
+    // Move the render_list[RENDER_LIST_SECONDARY] outside the loop for better performance
+    auto& secondary_render_list = render_list[RENDER_LIST_SECONDARY];
 
-	if (p_barrier != RD::BARRIER_MASK_NO_BARRIER) {
-		RD::get_singleton()->barrier(RD::BARRIER_MASK_FRAGMENT, p_barrier);
-	}
-	RD::get_singleton()->draw_command_end_label();
+    for (const SceneState::ShadowPass& shadow_pass : scene_state.shadow_passes) {
+        const auto& element_ptr = secondary_render_list.elements.ptr() + shadow_pass.element_from;
+        const auto& element_info_ptr = secondary_render_list.element_info.ptr() + shadow_pass.element_from;
+
+        RenderListParameters render_list_parameters(element_ptr, element_info_ptr, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from, RD::BARRIER_MASK_NO_BARRIER);
+        
+        // Use local references for frequently accessed members for potential performance gain
+        auto& pass_framebuffer = shadow_pass.framebuffer;
+        auto pass_initial_depth_action = shadow_pass.initial_depth_action;
+        auto pass_final_depth_action = shadow_pass.final_depth_action;
+        auto pass_rect = shadow_pass.rect;
+
+        _render_list_with_threads(&render_list_parameters, pass_framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, pass_initial_depth_action, pass_final_depth_action, Vector<Color>(), 1.0, 0, pass_rect);
+    }
+
+    if (p_barrier != RD::BARRIER_MASK_NO_BARRIER) {
+        renderer->barrier(RD::BARRIER_MASK_FRAGMENT, p_barrier);
+    }
+    
+    renderer->draw_command_end_label();
 }
 
 /* */
