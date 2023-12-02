@@ -456,30 +456,93 @@ TEST_CASE("[String] Number to string") {
 }
 
 TEST_CASE("[String] String to integer") {
-	static const char *nums[4] = { "1237461283", "- 22", "0", " - 1123412" };
-	static const int num[4] = { 1237461283, -22, 0, -1123412 };
+	static const char *nums[14] = { "1237461283", "- 22", "0", " - 1123412", "", "10_000_000", "-1_2_3_4", "10__000", "  1  2  34 ", "-0", "007", "--45", "---46", "-7-2" };
+	static const int num[14] = { 1237461283, -22, 0, -1123412, 0, 10000000, -1234, 10000, 1234, 0, 7, 45, -46, -72 };
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 14; i++) {
 		CHECK(String(nums[i]).to_int() == num[i]);
 	}
+	CHECK(String("0b1011").to_int() == 1011); // Looks like a binary number, but to_int() handles this as a base-10 number, "b" is just ignored.
+	CHECK(String("0x1012").to_int() == 1012); // Looks like a hexadecimal number, but to_int() handles this as a base-10 number, "x" is just ignored.
+
+	ERR_PRINT_OFF
+	CHECK(String("999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MAX); // Too large, largest possible is returned.
+	CHECK(String("-999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	ERR_PRINT_ON
 }
 
 TEST_CASE("[String] Hex to integer") {
-	static const char *nums[4] = { "0xFFAE", "22", "0", "AADDAD" };
-	static const int64_t num[4] = { 0xFFAE, 0x22, 0, 0xAADDAD };
+	static const char *nums[12] = { "0xFFAE", "22", "0", "AADDAD", "0x7FFFFFFFFFFFFFFF", "-0xf", "", "000", "000f", "0xaA", "-ff", "-" };
+	static const int64_t num[12] = { 0xFFAE, 0x22, 0, 0xAADDAD, 0x7FFFFFFFFFFFFFFF, -0xf, 0, 0, 0xf, 0xaa, -0xff, 0x0 };
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 12; i++) {
 		CHECK(String(nums[i]).hex_to_int() == num[i]);
 	}
+
+	// Invalid hex strings should return 0.
+	static const char *invalid_nums[15] = { "qwerty", "QWERTY", "0xqwerty", "0x00qwerty", "qwerty00", "0x", "0x__", "__", "x12", "+", " ff", "ff ", "f f", "+ff", "--0x78" };
+
+	ERR_PRINT_OFF
+	for (int i = 0; i < 15; i++) {
+		CHECK(String(invalid_nums[i]).hex_to_int() == 0);
+	}
+
+	CHECK(String("0xFFFFFFFFFFFFFFFFFFFFFFF").hex_to_int() == INT64_MAX); // Too large, largest possible is returned.
+	CHECK(String("-0xFFFFFFFFFFFFFFFFFFFFFFF").hex_to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	ERR_PRINT_ON
+}
+
+TEST_CASE("[String] Bin to integer") {
+	static const char *nums[10] = { "", "0", "0b0", "0b1", "0b", "1", "0b1010", "-0b11", "-1010", "0b0111111111111111111111111111111111111111111111111111111111111111" };
+	static const int64_t num[10] = { 0, 0, 0, 1, 0, 1, 10, -3, -10, 0x7FFFFFFFFFFFFFFF };
+
+	for (int i = 0; i < 10; i++) {
+		CHECK(String(nums[i]).bin_to_int() == num[i]);
+	}
+
+	// Invalid bin strings should return 0. The long "0x11...11" is just too long for a 64 bit int.
+	static const char *invalid_nums[16] = { "qwerty", "QWERTY", "0bqwerty", "0b00qwerty", "qwerty00", "0x__", "0b__", "__", "b12", "+", "-", "0x12ab", " 11", "11 ", "1 1", "--0b11" };
+
+	for (int i = 0; i < 16; i++) {
+		CHECK(String(invalid_nums[i]).bin_to_int() == 0);
+	}
+
+	ERR_PRINT_OFF
+	CHECK(String("0b111111111111111111111111111111111111111111111111111111111111111111111111111111111").bin_to_int() == INT64_MAX); // Too large, largest possible is returned.
+	CHECK(String("-0b111111111111111111111111111111111111111111111111111111111111111111111111111111111").bin_to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	ERR_PRINT_ON
 }
 
 TEST_CASE("[String] String to float") {
-	static const char *nums[4] = { "-12348298412.2", "0.05", "2.0002", " -0.0001" };
-	static const double num[4] = { -12348298412.2, 0.05, 2.0002, -0.0001 };
+	static const char *nums[12] = { "-12348298412.2", "0.05", "2.0002", " -0.0001", "0", "000", "123", "0.0", "000.000", "000.007", "234__", "3..14" };
+	static const double num[12] = { -12348298412.2, 0.05, 2.0002, -0.0001, 0.0, 0.0, 123.0, 0.0, 0.0, 0.007, 234.0, 3.0 };
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 12; i++) {
 		CHECK(!(ABS(String(nums[i]).to_float() - num[i]) > 0.00001));
 	}
+
+	// Invalid float strings should return 0.
+	static const char *invalid_nums[6] = { "qwerty", "qwerty123", "0xffff", "0b1010", "--3.13", "__345" };
+
+	for (int i = 0; i < 6; i++) {
+		CHECK(String(invalid_nums[i]).to_float() == 0);
+	}
+
+	// Very large exponents.
+	CHECK(String("1e308").to_float() == 1e308);
+	CHECK(String("-1e308").to_float() == -1e308);
+
+	// Exponent is so high that value is INFINITY/-INFINITY.
+	CHECK(String("1e309").to_float() == INFINITY);
+	CHECK(String("1e511").to_float() == INFINITY);
+	CHECK(String("-1e309").to_float() == -INFINITY);
+	CHECK(String("-1e511").to_float() == -INFINITY);
+
+	// Exponent is so high that a warning message is printed. Value is INFINITY/-INFINITY.
+	ERR_PRINT_OFF
+	CHECK(String("1e512").to_float() == INFINITY);
+	CHECK(String("-1e512").to_float() == -INFINITY);
+	ERR_PRINT_ON
 }
 
 TEST_CASE("[String] Slicing") {
