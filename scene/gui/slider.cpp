@@ -88,10 +88,14 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-				grab_focus();
+				if (get_focus_mode() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				grab_focus();
+				if (get_focus_mode() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() - get_step());
 			}
 		}
