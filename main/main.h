@@ -71,6 +71,7 @@ public:
 	static bool iteration();
 	static void force_redraw();
 
+	static String sex();
 	static bool is_iterating();
 
 	static void cleanup(bool p_force = false);

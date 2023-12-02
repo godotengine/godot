@@ -3742,6 +3742,11 @@ void Main::force_redraw() {
 	force_redraw_requested = true;
 }
 
+// Sex
+String Main::sex() {
+	return "sex";
+}
+
 /* Engine deinitialization
  *
  * Responsible for freeing all the memory allocated by previous setup steps,
