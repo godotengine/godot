@@ -30,8 +30,8 @@
 
 #include "switch/kernel/random.h"
 
-#include "main/main.h"
 #include "core/config/project_settings.h"
+#include "main/main.h"
 
 #include "display_server_switch.h"
 #include "os_switch.h"
@@ -62,7 +62,7 @@ Error OS_Switch::get_entropy(uint8_t *r_buffer, int p_bytes) {
 }
 
 void OS_Switch::initialize_joypads() {
-	print("initialize_joypads\n");
+	_joypads.initialize(Input::get_singleton());
 }
 
 void OS_Switch::delete_main_loop() {
@@ -103,18 +103,12 @@ void OS_Switch::run() {
 
 	_main_loop->initialize();
 
-	// Configure our supported input layout: a single player with standard controller styles
-	padConfigureInput(1, HidNpadStyleSet_NpadStandard);
-
-	// Initialize the default gamepad (which reads handheld mode inputs as well as the first connected controller)
-	PadState pad;
-	padInitializeDefault(&pad);
-
 	while (appletMainLoop()) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 
-		padUpdate(&pad);
-		u32 kDown = padGetButtonsDown(&pad);
+		_joypads.process();
+
+		u32 kDown = padGetButtonsDown(&_joypads.get_pad());
 		if (kDown & HidNpadButton_Plus) {
 			break;
 		}

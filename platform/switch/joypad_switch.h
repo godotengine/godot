@@ -33,12 +33,44 @@
 
 #include "switch_wrapper.h"
 
+#include <core/input/input.h>
+#include <core/input/input_enums.h>
+
+#include <array>
+#include <vector>
+
+typedef std::vector<std::pair<uint, JoyButton>> PadMappingSwitch;
+
+struct PadStateSwitch : public PadState {
+	bool initialized = false;
+	int id = 0;
+	PadMappingSwitch mapping = {};
+};
+
 class JoypadSwitch {
 private:
+	std::array<PadStateSwitch, 8> _pads; //switch support up to 8 controllers
+	Input *_input = nullptr;
+
 protected:
 public:
+	PadStateSwitch &get_pad(int i = 0) { return _pads[i]; }
+
+	//when only both joy-con are use as a single controller (general case)
+	static const PadMappingSwitch switch_joy_dual_button_map;
+	//when only right joy-con is use as a controller horizontally
+	static const PadMappingSwitch switch_joy_right_button_map;
+	//when only left joy-con is use as a controller horizontally
+	static const PadMappingSwitch switch_joy_left_button_map;
+
+	void initialize(Input *input);
+	void discover_pad(PadStateSwitch &pad);
+	void dispatch(PadStateSwitch &pad);
+
+	void process();
+
 	JoypadSwitch();
-	virtual ~JoypadSwitch();
+	virtual ~JoypadSwitch() = default;
 };
 
 #endif //JOYPAD_SWITCH_H

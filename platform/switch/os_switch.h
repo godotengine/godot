@@ -35,6 +35,7 @@
 #include "drivers/unix/os_unix.h"
 
 #include "switch_wrapper.h"
+#include "joypad_switch.h"
 
 #include <string>
 #include <vector>
@@ -43,6 +44,7 @@ class OS_Switch : public OS_Unix {
 	MainLoop *_main_loop = nullptr;
 	CryptoCore::RandomGenerator _random_generator;
 	std::vector<std::string> _args;
+	JoypadSwitch _joypads;
 
 private:
 protected:
