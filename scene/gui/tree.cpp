@@ -4355,6 +4355,10 @@ Size2 Tree::get_minimum_size() const {
 	}
 }
 
+LineEdit* Tree::get_line_editor() const {
+	LineEdit *line_editor_return = line_editor;
+	return line_editor_return;
+}
 TreeItem *Tree::create_item(TreeItem *p_parent, int p_index) {
 	ERR_FAIL_COND_V(blocked > 0, nullptr);
 

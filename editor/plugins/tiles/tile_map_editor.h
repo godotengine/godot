@@ -145,8 +145,6 @@ private:
 	void _update_fix_selected_and_hovered();
 	void _fix_invalid_tiles_in_tile_map_selection();
 
-	void patterns_item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
-
 	///// Bottom panel common ////
 	void _tab_changed();
 
@@ -192,14 +190,38 @@ private:
 	void _scenes_list_multi_selected(int p_index, bool p_selected);
 	void _scenes_list_lmb_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 
-	///// Bottom panel patterns ////
+	///// Bottom panel patterns GUI ////
 	VBoxContainer *patterns_bottom_panel = nullptr;
+
+	Tree *pattern_sets_display = nullptr;
+	PopupMenu *pattern_set_tree_menu = nullptr;
+	PopupMenu *delete_pattern_set_menu = nullptr;
+	Label *pattern_sets_help_label = nullptr;
+	
 	ItemList *patterns_item_list = nullptr;
+	PopupMenu *delete_pattern_menu = nullptr;
 	Label *patterns_help_label = nullptr;
-	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
-	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
-	bool select_last_pattern = false;
+
+	void _update_pattern_sets();
 	void _update_patterns_list();
+	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
+	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
+	
+	void _pattern_sets_display_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _pattern_set_menu_id_pressed(int p_id);
+
+	void _pattern_set_selected(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _delete_pattern_set_menu_id_pressed(int p_id);
+
+	void _rename_pattern_set();
+	void _rename_pattern_set_submitted(String new_text);
+	
+	//void _patterns_item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _pattern_clicked(int p_item_index, const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _delete_pattern_menu_id_pressed(int p_id);
+
+
+	//CHECK ME bool select_last_pattern = false;
 
 	// General
 	void _update_theme();
@@ -301,7 +323,6 @@ private:
 	void _update_terrains_tree();
 	void _update_tiles_list();
 	void _update_theme();
-
 	// Update callback
 	virtual void tile_set_changed() override;
 

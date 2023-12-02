@@ -389,6 +389,7 @@ class VBoxContainer;
 
 class Tree : public Control {
 	GDCLASS(Tree, Control);
+	
 
 public:
 	enum SelectMode {
@@ -787,6 +788,7 @@ public:
 
 	Size2 get_minimum_size() const override;
 
+	LineEdit *get_line_editor() const;
 	Tree();
 	~Tree();
 };
