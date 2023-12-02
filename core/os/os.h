@@ -63,6 +63,7 @@ class OS {
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
 	bool _writing_movie = false;
+	bool _in_editor = false;
 
 	CompositeLogger *_logger = nullptr;
 
