@@ -398,6 +398,11 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "editor") {
 		return true;
 	}
+	if (p_feature == "editor_hint") {
+		return _in_editor;
+	} else if (p_feature == "editor_runtime") {
+		return !_in_editor;
+	}
 #else
 	if (p_feature == "template") {
 		return true;

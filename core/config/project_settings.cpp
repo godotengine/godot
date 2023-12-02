@@ -1337,7 +1337,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
-	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor", false);
+	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor_hint", false);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);

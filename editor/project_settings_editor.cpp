@@ -280,6 +280,8 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("etc");
 	presets.insert("etc2");
 	presets.insert("editor");
+	presets.insert("editor_hint");
+	presets.insert("editor_runtime");
 	presets.insert("template_debug");
 	presets.insert("template_release");
 	presets.insert("debug");
