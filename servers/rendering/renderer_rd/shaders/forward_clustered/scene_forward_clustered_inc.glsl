@@ -40,7 +40,7 @@ layout(push_constant, std430) uniform DrawCall {
 }
 draw_call;
 
-#define SDFGI_MAX_CASCADES 8
+#define HDDAGI_MAX_CASCADES 8
 
 /* Set 0: Base Pass (never changes) */
 
@@ -56,7 +56,7 @@ layout(set = 0, binding = 4) uniform sampler light_projector_sampler;
 
 #define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 4)
 #define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 5)
-#define INSTANCE_FLAGS_USE_SDFGI (1 << 6)
+#define INSTANCE_FLAGS_USE_HDDAGI (1 << 6)
 #define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 7)
 #define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 8)
 #define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 9)
@@ -130,7 +130,7 @@ layout(set = 0, binding = 14, std430) restrict readonly buffer GlobalShaderUnifo
 }
 global_shader_uniforms;
 
-struct SDFGIProbeCascadeData {
+struct HDDAGIProbeCascadeData {
 	vec3 position;
 	float to_probe;
 
@@ -143,7 +143,7 @@ struct SDFGIProbeCascadeData {
 	uvec4 pad2;
 };
 
-layout(set = 0, binding = 15, std140) uniform SDFGI {
+layout(set = 0, binding = 15, std140) uniform HDDAGI {
 
 	ivec3 grid_size;
 	int max_cascades;
@@ -158,9 +158,9 @@ layout(set = 0, binding = 15, std140) uniform SDFGI {
 
 	uvec4 pad3;
 
-	SDFGIProbeCascadeData cascades[SDFGI_MAX_CASCADES];
+	HDDAGIProbeCascadeData cascades[HDDAGI_MAX_CASCADES];
 }
-sdfgi;
+hddagi;
 
 /* Set 1: Render Pass (changes per render pass) */
 
@@ -282,9 +282,9 @@ layout(set = 1, binding = 16) uniform texture2D ambient_reflection_blend_buffer;
 #define multiviewSampler sampler2D
 #endif
 
-layout(set = 1, binding = 17) uniform texture2DArray sdfgi_lightprobe_specular;
-layout(set = 1, binding = 18) uniform texture2DArray sdfgi_lightprobe_diffuse;
-layout(set = 1, binding = 19) uniform texture2DArray sdfgi_occlusion_probes;
+layout(set = 1, binding = 17) uniform texture2DArray hddagi_lightprobe_specular;
+layout(set = 1, binding = 18) uniform texture2DArray hddagi_lightprobe_diffuse;
+layout(set = 1, binding = 19) uniform texture2DArray hddagi_occlusion_probes;
 
 struct VoxelGIData {
 	mat4 xform; // 64 - 64

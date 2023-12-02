@@ -18,9 +18,9 @@ layout(constant_id = 0) const bool sc_half_res = false;
 layout(constant_id = 1) const bool sc_use_full_projection_matrix = false;
 layout(constant_id = 2) const bool sc_use_vrs = false;
 
-#define SDFGI_MAX_CASCADES 8
+#define HDDAGI_MAX_CASCADES 8
 
-//set 0 for SDFGI and render buffers
+//set 0 for HDDAGI and render buffers
 
 layout(rg32ui, set = 0, binding = 1) uniform restrict readonly uimage3D voxel_cascades;
 layout(r8ui, set = 0, binding = 2) uniform restrict readonly uimage3D voxel_region_cascades;
@@ -53,7 +53,7 @@ layout(set = 0, binding = 10) uniform texture2D depth_buffer;
 layout(set = 0, binding = 11) uniform texture2D normal_roughness_buffer;
 layout(set = 0, binding = 12) uniform utexture2D voxel_gi_buffer;
 
-layout(set = 0, binding = 15, std140) uniform SDFGI {
+layout(set = 0, binding = 15, std140) uniform HDDAGI {
 
 	ivec3 grid_size;
 	int max_cascades;
@@ -61,16 +61,16 @@ layout(set = 0, binding = 15, std140) uniform SDFGI {
 	float normal_bias;
 	float energy;
 	float y_mult;
-	uint pad;
+	float reflection_bias;
 
 	ivec3 probe_axis_size;
 	uint pad2;
 
 	uvec4 pad3;
 
-	ProbeCascadeData cascades[SDFGI_MAX_CASCADES];
+	ProbeCascadeData cascades[HDDAGI_MAX_CASCADES];
 }
-sdfgi;
+hddagi;
 
 
 #define MAX_VOXEL_GI_INSTANCES 8
@@ -213,13 +213,16 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
-	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
+	// GLSL Specification says:
+	// "Results are undefined if one or both operands are negative."
+	// So..
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
 }
 
 ivec2 probe_to_tex(ivec3 local_probe,int p_cascade) {
 
-	ivec3 cell = modi( sdfgi.cascades[p_cascade].region_world_offset + local_probe,sdfgi.probe_axis_size);
-	return cell.xy + ivec2(0,cell.z * int(sdfgi.probe_axis_size.y));
+	ivec3 cell = modi( hddagi.cascades[p_cascade].region_world_offset + local_probe,hddagi.probe_axis_size);
+	return cell.xy + ivec2(0,cell.z * int(hddagi.probe_axis_size.y));
 }
 
 #define ROUGHNESS_TO_REFLECTION_TRESHOOLD 0.3
@@ -286,11 +289,11 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade,float roughness_cel
 		ivec3(1<<fp_bits) - ivec3(1)
 	);
 
-	ivec3 region_offset_mask = (ivec3(sdfgi.grid_size) / REGION_SIZE) - ivec3(1);
+	ivec3 region_offset_mask = (ivec3(hddagi.grid_size) / REGION_SIZE) - ivec3(1);
 
 	ivec3 limits[MAX_LEVEL];
 
-	limits[LEVEL_REGION] = ((ivec3(sdfgi.grid_size) << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
+	limits[LEVEL_REGION] = ((ivec3(hddagi.grid_size) << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
 	ivec3 scroll_limit;
 
 	// Initialize to cascade
@@ -339,7 +342,7 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade,float roughness_cel
 			}
 		} else if (level == LEVEL_REGION) {
 			ivec3 region = pos >> fp_region_bits;
-			region = (sdfgi.cascades[cascade].region_world_offset + region) & region_offset_mask; // Scroll to world
+			region = (hddagi.cascades[cascade].region_world_offset + region) & region_offset_mask; // Scroll to world
 			region += cascade_base;
 			bool region_used = imageLoad(voxel_region_cascades,region).r > 0;
 
@@ -354,30 +357,30 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade,float roughness_cel
 			// Return to global
 			if (cascade >= p_cascade) {
 				ray_pos = vec3(pos) / float(1<<fp_bits);
-				ray_pos /= sdfgi.cascades[cascade].to_cell;
-				ray_pos += sdfgi.cascades[cascade].position;
+				ray_pos /= hddagi.cascades[cascade].to_cell;
+				ray_pos += hddagi.cascades[cascade].position;
 			}
 
 			cascade++;
-			if (cascade == sdfgi.max_cascades) {
+			if (cascade == hddagi.max_cascades) {
 				break;
 			}
 
-			ray_pos -= sdfgi.cascades[cascade].position;
-			ray_pos *= sdfgi.cascades[cascade].to_cell;
+			ray_pos -= hddagi.cascades[cascade].position;
+			ray_pos *= hddagi.cascades[cascade].to_cell;
 			pos = ivec3(ray_pos * float(1<<fp_bits));
-			if (any(lessThan(pos,ivec3(0))) || any(greaterThanEqual(pos,ivec3(sdfgi.grid_size)<<fp_bits))) {
+			if (any(lessThan(pos,ivec3(0))) || any(greaterThanEqual(pos,ivec3(hddagi.grid_size)<<fp_bits))) {
 				// Outside this cascade, go to next.
 				continue;
 			}
 
-			cascade_base = ivec3(0,int(sdfgi.grid_size.y/REGION_SIZE) * cascade , 0);
+			cascade_base = ivec3(0,int(hddagi.grid_size.y/REGION_SIZE) * cascade , 0);
 			level = LEVEL_REGION;
 
 			// Put a limit so the jump to the next level is not so strong
 
 			{
-				vec3 box = (vec3(sdfgi.grid_size * step) - ray_pos) / ray_dir;
+				vec3 box = (vec3(hddagi.grid_size * step) - ray_pos) / ray_dir;
 				vec3 axis = vec3(1,0,0);
 				float m = box.x;
 				if (box.y < m) {
@@ -389,8 +392,8 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade,float roughness_cel
 					axis = vec3(0,0,1);
 				}
 
-				vec3 half_size = vec3(sdfgi.grid_size) / 2.0;
-				vec3 inner_pos = -sdfgi.cascades[cascade].position * sdfgi.cascades[cascade].to_cell - half_size;
+				vec3 half_size = vec3(hddagi.grid_size) / 2.0;
+				vec3 inner_pos = -hddagi.cascades[cascade].position * hddagi.cascades[cascade].to_cell - half_size;
 
 				float inner_dir = dot(axis,inner_pos);
 				float blend = abs(inner_dir) / float(REGION_SIZE * 0.5);
@@ -500,7 +503,7 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade,float roughness_cel
 
 void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, float roughness, out vec3 diffuse_light, out vec3 specular_light) {
 
-	vec3 posf = cascade_pos + cam_normal * sdfgi.normal_bias;
+	vec3 posf = cascade_pos + cam_normal * hddagi.normal_bias;
 
 	ivec3 base_probe = ivec3(posf) / PROBE_CELLS;
 
@@ -508,11 +511,11 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 	vec3 specular_accum = vec3(0.0);
 	float weight_accum = 0.0;
 
-	vec2 occ_probe_tex_to_uv = 1.0 / vec2( (OCCLUSION_OCT_SIZE+2) * sdfgi.probe_axis_size.x, (OCCLUSION_OCT_SIZE+2) * sdfgi.probe_axis_size.y * sdfgi.probe_axis_size.z );
+	vec2 occ_probe_tex_to_uv = 1.0 / vec2( (OCCLUSION_OCT_SIZE+2) * hddagi.probe_axis_size.x, (OCCLUSION_OCT_SIZE+2) * hddagi.probe_axis_size.y * hddagi.probe_axis_size.z );
 
 	vec4 accum_light = vec4(0.0);
 
-	vec2 light_probe_tex_to_uv = 1.0 / vec2( (LIGHTPROBE_OCT_SIZE+2) * sdfgi.probe_axis_size.x, (LIGHTPROBE_OCT_SIZE+2) * sdfgi.probe_axis_size.y * sdfgi.probe_axis_size.z );
+	vec2 light_probe_tex_to_uv = 1.0 / vec2( (LIGHTPROBE_OCT_SIZE+2) * hddagi.probe_axis_size.x, (LIGHTPROBE_OCT_SIZE+2) * hddagi.probe_axis_size.y * hddagi.probe_axis_size.z );
 	vec2 light_uv = octahedron_encode(vec3(cam_normal)) * float(LIGHTPROBE_OCT_SIZE);
 	vec2 light_uv_spec = octahedron_encode(vec3(cam_specular_normal)) * float(LIGHTPROBE_OCT_SIZE);
 
@@ -594,12 +597,12 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 
 }
 
-void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, out vec4 ambient_light, out vec4 reflection_light) {
+void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, out vec4 ambient_light, out vec4 reflection_light) {
 
 	//make vertex orientation the world one, but still align to camera
-	vertex.y *= sdfgi.y_mult;
-	normal.y *= sdfgi.y_mult;
-	reflection.y *= sdfgi.y_mult;
+	vertex.y *= hddagi.y_mult;
+	normal.y *= hddagi.y_mult;
+	reflection.y *= hddagi.y_mult;
 
 	//renormalize
 	normal = normalize(normal);
@@ -622,10 +625,10 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 	vec3 cascade_pos;
 	vec3 cascade_normal;
 
-	for (int i = 0; i < sdfgi.max_cascades; i++) {
-		cascade_pos = (cam_pos - sdfgi.cascades[i].position) * sdfgi.cascades[i].to_cell;
+	for (int i = 0; i < hddagi.max_cascades; i++) {
+		cascade_pos = (cam_pos - hddagi.cascades[i].position) * hddagi.cascades[i].to_cell;
 
-		if (any(lessThan(cascade_pos, vec3(0.0))) || any(greaterThanEqual(cascade_pos, vec3(sdfgi.grid_size)))) {
+		if (any(lessThan(cascade_pos, vec3(0.0))) || any(greaterThanEqual(cascade_pos, vec3(hddagi.grid_size)))) {
 			continue; //skip cascade
 		}
 
@@ -633,7 +636,7 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 		break;
 	}
 
-	if (cascade < SDFGI_MAX_CASCADES) {
+	if (cascade < HDDAGI_MAX_CASCADES) {
 		ambient_light = vec4(0, 0, 0, 1);
 		reflection_light = vec4(0, 0, 0, 1);
 
@@ -641,9 +644,9 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 		float blend;
 		{
 			//process blend
-			vec3 blend_from = ((vec3(sdfgi.probe_axis_size) - 1) / 2.0);
+			vec3 blend_from = ((vec3(hddagi.probe_axis_size) - 1) / 2.0);
 
-			vec3 inner_pos = cam_pos * sdfgi.cascades[cascade].to_probe;
+			vec3 inner_pos = cam_pos * hddagi.cascades[cascade].to_probe;
 
 			vec3 inner_dist = blend_from - abs(inner_pos);
 
@@ -651,17 +654,41 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 
 			blend = clamp(1.0 - smoothstep(0.5,2.5,min_d),0,1);
 
-			if (cascade < sdfgi.max_cascades - 1) {
+#ifndef USE_AMBIENT_BLEND
+			if (cascade < hddagi.max_cascades - 1) {
 
 				if (bayer_dither(blend)) {
 					cascade++;
-					cascade_pos = (cam_pos - sdfgi.cascades[cascade].position) * sdfgi.cascades[cascade].to_cell;
+					cascade_pos = (cam_pos - hddagi.cascades[cascade].position) * hddagi.cascades[cascade].to_cell;
 				}
+				blend = 0.0;
+			}
+#endif
+		}
+
+		sdfvoxel_gi_process(cascade, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse, specular);
+
+#ifdef USE_AMBIENT_BLEND
+
+		if (blend > 0.0) {
+			if (cascade < hddagi.max_cascades - 1) {
+				vec3 blend_cascade_pos = (cam_pos - hddagi.cascades[cascade+1].position) * hddagi.cascades[cascade+1].to_cell;
+				vec3 diffuse2,specular2;
+				sdfvoxel_gi_process(cascade+1, blend_cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse2, specular2);
+				diffuse = mix(diffuse,diffuse2,blend);
+				specular = mix(specular,specular2,blend);
+
+				if (bayer_dither(blend)) {
+					// Apply dither for roughness here.
+					cascade++;
+					cascade_pos = (cam_pos - hddagi.cascades[cascade].position) * hddagi.cascades[cascade].to_cell;
+				}
+
 				blend = 0.0;
 			}
 		}
 
-		sdfvoxel_gi_process(cascade, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse, specular);
+#endif
 
 		ambient_light.rgb = diffuse;
 		ambient_light.a = 1.0 - blend;
@@ -676,15 +703,15 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 			vec3 ray_pos = cam_pos;
 			vec3 ray_dir = reflection;
 
-			vec3 start_cell = (ray_pos - sdfgi.cascades[cascade].position) * sdfgi.cascades[cascade].to_cell;
+			vec3 start_cell = (ray_pos - hddagi.cascades[cascade].position) * hddagi.cascades[cascade].to_cell;
 
 			{ // Bias ray
 
 				vec3 abs_cam_normal = abs(cam_normal);
 				vec3 ray_bias = cam_normal * 1.0 / max(abs_cam_normal.x, max(abs_cam_normal.y, abs_cam_normal.z));
 
-				start_cell += ray_bias * 2.0; // large bias to pass through the reflector cell.
-				ray_pos = start_cell / sdfgi.cascades[cascade].to_cell + sdfgi.cascades[cascade].position;
+				start_cell += ray_bias * hddagi.reflection_bias; // large bias to pass through the reflector cell.
+				ray_pos = start_cell / hddagi.cascades[cascade].to_cell + hddagi.cascades[cascade].position;
 			}
 
 			float r = sqrt(roughness); // perceptual roughness to roughness.
@@ -698,8 +725,8 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 					if (ivec3(start_cell) == hit_cell) {
 						// self hit the start cell, ouch, load the disocclusion
 
-						ivec3 read_cell = (hit_cell + (sdfgi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(sdfgi.grid_size) - 1);
-						uint disocc = imageLoad(voxel_disocclusion,read_cell + ivec3(0,(sdfgi.grid_size.y * hit_cascade),0)).r;
+						ivec3 read_cell = (hit_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
+						uint disocc = imageLoad(voxel_disocclusion,read_cell + ivec3(0,(hddagi.grid_size.y * hit_cascade),0)).r;
 
 						if (disocc == 0) {
 
@@ -733,7 +760,7 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 							start_cell += advance;
 							hit_cell += ivec3(advance);
 
-							read_cell = (hit_cell + (sdfgi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(sdfgi.grid_size) - 1);
+							read_cell = (hit_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
 							disocc = imageLoad(voxel_disocclusion,read_cell ).r;
 
 						}
@@ -776,8 +803,8 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 					}
 				}
 				if (valid) {
-					ivec3 read_cell = (hit_cell + hit_face + (sdfgi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(sdfgi.grid_size) - 1);
-					light.rgb = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0,(sdfgi.grid_size.y * hit_cascade),0), 0).rgb;
+					ivec3 read_cell = (hit_cell + hit_face + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
+					light.rgb = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0,(hddagi.grid_size.y * hit_cascade),0), 0).rgb;
 					light.a = 1;
 				} else {
 					//light = vec4(0,0,0,1);
@@ -792,8 +819,8 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 		}
 
 
-		ambient_light.rgb *= sdfgi.energy;
-		reflection_light.rgb *= sdfgi.energy;
+		ambient_light.rgb *= hddagi.energy;
+		reflection_light.rgb *= hddagi.energy;
 	} else {
 		ambient_light = vec4(0);
 		reflection_light = vec4(0);
@@ -942,8 +969,8 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 		normal = normalize(mat3(scene_data.cam_transform) * normal);
 		vec3 reflection = normalize(reflect(-view, normal));
 
-#ifdef USE_SDFGI
-		sdfgi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
+#ifdef USE_HDDAGI
+		hddagi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
 #endif
 
 #ifdef USE_VOXEL_GI_INSTANCES
@@ -974,7 +1001,7 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 				spec_accum /= blend_accum;
 			}
 
-#ifdef USE_SDFGI
+#ifdef USE_HDDAGI
 			reflection_light = blend_color(spec_accum, reflection_light);
 			ambient_light = blend_color(amb_accum, ambient_light);
 #else

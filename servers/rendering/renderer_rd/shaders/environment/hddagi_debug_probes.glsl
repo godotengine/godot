@@ -114,7 +114,10 @@ vec3 octahedron_decode(vec2 f) {
 }
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
-	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
+	// GLSL Specification says:
+	// "Results are undefined if one or both operands are negative."
+	// So..
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
 }
 
 #define OCC_DISTANCE_MAX 15.0
@@ -148,7 +151,7 @@ void main() {
 
 	world_cell = modi(world_cell + probe_cell,ivec3(params.probe_axis_size));
 	int oct_size = params.oct_size;
-	int oct_margin = 0;
+	int oct_margin = 1;
 
 	int idx = int(gl_VertexIndex >> 1);
 	ivec2 tex_posi = ivec2( idx % params.oct_size, idx / params.oct_size );
@@ -157,8 +160,11 @@ void main() {
 
 	float d = texelFetch(sampler2DArray(lightprobe_texture, linear_sampler), tex_pos, 0).r;
 	d *= OCC_DISTANCE_MAX;
-	if (d + 0.5 > OCC_DISTANCE_MAX) {
+	if (d == 0.0) {
 		color_interp = vec3(1.0,0.5,0.5);
+		d = OCC_DISTANCE_MAX;
+	} else {
+		d = max(0.0, d - 0.1);
 	}
 
 	if (bool(gl_VertexIndex & 1)) {
@@ -246,6 +252,7 @@ layout(location = 0) out vec4 frag_color;
 
 layout(set = 0, binding = 2) uniform texture2DArray lightprobe_texture;
 layout(set = 0, binding = 3) uniform sampler linear_sampler;
+layout(set = 0, binding = 5) uniform texture2DArray lightprobe_specular_texture;
 
 layout(push_constant, std430) uniform Params {
 	uint band_power;
@@ -286,8 +293,12 @@ vec2 octahedron_encode(vec3 n) {
 }
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
-	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
+	// GLSL Specification says:
+	// "Results are undefined if one or both operands are negative."
+	// So..
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
 }
+
 
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates

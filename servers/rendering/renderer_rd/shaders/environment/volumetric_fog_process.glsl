@@ -98,10 +98,10 @@ layout(set = 0, binding = 12) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_I
 
 layout(set = 0, binding = 13) uniform sampler linear_sampler_with_mipmaps;
 
-#ifdef ENABLE_SDFGI
+#ifdef ENABLE_HDDAGI
 
-// SDFGI Integration on set 1
-#define SDFGI_MAX_CASCADES 8
+// HDDAGI Integration on set 1
+#define HDDAGI_MAX_CASCADES 8
 
 struct SDFVoxelGICascadeData {
 	vec3 position;
@@ -112,7 +112,7 @@ struct SDFVoxelGICascadeData {
 	float exposure_normalization;
 };
 
-layout(set = 1, binding = 0, std140) uniform SDFGI {
+layout(set = 1, binding = 0, std140) uniform HDDAGI {
 	vec3 grid_size;
 	uint max_cascades;
 
@@ -136,15 +136,15 @@ layout(set = 1, binding = 0, std140) uniform SDFGI {
 	vec3 cascade_probe_size;
 	uint pad5;
 
-	SDFVoxelGICascadeData cascades[SDFGI_MAX_CASCADES];
+	SDFVoxelGICascadeData cascades[HDDAGI_MAX_CASCADES];
 }
-sdfgi;
+hddagi;
 
-layout(set = 1, binding = 1) uniform texture2DArray sdfgi_ambient_texture;
+layout(set = 1, binding = 1) uniform texture2DArray hddagi_ambient_texture;
 
-layout(set = 1, binding = 2) uniform texture3D sdfgi_occlusion_texture;
+layout(set = 1, binding = 2) uniform texture3D hddagi_occlusion_texture;
 
-#endif //SDFGI
+#endif //HDDAGI
 
 layout(set = 0, binding = 14, std140) uniform Params {
 	vec2 fog_frustum_size_begin;
@@ -627,17 +627,17 @@ void main() {
 			}
 		}
 
-		//sdfgi
-#ifdef ENABLE_SDFGI
+		//hddagi
+#ifdef ENABLE_HDDAGI
 
 		{
 			float blend = -1.0;
 			vec3 ambient_total = vec3(0.0);
 
-			for (uint i = 0; i < sdfgi.max_cascades; i++) {
-				vec3 cascade_pos = (world_pos - sdfgi.cascades[i].position) * sdfgi.cascades[i].to_probe;
+			for (uint i = 0; i < hddagi.max_cascades; i++) {
+				vec3 cascade_pos = (world_pos - hddagi.cascades[i].position) * hddagi.cascades[i].to_probe;
 
-				if (any(lessThan(cascade_pos, vec3(0.0))) || any(greaterThanEqual(cascade_pos, sdfgi.cascade_probe_size))) {
+				if (any(lessThan(cascade_pos, vec3(0.0))) || any(greaterThanEqual(cascade_pos, hddagi.cascade_probe_size))) {
 					continue; //skip cascade
 				}
 
@@ -647,7 +647,7 @@ void main() {
 				vec4 ambient_accum = vec4(0.0);
 
 				ivec3 tex_pos = ivec3(probe_base_pos.xy, int(i));
-				tex_pos.x += probe_base_pos.z * sdfgi.probe_axis_size;
+				tex_pos.x += probe_base_pos.z * hddagi.probe_axis_size;
 
 				for (uint j = 0; j < 8; j++) {
 					ivec3 offset = (ivec3(j) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1);
@@ -664,18 +664,18 @@ void main() {
 
 					// Compute lightprobe occlusion
 
-					if (sdfgi.use_occlusion) {
-						ivec3 occ_indexv = abs((sdfgi.cascades[i].region_world_offset + probe_posi) & ivec3(1, 1, 1)) * ivec3(1, 2, 4);
+					if (hddagi.use_occlusion) {
+						ivec3 occ_indexv = abs((hddagi.cascades[i].region_world_offset + probe_posi) & ivec3(1, 1, 1)) * ivec3(1, 2, 4);
 						vec4 occ_mask = mix(vec4(0.0), vec4(1.0), equal(ivec4(occ_indexv.x | occ_indexv.y), ivec4(0, 1, 2, 3)));
 
-						vec3 occ_pos = clamp(cascade_pos, probe_pos - sdfgi.occlusion_clamp, probe_pos + sdfgi.occlusion_clamp) * sdfgi.probe_to_uvw;
+						vec3 occ_pos = clamp(cascade_pos, probe_pos - hddagi.occlusion_clamp, probe_pos + hddagi.occlusion_clamp) * hddagi.probe_to_uvw;
 						occ_pos.z += float(i);
 						if (occ_indexv.z != 0) { //z bit is on, means index is >=4, so make it switch to the other half of textures
 							occ_pos.x += 1.0;
 						}
 
-						occ_pos *= sdfgi.occlusion_renormalize;
-						float occlusion = dot(textureLod(sampler3D(sdfgi_occlusion_texture, linear_sampler), occ_pos, 0.0), occ_mask);
+						occ_pos *= hddagi.occlusion_renormalize;
+						float occlusion = dot(textureLod(sampler3D(hddagi_occlusion_texture, linear_sampler), occ_pos, 0.0), occ_mask);
 
 						weight *= max(occlusion, 0.01);
 					}
@@ -684,11 +684,11 @@ void main() {
 
 					ivec3 uvw = tex_pos;
 					uvw.xy += offset.xy;
-					uvw.x += offset.z * sdfgi.probe_axis_size;
+					uvw.x += offset.z * hddagi.probe_axis_size;
 
-					vec3 ambient = texelFetch(sampler2DArray(sdfgi_ambient_texture, linear_sampler), uvw, 0).rgb;
+					vec3 ambient = texelFetch(sampler2DArray(hddagi_ambient_texture, linear_sampler), uvw, 0).rgb;
 
-					ambient_accum.rgb += ambient * weight * sdfgi.cascades[i].exposure_normalization;
+					ambient_accum.rgb += ambient * weight * hddagi.cascades[i].exposure_normalization;
 					ambient_accum.a += weight;
 				}
 

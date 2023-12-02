@@ -375,9 +375,11 @@ shared vec3 neighbours[LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE];
 #endif
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
-	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
+	// GLSL Specification says:
+	// "Results are undefined if one or both operands are negative."
+	// So..
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
 }
-
 
 void main() {
 

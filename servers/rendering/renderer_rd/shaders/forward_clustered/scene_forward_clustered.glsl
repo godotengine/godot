@@ -1244,7 +1244,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 
 #ifndef MODE_UNSHADED
-	// Used in regular draw pass and when drawing SDFs for SDFGI and materials for VoxelGI.
+	// Used in regular draw pass and when drawing SDFs for HDDAGI and materials for VoxelGI.
 	emission *= scene_data.emissive_exposure_normalization;
 #endif
 
@@ -1404,7 +1404,7 @@ void fragment_shader(in SceneData scene_data) {
 	}
 #else
 
-	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
+	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI)) { //has lightmap capture
 
 		//make vertex orientation the world one, but still align to camera
 		vec3 cam_vertex = mat3(scene_data.inv_view_matrix) * vertex;
@@ -1413,7 +1413,7 @@ void fragment_shader(in SceneData scene_data) {
 
 		vec4 ret_ambient;
 		vec4 ret_reflection;
-		sdfgi_process(cam_vertex,cam_normal,cam_reflection, roughness, ret_ambient, ret_reflection);
+		hddagi_process(cam_vertex,cam_normal,cam_reflection, roughness, ret_ambient, ret_reflection);
 
 		ambient_light = mix( ambient_light, ret_ambient.rgb, ret_ambient.a);
 		specular_light = mix( specular_light, ret_reflection.rgb, ret_reflection.a);

@@ -276,7 +276,10 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade, out ivec3 r_cell,o
 
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
-	return ((value % p_y) + p_y) % p_y;
+	// GLSL Specification says:
+	// "Results are undefined if one or both operands are negative."
+	// So..
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
 }
 
 ivec2 probe_to_tex(ivec3 local_probe,int p_cascade) {

@@ -37,12 +37,12 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/environment/sky.h"
 #include "servers/rendering/renderer_rd/shaders/environment/gi.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug_probes.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/environment/sdfgi_direct_light.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/environment/sdfgi_filter.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/environment/sdfgi_integrate.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/environment/sdfgi_preprocess.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/hddagi_debug.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/hddagi_debug_probes.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/hddagi_direct_light.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/hddagi_filter.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/hddagi_integrate.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/hddagi_preprocess.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
@@ -51,7 +51,7 @@
 #include "servers/rendering/storage/utilities.h"
 
 #define RB_SCOPE_GI SNAME("rbgi")
-#define RB_SCOPE_SDFGI SNAME("sdfgi")
+#define RB_SCOPE_HDDAGI SNAME("hddagi")
 
 #define RB_TEX_AMBIENT SNAME("ambient")
 #define RB_TEX_REFLECTION SNAME("reflection")
@@ -270,10 +270,10 @@ private:
 	PipelineCacheRD voxel_gi_debug_shader_version_pipelines[VOXEL_GI_DEBUG_MAX];
 	RID voxel_gi_debug_uniform_set;
 
-	/* SDFGI */
+	/* HDDAGI */
 
-	struct SDFGIShader {
-		enum SDFGIPreprocessShaderVersion {
+	struct HDDAGIShader {
+		enum HDDAGIPreprocessShaderVersion {
 			PRE_PROCESS_REGION_STORE,
 			PRE_PROCESS_LIGHT_STORE,
 			PRE_PROCESS_LIGHT_SCROLL,
@@ -306,7 +306,7 @@ private:
 			uint32_t pad;
 		};
 
-		SdfgiPreprocessShaderRD preprocess;
+		HddagiPreprocessShaderRD preprocess;
 		RID preprocess_shader;
 		RID preprocess_shader_version[PRE_PROCESS_MAX];
 		RID preprocess_pipeline[PRE_PROCESS_MAX];
@@ -325,7 +325,7 @@ private:
 			float cam_origin[3];
 		};
 
-		SdfgiDebugShaderRD debug;
+		HddagiDebugShaderRD debug;
 		RID debug_shader;
 		RID debug_shader_version;
 		RID debug_pipeline;
@@ -362,7 +362,7 @@ private:
 			uint32_t pad2;
 		};
 
-		SdfgiDebugProbesShaderRD debug_probes;
+		HddagiDebugProbesShaderRD debug_probes;
 		RID debug_probes_shader;
 		RID debug_probes_shader_version[PROBE_DEBUG_MAX];
 		PipelineCacheRD debug_probes_pipeline[PROBE_DEBUG_MAX];
@@ -406,7 +406,7 @@ private:
 			DIRECT_LIGHT_MODE_DYNAMIC,
 			DIRECT_LIGHT_MODE_MAX
 		};
-		SdfgiDirectLightShaderRD direct_light;
+		HddagiDirectLightShaderRD direct_light;
 		RID direct_light_shader;
 		RID direct_light_shader_version[DIRECT_LIGHT_MODE_MAX];
 		RID direct_light_pipeline[DIRECT_LIGHT_MODE_MAX];
@@ -447,12 +447,12 @@ private:
 			uint32_t motion_accum; // Motion that happened since last update (bit 0 in X, bit 1 in Y, bit 2 in Z).
 		};
 
-		SdfgiIntegrateShaderRD integrate;
+		HddagiIntegrateShaderRD integrate;
 		RID integrate_shader;
 		RID integrate_shader_version[INTEGRATE_MODE_MAX];
 		RID integrate_pipeline[INTEGRATE_MODE_MAX];
 
-	} sdfgi_shader;
+	} hddagi_shader;
 
 public:
 	static GI *get_singleton() { return singleton; }
@@ -480,7 +480,6 @@ public:
 		/* GI buffers */
 		bool using_half_size_gi = false;
 
-		RID uniform_set[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID scene_data_ubo;
 
 		RID get_voxel_gi_buffer();
@@ -565,10 +564,10 @@ public:
 
 	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_LOW;
 
-	/* SDFGI */
+	/* HDDAGI */
 
-	class SDFGI : public RenderBufferCustomDataRD {
-		GDCLASS(SDFGI, RenderBufferCustomDataRD)
+	class HDDAGI : public RenderBufferCustomDataRD {
+		GDCLASS(HDDAGI, RenderBufferCustomDataRD)
 
 	public:
 		enum {
@@ -698,9 +697,12 @@ public:
 		uint32_t sampling_cache_buffer_cascade_size = 0;
 
 		uint32_t update_frame = 0;
+		uint32_t frames_to_converge = 6;
 
 		bool using_probe_filter = true;
-		bool using_image_filter = true;
+		bool using_reflection_filter = true;
+		bool using_ambient_filter = true;
+
 #if 0
 		// used for rendering (voxelization)
 		RID render_albedo;
@@ -744,21 +746,22 @@ public:
 		bool reads_sky = true;
 		float energy = 1.0;
 		float normal_bias = 1.1;
+		float reflection_bias = 2.0;
 		float probe_bias = 1.1;
-		RS::EnvironmentSDFGIYScale y_scale_mode = RS::ENV_SDFGI_Y_SCALE_75_PERCENT;
+		RS::EnvironmentHDDAGICascadeFormat cascade_format = RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16;
 
 		float y_mult = 1.0;
 
 		uint32_t version = 0;
 		uint32_t render_pass = 0;
 
-		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
+		int32_t cascade_dynamic_light_count[HDDAGI::MAX_CASCADES]; //used dynamically
 
 		RID debug_probes_scene_data_ubo;
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
 		virtual void free_data() override;
-		~SDFGI();
+		~HDDAGI();
 
 		void create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi);
 		void update(RID p_env, const Vector3 &p_world_position);
@@ -793,32 +796,31 @@ public:
 		void render_static_lights(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result);
 	};
 
-	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
-	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_30_FRAMES;
-	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
+	RS::EnvironmentHDDAGIFramesToConverge hddagi_frames_to_converge = RS::ENV_HDDAGI_CONVERGE_IN_12_FRAMES;
+	RS::EnvironmentHDDAGIFramesToUpdateLight hddagi_frames_to_update_light = RS::ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES;
 
-	float sdfgi_solid_cell_ratio = 0.5;
-	Vector3 sdfgi_debug_probe_pos;
-	Vector3 sdfgi_debug_probe_dir;
-	bool sdfgi_debug_probe_enabled = false;
-	Vector3i sdfgi_debug_probe_index;
-	uint32_t sdfgi_current_version = 0;
+	float hddagi_solid_cell_ratio = 0.5;
+	Vector3 hddagi_debug_probe_pos;
+	Vector3 hddagi_debug_probe_dir;
+	bool hddagi_debug_probe_enabled = false;
+	Vector3i hddagi_debug_probe_index;
+	uint32_t hddagi_current_version = 0;
 
-	/* SDFGI UPDATE */
+	/* HDDAGI UPDATE */
 
-	int sdfgi_get_lightprobe_octahedron_size() const { return SDFGI::LIGHTPROBE_OCT_SIZE; }
-	int sdfgi_get_occlusion_octahedron_size() const { return SDFGI::OCCLUSION_OCT_SIZE; }
+	int hddagi_get_lightprobe_octahedron_size() const { return HDDAGI::LIGHTPROBE_OCT_SIZE; }
+	int hddagi_get_occlusion_octahedron_size() const { return HDDAGI::OCCLUSION_OCT_SIZE; }
 
-	virtual void sdfgi_reset() override;
+	virtual void hddagi_reset() override;
 
-	struct SDFGIData {
+	struct HDDAGIData {
 		int32_t grid_size[3];
 		int32_t max_cascades;
 
 		float normal_bias;
 		float energy;
 		float y_mult;
-		uint32_t pad;
+		float reflection_bias;
 
 		int32_t probe_axis_size[3];
 		uint32_t pad2;
@@ -838,7 +840,7 @@ public:
 			uint32_t pad2[4];
 		};
 
-		ProbeCascadeData cascades[SDFGI::MAX_CASCADES];
+		ProbeCascadeData cascades[HDDAGI::MAX_CASCADES];
 	};
 
 	struct VoxelGIData {
@@ -880,12 +882,14 @@ public:
 		float pad3;
 	};
 
-	RID sdfgi_ubo;
+	RID hddagi_ubo;
 
 	enum Mode {
 		MODE_VOXEL_GI,
-		MODE_SDFGI,
+		MODE_HDDAGI,
 		MODE_COMBINED,
+		MODE_HDDAGI_BLEND_AMBIENT,
+		MODE_COMBINED_BLEND_AMBIENT,
 		MODE_MAX
 	};
 
@@ -926,7 +930,7 @@ public:
 		uint32_t pad[2];
 	};
 
-	SdfgiFilterShaderRD filter_shader;
+	HddagiFilterShaderRD filter_shader;
 	RID filter_shader_version;
 	RID filter_pipelines[FILTER_SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
 
@@ -936,7 +940,7 @@ public:
 	void init(RendererRD::SkyRD *p_sky);
 	void free();
 
-	Ref<SDFGI> create_sdfgi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
+	Ref<HDDAGI> create_hddagi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
 
 	void setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used);
 	void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);

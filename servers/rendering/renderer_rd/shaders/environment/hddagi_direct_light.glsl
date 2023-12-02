@@ -149,7 +149,7 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
 	const int MAX_LEVEL = 3;
 
 
-	const int fp_bits = 8;
+	const int fp_bits = 10;
 	const int fp_block_bits = fp_bits + 2;
 	const int fp_region_bits = fp_block_bits + 1;
 	const int fp_cascade_bits = fp_region_bits + 4;
@@ -314,7 +314,10 @@ vec3 rgbe_decode(uint p_rgbe) {
 
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
-	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y), lessThan(sign(value), ivec3(0)) );
+	// GLSL Specification says:
+	// "Results are undefined if one or both operands are negative."
+	// So..
+	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
 }
 
 ivec2 probe_to_tex(ivec3 local_probe) {
@@ -454,11 +457,11 @@ void main() {
 		vec3 ray_dir = direction;
 		vec3 inv_dir = 1.0 / ray_dir;
 
-		//this is how to properly bias outgoing rays
+		/* No bias needed for voxels
 		float cell_size = 1.0 / cascades.data[params.cascade].to_cell;
 		ray_pos += sign(direction) * cell_size * 0.48; // go almost to the box edge but remain inside
 		ray_pos += ray_dir * 0.4 * cell_size; //apply a small bias from there
-
+		*/
 
 		hit = trace_ray_hdda(ray_pos,ray_dir,params.cascade);
 
