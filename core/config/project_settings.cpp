@@ -1473,7 +1473,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
-	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor", false);
+#ifdef TOOLS_ENABLED
+	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor_hint", false);
+#endif
 
 	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
 	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
@@ -1531,6 +1533,10 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("internationalization/rendering/root_node_auto_translate", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 2000);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
+#ifdef TOOLS_ENABLED
+	GLOBAL_DEF("gui/timers/tooltip_delay_sec.editor_hint", 0.5);
+#endif
 
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
