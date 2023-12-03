@@ -171,6 +171,8 @@ public:
 
 	virtual void load_platform_gdextensions() const override;
 
+	virtual bool is_media_playing() const override;
+
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
 	~OS_Android();

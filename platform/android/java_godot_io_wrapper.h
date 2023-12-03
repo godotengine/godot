@@ -61,6 +61,7 @@ private:
 	jmethodID _set_screen_orientation = 0;
 	jmethodID _get_screen_orientation = 0;
 	jmethodID _get_system_dir = 0;
+	jmethodID _is_media_playing = 0;
 
 public:
 	GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance);
@@ -87,6 +88,7 @@ public:
 	void set_screen_orientation(int p_orient);
 	int get_screen_orientation();
 	String get_system_dir(int p_dir, bool p_shared_storage);
+	bool is_media_playing();
 };
 
 #endif // JAVA_GODOT_IO_WRAPPER_H

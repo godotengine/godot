@@ -74,6 +74,8 @@ private:
 	virtual void finalize() override;
 
 	bool is_focused = false;
+	bool external_media_playing = false;
+	bool media_update_requested = false;
 
 	CGFloat _weight_to_ct(int p_weight) const;
 	CGFloat _stretch_to_ct(int p_stretch) const;
@@ -120,6 +122,9 @@ public:
 
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;
+
+	virtual bool is_media_playing() const override;
+	virtual void update_media_state();
 
 	virtual void vibrate_handheld(int p_duration_ms = 500) override;
 
