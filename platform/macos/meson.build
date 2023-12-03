@@ -70,4 +70,5 @@ if PLATFORM == 'macos'
                                                             'foundation',
                                                             'security',
                                                             ])
+    DEPENDENCIES += DEP_GLAD
 endif
