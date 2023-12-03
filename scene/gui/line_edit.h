@@ -33,43 +33,44 @@
 
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/text_edit_menu.h"
 
 class LineEdit : public Control {
 	GDCLASS(LineEdit, Control);
 
 public:
 	enum MenuItems {
-		MENU_CUT,
-		MENU_COPY,
-		MENU_PASTE,
-		MENU_CLEAR,
-		MENU_SELECT_ALL,
-		MENU_UNDO,
-		MENU_REDO,
-		MENU_SUBMENU_TEXT_DIR,
-		MENU_DIR_INHERITED,
-		MENU_DIR_AUTO,
-		MENU_DIR_LTR,
-		MENU_DIR_RTL,
-		MENU_DISPLAY_UCC,
-		MENU_SUBMENU_INSERT_UCC,
-		MENU_INSERT_LRM,
-		MENU_INSERT_RLM,
-		MENU_INSERT_LRE,
-		MENU_INSERT_RLE,
-		MENU_INSERT_LRO,
-		MENU_INSERT_RLO,
-		MENU_INSERT_PDF,
-		MENU_INSERT_ALM,
-		MENU_INSERT_LRI,
-		MENU_INSERT_RLI,
-		MENU_INSERT_FSI,
-		MENU_INSERT_PDI,
-		MENU_INSERT_ZWJ,
-		MENU_INSERT_ZWNJ,
-		MENU_INSERT_WJ,
-		MENU_INSERT_SHY,
-		MENU_MAX
+		MENU_CUT = TextEditMenu::MENU_CUT,
+		MENU_COPY = TextEditMenu::MENU_COPY,
+		MENU_PASTE = TextEditMenu::MENU_PASTE,
+		MENU_CLEAR = TextEditMenu::MENU_CLEAR,
+		MENU_SELECT_ALL = TextEditMenu::MENU_SELECT_ALL,
+		MENU_UNDO = TextEditMenu::MENU_UNDO,
+		MENU_REDO = TextEditMenu::MENU_REDO,
+		MENU_SUBMENU_TEXT_DIR = TextEditMenu::MENU_SUBMENU_TEXT_DIR,
+		MENU_DIR_INHERITED = TextEditMenu::MENU_DIR_INHERITED,
+		MENU_DIR_AUTO = TextEditMenu::MENU_DIR_AUTO,
+		MENU_DIR_LTR = TextEditMenu::MENU_DIR_LTR,
+		MENU_DIR_RTL = TextEditMenu::MENU_DIR_RTL,
+		MENU_DISPLAY_UCC = TextEditMenu::MENU_DISPLAY_UCC,
+		MENU_SUBMENU_INSERT_UCC = TextEditMenu::MENU_SUBMENU_INSERT_UCC,
+		MENU_INSERT_LRM = TextEditMenu::MENU_INSERT_LRM,
+		MENU_INSERT_RLM = TextEditMenu::MENU_INSERT_RLM,
+		MENU_INSERT_LRE = TextEditMenu::MENU_INSERT_LRE,
+		MENU_INSERT_RLE = TextEditMenu::MENU_INSERT_RLE,
+		MENU_INSERT_LRO = TextEditMenu::MENU_INSERT_LRO,
+		MENU_INSERT_RLO = TextEditMenu::MENU_INSERT_RLO,
+		MENU_INSERT_PDF = TextEditMenu::MENU_INSERT_PDF,
+		MENU_INSERT_ALM = TextEditMenu::MENU_INSERT_ALM,
+		MENU_INSERT_LRI = TextEditMenu::MENU_INSERT_LRI,
+		MENU_INSERT_RLI = TextEditMenu::MENU_INSERT_RLI,
+		MENU_INSERT_FSI = TextEditMenu::MENU_INSERT_FSI,
+		MENU_INSERT_PDI = TextEditMenu::MENU_INSERT_PDI,
+		MENU_INSERT_ZWJ = TextEditMenu::MENU_INSERT_ZWJ,
+		MENU_INSERT_ZWNJ = TextEditMenu::MENU_INSERT_ZWNJ,
+		MENU_INSERT_WJ = TextEditMenu::MENU_INSERT_WJ,
+		MENU_INSERT_SHY = TextEditMenu::MENU_INSERT_SHY,
+		MENU_MAX = TextEditMenu::MENU_MAX
 	};
 
 	enum VirtualKeyboardType {
@@ -109,9 +110,7 @@ private:
 	bool drag_and_drop_selection_enabled = true;
 
 	bool context_menu_enabled = true;
-	PopupMenu *menu = nullptr;
-	PopupMenu *menu_dir = nullptr;
-	PopupMenu *menu_ctl = nullptr;
+	TextEditMenu context_menu;
 
 	bool caret_mid_grapheme_enabled = false;
 
@@ -209,7 +208,6 @@ private:
 	void _clear_redo();
 	void _create_undo_state();
 
-	Key _get_menu_action_accelerator(const String &p_action);
 	void _generate_context_menu();
 	void _update_context_menu();
 
