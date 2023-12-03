@@ -756,6 +756,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Polygon editor
 	_initial_set("editors/polygon_editor/point_grab_radius", has_touchscreen_ui ? 32 : 8);
 	_initial_set("editors/polygon_editor/show_previous_outline", true);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/polygon_editor/auto_bake_delay", 1.5, "-1.0,10.0,0.01");
 
 	// Animation
 	_initial_set("editors/animation/autorename_animation_tracks", true);

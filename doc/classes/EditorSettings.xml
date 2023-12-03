@@ -429,6 +429,9 @@
 		<member name="editors/panning/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 2D viewport while panning in the 2D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
+		<member name="editors/polygon_editor/auto_bake_delay" type="float" setter="" getter="">
+			The delay in seconds until more complex and performance costly polygon editors commit their outlines, e.g. the 2D navigation polygon editor rebakes the navigation mesh polygons. A negative value stops the auto bake.
+		</member>
 		<member name="editors/polygon_editor/point_grab_radius" type="int" setter="" getter="">
 			The radius in which points can be selected in the [Polygon2D] and [CollisionPolygon2D] editors (in pixels). Higher values make it easier to select points quickly, but can make it more difficult to select the expected point when several points are located close to each other.
 		</member>
