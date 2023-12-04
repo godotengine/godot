@@ -129,8 +129,8 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 			section->set_text(0, item_name);
 			section->set_selectable(0, false);
 			section->set_selectable(1, false);
-			section->set_custom_bg_color(0, search_options->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
-			section->set_custom_bg_color(1, search_options->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+			section->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+			section->set_custom_bg_color(1, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 			sections[section_name] = section;
 		}
@@ -163,6 +163,10 @@ void EditorCommandPalette::_notification(int p_what) {
 				prev_rect = Rect2i(get_position(), get_size());
 				was_showed = true;
 			}
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			command_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 		} break;
 	}
 }
@@ -303,10 +307,6 @@ Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command
 	return p_shortcut;
 }
 
-void EditorCommandPalette::_theme_changed() {
-	command_search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
-}
-
 void EditorCommandPalette::_save_history() const {
 	Dictionary command_history;
 
@@ -330,7 +330,6 @@ EditorCommandPalette::EditorCommandPalette() {
 	connect("confirmed", callable_mp(this, &EditorCommandPalette::_confirmed));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->connect("theme_changed", callable_mp(this, &EditorCommandPalette::_theme_changed));
 	add_child(vbc);
 
 	command_search_box = memnew(LineEdit);
