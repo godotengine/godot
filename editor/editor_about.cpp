@@ -39,29 +39,25 @@
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
 const String EditorAbout::META_TEXT_TO_COPY = "text_to_copy";
 
-void EditorAbout::_theme_changed() {
-	const Ref<Font> font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
-	const int font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
-
-	_tpl_text->begin_bulk_theme_override();
-	_tpl_text->add_theme_font_override("normal_font", font);
-	_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
-	_tpl_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
-	_tpl_text->end_bulk_theme_override();
-
-	_license_text->begin_bulk_theme_override();
-	_license_text->add_theme_font_override("normal_font", font);
-	_license_text->add_theme_font_size_override("normal_font_size", font_size);
-	_license_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
-	_license_text->end_bulk_theme_override();
-
-	_logo->set_texture(get_editor_theme_icon(SNAME("Logo")));
-}
-
 void EditorAbout::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			_theme_changed();
+		case NOTIFICATION_THEME_CHANGED: {
+			const Ref<Font> font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+			const int font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
+
+			_tpl_text->begin_bulk_theme_override();
+			_tpl_text->add_theme_font_override("normal_font", font);
+			_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
+			_tpl_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
+			_tpl_text->end_bulk_theme_override();
+
+			_license_text->begin_bulk_theme_override();
+			_license_text->add_theme_font_override("normal_font", font);
+			_license_text->add_theme_font_size_override("normal_font_size", font_size);
+			_license_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
+			_license_text->end_bulk_theme_override();
+
+			_logo->set_texture(get_editor_theme_icon(SNAME("Logo")));
 		} break;
 	}
 }
@@ -128,12 +124,12 @@ EditorAbout::EditorAbout() {
 	set_hide_on_ok(true);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->connect("theme_changed", callable_mp(this, &EditorAbout::_theme_changed));
+	add_child(vbc);
+
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	hbc->add_theme_constant_override("separation", 30 * EDSCALE);
-	add_child(vbc);
 	vbc->add_child(hbc);
 
 	_logo = memnew(TextureRect);
