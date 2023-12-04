@@ -1859,8 +1859,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						clicked = _select_ray(b->get_position());
 						selection_in_progress = true;
 
-						if (clicked.is_null()) {
-							//default to regionselect
+						bool can_select_clicked = false;
+						if (clicked.is_valid()) {
+							Node3D *clicked_node3d = Object::cast_to<Node3D>(ObjectDB::get_instance(clicked));
+							can_select_clicked = clicked_node3d && !_is_node_locked(clicked_node3d);
+						}
+
+						if (!can_select_clicked) {
+							// default to regionselect if nothing selectable was clicked
 							cursor.region_select = true;
 							cursor.region_begin = b->get_position();
 							cursor.region_end = b->get_position();
@@ -1984,13 +1990,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
-				// enable region-select if nothing has been selected yet or multi-select (shift key) is active
-				if (selection_in_progress && movement_threshold_passed) {
-					if (get_selected_count() == 0 || clicked_wants_append) {
-						cursor.region_select = true;
-						cursor.region_begin = _edit.original_mouse_pos;
-						clicked = ObjectID();
-					}
+				// enable region-select if multi-select (shift key) is active
+				if (selection_in_progress && movement_threshold_passed && clicked_wants_append) {
+					cursor.region_select = true;
+					cursor.region_begin = _edit.original_mouse_pos;
+					clicked = ObjectID();
 				}
 
 				if (cursor.region_select) {
@@ -2000,9 +2004,18 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 
 				if (clicked.is_valid() && movement_threshold_passed) {
-					_compute_edit(_edit.original_mouse_pos);
-					clicked = ObjectID();
-					_edit.mode = TRANSFORM_TRANSLATE;
+					Node3D *clicked_node3d = Object::cast_to<Node3D>(ObjectDB::get_instance(clicked));
+					if (clicked_node3d && !editor_selection->is_selected(clicked_node3d)) {
+						editor_selection->clear();
+						editor_selection->add_node(clicked_node3d);
+						EditorNode::get_singleton()->edit_node(clicked_node3d);
+					}
+
+					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+						_compute_edit(_edit.original_mouse_pos);
+						clicked = ObjectID();
+						_edit.mode = TRANSFORM_TRANSLATE;
+					}
 				}
 
 				if (_edit.mode == TRANSFORM_NONE || _edit.numeric_input != 0 || _edit.numeric_next_decimal != 0) {
