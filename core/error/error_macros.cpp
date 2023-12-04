@@ -115,14 +115,26 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 }
 
 // Index errors. (All combinations of p_message as String or char*.)
-void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message, bool p_editor_notify, bool p_fatal) {
+void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message, bool p_editor_notify, bool p_fatal, const char *p_return) {
 	String fstr(p_fatal ? "FATAL: " : "");
-	String err(fstr + "Index " + p_index_str + " = " + itos(p_index) + " is out of bounds (" + p_size_str + " = " + itos(p_size) + ").");
+	String rstr(p_return && *p_return ? " Returning: " + String(p_return) + "." : "");
+	String err(fstr + "Index " + p_index_str + " = " + itos(p_index) + " is out of bounds (" + p_size_str + " = " + itos(p_size) + ")." + rstr);
 	_err_print_error(p_function, p_file, p_line, err.utf8().get_data(), p_message, p_editor_notify, ERR_HANDLER_ERROR);
 }
 
-void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify, bool p_fatal) {
-	_err_print_index_error(p_function, p_file, p_line, p_index, p_size, p_index_str, p_size_str, p_message.utf8().get_data(), p_editor_notify, p_fatal);
+void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify, bool p_fatal, const char *p_return) {
+	_err_print_index_error(p_function, p_file, p_line, p_index, p_size, p_index_str, p_size_str, p_message.utf8().get_data(), p_editor_notify, p_fatal, p_return);
+}
+
+void _err_print_index_error(const char *p_function, const char *p_file, int p_line, uint64_t p_index, uint64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message, bool p_editor_notify, bool p_fatal, const char *p_return) {
+	String fstr(p_fatal ? "FATAL: " : "");
+	String rstr(p_return && *p_return ? " Returning: " + String(p_return) + "." : "");
+	String err(fstr + "Index " + p_index_str + " = " + uitos(p_index) + " is out of bounds (" + p_size_str + " = " + uitos(p_size) + ")." + rstr);
+	_err_print_error(p_function, p_file, p_line, err.utf8().get_data(), p_message, p_editor_notify, ERR_HANDLER_ERROR);
+}
+
+void _err_print_index_error(const char *p_function, const char *p_file, int p_line, uint64_t p_index, uint64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify, bool p_fatal, const char *p_return) {
+	_err_print_index_error(p_function, p_file, p_line, p_index, p_size, p_index_str, p_size_str, p_message.utf8().get_data(), p_editor_notify, p_fatal, p_return);
 }
 
 void _err_flush_stdout() {
