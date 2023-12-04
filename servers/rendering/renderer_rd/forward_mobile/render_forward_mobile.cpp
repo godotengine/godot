@@ -70,69 +70,31 @@ void RenderForwardMobile::ForwardIDStorageMobile::map_forward_id(RendererRD::For
 	forward_id_allocators[p_type].last_pass[p_id] = p_last_pass;
 }
 
-void RenderForwardMobile::fill_push_constant_instance_indices(SceneState::InstanceData *p_instance_data, const GeometryInstanceForwardMobile *p_instance) {
-	uint64_t current_frame = RSG::rasterizer->get_frame_number();
+void RenderForwardMobile::fill_push_constant_instance_indices(SceneState::InstanceData* p_instance_data, const GeometryInstanceForwardMobile* p_instance) {
+    uint64_t current_frame = RSG::rasterizer->get_frame_number();
 
-	p_instance_data->omni_lights[0] = 0xFFFFFFFF;
-	p_instance_data->omni_lights[1] = 0xFFFFFFFF;
+    fill_push_constant_buffer(p_instance_data->omni_lights, p_instance->omni_light_count, RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT, forward_id_storage_mobile, current_frame);
+    fill_push_constant_buffer(p_instance_data->spot_lights, p_instance->spot_light_count, RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT, forward_id_storage_mobile, current_frame);
+    fill_push_constant_buffer(p_instance_data->decals, p_instance->decals_count, RendererRD::FORWARD_ID_TYPE_DECAL, forward_id_storage_mobile, current_frame);
+    fill_push_constant_buffer(p_instance_data->reflection_probes, p_instance->reflection_probe_count, RendererRD::FORWARD_ID_TYPE_REFLECTION_PROBE, forward_id_storage_mobile, current_frame);
+}
 
-	uint32_t idx = 0;
-	for (uint32_t i = 0; i < p_instance->omni_light_count; i++) {
-		uint32_t ofs = idx < 4 ? 0 : 1;
-		uint32_t shift = (idx & 0x3) << 3;
-		uint32_t mask = ~(0xFF << shift);
+void RenderForwardMobile::fill_push_constant_buffer(uint32_t* buffer, uint32_t count, RendererRD::ForwardIDType type, ForwardIDStorageMobile* storage, uint64_t current_frame) {
+    buffer[0] = 0xFFFFFFFF;
+    buffer[1] = 0xFFFFFFFF;
 
-		if (forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT].last_pass[p_instance->omni_lights[i]] == current_frame) {
-			p_instance_data->omni_lights[ofs] &= mask;
-			p_instance_data->omni_lights[ofs] |= uint32_t(forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT].map[p_instance->omni_lights[i]]) << shift;
-			idx++;
-		}
-	}
+    uint32_t idx = 0;
+    for (uint32_t i = 0; i < count; i++) {
+        uint32_t ofs = idx < 4 ? 0 : 1;
+        uint32_t shift = (idx & 0x3) << 3;
+        uint32_t mask = ~(0xFFu << shift);
 
-	p_instance_data->spot_lights[0] = 0xFFFFFFFF;
-	p_instance_data->spot_lights[1] = 0xFFFFFFFF;
-
-	idx = 0;
-	for (uint32_t i = 0; i < p_instance->spot_light_count; i++) {
-		uint32_t ofs = idx < 4 ? 0 : 1;
-		uint32_t shift = (idx & 0x3) << 3;
-		uint32_t mask = ~(0xFF << shift);
-		if (forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT].last_pass[p_instance->spot_lights[i]] == current_frame) {
-			p_instance_data->spot_lights[ofs] &= mask;
-			p_instance_data->spot_lights[ofs] |= uint32_t(forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT].map[p_instance->spot_lights[i]]) << shift;
-			idx++;
-		}
-	}
-
-	p_instance_data->decals[0] = 0xFFFFFFFF;
-	p_instance_data->decals[1] = 0xFFFFFFFF;
-
-	idx = 0;
-	for (uint32_t i = 0; i < p_instance->decals_count; i++) {
-		uint32_t ofs = idx < 4 ? 0 : 1;
-		uint32_t shift = (idx & 0x3) << 3;
-		uint32_t mask = ~(0xFF << shift);
-		if (forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_DECAL].last_pass[p_instance->decals[i]] == current_frame) {
-			p_instance_data->decals[ofs] &= mask;
-			p_instance_data->decals[ofs] |= uint32_t(forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_DECAL].map[p_instance->decals[i]]) << shift;
-			idx++;
-		}
-	}
-
-	p_instance_data->reflection_probes[0] = 0xFFFFFFFF;
-	p_instance_data->reflection_probes[1] = 0xFFFFFFFF;
-
-	idx = 0;
-	for (uint32_t i = 0; i < p_instance->reflection_probe_count; i++) {
-		uint32_t ofs = idx < 4 ? 0 : 1;
-		uint32_t shift = (idx & 0x3) << 3;
-		uint32_t mask = ~(0xFF << shift);
-		if (forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_REFLECTION_PROBE].last_pass[p_instance->reflection_probes[i]] == current_frame) {
-			p_instance_data->reflection_probes[ofs] &= mask;
-			p_instance_data->reflection_probes[ofs] |= uint32_t(forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_REFLECTION_PROBE].map[p_instance->reflection_probes[i]]) << shift;
-			idx++;
-		}
-	}
+        if (storage->forward_id_allocators[type].last_pass[p_instance->omni_lights[i]] == current_frame) {
+            buffer[ofs] &= mask;
+            buffer[ofs] |= uint32_t(storage->forward_id_allocators[type].map[p_instance->omni_lights[i]]) << shift;
+            idx++;
+        }
+    }
 }
 
 /* Render buffer */
