@@ -3167,7 +3167,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "flags_use_shadow_to_opacity", "shadow_to_opacity" },
 			{ "flags_no_depth_test", "no_depth_test" },
 			{ "flags_use_point_size", "use_point_size" },
-			{ "flags_fixed_size", "fixed_Size" },
+			{ "flags_fixed_size", "fixed_size" },
 			{ "flags_albedo_tex_force_srgb", "albedo_texture_force_srgb" },
 			{ "flags_do_not_receive_shadows", "disable_receive_shadows" },
 			{ "flags_disable_ambient_light", "disable_ambient_light" },
