@@ -1282,6 +1282,8 @@ private:
 	int frame = 0;
 	TightLocalVector<Frame> frames;
 	uint64_t frames_drawn = 0;
+	RID local_device;
+	bool used_setup_buffer = false;
 
 	void _free_pending_resources(int p_frame);
 
