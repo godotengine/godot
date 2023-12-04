@@ -3121,6 +3121,8 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 		current_char_ofs += t->text.length();
 	} else if (p_item->type == ITEM_IMAGE) {
 		current_char_ofs++;
+	} else if (p_item->type == ITEM_NEWLINE) {
+		current_char_ofs++;
 	}
 
 	if (p_enter) {
