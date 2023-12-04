@@ -2987,24 +2987,28 @@ bool Main::start() {
 		return false;
 	}
 
-	if (dump_gdextension_interface) {
-		GDExtensionInterfaceDump::generate_gdextension_interface_file("gdextension_interface.h");
-	}
+	// GDExtension API and interface.
+	{
+		if (dump_gdextension_interface) {
+			GDExtensionInterfaceDump::generate_gdextension_interface_file("gdextension_interface.h");
+		}
 
-	if (dump_extension_api) {
-		Engine::get_singleton()->set_editor_hint(true); // "extension_api.json" should always contains editor singletons.
-		GDExtensionAPIDump::generate_extension_json_file("extension_api.json", include_docs_in_extension_api_dump);
-	}
+		if (dump_extension_api) {
+			Engine::get_singleton()->set_editor_hint(true); // "extension_api.json" should always contains editor singletons.
+			GDExtensionAPIDump::generate_extension_json_file("extension_api.json", include_docs_in_extension_api_dump);
+		}
 
-	if (dump_gdextension_interface || dump_extension_api) {
-		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
-		return false;
-	}
+		if (dump_gdextension_interface || dump_extension_api) {
+			OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
+			return false;
+		}
 
-	if (validate_extension_api) {
-		bool valid = GDExtensionAPIDump::validate_extension_json_file(validate_extension_api_file) == OK;
-		OS::get_singleton()->set_exit_code(valid ? EXIT_SUCCESS : EXIT_FAILURE);
-		return false;
+		if (validate_extension_api) {
+			Engine::get_singleton()->set_editor_hint(true); // "extension_api.json" should always contains editor singletons.
+			bool valid = GDExtensionAPIDump::validate_extension_json_file(validate_extension_api_file) == OK;
+			OS::get_singleton()->set_exit_code(valid ? EXIT_SUCCESS : EXIT_FAILURE);
+			return false;
+		}
 	}
 
 #ifndef DISABLE_DEPRECATED
