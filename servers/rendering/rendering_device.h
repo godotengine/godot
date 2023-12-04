@@ -872,10 +872,26 @@ public:
 
 	// <TF>
 	// @ShadyTF
-	RID persistent_uniform_buffer_create(uint32_t p_size_bytes);
+	// was
+	//
+	//RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	//RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+
+	/*****************/
+	/**** BUFFERS ****/
+	/*****************/
+
+	enum BufferCreationBits {
+		BUFFER_CREATION_PERSISTENT_BIT = (1 << 0),
+		BUFFER_CREATION_LINEAR_BIT = (1 << 1)
+	};
+
+	RID linear_buffer_create(uint32_t p_size_bytes, bool p_storage, BitField<StorageBufferUsage> p_usage = 0);
+	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<BufferCreationBits> p_creation_bits = 0);
+	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
+
 	// <TF>
-	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
-	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0);
+
 	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
 	struct Uniform {
@@ -1452,9 +1468,16 @@ VARIANT_ENUM_CAST(RenderingDevice::Limit)
 VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 VARIANT_ENUM_CAST(RenderingDevice::Features)
 
+
 #ifndef DISABLE_DEPRECATED
 VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);
 #endif
+
+// <TF>
+// @ShadyTF
+VARIANT_BITFIELD_CAST(RenderingDevice::BufferCreationBits);
+// </TF>
+
 
 typedef RenderingDevice RD;
 

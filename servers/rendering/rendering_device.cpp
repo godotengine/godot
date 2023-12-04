@@ -576,7 +576,7 @@ Vector<uint8_t> RenderingDevice::buffer_get_data(RID p_buffer, uint32_t p_offset
 	return buffer_data;
 }
 
-RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage) {
+RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits ) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
@@ -586,6 +586,13 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<u
 	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_STORAGE_BIT);
 	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_INDIRECT_BIT);
+	}
+	if (persistent_buffer_enabled && p_creation_bits.has_flag(BUFFER_CREATION_PERSISTENT_BIT)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_PERSISTENT_BIT);
+		
+		if (p_creation_bits.has_flag(BUFFER_CREATION_LINEAR_BIT)) {
+			return linear_buffer_create(p_size_bytes, true, p_usage);
+		}
 	}
 	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
@@ -606,6 +613,7 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<u
 #endif
 	return id;
 }
+
 
 RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
 	_THREAD_SAFE_METHOD_
@@ -2510,7 +2518,7 @@ uint64_t RenderingDevice::shader_get_vertex_input_attribute_mask(RID p_shader) {
 /**** UNIFORMS ****/
 /******************/
 
-RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {
+RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
@@ -2518,6 +2526,13 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 	Buffer buffer;
 	buffer.size = p_size_bytes;
 	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT);
+	if (persistent_buffer_enabled && p_creation_bits.has_flag(BUFFER_CREATION_PERSISTENT_BIT)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_PERSISTENT_BIT);
+
+		if (p_creation_bits.has_flag(BUFFER_CREATION_LINEAR_BIT)) {
+			return linear_buffer_create(p_size_bytes, false);
+		}
+	}
 	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
@@ -2541,14 +2556,18 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 }
 // <TF>
 // @ShadyTF : persistent buffers
-RID RenderingDevice::persistent_uniform_buffer_create(uint32_t p_size_bytes) {
+RID RenderingDevice::linear_buffer_create(uint32_t p_size_bytes, bool p_storage, BitField<StorageBufferUsage> p_usage) {
 	_THREAD_SAFE_METHOD_
-
-	if (persistent_buffer_enabled == false) {
-		return uniform_buffer_create(p_size_bytes);
-	}
 	PersistentBuffer linear_buffer;
-	linear_buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT | RDD::BUFFER_USAGE_PERSISTENT_BIT);
+	if (p_storage) {
+		linear_buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_STORAGE_BIT| RDD::BUFFER_USAGE_PERSISTENT_BIT);
+		if (p_usage.has_flag(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT)) {
+			linear_buffer.usage.set_flag(RDD::BUFFER_USAGE_INDIRECT_BIT);
+		}
+	} else {
+		linear_buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT | RDD::BUFFER_USAGE_PERSISTENT_BIT);
+	}
+	
 
 	for (int i = 0; i < frame_count; i++) {
 		Buffer buffer;
@@ -4957,7 +4976,7 @@ void RenderingDevice::initialize(ApiContextRD *p_context, bool p_local_device) {
 
 	// <TF>
 	// @ShadyTF persistently mapped buffers
-	persistent_buffer_enabled = false;
+	persistent_buffer_enabled = true;
 	// </TF>
 	context = p_context;
 
