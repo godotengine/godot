@@ -48,8 +48,6 @@ enum ShaderType {
 void ShaderCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			_update_theme();
-
 			String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
 			if (!last_lang.is_empty()) {
 				for (int i = 0; i < type_menu->get_item_count(); i++) {
@@ -68,28 +66,17 @@ void ShaderCreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_theme();
+			static const char *shader_types[3] = { "Shader", "VisualShader", "TextFile" };
+			for (int i = 0; i < 3; i++) {
+				Ref<Texture2D> icon = get_editor_theme_icon(shader_types[i]);
+				if (icon.is_valid()) {
+					type_menu->set_item_icon(i, icon);
+				}
+			}
+
+			path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 	}
-}
-
-void ShaderCreateDialog::_update_theme() {
-	Ref<Texture2D> shader_icon = gc->get_editor_theme_icon(SNAME("Shader"));
-	if (shader_icon.is_valid()) {
-		type_menu->set_item_icon(0, shader_icon);
-	}
-
-	Ref<Texture2D> visual_shader_icon = gc->get_editor_theme_icon(SNAME("VisualShader"));
-	if (visual_shader_icon.is_valid()) {
-		type_menu->set_item_icon(1, visual_shader_icon);
-	}
-
-	Ref<Texture2D> include_icon = gc->get_editor_theme_icon(SNAME("TextFile"));
-	if (include_icon.is_valid()) {
-		type_menu->set_item_icon(2, include_icon);
-	}
-
-	path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 }
 
 void ShaderCreateDialog::_update_language_info() {
