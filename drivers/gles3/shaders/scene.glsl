@@ -139,6 +139,8 @@ layout(location = 14) in highp vec4 instance_xform2;
 layout(location = 15) in highp uvec4 instance_color_custom_data; // Color packed into xy, Custom data into zw.
 #endif
 
+#define FLAGS_NON_UNIFORM_SCALE (1 << 4)
+
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
@@ -242,6 +244,8 @@ uniform highp vec3 compressed_aabb_position;
 uniform highp vec3 compressed_aabb_size;
 uniform highp vec4 uv_scale;
 
+uniform highp uint model_flags;
+
 /* Varyings */
 
 out highp vec3 vertex_interp;
@@ -310,7 +314,14 @@ void main() {
 #ifdef NORMAL_USED
 	vec3 normal = oct_to_vec3(axis_tangent_attrib.xy * 2.0 - 1.0);
 #endif
-	highp mat3 model_normal_matrix = mat3(model_matrix);
+
+	highp mat3 model_normal_matrix;
+
+	if (bool(model_flags & uint(FLAGS_NON_UNIFORM_SCALE))) {
+		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
+	} else {
+		model_normal_matrix = mat3(model_matrix);
+	}
 
 #if defined(NORMAL_USED) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 
