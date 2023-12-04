@@ -500,18 +500,16 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
-	// This probably needs to change...
 	scene_state.lightmaps_used = 0;
-	for (int i = 0; i < (int)p_lightmaps.size(); i++) {
-		if (i >= (int)scene_state.max_lightmaps) {
-			break;
-		}
 
+	for (int i = 0; i < (int)scene_state.max_lightmaps && i < (int)p_lightmaps.size(); i++) {
 		RID lightmap = light_storage->lightmap_instance_get_lightmap(p_lightmaps[i]);
 
 		Basis to_lm = light_storage->lightmap_instance_get_transform(p_lightmaps[i]).basis.inverse() * p_cam_transform.basis;
-		to_lm = to_lm.inverse().transposed(); //will transform normals
-		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
+		Basis to_lm_transposed = to_lm.transposed(); // No need for inverse, just transpose
+
+		RendererRD::MaterialStorage::store_transform_3x3(to_lm_transposed, scene_state.lightmaps[i].normal_xform);
+
 		scene_state.lightmaps[i].exposure_normalization = 1.0;
 		if (p_render_data->camera_attributes.is_valid()) {
 			float baked_exposure = light_storage->lightmap_get_baked_exposure_normalization(lightmap);
@@ -524,6 +522,7 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 
 		scene_state.lightmaps_used++;
 	}
+
 	if (scene_state.lightmaps_used > 0) {
 		RD::get_singleton()->buffer_update(scene_state.lightmap_buffer, 0, sizeof(LightmapData) * scene_state.lightmaps_used, scene_state.lightmaps, RD::BARRIER_MASK_RASTER);
 	}
