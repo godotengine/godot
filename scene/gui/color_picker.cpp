@@ -556,16 +556,17 @@ void ColorPicker::_html_submitted(const String &p_html) {
 		return;
 	}
 
-	const Color previous_color = color;
-	color = Color::from_string(p_html.strip_edges(), previous_color);
+	Color new_color = Color::from_string(p_html.strip_edges(), color);
 
 	if (!is_editing_alpha()) {
-		color.a = previous_color.a;
+		new_color.a = color.a;
 	}
 
-	if (color == previous_color) {
+	if (new_color.to_argb32() == color.to_argb32()) {
 		return;
 	}
+	color = new_color;
+
 	if (!is_inside_tree()) {
 		return;
 	}
