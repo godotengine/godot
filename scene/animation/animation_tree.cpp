@@ -100,9 +100,9 @@ void AnimationNode::blend_animation(const StringName &p_animation, AnimationMixe
 	process_state->tree->make_animation_instance(p_animation, p_playback_info);
 }
 
-double AnimationNode::_pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info) {
+double AnimationNode::_pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	process_state = p_process_state;
-	double t = process(p_playback_info);
+	double t = process(p_playback_info, p_test_only);
 	process_state = nullptr;
 	return t;
 }
@@ -152,7 +152,7 @@ double AnimationNode::blend_input(int p_input, AnimationMixer::PlaybackInfo p_pl
 }
 
 double AnimationNode::blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter, bool p_sync, bool p_test_only) {
-	node_state.connections.clear();
+	p_node->node_state.connections.clear();
 	return _blend_node(p_node, p_subpath, this, p_playback_info, p_filter, p_sync, p_test_only, nullptr);
 }
 
@@ -269,9 +269,9 @@ double AnimationNode::_blend_node(Ref<AnimationNode> p_node, const StringName &p
 	p_node->node_state.parent = new_parent;
 	if (!p_playback_info.seeked && !p_sync && !any_valid) {
 		p_playback_info.time = 0.0;
-		return p_node->_pre_process(process_state, p_playback_info);
+		return p_node->_pre_process(process_state, p_playback_info, p_test_only);
 	}
-	return p_node->_pre_process(process_state, p_playback_info);
+	return p_node->_pre_process(process_state, p_playback_info, p_test_only);
 }
 
 String AnimationNode::get_caption() const {
@@ -565,12 +565,12 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		if (started) {
 			// If started, seek.
 			pi.seeked = true;
-			root_animation_node->_pre_process(&process_state, pi);
+			root_animation_node->_pre_process(&process_state, pi, false);
 			started = false;
-		} else {
-			pi.time = p_delta;
-			root_animation_node->_pre_process(&process_state, pi);
 		}
+		pi.seeked = false;
+		pi.time = p_delta;
+		root_animation_node->_pre_process(&process_state, pi, false);
 	}
 
 	if (!process_state.valid) {
