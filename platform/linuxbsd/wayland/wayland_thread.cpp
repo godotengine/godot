@@ -3185,13 +3185,13 @@ void WaylandThread::window_set_title(DisplayServer::WindowID p_window_id, String
 	WindowState &ws = main_window;
 
 #ifdef LIBDECOR_ENABLED
-	if (ws.libdecor_frame && p_title.utf8().ptr()) {
-		libdecor_frame_set_title(ws.libdecor_frame, p_title.utf8().ptr());
+	if (ws.libdecor_frame) {
+		libdecor_frame_set_title(ws.libdecor_frame, p_title.utf8());
 	}
 #endif // LIBDECOR_ENABLE
 
-	if (ws.xdg_toplevel && p_title.utf8().ptr()) {
-		xdg_toplevel_set_title(ws.xdg_toplevel, p_title.utf8().ptr());
+	if (ws.xdg_toplevel) {
+		xdg_toplevel_set_title(ws.xdg_toplevel, p_title.utf8());
 	}
 }
 
@@ -3201,13 +3201,13 @@ void WaylandThread::window_set_app_id(DisplayServer::WindowID p_window_id, Strin
 
 #ifdef LIBDECOR_ENABLED
 	if (ws.libdecor_frame) {
-		libdecor_frame_set_app_id(ws.libdecor_frame, p_app_id.utf8().ptrw());
+		libdecor_frame_set_app_id(ws.libdecor_frame, p_app_id.utf8());
 		return;
 	}
 #endif // LIBDECOR_ENABLED
 
 	if (ws.xdg_toplevel) {
-		xdg_toplevel_set_app_id(ws.xdg_toplevel, p_app_id.utf8().ptrw());
+		xdg_toplevel_set_app_id(ws.xdg_toplevel, p_app_id.utf8());
 		return;
 	}
 }
@@ -3690,7 +3690,7 @@ Vector<uint8_t> WaylandThread::selection_get_mime(String p_mime) const {
 		return Vector<uint8_t>();
 	}
 
-	return _wl_data_offer_read(wl_display, p_mime.utf8().ptr(), ss->wl_data_offer_selection);
+	return _wl_data_offer_read(wl_display, p_mime.utf8(), ss->wl_data_offer_selection);
 }
 
 bool WaylandThread::primary_has_mime(String p_mime) const {
@@ -3733,7 +3733,7 @@ Vector<uint8_t> WaylandThread::primary_get_mime(String p_mime) const {
 		return Vector<uint8_t>();
 	}
 
-	return _wp_primary_selection_offer_read(wl_display, p_mime.utf8().ptr(), ss->wp_primary_selection_offer);
+	return _wp_primary_selection_offer_read(wl_display, p_mime.utf8(), ss->wp_primary_selection_offer);
 }
 
 void WaylandThread::primary_set_text(String p_text) {
