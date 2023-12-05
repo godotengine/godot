@@ -61,8 +61,11 @@ class EditorPlugin : public Node {
 	bool force_draw_over_forwarding_enabled = false;
 
 	String last_main_screen_name;
+	String plugin_version;
 
+#ifndef DISABLE_DEPRECATED
 	void _editor_project_settings_changed();
+#endif
 
 protected:
 	void _notification(int p_what);
@@ -88,6 +91,7 @@ protected:
 	GDVIRTUAL0RC(Dictionary, _get_state)
 	GDVIRTUAL1(_set_state, Dictionary)
 	GDVIRTUAL0(_clear)
+	GDVIRTUAL1RC(String, _get_unsaved_status, String)
 	GDVIRTUAL0(_save_external_data)
 	GDVIRTUAL0(_apply_changes)
 	GDVIRTUAL0RC(Vector<String>, _get_breakpoints)
@@ -167,14 +171,18 @@ public:
 
 	virtual String get_name() const;
 	virtual const Ref<Texture2D> get_icon() const;
+	virtual String get_plugin_version() const;
+	virtual void set_plugin_version(const String &p_version);
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
+	virtual bool can_auto_hide() const;
 	virtual Dictionary get_state() const; //save editor state so it can't be reloaded when reloading scene
 	virtual void set_state(const Dictionary &p_state); //restore editor state (likely was saved with the scene)
 	virtual void clear(); // clear any temporary data in the editor, reset it (likely new scene or load another scene)
+	virtual String get_unsaved_status(const String &p_for_scene = "") const;
 	virtual void save_external_data(); // if editor references external resources/scenes, save them
 	virtual void apply_changes(); // if changes are pending in editor, apply them
 	virtual void get_breakpoints(List<String> *p_breakpoints);

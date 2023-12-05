@@ -37,6 +37,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
@@ -419,13 +420,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 void EditorFeatureProfileManager::_profile_action(int p_action) {
 	switch (p_action) {
 		case PROFILE_CLEAR: {
-			EditorSettings::get_singleton()->set("_default_feature_profile", "");
-			EditorSettings::get_singleton()->save();
-			current_profile = "";
-			current.unref();
-
-			_update_profile_list();
-			_emit_current_profile_changed();
+			set_current_profile("", false);
 		} break;
 		case PROFILE_SET: {
 			String selected = _get_selected_profile();
@@ -433,13 +428,7 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			if (selected == current_profile) {
 				return; // Nothing to do here.
 			}
-			EditorSettings::get_singleton()->set("_default_feature_profile", selected);
-			EditorSettings::get_singleton()->save();
-			current_profile = selected;
-			current = edited;
-
-			_update_profile_list();
-			_emit_current_profile_changed();
+			set_current_profile(selected, false);
 		} break;
 		case PROFILE_IMPORT: {
 			import_profiles->popup_file_dialog();
@@ -507,14 +496,14 @@ void EditorFeatureProfileManager::_profile_selected(int p_what) {
 void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
 	TreeItem *class_item = class_list->create_item(p_parent);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class, "Node"));
+	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class));
 	String text = p_class;
 
 	bool disabled = edited->is_class_disabled(p_class);
 	bool disabled_editor = edited->is_class_editor_disabled(p_class);
 	bool disabled_properties = edited->has_class_properties_disabled(p_class);
 	if (disabled) {
-		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	} else if (disabled_editor && disabled_properties) {
 		text += " " + TTR("(Editor Disabled, Properties Disabled)");
 	} else if (disabled_properties) {
@@ -534,11 +523,11 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 		class_item->select(0);
 	}
 	if (disabled) {
-		//class disabled, do nothing else (do not show further)
+		// Class disabled, do nothing else (do not show further).
 		return;
 	}
 
-	class_item->set_checked(0, true); // if its not disabled, its checked
+	class_item->set_checked(0, true); // If it's not disabled, it's checked.
 
 	List<StringName> child_classes;
 	ClassDB::get_direct_inheriters_from_class(p_class, &child_classes);
@@ -566,21 +555,22 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 
 	Variant md = item->get_metadata(0);
 	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
-		String class_name = md;
-		String class_description;
-
-		DocTools *dd = EditorHelp::get_doc_data();
-		HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_name);
-		if (E) {
-			class_description = DTR(E->value.brief_description);
+		String text = description_bit->get_class_description(md);
+		if (!text.is_empty()) {
+			// Display both class name and description, since the help bit may be displayed
+			// far away from the location (especially if the dialog was resized to be taller).
+			description_bit->set_text(vformat("[b]%s[/b]: %s", md, text));
+			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+		} else {
+			// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
+			description_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", md)));
+			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 		}
-
-		description_bit->set_text(class_description);
 	} else if (md.get_type() == Variant::INT) {
-		int feature_id = md;
-		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature(feature_id));
+		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature((int)md));
+		description_bit->set_text(vformat("[b]%s[/b]: %s", TTR(item->get_text(0)), TTRGET(feature_description)));
+		description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
 
-		description_bit->set_text(TTRGET(feature_description));
 		return;
 	} else {
 		return;
@@ -878,11 +868,45 @@ Ref<EditorFeatureProfile> EditorFeatureProfileManager::get_current_profile() {
 	return current;
 }
 
+String EditorFeatureProfileManager::get_current_profile_name() const {
+	return current_profile;
+}
+
+void EditorFeatureProfileManager::set_current_profile(const String &p_profile_name, bool p_validate_profile) {
+	if (p_validate_profile && !p_profile_name.is_empty()) {
+		// Profile may not exist.
+		Ref<DirAccess> da = DirAccess::open(EditorPaths::get_singleton()->get_feature_profiles_dir());
+		ERR_FAIL_COND_MSG(da.is_null(), "Cannot open directory '" + EditorPaths::get_singleton()->get_feature_profiles_dir() + "'.");
+		ERR_FAIL_COND_MSG(!da->file_exists(p_profile_name + ".profile"), "Feature profile '" + p_profile_name + "' does not exist.");
+
+		// Change profile selection to emulate the UI interaction. Otherwise, the wrong profile would get activated.
+		// FIXME: Ideally, _update_selected_profile() should not rely on the user interface state to function properly.
+		for (int i = 0; i < profile_list->get_item_count(); i++) {
+			if (profile_list->get_item_metadata(i) == p_profile_name) {
+				profile_list->select(i);
+				break;
+			}
+		}
+		_update_selected_profile();
+	}
+
+	// Store in editor settings.
+	EditorSettings::get_singleton()->set("_default_feature_profile", p_profile_name);
+	EditorSettings::get_singleton()->save();
+
+	current_profile = p_profile_name;
+	if (p_profile_name.is_empty()) {
+		current.unref();
+	} else {
+		current = edited;
+	}
+	_update_profile_list();
+	_emit_current_profile_changed();
+}
+
 EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = nullptr;
 
 void EditorFeatureProfileManager::_bind_methods() {
-	ClassDB::bind_method("_update_selected_profile", &EditorFeatureProfileManager::_update_selected_profile);
-
 	ADD_SIGNAL(MethodInfo("current_feature_profile_changed"));
 }
 

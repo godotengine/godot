@@ -274,10 +274,6 @@ int mbedtls_aria_crypt_cfb128(mbedtls_aria_context *ctx,
  * \brief      This function performs an ARIA-CTR encryption or decryption
  *             operation.
  *
- *             This function performs the operation defined in the \p mode
- *             parameter (encrypt/decrypt), on the input data buffer
- *             defined in the \p input parameter.
- *
  *             Due to the nature of CTR, you must use the same key schedule
  *             for both encryption and decryption operations. Therefore, you
  *             must use the context initialized with mbedtls_aria_setkey_enc()

@@ -32,6 +32,7 @@
 
 #include "dir_access_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/memory.h"
 #include "core/string/print_string.h"
 
@@ -40,23 +41,30 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-/*
+typedef struct _NT_IO_STATUS_BLOCK {
+	union {
+		LONG Status;
+		PVOID Pointer;
+	} DUMMY;
+	ULONG_PTR Information;
+} NT_IO_STATUS_BLOCK;
 
-[03:57] <reduz> yessopie, so i don't havemak to rely on unicows
-[03:58] <yessopie> reduz- yeah, all of the functions fail, and then you can call GetLastError () which will return 120
-[03:58] <drumstick> CategoryApl, hehe, what? :)
-[03:59] <CategoryApl> didn't Verona lead to some trouble
-[03:59] <yessopie> 120 = ERROR_CALL_NOT_IMPLEMENTED
-[03:59] <yessopie> (you can use that constant if you include winerr.h)
-[03:59] <CategoryApl> well answer with winning a compo
+typedef struct _NT_FILE_CASE_SENSITIVE_INFO {
+	ULONG Flags;
+} NT_FILE_CASE_SENSITIVE_INFO;
 
-[04:02] <yessopie> if ( SetCurrentDirectoryW ( L"." ) == FALSE && GetLastError () == ERROR_CALL_NOT_IMPLEMENTED ) { use ANSI }
-*/
+typedef enum _NT_FILE_INFORMATION_CLASS {
+	FileCaseSensitiveInformation = 71,
+} NT_FILE_INFORMATION_CLASS;
+
+#define NT_FILE_CS_FLAG_CASE_SENSITIVE_DIR 0x00000001
+
+extern "C" NTSYSAPI LONG NTAPI NtQueryInformationFile(HANDLE FileHandle, NT_IO_STATUS_BLOCK *IoStatusBlock, PVOID FileInformation, ULONG Length, NT_FILE_INFORMATION_CLASS FileInformationClass);
 
 struct DirAccessWindowsPrivate {
-	HANDLE h; //handle for findfirstfile
+	HANDLE h; // handle for FindFirstFile.
 	WIN32_FIND_DATA f;
-	WIN32_FIND_DATAW fu; //unicode version
+	WIN32_FIND_DATAW fu; // Unicode version.
 };
 
 String DirAccessWindows::fix_path(String p_path) const {
@@ -353,16 +361,37 @@ String DirAccessWindows::get_filesystem_type() const {
 	ERR_FAIL_V("");
 }
 
+bool DirAccessWindows::is_case_sensitive(const String &p_path) const {
+	String f = p_path;
+	if (!f.is_absolute_path()) {
+		f = get_current_dir().path_join(f);
+	}
+	f = fix_path(f);
+
+	HANDLE h_file = ::CreateFileW((LPCWSTR)(f.utf16().get_data()), 0,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+			nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+	if (h_file == INVALID_HANDLE_VALUE) {
+		return false;
+	}
+
+	NT_IO_STATUS_BLOCK io_status_block;
+	NT_FILE_CASE_SENSITIVE_INFO file_info;
+	LONG out = NtQueryInformationFile(h_file, &io_status_block, &file_info, sizeof(NT_FILE_CASE_SENSITIVE_INFO), FileCaseSensitiveInformation);
+	::CloseHandle(h_file);
+
+	if (out >= 0) {
+		return file_info.Flags & NT_FILE_CS_FLAG_CASE_SENSITIVE_DIR;
+	} else {
+		return false;
+	}
+}
+
 DirAccessWindows::DirAccessWindows() {
 	p = memnew(DirAccessWindowsPrivate);
 	p->h = INVALID_HANDLE_VALUE;
 	current_dir = ".";
-
-#ifdef UWP_ENABLED
-	Windows::Storage::StorageFolder ^ install_folder = Windows::ApplicationModel::Package::Current->InstalledLocation;
-	change_dir(install_folder->Path->Data());
-
-#else
 
 	DWORD mask = GetLogicalDrives();
 
@@ -375,7 +404,6 @@ DirAccessWindows::DirAccessWindows() {
 	}
 
 	change_dir(".");
-#endif
 }
 
 DirAccessWindows::~DirAccessWindows() {
@@ -384,4 +412,4 @@ DirAccessWindows::~DirAccessWindows() {
 	memdelete(p);
 }
 
-#endif //windows DirAccess support
+#endif // WINDOWS_ENABLED

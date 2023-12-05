@@ -33,7 +33,9 @@
 
 // For each cp that we'd like to retain maps to the corresponding gid.
 HB_SUBSET_PLAN_MEMBER (hb_set_t, unicodes)
-HB_SUBSET_PLAN_MEMBER (hb_sorted_vector_t E(<hb_pair_t<hb_codepoint_t, hb_codepoint_t>>), unicode_to_new_gid_list)
+HB_SUBSET_PLAN_MEMBER (hb_sorted_vector_t<hb_codepoint_pair_t>, unicode_to_new_gid_list)
+
+HB_SUBSET_PLAN_MEMBER (hb_sorted_vector_t<hb_codepoint_pair_t>, new_to_old_gid_list)
 
 // name_ids we would like to retain
 HB_SUBSET_PLAN_MEMBER (hb_set_t, name_ids)
@@ -90,34 +92,41 @@ HB_SUBSET_PLAN_MEMBER (hb_map_t, colrv1_layers)
 HB_SUBSET_PLAN_MEMBER (hb_map_t, colr_palettes)
 
 //Old layout item variation index -> (New varidx, delta) mapping
-HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb_pair_t E(<unsigned, int>)>), layout_variation_idx_delta_map)
+HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<unsigned, hb_pair_t E(<unsigned, int>)>), layout_variation_idx_delta_map)
 
 //gdef varstore retained varidx mapping
 HB_SUBSET_PLAN_MEMBER (hb_vector_t<hb_inc_bimap_t>, gdef_varstore_inner_maps)
 
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, hb::unique_ptr<hb_blob_t>>), sanitized_table_cache)
 
-//normalized axes location map
-HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, int>), axes_location)
+//normalized axes range map
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, Triple>), axes_location)
 HB_SUBSET_PLAN_MEMBER (hb_vector_t<int>, normalized_coords)
 
-//user specified axes location map
-HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, float>), user_axes_location)
+//user specified axes range map
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, Triple>), user_axes_location)
+//axis->TripleDistances map (distances in the pre-normalized space)
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, TripleDistances>), axes_triple_distances)
 
 //retained old axis index -> new axis index mapping in fvar axis array
 HB_SUBSET_PLAN_MEMBER (hb_map_t, axes_index_map)
 
 //axis_index->axis_tag mapping in fvar axis array
 HB_SUBSET_PLAN_MEMBER (hb_map_t, axes_old_index_tag_map)
+//vector of retained axis tags in the order of axes given in the 'fvar' table
+HB_SUBSET_PLAN_MEMBER (hb_vector_t<hb_tag_t>, axis_tags)
 
 //hmtx metrics map: new gid->(advance, lsb)
 HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<hb_codepoint_t, hb_pair_t E(<unsigned, int>)>), hmtx_map)
 //vmtx metrics map: new gid->(advance, lsb)
 HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<hb_codepoint_t, hb_pair_t E(<unsigned, int>)>), vmtx_map)
 //boundsWidth map: new gid->boundsWidth, boundWidth=xMax - xMin
-HB_SUBSET_PLAN_MEMBER (mutable hb_map_t, bounds_width_map)
+HB_SUBSET_PLAN_MEMBER (mutable hb_vector_t<unsigned>, bounds_width_vec)
 //boundsHeight map: new gid->boundsHeight, boundsHeight=yMax - yMin
-HB_SUBSET_PLAN_MEMBER (mutable hb_map_t, bounds_height_map)
+HB_SUBSET_PLAN_MEMBER (mutable hb_vector_t<unsigned>, bounds_height_vec)
+
+//map: new_gid -> contour points vector
+HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<hb_codepoint_t, contour_point_vector_t>), new_gid_contour_points_map)
 
 #ifdef HB_EXPERIMENTAL_API
 // name table overrides map: hb_ot_name_record_ids_t-> name string new value or

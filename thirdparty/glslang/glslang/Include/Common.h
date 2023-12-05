@@ -44,6 +44,7 @@
 #else
 #include <cmath>
 #endif
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <list>
@@ -54,7 +55,7 @@
 #include <unordered_set>
 #include <vector>
 
-#if defined(__ANDROID__) || (defined(_MSC_VER) && _MSC_VER < 1700)
+#if defined(__ANDROID__)
 #include <sstream>
 namespace std {
 template<typename T>
@@ -66,7 +67,7 @@ std::string to_string(const T& val) {
 }
 #endif
 
-#if (defined(_MSC_VER) && _MSC_VER < 1900 /*vs2015*/) || (defined(MINGW_HAS_SECURE_API) && MINGW_HAS_SECURE_API)
+#if defined(MINGW_HAS_SECURE_API) && MINGW_HAS_SECURE_API
     #include <basetsd.h>
     #ifndef snprintf
     #define snprintf sprintf_s
@@ -80,22 +81,6 @@ std::string to_string(const T& val) {
     #define safe_vsprintf(buf,max,format,args) vsnprintf((buf), (max), (format), (args))
     #include <stdint.h>
     #define UINT_PTR uintptr_t
-#endif
-
-#if defined(_MSC_VER) && _MSC_VER < 1800
-    #include <stdlib.h>
-    inline long long int strtoll (const char* str, char** endptr, int base)
-    {
-        return _strtoi64(str, endptr, base);
-    }
-    inline unsigned long long int strtoull (const char* str, char** endptr, int base)
-    {
-        return _strtoui64(str, endptr, base);
-    }
-    inline long long int atoll (const char* str)
-    {
-        return strtoll(str, NULL, 10);
-    }
 #endif
 
 #if defined(_MSC_VER)

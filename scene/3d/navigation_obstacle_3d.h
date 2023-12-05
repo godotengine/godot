@@ -46,7 +46,7 @@ class NavigationObstacle3D : public Node3D {
 
 	Vector<Vector3> vertices;
 
-	RID fake_agent;
+	bool avoidance_enabled = true;
 	uint32_t avoidance_layers = 1;
 
 	bool use_3d_avoidance = false;
@@ -77,8 +77,10 @@ public:
 	NavigationObstacle3D();
 	virtual ~NavigationObstacle3D();
 
-	RID get_obstacle_rid() const { return obstacle; }
-	RID get_agent_rid() const { return fake_agent; }
+	RID get_rid() const { return obstacle; }
+
+	void set_avoidance_enabled(bool p_enabled);
+	bool get_avoidance_enabled() const;
 
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;

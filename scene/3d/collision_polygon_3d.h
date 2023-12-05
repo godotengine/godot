@@ -45,7 +45,7 @@ protected:
 	Vector<Point2> polygon;
 
 	uint32_t owner_id = 0;
-	CollisionObject3D *parent = nullptr;
+	CollisionObject3D *collision_object = nullptr;
 
 	bool disabled = false;
 

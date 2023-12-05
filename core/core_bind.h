@@ -230,14 +230,16 @@ public:
 	String get_cache_dir() const;
 
 	Error set_thread_name(const String &p_name);
-	Thread::ID get_thread_caller_id() const;
-	Thread::ID get_main_thread_id() const;
+	::Thread::ID get_thread_caller_id() const;
+	::Thread::ID get_main_thread_id() const;
 
 	bool has_feature(const String &p_feature) const;
+	bool is_sandboxed() const;
 
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
+	void revoke_granted_permissions();
 
 	static OS *get_singleton() { return singleton; }
 
@@ -318,12 +320,14 @@ protected:
 
 public:
 	static Geometry3D *get_singleton();
+	Vector<Vector3> compute_convex_mesh_points(const TypedArray<Plane> &p_planes);
 	TypedArray<Plane> build_box_planes(const Vector3 &p_extents);
 	TypedArray<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	TypedArray<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	Vector<Vector3> get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2);
 	Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
 	Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
+	Vector3 get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
 	Variant ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
 	Variant segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
 
@@ -408,6 +412,8 @@ public:
 	bool is_started() const;
 	bool is_alive() const;
 	Variant wait_to_finish();
+
+	static void set_thread_safety_checks_enabled(bool p_enabled);
 };
 
 namespace special {

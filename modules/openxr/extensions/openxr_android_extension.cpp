@@ -29,12 +29,14 @@
 /**************************************************************************/
 
 #include "openxr_android_extension.h"
+
+#include "../openxr_api.h"
+
 #include "java_godot_wrapper.h"
 #include "os_android.h"
 #include "thread_jandroid.h"
 
 #include <jni.h>
-#include <modules/openxr/openxr_api.h>
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 
@@ -51,6 +53,7 @@ OpenXRAndroidExtension::OpenXRAndroidExtension() {
 HashMap<String, bool *> OpenXRAndroidExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
+	request_extensions[XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME] = &loader_init_extension_available;
 	request_extensions[XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME] = &create_instance_extension_available;
 
 	return request_extensions;

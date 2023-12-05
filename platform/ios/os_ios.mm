@@ -28,20 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#import "os_ios.h"
+
 #ifdef IOS_ENABLED
 
-#include "os_ios.h"
-
 #import "app_delegate.h"
+#import "display_server_ios.h"
+#import "godot_view.h"
+#import "view_controller.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "display_server_ios.h"
 #include "drivers/unix/syslog_logger.h"
-#import "godot_view.h"
 #include "main/main.h"
-#import "view_controller.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <CoreText/CoreText.h>
@@ -51,6 +52,7 @@
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+
 #import <QuartzCore/CAMetalLayer.h>
 #ifdef USE_VOLK
 #include <volk.h>
@@ -70,16 +72,15 @@ HashMap<String, void *> OS_IOS::dynamic_symbol_lookup_table;
 
 void add_ios_init_callback(init_callback cb) {
 	if (ios_init_callbacks_count == ios_init_callbacks_capacity) {
-		void *new_ptr = realloc(ios_init_callbacks, sizeof(cb) * 32);
+		void *new_ptr = realloc(ios_init_callbacks, sizeof(cb) * (ios_init_callbacks_capacity + 32));
 		if (new_ptr) {
 			ios_init_callbacks = (init_callback *)(new_ptr);
 			ios_init_callbacks_capacity += 32;
+		} else {
+			ERR_FAIL_MSG("Unable to allocate memory for extension callbacks.");
 		}
 	}
-	if (ios_init_callbacks_capacity > ios_init_callbacks_count) {
-		ios_init_callbacks[ios_init_callbacks_count] = cb;
-		++ios_init_callbacks_count;
-	}
+	ios_init_callbacks[ios_init_callbacks_count++] = cb;
 }
 
 void register_dynamic_symbol(char *name, void *address) {
@@ -255,7 +256,7 @@ Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle,
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = path;

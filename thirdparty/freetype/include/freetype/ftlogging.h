@@ -62,7 +62,7 @@ FT_BEGIN_HEADER
    *   component.
    *
    *   ```
-   *   FT_Trace_Set_Level( "any:7 memory:0 );
+   *   FT_Trace_Set_Level( "any:7 memory:0" );
    *   ```
    *
    * @note:

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorPlugin" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorPlugin" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Used by the editor to extend its functionality.
 	</brief_description>
 	<description>
 		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins. See also [EditorScript] to add functions to the editor.
+		[b]Note:[/b] Some names in this class contain "left" or "right" (e.g. [constant DOCK_SLOT_LEFT_UL]). These APIs assume left-to-right layout, and would be backwards when using right-to-left layout. These names are kept for compatibility reasons.
 	</description>
 	<tutorials>
 		<link title="Editor plugins documentation index">$DOCS_URL/tutorials/plugins/editor/index.html</link>
@@ -245,7 +246,7 @@
 				    # You can use a custom icon:
 				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
 				    # Or use a built-in icon:
-				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/gdscript]
 				[csharp]
 				public override Texture2D _GetPluginIcon()
@@ -253,7 +254,7 @@
 				    // You can use a custom icon:
 				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
 				    // Or use a built-in icon:
-				    return GetEditorInterface().GetBaseControl().GetThemeIcon("Node", "EditorIcons");
+				    return EditorInterface.Singleton.GetEditorTheme().GetIcon("Node", "EditorIcons");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -280,6 +281,34 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="_get_unsaved_status" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="for_scene" type="String" />
+			<description>
+				Override this method to provide a custom message that lists unsaved changes. The editor will call this method when exiting or when closing a scene, and display the returned string in a confirmation dialog. Return empty string if the plugin has no unsaved changes.
+				When closing a scene, [param for_scene] is the path to the scene being closed. You can use it to handle built-in resources in that scene.
+				If the user confirms saving, [method _save_external_data] will be called, before closing the editor.
+				[codeblock]
+				func _get_unsaved_status(for_scene):
+				    if not unsaved:
+				        return ""
+
+				    if for_scene.is_empty():
+				        return "Save changes in MyCustomPlugin before closing?"
+				    else:
+				        return "Scene %s has changes from MyCustomPlugin. Save before closing?" % for_scene.get_file()
+
+				func _save_external_data():
+				    unsaved = false
+				[/codeblock]
+				If the plugin has no scene-specific changes, you can ignore the calls when closing scenes:
+				[codeblock]
+				func _get_unsaved_status(for_scene):
+				    if not for_scene.is_empty():
+				        return ""
+				[/codeblock]
+			</description>
+		</method>
 		<method name="_get_window_layout" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="configuration" type="ConfigFile" />
@@ -298,6 +327,7 @@
 			<param index="0" name="object" type="Object" />
 			<description>
 				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return [code]true[/code], then you will get the functions [method _edit] and [method _make_visible] called when the editor requests them. If you have declared the methods [method _forward_canvas_gui_input] and [method _forward_3d_gui_input] these will be called too.
+				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handes more types of objects and they are edited at the same time, it will result in errors.
 			</description>
 		</method>
 		<method name="_has_main_screen" qualifiers="virtual const">
@@ -311,7 +341,7 @@
 
 				func _enter_tree():
 				    plugin_control = preload("my_plugin_control.tscn").instantiate()
-				    get_editor_interface().get_editor_main_screen().add_child(plugin_control)
+				    EditorInterface.get_editor_main_screen().add_child(plugin_control)
 				    plugin_control.hide()
 
 				func _has_main_screen():
@@ -324,7 +354,7 @@
 				    return "My Super Cool Plugin 3000"
 
 				func _get_plugin_icon():
-				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/codeblock]
 			</description>
 		</method>
@@ -511,7 +541,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="submenu" type="PopupMenu" />
 			<description>
-				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [code]remove_tool_menu_item(name)[/code] on plugin clean up to remove the menu.
+				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [method remove_tool_menu_item] on plugin clean up to remove the menu.
 			</description>
 		</method>
 		<method name="add_translation_parser_plugin">
@@ -529,16 +559,23 @@
 				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [UndoRedo] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
 			</description>
 		</method>
-		<method name="get_editor_interface">
+		<method name="get_editor_interface" is_deprecated="true">
 			<return type="EditorInterface" />
 			<description>
-				Returns the [EditorInterface] singleton. It provides access to some parts of the editor GUI as well as various inner states and tools.
+				Returns the [EditorInterface] singleton instance.
+				[i]Deprecated.[/i] [EditorInterface] is a global singleton and can be accessed directly by its name.
 			</description>
 		</method>
 		<method name="get_export_as_menu">
 			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] under [b]Scene &gt; Export As...[/b].
+			</description>
+		</method>
+		<method name="get_plugin_version" qualifiers="const">
+			<return type="String" />
+			<description>
+				Provide the version of the plugin declared in the [code]plugin.cfg[/code] config file.
 			</description>
 		</method>
 		<method name="get_script_create_dialog">
@@ -713,9 +750,10 @@
 				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
-		<signal name="project_settings_changed">
+		<signal name="project_settings_changed" is_deprecated="true">
 			<description>
 				Emitted when any project setting has changed.
+				[i]Deprecated.[/i] Use [signal ProjectSettings.settings_changed] instead.
 			</description>
 		</signal>
 		<signal name="resource_saved">
@@ -787,13 +825,13 @@
 			Dock slot, left side, bottom-right (in default layout includes FileSystem dock).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UL" value="4" enum="DockSlot">
-			Dock slot, right side, upper-left (empty in default layout).
+			Dock slot, right side, upper-left (in default layout includes Inspector, Node, and History docks).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BL" value="5" enum="DockSlot">
 			Dock slot, right side, bottom-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UR" value="6" enum="DockSlot">
-			Dock slot, right side, upper-right (in default layout includes Inspector, Node and History docks).
+			Dock slot, right side, upper-right (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
 			Dock slot, right side, bottom-right (empty in default layout).

@@ -15,6 +15,7 @@
 #include "src/webp/config.h"
 #endif
 
+#include "src/dsp/cpu.h"
 #include "src/utils/bit_reader_inl_utils.h"
 #include "src/utils/utils.h"
 
@@ -121,7 +122,7 @@ int32_t VP8GetSignedValue(VP8BitReader* const br, int bits,
 
 #define VP8L_LOG8_WBITS 4  // Number of bytes needed to store VP8L_WBITS bits.
 
-#if defined(__arm__) || defined(_M_ARM) || defined(__aarch64__) || \
+#if defined(__arm__) || defined(_M_ARM) || WEBP_AARCH64 || \
     defined(__i386__) || defined(_M_IX86) || \
     defined(__x86_64__) || defined(_M_X64)
 #define VP8L_USE_FAST_LOAD

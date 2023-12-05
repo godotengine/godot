@@ -98,8 +98,17 @@
   FT_EXPORT_DEF( void )
   FT_GlyphSlot_Embolden( FT_GlyphSlot  slot )
   {
+    FT_GlyphSlot_AdjustWeight( slot, 0x0AAA, 0x0AAA );
+  }
+
+
+  FT_EXPORT_DEF( void )
+  FT_GlyphSlot_AdjustWeight( FT_GlyphSlot  slot,
+                             FT_Fixed      xdelta,
+                             FT_Fixed      ydelta )
+  {
     FT_Library  library;
-    FT_Face     face;
+    FT_Size     size;
     FT_Error    error;
     FT_Pos      xstr, ystr;
 
@@ -108,16 +117,15 @@
       return;
 
     library = slot->library;
-    face    = slot->face;
+    size    = slot->face->size;
 
     if ( slot->format != FT_GLYPH_FORMAT_OUTLINE &&
          slot->format != FT_GLYPH_FORMAT_BITMAP  )
       return;
 
-    /* some reasonable strength */
-    xstr = FT_MulFix( face->units_per_EM,
-                      face->size->metrics.y_scale ) / 24;
-    ystr = xstr;
+    /* express deltas in pixels in 26.6 format */
+    xstr = (FT_Pos)size->metrics.x_ppem * xdelta / 1024;
+    ystr = (FT_Pos)size->metrics.y_ppem * ydelta / 1024;
 
     if ( slot->format == FT_GLYPH_FORMAT_OUTLINE )
       FT_Outline_EmboldenXY( &slot->outline, xstr, ystr );

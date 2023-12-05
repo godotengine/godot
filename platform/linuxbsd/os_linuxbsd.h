@@ -31,13 +31,14 @@
 #ifndef OS_LINUXBSD_H
 #define OS_LINUXBSD_H
 
-#include "core/input/input.h"
 #include "crash_handler_linuxbsd.h"
+#include "joypad_linux.h"
+
+#include "core/input/input.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "joypad_linux.h"
 #include "servers/audio_server.h"
 
 #ifdef FONTCONFIG_ENABLED
@@ -121,6 +122,8 @@ public:
 
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;
+
+	virtual bool is_sandboxed() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 

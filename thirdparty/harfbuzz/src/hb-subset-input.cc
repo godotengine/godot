@@ -69,14 +69,11 @@ hb_subset_input_t::hb_subset_input_t ()
   sets.drop_tables->add_array (default_drop_tables, ARRAY_LENGTH (default_drop_tables));
 
   hb_tag_t default_no_subset_tables[] = {
-    HB_TAG ('a', 'v', 'a', 'r'),
     HB_TAG ('g', 'a', 's', 'p'),
     HB_TAG ('f', 'p', 'g', 'm'),
     HB_TAG ('p', 'r', 'e', 'p'),
     HB_TAG ('V', 'D', 'M', 'X'),
     HB_TAG ('D', 'S', 'I', 'G'),
-    HB_TAG ('M', 'V', 'A', 'R'),
-    HB_TAG ('c', 'v', 'a', 'r'),
   };
   sets.no_subset_tables->add_array (default_no_subset_tables,
 					 ARRAY_LENGTH (default_no_subset_tables));
@@ -438,7 +435,8 @@ hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  return input->axes_location.set (axis_tag, axis_info.default_value);
+  float default_val = axis_info.default_value;
+  return input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val));
 }
 
 /**
@@ -468,8 +466,59 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
     return false;
 
   float val = hb_clamp(axis_value, axis_info.min_value, axis_info.max_value);
-  return input->axes_location.set (axis_tag, val);
+  return input->axes_location.set (axis_tag, Triple (val, val, val));
 }
+
+#ifdef HB_EXPERIMENTAL_API
+/**
+ * hb_subset_input_set_axis_range: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
+ * @axis_tag: Tag of the axis
+ * @axis_min_value: Minimum value of the axis variation range to set
+ * @axis_max_value: Maximum value of the axis variation range to set
+ * @axis_def_value: Default value of the axis variation range to set, in case of
+ * null, it'll be determined automatically
+ *
+ * Restricting the range of variation on an axis in the given subset input object.
+ * New min/default/max values will be clamped if they're not within the fvar axis range.
+ * If the new default value is null:
+ * If the fvar axis default value is within the new range, then new default
+ * value is the same as original default value.
+ * If the fvar axis default value is not within the new range, the new default
+ * value will be changed to the new min or max value, whichever is closer to the fvar
+ * axis default.
+ *
+ * Note: input min value can not be bigger than input max value. If the input
+ * default value is not within the new min/max range, it'll be clamped.
+ * Note: currently it supports gvar and cvar tables only.
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_set_axis_range (hb_subset_input_t  *input,
+                                hb_face_t          *face,
+                                hb_tag_t            axis_tag,
+                                float               axis_min_value,
+                                float               axis_max_value,
+                                float              *axis_def_value /* IN, maybe NULL */)
+{
+  if (axis_min_value > axis_max_value)
+    return false;
+
+  hb_ot_var_axis_info_t axis_info;
+  if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
+    return false;
+
+  float new_min_val = hb_clamp(axis_min_value, axis_info.min_value, axis_info.max_value);
+  float new_max_val = hb_clamp(axis_max_value, axis_info.min_value, axis_info.max_value);
+  float new_default_val = axis_def_value ? *axis_def_value : axis_info.default_value;
+  new_default_val = hb_clamp(new_default_val, new_min_val, new_max_val);
+  return input->axes_location.set (axis_tag, Triple (new_min_val, new_default_val, new_max_val));
+}
+#endif
 #endif
 
 /**

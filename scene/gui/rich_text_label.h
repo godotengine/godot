@@ -32,10 +32,12 @@
 #define RICH_TEXT_LABEL_H
 
 #include "core/object/worker_thread_pool.h"
-#include "rich_text_effect.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
+
+class CharFXTransform;
+class RichTextEffect;
 
 class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
@@ -70,12 +72,15 @@ public:
 		ITEM_WAVE,
 		ITEM_TORNADO,
 		ITEM_RAINBOW,
+		ITEM_PULSE,
 		ITEM_BGCOLOR,
 		ITEM_FGCOLOR,
 		ITEM_META,
 		ITEM_HINT,
 		ITEM_DROPCAP,
-		ITEM_CUSTOMFX
+		ITEM_CUSTOMFX,
+		ITEM_CONTEXT,
+		ITEM_LANGUAGE,
 	};
 
 	enum MenuItems {
@@ -93,10 +98,27 @@ public:
 		CUSTOM_FONT,
 	};
 
+	enum ImageUpdateMask {
+		UPDATE_TEXTURE = 1 << 0,
+		UPDATE_SIZE = 1 << 1,
+		UPDATE_COLOR = 1 << 2,
+		UPDATE_ALIGNMENT = 1 << 3,
+		UPDATE_REGION = 1 << 4,
+		UPDATE_PAD = 1 << 5,
+		UPDATE_TOOLTIP = 1 << 6,
+		UPDATE_WIDTH_IN_PERCENT = 1 << 7,
+	};
+
 protected:
 	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
+	static void _bind_compatibility_methods();
+#endif
 
 private:
 	struct Item;
@@ -183,8 +205,14 @@ private:
 	struct ItemImage : public Item {
 		Ref<Texture2D> image;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
+		bool pad = false;
+		bool size_in_percent = false;
+		Rect2 region;
 		Size2 size;
+		Size2 rq_size;
 		Color color;
+		Variant key;
+		String tooltip;
 		ItemImage() { type = ITEM_IMAGE; }
 	};
 
@@ -235,6 +263,11 @@ private:
 		ItemHint() { type = ITEM_HINT; }
 	};
 
+	struct ItemLanguage : public Item {
+		String language;
+		ItemLanguage() { type = ITEM_LANGUAGE; }
+	};
+
 	struct ItemParagraph : public Item {
 		HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 		String language;
@@ -254,7 +287,7 @@ private:
 		ListType list_type = LIST_DOTS;
 		bool capitalize = false;
 		int level = 0;
-		String bullet = String::utf8("•");
+		String bullet = U"•";
 		ItemList() { type = ITEM_LIST; }
 	};
 
@@ -343,6 +376,14 @@ private:
 		ItemRainbow() { type = ITEM_RAINBOW; }
 	};
 
+	struct ItemPulse : public ItemFX {
+		Color color = Color(1.0, 1.0, 1.0, 0.25);
+		float frequency = 1.0f;
+		float ease = -2.0f;
+
+		ItemPulse() { type = ITEM_PULSE; }
+	};
+
 	struct ItemBGColor : public Item {
 		Color color;
 		ItemBGColor() { type = ITEM_BGCOLOR; }
@@ -357,17 +398,13 @@ private:
 		Ref<CharFXTransform> char_fx_transform;
 		Ref<RichTextEffect> custom_effect;
 
-		ItemCustomFX() {
-			type = ITEM_CUSTOMFX;
-			char_fx_transform.instantiate();
-		}
+		ItemCustomFX();
 
-		virtual ~ItemCustomFX() {
-			_clear_children();
+		virtual ~ItemCustomFX();
+	};
 
-			char_fx_transform.unref();
-			custom_effect.unref();
-		}
+	struct ItemContext : public Item {
+		ItemContext() { type = ITEM_CONTEXT; }
 	};
 
 	ItemFrame *main = nullptr;
@@ -421,6 +458,7 @@ private:
 	void _stop_thread();
 	bool _validate_line_caches();
 	void _process_line_caches();
+	_FORCE_INLINE_ float _update_scroll_exceeds(float p_total_height, float p_ctrl_height, float p_width, int p_idx, float p_old_scroll, float p_text_rect_height);
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
@@ -453,6 +491,7 @@ private:
 
 	Selection selection;
 	bool deselect_on_focus_loss_enabled = true;
+	bool drag_and_drop_selection_enabled = true;
 
 	bool context_menu_enabled = false;
 	bool shortcut_keys_enabled = true;
@@ -527,6 +566,8 @@ private:
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 
+	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
+
 	void _draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item *it_from, Item *it_to, int start, int end, int fbg_flag);
 #ifndef DISABLE_DEPRECATED
 	// Kept for compatibility from 3.x to 4.0.
@@ -569,6 +610,9 @@ private:
 		Ref<Font> mono_font;
 		int mono_font_size;
 
+		int text_highlight_h_padding;
+		int text_highlight_v_padding;
+
 		int table_h_separation;
 		int table_v_separation;
 		Color table_odd_row_bg;
@@ -581,7 +625,8 @@ private:
 public:
 	String get_parsed_text() const;
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(0, 0, 0, 0));
+	void add_image(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
+	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
 	void add_newline();
 	bool remove_paragraph(const int p_paragraph);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
@@ -599,6 +644,7 @@ public:
 	void push_outline_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();
+	void push_language(const String &p_language);
 	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
@@ -610,9 +656,11 @@ public:
 	void push_wave(float p_frequency, float p_amplitude, bool p_connected);
 	void push_tornado(float p_frequency, float p_radius, bool p_connected);
 	void push_rainbow(float p_saturation, float p_value, float p_frequency);
+	void push_pulse(const Color &p_color, float p_frequency, float p_ease);
 	void push_bgcolor(const Color &p_color);
 	void push_fgcolor(const Color &p_color);
 	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
+	void push_context();
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	void set_cell_row_background_color(const Color &p_odd_row_bg, const Color &p_even_row_bg);
 	void set_cell_border_color(const Color &p_color);
@@ -621,6 +669,8 @@ public:
 	int get_current_table_column() const;
 	void push_cell();
 	void pop();
+	void pop_context();
+	void pop_all();
 
 	void clear();
 
@@ -680,10 +730,16 @@ public:
 	String get_selected_text() const;
 	void select_all();
 	void selection_copy();
+
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
+
+	void set_drag_and_drop_selection_enabled(const bool p_enabled);
+	bool is_drag_and_drop_selection_enabled() const;
+
 	void deselect();
 
+	int get_pending_paragraphs() const;
 	bool is_ready() const;
 	bool is_updating() const;
 
@@ -748,5 +804,6 @@ public:
 
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
+VARIANT_BITFIELD_CAST(RichTextLabel::ImageUpdateMask);
 
 #endif // RICH_TEXT_LABEL_H

@@ -38,9 +38,10 @@
 #include "scene/resources/visual_shader.h"
 
 class CodeEdit;
+class ColorPicker;
 class CurveEditor;
 class GraphEdit;
-class GraphNode;
+class GraphElement;
 class MenuButton;
 class PopupPanel;
 class RichTextLabel;
@@ -81,7 +82,7 @@ private:
 	struct Link {
 		VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 		VisualShaderNode *visual_node = nullptr;
-		GraphNode *graph_node = nullptr;
+		GraphElement *graph_element = nullptr;
 		bool preview_visible = false;
 		int preview_pos = 0;
 		HashMap<int, InputPort> input_ports;
@@ -105,7 +106,7 @@ public:
 	void set_editor(VisualShaderEditor *p_editor);
 	void register_shader(VisualShader *p_visual_shader);
 	void set_connections(const List<VisualShader::Connection> &p_connections);
-	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node);
+	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphElement *p_graph_element);
 	void register_output_port(int p_id, int p_port, TextureButton *p_button);
 	void register_parameter_name(int p_id, LineEdit *p_parameter_name);
 	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
@@ -259,6 +260,10 @@ class VisualShaderEditor : public VBoxContainer {
 		COLLAPSE_ALL
 	};
 
+#ifdef MINGW_ENABLED
+#undef DELETE
+#endif
+
 	enum NodeMenuOptions {
 		ADD,
 		SEPARATOR, // ignore
@@ -343,7 +348,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	List<VisualShaderNodeParameterRef> uniform_refs;
 
-	void _draw_color_over_button(Object *obj, Color p_color);
+	void _draw_color_over_button(Object *p_obj, Color p_color);
 
 	void _setup_node(VisualShaderNode *p_node, const Vector<Variant> &p_ops);
 	void _add_node(int p_idx, const Vector<Variant> &p_ops, String p_resource_path = "", int p_node_idx = -1);
@@ -417,9 +422,9 @@ class VisualShaderEditor : public VBoxContainer {
 	void _comment_desc_text_changed();
 
 	void _parameter_line_edit_changed(const String &p_text, int p_node_id);
-	void _parameter_line_edit_focus_out(Object *line_edit, int p_node_id);
+	void _parameter_line_edit_focus_out(Object *p_line_edit, int p_node_id);
 
-	void _port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output);
+	void _port_name_focus_out(Object *p_line_edit, int p_node_id, int p_port_id, bool p_output);
 
 	struct CopyItem {
 		int id;
@@ -451,7 +456,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _mode_selected(int p_id);
 	void _custom_mode_toggled(bool p_enabled);
 
-	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
+	void _input_select_item(Ref<VisualShaderNodeInput> p_input, String p_name);
 	void _parameter_ref_select_item(Ref<VisualShaderNodeParameterRef> p_parameter_ref, String p_name);
 	void _varying_select_item(Ref<VisualShaderNodeVarying> p_varying, String p_name);
 
@@ -470,7 +475,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _change_output_port_name(const String &p_text, Object *p_line_edit, int p_node, int p_port);
 	void _expand_output_port(int p_node, int p_port, bool p_expand);
 
-	void _expression_focus_out(Object *code_edit, int p_node);
+	void _expression_focus_out(Object *p_code_edit, int p_node);
 
 	void _set_node_size(int p_type, int p_node, const Size2 &p_size);
 	void _node_resized(const Vector2 &p_new_size, int p_type, int p_node);
@@ -492,6 +497,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _varying_unselected();
 	void _update_varying_tree();
 
+	void _set_custom_node_option(int p_index, int p_node, int p_op);
+
 	Vector2 menu_point;
 	void _node_menu_id_pressed(int p_idx);
 
@@ -500,7 +507,6 @@ class VisualShaderEditor : public VBoxContainer {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	bool _is_available(int p_mode);
-	void _update_created_node(GraphNode *node);
 	void _update_parameters(bool p_update_refs);
 	void _update_parameter_refs(HashSet<String> &p_names);
 	void _update_varyings();

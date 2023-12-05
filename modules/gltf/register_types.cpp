@@ -31,19 +31,21 @@
 #include "register_types.h"
 
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
+#include "extensions/gltf_document_extension_texture_ktx.h"
 #include "extensions/gltf_document_extension_texture_webp.h"
 #include "extensions/gltf_spec_gloss.h"
 #include "extensions/physics/gltf_document_extension_physics.h"
 #include "gltf_document.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/config/project_settings.h"
 #include "editor/editor_import_blend_runner.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
 #include "editor/editor_scene_importer_fbx.h"
 #include "editor/editor_scene_importer_gltf.h"
+
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 
 static void _editor_init() {
@@ -54,24 +56,13 @@ static void _editor_init() {
 	// Blend to glTF importer.
 
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
-	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
-	EDITOR_DEF_RST("filesystem/import/blender/rpc_port", 6011);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,
-			"filesystem/import/blender/rpc_port", PROPERTY_HINT_RANGE, "0,65535,1"));
-
-	EDITOR_DEF_RST("filesystem/import/blender/rpc_server_uptime", 5);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT,
-			"filesystem/import/blender/rpc_server_uptime", PROPERTY_HINT_RANGE, "0,300,1,or_greater,suffix:s"));
-
-	String blender3_path = EDITOR_DEF_RST("filesystem/import/blender/blender3_path", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
-			"filesystem/import/blender/blender3_path", PROPERTY_HINT_GLOBAL_DIR));
+	String blender3_path = EDITOR_GET("filesystem/import/blender/blender3_path");
 	if (blend_enabled) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (blender3_path.is_empty()) {
-			WARN_PRINT("Blend file import is enabled in the project settings, but no Blender path is configured in the editor settings. Blend files will not be imported.");
+			WARN_PRINT(TTR("Blend file import is enabled in the project settings, but no Blender path is configured in the editor settings. Blend files will not be imported."));
 		} else if (!da->dir_exists(blender3_path)) {
-			WARN_PRINT("Blend file import is enabled, but the Blender path doesn't point to an accessible directory. Blend files will not be imported.");
+			WARN_PRINT(TTR("Blend file import is enabled, but the Blender path doesn't point to an accessible directory. Blend files will not be imported."));
 		} else {
 			Ref<EditorSceneFormatImporterBlend> importer;
 			importer.instantiate();
@@ -88,10 +79,6 @@ static void _editor_init() {
 	// FBX to glTF importer.
 
 	bool fbx_enabled = GLOBAL_GET("filesystem/import/fbx/enabled");
-	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
-	String fbx2gltf_path = EDITOR_DEF_RST("filesystem/import/fbx/fbx2gltf_path", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
-			"filesystem/import/fbx/fbx2gltf_path", PROPERTY_HINT_GLOBAL_FILE));
 	if (fbx_enabled) {
 		Ref<EditorSceneFormatImporterFBX> importer;
 		importer.instantiate();
@@ -116,7 +103,6 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFAnimation);
 		GDREGISTER_CLASS(GLTFBufferView);
 		GDREGISTER_CLASS(GLTFCamera);
-		GDREGISTER_CLASS(GLTFCollider);
 		GDREGISTER_CLASS(GLTFDocument);
 		GDREGISTER_CLASS(GLTFDocumentExtension);
 		GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
@@ -124,6 +110,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFMesh);
 		GDREGISTER_CLASS(GLTFNode);
 		GDREGISTER_CLASS(GLTFPhysicsBody);
+		GDREGISTER_CLASS(GLTFPhysicsShape);
 		GDREGISTER_CLASS(GLTFSkeleton);
 		GDREGISTER_CLASS(GLTFSkin);
 		GDREGISTER_CLASS(GLTFSpecGloss);
@@ -132,6 +119,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFTextureSampler);
 		// Register GLTFDocumentExtension classes with GLTFDocument.
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionPhysics);
+		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureKTX);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureWebP);
 		bool is_editor = ::Engine::get_singleton()->is_editor_hint();
 		if (!is_editor) {

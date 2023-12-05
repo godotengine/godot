@@ -82,11 +82,11 @@ void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
 		return;
 	}
 	if (shape.is_valid()) {
-		shape->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		shape->disconnect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	shape = p_shape;
 	if (shape.is_valid()) {
-		shape->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		shape->connect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	queue_redraw();
 }
@@ -368,6 +368,19 @@ void TouchScreenButton::set_passby_press(bool p_enable) {
 bool TouchScreenButton::is_passby_press_enabled() const {
 	return passby_press;
 }
+
+#ifndef DISABLE_DEPRECATED
+bool TouchScreenButton::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == SNAME("normal")) { // Compatibility with Godot 3.x.
+		set_texture_normal(p_value);
+		return true;
+	} else if (p_name == SNAME("pressed")) { // Compatibility with Godot 3.x.
+		set_texture_pressed(p_value);
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
 
 void TouchScreenButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_normal", "texture"), &TouchScreenButton::set_texture_normal);

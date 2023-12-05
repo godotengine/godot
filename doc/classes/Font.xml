@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Font" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Font" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for fonts and font variations.
+		Abstract base class for fonts and font variations.
 	</brief_description>
 	<description>
-		Font is the abstract base class for font, so it shouldn't be used directly. Other types of fonts inherit from it.
+		Abstract base class for different font types. It has methods for drawing text and font character introspection.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -44,8 +44,8 @@
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="max_lines" type="int" default="-1" />
 			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<param index="9" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="9" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -64,8 +64,8 @@
 			<param index="6" name="max_lines" type="int" default="-1" />
 			<param index="7" name="size" type="int" default="1" />
 			<param index="8" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<param index="10" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="10" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -82,7 +82,7 @@
 			<param index="4" name="width" type="float" default="-1" />
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="7" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="7" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -100,7 +100,7 @@
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="size" type="int" default="1" />
 			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="8" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="8" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -114,6 +114,10 @@
 			<param index="1" name="face_index" type="int" default="0" />
 			<param index="2" name="strength" type="float" default="0.0" />
 			<param index="3" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
+			<param index="4" name="spacing_top" type="int" default="0" />
+			<param index="5" name="spacing_bottom" type="int" default="0" />
+			<param index="6" name="spacing_space" type="int" default="0" />
+			<param index="7" name="spacing_glyph" type="int" default="0" />
 			<description>
 				Returns [TextServer] RID of the font cache for specific variation.
 			</description>
@@ -149,12 +153,6 @@
 				Returns number of faces in the TrueType / OpenType collection.
 			</description>
 		</method>
-		<method name="get_fallbacks" qualifiers="const">
-			<return type="Font[]" />
-			<description>
-				Returns array of fallback [Font]s.
-			</description>
-		</method>
 		<method name="get_font_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -168,7 +166,7 @@
 			</description>
 		</method>
 		<method name="get_font_style" qualifiers="const">
-			<return type="int" enum="TextServer.FontStyle" />
+			<return type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<description>
 				Returns font style flags, see [enum TextServer.FontStyle].
 			</description>
@@ -200,8 +198,8 @@
 			<param index="2" name="width" type="float" default="-1" />
 			<param index="3" name="font_size" type="int" default="16" />
 			<param index="4" name="max_lines" type="int" default="-1" />
-			<param index="5" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<param index="6" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="5" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="6" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="7" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="8" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -240,7 +238,7 @@
 			<param index="1" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<param index="2" name="width" type="float" default="-1" />
 			<param index="3" name="font_size" type="int" default="16" />
-			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="5" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="6" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -335,12 +333,11 @@
 				Sets LRU cache capacity for [code]draw_*[/code] methods.
 			</description>
 		</method>
-		<method name="set_fallbacks">
-			<return type="void" />
-			<param index="0" name="fallbacks" type="Font[]" />
-			<description>
-				Sets array of fallback [Font]s.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
+			Array of fallback [Font]s to use as a substitute if a glyph is not found in this current [Font].
+			If this array is empty in a [FontVariation], the [member FontVariation.base_font]'s fallbacks are used instead.
+		</member>
+	</members>
 </class>

@@ -33,7 +33,6 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 
@@ -50,12 +49,10 @@ void EditorResourceTooltipPlugin::_thumbnail_ready(const String &p_path, const R
 
 void EditorResourceTooltipPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_thumbnail_ready"), &EditorResourceTooltipPlugin::_thumbnail_ready);
-
-	ClassDB::bind_static_method("EditorResourceTooltipPlugin", D_METHOD("make_default_tooltip", "path"), &EditorResourceTooltipPlugin::make_default_tooltip);
 	ClassDB::bind_method(D_METHOD("request_thumbnail", "path", "control"), &EditorResourceTooltipPlugin::request_thumbnail);
 
 	GDVIRTUAL_BIND(_handles, "type");
-	GDVIRTUAL_BIND(_make_tooltip_for_path, "path", "metadata");
+	GDVIRTUAL_BIND(_make_tooltip_for_path, "path", "metadata", "base");
 }
 
 VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p_resource_path) {
@@ -91,10 +88,10 @@ bool EditorResourceTooltipPlugin::handles(const String &p_resource_type) const {
 	return ret;
 }
 
-Control *EditorResourceTooltipPlugin::make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata) const {
-	Object *ret = nullptr;
-	GDVIRTUAL_CALL(_make_tooltip_for_path, p_resource_path, p_metadata, ret);
-	return Object::cast_to<Control>(ret);
+Control *EditorResourceTooltipPlugin::make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const {
+	Control *ret = nullptr;
+	GDVIRTUAL_CALL(_make_tooltip_for_path, p_resource_path, p_metadata, p_base, ret);
+	return ret;
 }
 
 // EditorTextureTooltipPlugin
@@ -103,9 +100,9 @@ bool EditorTextureTooltipPlugin::handles(const String &p_resource_type) const {
 	return ClassDB::is_parent_class(p_resource_type, "Texture2D") || ClassDB::is_parent_class(p_resource_type, "Image");
 }
 
-Control *EditorTextureTooltipPlugin::make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata) const {
+Control *EditorTextureTooltipPlugin::make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const {
 	HBoxContainer *hb = memnew(HBoxContainer);
-	VBoxContainer *vb = EditorResourceTooltipPlugin::make_default_tooltip(p_resource_path);
+	VBoxContainer *vb = Object::cast_to<VBoxContainer>(p_base);
 	vb->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 
 	Vector2 dimensions = p_metadata.get("dimensions", Vector2());

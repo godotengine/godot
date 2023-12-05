@@ -270,6 +270,7 @@ VoxelGIData::~VoxelGIData() {
 void VoxelGI::set_probe_data(const Ref<VoxelGIData> &p_data) {
 	if (p_data.is_valid()) {
 		RS::get_singleton()->instance_set_base(get_instance(), p_data->get_rid());
+		RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(p_data->get_rid(), _get_camera_exposure_normalization());
 	} else {
 		RS::get_singleton()->instance_set_base(get_instance(), RID());
 	}
@@ -303,15 +304,31 @@ Vector3 VoxelGI::get_size() const {
 
 void VoxelGI::set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes) {
 	camera_attributes = p_camera_attributes;
+
+	if (probe_data.is_valid()) {
+		RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(probe_data->get_rid(), _get_camera_exposure_normalization());
+	}
 }
 
 Ref<CameraAttributes> VoxelGI::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+static bool is_node_voxel_bakeable(Node3D *p_node) {
+	if (!p_node->is_visible_in_tree()) {
+		return false;
+	}
+
+	GeometryInstance3D *geometry = Object::cast_to<GeometryInstance3D>(p_node);
+	if (geometry != nullptr && geometry->get_gi_mode() != GeometryInstance3D::GI_MODE_STATIC) {
+		return false;
+	}
+	return true;
+}
+
 void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
-	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_STATIC && mi->is_visible_in_tree()) {
+	if (mi && is_node_voxel_bakeable(mi)) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 			AABB aabb = mesh->get_aabb();
@@ -333,8 +350,15 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 	Node3D *s = Object::cast_to<Node3D>(p_at_node);
 	if (s) {
-		if (s->is_visible_in_tree()) {
-			Array meshes = p_at_node->call("get_meshes");
+		if (is_node_voxel_bakeable(s)) {
+			Array meshes;
+			MultiMeshInstance3D *multi_mesh = Object::cast_to<MultiMeshInstance3D>(p_at_node);
+			if (multi_mesh) {
+				meshes = multi_mesh->get_meshes();
+			} else {
+				meshes = p_at_node->call("get_meshes");
+			}
+
 			for (int i = 0; i < meshes.size(); i += 2) {
 				Transform3D mxf = meshes[i];
 				Ref<Mesh> mesh = meshes[i + 1];
@@ -398,13 +422,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 	p_from_node = p_from_node ? p_from_node : get_parent();
 	ERR_FAIL_NULL(p_from_node);
 
-	float exposure_normalization = 1.0;
-	if (camera_attributes.is_valid()) {
-		exposure_normalization = camera_attributes->get_exposure_multiplier();
-		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
-			exposure_normalization = camera_attributes->calculate_exposure_normalization();
-		}
-	}
+	float exposure_normalization = _get_camera_exposure_normalization();
 
 	Voxelizer baker;
 
@@ -483,6 +501,17 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 void VoxelGI::_debug_bake() {
 	bake(nullptr, true);
+}
+
+float VoxelGI::_get_camera_exposure_normalization() {
+	float exposure_normalization = 1.0;
+	if (camera_attributes.is_valid()) {
+		exposure_normalization = camera_attributes->get_exposure_multiplier();
+		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+			exposure_normalization = camera_attributes->calculate_exposure_normalization();
+		}
+	}
+	return exposure_normalization;
 }
 
 AABB VoxelGI::get_aabb() const {

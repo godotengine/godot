@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFPhysicsShape" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Represents a GLTF physics shape.
+	</brief_description>
+	<description>
+		Represents a physics shape as defined by the [code]OMI_collider[/code] GLTF extension. This class is an intermediary between the GLTF data and Godot's nodes, and it's abstracted in a way that allows adding support for different GLTF physics extensions in the future.
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+		<link title="OMI_collider GLTF extension">https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_collider</link>
+	</tutorials>
+	<methods>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="GLTFPhysicsShape" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Creates a new GLTFPhysicsShape instance by parsing the given [Dictionary].
+			</description>
+		</method>
+		<method name="from_node" qualifiers="static">
+			<return type="GLTFPhysicsShape" />
+			<param index="0" name="shape_node" type="CollisionShape3D" />
+			<description>
+				Create a new GLTFPhysicsShape instance from the given Godot [CollisionShape3D] node.
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFPhysicsShape instance into a [Dictionary].
+			</description>
+		</method>
+		<method name="to_node">
+			<return type="CollisionShape3D" />
+			<param index="0" name="cache_shapes" type="bool" default="false" />
+			<description>
+				Converts this GLTFPhysicsShape instance into a Godot [CollisionShape3D] node.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			The height of the shape, in meters. This is only used when the shape type is "capsule" or "cylinder". This value should not be negative, and for "capsule" it should be at least twice the radius.
+		</member>
+		<member name="importer_mesh" type="ImporterMesh" setter="set_importer_mesh" getter="get_importer_mesh">
+			The [ImporterMesh] resource of the shape. This is only used when the shape type is "hull" (convex hull) or "trimesh" (concave trimesh).
+		</member>
+		<member name="is_trigger" type="bool" setter="set_is_trigger" getter="get_is_trigger" default="false">
+			If [code]true[/code], indicates that this shape is a trigger. For Godot, this means that the shape should be a child of an Area3D node.
+			This is the only variable not used in the [method to_node] method, it's intended to be used alongside when deciding where to add the generated node as a child.
+		</member>
+		<member name="mesh_index" type="int" setter="set_mesh_index" getter="get_mesh_index" default="-1">
+			The index of the shape's mesh in the GLTF file. This is only used when the shape type is "hull" (convex hull) or "trimesh" (concave trimesh).
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
+			The radius of the shape, in meters. This is only used when the shape type is "capsule", "cylinder", or "sphere". This value should not be negative.
+		</member>
+		<member name="shape_type" type="String" setter="set_shape_type" getter="get_shape_type" default="&quot;&quot;">
+			The type of shape this shape represents. Valid values are "box", "capsule", "cylinder", "sphere", "hull", and "trimesh".
+		</member>
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
+			The size of the shape, in meters. This is only used when the shape type is "box", and it represents the "diameter" of the box. This value should not be negative.
+		</member>
+	</members>
+</class>

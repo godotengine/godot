@@ -53,6 +53,7 @@ struct Paint;
 struct hb_paint_context_t :
        hb_dispatch_context_t<hb_paint_context_t>
 {
+  const char *get_name () { return "PAINT"; }
   template <typename T>
   return_t dispatch (const T &obj) { obj.paint_glyph (this); return hb_empty_t (); }
   static return_t default_return_value () { return hb_empty_t (); }
@@ -68,6 +69,8 @@ public:
   unsigned int palette_index;
   hb_color_t foreground;
   VarStoreInstancer &instancer;
+  hb_map_t current_glyphs;
+  hb_map_t current_layers;
   int depth_left = HB_MAX_NESTING_LEVEL;
   int edge_count = HB_COLRV1_MAX_EDGE_COUNT;
 
@@ -261,6 +264,7 @@ struct Variable
 
   void paint_glyph (hb_paint_context_t *c) const
   {
+    TRACE_PAINT (this);
     value.paint_glyph (c, varIdxBase);
   }
 
@@ -281,7 +285,7 @@ struct Variable
   public:
   VarIdx varIdxBase;
   public:
-  DEFINE_SIZE_STATIC (4 + T::static_size);
+  DEFINE_SIZE_MIN (VarIdx::static_size + T::min_size);
 };
 
 template <typename T>
@@ -315,6 +319,7 @@ struct NoVariable
 
   void paint_glyph (hb_paint_context_t *c) const
   {
+    TRACE_PAINT (this);
     value.paint_glyph (c, varIdxBase);
   }
 
@@ -332,7 +337,7 @@ struct NoVariable
 
   T      value;
   public:
-  DEFINE_SIZE_STATIC (T::static_size);
+  DEFINE_SIZE_MIN (T::min_size);
 };
 
 // Color structures
@@ -409,7 +414,6 @@ struct ColorLine
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (this);
-    if (unlikely (!out)) return_trace (false);
     if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
     if (!c->serializer->check_assign (out->extend, extend, HB_SERIALIZE_ERROR_INT_OVERFLOW)) return_trace (false);
@@ -559,6 +563,7 @@ struct Affine2x3
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     c->funcs->push_transform (c->data,
 			      xx.to_float (c->instancer (varIdxBase, 0)),
 			      yx.to_float (c->instancer (varIdxBase, 1)),
@@ -640,6 +645,7 @@ struct PaintSolid
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     hb_bool_t is_foreground;
     hb_color_t color;
 
@@ -694,6 +700,7 @@ struct PaintLinearGradient
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     hb_color_line_t cl = {
       (void *) &(this+colorLine),
       (this+colorLine).static_get_color_stops, c,
@@ -760,6 +767,7 @@ struct PaintRadialGradient
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     hb_color_line_t cl = {
       (void *) &(this+colorLine),
       (this+colorLine).static_get_color_stops, c,
@@ -824,6 +832,7 @@ struct PaintSweepGradient
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     hb_color_line_t cl = {
       (void *) &(this+colorLine),
       (this+colorLine).static_get_color_stops, c,
@@ -875,6 +884,7 @@ struct PaintGlyph
 
   void paint_glyph (hb_paint_context_t *c) const
   {
+    TRACE_PAINT (this);
     c->funcs->push_inverse_root_transform (c->data, c->font);
     c->funcs->push_clip_glyph (c->data, gid, c->font);
     c->funcs->push_root_transform (c->data, c->font);
@@ -947,6 +957,7 @@ struct PaintTransform
 
   void paint_glyph (hb_paint_context_t *c) const
   {
+    TRACE_PAINT (this);
     (this+transform).paint_glyph (c);
     c->recurse (this+src);
     c->funcs->pop_transform (c->data);
@@ -991,6 +1002,7 @@ struct PaintTranslate
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     float ddx = dx + c->instancer (varIdxBase, 0);
     float ddy = dy + c->instancer (varIdxBase, 1);
 
@@ -1039,6 +1051,7 @@ struct PaintScale
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     float sx = scaleX.to_float (c->instancer (varIdxBase, 0));
     float sy = scaleY.to_float (c->instancer (varIdxBase, 1));
 
@@ -1089,6 +1102,7 @@ struct PaintScaleAroundCenter
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     float sx = scaleX.to_float (c->instancer (varIdxBase, 0));
     float sy = scaleY.to_float (c->instancer (varIdxBase, 1));
     float tCenterX = centerX + c->instancer (varIdxBase, 2);
@@ -1142,6 +1156,7 @@ struct PaintScaleUniform
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     float s = scale.to_float (c->instancer (varIdxBase, 0));
 
     bool p1 = c->funcs->push_scale (c->data, s, s);
@@ -1189,6 +1204,7 @@ struct PaintScaleUniformAroundCenter
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     float s = scale.to_float (c->instancer (varIdxBase, 0));
     float tCenterX = centerX + c->instancer (varIdxBase, 1);
     float tCenterY = centerY + c->instancer (varIdxBase, 2);
@@ -1240,6 +1256,7 @@ struct PaintRotate
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     float a = angle.to_float (c->instancer (varIdxBase, 0));
 
     bool p1 = c->funcs->push_rotate (c->data, a);
@@ -1287,6 +1304,7 @@ struct PaintRotateAroundCenter
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     float a = angle.to_float (c->instancer (varIdxBase, 0));
     float tCenterX = centerX + c->instancer (varIdxBase, 1);
     float tCenterY = centerY + c->instancer (varIdxBase, 2);
@@ -1341,6 +1359,7 @@ struct PaintSkew
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     float sx = xSkewAngle.to_float(c->instancer (varIdxBase, 0));
     float sy = ySkewAngle.to_float(c->instancer (varIdxBase, 1));
 
@@ -1391,6 +1410,7 @@ struct PaintSkewAroundCenter
 
   void paint_glyph (hb_paint_context_t *c, uint32_t varIdxBase) const
   {
+    TRACE_PAINT (this);
     float sx = xSkewAngle.to_float(c->instancer (varIdxBase, 0));
     float sy = ySkewAngle.to_float(c->instancer (varIdxBase, 1));
     float tCenterX = centerX + c->instancer (varIdxBase, 2);
@@ -1426,20 +1446,24 @@ struct PaintComposite
     auto *out = c->serializer->embed (this);
     if (unlikely (!out)) return_trace (false);
 
-    if (!out->src.serialize_subset (c, src, this, instancer)) return_trace (false);
-    return_trace (out->backdrop.serialize_subset (c, backdrop, this, instancer));
+    bool ret = false;
+    ret |= out->src.serialize_subset (c, src, this, instancer);
+    ret |= out->backdrop.serialize_subset (c, backdrop, this, instancer);
+    return_trace (ret);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  c->check_ops (this->min_size) && // PainComposite can get exponential
                   src.sanitize (c, this) &&
                   backdrop.sanitize (c, this));
   }
 
   void paint_glyph (hb_paint_context_t *c) const
   {
+    TRACE_PAINT (this);
     c->recurse (this+backdrop);
     c->funcs->push_group (c->data);
     c->recurse (this+src);
@@ -1898,15 +1922,16 @@ struct LayerList : Array32OfOffset32To<Paint>
     auto *out = c->serializer->start_embed (this);
     if (unlikely (!c->serializer->extend_min (out)))  return_trace (false);
 
+    bool ret = false;
     for (const auto& _ : + hb_enumerate (*this)
                          | hb_filter (c->plan->colrv1_layers, hb_first))
 
     {
       auto *o = out->serialize_append (c->serializer);
-      if (unlikely (!o) || !o->serialize_subset (c, _.second, this, instancer))
-        return_trace (false);
+      if (unlikely (!o)) return_trace (false);
+      ret |= o->serialize_subset (c, _.second, this, instancer);
     }
-    return_trace (true);
+    return_trace (ret);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -2167,7 +2192,7 @@ struct COLR
     if (version == 0 && (!base_it || !layer_it))
       return_trace (false);
 
-    COLR *colr_prime = c->serializer->start_embed<COLR> ();
+    auto *colr_prime = c->serializer->start_embed<COLR> ();
     if (unlikely (!c->serializer->extend_min (colr_prime)))  return_trace (false);
 
     if (version == 0)
@@ -2284,6 +2309,7 @@ struct COLR
 	                         &(this+varIdxMap),
 	                         hb_array (font->coords, font->num_coords));
     hb_paint_context_t c (this, funcs, data, font, palette_index, foreground, instancer);
+    c.current_glyphs.add (glyph);
 
     if (version == 1)
     {
@@ -2399,18 +2425,42 @@ hb_paint_context_t::recurse (const Paint &paint)
 
 void PaintColrLayers::paint_glyph (hb_paint_context_t *c) const
 {
+  TRACE_PAINT (this);
   const LayerList &paint_offset_lists = c->get_colr_table ()->get_layerList ();
   for (unsigned i = firstLayerIndex; i < firstLayerIndex + numLayers; i++)
   {
+    if (unlikely (c->current_layers.has (i)))
+      continue;
+
+    c->current_layers.add (i);
+
     const Paint &paint = paint_offset_lists.get_paint (i);
     c->funcs->push_group (c->data);
     c->recurse (paint);
     c->funcs->pop_group (c->data, HB_PAINT_COMPOSITE_MODE_SRC_OVER);
+
+    c->current_layers.del (i);
   }
 }
 
 void PaintColrGlyph::paint_glyph (hb_paint_context_t *c) const
 {
+  TRACE_PAINT (this);
+
+  if (unlikely (c->current_glyphs.has (gid)))
+    return;
+
+  c->current_glyphs.add (gid);
+
+  c->funcs->push_inverse_root_transform (c->data, c->font);
+  if (c->funcs->color_glyph (c->data, gid, c->font))
+  {
+    c->funcs->pop_transform (c->data);
+    c->current_glyphs.del (gid);
+    return;
+  }
+  c->funcs->pop_transform (c->data);
+
   const COLR *colr_table = c->get_colr_table ();
   const Paint *paint = colr_table->get_base_glyph_paint (gid);
 
@@ -2429,6 +2479,8 @@ void PaintColrGlyph::paint_glyph (hb_paint_context_t *c) const
 
   if (has_clip_box)
     c->funcs->pop_clip (c->data);
+
+  c->current_glyphs.del (gid);
 }
 
 } /* namespace OT */

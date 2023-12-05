@@ -368,7 +368,7 @@ arabic_fallback_plan_shape (arabic_fallback_plan_t *fallback_plan,
 			    hb_font_t *font,
 			    hb_buffer_t *buffer)
 {
-  OT::hb_ot_apply_context_t c (0, font, buffer);
+  OT::hb_ot_apply_context_t c (0, font, buffer, hb_blob_get_empty ());
   for (unsigned int i = 0; i < fallback_plan->num_lookups; i++)
     if (fallback_plan->lookup_array[i]) {
       c.set_lookup_mask (fallback_plan->mask_array[i]);

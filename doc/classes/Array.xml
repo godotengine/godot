@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Array" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Array" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A generic array datatype.
+		A built-in data structure that holds a sequence of elements.
 	</brief_description>
 	<description>
-		A generic array that can contain several elements of any type, accessible by a numerical index starting at 0. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 is the second to last, etc.).
+		An array data structure that can contain a sequence of elements of any type. Elements are accessed by a numerical index starting at 0. Negative indices are used to count from the back (-1 is the last element, -2 is the second to last, etc.).
 		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
@@ -38,7 +38,6 @@
 		GD.Print(array1 + array2); // Prints [One, 2, 3, Four]
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] Concatenating with the [code]+=[/code] operator will create a new array, which has a cost. If you want to append another array to an existing array, [method append_array] is more efficient.
 		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
 		[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
 	</description>
@@ -258,7 +257,7 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Removes the first occurrence of a value from the array. If the value does not exist in the array, nothing happens. To remove an element by index, use [method remove_at] instead.
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 				[b]Note:[/b] Do not erase entries while iterating over the array.
 			</description>
@@ -384,8 +383,8 @@
 			<param index="0" name="position" type="int" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]). Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 				[b]Note:[/b] On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.
 			</description>
 		</method>
@@ -463,7 +462,7 @@
 		<method name="pick_random" qualifiers="const">
 			<return type="Variant" />
 			<description>
-				Returns a random value from the target array.
+				Returns a random value from the target array. Prints an error and returns [code]null[/code] if the array is empty.
 				[codeblocks]
 				[gdscript]
 				var array: Array[int] = [1, 2, 3, 4]
@@ -535,15 +534,17 @@
 			<param index="0" name="position" type="int" />
 			<description>
 				Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use [method erase] instead.
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
+				[b]Note:[/b] [param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array without returning the value, use [code]arr.resize(arr.size() - 1)[/code].
 			</description>
 		</method>
 		<method name="resize">
 			<return type="int" />
 			<param index="0" name="size" type="int" />
 			<description>
-				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code].
+				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code]. Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 			</description>
 		</method>
 		<method name="reverse">
@@ -584,6 +585,7 @@
 				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
 				If specified, [param step] is the relative index between source elements. It can be negative, then [param begin] must be higher than [param end]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code].
 				If [param deep] is true, each element will be copied by value rather than by reference.
+				[b]Note:[/b] To include the first element when [param step] is negative, use [code]arr.slice(begin, -arr.size() - 1, step)[/code] (i.e. [code][0, 1, 2].slice(1, -4, -1)[/code] returns [code][1, 0][/code]).
 			</description>
 		</method>
 		<method name="sort">

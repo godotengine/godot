@@ -83,10 +83,9 @@ class EditorCommandPalette : public ConfirmationDialog {
 	float _score_path(const String &p_search, const String &p_path);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _confirmed();
-	void _update_command_keys();
 	void _add_command(String p_command_name, String p_key_name, Callable p_binded_action, String p_shortcut_text = "None");
-	void _theme_changed();
 	void _save_history() const;
+
 	EditorCommandPalette();
 
 protected:
@@ -97,7 +96,7 @@ public:
 	void open_popup();
 	void get_actions_list(List<String> *p_list) const;
 	void add_command(String p_command_name, String p_key_name, Callable p_action, Vector<Variant> arguments, String p_shortcut_text = "None");
-	void execute_command(String &p_command_name);
+	void execute_command(const String &p_command_name);
 	void register_shortcuts_as_command();
 	Ref<Shortcut> add_shortcut_command(const String &p_command, const String &p_key, Ref<Shortcut> p_shortcut);
 	void remove_command(String p_key_name);
@@ -105,5 +104,6 @@ public:
 };
 
 Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode = Key::NONE, String p_command = "");
+Ref<Shortcut> ED_SHORTCUT_ARRAY_AND_COMMAND(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes, String p_command = "");
 
 #endif // EDITOR_COMMAND_PALETTE_H

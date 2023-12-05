@@ -36,6 +36,11 @@
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 
+#ifdef MINGW_ENABLED
+#undef near
+#undef far
+#endif
+
 class Camera3D : public Node3D {
 	GDCLASS(Camera3D, Node3D);
 
@@ -105,6 +110,8 @@ protected:
 
 	static void _bind_methods();
 
+	Projection _get_camera_projection(real_t p_near) const;
+
 public:
 	enum {
 		NOTIFICATION_BECAME_CURRENT = 50,
@@ -138,6 +145,7 @@ public:
 	void set_frustum_offset(Vector2 p_offset);
 
 	virtual Transform3D get_camera_transform() const;
+	virtual Projection get_camera_projection() const;
 
 	virtual Vector3 project_ray_normal(const Point2 &p_pos) const;
 	virtual Vector3 project_ray_origin(const Point2 &p_pos) const;

@@ -99,6 +99,11 @@ void mbedtls_ssl_cache_init(mbedtls_ssl_cache_context *cache);
  *
  * \param data     SSL cache context
  * \param session  session to retrieve entry for
+ *
+ * \return                \c 0 on success.
+ * \return                #MBEDTLS_ERR_SSL_CACHE_ENTRY_NOT_FOUND if there is
+ *                        no cache entry with specified session ID found, or
+ *                        any other negative error code for other failures.
  */
 int mbedtls_ssl_cache_get(void *data, mbedtls_ssl_session *session);
 
@@ -108,6 +113,9 @@ int mbedtls_ssl_cache_get(void *data, mbedtls_ssl_session *session);
  *
  * \param data     SSL cache context
  * \param session  session to store entry for
+ *
+ * \return                \c 0 on success.
+ * \return                A negative error code on failure.
  */
 int mbedtls_ssl_cache_set(void *data, const mbedtls_ssl_session *session);
 

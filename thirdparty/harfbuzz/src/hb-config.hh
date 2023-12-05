@@ -113,7 +113,6 @@
 /* Closure of options. */
 
 #ifdef HB_NO_BORING_EXPANSION
-#define HB_NO_AVAR2
 #define HB_NO_BEYOND_64K
 #define HB_NO_CUBIC_GLYF
 #define HB_NO_VAR_COMPOSITES
@@ -184,7 +183,7 @@
 #endif
 
 #ifdef HB_OPTIMIZE_SIZE_MORE
-#define HB_NO_OT_LIGATURES_FAST_PATH
+#define HB_NO_OT_RULESETS_FAST_PATH
 #endif
 
 #ifdef HB_MINIMIZE_MEMORY_USAGE

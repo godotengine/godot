@@ -1241,7 +1241,7 @@ script_collect_features (hb_collect_features_context_t *c,
  *   terminated by %HB_TAG_NONE
  * @features: (nullable) (array zero-terminated=1): The array of features to collect,
  *   terminated by %HB_TAG_NONE
- * @feature_indexes: (out): The array of feature indexes found for the query
+ * @feature_indexes: (out): The set of feature indexes found for the query
  *
  * Fetches a list of all feature indexes in the specified face's GSUB table
  * or GPOS table, underneath the specified scripts, languages, and features.
@@ -1282,6 +1282,49 @@ hb_ot_layout_collect_features (hb_face_t      *face,
   }
 }
 
+/**
+ * hb_ot_layout_collect_features_map:
+ * @face: #hb_face_t to work upon
+ * @table_tag: #HB_OT_TAG_GSUB or #HB_OT_TAG_GPOS
+ * @script_index: The index of the requested script tag
+ * @language_index: The index of the requested language tag
+ * @feature_map: (out): The map of feature tag to feature index.
+ *
+ * Fetches the mapping from feature tags to feature indexes for
+ * the specified script and language.
+ *
+ * Since: 8.1.0
+ **/
+void
+hb_ot_layout_collect_features_map (hb_face_t      *face,
+				   hb_tag_t        table_tag,
+				   unsigned        script_index,
+				   unsigned        language_index,
+				   hb_map_t       *feature_map /* OUT */)
+{
+  const OT::GSUBGPOS &g = get_gsubgpos_table (face, table_tag);
+  const OT::LangSys &l = g.get_script (script_index).get_lang_sys (language_index);
+
+  unsigned int count = l.get_feature_indexes (0, nullptr, nullptr);
+  feature_map->alloc (count);
+
+  /* Loop in reverse, such that earlier entries win. That emulates
+   * a linear search, which seems to be what other implementations do.
+   * We found that with arialuni_t.ttf, the "ur" language system has
+   * duplicate features, and the earlier ones work but not later ones.
+   */
+  for (unsigned int i = count; i; i--)
+  {
+    unsigned feature_index = 0;
+    unsigned feature_count = 1;
+    l.get_feature_indexes (i - 1, &feature_count, &feature_index);
+    if (!feature_count)
+      break;
+    hb_tag_t feature_tag = g.get_feature_tag (feature_index);
+    feature_map->set (feature_tag, feature_index);
+  }
+}
+
 
 /**
  * hb_ot_layout_collect_lookups:
@@ -1316,8 +1359,7 @@ hb_ot_layout_collect_lookups (hb_face_t      *face,
   hb_set_t feature_indexes;
   hb_ot_layout_collect_features (face, table_tag, scripts, languages, features, &feature_indexes);
 
-  for (hb_codepoint_t feature_index = HB_SET_VALUE_INVALID;
-       hb_set_next (&feature_indexes, &feature_index);)
+  for (auto feature_index : feature_indexes)
     g.get_feature (feature_index).add_lookup_indexes_to (lookup_indexes);
 
   g.feature_variation_collect_lookups (&feature_indexes, nullptr, lookup_indexes);
@@ -1570,7 +1612,7 @@ hb_ot_layout_lookups_substitute_closure (hb_face_t      *face,
     glyphs_length = glyphs->get_population ();
     if (lookups)
     {
-      for (hb_codepoint_t lookup_index = HB_SET_VALUE_INVALID; hb_set_next (lookups, &lookup_index);)
+      for (auto lookup_index : *lookups)
 	gsub.get_lookup (lookup_index).closure (&c, lookup_index);
     }
     else
@@ -1953,7 +1995,7 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
 {
   const unsigned int table_index = proxy.table_index;
   unsigned int i = 0;
-  OT::hb_ot_apply_context_t c (table_index, font, buffer);
+  OT::hb_ot_apply_context_t c (table_index, font, buffer, proxy.accel.get_blob ());
   c.set_recurse_func (Proxy::Lookup::template dispatch_recurse_func<OT::hb_ot_apply_context_t>);
 
   for (unsigned int stage_index = 0; stage_index < stages[table_index].length; stage_index++)
@@ -2011,20 +2053,20 @@ void hb_ot_map_t::substitute (const hb_ot_shape_plan_t *plan, hb_font_t *font, h
 {
   GSUBProxy proxy (font->face);
   if (buffer->messaging () &&
-      !buffer->message (font, "start table GSUB")) return;
+      !buffer->message (font, "start table GSUB script tag '%c%c%c%c'", HB_UNTAG (chosen_script[0]))) return;
   apply (proxy, plan, font, buffer);
   if (buffer->messaging ())
-    (void) buffer->message (font, "end table GSUB");
+    (void) buffer->message (font, "end table GSUB script tag '%c%c%c%c'", HB_UNTAG (chosen_script[0]));
 }
 
 void hb_ot_map_t::position (const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
   GPOSProxy proxy (font->face);
   if (buffer->messaging () &&
-      !buffer->message (font, "start table GPOS")) return;
+      !buffer->message (font, "start table GPOS script tag '%c%c%c%c'", HB_UNTAG (chosen_script[1]))) return;
   apply (proxy, plan, font, buffer);
   if (buffer->messaging ())
-    (void) buffer->message (font, "end table GPOS");
+    (void) buffer->message (font, "end table GPOS script tag '%c%c%c%c'", HB_UNTAG (chosen_script[1]));
 }
 
 void
@@ -2036,6 +2078,112 @@ hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
 }
 
 #ifndef HB_NO_BASE
+
+static void
+choose_base_tags (hb_script_t    script,
+		  hb_language_t  language,
+		  hb_tag_t      *script_tag,
+		  hb_tag_t      *language_tag)
+{
+  hb_tag_t script_tags[HB_OT_MAX_TAGS_PER_SCRIPT];
+  unsigned script_count = ARRAY_LENGTH (script_tags);
+
+  hb_tag_t language_tags[HB_OT_MAX_TAGS_PER_LANGUAGE];
+  unsigned language_count = ARRAY_LENGTH (language_tags);
+
+  hb_ot_tags_from_script_and_language (script, language,
+				       &script_count, script_tags,
+				       &language_count, language_tags);
+
+  *script_tag = script_count ? script_tags[script_count - 1] : HB_OT_TAG_DEFAULT_SCRIPT;
+  *language_tag = language_count ? language_tags[language_count - 1] : HB_OT_TAG_DEFAULT_LANGUAGE;
+}
+
+/**
+ * hb_ot_layout_get_font_extents:
+ * @font: a font
+ * @direction: text direction.
+ * @script_tag:  script tag.
+ * @language_tag: language tag.
+ * @extents: (out) (nullable): font extents if found.
+ *
+ * Fetches script/language-specific font extents.  These values are
+ * looked up in the `BASE` table's `MinMax` records.
+ *
+ * If no such extents are found, the default extents for the font are
+ * fetched. As such, the return value of this function can for the
+ * most part be ignored.  Note that the per-script/language extents
+ * do not have a line-gap value, and the line-gap is set to zero in
+ * that case.
+ *
+ * Return value: `true` if found script/language-specific font extents.
+ *
+ * Since: 8.0.0
+ **/
+hb_bool_t
+hb_ot_layout_get_font_extents (hb_font_t         *font,
+			       hb_direction_t     direction,
+			       hb_tag_t           script_tag,
+			       hb_tag_t           language_tag,
+			       hb_font_extents_t *extents)
+{
+  hb_position_t min, max;
+  if (font->face->table.BASE->get_min_max (font, direction, script_tag, language_tag, HB_TAG_NONE,
+					   &min, &max))
+  {
+    if (extents)
+    {
+      extents->ascender  = max;
+      extents->descender = min;
+      extents->line_gap  = 0;
+    }
+    return true;
+  }
+
+  hb_font_get_extents_for_direction (font, direction, extents);
+  return false;
+}
+
+/**
+ * hb_ot_layout_get_font_extents2:
+ * @font: a font
+ * @direction: text direction.
+ * @script:  script.
+ * @language: (nullable): language.
+ * @extents: (out) (nullable): font extents if found.
+ *
+ * Fetches script/language-specific font extents.  These values are
+ * looked up in the `BASE` table's `MinMax` records.
+ *
+ * If no such extents are found, the default extents for the font are
+ * fetched. As such, the return value of this function can for the
+ * most part be ignored.  Note that the per-script/language extents
+ * do not have a line-gap value, and the line-gap is set to zero in
+ * that case.
+ *
+ * This function is like hb_ot_layout_get_font_extents() but takes
+ * #hb_script_t and #hb_language_t instead of OpenType #hb_tag_t.
+ *
+ * Return value: `true` if found script/language-specific font extents.
+ *
+ * Since: 8.0.0
+ **/
+hb_bool_t
+hb_ot_layout_get_font_extents2 (hb_font_t         *font,
+				hb_direction_t     direction,
+				hb_script_t        script,
+				hb_language_t      language,
+				hb_font_extents_t *extents)
+{
+  hb_tag_t script_tag, language_tag;
+  choose_base_tags (script, language, &script_tag, &language_tag);
+  return hb_ot_layout_get_font_extents (font,
+					direction,
+					script_tag,
+					language_tag,
+					extents);
+}
+
 /**
  * hb_ot_layout_get_horizontal_baseline_tag_for_script:
  * @script: a script tag.
@@ -2131,6 +2279,42 @@ hb_ot_layout_get_baseline (hb_font_t                   *font,
 			   hb_position_t               *coord        /* OUT.  May be NULL. */)
 {
   return font->face->table.BASE->get_baseline (font, baseline_tag, direction, script_tag, language_tag, coord);
+}
+
+/**
+ * hb_ot_layout_get_baseline2:
+ * @font: a font
+ * @baseline_tag: a baseline tag
+ * @direction: text direction.
+ * @script:  script.
+ * @language: (nullable): language, currently unused.
+ * @coord: (out) (nullable): baseline value if found.
+ *
+ * Fetches a baseline value from the face.
+ *
+ * This function is like hb_ot_layout_get_baseline() but takes
+ * #hb_script_t and #hb_language_t instead of OpenType #hb_tag_t.
+ *
+ * Return value: `true` if found baseline value in the font.
+ *
+ * Since: 8.0.0
+ **/
+hb_bool_t
+hb_ot_layout_get_baseline2 (hb_font_t                   *font,
+			    hb_ot_layout_baseline_tag_t  baseline_tag,
+			    hb_direction_t               direction,
+			    hb_script_t                  script,
+			    hb_language_t                language,
+			    hb_position_t               *coord        /* OUT.  May be NULL. */)
+{
+  hb_tag_t script_tag, language_tag;
+  choose_base_tags (script, language, &script_tag, &language_tag);
+  return hb_ot_layout_get_baseline (font,
+				    baseline_tag,
+				    direction,
+				    script_tag,
+				    language_tag,
+				    coord);
 }
 
 /**
@@ -2355,6 +2539,41 @@ hb_ot_layout_get_baseline_with_fallback (hb_font_t                   *font,
   }
 }
 
+/**
+ * hb_ot_layout_get_baseline_with_fallback2:
+ * @font: a font
+ * @baseline_tag: a baseline tag
+ * @direction: text direction.
+ * @script:  script.
+ * @language: (nullable): language, currently unused.
+ * @coord: (out): baseline value if found.
+ *
+ * Fetches a baseline value from the face, and synthesizes
+ * it if the font does not have it.
+ *
+ * This function is like hb_ot_layout_get_baseline_with_fallback() but takes
+ * #hb_script_t and #hb_language_t instead of OpenType #hb_tag_t.
+ *
+ * Since: 8.0.0
+ **/
+void
+hb_ot_layout_get_baseline_with_fallback2 (hb_font_t                   *font,
+					  hb_ot_layout_baseline_tag_t  baseline_tag,
+					  hb_direction_t               direction,
+					  hb_script_t                  script,
+					  hb_language_t                language,
+					  hb_position_t               *coord        /* OUT */)
+{
+  hb_tag_t script_tag, language_tag;
+  choose_base_tags (script, language, &script_tag, &language_tag);
+  hb_ot_layout_get_baseline_with_fallback (font,
+					   baseline_tag,
+					   direction,
+					   script_tag,
+					   language_tag,
+					   coord);
+}
+
 #endif
 
 
@@ -2451,9 +2670,10 @@ hb_ot_layout_lookup_get_optical_bound (hb_font_t      *font,
 				       hb_codepoint_t  glyph)
 {
   const OT::PosLookup &lookup = font->face->table.GPOS->table->get_lookup (lookup_index);
+  hb_blob_t *blob = font->face->table.GPOS->get_blob ();
   hb_glyph_position_t pos = {0};
   hb_position_single_dispatch_t c;
-  lookup.dispatch (&c, font, direction, glyph, pos);
+  lookup.dispatch (&c, font, blob, direction, glyph, pos);
   hb_position_t ret = 0;
   switch (direction)
   {

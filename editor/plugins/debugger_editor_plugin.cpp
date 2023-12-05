@@ -54,8 +54,6 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
 	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
-	// Add separation for the warning/error icon that is displayed later.
-	db->add_theme_constant_override("h_separation", 6 * EDSCALE);
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.
@@ -81,6 +79,10 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, avoidance objects shapes, radius and velocities will be visible in the running project."));
 	debug_menu->add_separator();
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_canvas_redraw", TTR("Debug CanvasItem Redraws")), RUN_DEBUG_CANVAS_REDRAW);
+	debug_menu->set_item_tooltip(-1,
+			TTR("When this option is enabled, redraw requests of 2D objects will become visible (as a short flash) in the running project.\nThis is useful to troubleshoot low processor mode."));
+	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Synchronize Scene Changes")), RUN_LIVE_DEBUG);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, any changes made to the scene in the editor will be replicated in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
@@ -93,12 +95,12 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 
 	// Multi-instance, start/stop
 	instances_menu = memnew(PopupMenu);
-	instances_menu->set_name("run_instances");
+	instances_menu->set_name("RunInstances");
 	instances_menu->set_hide_on_checkable_item_selection(false);
 
 	debug_menu->add_child(instances_menu);
 	debug_menu->add_separator();
-	debug_menu->add_submenu_item(TTR("Run Multiple Instances"), "run_instances");
+	debug_menu->add_submenu_item(TTR("Run Multiple Instances"), "RunInstances");
 
 	for (int i = 1; i <= 4; i++) {
 		instances_menu->add_radio_check_item(vformat(TTRN("Run %d Instance", "Run %d Instances", i), i));
@@ -177,6 +179,12 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_avoidance", !ischecked);
 
 		} break;
+		case RUN_DEBUG_CANVAS_REDRAW: {
+			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_CANVAS_REDRAW));
+			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_CANVAS_REDRAW), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_canvas_redraw", !ischecked);
+
+		} break;
 		case RUN_RELOAD_SCRIPTS: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_RELOAD_SCRIPTS));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_RELOAD_SCRIPTS), !ischecked);
@@ -215,6 +223,7 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool check_debug_avoidance = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_avoidance", false);
+	bool check_debug_canvas_redraw = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_canvas_redraw", false);
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
 	bool check_server_keep_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "server_keep_open", false);
@@ -237,6 +246,9 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_debug_avoidance) {
 		_menu_option(RUN_DEBUG_AVOIDANCE);
+	}
+	if (check_debug_canvas_redraw) {
+		_menu_option(RUN_DEBUG_CANVAS_REDRAW);
 	}
 	if (check_live_debug) {
 		_menu_option(RUN_LIVE_DEBUG);

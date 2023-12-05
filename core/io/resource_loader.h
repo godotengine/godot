@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -182,7 +181,7 @@ private:
 
 	static thread_local int load_nesting;
 	static thread_local WorkerThreadPool::TaskID caller_task_id;
-	static thread_local Vector<String> load_paths_stack;
+	static thread_local Vector<String> *load_paths_stack; // A pointer to avoid broken TLS implementations from double-running the destructor.
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
 	static bool cleaning_tasks;
@@ -231,7 +230,11 @@ public:
 	// Loaders can safely use this regardless which thread they are running on.
 	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
 		if (dep_err_notify) {
-			callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type).call_deferred();
+			if (Thread::get_caller_id() == Thread::get_main_id()) {
+				dep_err_notify(p_path, p_dependency, p_type);
+			} else {
+				callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type).call_deferred();
+			}
 		}
 	}
 	static void set_dependency_error_notify_func(DependencyErrorNotify p_err_notify) {

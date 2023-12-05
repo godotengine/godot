@@ -31,6 +31,7 @@
 #include "marker_3d_gizmo_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/marker_3d.h"
 
@@ -60,7 +61,7 @@ Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	// Use a darkened axis color for the negative axis.
 	// This makes it possible to see in which direction the Marker3D node is rotated
 	// (which can be important depending on how it's used).
-	const Color color_x = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_x_color"), SNAME("Editor"));
+	const Color color_x = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("axis_x_color"), EditorStringName(Editor));
 	cursor_colors.push_back(color_x);
 	cursor_colors.push_back(color_x);
 	// FIXME: Use less strong darkening factor once GH-48573 is fixed.
@@ -68,13 +69,13 @@ Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	cursor_colors.push_back(color_x.lerp(Color(0, 0, 0), 0.75));
 	cursor_colors.push_back(color_x.lerp(Color(0, 0, 0), 0.75));
 
-	const Color color_y = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_y_color"), SNAME("Editor"));
+	const Color color_y = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("axis_y_color"), EditorStringName(Editor));
 	cursor_colors.push_back(color_y);
 	cursor_colors.push_back(color_y);
 	cursor_colors.push_back(color_y.lerp(Color(0, 0, 0), 0.75));
 	cursor_colors.push_back(color_y.lerp(Color(0, 0, 0), 0.75));
 
-	const Color color_z = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_z_color"), SNAME("Editor"));
+	const Color color_z = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("axis_z_color"), EditorStringName(Editor));
 	cursor_colors.push_back(color_z);
 	cursor_colors.push_back(color_z);
 	cursor_colors.push_back(color_z.lerp(Color(0, 0, 0), 0.75));
@@ -84,6 +85,7 @@ Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 	Array d;

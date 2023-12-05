@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsServer2D" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsServer2D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Server interface for low-level 2D physics access.
+		A server interface for low-level 2D physics access.
 	</brief_description>
 	<description>
 		PhysicsServer2D is the server responsible for all 2D physics. It can directly create and manipulate all physics objects:
 		- A [i]space[/i] is a self-contained world for a physics simulation. It contains bodies, areas, and joints. Its state can be queried for collision and intersection information, and several parameters of the simulation can be modified.
-		- A [i]shape[/i] is a geometric figure such as a circle, a rectangle, a capsule, or a polygon. It can be used for collision detection by adding it to a body/area, possibly with an extra transformation relative to the body/area's origin. Bodies/areas can have multiple (transformed) shapes added to them, and a single shape can be added to bodies/areas multiple times with different local transformations.
+		- A [i]shape[/i] is a geometric shape such as a circle, a rectangle, a capsule, or a polygon. It can be used for collision detection by adding it to a body/area, possibly with an extra transformation relative to the body/area's origin. Bodies/areas can have multiple (transformed) shapes added to them, and a single shape can be added to bodies/areas multiple times with different local transformations.
 		- A [i]body[/i] is a physical object which can be in static, kinematic, or rigid mode. Its state (such as position and velocity) can be queried and updated. A force integration callback can be set to customize the body's physics.
 		- An [i]area[/i] is a region in space which can be used to detect bodies and areas entering and exiting it. A body monitoring callback can be set to report entering/exiting body shapes, and similarly an area monitoring callback can be set. Gravity and damping can be overridden within the area by setting area parameters.
 		- A [i]joint[/i] is a constraint, either between two bodies or on one body relative to a point. Parameters such as the joint bias and the rest length of a spring joint can be adjusted.
-		Physics objects in the physics server may be created and manipulated independently; they do not have to be tied to nodes in the scene tree.
-		[b]Note:[/b] All the physics nodes use the physics server internally. Adding a physics node to the scene tree will cause a corresponding physics object to be created in the physics server. A rigid body node registers a callback that updates the node's transform with the transform of the respective body object in the physics server (every physics update). An area node registers a callback to inform the area node about overlaps with the respective area object in the physics server. The raycast node queries the direct state of the relevant space in the physics server.
+		Physics objects in [PhysicsServer2D] may be created and manipulated independently; they do not have to be tied to nodes in the scene tree.
+		[b]Note:[/b] All the 2D physics nodes use the physics server internally. Adding a physics node to the scene tree will cause a corresponding physics object to be created in the physics server. A rigid body node registers a callback that updates the node's transform with the transform of the respective body object in the physics server (every physics update). An area node registers a callback to inform the area node about overlaps with the respective area object in the physics server. The raycast node queries the direct state of the relevant space in the physics server.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -118,7 +118,7 @@
 			<return type="RID" />
 			<param index="0" name="area" type="RID" />
 			<description>
-				Returns the [RID] of the space assigned to the area. Returns [code]RID()[/code] if no space is assigned.
+				Returns the [RID] of the space assigned to the area. Returns an empty [RID] if no space is assigned.
 			</description>
 		</method>
 		<method name="area_get_transform" qualifiers="const">
@@ -486,7 +486,7 @@
 			<return type="RID" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns the [RID] of the space assigned to the body. Returns [code]RID()[/code] if no space is assigned.
+				Returns the [RID] of the space assigned to the body. Returns an empty [RID] if no space is assigned.
 			</description>
 		</method>
 		<method name="body_get_state" qualifiers="const">
@@ -803,7 +803,7 @@
 			<param index="1" name="anchor_a" type="Vector2" />
 			<param index="2" name="anchor_b" type="Vector2" />
 			<param index="3" name="body_a" type="RID" />
-			<param index="4" name="body_b" type="RID" />
+			<param index="4" name="body_b" type="RID" default="RID()" />
 			<description>
 				Makes the joint a damped spring joint, attached at the point [param anchor_a] (given in global coordinates) on the body [param body_a] and at the point [param anchor_b] (given in global coordinates) on the body [param body_b]. To set the parameters which are specific to the damped spring, see [method damped_spring_joint_set_param].
 			</description>
@@ -814,8 +814,8 @@
 			<param index="1" name="groove1_a" type="Vector2" />
 			<param index="2" name="groove2_a" type="Vector2" />
 			<param index="3" name="anchor_b" type="Vector2" />
-			<param index="4" name="body_a" type="RID" />
-			<param index="5" name="body_b" type="RID" />
+			<param index="4" name="body_a" type="RID" default="RID()" />
+			<param index="5" name="body_b" type="RID" default="RID()" />
 			<description>
 				Makes the joint a groove joint.
 			</description>
@@ -825,9 +825,9 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="anchor" type="Vector2" />
 			<param index="2" name="body_a" type="RID" />
-			<param index="3" name="body_b" type="RID" />
+			<param index="3" name="body_b" type="RID" default="RID()" />
 			<description>
-				Makes the joint a pin joint. If [param body_b] is [code]RID()[/code], then [param body_a] is pinned to the point [param anchor] (given in global coordinates); otherwise, [param body_a] is pinned to [param body_b] at the point [param anchor] (given in global coordinates). To set the parameters which are specific to the pin joint, see [method pin_joint_set_param].
+				Makes the joint a pin joint. If [param body_b] is an empty [RID], then [param body_a] is pinned to the point [param anchor] (given in global coordinates); otherwise, [param body_a] is pinned to [param body_b] at the point [param anchor] (given in global coordinates). To set the parameters which are specific to the pin joint, see [method pin_joint_set_param].
 			</description>
 		</method>
 		<method name="joint_set_param">
@@ -839,12 +839,29 @@
 				Sets the value of the given joint parameter. See [enum JointParam] for the list of available parameters.
 			</description>
 		</method>
+		<method name="pin_joint_get_flag" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
+			<description>
+				Gets a pin joint flag (see [enum PinJointFlag] constants).
+			</description>
+		</method>
 		<method name="pin_joint_get_param" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
 			<description>
 				Returns the value of a pin joint parameter. See [enum PinJointParam] for a list of available parameters.
+			</description>
+		</method>
+		<method name="pin_joint_set_flag">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
+			<param index="2" name="enabled" type="bool" />
+			<description>
+				Sets a pin joint flag (see [enum PinJointFlag] constants).
 			</description>
 		</method>
 		<method name="pin_joint_set_param">
@@ -901,15 +918,15 @@
 			<param index="1" name="data" type="Variant" />
 			<description>
 				Sets the shape data that defines the configuration of the shape. The [param data] to be passed depends on the shape's type (see [method shape_get_type]):
-				- [constant SHAPE_WORLD_BOUNDARY]: an array of length two containing a [Vector2] [code]normal[/code] direction and a [code]float[/code] distance [code]d[/code],
-				- [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key [code]length[/code] with a [code]float[/code] value and the key [code]slide_on_slope[/code] with a [code]bool[/code] value,
+				- [constant SHAPE_WORLD_BOUNDARY]: an array of length two containing a [Vector2] [code]normal[/code] direction and a [float] distance [code]d[/code],
+				- [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key [code]length[/code] with a [float] value and the key [code]slide_on_slope[/code] with a [bool] value,
 				- [constant SHAPE_SEGMENT]: a [Rect2] [code]rect[/code] containing the first point of the segment in [code]rect.position[/code] and the second point of the segment in [code]rect.size[/code],
-				- [constant SHAPE_CIRCLE]: a [code]float[/code] [code]radius[/code],
+				- [constant SHAPE_CIRCLE]: a [float] [code]radius[/code],
 				- [constant SHAPE_RECTANGLE]: a [Vector2] [code]half_extents[/code],
-				- [constant SHAPE_CAPSULE]: an array of length two (or a [Vector2]) containing a [code]float[/code] [code]height[/code] and a [code]float[/code] [code]radius[/code],
-				- [constant SHAPE_CONVEX_POLYGON]: either a [PackedVector2Array] of points defining a convex polygon in counterclockwise order (the clockwise outward normal of each segment formed by consecutive points is calculated internally), or a [PackedFloat32Array] of length divisible by four so that every 4-tuple of [code]float[/code]s contains the coordinates of a point followed by the coordinates of the clockwise outward normal vector to the segment between the current point and the next point,
+				- [constant SHAPE_CAPSULE]: an array of length two (or a [Vector2]) containing a [float] [code]height[/code] and a [float] [code]radius[/code],
+				- [constant SHAPE_CONVEX_POLYGON]: either a [PackedVector2Array] of points defining a convex polygon in counterclockwise order (the clockwise outward normal of each segment formed by consecutive points is calculated internally), or a [PackedFloat32Array] of length divisible by four so that every 4-tuple of [float]s contains the coordinates of a point followed by the coordinates of the clockwise outward normal vector to the segment between the current point and the next point,
 				- [constant SHAPE_CONCAVE_POLYGON]: a [PackedVector2Array] of length divisible by two (each pair of points forms one segment).
-				[b]Warning[/b]: In the case of [constant SHAPE_CONVEX_POLYGON], this method does not check if the points supplied actually form a convex polygon (unlike the [member CollisionPolygon2D.polygon] property).
+				[b]Warning:[/b] In the case of [constant SHAPE_CONVEX_POLYGON], this method does not check if the points supplied actually form a convex polygon (unlike the [member CollisionPolygon2D.polygon] property).
 			</description>
 		</method>
 		<method name="space_create">
@@ -1159,6 +1176,21 @@
 		</constant>
 		<constant name="PIN_JOINT_SOFTNESS" value="0" enum="PinJointParam">
 			Constant to set/get a how much the bond of the pin joint can flex. The default value of this parameter is [code]0.0[/code].
+		</constant>
+		<constant name="PIN_JOINT_LIMIT_UPPER" value="1" enum="PinJointParam">
+			The maximum rotation around the pin.
+		</constant>
+		<constant name="PIN_JOINT_LIMIT_LOWER" value="2" enum="PinJointParam">
+			The minimum rotation around the pin.
+		</constant>
+		<constant name="PIN_JOINT_MOTOR_TARGET_VELOCITY" value="3" enum="PinJointParam">
+			Target speed for the motor. In radians per second.
+		</constant>
+		<constant name="PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED" value="0" enum="PinJointFlag">
+			If [code]true[/code], the pin has a maximum and a minimum rotation.
+		</constant>
+		<constant name="PIN_JOINT_FLAG_MOTOR_ENABLED" value="1" enum="PinJointFlag">
+			If [code]true[/code], a motor turns the pin.
 		</constant>
 		<constant name="DAMPED_SPRING_REST_LENGTH" value="0" enum="DampedSpringParam">
 			Sets the resting length of the spring joint. The joint will always try to go to back this length when pulled apart. The default value of this parameter is the distance between the joint's anchor points.

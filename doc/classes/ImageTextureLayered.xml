@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImageTextureLayered" inherits="TextureLayered" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ImageTextureLayered" inherits="TextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for texture types which contain the data of multiple [ImageTexture]s. Each image is of the same size and format.
 	</brief_description>
@@ -23,7 +23,7 @@
 			<param index="1" name="layer" type="int" />
 			<description>
 				Replaces the existing [Image] data at the given [param layer] with this new image.
-				The given [Image] must have the same width, height, image format and mipmapping setting (a [code]bool[/code] value) as the rest of the referenced images.
+				The given [Image] must have the same width, height, image format, and mipmapping flag as the rest of the referenced images.
 				If the image format is unsupported, it will be decompressed and converted to a similar and supported [enum Image.Format].
 				The update is immediate: it's synchronized with drawing.
 			</description>

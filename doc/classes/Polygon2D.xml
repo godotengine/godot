@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Polygon2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Polygon2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D polygon.
 	</brief_description>
@@ -75,7 +75,7 @@
 			Internal list of [Bone2D] nodes used by the assigned [member skeleton]. Edited using the Polygon2D editor ("UV" button on the top toolbar).
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
-			The polygon's fill color. If [code]texture[/code] is defined, it will be multiplied by this color. It will also be the default color for vertices not set in [code]vertex_colors[/code].
+			The polygon's fill color. If [member texture] is set, it will be multiplied by this color. It will also be the default color for vertices not set in [member vertex_colors].
 		</member>
 		<member name="internal_vertex_count" type="int" setter="set_internal_vertex_count" getter="get_internal_vertex_count" default="0">
 			Number of internal vertices, used for UV mapping.
@@ -100,22 +100,22 @@
 			Path to a [Skeleton2D] node used for skeleton-based deformations of this polygon. If empty or invalid, skeletal deformations will not be used.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			The polygon's fill texture. Use [code]uv[/code] to set texture coordinates.
+			The polygon's fill texture. Use [member uv] to set texture coordinates.
 		</member>
 		<member name="texture_offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" default="Vector2(0, 0)">
-			Amount to offset the polygon's [code]texture[/code]. If [code](0, 0)[/code] the texture's origin (its top-left corner) will be placed at the polygon's [code]position[/code].
+			Amount to offset the polygon's [member texture]. If set to [code]Vector2(0, 0)[/code], the texture's origin (its top-left corner) will be placed at the polygon's position.
 		</member>
 		<member name="texture_rotation" type="float" setter="set_texture_rotation" getter="get_texture_rotation" default="0.0">
 			The texture's rotation in radians.
 		</member>
 		<member name="texture_scale" type="Vector2" setter="set_texture_scale" getter="get_texture_scale" default="Vector2(1, 1)">
-			Amount to multiply the [code]uv[/code] coordinates when using a [code]texture[/code]. Larger values make the texture smaller, and vice versa.
+			Amount to multiply the [member uv] coordinates when using [member texture]. Larger values make the texture smaller, and vice versa.
 		</member>
 		<member name="uv" type="PackedVector2Array" setter="set_uv" getter="get_uv" default="PackedVector2Array()">
-			Texture coordinates for each vertex of the polygon. There should be one [code]uv[/code] per polygon vertex. If there are fewer, undefined vertices will use [code](0, 0)[/code].
+			Texture coordinates for each vertex of the polygon. There should be one UV value per polygon vertex. If there are fewer, undefined vertices will use [code]Vector2(0, 0)[/code].
 		</member>
 		<member name="vertex_colors" type="PackedColorArray" setter="set_vertex_colors" getter="get_vertex_colors" default="PackedColorArray()">
-			Color for each vertex. Colors are interpolated between vertices, resulting in smooth gradients. There should be one per polygon vertex. If there are fewer, undefined vertices will use [code]color[/code].
+			Color for each vertex. Colors are interpolated between vertices, resulting in smooth gradients. There should be one per polygon vertex. If there are fewer, undefined vertices will use [member color].
 		</member>
 	</members>
 </class>

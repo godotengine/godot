@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GDScript" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="@GDScript" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Built-in GDScript functions.
+		Built-in GDScript constants, functions, and annotations.
 	</brief_description>
 	<description>
 		A list of GDScript-specific utility functions and annotations accessible from any script.
@@ -57,11 +57,12 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="convert">
+		<method name="convert" is_deprecated="true">
 			<return type="Variant" />
 			<param index="0" name="what" type="Variant" />
 			<param index="1" name="type" type="int" />
 			<description>
+				[i]Deprecated.[/i] Use [method @GlobalScope.type_convert] instead.
 				Converts [param what] to [param type] in the best way possible. The [param type] uses the [enum Variant.Type] values.
 				[codeblock]
 				var a = [4, 2.5, 1.2]
@@ -274,7 +275,7 @@
 			[b]Warning:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
 		</constant>
 		<constant name="NAN" value="nan">
-			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that it is not equal to itself ([code]NAN == NAN[/code] returns [code]false[/code]). It is output by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
 			[b]Warning:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
 		</constant>
 	</constants>
@@ -284,11 +285,36 @@
 			<description>
 				Mark the following property as exported (editable in the Inspector dock and saved to disk). To control the type of the exported property, use the type hint notation.
 				[codeblock]
+				extends Node
+
+				enum Direction {LEFT, RIGHT, UP, DOWN}
+
+				# Built-in types.
 				@export var string = ""
 				@export var int_number = 5
 				@export var float_number: float = 5
+
+				# Enums.
+				@export var type: Variant.Type
+				@export var format: Image.Format
+				@export var direction: Direction
+
+				# Resources.
 				@export var image: Image
+				@export var custom_resource: CustomResource
+
+				# Nodes.
+				@export var node: Node
+				@export var custom_node: CustomNode
+
+				# Typed arrays.
+				@export var int_array: Array[int]
+				@export var direction_array: Array[Direction]
+				@export var image_array: Array[Image]
+				@export var node_array: Array[Node]
 				[/codeblock]
+				[b]Note:[/b] Custom resources and nodes must be registered as global classes using [code]class_name[/code].
+				[b]Note:[/b] Node export is only supported in [Node]-derived classes and has a number of other limitations.
 			</description>
 		</annotation>
 		<annotation name="@export_category">
@@ -533,6 +559,7 @@
 				[codeblock]
 				@export_node_path("Button", "TouchScreenButton") var some_button
 				[/codeblock]
+				[b]Note:[/b] The type must be a native class or a globally registered script (using the [code]class_name[/code] keyword) that inherits [Node].
 			</description>
 		</annotation>
 		<annotation name="@export_placeholder">
@@ -555,7 +582,7 @@
 			<description>
 				Export an [int] or [float] property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [code]EditorSettings.interface/inspector/default_float_step[/code] setting.
 				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"hide_slider"[/code] hint will hide the slider element of the editor widget.
-				Hints also allow to indicate the units for the edited value. Using [code]"radians"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock. [code]"degrees"[/code] allows to add a degree sign as a unit suffix. Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
+				Hints also allow to indicate the units for the edited value. Using [code]"radians_as_degrees"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock (the range values are also in degrees). [code]"degrees"[/code] allows to add a degree sign as a unit suffix (the value is unchanged). Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
 				See also [constant PROPERTY_HINT_RANGE].
 				[codeblock]
 				@export_range(0, 20) var number
@@ -565,7 +592,7 @@
 				@export_range(0, 100, 1, "or_greater") var power_percent
 				@export_range(0, 100, 1, "or_greater", "or_less") var health_delta
 
-				@export_range(-3.14, 3.14, 0.001, "radians") var angle_radians
+				@export_range(-180, 180, 0.001, "radians_as_degrees") var angle_radians
 				@export_range(0, 360, 1, "degrees") var angle_degrees
 				@export_range(-8, 8, 2, "suffix:px") var target_offset
 				[/codeblock]
@@ -594,13 +621,13 @@
 			<return type="void" />
 			<param index="0" name="icon_path" type="String" />
 			<description>
-				Add a custom icon to the current script. The script must be registered as a global class using the [code]class_name[/code] keyword for this to have a visible effect. The icon specified at [param icon_path] is displayed in the Scene dock for every node of that class, as well as in various editor dialogs.
+				Add a custom icon to the current script. The icon specified at [param icon_path] is displayed in the Scene dock for every node of that class, as well as in various editor dialogs.
 				[codeblock]
 				@icon("res://path/to/class/icon.svg")
 				[/codeblock]
 				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
-				[b]Note:[/b] As annotations describe their subject, the [code]@icon[/code] annotation must be placed before the class definition and inheritance.
-				[b]Note:[/b] Unlike other annotations, the argument of the [code]@icon[/code] annotation must be a string literal (constant expressions are not supported).
+				[b]Note:[/b] As annotations describe their subject, the [annotation @icon] annotation must be placed before the class definition and inheritance.
+				[b]Note:[/b] Unlike other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
 		<annotation name="@onready">
@@ -612,7 +639,7 @@
 				[/codeblock]
 			</description>
 		</annotation>
-		<annotation name="@rpc" qualifiers="vararg">
+		<annotation name="@rpc">
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
 			<param index="1" name="sync" type="String" default="&quot;call_remote&quot;" />
@@ -620,7 +647,11 @@
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
-				The order of [param mode], [param sync] and [param transfer_mode] does not matter and all arguments can be omitted, but [param transfer_channel] always has to be the last argument. The accepted values for [param mode] are [code]"any_peer"[/code] or [code]"authority"[/code], for [param sync] are [code]"call_remote"[/code] or [code]"call_local"[/code] and for [param transfer_mode] are [code]"unreliable"[/code], [code]"unreliable_ordered"[/code] or [code]"reliable"[/code].
+				If [param mode] is set as [code]"any_peer"[/code], allows any peer to call this RPC function. Otherwise, only the authority peer is allowed to call it and [param mode] should be kept as [code]"authority"[/code]. When configuring functions as RPCs with [method Node.rpc_config], each of these modes respectively corresponds to the [constant MultiplayerAPI.RPC_MODE_AUTHORITY] and [constant MultiplayerAPI.RPC_MODE_ANY_PEER] RPC modes. See [enum MultiplayerAPI.RPCMode]. If a peer that is not the authority tries to call a function that is only allowed for the authority, the function will not be executed. If the error can be detected locally (when the RPC configuration is consistent between the local and the remote peer), an error message will be displayed on the sender peer. Otherwise, the remote peer will detect the error and print an error there.
+				If [param sync] is set as [code]"call_remote"[/code], the function will only be executed on the remote peer, but not locally. To run this function locally too, set [param sync] to [code]"call_local"[/code]. When configuring functions as RPCs with [method Node.rpc_config], this is equivalent to setting [code]call_local[/code] to [code]true[/code].
+				The [param transfer_mode] accepted values are [code]"unreliable"[/code], [code]"unreliable_ordered"[/code], or [code]"reliable"[/code]. It sets the transfer mode of the underlying [MultiplayerPeer]. See [member MultiplayerPeer.transfer_mode].
+				The [param transfer_channel] defines the channel of the underlying [MultiplayerPeer]. See [member MultiplayerPeer.transfer_channel].
+				The order of [param mode], [param sync] and [param transfer_mode] does not matter, but values related to the same argument must not be used more than once. [param transfer_channel] always has to be the 4th argument (you must specify 3 preceding arguments).
 				[codeblock]
 				@rpc
 				func fn(): pass
@@ -647,7 +678,7 @@
 				@tool
 				extends Node
 				[/codeblock]
-				[b]Note:[/b] As annotations describe their subject, the [code]@tool[/code] annotation must be placed before the class definition and inheritance.
+				[b]Note:[/b] As annotations describe their subject, the [annotation @tool] annotation must be placed before the class definition and inheritance.
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">

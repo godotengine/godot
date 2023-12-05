@@ -41,8 +41,11 @@ FT_BEGIN_HEADER
 #  if ( defined( __STDC_VERSION__ ) && __STDC_VERSION__ > 201710L ) || \
       ( defined( __cplusplus ) && __cplusplus > 201402L )
 #    define FALL_THROUGH  [[__fallthrough__]]
-#  elif ( defined( __GNUC__ ) && __GNUC__ >= 7 )          || \
-        ( defined( __clang__ ) && __clang_major__ >= 10 )
+#  elif ( defined( __GNUC__ ) && __GNUC__ >= 7 )       || \
+        ( defined( __clang__ )                      &&    \
+          ( defined( __apple_build_version__ )            \
+              ? __apple_build_version__ >= 12000000       \
+              : __clang_major__ >= 10 ) )
 #    define FALL_THROUGH  __attribute__(( __fallthrough__ ))
 #  else
 #    define FALL_THROUGH  ( (void)0 )

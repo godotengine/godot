@@ -33,8 +33,11 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/2d/gpu_particles_2d.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
@@ -67,14 +70,26 @@ void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_LOAD_EMISSION_MASK: {
 			file->popup_file_dialog();
-
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
 			emission_mask->popup_centered();
 		} break;
 		case MENU_RESTART: {
 			particles->restart();
-		}
+		} break;
+		case MENU_CONVERT_TO_GPU_PARTICLES: {
+			GPUParticles2D *gpu_particles = memnew(GPUParticles2D);
+			gpu_particles->convert_from_particles(particles);
+			gpu_particles->set_name(particles->get_name());
+			gpu_particles->set_transform(particles->get_transform());
+			gpu_particles->set_visible(particles->is_visible());
+			gpu_particles->set_process_mode(particles->get_process_mode());
+
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+			ur->create_action(TTR("Convert to GPUParticles3D"));
+			SceneTreeDock::get_singleton()->replace_node(particles, gpu_particles);
+			ur->commit_action(false);
+		} break;
 	}
 }
 
@@ -217,11 +232,16 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 
 	{
+		Vector2 offset;
+		if (emission_mask_centered->is_pressed()) {
+			offset = Vector2(-s.width * 0.5, -s.height * 0.5);
+		}
+
 		PackedVector2Array points;
 		points.resize(valid_positions.size());
 		Vector2 *pointsw = points.ptrw();
 		for (int i = 0; i < valid_positions.size(); i += 1) {
-			pointsw[i] = valid_positions[i];
+			pointsw[i] = valid_positions[i] + offset;
 		}
 		particles->set_emission_points(points);
 	}
@@ -231,7 +251,7 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
-			menu->set_icon(epoints->get_theme_icon(SNAME("CPUParticles2D"), SNAME("EditorIcons")));
+			menu->set_icon(epoints->get_editor_theme_icon(SNAME("CPUParticles2D")));
 			file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
 		} break;
 	}
@@ -247,11 +267,10 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
 	toolbar->hide();
 
-	toolbar->add_child(memnew(VSeparator));
-
 	menu = memnew(MenuButton);
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
+	menu->get_popup()->add_item(TTR("Convert to GPUParticles2D"), MENU_CONVERT_TO_GPU_PARTICLES);
 	menu->set_text(TTR("CPUParticles2D"));
 	menu->set_switch_on_hover(true);
 	toolbar->add_child(menu);
@@ -281,9 +300,14 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	emission_mask_mode->add_item(TTR("Solid Pixels"), EMISSION_MODE_SOLID);
 	emission_mask_mode->add_item(TTR("Border Pixels"), EMISSION_MODE_BORDER);
 	emission_mask_mode->add_item(TTR("Directed Border Pixels"), EMISSION_MODE_BORDER_DIRECTED);
+	VBoxContainer *optionsvb = memnew(VBoxContainer);
+	emvb->add_margin_child(TTR("Options"), optionsvb);
+	emission_mask_centered = memnew(CheckBox);
+	emission_mask_centered->set_text(TTR("Centered"));
+	optionsvb->add_child(emission_mask_centered);
 	emission_colors = memnew(CheckBox);
-	emission_colors->set_text(TTR("Capture from Pixel"));
-	emvb->add_margin_child(TTR("Emission Colors"), emission_colors);
+	emission_colors->set_text(TTR("Capture Colors from Pixel"));
+	optionsvb->add_child(emission_colors);
 
 	toolbar->add_child(emission_mask);
 

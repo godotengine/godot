@@ -48,12 +48,14 @@ bool Bone2D::_set(const StringName &p_path, const Variant &p_value) {
 	} else if (path.begins_with("default_length")) {
 		set_length(p_value);
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor_settings/show_bone_gizmo")) {
+	else if (path.begins_with("editor_settings/show_bone_gizmo")) {
 		_editor_set_show_bone_gizmo(p_value);
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -70,12 +72,14 @@ bool Bone2D::_get(const StringName &p_path, Variant &r_ret) const {
 	} else if (path.begins_with("default_length")) {
 		r_ret = get_length();
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor_settings/show_bone_gizmo")) {
+	else if (path.begins_with("editor_settings/show_bone_gizmo")) {
 		r_ret = _editor_get_show_bone_gizmo();
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -309,8 +313,8 @@ void Bone2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p_outline_shape, Bone2D *p_other_bone) {
-	int bone_width = EDITOR_GET("editors/2d/bone_width");
-	int bone_outline_width = EDITOR_GET("editors/2d/bone_outline_size");
+	float bone_width = EDITOR_GET("editors/2d/bone_width");
+	float bone_outline_width = EDITOR_GET("editors/2d/bone_outline_size");
 
 	if (!is_inside_tree()) {
 		return false; //may have been removed
@@ -406,7 +410,7 @@ void Bone2D::apply_rest() {
 }
 
 int Bone2D::get_index_in_skeleton() const {
-	ERR_FAIL_COND_V(!skeleton, -1);
+	ERR_FAIL_NULL_V(skeleton, -1);
 	skeleton->_update_bone_setup();
 	return skeleton_index;
 }
@@ -542,7 +546,7 @@ void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
 			PropertyInfo(Variant::OBJECT, PNAME("modification_stack"),
 					PROPERTY_HINT_RESOURCE_TYPE,
 					"SkeletonModificationStack2D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_ALWAYS_DUPLICATE));
+					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 }
 
 void Skeleton2D::_make_bone_setup_dirty() {

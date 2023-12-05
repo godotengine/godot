@@ -101,7 +101,7 @@ void AudioDriverWeb::_audio_driver_capture(int p_from, int p_samples) {
 }
 
 Error AudioDriverWeb::init() {
-	int latency = GLOBAL_GET("audio/driver/output_latency");
+	int latency = Engine::get_singleton()->get_audio_output_latency();
 	if (!audio_context.inited) {
 		audio_context.mix_rate = _get_configured_mix_rate();
 		audio_context.channel_count = godot_audio_init(&audio_context.mix_rate, latency, &_state_change_callback, &_latency_update_callback);

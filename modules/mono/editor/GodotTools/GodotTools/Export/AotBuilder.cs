@@ -195,7 +195,7 @@ namespace GodotTools.Export
                     bool isSim = arch == "i386" || arch == "x86_64"; // Shouldn't really happen as we don't do AOT for the simulator
                     string versionMinName = isSim ? "iphonesimulator" : "iphoneos";
                     string iOSPlatformName = isSim ? "iPhoneSimulator" : "iPhoneOS";
-                    const string versionMin = "10.0"; // TODO: Turn this hard-coded version into an exporter setting
+                    const string versionMin = "12.0"; // TODO: Turn this hard-coded version into an exporter setting
                     string iOSSdkPath = Path.Combine(XcodeHelper.XcodePath,
                             $"Contents/Developer/Platforms/{iOSPlatformName}.platform/Developer/SDKs/{iOSPlatformName}.sdk");
 
@@ -592,7 +592,6 @@ MONO_AOT_MODE_LAST = 1000,
             switch (platform)
             {
                 case OS.Platforms.Windows:
-                case OS.Platforms.UWP:
                 {
                     return $"windows-{arch}";
                 }
@@ -603,10 +602,6 @@ MONO_AOT_MODE_LAST = 1000,
                 case OS.Platforms.LinuxBSD:
                 {
                     return $"linux-{arch}";
-                }
-                case OS.Platforms.Haiku:
-                {
-                    return $"{platform}-{arch}";
                 }
                 default:
                     throw new NotSupportedException($"Platform not supported: {platform}");

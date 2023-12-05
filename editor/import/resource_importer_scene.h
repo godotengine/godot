@@ -71,6 +71,7 @@ public:
 		IMPORT_GENERATE_TANGENT_ARRAYS = 8,
 		IMPORT_USE_NAMED_SKIN_BINDS = 16,
 		IMPORT_DISCARD_MESHES_AND_MATERIALS = 32, //used for optimizing animation import
+		IMPORT_FORCE_DISABLE_MESH_COMPRESSION = 64,
 	};
 
 	virtual uint32_t get_import_flags() const;
@@ -78,6 +79,7 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr);
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options);
+	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {}
 
 	EditorSceneFormatImporter() {}
 };
@@ -214,7 +216,7 @@ class ResourceImporterScene : public ResourceImporter {
 
 	Array _get_skinned_pose_transforms(ImporterMeshInstance3D *p_src_mesh_node);
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
-	void _generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
+	Node *_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
 	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
 
 	enum AnimationImportTracks {
@@ -275,6 +277,7 @@ public:
 
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
+	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 
@@ -296,7 +299,8 @@ public:
 
 	virtual bool can_import_threaded() const override { return false; }
 
-	ResourceImporterScene(bool p_animation_import = false);
+	ResourceImporterScene(bool p_animation_import = false, bool p_singleton = false);
+	~ResourceImporterScene();
 
 	template <class M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);

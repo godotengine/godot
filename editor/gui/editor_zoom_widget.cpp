@@ -70,9 +70,33 @@ float EditorZoomWidget::get_zoom() {
 }
 
 void EditorZoomWidget::set_zoom(float p_zoom) {
-	if (p_zoom > 0 && p_zoom != zoom) {
-		zoom = p_zoom;
+	float new_zoom = CLAMP(p_zoom, min_zoom, max_zoom);
+	if (zoom != new_zoom) {
+		zoom = new_zoom;
 		_update_zoom_label();
+	}
+}
+
+float EditorZoomWidget::get_min_zoom() {
+	return min_zoom;
+}
+
+float EditorZoomWidget::get_max_zoom() {
+	return max_zoom;
+}
+
+void EditorZoomWidget::setup_zoom_limits(float p_min, float p_max) {
+	ERR_FAIL_COND(p_min < 0 || p_min > p_max);
+
+	min_zoom = p_min;
+	max_zoom = p_max;
+
+	if (zoom > max_zoom) {
+		set_zoom(max_zoom);
+		emit_signal(SNAME("zoom_changed"), zoom);
+	} else if (zoom < min_zoom) {
+		set_zoom(min_zoom);
+		emit_signal(SNAME("zoom_changed"), zoom);
 	}
 }
 
@@ -97,7 +121,7 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 			}
 		} else {
 			if (p_increment_count >= 1) {
-				// Zooming. Convert the current zoom into a denominator.
+				// Zooming in. Convert the current zoom into a denominator.
 				float new_zoom = 1.0 / Math::ceil(1.0 / zoom_noscale - p_increment_count);
 				if (Math::is_equal_approx(zoom_noscale, new_zoom)) {
 					// New zoom is identical to the old zoom, so try again.
@@ -106,7 +130,7 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 				}
 				set_zoom(new_zoom * MAX(1, EDSCALE));
 			} else {
-				// Dezooming. Convert the current zoom into a denominator.
+				// Zooming out. Convert the current zoom into a denominator.
 				float new_zoom = 1.0 / Math::floor(1.0 / zoom_noscale - p_increment_count);
 				if (Math::is_equal_approx(zoom_noscale, new_zoom)) {
 					// New zoom is identical to the old zoom, so try again.
@@ -118,9 +142,9 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 		}
 	} else {
 		// Base increment factor defined as the twelveth root of two.
-		// This allow a smooth geometric evolution of the zoom, with the advantage of
+		// This allows for a smooth geometric evolution of the zoom, with the advantage of
 		// visiting all integer power of two scale factors.
-		// note: this is analogous to the 'semitones' interval in the music world
+		// Note: this is analogous to the 'semitone' interval in the music world
 		// In order to avoid numerical imprecisions, we compute and edit a zoom index
 		// with the following relation: zoom = 2 ^ (index / 12)
 
@@ -145,8 +169,8 @@ void EditorZoomWidget::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			zoom_minus->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
-			zoom_plus->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
+			zoom_minus->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_plus->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 		} break;
 	}
 }
@@ -171,37 +195,40 @@ EditorZoomWidget::EditorZoomWidget() {
 	// Zoom buttons
 	zoom_minus = memnew(Button);
 	zoom_minus->set_flat(true);
-	add_child(zoom_minus);
-	zoom_minus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
 	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTR("Zoom Out"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
 	zoom_minus->set_shortcut_context(this);
 	zoom_minus->set_focus_mode(FOCUS_NONE);
+	add_child(zoom_minus);
+	zoom_minus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
-	zoom_reset->add_theme_style_override("normal", memnew(StyleBoxEmpty));
-	zoom_reset->add_theme_style_override("hover", memnew(StyleBoxEmpty));
-	zoom_reset->add_theme_style_override("focus", memnew(StyleBoxEmpty));
-	zoom_reset->add_theme_style_override("pressed", memnew(StyleBoxEmpty));
-	add_child(zoom_reset);
+
+	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
+	zoom_reset->add_theme_style_override("normal", empty_stylebox);
+	zoom_reset->add_theme_style_override("hover", empty_stylebox);
+	zoom_reset->add_theme_style_override("focus", empty_stylebox);
+	zoom_reset->add_theme_style_override("pressed", empty_stylebox);
 	zoom_reset->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
 	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
-	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
+
 	zoom_reset->set_shortcut(ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent"));
 	zoom_reset->set_shortcut_context(this);
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 	zoom_reset->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	// Prevent the button's size from changing when the text size changes
 	zoom_reset->set_custom_minimum_size(Size2(56 * EDSCALE, 0));
+	add_child(zoom_reset);
+	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
 
 	zoom_plus = memnew(Button);
 	zoom_plus->set_flat(true);
-	add_child(zoom_plus);
-	zoom_plus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
 	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTR("Zoom In"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 	zoom_plus->set_shortcut_context(this);
 	zoom_plus->set_focus_mode(FOCUS_NONE);
+	add_child(zoom_plus);
+	zoom_plus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
 
 	_update_zoom_label();
 

@@ -89,14 +89,18 @@ struct hb_vector_size_t
 
 struct hb_bit_page_t
 {
-  void init0 () { v.init0 (); }
-  void init1 () { v.init1 (); }
+  void init0 () { v.init0 (); population = 0; }
+  void init1 () { v.init1 (); population = PAGE_BITS; }
+
+  void dirty () { population = UINT_MAX; }
 
   static inline constexpr unsigned len ()
   { return ARRAY_LENGTH_CONST (v); }
 
+  operator bool () const { return !is_empty (); }
   bool is_empty () const
   {
+    if (has_population ()) return !population;
     return
     + hb_iter (v)
     | hb_none
@@ -104,14 +108,11 @@ struct hb_bit_page_t
   }
   uint32_t hash () const
   {
-    return
-    + hb_iter (v)
-    | hb_reduce ([] (uint32_t h, const elt_t &_) { return h * 31 + hb_hash (_); }, (uint32_t) 0u)
-    ;
+    return hb_bytes_t ((const char *) &v, sizeof (v)).hash ();
   }
 
-  void add (hb_codepoint_t g) { elt (g) |= mask (g); }
-  void del (hb_codepoint_t g) { elt (g) &= ~mask (g); }
+  void add (hb_codepoint_t g) { elt (g) |= mask (g); dirty (); }
+  void del (hb_codepoint_t g) { elt (g) &= ~mask (g); dirty (); }
   void set (hb_codepoint_t g, bool value) { if (value) add (g); else del (g); }
   bool get (hb_codepoint_t g) const { return elt (g) & mask (g); }
 
@@ -123,20 +124,21 @@ struct hb_bit_page_t
       *la |= (mask (b) << 1) - mask(a);
     else
     {
-      *la |= ~(mask (a) - 1);
+      *la |= ~(mask (a) - 1llu);
       la++;
 
       hb_memset (la, 0xff, (char *) lb - (char *) la);
 
-      *lb |= ((mask (b) << 1) - 1);
+      *lb |= ((mask (b) << 1) - 1llu);
     }
+    dirty ();
   }
   void del_range (hb_codepoint_t a, hb_codepoint_t b)
   {
     elt_t *la = &elt (a);
     elt_t *lb = &elt (b);
     if (la == lb)
-      *la &= ~((mask (b) << 1) - mask(a));
+      *la &= ~((mask (b) << 1llu) - mask(a));
     else
     {
       *la &= mask (a) - 1;
@@ -144,8 +146,9 @@ struct hb_bit_page_t
 
       hb_memset (la, 0, (char *) lb - (char *) la);
 
-      *lb &= ~((mask (b) << 1) - 1);
+      *lb &= ~((mask (b) << 1) - 1llu);
     }
+    dirty ();
   }
   void set_range (hb_codepoint_t a, hb_codepoint_t b, bool v)
   { if (v) add_range (a, b); else del_range (a, b); }
@@ -216,6 +219,7 @@ struct hb_bit_page_t
     return count;
   }
 
+  bool operator == (const hb_bit_page_t &other) const { return is_equal (other); }
   bool is_equal (const hb_bit_page_t &other) const
   {
     for (unsigned i = 0; i < len (); i++)
@@ -223,20 +227,28 @@ struct hb_bit_page_t
 	return false;
     return true;
   }
+  bool operator <= (const hb_bit_page_t &larger_page) const { return is_subset (larger_page); }
   bool is_subset (const hb_bit_page_t &larger_page) const
   {
+    if (has_population () && larger_page.has_population () &&
+	population > larger_page.population)
+      return false;
+
     for (unsigned i = 0; i < len (); i++)
       if (~larger_page.v[i] & v[i])
 	return false;
     return true;
   }
 
+  bool has_population () const { return population != UINT_MAX; }
   unsigned int get_population () const
   {
-    return
+    if (has_population ()) return population;
+    population =
     + hb_iter (v)
     | hb_reduce ([] (unsigned pop, const elt_t &_) { return pop + hb_popcount (_); }, 0u)
     ;
+    return population;
   }
 
   bool next (hb_codepoint_t *codepoint) const
@@ -332,9 +344,9 @@ struct hb_bit_page_t
   const elt_t& elt (hb_codepoint_t g) const { return v[(g & MASK) / ELT_BITS]; }
   static constexpr elt_t mask (hb_codepoint_t g) { return elt_t (1) << (g & ELT_MASK); }
 
+  mutable unsigned population;
   vector_t v;
 };
-static_assert (hb_bit_page_t::PAGE_BITS == sizeof (hb_bit_page_t) * 8, "");
 
 
 #endif /* HB_BIT_PAGE_HH */

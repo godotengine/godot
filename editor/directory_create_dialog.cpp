@@ -33,10 +33,10 @@
 #include "core/io/dir_access.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/panel_container.h"
 
 static String sanitize_input(const String &p_path) {
 	String path = p_path.strip_edges();
@@ -51,13 +51,20 @@ String DirectoryCreateDialog::_validate_path(const String &p_path) const {
 		return TTR("Folder name cannot be empty.");
 	}
 
+	if (p_path.contains("\\") || p_path.contains(":") || p_path.contains("*") ||
+			p_path.contains("|") || p_path.contains(">")) {
+		return TTR("Folder name contains invalid characters.");
+	}
+
 	for (const String &part : p_path.split("/")) {
 		if (part.is_empty()) {
 			return TTR("Folder name cannot be empty.");
 		}
-		if (p_path.contains("\\") || p_path.contains(":") || p_path.contains("*") ||
-				p_path.contains("|") || p_path.contains(">") || p_path.ends_with(".") || p_path.ends_with(" ")) {
-			return TTR("Folder name contains invalid characters.");
+		if (part.ends_with(" ") || part[0] == ' ') {
+			return TTR("Folder name cannot begin or end with a space.");
+		}
+		if (part[0] == '.') {
+			return TTR("Folder name cannot begin with a dot.");
 		}
 	}
 
@@ -73,24 +80,17 @@ String DirectoryCreateDialog::_validate_path(const String &p_path) const {
 	return String();
 }
 
-void DirectoryCreateDialog::_on_dir_path_changed(const String &p_text) {
-	const String path = sanitize_input(p_text);
+void DirectoryCreateDialog::_on_dir_path_changed() {
+	const String path = sanitize_input(dir_path->get_text());
 	const String error = _validate_path(path);
 
 	if (error.is_empty()) {
-		status_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
-
 		if (path.contains("/")) {
-			status_label->set_text(TTR("Using slashes in folder names will create subfolders recursively."));
-		} else {
-			status_label->set_text(TTR("Folder name is valid."));
+			validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Using slashes in folder names will create subfolders recursively."), EditorValidationPanel::MSG_OK);
 		}
 	} else {
-		status_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-		status_label->set_text(error);
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, error, EditorValidationPanel::MSG_ERROR);
 	}
-
-	get_ok_button()->set_disabled(!error.is_empty());
 }
 
 void DirectoryCreateDialog::ok_pressed() {
@@ -127,19 +127,11 @@ void DirectoryCreateDialog::config(const String &p_base_dir) {
 	label->set_text(vformat(TTR("Create new folder in %s:"), base_dir));
 	dir_path->set_text("new folder");
 	dir_path->select_all();
-	_on_dir_path_changed(dir_path->get_text());
+	validation_panel->update();
 }
 
 void DirectoryCreateDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dir_created"));
-}
-
-void DirectoryCreateDialog::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-		} break;
-	}
 }
 
 DirectoryCreateDialog::DirectoryCreateDialog() {
@@ -154,7 +146,6 @@ DirectoryCreateDialog::DirectoryCreateDialog() {
 	vb->add_child(label);
 
 	dir_path = memnew(LineEdit);
-	dir_path->connect("text_changed", callable_mp(this, &DirectoryCreateDialog::_on_dir_path_changed));
 	vb->add_child(dir_path);
 	register_text_enter(dir_path);
 
@@ -162,11 +153,11 @@ DirectoryCreateDialog::DirectoryCreateDialog() {
 	spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
 	vb->add_child(spacing);
 
-	status_panel = memnew(PanelContainer);
-	status_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	vb->add_child(status_panel);
+	validation_panel = memnew(EditorValidationPanel);
+	vb->add_child(validation_panel);
+	validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Folder name is valid."));
+	validation_panel->set_update_callback(callable_mp(this, &DirectoryCreateDialog::_on_dir_path_changed));
+	validation_panel->set_accept_button(get_ok_button());
 
-	status_label = memnew(Label);
-	status_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	status_panel->add_child(status_label);
+	dir_path->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 }

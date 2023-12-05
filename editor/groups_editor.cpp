@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/scene_tree_dock.h"
@@ -116,7 +117,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 
 		if (!can_edit(p_current, selected_group)) {
 			node->set_selectable(0, false);
-			node->set_custom_color(0, groups->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			node->set_custom_color(0, groups->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 		}
 	}
 
@@ -210,8 +211,8 @@ void GroupDialog::_add_group(String p_name) {
 
 	TreeItem *new_group = groups->create_item(groups_root);
 	new_group->set_text(0, name);
-	new_group->add_button(0, groups->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), DELETE_GROUP);
-	new_group->add_button(0, groups->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), COPY_GROUP);
+	new_group->add_button(0, groups->get_editor_theme_icon(SNAME("Remove")), DELETE_GROUP);
+	new_group->add_button(0, groups->get_editor_theme_icon(SNAME("ActionCopy")), COPY_GROUP);
 	new_group->set_editable(0, true);
 	new_group->select(0);
 	groups->ensure_cursor_is_visible();
@@ -393,16 +394,16 @@ void GroupDialog::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_layout_rtl()) {
-				add_button->set_icon(groups->get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
-				remove_button->set_icon(groups->get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				add_button->set_icon(groups->get_editor_theme_icon(SNAME("Back")));
+				remove_button->set_icon(groups->get_editor_theme_icon(SNAME("Forward")));
 			} else {
-				add_button->set_icon(groups->get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
-				remove_button->set_icon(groups->get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
+				add_button->set_icon(groups->get_editor_theme_icon(SNAME("Forward")));
+				remove_button->set_icon(groups->get_editor_theme_icon(SNAME("Back")));
 			}
 
-			add_filter->set_right_icon(groups->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			add_filter->set_right_icon(groups->get_editor_theme_icon(SNAME("Search")));
 			add_filter->set_clear_button_enabled(true);
-			remove_filter->set_right_icon(groups->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			remove_filter->set_right_icon(groups->get_editor_theme_icon(SNAME("Search")));
 			remove_filter->set_clear_button_enabled(true);
 		} break;
 	}
@@ -761,8 +762,8 @@ void GroupsEditor::update_tree() {
 		item->set_text(0, gi.name);
 		item->set_editable(0, true);
 		if (can_be_deleted) {
-			item->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), DELETE_GROUP);
-			item->add_button(0, get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), COPY_GROUP);
+			item->add_button(0, get_editor_theme_icon(SNAME("Remove")), DELETE_GROUP);
+			item->add_button(0, get_editor_theme_icon(SNAME("ActionCopy")), COPY_GROUP);
 		} else {
 			item->set_selectable(0, false);
 		}

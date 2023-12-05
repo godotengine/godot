@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2019 University of Cambridge
+          New API code Copyright (c) 2016-2022 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -51,19 +51,23 @@ POSSIBILITY OF SUCH DAMAGE.
 *  Create a match data block given ovector size  *
 *************************************************/
 
-/* A minimum of 1 is imposed on the number of ovector pairs. */
+/* A minimum of 1 is imposed on the number of ovector pairs. A maximum is also
+imposed because the oveccount field in a match data block is uintt6_t. */
 
 PCRE2_EXP_DEFN pcre2_match_data * PCRE2_CALL_CONVENTION
 pcre2_match_data_create(uint32_t oveccount, pcre2_general_context *gcontext)
 {
 pcre2_match_data *yield;
 if (oveccount < 1) oveccount = 1;
+if (oveccount > UINT16_MAX) oveccount = UINT16_MAX;
 yield = PRIV(memctl_malloc)(
   offsetof(pcre2_match_data, ovector) + 2*oveccount*sizeof(PCRE2_SIZE),
   (pcre2_memctl *)gcontext);
 if (yield == NULL) return NULL;
 yield->oveccount = oveccount;
 yield->flags = 0;
+yield->heapframes = NULL;
+yield->heapframes_size = 0;
 return yield;
 }
 
@@ -95,6 +99,9 @@ pcre2_match_data_free(pcre2_match_data *match_data)
 {
 if (match_data != NULL)
   {
+  if (match_data->heapframes != NULL)
+    match_data->memctl.free(match_data->heapframes,
+      match_data->memctl.memory_data);
   if ((match_data->flags & PCRE2_MD_COPIED_SUBJECT) != 0)
     match_data->memctl.free((void *)match_data->subject,
       match_data->memctl.memory_data);

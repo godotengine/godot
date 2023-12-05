@@ -38,10 +38,10 @@
 #include "tile_map_editor.h"
 #include "tile_set_editor.h"
 
-class TilesEditorPlugin : public EditorPlugin {
-	GDCLASS(TilesEditorPlugin, EditorPlugin);
+class TilesEditorUtils : public Object {
+	GDCLASS(TilesEditorUtils, Object);
 
-	static TilesEditorPlugin *singleton;
+	static TilesEditorUtils *singleton;
 
 public:
 	enum SourceSortOption {
@@ -53,27 +53,10 @@ public:
 	};
 
 private:
-	bool is_visible = false;
-
-	bool tile_map_changed_needs_update = false;
-	ObjectID tile_map_id;
-	Ref<TileSet> tile_set;
-	bool is_editing_tile_set = false;
-
-	Button *tilemap_editor_button = nullptr;
-	TileMapEditor *tilemap_editor = nullptr;
-
-	Button *tileset_editor_button = nullptr;
-	TileSetEditor *tileset_editor = nullptr;
-
-	void _update_editors();
-
 	// For synchronization.
 	int atlas_sources_lists_current = 0;
 	float atlas_view_zoom = 1.0;
 	Vector2 atlas_view_scroll;
-
-	void _tile_map_changed();
 
 	// Source sorting.
 	int source_sort = SOURCE_SORT_ID;
@@ -101,16 +84,8 @@ private:
 	static void _thread_func(void *ud);
 	void _thread();
 
-protected:
-	void _notification(int p_what);
-
 public:
-	_FORCE_INLINE_ static TilesEditorPlugin *get_singleton() { return singleton; }
-
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return tilemap_editor->forward_canvas_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { tilemap_editor->forward_canvas_draw_over_viewport(p_overlay); }
-
-	bool is_tile_map_selected();
+	_FORCE_INLINE_ static TilesEditorUtils *get_singleton() { return singleton; }
 
 	// Pattern preview API.
 	void queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback);
@@ -126,14 +101,63 @@ public:
 	void set_sorting_option(int p_option);
 	List<int> get_sorted_sources(const Ref<TileSet> p_tile_set) const;
 
+	// Misc.
+	void display_tile_set_editor_panel();
+
+	static void draw_selection_rect(CanvasItem *p_ci, const Rect2 &p_rect, const Color &p_color = Color(1.0, 1.0, 1.0));
+
+	TilesEditorUtils();
+	~TilesEditorUtils();
+};
+
+class TileMapEditorPlugin : public EditorPlugin {
+	GDCLASS(TileMapEditorPlugin, EditorPlugin);
+
+	TileMapEditor *editor = nullptr;
+	Button *button = nullptr;
+	ObjectID tile_map_id;
+
+	bool tile_map_changed_needs_update = false;
+	ObjectID edited_tileset; // The TileSet associated with the TileMap.
+
+	void _tile_map_changed();
+	void _update_tile_map();
+
+protected:
+	void _notification(int p_notification);
+
+public:
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	static void draw_selection_rect(CanvasItem *p_ci, const Rect2 &p_rect, const Color &p_color = Color(1.0, 1.0, 1.0));
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
-	TilesEditorPlugin();
-	~TilesEditorPlugin();
+	void hide_editor();
+	bool is_editor_visible() const;
+
+	TileMapEditorPlugin();
+	~TileMapEditorPlugin();
+};
+
+class TileSetEditorPlugin : public EditorPlugin {
+	GDCLASS(TileSetEditorPlugin, EditorPlugin);
+
+	TileSetEditor *editor = nullptr;
+	Button *button = nullptr;
+
+	ObjectID edited_tileset;
+
+public:
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+
+	ObjectID get_edited_tileset() const;
+
+	TileSetEditorPlugin();
+	~TileSetEditorPlugin();
 };
 
 #endif // TILES_EDITOR_PLUGIN_H

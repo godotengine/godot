@@ -31,6 +31,7 @@
 #include "openxr_editor_plugin.h"
 
 #include "../action_map/openxr_action_map.h"
+
 #include "editor/editor_node.h"
 
 void OpenXREditorPlugin::edit(Object *p_node) {

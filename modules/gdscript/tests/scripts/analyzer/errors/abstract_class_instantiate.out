@@ -1,2 +1,2 @@
 GDTEST_ANALYZER_ERROR
-Native class "CanvasItem" cannot be constructed as it is abstract.
+Native class "InstancePlaceholder" cannot be constructed as it is abstract.

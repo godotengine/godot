@@ -30,10 +30,12 @@
 
 #include "editor_export.h"
 
+#include "core/config/project_settings.h"
+
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
-	if (values.has(p_name)) {
-		values[p_name] = p_value;
-		EditorExport::singleton->save_presets();
+	values[p_name] = p_value;
+	EditorExport::singleton->save_presets();
+	if (update_visibility.has(p_name)) {
 		if (update_visibility[p_name]) {
 			notify_property_list_changed();
 		}
@@ -57,13 +59,32 @@ void EditorExportPreset::_bind_methods() {
 }
 
 String EditorExportPreset::_get_property_warning(const StringName &p_name) const {
-	return platform->get_export_option_warning(this, p_name);
+	String warning = platform->get_export_option_warning(this, p_name);
+	if (!warning.is_empty()) {
+		warning += "\n";
+	}
+
+	// Get property warning from editor export plugins.
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (!export_plugins[i]->supports_platform(platform)) {
+			continue;
+		}
+
+		export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>(this));
+		String plugin_warning = export_plugins[i]->_get_export_option_warning(platform, p_name);
+		if (!plugin_warning.is_empty()) {
+			warning += plugin_warning + "\n";
+		}
+	}
+
+	return warning;
 }
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const PropertyInfo &E : properties) {
-		if (platform->get_export_option_visibility(this, E.name)) {
-			p_list->push_back(E);
+	for (const KeyValue<StringName, PropertyInfo> &E : properties) {
+		if (platform->get_export_option_visibility(this, E.key)) {
+			p_list->push_back(E.value);
 		}
 	}
 }
@@ -311,6 +332,61 @@ Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p
 		return from_env;
 	}
 	return get(p_name, r_valid);
+}
+
+_FORCE_INLINE_ bool _check_digits(const String &p_str) {
+	for (int i = 0; i < p_str.length(); i++) {
+		char32_t c = p_str.operator[](i);
+		if (!is_digit(c)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+String EditorExportPreset::get_version(const StringName &p_preset_string, bool p_windows_version) const {
+	String result = get(p_preset_string);
+	if (result.is_empty()) {
+		result = GLOBAL_GET("application/config/version");
+
+		// Split and validate version number components.
+		const PackedStringArray result_split = result.split(".", false);
+		bool valid_version = !result_split.is_empty();
+		for (const String &E : result_split) {
+			if (!_check_digits(E)) {
+				valid_version = false;
+				break;
+			}
+		}
+
+		if (valid_version) {
+			if (p_windows_version) {
+				// Modify version number to match Windows constraints (version numbers must have 4 components).
+				if (result_split.size() == 1) {
+					result = result + ".0.0.0";
+				} else if (result_split.size() == 2) {
+					result = result + ".0.0";
+				} else if (result_split.size() == 3) {
+					result = result + ".0";
+				} else {
+					result = vformat("%s.%s.%s.%s", result_split[0], result_split[1], result_split[2], result_split[3]);
+				}
+			} else {
+				result = String(".").join(result_split);
+			}
+		} else {
+			if (!result.is_empty()) {
+				WARN_PRINT(vformat("Invalid version number \"%s\". The version number can only contain numeric characters (0-9) and non-consecutive periods (.).", result));
+			}
+			if (p_windows_version) {
+				result = "1.0.0.0";
+			} else {
+				result = "1.0.0";
+			}
+		}
+	}
+
+	return result;
 }
 
 EditorExportPreset::EditorExportPreset() {}

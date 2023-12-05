@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Button" inherits="BaseButton" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Button" inherits="BaseButton" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Standard themed Button.
+		A themed button that can contain text and an icon.
 	</brief_description>
 	<description>
-		Button is the standard themed button. It can contain text and an icon, and will display them according to the current [Theme].
+		[Button] is the standard themed button. It can contain text and an icon, and it will display them according to the current [Theme].
 		[b]Example of creating a button and assigning an action when pressed by code:[/b]
 		[codeblocks]
 		[gdscript]
@@ -32,9 +32,8 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		Buttons (like all Control nodes) can also be created in the editor, but some situations may require creating them from code.
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] Buttons do not interpret touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions, as [TouchScreenButton] supports multitouch.
+		[b]Note:[/b] Buttons do not interpret touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions.
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
@@ -116,7 +115,7 @@
 		<theme_item name="icon_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Icon modulate [Color] used when the [Button] is being pressed.
 		</theme_item>
-		<theme_item name="h_separation" data_type="constant" type="int" default="2">
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between [Button]'s icon and text. Negative values will be treated as [code]0[/code] when used.
 		</theme_item>
 		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
@@ -132,20 +131,41 @@
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the [Button]'s text.
 		</theme_item>
+		<theme_item name="icon" data_type="icon" type="Texture2D">
+			Default icon for the [Button]. Appears only if [member icon] is not assigned.
+		</theme_item>
 		<theme_item name="disabled" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is disabled.
 		</theme_item>
+		<theme_item name="disabled_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is disabled (for right-to-left layouts).
+		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [Button] is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+			[StyleBox] used when the [Button] is focused. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</theme_item>
 		<theme_item name="hover" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is being hovered.
 		</theme_item>
+		<theme_item name="hover_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is being hovered (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="hover_pressed" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is being pressed and hovered at the same time.
+		</theme_item>
+		<theme_item name="hover_pressed_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is being pressed and hovered at the same time (for right-to-left layouts).
+		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Default [StyleBox] for the [Button].
 		</theme_item>
+		<theme_item name="normal_mirrored" data_type="style" type="StyleBox">
+			Default [StyleBox] for the [Button] (for right-to-left layouts).
+		</theme_item>
 		<theme_item name="pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is being pressed.
+		</theme_item>
+		<theme_item name="pressed_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is being pressed (for right-to-left layouts).
 		</theme_item>
 	</theme_items>
 </class>

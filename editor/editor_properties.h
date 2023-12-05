@@ -40,6 +40,7 @@ class EditorFileDialog;
 class EditorLocaleDialog;
 class EditorResourcePicker;
 class EditorSpinSlider;
+class MenuButton;
 class PropertySelector;
 class SceneTreeDialog;
 class TextEdit;
@@ -264,7 +265,7 @@ private:
 	bool expand_hovered = false;
 	bool expanded = false;
 	int expansion_rows = 0;
-	int hovered_index = -1;
+	uint32_t hovered_index = INT32_MAX; // Nothing is hovered.
 	bool read_only = false;
 	int renamed_layer_index = -1;
 	PopupMenu *layer_rename = nullptr;
@@ -275,7 +276,7 @@ private:
 	void _rename_operation_confirm();
 	void _update_hovered(const Vector2 &p_position);
 	void _on_hover_exit();
-	void _update_flag();
+	void _update_flag(bool p_replace);
 	Size2 get_grid_size() const;
 
 protected:
@@ -285,7 +286,7 @@ protected:
 public:
 	uint32_t value = 0;
 	int layer_group_size = 0;
-	int layer_count = 0;
+	uint32_t layer_count = 0;
 	Vector<String> names;
 	Vector<String> tooltips;
 
@@ -399,7 +400,7 @@ class EditorPropertyFloat : public EditorProperty {
 	GDCLASS(EditorPropertyFloat, EditorProperty);
 	EditorSpinSlider *spin = nullptr;
 	bool setting = false;
-	bool angle_in_radians = false;
+	bool radians_as_degrees = false;
 	void _value_changed(double p_val);
 
 protected:
@@ -408,7 +409,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), bool p_angle_in_radians = false);
+	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), bool p_radians_as_degrees = false);
 	EditorPropertyFloat();
 };
 
@@ -455,26 +456,6 @@ public:
 	EditorPropertyEasing();
 };
 
-class EditorPropertyVector2 : public EditorProperty {
-	GDCLASS(EditorPropertyVector2, EditorProperty);
-	EditorSpinSlider *spin[2];
-	bool setting = false;
-	double ratio_xy = 1.0;
-	double ratio_yx = 1.0;
-	TextureButton *linked = nullptr;
-	void _update_ratio();
-	void _value_changed(double p_val, const String &p_name);
-
-protected:
-	virtual void _set_read_only(bool p_read_only) override;
-	void _notification(int p_what);
-
-public:
-	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link = false, const String &p_suffix = String());
-	EditorPropertyVector2(bool p_force_wide = false);
-};
-
 class EditorPropertyRect2 : public EditorProperty {
 	GDCLASS(EditorPropertyRect2, EditorProperty);
 	EditorSpinSlider *spin[4];
@@ -492,54 +473,6 @@ public:
 	EditorPropertyRect2(bool p_force_wide = false);
 };
 
-class EditorPropertyVector3 : public EditorProperty {
-	GDCLASS(EditorPropertyVector3, EditorProperty);
-	EditorSpinSlider *spin[3];
-	bool setting = false;
-	bool angle_in_radians = false;
-	double ratio_yx = 1.0;
-	double ratio_zx = 1.0;
-	double ratio_xy = 1.0;
-	double ratio_zy = 1.0;
-	double ratio_xz = 1.0;
-	double ratio_yz = 1.0;
-	TextureButton *linked = nullptr;
-	void _update_ratio();
-	void _value_changed(double p_val, const String &p_name);
-
-protected:
-	virtual void _set_read_only(bool p_read_only) override;
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	virtual void update_property() override;
-	virtual void update_using_vector(Vector3 p_vector);
-	virtual Vector3 get_vector();
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link = false, const String &p_suffix = String(), bool p_angle_in_radians = false);
-	EditorPropertyVector3(bool p_force_wide = false);
-};
-
-class EditorPropertyVector2i : public EditorProperty {
-	GDCLASS(EditorPropertyVector2i, EditorProperty);
-	EditorSpinSlider *spin[2];
-	bool setting = false;
-	double ratio_xy = 1.0;
-	double ratio_yx = 1.0;
-	TextureButton *linked = nullptr;
-	void _update_ratio();
-	void _value_changed(double p_val, const String &p_name);
-
-protected:
-	virtual void _set_read_only(bool p_read_only) override;
-	void _notification(int p_what);
-
-public:
-	virtual void update_property() override;
-	void setup(int p_min, int p_max, bool p_link = false, const String &p_suffix = String());
-	EditorPropertyVector2i(bool p_force_wide = false);
-};
-
 class EditorPropertyRect2i : public EditorProperty {
 	GDCLASS(EditorPropertyRect2i, EditorProperty);
 	EditorSpinSlider *spin[4];
@@ -555,31 +488,6 @@ public:
 	virtual void update_property() override;
 	void setup(int p_min, int p_max, const String &p_suffix = String());
 	EditorPropertyRect2i(bool p_force_wide = false);
-};
-
-class EditorPropertyVector3i : public EditorProperty {
-	GDCLASS(EditorPropertyVector3i, EditorProperty);
-	EditorSpinSlider *spin[3];
-	bool setting = false;
-	double ratio_yx = 1.0;
-	double ratio_zx = 1.0;
-	double ratio_xy = 1.0;
-	double ratio_zy = 1.0;
-	double ratio_xz = 1.0;
-	double ratio_yz = 1.0;
-	TextureButton *linked = nullptr;
-	void _update_ratio();
-	void _value_changed(double p_val, const String &p_name);
-
-protected:
-	virtual void _set_read_only(bool p_read_only) override;
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	virtual void update_property() override;
-	void setup(int p_min, int p_max, bool p_link = false, const String &p_suffix = String());
-	EditorPropertyVector3i(bool p_force_wide = false);
 };
 
 class EditorPropertyPlane : public EditorProperty {
@@ -631,40 +539,6 @@ public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String(), bool p_hide_editor = false);
 	EditorPropertyQuaternion();
-};
-
-class EditorPropertyVector4 : public EditorProperty {
-	GDCLASS(EditorPropertyVector4, EditorProperty);
-	EditorSpinSlider *spin[4];
-	bool setting = false;
-	void _value_changed(double p_val, const String &p_name);
-
-protected:
-	virtual void _set_read_only(bool p_read_only) override;
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
-	EditorPropertyVector4();
-};
-
-class EditorPropertyVector4i : public EditorProperty {
-	GDCLASS(EditorPropertyVector4i, EditorProperty);
-	EditorSpinSlider *spin[4];
-	bool setting = false;
-	void _value_changed(double p_val, const String &p_name);
-
-protected:
-	virtual void _set_read_only(bool p_read_only) override;
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	virtual void update_property() override;
-	void setup(double p_min, double p_max, const String &p_suffix = String());
-	EditorPropertyVector4i();
 };
 
 class EditorPropertyAABB : public EditorProperty {
@@ -776,34 +650,46 @@ public:
 
 class EditorPropertyNodePath : public EditorProperty {
 	GDCLASS(EditorPropertyNodePath, EditorProperty);
+
+	enum {
+		ACTION_CLEAR,
+		ACTION_COPY,
+		ACTION_EDIT,
+		ACTION_SELECT,
+	};
+
 	Button *assign = nullptr;
-	Button *clear = nullptr;
+	MenuButton *menu = nullptr;
+	LineEdit *edit = nullptr;
+
 	SceneTreeDialog *scene_tree = nullptr;
 	NodePath base_hint;
 	bool use_path_from_scene_root = false;
-	bool pointer_mode = false;
+	bool editing_node = false;
 
 	Vector<StringName> valid_types;
 	void _node_selected(const NodePath &p_path);
 	void _node_assign();
-	void _node_clear();
+	Node *get_base_node();
+	void _update_menu();
+	void _menu_option(int p_idx);
+	void _accept_text();
+	void _text_submitted(const String &p_text);
+	const NodePath _get_node_path() const;
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool is_drop_valid(const Dictionary &p_drag_data) const;
 
-	String _get_meta_pointer_property() const;
 	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const override;
-	virtual StringName _get_revert_property() const override;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;
-	void setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root = true, bool p_pointer_mode = false);
+	void setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root = true, bool p_editing_node = false);
 	EditorPropertyNodePath();
 };
 

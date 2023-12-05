@@ -98,6 +98,7 @@ static int kLinearToGammaTab[GAMMA_TAB_SIZE + 1];
 static uint16_t kGammaToLinearTab[256];
 static volatile int kGammaTablesOk = 0;
 static void InitGammaTables(void);
+extern VP8CPUInfo VP8GetCPUInfo;
 
 WEBP_DSP_INIT_FUNC(InitGammaTables) {
   if (!kGammaTablesOk) {
@@ -534,7 +535,9 @@ static int ImportYUVAFromRGBA(const uint8_t* r_ptr,
     WebPInitConvertARGBToYUV();
     InitGammaTables();
 
-    if (tmp_rgb == NULL) return 0;  // malloc error
+    if (tmp_rgb == NULL) {
+      return WebPEncodingSetError(picture, VP8_ENC_ERROR_OUT_OF_MEMORY);
+    }
 
     // Downsample Y/U/V planes, two rows at a time
     for (y = 0; y < (height >> 1); ++y) {

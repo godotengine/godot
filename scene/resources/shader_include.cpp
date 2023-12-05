@@ -37,11 +37,10 @@ void ShaderInclude::_dependency_changed() {
 }
 
 void ShaderInclude::set_code(const String &p_code) {
-	HashSet<Ref<ShaderInclude>> new_dependencies;
 	code = p_code;
 
-	for (Ref<ShaderInclude> E : dependencies) {
-		E->disconnect(SNAME("changed"), callable_mp(this, &ShaderInclude::_dependency_changed));
+	for (const Ref<ShaderInclude> &E : dependencies) {
+		E->disconnect_changed(callable_mp(this, &ShaderInclude::_dependency_changed));
 	}
 
 	{
@@ -51,15 +50,17 @@ void ShaderInclude::set_code(const String &p_code) {
 		}
 
 		String pp_code;
+		HashSet<Ref<ShaderInclude>> new_dependencies;
 		ShaderPreprocessor preprocessor;
-		preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_dependencies);
+		Error result = preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_dependencies);
+		if (result == OK) {
+			// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
+			dependencies = new_dependencies;
+		}
 	}
 
-	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
-	dependencies = new_dependencies;
-
-	for (Ref<ShaderInclude> E : dependencies) {
-		E->connect(SNAME("changed"), callable_mp(this, &ShaderInclude::_dependency_changed));
+	for (const Ref<ShaderInclude> &E : dependencies) {
+		E->connect_changed(callable_mp(this, &ShaderInclude::_dependency_changed));
 	}
 
 	emit_changed();
@@ -87,13 +88,18 @@ Ref<Resource> ResourceFormatLoaderShaderInclude::load(const String &p_path, cons
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
 
-	Ref<ShaderInclude> shader_inc;
-	shader_inc.instantiate();
-
-	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path);
+	Error error = OK;
+	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path, &error);
+	ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot load shader include: " + p_path);
 
 	String str;
-	str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+	if (buffer.size() > 0) {
+		error = str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+		ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot parse shader include: " + p_path);
+	}
+
+	Ref<ShaderInclude> shader_inc;
+	shader_inc.instantiate();
 
 	shader_inc->set_include_path(p_path);
 	shader_inc->set_code(str);

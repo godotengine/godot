@@ -239,7 +239,7 @@
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
     FT_Service_MetricsVariations  var =
-      (FT_Service_MetricsVariations)face->var;
+      (FT_Service_MetricsVariations)face->tt_var;
 #endif
 
 

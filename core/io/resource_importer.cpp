@@ -394,6 +394,15 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String 
 	return Ref<ResourceImporter>();
 }
 
+void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importer, bool p_first_priority) {
+	ERR_FAIL_COND(p_importer.is_null());
+	if (p_first_priority) {
+		importers.insert(0, p_importer);
+	} else {
+		importers.push_back(p_importer);
+	}
+}
+
 void ResourceFormatImporter::get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter>> *r_importers) {
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
@@ -472,18 +481,11 @@ ResourceFormatImporter::ResourceFormatImporter() {
 	singleton = this;
 }
 
+//////////////
+
 void ResourceImporter::_bind_methods() {
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
-}
-
-void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importer, bool p_first_priority) {
-	ERR_FAIL_COND(p_importer.is_null());
-	if (p_first_priority) {
-		importers.insert(0, p_importer);
-	} else {
-		importers.push_back(p_importer);
-	}
 }
 
 /////

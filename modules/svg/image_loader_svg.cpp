@@ -67,12 +67,22 @@ void ImageLoaderSVG::_replace_color_property(const HashMap<Color, Color> &p_colo
 	}
 }
 
-Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample) {
+Ref<Image> ImageLoaderSVG::load_mem_svg(const uint8_t *p_svg, int p_size, float p_scale) {
+	Ref<Image> img;
+	img.instantiate();
+
+	Error err = create_image_from_utf8_buffer(img, p_svg, p_size, p_scale, false);
+	ERR_FAIL_COND_V(err, Ref<Image>());
+
+	return img;
+}
+
+Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const uint8_t *p_buffer, int p_buffer_size, float p_scale, bool p_upsample) {
 	ERR_FAIL_COND_V_MSG(Math::is_zero_approx(p_scale), ERR_INVALID_PARAMETER, "ImageLoaderSVG: Can't load SVG with a scale of 0.");
 
 	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
 
-	tvg::Result result = picture->load((const char *)p_buffer.ptr(), p_buffer.size(), "svg", true);
+	tvg::Result result = picture->load((const char *)p_buffer, p_buffer_size, "svg", true);
 	if (result != tvg::Result::Success) {
 		return ERR_INVALID_DATA;
 	}
@@ -97,7 +107,7 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const Pa
 	// Note: memalloc here, be sure to memfree before any return.
 	uint32_t *buffer = (uint32_t *)memalloc(sizeof(uint32_t) * width * height);
 
-	tvg::Result res = sw_canvas->target(buffer, width, width, height, tvg::SwCanvas::ARGB8888_STRAIGHT);
+	tvg::Result res = sw_canvas->target(buffer, width, width, height, tvg::SwCanvas::ARGB8888S);
 	if (res != tvg::Result::Success) {
 		memfree(buffer);
 		ERR_FAIL_V_MSG(FAILED, "ImageLoaderSVG: Couldn't set target on ThorVG canvas.");
@@ -142,6 +152,10 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const Pa
 	return OK;
 }
 
+Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample) {
+	return create_image_from_utf8_buffer(p_image, p_buffer.ptr(), p_buffer.size(), p_scale, p_upsample);
+}
+
 Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map) {
 	if (p_color_map.size()) {
 		_replace_color_property(p_color_map, "stop-color=\"", p_string);
@@ -178,4 +192,8 @@ Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileacces
 		p_image->srgb_to_linear();
 	}
 	return OK;
+}
+
+ImageLoaderSVG::ImageLoaderSVG() {
+	Image::_svg_scalable_mem_loader_func = load_mem_svg;
 }

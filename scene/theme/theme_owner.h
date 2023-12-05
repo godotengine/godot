@@ -36,11 +36,18 @@
 
 class Control;
 class Node;
+class ThemeContext;
 class Window;
 
 class ThemeOwner : public Object {
+	Node *holder = nullptr;
+
 	Control *owner_control = nullptr;
 	Window *owner_window = nullptr;
+	ThemeContext *owner_context = nullptr;
+
+	void _owner_context_changed();
+	ThemeContext *_get_active_owner_context() const;
 
 	Node *_get_next_owner_node(Node *p_from_node) const;
 	Ref<Theme> _get_owner_node_theme(Node *p_owner_node) const;
@@ -51,6 +58,8 @@ public:
 	void set_owner_node(Node *p_node);
 	Node *get_owner_node() const;
 	bool has_owner_node() const;
+
+	void set_owner_context(ThemeContext *p_context, bool p_propagate = true);
 
 	// Theme propagation.
 
@@ -69,7 +78,7 @@ public:
 	Ref<Font> get_theme_default_font();
 	int get_theme_default_font_size();
 
-	ThemeOwner() {}
+	ThemeOwner(Node *p_holder) { holder = p_holder; }
 	~ThemeOwner() {}
 };
 

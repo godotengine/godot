@@ -292,7 +292,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				loop_end = file->get_32();
 			}
 		}
-		file->seek(file_pos + chunksize);
+		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
+		// chunk sizes.
+		file->seek(file_pos + chunksize + (chunksize & 1));
 	}
 
 	// STEP 2, APPLY CONVERSIONS
@@ -386,7 +388,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	bool trim = p_options["edit/trim"];
 
-	if (trim && (loop_mode != AudioStreamWAV::LOOP_DISABLED) && format_channels > 0) {
+	if (trim && (loop_mode == AudioStreamWAV::LOOP_DISABLED) && format_channels > 0) {
 		int first = 0;
 		int last = (frames / format_channels) - 1;
 		bool found = false;

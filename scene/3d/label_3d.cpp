@@ -30,7 +30,6 @@
 
 #include "label_3d.h"
 
-#include "core/core_string_names.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
@@ -126,10 +125,6 @@ void Label3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &Label3D::generate_triangle_mesh);
 
-	ClassDB::bind_method(D_METHOD("_queue_update"), &Label3D::_queue_update);
-	ClassDB::bind_method(D_METHOD("_font_changed"), &Label3D::_font_changed);
-	ClassDB::bind_method(D_METHOD("_im_update"), &Label3D::_im_update);
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 
@@ -204,12 +199,12 @@ void Label3D::_notification(int p_what) {
 				_im_update();
 			}
 			Viewport *viewport = get_viewport();
-			ERR_FAIL_COND(!viewport);
+			ERR_FAIL_NULL(viewport);
 			viewport->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			Viewport *viewport = get_viewport();
-			ERR_FAIL_COND(!viewport);
+			ERR_FAIL_NULL(viewport);
 			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -239,7 +234,7 @@ void Label3D::_queue_update() {
 	}
 
 	pending_update = true;
-	call_deferred(SceneStringNames::get_singleton()->_im_update);
+	callable_mp(this, &Label3D::_im_update).call_deferred();
 }
 
 AABB Label3D::get_aabb() const {
@@ -478,9 +473,6 @@ void Label3D::_shape() {
 
 		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
 		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-		}
 
 		TypedArray<Vector3i> stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
@@ -497,9 +489,6 @@ void Label3D::_shape() {
 		int spans = TS->shaped_get_span_count(text_rid);
 		for (int i = 0; i < spans; i++) {
 			TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
-		}
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
 
 		dirty_font = false;
@@ -766,12 +755,12 @@ void Label3D::_font_changed() {
 void Label3D::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
 		if (font_override.is_valid()) {
-			font_override->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->disconnect_changed(callable_mp(this, &Label3D::_font_changed));
 		}
 		font_override = p_font;
 		dirty_font = true;
 		if (font_override.is_valid()) {
-			font_override->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->connect_changed(callable_mp(this, &Label3D::_font_changed));
 		}
 		_queue_update();
 	}
@@ -783,7 +772,7 @@ Ref<Font> Label3D::get_font() const {
 
 Ref<Font> Label3D::_get_font_or_default() const {
 	if (theme_font.is_valid()) {
-		theme_font->disconnect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font->disconnect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 		theme_font.unref();
 	}
 
@@ -791,45 +780,34 @@ Ref<Font> Label3D::_get_font_or_default() const {
 		return font_override;
 	}
 
-	// Check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_project_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
+	StringName theme_name = "font";
+	List<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+
+	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_null()) {
+			continue;
+		}
 
 		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
-				}
-				return f;
+			if (!theme->has_font(theme_name, E)) {
+				continue;
 			}
+
+			Ref<Font> f = theme->get_font(theme_name, E);
+			if (f.is_valid()) {
+				theme_font = f;
+				theme_font->connect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
+			}
+			return f;
 		}
 	}
 
-	// Lastly, fall back on the items defined in the default Theme, if they exist.
-	{
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
-
-		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
-				}
-				return f;
-			}
-		}
-	}
-
-	// If they don't exist, use any type to return the default/empty value.
-	Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
+	Ref<Font> f = global_context->get_fallback_theme()->get_font(theme_name, StringName());
 	if (f.is_valid()) {
 		theme_font = f;
-		theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font->connect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 	}
 	return f;
 }

@@ -1291,7 +1291,13 @@ void Variant::zero() {
 			break;
 
 		default:
+			Type prev_type = type;
 			this->clear();
+			if (type != prev_type) {
+				// clear() changes type to NIL, so it needs to be restored.
+				Callable::CallError ce;
+				Variant::construct(prev_type, *this, nullptr, 0, ce);
+			}
 			break;
 	}
 }
@@ -1754,11 +1760,10 @@ String Variant::stringify(int recursion_count) const {
 		case COLOR:
 			return operator Color();
 		case DICTIONARY: {
+			ERR_FAIL_COND_V_MSG(recursion_count > MAX_RECURSION, "{ ... }", "Maximum dictionary recursion reached!");
+			recursion_count++;
+
 			const Dictionary &d = *reinterpret_cast<const Dictionary *>(_data._mem);
-			if (recursion_count > MAX_RECURSION) {
-				ERR_PRINT("Maximum dictionary recursion reached!");
-				return "{ ... }";
-			}
 
 			// Add leading and trailing space to Dictionary printing. This distinguishes it
 			// from array printing on fonts that have similar-looking {} and [] characters.
@@ -1768,7 +1773,6 @@ String Variant::stringify(int recursion_count) const {
 
 			Vector<_VariantStrPair> pairs;
 
-			recursion_count++;
 			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 				_VariantStrPair sp;
 				sp.key = stringify_variant_clean(E->get(), recursion_count);
@@ -1787,6 +1791,7 @@ String Variant::stringify(int recursion_count) const {
 
 			return str;
 		}
+		// Packed arrays cannot contain recursive structures, the recursion_count increment is not needed.
 		case PACKED_VECTOR2_ARRAY: {
 			return stringify_vector(operator Vector<Vector2>(), recursion_count);
 		}
@@ -1815,13 +1820,10 @@ String Variant::stringify(int recursion_count) const {
 			return stringify_vector(operator Vector<double>(), recursion_count);
 		}
 		case ARRAY: {
-			Array arr = operator Array();
-			if (recursion_count > MAX_RECURSION) {
-				ERR_PRINT("Maximum array recursion reached!");
-				return "[...]";
-			}
+			ERR_FAIL_COND_V_MSG(recursion_count > MAX_RECURSION, "[...]", "Maximum array recursion reached!");
+			recursion_count++;
 
-			return stringify_vector(arr, recursion_count);
+			return stringify_vector(operator Array(), recursion_count);
 		}
 		case OBJECT: {
 			if (_get_obj().obj) {
@@ -2121,7 +2123,7 @@ Variant::operator ::RID() const {
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
-			ERR_FAIL_COND_V_MSG(ObjectDB::get_instance(_get_obj().id) == nullptr, ::RID(), "Invalid pointer (object was freed).");
+			ERR_FAIL_NULL_V_MSG(ObjectDB::get_instance(_get_obj().id), ::RID(), "Invalid pointer (object was freed).");
 		}
 #endif
 		Callable::CallError ce;
@@ -3239,8 +3241,11 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 	return 0;
 }
 
+#define hash_compare_scalar_base(p_lhs, p_rhs, semantic_comparison) \
+	(((p_lhs) == (p_rhs)) || (semantic_comparison && Math::is_nan(p_lhs) && Math::is_nan(p_rhs)))
+
 #define hash_compare_scalar(p_lhs, p_rhs) \
-	(((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs)))
+	(hash_compare_scalar_base(p_lhs, p_rhs, true))
 
 #define hash_compare_vector2(p_lhs, p_rhs)        \
 	(hash_compare_scalar((p_lhs).x, (p_rhs).x) && \
@@ -3286,7 +3291,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
                                                                         \
 	return true
 
-bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const {
+bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool semantic_comparison) const {
 	if (type != p_variant.type) {
 		return false;
 	}
@@ -3297,7 +3302,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 		} break;
 
 		case FLOAT: {
-			return hash_compare_scalar(_data._float, p_variant._data._float);
+			return hash_compare_scalar_base(_data._float, p_variant._data._float, semantic_comparison);
 		} break;
 
 		case STRING: {

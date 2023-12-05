@@ -48,10 +48,24 @@
 using OT::Layout::GSUB;
 using OT::Layout::GPOS;
 
+
+hb_subset_accelerator_t::~hb_subset_accelerator_t ()
+{
+  if (cmap_cache && destroy_cmap_cache)
+    destroy_cmap_cache ((void*) cmap_cache);
+
+#ifndef HB_NO_SUBSET_CFF
+  cff1_accel.fini ();
+  cff2_accel.fini ();
+#endif
+  hb_face_destroy (source);
+}
+
+
 typedef hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> script_langsys_map;
 #ifndef HB_NO_SUBSET_CFF
 static inline bool
-_add_cff_seac_components (const OT::cff1::accelerator_t &cff,
+_add_cff_seac_components (const OT::cff1::accelerator_subset_t &cff,
 			  hb_codepoint_t gid,
 			  hb_set_t *gids_to_retain)
 {
@@ -135,7 +149,8 @@ static void _collect_layout_indices (hb_subset_plan_t     *plan,
                                      hb_set_t		  *lookup_indices, /* OUT */
                                      hb_set_t		  *feature_indices, /* OUT */
                                      hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *feature_record_cond_idx_map, /* OUT */
-                                     hb_hashmap_t<unsigned, const OT::Feature*> *feature_substitutes_map /* OUT */)
+                                     hb_hashmap_t<unsigned, const OT::Feature*> *feature_substitutes_map, /* OUT */
+                                     bool& insert_catch_all_feature_variation_record)
 {
   unsigned num_features = table.get_feature_count ();
   hb_vector_t<hb_tag_t> features;
@@ -171,8 +186,11 @@ static void _collect_layout_indices (hb_subset_plan_t     *plan,
       &plan->axes_location,
       feature_record_cond_idx_map,
       feature_substitutes_map,
+      insert_catch_all_feature_variation_record,
       feature_indices,
-      true,
+      false,
+      false,
+      false,
       0,
       &conditionset_map
     };
@@ -283,7 +301,8 @@ _closure_glyphs_lookups_features (hb_subset_plan_t   *plan,
 				  hb_map_t	     *features,
 				  script_langsys_map *langsys_map,
 				  hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *feature_record_cond_idx_map,
-				  hb_hashmap_t<unsigned, const OT::Feature*> *feature_substitutes_map)
+				  hb_hashmap_t<unsigned, const OT::Feature*> *feature_substitutes_map,
+				  bool& insert_catch_all_feature_variation_record)
 {
   hb_blob_ptr_t<T> table = plan->source_table<T> ();
   hb_tag_t table_tag = table->tableTag;
@@ -293,7 +312,8 @@ _closure_glyphs_lookups_features (hb_subset_plan_t   *plan,
                               &lookup_indices,
                               &feature_indices,
                               feature_record_cond_idx_map,
-                              feature_substitutes_map);
+                              feature_substitutes_map,
+                              insert_catch_all_feature_variation_record);
 
   if (table_tag == HB_OT_TAG_GSUB && !(plan->flags & HB_SUBSET_FLAGS_NO_LAYOUT_CLOSURE))
     hb_ot_layout_lookups_substitute_closure (plan->source,
@@ -329,7 +349,7 @@ _generate_varstore_inner_maps (const hb_set_t& varidx_set,
 {
   if (varidx_set.is_empty () || subtable_count == 0) return;
 
-  inner_maps.resize (subtable_count);
+  if (unlikely (!inner_maps.resize (subtable_count))) return;
   for (unsigned idx : varidx_set)
   {
     uint16_t major = idx >> 16;
@@ -356,7 +376,7 @@ _get_hb_font_with_variations (const hb_subset_plan_t *plan)
   {
     hb_variation_t var;
     var.tag = _.first;
-    var.value = _.second;
+    var.value = _.second.middle;
     vars.push (var);
   }
 
@@ -379,34 +399,20 @@ _collect_layout_variation_indices (hb_subset_plan_t* plan)
     return;
   }
 
-  const OT::VariationStore *var_store = nullptr;
   hb_set_t varidx_set;
-  float *store_cache = nullptr;
-  bool collect_delta = plan->pinned_at_default ? false : true;
-  if (collect_delta)
-  {
-    if (gdef->has_var_store ())
-    {
-      var_store = &(gdef->get_var_store ());
-      store_cache = var_store->create_cache ();
-    }
-  }
-
   OT::hb_collect_variation_indices_context_t c (&varidx_set,
-                                                &plan->layout_variation_idx_delta_map,
-                                                plan->normalized_coords ? &(plan->normalized_coords) : nullptr,
-                                                var_store,
                                                 &plan->_glyphset_gsub,
-                                                &plan->gpos_lookups,
-                                                store_cache);
+                                                &plan->gpos_lookups);
   gdef->collect_variation_indices (&c);
 
   if (hb_ot_layout_has_positioning (plan->source))
     gpos->collect_variation_indices (&c);
 
-  var_store->destroy_cache (store_cache);
-
-  gdef->remap_layout_variation_indices (&varidx_set, &plan->layout_variation_idx_delta_map);
+  gdef->remap_layout_variation_indices (&varidx_set,
+                                        plan->normalized_coords,
+                                        !plan->pinned_at_default,
+                                        plan->all_axes_pinned,
+                                        &plan->layout_variation_idx_delta_map);
 
   unsigned subtable_count = gdef->has_var_store () ? gdef->get_var_store ().get_sub_table_count () : 0;
   _generate_varstore_inner_maps (varidx_set, subtable_count, plan->gdef_varstore_inner_maps);
@@ -541,6 +547,8 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
 	unicodes->get_population () < cmap_unicodes->get_population () &&
 	glyphs->get_population () < cmap_unicodes->get_population ())
     {
+      plan->codepoint_to_glyph->alloc (unicodes->get_population () + glyphs->get_population ());
+
       auto &gid_to_unicodes = plan->accelerator->gid_to_unicodes;
       for (hb_codepoint_t gid : *glyphs)
       {
@@ -569,6 +577,7 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
     }
     else
     {
+      plan->codepoint_to_glyph->alloc (cmap_unicodes->get_population ());
       for (hb_codepoint_t cp : *cmap_unicodes)
       {
 	hb_codepoint_t gid = (*unicode_glyphid_map)[cp];
@@ -581,11 +590,15 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
     }
 
     /* Add gids which where requested, but not mapped in cmap */
-    for (hb_codepoint_t gid : *glyphs)
+    unsigned num_glyphs = plan->source->get_num_glyphs ();
+    hb_codepoint_t first = HB_SET_VALUE_INVALID, last = HB_SET_VALUE_INVALID;
+    for (; glyphs->next_range (&first, &last); )
     {
-      if (gid >= plan->source->get_num_glyphs ())
+      if (first >= num_glyphs)
 	break;
-      plan->_glyphset_gsub.add (gid);
+      if (last >= num_glyphs)
+        last = num_glyphs - 1;
+      plan->_glyphset_gsub.add_range (first, last);
     }
   }
 
@@ -616,7 +629,9 @@ _glyf_add_gid_and_children (const OT::glyf_accelerator_t &glyf,
   if (unlikely (depth++ > HB_MAX_NESTING_LEVEL)) return operation_count;
   if (unlikely (--operation_count < 0)) return operation_count;
 
-  for (auto &item : glyf.glyph_for_gid (gid).get_composite_iterator ())
+  auto glyph = glyf.glyph_for_gid (gid);
+
+  for (auto &item : glyph.get_composite_iterator ())
     operation_count =
       _glyf_add_gid_and_children (glyf,
 				  item.get_gid (),
@@ -625,7 +640,7 @@ _glyf_add_gid_and_children (const OT::glyf_accelerator_t &glyf,
 				  depth);
 
 #ifndef HB_NO_VAR_COMPOSITES
-  for (auto &item : glyf.glyph_for_gid (gid).get_var_composite_iterator ())
+  for (auto &item : glyph.get_var_composite_iterator ())
    {
     operation_count =
       _glyf_add_gid_and_children (glyf,
@@ -648,7 +663,7 @@ _nameid_closure (hb_subset_plan_t* plan,
 #endif
 #ifndef HB_NO_VAR
   if (!plan->all_axes_pinned)
-    plan->source->table.fvar->collect_name_ids (&plan->user_axes_location, &plan->name_ids);
+    plan->source->table.fvar->collect_name_ids (&plan->user_axes_location, &plan->axes_old_index_tag_map, &plan->name_ids);
 #endif
 #ifndef HB_NO_COLOR
   if (!drop_tables->has (HB_OT_TAG_CPAL))
@@ -677,7 +692,11 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 {
   OT::glyf_accelerator_t glyf (plan->source);
 #ifndef HB_NO_SUBSET_CFF
-  OT::cff1::accelerator_t cff (plan->source);
+  // Note: we cannot use inprogress_accelerator here, since it has not been
+  // created yet. So in case of preprocessed-face (and otherwise), we do an
+  // extra sanitize pass here, which is not ideal.
+  OT::cff1::accelerator_subset_t stack_cff (plan->accelerator ? nullptr : plan->source);
+  const OT::cff1::accelerator_subset_t *cff (plan->accelerator ? plan->accelerator->cff1_accel.get () : &stack_cff);
 #endif
 
   plan->_glyphset_gsub.add (0); // Not-def
@@ -694,7 +713,8 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
         &plan->gsub_features,
         &plan->gsub_langsys,
         &plan->gsub_feature_record_cond_idx_map,
-        &plan->gsub_feature_substitutes_map);
+        &plan->gsub_feature_substitutes_map,
+        plan->gsub_insert_catch_all_feature_variation_rec);
 
   if (!drop_tables->has (HB_OT_TAG_GPOS))
     _closure_glyphs_lookups_features<GPOS> (
@@ -704,7 +724,8 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
         &plan->gpos_features,
         &plan->gpos_langsys,
         &plan->gpos_feature_record_cond_idx_map,
-        &plan->gpos_feature_substitutes_map);
+        &plan->gpos_feature_substitutes_map,
+        plan->gpos_insert_catch_all_feature_variation_rec);
 #endif
   _remove_invalid_gids (&plan->_glyphset_gsub, plan->source->get_num_glyphs ());
 
@@ -737,16 +758,15 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   if (!plan->accelerator || plan->accelerator->has_seac)
   {
     bool has_seac = false;
-    if (cff.is_valid ())
+    if (cff->is_valid ())
       for (hb_codepoint_t gid : cur_glyphset)
-	if (_add_cff_seac_components (cff, gid, &plan->_glyphset))
+	if (_add_cff_seac_components (*cff, gid, &plan->_glyphset))
 	  has_seac = true;
     plan->has_seac = has_seac;
   }
 #endif
 
   _remove_invalid_gids (&plan->_glyphset, plan->source->get_num_glyphs ());
-
 
 #ifndef HB_NO_VAR
   if (!drop_tables->has (HB_OT_TAG_GDEF))
@@ -759,10 +779,10 @@ _create_glyph_map_gsub (const hb_set_t* glyph_set_gsub,
                         const hb_map_t* glyph_map,
                         hb_map_t* out)
 {
+  out->alloc (glyph_set_gsub->get_population ());
   + hb_iter (glyph_set_gsub)
   | hb_map ([&] (hb_codepoint_t gid) {
-    return hb_pair_t<hb_codepoint_t, hb_codepoint_t> (gid,
-                                                      glyph_map->get (gid));
+    return hb_codepoint_pair_t (gid, glyph_map->get (gid));
   })
   | hb_sink (out)
   ;
@@ -775,11 +795,13 @@ _create_old_gid_to_new_gid_map (const hb_face_t *face,
                                 const hb_map_t  *requested_glyph_map,
 				hb_map_t	*glyph_map, /* OUT */
 				hb_map_t	*reverse_glyph_map, /* OUT */
+				hb_sorted_vector_t<hb_codepoint_pair_t> *new_to_old_gid_list /* OUT */,
 				unsigned int	*num_glyphs /* OUT */)
 {
   unsigned pop = all_gids_to_retain->get_population ();
-  reverse_glyph_map->resize (pop);
-  glyph_map->resize (pop);
+  reverse_glyph_map->alloc (pop);
+  glyph_map->alloc (pop);
+  new_to_old_gid_list->alloc (pop);
 
   if (*requested_glyph_map)
   {
@@ -803,45 +825,44 @@ _create_old_gid_to_new_gid_map (const hb_face_t *face,
     for (auto old_gid : all_gids_to_retain->iter ())
     {
       if (old_gid == 0) {
-        reverse_glyph_map->set(0, 0);
+	new_to_old_gid_list->push (hb_pair<hb_codepoint_t, hb_codepoint_t> (0u, 0u));
         continue;
       }
 
       hb_codepoint_t* new_gid;
       if (!requested_glyph_map->has (old_gid, &new_gid))
       {
-        remaining.add(old_gid);  
+        remaining.add(old_gid);
         continue;
       }
 
       if (*new_gid > max_glyph)
         max_glyph = *new_gid;
-      reverse_glyph_map->set (*new_gid, old_gid);
+      new_to_old_gid_list->push (hb_pair (*new_gid, old_gid));
     }
+    new_to_old_gid_list->qsort ();
 
     // Anything that wasn't mapped by the requested mapping should
     // be placed after the requested mapping.
     for (auto old_gid : remaining)
-    {
-      reverse_glyph_map->set(++max_glyph, old_gid);
-    }
+      new_to_old_gid_list->push (hb_pair (++max_glyph, old_gid));
 
     *num_glyphs = max_glyph + 1;
   }
   else if (!retain_gids)
   {
     + hb_enumerate (hb_iter (all_gids_to_retain), (hb_codepoint_t) 0)
-    | hb_sink (reverse_glyph_map)
+    | hb_sink (new_to_old_gid_list)
     ;
-    *num_glyphs = reverse_glyph_map->get_population ();
+    *num_glyphs = new_to_old_gid_list->length;
   }
   else
   {
     + hb_iter (all_gids_to_retain)
     | hb_map ([] (hb_codepoint_t _) {
-		return hb_pair_t<hb_codepoint_t, hb_codepoint_t> (_, _);
+		return hb_codepoint_pair_t (_, _);
 	      })
-    | hb_sink (reverse_glyph_map)
+    | hb_sink (new_to_old_gid_list)
     ;
 
     hb_codepoint_t max_glyph = HB_SET_VALUE_INVALID;
@@ -850,8 +871,11 @@ _create_old_gid_to_new_gid_map (const hb_face_t *face,
     *num_glyphs = max_glyph + 1;
   }
 
-  + reverse_glyph_map->iter ()
-  | hb_map (&hb_pair_t<hb_codepoint_t, hb_codepoint_t>::reverse)
+  + hb_iter (new_to_old_gid_list)
+  | hb_sink (reverse_glyph_map)
+  ;
+  + hb_iter (new_to_old_gid_list)
+  | hb_map (&hb_codepoint_pair_t::reverse)
   | hb_sink (glyph_map)
   ;
 
@@ -884,24 +908,38 @@ _normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
     hb_tag_t axis_tag = axis.get_axis_tag ();
     plan->axes_old_index_tag_map.set (old_axis_idx, axis_tag);
 
-    if (!plan->user_axes_location.has (axis_tag))
+    if (!plan->user_axes_location.has (axis_tag) ||
+        !plan->user_axes_location.get (axis_tag).is_point ())
     {
       axis_not_pinned = true;
       plan->axes_index_map.set (old_axis_idx, new_axis_idx);
+      plan->axis_tags.push (axis_tag);
       new_axis_idx++;
     }
-    else
+
+    Triple *axis_range;
+    if (plan->user_axes_location.has (axis_tag, &axis_range))
     {
-      int normalized_v = axis.normalize_axis_value (plan->user_axes_location.get (axis_tag));
+      plan->axes_triple_distances.set (axis_tag, axis.get_triple_distances ());
+
+      int normalized_min = axis.normalize_axis_value (axis_range->minimum);
+      int normalized_default = axis.normalize_axis_value (axis_range->middle);
+      int normalized_max = axis.normalize_axis_value (axis_range->maximum);
+
       if (has_avar && old_axis_idx < avar_axis_count)
       {
-        normalized_v = seg_maps->map (normalized_v);
+        normalized_min = seg_maps->map (normalized_min);
+        normalized_default = seg_maps->map (normalized_default);
+        normalized_max = seg_maps->map (normalized_max);
       }
-      plan->axes_location.set (axis_tag, normalized_v);
-      if (normalized_v != 0)
+      plan->axes_location.set (axis_tag, Triple (static_cast<float> (normalized_min / 16384.f),
+                                                 static_cast<float> (normalized_default / 16384.f),
+                                                 static_cast<float> (normalized_max / 16384.f)));
+
+      if (normalized_default != 0)
         plan->pinned_at_default = false;
 
-      plan->normalized_coords[old_axis_idx] = normalized_v;
+      plan->normalized_coords[old_axis_idx] = normalized_default;
     }
 
     old_axis_idx++;
@@ -968,7 +1006,7 @@ _update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
           continue;
       }
       plan->hmtx_map.set (new_gid, hb_pair ((unsigned) hori_aw, lsb));
-      plan->bounds_width_map.set (new_gid, extents.width);
+      plan->bounds_width_vec[new_gid] = extents.width;
     }
 
     if (_vmtx.has_data ())
@@ -985,7 +1023,7 @@ _update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
           continue;
       }
       plan->vmtx_map.set (new_gid, hb_pair ((unsigned) vert_aw, tsb));
-      plan->bounds_height_map.set (new_gid, extents.height);
+      plan->bounds_height_vec[new_gid] = extents.height;
     }
   }
   hb_font_destroy (font);
@@ -993,6 +1031,36 @@ _update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
     _hmtx.var_table->get_var_store ().destroy_cache (hvar_store_cache);
   if (vvar_store_cache)
     _vmtx.var_table->get_var_store ().destroy_cache (vvar_store_cache);
+}
+
+static bool
+_get_instance_glyphs_contour_points (hb_subset_plan_t *plan)
+{
+  /* contour_points vector only needed for updating gvar table (infer delta)
+   * during partial instancing */
+  if (plan->user_axes_location.is_empty () || plan->all_axes_pinned)
+    return true;
+
+  OT::glyf_accelerator_t glyf (plan->source);
+
+  for (auto &_ : plan->new_to_old_gid_list)
+  {
+    hb_codepoint_t new_gid = _.first;
+    contour_point_vector_t all_points;
+    if (new_gid == 0 && !(plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
+    {
+      if (unlikely (!plan->new_gid_contour_points_map.set (new_gid, all_points)))
+        return false;
+      continue;
+    }
+
+    hb_codepoint_t old_gid = _.second;
+    if (unlikely (!glyf.glyph_for_gid (old_gid).get_all_points_without_var (plan->source, all_points)))
+      return false;
+    if (unlikely (!plan->new_gid_contour_points_map.set (new_gid, all_points)))
+      return false;
+  }
+  return true;
 }
 #endif
 
@@ -1018,6 +1086,8 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
   glyph_map = hb_map_create ();
   reverse_glyph_map = hb_map_create ();
 
+  gsub_insert_catch_all_feature_variation_rec = false;
+  gpos_insert_catch_all_feature_variation_rec = false;
   gdef_varstore_inner_maps.init ();
 
   user_axes_location = input->axes_location;
@@ -1065,6 +1135,7 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
           &input->glyph_map,
           glyph_map,
           reverse_glyph_map,
+	  &new_to_old_gid_list,
           &_num_output_glyphs))) {
     return;
   }
@@ -1082,28 +1153,27 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
         glyph_map->get(unicode_to_new_gid_list.arrayZ[i].second);
   }
 
+  bounds_width_vec.resize (_num_output_glyphs, false);
+  for (auto &v : bounds_width_vec)
+    v = 0xFFFFFFFF;
+  bounds_height_vec.resize (_num_output_glyphs, false);
+  for (auto &v : bounds_height_vec)
+    v = 0xFFFFFFFF;
+
   if (unlikely (in_error ()))
     return;
 
 #ifndef HB_NO_VAR
   _update_instance_metrics_map_from_cff2 (this);
+  if (!check_success (_get_instance_glyphs_contour_points (this)))
+      return;
 #endif
 
   if (attach_accelerator_data)
   {
-    hb_multimap_t gid_to_unicodes;
-
-    hb_map_t &unicode_to_gid = *codepoint_to_glyph;
-
-    for (auto unicode : unicodes)
-    {
-      auto gid = unicode_to_gid[unicode];
-      gid_to_unicodes.add (gid, unicode);
-    }
-
     inprogress_accelerator =
-      hb_subset_accelerator_t::create (*codepoint_to_glyph,
-				       gid_to_unicodes,
+      hb_subset_accelerator_t::create (source,
+				       *codepoint_to_glyph,
                                        unicodes,
 				       has_seac);
 
@@ -1114,6 +1184,29 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
 #include "hb-subset-plan-member-list.hh"
 #undef HB_SUBSET_PLAN_MEMBER
 }
+
+hb_subset_plan_t::~hb_subset_plan_t()
+{
+  hb_face_destroy (dest);
+
+  hb_map_destroy (codepoint_to_glyph);
+  hb_map_destroy (glyph_map);
+  hb_map_destroy (reverse_glyph_map);
+#ifndef HB_NO_SUBSET_CFF
+  cff1_accel.fini ();
+  cff2_accel.fini ();
+#endif
+  hb_face_destroy (source);
+
+#ifdef HB_EXPERIMENTAL_API
+  for (auto _ : name_table_overrides.iter_ref ())
+    _.second.fini ();
+#endif
+
+  if (inprogress_accelerator)
+    hb_subset_accelerator_t::destroy ((void*) inprogress_accelerator);
+}
+
 
 /**
  * hb_subset_plan_create_or_fail:

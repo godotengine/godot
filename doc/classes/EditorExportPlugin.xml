@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlugin" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A script that is executed when exporting the project.
 	</brief_description>
@@ -8,6 +8,7 @@
 		To use [EditorExportPlugin], register it using the [method EditorPlugin.add_export_plugin] method first.
 	</description>
 	<tutorials>
+		<link title="Export Android plugins">$DOCS_URL/tutorials/platform/android/android_plugin.html</link>
 	</tutorials>
 	<methods>
 		<method name="_begin_customize_resources" qualifiers="virtual const">
@@ -43,7 +44,7 @@
 			<param index="1" name="path" type="String" />
 			<description>
 				Customize a scene. If changes are made to it, return the same or a new scene. Otherwise, return [code]null[/code]. If a new scene is returned, it is up to you to dispose of the old one.
-				Implementing this method is required if [method _begin_customize_resources] returns [code]true[/code].
+				Implementing this method is required if [method _begin_customize_scenes] returns [code]true[/code].
 			</description>
 		</method>
 		<method name="_end_customize_resources" qualifiers="virtual">
@@ -84,6 +85,64 @@
 				Calling [method skip] inside this callback will make the file not included in the export.
 			</description>
 		</method>
+		<method name="_get_android_dependencies" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				Virtual method to be overridden by the user. This is called to retrieve the set of Android dependencies provided by this plugin. Each returned Android dependency should have the format of an Android remote binary dependency: [code]org.godot.example:my-plugin:0.0.0[/code]
+				For more information see [url=https://developer.android.com/build/dependencies?agpversion=4.1#dependency-types]Android documentation on dependencies[/url].
+				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
+			</description>
+		</method>
+		<method name="_get_android_dependencies_maven_repos" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				Virtual method to be overridden by the user. This is called to retrieve the URLs of Maven repositories for the set of Android dependencies provided by this plugin.
+				For more information see [url=https://docs.gradle.org/current/userguide/dependency_management.html#sec:maven_repo]Gradle documentation on dependency management[/url].
+				[b]Note:[/b] Google's Maven repo and the Maven Central repo are already included by default.
+				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
+			</description>
+		</method>
+		<method name="_get_android_libraries" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				Virtual method to be overridden by the user. This is called to retrieve the local paths of the Android libraries archive (AAR) files provided by this plugin.
+				[b]Note:[/b] Relative paths [b]must[/b] be relative to Godot's [code]res://addons/[/code] directory. For example, an AAR file located under [code]res://addons/hello_world_plugin/HelloWorld.release.aar[/code] can be returned as an absolute path using [code]res://addons/hello_world_plugin/HelloWorld.release.aar[/code] or a relative path using [code]hello_world_plugin/HelloWorld.release.aar[/code].
+				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
+			</description>
+		</method>
+		<method name="_get_android_manifest_activity_element_contents" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				Virtual method to be overridden by the user. This is used at export time to update the contents of the [code]activity[/code] element in the generated Android manifest.
+				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
+			</description>
+		</method>
+		<method name="_get_android_manifest_application_element_contents" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				Virtual method to be overridden by the user. This is used at export time to update the contents of the [code]application[/code] element in the generated Android manifest.
+				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
+			</description>
+		</method>
+		<method name="_get_android_manifest_element_contents" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				Virtual method to be overridden by the user. This is used at export time to update the contents of the [code]manifest[/code] element in the generated Android manifest.
+				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
+			</description>
+		</method>
 		<method name="_get_customization_configuration_hash" qualifiers="virtual const">
 			<return type="int" />
 			<description>
@@ -97,6 +156,15 @@
 			<param index="1" name="debug" type="bool" />
 			<description>
 				Return a [PackedStringArray] of additional features this preset, for the given [param platform], should have.
+			</description>
+		</method>
+		<method name="_get_export_option_warning" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="option" type="String" />
+			<description>
+				Check the requirements for the given [param option] and return a non-empty warning string if they are not met.
+				[b]Note:[/b] Use [method get_option] to check the value of the export options.
 			</description>
 		</method>
 		<method name="_get_export_options" qualifiers="virtual const">
@@ -124,13 +192,21 @@
 				Return [code]true[/code], if the result of [method _get_export_options] has changed and the export options of preset corresponding to [param platform] should be updated.
 			</description>
 		</method>
+		<method name="_supports_platform" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Return [code]true[/code] if the plugin supports the given [param platform].
+			</description>
+		</method>
 		<method name="add_file">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="file" type="PackedByteArray" />
 			<param index="2" name="remap" type="bool" />
 			<description>
-				Adds a custom file to be exported. [param path] is the virtual path that can be used to load the file, [param file] is the binary data of the file. If [param remap] is [code]true[/code], file will not be exported, but instead remapped to the given [param path].
+				Adds a custom file to be exported. [param path] is the virtual path that can be used to load the file, [param file] is the binary data of the file.
+				When called inside [method _export_file] and [param remap] is [code]true[/code], the current file will not be exported, but instead remapped to this custom file. [param remap] is ignored when called in other places.
 			</description>
 		</method>
 		<method name="add_ios_bundle_file">
@@ -152,8 +228,8 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds a dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project and embeds it into resulting binary.
-				[b]Note:[/b] For static libraries (*.a) works in same way as [code]add_ios_framework[/code].
-				This method should not be used for System libraries as they are already present on the device.
+				[b]Note:[/b] For static libraries (*.a) works in same way as [method add_ios_framework].
+				[b]Note:[/b] This method should not be used for System libraries as they are already present on the device.
 			</description>
 		</method>
 		<method name="add_ios_framework">

@@ -516,7 +516,7 @@
             if ( !psh_hint_is_fitted( parent ) )
               psh_hint_align( parent, globals, dimension, glyph );
 
-            /* keep original relation between hints, this is, use the */
+            /* keep original relation between hints, that is, use the */
             /* scaled distance between the centers of the hints to    */
             /* compute the new position                               */
             par_org_center = parent->org_pos + ( parent->org_len >> 1 );

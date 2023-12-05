@@ -35,11 +35,13 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/message_queue.h"
-#include "core/variant/variant_utility.cpp"
+#include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "scene/resources/image_texture.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	bool success = false;
@@ -204,113 +206,112 @@ const Dictionary EditorResourcePreview::get_preview_metadata(const String &p_pat
 void EditorResourcePreview::_iterate() {
 	preview_mutex.lock();
 
-	if (queue.size()) {
-		QueueItem item = queue.front()->get();
-		queue.pop_front();
+	if (queue.size() == 0) {
+		preview_mutex.unlock();
+		return;
+	}
 
-		if (cache.has(item.path)) {
-			// Already has it because someone loaded it, just let it know it's ready.
-			_preview_ready(item.path, cache[item.path].last_hash, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata, cache[item.path].preview_metadata);
+	QueueItem item = queue.front()->get();
+	queue.pop_front();
 
-			preview_mutex.unlock();
-		} else {
-			preview_mutex.unlock();
+	if (cache.has(item.path)) {
+		Item cached_item = cache[item.path];
+		// Already has it because someone loaded it, just let it know it's ready.
+		_preview_ready(item.path, cached_item.last_hash, cached_item.preview, cached_item.small_preview, item.id, item.function, item.userdata, cached_item.preview_metadata);
+		preview_mutex.unlock();
+		return;
+	}
+	preview_mutex.unlock();
 
-			Ref<ImageTexture> texture;
-			Ref<ImageTexture> small_texture;
+	Ref<ImageTexture> texture;
+	Ref<ImageTexture> small_texture;
 
-			int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
-			thumbnail_size *= EDSCALE;
+	int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
+	thumbnail_size *= EDSCALE;
 
-			if (item.resource.is_valid()) {
-				Dictionary preview_metadata;
-				_generate_preview(texture, small_texture, item, String(), preview_metadata);
+	if (item.resource.is_valid()) {
+		Dictionary preview_metadata;
+		_generate_preview(texture, small_texture, item, String(), preview_metadata);
+		_preview_ready(item.path, item.resource->hash_edited_version(), texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
+		return;
+	}
 
-				_preview_ready(item.path, item.resource->hash_edited_version(), texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
+	Dictionary preview_metadata;
+	String temp_path = EditorPaths::get_singleton()->get_cache_dir();
+	String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
+	cache_base = temp_path.path_join("resthumb-" + cache_base);
 
+	// Does not have it, try to load a cached thumbnail.
+
+	String file = cache_base + ".txt";
+	Ref<FileAccess> f = FileAccess::open(file, FileAccess::READ);
+	if (f.is_null()) {
+		// No cache found, generate.
+		_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
+	} else {
+		uint64_t modtime = FileAccess::get_modified_time(item.path);
+		int tsize;
+		bool has_small_texture;
+		uint64_t last_modtime;
+		String hash;
+		_read_preview_cache(f, &tsize, &has_small_texture, &last_modtime, &hash, &preview_metadata);
+
+		bool cache_valid = true;
+
+		if (tsize != thumbnail_size) {
+			cache_valid = false;
+			f.unref();
+		} else if (last_modtime != modtime) {
+			String last_md5 = f->get_line();
+			String md5 = FileAccess::get_md5(item.path);
+			f.unref();
+
+			if (last_md5 != md5) {
+				cache_valid = false;
 			} else {
-				Dictionary preview_metadata;
-				String temp_path = EditorPaths::get_singleton()->get_cache_dir();
-				String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
-				cache_base = temp_path.path_join("resthumb-" + cache_base);
+				// Update modified time.
 
-				// Does not have it, try to load a cached thumbnail.
-
-				String file = cache_base + ".txt";
-				Ref<FileAccess> f = FileAccess::open(file, FileAccess::READ);
-				if (f.is_null()) {
-					// No cache found, generate.
-					_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
+				Ref<FileAccess> f2 = FileAccess::open(file, FileAccess::WRITE);
+				if (f2.is_null()) {
+					// Not returning as this would leave the thread hanging and would require
+					// some proper cleanup/disabling of resource preview generation.
+					ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
 				} else {
-					uint64_t modtime = FileAccess::get_modified_time(item.path);
-					int tsize;
-					bool has_small_texture;
-					uint64_t last_modtime;
-					String hash;
-					_read_preview_cache(f, &tsize, &has_small_texture, &last_modtime, &hash, &preview_metadata);
+					_write_preview_cache(f2, thumbnail_size, has_small_texture, modtime, md5, preview_metadata);
+				}
+			}
+		} else {
+			f.unref();
+		}
 
-					bool cache_valid = true;
+		if (cache_valid) {
+			Ref<Image> img;
+			img.instantiate();
+			Ref<Image> small_img;
+			small_img.instantiate();
 
-					if (tsize != thumbnail_size) {
+			if (img->load(cache_base + ".png") != OK) {
+				cache_valid = false;
+			} else {
+				texture.instantiate();
+				texture->set_image(img);
+
+				if (has_small_texture) {
+					if (small_img->load(cache_base + "_small.png") != OK) {
 						cache_valid = false;
-						f.unref();
-					} else if (last_modtime != modtime) {
-						String last_md5 = f->get_line();
-						String md5 = FileAccess::get_md5(item.path);
-						f.unref();
-
-						if (last_md5 != md5) {
-							cache_valid = false;
-						} else {
-							// Update modified time.
-
-							Ref<FileAccess> f2 = FileAccess::open(file, FileAccess::WRITE);
-							if (f2.is_null()) {
-								// Not returning as this would leave the thread hanging and would require
-								// some proper cleanup/disabling of resource preview generation.
-								ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
-							} else {
-								_write_preview_cache(f2, thumbnail_size, has_small_texture, modtime, md5, preview_metadata);
-							}
-						}
 					} else {
-						f.unref();
-					}
-
-					if (cache_valid) {
-						Ref<Image> img;
-						img.instantiate();
-						Ref<Image> small_img;
-						small_img.instantiate();
-
-						if (img->load(cache_base + ".png") != OK) {
-							cache_valid = false;
-						} else {
-							texture.instantiate();
-							texture->set_image(img);
-
-							if (has_small_texture) {
-								if (small_img->load(cache_base + "_small.png") != OK) {
-									cache_valid = false;
-								} else {
-									small_texture.instantiate();
-									small_texture->set_image(small_img);
-								}
-							}
-						}
-					}
-
-					if (!cache_valid) {
-						_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
+						small_texture.instantiate();
+						small_texture->set_image(small_img);
 					}
 				}
-				_preview_ready(item.path, 0, texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
 			}
 		}
 
-	} else {
-		preview_mutex.unlock();
+		if (!cache_valid) {
+			_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
+		}
 	}
+	_preview_ready(item.path, 0, texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
 }
 
 void EditorResourcePreview::_write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, String p_hash, const Dictionary &p_metadata) {
@@ -331,7 +332,7 @@ void EditorResourcePreview::_read_preview_cache(Ref<FileAccess> p_file, int *r_t
 
 void EditorResourcePreview::_thread() {
 	exited.clear();
-	while (!exit.is_set()) {
+	while (!exiting.is_set()) {
 		preview_sem.wait();
 		_iterate();
 	}
@@ -340,7 +341,8 @@ void EditorResourcePreview::_thread() {
 
 void EditorResourcePreview::_update_thumbnail_sizes() {
 	if (small_thumbnail_size == -1) {
-		small_thumbnail_size = EditorNode::get_singleton()->get_theme_base()->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"))->get_width(); // Kind of a workaround to retrieve the default icon size
+		// Kind of a workaround to retrieve the default icon size.
+		small_thumbnail_size = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Object"), EditorStringName(EditorIcons))->get_width();
 	}
 }
 
@@ -375,9 +377,9 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 }
 
 void EditorResourcePreview::queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
+	ERR_FAIL_NULL(p_receiver);
 	_update_thumbnail_sizes();
 
-	ERR_FAIL_NULL(p_receiver);
 	{
 		MutexLock lock(preview_mutex);
 
@@ -411,8 +413,6 @@ EditorResourcePreview *EditorResourcePreview::get_singleton() {
 }
 
 void EditorResourcePreview::_bind_methods() {
-	ClassDB::bind_method("_preview_ready", &EditorResourcePreview::_preview_ready);
-
 	ClassDB::bind_method(D_METHOD("queue_resource_preview", "path", "receiver", "receiver_func", "userdata"), &EditorResourcePreview::queue_resource_preview);
 	ClassDB::bind_method(D_METHOD("queue_edited_resource_preview", "resource", "receiver", "receiver_func", "userdata"), &EditorResourcePreview::queue_edited_resource_preview);
 	ClassDB::bind_method(D_METHOD("add_preview_generator", "generator"), &EditorResourcePreview::add_preview_generator);
@@ -450,12 +450,18 @@ void EditorResourcePreview::start() {
 
 void EditorResourcePreview::stop() {
 	if (thread.is_started()) {
-		exit.set();
+		exiting.set();
 		preview_sem.post();
+
+		for (int i = 0; i < preview_generators.size(); i++) {
+			preview_generators.write[i]->abort();
+		}
+
 		while (!exited.is_set()) {
 			OS::get_singleton()->delay_usec(10000);
 			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
 		}
+
 		thread.wait_to_finish();
 	}
 }

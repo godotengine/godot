@@ -504,6 +504,13 @@
 
     FT_FRAME_EXIT();
 
+    if ( !valid_entries )
+    {
+      FT_TRACE2(( "tt_face_load_font_dir: no valid tables found\n" ));
+      error = FT_THROW( Unknown_File_Format );
+      goto Exit;
+    }
+
     FT_TRACE2(( "table directory loaded\n" ));
     FT_TRACE2(( "\n" ));
 

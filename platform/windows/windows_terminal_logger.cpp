@@ -33,6 +33,7 @@
 #ifdef WINDOWS_ENABLED
 
 #include <stdio.h>
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -80,12 +81,9 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		return;
 	}
 
-#ifndef UWP_ENABLED
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (!hCon || hCon == INVALID_HANDLE_VALUE) {
-#endif
 		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
-#ifndef UWP_ENABLED
 	} else {
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
 		GetConsoleScreenBufferInfo(hCon, &sbi);
@@ -158,9 +156,8 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 		SetConsoleTextAttribute(hCon, sbi.wAttributes);
 	}
-#endif
 }
 
 WindowsTerminalLogger::~WindowsTerminalLogger() {}
 
-#endif
+#endif // WINDOWS_ENABLED

@@ -147,12 +147,16 @@ void SubViewportContainer::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_MOUSE_ENTER: {
-			_notify_viewports(NOTIFICATION_VP_MOUSE_ENTER);
+		case NOTIFICATION_FOCUS_ENTER: {
+			// If focused, send InputEvent to the SubViewport before the Gui-Input stage.
+			set_process_input(true);
+			set_process_unhandled_input(false);
 		} break;
 
-		case NOTIFICATION_MOUSE_EXIT: {
-			_notify_viewports(NOTIFICATION_VP_MOUSE_EXIT);
+		case NOTIFICATION_FOCUS_EXIT: {
+			// A different Control has focus and should receive Gui-Input before the InputEvent is sent to the SubViewport.
+			set_process_input(false);
+			set_process_unhandled_input(true);
 		} break;
 	}
 }
@@ -168,6 +172,14 @@ void SubViewportContainer::_notify_viewports(int p_notification) {
 }
 
 void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
+	_propagate_nonpositional_event(p_event);
+}
+
+void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
+	_propagate_nonpositional_event(p_event);
+}
+
+void SubViewportContainer::_propagate_nonpositional_event(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -176,6 +188,13 @@ void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
 
 	if (_is_propagated_in_gui_input(p_event)) {
 		return;
+	}
+
+	bool send;
+	if (GDVIRTUAL_CALL(_propagate_input_event, p_event, send)) {
+		if (!send) {
+			return;
+		}
 	}
 
 	_send_event_to_viewports(p_event);
@@ -190,6 +209,13 @@ void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (!_is_propagated_in_gui_input(p_event)) {
 		return;
+	}
+
+	bool send;
+	if (GDVIRTUAL_CALL(_propagate_input_event, p_event, send)) {
+		if (!send) {
+			return;
+		}
 	}
 
 	if (stretch && shrink > 1) {
@@ -247,6 +273,10 @@ PackedStringArray SubViewportContainer::get_configuration_warnings() const {
 		warnings.push_back(RTR("This node doesn't have a SubViewport as child, so it can't display its intended content.\nConsider adding a SubViewport as a child to provide something displayable."));
 	}
 
+	if (get_default_cursor_shape() != Control::CURSOR_ARROW) {
+		warnings.push_back(RTR("The default mouse cursor shape of SubViewportContainer has no effect.\nConsider leaving it at its initial value `CURSOR_ARROW`."));
+	}
+
 	return warnings;
 }
 
@@ -259,8 +289,11 @@ void SubViewportContainer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink"), "set_stretch_shrink", "get_stretch_shrink");
+
+	GDVIRTUAL_BIND(_propagate_input_event, "event");
 }
 
 SubViewportContainer::SubViewportContainer() {
-	set_process_input(true);
+	set_process_unhandled_input(true);
+	set_focus_mode(FOCUS_CLICK);
 }

@@ -66,6 +66,52 @@ bool ThemeOwner::has_owner_node() const {
 	return bool(owner_control || owner_window);
 }
 
+void ThemeOwner::set_owner_context(ThemeContext *p_context, bool p_propagate) {
+	ThemeContext *default_context = ThemeDB::get_singleton()->get_default_theme_context();
+
+	if (owner_context && owner_context->is_connected("changed", callable_mp(this, &ThemeOwner::_owner_context_changed))) {
+		owner_context->disconnect("changed", callable_mp(this, &ThemeOwner::_owner_context_changed));
+	} else if (default_context->is_connected("changed", callable_mp(this, &ThemeOwner::_owner_context_changed))) {
+		default_context->disconnect("changed", callable_mp(this, &ThemeOwner::_owner_context_changed));
+	}
+
+	owner_context = p_context;
+
+	if (owner_context) {
+		owner_context->connect("changed", callable_mp(this, &ThemeOwner::_owner_context_changed));
+	} else {
+		default_context->connect("changed", callable_mp(this, &ThemeOwner::_owner_context_changed));
+	}
+
+	if (p_propagate) {
+		_owner_context_changed();
+	}
+}
+
+void ThemeOwner::_owner_context_changed() {
+	if (!holder->is_inside_tree()) {
+		// We ignore theme changes outside of tree, because NOTIFICATION_ENTER_TREE covers everything.
+		return;
+	}
+
+	Control *c = Object::cast_to<Control>(holder);
+	Window *w = c == nullptr ? Object::cast_to<Window>(holder) : nullptr;
+
+	if (c) {
+		c->notification(Control::NOTIFICATION_THEME_CHANGED);
+	} else if (w) {
+		w->notification(Window::NOTIFICATION_THEME_CHANGED);
+	}
+}
+
+ThemeContext *ThemeOwner::_get_active_owner_context() const {
+	if (owner_context) {
+		return owner_context;
+	}
+
+	return ThemeDB::get_singleton()->get_default_theme_context();
+}
+
 // Theme propagation.
 
 void ThemeOwner::assign_theme_on_parented(Node *p_for_node) {
@@ -158,9 +204,7 @@ void ThemeOwner::get_theme_type_dependencies(const Node *p_for_node, const Strin
 	const Window *for_w = Object::cast_to<Window>(p_for_node);
 	ERR_FAIL_COND_MSG(!for_c && !for_w, "Only Control and Window nodes and derivatives can be polled for theming.");
 
-	Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
-	Ref<Theme> project_theme = ThemeDB::get_singleton()->get_project_theme();
-
+	StringName type_name = p_for_node->get_class_name();
 	StringName type_variation;
 	if (for_c) {
 		type_variation = for_c->get_theme_type_variation();
@@ -168,31 +212,41 @@ void ThemeOwner::get_theme_type_dependencies(const Node *p_for_node, const Strin
 		type_variation = for_w->get_theme_type_variation();
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == p_for_node->get_class_name() || p_theme_type == type_variation) {
-		if (project_theme.is_valid() && project_theme->get_type_variation_base(type_variation) != StringName()) {
-			project_theme->get_type_dependencies(p_for_node->get_class_name(), type_variation, r_list);
-		} else {
-			default_theme->get_type_dependencies(p_for_node->get_class_name(), type_variation, r_list);
+	// If we are looking for dependencies of the current class (or a variation of it), check relevant themes.
+	if (p_theme_type == StringName() || p_theme_type == type_name || p_theme_type == type_variation) {
+		// We need one theme that can give us a valid dependency chain. It must be complete
+		// (i.e. variations can depend on other variations, but only within the same theme,
+		// and eventually the chain must lead to native types).
+
+		// First, look through themes owned by nodes in the tree.
+		Node *owner_node = get_owner_node();
+
+		while (owner_node) {
+			Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
+			if (owner_theme.is_valid() && owner_theme->get_type_variation_base(type_variation) != StringName()) {
+				owner_theme->get_type_dependencies(type_name, type_variation, r_list);
+				return;
+			}
+
+			owner_node = _get_next_owner_node(owner_node);
 		}
-	} else {
-		default_theme->get_type_dependencies(p_theme_type, StringName(), r_list);
-	}
-}
 
-Node *ThemeOwner::_get_next_owner_node(Node *p_from_node) const {
-	Node *parent = p_from_node->get_parent();
-
-	Control *parent_c = Object::cast_to<Control>(parent);
-	if (parent_c) {
-		return parent_c->get_theme_owner_node();
-	} else {
-		Window *parent_w = Object::cast_to<Window>(parent);
-		if (parent_w) {
-			return parent_w->get_theme_owner_node();
+		// Second, check global contexts.
+		ThemeContext *global_context = _get_active_owner_context();
+		for (const Ref<Theme> &theme : global_context->get_themes()) {
+			if (theme.is_valid() && theme->get_type_variation_base(type_variation) != StringName()) {
+				theme->get_type_dependencies(type_name, type_variation, r_list);
+				return;
+			}
 		}
+
+		// If nothing was found, get the native dependencies for the current class.
+		ThemeDB::get_singleton()->get_native_type_dependencies(type_name, r_list);
+		return;
 	}
 
-	return nullptr;
+	// Otherwise, get the native dependencies for the provided theme type.
+	ThemeDB::get_singleton()->get_native_type_dependencies(p_theme_type, r_list);
 }
 
 Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types) {
@@ -215,24 +269,20 @@ Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const S
 		owner_node = _get_next_owner_node(owner_node);
 	}
 
-	// Secondly, check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		for (const StringName &E : p_theme_types) {
-			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(p_data_type, p_name, E)) {
-				return ThemeDB::get_singleton()->get_project_theme()->get_theme_item(p_data_type, p_name, E);
+	// Second, check global themes from the appropriate context.
+	ThemeContext *global_context = _get_active_owner_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_valid()) {
+			for (const StringName &E : p_theme_types) {
+				if (theme->has_theme_item(p_data_type, p_name, E)) {
+					return theme->get_theme_item(p_data_type, p_name, E);
+				}
 			}
 		}
 	}
 
-	// Lastly, fall back on the items defined in the default Theme, if they exist.
-	for (const StringName &E : p_theme_types) {
-		if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(p_data_type, p_name, E)) {
-			return ThemeDB::get_singleton()->get_default_theme()->get_theme_item(p_data_type, p_name, E);
-		}
-	}
-
-	// If they don't exist, use any type to return the default/empty value.
-	return ThemeDB::get_singleton()->get_default_theme()->get_theme_item(p_data_type, p_name, p_theme_types[0]);
+	// Finally, if no match exists, use any type to return the default/empty value.
+	return global_context->get_fallback_theme()->get_theme_item(p_data_type, p_name, StringName());
 }
 
 bool ThemeOwner::has_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types) {
@@ -255,22 +305,19 @@ bool ThemeOwner::has_theme_item_in_types(Theme::DataType p_data_type, const Stri
 		owner_node = _get_next_owner_node(owner_node);
 	}
 
-	// Secondly, check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		for (const StringName &E : p_theme_types) {
-			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(p_data_type, p_name, E)) {
-				return true;
+	// Second, check global themes from the appropriate context.
+	ThemeContext *global_context = _get_active_owner_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_valid()) {
+			for (const StringName &E : p_theme_types) {
+				if (theme->has_theme_item(p_data_type, p_name, E)) {
+					return true;
+				}
 			}
 		}
 	}
 
-	// Lastly, fall back on the items defined in the default Theme, if they exist.
-	for (const StringName &E : p_theme_types) {
-		if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(p_data_type, p_name, E)) {
-			return true;
-		}
-	}
-
+	// Finally, if no match exists, return false.
 	return false;
 }
 
@@ -290,17 +337,17 @@ float ThemeOwner::get_theme_default_base_scale() {
 		owner_node = _get_next_owner_node(owner_node);
 	}
 
-	// Secondly, check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		if (ThemeDB::get_singleton()->get_project_theme()->has_default_base_scale()) {
-			return ThemeDB::get_singleton()->get_project_theme()->get_default_base_scale();
+	// Second, check global themes from the appropriate context.
+	ThemeContext *global_context = _get_active_owner_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_valid()) {
+			if (theme->has_default_base_scale()) {
+				return theme->get_default_base_scale();
+			}
 		}
 	}
 
-	// Lastly, fall back on the default Theme.
-	if (ThemeDB::get_singleton()->get_default_theme()->has_default_base_scale()) {
-		return ThemeDB::get_singleton()->get_default_theme()->get_default_base_scale();
-	}
+	// Finally, if no match exists, return the universal default.
 	return ThemeDB::get_singleton()->get_fallback_base_scale();
 }
 
@@ -320,17 +367,17 @@ Ref<Font> ThemeOwner::get_theme_default_font() {
 		owner_node = _get_next_owner_node(owner_node);
 	}
 
-	// Secondly, check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		if (ThemeDB::get_singleton()->get_project_theme()->has_default_font()) {
-			return ThemeDB::get_singleton()->get_project_theme()->get_default_font();
+	// Second, check global themes from the appropriate context.
+	ThemeContext *global_context = _get_active_owner_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_valid()) {
+			if (theme->has_default_font()) {
+				return theme->get_default_font();
+			}
 		}
 	}
 
-	// Lastly, fall back on the default Theme.
-	if (ThemeDB::get_singleton()->get_default_theme()->has_default_font()) {
-		return ThemeDB::get_singleton()->get_default_theme()->get_default_font();
-	}
+	// Finally, if no match exists, return the universal default.
 	return ThemeDB::get_singleton()->get_fallback_font();
 }
 
@@ -350,17 +397,17 @@ int ThemeOwner::get_theme_default_font_size() {
 		owner_node = _get_next_owner_node(owner_node);
 	}
 
-	// Secondly, check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		if (ThemeDB::get_singleton()->get_project_theme()->has_default_font_size()) {
-			return ThemeDB::get_singleton()->get_project_theme()->get_default_font_size();
+	// Second, check global themes from the appropriate context.
+	ThemeContext *global_context = _get_active_owner_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_valid()) {
+			if (theme->has_default_font_size()) {
+				return theme->get_default_font_size();
+			}
 		}
 	}
 
-	// Lastly, fall back on the default Theme.
-	if (ThemeDB::get_singleton()->get_default_theme()->has_default_font_size()) {
-		return ThemeDB::get_singleton()->get_default_theme()->get_default_font_size();
-	}
+	// Finally, if no match exists, return the universal default.
 	return ThemeDB::get_singleton()->get_fallback_font_size();
 }
 
@@ -376,4 +423,20 @@ Ref<Theme> ThemeOwner::_get_owner_node_theme(Node *p_owner_node) const {
 	}
 
 	return Ref<Theme>();
+}
+
+Node *ThemeOwner::_get_next_owner_node(Node *p_from_node) const {
+	Node *parent = p_from_node->get_parent();
+
+	Control *parent_c = Object::cast_to<Control>(parent);
+	if (parent_c) {
+		return parent_c->get_theme_owner_node();
+	} else {
+		Window *parent_w = Object::cast_to<Window>(parent);
+		if (parent_w) {
+			return parent_w->get_theme_owner_node();
+		}
+	}
+
+	return nullptr;
 }

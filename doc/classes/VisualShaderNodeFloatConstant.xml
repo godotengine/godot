@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeFloatConstant" inherits="VisualShaderNodeConstant" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualShaderNodeFloatConstant" inherits="VisualShaderNodeConstant" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A scalar floating-point constant to be used within the visual shader graph.
 	</brief_description>
 	<description>
-		Translated to [code]float[/code] in the shader language.
+		Translated to [code skip-lint]float[/code] in the shader language.
 	</description>
 	<tutorials>
 	</tutorials>

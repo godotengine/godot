@@ -1173,9 +1173,12 @@
 
   /* called when adding a new module through @FT_Add_Module */
   static FT_Error
-  bsdf_raster_new( FT_Memory      memory,
-                   BSDF_PRaster*  araster )
+  bsdf_raster_new( void*       memory_,    /* FT_Memory     */
+                   FT_Raster*  araster_ )  /* BSDF_PRaster* */
   {
+    FT_Memory      memory  = (FT_Memory)memory_;
+    BSDF_PRaster*  araster = (BSDF_PRaster*)araster_;
+
     FT_Error      error;
     BSDF_PRaster  raster = NULL;
 

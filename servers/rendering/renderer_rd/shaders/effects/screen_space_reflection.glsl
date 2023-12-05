@@ -184,7 +184,7 @@ void main() {
 			vec4 test_normal_roughness = imageLoad(source_normal_roughness, test_pos);
 			vec3 test_normal = test_normal_roughness.xyz * 2.0 - 1.0;
 			test_normal = normalize(test_normal);
-			test_normal.y = -test_normal.y; //because this code reads flipped
+			test_normal.y = -test_normal.y; // Because this code reads flipped.
 
 			if (dot(ray_dir, test_normal) < 0.001) {
 				// if depth was surpassed
@@ -203,6 +203,7 @@ void main() {
 
 	if (found) {
 		float margin_blend = 1.0;
+		vec2 final_pos = pos;
 
 		vec2 margin = vec2((params.screen_size.x + params.screen_size.y) * 0.05); // make a uniform margin
 		if (any(bvec4(lessThan(pos, vec2(0.0, 0.0)), greaterThan(pos, params.screen_size)))) {
@@ -219,16 +220,40 @@ void main() {
 			//margin_blend = 1.0;
 		}
 
-		vec2 final_pos;
+		// Fade In / Fade Out
 		float grad = (steps_taken + 1.0) / float(params.num_steps);
 		float initial_fade = params.curve_fade_in == 0.0 ? 1.0 : pow(clamp(grad, 0.0, 1.0), params.curve_fade_in);
 		float fade = pow(clamp(1.0 - grad, 0.0, 1.0), params.distance_fade) * initial_fade;
+
+		// Ensure that precision errors do not introduce any fade. Even if it is just slightly below 1.0,
+		// strong specular light can leak through the reflection.
+		if (fade > 0.999) {
+			fade = 1.0;
+		}
+
 		// This is an ad-hoc term to fade out the SSR as roughness increases. Values used
 		// are meant to match the visual appearance of a ReflectionProbe.
 		float roughness_fade = smoothstep(0.4, 0.7, 1.0 - normal_roughness.w);
-		final_pos = pos;
 
-		vec4 final_color;
+		// Schlick term.
+		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;
+
+		// F0 is the reflectance of normally incident light (perpendicular to the surface).
+		// Dielectric materials have a widely accepted default value of 0.04. We assume that metals reflect all light, so their F0 is 1.0.
+		float f0 = mix(0.04, 1.0, metallic);
+		float m = clamp(1.0 - dot(normal, -view_dir), 0.0, 1.0);
+		float m2 = m * m;
+		m = m2 * m2 * m; // pow(m,5)
+		float fresnel_term = f0 + (1.0 - f0) * m; // Fresnel Schlick term.
+
+		// The alpha value of final_color controls the blending with specular light in specular_merge.glsl.
+		// Note that the Fresnel term is multiplied with the RGB color instead of being a part of the alpha value.
+		// There is a key difference:
+		// - multiplying a term with RGB darkens the SSR light without introducing/taking away specular light.
+		// - combining a term into the Alpha value introduces specular light at the expense of the SSR light.
+		vec4 final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb * fresnel_term, fade * margin_blend * roughness_fade);
+
+		imageStore(ssr_image, ssC, final_color);
 
 #ifdef MODE_ROUGH
 
@@ -258,18 +283,6 @@ void main() {
 		imageStore(blur_radius_image, ssC, vec4(blur_radius / 255.0)); //stored in r8
 
 #endif // MODE_ROUGH
-
-		final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb, fade * margin_blend * roughness_fade);
-
-		// Schlick term.
-		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;
-		float f0 = mix(0.04, 0.37, metallic); // The default value of R0 is 0.04 and the maximum value is considered to be Germanium with R0 value of 0.37
-		float m = clamp(1.0 - dot(normal, -view_dir), 0.0, 1.0);
-		float m2 = m * m;
-		m = m2 * m2 * m; // pow(m,5)
-		final_color.a *= f0 + (1.0 - f0) * m; // Fresnel Schlick term.
-
-		imageStore(ssr_image, ssC, final_color);
 
 	} else {
 #ifdef MODE_ROUGH

@@ -48,10 +48,11 @@
    *
    */
 
-  static const char*
-  cid_get_postscript_name( CID_Face  face )
+  FT_CALLBACK_DEF( const char* )
+  cid_get_postscript_name( FT_Face  face )    /* CID_Face */
   {
-    const char*  result = face->cid.cid_font_name;
+    CID_Face     cidface = (CID_Face)face;
+    const char*  result  = cidface->cid.cid_font_name;
 
 
     if ( result && result[0] == '/' )
@@ -72,34 +73,36 @@
    *
    */
 
-  static FT_Error
-  cid_ps_get_font_info( FT_Face          face,
+  FT_CALLBACK_DEF( FT_Error )
+  cid_ps_get_font_info( FT_Face          face,        /* CID_Face */
                         PS_FontInfoRec*  afont_info )
   {
-    *afont_info = ((CID_Face)face)->cid.font_info;
+    *afont_info = ( (CID_Face)face )->cid.font_info;
 
     return FT_Err_Ok;
   }
 
-  static FT_Error
-  cid_ps_get_font_extra( FT_Face          face,
-                        PS_FontExtraRec*  afont_extra )
+
+  FT_CALLBACK_DEF( FT_Error )
+  cid_ps_get_font_extra( FT_Face           face,         /* CID_Face */
+                         PS_FontExtraRec*  afont_extra )
   {
-    *afont_extra = ((CID_Face)face)->font_extra;
+    *afont_extra = ( (CID_Face)face )->font_extra;
 
     return FT_Err_Ok;
   }
+
 
   static const FT_Service_PsInfoRec  cid_service_ps_info =
   {
-    (PS_GetFontInfoFunc)   cid_ps_get_font_info,   /* ps_get_font_info    */
-    (PS_GetFontExtraFunc)  cid_ps_get_font_extra,  /* ps_get_font_extra   */
+    cid_ps_get_font_info,   /* PS_GetFontInfoFunc    ps_get_font_info    */
+    cid_ps_get_font_extra,  /* PS_GetFontExtraFunc   ps_get_font_extra   */
     /* unsupported with CID fonts */
-    (PS_HasGlyphNamesFunc) NULL,                   /* ps_has_glyph_names  */
+    NULL,                   /* PS_HasGlyphNamesFunc  ps_has_glyph_names  */
     /* unsupported                */
-    (PS_GetFontPrivateFunc)NULL,                   /* ps_get_font_private */
+    NULL,                   /* PS_GetFontPrivateFunc ps_get_font_private */
     /* not implemented            */
-    (PS_GetFontValueFunc)  NULL                    /* ps_get_font_value   */
+    NULL                    /* PS_GetFontValueFunc   ps_get_font_value   */
   };
 
 
@@ -107,13 +110,14 @@
    * CID INFO SERVICE
    *
    */
-  static FT_Error
-  cid_get_ros( CID_Face      face,
+  FT_CALLBACK_DEF( FT_Error )
+  cid_get_ros( FT_Face       face,        /* CID_Face */
                const char*  *registry,
                const char*  *ordering,
                FT_Int       *supplement )
   {
-    CID_FaceInfo  cid = &face->cid;
+    CID_Face      cidface = (CID_Face)face;
+    CID_FaceInfo  cid     = &cidface->cid;
 
 
     if ( registry )
@@ -129,32 +133,48 @@
   }
 
 
-  static FT_Error
-  cid_get_is_cid( CID_Face  face,
+  FT_CALLBACK_DEF( FT_Error )
+  cid_get_is_cid( FT_Face   face,    /* CID_Face */
                   FT_Bool  *is_cid )
   {
     FT_Error  error = FT_Err_Ok;
     FT_UNUSED( face );
 
 
+    /*
+     * XXX: If the ROS is Adobe-Identity-H or -V,
+     * the font has no reliable information about
+     * its glyph collection.  Should we not set
+     * *is_cid in such cases?
+     */
     if ( is_cid )
-      *is_cid = 1; /* cid driver is only used for CID keyed fonts */
+      *is_cid = 1;
 
     return error;
   }
 
 
-  static FT_Error
-  cid_get_cid_from_glyph_index( CID_Face  face,
+  FT_CALLBACK_DEF( FT_Error )
+  cid_get_cid_from_glyph_index( FT_Face   face,        /* CID_Face */
                                 FT_UInt   glyph_index,
                                 FT_UInt  *cid )
   {
-    FT_Error  error = FT_Err_Ok;
-    FT_UNUSED( face );
+    FT_Error  error   = FT_Err_Ok;
+    CID_Face  cidface = (CID_Face)face;
 
 
-    if ( cid )
-      *cid = glyph_index; /* identity mapping */
+    /*
+     * Currently, FreeType does not support incrementally-defined, CID-keyed
+     * fonts that store the glyph description data in a `/GlyphDirectory`
+     * array or dictionary.  Fonts loaded by the incremental loading feature
+     * are thus not handled here.
+     */
+    error = cid_compute_fd_and_offsets( cidface, glyph_index,
+                                        NULL, NULL, NULL );
+    if ( error )
+      *cid = 0;
+    else
+      *cid = glyph_index;
 
     return error;
   }
@@ -162,12 +182,12 @@
 
   static const FT_Service_CIDRec  cid_service_cid_info =
   {
-    (FT_CID_GetRegistryOrderingSupplementFunc)
-      cid_get_ros,                             /* get_ros                  */
-    (FT_CID_GetIsInternallyCIDKeyedFunc)
-      cid_get_is_cid,                          /* get_is_cid               */
-    (FT_CID_GetCIDFromGlyphIndexFunc)
-      cid_get_cid_from_glyph_index             /* get_cid_from_glyph_index */
+    cid_get_ros,
+      /* FT_CID_GetRegistryOrderingSupplementFunc get_ros                  */
+    cid_get_is_cid,
+      /* FT_CID_GetIsInternallyCIDKeyedFunc       get_is_cid               */
+    cid_get_cid_from_glyph_index
+      /* FT_CID_GetCIDFromGlyphIndexFunc          get_cid_from_glyph_index */
   };
 
 
@@ -179,9 +199,9 @@
   FT_DEFINE_SERVICE_PROPERTIESREC(
     cid_service_properties,
 
-    (FT_Properties_SetFunc)ps_property_set,      /* set_property */
-    (FT_Properties_GetFunc)ps_property_get )     /* get_property */
-
+    ps_property_set,  /* FT_Properties_SetFunc set_property */
+    ps_property_get   /* FT_Properties_GetFunc get_property */
+  )
 
   /*
    * SERVICE LIST
@@ -207,7 +227,6 @@
 
     return ft_service_list_lookup( cid_services, cid_interface );
   }
-
 
 
   FT_CALLBACK_TABLE_DEF

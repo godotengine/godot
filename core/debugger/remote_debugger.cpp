@@ -94,6 +94,7 @@ public:
 Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
 	Array msg;
 	msg.push_back(p_message);
+	msg.push_back(Thread::get_caller_id());
 	msg.push_back(p_data);
 	Error err = peer->put_message(msg);
 	if (err != OK) {
@@ -185,9 +186,9 @@ RemoteDebugger::ErrorMessage RemoteDebugger::_create_overflow_error(const String
 }
 
 void RemoteDebugger::flush_output() {
+	MutexLock lock(mutex);
 	flush_thread = Thread::get_caller_id();
 	flushing = true;
-	MutexLock lock(mutex);
 	if (!is_peer_connected()) {
 		return;
 	}
@@ -348,18 +349,65 @@ Error RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data, boo
 	return capture_parse(cap, msg, p_data, r_captured);
 }
 
+void RemoteDebugger::_poll_messages() {
+	MutexLock mutex_lock(mutex);
+
+	peer->poll();
+	while (peer->has_message()) {
+		Array cmd = peer->get_message();
+		ERR_CONTINUE(cmd.size() != 3);
+		ERR_CONTINUE(cmd[0].get_type() != Variant::STRING);
+		ERR_CONTINUE(cmd[1].get_type() != Variant::INT);
+		ERR_CONTINUE(cmd[2].get_type() != Variant::ARRAY);
+
+		Thread::ID thread = cmd[1];
+
+		if (!messages.has(thread)) {
+			continue; // This thread is not around to receive the messages
+		}
+
+		Message msg;
+		msg.message = cmd[0];
+		msg.data = cmd[2];
+		messages[thread].push_back(msg);
+	}
+}
+
+bool RemoteDebugger::_has_messages() {
+	MutexLock mutex_lock(mutex);
+	return messages.has(Thread::get_caller_id()) && !messages[Thread::get_caller_id()].is_empty();
+}
+
+Array RemoteDebugger::_get_message() {
+	MutexLock mutex_lock(mutex);
+	ERR_FAIL_COND_V(!messages.has(Thread::get_caller_id()), Array());
+	List<Message> &message_list = messages[Thread::get_caller_id()];
+	ERR_FAIL_COND_V(message_list.is_empty(), Array());
+
+	Array msg;
+	msg.resize(2);
+	msg[0] = message_list.front()->get().message;
+	msg[1] = message_list.front()->get().data;
+	message_list.pop_front();
+	return msg;
+}
+
 void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	//this function is called when there is a debugger break (bug on script)
 	//or when execution is paused from editor
 
-	if (script_debugger->is_skipping_breakpoints() && !p_is_error_breakpoint) {
-		return;
-	}
+	{
+		MutexLock lock(mutex);
+		// Tests that require mutex.
+		if (script_debugger->is_skipping_breakpoints() && !p_is_error_breakpoint) {
+			return;
+		}
 
-	ERR_FAIL_COND_MSG(!is_peer_connected(), "Script Debugger failed to connect, but being used anyway.");
+		ERR_FAIL_COND_MSG(!is_peer_connected(), "Script Debugger failed to connect, but being used anyway.");
 
-	if (!peer->can_block()) {
-		return; // Peer does not support blocking IO. We could at least send the error though.
+		if (!peer->can_block()) {
+			return; // Peer does not support blocking IO. We could at least send the error though.
+		}
 	}
 
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
@@ -367,24 +415,35 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	Array msg;
 	msg.push_back(p_can_continue);
 	msg.push_back(error_str);
-	ERR_FAIL_COND(!script_lang);
+	ERR_FAIL_NULL(script_lang);
 	msg.push_back(script_lang->debug_get_stack_level_count() > 0);
+	msg.push_back(Thread::get_caller_id() == Thread::get_main_id() ? String(RTR("Main Thread")) : itos(Thread::get_caller_id()));
 	if (allow_focus_steal_fn) {
 		allow_focus_steal_fn();
 	}
 	send_message("debug_enter", msg);
 
-	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	Input::MouseMode mouse_mode = Input::MOUSE_MODE_VISIBLE;
+
+	if (Thread::get_caller_id() == Thread::get_main_id()) {
+		mouse_mode = Input::get_singleton()->get_mouse_mode();
+		if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		}
+	} else {
+		MutexLock mutex_lock(mutex);
+		messages.insert(Thread::get_caller_id(), List<Message>());
 	}
 
+	mutex.lock();
 	while (is_peer_connected()) {
+		mutex.unlock();
 		flush_output();
-		peer->poll();
 
-		if (peer->has_message()) {
-			Array cmd = peer->get_message();
+		_poll_messages();
+
+		if (_has_messages()) {
+			Array cmd = _get_message();
 
 			ERR_CONTINUE(cmd.size() != 2);
 			ERR_CONTINUE(cmd[0].get_type() != Variant::STRING);
@@ -426,7 +485,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 			} else if (command == "get_stack_frame_vars") {
 				ERR_FAIL_COND(data.size() != 1);
-				ERR_FAIL_COND(!script_lang);
+				ERR_FAIL_NULL(script_lang);
 				int lv = data[0];
 
 				List<String> members;
@@ -479,14 +538,22 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			}
 		} else {
 			OS::get_singleton()->delay_usec(10000);
-			OS::get_singleton()->process_and_drop_events();
+			if (Thread::get_caller_id() == Thread::get_main_id()) {
+				// If this is a busy loop on the main thread, events still need to be processed.
+				OS::get_singleton()->process_and_drop_events();
+			}
 		}
 	}
 
 	send_message("debug_exit", Array());
 
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
-		Input::get_singleton()->set_mouse_mode(mouse_mode);
+	if (Thread::get_caller_id() == Thread::get_main_id()) {
+		if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(mouse_mode);
+		}
+	} else {
+		MutexLock mutex_lock(mutex);
+		messages.erase(Thread::get_caller_id());
 	}
 }
 
@@ -496,9 +563,11 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 	}
 
 	flush_output();
-	peer->poll();
-	while (peer->has_message()) {
-		Array arr = peer->get_message();
+
+	_poll_messages();
+
+	while (_has_messages()) {
+		Array arr = _get_message();
 
 		ERR_CONTINUE(arr.size() != 2);
 		ERR_CONTINUE(arr[0].get_type() != Variant::STRING);
@@ -604,6 +673,8 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 	eh.errfunc = _err_handler;
 	eh.userdata = this;
 	add_error_handler(&eh);
+
+	messages.insert(Thread::get_main_id(), List<Message>());
 }
 
 RemoteDebugger::~RemoteDebugger() {

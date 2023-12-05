@@ -31,9 +31,11 @@
 #ifndef DIR_ACCESS_JANDROID_H
 #define DIR_ACCESS_JANDROID_H
 
+#include "java_godot_lib_jni.h"
+
 #include "core/io/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
-#include "java_godot_lib_jni.h"
+
 #include <stdio.h>
 
 /// Android implementation of the DirAccess interface used to provide access to

@@ -134,7 +134,7 @@ void DisjointSet<T, H, C, AL>::get_representatives(Vector<T> &out_representative
 template <typename T, class H, class C, class AL>
 void DisjointSet<T, H, C, AL>::get_members(Vector<T> &out_members, T representative) {
 	typename MapT::Iterator rep_itr = elements.find(representative);
-	ERR_FAIL_COND(rep_itr == nullptr);
+	ERR_FAIL_NULL(rep_itr);
 
 	Element *rep_element = rep_itr->value;
 	ERR_FAIL_COND(rep_element->parent != rep_element);

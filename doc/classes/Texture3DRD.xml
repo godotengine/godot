@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Texture3DRD" inherits="Texture3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Texture for 3D that is bound to a texture created on the [RenderingDevice].
+	</brief_description>
+	<description>
+		This texture class allows you to use a 3D texture created directly on the [RenderingDevice] as a texture for materials, meshes, etc.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="texture_rd_rid" type="RID" setter="set_texture_rd_rid" getter="get_texture_rd_rid" default="RID()">
+			The RID of the texture object created on the [RenderingDevice].
+		</member>
+	</members>
+</class>

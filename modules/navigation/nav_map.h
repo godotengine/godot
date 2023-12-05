@@ -32,16 +32,14 @@
 #define NAV_MAP_H
 
 #include "nav_rid.h"
+#include "nav_utils.h"
 
 #include "core/math/math_defs.h"
 #include "core/object/worker_thread_pool.h"
-#include "core/templates/rb_map.h"
-#include "nav_utils.h"
 
 #include <KdTree2d.h>
-#include <RVOSimulator2d.h>
-
 #include <KdTree3d.h>
+#include <RVOSimulator2d.h>
 #include <RVOSimulator3d.h>
 
 class NavLink;
@@ -54,8 +52,9 @@ class NavMap : public NavRid {
 	Vector3 up = Vector3(0, 1, 0);
 
 	/// To find the polygons edges the vertices are displaced in a grid where
-	/// each cell has the following cell_size.
-	real_t cell_size = 0.25;
+	/// each cell has the following cell_size and cell_height.
+	real_t cell_size = 0.25; // Must match ProjectSettings default 3D cell_size and NavigationMesh cell_size.
+	real_t cell_height = 0.25; // Must match ProjectSettings default 3D cell_height and NavigationMesh cell_height.
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.
@@ -130,6 +129,9 @@ public:
 	real_t get_cell_size() const {
 		return cell_size;
 	}
+
+	void set_cell_height(real_t p_cell_height);
+	real_t get_cell_height() const { return cell_height; }
 
 	void set_use_edge_connections(bool p_enabled);
 	bool get_use_edge_connections() const {

@@ -109,5 +109,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(IP::Type);
+VARIANT_ENUM_CAST(IP::ResolverStatus);
 
 #endif // IP_H

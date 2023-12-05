@@ -21,18 +21,25 @@ struct AnchorMatrix
     if (unlikely (hb_unsigned_mul_overflows (rows, cols))) return_trace (false);
     unsigned int count = rows * cols;
     if (!c->check_array (matrixZ.arrayZ, count)) return_trace (false);
+
+    if (c->lazy_some_gpos)
+      return_trace (true);
+
     for (unsigned int i = 0; i < count; i++)
       if (!matrixZ[i].sanitize (c, this)) return_trace (false);
     return_trace (true);
   }
 
-  const Anchor& get_anchor (unsigned int row, unsigned int col,
-                            unsigned int cols, bool *found) const
+  const Anchor& get_anchor (hb_ot_apply_context_t *c,
+			    unsigned int row, unsigned int col,
+			    unsigned int cols, bool *found) const
   {
     *found = false;
     if (unlikely (row >= rows || col >= cols)) return Null (Anchor);
-    *found = !matrixZ[row * cols + col].is_null ();
-    return this+matrixZ[row * cols + col];
+    auto &offset = matrixZ[row * cols + col];
+    if (unlikely (!offset.sanitize (&c->sanitizer, this))) return Null (Anchor);
+    *found = !offset.is_null ();
+    return this+offset;
   }
 
   template <typename Iterator,
@@ -58,14 +65,15 @@ struct AnchorMatrix
     if (unlikely (!c->serializer->extend_min (out)))  return_trace (false);
 
     out->rows = num_rows;
+    bool ret = false;
     for (const unsigned i : index_iter)
     {
       auto *offset = c->serializer->embed (matrixZ[i]);
       if (!offset) return_trace (false);
-      offset->serialize_subset (c, matrixZ[i], this);
+      ret |= offset->serialize_subset (c, matrixZ[i], this);
     }
 
-    return_trace (true);
+    return_trace (ret);
   }
 };
 

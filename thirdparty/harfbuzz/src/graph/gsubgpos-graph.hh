@@ -166,7 +166,7 @@ struct Lookup : public OT::Lookup
     }
 
     if (all_new_subtables) {
-      add_sub_tables (c, this_index, type, all_new_subtables);
+      return add_sub_tables (c, this_index, type, all_new_subtables);
     }
 
     return true;
@@ -184,7 +184,7 @@ struct Lookup : public OT::Lookup
     return sub_table->split_subtables (c, parent_idx, objidx);
   }
 
-  void add_sub_tables (gsubgpos_graph_context_t& c,
+  bool add_sub_tables (gsubgpos_graph_context_t& c,
                        unsigned this_index,
                        unsigned type,
                        hb_vector_t<hb_pair_t<unsigned, hb_vector_t<unsigned>>>& subtable_ids)
@@ -200,7 +200,12 @@ struct Lookup : public OT::Lookup
     size_t new_size = v.table_size ()
                       + new_subtable_count * OT::Offset16::static_size;
     char* buffer = (char*) hb_calloc (1, new_size);
-    c.add_buffer (buffer);
+    if (!buffer) return false;
+    if (!c.add_buffer (buffer))
+    {
+      hb_free (buffer);
+     return false;
+    }
     hb_memcpy (buffer, v.obj.head, v.table_size());
 
     v.obj.head = buffer;
@@ -220,7 +225,7 @@ struct Lookup : public OT::Lookup
         if (is_ext)
         {
           unsigned ext_id = create_extension_subtable (c, subtable_id, type);
-          c.graph.vertices_[subtable_id].parents.push (ext_id);
+          c.graph.vertices_[subtable_id].add_parent (ext_id);
           subtable_id = ext_id;
         }
 
@@ -229,7 +234,7 @@ struct Lookup : public OT::Lookup
         link->objidx = subtable_id;
         link->position = (char*) &new_lookup->subTable[offset_index++] -
                          (char*) new_lookup;
-        c.graph.vertices_[subtable_id].parents.push (this_index);
+        c.graph.vertices_[subtable_id].add_parent (this_index);
       }
     }
 
@@ -239,6 +244,7 @@ struct Lookup : public OT::Lookup
     // The head location of the lookup has changed, invalidating the lookups map entry
     // in the context. Update the map.
     c.lookups.set (this_index, new_lookup);
+    return true;
   }
 
   void fix_existing_subtable_links (gsubgpos_graph_context_t& c,
@@ -293,24 +299,35 @@ struct Lookup : public OT::Lookup
                                 unsigned subtable_index)
   {
     unsigned type = lookupType;
+    unsigned ext_index = -1;
+    unsigned* existing_ext_index = nullptr;
+    if (c.subtable_to_extension.has(subtable_index, &existing_ext_index)) {
+      ext_index = *existing_ext_index;
+    } else {    
+      ext_index = create_extension_subtable(c, subtable_index, type);
+      c.subtable_to_extension.set(subtable_index, ext_index);
+    }
 
-    unsigned ext_index = create_extension_subtable(c, subtable_index, type);
     if (ext_index == (unsigned) -1)
       return false;
 
+    auto& subtable_vertex = c.graph.vertices_[subtable_index];
     auto& lookup_vertex = c.graph.vertices_[lookup_index];
     for (auto& l : lookup_vertex.obj.real_links.writer ())
     {
-      if (l.objidx == subtable_index)
+      if (l.objidx == subtable_index) {
         // Change lookup to point at the extension.
         l.objidx = ext_index;
+        if (existing_ext_index)
+          subtable_vertex.remove_parent(lookup_index);
+      }
     }
 
     // Make extension point at the subtable.
     auto& ext_vertex = c.graph.vertices_[ext_index];
-    auto& subtable_vertex = c.graph.vertices_[subtable_index];
-    ext_vertex.parents.push (lookup_index);
-    subtable_vertex.remap_parent (lookup_index, ext_index);
+    ext_vertex.add_parent (lookup_index);
+    if (!existing_ext_index)
+      subtable_vertex.remap_parent (lookup_index, ext_index);
 
     return true;
   }

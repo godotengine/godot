@@ -31,19 +31,21 @@
 #ifndef DISPLAY_SERVER_MACOS_H
 #define DISPLAY_SERVER_MACOS_H
 
-#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
-
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
 #if defined(GLES3_ENABLED)
+#include "gl_manager_macos_angle.h"
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
 #if defined(VULKAN_ENABLED)
+#include "vulkan_context_macos.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/macos/vulkan_context_macos.h"
 #endif // VULKAN_ENABLED
+
+#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
 #import <AppKit/AppKit.h>
 #import <AppKit/NSCursor.h>
@@ -116,6 +118,9 @@ public:
 		bool no_focus = false;
 		bool is_popup = false;
 		bool mpass = false;
+		bool focused = false;
+		bool is_visible = true;
+		bool extend_to_title = false;
 
 		Rect2i parent_safe_rect;
 	};
@@ -125,7 +130,8 @@ public:
 
 private:
 #if defined(GLES3_ENABLED)
-	GLManager_MacOS *gl_manager = nullptr;
+	GLManagerLegacy_MacOS *gl_manager_legacy = nullptr;
+	GLManagerANGLE_MacOS *gl_manager_angle = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
 	VulkanContextMacOS *context_vulkan = nullptr;
@@ -135,7 +141,14 @@ private:
 
 	NSMenu *apple_menu = nullptr;
 	NSMenu *dock_menu = nullptr;
-	HashMap<String, NSMenu *> submenu;
+	struct MenuData {
+		Callable open;
+		Callable close;
+		NSMenu *menu = nullptr;
+		bool is_open = false;
+	};
+	HashMap<String, MenuData> submenu;
+	HashMap<NSMenu *, String> submenu_inv;
 
 	struct WarpEvent {
 		NSTimeInterval timestamp;
@@ -169,6 +182,7 @@ private:
 	int current_layout = 0;
 	bool keyboard_layout_dirty = true;
 
+	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	float display_max_scale = 1.f;
@@ -192,10 +206,10 @@ private:
 
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);
+	bool _is_menu_opened(NSMenu *p_menu) const;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd);
-	void _set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
 
 	void _update_displays_arrangement();
 	Point2i _get_screens_origin() const;
@@ -218,6 +232,8 @@ private:
 public:
 	NSMenu *get_dock_menu() const;
 	void menu_callback(id p_sender);
+	void menu_open(NSMenu *p_menu);
+	void menu_close(NSMenu *p_menu);
 
 	bool has_window(WindowID p_window) const;
 	WindowData &get_window(WindowID p_window);
@@ -238,14 +254,19 @@ public:
 	bool get_is_resizing() const;
 	void reparent_check(WindowID p_window);
 	WindowID _get_focused_window_or_popup() const;
+	void mouse_enter_window(WindowID p_window);
+	void mouse_exit_window(WindowID p_window);
+	void update_presentation_mode();
 
-	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
 	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);
+	void set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+
+	virtual void global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callback = Callable(), const Callable &p_close_callback = Callable()) override;
 
 	virtual int global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index = -1) override;
 	virtual int global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1) override;
@@ -270,6 +291,7 @@ public:
 	virtual String global_menu_get_item_submenu(const String &p_menu_root, int p_idx) const override;
 	virtual Key global_menu_get_item_accelerator(const String &p_menu_root, int p_idx) const override;
 	virtual bool global_menu_is_item_disabled(const String &p_menu_root, int p_idx) const override;
+	virtual bool global_menu_is_item_hidden(const String &p_menu_root, int p_idx) const override;
 	virtual String global_menu_get_item_tooltip(const String &p_menu_root, int p_idx) const override;
 	virtual int global_menu_get_item_state(const String &p_menu_root, int p_idx) const override;
 	virtual int global_menu_get_item_max_states(const String &p_menu_root, int p_idx) const override;
@@ -281,11 +303,13 @@ public:
 	virtual void global_menu_set_item_radio_checkable(const String &p_menu_root, int p_idx, bool p_checkable) override;
 	virtual void global_menu_set_item_callback(const String &p_menu_root, int p_idx, const Callable &p_callback) override;
 	virtual void global_menu_set_item_key_callback(const String &p_menu_root, int p_idx, const Callable &p_key_callback) override;
+	virtual void global_menu_set_item_hover_callbacks(const String &p_menu_root, int p_idx, const Callable &p_callback) override;
 	virtual void global_menu_set_item_tag(const String &p_menu_root, int p_idx, const Variant &p_tag) override;
 	virtual void global_menu_set_item_text(const String &p_menu_root, int p_idx, const String &p_text) override;
 	virtual void global_menu_set_item_submenu(const String &p_menu_root, int p_idx, const String &p_submenu) override;
 	virtual void global_menu_set_item_accelerator(const String &p_menu_root, int p_idx, Key p_keycode) override;
 	virtual void global_menu_set_item_disabled(const String &p_menu_root, int p_idx, bool p_disabled) override;
+	virtual void global_menu_set_item_hidden(const String &p_menu_root, int p_idx, bool p_hidden) override;
 	virtual void global_menu_set_item_tooltip(const String &p_menu_root, int p_idx, const String &p_tooltip) override;
 	virtual void global_menu_set_item_state(const String &p_menu_root, int p_idx, int p_state) override;
 	virtual void global_menu_set_item_max_states(const String &p_menu_root, int p_idx, int p_max_states) override;
@@ -313,6 +337,8 @@ public:
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
 
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
+
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
@@ -324,6 +350,9 @@ public:
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
+	virtual Ref<Image> clipboard_get_image() const override;
+	virtual bool clipboard_has() const override;
+	virtual bool clipboard_has_image() const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
@@ -357,6 +386,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window) const override;
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
@@ -389,6 +419,7 @@ public:
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 
@@ -430,6 +461,7 @@ public:
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
+	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;

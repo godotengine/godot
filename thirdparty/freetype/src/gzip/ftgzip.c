@@ -70,10 +70,9 @@
   /* so that configuration with `FT_CONFIG_OPTION_SYSTEM_ZLIB' might   */
   /* include the wrong `zconf.h' file, leading to errors.              */
 
-#if defined( __GNUC__ ) ||  defined( __clang__ )
 #define ZEXPORT
-#define ZEXTERN      static
-#endif
+  /* prevent zlib functions from being visible outside their object files */
+#define ZEXTERN  static
 
 #define HAVE_MEMCPY  1
 #define Z_SOLO       1

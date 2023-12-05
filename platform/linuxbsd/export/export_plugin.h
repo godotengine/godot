@@ -34,7 +34,7 @@
 #include "core/io/file_access.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform_pc.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/image_texture.h"
 
 class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
 	GDCLASS(EditorExportPlatformLinuxBSD, EditorExportPlatformPC);

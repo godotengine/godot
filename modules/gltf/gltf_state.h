@@ -47,17 +47,20 @@ class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
 
-	String filename;
 	String base_path;
+	String filename;
 	Dictionary json;
 	int major_version = 0;
 	int minor_version = 0;
+	String copyright;
 	Vector<uint8_t> glb_data;
 
 	bool use_named_skin_binds = false;
 	bool use_khr_texture_transform = false;
 	bool discard_meshes_and_materials = false;
+	bool force_generate_tangents = false;
 	bool create_animations = true;
+	bool force_disable_compression = false;
 
 	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
 
@@ -125,6 +128,9 @@ public:
 	int get_minor_version();
 	void set_minor_version(int p_minor_version);
 
+	String get_copyright() const;
+	void set_copyright(const String &p_copyright);
+
 	Vector<uint8_t> get_glb_data();
 	void set_glb_data(Vector<uint8_t> p_glb_data);
 
@@ -166,6 +172,9 @@ public:
 
 	String get_base_path();
 	void set_base_path(String p_base_path);
+
+	String get_filename() const;
+	void set_filename(const String &p_filename);
 
 	PackedInt32Array get_root_nodes();
 	void set_root_nodes(PackedInt32Array p_root_nodes);

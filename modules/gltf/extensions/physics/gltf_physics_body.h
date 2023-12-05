@@ -45,9 +45,10 @@ protected:
 private:
 	String body_type = "static";
 	real_t mass = 1.0;
-	Vector3 linear_velocity = Vector3();
-	Vector3 angular_velocity = Vector3();
-	Vector3 inertia = Vector3();
+	Vector3 linear_velocity;
+	Vector3 angular_velocity;
+	Vector3 center_of_mass;
+	Basis inertia_tensor = Basis(0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 public:
 	String get_body_type() const;
@@ -62,8 +63,11 @@ public:
 	Vector3 get_angular_velocity() const;
 	void set_angular_velocity(Vector3 p_angular_velocity);
 
-	Vector3 get_inertia() const;
-	void set_inertia(Vector3 p_inertia);
+	Vector3 get_center_of_mass() const;
+	void set_center_of_mass(const Vector3 &p_center_of_mass);
+
+	Basis get_inertia_tensor() const;
+	void set_inertia_tensor(Basis p_inertia_tensor);
 
 	static Ref<GLTFPhysicsBody> from_node(const CollisionObject3D *p_body_node);
 	CollisionObject3D *to_node() const;

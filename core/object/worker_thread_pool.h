@@ -106,6 +106,7 @@ private:
 		uint32_t index;
 		Thread thread;
 		Task *current_low_prio_task = nullptr;
+		bool ready_for_scripting = false;
 	};
 
 	TightLocalVector<ThreadData> threads;

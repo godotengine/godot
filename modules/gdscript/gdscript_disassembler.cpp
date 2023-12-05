@@ -30,10 +30,10 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "gdscript.h"
 #include "gdscript_function.h"
 
 #include "core/string/string_builder.h"
-#include "gdscript.h"
 
 static String _get_variant_string(const Variant &p_variant) {
 	String txt;
@@ -50,12 +50,17 @@ static String _get_variant_string(const Variant &p_variant) {
 		} else {
 			GDScriptNativeClass *cls = Object::cast_to<GDScriptNativeClass>(obj);
 			if (cls) {
-				txt += cls->get_name();
-				txt += " (class)";
+				txt = "class(" + cls->get_name() + ")";
 			} else {
-				txt = obj->get_class();
-				if (obj->get_script_instance()) {
-					txt += "(" + obj->get_script_instance()->get_script()->get_path() + ")";
+				Script *script = Object::cast_to<Script>(obj);
+				if (script) {
+					txt = "script(" + GDScript::debug_get_script_name(script) + ")";
+				} else {
+					txt = "object(" + obj->get_class();
+					if (obj->get_script_instance()) {
+						txt += ", " + GDScript::debug_get_script_name(obj->get_script_instance()->get_script());
+					}
+					txt += ")";
 				}
 			}
 		}
@@ -69,12 +74,6 @@ static String _disassemble_address(const GDScript *p_script, const GDScriptFunct
 	int addr = p_address & GDScriptFunction::ADDR_MASK;
 
 	switch (p_address >> GDScriptFunction::ADDR_BITS) {
-		case GDScriptFunction::ADDR_TYPE_MEMBER: {
-			return "member(" + p_script->debug_get_member_by_index(addr) + ")";
-		} break;
-		case GDScriptFunction::ADDR_TYPE_CONSTANT: {
-			return "const(" + _get_variant_string(p_function.get_constant(addr)) + ")";
-		} break;
 		case GDScriptFunction::ADDR_TYPE_STACK: {
 			switch (addr) {
 				case GDScriptFunction::ADDR_STACK_SELF:
@@ -86,6 +85,12 @@ static String _disassemble_address(const GDScript *p_script, const GDScriptFunct
 				default:
 					return "stack(" + itos(addr) + ")";
 			}
+		} break;
+		case GDScriptFunction::ADDR_TYPE_CONSTANT: {
+			return "const(" + _get_variant_string(p_function.get_constant(addr)) + ")";
+		} break;
+		case GDScriptFunction::ADDR_TYPE_MEMBER: {
+			return "member(" + p_script->debug_get_member_by_index(addr) + ")";
 		} break;
 	}
 
@@ -108,6 +113,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 		switch (opcode) {
 			case OPCODE_OPERATOR: {
+				constexpr int _pointer_size = sizeof(Variant::ValidatedOperatorEvaluator) / sizeof(*_code_ptr);
 				int operation = _code_ptr[ip + 4];
 
 				text += "operator ";
@@ -120,7 +126,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " ";
 				text += DADDR(2);
 
-				incr += 5;
+				incr += 7 + _pointer_size;
 			} break;
 			case OPCODE_OPERATOR_VALIDATED: {
 				text += "validated operator ";
@@ -152,12 +158,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(2);
 				text += " is Array[";
 
-				Ref<Script> script_type = get_constant(_code_ptr[ip + 3] & GDScriptFunction::ADDR_MASK);
+				Ref<Script> script_type = get_constant(_code_ptr[ip + 3] & ADDR_MASK);
 				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + 5]);
 
 				if (script_type.is_valid() && script_type->is_valid()) {
-					text += script_type->get_path();
+					text += "script(";
+					text += GDScript::debug_get_script_name(script_type);
+					text += ")";
 				} else if (native_type != StringName()) {
 					text += native_type;
 				} else {
@@ -312,6 +320,38 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 3;
 			} break;
+			case OPCODE_SET_STATIC_VARIABLE: {
+				Ref<GDScript> gdscript = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
+
+				text += "set_static_variable script(";
+				text += GDScript::debug_get_script_name(gdscript);
+				text += ")";
+				if (gdscript.is_valid()) {
+					text += "[\"" + gdscript->debug_get_static_var_by_index(_code_ptr[ip + 3]) + "\"]";
+				} else {
+					text += "[<index " + itos(_code_ptr[ip + 3]) + ">]";
+				}
+				text += " = ";
+				text += DADDR(1);
+
+				incr += 4;
+			} break;
+			case OPCODE_GET_STATIC_VARIABLE: {
+				Ref<GDScript> gdscript = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
+
+				text += "get_static_variable ";
+				text += DADDR(1);
+				text += " = script(";
+				text += GDScript::debug_get_script_name(gdscript);
+				text += ")";
+				if (gdscript.is_valid()) {
+					text += "[\"" + gdscript->debug_get_static_var_by_index(_code_ptr[ip + 3]) + "\"]";
+				} else {
+					text += "[<index " + itos(_code_ptr[ip + 3]) + ">]";
+				}
+
+				incr += 4;
+			} break;
 			case OPCODE_ASSIGN: {
 				text += "assign ";
 				text += DADDR(1);
@@ -363,11 +403,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4;
 			} break;
 			case OPCODE_ASSIGN_TYPED_SCRIPT: {
-				Variant script = _constants_ptr[_code_ptr[ip + 3]];
-				Script *sc = Object::cast_to<Script>(script.operator Object *());
+				Ref<Script> script = get_constant(_code_ptr[ip + 3] & ADDR_MASK);
 
 				text += "assign typed script (";
-				text += sc->get_path();
+				text += GDScript::debug_get_script_name(script);
 				text += ") ";
 				text += DADDR(1);
 				text += " = ";
@@ -467,13 +506,13 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
-				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2] & GDScriptFunction::ADDR_MASK);
+				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2] & ADDR_MASK);
 				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + argc + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + argc + 5]);
 
 				String type_name;
 				if (script_type.is_valid() && script_type->is_valid()) {
-					type_name = script_type->get_path();
+					type_name = "script(" + GDScript::debug_get_script_name(script_type) + ")";
 				} else if (native_type != StringName()) {
 					type_name = native_type;
 				} else {
@@ -631,10 +670,29 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4 + argc;
 			} break;
-			case OPCODE_CALL_PTRCALL_NO_RETURN: {
+
+			case OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN: {
+				int instr_var_args = _code_ptr[++ip];
+				text += "call method-bind validated (return) ";
+				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+				text += DADDR(2 + argc) + " = ";
+				text += DADDR(1 + argc) + ".";
+				text += method->get_name();
+				text += "(";
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(1 + i);
+				}
+				text += ")";
+				incr = 5 + argc;
+			} break;
+
+			case OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN: {
 				int instr_var_args = _code_ptr[++ip];
 
-				text += "call-ptrcall (no return) ";
+				text += "call method-bind validated (no return) ";
 
 				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
 
@@ -654,65 +712,6 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 5 + argc;
 			} break;
-
-#define DISASSEMBLE_PTRCALL(m_type)                                            \
-	case OPCODE_CALL_PTRCALL_##m_type: {                                       \
-		int instr_var_args = _code_ptr[++ip];                                  \
-		text += "call-ptrcall (return ";                                       \
-		text += #m_type;                                                       \
-		text += ") ";                                                          \
-		MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]]; \
-		int argc = _code_ptr[ip + 1 + instr_var_args];                         \
-		text += DADDR(2 + argc) + " = ";                                       \
-		text += DADDR(1 + argc) + ".";                                         \
-		text += method->get_name();                                            \
-		text += "(";                                                           \
-		for (int i = 0; i < argc; i++) {                                       \
-			if (i > 0)                                                         \
-				text += ", ";                                                  \
-			text += DADDR(1 + i);                                              \
-		}                                                                      \
-		text += ")";                                                           \
-		incr = 5 + argc;                                                       \
-	} break
-
-				DISASSEMBLE_PTRCALL(BOOL);
-				DISASSEMBLE_PTRCALL(INT);
-				DISASSEMBLE_PTRCALL(FLOAT);
-				DISASSEMBLE_PTRCALL(STRING);
-				DISASSEMBLE_PTRCALL(VECTOR2);
-				DISASSEMBLE_PTRCALL(VECTOR2I);
-				DISASSEMBLE_PTRCALL(RECT2);
-				DISASSEMBLE_PTRCALL(RECT2I);
-				DISASSEMBLE_PTRCALL(VECTOR3);
-				DISASSEMBLE_PTRCALL(VECTOR3I);
-				DISASSEMBLE_PTRCALL(TRANSFORM2D);
-				DISASSEMBLE_PTRCALL(VECTOR4);
-				DISASSEMBLE_PTRCALL(VECTOR4I);
-				DISASSEMBLE_PTRCALL(PLANE);
-				DISASSEMBLE_PTRCALL(AABB);
-				DISASSEMBLE_PTRCALL(BASIS);
-				DISASSEMBLE_PTRCALL(TRANSFORM3D);
-				DISASSEMBLE_PTRCALL(PROJECTION);
-				DISASSEMBLE_PTRCALL(COLOR);
-				DISASSEMBLE_PTRCALL(STRING_NAME);
-				DISASSEMBLE_PTRCALL(NODE_PATH);
-				DISASSEMBLE_PTRCALL(RID);
-				DISASSEMBLE_PTRCALL(QUATERNION);
-				DISASSEMBLE_PTRCALL(OBJECT);
-				DISASSEMBLE_PTRCALL(CALLABLE);
-				DISASSEMBLE_PTRCALL(SIGNAL);
-				DISASSEMBLE_PTRCALL(DICTIONARY);
-				DISASSEMBLE_PTRCALL(ARRAY);
-				DISASSEMBLE_PTRCALL(PACKED_BYTE_ARRAY);
-				DISASSEMBLE_PTRCALL(PACKED_INT32_ARRAY);
-				DISASSEMBLE_PTRCALL(PACKED_INT64_ARRAY);
-				DISASSEMBLE_PTRCALL(PACKED_FLOAT32_ARRAY);
-				DISASSEMBLE_PTRCALL(PACKED_FLOAT64_ARRAY);
-				DISASSEMBLE_PTRCALL(PACKED_STRING_ARRAY);
-				DISASSEMBLE_PTRCALL(PACKED_VECTOR2_ARRAY);
-				DISASSEMBLE_PTRCALL(PACKED_VECTOR3_ARRAY);
-				DISASSEMBLE_PTRCALL(PACKED_COLOR_ARRAY);
 
 			case OPCODE_CALL_BUILTIN_TYPE_VALIDATED: {
 				int instr_var_args = _code_ptr[++ip];
@@ -937,11 +936,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 3;
 			} break;
 			case OPCODE_RETURN_TYPED_SCRIPT: {
-				Variant script = _constants_ptr[_code_ptr[ip + 2]];
-				Script *sc = Object::cast_to<Script>(script.operator Object *());
+				Ref<Script> script = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
 
 				text += "return typed script (";
-				text += sc->get_path();
+				text += GDScript::debug_get_script_name(script);
 				text += ") ";
 				text += DADDR(1);
 
@@ -1130,4 +1128,4 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	}
 }
 
-#endif
+#endif // DEBUG_ENABLED

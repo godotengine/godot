@@ -22,7 +22,7 @@
 #define IsFlat IsFlat_NEON
 
 static uint32_t horizontal_add_uint32x4(const uint32x4_t a) {
-#if defined(__aarch64__)
+#if WEBP_AARCH64
   return vaddvq_u32(a);
 #else
   const uint64x2_t b = vpaddlq_u32(a);

@@ -43,6 +43,7 @@ _arguments \
   '--remote-fs[use a remote filesystem]:remote filesystem address' \
   '--remote-fs-password[password for remote filesystem]:remote filesystem password' \
   '--audio-driver[set the audio driver]:audio driver name' \
+  '--audio-output-latency[override audio output latency in milliseconds (default is 15 ms)]:number of milliseconds' \
   '--display-driver[set the display driver]:display driver name' \
   "--rendering-method[set the renderer]:renderer name:((forward_plus\:'Desktop renderer' mobile\:'Desktop and mobile renderer' gl_compatibility\:'Desktop, mobile and web renderer'))" \
   "--rendering-driver[set the rendering driver]:rendering driver name:((vulkan\:'Vulkan renderer' opengl3\:'OpenGL ES 3.0 renderer' dummy\:'Dummy renderer'))" \
@@ -69,6 +70,7 @@ _arguments \
   '--debug-collisions[show collision shapes when running the scene]' \
   '--debug-navigation[show navigation polygons when running the scene]' \
   '--debug-stringnames[print all StringName allocations to stdout when the engine quits]' \
+  '--frame-delay[set a maximum number of frames per second rendered (can be used to limit power usage), a value of 0 results in unlimited framerate]:maximum frames per seocnd' \
   '--frame-delay[simulate high CPU load (delay each frame by the given number of milliseconds)]:number of milliseconds' \
   '--time-scale[force time scale (higher values are faster, 1.0 is normal speed)]:time scale' \
   '--disable-vsync[disable vertical synchronization even if enabled in the project settings]' \

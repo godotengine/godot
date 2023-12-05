@@ -28,9 +28,12 @@
 
 
   static FT_Error
-  af_indic_metrics_init( AF_CJKMetrics  metrics,
-                         FT_Face        face )
+  af_indic_metrics_init( AF_StyleMetrics  metrics_, /* AF_CJKMetrics */
+                         FT_Face          face )
   {
+    AF_CJKMetrics  metrics = (AF_CJKMetrics)metrics_;
+
+
     /* skip blue zone init in CJK routines */
     FT_CharMap  oldmap = face->charmap;
 
@@ -55,8 +58,8 @@
 
 
   static void
-  af_indic_metrics_scale( AF_CJKMetrics  metrics,
-                          AF_Scaler      scaler )
+  af_indic_metrics_scale( AF_StyleMetrics  metrics,
+                          AF_Scaler        scaler )
   {
     /* use CJK routines */
     af_cjk_metrics_scale( metrics, scaler );
@@ -64,8 +67,8 @@
 
 
   static FT_Error
-  af_indic_hints_init( AF_GlyphHints  hints,
-                       AF_CJKMetrics  metrics )
+  af_indic_hints_init( AF_GlyphHints    hints,
+                       AF_StyleMetrics  metrics )
   {
     /* use CJK routines */
     return af_cjk_hints_init( hints, metrics );
@@ -73,10 +76,10 @@
 
 
   static FT_Error
-  af_indic_hints_apply( FT_UInt        glyph_index,
-                        AF_GlyphHints  hints,
-                        FT_Outline*    outline,
-                        AF_CJKMetrics  metrics )
+  af_indic_hints_apply( FT_UInt          glyph_index,
+                        AF_GlyphHints    hints,
+                        FT_Outline*      outline,
+                        AF_StyleMetrics  metrics )
   {
     /* use CJK routines */
     return af_cjk_hints_apply( glyph_index, hints, outline, metrics );
@@ -87,10 +90,13 @@
   /* metrics class.                                             */
 
   static void
-  af_indic_get_standard_widths( AF_CJKMetrics  metrics,
-                                FT_Pos*        stdHW,
-                                FT_Pos*        stdVW )
+  af_indic_get_standard_widths( AF_StyleMetrics  metrics_, /* AF_CJKMetrics */
+                                FT_Pos*          stdHW,
+                                FT_Pos*          stdVW )
   {
+    AF_CJKMetrics  metrics = (AF_CJKMetrics)metrics_;
+
+
     if ( stdHW )
       *stdHW = metrics->axis[AF_DIMENSION_VERT].standard_width;
 

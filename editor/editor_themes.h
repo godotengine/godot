@@ -45,12 +45,31 @@ class EditorColorMap {
 	static HashSet<StringName> color_conversion_exceptions;
 
 public:
-	static void create();
 	static void add_conversion_color_pair(const String p_from_color, const String p_to_color);
-	static void add_conversion_exception(const StringName p_icon_name);
+	static void add_conversion_exception(const StringName &p_icon_name);
 
 	static HashMap<Color, Color> &get_color_conversion_map() { return color_conversion_map; };
 	static HashSet<StringName> &get_color_conversion_exceptions() { return color_conversion_exceptions; };
+
+	static void create();
+	static void finish();
+};
+
+class EditorTheme : public Theme {
+	GDCLASS(EditorTheme, Theme);
+
+	static Vector<StringName> editor_theme_types;
+
+public:
+	virtual Color get_color(const StringName &p_name, const StringName &p_theme_type) const override;
+	virtual int get_constant(const StringName &p_name, const StringName &p_theme_type) const override;
+	virtual Ref<Font> get_font(const StringName &p_name, const StringName &p_theme_type) const override;
+	virtual int get_font_size(const StringName &p_name, const StringName &p_theme_type) const override;
+	virtual Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_theme_type) const override;
+	virtual Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_theme_type) const override;
+
+	static void initialize();
+	static void finalize();
 };
 
 Ref<Theme> create_editor_theme(Ref<Theme> p_theme = nullptr);

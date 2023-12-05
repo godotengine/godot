@@ -222,13 +222,13 @@ void Theme::set_default_font(const Ref<Font> &p_default_font) {
 	}
 
 	if (default_font.is_valid()) {
-		default_font->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+		default_font->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 	}
 
 	default_font = p_default_font;
 
 	if (default_font.is_valid()) {
-		default_font->connect("changed", callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
+		default_font->connect_changed(callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_emit_theme_changed();
@@ -268,13 +268,13 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_theme_type, c
 	bool existing = false;
 	if (icon_map[p_theme_type].has(p_name) && icon_map[p_theme_type][p_name].is_valid()) {
 		existing = true;
-		icon_map[p_theme_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+		icon_map[p_theme_type][p_name]->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 	}
 
 	icon_map[p_theme_type][p_name] = p_icon;
 
 	if (p_icon.is_valid()) {
-		icon_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
+		icon_map[p_theme_type][p_name]->connect_changed(callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_emit_theme_changed(!existing);
@@ -314,7 +314,7 @@ void Theme::clear_icon(const StringName &p_name, const StringName &p_theme_type)
 	ERR_FAIL_COND_MSG(!icon_map[p_theme_type].has(p_name), "Cannot clear the icon '" + String(p_name) + "' because it does not exist.");
 
 	if (icon_map[p_theme_type][p_name].is_valid()) {
-		icon_map[p_theme_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+		icon_map[p_theme_type][p_name]->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 	}
 
 	icon_map[p_theme_type].erase(p_name);
@@ -353,7 +353,7 @@ void Theme::remove_icon_type(const StringName &p_theme_type) {
 	for (const KeyValue<StringName, Ref<Texture2D>> &E : icon_map[p_theme_type]) {
 		Ref<Texture2D> icon = E.value;
 		if (icon.is_valid()) {
-			icon->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+			icon->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 		}
 	}
 
@@ -378,13 +378,13 @@ void Theme::set_stylebox(const StringName &p_name, const StringName &p_theme_typ
 	bool existing = false;
 	if (style_map[p_theme_type].has(p_name) && style_map[p_theme_type][p_name].is_valid()) {
 		existing = true;
-		style_map[p_theme_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+		style_map[p_theme_type][p_name]->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 	}
 
 	style_map[p_theme_type][p_name] = p_style;
 
 	if (p_style.is_valid()) {
-		style_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
+		style_map[p_theme_type][p_name]->connect_changed(callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_emit_theme_changed(!existing);
@@ -424,7 +424,7 @@ void Theme::clear_stylebox(const StringName &p_name, const StringName &p_theme_t
 	ERR_FAIL_COND_MSG(!style_map[p_theme_type].has(p_name), "Cannot clear the stylebox '" + String(p_name) + "' because it does not exist.");
 
 	if (style_map[p_theme_type][p_name].is_valid()) {
-		style_map[p_theme_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+		style_map[p_theme_type][p_name]->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 	}
 
 	style_map[p_theme_type].erase(p_name);
@@ -463,7 +463,7 @@ void Theme::remove_stylebox_type(const StringName &p_theme_type) {
 	for (const KeyValue<StringName, Ref<StyleBox>> &E : style_map[p_theme_type]) {
 		Ref<StyleBox> style = E.value;
 		if (style.is_valid()) {
-			style->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+			style->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 		}
 	}
 
@@ -488,13 +488,13 @@ void Theme::set_font(const StringName &p_name, const StringName &p_theme_type, c
 	bool existing = false;
 	if (font_map[p_theme_type][p_name].is_valid()) {
 		existing = true;
-		font_map[p_theme_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+		font_map[p_theme_type][p_name]->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 	}
 
 	font_map[p_theme_type][p_name] = p_font;
 
 	if (p_font.is_valid()) {
-		font_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
+		font_map[p_theme_type][p_name]->connect_changed(callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_emit_theme_changed(!existing);
@@ -536,7 +536,7 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_theme_type)
 	ERR_FAIL_COND_MSG(!font_map[p_theme_type].has(p_name), "Cannot clear the font '" + String(p_name) + "' because it does not exist.");
 
 	if (font_map[p_theme_type][p_name].is_valid()) {
-		font_map[p_theme_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+		font_map[p_theme_type][p_name]->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 	}
 
 	font_map[p_theme_type].erase(p_name);
@@ -575,7 +575,7 @@ void Theme::remove_font_type(const StringName &p_theme_type) {
 	for (const KeyValue<StringName, Ref<Font>> &E : font_map[p_theme_type]) {
 		Ref<Font> font = E.value;
 		if (font.is_valid()) {
-			font->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+			font->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 		}
 	}
 
@@ -1240,6 +1240,11 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 		types.insert(E.key);
 	}
 
+	// Variations.
+	for (const KeyValue<StringName, StringName> &E : variation_map) {
+		types.insert(E.key);
+	}
+
 	for (const StringName &E : types) {
 		p_list->push_back(E);
 	}
@@ -1263,11 +1268,7 @@ void Theme::get_type_dependencies(const StringName &p_base_type, const StringNam
 	}
 
 	// Continue building the chain using native class hierarchy.
-	StringName class_name = p_base_type;
-	while (class_name != StringName()) {
-		p_list->push_back(class_name);
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
-	}
+	ThemeDB::get_singleton()->get_native_type_dependencies(p_base_type, p_list);
 }
 
 // Internal methods for getting lists as a Vector of String (compatible with public API).
@@ -1622,7 +1623,7 @@ void Theme::clear() {
 			for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
 				if (F.value.is_valid()) {
 					Ref<Texture2D> icon = F.value;
-					icon->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+					icon->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 				}
 			}
 		}
@@ -1633,7 +1634,7 @@ void Theme::clear() {
 			for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
 				if (F.value.is_valid()) {
 					Ref<StyleBox> style = F.value;
-					style->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+					style->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 				}
 			}
 		}
@@ -1644,7 +1645,7 @@ void Theme::clear() {
 			for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
 				if (F.value.is_valid()) {
 					Ref<Font> font = F.value;
-					font->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
+					font->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
 				}
 			}
 		}

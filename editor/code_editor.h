@@ -97,7 +97,7 @@ class FindReplaceBar : public HBoxContainer {
 	void _update_matches_label();
 
 	void _show_search(bool p_focus_replace = false, bool p_show_only = false);
-	void _hide_bar();
+	void _hide_bar(bool p_force_focus = false);
 
 	void _editor_text_changed();
 	void _search_options_changed(bool p_pressed);
@@ -108,6 +108,9 @@ class FindReplaceBar : public HBoxContainer {
 protected:
 	void _notification(int p_what);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	void _focus_lost();
+
+	void _update_flags(bool p_direction_backwards);
 
 	bool _search(uint32_t p_flags, int p_from_line, int p_from_col);
 
@@ -157,6 +160,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	Label *info = nullptr;
 	Timer *idle = nullptr;
+	bool code_complete_enabled = true;
 	Timer *code_complete_timer = nullptr;
 	int code_complete_timer_line = 0;
 
@@ -187,6 +191,7 @@ class CodeTextEditor : public VBoxContainer {
 	Color completion_font_color;
 	Color completion_string_color;
 	Color completion_comment_color;
+	Color completion_doc_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud = nullptr;
 

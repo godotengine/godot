@@ -33,6 +33,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/multi_node_edit.h"
 
 Size2 EditorObjectSelector::get_minimum_size() const {
@@ -100,7 +101,6 @@ void EditorObjectSelector::_show_popup() {
 
 	sub_objects_menu->set_position(gp);
 	sub_objects_menu->set_size(Size2(size.width, 1));
-	sub_objects_menu->set_parent_rect(Rect2(Point2(gp - sub_objects_menu->get_position()), size));
 
 	sub_objects_menu->take_mouse_focus();
 	sub_objects_menu->popup();
@@ -201,10 +201,10 @@ void EditorObjectSelector::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 
-			int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 			current_object_icon->set_custom_minimum_size(Size2(icon_size, icon_size));
-			current_object_label->add_theme_font_override("font", get_theme_font(SNAME("main"), SNAME("EditorFonts")));
+			current_object_label->add_theme_font_override("font", get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 			sub_objects_icon->set_texture(get_theme_icon(SNAME("arrow"), SNAME("OptionButton")));
 			sub_objects_menu->add_theme_constant_override("icon_max_width", icon_size);
 		} break;

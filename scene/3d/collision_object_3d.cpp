@@ -394,11 +394,7 @@ void CollisionObject3D::_update_debug_shapes() {
 				if (s.debug_shape.is_null()) {
 					s.debug_shape = RS::get_singleton()->instance_create();
 					RS::get_singleton()->instance_set_scenario(s.debug_shape, get_world_3d()->get_scenario());
-
-					if (!s.shape->is_connected("changed", callable_mp(this, &CollisionObject3D::_shape_changed))) {
-						s.shape->connect("changed", callable_mp(this, &CollisionObject3D::_shape_changed).bind(s.shape), CONNECT_DEFERRED);
-					}
-
+					s.shape->connect_changed(callable_mp(this, &CollisionObject3D::_shape_changed).bind(s.shape), CONNECT_DEFERRED);
 					++debug_shapes_count;
 				}
 
@@ -422,8 +418,8 @@ void CollisionObject3D::_clear_debug_shapes() {
 			if (s.debug_shape.is_valid()) {
 				RS::get_singleton()->free(s.debug_shape);
 				s.debug_shape = RID();
-				if (s.shape.is_valid() && s.shape->is_connected("changed", callable_mp(this, &CollisionObject3D::_update_shape_data))) {
-					s.shape->disconnect("changed", callable_mp(this, &CollisionObject3D::_update_shape_data));
+				if (s.shape.is_valid()) {
+					s.shape->disconnect_changed(callable_mp(this, &CollisionObject3D::_update_shape_data));
 				}
 			}
 		}
@@ -663,8 +659,8 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 
 	if (s.debug_shape.is_valid()) {
 		RS::get_singleton()->free(s.debug_shape);
-		if (s.shape.is_valid() && s.shape->is_connected("changed", callable_mp(this, &CollisionObject3D::_shape_changed))) {
-			s.shape->disconnect("changed", callable_mp(this, &CollisionObject3D::_shape_changed));
+		if (s.shape.is_valid()) {
+			s.shape->disconnect_changed(callable_mp(this, &CollisionObject3D::_shape_changed));
 		}
 		--debug_shapes_count;
 	}

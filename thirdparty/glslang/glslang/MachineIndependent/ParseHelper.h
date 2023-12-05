@@ -95,12 +95,15 @@ public:
             globalUniformSet(TQualifier::layoutSetEnd),
             atomicCounterBlockSet(TQualifier::layoutSetEnd)
     {
+        // use storage buffer on SPIR-V 1.3 and up
+        if (spvVersion.spv >= EShTargetSpv_1_3)
+            intermediate.setUseStorageBuffer();
+
         if (entryPoint != nullptr)
             sourceEntryPointName = *entryPoint;
     }
     virtual ~TParseContextBase() { }
 
-#if !defined(GLSLANG_WEB) || defined(GLSLANG_WEB_DEVEL)
     virtual void C_DECL   error(const TSourceLoc&, const char* szReason, const char* szToken,
                                 const char* szExtraInfoFormat, ...);
     virtual void C_DECL    warn(const TSourceLoc&, const char* szReason, const char* szToken,
@@ -109,7 +112,6 @@ public:
                                 const char* szExtraInfoFormat, ...);
     virtual void C_DECL  ppWarn(const TSourceLoc&, const char* szReason, const char* szToken,
                                 const char* szExtraInfoFormat, ...);
-#endif
 
     virtual void setLimits(const TBuiltInResource&) = 0;
 
@@ -327,10 +329,8 @@ public:
     TIntermTyped* handleBracketDereference(const TSourceLoc&, TIntermTyped* base, TIntermTyped* index);
     void handleIndexLimits(const TSourceLoc&, TIntermTyped* base, TIntermTyped* index);
 
-#ifndef GLSLANG_WEB
     void makeEditable(TSymbol*&) override;
     void ioArrayCheck(const TSourceLoc&, const TType&, const TString& identifier);
-#endif
     bool isIoResizeArray(const TType&) const;
     void fixIoArraySize(const TSourceLoc&, TType&);
     void handleIoResizeArrayAccess(const TSourceLoc&, TIntermTyped* base);
@@ -378,7 +378,7 @@ public:
     void globalCheck(const TSourceLoc&, const char* token);
     bool constructorError(const TSourceLoc&, TIntermNode*, TFunction&, TOperator, TType&);
     bool constructorTextureSamplerError(const TSourceLoc&, const TFunction&);
-    void arraySizeCheck(const TSourceLoc&, TIntermTyped* expr, TArraySize&, const char *sizeType);
+    void arraySizeCheck(const TSourceLoc&, TIntermTyped* expr, TArraySize&, const char *sizeType, const bool allowZero = false);
     bool arrayQualifierError(const TSourceLoc&, const TQualifier&);
     bool arrayError(const TSourceLoc&, const TType&);
     void arraySizeRequiredCheck(const TSourceLoc&, const TArraySizes&);
@@ -393,14 +393,14 @@ public:
     void accStructCheck(const TSourceLoc & loc, const TType & type, const TString & identifier);
     void transparentOpaqueCheck(const TSourceLoc&, const TType&, const TString& identifier);
     void memberQualifierCheck(glslang::TPublicType&);
-    void globalQualifierFixCheck(const TSourceLoc&, TQualifier&, bool isMemberCheck = false);
+    void globalQualifierFixCheck(const TSourceLoc&, TQualifier&, bool isMemberCheck = false, const TPublicType* publicType = nullptr);
     void globalQualifierTypeCheck(const TSourceLoc&, const TQualifier&, const TPublicType&);
     bool structQualifierErrorCheck(const TSourceLoc&, const TPublicType& pType);
     void mergeQualifiers(const TSourceLoc&, TQualifier& dst, const TQualifier& src, bool force);
     void setDefaultPrecision(const TSourceLoc&, TPublicType&, TPrecisionQualifier);
     int computeSamplerTypeIndex(TSampler&);
     TPrecisionQualifier getDefaultPrecision(TPublicType&);
-    void precisionQualifierCheck(const TSourceLoc&, TBasicType, TQualifier&);
+    void precisionQualifierCheck(const TSourceLoc&, TBasicType, TQualifier&, bool isCoopMat);
     void parameterTypeCheck(const TSourceLoc&, TStorageQualifier qualifier, const TType& type);
     bool containsFieldWithBasicType(const TType& type ,TBasicType basicType);
     TSymbol* redeclareBuiltinVariable(const TSourceLoc&, const TString&, const TQualifier&, const TShaderQualifiers&);
@@ -418,6 +418,7 @@ public:
     void inductiveLoopCheck(const TSourceLoc&, TIntermNode* init, TIntermLoop* loop);
     void arrayLimitCheck(const TSourceLoc&, const TString&, int size);
     void limitCheck(const TSourceLoc&, int value, const char* limit, const char* feature);
+    void coopMatTypeParametersCheck(const TSourceLoc&, const TPublicType&);
 
     void inductiveLoopBodyCheck(TIntermNode*, long long loopIndexId, TSymbolTable&);
     void constantIndexExpressionCheck(TIntermNode*);
@@ -438,12 +439,12 @@ public:
     const TFunction* findFunction400(const TSourceLoc& loc, const TFunction& call, bool& builtIn);
     const TFunction* findFunctionExplicitTypes(const TSourceLoc& loc, const TFunction& call, bool& builtIn);
     void declareTypeDefaults(const TSourceLoc&, const TPublicType&);
-    TIntermNode* declareVariable(const TSourceLoc&, TString& identifier, const TPublicType&, TArraySizes* typeArray = 0, TIntermTyped* initializer = 0);
+    TIntermNode* declareVariable(const TSourceLoc&, TString& identifier, const TPublicType&, TArraySizes* typeArray = nullptr, TIntermTyped* initializer = nullptr);
     TIntermTyped* addConstructor(const TSourceLoc&, TIntermNode*, const TType&);
     TIntermTyped* constructAggregate(TIntermNode*, const TType&, int, const TSourceLoc&);
     TIntermTyped* constructBuiltIn(const TType&, TOperator, TIntermTyped*, const TSourceLoc&, bool subset);
     void inheritMemoryQualifiers(const TQualifier& from, TQualifier& to);
-    void declareBlock(const TSourceLoc&, TTypeList& typeList, const TString* instanceName = 0, TArraySizes* arraySizes = 0);
+    void declareBlock(const TSourceLoc&, TTypeList& typeList, const TString* instanceName = nullptr, TArraySizes* arraySizes = nullptr);
     void blockStorageRemap(const TSourceLoc&, const TString*, TQualifier&);
     void blockStageIoCheck(const TSourceLoc&, const TQualifier&);
     void blockQualifierCheck(const TSourceLoc&, const TQualifier&, bool instanceName);
@@ -456,11 +457,12 @@ public:
     void addQualifierToExisting(const TSourceLoc&, TQualifier, TIdentifierList&);
     void invariantCheck(const TSourceLoc&, const TQualifier&);
     void updateStandaloneQualifierDefaults(const TSourceLoc&, const TPublicType&);
+    void updateBindlessQualifier(TType& memberType);
     void wrapupSwitchSubsequence(TIntermAggregate* statements, TIntermNode* branchNode);
     TIntermNode* addSwitch(const TSourceLoc&, TIntermTyped* expression, TIntermAggregate* body);
     const TTypeList* recordStructCopy(TStructRecord&, const TType*, const TType*);
+    TLayoutFormat mapLegacyLayoutFormat(TLayoutFormat legacyLayoutFormat, TBasicType imageType);
 
-#ifndef GLSLANG_WEB
     TAttributeType attributeFromName(const TString& name) const;
     TAttributes* makeAttributes(const TString& identifier) const;
     TAttributes* makeAttributes(const TString& identifier, TIntermNode* node) const;
@@ -480,14 +482,13 @@ public:
     TSpirvRequirement* mergeSpirvRequirements(const TSourceLoc& loc, TSpirvRequirement* spirvReq1,
                                                 TSpirvRequirement* spirvReq2);
     TSpirvTypeParameters* makeSpirvTypeParameters(const TSourceLoc& loc, const TIntermConstantUnion* constant);
+    TSpirvTypeParameters* makeSpirvTypeParameters(const TSourceLoc& loc, const TPublicType& type);
     TSpirvTypeParameters* mergeSpirvTypeParameters(TSpirvTypeParameters* spirvTypeParams1,
                                                    TSpirvTypeParameters* spirvTypeParams2);
     TSpirvInstruction* makeSpirvInstruction(const TSourceLoc& loc, const TString& name, const TString& value);
     TSpirvInstruction* makeSpirvInstruction(const TSourceLoc& loc, const TString& name, int value);
     TSpirvInstruction* mergeSpirvInstruction(const TSourceLoc& loc, TSpirvInstruction* spirvInst1,
                                              TSpirvInstruction* spirvInst2);
-#endif
-
     void checkAndResizeMeshViewDim(const TSourceLoc&, TType&, bool isBlockMember);
 
 protected:
@@ -500,9 +501,7 @@ protected:
     bool isRuntimeLength(const TIntermTyped&) const;
     TIntermNode* executeInitializer(const TSourceLoc&, TIntermTyped* initializer, TVariable* variable);
     TIntermTyped* convertInitializerList(const TSourceLoc&, const TType&, TIntermTyped* initializer);
-#ifndef GLSLANG_WEB
     void finish() override;
-#endif
 
     virtual const char* getGlobalUniformBlockName() const override;
     virtual void finalizeGlobalUniformBlockLayout(TVariable&) override;
@@ -539,7 +538,6 @@ protected:
     TQualifier globalOutputDefaults;
     TQualifier globalSharedDefaults;
     TString currentCaller;        // name of last function body entered (not valid when at global scope)
-#ifndef GLSLANG_WEB
     int* atomicUintOffsets;       // to become an array of the right size to hold an offset per binding point
     bool anyIndexLimits;
     TIdSetType inductiveLoopIds;
@@ -580,7 +578,6 @@ protected:
     //    array-sizing declarations
     //
     TVector<TSymbol*> ioArraySymbolResizeList;
-#endif
 };
 
 } // end namespace glslang

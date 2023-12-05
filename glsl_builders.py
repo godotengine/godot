@@ -47,7 +47,6 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
     line = fs.readline()
 
     while line:
-
         index = line.find("//")
         if index != -1:
             line = line[:index]
@@ -184,7 +183,6 @@ def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, dept
     line = fs.readline()
 
     while line:
-
         while line.find("#include ") != -1:
             includeline = line.replace("#include ", "").strip()[1:-1]
 

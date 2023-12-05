@@ -31,8 +31,9 @@
 #ifndef WEBRTC_PEER_CONNECTION_H
 #define WEBRTC_PEER_CONNECTION_H
 
+#include "webrtc_data_channel.h"
+
 #include "core/io/packet_peer.h"
-#include "modules/webrtc/webrtc_data_channel.h"
 
 class WebRTCPeerConnection : public RefCounted {
 	GDCLASS(WebRTCPeerConnection, RefCounted);

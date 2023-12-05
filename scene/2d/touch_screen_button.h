@@ -71,6 +71,9 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif // DISABLE_DEPRECATED
 
 public:
 #ifdef TOOLS_ENABLED

@@ -228,8 +228,22 @@ namespace Godot
         }
 
         // Constants
+        private static readonly Vector4I _minValue = new Vector4I(int.MinValue, int.MinValue, int.MinValue, int.MinValue);
+        private static readonly Vector4I _maxValue = new Vector4I(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue);
+
         private static readonly Vector4I _zero = new Vector4I(0, 0, 0, 0);
         private static readonly Vector4I _one = new Vector4I(1, 1, 1, 1);
+
+        /// <summary>
+        /// Min vector, a vector with all components equal to <see cref="int.MinValue"/>. Can be used as a negative integer equivalent of <see cref="Vector4.Inf"/>.
+        /// </summary>
+        /// <value>Equivalent to <c>new Vector4I(int.MinValue, int.MinValue, int.MinValue, int.MinValue)</c>.</value>
+        public static Vector4I MinValue { get { return _minValue; } }
+        /// <summary>
+        /// Max vector, a vector with all components equal to <see cref="int.MaxValue"/>. Can be used as an integer equivalent of <see cref="Vector4.Inf"/>.
+        /// </summary>
+        /// <value>Equivalent to <c>new Vector4I(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue)</c>.</value>
+        public static Vector4I MaxValue { get { return _maxValue; } }
 
         /// <summary>
         /// Zero vector, a vector with all components set to <c>0</c>.
@@ -593,7 +607,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the vector is equal
-        /// to the given object (<see paramref="obj"/>).
+        /// to the given object (<paramref name="obj"/>).
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
@@ -618,7 +632,7 @@ namespace Godot
         /// <returns>A hash code for this vector.</returns>
         public override readonly int GetHashCode()
         {
-            return Y.GetHashCode() ^ X.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode();
+            return HashCode.Combine(X, Y, Z, W);
         }
 
         /// <summary>

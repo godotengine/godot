@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "os_linuxbsd.h"
+
+#include "main/main.h"
+
 #include <limits.h>
 #include <locale.h>
 #include <stdlib.h>
@@ -36,9 +40,6 @@
 #if defined(SANITIZERS_ENABLED)
 #include <sys/resource.h>
 #endif
-
-#include "main/main.h"
-#include "os_linuxbsd.h"
 
 int main(int argc, char *argv[]) {
 #if defined(SANITIZERS_ENABLED)
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
 	TEST_MAIN_OVERRIDE
 
 	char *cwd = (char *)malloc(PATH_MAX);
-	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
+	ERR_FAIL_NULL_V(cwd, ERR_OUT_OF_MEMORY);
 	char *ret = getcwd(cwd, PATH_MAX);
 
 	Error err = Main::setup(argv[0], argc - 1, &argv[1]);

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
+#include "core/object/script_language.h"
 #include "core/os/condition_variable.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -239,15 +240,15 @@ ResourceLoader::LoadToken::~LoadToken() {
 
 Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	load_nesting++;
-	if (load_paths_stack.size()) {
+	if (load_paths_stack->size()) {
 		thread_load_mutex.lock();
-		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(load_paths_stack[load_paths_stack.size() - 1]);
+		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(load_paths_stack->get(load_paths_stack->size() - 1));
 		if (E) {
 			E->value.sub_tasks.insert(p_path);
 		}
 		thread_load_mutex.unlock();
 	}
-	load_paths_stack.push_back(p_path);
+	load_paths_stack->push_back(p_path);
 
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
@@ -263,7 +264,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		}
 	}
 
-	load_paths_stack.resize(load_paths_stack.size() - 1);
+	load_paths_stack->resize(load_paths_stack->size() - 1);
 	load_nesting--;
 
 	if (!res.is_null()) {
@@ -275,10 +276,10 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 
 #ifdef TOOLS_ENABLED
 	Ref<FileAccess> file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-	ERR_FAIL_COND_V_MSG(!file_check->file_exists(p_path), Ref<Resource>(), "Resource file not found: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(!file_check->file_exists(p_path), Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, p_type_hint));
 #endif
 
-	ERR_FAIL_V_MSG(Ref<Resource>(), "No loader found for resource: " + p_path + ".");
+	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, p_type_hint));
 }
 
 void ResourceLoader::_thread_load_function(void *p_userdata) {
@@ -296,8 +297,10 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	// Thread-safe either if it's the current thread or a brand new one.
 	CallQueue *mq_override = nullptr;
 	if (load_nesting == 0) {
+		load_paths_stack = memnew(Vector<String>);
+
 		if (!load_task.dependent_path.is_empty()) {
-			load_paths_stack.push_back(load_task.dependent_path);
+			load_paths_stack->push_back(load_task.dependent_path);
 		}
 		if (!Thread::is_main_thread()) {
 			mq_override = memnew(CallQueue);
@@ -308,6 +311,10 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		DEV_ASSERT(load_task.dependent_path.is_empty());
 	}
 	// --
+
+	if (!Thread::is_main_thread()) {
+		set_current_thread_safe_for_nodes(true);
+	}
 
 	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
 	if (mq_override) {
@@ -334,6 +341,8 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	if (load_task.resource.is_valid()) {
 		if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 			load_task.resource->set_path(load_task.local_path);
+		} else if (!load_task.local_path.is_resource_file()) {
+			load_task.resource->set_path_cache(load_task.local_path);
 		}
 
 		if (load_task.xl_remapped) {
@@ -356,9 +365,11 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	thread_load_mutex.unlock();
 
-	if (load_nesting == 0 && mq_override) {
-		memdelete(mq_override);
-		set_current_thread_safe_for_nodes(false);
+	if (load_nesting == 0) {
+		if (mq_override) {
+			memdelete(mq_override);
+		}
+		memdelete(load_paths_stack);
 	}
 }
 
@@ -909,7 +920,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		}
 
 		// Fallback to p_path if new_path does not exist.
-		if (!FileAccess::exists(new_path)) {
+		if (!FileAccess::exists(new_path + ".import") && !FileAccess::exists(new_path)) {
 			WARN_PRINT(vformat("Translation remap '%s' does not exist. Falling back to '%s'.", new_path, p_path));
 			new_path = p_path;
 		}
@@ -1044,8 +1055,9 @@ void ResourceLoader::clear_thread_load_tasks() {
 		thread_load_mutex.lock();
 	}
 
-	for (KeyValue<String, LoadToken *> &E : user_load_tokens) {
-		memdelete(E.value);
+	while (user_load_tokens.begin()) {
+		// User load tokens remove themselves from the map on destruction.
+		memdelete(user_load_tokens.begin()->value);
 	}
 	user_load_tokens.clear();
 
@@ -1101,11 +1113,10 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 	Ref<Script> s = res;
 	StringName ibt = s->get_instance_base_type();
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatLoader");
-	ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceLoader: " + script_path + ".");
+	ERR_FAIL_COND_V_MSG(!valid_type, false, vformat("Failed to add a custom resource loader, script '%s' does not inherit 'ResourceFormatLoader'.", script_path));
 
 	Object *obj = ClassDB::instantiate(ibt);
-
-	ERR_FAIL_COND_V_MSG(obj == nullptr, false, "Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt) + ".");
+	ERR_FAIL_NULL_V_MSG(obj, false, vformat("Failed to add a custom resource loader, cannot instantiate '%s'.", ibt));
 
 	Ref<ResourceFormatLoader> crl = Object::cast_to<ResourceFormatLoader>(obj);
 	crl->set_script(s);
@@ -1167,7 +1178,7 @@ bool ResourceLoader::timestamp_on_load = false;
 
 thread_local int ResourceLoader::load_nesting = 0;
 thread_local WorkerThreadPool::TaskID ResourceLoader::caller_task_id = 0;
-thread_local Vector<String> ResourceLoader::load_paths_stack;
+thread_local Vector<String> *ResourceLoader::load_paths_stack;
 
 template <>
 thread_local uint32_t SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG>::count = 0;

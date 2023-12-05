@@ -10,10 +10,6 @@ if TYPE_CHECKING:
     from SCons import Environment
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "LinuxBSD"
 
@@ -89,6 +85,16 @@ def configure(env: "Environment"):
         # gdb works fine without it though, so maybe our crash handler could too.
         env.Append(LINKFLAGS=["-rdynamic"])
 
+    # Cross-compilation
+    # TODO: Support cross-compilation on architectures other than x86.
+    host_is_64_bit = sys.maxsize > 2**32
+    if host_is_64_bit and env["arch"] == "x86_32":
+        env.Append(CCFLAGS=["-m32"])
+        env.Append(LINKFLAGS=["-m32"])
+    elif not host_is_64_bit and env["arch"] == "x86_64":
+        env.Append(CCFLAGS=["-m64"])
+        env.Append(LINKFLAGS=["-m64"])
+
     # CPU architecture flags.
     if env["arch"] == "rv64":
         # G = General-purpose extensions, C = Compression extension (very common).
@@ -110,7 +116,7 @@ def configure(env: "Environment"):
         print("Using linker program: " + env["linker"])
         if env["linker"] == "mold" and using_gcc(env):  # GCC < 12.1 doesn't support -fuse-ld=mold.
             cc_version = get_compiler_version(env)
-            cc_semver = (int(cc_version["major"]), int(cc_version["minor"]))
+            cc_semver = (cc_version["major"], cc_version["minor"])
             if cc_semver < (12, 1):
                 found_wrapper = False
                 for path in ["/usr/libexec", "/usr/local/libexec", "/usr/lib", "/usr/local/lib"]:
@@ -239,10 +245,14 @@ def configure(env: "Environment"):
         env.ParseConfig("pkg-config libenet --cflags --libs")
 
     if not env["builtin_squish"]:
-        env.ParseConfig("pkg-config libsquish --cflags --libs")
+        # libsquish doesn't reliably install its .pc file, so some distros lack it.
+        env.Append(LIBS=["libsquish"])
 
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
+
+    if env["brotli"] and not env["builtin_brotli"]:
+        env.ParseConfig("pkg-config libbrotlicommon libbrotlidec --cflags --libs")
 
     # Sound and video libraries
     # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
@@ -290,6 +300,9 @@ def configure(env: "Environment"):
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.
         env.Append(LIBS=["embree3"])
+
+    if not env["builtin_openxr"]:
+        env.ParseConfig("pkg-config openxr --cflags --libs")
 
     if env["fontconfig"]:
         if not env["use_sowrap"]:
@@ -452,7 +465,7 @@ def configure(env: "Environment"):
         linker_version_str = subprocess.check_output(
             [env.subst(env["LINK"]), "-Wl,--version"] + env.subst(env["LINKFLAGS"])
         ).decode("utf-8")
-        gnu_ld_version = re.search("^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
+        gnu_ld_version = re.search(r"^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
         if not gnu_ld_version:
             print(
                 "Warning: Creating export template binaries enabled for PCK embedding is currently only supported with GNU ld, not gold, LLD or mold."
@@ -466,22 +479,11 @@ def configure(env: "Environment"):
     if platform.system() == "FreeBSD":
         env.Append(LINKFLAGS=["-lkvm"])
 
-    ## Cross-compilation
-    # TODO: Support cross-compilation on architectures other than x86.
-    host_is_64_bit = sys.maxsize > 2**32
-    if host_is_64_bit and env["arch"] == "x86_32":
-        env.Append(CCFLAGS=["-m32"])
-        env.Append(LINKFLAGS=["-m32", "-L/usr/lib/i386-linux-gnu"])
-    elif not host_is_64_bit and env["arch"] == "x86_64":
-        env.Append(CCFLAGS=["-m64"])
-        env.Append(LINKFLAGS=["-m64", "-L/usr/lib/i686-linux-gnu"])
-
     # Link those statically for portability
     if env["use_static_cpp"]:
         env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
         if env["use_llvm"] and platform.system() != "FreeBSD":
             env["LINKCOM"] = env["LINKCOM"] + " -l:libatomic.a"
-
     else:
         if env["use_llvm"] and platform.system() != "FreeBSD":
             env.Append(LIBS=["atomic"])

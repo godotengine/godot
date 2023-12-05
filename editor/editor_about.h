@@ -51,6 +51,8 @@
 class EditorAbout : public AcceptDialog {
 	GDCLASS(EditorAbout, AcceptDialog);
 
+	static const String META_TEXT_TO_COPY;
+
 private:
 	void _license_tree_selected();
 	void _version_button_pressed();
@@ -61,8 +63,6 @@ private:
 	RichTextLabel *_license_text = nullptr;
 	RichTextLabel *_tpl_text = nullptr;
 	TextureRect *_logo = nullptr;
-
-	void _theme_changed();
 
 protected:
 	void _notification(int p_what);

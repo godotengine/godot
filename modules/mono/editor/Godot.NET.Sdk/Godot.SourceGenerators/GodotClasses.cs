@@ -11,6 +11,7 @@ namespace Godot.SourceGenerators
         public const string SignalAttr = "Godot.SignalAttribute";
         public const string MustBeVariantAttr = "Godot.MustBeVariantAttribute";
         public const string GodotClassNameAttr = "Godot.GodotClassNameAttribute";
+        public const string GlobalClassAttr = "Godot.GlobalClassAttribute";
         public const string SystemFlagsAttr = "System.FlagsAttribute";
     }
 }

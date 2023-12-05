@@ -119,6 +119,7 @@ public:
 
 	void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override {}
 	void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override {}
+	bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override { return true; };
 
 	bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override { return false; }
 

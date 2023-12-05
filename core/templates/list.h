@@ -132,6 +132,8 @@ public:
 			data->erase(this);
 		}
 
+		void transfer_to_back(List<T, A> *p_dst_list);
+
 		_FORCE_INLINE_ Element() {}
 	};
 
@@ -219,7 +221,7 @@ private:
 		int size_cache = 0;
 
 		bool erase(const Element *p_I) {
-			ERR_FAIL_COND_V(!p_I, false);
+			ERR_FAIL_NULL_V(p_I, false);
 			ERR_FAIL_COND_V(p_I->data != this, false);
 
 			if (first == p_I) {
@@ -761,5 +763,42 @@ public:
 		}
 	}
 };
+
+template <class T, class A>
+void List<T, A>::Element::transfer_to_back(List<T, A> *p_dst_list) {
+	// Detach from current.
+
+	if (data->first == this) {
+		data->first = data->first->next_ptr;
+	}
+	if (data->last == this) {
+		data->last = data->last->prev_ptr;
+	}
+	if (prev_ptr) {
+		prev_ptr->next_ptr = next_ptr;
+	}
+	if (next_ptr) {
+		next_ptr->prev_ptr = prev_ptr;
+	}
+	data->size_cache--;
+
+	// Attach to the back of the new one.
+
+	if (!p_dst_list->_data) {
+		p_dst_list->_data = memnew_allocator(_Data, A);
+		p_dst_list->_data->first = this;
+		p_dst_list->_data->last = nullptr;
+		p_dst_list->_data->size_cache = 0;
+		prev_ptr = nullptr;
+	} else {
+		p_dst_list->_data->last->next_ptr = this;
+		prev_ptr = p_dst_list->_data->last;
+	}
+	p_dst_list->_data->last = this;
+	next_ptr = nullptr;
+
+	data = p_dst_list->_data;
+	p_dst_list->_data->size_cache++;
+}
 
 #endif // LIST_H

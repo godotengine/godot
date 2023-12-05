@@ -40,7 +40,7 @@ void InputEventConfigContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			open_config_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			open_config_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
 		} break;
 	}
 }
@@ -77,7 +77,7 @@ void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 
 	input_event = p_event;
 	_event_changed();
-	input_event->connect("changed", callable_mp(this, &InputEventConfigContainer::_event_changed));
+	input_event->connect_changed(callable_mp(this, &InputEventConfigContainer::_event_changed));
 }
 
 InputEventConfigContainer::InputEventConfigContainer() {

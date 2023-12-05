@@ -35,11 +35,12 @@
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
+#include "scene/resources/image_texture.h"
 
 void EditorRunNative::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			remote_debug->set_icon(get_theme_icon(SNAME("PlayRemote"), SNAME("EditorIcons")));
+			remote_debug->set_icon(get_editor_theme_icon(SNAME("PlayRemote")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {

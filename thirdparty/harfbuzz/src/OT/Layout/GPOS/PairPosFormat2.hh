@@ -54,8 +54,9 @@ struct PairPosFormat2_4
     return_trace (c->check_range ((const void *) values,
                                   count,
                                   stride) &&
-                  valueFormat1.sanitize_values_stride_unsafe (c, this, &values[0], count, stride) &&
-                  valueFormat2.sanitize_values_stride_unsafe (c, this, &values[len1], count, stride));
+		  (c->lazy_some_gpos ||
+		   (valueFormat1.sanitize_values_stride_unsafe (c, this, &values[0], count, stride) &&
+		    valueFormat2.sanitize_values_stride_unsafe (c, this, &values[len1], count, stride))));
   }
 
   bool intersects (const hb_set_t *glyphs) const
@@ -130,7 +131,7 @@ struct PairPosFormat2_4
     if (likely (index == NOT_COVERED)) return_trace (false);
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset_fast (buffer->idx, 1);
+    skippy_iter.reset_fast (buffer->idx);
     unsigned unsafe_to;
     if (unlikely (!skippy_iter.next (&unsafe_to)))
     {
@@ -162,7 +163,7 @@ struct PairPosFormat2_4
 
 
     /* Isolate simple kerning and apply it half to each side.
-     * Results in better cursor positinoing / underline drawing.
+     * Results in better cursor positioning / underline drawing.
      *
      * Disabled, because causes issues... :-(
      * https://github.com/harfbuzz/harfbuzz/issues/3408
@@ -298,11 +299,13 @@ struct PairPosFormat2_4
       out->valueFormat2 = out->valueFormat2.drop_device_table_flags ();
     }
 
+    unsigned total_len = len1 + len2;
+    hb_vector_t<unsigned> class2_idxs (+ hb_range ((unsigned) class2Count) | hb_filter (klass2_map));
     for (unsigned class1_idx : + hb_range ((unsigned) class1Count) | hb_filter (klass1_map))
     {
-      for (unsigned class2_idx : + hb_range ((unsigned) class2Count) | hb_filter (klass2_map))
+      for (unsigned class2_idx : class2_idxs)
       {
-        unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * (len1 + len2);
+        unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * total_len;
         valueFormat1.copy_values (c->serializer, out->valueFormat1, this, &values[idx], &c->plan->layout_variation_idx_delta_map);
         valueFormat2.copy_values (c->serializer, out->valueFormat2, this, &values[idx + len1], &c->plan->layout_variation_idx_delta_map);
       }

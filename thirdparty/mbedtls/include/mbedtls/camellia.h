@@ -231,7 +231,7 @@ int mbedtls_camellia_crypt_cfb128(mbedtls_camellia_context *ctx,
  * *note       Due to the nature of CTR mode, you should use the same
  *             key for both encryption and decryption. In particular, calls
  *             to this function should be preceded by a key-schedule via
- *             mbedtls_camellia_setkey_enc() regardless of whether \p mode
+ *             mbedtls_camellia_setkey_enc() regardless of whether the mode
  *             is #MBEDTLS_CAMELLIA_ENCRYPT or #MBEDTLS_CAMELLIA_DECRYPT.
  *
  * \warning    You must never reuse a nonce value with the same key. Doing so

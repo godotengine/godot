@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Bone2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Bone2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A joint used with [Skeleton2D] to control and animate other nodes.
 	</brief_description>
@@ -46,7 +46,7 @@
 		<method name="get_skeleton_rest" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the node's [member rest] [code]Transform2D[/code] if it doesn't have a parent, or its rest pose relative to its parent.
+				Returns the node's [member rest] [Transform2D] if it doesn't have a parent, or its rest pose relative to its parent.
 			</description>
 		</method>
 		<method name="set_autocalculate_length_and_angle">
@@ -61,7 +61,7 @@
 			<param index="0" name="angle" type="float" />
 			<description>
 				Sets the bone angle for the [Bone2D]. This is typically set to the rotation from the [Bone2D] to a child [Bone2D] node.
-				[b]Note:[/b] [b]Note:[/b] This is different from the [Bone2D]'s rotation. The bone's angle is the rotation of the bone shown by the gizmo, which is unaffected by the [Bone2D]'s [member Node2D.transform].
+				[b]Note:[/b] This is different from the [Bone2D]'s rotation. The bone's angle is the rotation of the bone shown by the gizmo, which is unaffected by the [Bone2D]'s [member Node2D.transform].
 			</description>
 		</method>
 		<method name="set_length">

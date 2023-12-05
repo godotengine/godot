@@ -75,7 +75,7 @@ bool VideoStreamPlayback::is_playing() const {
 }
 
 void VideoStreamPlayback::set_paused(bool p_paused) {
-	GDVIRTUAL_CALL(_is_playing, p_paused);
+	GDVIRTUAL_CALL(_set_paused, p_paused);
 }
 
 bool VideoStreamPlayback::is_paused() const {
@@ -172,6 +172,7 @@ Ref<VideoStreamPlayback> VideoStream::instantiate_playback() {
 
 void VideoStream::set_file(const String &p_file) {
 	file = p_file;
+	emit_changed();
 }
 
 String VideoStream::get_file() {

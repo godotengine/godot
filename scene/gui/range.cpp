@@ -94,6 +94,10 @@ void Range::set_value(double p_val) {
 }
 
 void Range::_set_value_no_signal(double p_val) {
+	if (!Math::is_finite(p_val)) {
+		return;
+	}
+
 	if (shared->step > 0) {
 		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
 	}
@@ -236,7 +240,7 @@ double Range::get_as_ratio() const {
 
 void Range::_share(Node *p_range) {
 	Range *r = Object::cast_to<Range>(p_range);
-	ERR_FAIL_COND(!r);
+	ERR_FAIL_NULL(r);
 	share(r);
 }
 

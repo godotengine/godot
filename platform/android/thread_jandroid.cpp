@@ -30,9 +30,9 @@
 
 #include "thread_jandroid.h"
 
-#include <android/log.h>
-
 #include "core/os/thread.h"
+
+#include <android/log.h>
 
 static JavaVM *java_vm = nullptr;
 static thread_local JNIEnv *env = nullptr;

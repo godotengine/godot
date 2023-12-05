@@ -57,7 +57,7 @@
    * PROPERTY SERVICE
    *
    */
-  static FT_Error
+  FT_CALLBACK_DEF( FT_Error )
   tt_property_set( FT_Module    module,         /* TT_Driver */
                    const char*  property_name,
                    const void*  value,
@@ -93,17 +93,22 @@
         interpreter_version = *iv;
       }
 
-      if ( interpreter_version == TT_INTERPRETER_VERSION_35
-#ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
-           || interpreter_version == TT_INTERPRETER_VERSION_38
-#endif
+      switch ( interpreter_version )
+      {
+      case TT_INTERPRETER_VERSION_35:
+        driver->interpreter_version = TT_INTERPRETER_VERSION_35;
+        break;
+
+      case TT_INTERPRETER_VERSION_38:
+      case TT_INTERPRETER_VERSION_40:
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-           || interpreter_version == TT_INTERPRETER_VERSION_40
+        driver->interpreter_version = TT_INTERPRETER_VERSION_40;
+      break;
 #endif
-         )
-        driver->interpreter_version = interpreter_version;
-      else
+
+      default:
         error = FT_ERR( Unimplemented_Feature );
+      }
 
       return error;
     }
@@ -114,10 +119,10 @@
   }
 
 
-  static FT_Error
+  FT_CALLBACK_DEF( FT_Error )
   tt_property_get( FT_Module    module,         /* TT_Driver */
                    const char*  property_name,
-                   const void*  value )
+                   void*        value )
   {
     FT_Error   error  = FT_Err_Ok;
     TT_Driver  driver = (TT_Driver)module;
@@ -144,8 +149,8 @@
   FT_DEFINE_SERVICE_PROPERTIESREC(
     tt_service_properties,
 
-    (FT_Properties_SetFunc)tt_property_set,     /* set_property */
-    (FT_Properties_GetFunc)tt_property_get      /* get_property */
+    tt_property_set,  /* FT_Properties_SetFunc set_property */
+    tt_property_get   /* FT_Properties_GetFunc get_property */
   )
 
 
@@ -198,35 +203,35 @@
    *
    *   They can be implemented by format-specific interfaces.
    */
-  static FT_Error
-  tt_get_kerning( FT_Face     ttface,          /* TT_Face */
+  FT_CALLBACK_DEF( FT_Error )
+  tt_get_kerning( FT_Face     face,        /* TT_Face */
                   FT_UInt     left_glyph,
                   FT_UInt     right_glyph,
                   FT_Vector*  kerning )
   {
-    TT_Face       face = (TT_Face)ttface;
-    SFNT_Service  sfnt = (SFNT_Service)face->sfnt;
+    TT_Face       ttface = (TT_Face)face;
+    SFNT_Service  sfnt   = (SFNT_Service)ttface->sfnt;
 
 
     kerning->x = 0;
     kerning->y = 0;
 
     if ( sfnt )
-      kerning->x = sfnt->get_kerning( face, left_glyph, right_glyph );
+      kerning->x = sfnt->get_kerning( ttface, left_glyph, right_glyph );
 
     return 0;
   }
 
 
-  static FT_Error
-  tt_get_advances( FT_Face    ttface,
+  FT_CALLBACK_DEF( FT_Error )
+  tt_get_advances( FT_Face    face,      /* TT_Face */
                    FT_UInt    start,
                    FT_UInt    count,
                    FT_Int32   flags,
                    FT_Fixed  *advances )
   {
     FT_UInt  nn;
-    TT_Face  face = (TT_Face)ttface;
+    TT_Face  ttface = (TT_Face)face;
 
 
     /* XXX: TODO: check for sbits */
@@ -235,8 +240,8 @@
     {
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
       /* no fast retrieval for blended MM fonts without VVAR table */
-      if ( ( FT_IS_NAMED_INSTANCE( ttface ) || FT_IS_VARIATION( ttface ) ) &&
-           !( face->variation_support & TT_FACE_FLAG_VAR_VADVANCE )        )
+      if ( ( FT_IS_NAMED_INSTANCE( face ) || FT_IS_VARIATION( face ) ) &&
+           !( ttface->variation_support & TT_FACE_FLAG_VAR_VADVANCE )  )
         return FT_THROW( Unimplemented_Feature );
 #endif
 
@@ -247,7 +252,7 @@
 
 
         /* since we don't need `tsb', we use zero for `yMax' parameter */
-        TT_Get_VMetrics( face, start + nn, 0, &tsb, &ah );
+        TT_Get_VMetrics( ttface, start + nn, 0, &tsb, &ah );
         advances[nn] = ah;
       }
     }
@@ -255,8 +260,8 @@
     {
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
       /* no fast retrieval for blended MM fonts without HVAR table */
-      if ( ( FT_IS_NAMED_INSTANCE( ttface ) || FT_IS_VARIATION( ttface ) ) &&
-           !( face->variation_support & TT_FACE_FLAG_VAR_HADVANCE )        )
+      if ( ( FT_IS_NAMED_INSTANCE( face ) || FT_IS_VARIATION( face ) ) &&
+           !( ttface->variation_support & TT_FACE_FLAG_VAR_HADVANCE )  )
         return FT_THROW( Unimplemented_Feature );
 #endif
 
@@ -266,7 +271,7 @@
         FT_UShort  aw;
 
 
-        TT_Get_HMetrics( face, start + nn, &lsb, &aw );
+        TT_Get_HMetrics( ttface, start + nn, &lsb, &aw );
         advances[nn] = aw;
       }
     }
@@ -290,7 +295,7 @@
 
 #ifdef TT_CONFIG_OPTION_EMBEDDED_BITMAPS
 
-  static FT_Error
+  FT_CALLBACK_DEF( FT_Error )
   tt_size_select( FT_Size   size,
                   FT_ULong  strike_index )
   {
@@ -306,7 +311,7 @@
       /* use the scaled metrics, even when tt_size_reset fails */
       FT_Select_Metrics( size->face, strike_index );
 
-      tt_size_reset( ttsize, 0 ); /* ignore return value */
+      tt_size_reset( ttsize ); /* ignore return value */
     }
     else
     {
@@ -327,7 +332,7 @@
 #endif /* TT_CONFIG_OPTION_EMBEDDED_BITMAPS */
 
 
-  static FT_Error
+  FT_CALLBACK_DEF( FT_Error )
   tt_size_request( FT_Size          size,
                    FT_Size_Request  req )
   {
@@ -367,7 +372,7 @@
 
     if ( FT_IS_SCALABLE( size->face ) )
     {
-      error = tt_size_reset( ttsize, 0 );
+      error = tt_size_reset( ttsize );
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
       /* for the `MPS' bytecode instruction we need the point size */
@@ -426,15 +431,15 @@
    * @Return:
    *   FreeType error code.  0 means success.
    */
-  static FT_Error
-  tt_glyph_load( FT_GlyphSlot  ttslot,      /* TT_GlyphSlot */
-                 FT_Size       ttsize,      /* TT_Size      */
+  FT_CALLBACK_DEF( FT_Error )
+  tt_glyph_load( FT_GlyphSlot  slot,        /* TT_GlyphSlot */
+                 FT_Size       size,        /* TT_Size      */
                  FT_UInt       glyph_index,
                  FT_Int32      load_flags )
   {
-    TT_GlyphSlot  slot = (TT_GlyphSlot)ttslot;
-    TT_Size       size = (TT_Size)ttsize;
-    FT_Face       face = ttslot->face;
+    TT_GlyphSlot  ttslot = (TT_GlyphSlot)slot;
+    TT_Size       ttsize = (TT_Size)size;
+    FT_Face       face   = ttslot->face;
     FT_Error      error;
 
 
@@ -476,12 +481,12 @@
     }
 
     /* use hinted metrics only if we load a glyph with hinting */
-    size->metrics = ( load_flags & FT_LOAD_NO_HINTING )
-                      ? &ttsize->metrics
-                      : &size->hinted_metrics;
+    ttsize->metrics = ( load_flags & FT_LOAD_NO_HINTING )
+                        ? &size->metrics
+                        : &ttsize->hinted_metrics;
 
     /* now fill in the glyph slot with outline/bitmap/layered */
-    error = TT_Load_Glyph( size, slot, glyph_index, load_flags );
+    error = TT_Load_Glyph( ttsize, ttslot, glyph_index, load_flags );
 
     /* force drop-out mode to 2 - irrelevant now */
     /* slot->outline.dropout_mode = 2; */
@@ -507,49 +512,47 @@
   FT_DEFINE_SERVICE_MULTIMASTERSREC(
     tt_service_gx_multi_masters,
 
-    (FT_Get_MM_Func)        NULL,                  /* get_mm                    */
-    (FT_Set_MM_Design_Func) NULL,                  /* set_mm_design             */
-    (FT_Set_MM_Blend_Func)  TT_Set_MM_Blend,       /* set_mm_blend              */
-    (FT_Get_MM_Blend_Func)  TT_Get_MM_Blend,       /* get_mm_blend              */
-    (FT_Get_MM_Var_Func)    TT_Get_MM_Var,         /* get_mm_var                */
-    (FT_Set_Var_Design_Func)TT_Set_Var_Design,     /* set_var_design            */
-    (FT_Get_Var_Design_Func)TT_Get_Var_Design,     /* get_var_design            */
-    (FT_Set_Instance_Func)  TT_Set_Named_Instance, /* set_instance              */
-    (FT_Set_MM_WeightVector_Func)
-                            NULL,                  /* set_mm_weightvector       */
-    (FT_Get_MM_WeightVector_Func)
-                            NULL,                  /* get_mm_weightvector       */
-    (FT_Var_Load_Delta_Set_Idx_Map_Func)
-                            tt_var_load_delta_set_index_mapping,
-                                                   /* load_delta_set_idx_map    */
-    (FT_Var_Load_Item_Var_Store_Func)
-                            tt_var_load_item_variation_store,
-                                                   /* load_item_variation_store */
-    (FT_Var_Get_Item_Delta_Func)
-                            tt_var_get_item_delta, /* get_item_delta            */
-    (FT_Var_Done_Item_Var_Store_Func)
-                            tt_var_done_item_variation_store,
-                                                   /* done_item_variation_store */
-    (FT_Var_Done_Delta_Set_Idx_Map_Func)
-                            tt_var_done_delta_set_index_map,
-                                                   /* done_delta_set_index_map  */
-    (FT_Get_Var_Blend_Func) tt_get_var_blend,      /* get_var_blend             */
-    (FT_Done_Blend_Func)    tt_done_blend          /* done_blend                */
+    NULL,                  /* FT_Get_MM_Func              get_mm                     */
+    NULL,                  /* FT_Set_MM_Design_Func       set_mm_design              */
+    TT_Set_MM_Blend,       /* FT_Set_MM_Blend_Func        set_mm_blend               */
+    TT_Get_MM_Blend,       /* FT_Get_MM_Blend_Func        get_mm_blend               */
+    TT_Get_MM_Var,         /* FT_Get_MM_Var_Func          get_mm_var                 */
+    TT_Set_Var_Design,     /* FT_Set_Var_Design_Func      set_var_design             */
+    TT_Get_Var_Design,     /* FT_Get_Var_Design_Func      get_var_design             */
+    TT_Set_Named_Instance, /* FT_Set_Named_Instance_Func  set_named_instance         */
+    TT_Get_Default_Named_Instance,
+                    /* FT_Get_Default_Named_Instance_Func get_default_named_instance */
+    NULL,                  /* FT_Set_MM_WeightVector_Func set_mm_weightvector        */
+    NULL,                  /* FT_Get_MM_WeightVector_Func get_mm_weightvector        */
+
+    tt_construct_ps_name,  /* FT_Construct_PS_Name_Func   construct_ps_name          */
+    tt_var_load_delta_set_index_mapping,
+                    /* FT_Var_Load_Delta_Set_Idx_Map_Func load_delta_set_idx_map     */
+    tt_var_load_item_variation_store,
+                    /* FT_Var_Load_Item_Var_Store_Func    load_item_variation_store  */
+    tt_var_get_item_delta, /* FT_Var_Get_Item_Delta_Func  get_item_delta             */
+    tt_var_done_item_variation_store,
+                    /* FT_Var_Done_Item_Var_Store_Func    done_item_variation_store  */
+    tt_var_done_delta_set_index_map,
+                    /* FT_Var_Done_Delta_Set_Idx_Map_Func done_delta_set_index_map   */
+    tt_get_var_blend,      /* FT_Get_Var_Blend_Func       get_var_blend              */
+    tt_done_blend          /* FT_Done_Blend_Func          done_blend                 */
   )
 
   FT_DEFINE_SERVICE_METRICSVARIATIONSREC(
     tt_service_metrics_variations,
 
-    (FT_HAdvance_Adjust_Func)tt_hadvance_adjust,     /* hadvance_adjust */
-    (FT_LSB_Adjust_Func)     NULL,                   /* lsb_adjust      */
-    (FT_RSB_Adjust_Func)     NULL,                   /* rsb_adjust      */
+    tt_hadvance_adjust,   /* FT_HAdvance_Adjust_Func hadvance_adjust */
+    NULL,                 /* FT_LSB_Adjust_Func      lsb_adjust      */
+    NULL,                 /* FT_RSB_Adjust_Func      rsb_adjust      */
 
-    (FT_VAdvance_Adjust_Func)tt_vadvance_adjust,     /* vadvance_adjust */
-    (FT_TSB_Adjust_Func)     NULL,                   /* tsb_adjust      */
-    (FT_BSB_Adjust_Func)     NULL,                   /* bsb_adjust      */
-    (FT_VOrg_Adjust_Func)    NULL,                   /* vorg_adjust     */
+    tt_vadvance_adjust,   /* FT_VAdvance_Adjust_Func vadvance_adjust */
+    NULL,                 /* FT_TSB_Adjust_Func      tsb_adjust      */
+    NULL,                 /* FT_BSB_Adjust_Func      bsb_adjust      */
+    NULL,                 /* FT_VOrg_Adjust_Func     vorg_adjust     */
 
-    (FT_Metrics_Adjust_Func) tt_apply_mvar           /* metrics_adjust  */
+    tt_apply_mvar,        /* FT_Metrics_Adjust_Func  metrics_adjust  */
+    tt_size_reset_height  /* FT_Size_Reset_Func      size_reset      */
   )
 
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */

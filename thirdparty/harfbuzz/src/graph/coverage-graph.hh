@@ -96,7 +96,7 @@ struct Coverage : public OT::Layout::Common::Coverage
     coverage_link->width = SmallTypes::size;
     coverage_link->objidx = coverage_prime_id;
     coverage_link->position = link_position;
-    coverage_prime_vertex.parents.push (parent_id);
+    coverage_prime_vertex.add_parent (parent_id);
 
     return (Coverage*) coverage_prime_vertex.obj.head;
   }
@@ -118,7 +118,13 @@ struct Coverage : public OT::Layout::Common::Coverage
     }
 
     hb_bytes_t coverage_copy = serializer.copy_bytes ();
-    c.add_buffer ((char *) coverage_copy.arrayZ); // Give ownership to the context, it will cleanup the buffer.
+    if (!coverage_copy.arrayZ) return false;
+    // Give ownership to the context, it will cleanup the buffer.
+    if (!c.add_buffer ((char *) coverage_copy.arrayZ))
+    {
+      hb_free ((char *) coverage_copy.arrayZ);
+      return false;
+    }
 
     auto& obj = c.graph.vertices_[dest_obj].obj;
     obj.head = (char *) coverage_copy.arrayZ;

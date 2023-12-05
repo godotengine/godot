@@ -87,6 +87,19 @@ static inline constexpr uint16_t hb_uint16_swap (uint16_t v)
 static inline constexpr uint32_t hb_uint32_swap (uint32_t v)
 { return (hb_uint16_swap (v) << 16) | hb_uint16_swap (v >> 16); }
 
+#ifndef HB_FAST_INT_ACCESS
+#if defined(__OPTIMIZE__) && \
+    defined(__BYTE_ORDER) && \
+    (__BYTE_ORDER == __BIG_ENDIAN || \
+     (__BYTE_ORDER == __LITTLE_ENDIAN && \
+      hb_has_builtin(__builtin_bswap16) && \
+      hb_has_builtin(__builtin_bswap32)))
+#define HB_FAST_INT_ACCESS 1
+#else
+#define HB_FAST_INT_ACCESS 0
+#endif
+#endif
+
 template <typename Type, int Bytes = sizeof (Type)>
 struct BEInt;
 template <typename Type>
@@ -101,21 +114,25 @@ struct BEInt<Type, 1>
 template <typename Type>
 struct BEInt<Type, 2>
 {
+  struct __attribute__((packed)) packed_uint16_t { uint16_t v; };
+
   public:
   BEInt () = default;
-  constexpr BEInt (Type V) : v {uint8_t ((V >>  8) & 0xFF),
-			        uint8_t ((V      ) & 0xFF)} {}
 
-  struct __attribute__((packed)) packed_uint16_t { uint16_t v; };
-  constexpr operator Type () const
-  {
-#if defined(__OPTIMIZE__) && !defined(HB_NO_PACKED) && \
-    defined(__BYTE_ORDER) && \
-    (__BYTE_ORDER == __BIG_ENDIAN || \
-     (__BYTE_ORDER == __LITTLE_ENDIAN && \
-      hb_has_builtin(__builtin_bswap16)))
-    /* Spoon-feed the compiler a big-endian integer with alignment 1.
-     * https://github.com/harfbuzz/harfbuzz/pull/1398 */
+  BEInt (Type V)
+#if HB_FAST_INT_ACCESS
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+  { ((packed_uint16_t *) v)->v = __builtin_bswap16 (V); }
+#else /* __BYTE_ORDER == __BIG_ENDIAN */
+  { ((packed_uint16_t *) v)->v = V; }
+#endif
+#else
+    : v {uint8_t ((V >>  8) & 0xFF),
+	 uint8_t ((V      ) & 0xFF)} {}
+#endif
+
+  constexpr operator Type () const {
+#if HB_FAST_INT_ACCESS
 #if __BYTE_ORDER == __LITTLE_ENDIAN
     return __builtin_bswap16 (((packed_uint16_t *) v)->v);
 #else /* __BYTE_ORDER == __BIG_ENDIAN */
@@ -146,22 +163,27 @@ struct BEInt<Type, 3>
 template <typename Type>
 struct BEInt<Type, 4>
 {
+  struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
+
   public:
   BEInt () = default;
-  constexpr BEInt (Type V) : v {uint8_t ((V >> 24) & 0xFF),
-			        uint8_t ((V >> 16) & 0xFF),
-			        uint8_t ((V >>  8) & 0xFF),
-			        uint8_t ((V      ) & 0xFF)} {}
 
-  struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
+  BEInt (Type V)
+#if HB_FAST_INT_ACCESS
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+  { ((packed_uint32_t *) v)->v = __builtin_bswap32 (V); }
+#else /* __BYTE_ORDER == __BIG_ENDIAN */
+  { ((packed_uint32_t *) v)->v = V; }
+#endif
+#else
+    : v {uint8_t ((V >> 24) & 0xFF),
+	 uint8_t ((V >> 16) & 0xFF),
+	 uint8_t ((V >>  8) & 0xFF),
+	 uint8_t ((V      ) & 0xFF)} {}
+#endif
+
   constexpr operator Type () const {
-#if defined(__OPTIMIZE__) && !defined(HB_NO_PACKED) && \
-    defined(__BYTE_ORDER) && \
-    (__BYTE_ORDER == __BIG_ENDIAN || \
-     (__BYTE_ORDER == __LITTLE_ENDIAN && \
-      hb_has_builtin(__builtin_bswap32)))
-    /* Spoon-feed the compiler a big-endian integer with alignment 1.
-     * https://github.com/harfbuzz/harfbuzz/pull/1398 */
+#if HB_FAST_INT_ACCESS
 #if __BYTE_ORDER == __LITTLE_ENDIAN
     return __builtin_bswap32 (((packed_uint32_t *) v)->v);
 #else /* __BYTE_ORDER == __BIG_ENDIAN */
@@ -231,12 +253,123 @@ struct
 }
 HB_FUNCOBJ (hb_bool);
 
+
+/* The MIT License
+
+   Copyright (C) 2012 Zilong Tan (eric.zltan@gmail.com)
+
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation
+   files (the "Software"), to deal in the Software without
+   restriction, including without limitation the rights to use, copy,
+   modify, merge, publish, distribute, sublicense, and/or sell copies
+   of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+*/
+
+
+// Compression function for Merkle-Damgard construction.
+// This function is generated using the framework provided.
+#define mix(h) (					\
+			(void) ((h) ^= (h) >> 23),		\
+			(void) ((h) *= 0x2127599bf4325c37ULL),	\
+			(h) ^= (h) >> 47)
+
+static inline uint64_t fasthash64(const void *buf, size_t len, uint64_t seed)
+{
+	struct __attribute__((packed)) packed_uint64_t { uint64_t v; };
+	const uint64_t    m = 0x880355f21e6d1965ULL;
+	const packed_uint64_t *pos = (const packed_uint64_t *)buf;
+	const packed_uint64_t *end = pos + (len / 8);
+	const unsigned char *pos2;
+	uint64_t h = seed ^ (len * m);
+	uint64_t v;
+
+#ifndef HB_OPTIMIZE_SIZE
+	if (((uintptr_t) pos & 7) == 0)
+	{
+	  while (pos != end)
+	  {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+	    v  = * (const uint64_t *) (pos++);
+#pragma GCC diagnostic pop
+	    h ^= mix(v);
+	    h *= m;
+	  }
+	}
+	else
+#endif
+	{
+	  while (pos != end)
+	  {
+	    v  = pos++->v;
+	    h ^= mix(v);
+	    h *= m;
+	  }
+	}
+
+	pos2 = (const unsigned char*)pos;
+	v = 0;
+
+	switch (len & 7) {
+	case 7: v ^= (uint64_t)pos2[6] << 48; HB_FALLTHROUGH;
+	case 6: v ^= (uint64_t)pos2[5] << 40; HB_FALLTHROUGH;
+	case 5: v ^= (uint64_t)pos2[4] << 32; HB_FALLTHROUGH;
+	case 4: v ^= (uint64_t)pos2[3] << 24; HB_FALLTHROUGH;
+	case 3: v ^= (uint64_t)pos2[2] << 16; HB_FALLTHROUGH;
+	case 2: v ^= (uint64_t)pos2[1] <<  8; HB_FALLTHROUGH;
+	case 1: v ^= (uint64_t)pos2[0];
+		h ^= mix(v);
+		h *= m;
+	}
+
+	return mix(h);
+}
+
+static inline uint32_t fasthash32(const void *buf, size_t len, uint32_t seed)
+{
+	// the following trick converts the 64-bit hashcode to Fermat
+	// residue, which shall retain information from both the higher
+	// and lower parts of hashcode.
+        uint64_t h = fasthash64(buf, len, seed);
+	return h - (h >> 32);
+}
+
 struct
 {
   private:
 
   template <typename T> constexpr auto
-  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
+  impl (const T& v, hb_priority<2>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
+
+  // Horrible: std:hash() of integers seems to be identity in gcc / clang?!
+  // https://github.com/harfbuzz/harfbuzz/pull/4228
+  //
+  // For performance characteristics see:
+  // https://github.com/harfbuzz/harfbuzz/pull/4228#issuecomment-1565079537
+  template <typename T,
+	    hb_enable_if (std::is_integral<T>::value && sizeof (T) <= sizeof (uint32_t))> constexpr auto
+  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, (uint32_t) v * 2654435761u /* Knuh's multiplicative hash */)
+  template <typename T,
+	    hb_enable_if (std::is_integral<T>::value && sizeof (T) > sizeof (uint32_t))> constexpr auto
+  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, (uint32_t) (v ^ (v >> 32)) * 2654435761u /* Knuth's multiplicative hash */)
+
+  template <typename T,
+	    hb_enable_if (std::is_floating_point<T>::value)> constexpr auto
+  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, fasthash32 (std::addressof (v), sizeof (T), 0xf437ffe6))
 
   template <typename T> constexpr auto
   impl (const T& v, hb_priority<0>) const HB_RETURN (uint32_t, std::hash<hb_decay<decltype (hb_deref (v))>>{} (hb_deref (v)))
@@ -551,6 +684,8 @@ struct hb_pair_t
 template <typename T1, typename T2> static inline hb_pair_t<T1, T2>
 hb_pair (T1&& a, T2&& b) { return hb_pair_t<T1, T2> (a, b); }
 
+typedef hb_pair_t<hb_codepoint_t, hb_codepoint_t> hb_codepoint_pair_t;
+
 struct
 {
   template <typename Pair> constexpr typename Pair::first_t
@@ -853,7 +988,7 @@ static inline void *
 hb_memset (void *s, int c, unsigned int n)
 {
   /* It's illegal to pass NULL to memset(), even if n is zero. */
-  if (unlikely (!n)) return 0;
+  if (unlikely (!n)) return s;
   return memset (s, c, n);
 }
 

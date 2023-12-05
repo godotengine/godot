@@ -30,7 +30,6 @@
 
 #include "noise_texture_2d.h"
 
-#include "core/core_string_names.h"
 #include "noise.h"
 
 NoiseTexture2D::NoiseTexture2D() {
@@ -222,11 +221,11 @@ void NoiseTexture2D::set_noise(Ref<Noise> p_noise) {
 		return;
 	}
 	if (noise.is_valid()) {
-		noise->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture2D::_queue_update));
+		noise->disconnect_changed(callable_mp(this, &NoiseTexture2D::_queue_update));
 	}
 	noise = p_noise;
 	if (noise.is_valid()) {
-		noise->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture2D::_queue_update));
+		noise->connect_changed(callable_mp(this, &NoiseTexture2D::_queue_update));
 	}
 	_queue_update();
 }
@@ -346,11 +345,11 @@ void NoiseTexture2D::set_color_ramp(const Ref<Gradient> &p_gradient) {
 		return;
 	}
 	if (color_ramp.is_valid()) {
-		color_ramp->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture2D::_queue_update));
+		color_ramp->disconnect_changed(callable_mp(this, &NoiseTexture2D::_queue_update));
 	}
 	color_ramp = p_gradient;
 	if (color_ramp.is_valid()) {
-		color_ramp->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture2D::_queue_update));
+		color_ramp->connect_changed(callable_mp(this, &NoiseTexture2D::_queue_update));
 	}
 	_queue_update();
 }

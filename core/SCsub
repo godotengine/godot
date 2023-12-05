@@ -65,7 +65,7 @@ thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_mis
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_misc_sources)
 
 # Brotli
-if env["brotli"]:
+if env["brotli"] and env["builtin_brotli"]:
     thirdparty_brotli_dir = "#thirdparty/brotli/"
     thirdparty_brotli_sources = [
         "common/constants.c",
@@ -89,6 +89,24 @@ if env["brotli"]:
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_brotli_sources)
 
+# Clipper2 Thirdparty source files used for polygon and polyline boolean operations.
+if env["builtin_clipper2"]:
+    thirdparty_clipper_dir = "#thirdparty/clipper2/"
+    thirdparty_clipper_sources = [
+        "src/clipper.engine.cpp",
+        "src/clipper.offset.cpp",
+        "src/clipper.rectclip.cpp",
+    ]
+    thirdparty_clipper_sources = [thirdparty_clipper_dir + file for file in thirdparty_clipper_sources]
+
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
+    env.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
+
+    env_thirdparty.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
+    env.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
+
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_clipper_sources)
+
 # Zlib library, can be unbundled
 if env["builtin_zlib"]:
     thirdparty_zlib_dir = "#thirdparty/zlib/"
@@ -97,7 +115,6 @@ if env["builtin_zlib"]:
         "compress.c",
         "crc32.c",
         "deflate.c",
-        "infback.c",
         "inffast.c",
         "inflate.c",
         "inftrees.c",

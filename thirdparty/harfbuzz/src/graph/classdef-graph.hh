@@ -72,7 +72,7 @@ struct ClassDef : public OT::ClassDef
     class_def_link->width = SmallTypes::size;
     class_def_link->objidx = class_def_prime_id;
     class_def_link->position = link_position;
-    class_def_prime_vertex.parents.push (parent_id);
+    class_def_prime_vertex.add_parent (parent_id);
 
     return true;
   }
@@ -94,7 +94,13 @@ struct ClassDef : public OT::ClassDef
     }
 
     hb_bytes_t class_def_copy = serializer.copy_bytes ();
-    c.add_buffer ((char *) class_def_copy.arrayZ); // Give ownership to the context, it will cleanup the buffer.
+    if (!class_def_copy.arrayZ) return false;
+    // Give ownership to the context, it will cleanup the buffer.
+    if (!c.add_buffer ((char *) class_def_copy.arrayZ))
+    {
+      hb_free ((char *) class_def_copy.arrayZ);
+      return false;
+    }
 
     auto& obj = c.graph.vertices_[dest_obj].obj;
     obj.head = (char *) class_def_copy.arrayZ;

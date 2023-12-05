@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "ios.h"
+#import "ios.h"
 
 #import "app_delegate.h"
 #import "view_controller.h"

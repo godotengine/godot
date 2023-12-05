@@ -166,6 +166,32 @@ hb_cairo_pop_transform (hb_paint_funcs_t *pfuncs HB_UNUSED,
   cairo_restore (cr);
 }
 
+static hb_bool_t
+hb_cairo_paint_color_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
+			    void *paint_data,
+			    hb_codepoint_t glyph,
+			    hb_font_t *font,
+			    void *user_data HB_UNUSED)
+{
+  hb_cairo_context_t *c = (hb_cairo_context_t *) paint_data;
+  cairo_t *cr = c->cr;
+
+  cairo_save (cr);
+
+  hb_position_t x_scale, y_scale;
+  hb_font_get_scale (font, &x_scale, &y_scale);
+  cairo_scale (cr, x_scale, y_scale);
+
+  cairo_glyph_t cairo_glyph = { glyph, 0, 0 };
+  cairo_set_scaled_font (cr, c->scaled_font);
+  cairo_set_font_size (cr, 1);
+  cairo_show_glyphs (cr, &cairo_glyph, 1);
+
+  cairo_restore (cr);
+
+  return true;
+}
+
 static void
 hb_cairo_push_clip_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
 			  void *paint_data,
@@ -397,6 +423,7 @@ static struct hb_cairo_paint_funcs_lazy_loader_t : hb_paint_funcs_lazy_loader_t<
 
     hb_paint_funcs_set_push_transform_func (funcs, hb_cairo_push_transform, nullptr, nullptr);
     hb_paint_funcs_set_pop_transform_func (funcs, hb_cairo_pop_transform, nullptr, nullptr);
+    hb_paint_funcs_set_color_glyph_func (funcs, hb_cairo_paint_color_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_glyph_func (funcs, hb_cairo_push_clip_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_rectangle_func (funcs, hb_cairo_push_clip_rectangle, nullptr, nullptr);
     hb_paint_funcs_set_pop_clip_func (funcs, hb_cairo_pop_clip, nullptr, nullptr);
@@ -956,7 +983,7 @@ hb_cairo_glyphs_from_buffer (hb_buffer_t *buffer,
 
   if (clusters && *num_clusters && utf8)
   {
-    memset ((void *) *clusters, 0, *num_clusters * sizeof ((*clusters)[0]));
+    hb_memset ((void *) *clusters, 0, *num_clusters * sizeof ((*clusters)[0]));
     hb_bool_t backward = HB_DIRECTION_IS_BACKWARD (hb_buffer_get_direction (buffer));
     *cluster_flags = backward ? CAIRO_TEXT_CLUSTER_FLAG_BACKWARD : (cairo_text_cluster_flags_t) 0;
     unsigned int cluster = 0;

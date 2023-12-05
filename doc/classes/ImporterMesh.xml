@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImporterMesh" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ImporterMesh" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Resource] that contains vertex array-based geometry during the import process.
 	</brief_description>
@@ -92,7 +92,7 @@
 			<return type="Array" />
 			<param index="0" name="surface_idx" type="int" />
 			<description>
-				Returns the arrays for the vertices, normals, uvs, etc. that make up the requested surface. See [method add_surface].
+				Returns the arrays for the vertices, normals, UVs, etc. that make up the requested surface. See [method add_surface].
 			</description>
 		</method>
 		<method name="get_surface_blend_shape_arrays" qualifiers="const">

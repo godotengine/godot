@@ -534,17 +534,23 @@
                                         0 );
     }
 
-    if ( !face->var )
+    if ( !face->tt_var )
     {
       /* we want the metrics variations interface */
       /* from the `truetype' module only          */
       FT_Module  tt_module = FT_Get_Module( library, "truetype" );
 
 
-      face->var = ft_module_get_service( tt_module,
-                                         FT_SERVICE_ID_METRICS_VARIATIONS,
-                                         0 );
+      face->tt_var = ft_module_get_service( tt_module,
+                                            FT_SERVICE_ID_METRICS_VARIATIONS,
+                                            0 );
     }
+
+    if ( !face->face_var )
+      face->face_var = ft_module_get_service(
+                         &face->root.driver->root,
+                         FT_SERVICE_ID_METRICS_VARIATIONS,
+                         0 );
 #endif
 
     FT_TRACE2(( "SFNT driver\n" ));
@@ -691,6 +697,9 @@
 
           instance_offset += instance_size;
         }
+
+        /* named instance indices start with value 1 */
+        face->var_default_named_instance = i + 1;
 
         if ( i == num_instances )
         {
@@ -1054,6 +1063,16 @@
         GET_NAME( FONT_SUBFAMILY, &face->root.style_name );
     }
 
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+    {
+      FT_Memory  memory = face->root.memory;
+
+
+      if ( FT_STRDUP( face->non_var_style_name, face->root.style_name ) )
+        goto Exit;
+    }
+#endif
+
     /* now set up root fields */
     {
       FT_Face  root  = &face->root;
@@ -1221,7 +1240,7 @@
 
         if ( count > 0 )
         {
-          FT_Memory        memory   = face->root.stream->memory;
+          FT_Memory        memory   = face->root.memory;
           FT_UShort        em_size  = face->header.Units_Per_EM;
           FT_Short         avgwidth = face->os2.xAvgCharWidth;
           FT_Size_Metrics  metrics;
@@ -1500,6 +1519,7 @@
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
     FT_FREE( face->var_postscript_prefix );
+    FT_FREE( face->non_var_style_name );
 #endif
 
     /* freeing glyph color palette data */

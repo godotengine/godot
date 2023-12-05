@@ -68,6 +68,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Vector<String> functions;
 	List<ScriptLanguage::Warning> warnings;
 	List<ScriptLanguage::ScriptError> errors;
+	HashMap<String, List<ScriptLanguage::ScriptError>> depended_errors;
 	HashSet<int> safe_lines;
 
 	List<Connection> missing_connections;
@@ -97,6 +98,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color safe_line_number_color = Color(1, 1, 1);
 
 	Color marked_line_color = Color(1, 1, 1);
+	Color folded_code_region_color = Color(1, 1, 1);
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
@@ -124,6 +126,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_UNINDENT,
 		EDIT_DELETE_LINE,
 		EDIT_DUPLICATE_SELECTION,
+		EDIT_DUPLICATE_LINES,
 		EDIT_PICK_COLOR,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
@@ -132,6 +135,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_TOGGLE_WORD_WRAP,
 		EDIT_TOGGLE_FOLD_LINE,
 		EDIT_FOLD_ALL_LINES,
+		EDIT_CREATE_CODE_REGION,
 		EDIT_UNFOLD_ALL_LINES,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
@@ -257,53 +261,6 @@ public:
 
 	ScriptTextEditor();
 	~ScriptTextEditor();
-};
-
-const int KIND_COUNT = 10;
-// The order in which to sort code completion options.
-const ScriptLanguage::CodeCompletionKind KIND_SORT_ORDER[KIND_COUNT] = {
-	ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE,
-	ScriptLanguage::CODE_COMPLETION_KIND_MEMBER,
-	ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION,
-	ScriptLanguage::CODE_COMPLETION_KIND_ENUM,
-	ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL,
-	ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT,
-	ScriptLanguage::CODE_COMPLETION_KIND_CLASS,
-	ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH,
-	ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH,
-	ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT,
-};
-
-// The custom comparer which will sort completion options.
-struct CodeCompletionOptionCompare {
-	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const {
-		if (l.location == r.location) {
-			// If locations are same, sort on kind
-			if (l.kind == r.kind) {
-				// If kinds are same, sort alphanumeric
-				return l.display < r.display;
-			}
-
-			// Sort kinds based on the const sorting array defined above. Lower index = higher priority.
-			int l_index = -1;
-			int r_index = -1;
-			for (int i = 0; i < KIND_COUNT; i++) {
-				const ScriptLanguage::CodeCompletionKind kind = KIND_SORT_ORDER[i];
-				l_index = kind == l.kind ? i : l_index;
-				r_index = kind == r.kind ? i : r_index;
-
-				if (l_index != -1 && r_index != -1) {
-					return l_index < r_index;
-				}
-			}
-
-			// This return should never be hit unless something goes wrong.
-			// l and r should always have a Kind which is in the sort order array.
-			return l.display < r.display;
-		}
-
-		return l.location < r.location;
-	}
 };
 
 #endif // SCRIPT_TEXT_EDITOR_H

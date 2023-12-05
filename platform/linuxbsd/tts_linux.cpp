@@ -82,11 +82,11 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 void TTS_Linux::speech_event_index_mark(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type, char *p_index_mark) {
 	TTS_Linux *tts = TTS_Linux::get_singleton();
 	if (tts) {
-		callable_mp(tts, &TTS_Linux::_speech_index_mark).call_deferred(p_msg_id, p_client_id, (int)p_type, String::utf8(p_index_mark));
+		callable_mp(tts, &TTS_Linux::_speech_index_mark).call_deferred((int)p_msg_id, (int)p_type, String::utf8(p_index_mark));
 	}
 }
 
-void TTS_Linux::_speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_type, const String &p_index_mark) {
+void TTS_Linux::_speech_index_mark(int p_msg_id, int p_type, const String &p_index_mark) {
 	_THREAD_SAFE_METHOD_
 
 	if (ids.has(p_msg_id)) {
@@ -97,11 +97,29 @@ void TTS_Linux::_speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_ty
 void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type) {
 	TTS_Linux *tts = TTS_Linux::get_singleton();
 	if (tts) {
-		callable_mp(tts, &TTS_Linux::_speech_event).call_deferred(p_msg_id, p_client_id, (int)p_type);
+		callable_mp(tts, &TTS_Linux::_speech_event).call_deferred((int)p_msg_id, (int)p_type);
 	}
 }
 
-void TTS_Linux::_speech_event(size_t p_msg_id, size_t p_client_id, int p_type) {
+void TTS_Linux::_load_voices() {
+	if (!voices_loaded) {
+		SPDVoice **spd_voices = spd_list_synthesis_voices(synth);
+		if (spd_voices != nullptr) {
+			SPDVoice **voices_ptr = spd_voices;
+			while (*voices_ptr != nullptr) {
+				VoiceInfo vi;
+				vi.language = String::utf8((*voices_ptr)->language);
+				vi.variant = String::utf8((*voices_ptr)->variant);
+				voices[String::utf8((*voices_ptr)->name)] = vi;
+				voices_ptr++;
+			}
+			free_spd_voices(spd_voices);
+		}
+		voices_loaded = true;
+	}
+}
+
+void TTS_Linux::_speech_event(int p_msg_id, int p_type) {
 	_THREAD_SAFE_METHOD_
 
 	if (!paused && ids.has(p_msg_id)) {
@@ -123,18 +141,13 @@ void TTS_Linux::_speech_event(size_t p_msg_id, size_t p_client_id, int p_type) {
 		// Inject index mark after each word.
 		String text;
 		String language;
-		SPDVoice **voices = spd_list_synthesis_voices(synth);
-		if (voices != nullptr) {
-			SPDVoice **voices_ptr = voices;
-			while (*voices_ptr != nullptr) {
-				if (String::utf8((*voices_ptr)->name) == message.voice) {
-					language = String::utf8((*voices_ptr)->language);
-					break;
-				}
-				voices_ptr++;
-			}
-			free_spd_voices(voices);
+
+		_load_voices();
+		const VoiceInfo *voice = voices.getptr(message.voice);
+		if (voice) {
+			language = voice->language;
 		}
+
 		PackedInt32Array breaks = TS->string_get_word_breaks(message.text, language);
 		for (int i = 0; i < breaks.size(); i += 2) {
 			const int start = breaks[i];
@@ -173,29 +186,25 @@ bool TTS_Linux::is_paused() const {
 Array TTS_Linux::get_voices() const {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!synth, Array());
-	Array list;
-	SPDVoice **voices = spd_list_synthesis_voices(synth);
-	if (voices != nullptr) {
-		SPDVoice **voices_ptr = voices;
-		while (*voices_ptr != nullptr) {
-			Dictionary voice_d;
-			voice_d["name"] = String::utf8((*voices_ptr)->name);
-			voice_d["id"] = String::utf8((*voices_ptr)->name);
-			voice_d["language"] = String::utf8((*voices_ptr)->language) + "_" + String::utf8((*voices_ptr)->variant);
-			list.push_back(voice_d);
+	ERR_FAIL_NULL_V(synth, Array());
+	const_cast<TTS_Linux *>(this)->_load_voices();
 
-			voices_ptr++;
-		}
-		free_spd_voices(voices);
+	Array list;
+	for (const KeyValue<String, VoiceInfo> &E : voices) {
+		Dictionary voice_d;
+		voice_d["name"] = E.key;
+		voice_d["id"] = E.key;
+		voice_d["language"] = E.value.language + "_" + E.value.variant;
+		list.push_back(voice_d);
 	}
+
 	return list;
 }
 
 void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	if (p_interrupt) {
 		stop();
 	}
@@ -217,14 +226,14 @@ void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume,
 	if (is_paused()) {
 		resume();
 	} else {
-		_speech_event(0, 0, (int)SPD_EVENT_BEGIN);
+		_speech_event(0, (int)SPD_EVENT_BEGIN);
 	}
 }
 
 void TTS_Linux::pause() {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	if (spd_pause(synth) == 0) {
 		paused = true;
 	}
@@ -233,7 +242,7 @@ void TTS_Linux::pause() {
 void TTS_Linux::resume() {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	spd_resume(synth);
 	paused = false;
 }
@@ -241,7 +250,7 @@ void TTS_Linux::resume() {
 void TTS_Linux::stop() {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	for (DisplayServer::TTSUtterance &message : queue) {
 		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, message.id);
 	}

@@ -33,6 +33,7 @@
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 #include "scene/gui/label.h"
+#include "scene/theme/theme_db.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;
 
@@ -54,30 +55,71 @@ void FileDialog::_focus_file_text() {
 	}
 }
 
+void FileDialog::popup(const Rect2i &p_rect) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		ConfirmationDialog::popup(p_rect);
+	}
+#endif
+
+	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+		DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+	} else {
+		ConfirmationDialog::popup(p_rect);
+	}
+}
+
+void FileDialog::set_visible(bool p_visible) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		ConfirmationDialog::set_visible(p_visible);
+		return;
+	}
+#endif
+
+	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+		if (p_visible) {
+			DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+		}
+	} else {
+		ConfirmationDialog::set_visible(p_visible);
+	}
+}
+
+void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter) {
+	if (p_ok) {
+		if (p_files.size() > 0) {
+			String f = p_files[0];
+			if (mode == FILE_MODE_OPEN_FILES) {
+				emit_signal(SNAME("files_selected"), p_files);
+			} else {
+				if (mode == FILE_MODE_SAVE_FILE) {
+					emit_signal(SNAME("file_selected"), f);
+				} else if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
+					emit_signal(SNAME("file_selected"), f);
+				} else if (mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_DIR) {
+					emit_signal(SNAME("dir_selected"), f);
+				}
+			}
+			file->set_text(f);
+			dir->set_text(f.get_base_dir());
+			_filter_selected(p_filter);
+		}
+	} else {
+		file->set_text("");
+		emit_signal(SNAME("canceled"));
+	}
+}
+
 VBoxContainer *FileDialog::get_vbox() {
 	return vbox;
 }
 
-void FileDialog::_update_theme_item_cache() {
-	ConfirmationDialog::_update_theme_item_cache();
-
-	theme_cache.parent_folder = get_theme_icon(SNAME("parent_folder"));
-	theme_cache.forward_folder = get_theme_icon(SNAME("forward_folder"));
-	theme_cache.back_folder = get_theme_icon(SNAME("back_folder"));
-	theme_cache.reload = get_theme_icon(SNAME("reload"));
-	theme_cache.toggle_hidden = get_theme_icon(SNAME("toggle_hidden"));
-	theme_cache.folder = get_theme_icon(SNAME("folder"));
-	theme_cache.file = get_theme_icon(SNAME("file"));
-
-	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"));
-	theme_cache.file_icon_color = get_theme_color(SNAME("file_icon_color"));
-	theme_cache.file_disabled_color = get_theme_color(SNAME("file_disabled_color"));
-
-	// TODO: Define own colors?
-	theme_cache.icon_normal_color = get_theme_color(SNAME("font_color"), SNAME("Button"));
-	theme_cache.icon_hover_color = get_theme_color(SNAME("font_hover_color"), SNAME("Button"));
-	theme_cache.icon_focus_color = get_theme_color(SNAME("font_focus_color"), SNAME("Button"));
-	theme_cache.icon_pressed_color = get_theme_color(SNAME("font_pressed_color"), SNAME("Button"));
+void FileDialog::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "dialog_text") {
+		// File dialogs have a custom layout, and dialog nodes can't have both a text and a layout.
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
 }
 
 void FileDialog::_notification(int p_what) {
@@ -102,30 +144,40 @@ void FileDialog::_notification(int p_what) {
 			refresh->set_icon(theme_cache.reload);
 			show_hidden->set_icon(theme_cache.toggle_hidden);
 
+			dir_up->begin_bulk_theme_override();
 			dir_up->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
 			dir_up->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			dir_up->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			dir_up->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+			dir_up->end_bulk_theme_override();
 
+			dir_prev->begin_bulk_theme_override();
 			dir_prev->add_theme_color_override("icon_color_normal", theme_cache.icon_normal_color);
 			dir_prev->add_theme_color_override("icon_color_hover", theme_cache.icon_hover_color);
 			dir_prev->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			dir_prev->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
+			dir_prev->end_bulk_theme_override();
 
+			dir_next->begin_bulk_theme_override();
 			dir_next->add_theme_color_override("icon_color_normal", theme_cache.icon_normal_color);
 			dir_next->add_theme_color_override("icon_color_hover", theme_cache.icon_hover_color);
 			dir_next->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			dir_next->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
+			dir_next->end_bulk_theme_override();
 
+			refresh->begin_bulk_theme_override();
 			refresh->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
 			refresh->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			refresh->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			refresh->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+			refresh->end_bulk_theme_override();
 
+			show_hidden->begin_bulk_theme_override();
 			show_hidden->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
 			show_hidden->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			show_hidden->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			show_hidden->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+			show_hidden->end_bulk_theme_override();
 
 			invalidate();
 		} break;
@@ -634,7 +686,7 @@ void FileDialog::update_file_list() {
 		files.pop_front();
 	}
 
-	if (mode != FILE_MODE_SAVE_FILE) {
+	if (mode != FILE_MODE_SAVE_FILE && mode != FILE_MODE_OPEN_DIR) {
 		// Select the first file from list if nothing is selected.
 		if (tree->get_root() && tree->get_root()->get_first_child() && tree->get_selected() == nullptr) {
 			tree->get_root()->get_first_child()->select(0);
@@ -833,6 +885,8 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 	} else {
 		tree->set_select_mode(Tree::SELECT_SINGLE);
 	}
+
+	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 }
 
 FileDialog::FileMode FileDialog::get_file_mode() const {
@@ -978,6 +1032,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root_subfolder"), &FileDialog::get_root_subfolder);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &FileDialog::set_show_hidden_files);
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &FileDialog::is_showing_hidden_files);
+	ClassDB::bind_method(D_METHOD("set_use_native_dialog", "native"), &FileDialog::set_use_native_dialog);
+	ClassDB::bind_method(D_METHOD("get_use_native_dialog"), &FileDialog::get_use_native_dialog);
 	ClassDB::bind_method(D_METHOD("deselect_all"), &FileDialog::deselect_all);
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
@@ -988,6 +1044,7 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "root_subfolder"), "set_root_subfolder", "get_root_subfolder");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_native_dialog"), "set_use_native_dialog", "get_use_native_dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_path", "get_current_path");
@@ -1005,6 +1062,24 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(ACCESS_RESOURCES);
 	BIND_ENUM_CONSTANT(ACCESS_USERDATA);
 	BIND_ENUM_CONSTANT(ACCESS_FILESYSTEM);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, forward_folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, back_folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, reload);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, toggle_hidden);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, file);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, folder_icon_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, file_icon_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, file_disabled_color);
+
+	// TODO: Define own colors?
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_normal_color, "font_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_hover_color, "font_hover_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_focus_color, "font_focus_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_pressed_color, "font_pressed_color", "Button");
 }
 
 void FileDialog::set_show_hidden_files(bool p_show) {
@@ -1023,6 +1098,14 @@ void FileDialog::set_default_show_hidden_files(bool p_show) {
 	default_show_hidden_files = p_show;
 }
 
+void FileDialog::set_use_native_dialog(bool p_native) {
+	use_native_dialog = p_native;
+}
+
+bool FileDialog::get_use_native_dialog() const {
+	return use_native_dialog;
+}
+
 FileDialog::FileDialog() {
 	show_hidden_files = default_show_hidden_files;
 
@@ -1035,13 +1118,13 @@ FileDialog::FileDialog() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	dir_prev = memnew(Button);
-	dir_prev->set_flat(true);
+	dir_prev->set_theme_type_variation("FlatButton");
 	dir_prev->set_tooltip_text(RTR("Go to previous folder."));
 	dir_next = memnew(Button);
-	dir_next->set_flat(true);
+	dir_next->set_theme_type_variation("FlatButton");
 	dir_next->set_tooltip_text(RTR("Go to next folder."));
 	dir_up = memnew(Button);
-	dir_up->set_flat(true);
+	dir_up->set_theme_type_variation("FlatButton");
 	dir_up->set_tooltip_text(RTR("Go to parent folder."));
 	hbc->add_child(dir_prev);
 	hbc->add_child(dir_next);
@@ -1065,13 +1148,13 @@ FileDialog::FileDialog() {
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	refresh = memnew(Button);
-	refresh->set_flat(true);
+	refresh->set_theme_type_variation("FlatButton");
 	refresh->set_tooltip_text(RTR("Refresh files."));
 	refresh->connect("pressed", callable_mp(this, &FileDialog::update_file_list));
 	hbc->add_child(refresh);
 
 	show_hidden = memnew(Button);
-	show_hidden->set_flat(true);
+	show_hidden->set_theme_type_variation("FlatButton");
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(RTR("Toggle the visibility of hidden files."));

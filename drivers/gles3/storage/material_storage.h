@@ -88,7 +88,7 @@ struct Shader {
 /* Material structs */
 
 struct MaterialData {
-	void update_uniform_buffer(const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const HashMap<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
+	void update_uniform_buffer(const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const HashMap<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size);
 	void update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
 	virtual void set_render_priority(int p_priority) = 0;
@@ -98,7 +98,7 @@ struct MaterialData {
 	virtual ~MaterialData();
 
 	// Used internally by all Materials
-	void update_parameters_internal(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size);
+	void update_parameters_internal(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, bool p_is_3d_shader_type);
 
 protected:
 	Vector<uint8_t> ubo_data;
@@ -112,8 +112,6 @@ private:
 	List<RID>::Element *global_texture_E = nullptr;
 	uint64_t global_textures_pass = 0;
 	HashMap<StringName, uint64_t> used_global_textures;
-
-	//internally by update_parameters_internal
 };
 
 typedef MaterialData *(*MaterialDataRequestFunction)(ShaderData *);
@@ -141,7 +139,7 @@ struct Material {
 /* CanvasItem Materials */
 
 struct CanvasShaderData : public ShaderData {
-	enum BlendMode { //used internally
+	enum BlendMode { // Used internally.
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
@@ -151,9 +149,11 @@ struct CanvasShaderData : public ShaderData {
 		BLEND_MODE_LCD,
 	};
 
+	// All these members are (re)initialized in `set_code`.
+	// Make sure to add the init to `set_code` whenever adding new members.
+
 	bool valid;
 	RID version;
-	BlendMode blend_mode = BLEND_MODE_MIX;
 
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
@@ -162,10 +162,12 @@ struct CanvasShaderData : public ShaderData {
 
 	String code;
 
-	bool uses_screen_texture = false;
-	bool uses_screen_texture_mipmaps = false;
-	bool uses_sdf = false;
-	bool uses_time = false;
+	BlendMode blend_mode;
+
+	bool uses_screen_texture;
+	bool uses_screen_texture_mipmaps;
+	bool uses_sdf;
+	bool uses_time;
 
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
@@ -193,6 +195,9 @@ MaterialData *_create_canvas_material_func(ShaderData *p_shader);
 /* Sky Materials */
 
 struct SkyShaderData : public ShaderData {
+	// All these members are (re)initialized in `set_code`.
+	// Make sure to add the init to `set_code` whenever adding new members.
+
 	bool valid;
 	RID version;
 
@@ -235,7 +240,7 @@ MaterialData *_create_sky_material_func(ShaderData *p_shader);
 /* Scene Materials */
 
 struct SceneShaderData : public ShaderData {
-	enum BlendMode { //used internally
+	enum BlendMode { // Used internally.
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
@@ -266,6 +271,9 @@ struct SceneShaderData : public ShaderData {
 		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
 	};
 
+	// All these members are (re)initialized in `set_code`.
+	// Make sure to add the init to `set_code` whenever adding new members.
+
 	bool valid;
 	RID version;
 
@@ -284,8 +292,8 @@ struct SceneShaderData : public ShaderData {
 
 	bool uses_point_size;
 	bool uses_alpha;
-	bool uses_blend_alpha;
 	bool uses_alpha_clip;
+	bool uses_blend_alpha;
 	bool uses_depth_prepass_alpha;
 	bool uses_discard;
 	bool uses_roughness;
@@ -318,10 +326,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_bones;
 	bool uses_weights;
 
-	uint32_t vertex_input_mask = 0;
-
-	uint64_t last_pass = 0;
-	uint32_t index = 0;
+	uint64_t vertex_input_mask;
 
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
@@ -356,21 +361,24 @@ enum {
 };
 
 struct ParticlesShaderData : public ShaderData {
-	bool valid = false;
+	// All these members are (re)initialized in `set_code`.
+	// Make sure to add the init to `set_code` whenever adding new members.
+
+	bool valid;
 	RID version;
-	bool uses_collision = false;
 
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
-	uint32_t ubo_size = 0;
+	uint32_t ubo_size;
 
 	String code;
 
-	bool uses_time = false;
+	bool uses_collision;
+	bool uses_time;
 
 	bool userdatas_used[PARTICLES_MAX_USERDATAS] = {};
-	uint32_t userdata_count = 0;
+	uint32_t userdata_count;
 
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;

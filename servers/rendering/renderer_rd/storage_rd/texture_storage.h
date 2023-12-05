@@ -96,7 +96,7 @@ private:
 
 		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
-		RID uniform_sets[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
+		RID uniform_sets[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX][2];
 
 		Size2i size_cache = Size2i(1, 1);
 		bool use_normal_cache = false;
@@ -195,6 +195,27 @@ private:
 
 	Ref<Image> _validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format);
 	void _texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0, bool p_immediate = false);
+
+	struct TextureFromRDFormat {
+		Image::Format image_format;
+		RD::DataFormat rd_format;
+		RD::DataFormat rd_format_srgb;
+		RD::TextureSwizzle swizzle_r;
+		RD::TextureSwizzle swizzle_g;
+		RD::TextureSwizzle swizzle_b;
+		RD::TextureSwizzle swizzle_a;
+		TextureFromRDFormat() {
+			image_format = Image::FORMAT_MAX;
+			rd_format = RD::DATA_FORMAT_MAX;
+			rd_format_srgb = RD::DATA_FORMAT_MAX;
+			swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		}
+	};
+
+	void _texture_format_from_rd(RD::DataFormat p_rd_format, TextureFromRDFormat &r_format);
 
 	/* DECAL API */
 
@@ -310,9 +331,10 @@ private:
 		uint32_t view_count;
 		RID color;
 		Vector<RID> color_slices;
-		RID color_multisample; // Needed when MSAA is enabled.
+		RID color_multisample; // Needed when 2D MSAA is enabled.
 
-		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
+		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED; // 2D MSAA mode
+		bool msaa_needs_resolve = false; // 2D MSAA needs resolved
 
 		//used for retrieving from CPU
 		RD::DataFormat color_format = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
@@ -320,6 +342,7 @@ private:
 		Image::Format image_format = Image::FORMAT_L8;
 
 		bool is_transparent = false;
+		bool use_hdr = false;
 
 		bool sdf_enabled = false;
 
@@ -453,7 +476,7 @@ public:
 	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override;
 	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override;
 
-	bool canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular);
+	bool canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, bool p_use_srgb, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular, bool p_texture_is_data);
 
 	/* Texture API */
 
@@ -488,6 +511,8 @@ public:
 	virtual void texture_set_path(RID p_texture, const String &p_path) override;
 	virtual String texture_get_path(RID p_texture) const override;
 
+	virtual Image::Format texture_get_format(RID p_texture) const override;
+
 	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
 	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) override;
@@ -498,6 +523,7 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
@@ -693,6 +719,11 @@ public:
 	virtual void render_target_set_as_unused(RID p_render_target) override;
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
+	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override;
+	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override;
+	virtual void render_target_do_msaa_resolve(RID p_render_target) override;
+	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) override;
+	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);

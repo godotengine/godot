@@ -204,6 +204,7 @@ Arguments:
   P           a previous frame of interest
   frame_size  the frame size
   mb          points to the match block
+  match_data  points to the match data block
   s           identification text
 
 Returns:    nothing
@@ -211,7 +212,7 @@ Returns:    nothing
 
 static void
 display_frames(FILE *f, heapframe *F, heapframe *P, PCRE2_SIZE frame_size,
-  match_block *mb, const char *s, ...)
+  match_block *mb, pcre2_match_data *match_data, const char *s, ...)
 {
 uint32_t i;
 heapframe *Q;
@@ -223,10 +224,10 @@ vfprintf(f, s, ap);
 va_end(ap);
 
 if (P != NULL) fprintf(f, " P=%lu",
-  ((char *)P - (char *)(mb->match_frames))/frame_size);
+  ((char *)P - (char *)(match_data->heapframes))/frame_size);
 fprintf(f, "\n");
 
-for (i = 0, Q = mb->match_frames;
+for (i = 0, Q = match_data->heapframes;
      Q <= F;
      i++, Q = (heapframe *)((char *)Q + frame_size))
   {
@@ -490,10 +491,16 @@ A version did exist that used individual frames on the heap instead of calling
 match() recursively, but this ran substantially slower. The current version is
 a refactoring that uses a vector of frames to remember backtracking points.
 This runs no slower, and possibly even a bit faster than the original recursive
-implementation. An initial vector of size START_FRAMES_SIZE (enough for maybe
-50 frames) is allocated on the system stack. If this is not big enough, the
-heap is used for a larger vector.
+implementation.
 
+At first, an initial vector of size START_FRAMES_SIZE (enough for maybe 50
+frames) was allocated on the system stack. If this was not big enough, the heap
+was used for a larger vector. However, it turns out that there are environments
+where taking as little as 20KiB from the system stack is an embarrassment.
+After another refactoring, the heap is used exclusively, but a pointer the
+frames vector and its size are cached in the match_data block, so that there is
+no new memory allocation if the same match_data block is used for multiple
+matches (unless the frames vector has to be extended).
 *******************************************************************************
 ******************************************************************************/
 
@@ -566,10 +573,9 @@ made performance worse.
 Arguments:
    start_eptr   starting character in subject
    start_ecode  starting position in compiled code
-   ovector      pointer to the final output vector
-   oveccount    number of pairs in ovector
    top_bracket  number of capturing parentheses in the pattern
    frame_size   size of each backtracking frame
+   match_data   pointer to the match_data block
    mb           pointer to "static" variables block
 
 Returns:        MATCH_MATCH if matched            )  these values are >= 0
@@ -580,17 +586,19 @@ Returns:        MATCH_MATCH if matched            )  these values are >= 0
 */
 
 static int
-match(PCRE2_SPTR start_eptr, PCRE2_SPTR start_ecode, PCRE2_SIZE *ovector,
-  uint16_t oveccount, uint16_t top_bracket, PCRE2_SIZE frame_size,
-  match_block *mb)
+match(PCRE2_SPTR start_eptr, PCRE2_SPTR start_ecode, uint16_t top_bracket,
+  PCRE2_SIZE frame_size, pcre2_match_data *match_data, match_block *mb)
 {
 /* Frame-handling variables */
 
 heapframe *F;           /* Current frame pointer */
 heapframe *N = NULL;    /* Temporary frame pointers */
 heapframe *P = NULL;
+
+heapframe *frames_top;  /* End of frames vector */
 heapframe *assert_accept_frame = NULL;  /* For passing back a frame with captures */
-PCRE2_SIZE frame_copy_size;     /* Amount to copy when creating a new frame */
+PCRE2_SIZE heapframes_size;   /* Usable size of frames vector */
+PCRE2_SIZE frame_copy_size;   /* Amount to copy when creating a new frame */
 
 /* Local variables that do not need to be preserved over calls to RRMATCH(). */
 
@@ -627,10 +635,14 @@ copied when a new frame is created. */
 
 frame_copy_size = frame_size - offsetof(heapframe, eptr);
 
-/* Set up the first current frame at the start of the vector, and initialize
-fields that are not reset for new frames. */
+/* Set up the first frame and the end of the frames vector. We set the local
+heapframes_size to the usuable amount of the vector, that is, a whole number of
+frames. */
 
-F = mb->match_frames;
+F = match_data->heapframes;
+heapframes_size = (match_data->heapframes_size / frame_size) * frame_size;
+frames_top = (heapframe *)((char *)F + heapframes_size);
+
 Frdepth = 0;                        /* "Recursion" depth */
 Fcapture_last = 0;                  /* Number of most recent capture */
 Fcurrent_recurse = RECURSE_UNSET;   /* Not pattern recursing. */
@@ -646,34 +658,35 @@ backtracking point. */
 
 MATCH_RECURSE:
 
-/* Set up a new backtracking frame. If the vector is full, get a new one
-on the heap, doubling the size, but constrained by the heap limit. */
+/* Set up a new backtracking frame. If the vector is full, get a new one,
+doubling the size, but constrained by the heap limit (which is in KiB). */
 
 N = (heapframe *)((char *)F + frame_size);
-if (N >= mb->match_frames_top)
+if (N >= frames_top)
   {
-  PCRE2_SIZE newsize = mb->frame_vector_size * 2;
   heapframe *new;
+  PCRE2_SIZE newsize = match_data->heapframes_size * 2;
 
-  if ((newsize / 1024) > mb->heap_limit)
+  if (newsize > mb->heap_limit)
     {
-    PCRE2_SIZE maxsize = ((mb->heap_limit * 1024)/frame_size) * frame_size;
-    if (mb->frame_vector_size >= maxsize) return PCRE2_ERROR_HEAPLIMIT;
+    PCRE2_SIZE maxsize = (mb->heap_limit/frame_size) * frame_size;
+    if (match_data->heapframes_size >= maxsize) return PCRE2_ERROR_HEAPLIMIT;
     newsize = maxsize;
     }
 
-  new = mb->memctl.malloc(newsize, mb->memctl.memory_data);
+  new = match_data->memctl.malloc(newsize, match_data->memctl.memory_data);
   if (new == NULL) return PCRE2_ERROR_NOMEMORY;
-  memcpy(new, mb->match_frames, mb->frame_vector_size);
+  memcpy(new, match_data->heapframes, heapframes_size);
 
-  F = (heapframe *)((char *)new + ((char *)F - (char *)mb->match_frames));
+  F = (heapframe *)((char *)new + ((char *)F - (char *)match_data->heapframes));
   N = (heapframe *)((char *)F + frame_size);
 
-  if (mb->match_frames != mb->stack_frames)
-    mb->memctl.free(mb->match_frames, mb->memctl.memory_data);
-  mb->match_frames = new;
-  mb->match_frames_top = (heapframe *)((char *)mb->match_frames + newsize);
-  mb->frame_vector_size = newsize;
+  match_data->memctl.free(match_data->heapframes, match_data->memctl.memory_data);
+  match_data->heapframes = new;
+  match_data->heapframes_size = newsize;
+
+  heapframes_size = (newsize / frame_size) * frame_size;
+  frames_top = (heapframe *)((char *)new + heapframes_size);
   }
 
 #ifdef DEBUG_SHOW_RMATCH
@@ -731,7 +744,7 @@ recursion value. */
 
 if (group_frame_type != 0)
   {
-  Flast_group_offset = (char *)F - (char *)mb->match_frames;
+  Flast_group_offset = (char *)F - (char *)match_data->heapframes;
   if (GF_IDMASK(group_frame_type) == GF_RECURSE)
     Fcurrent_recurse = GF_DATAMASK(group_frame_type);
   group_frame_type = 0;
@@ -773,7 +786,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
       for(;;)
         {
         if (offset == PCRE2_UNSET) return PCRE2_ERROR_INTERNAL;
-        N = (heapframe *)((char *)mb->match_frames + offset);
+        N = (heapframe *)((char *)match_data->heapframes + offset);
         P = (heapframe *)((char *)N - frame_size);
         if (N->group_frame_type == (GF_CAPTURE | number)) break;
         offset = P->last_group_offset;
@@ -811,7 +824,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
       for(;;)
         {
         if (offset == PCRE2_UNSET) return PCRE2_ERROR_INTERNAL;
-        N = (heapframe *)((char *)mb->match_frames + offset);
+        N = (heapframe *)((char *)match_data->heapframes + offset);
         P = (heapframe *)((char *)N - frame_size);
         if (GF_IDMASK(N->group_frame_type) == GF_RECURSE) break;
         offset = P->last_group_offset;
@@ -864,14 +877,15 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
     mb->mark = Fmark;                    /* and the last success mark */
     if (Feptr > mb->last_used_ptr) mb->last_used_ptr = Feptr;
 
-    ovector[0] = Fstart_match - mb->start_subject;
-    ovector[1] = Feptr - mb->start_subject;
+    match_data->ovector[0] = Fstart_match - mb->start_subject;
+    match_data->ovector[1] = Feptr - mb->start_subject;
 
     /* Set i to the smaller of the sizes of the external and frame ovectors. */
 
-    i = 2 * ((top_bracket + 1 > oveccount)? oveccount : top_bracket + 1);
-    memcpy(ovector + 2, Fovector, (i - 2) * sizeof(PCRE2_SIZE));
-    while (--i >= Foffset_top + 2) ovector[i] = PCRE2_UNSET;
+    i = 2 * ((top_bracket + 1 > match_data->oveccount)?
+      match_data->oveccount : top_bracket + 1);
+    memcpy(match_data->ovector + 2, Fovector, (i - 2) * sizeof(PCRE2_SIZE));
+    while (--i >= Foffset_top + 2) match_data->ovector[i] = PCRE2_UNSET;
     return MATCH_MATCH;  /* Note: NOT RRETURN */
 
 
@@ -5328,7 +5342,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
       offset = Flast_group_offset;
       while (offset != PCRE2_UNSET)
         {
-        N = (heapframe *)((char *)mb->match_frames + offset);
+        N = (heapframe *)((char *)match_data->heapframes + offset);
         P = (heapframe *)((char *)N - frame_size);
         if (N->group_frame_type == (GF_RECURSE | number))
           {
@@ -5729,7 +5743,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
     if (*bracode != OP_BRA && *bracode != OP_COND)
       {
-      N = (heapframe *)((char *)mb->match_frames + Flast_group_offset);
+      N = (heapframe *)((char *)match_data->heapframes + Flast_group_offset);
       P = (heapframe *)((char *)N - frame_size);
       Flast_group_offset = P->last_group_offset;
 
@@ -6346,6 +6360,7 @@ BOOL jit_checked_utf = FALSE;
 #endif  /* SUPPORT_UNICODE */
 
 PCRE2_SIZE frame_size;
+PCRE2_SIZE heapframes_size;
 
 /* We need to have mb as a pointer to a match block, because the IS_NEWLINE
 macro is used below, and it expects NLBLOCK to be defined as a pointer. */
@@ -6353,15 +6368,6 @@ macro is used below, and it expects NLBLOCK to be defined as a pointer. */
 pcre2_callout_block cb;
 match_block actual_match_block;
 match_block *mb = &actual_match_block;
-
-/* Allocate an initial vector of backtracking frames on the stack. If this
-proves to be too small, it is replaced by a larger one on the heap. To get a
-vector of the size required that is aligned for pointers, allocate it as a
-vector of pointers. */
-
-PCRE2_SPTR stack_frames_vector[START_FRAMES_SIZE/sizeof(PCRE2_SPTR)]
-    PCRE2_KEEP_UNINITIALIZED;
-mb->stack_frames = (heapframe *)stack_frames_vector;
 
 /* Recognize NULL, length 0 as an empty string. */
 
@@ -6793,15 +6799,11 @@ switch(re->newline_convention)
 vector at the end, whose size depends on the number of capturing parentheses in
 the pattern. It is not used at all if there are no capturing parentheses.
 
-  frame_size             is the total size of each frame
-  mb->frame_vector_size  is the total usable size of the vector (rounded down
-                           to a whole number of frames)
+  frame_size                   is the total size of each frame
+  match_data->heapframes       is the pointer to the frames vector
+  match_data->heapframes_size  is the total size of the vector
 
-The last of these is changed within the match() function if the frame vector
-has to be expanded. We therefore put it into the match block so that it is
-correct when calling match() more than once for non-anchored patterns.
-
-We must also pad frame_size for alignment to ensure subsequent frames are as
+We must pad the frame_size for alignment to ensure subsequent frames are as
 aligned as heapframe. Whilst ovector is word-aligned due to being a PCRE2_SIZE
 array, that does not guarantee it is suitably aligned for pointers, as some
 architectures have pointers that are larger than a size_t. */
@@ -6813,8 +6815,8 @@ frame_size = (offsetof(heapframe, ovector) +
 /* Limits set in the pattern override the match context only if they are
 smaller. */
 
-mb->heap_limit = (mcontext->heap_limit < re->limit_heap)?
-  mcontext->heap_limit : re->limit_heap;
+mb->heap_limit = ((mcontext->heap_limit < re->limit_heap)?
+  mcontext->heap_limit : re->limit_heap) * 1024;
 
 mb->match_limit = (mcontext->match_limit < re->limit_match)?
   mcontext->match_limit : re->limit_match;
@@ -6823,35 +6825,40 @@ mb->match_limit_depth = (mcontext->depth_limit < re->limit_depth)?
   mcontext->depth_limit : re->limit_depth;
 
 /* If a pattern has very many capturing parentheses, the frame size may be very
-large. Ensure that there are at least 10 available frames by getting an initial
-vector on the heap if necessary, except when the heap limit prevents this. Get
-fewer if possible. (The heap limit is in kibibytes.) */
+large. Set the initial frame vector size to ensure that there are at least 10
+available frames, but enforce a minimum of START_FRAMES_SIZE. If this is
+greater than the heap limit, get as large a vector as possible. Always round
+the size to a multiple of the frame size. */
 
-if (frame_size <= START_FRAMES_SIZE/10)
+heapframes_size = frame_size * 10;
+if (heapframes_size < START_FRAMES_SIZE) heapframes_size = START_FRAMES_SIZE;
+if (heapframes_size > mb->heap_limit)
   {
-  mb->match_frames = mb->stack_frames;   /* Initial frame vector on the stack */
-  mb->frame_vector_size = ((START_FRAMES_SIZE/frame_size) * frame_size);
+  if (frame_size > mb->heap_limit ) return PCRE2_ERROR_HEAPLIMIT;
+  heapframes_size = mb->heap_limit;
   }
-else
+
+/* If an existing frame vector in the match_data block is large enough, we can
+use it.Otherwise, free any pre-existing vector and get a new one. */
+
+if (match_data->heapframes_size < heapframes_size)
   {
-  mb->frame_vector_size = frame_size * 10;
-  if ((mb->frame_vector_size / 1024) > mb->heap_limit)
+  match_data->memctl.free(match_data->heapframes,
+    match_data->memctl.memory_data);
+  match_data->heapframes = match_data->memctl.malloc(heapframes_size,
+    match_data->memctl.memory_data);
+  if (match_data->heapframes == NULL)
     {
-    if (frame_size > mb->heap_limit * 1024) return PCRE2_ERROR_HEAPLIMIT;
-    mb->frame_vector_size = ((mb->heap_limit * 1024)/frame_size) * frame_size;
+    match_data->heapframes_size = 0;
+    return PCRE2_ERROR_NOMEMORY;
     }
-  mb->match_frames = mb->memctl.malloc(mb->frame_vector_size,
-    mb->memctl.memory_data);
-  if (mb->match_frames == NULL) return PCRE2_ERROR_NOMEMORY;
+  match_data->heapframes_size = heapframes_size;
   }
-
-mb->match_frames_top =
-  (heapframe *)((char *)mb->match_frames + mb->frame_vector_size);
 
 /* Write to the ovector within the first frame to mark every capture unset and
 to avoid uninitialized memory read errors when it is copied to a new frame. */
 
-memset((char *)(mb->match_frames) + offsetof(heapframe, ovector), 0xff,
+memset((char *)(match_data->heapframes) + offsetof(heapframe, ovector), 0xff,
   frame_size - offsetof(heapframe, ovector));
 
 /* Pointers to the individual character tables */
@@ -7279,8 +7286,8 @@ for(;;)
   mb->end_offset_top = 0;
   mb->skip_arg_count = 0;
 
-  rc = match(start_match, mb->start_code, match_data->ovector,
-    match_data->oveccount, re->top_bracket, frame_size, mb);
+  rc = match(start_match, mb->start_code, re->top_bracket, frame_size,
+    match_data, mb);
 
   if (mb->hitend && start_partial == NULL)
     {
@@ -7463,11 +7470,6 @@ if (utf && end_subject != true_end_subject &&
   }
 #endif  /* SUPPORT_UNICODE */
 
-/* Release an enlarged frame vector that is on the heap. */
-
-if (mb->match_frames != mb->stack_frames)
-  mb->memctl.free(mb->match_frames, mb->memctl.memory_data);
-
 /* Fill in fields that are always returned in the match data. */
 
 match_data->code = re;
@@ -7532,5 +7534,11 @@ else match_data->rc = PCRE2_ERROR_NOMATCH;
 
 return match_data->rc;
 }
+
+/* These #undefs are here to enable unity builds with CMake. */
+
+#undef NLBLOCK /* Block containing newline information */
+#undef PSSTART /* Field containing processed string start */
+#undef PSEND   /* Field containing processed string end */
 
 /* End of pcre2_match.c */

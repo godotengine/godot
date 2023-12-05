@@ -55,8 +55,9 @@ using namespace godot;
 #ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
 
-#include "thorvg_bounds_iterator.h"
 #include "thorvg_svg_in_ot.h"
+
+#include "thorvg_bounds_iterator.h"
 
 #include <freetype/otsvg.h>
 #include <ft2build.h>
@@ -120,14 +121,19 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 				for (int i = 0; i < parser->get_attribute_count(); i++) {
 					xml_body += vformat(" %s=\"%s\"", parser->get_attribute_name(i), parser->get_attribute_value(i));
 				}
-				xml_body += ">";
+
+				if (parser->is_empty()) {
+					xml_body += "/>";
+				} else {
+					xml_body += ">";
+				}
 			} else if (parser->get_node_type() == XMLParser::NODE_TEXT) {
 				xml_body += parser->get_node_data();
 			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
 				xml_body += vformat("</%s>", parser->get_node_name());
 			}
 		}
-		String temp_xml_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 0 0\">" + xml_body;
+		String temp_xml_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\">" + xml_body;
 		CharString temp_xml = temp_xml_str.utf8();
 
 		std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
@@ -181,8 +187,8 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to get SVG bounds.");
 		}
 
-		gl_state.bmp_y = -min_y * gl_state.h / new_h;
-		gl_state.bmp_x = min_x * gl_state.w / new_w;
+		gl_state.bmp_y = gl_state.h + metrics.descender / 64.f;
+		gl_state.bmp_x = 0;
 
 		gl_state.ready = true;
 	}
@@ -250,7 +256,7 @@ FT_Error tvg_svg_in_ot_render(FT_GlyphSlot p_slot, FT_Pointer *p_state) {
 	}
 
 	std::unique_ptr<tvg::SwCanvas> sw_canvas = tvg::SwCanvas::gen();
-	res = sw_canvas->target((uint32_t *)p_slot->bitmap.buffer, (int)p_slot->bitmap.width, (int)p_slot->bitmap.width, (int)p_slot->bitmap.rows, tvg::SwCanvas::ARGB8888_STRAIGHT);
+	res = sw_canvas->target((uint32_t *)p_slot->bitmap.buffer, (int)p_slot->bitmap.width, (int)p_slot->bitmap.width, (int)p_slot->bitmap.rows, tvg::SwCanvas::ARGB8888S);
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FT_Err_Invalid_Outline, "Failed to create SVG canvas.");
 	}

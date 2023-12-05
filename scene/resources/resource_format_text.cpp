@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_format_binary.h"
+#include "core/object/script_language.h"
 #include "core/version.h"
 
 // Version 2: changed names for Basis, AABB, Vectors, etc.
@@ -168,7 +169,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			} else {
 #ifdef TOOLS_ENABLED
 				//remember ID for saving
-				res->set_id_for_path(path, id);
+				res->set_id_for_path(local_path, id);
 #endif
 				r_res = res;
 			}
@@ -576,6 +577,8 @@ Error ResourceLoaderText::load() {
 		if (do_assign) {
 			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 				res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+			} else if (!path.is_resource_file()) {
+				res->set_path_cache(path);
 			}
 			res->set_scene_unique_id(id);
 		}
@@ -851,25 +854,33 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 
 		String path = next_tag.fields["path"];
 		String type = next_tag.fields["type"];
+		String fallback_path;
 
 		bool using_uid = false;
 		if (next_tag.fields.has("uid")) {
-			//if uid exists, return uid in text format, not the path
+			// If uid exists, return uid in text format, not the path.
 			String uidt = next_tag.fields["uid"];
 			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
 			if (uid != ResourceUID::INVALID_ID) {
+				fallback_path = path; // Used by Dependency Editor, in case uid path fails.
 				path = ResourceUID::get_singleton()->id_to_text(uid);
 				using_uid = true;
 			}
 		}
 
 		if (!using_uid && !path.contains("://") && path.is_relative_path()) {
-			// path is relative to file being loaded, so convert to a resource path
+			// Path is relative to file being loaded, so convert to a resource path.
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().path_join(path));
 		}
 
 		if (p_add_types) {
 			path += "::" + type;
+		}
+		if (!fallback_path.is_empty()) {
+			if (!p_add_types) {
+				path += "::"; // Ensure that path comes third, even if there is no type.
+			}
+			path += "::" + fallback_path;
 		}
 
 		p_dependencies->push_back(path);
@@ -1380,6 +1391,8 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 	wf->store_buffer(data.ptr(), data.size());
 	{
 		Ref<DirAccess> dar = DirAccess::open(temp_file.get_base_dir());
+		ERR_FAIL_COND_V(dar.is_null(), FAILED);
+
 		dar->remove(temp_file);
 	}
 
@@ -1820,6 +1833,10 @@ String ResourceFormatSaverTextInstance::_write_resources(void *ud, const Ref<Res
 }
 
 String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res) {
+	if (res->get_meta(SNAME("_skip_save_"), false)) {
+		return "null";
+	}
+
 	if (external_resources.has(res)) {
 		return "ExtResource(\"" + external_resources[res] + "\")";
 	} else {
@@ -1844,7 +1861,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		case Variant::OBJECT: {
 			Ref<Resource> res = p_variant;
 
-			if (res.is_null() || external_resources.has(res)) {
+			if (res.is_null() || external_resources.has(res) || res->get_meta(SNAME("_skip_save_"), false)) {
 				return;
 			}
 
@@ -1865,6 +1882,8 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				return;
 			}
 
+			resource_set.insert(res);
+
 			List<PropertyInfo> property_list;
 
 			res->get_property_list(&property_list);
@@ -1879,14 +1898,17 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 					Variant v = res->get(I->get().name);
 
 					if (pi.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+						NonPersistentKey npk;
+						npk.base = res;
+						npk.property = pi.name;
+						non_persistent_map[npk] = v;
+
 						Ref<Resource> sres = v;
 						if (sres.is_valid()) {
-							NonPersistentKey npk;
-							npk.base = res;
-							npk.property = pi.name;
-							non_persistent_map[npk] = sres;
 							resource_set.insert(sres);
 							saved_resources.push_back(sres);
+						} else {
+							_find_resources(v);
 						}
 					} else {
 						_find_resources(v);
@@ -1896,8 +1918,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				I = I->next();
 			}
 
-			resource_set.insert(res); //saved after, so the children it needs are available when loaded
-			saved_resources.push_back(res);
+			saved_resources.push_back(res); // Saved after, so the children it needs are available when loaded
 
 		} break;
 		case Variant::ARRAY: {

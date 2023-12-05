@@ -66,7 +66,6 @@ class MenuBar : public Control {
 		}
 	};
 	Vector<Menu> menu_cache;
-	HashSet<String> global_menus;
 
 	int focused_menu = -1;
 	int selected_menu = -1;
@@ -114,14 +113,27 @@ class MenuBar : public Control {
 
 	void _open_popup(int p_index, bool p_focus_item = false);
 	void _popup_visibility_changed(bool p_visible);
-	void _update_submenu(const String &p_menu_name, PopupMenu *p_child);
-	void _clear_menu();
-	void _update_menu();
+
+	String global_menu_name;
+
+	int _find_global_start_index() {
+		if (global_menu_name.is_empty()) {
+			return -1;
+		}
+
+		DisplayServer *ds = DisplayServer::get_singleton();
+		int count = ds->global_menu_get_item_count("_main");
+		for (int i = 0; i < count; i++) {
+			if (ds->global_menu_get_item_tag("_main", i).operator String().begins_with(global_menu_name)) {
+				return i;
+			}
+		}
+		return -1;
+	}
 
 protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
@@ -130,6 +142,9 @@ protected:
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	String bind_global_menu();
+	void unbind_global_menu();
 
 	void set_switch_on_hover(bool p_enabled);
 	bool is_switch_on_hover();

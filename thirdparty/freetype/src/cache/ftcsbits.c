@@ -342,7 +342,7 @@
     FT_Bool     result;
 
 
-    if (list_changed)
+    if ( list_changed )
       *list_changed = FALSE;
     result = FT_BOOL( gnode->family == gquery->family       &&
                       gindex - gnode->gindex < snode->count );
@@ -410,20 +410,5 @@
 
     return result;
   }
-
-
-#ifdef FTC_INLINE
-
-  FT_LOCAL_DEF( FT_Bool )
-  FTC_SNode_Compare( FTC_SNode   snode,
-                     FTC_GQuery  gquery,
-                     FTC_Cache   cache,
-                     FT_Bool*    list_changed )
-  {
-    return ftc_snode_compare( FTC_NODE( snode ), gquery,
-                              cache, list_changed );
-  }
-
-#endif
 
 /* END */

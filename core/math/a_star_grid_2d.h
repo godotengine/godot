@@ -33,7 +33,6 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
-#include "core/object/script_language.h"
 #include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 
@@ -106,22 +105,30 @@ private:
 	uint64_t pass = 1;
 
 private: // Internal routines.
-	_FORCE_INLINE_ bool _is_walkable(int64_t p_x, int64_t p_y) const {
+	_FORCE_INLINE_ bool _is_walkable(int32_t p_x, int32_t p_y) const {
 		if (region.has_point(Vector2i(p_x, p_y))) {
 			return !points[p_y - region.position.y][p_x - region.position.x].solid;
 		}
 		return false;
 	}
 
-	_FORCE_INLINE_ Point *_get_point(int64_t p_x, int64_t p_y) {
+	_FORCE_INLINE_ Point *_get_point(int32_t p_x, int32_t p_y) {
 		if (region.has_point(Vector2i(p_x, p_y))) {
 			return &points[p_y - region.position.y][p_x - region.position.x];
 		}
 		return nullptr;
 	}
 
-	_FORCE_INLINE_ Point *_get_point_unchecked(int64_t p_x, int64_t p_y) {
+	_FORCE_INLINE_ Point *_get_point_unchecked(int32_t p_x, int32_t p_y) {
 		return &points[p_y - region.position.y][p_x - region.position.x];
+	}
+
+	_FORCE_INLINE_ Point *_get_point_unchecked(const Vector2i &p_id) {
+		return &points[p_id.y - region.position.y][p_id.x - region.position.x];
+	}
+
+	_FORCE_INLINE_ const Point *_get_point_unchecked(const Vector2i &p_id) const {
+		return &points[p_id.y - region.position.y][p_id.x - region.position.x];
 	}
 
 	void _get_nbors(Point *p_point, LocalVector<Point *> &r_nbors);
@@ -152,10 +159,7 @@ public:
 
 	void update();
 
-	int get_width() const;
-	int get_height() const;
-
-	bool is_in_bounds(int p_x, int p_y) const;
+	bool is_in_bounds(int32_t p_x, int32_t p_y) const;
 	bool is_in_boundsv(const Vector2i &p_id) const;
 	bool is_dirty() const;
 
@@ -176,6 +180,9 @@ public:
 
 	void set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale);
 	real_t get_point_weight_scale(const Vector2i &p_id) const;
+
+	void fill_solid_region(const Rect2i &p_region, bool p_solid = true);
+	void fill_weight_scale_region(const Rect2i &p_region, real_t p_weight_scale);
 
 	void clear();
 

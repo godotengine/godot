@@ -67,28 +67,51 @@ struct head_maxp_info_t
 
 typedef struct head_maxp_info_t head_maxp_info_t;
 
+struct contour_point_t
+{
+  void init (float x_ = 0.f, float y_ = 0.f, bool is_end_point_ = false)
+  { flag = 0; x = x_; y = y_; is_end_point = is_end_point_; }
+
+  void transform (const float (&matrix)[4])
+  {
+    float x_ = x * matrix[0] + y * matrix[2];
+	  y  = x * matrix[1] + y * matrix[3];
+    x  = x_;
+  }
+  HB_ALWAYS_INLINE
+  void translate (const contour_point_t &p) { x += p.x; y += p.y; }
+
+
+  float x;
+  float y;
+  uint8_t flag;
+  bool is_end_point;
+};
+
+struct contour_point_vector_t : hb_vector_t<contour_point_t>
+{
+  void extend (const hb_array_t<contour_point_t> &a)
+  {
+    unsigned int old_len = length;
+    if (unlikely (!resize (old_len + a.length, false)))
+      return;
+    auto arrayZ = this->arrayZ + old_len;
+    unsigned count = a.length;
+    hb_memcpy (arrayZ, a.arrayZ, count * sizeof (arrayZ[0]));
+  }
+};
+
+namespace OT {
+  struct cff1_subset_accelerator_t;
+  struct cff2_subset_accelerator_t;
+}
+
 struct hb_subset_plan_t
 {
   HB_INTERNAL hb_subset_plan_t (hb_face_t *,
 				const hb_subset_input_t *input);
 
-  ~hb_subset_plan_t()
-  {
-    hb_face_destroy (source);
-    hb_face_destroy (dest);
-
-    hb_map_destroy (codepoint_to_glyph);
-    hb_map_destroy (glyph_map);
-    hb_map_destroy (reverse_glyph_map);
-
-#ifdef HB_EXPERIMENTAL_API
-    for (auto _ : name_table_overrides)
-      _.second.fini ();
-#endif
-
-    if (inprogress_accelerator)
-      hb_subset_accelerator_t::destroy ((void*) inprogress_accelerator);
-  }
+  HB_INTERNAL ~hb_subset_plan_t();
 
   hb_object_header_t header;
 
@@ -106,6 +129,12 @@ struct hb_subset_plan_t
 
   // Plan is only good for a specific source/dest so keep them with it
   hb_face_t *source;
+#ifndef HB_NO_SUBSET_CFF
+  // These have to be immediately after source:
+  hb_face_lazy_loader_t<OT::cff1_subset_accelerator_t, 1> cff1_accel;
+  hb_face_lazy_loader_t<OT::cff2_subset_accelerator_t, 2> cff2_accel;
+#endif
+
   hb_face_t *dest;
 
   unsigned int _num_output_glyphs;
@@ -113,6 +142,10 @@ struct hb_subset_plan_t
   bool all_axes_pinned;
   bool pinned_at_default;
   bool has_seac;
+
+  // whether to insert a catch-all FeatureVariationRecord
+  bool gsub_insert_catch_all_feature_variation_rec;
+  bool gpos_insert_catch_all_feature_variation_rec;
 
 #define HB_SUBSET_PLAN_MEMBER(Type, Name) Type Name;
 #include "hb-subset-plan-member-list.hh"
@@ -127,25 +160,31 @@ struct hb_subset_plan_t
  public:
 
   template<typename T>
-  hb_blob_ptr_t<T> source_table()
+  struct source_table_loader
   {
-    hb_lock_t lock (accelerator ? &accelerator->sanitized_table_cache_lock : nullptr);
+    hb_blob_ptr_t<T> operator () (hb_subset_plan_t *plan)
+    {
+      hb_lock_t lock (plan->accelerator ? &plan->accelerator->sanitized_table_cache_lock : nullptr);
 
-    auto *cache = accelerator ? &accelerator->sanitized_table_cache : &sanitized_table_cache;
-    if (cache
-        && !cache->in_error ()
-        && cache->has (+T::tableTag)) {
-      return hb_blob_reference (cache->get (+T::tableTag).get ());
+      auto *cache = plan->accelerator ? &plan->accelerator->sanitized_table_cache : &plan->sanitized_table_cache;
+      if (cache
+	  && !cache->in_error ()
+	  && cache->has (+T::tableTag)) {
+	return hb_blob_reference (cache->get (+T::tableTag).get ());
+      }
+
+      hb::unique_ptr<hb_blob_t> table_blob {hb_sanitize_context_t ().reference_table<T> (plan->source)};
+      hb_blob_t* ret = hb_blob_reference (table_blob.get ());
+
+      if (likely (cache))
+	cache->set (+T::tableTag, std::move (table_blob));
+
+      return ret;
     }
+  };
 
-    hb::unique_ptr<hb_blob_t> table_blob {hb_sanitize_context_t ().reference_table<T> (source)};
-    hb_blob_t* ret = hb_blob_reference (table_blob.get ());
-
-    if (likely (cache))
-      cache->set (+T::tableTag, std::move (table_blob));
-
-    return ret;
-  }
+  template<typename T>
+  auto source_table() HB_AUTO_RETURN (source_table_loader<T> {} (this))
 
   bool in_error () const { return !successful; }
 
@@ -182,15 +221,6 @@ struct hb_subset_plan_t
   num_output_glyphs () const
   {
     return _num_output_glyphs;
-  }
-
-  /*
-   * Given an output gid , returns true if that glyph id is an empty
-   * glyph (ie. it's a gid that we are dropping all data for).
-   */
-  inline bool is_empty_glyph (hb_codepoint_t gid) const
-  {
-    return !_glyphset.has (gid);
   }
 
   inline bool new_gid_for_codepoint (hb_codepoint_t codepoint,
@@ -241,5 +271,6 @@ struct hb_subset_plan_t
     return hb_face_builder_add_table (dest, tag, contents);
   }
 };
+
 
 #endif /* HB_SUBSET_PLAN_HH */

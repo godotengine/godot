@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshDataTool" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MeshDataTool" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper tool to access and edit [Mesh] data.
 	</brief_description>
@@ -49,6 +49,7 @@
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>
+		<link title="Using the MeshDataTool">$DOCS_URL/tutorials/3d/procedural_geometry/meshdatatool.html</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -60,6 +61,7 @@
 		<method name="commit_to_surface">
 			<return type="int" enum="Error" />
 			<param index="0" name="mesh" type="ArrayMesh" />
+			<param index="1" name="compression_flags" type="int" default="0" />
 			<description>
 				Adds a new surface to specified [Mesh] with edited data.
 			</description>
@@ -136,8 +138,21 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="vertex" type="int" />
 			<description>
-				Returns the specified vertex of the given face.
+				Returns the specified vertex index of the given face.
 				Vertex argument must be either 0, 1, or 2 because faces contain three vertices.
+				[b]Example:[/b]
+				[codeblocks]
+				[gdscript]
+				var index = mesh_data_tool.get_face_vertex(0, 1) # Gets the index of the second vertex of the first face.
+				var position = mesh_data_tool.get_vertex(index)
+				var normal = mesh_data_tool.get_vertex_normal(index)
+				[/gdscript]
+				[csharp]
+				int index = meshDataTool.GetFaceVertex(0, 1); // Gets the index of the second vertex of the first face.
+				Vector3 position = meshDataTool.GetVertex(index);
+				Vector3 normal = meshDataTool.GetVertexNormal(index);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
@@ -157,7 +172,7 @@
 			<return type="Vector3" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the vertex at given index.
+				Returns the position of the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_bones" qualifiers="const">

@@ -33,9 +33,9 @@
 
 #include "scene/gui/dialogs.h"
 
+class EditorValidationPanel;
 class Label;
 class LineEdit;
-class PanelContainer;
 
 class DirectoryCreateDialog : public ConfirmationDialog {
 	GDCLASS(DirectoryCreateDialog, ConfirmationDialog);
@@ -44,17 +44,13 @@ class DirectoryCreateDialog : public ConfirmationDialog {
 
 	Label *label = nullptr;
 	LineEdit *dir_path = nullptr;
-
-	PanelContainer *status_panel = nullptr;
-	Label *status_label = nullptr;
+	EditorValidationPanel *validation_panel = nullptr;
 
 	String _validate_path(const String &p_path) const;
-
-	void _on_dir_path_changed(const String &p_text);
+	void _on_dir_path_changed();
 
 protected:
 	static void _bind_methods();
-	void _notification(int p_what);
 
 	virtual void ok_pressed() override;
 	virtual void _post_popup() override;

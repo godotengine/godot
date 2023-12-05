@@ -172,18 +172,46 @@ exit:
 #endif /* MBEDTLS_ARC4_C */
 }
 
+#if !defined(MBEDTLS_CIPHER_PADDING_PKCS7)
+int mbedtls_pkcs12_pbe_ext(mbedtls_asn1_buf *pbe_params, int mode,
+                           mbedtls_cipher_type_t cipher_type, mbedtls_md_type_t md_type,
+                           const unsigned char *pwd,  size_t pwdlen,
+                           const unsigned char *data, size_t len,
+                           unsigned char *output, size_t output_size,
+                           size_t *output_len);
+#endif
+
 int mbedtls_pkcs12_pbe(mbedtls_asn1_buf *pbe_params, int mode,
                        mbedtls_cipher_type_t cipher_type, mbedtls_md_type_t md_type,
                        const unsigned char *pwd,  size_t pwdlen,
                        const unsigned char *data, size_t len,
                        unsigned char *output)
 {
+    size_t output_len = 0;
+
+    /* We assume caller of the function is providing a big enough output buffer
+     * so we pass output_size as SIZE_MAX to pass checks, However, no guarantees
+     * for the output size actually being correct.
+     */
+    return mbedtls_pkcs12_pbe_ext(pbe_params, mode, cipher_type, md_type,
+                                  pwd, pwdlen, data, len, output, SIZE_MAX,
+                                  &output_len);
+}
+
+int mbedtls_pkcs12_pbe_ext(mbedtls_asn1_buf *pbe_params, int mode,
+                           mbedtls_cipher_type_t cipher_type, mbedtls_md_type_t md_type,
+                           const unsigned char *pwd,  size_t pwdlen,
+                           const unsigned char *data, size_t len,
+                           unsigned char *output, size_t output_size,
+                           size_t *output_len)
+{
     int ret, keylen = 0;
     unsigned char key[32];
     unsigned char iv[16];
     const mbedtls_cipher_info_t *cipher_info;
     mbedtls_cipher_context_t cipher_ctx;
-    size_t olen = 0;
+    size_t finish_olen = 0;
+    unsigned int padlen = 0;
 
     if (pwd == NULL && pwdlen != 0) {
         return MBEDTLS_ERR_PKCS12_BAD_INPUT_DATA;
@@ -195,6 +223,19 @@ int mbedtls_pkcs12_pbe(mbedtls_asn1_buf *pbe_params, int mode,
     }
 
     keylen = cipher_info->key_bitlen / 8;
+
+    if (mode == MBEDTLS_PKCS12_PBE_DECRYPT) {
+        if (output_size < len) {
+            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        }
+    }
+
+    if (mode == MBEDTLS_PKCS12_PBE_ENCRYPT) {
+        padlen = cipher_info->block_size - (len % cipher_info->block_size);
+        if (output_size < (len + padlen)) {
+            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        }
+    }
 
     if ((ret = pkcs12_pbe_derive_key_iv(pbe_params, md_type, pwd, pwdlen,
                                         key, keylen,
@@ -214,6 +255,25 @@ int mbedtls_pkcs12_pbe(mbedtls_asn1_buf *pbe_params, int mode,
         goto exit;
     }
 
+#if defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
+    /* PKCS12 uses CBC with PKCS7 padding */
+
+    mbedtls_cipher_padding_t padding = MBEDTLS_PADDING_PKCS7;
+#if !defined(MBEDTLS_CIPHER_PADDING_PKCS7)
+    /* For historical reasons, when decrypting, this function works when
+     * decrypting even when support for PKCS7 padding is disabled. In this
+     * case, it ignores the padding, and so will never report a
+     * password mismatch.
+     */
+    if (mode == MBEDTLS_PKCS12_PBE_DECRYPT) {
+        padding = MBEDTLS_PADDING_NONE;
+    }
+#endif
+    if ((ret = mbedtls_cipher_set_padding_mode(&cipher_ctx, padding)) != 0) {
+        goto exit;
+    }
+#endif /* MBEDTLS_CIPHER_MODE_WITH_PADDING */
+
     if ((ret = mbedtls_cipher_set_iv(&cipher_ctx, iv, cipher_info->iv_size)) != 0) {
         goto exit;
     }
@@ -223,13 +283,15 @@ int mbedtls_pkcs12_pbe(mbedtls_asn1_buf *pbe_params, int mode,
     }
 
     if ((ret = mbedtls_cipher_update(&cipher_ctx, data, len,
-                                     output, &olen)) != 0) {
+                                     output, output_len)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_cipher_finish(&cipher_ctx, output + olen, &olen)) != 0) {
+    if ((ret = mbedtls_cipher_finish(&cipher_ctx, output + (*output_len), &finish_olen)) != 0) {
         ret = MBEDTLS_ERR_PKCS12_PASSWORD_MISMATCH;
     }
+
+    *output_len += finish_olen;
 
 exit:
     mbedtls_platform_zeroize(key, sizeof(key));

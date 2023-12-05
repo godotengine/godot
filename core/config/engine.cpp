@@ -74,6 +74,14 @@ int Engine::get_max_fps() const {
 	return _max_fps;
 }
 
+void Engine::set_audio_output_latency(int p_msec) {
+	_audio_output_latency = p_msec > 1 ? p_msec : 1;
+}
+
+int Engine::get_audio_output_latency() const {
+	return _audio_output_latency;
+}
+
 uint64_t Engine::get_frames_drawn() {
 	return frames_drawn;
 }
@@ -168,14 +176,14 @@ TypedArray<Dictionary> Engine::get_copyright_info() const {
 
 Dictionary Engine::get_donor_info() const {
 	Dictionary donors;
-	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSOR_PLATINUM);
-	donors["gold_sponsors"] = array_from_info(DONORS_SPONSOR_GOLD);
-	donors["silver_sponsors"] = array_from_info(DONORS_SPONSOR_SILVER);
-	donors["bronze_sponsors"] = array_from_info(DONORS_SPONSOR_BRONZE);
-	donors["mini_sponsors"] = array_from_info(DONORS_SPONSOR_MINI);
-	donors["gold_donors"] = array_from_info(DONORS_GOLD);
-	donors["silver_donors"] = array_from_info(DONORS_SILVER);
-	donors["bronze_donors"] = array_from_info(DONORS_BRONZE);
+	donors["patrons"] = array_from_info(DONORS_PATRONS);
+	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSORS_PLATINUM);
+	donors["gold_sponsors"] = array_from_info(DONORS_SPONSORS_GOLD);
+	donors["silver_sponsors"] = array_from_info(DONORS_SPONSORS_SILVER);
+	donors["diamond_members"] = array_from_info(DONORS_MEMBERS_DIAMOND);
+	donors["titanium_members"] = array_from_info(DONORS_MEMBERS_TITANIUM);
+	donors["platinum_members"] = array_from_info(DONORS_MEMBERS_PLATINUM);
+	donors["gold_members"] = array_from_info(DONORS_MEMBERS_GOLD);
 	return donors;
 }
 
@@ -239,6 +247,10 @@ bool Engine::is_validation_layers_enabled() const {
 	return use_validation_layers;
 }
 
+bool Engine::is_generate_spirv_debug_info_enabled() const {
+	return generate_spirv_debug_info;
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	CoreGlobals::print_error_enabled = p_enabled;
 }
@@ -248,14 +260,21 @@ bool Engine::is_printing_error_messages() const {
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {
-	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), "Can't register singleton that already exists: " + String(p_singleton.name));
+	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), vformat("Can't register singleton '%s' because it already exists.", p_singleton.name));
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
 
 Object *Engine::get_singleton_object(const StringName &p_name) const {
 	HashMap<StringName, Object *>::ConstIterator E = singleton_ptrs.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + String(p_name) + "'.");
+	ERR_FAIL_COND_V_MSG(!E, nullptr, vformat("Failed to retrieve non-existent singleton '%s'.", p_name));
+
+#ifdef TOOLS_ENABLED
+	if (!is_editor_hint() && is_singleton_editor_only(p_name)) {
+		ERR_FAIL_V_MSG(nullptr, vformat("Can't retrieve singleton '%s' outside of editor.", p_name));
+	}
+#endif
+
 	return E->value;
 }
 
@@ -270,6 +289,19 @@ bool Engine::is_singleton_user_created(const StringName &p_name) const {
 
 	return false;
 }
+
+bool Engine::is_singleton_editor_only(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!singleton_ptrs.has(p_name), false);
+
+	for (const Singleton &E : singletons) {
+		if (E.name == p_name && E.editor_only) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Engine::remove_singleton(const StringName &p_name) {
 	ERR_FAIL_COND(!singleton_ptrs.has(p_name));
 
@@ -288,6 +320,12 @@ bool Engine::has_singleton(const StringName &p_name) const {
 
 void Engine::get_singletons(List<Singleton> *p_singletons) {
 	for (const Singleton &E : singletons) {
+#ifdef TOOLS_ENABLED
+		if (!is_editor_hint() && E.editor_only) {
+			continue;
+		}
+#endif
+
 		p_singletons->push_back(E);
 	}
 }

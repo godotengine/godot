@@ -37,7 +37,7 @@
 #ifndef _POOLALLOC_INCLUDED_
 #define _POOLALLOC_INCLUDED_
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 #  define GUARD_BLOCKS  // define to enable guard block sanity checking
 #endif
 
@@ -74,7 +74,7 @@ namespace glslang {
 
 class TAllocation {
 public:
-    TAllocation(size_t size, unsigned char* mem, TAllocation* prev = 0) :
+    TAllocation(size_t size, unsigned char* mem, TAllocation* prev = nullptr) :
         size(size), mem(mem), prevAlloc(prev) {
         // Allocations are bracketed:
         //    [allocationHeader][initialGuardBlock][userData][finalGuardBlock]
@@ -171,7 +171,7 @@ public:
     void popAll();
 
     //
-    // Call allocate() to actually acquire memory.  Returns 0 if no memory
+    // Call allocate() to actually acquire memory.  Returns nullptr if no memory
     // available, otherwise a properly aligned pointer to 'numBytes' of memory.
     //
     void* allocate(size_t numBytes);
@@ -189,7 +189,7 @@ protected:
     struct tHeader {
         tHeader(tHeader* nextPage, size_t pageCount) :
 #ifdef GUARD_BLOCKS
-        lastAllocation(0),
+        lastAllocation(nullptr),
 #endif
         nextPage(nextPage), pageCount(pageCount) { }
 

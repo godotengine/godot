@@ -40,6 +40,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
@@ -197,15 +198,15 @@ void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSettingsDialog::_update_icons() {
-	search_box->set_right_icon(shortcuts->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	search_box->set_right_icon(shortcuts->get_editor_theme_icon(SNAME("Search")));
 	search_box->set_clear_button_enabled(true);
-	shortcut_search_box->set_right_icon(shortcuts->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	shortcut_search_box->set_right_icon(shortcuts->get_editor_theme_icon(SNAME("Search")));
 	shortcut_search_box->set_clear_button_enabled(true);
 
-	restart_close_button->set_icon(shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+	restart_close_button->set_icon(shortcuts->get_editor_theme_icon(SNAME("Close")));
 	restart_container->add_theme_style_override("panel", shortcuts->get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-	restart_icon->set_texture(shortcuts->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-	restart_label->add_theme_color_override("font_color", shortcuts->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	restart_icon->set_texture(shortcuts->get_editor_theme_icon(SNAME("StatusWarning")));
+	restart_label->add_theme_color_override("font_color", shortcuts->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 }
 
 void EditorSettingsDialog::_event_config_confirmed() {
@@ -233,7 +234,7 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Edit Built-in Action") + " '" + p_name + "'");
+	undo_redo->create_action(vformat(TTR("Edit Built-in Action: %s"), p_name));
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
 	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
@@ -249,7 +250,7 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Edit Shortcut") + " '" + p_path + "'");
+	undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path));
 	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
 	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
@@ -303,11 +304,11 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 	}
 
 	if (p_allow_revert) {
-		shortcut_item->add_button(1, shortcuts->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), SHORTCUT_REVERT);
+		shortcut_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Reload")), SHORTCUT_REVERT);
 	}
 
-	shortcut_item->add_button(1, shortcuts->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), SHORTCUT_ADD);
-	shortcut_item->add_button(1, shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")), SHORTCUT_ERASE);
+	shortcut_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Add")), SHORTCUT_ADD);
+	shortcut_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Close")), SHORTCUT_ERASE);
 
 	shortcut_item->set_meta("is_action", p_is_action);
 	shortcut_item->set_meta("type", "shortcut");
@@ -326,11 +327,11 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 		event_item->set_text(0, shortcut_item->get_child_count() == 1 ? "Primary" : "");
 		event_item->set_text(1, ie->as_text());
 
-		event_item->add_button(1, shortcuts->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), SHORTCUT_EDIT);
-		event_item->add_button(1, shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")), SHORTCUT_ERASE);
+		event_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Edit")), SHORTCUT_EDIT);
+		event_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Close")), SHORTCUT_ERASE);
 
-		event_item->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
-		event_item->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
+		event_item->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
+		event_item->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
 
 		event_item->set_meta("is_action", p_is_action);
 		event_item->set_meta("type", "event");
@@ -399,8 +400,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 	if (collapsed.has("Common")) {
 		common_section->set_collapsed(collapsed["Common"]);
 	}
-	common_section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-	common_section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+	common_section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+	common_section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 	// Get the action map for the editor, and add each item to the "Common" section.
 	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
@@ -452,8 +453,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 		section->set_tooltip_text(0, tooltip);
 		section->set_selectable(0, false);
 		section->set_selectable(1, false);
-		section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-		section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+		section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 		if (collapsed.has(item_name)) {
 			section->set_collapsed(collapsed[item_name]);
@@ -499,7 +500,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		return;
 	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_COND_MSG(!ti, "Object passed is not a TreeItem");
+	ERR_FAIL_NULL_MSG(ti, "Object passed is not a TreeItem.");
 
 	ShortcutButton button_idx = (ShortcutButton)p_idx;
 

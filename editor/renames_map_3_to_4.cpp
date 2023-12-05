@@ -1071,6 +1071,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 
 	// Would need bespoke solution.
 	// { "autowrap", "autowrap_mode" }, // Label -- Changed from bool to enum.
+	// { "extents", "size" }, // BoxShape3D, LightmapGI, ReflectionProbe
 	// { "frames", "sprite_frames" }, // AnimatedSprite2D, AnimatedSprite3D -- GH-73696
 	// { "percent_visible, "show_percentage }, // ProgressBar -- Breaks Label and RichTextLabel.
 	// { "pressed", "button_pressed" }, // BaseButton -- Would also rename the signal.
@@ -1098,7 +1099,6 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "drag_margin_top", "drag_top_margin" }, // Camera2D
 	{ "drag_margin_v_enabled", "drag_vertical_enabled" }, // Camera2D
 	{ "enabled_focus_mode", "focus_mode" }, // BaseButton - Removed
-	{ "extents", "size" }, // BoxShape3D, LightmapGI, ReflectionProbe
 	{ "extra_spacing_bottom", "spacing_bottom" }, // Font
 	{ "extra_spacing_top", "spacing_top" }, // Font
 	{ "focus_neighbour_bottom", "focus_neighbor_bottom" }, // Control
@@ -1198,7 +1198,6 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "DragMarginTop", "DragTopMargin" }, // Camera2D
 	{ "DragMarginVEnabled", "DragVerticalEnabled" }, // Camera2D
 	{ "EnabledFocusMode", "FocusMode" }, // BaseButton - Removed
-	{ "Extents", "Size" }, // BoxShape3D, LightmapGI, ReflectionProbe
 	{ "ExtraSpacingBottom", "SpacingBottom" }, // Font
 	{ "ExtraSpacingTop", "SpacingTop" }, // Font
 	{ "FocusNeighbourBottom", "FocusNeighborBottom" }, // Control
@@ -1451,7 +1450,7 @@ const char *RenamesMap3To4::shaders_renames[][2] = {
 	{ "NORMALMAP_DEPTH", "NORMAL_MAP_DEPTH" },
 	{ "TRANSMISSION", "BACKLIGHT" },
 	{ "WORLD_MATRIX", "MODEL_MATRIX" },
-	{ "depth_draw_alpha_prepass", "depth_draw_opaque" },
+	{ "depth_draw_alpha_prepass", "depth_prepass_alpha" },
 	{ "hint_albedo", "source_color" },
 	{ "hint_aniso", "hint_anisotropy" },
 	{ "hint_black", "hint_default_black" },

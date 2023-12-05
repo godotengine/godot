@@ -51,46 +51,33 @@
 
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
 
-#if !defined(_WIN32_WINNT)
-#define _WIN32_WINNT 0x0400
-#endif
 #include <windows.h>
 #include <bcrypt.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1600
-/* Visual Studio 2010 and earlier issue a warning when both <stdint.h> and
- * <intsafe.h> are included, as they redefine a number of <TYPE>_MAX constants.
- * These constants are guaranteed to be the same, though, so we suppress the
- * warning when including intsafe.h.
- */
-#pragma warning( push )
-#pragma warning( disable : 4005 )
-#endif
 #include <intsafe.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1600
-#pragma warning( pop )
-#endif
 
 int mbedtls_platform_entropy_poll(void *data, unsigned char *output, size_t len,
                                   size_t *olen)
 {
-    ULONG len_as_ulong = 0;
     ((void) data);
     *olen = 0;
 
     /*
      * BCryptGenRandom takes ULONG for size, which is smaller than size_t on
-     * 64-bit Windows platforms. Ensure len's value can be safely converted into
-     * a ULONG.
+     * 64-bit Windows platforms. Extract entropy in chunks of len (dependent
+     * on ULONG_MAX) size.
      */
-    if (FAILED(SizeTToULong(len, &len_as_ulong))) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
-    }
+    while (len != 0) {
+        unsigned long ulong_bytes =
+            (len > ULONG_MAX) ? ULONG_MAX : (unsigned long) len;
 
-    if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, output, len_as_ulong, BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
-    }
+        if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, output, ulong_bytes,
+                                            BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
+            return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+        }
 
-    *olen = len;
+        *olen += ulong_bytes;
+        len -= ulong_bytes;
+    }
 
     return 0;
 }

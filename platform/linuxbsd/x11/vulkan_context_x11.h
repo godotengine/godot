@@ -34,6 +34,7 @@
 #ifdef VULKAN_ENABLED
 
 #include "drivers/vulkan/vulkan_context.h"
+
 #include <X11/Xlib.h>
 
 class VulkanContextX11 : public VulkanContext {

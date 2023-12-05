@@ -131,6 +131,7 @@ public:
 		StringName name;
 		bool disabled = false;
 		bool exposed = false;
+		bool reloadable = false;
 		bool is_virtual = false;
 		Object *(*creation_func)() = nullptr;
 
@@ -155,7 +156,7 @@ public:
 #endif
 
 	static APIType current_api;
-	static HashMap<APIType, uint64_t> api_hashes_cache;
+	static HashMap<APIType, uint32_t> api_hashes_cache;
 
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 
@@ -187,9 +188,10 @@ public:
 	template <class T>
 	static void register_class(bool p_virtual = false) {
 		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
 		t->is_virtual = p_virtual;
@@ -201,17 +203,33 @@ public:
 	template <class T>
 	static void register_abstract_class() {
 		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
 		//nothing
 	}
 
+	template <class T>
+	static void register_internal_class() {
+		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_NULL(t);
+		t->creation_func = &creator<T>;
+		t->exposed = false;
+		t->is_virtual = false;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		T::register_custom_data_to_otdb();
+	}
+
 	static void register_extension_class(ObjectGDExtension *p_extension);
-	static void unregister_extension_class(const StringName &p_class);
+	static void unregister_extension_class(const StringName &p_class, bool p_free_method_binds = true);
 
 	template <class T>
 	static Object *_create_ptr_func() {
@@ -221,9 +239,10 @@ public:
 	template <class T>
 	static void register_custom_instance_class() {
 		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
@@ -232,6 +251,9 @@ public:
 	}
 
 	static void get_class_list(List<StringName> *p_classes);
+#ifdef TOOLS_ENABLED
+	static void get_extensions_class_list(List<StringName> *p_classes);
+#endif
 	static void get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);
@@ -246,7 +268,7 @@ public:
 
 	static APIType get_api_type(const StringName &p_class);
 
-	static uint64_t get_api_hash(APIType p_api);
+	static uint32_t get_api_hash(APIType p_api);
 
 	template <typename>
 	struct member_function_traits;
@@ -329,7 +351,7 @@ public:
 		GLOBAL_LOCK_FUNCTION;
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
-		ERR_FAIL_COND_V(!bind, nullptr);
+		ERR_FAIL_NULL_V(bind, nullptr);
 
 		if constexpr (std::is_same<typename member_function_traits<M>::return_type, Object *>::value) {
 			bind->set_return_type_is_raw_object_ptr(true);
@@ -342,7 +364,7 @@ public:
 		GLOBAL_LOCK_FUNCTION;
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
-		ERR_FAIL_COND_V(!bind, nullptr);
+		ERR_FAIL_NULL_V(bind, nullptr);
 
 		if constexpr (std::is_same<typename member_function_traits<M>::return_type, Object *>::value) {
 			bind->set_return_type_is_raw_object_ptr(true);
@@ -380,6 +402,7 @@ public:
 	static void set_method_flags(const StringName &p_class, const StringName &p_method, int p_flags);
 
 	static void get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static void get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods_with_hash, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
 	static MethodBind *get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists = nullptr, bool *r_is_deprecated = nullptr);
@@ -408,6 +431,7 @@ public:
 	static bool is_class_enabled(const StringName &p_class);
 
 	static bool is_class_exposed(const StringName &p_class);
+	static bool is_class_reloadable(const StringName &p_class);
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);
@@ -479,6 +503,10 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 #define GDREGISTER_ABSTRACT_CLASS(m_class)             \
 	if (m_class::_class_is_enabled) {                  \
 		::ClassDB::register_abstract_class<m_class>(); \
+	}
+#define GDREGISTER_INTERNAL_CLASS(m_class)             \
+	if (m_class::_class_is_enabled) {                  \
+		::ClassDB::register_internal_class<m_class>(); \
 	}
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))

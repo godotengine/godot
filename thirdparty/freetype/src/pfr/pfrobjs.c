@@ -50,14 +50,14 @@
     if ( !face )
       return;
 
-    memory = pfrface->driver->root.memory;
+    memory = pfrface->memory;
 
     /* we don't want dangling pointers */
     pfrface->family_name = NULL;
     pfrface->style_name  = NULL;
 
     /* finalize the physical font record */
-    pfr_phy_font_done( &face->phy_font, FT_FACE_MEMORY( face ) );
+    pfr_phy_font_done( &face->phy_font, memory );
 
     /* no need to finalize the logical font or the header */
     FT_FREE( pfrface->available_sizes );
@@ -214,7 +214,7 @@
         FT_UInt          n, count = phy_font->num_strikes;
         FT_Bitmap_Size*  size;
         PFR_Strike       strike;
-        FT_Memory        memory = pfrface->stream->memory;
+        FT_Memory        memory = pfrface->memory;
 
 
         if ( FT_QNEW_ARRAY( pfrface->available_sizes, count ) )

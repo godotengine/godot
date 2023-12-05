@@ -45,12 +45,14 @@ name is available.
     Anutrix
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
+    AThousandShips
     Bartłomiej T. Listwon (Listwon)
     Bastiaan Olij (BastiaanOlij)
     Ben Brookshire (sheepandshepherd)
     Benjamin Larsson (Nallebeorn)
     Bernhard Liebl (poke1024)
     Bhuvan Vemula (Bhu1-V)
+    bitsawer
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
     Brian Semrau (briansemrau)
@@ -60,6 +62,7 @@ name is available.
     Caner Demirer (cdemirer)
     Carl Olsson (not-surt)
     Carter Anderson (cart)
+    ChibiDenDen
     Chris Bradfield (cbscribe)
     Clay John (clayjohn)
     ConteZero
@@ -69,6 +72,7 @@ name is available.
     Daniel Zilberleyb (dzil123)
     Danil Alexeev (dalexeev)
     dankan1890
+    Darío Banini (DarioSamo)
     David Cambré (Gallilus)
     David Sichma (DavidSichma)
     David Snopek (dsnopek)
@@ -93,6 +97,7 @@ name is available.
     Fabrice Cipolla (fabriceci)
     Ferenc Arn (tagcup)
     FireForge (fire-forge)
+    Florian Kothmeier (Dragoncraft89)
     follower
     foxydevloper
     François Belair (Razoric480)
@@ -104,12 +109,14 @@ name is available.
     Gilles Roudiere (groud)
     Gordon MacPherson (RevoluPowered)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
+    Hakim Rouatbi (hakro)
     Hanif Bin Ariffin (hbina)
     Haoyu Qiu (timothyqiu)
     Hein-Pieter van Braam-Stewart (hpvb)
     Hendrik Brucker (Geometror)
     hilfazer
     Hiroshi Ogawa (hi-ogawa)
+    HolonProduction
     homer666
     hoontee
     Hugo Locurcio (Calinou)
@@ -171,6 +178,7 @@ name is available.
     marynate
     Masoud BH (masoudbh3)
     Mateo Kuruk Miccino (kuruk-mm)
+    Matias N. Goldberg (darksylinc)
     Matthew (skyace65)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
@@ -181,11 +189,13 @@ name is available.
     Michał Iwańczuk (iwek7)
     MichiRecRoom (LikeLakers2)
     Micky (Mickeon)
+    Mikael Hermansson (mihe)
     MinusKube
     Morris "Tabor" Arroad (mortarroad)
     mrezai
     Muhammad Huri (CakHuri)
     muiroc
+    myaaaaaaaaa
     Nathan Franke (nathanfranke)
     Nathan Lovato (NathanLovato)
     Nathan Warden (NathanWarden)
@@ -193,11 +203,13 @@ name is available.
     Nikita Lita (nikitalita)
     Nils André-Chang (NilsIrl)
     Noah Beard (TwistedTwigleg)
+    Nông Văn Tình (nongvantinh)
     Nuno Donato (nunodonato)
     ocean (they/them) (anvilfolk)
     Omar El Sheikh (The-O-King)
     Ovnuniarchos
     Pascal Richter (ShyRed)
+    Patrick Exner (FlameLizard)
     Patrick (firefly2442)
     Paul Batty (Paulb23)
     Paul Joannon (paulloz)
@@ -241,13 +253,16 @@ name is available.
     smix8
     snailrhymer
     Stijn Hinlopen (hinlopen)
+    stmSi
     Swarnim Arun (minraws)
     TC (floppyhammer)
     TechnoPorg
+    Thaddeus Crews (Repiteo)
     Thakee Nathees (ThakeeNathees)
     thebestnom
     Theo Hallenius (TheoXD)
     Timo Schwarzer (timoschwarzer)
+    Timothé Bonhoure (ajreckof)
     Timo (toger5)
     Tomasz Chabora (KoBeWi)
     trollodel
@@ -269,4 +284,5 @@ name is available.
     Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
     ZuBsPaCe
+    谢天 (jsjtxietian)
     风青山 (Rindbee)

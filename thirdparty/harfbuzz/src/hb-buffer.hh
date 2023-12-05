@@ -464,13 +464,16 @@ struct hb_buffer_t
 		      start, end,
 		      true);
   }
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   void unsafe_to_concat (unsigned int start = 0, unsigned int end = -1)
   {
     if (likely ((flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) == 0))
       return;
     _set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
 		      start, end,
-		      true);
+		      false);
   }
   void unsafe_to_break_from_outbuffer (unsigned int start = 0, unsigned int end = -1)
   {
@@ -478,6 +481,9 @@ struct hb_buffer_t
 		      start, end,
 		      true, true);
   }
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   void unsafe_to_concat_from_outbuffer (unsigned int start = 0, unsigned int end = -1)
   {
     if (likely ((flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) == 0))
@@ -493,6 +499,13 @@ struct hb_buffer_t
 
   HB_NODISCARD HB_INTERNAL bool enlarge (unsigned int size);
 
+  HB_NODISCARD bool resize (unsigned length)
+  {
+    assert (!have_output);
+    if (unlikely (!ensure (length))) return false;
+    len = length;
+    return true;
+  }
   HB_NODISCARD bool ensure (unsigned int size)
   { return likely (!size || size < allocated) ? true : enlarge (size); }
 

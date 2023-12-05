@@ -192,7 +192,7 @@ public:
 		GLuint index_buffer = 0;
 		int count = 0;
 		bool color_disabled = false;
-		Color color;
+		Color color = Color(1.0, 1.0, 1.0, 1.0);
 	};
 
 	struct {
@@ -366,6 +366,12 @@ public:
 	void _enable_attributes(uint32_t p_start, bool p_primitive, uint32_t p_rate = 1);
 
 	void set_time(double p_time);
+
+	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) override {
+		if (p_enabled) {
+			WARN_PRINT_ONCE("Debug CanvasItem Redraw is not available yet when using the GL Compatibility backend.");
+		}
+	}
 
 	static RasterizerCanvasGLES3 *get_singleton();
 	RasterizerCanvasGLES3();

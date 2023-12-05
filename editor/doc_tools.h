@@ -45,7 +45,11 @@ public:
 	void add_doc(const DocData::ClassDoc &p_class_doc);
 	void remove_doc(const String &p_class_name);
 	bool has_doc(const String &p_class_name);
-	void generate(bool p_basic_types = false);
+	enum GenerateFlags {
+		GENERATE_FLAG_SKIP_BASIC_TYPES = (1 << 0),
+		GENERATE_FLAG_EXTENSION_CLASSES_ONLY = (1 << 1),
+	};
+	void generate(BitField<GenerateFlags> p_flags = {});
 	Error load_classes(const String &p_dir);
 	Error save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_include_xml_schema = true);
 

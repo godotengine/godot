@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiplayerAPIExtension" inherits="MultiplayerAPI" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MultiplayerAPIExtension" inherits="MultiplayerAPI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class used for extending the [MultiplayerAPI].
 	</brief_description>
@@ -15,7 +15,7 @@
 		var base_multiplayer = SceneMultiplayer.new()
 
 		func _init():
-		    # Just passthourgh base signals (copied to var to avoid cyclic reference)
+		    # Just passthrough base signals (copied to var to avoid cyclic reference)
 		    var cts = connected_to_server
 		    var cf = connection_failed
 		    var pc = peer_connected
@@ -25,13 +25,16 @@
 		    base_multiplayer.peer_connected.connect(func(id): pc.emit(id))
 		    base_multiplayer.peer_disconnected.connect(func(id): pd.emit(id))
 
+		func _poll():
+		    return base_multiplayer.poll()
+
 		# Log RPC being made and forward it to the default multiplayer.
-		func _rpc(peer: int, object: Object, method: StringName, args: Array) -&gt; int: # Error
+		func _rpc(peer: int, object: Object, method: StringName, args: Array) -&gt; Error:
 		    print("Got RPC for %d: %s::%s(%s)" % [peer, object, method, args])
 		    return base_multiplayer.rpc(peer, object, method, args)
 
 		# Log configuration add. E.g. root path (nullptr, NodePath), replication (Node, Spawner|Synchronizer), custom.
-		func _object_configuration_add(object, config: Variant) -&gt; int: # Error
+		func _object_configuration_add(object, config: Variant) -&gt; Error:
 		    if config is MultiplayerSynchronizer:
 		        print("Adding synchronization configuration for %s. Synchronizer: %s" % [object, config])
 		    elif config is MultiplayerSpawner:
@@ -39,7 +42,7 @@
 		    return base_multiplayer.object_configuration_add(object, config)
 
 		# Log configuration remove. E.g. root path (nullptr, NodePath), replication (Node, Spawner|Synchronizer), custom.
-		func _object_configuration_remove(object, config: Variant) -&gt; int: # Error
+		func _object_configuration_remove(object, config: Variant) -&gt; Error:
 		    if config is MultiplayerSynchronizer:
 		        print("Removing synchronization configuration for %s. Synchronizer: %s" % [object, config])
 		    elif config is MultiplayerSpawner:

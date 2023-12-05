@@ -30,7 +30,8 @@
 
 #include "test_crypto_mbedtls.h"
 
-#include "modules/mbedtls/crypto_mbedtls.h"
+#include "../crypto_mbedtls.h"
+
 #include "tests/test_macros.h"
 
 namespace TestCryptoMbedTLS {

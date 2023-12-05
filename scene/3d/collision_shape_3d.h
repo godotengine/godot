@@ -41,9 +41,11 @@ class CollisionShape3D : public Node3D {
 	Ref<Shape3D> shape;
 
 	uint32_t owner_id = 0;
-	CollisionObject3D *parent = nullptr;
+	CollisionObject3D *collision_object = nullptr;
 
+#ifndef DISABLE_DEPRECATED
 	void resource_changed(Ref<Resource> res);
+#endif
 	bool disabled = false;
 
 protected:

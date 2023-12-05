@@ -1086,7 +1086,7 @@
 #else /* T1_CONFIG_OPTION_NO_AFM */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _afm_parse_dummy;
+  typedef int  afm_parse_dummy_;
 
 #endif /* T1_CONFIG_OPTION_NO_AFM */
 

@@ -43,7 +43,6 @@ class NavigationAgent3D : public Node {
 	Node3D *agent_parent = nullptr;
 
 	RID agent;
-	RID map_before_pause;
 	RID map_override;
 
 	bool avoidance_enabled = false;
@@ -78,7 +77,7 @@ class NavigationAgent3D : public Node {
 	Vector3 safe_velocity;
 
 	/// The submitted target velocity, sets the "wanted" rvo agent velocity on the next update
-	// this velocity is not guaranteed, the simulation will try to fulfil it if possible
+	// this velocity is not guaranteed, the simulation will try to fulfill it if possible
 	// if other agents or obstacles interfere it will be changed accordingly
 	Vector3 velocity;
 	bool velocity_submitted = false;
@@ -90,6 +89,7 @@ class NavigationAgent3D : public Node {
 
 	// 2D avoidance has no y-axis. This stores and reapplies the y-axis velocity to the agent before and after the avoidance step.
 	// While not perfect it at least looks way better than agent's that clip through everything that is not a flat surface
+	bool keep_y_velocity = true;
 	float stored_y_velocity = 0.0;
 
 	bool target_position_submitted = false;
@@ -115,6 +115,7 @@ class NavigationAgent3D : public Node {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 
 #ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -173,6 +174,9 @@ public:
 
 	void set_use_3d_avoidance(bool p_use_3d_avoidance);
 	bool get_use_3d_avoidance() const { return use_3d_avoidance; }
+
+	void set_keep_y_velocity(bool p_enabled);
+	bool get_keep_y_velocity() const;
 
 	void set_neighbor_distance(real_t p_distance);
 	real_t get_neighbor_distance() const { return neighbor_distance; }

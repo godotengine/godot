@@ -39,6 +39,7 @@
 #include "core/typedefs.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/shader_include.h"
@@ -205,6 +206,7 @@ private:
 	Error expand_macros(const String &p_string, int p_line, String &r_result);
 	bool expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded);
 	bool find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start);
+	void concatenate_macro_body(String &r_body);
 
 	String next_directive(Tokenizer *p_tokenizer, const Vector<String> &p_directives);
 	void add_to_output(const String &p_str);

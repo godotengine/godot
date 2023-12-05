@@ -56,8 +56,10 @@ private:
 		SCENE_UNIFORM_SET = 0,
 		RENDER_PASS_UNIFORM_SET = 1,
 		TRANSFORMS_UNIFORM_SET = 2,
-		MATERIAL_UNIFORM_SET = 3
+		MATERIAL_UNIFORM_SET = 3,
 	};
+
+	const int SAMPLERS_BINDING_FIRST_INDEX = 15;
 
 	enum {
 
@@ -118,19 +120,12 @@ private:
 			FB_CONFIG_MAX
 		};
 
-		RID get_color_msaa() const { return render_buffers->get_texture(RB_SCOPE_MOBILE, RB_TEX_COLOR_MSAA); }
-		RID get_color_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_MOBILE, RB_TEX_COLOR_MSAA, p_layer, 0); }
-
-		RID get_depth_msaa() const { return render_buffers->get_texture(RB_SCOPE_MOBILE, RB_TEX_DEPTH_MSAA); }
-		RID get_depth_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_MOBILE, RB_TEX_DEPTH_MSAA, p_layer, 0); }
-
 		RID get_color_fbs(FramebufferConfigType p_config_type);
 		virtual void free_data() override;
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
 
 	private:
 		RenderSceneBuffersRD *render_buffers = nullptr;
-		RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
 	};
 
 	virtual void setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) override;
@@ -203,13 +198,23 @@ private:
 	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas = false, int p_index = 0);
 	void _pre_opaque_render(RenderDataRD *p_render_data);
 
-	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
+	enum BaseUniformSetCache {
+		BASE_UNIFORM_SET_CACHE_VIEWPORT,
+		BASE_UNIFORM_SET_CACHE_DEFAULT,
+		BASE_UNIFORM_SET_CACHE_MAX
+	};
 
-	void _update_render_base_uniform_set();
+	// One for custom samplers, one for default samplers.
+	// Need to switch between them as default is needed for probes, shadows, materials, etc.
+	RID render_base_uniform_set_cache[BASE_UNIFORM_SET_CACHE_MAX];
 
+	uint64_t lightmap_texture_array_version_cache[BASE_UNIFORM_SET_CACHE_MAX] = { 0xFFFFFFFF, 0xFFFFFFFF };
+
+	void _update_render_base_uniform_set(const RendererRD::MaterialStorage::Samplers &p_samplers, BaseUniformSetCache p_cache_index);
+
+	void _update_instance_data_buffer(RenderListType p_render_list);
+	void _fill_instance_data(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1, bool p_update_buffer = true);
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
-	void _fill_element_info(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1);
-	// void _update_instance_data_buffer(RenderListType p_render_list);
 
 	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false, int p_index = 0);
 	void _setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
@@ -233,6 +238,32 @@ private:
 
 	struct SceneState {
 		LocalVector<RID> uniform_buffers;
+
+		struct PushConstant {
+			float uv_offset[2];
+			uint32_t base_index;
+			uint32_t pad;
+		};
+
+		struct InstanceData {
+			float transform[16];
+			uint32_t flags;
+			uint32_t instance_uniforms_ofs; // Base offset in global buffer for instance variables.
+			uint32_t gi_offset; // GI information when using lightmapping (VCT or lightmap index).
+			uint32_t layer_mask = 1;
+			float lightmap_uv_scale[4]; // Doubles as uv_offset when needed.
+			uint32_t reflection_probes[2]; // Packed reflection probes.
+			uint32_t omni_lights[2]; // Packed omni lights.
+			uint32_t spot_lights[2]; // Packed spot lights.
+			uint32_t decals[2]; // Packed spot lights.
+			float compressed_aabb_position[4];
+			float compressed_aabb_size[4];
+			float uv_scale[4];
+		};
+
+		RID instance_buffer[RENDER_LIST_MAX];
+		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
+		LocalVector<InstanceData> instance_data[RENDER_LIST_MAX];
 
 		// !BAS! We need to change lightmaps, we're not going to do this with a buffer but pushing the used lightmap in
 		LightmapData lightmaps[MAX_LIGHTMAPS];
@@ -452,27 +483,11 @@ protected:
 
 	class GeometryInstanceForwardMobile : public RenderGeometryInstanceBase {
 	public:
-		// this structure maps to our push constant in our shader and is populated right before our draw call
-		struct PushConstant {
-			float transform[16];
-			uint32_t flags;
-			uint32_t instance_uniforms_ofs; //base offset in global buffer for instance variables
-			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
-			uint32_t layer_mask = 1;
-			float lightmap_uv_scale[4]; // doubles as uv_offset when needed
-			uint32_t reflection_probes[2]; // packed reflection probes
-			uint32_t omni_lights[2]; // packed omni lights
-			uint32_t spot_lights[2]; // packed spot lights
-			uint32_t decals[2]; // packed spot lights
-		};
-
-		// PushConstant push_constant; // we populate this from our instance data
-
 		//used during rendering
 		RID transforms_uniform_set;
 		bool use_projector = false;
 		bool use_soft_shadow = false;
-		bool store_transform_cache = true; // if true we copy our transform into our PushConstant, if false we use our transforms UBO and clear our PushConstants transform
+		bool store_transform_cache = true; // If true we copy our transform into our per-draw buffer, if false we use our transforms UBO and clear our per-draw transform.
 		uint32_t instance_count = 0;
 		uint32_t trail_steps = 1;
 
@@ -530,6 +545,7 @@ protected:
 		struct ForwardIDAllocator {
 			LocalVector<bool> allocations;
 			LocalVector<uint8_t> map;
+			LocalVector<uint64_t> last_pass;
 		};
 
 		ForwardIDAllocator forward_id_allocators[RendererRD::FORWARD_ID_MAX];
@@ -537,13 +553,13 @@ protected:
 	public:
 		virtual RendererRD::ForwardID allocate_forward_id(RendererRD::ForwardIDType p_type) override;
 		virtual void free_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id) override;
-		virtual void map_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id, uint32_t p_index) override;
+		virtual void map_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id, uint32_t p_index, uint64_t p_last_pass) override;
 		virtual bool uses_forward_ids() const override { return true; }
-
-		void fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, uint32_t &spec_constants, const GeometryInstanceForwardMobile *p_instance);
 	};
 
 	ForwardIDStorageMobile *forward_id_storage_mobile = nullptr;
+
+	void fill_push_constant_instance_indices(SceneState::InstanceData *p_instance_data, const GeometryInstanceForwardMobile *p_instance);
 
 	virtual RendererRD::ForwardIDStorage *create_forward_id_storage() override {
 		forward_id_storage_mobile = memnew(ForwardIDStorageMobile);

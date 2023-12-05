@@ -300,7 +300,7 @@ void CSGShape3D::_update_shape() {
 	root_mesh.unref(); //byebye root mesh
 
 	CSGBrush *n = _get_brush();
-	ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
 	OAHashMap<Vector3, Vector3> vec_map;
 
@@ -458,7 +458,7 @@ void CSGShape3D::_update_shape() {
 void CSGShape3D::_update_collision_faces() {
 	if (use_collision && is_root_shape() && root_collision_shape.is_valid()) {
 		CSGBrush *n = _get_brush();
-		ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+		ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 		Vector<Vector3> physics_faces;
 		physics_faces.resize(n->faces.size() * 3);
 		Vector3 *physicsw = physics_faces.ptrw();
@@ -488,7 +488,9 @@ bool CSGShape3D::_is_debug_collision_shape_visible() {
 }
 
 void CSGShape3D::_update_debug_collision_shape() {
-	// NOTE: This is called only for the root shape with collision, when root_collision_shape is valid.
+	if (!use_collision || !is_root_shape() || !root_collision_shape.is_valid() || !_is_debug_collision_shape_visible()) {
+		return;
+	}
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
@@ -572,6 +574,11 @@ void CSGShape3D::_notification(int p_what) {
 			if (!is_root_shape() && last_visible != is_visible()) {
 				// Update this node's parent only if its own visibility has changed, not the visibility of parent nodes
 				parent_shape->_make_dirty();
+			}
+			if (is_visible()) {
+				_update_debug_collision_shape();
+			} else {
+				_clear_debug_collision_shape();
 			}
 			last_visible = is_visible();
 		} break;
@@ -953,12 +960,12 @@ void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		return;
 	}
 	if (mesh.is_valid()) {
-		mesh->disconnect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
+		mesh->disconnect_changed(callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 	mesh = p_mesh;
 
 	if (mesh.is_valid()) {
-		mesh->connect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
+		mesh->connect_changed(callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 
 	_mesh_changed();
@@ -1933,7 +1940,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				case PATH_ROTATION_PATH:
 					break;
 				case PATH_ROTATION_PATH_FOLLOW:
-					current_up = curve->sample_baked_up_vector(0);
+					current_up = curve->sample_baked_up_vector(0, true);
 					break;
 			}
 
@@ -2020,7 +2027,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						case PATH_ROTATION_PATH:
 							break;
 						case PATH_ROTATION_PATH_FOLLOW:
-							current_up = curve->sample_baked_up_vector(current_offset);
+							current_up = curve->sample_baked_up_vector(current_offset, true);
 							break;
 					}
 
@@ -2219,7 +2226,7 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path3D"), "set_path_node", "get_path_node");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_interval_type", PROPERTY_HINT_ENUM, "Distance,Subdivide"), "set_path_interval_type", "get_path_interval_type");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_interval", PROPERTY_HINT_RANGE, "0.01,1.0,0.01,exp,or_greater"), "set_path_interval", "get_path_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_simplify_angle", PROPERTY_HINT_RANGE, "0.0,180.0,0.1,exp"), "set_path_simplify_angle", "get_path_simplify_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_simplify_angle", PROPERTY_HINT_RANGE, "0.0,180.0,0.1"), "set_path_simplify_angle", "get_path_simplify_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");

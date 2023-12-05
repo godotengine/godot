@@ -114,7 +114,7 @@ _hb_ft_font_create (FT_Face ft_face, bool symbol, bool unref)
   ft_font->load_flags = FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING;
 
   ft_font->cached_serial = (unsigned) -1;
-  ft_font->advance_cache.init ();
+  new (&ft_font->advance_cache) hb_ft_advance_cache_t;
 
   return ft_font;
 }

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventKey" inherits="InputEventWithModifiers" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="InputEventKey" inherits="InputEventWithModifiers" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Input event type for keyboard events.
+		Represents a key on a keyboard being pressed or released.
 	</brief_description>
 	<description>
-		Stores key presses on the keyboard. Supports key presses, key releases and [member echo] events.
+		An input event for keys on a keyboard. Supports key presses, key releases and [member echo] events. It can also be received in [method Node._unhandled_key_input].
 		[b]Note:[/b] Events received from the keyboard usually have all properties set. Event mappings should have only one of the [member keycode], [member physical_keycode] or [member unicode] set.
-		When events are compared, properties are checked in the following priority - [member keycode], [member physical_keycode] and [member unicode], events with the first matching value will be considered equal.
+		When events are compared, properties are checked in the following priority - [member keycode], [member physical_keycode] and [member unicode]. Events with the first matching value will be considered equal.
 	</description>
 	<tutorials>
-		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 		<method name="as_text_key_label" qualifiers="const">
@@ -79,7 +79,25 @@
 		</member>
 		<member name="physical_keycode" type="int" setter="set_physical_keycode" getter="get_physical_keycode" enum="Key" default="0">
 			Represents the physical location of a key on the 101/102-key US QWERTY keyboard, which corresponds to one of the [enum Key] constants.
-			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
+			To get a human-readable representation of the [InputEventKey], use [method OS.get_keycode_string] in combination with [method DisplayServer.keyboard_get_keycode_from_physical]:
+			[codeblocks]
+			[gdscript]
+			func _input(event):
+			    if event is InputEventKey:
+			        var keycode = DisplayServer.keyboard_get_keycode_from_physical(event.physical_keycode)
+			        print(OS.get_keycode_string(keycode))
+			[/gdscript]
+			[csharp]
+			public override void _Input(InputEvent @event)
+			{
+			    if (@event is InputEventKey inputEventKey)
+			    {
+			        var keycode = DisplayServer.KeyboardGetKeycodeFromPhysical(inputEventKey.PhysicalKeycode);
+			        GD.Print(OS.GetKeycodeString(keycode));
+			    }
+			}
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.

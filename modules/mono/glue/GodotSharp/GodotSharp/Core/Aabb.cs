@@ -564,7 +564,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this <see cref="Aabb"/> is finite, by calling
-        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
         /// </summary>
         /// <returns>Whether this vector is finite or not.</returns>
         public readonly bool IsFinite()
@@ -683,7 +683,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the AABB is exactly equal
-        /// to the given object (<see paramref="obj"/>).
+        /// to the given object (<paramref name="obj"/>).
         /// Note: Due to floating-point precision errors, consider using
         /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
@@ -723,7 +723,7 @@ namespace Godot
         /// <returns>A hash code for this AABB.</returns>
         public override readonly int GetHashCode()
         {
-            return _position.GetHashCode() ^ _size.GetHashCode();
+            return HashCode.Combine(_position, _size);
         }
 
         /// <summary>

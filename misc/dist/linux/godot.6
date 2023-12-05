@@ -58,6 +58,9 @@ Password for remote filesystem.
 \fB\-\-audio\-driver\fR <driver>
 Audio driver ('PulseAudio', 'ALSA', 'Dummy').
 .TP
+\fB\-\-audio\-output\-latency\fR <ms>
+Override audio output latency in milliseconds (default is 15 ms). Lower values make sound playback more reactive but increase CPU usage, and may result in audio cracking if the CPU can't keep up.
+.TP
 \fB\-\-video\-driver\fR <driver>
 Video driver ('Vulkan', 'GLES2').
 .SS "Display options:"
@@ -105,8 +108,11 @@ Show collisions shapes when running the scene.
 \fB\-\-debug\-navigation\fR
 Show navigation polygons when running the scene.
 .TP
+\fB\-\-max\-fps\fR <fps>
+Set a maximum number of frames per second rendered (can be used to limit power usage). A value of 0 results in unlimited framerate.
+.TP
 \fB\-\-frame\-delay\fR <ms>
-Simulate high CPU load (delay each frame by <ms> milliseconds).
+Simulate high CPU load (delay each frame by <ms> milliseconds). Do not use as a FPS limiter; use --max-fps instead.
 .TP
 \fB\-\-time\-scale\fR <scale>
 Force time scale (higher values are faster, 1.0 is normal speed).

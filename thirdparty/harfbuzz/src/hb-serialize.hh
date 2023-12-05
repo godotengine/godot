@@ -113,7 +113,7 @@ struct hb_serialize_context_t
     {
       // Virtual links aren't considered for equality since they don't affect the functionality
       // of the object.
-      return hb_bytes_t (head, tail - head).hash () ^
+      return hb_bytes_t (head, hb_min (128, tail - head)).hash () ^
           real_links.as_bytes ().hash ();
     }
 
@@ -172,8 +172,14 @@ struct hb_serialize_context_t
   };
 
   snapshot_t snapshot ()
-  { return snapshot_t {
-      head, tail, current, current->real_links.length, current->virtual_links.length, errors }; }
+  {
+    return snapshot_t {
+      head, tail, current,
+      current ? current->real_links.length : 0,
+      current ? current->virtual_links.length : 0,
+      errors
+     };
+  }
 
   hb_serialize_context_t (void *start_, unsigned int size) :
     start ((char *) start_),
@@ -260,7 +266,8 @@ struct hb_serialize_context_t
 	   propagate_error (std::forward<Ts> (os)...); }
 
   /* To be called around main operation. */
-  template <typename Type>
+  template <typename Type=char>
+  __attribute__((returns_nonnull))
   Type *start_serialize ()
   {
     DEBUG_MSG_LEVEL (SERIALIZE, this->start, 0, +1,
@@ -303,6 +310,7 @@ struct hb_serialize_context_t
   }
 
   template <typename Type = void>
+  __attribute__((returns_nonnull))
   Type *push ()
   {
     if (unlikely (in_error ())) return start_embed<Type> ();
@@ -323,6 +331,8 @@ struct hb_serialize_context_t
   {
     object_t *obj = current;
     if (unlikely (!obj)) return;
+    // Allow cleanup when we've error'd out on int overflows which don't compromise
+    // the serializer state.
     if (unlikely (in_error() && !only_overflow ())) return;
 
     current = current->next;
@@ -340,7 +350,9 @@ struct hb_serialize_context_t
   {
     object_t *obj = current;
     if (unlikely (!obj)) return 0;
-    if (unlikely (in_error())) return 0;
+    // Allow cleanup when we've error'd out on int overflows which don't compromise
+    // the serializer state.
+    if (unlikely (in_error()  && !only_overflow ())) return 0;
 
     current = current->next;
     obj->tail = head;
@@ -405,8 +417,11 @@ struct hb_serialize_context_t
     // Overflows that happened after the snapshot will be erased by the revert.
     if (unlikely (in_error () && !only_overflow ())) return;
     assert (snap.current == current);
-    current->real_links.shrink (snap.num_real_links);
-    current->virtual_links.shrink (snap.num_virtual_links);
+    if (current)
+    {
+      current->real_links.shrink (snap.num_real_links);
+      current->virtual_links.shrink (snap.num_virtual_links);
+    }
     errors = snap.errors;
     revert (snap.head, snap.tail);
   }
@@ -563,13 +578,15 @@ struct hb_serialize_context_t
   {
     unsigned int l = length () % alignment;
     if (l)
-      allocate_size<void> (alignment - l);
+      (void) allocate_size<void> (alignment - l);
   }
 
   template <typename Type = void>
+  __attribute__((returns_nonnull))
   Type *start_embed (const Type *obj HB_UNUSED = nullptr) const
   { return reinterpret_cast<Type *> (this->head); }
   template <typename Type>
+  __attribute__((returns_nonnull))
   Type *start_embed (const Type &obj) const
   { return start_embed (std::addressof (obj)); }
 
@@ -597,6 +614,7 @@ struct hb_serialize_context_t
   }
 
   template <typename Type>
+  HB_NODISCARD
   Type *allocate_size (size_t size, bool clear = true)
   {
     if (unlikely (in_error ())) return nullptr;
@@ -618,6 +636,7 @@ struct hb_serialize_context_t
   { return this->allocate_size<Type> (Type::min_size); }
 
   template <typename Type>
+  HB_NODISCARD
   Type *embed (const Type *obj)
   {
     unsigned int size = obj->get_size ();
@@ -627,6 +646,7 @@ struct hb_serialize_context_t
     return ret;
   }
   template <typename Type>
+  HB_NODISCARD
   Type *embed (const Type &obj)
   { return embed (std::addressof (obj)); }
   char *embed (const char *obj, unsigned size)

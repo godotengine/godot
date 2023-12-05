@@ -33,9 +33,10 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-#include <string.h>
 #include <webp/decode.h>
 #include <webp/encode.h>
+
+#include <string.h>
 
 namespace WebPCommon {
 Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
@@ -58,6 +59,10 @@ Vector<uint8_t> _webp_packer(const Ref<Image> &p_image, float p_quality, bool p_
 	compression_method = CLAMP(compression_method, 0, 6);
 
 	Ref<Image> img = p_image->duplicate();
+	if (img->is_compressed()) {
+		Error error = img->decompress();
+		ERR_FAIL_COND_V_MSG(error != OK, Vector<uint8_t>(), "Couldn't decompress image.");
+	}
 	if (img->detect_alpha()) {
 		img->convert(Image::FORMAT_RGBA8);
 	} else {
@@ -83,6 +88,7 @@ Vector<uint8_t> _webp_packer(const Ref<Image> &p_image, float p_quality, bool p_
 	}
 	config.method = compression_method;
 	config.quality = p_quality;
+	config.use_sharp_yuv = 1;
 	pic.use_argb = 1;
 	pic.width = s.width;
 	pic.height = s.height;

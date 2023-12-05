@@ -56,6 +56,14 @@
 static const char *ignore_str = "/dev/input/js";
 #endif
 
+// On Linux with Steam Input Xbox 360 devices have an index appended to their device name, this index is
+// the Steam Input gamepad index
+#define VALVE_GAMEPAD_NAME_PREFIX "Microsoft X-Box 360 pad "
+// IDs used by Steam Input virtual controllers.
+// See https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices
+#define VALVE_GAMEPAD_VID 0x28DE
+#define VALVE_GAMEPAD_PID 0x11FF
+
 JoypadLinux::Joypad::~Joypad() {
 	for (int i = 0; i < MAX_ABS; i++) {
 		if (abs_info[i]) {
@@ -74,43 +82,22 @@ void JoypadLinux::Joypad::reset() {
 	events.clear();
 }
 
-#ifdef UDEV_ENABLED
-// This function is derived from SDL:
-// https://github.com/libsdl-org/SDL/blob/main/src/core/linux/SDL_sandbox.c#L28-L45
-static bool detect_sandbox() {
-	if (access("/.flatpak-info", F_OK) == 0) {
-		return true;
-	}
-
-	// For Snap, we check multiple variables because they might be set for
-	// unrelated reasons. This is the same thing WebKitGTK does.
-	if (OS::get_singleton()->has_environment("SNAP") && OS::get_singleton()->has_environment("SNAP_NAME") && OS::get_singleton()->has_environment("SNAP_REVISION")) {
-		return true;
-	}
-
-	if (access("/run/host/container-manager", F_OK) == 0) {
-		return true;
-	}
-
-	return false;
-}
-#endif // UDEV_ENABLED
-
 JoypadLinux::JoypadLinux(Input *in) {
 #ifdef UDEV_ENABLED
-#ifdef SOWRAP_ENABLED
-#ifdef DEBUG_ENABLED
-	int dylibloader_verbose = 1;
-#else
-	int dylibloader_verbose = 0;
-#endif
-	if (detect_sandbox()) {
+	if (OS::get_singleton()->is_sandboxed()) {
 		// Linux binaries in sandboxes / containers need special handling because
 		// libudev doesn't work there. So we need to fallback to manual parsing
 		// of /dev/input in such case.
 		use_udev = false;
 		print_verbose("JoypadLinux: udev enabled, but detected incompatible sandboxed mode. Falling back to /dev/input to detect joypads.");
-	} else {
+	}
+#ifdef SOWRAP_ENABLED
+	else {
+#ifdef DEBUG_ENABLED
+		int dylibloader_verbose = 1;
+#else
+		int dylibloader_verbose = 0;
+#endif
 		use_udev = initialize_libudev(dylibloader_verbose) == 0;
 		if (use_udev) {
 			if (!udev_new || !udev_unref || !udev_enumerate_new || !udev_enumerate_add_match_subsystem || !udev_enumerate_scan_devices || !udev_enumerate_get_list_entry || !udev_list_entry_get_next || !udev_list_entry_get_name || !udev_device_new_from_syspath || !udev_device_get_devnode || !udev_device_get_action || !udev_device_unref || !udev_enumerate_unref || !udev_monitor_new_from_netlink || !udev_monitor_filter_add_match_subsystem_devtype || !udev_monitor_enable_receiving || !udev_monitor_get_fd || !udev_monitor_receive_device || !udev_monitor_unref) {
@@ -124,10 +111,11 @@ JoypadLinux::JoypadLinux(Input *in) {
 			print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
 		}
 	}
-#endif
+#endif // SOWRAP_ENABLED
 #else
 	print_verbose("JoypadLinux: udev disabled, parsing /dev/input to detect joypads.");
-#endif
+#endif // UDEV_ENABLED
+
 	input = in;
 	monitor_joypads_thread.start(monitor_joypads_thread_func, this);
 	joypad_events_thread.start(joypad_events_thread_func, this);
@@ -391,6 +379,16 @@ void JoypadLinux::open_joypad(const char *p_path) {
 			return;
 		}
 
+		uint16_t vendor = BSWAP16(inpid.vendor);
+		uint16_t product = BSWAP16(inpid.product);
+		uint16_t version = BSWAP16(inpid.version);
+
+		if (input->should_ignore_device(vendor, product)) {
+			// This can be true in cases where Steam is passing information into the game to ignore
+			// original gamepads when using virtual rebindings (See SteamInput).
+			return;
+		}
+
 		MutexLock lock(joypads_mutex[joy_num]);
 		Joypad &joypad = joypads[joy_num];
 		joypad.reset();
@@ -399,12 +397,23 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		setup_joypad_properties(joypad);
 		sprintf(uid, "%04x%04x", BSWAP16(inpid.bustype), 0);
 		if (inpid.vendor && inpid.product && inpid.version) {
-			uint16_t vendor = BSWAP16(inpid.vendor);
-			uint16_t product = BSWAP16(inpid.product);
-			uint16_t version = BSWAP16(inpid.version);
+			Dictionary joypad_info;
+			joypad_info["vendor_id"] = inpid.vendor;
+			joypad_info["product_id"] = inpid.product;
+			joypad_info["raw_name"] = name;
 
 			sprintf(uid + String(uid).length(), "%04x%04x%04x%04x%04x%04x", vendor, 0, product, 0, version, 0);
-			input->joy_connection_changed(joy_num, true, name, uid);
+
+			if (inpid.vendor == VALVE_GAMEPAD_VID && inpid.product == VALVE_GAMEPAD_PID) {
+				if (name.begins_with(VALVE_GAMEPAD_NAME_PREFIX)) {
+					String idx_str = name.substr(strlen(VALVE_GAMEPAD_NAME_PREFIX));
+					if (idx_str.is_valid_int()) {
+						joypad_info["steam_input_index"] = idx_str.to_int();
+					}
+				}
+			}
+
+			input->joy_connection_changed(joy_num, true, name, uid, joypad_info);
 		} else {
 			String uidname = uid;
 			int uidlen = MIN(name.length(), 11);

@@ -1,6 +1,7 @@
 # meta-description: Basic import script template
+
 @tool
-extends EditorScenePostImport
+extends _BASE_
 
 
 # Called by the editor when a scene has this script set as the import script in the import tab.

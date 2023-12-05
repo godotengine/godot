@@ -237,10 +237,10 @@ void MultiplayerDebugger::RPCProfiler::tick(double p_frame_time, double p_proces
 // ReplicationProfiler
 
 MultiplayerDebugger::SyncInfo::SyncInfo(MultiplayerSynchronizer *p_sync) {
-	ERR_FAIL_COND(!p_sync);
+	ERR_FAIL_NULL(p_sync);
 	synchronizer = p_sync->get_instance_id();
-	if (p_sync->get_replication_config().is_valid()) {
-		config = p_sync->get_replication_config()->get_instance_id();
+	if (p_sync->get_replication_config_ptr()) {
+		config = p_sync->get_replication_config_ptr()->get_instance_id();
 	}
 	if (p_sync->get_root_node()) {
 		root_node = p_sync->get_root_node()->get_instance_id();
@@ -305,7 +305,7 @@ void MultiplayerDebugger::ReplicationProfiler::add(const Array &p_data) {
 	const ObjectID id = p_data[1];
 	const uint64_t size = p_data[2];
 	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(ObjectDB::get_instance(id));
-	ERR_FAIL_COND(!sync);
+	ERR_FAIL_NULL(sync);
 	if (!sync_data.has(id)) {
 		sync_data[id] = SyncInfo(sync);
 	}

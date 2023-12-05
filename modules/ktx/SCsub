@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_ktx = env_modules.Clone()
+
+# libktx thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/libktx/"
+thirdparty_sources = [
+    "lib/basis_transcode.cpp",
+    "lib/checkheader.c",
+    "lib/filestream.c",
+    "lib/hashlist.c",
+    "lib/memstream.c",
+    "lib/swap.c",
+    "lib/texture.c",
+    "lib/texture1.c",
+    "lib/texture2.c",
+    "lib/dfdutils/createdfd.c",
+    "lib/dfdutils/colourspaces.c",
+    "lib/dfdutils/interpretdfd.c",
+    "lib/dfdutils/printdfd.c",
+    "lib/dfdutils/queries.c",
+    "lib/dfdutils/vk2dfd.c",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_ktx.Prepend(CPPPATH=[thirdparty_dir + "include"])
+env_ktx.Prepend(CPPPATH=[thirdparty_dir + "utils"])
+env_ktx.Prepend(CPPPATH=[thirdparty_dir + "lib"])
+env_ktx.Prepend(CPPPATH=[thirdparty_dir + "other_include"])
+env_ktx.Prepend(CPPPATH=["#thirdparty/basis_universal"])
+
+if env["vulkan"]:
+    env_ktx.Prepend(CPPPATH=["#thirdparty/vulkan/include"])
+else:
+    # Falls back on bundled `vkformat_enum.h`.
+    env_ktx.Append(CPPDEFINES=["LIBKTX"])
+
+env_ktx.Append(CPPDEFINES=[("KHRONOS_STATIC", 1)])
+
+env_thirdparty = env_ktx.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+module_obj = []
+
+env_ktx.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

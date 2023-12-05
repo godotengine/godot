@@ -28,29 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef X11_ENABLED
-#if defined(GLES3_ENABLED)
+#if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
 #include "detect_prime_x11.h"
 
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 
-#include <stdlib.h>
-
 #include "thirdparty/glad/glad/gl.h"
 #include "thirdparty/glad/glad/glx.h"
 
 #ifdef SOWRAP_ENABLED
-#include "dynwrappers/xlib-so_wrap.h"
+#include "x11/dynwrappers/xlib-so_wrap.h"
 #else
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
 
-#include <cstring>
-
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -140,6 +137,19 @@ void create_context() {
 	XFree(vi);
 }
 
+int silent_error_handler(Display *display, XErrorEvent *error) {
+	static char message[1024];
+	XGetErrorText(display, error->error_code, message, sizeof(message));
+	print_verbose(vformat("XServer error: %s"
+						  "\n   Major opcode of failed request: %d"
+						  "\n   Serial number of failed request: %d"
+						  "\n   Current serial number in output stream: %d",
+			String::utf8(message), (uint64_t)error->request_code, (uint64_t)error->minor_code, (uint64_t)error->serial));
+
+	quick_exit(1);
+	return 0;
+}
+
 int detect_prime() {
 	pid_t p;
 	int priorities[2] = {};
@@ -192,6 +202,7 @@ int detect_prime() {
 			// cleaning up these processes, and fork() makes a copy
 			// of all globals.
 			CoreGlobals::leak_reporting_enabled = false;
+			XSetErrorHandler(&silent_error_handler);
 
 			char string[201];
 
@@ -265,5 +276,4 @@ int detect_prime() {
 	return preferred;
 }
 
-#endif
-#endif
+#endif // X11_ENABLED && GLES3_ENABLED

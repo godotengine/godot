@@ -77,10 +77,9 @@ SSEffects::SSEffects() {
 		for (int pass = 0; pass < 4; pass++) {
 			for (int subPass = 0; subPass < sub_pass_count; subPass++) {
 				int a = pass;
-				int b = subPass;
 
 				int spmap[5]{ 0, 1, 4, 3, 2 };
-				b = spmap[subPass];
+				int b = spmap[subPass];
 
 				float ca, sa;
 				float angle0 = (float(a) + float(b) / float(sub_pass_count)) * Math_PI * 0.5f;
@@ -951,7 +950,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 	RD::get_singleton()->draw_command_end_label(); // SSIL
 
-	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER);
+	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_TRANSFER); // Zeroing importance_map_load_counter depends on us.
 
 	int zero[1] = { 0 };
 	RD::get_singleton()->buffer_update(ssil.importance_map_load_counter, 0, sizeof(uint32_t), &zero, 0); //no barrier
@@ -1333,7 +1332,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		RD::get_singleton()->draw_command_end_label(); // Interleave
 	}
 	RD::get_singleton()->draw_command_end_label(); //SSAO
-	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER); //wait for upcoming transfer
+	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_TRANSFER); // Zeroing importance_map_load_counter depends on us.
 
 	int zero[1] = { 0 };
 	RD::get_singleton()->buffer_update(ssao.importance_map_load_counter, 0, sizeof(uint32_t), &zero, 0); //no barrier
@@ -1430,7 +1429,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 			push_constant.camera_z_far = p_projections[v].get_z_far();
 			push_constant.camera_z_near = p_projections[v].get_z_near();
 			push_constant.orthogonal = p_projections[v].is_orthogonal();
-			push_constant.filter = false; //enabling causes arctifacts
+			push_constant.filter = false; // Enabling causes artifacts.
 			push_constant.screen_size[0] = p_ssr_buffers.size.x;
 			push_constant.screen_size[1] = p_ssr_buffers.size.y;
 

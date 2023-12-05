@@ -177,6 +177,14 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
 
 #ifdef HB_EXPERIMENTAL_API
 HB_EXTERN hb_bool_t
+hb_subset_input_set_axis_range (hb_subset_input_t  *input,
+				hb_face_t          *face,
+				hb_tag_t            axis_tag,
+				float               axis_min_value,
+				float               axis_max_value,
+				float              *axis_def_value);
+
+HB_EXTERN hb_bool_t
 hb_subset_input_override_name_table (hb_subset_input_t  *input,
 				     hb_ot_name_id_t     name_id,
 				     unsigned            platform_id,

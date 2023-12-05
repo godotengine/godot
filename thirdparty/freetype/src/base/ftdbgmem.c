@@ -963,7 +963,7 @@
 #else  /* !FT_DEBUG_MEMORY */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _debug_mem_dummy;
+  typedef int  debug_mem_dummy_;
 
 #endif /* !FT_DEBUG_MEMORY */
 

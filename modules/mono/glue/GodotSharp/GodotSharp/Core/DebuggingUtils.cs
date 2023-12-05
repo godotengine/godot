@@ -14,14 +14,46 @@ namespace Godot
     {
         private static void AppendTypeName(this StringBuilder sb, Type type)
         {
-            if (type.IsPrimitive)
-                sb.Append(type.Name);
-            else if (type == typeof(void))
+            // Use the C# type keyword for built-in types.
+            // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/built-in-types
+            if (type == typeof(void))
                 sb.Append("void");
+            else if (type == typeof(bool))
+                sb.Append("bool");
+            else if (type == typeof(byte))
+                sb.Append("byte");
+            else if (type == typeof(sbyte))
+                sb.Append("sbyte");
+            else if (type == typeof(char))
+                sb.Append("char");
+            else if (type == typeof(decimal))
+                sb.Append("decimal");
+            else if (type == typeof(double))
+                sb.Append("double");
+            else if (type == typeof(float))
+                sb.Append("float");
+            else if (type == typeof(int))
+                sb.Append("int");
+            else if (type == typeof(uint))
+                sb.Append("uint");
+            else if (type == typeof(nint))
+                sb.Append("nint");
+            else if (type == typeof(nuint))
+                sb.Append("nuint");
+            else if (type == typeof(long))
+                sb.Append("long");
+            else if (type == typeof(ulong))
+                sb.Append("ulong");
+            else if (type == typeof(short))
+                sb.Append("short");
+            else if (type == typeof(ushort))
+                sb.Append("ushort");
+            else if (type == typeof(object))
+                sb.Append("object");
+            else if (type == typeof(string))
+                sb.Append("string");
             else
                 sb.Append(type);
-
-            sb.Append(' ');
         }
 
         internal static void InstallTraceListener()
@@ -70,13 +102,26 @@ namespace Godot
             }
         }
 
+        internal static unsafe StackFrame? GetCurrentStackFrame(int skipFrames = 0)
+        {
+            // We skip 2 frames:
+            // The first skipped frame is the current method.
+            // The second skipped frame is a method in NativeInterop.NativeFuncs.
+            var stackTrace = new StackTrace(skipFrames: 2 + skipFrames, fNeedFileInfo: true);
+            return stackTrace.GetFrame(0);
+        }
+
         [UnmanagedCallersOnly]
         internal static unsafe void GetCurrentStackInfo(void* destVector)
         {
             try
             {
                 var vector = (godot_stack_info_vector*)destVector;
-                var stackTrace = new StackTrace(skipFrames: 1, fNeedFileInfo: true);
+
+                // We skip 2 frames:
+                // The first skipped frame is the current method.
+                // The second skipped frame is a method in NativeInterop.NativeFuncs.
+                var stackTrace = new StackTrace(skipFrames: 2, fNeedFileInfo: true);
                 int frameCount = stackTrace.FrameCount;
 
                 if (frameCount == 0)
@@ -87,6 +132,14 @@ namespace Godot
                 int i = 0;
                 foreach (StackFrame frame in stackTrace.GetFrames())
                 {
+                    var method = frame.GetMethod();
+
+                    if (method is MethodInfo methodInfo && methodInfo.IsDefined(typeof(StackTraceHiddenAttribute)))
+                    {
+                        // Skip methods marked hidden from the stack trace.
+                        continue;
+                    }
+
                     string? fileName = frame.GetFileName();
                     int fileLineNumber = frame.GetFileLineNumber();
 
@@ -102,6 +155,9 @@ namespace Godot
 
                     i++;
                 }
+
+                // Resize the vector again in case we skipped some frames.
+                vector->Resize(i);
             }
             catch (Exception e)
             {
@@ -122,7 +178,10 @@ namespace Godot
             var sb = new StringBuilder();
 
             if (methodBase is MethodInfo methodInfo)
+            {
                 sb.AppendTypeName(methodInfo.ReturnType);
+                sb.Append(' ');
+            }
 
             sb.Append(methodBase.DeclaringType?.FullName ?? "<unknown>");
             sb.Append('.');

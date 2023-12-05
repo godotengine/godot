@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorNode3DGizmo" inherits="Node3DGizmo" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorNode3DGizmo" inherits="Node3DGizmo" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Gizmo for editing Node3D objects.
+		Gizmo for editing [Node3D] objects.
 	</brief_description>
 	<description>
-		Gizmo that is used for providing custom visualization and editing (handles and subgizmos) for Node3D objects. Can be overridden to create custom gizmos, but for simple gizmos creating a [EditorNode3DGizmoPlugin] is usually recommended.
+		Gizmo that is used for providing custom visualization and editing (handles and subgizmos) for [Node3D] objects. Can be overridden to create custom gizmos, but for simple gizmos creating a [EditorNode3DGizmoPlugin] is usually recommended.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -87,7 +87,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="transform" type="Transform3D" />
 			<description>
-				Override this method to update the node properties during subgizmo editing (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). The [param transform] is given in the Node3D's local coordinate system.
+				Override this method to update the node properties during subgizmo editing (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). The [param transform] is given in the [Node3D]'s local coordinate system.
 			</description>
 		</method>
 		<method name="_subgizmos_intersect_frustum" qualifiers="virtual const">
@@ -95,7 +95,7 @@
 			<param index="0" name="camera" type="Camera3D" />
 			<param index="1" name="frustum" type="Plane[]" />
 			<description>
-				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [param camera] and a [param frustum], this method should return which subgizmos are contained within the frustum. The [param frustum] argument consists of an [code]Array[/code] with all the [code]Plane[/code]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, which can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos].
+				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [param camera] and a [param frustum], this method should return which subgizmos are contained within the frustum. The [param frustum] argument consists of an array with all the [Plane]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, which can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos].
 			</description>
 		</method>
 		<method name="_subgizmos_intersect_ray" qualifiers="virtual const">
@@ -128,7 +128,7 @@
 			<param index="3" name="billboard" type="bool" default="false" />
 			<param index="4" name="secondary" type="bool" default="false" />
 			<description>
-				Adds a list of handles (points) which can be used to edit the properties of the gizmo's Node3D. The [param ids] argument can be used to specify a custom identifier for each handle, if an empty [code]Array[/code] is passed, the ids will be assigned automatically from the [param handles] argument order.
+				Adds a list of handles (points) which can be used to edit the properties of the gizmo's [Node3D]. The [param ids] argument can be used to specify a custom identifier for each handle, if an empty array is passed, the ids will be assigned automatically from the [param handles] argument order.
 				The [param secondary] argument marks the added handles as secondary, meaning they will normally have lower selection priority than regular handles. When the user is holding the shift key secondary handles will switch to have higher priority than regular handles. This change in priority can be used to place multiple handles at the same point while still giving the user control on their selection.
 				There are virtual methods which will be called upon editing of these handles. Call this method during [method _redraw].
 			</description>

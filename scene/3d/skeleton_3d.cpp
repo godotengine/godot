@@ -548,6 +548,7 @@ bool Skeleton3D::is_show_rest_only() const {
 
 void Skeleton3D::clear_bones() {
 	bones.clear();
+	name_to_bone_index.clear();
 	process_order_dirty = true;
 	version++;
 	_make_dirty();
@@ -679,7 +680,7 @@ void Skeleton3D::bind_physical_bone_to_bone(int p_bone, PhysicalBone3D *p_physic
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
 	ERR_FAIL_COND(bones[p_bone].physical_bone);
-	ERR_FAIL_COND(!p_physical_bone);
+	ERR_FAIL_NULL(p_physical_bone);
 	bones.write[p_bone].physical_bone = p_physical_bone;
 
 	_rebuild_physical_bones_cache();
@@ -886,7 +887,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 	skin_bindings.insert(skin_ref.operator->());
 
-	skin_ref->skin->connect("changed", callable_mp(skin_ref.operator->(), &SkinReference::_skin_changed));
+	skin_ref->skin->connect_changed(callable_mp(skin_ref.operator->(), &SkinReference::_skin_changed));
 
 	_make_dirty(); // Skin needs to be updated, so update skeleton.
 
@@ -905,6 +906,7 @@ void Skeleton3D::force_update_all_bone_transforms() {
 	for (int i = 0; i < parentless_bones.size(); i++) {
 		force_update_bone_children_transforms(parentless_bones[i]);
 	}
+	rest_dirty = false;
 }
 
 void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
@@ -962,7 +964,6 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 
 		emit_signal(SceneStringNames::get_singleton()->bone_pose_changed, current_bone_idx);
 	}
-	rest_dirty = false;
 }
 
 void Skeleton3D::_bind_methods() {
