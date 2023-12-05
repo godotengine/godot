@@ -631,6 +631,10 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values) {
 	HashSet<StringName> new_values;
 	for (const PropertyInfo &E : p_properties) {
+		if (E.usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_CATEGORY)) {
+			continue;
+		}
+
 		StringName n = E.name;
 		new_values.insert(n);
 
