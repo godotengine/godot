@@ -534,6 +534,7 @@ private:
 		Item *to_item = nullptr;
 		int to_char = 0;
 
+		bool double_click = false; // Selecting whole words?
 		bool active = false; // anything selected? i.e. from, to, etc. valid?
 		bool enabled = false; // allow selections?
 		bool drag_attempt = false;
