@@ -912,6 +912,11 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	if (library_path.get_file().begins_with("godot-jolt_") && compatibility_minimum[0] == 4 && compatibility_minimum[1] == 1) {
+		ERR_PRINT("Godot Jolt failed to load, as the currently installed version is incompatible with Godot 4.2. You can update it to a compatible version by deleting it and installing it again.");
+		return ERR_INVALID_DATA;
+	}
+
 	bool is_static_library = library_path.ends_with(".a") || library_path.ends_with(".xcframework");
 
 	if (!library_path.is_resource_file() && !library_path.is_absolute_path()) {
