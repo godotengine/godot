@@ -72,6 +72,11 @@ void SceneDebugger::deinitialize() {
 	}
 }
 
+#ifdef MINGW_ENABLED
+#undef near
+#undef far
+#endif
+
 #ifdef DEBUG_ENABLED
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
@@ -336,6 +341,12 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 	}
 
 	if (Node *node = Object::cast_to<Node>(obj)) {
+		// For debugging multiplayer.
+		{
+			PropertyInfo pi(Variant::INT, String("Node/multiplayer_authority"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
+			properties.push_back(SceneDebuggerProperty(pi, node->get_multiplayer_authority()));
+		}
+
 		// Add specialized NodePath info (if inside tree).
 		if (node->is_inside_tree()) {
 			PropertyInfo pi(Variant::NODE_PATH, String("Node/path"));

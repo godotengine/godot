@@ -349,6 +349,8 @@ class AnimationTrackEditGroup : public Control {
 protected:
 	void _notification(int p_what);
 
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 public:
 	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
 	virtual Size2 get_minimum_size() const override;
@@ -387,6 +389,12 @@ class AnimationTrackEditor : public VBoxContainer {
 	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
 
+	Button *dummy_player_warning = nullptr;
+	void _show_dummy_player_warning();
+
+	Button *inactive_player_warning = nullptr;
+	void _show_inactive_player_warning();
+
 	void _snap_mode_changed(int p_mode);
 	Vector<AnimationTrackEdit *> track_edits;
 	Vector<AnimationTrackEditGroup *> groups;
@@ -401,7 +409,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _check_bezier_exist();
 
 	void _name_limit_changed();
-	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only);
+	void _timeline_changed(float p_new_pos, bool p_timeline_only);
 	void _track_remove_request(int p_track);
 	void _animation_track_remove_request(int p_track, Ref<Animation> p_from_animation);
 	void _track_grab_focus(int p_track);
@@ -645,6 +653,8 @@ public:
 	void commit_insert_queue();
 
 	void show_select_node_warning(bool p_show);
+	void show_dummy_player_warning(bool p_show);
+	void show_inactive_player_warning(bool p_show);
 
 	bool is_key_selected(int p_track, int p_key) const;
 	bool is_selection_active() const;

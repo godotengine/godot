@@ -145,8 +145,7 @@ struct PtrToArg<TypedArray<T>> {
 template <class T>
 struct PtrToArg<const TypedArray<T> &> {
 	typedef Array EncodeT;
-	_FORCE_INLINE_ static TypedArray<T>
-	convert(const void *p_ptr) {
+	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 };
@@ -229,5 +228,8 @@ MAKE_TYPED_ARRAY_INFO(Vector<Vector2>, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Vector3>, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
 MAKE_TYPED_ARRAY_INFO(IPAddress, Variant::STRING)
+
+#undef MAKE_TYPED_ARRAY
+#undef MAKE_TYPED_ARRAY_INFO
 
 #endif // TYPED_ARRAY_H

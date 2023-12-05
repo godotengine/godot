@@ -37,6 +37,12 @@
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
+#ifdef MINGW_ENABLED
+#undef CONST
+#undef IN
+#undef VOID
+#endif
+
 class GDScriptTokenizer {
 public:
 	enum CursorPlace {
@@ -105,6 +111,7 @@ public:
 			PASS,
 			RETURN,
 			MATCH,
+			WHEN,
 			// Keywords
 			AS,
 			ASSERT,
@@ -187,6 +194,8 @@ public:
 #ifdef TOOLS_ENABLED
 	struct CommentData {
 		String comment;
+		// true: Comment starts at beginning of line or after indentation.
+		// false: Inline comment (starts after some code).
 		bool new_line = false;
 		CommentData() {}
 		CommentData(const String &p_comment, bool p_new_line) {

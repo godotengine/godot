@@ -35,7 +35,7 @@
 			<param index="1" name="to_id" type="Vector2i" />
 			<description>
 				Called when computing the cost between two connected points.
-				Note that this function is hidden in the default [code]AStarGrid2D[/code] class.
+				Note that this function is hidden in the default [AStarGrid2D] class.
 			</description>
 		</method>
 		<method name="_estimate_cost" qualifiers="virtual const">
@@ -44,7 +44,7 @@
 			<param index="1" name="to_id" type="Vector2i" />
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
-				Note that this function is hidden in the default [code]AStarGrid2D[/code] class.
+				Note that this function is hidden in the default [AStarGrid2D] class.
 			</description>
 		</method>
 		<method name="clear">
@@ -84,7 +84,7 @@
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
 			<description>
-				Returns an array with the points that are in the path found by AStarGrid2D between the given points. The array is ordered from the starting point to the ending point of the path.
+				Returns an array with the points that are in the path found by [AStarGrid2D] between the given points. The array is ordered from the starting point to the ending point of the path.
 				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
 			</description>
 		</method>
@@ -113,14 +113,14 @@
 			<param index="0" name="x" type="int" />
 			<param index="1" name="y" type="int" />
 			<description>
-				Returns [code]true[/code] if the [param x] and [param y] is a valid grid coordinate (id).
+				Returns [code]true[/code] if the [param x] and [param y] is a valid grid coordinate (id), i.e. if it is inside [member region]. Equivalent to [code]region.has_point(Vector2i(x, y))[/code].
 			</description>
 		</method>
 		<method name="is_in_boundsv" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="id" type="Vector2i" />
 			<description>
-				Returns [code]true[/code] if the [param id] vector is a valid grid coordinate.
+				Returns [code]true[/code] if the [param id] vector is a valid grid coordinate, i.e. if it is inside [member region]. Equivalent to [code]region.has_point(id)[/code].
 			</description>
 		</method>
 		<method name="is_point_solid" qualifiers="const">

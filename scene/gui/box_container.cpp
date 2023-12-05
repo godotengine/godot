@@ -30,8 +30,9 @@
 
 #include "box_container.h"
 
-#include "label.h"
-#include "margin_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
+#include "scene/theme/theme_db.h"
 
 struct _MinSizeCache {
 	int min_size = 0;
@@ -288,12 +289,6 @@ Size2 BoxContainer::get_minimum_size() const {
 	return minimum;
 }
 
-void BoxContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.separation = get_theme_constant(SNAME("separation"));
-}
-
 void BoxContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
@@ -399,6 +394,8 @@ void BoxContainer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BoxContainer, separation);
 }
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {

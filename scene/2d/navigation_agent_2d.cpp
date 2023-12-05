@@ -294,6 +294,13 @@ NavigationAgent2D::NavigationAgent2D() {
 	NavigationServer2D::get_singleton()->agent_set_time_horizon_obstacles(agent, time_horizon_obstacles);
 	NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
 	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, max_speed);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_layers(agent, avoidance_layers);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_mask(agent, avoidance_mask);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_priority(agent, avoidance_priority);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(agent, avoidance_enabled);
+	if (avoidance_enabled) {
+		NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
+	}
 
 	// Preallocate query and result objects to improve performance.
 	navigation_query = Ref<NavigationPathQueryParameters2D>();
@@ -301,11 +308,6 @@ NavigationAgent2D::NavigationAgent2D() {
 
 	navigation_result = Ref<NavigationPathQueryResult2D>();
 	navigation_result.instantiate();
-
-	set_avoidance_layers(avoidance_layers);
-	set_avoidance_mask(avoidance_mask);
-	set_avoidance_priority(avoidance_priority);
-	set_avoidance_enabled(avoidance_enabled);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationAgent2D::_navigation_debug_changed));
@@ -560,7 +562,7 @@ Vector2 NavigationAgent2D::get_next_path_position() {
 
 	const Vector<Vector2> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
-		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector2(), "The agent has no parent.");
+		ERR_FAIL_NULL_V_MSG(agent_parent, Vector2(), "The agent has no parent.");
 		return agent_parent->get_global_position();
 	} else {
 		return navigation_path[navigation_path_index];
@@ -568,7 +570,7 @@ Vector2 NavigationAgent2D::get_next_path_position() {
 }
 
 real_t NavigationAgent2D::distance_to_target() const {
-	ERR_FAIL_COND_V_MSG(agent_parent == nullptr, 0.0, "The agent has no parent.");
+	ERR_FAIL_NULL_V_MSG(agent_parent, 0.0, "The agent has no parent.");
 	return agent_parent->get_global_position().distance_to(target_position);
 }
 

@@ -33,10 +33,6 @@
 #include "mono_gd/gd_mono.h"
 #include "utils/path_utils.h"
 
-#ifdef ANDROID_ENABLED
-#include "mono_gd/support/android_support.h"
-#endif
-
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
@@ -104,8 +100,6 @@ static const char *platform_name_map[][2] = {
 	{ "FreeBSD", "linuxbsd" },
 	{ "NetBSD", "linuxbsd" },
 	{ "BSD", "linuxbsd" },
-	{ "UWP", "uwp" },
-	{ "Haiku", "haiku" },
 	{ "Android", "android" },
 	{ "iOS", "ios" },
 	{ "Web", "web" },

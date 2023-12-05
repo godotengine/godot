@@ -147,6 +147,15 @@ struct TSmallArrayVector {
             sizes->erase(sizes->begin());
     }
 
+    void pop_back()
+    {
+        assert(sizes != nullptr && sizes->size() > 0);
+        if (sizes->size() == 1)
+            dealloc();
+        else
+            sizes->resize(sizes->size() - 1);
+    }
+
     // 'this' should currently not be holding anything, and copyNonFront
     // will make it hold a copy of all but the first element of rhs.
     // (This would be useful for making a type that is dereferenced by
@@ -306,6 +315,7 @@ struct TArraySizes {
     bool isDefaultImplicitlySized() const { return implicitlySized && implicitArraySize == 0; }
     void setImplicitlySized(bool isImplicitSizing) { implicitlySized = isImplicitSizing; }
     void dereference() { sizes.pop_front(); }
+    void removeLastSize() { sizes.pop_back(); }
     void copyDereferenced(const TArraySizes& rhs)
     {
         assert(sizes.size() == 0);

@@ -37,6 +37,7 @@
 class OptionButton : public Button {
 	GDCLASS(OptionButton, Button);
 
+	bool disable_shortcuts = false;
 	PopupMenu *popup = nullptr;
 	int current = -1;
 	bool fit_to_longest_item = true;
@@ -71,14 +72,16 @@ class OptionButton : public Button {
 
 protected:
 	Size2 get_minimum_size() const override;
-	virtual void _update_theme_item_cache() override;
 	virtual void _queue_update_size_cache() override;
+
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
@@ -128,6 +131,8 @@ public:
 
 	PopupMenu *get_popup() const;
 	void show_popup();
+
+	void set_disable_shortcuts(bool p_disabled);
 
 	OptionButton(const String &p_text = String());
 	~OptionButton();

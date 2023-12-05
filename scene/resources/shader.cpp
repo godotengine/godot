@@ -234,13 +234,18 @@ Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const Strin
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
 
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path);
+	Error error = OK;
+	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path, &error);
+	ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot load shader: " + p_path);
 
 	String str;
-	str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+	if (buffer.size() > 0) {
+		error = str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+		ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot parse shader: " + p_path);
+	}
+
+	Ref<Shader> shader;
+	shader.instantiate();
 
 	shader->set_include_path(p_path);
 	shader->set_code(str);

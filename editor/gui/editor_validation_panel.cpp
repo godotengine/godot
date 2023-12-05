@@ -31,6 +31,7 @@
 #include "editor_validation_panel.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -52,9 +53,9 @@ void EditorValidationPanel::_update() {
 void EditorValidationPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			theme_cache.valid_color = get_theme_color(SNAME("success_color"), SNAME("Editor"));
-			theme_cache.warning_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
-			theme_cache.error_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
+			theme_cache.valid_color = get_theme_color(SNAME("success_color"), EditorStringName(Editor));
+			theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+			theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 		} break;
 	}
 }

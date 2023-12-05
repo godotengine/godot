@@ -81,8 +81,11 @@ class AnimationBezierTrackEdit : public Control {
 	int solo_track = -1;
 	bool is_filtered = false;
 
-	float v_scroll = 0;
-	float v_zoom = 1;
+	float track_v_scroll = 0;
+	float track_v_scroll_max = 0;
+
+	float timeline_v_scroll = 0;
+	float timeline_v_zoom = 1;
 
 	PopupMenu *menu = nullptr;
 

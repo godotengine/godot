@@ -390,6 +390,8 @@ struct cff2
   template <typename PRIVOPSET, typename PRIVDICTVAL>
   struct accelerator_templ_t
   {
+    static constexpr hb_tag_t tableTag = cff2::tableTag;
+
     accelerator_templ_t (hb_face_t *face)
     {
       if (!face) return;

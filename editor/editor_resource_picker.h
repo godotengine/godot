@@ -72,6 +72,7 @@ class EditorResourcePicker : public HBoxContainer {
 		OBJ_MENU_MAKE_UNIQUE,
 		OBJ_MENU_MAKE_UNIQUE_RECURSIVE,
 		OBJ_MENU_SAVE,
+		OBJ_MENU_SAVE_AS,
 		OBJ_MENU_COPY,
 		OBJ_MENU_PASTE,
 		OBJ_MENU_SHOW_IN_FILE_SYSTEM,
@@ -145,8 +146,8 @@ class EditorScriptPicker : public EditorResourcePicker {
 	GDCLASS(EditorScriptPicker, EditorResourcePicker);
 
 	enum ExtraMenuOption {
-		OBJ_MENU_NEW_SCRIPT = 10,
-		OBJ_MENU_EXTEND_SCRIPT = 11
+		OBJ_MENU_NEW_SCRIPT = 50,
+		OBJ_MENU_EXTEND_SCRIPT = 51
 	};
 
 	Node *script_owner = nullptr;
@@ -168,7 +169,7 @@ class EditorShaderPicker : public EditorResourcePicker {
 	GDCLASS(EditorShaderPicker, EditorResourcePicker);
 
 	enum ExtraMenuOption {
-		OBJ_MENU_NEW_SHADER = 10,
+		OBJ_MENU_NEW_SHADER = 50,
 	};
 
 	ShaderMaterial *edited_material = nullptr;

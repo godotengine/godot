@@ -79,6 +79,7 @@ class Sprite2DEditor : public Control {
 	friend class Sprite2DEditorPlugin;
 
 	void _debug_uv_draw();
+	void _popup_debug_uv_dialog();
 	void _update_mesh_data();
 
 	void _create_node();

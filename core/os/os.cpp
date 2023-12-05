@@ -39,7 +39,15 @@
 #include "core/version_generated.gen.h"
 
 #include <stdarg.h>
+
+#ifdef MINGW_ENABLED
+#define MINGW_STDTHREAD_REDUNDANCY_WARNING
+#include "thirdparty/mingw-std-threads/mingw.thread.h"
+#define THREADING_NAMESPACE mingw_stdthread
+#else
 #include <thread>
+#define THREADING_NAMESPACE std
+#endif
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
@@ -355,11 +363,11 @@ void OS::set_cmdline(const char *p_execpath, const List<String> &p_args, const L
 }
 
 String OS::get_unique_id() const {
-	ERR_FAIL_V("");
+	return "";
 }
 
 int OS::get_processor_count() const {
-	return std::thread::hardware_concurrency();
+	return THREADING_NAMESPACE::thread::hardware_concurrency();
 }
 
 String OS::get_processor_name() const {
@@ -486,6 +494,12 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 	if (p_feature == "wasm") {
+		return true;
+	}
+#endif
+
+#if defined(IOS_SIMULATOR)
+	if (p_feature == "simulator") {
 		return true;
 	}
 #endif

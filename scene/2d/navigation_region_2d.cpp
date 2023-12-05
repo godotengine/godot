@@ -35,6 +35,10 @@
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
+RID NavigationRegion2D::get_rid() const {
+	return region;
+}
+
 void NavigationRegion2D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		return;
@@ -136,7 +140,7 @@ real_t NavigationRegion2D::get_travel_cost() const {
 }
 
 RID NavigationRegion2D::get_region_rid() const {
-	return region;
+	return get_rid();
 }
 
 #ifdef TOOLS_ENABLED
@@ -165,6 +169,7 @@ void NavigationRegion2D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			set_physics_process_internal(false);
+			_region_update_transform();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -179,10 +184,6 @@ void NavigationRegion2D::_notification(int p_what) {
 }
 
 void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_navigation_polygon) {
-	if (p_navigation_polygon == navigation_polygon) {
-		return;
-	}
-
 	if (navigation_polygon.is_valid()) {
 		navigation_polygon->disconnect_changed(callable_mp(this, &NavigationRegion2D::_navigation_polygon_changed));
 	}
@@ -226,6 +227,32 @@ RID NavigationRegion2D::get_navigation_map() const {
 	return RID();
 }
 
+void NavigationRegion2D::bake_navigation_polygon(bool p_on_thread) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "The SceneTree can only be parsed on the main thread. Call this function from the main thread or use call_deferred().");
+	ERR_FAIL_COND_MSG(!navigation_polygon.is_valid(), "Baking the navigation polygon requires a valid `NavigationPolygon` resource.");
+
+	Ref<NavigationMeshSourceGeometryData2D> source_geometry_data;
+	source_geometry_data.instantiate();
+
+	NavigationServer2D::get_singleton()->parse_source_geometry_data(navigation_polygon, source_geometry_data, this);
+
+	if (p_on_thread) {
+		NavigationServer2D::get_singleton()->bake_from_source_geometry_data_async(navigation_polygon, source_geometry_data, callable_mp(this, &NavigationRegion2D::_bake_finished).bind(navigation_polygon));
+	} else {
+		NavigationServer2D::get_singleton()->bake_from_source_geometry_data(navigation_polygon, source_geometry_data, callable_mp(this, &NavigationRegion2D::_bake_finished).bind(navigation_polygon));
+	}
+}
+
+void NavigationRegion2D::_bake_finished(Ref<NavigationPolygon> p_navigation_polygon) {
+	if (!Thread::is_main_thread()) {
+		call_deferred(SNAME("_bake_finished"), p_navigation_polygon);
+		return;
+	}
+
+	set_navigation_polygon(p_navigation_polygon);
+	emit_signal(SNAME("bake_finished"));
+}
+
 void NavigationRegion2D::_navigation_polygon_changed() {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		queue_redraw();
@@ -257,6 +284,8 @@ PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
 }
 
 void NavigationRegion2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationRegion2D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "navigation_polygon"), &NavigationRegion2D::set_navigation_polygon);
 	ClassDB::bind_method(D_METHOD("get_navigation_polygon"), &NavigationRegion2D::get_navigation_polygon);
 
@@ -290,6 +319,8 @@ void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_travel_cost", "travel_cost"), &NavigationRegion2D::set_travel_cost);
 	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationRegion2D::get_travel_cost);
 
+	ClassDB::bind_method(D_METHOD("bake_navigation_polygon", "on_thread"), &NavigationRegion2D::bake_navigation_polygon, DEFVAL(true));
+
 	ClassDB::bind_method(D_METHOD("_navigation_polygon_changed"), &NavigationRegion2D::_navigation_polygon_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_polygon", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"), "set_navigation_polygon", "get_navigation_polygon");
@@ -300,6 +331,9 @@ void NavigationRegion2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "constrain_avoidance"), "set_constrain_avoidance", "get_constrain_avoidance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
+
+	ADD_SIGNAL(MethodInfo("navigation_polygon_changed"));
+	ADD_SIGNAL(MethodInfo("bake_finished"));
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -329,6 +363,9 @@ NavigationRegion2D::NavigationRegion2D() {
 	NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
 	NavigationServer2D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
 	NavigationServer2D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
+	NavigationServer2D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
+	NavigationServer2D::get_singleton()->region_set_use_edge_connections(region, use_edge_connections);
+	NavigationServer2D::get_singleton()->region_set_enabled(region, enabled);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->connect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
@@ -470,20 +507,18 @@ void NavigationRegion2D::_region_enter_navigation_map() {
 		return;
 	}
 
-	if (enabled) {
-		if (map_override.is_valid()) {
-			NavigationServer2D::get_singleton()->region_set_map(region, map_override);
-			for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-				if (constrain_avoidance_obstacles[i].is_valid()) {
-					NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], map_override);
-				}
+	if (map_override.is_valid()) {
+		NavigationServer2D::get_singleton()->region_set_map(region, map_override);
+		for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
+			if (constrain_avoidance_obstacles[i].is_valid()) {
+				NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], map_override);
 			}
-		} else {
-			NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
-			for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-				if (constrain_avoidance_obstacles[i].is_valid()) {
-					NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], get_world_2d()->get_navigation_map());
-				}
+		}
+	} else {
+		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+		for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
+			if (constrain_avoidance_obstacles[i].is_valid()) {
+				NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], get_world_2d()->get_navigation_map());
 			}
 		}
 	}
@@ -495,6 +530,8 @@ void NavigationRegion2D::_region_enter_navigation_map() {
 			NavigationServer2D::get_singleton()->obstacle_set_position(constrain_avoidance_obstacles[i], get_global_position());
 		}
 	}
+
+	NavigationServer2D::get_singleton()->region_set_enabled(region, enabled);
 
 	queue_redraw();
 }

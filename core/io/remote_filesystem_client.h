@@ -44,8 +44,8 @@ protected:
 	String _get_cache_path() { return cache_path; }
 	struct FileCache {
 		String path; // Local path (as in "folder/to/file.png")
-		uint64_t server_modified_time; // MD5 checksum.
-		uint64_t modified_time;
+		uint64_t server_modified_time = 0; // MD5 checksum.
+		uint64_t modified_time = 0;
 	};
 	virtual bool _is_configured() { return !cache_path.is_empty(); }
 	// Can be re-implemented per platform. If so, feel free to ignore get_cache_path()

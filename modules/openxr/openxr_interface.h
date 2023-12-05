@@ -33,6 +33,7 @@
 
 #include "action_map/openxr_action_map.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
+#include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
 #include "servers/xr/xr_interface.h"
@@ -55,6 +56,7 @@ private:
 	Transform3D head_transform;
 	Vector3 head_linear_velocity;
 	Vector3 head_angular_velocity;
+	XRPose::TrackingConfidence head_confidence;
 	Transform3D transform_for_view[2]; // We currently assume 2, but could be 4 for VARJO which we do not support yet
 
 	void _load_action_map();
@@ -97,6 +99,8 @@ private:
 
 	void _set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye);
 
+	void handle_hand_tracking(const String &p_path, OpenXRHandTrackingExtension::HandTrackedHands p_hand);
+
 protected:
 	static void _bind_methods();
 
@@ -106,6 +110,9 @@ public:
 
 	virtual PackedStringArray get_suggested_tracker_names() const override;
 	virtual TrackingStatus get_tracking_status() const override;
+
+	bool is_hand_tracking_supported();
+	bool is_eye_gaze_interaction_supported();
 
 	bool initialize_on_startup() const;
 	virtual bool is_initialized() const override;
@@ -130,6 +137,14 @@ public:
 	double get_render_target_size_multiplier() const;
 	void set_render_target_size_multiplier(double multiplier);
 
+	bool is_foveation_supported() const;
+
+	int get_foveation_level() const;
+	void set_foveation_level(int p_foveation_level);
+
+	bool get_foveation_dynamic() const;
+	void set_foveation_dynamic(bool p_foveation_dynamic);
+
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
@@ -152,6 +167,7 @@ public:
 
 	/** environment blend mode. */
 	virtual Array get_supported_environment_blend_modes() override;
+	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const override;
 	virtual bool set_environment_blend_mode(XRInterface::EnvironmentBlendMode mode) override;
 
 	void on_state_ready();
@@ -161,8 +177,77 @@ public:
 	void on_pose_recentered();
 	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
 
+	/** Hand tracking. */
+	enum Hand {
+		HAND_LEFT,
+		HAND_RIGHT,
+		HAND_MAX,
+	};
+
+	enum HandMotionRange {
+		HAND_MOTION_RANGE_UNOBSTRUCTED,
+		HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER,
+		HAND_MOTION_RANGE_MAX
+	};
+
+	void set_motion_range(const Hand p_hand, const HandMotionRange p_motion_range);
+	HandMotionRange get_motion_range(const Hand p_hand) const;
+
+	enum HandJoints {
+		HAND_JOINT_PALM = 0,
+		HAND_JOINT_WRIST = 1,
+		HAND_JOINT_THUMB_METACARPAL = 2,
+		HAND_JOINT_THUMB_PROXIMAL = 3,
+		HAND_JOINT_THUMB_DISTAL = 4,
+		HAND_JOINT_THUMB_TIP = 5,
+		HAND_JOINT_INDEX_METACARPAL = 6,
+		HAND_JOINT_INDEX_PROXIMAL = 7,
+		HAND_JOINT_INDEX_INTERMEDIATE = 8,
+		HAND_JOINT_INDEX_DISTAL = 9,
+		HAND_JOINT_INDEX_TIP = 10,
+		HAND_JOINT_MIDDLE_METACARPAL = 11,
+		HAND_JOINT_MIDDLE_PROXIMAL = 12,
+		HAND_JOINT_MIDDLE_INTERMEDIATE = 13,
+		HAND_JOINT_MIDDLE_DISTAL = 14,
+		HAND_JOINT_MIDDLE_TIP = 15,
+		HAND_JOINT_RING_METACARPAL = 16,
+		HAND_JOINT_RING_PROXIMAL = 17,
+		HAND_JOINT_RING_INTERMEDIATE = 18,
+		HAND_JOINT_RING_DISTAL = 19,
+		HAND_JOINT_RING_TIP = 20,
+		HAND_JOINT_LITTLE_METACARPAL = 21,
+		HAND_JOINT_LITTLE_PROXIMAL = 22,
+		HAND_JOINT_LITTLE_INTERMEDIATE = 23,
+		HAND_JOINT_LITTLE_DISTAL = 24,
+		HAND_JOINT_LITTLE_TIP = 25,
+		HAND_JOINT_MAX = 26,
+	};
+
+	enum HandJointFlags {
+		HAND_JOINT_NONE = 0,
+		HAND_JOINT_ORIENTATION_VALID = 1,
+		HAND_JOINT_ORIENTATION_TRACKED = 2,
+		HAND_JOINT_POSITION_VALID = 4,
+		HAND_JOINT_POSITION_TRACKED = 8,
+		HAND_JOINT_LINEAR_VELOCITY_VALID = 16,
+		HAND_JOINT_ANGULAR_VELOCITY_VALID = 32,
+	};
+
+	BitField<HandJointFlags> get_hand_joint_flags(Hand p_hand, HandJoints p_joint) const;
+	Quaternion get_hand_joint_rotation(Hand p_hand, HandJoints p_joint) const;
+	Vector3 get_hand_joint_position(Hand p_hand, HandJoints p_joint) const;
+	float get_hand_joint_radius(Hand p_hand, HandJoints p_joint) const;
+
+	Vector3 get_hand_joint_linear_velocity(Hand p_hand, HandJoints p_joint) const;
+	Vector3 get_hand_joint_angular_velocity(Hand p_hand, HandJoints p_joint) const;
+
 	OpenXRInterface();
 	~OpenXRInterface();
 };
+
+VARIANT_ENUM_CAST(OpenXRInterface::Hand)
+VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
+VARIANT_ENUM_CAST(OpenXRInterface::HandJoints)
+VARIANT_BITFIELD_CAST(OpenXRInterface::HandJointFlags)
 
 #endif // OPENXR_INTERFACE_H

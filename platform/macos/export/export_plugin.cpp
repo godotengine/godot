@@ -38,9 +38,12 @@
 
 #include "core/io/image_loader.h"
 #include "core/string/translation.h"
+#include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For svg and regex.
@@ -137,6 +140,9 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 
 		if (p_name == "codesign/codesign") {
 			if (dist_type == 2) {
+				if (codesign_tool == 2 && Engine::get_singleton()->has_singleton("GodotSharp")) {
+					return TTR("'rcodesign' doesn't support signing applications with embedded dynamic libraries (GDExtension or .NET).");
+				}
 				if (codesign_tool == 0) {
 					return TTR("Code signing is required for App Store distribution.");
 				}
@@ -312,9 +318,6 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 			case 2: { // "notarytool"
 				// All options are visible.
 			} break;
-			case 3: { // "altool"
-				// All options are visible.
-			} break;
 			default: { // disabled
 				if (p_option == "notarization/apple_id_name" || p_option == "notarization/apple_id_password" || p_option == "notarization/api_uuid" || p_option == "notarization/api_key" || p_option == "notarization/api_key_id") {
 					return false;
@@ -377,11 +380,12 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_category", PROPERTY_HINT_ENUM, "Business,Developer-tools,Education,Entertainment,Finance,Games,Action-games,Adventure-games,Arcade-games,Board-games,Card-games,Casino-games,Dice-games,Educational-games,Family-games,Kids-games,Music-games,Puzzle-games,Racing-games,Role-playing-games,Simulation-games,Sports-games,Strategy-games,Trivia-games,Word-games,Graphics-design,Healthcare-fitness,Lifestyle,Medical,Music,News,Photography,Productivity,Reference,Social-networking,Sports,Travel,Utilities,Video,Weather"), "Games"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version"), "10.12"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/platform_build"), "14C18"));
@@ -433,14 +437,14 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 #ifdef MACOS_ENABLED
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,rcodesign,Xcode notarytool,Xcode altool (deprecated)"), 0, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,rcodesign,Xcode notarytool"), 0, true));
 #else
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,rcodesign"), 0, true));
 #endif
-	// "altool" and "notarytool" only options:
+	// "notarytool" only options:
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple ID email", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_password", PROPERTY_HINT_PASSWORD, "Enable two-factor authentication and provide app-specific password", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
-	// "altool", "notarytool" and "rcodesign" only options:
+	// "notarytool" and "rcodesign" only options:
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_uuid", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect issuer ID UUID", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_key", PROPERTY_HINT_GLOBAL_FILE, "*.p8", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_key_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect API key ID", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
@@ -552,8 +556,6 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, 
 }
 
 void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
-	Ref<ImageTexture> it = memnew(ImageTexture);
-
 	Vector<uint8_t> data;
 
 	data.resize(8);
@@ -583,49 +585,35 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 	};
 
 	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
-		Ref<Image> copy = p_icon; // does this make sense? doesn't this just increase the reference count instead of making a copy? Do we even need a copy?
+		Ref<Image> copy = p_icon->duplicate();
 		copy->convert(Image::FORMAT_RGBA8);
 		copy->resize(icon_infos[i].size, icon_infos[i].size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
 
 		if (icon_infos[i].is_png) {
 			// Encode PNG icon.
-			it->set_image(copy);
-			String path = EditorPaths::get_singleton()->get_cache_dir().path_join("icon.png");
-			ResourceSaver::save(it, path);
-
-			{
-				Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
-				if (f.is_null()) {
-					// Clean up generated file.
-					DirAccess::remove_file_or_error(path);
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not open icon file \"%s\"."), path));
-					return;
-				}
-
+			Vector<uint8_t> png_buffer;
+			Error err = PNGDriverCommon::image_to_png(copy, png_buffer);
+			if (err == OK) {
 				int ofs = data.size();
-				uint64_t len = f->get_length();
+				uint64_t len = png_buffer.size();
 				data.resize(data.size() + len + 8);
-				f->get_buffer(&data.write[ofs + 8], len);
+				memcpy(&data.write[ofs + 8], png_buffer.ptr(), len);
 				len += 8;
 				len = BSWAP32(len);
 				memcpy(&data.write[ofs], icon_infos[i].name, 4);
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
-
-			// Clean up generated file.
-			DirAccess::remove_file_or_error(path);
-
 		} else {
 			Vector<uint8_t> src_data = copy->get_data();
 
-			//encode 24bit RGB RLE icon
+			// Encode 24-bit RGB RLE icon.
 			{
 				int ofs = data.size();
 				data.resize(data.size() + 8);
 
-				_rgba8_to_packbits_encode(0, icon_infos[i].size, src_data, data); // encode R
-				_rgba8_to_packbits_encode(1, icon_infos[i].size, src_data, data); // encode G
-				_rgba8_to_packbits_encode(2, icon_infos[i].size, src_data, data); // encode B
+				_rgba8_to_packbits_encode(0, icon_infos[i].size, src_data, data); // Encode R.
+				_rgba8_to_packbits_encode(1, icon_infos[i].size, src_data, data); // Encode G.
+				_rgba8_to_packbits_encode(2, icon_infos[i].size, src_data, data); // Encode B.
 
 				int len = data.size() - ofs;
 				len = BSWAP32(len);
@@ -633,7 +621,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
 
-			//encode 8bit mask uncompressed icon
+			// Encode 8-bit mask uncompressed icon.
 			{
 				int ofs = data.size();
 				int len = copy->get_width() * copy->get_height();
@@ -670,7 +658,7 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 		} else if (lines[i].find("$bundle_identifier") != -1) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 		} else if (lines[i].find("$short_version") != -1) {
-			strnew += lines[i].replace("$short_version", p_preset->get("application/short_version")) + "\n";
+			strnew += lines[i].replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
 		} else if (lines[i].find("$version") != -1) {
 			strnew += lines[i].replace("$version", p_preset->get_version("application/version")) + "\n";
 		} else if (lines[i].find("$signature") != -1) {
@@ -913,89 +901,6 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
 			}
 		} break;
-		case 3: { // "altool"
-			print_verbose("using altool notarization...");
-
-			if (!FileAccess::exists("/usr/bin/xcrun") && !FileAccess::exists("/bin/xcrun")) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Xcode command line tools are not installed."));
-				return Error::FAILED;
-			}
-
-			List<String> args;
-
-			args.push_back("altool");
-			args.push_back("--notarize-app");
-
-			args.push_back("--primary-bundle-id");
-			args.push_back(p_preset->get("application/bundle_identifier"));
-
-			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) == "" && p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) == "") {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Neither Apple ID name nor App Store Connect issuer ID name not specified."));
-				return Error::FAILED;
-			}
-			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) != "" && p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) != "") {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Both Apple ID name and App Store Connect issuer ID name are specified, only one should be set at the same time."));
-				return Error::FAILED;
-			}
-
-			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) != "") {
-				if (p_preset->get_or_env("notarization/apple_id_password", ENV_MAC_NOTARIZATION_APPLE_PASS) == "") {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Apple ID password not specified."));
-					return Error::FAILED;
-				}
-				args.push_back("--username");
-				args.push_back(p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID));
-
-				args.push_back("--password");
-				args.push_back(p_preset->get_or_env("notarization/apple_id_password", ENV_MAC_NOTARIZATION_APPLE_PASS));
-			} else {
-				if (p_preset->get_or_env("notarization/api_key", ENV_MAC_NOTARIZATION_KEY) == "") {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect API key ID not specified."));
-					return Error::FAILED;
-				}
-				args.push_back("--apiIssuer");
-				args.push_back(p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID));
-
-				args.push_back("--apiKey");
-				args.push_back(p_preset->get_or_env("notarization/api_key_id", ENV_MAC_NOTARIZATION_KEY_ID));
-			}
-
-			args.push_back("--type");
-			args.push_back("osx");
-
-			if (p_preset->get("codesign/apple_team_id")) {
-				args.push_back("--asc-provider");
-				args.push_back(p_preset->get("codesign/apple_team_id"));
-			}
-
-			args.push_back("--file");
-			args.push_back(p_path);
-
-			String str;
-			int exitcode = 0;
-			Error err = OS::get_singleton()->execute("xcrun", args, &str, &exitcode, true);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Could not start xcrun executable."));
-				return err;
-			}
-
-			int rq_offset = str.find("RequestUUID:");
-			if (exitcode != 0 || rq_offset == -1) {
-				print_line("xcrun altool (" + p_path + "):\n" + str);
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed, see editor log for details."));
-				return Error::FAILED;
-			} else {
-				print_verbose("xcrun altool (" + p_path + "):\n" + str);
-				int next_nl = str.find("\n", rq_offset);
-				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 13, -1) : str.substr(rq_offset + 13, next_nl - rq_offset - 13);
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour. When the process is completed, you'll receive an email."));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun altool --notarization-history 0 -u <your email> -p <app-specific pwd>\"");
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
-			}
-		} break;
 #endif
 		default: {
 		};
@@ -1044,6 +949,8 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 				args.push_back("--p12-password");
 				args.push_back(certificate_pass);
 			}
+			args.push_back("--code-signature-flags");
+			args.push_back("runtime");
 
 			args.push_back("-v"); /* provide some more feedback */
 
@@ -1136,7 +1043,6 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 
 Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path,
 		const String &p_ent_path, bool p_should_error_on_non_code) {
-#ifdef MACOS_ENABLED
 	static Vector<String> extensions_to_sign;
 
 	if (extensions_to_sign.is_empty()) {
@@ -1183,7 +1089,6 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 
 		current_file = dir_access->get_next();
 	}
-#endif
 
 	return OK;
 }
@@ -1222,7 +1127,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			if (extensions_to_sign.find(p_in_app_path.get_extension()) > -1) {
 				err = _code_sign(p_preset, p_in_app_path, p_ent_path, false);
 			}
-			if (is_executable(p_in_app_path)) {
+			if (dir_access->file_exists(p_in_app_path) && is_executable(p_in_app_path)) {
 				// chmod with 0755 if the file is executable.
 				FileAccess::set_unix_permissions(p_in_app_path, 0755);
 			}
@@ -1616,6 +1521,14 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	// Now process our template.
 	bool found_binary = false;
 
+	int export_angle = p_preset->get("application/export_angle");
+	bool include_angle_libs = false;
+	if (export_angle == 0) {
+		include_angle_libs = String(GLOBAL_GET("rendering/gl_compatibility/driver.macos")) == "opengl3_angle";
+	} else if (export_angle == 1) {
+		include_angle_libs = true;
+	}
+
 	while (ret == UNZ_OK && err == OK) {
 		// Get filename.
 		unz_file_info info;
@@ -1661,6 +1574,20 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 			ret = unzGoToNextFile(src_pkg_zip);
 			continue; // next
+		}
+
+		if (file == "Contents/Frameworks/libEGL.dylib") {
+			if (!include_angle_libs) {
+				ret = unzGoToNextFile(src_pkg_zip);
+				continue; // skip
+			}
+		}
+
+		if (file == "Contents/Frameworks/libGLESv2.dylib") {
+			if (!include_angle_libs) {
+				ret = unzGoToNextFile(src_pkg_zip);
+				continue; // skip
+			}
 		}
 
 		if (file == "Contents/Info.plist") {
@@ -1788,6 +1715,10 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		if (!shared_objects.is_empty() && sign_enabled && ad_hoc && !lib_validation) {
 			add_message(EXPORT_MESSAGE_INFO, TTR("Entitlements Modified"), TTR("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries."));
 			lib_validation = true;
+		}
+
+		if (!shared_objects.is_empty() && sign_enabled && codesign_tool == 2) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("'rcodesign' doesn't support signing applications with embedded dynamic libraries."));
 		}
 
 		String ent_path = p_preset->get("codesign/entitlements/custom_file");
@@ -2095,9 +2026,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
-	// Look for export templates (custom templates).
-	bool dvalid = false;
-	bool rvalid = false;
+	// Look for export templates (official templates first, then custom).
+	bool dvalid = exists_export_template("macos.zip", &err);
+	bool rvalid = dvalid; // Both in the same ZIP.
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -2112,28 +2043,18 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 		}
 	}
 
-	// Look for export templates (official templates, check only is custom templates are not set).
-	if (!dvalid || !rvalid) {
-		dvalid = exists_export_template("macos.zip", &err);
-		rvalid = dvalid; // Both in the same ZIP.
-	}
-
 	bool valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
 	// Check the texture formats, which vary depending on the target architecture.
 	String architecture = p_preset->get("binary_format/architecture");
 	if (architecture == "universal" || architecture == "x86_64") {
-		const String bc_error = test_bc();
-		if (!bc_error.is_empty()) {
+		if (!ResourceImporterTextureSettings::should_import_s3tc_bptc()) {
 			valid = false;
-			err += bc_error;
 		}
 	} else if (architecture == "arm64") {
-		const String etc_error = test_etc2();
-		if (!etc_error.is_empty()) {
+		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 			valid = false;
-			err += etc_error;
 		}
 	} else {
 		ERR_PRINT("Invalid architecture");
@@ -2463,7 +2384,7 @@ EditorExportPlatformMacOS::EditorExportPlatformMacOS() {
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
-			stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
+			stop_icon = theme->get_icon(SNAME("Stop"), EditorStringName(EditorIcons));
 		} else {
 			stop_icon.instantiate();
 		}

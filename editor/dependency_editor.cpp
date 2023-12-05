@@ -304,9 +304,9 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 		}
 
 		if (only_scenes_selected) {
-			file_options->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_OPEN);
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_OPEN);
 		} else if (selected_items.size() == 1) {
-			file_options->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_OPEN);
 		} else {
 			return;
 		}
@@ -508,17 +508,17 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 				if (!tree_items.has(rd.dependency_folder)) {
 					TreeItem *folder_item = owners->create_item(owners->get_root());
 					folder_item->set_text(0, rd.dependency_folder);
-					folder_item->set_icon(0, owners->get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+					folder_item->set_icon(0, owners->get_editor_theme_icon(SNAME("Folder")));
 					tree_items[rd.dependency_folder] = folder_item;
 				}
 				TreeItem *dependency_item = owners->create_item(tree_items[rd.dependency_folder]);
 				dependency_item->set_text(0, rd.dependency);
-				dependency_item->set_icon(0, owners->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+				dependency_item->set_icon(0, owners->get_editor_theme_icon(SNAME("Warning")));
 				tree_items[rd.dependency] = dependency_item;
 			} else {
 				TreeItem *dependency_item = owners->create_item(owners->get_root());
 				dependency_item->set_text(0, rd.dependency);
-				dependency_item->set_icon(0, owners->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+				dependency_item->set_icon(0, owners->get_editor_theme_icon(SNAME("Warning")));
 				tree_items[rd.dependency] = dependency_item;
 			}
 		}
@@ -804,7 +804,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 				int ds = efsd->get_file_deps(i).size();
 				ti->set_text(1, itos(ds));
 				if (ds) {
-					ti->add_button(1, files->get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")), -1, false, TTR("Show Dependencies"));
+					ti->add_button(1, files->get_editor_theme_icon(SNAME("GuiVisibilityVisible")), -1, false, TTR("Show Dependencies"));
 				}
 				ti->set_metadata(0, path);
 				has_children = true;

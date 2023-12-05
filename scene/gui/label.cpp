@@ -33,7 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
-
+#include "scene/gui/container.h"
+#include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
 
 void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
@@ -44,6 +45,7 @@ void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	autowrap_mode = p_mode;
 	lines_dirty = true;
 	queue_redraw();
+	update_configuration_warnings();
 
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
@@ -126,9 +128,6 @@ void Label::_shape() {
 			for (int i = 0; i < spans; i++) {
 				TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
 			}
-		}
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, txt));
 		if (!tab_stops.is_empty()) {
@@ -327,24 +326,21 @@ inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Col
 	}
 }
 
-void Label::_update_theme_item_cache() {
-	Control::_update_theme_item_cache();
-
-	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
-	theme_cache.font = get_theme_font(SNAME("font"));
-
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.line_spacing = get_theme_constant(SNAME("line_spacing"));
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_shadow_color = get_theme_color(SNAME("font_shadow_color"));
-	theme_cache.font_shadow_offset = Point2(get_theme_constant(SNAME("shadow_offset_x")), get_theme_constant(SNAME("shadow_offset_y")));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.font_shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
-}
-
 PackedStringArray Label::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
+
+	// FIXME: This is not ideal and the sizing model should be fixed,
+	// but for now we have to warn about this impossible to resolve combination.
+	// See GH-83546.
+	if (is_inside_tree() && get_tree()->get_edited_scene_root() != this) {
+		// If the Label happens to be the root node of the edited scene, we don't need
+		// to check what its parent is. It's going to be some node from the editor tree
+		// and it can be a container, but that makes no difference to the user.
+		Container *parent_container = Object::cast_to<Container>(get_parent_control());
+		if (parent_container && autowrap_mode != TextServer::AUTOWRAP_OFF && get_custom_minimum_size() == Size2()) {
+			warnings.push_back(RTR("Labels with autowrapping enabled must have a custom minimum size configured to work correctly inside a container."));
+		}
+	}
 
 	// Ensure that the font can render all of the required glyphs.
 	Ref<Font> font;
@@ -1057,6 +1053,19 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Label, normal_style, "normal");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Label, line_spacing);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Label, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, Label, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_shadow_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_offset.x, "shadow_offset_x");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_offset.y, "shadow_offset_y");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_outline_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_outline_size, "outline_size");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_outline_size, "shadow_outline_size");
 }
 
 Label::Label(const String &p_text) {

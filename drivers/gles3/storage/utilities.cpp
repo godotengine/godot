@@ -31,6 +31,8 @@
 #ifdef GLES3_ENABLED
 
 #include "utilities.h"
+
+#include "../rasterizer_gles3.h"
 #include "config.h"
 #include "light_storage.h"
 #include "material_storage.h"
@@ -113,7 +115,7 @@ Vector<uint8_t> Utilities::buffer_get_data(GLenum p_target, GLuint p_buffer, uin
 #if defined(__EMSCRIPTEN__)
 	{
 		uint8_t *w = ret.ptrw();
-		glGetBufferSubData(p_target, 0, p_buffer_size, w);
+		godot_webgl2_glGetBufferSubData(p_target, 0, p_buffer_size, w);
 	}
 #else
 	void *data = glMapBufferRange(p_target, 0, p_buffer_size, GL_MAP_READ_BIT);
@@ -253,9 +255,11 @@ void Utilities::capture_timestamps_begin() {
 void Utilities::capture_timestamp(const String &p_name) {
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
-#ifdef GLES_OVER_GL
-	glQueryCounter(frames[frame].queries[frames[frame].timestamp_count], GL_TIMESTAMP);
-#endif
+#ifdef GL_API_ENABLED
+	if (RasterizerGLES3::is_gles_over_gl()) {
+		glQueryCounter(frames[frame].queries[frames[frame].timestamp_count], GL_TIMESTAMP);
+	}
+#endif // GL_API_ENABLED
 
 	frames[frame].timestamp_names[frames[frame].timestamp_count] = p_name;
 	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = OS::get_singleton()->get_ticks_usec();
@@ -265,13 +269,15 @@ void Utilities::capture_timestamp(const String &p_name) {
 void Utilities::_capture_timestamps_begin() {
 	// frame is incremented at the end of the frame so this gives us the queries for frame - 2. By then they should be ready.
 	if (frames[frame].timestamp_count) {
-#ifdef GLES_OVER_GL
-		for (uint32_t i = 0; i < frames[frame].timestamp_count; i++) {
-			uint64_t temp = 0;
-			glGetQueryObjectui64v(frames[frame].queries[i], GL_QUERY_RESULT, &temp);
-			frames[frame].timestamp_result_values[i] = temp;
+#ifdef GL_API_ENABLED
+		if (RasterizerGLES3::is_gles_over_gl()) {
+			for (uint32_t i = 0; i < frames[frame].timestamp_count; i++) {
+				uint64_t temp = 0;
+				glGetQueryObjectui64v(frames[frame].queries[i], GL_QUERY_RESULT, &temp);
+				frames[frame].timestamp_result_values[i] = temp;
+			}
 		}
-#endif
+#endif // GL_API_ENABLED
 		SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
 		SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
 	}
@@ -366,13 +372,13 @@ uint64_t Utilities::get_rendering_info(RS::RenderingInfo p_info) {
 }
 
 String Utilities::get_video_adapter_name() const {
-	const String rendering_device_name = (const char *)glGetString(GL_RENDERER);
+	const String rendering_device_name = String::utf8((const char *)glGetString(GL_RENDERER));
 	// NVIDIA suffixes all GPU model names with "/PCIe/SSE2" in OpenGL (but not Vulkan). This isn't necessary to display nowadays, so it can be trimmed.
 	return rendering_device_name.trim_suffix("/PCIe/SSE2");
 }
 
 String Utilities::get_video_adapter_vendor() const {
-	const String rendering_device_vendor = (const char *)glGetString(GL_VENDOR);
+	const String rendering_device_vendor = String::utf8((const char *)glGetString(GL_VENDOR));
 	// NVIDIA suffixes its vendor name with " Corporation". This is neither necessary to process nor display.
 	return rendering_device_vendor.trim_suffix(" Corporation");
 }
@@ -382,7 +388,7 @@ RenderingDevice::DeviceType Utilities::get_video_adapter_type() const {
 }
 
 String Utilities::get_video_adapter_api_version() const {
-	return (const char *)glGetString(GL_VERSION);
+	return String::utf8((const char *)glGetString(GL_VERSION));
 }
 
 Size2i Utilities::get_maximum_viewport_size() const {

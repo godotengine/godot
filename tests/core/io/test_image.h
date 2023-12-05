@@ -115,16 +115,6 @@ TEST_CASE("[Image] Saving and loading") {
 			image_bmp->load_bmp_from_buffer(data_bmp) == OK,
 			"The BMP image should load successfully.");
 
-	// Load DDS
-	Ref<Image> image_dds = memnew(Image());
-	Ref<FileAccess> f_dds = FileAccess::open(TestUtils::get_data_path("images/icon.dds"), FileAccess::READ, &err);
-	PackedByteArray data_dds;
-	data_dds.resize(f_dds->get_length() + 1);
-	f_dds->get_buffer(data_dds.ptrw(), f_dds->get_length());
-	CHECK_MESSAGE(
-			image_dds->load_dds_from_buffer(data_dds) == OK,
-			"The DDS image should load successfully.");
-
 	// Load JPG
 	Ref<Image> image_jpg = memnew(Image());
 	Ref<FileAccess> f_jpg = FileAccess::open(TestUtils::get_data_path("images/icon.jpg"), FileAccess::READ, &err);
@@ -262,9 +252,7 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 
 		for (const Rect2i &rect : rects) {
 			Ref<Image> img = memnew(Image(img_width, img_height, false, Image::FORMAT_RGBA8));
-			CHECK_NOTHROW_MESSAGE(
-					img->fill_rect(rect, Color(1, 1, 1, 1)),
-					"fill_rect() shouldn't throw for any rect.");
+			img->fill_rect(rect, Color(1, 1, 1, 1));
 			for (int y = 0; y < img->get_height(); y++) {
 				for (int x = 0; x < img->get_width(); x++) {
 					if (rect.abs().has_point(Point2(x, y))) {
@@ -317,7 +305,7 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 	// Pre-multiply Alpha then Convert from RGBA to L8, checking alpha
 	{
 		Ref<Image> gray_image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
-		CHECK_NOTHROW_MESSAGE(gray_image->fill_rect(Rect2i(0, 0, 3, 3), Color(1, 1, 1, 0)), "fill_rect() shouldn't throw for any rect.");
+		gray_image->fill_rect(Rect2i(0, 0, 3, 3), Color(1, 1, 1, 0));
 		gray_image->set_pixel(1, 1, Color(1, 1, 1, 1));
 		gray_image->set_pixel(1, 2, Color(0.5, 0.5, 0.5, 0.5));
 		gray_image->set_pixel(2, 1, Color(0.25, 0.05, 0.5, 1.0));

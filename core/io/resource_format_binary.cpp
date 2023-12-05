@@ -36,6 +36,7 @@
 #include "core/io/image.h"
 #include "core/io/marshalls.h"
 #include "core/io/missing_resource.h"
+#include "core/object/script_language.h"
 #include "core/version.h"
 
 //#define print_bl(m_what) print_line(m_what)
@@ -773,6 +774,8 @@ Error ResourceLoaderBinary::load() {
 			res = Ref<Resource>(r);
 			if (!path.is_empty() && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 				r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); //if got here because the resource with same path has different type, replace it
+			} else if (!path.is_resource_file()) {
+				r->set_path_cache(path);
 			}
 			r->set_scene_unique_id(id);
 		}

@@ -43,7 +43,7 @@
 #define _DEBUG
 #endif
 #endif
-#include "vk_mem_alloc.h"
+#include "thirdparty/vulkan/vk_mem_alloc.h"
 
 #ifdef USE_VOLK
 #include <volk.h>
@@ -621,7 +621,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			VkDescriptorSetLayout descriptor_set_layout = VK_NULL_HANDLE;
 		};
 
-		uint32_t vertex_input_mask = 0; // Inputs used, this is mostly for validation.
+		uint64_t vertex_input_mask = 0; // Inputs used, this is mostly for validation.
 		uint32_t fragment_output_mask = 0;
 
 		struct PushConstant {
@@ -805,8 +805,10 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	};
 
 	struct PipelineCache {
+		String file_path;
+		PipelineCacheHeader header = {};
 		size_t current_size = 0;
-		Vector<uint8_t> buffer;
+		LocalVector<uint8_t> buffer;
 		VkPipelineCache cache_object = VK_NULL_HANDLE;
 	};
 
@@ -816,7 +818,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	void _load_pipeline_cache();
 	void _update_pipeline_cache(bool p_closing = false);
-	void _save_pipeline_cache_threaded(size_t pso_blob_size);
+	static void _save_pipeline_cache(void *p_data);
 
 	struct ComputePipeline {
 		RID shader;
@@ -1013,8 +1015,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
 		VkCommandPool command_pool = VK_NULL_HANDLE;
-		VkCommandBuffer setup_command_buffer = VK_NULL_HANDLE; // Used at the beginning of every frame for set-up.
-		VkCommandBuffer draw_command_buffer = VK_NULL_HANDLE; // Used at the beginning of every frame for set-up.
+		// Used for filling up newly created buffers with data provided on creation.
+		// Primarily intended to be accessed by worker threads.
+		// Ideally this cmd buffer should use an async transfer queue.
+		VkCommandBuffer setup_command_buffer = VK_NULL_HANDLE;
+		// The main cmd buffer for drawing and compute.
+		// Primarily intended to be used by the main thread to do most stuff.
+		VkCommandBuffer draw_command_buffer = VK_NULL_HANDLE;
 
 		struct Timestamp {
 			String description;
@@ -1073,7 +1080,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
-	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
+	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
@@ -1138,7 +1145,7 @@ public:
 	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID());
 	virtual RID shader_create_placeholder();
 
-	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader);
+	virtual uint64_t shader_get_vertex_input_attribute_mask(RID p_shader);
 
 	/*****************/
 	/**** UNIFORM ****/
@@ -1152,6 +1159,7 @@ public:
 	virtual bool uniform_set_is_valid(RID p_uniform_set);
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
 
+	virtual Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS); // Works for any buffer.
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0);

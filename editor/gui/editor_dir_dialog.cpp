@@ -46,7 +46,7 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 	String path = p_dir->get_path();
 
 	p_item->set_metadata(0, p_dir->get_path());
-	p_item->set_icon(0, tree->get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+	p_item->set_icon(0, tree->get_editor_theme_icon(SNAME("Folder")));
 	p_item->set_icon_modulate(0, tree->get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
 
 	if (!p_item->get_parent()) {

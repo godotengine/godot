@@ -85,14 +85,15 @@ jobs:
             artifact: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Need newer mesa for lavapipe to work properly.
       - name: Linux dependencies for tests
         if: ${{ matrix.proj-test }}
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo add-apt-repository ppa:kisak/kisak-mesa
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB8B81E14DA65431D7504EA8F63F0F2B90935439
+          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu focal main"
           sudo apt-get install -qq mesa-vulkan-drivers
 
       - name: Free disk space on runner
@@ -111,7 +112,7 @@ jobs:
         uses: ./.github/actions/godot-deps
 
       - name: Set up .NET Sdk
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v3
         if: ${{ matrix.build-mono }}
         with:
           dotnet-version: '6.0.x'
@@ -130,7 +131,7 @@ jobs:
       - name: Generate C# glue
         if: ${{ matrix.build-mono }}
         run: |
-          ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue || true
+          ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue
 
       - name: Build .NET solutions
         if: ${{ matrix.build-mono }}
@@ -161,7 +162,7 @@ jobs:
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
-          ${{ matrix.bin }} --test --headless
+          ${{ matrix.bin }} --headless --test --force-colors
 
       # Check class reference
       - name: Check for class reference updates

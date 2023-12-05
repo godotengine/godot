@@ -145,12 +145,7 @@ void NavAgent::dispatch_avoidance_callback() {
 	}
 
 	// Invoke the callback with the new velocity.
-	Variant args[] = { new_velocity };
-	const Variant *args_p[] = { &args[0] };
-	Variant return_value;
-	Callable::CallError call_error;
-
-	avoidance_callback.callp(args_p, 1, return_value, call_error);
+	avoidance_callback.call(new_velocity);
 }
 
 void NavAgent::set_neighbor_distance(real_t p_neighbor_distance) {

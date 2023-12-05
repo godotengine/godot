@@ -54,6 +54,7 @@
 
 #if defined(GLES3_ENABLED)
 #include "x11/gl_manager_x11.h"
+#include "x11/gl_manager_x11_egl.h"
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -138,6 +139,7 @@ class DisplayServerX11 : public DisplayServer {
 
 #if defined(GLES3_ENABLED)
 	GLManager_X11 *gl_manager = nullptr;
+	GLManagerEGL_X11 *gl_manager_egl = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
 	VulkanContextX11 *context_vulkan = nullptr;
@@ -302,6 +304,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
 	String _clipboard_get(Atom p_source, Window x11_window) const;
+	Atom _clipboard_get_image_target(Atom p_source, Window x11_window) const;
 	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
 
 	bool do_mouse_warp = false;
@@ -393,6 +396,8 @@ public:
 #if defined(DBUS_ENABLED)
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
 #endif
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
@@ -404,6 +409,8 @@ public:
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
+	virtual Ref<Image> clipboard_get_image() const override;
+	virtual bool clipboard_has_image() const override;
 	virtual void clipboard_set_primary(const String &p_text) override;
 	virtual String clipboard_get_primary() const override;
 

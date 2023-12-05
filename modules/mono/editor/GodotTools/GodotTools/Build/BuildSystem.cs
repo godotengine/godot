@@ -9,7 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Godot;
 using GodotTools.BuildLogger;
+using GodotTools.Internals;
 using GodotTools.Utils;
+using Directory = GodotTools.Utils.Directory;
 
 namespace GodotTools.Build
 {
@@ -23,7 +25,7 @@ namespace GodotTools.Build
             if (dotnetPath == null)
                 throw new FileNotFoundException("Cannot find the dotnet executable.");
 
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var editorSettings = EditorInterface.Singleton.GetEditorSettings();
 
             var startInfo = new ProcessStartInfo(dotnetPath);
 
@@ -94,7 +96,7 @@ namespace GodotTools.Build
             if (dotnetPath == null)
                 throw new FileNotFoundException("Cannot find the dotnet executable.");
 
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var editorSettings = EditorInterface.Singleton.GetEditorSettings();
 
             var startInfo = new ProcessStartInfo(dotnetPath);
 
@@ -292,6 +294,82 @@ namespace GodotTools.Build
 
             foreach (string env in platformEnvironmentVariables)
                 environmentVariables.Remove(env);
+        }
+
+        private static Process DoGenerateXCFramework(List<string> outputPaths, string xcFrameworkPath,
+            Action<string> stdOutHandler, Action<string> stdErrHandler)
+        {
+            if (Directory.Exists(xcFrameworkPath))
+            {
+                Directory.Delete(xcFrameworkPath, true);
+            }
+
+            var startInfo = new ProcessStartInfo("xcrun");
+
+            BuildXCFrameworkArguments(outputPaths, xcFrameworkPath, startInfo.ArgumentList);
+
+            string launchMessage = startInfo.GetCommandLineDisplay(new StringBuilder("Packaging: ")).ToString();
+            stdOutHandler?.Invoke(launchMessage);
+            if (Godot.OS.IsStdOutVerbose())
+                Console.WriteLine(launchMessage);
+
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            startInfo.UseShellExecute = false;
+
+            if (OperatingSystem.IsWindows())
+            {
+                startInfo.StandardOutputEncoding = Encoding.UTF8;
+                startInfo.StandardErrorEncoding = Encoding.UTF8;
+            }
+
+            // Needed when running from Developer Command Prompt for VS.
+            RemovePlatformVariable(startInfo.EnvironmentVariables);
+
+            var process = new Process { StartInfo = startInfo };
+
+            if (stdOutHandler != null)
+                process.OutputDataReceived += (_, e) => stdOutHandler.Invoke(e.Data);
+            if (stdErrHandler != null)
+                process.ErrorDataReceived += (_, e) => stdErrHandler.Invoke(e.Data);
+
+            process.Start();
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            return process;
+        }
+
+        public static int GenerateXCFramework(List<string> outputPaths, string xcFrameworkPath, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        {
+            using (var process = DoGenerateXCFramework(outputPaths, xcFrameworkPath, stdOutHandler, stdErrHandler))
+            {
+                process.WaitForExit();
+
+                return process.ExitCode;
+            }
+        }
+
+        private static void BuildXCFrameworkArguments(List<string> outputPaths,
+            string xcFrameworkPath, Collection<string> arguments)
+        {
+            var baseDylib = $"{GodotSharpDirs.ProjectAssemblyName}.dylib";
+            var baseSym = $"{GodotSharpDirs.ProjectAssemblyName}.framework.dSYM";
+
+            arguments.Add("xcodebuild");
+            arguments.Add("-create-xcframework");
+
+            foreach (var outputPath in outputPaths)
+            {
+                arguments.Add("-library");
+                arguments.Add(Path.Combine(outputPath, baseDylib));
+                arguments.Add("-debug-symbols");
+                arguments.Add(Path.Combine(outputPath, baseSym));
+            }
+
+            arguments.Add("-output");
+            arguments.Add(xcFrameworkPath);
         }
     }
 }

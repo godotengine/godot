@@ -621,10 +621,10 @@
     {
       GX_ItemVarData  varData = &itemStore->varData[i];
 
-      FT_UInt  item_count;
-      FT_UInt  word_delta_count;
-      FT_UInt  region_idx_count;
-      FT_UInt  per_region_size;
+      FT_UInt    item_count;
+      FT_UShort  word_delta_count;
+      FT_UInt    region_idx_count;
+      FT_UInt    per_region_size;
 
 
       if ( FT_STREAM_SEEK( offset + dataOffsetArray[i] ) )

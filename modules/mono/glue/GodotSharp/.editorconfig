@@ -1,8 +1,17 @@
 [**/Generated/**.cs]
-# Validate parameter is non-null before using it
+# CA1062: Validate parameter is non-null before using it
 # Useful for generated code, as it disables nullable
 dotnet_diagnostic.CA1062.severity = error
 # CA1069: Enums should not have duplicate values
 dotnet_diagnostic.CA1069.severity = none
 # CA1708: Identifiers should differ by more than case
 dotnet_diagnostic.CA1708.severity = none
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = none
+# CS1573: Parameter has no matching param tag in the XML comment
+dotnet_diagnostic.CS1573.severity = none
+
+[GodotSharp/Core/**.cs]
+# CS1591: Missing XML comment for publicly visible type or member
+# TODO: Temporary change to not pollute the warnings, but we need to document public APIs
+dotnet_diagnostic.CS1591.severity = suggestion

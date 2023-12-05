@@ -42,6 +42,7 @@ class Viewport;
 class Label;
 class Panel;
 class ThemeOwner;
+class ThemeContext;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
@@ -367,6 +368,8 @@ public:
 		NOTIFICATION_SCROLL_BEGIN = 47,
 		NOTIFICATION_SCROLL_END = 48,
 		NOTIFICATION_LAYOUT_DIRECTION_CHANGED = 49,
+		NOTIFICATION_MOUSE_ENTER_SELF = 60,
+		NOTIFICATION_MOUSE_EXIT_SELF = 61,
 	};
 
 	// Editor plugin interoperability.
@@ -526,6 +529,7 @@ public:
 
 	Control *find_next_valid_focus() const;
 	Control *find_prev_valid_focus() const;
+	Control *find_valid_focus_neighbor(Side p_size) const;
 
 	void set_focus_neighbor(Side p_side, const NodePath &p_neighbor);
 	NodePath get_focus_neighbor(Side p_side) const;
@@ -552,6 +556,8 @@ public:
 	void set_theme_owner_node(Node *p_node);
 	Node *get_theme_owner_node() const;
 	bool has_theme_owner_node() const;
+
+	void set_theme_context(ThemeContext *p_context, bool p_propagate = true);
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
@@ -582,6 +588,10 @@ public:
 	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+#ifdef TOOLS_ENABLED
+	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
+#endif
 
 	bool has_theme_icon_override(const StringName &p_name) const;
 	bool has_theme_stylebox_override(const StringName &p_name) const;

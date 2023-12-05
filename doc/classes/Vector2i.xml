@@ -124,6 +124,12 @@
 		<constant name="ONE" value="Vector2i(1, 1)">
 			One vector, a vector with all components set to [code]1[/code].
 		</constant>
+		<constant name="MIN" value="Vector2i(-2147483648, -2147483648)">
+			Min vector, a vector with all components equal to [code]INT32_MIN[/code]. Can be used as a negative integer equivalent of [constant Vector2.INF].
+		</constant>
+		<constant name="MAX" value="Vector2i(2147483647, 2147483647)">
+			Max vector, a vector with all components equal to [code]INT32_MAX[/code]. Can be used as an integer equivalent of [constant Vector2.INF].
+		</constant>
 		<constant name="LEFT" value="Vector2i(-1, 0)">
 			Left unit vector. Represents the direction of left.
 		</constant>

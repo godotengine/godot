@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "scene/gui/flow_container.h"
@@ -139,6 +140,9 @@ void CurveEdit::_notification(int p_what) {
 
 void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	if (curve.is_null()) {
+		return;
+	}
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
@@ -224,7 +228,7 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 			} else if (grabbing == GRAB_NONE) {
 				// Adding a new point. Insert a temporary point for the user to adjust, so it's not in the undo/redo.
 				Vector2 new_pos = get_world_pos(mpos).clamp(Vector2(0.0, curve->get_min_value()), Vector2(1.0, curve->get_max_value()));
-				if (snap_enabled || mb->is_ctrl_pressed()) {
+				if (snap_enabled || mb->is_command_or_control_pressed()) {
 					new_pos.x = Math::snapped(new_pos.x, 1.0 / snap_count);
 					new_pos.y = Math::snapped(new_pos.y - curve->get_min_value(), curve->get_range() / snap_count) + curve->get_min_value();
 				}
@@ -275,7 +279,7 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 					// Drag point.
 					Vector2 new_pos = get_world_pos(mpos).clamp(Vector2(0.0, curve->get_min_value()), Vector2(1.0, curve->get_max_value()));
 
-					if (snap_enabled || mm->is_ctrl_pressed()) {
+					if (snap_enabled || mm->is_command_or_control_pressed()) {
 						new_pos.x = Math::snapped(new_pos.x, 1.0 / snap_count);
 						new_pos.y = Math::snapped(new_pos.y - curve->get_min_value(), curve->get_range() / snap_count) + curve->get_min_value();
 					}
@@ -787,8 +791,8 @@ void CurveEdit::_redraw() {
 	Vector2 min_edge = get_world_pos(Vector2(0, view_size.y));
 	Vector2 max_edge = get_world_pos(Vector2(view_size.x, 0));
 
-	const Color grid_color_primary = get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.25);
-	const Color grid_color = get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.1);
+	const Color grid_color_primary = get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.25);
+	const Color grid_color = get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.1);
 
 	const Vector2i grid_steps = Vector2i(4, 2);
 	const Vector2 step_size = Vector2(1, curve->get_range()) / grid_steps;
@@ -814,7 +818,7 @@ void CurveEdit::_redraw() {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	float font_height = font->get_height(font_size);
-	Color text_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+	Color text_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 
 	for (int i = 0; i <= grid_steps.x; ++i) {
 		real_t x = i * step_size.x;
@@ -832,8 +836,8 @@ void CurveEdit::_redraw() {
 	// The scaling up ensures that the curve rendering doesn't break when we use a quad line to draw it.
 	draw_set_transform_matrix(Transform2D(0, get_view_pos(Vector2(0, 0))));
 
-	const Color line_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
-	const Color edge_line_color = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.75);
+	const Color line_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	const Color edge_line_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.75);
 
 	CanvasItemPlotCurve plot_func(*this, line_color, edge_line_color);
 	plot_curve_accurate(**curve, 2.f, (get_view_pos(Vector2(1, curve->get_max_value())) - get_view_pos(Vector2(0, curve->get_min_value()))) / Vector2(1, curve->get_range()), plot_func);
@@ -843,7 +847,7 @@ void CurveEdit::_redraw() {
 
 	bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
-	const Color point_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+	const Color point_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 
 	for (int i = 0; i < curve->get_point_count(); ++i) {
 		Vector2 pos = get_view_pos(curve->get_point_position(i));
@@ -859,12 +863,12 @@ void CurveEdit::_redraw() {
 
 	if (selected_index >= 0) {
 		const Vector2 point_pos = curve->get_point_position(selected_index);
-		const Color selected_point_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		const Color selected_point_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
 		// Draw tangents if not dragging a point, or if holding a point without having moved it yet.
 		if (grabbing == GRAB_NONE || initial_grab_pos == point_pos || selected_tangent_index != TANGENT_NONE) {
-			const Color selected_tangent_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")).darkened(0.25);
-			const Color tangent_color = get_theme_color(SNAME("font_color"), SNAME("Editor")).darkened(0.25);
+			const Color selected_tangent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).darkened(0.25);
+			const Color tangent_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor)).darkened(0.25);
 
 			if (selected_index != 0) {
 				Vector2 control_pos = get_tangent_view_pos(selected_index, TANGENT_LEFT);
@@ -939,8 +943,8 @@ void CurveEdit::_redraw() {
 	}
 
 	if (shift_pressed && grabbing != GRAB_NONE && selected_tangent_index == TANGENT_NONE) {
-		draw_line(Vector2(initial_grab_pos.x, curve->get_min_value()), Vector2(initial_grab_pos.x, curve->get_max_value()), get_theme_color(SNAME("axis_x_color"), SNAME("Editor")).darkened(0.4));
-		draw_line(Vector2(0, initial_grab_pos.y), Vector2(1, initial_grab_pos.y), get_theme_color(SNAME("axis_y_color"), SNAME("Editor")).darkened(0.4));
+		draw_line(Vector2(initial_grab_pos.x, curve->get_min_value()), Vector2(initial_grab_pos.x, curve->get_max_value()), get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)).darkened(0.4));
+		draw_line(Vector2(0, initial_grab_pos.y), Vector2(1, initial_grab_pos.y), get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)).darkened(0.4));
 	}
 }
 
@@ -969,14 +973,14 @@ void CurveEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			spacing = Math::round(BASE_SPACING * get_theme_default_base_scale());
-			snap_button->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
+			snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 			PopupMenu *p = presets_button->get_popup();
 			p->clear();
-			p->add_icon_item(get_theme_icon(SNAME("CurveConstant"), SNAME("EditorIcons")), TTR("Constant"), CurveEdit::PRESET_CONSTANT);
-			p->add_icon_item(get_theme_icon(SNAME("CurveLinear"), SNAME("EditorIcons")), TTR("Linear"), CurveEdit::PRESET_LINEAR);
-			p->add_icon_item(get_theme_icon(SNAME("CurveIn"), SNAME("EditorIcons")), TTR("Ease In"), CurveEdit::PRESET_EASE_IN);
-			p->add_icon_item(get_theme_icon(SNAME("CurveOut"), SNAME("EditorIcons")), TTR("Ease Out"), CurveEdit::PRESET_EASE_OUT);
-			p->add_icon_item(get_theme_icon(SNAME("CurveInOut"), SNAME("EditorIcons")), TTR("Smoothstep"), CurveEdit::PRESET_SMOOTHSTEP);
+			p->add_icon_item(get_editor_theme_icon(SNAME("CurveConstant")), TTR("Constant"), CurveEdit::PRESET_CONSTANT);
+			p->add_icon_item(get_editor_theme_icon(SNAME("CurveLinear")), TTR("Linear"), CurveEdit::PRESET_LINEAR);
+			p->add_icon_item(get_editor_theme_icon(SNAME("CurveIn")), TTR("Ease In"), CurveEdit::PRESET_EASE_IN);
+			p->add_icon_item(get_editor_theme_icon(SNAME("CurveOut")), TTR("Ease Out"), CurveEdit::PRESET_EASE_OUT);
+			p->add_icon_item(get_editor_theme_icon(SNAME("CurveInOut")), TTR("Smoothstep"), CurveEdit::PRESET_SMOOTHSTEP);
 		} break;
 		case NOTIFICATION_READY: {
 			Ref<Curve> curve = curve_editor_rect->get_curve();
@@ -1040,7 +1044,7 @@ bool EditorInspectorPluginCurve::can_handle(Object *p_object) {
 
 void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
 	Curve *curve = Object::cast_to<Curve>(p_object);
-	ERR_FAIL_COND(!curve);
+	ERR_FAIL_NULL(curve);
 	Ref<Curve> c(curve);
 
 	CurveEditor *editor = memnew(CurveEditor);

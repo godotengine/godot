@@ -41,10 +41,12 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "main/main.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/theme.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
@@ -196,6 +198,10 @@ bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
 
 // Editor GUI.
 
+Ref<Theme> EditorInterface::get_editor_theme() const {
+	return EditorNode::get_singleton()->get_editor_theme();
+}
+
 Control *EditorInterface::get_base_control() const {
 	return EditorNode::get_singleton()->get_gui_base();
 }
@@ -206,6 +212,15 @@ VBoxContainer *EditorInterface::get_editor_main_screen() const {
 
 ScriptEditor *EditorInterface::get_script_editor() const {
 	return ScriptEditor::get_singleton();
+}
+
+SubViewport *EditorInterface::get_editor_viewport_2d() const {
+	return EditorNode::get_singleton()->get_scene_root();
+}
+
+SubViewport *EditorInterface::get_editor_viewport_3d(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, static_cast<int>(Node3DEditor::VIEWPORTS_COUNT), nullptr);
+	return Node3DEditor::get_singleton()->get_editor_viewport(p_idx)->get_viewport_node();
 }
 
 void EditorInterface::set_main_screen_editor(const String &p_name) {
@@ -405,9 +420,12 @@ void EditorInterface::_bind_methods() {
 
 	// Editor GUI.
 
+	ClassDB::bind_method(D_METHOD("get_editor_theme"), &EditorInterface::get_editor_theme);
 	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
 	ClassDB::bind_method(D_METHOD("get_editor_main_screen"), &EditorInterface::get_editor_main_screen);
 	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);
+	ClassDB::bind_method(D_METHOD("get_editor_viewport_2d"), &EditorInterface::get_editor_viewport_2d);
+	ClassDB::bind_method(D_METHOD("get_editor_viewport_3d", "idx"), &EditorInterface::get_editor_viewport_3d, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
@@ -474,7 +492,7 @@ void EditorInterface::create() {
 }
 
 void EditorInterface::free() {
-	ERR_FAIL_COND(singleton == nullptr);
+	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
 }
 

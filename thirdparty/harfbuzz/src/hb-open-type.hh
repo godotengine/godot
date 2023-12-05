@@ -718,30 +718,6 @@ struct ArrayOf
     return_trace (out);
   }
 
-  /* Special-case ArrayOf Offset16To structs with a maximum size. */
-  template <typename T = Type,
-	    typename Base = void,
-	    hb_enable_if (hb_has_max_size (typename T::target_t) &&
-			  sizeof (T) == 2)>
-  HB_ALWAYS_INLINE
-  bool sanitize (hb_sanitize_context_t *c, const Base *base) const
-  {
-    TRACE_SANITIZE (this);
-
-    if (unlikely (!sanitize_shallow (c))) return_trace (false);
-
-    unsigned max_len = 65536 + Type::target_t::max_size;
-
-    if (unlikely (c->check_range_fast (base, max_len)))
-      return_trace (true);
-
-    unsigned int count = len;
-    for (unsigned int i = 0; i < count; i++)
-      if (unlikely (!c->dispatch (arrayZ[i], base)))
-	return_trace (false);
-    return_trace (true);
-  }
-
   template <typename ...Ts>
   HB_ALWAYS_INLINE
   bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const

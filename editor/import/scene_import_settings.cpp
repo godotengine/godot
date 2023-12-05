@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
@@ -170,7 +171,7 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	MaterialData &material_data = material_map[import_id];
 	ERR_FAIL_COND(p_material != material_data.material);
 
-	Ref<Texture2D> icon = get_theme_icon(SNAME("StandardMaterial3D"), SNAME("EditorIcons"));
+	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("StandardMaterial3D"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
 	if (p_material->get_name().is_empty()) {
@@ -224,7 +225,7 @@ void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, Tree
 
 	MeshData &mesh_data = mesh_map[import_id];
 
-	Ref<Texture2D> icon = get_theme_icon(SNAME("Mesh"), SNAME("EditorIcons"));
+	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("MeshItem"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
 	item->set_text(0, p_mesh->get_name());
@@ -274,7 +275,7 @@ void SceneImportSettings::_fill_animation(Tree *p_tree, const Ref<Animation> &p_
 
 	AnimationData &animation_data = animation_map[p_name];
 
-	Ref<Texture2D> icon = get_theme_icon(SNAME("Animation"), SNAME("EditorIcons"));
+	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Animation"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
 	item->set_text(0, p_name);
@@ -318,17 +319,17 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 
 	String type = p_node->get_class();
 
-	if (!has_theme_icon(type, SNAME("EditorIcons"))) {
+	if (!has_theme_icon(type, EditorStringName(EditorIcons))) {
 		type = "Node3D";
 	}
 
-	Ref<Texture2D> icon = get_theme_icon(type, SNAME("EditorIcons"));
+	Ref<Texture2D> icon = get_editor_theme_icon(type);
 
 	TreeItem *item = scene_tree->create_item(p_parent_item);
 	item->set_text(0, p_node->get_name());
 
 	if (p_node == scene) {
-		icon = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		icon = get_editor_theme_icon(SNAME("PackedScene"));
 		item->set_text(0, TTR("Scene"));
 	}
 
@@ -549,7 +550,7 @@ void SceneImportSettings::_update_camera() {
 	camera->set_orthogonal(camera_size * zoom, 0.0001, camera_size * 2);
 
 	Transform3D xf;
-	xf.basis = Basis(Vector3(1, 0, 0), rot_x) * Basis(Vector3(0, 1, 0), rot_y);
+	xf.basis = Basis(Vector3(0, 1, 0), rot_y) * Basis(Vector3(1, 0, 0), rot_x);
 	xf.origin = center;
 	xf.translate_local(0, 0, camera_size);
 
@@ -886,11 +887,11 @@ void SceneImportSettings::_play_animation() {
 	if (animation_player->has_animation(id)) {
 		if (animation_player->is_playing()) {
 			animation_player->pause();
-			animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			set_process(false);
 		} else {
 			animation_player->play(id);
-			animation_play_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+			animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
 			set_process(true);
 		}
 	}
@@ -899,7 +900,7 @@ void SceneImportSettings::_play_animation() {
 void SceneImportSettings::_stop_current_animation() {
 	animation_pingpong = false;
 	animation_player->stop();
-	animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	animation_slider->set_value_no_signal(0.0);
 	set_process(false);
 }
@@ -911,7 +912,7 @@ void SceneImportSettings::_reset_animation(const String &p_animation_name) {
 		if (animation_player != nullptr && animation_player->is_playing()) {
 			animation_player->stop();
 		}
-		animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+		animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 
 		_reset_bone_transforms();
 		set_process(false);
@@ -933,7 +934,7 @@ void SceneImportSettings::_reset_animation(const String &p_animation_name) {
 			animation_player->play(p_animation_name);
 		} else {
 			animation_player->stop(true);
-			animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_player->set_assigned_animation(p_animation_name);
 			animation_player->seek(0.0, true);
 			animation_slider->set_value_no_signal(0.0);
@@ -948,7 +949,7 @@ void SceneImportSettings::_animation_slider_value_changed(double p_value) {
 	}
 	if (animation_player->is_playing()) {
 		animation_player->stop();
-		animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+		animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	}
 	animation_player->seek(p_value * animation_map[selected_id].animation->get_length(), true);
@@ -959,7 +960,7 @@ void SceneImportSettings::_animation_finished(const StringName &p_name) {
 
 	switch (loop_mode) {
 		case Animation::LOOP_NONE: {
-			animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_slider->set_value_no_signal(1.0);
 			set_process(false);
 		} break;
@@ -1044,6 +1045,9 @@ void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 		(*rot_y) -= mm->get_relative().x * 0.01 * EDSCALE;
 		(*rot_x) = CLAMP((*rot_x), -Math_PI / 2, Math_PI / 2);
 		_update_camera();
+	}
+	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+		DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CursorShape::CURSOR_ARROW);
 	}
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
@@ -1140,16 +1144,18 @@ void SceneImportSettings::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			action_menu->begin_bulk_theme_override();
 			action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
 			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
 			action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
+			action_menu->end_bulk_theme_override();
 
 			if (animation_player != nullptr && animation_player->is_playing()) {
-				animation_play_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+				animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
 			} else {
-				animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+				animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			}
-			animation_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+			animation_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1193,11 +1199,11 @@ void SceneImportSettings::_save_path_changed(const String &p_path) {
 	if (FileAccess::exists(p_path)) {
 		save_path_item->set_text(2, TTR("Warning: File exists"));
 		save_path_item->set_tooltip_text(2, TTR("Existing file with the same name will be replaced."));
-		save_path_item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+		save_path_item->set_icon(2, get_editor_theme_icon(SNAME("StatusWarning")));
 
 	} else {
 		save_path_item->set_text(2, TTR("Will create new file"));
-		save_path_item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
+		save_path_item->set_icon(2, get_editor_theme_icon(SNAME("StatusSuccess")));
 	}
 }
 
@@ -1231,7 +1237,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 				String name = md.material_node->get_text(0);
 
 				item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				item->set_icon(0, get_theme_icon(SNAME("StandardMaterial3D"), SNAME("EditorIcons")));
+				item->set_icon(0, get_editor_theme_icon(SNAME("StandardMaterial3D")));
 				item->set_text(0, name);
 
 				if (md.has_import_id) {
@@ -1253,20 +1259,20 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						if (FileAccess::exists(path)) {
 							item->set_text(2, TTR("Warning: File exists"));
 							item->set_tooltip_text(2, TTR("Existing file with the same name will be replaced."));
-							item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+							item->set_icon(2, get_editor_theme_icon(SNAME("StatusWarning")));
 
 						} else {
 							item->set_text(2, TTR("Will create new file"));
-							item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
+							item->set_icon(2, get_editor_theme_icon(SNAME("StatusSuccess")));
 						}
 
-						item->add_button(1, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+						item->add_button(1, get_editor_theme_icon(SNAME("Folder")));
 					}
 
 				} else {
 					item->set_text(2, TTR("No import ID"));
 					item->set_tooltip_text(2, TTR("Material has no name nor any other way to identify on re-import.\nPlease name it or ensure it is exported with an unique ID."));
-					item->set_icon(2, get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
+					item->set_icon(2, get_editor_theme_icon(SNAME("StatusError")));
 				}
 
 				save_path_items.push_back(item);
@@ -1284,7 +1290,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 				String name = md.mesh_node->get_text(0);
 
 				item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				item->set_icon(0, get_theme_icon(SNAME("Mesh"), SNAME("EditorIcons")));
+				item->set_icon(0, get_editor_theme_icon(SNAME("MeshItem")));
 				item->set_text(0, name);
 
 				if (md.has_import_id) {
@@ -1306,20 +1312,20 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						if (FileAccess::exists(path)) {
 							item->set_text(2, TTR("Warning: File exists"));
 							item->set_tooltip_text(2, TTR("Existing file with the same name will be replaced on import."));
-							item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+							item->set_icon(2, get_editor_theme_icon(SNAME("StatusWarning")));
 
 						} else {
 							item->set_text(2, TTR("Will save to new file"));
-							item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
+							item->set_icon(2, get_editor_theme_icon(SNAME("StatusSuccess")));
 						}
 
-						item->add_button(1, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+						item->add_button(1, get_editor_theme_icon(SNAME("Folder")));
 					}
 
 				} else {
 					item->set_text(2, TTR("No import ID"));
 					item->set_tooltip_text(2, TTR("Mesh has no name nor any other way to identify on re-import.\nPlease name it or ensure it is exported with an unique ID."));
-					item->set_icon(2, get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
+					item->set_icon(2, get_editor_theme_icon(SNAME("StatusError")));
 				}
 
 				save_path_items.push_back(item);
@@ -1337,7 +1343,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 				String name = ad.scene_node->get_text(0);
 
 				item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				item->set_icon(0, get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")));
+				item->set_icon(0, get_editor_theme_icon(SNAME("Animation")));
 				item->set_text(0, name);
 
 				if (ad.settings.has("save_to_file/enabled") && bool(ad.settings["save_to_file/enabled"])) {
@@ -1358,14 +1364,14 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 					if (FileAccess::exists(path)) {
 						item->set_text(2, TTR("Warning: File exists"));
 						item->set_tooltip_text(2, TTR("Existing file with the same name will be replaced on import."));
-						item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+						item->set_icon(2, get_editor_theme_icon(SNAME("StatusWarning")));
 
 					} else {
 						item->set_text(2, TTR("Will save to new file"));
-						item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
+						item->set_icon(2, get_editor_theme_icon(SNAME("StatusSuccess")));
 					}
 
-					item->add_button(1, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+					item->add_button(1, get_editor_theme_icon(SNAME("Folder")));
 				}
 
 				save_path_items.push_back(item);
@@ -1555,6 +1561,7 @@ SceneImportSettings::SceneImportSettings() {
 		Ref<StandardMaterial3D> selection_mat;
 		selection_mat.instantiate();
 		selection_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		selection_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		selection_mat->set_albedo(Color(1, 0.8, 1.0));
 
 		Ref<SurfaceTool> st;
@@ -1580,6 +1587,7 @@ SceneImportSettings::SceneImportSettings() {
 
 		node_selected = memnew(MeshInstance3D);
 		node_selected->set_mesh(selection_mesh);
+		node_selected->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 		base_viewport->add_child(node_selected);
 		node_selected->hide();
 	}
@@ -1595,6 +1603,7 @@ SceneImportSettings::SceneImportSettings() {
 	{
 		collider_mat.instantiate();
 		collider_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		collider_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		collider_mat->set_albedo(Color(0.5, 0.5, 1.0));
 	}
 

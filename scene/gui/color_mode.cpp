@@ -73,10 +73,10 @@ void ColorModeRGB::slider_draw(int p_which) {
 	Color left_color;
 	Color right_color;
 	Color color = color_picker->get_pick_color();
-	const real_t margin = 16 * color_picker->get_theme_default_base_scale();
+	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
 	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, 0), Size2(size.x, margin)), true);
+		slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
 
 		left_color = color;
 		left_color.a = 0;
@@ -168,10 +168,10 @@ void ColorModeHSV::slider_draw(int p_which) {
 	Color left_color;
 	Color right_color;
 	Color color = color_picker->get_pick_color();
-	const real_t margin = 16 * color_picker->get_theme_default_base_scale();
+	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
 	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, 0), Size2(size.x, margin)), true);
+		slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
 
 		left_color = color;
 		left_color.a = 0;
@@ -204,7 +204,7 @@ void ColorModeHSV::slider_draw(int p_which) {
 	slider->draw_polygon(pos, col);
 
 	if (p_which == 0) { // H
-		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_hue"), SNAME("ColorPicker"));
+		Ref<Texture2D> hue = color_picker->theme_cache.color_hue;
 		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false, Color::from_hsv(0, 0, color.get_v(), color.get_s()));
 	}
 }
@@ -243,10 +243,10 @@ void ColorModeRAW::slider_draw(int p_which) {
 	Color left_color;
 	Color right_color;
 	Color color = color_picker->get_pick_color();
-	const real_t margin = 16 * color_picker->get_theme_default_base_scale();
+	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
 	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, 0), Size2(size.x, margin)), true);
+		slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
 
 		left_color = color;
 		left_color.a = 0;
@@ -334,7 +334,7 @@ Color ColorModeOKHSL::get_color() const {
 void ColorModeOKHSL::slider_draw(int p_which) {
 	HSlider *slider = color_picker->get_slider(p_which);
 	Size2 size = slider->get_size();
-	const real_t margin = 16 * color_picker->get_theme_default_base_scale();
+	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
 	Vector<Vector2> pos;
 	Vector<Color> col;
@@ -370,7 +370,7 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 		col.resize(4);
 
 		if (p_which == ColorPicker::SLIDER_COUNT) {
-			slider->draw_texture_rect(color_picker->get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker")), Rect2(Point2(0, 0), Size2(size.x, margin)), true);
+			slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
 
 			left_color = color;
 			left_color.a = 0;
@@ -399,7 +399,7 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 	slider->draw_polygon(pos, col);
 
 	if (p_which == 0) { // H
-		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_okhsl_hue"), SNAME("ColorPicker"));
+		Ref<Texture2D> hue = color_picker->theme_cache.color_okhsl_hue;
 		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false, Color::from_hsv(0, 0, color.get_ok_hsl_l() * 2.0, color.get_ok_hsl_s()));
 		return;
 	}

@@ -207,6 +207,12 @@ public:
 		STRUCTURED_TEXT_CUSTOM
 	};
 
+	enum FixedSizeScaleMode {
+		FIXED_SIZE_SCALE_DISABLE,
+		FIXED_SIZE_SCALE_INTEGER_ONLY,
+		FIXED_SIZE_SCALE_ENABLED,
+	};
+
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
@@ -237,6 +243,7 @@ public:
 	/* Font interface */
 
 	virtual RID create_font() = 0;
+	virtual RID create_font_linked_variation(const RID &p_font_rid) = 0;
 
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) = 0;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) = 0;
@@ -280,6 +287,9 @@ public:
 	virtual void font_set_fixed_size(const RID &p_font_rid, int64_t p_fixed_size) = 0;
 	virtual int64_t font_get_fixed_size(const RID &p_font_rid) const = 0;
 
+	virtual void font_set_fixed_size_scale_mode(const RID &p_font_rid, FixedSizeScaleMode p_fixed_size_scale) = 0;
+	virtual FixedSizeScaleMode font_get_fixed_size_scale_mode(const RID &p_font_rid) const = 0;
+
 	virtual void font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) = 0;
 	virtual bool font_is_allow_system_fallback(const RID &p_font_rid) const = 0;
 
@@ -294,6 +304,9 @@ public:
 
 	virtual void font_set_embolden(const RID &p_font_rid, double p_strength) = 0;
 	virtual double font_get_embolden(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_spacing(const RID &p_font_rid, SpacingType p_spacing, int64_t p_value) = 0;
+	virtual int64_t font_get_spacing(const RID &p_font_rid, SpacingType p_spacing) const = 0;
 
 	virtual void font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) = 0;
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const = 0;
@@ -491,6 +504,11 @@ public:
 	virtual int64_t shaped_text_next_grapheme_pos(const RID &p_shaped, int64_t p_pos) const;
 	virtual int64_t shaped_text_prev_grapheme_pos(const RID &p_shaped, int64_t p_pos) const;
 
+	virtual PackedInt32Array shaped_text_get_character_breaks(const RID &p_shaped) const = 0;
+	virtual int64_t shaped_text_next_character_pos(const RID &p_shaped, int64_t p_pos) const;
+	virtual int64_t shaped_text_prev_character_pos(const RID &p_shaped, int64_t p_pos) const;
+	virtual int64_t shaped_text_closest_character_pos(const RID &p_shaped, int64_t p_pos) const;
+
 	// The pen position is always placed on the baseline and moveing left to right.
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
 	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
@@ -502,6 +520,7 @@ public:
 
 	// String functions.
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int64_t p_chars_per_line = 0) const = 0;
+	virtual PackedInt32Array string_get_character_breaks(const String &p_string, const String &p_language = "") const;
 
 	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
 	virtual bool spoof_check(const String &p_string) const { return false; };
@@ -610,6 +629,7 @@ VARIANT_BITFIELD_CAST(TextServer::FontStyle);
 VARIANT_ENUM_CAST(TextServer::StructuredTextParser);
 VARIANT_ENUM_CAST(TextServer::FontAntialiasing);
 VARIANT_ENUM_CAST(TextServer::FontLCDSubpixelLayout);
+VARIANT_ENUM_CAST(TextServer::FixedSizeScaleMode);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);

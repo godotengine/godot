@@ -45,6 +45,13 @@
 				Clips the polygon defined by the points in [param points] against the [param plane] and returns the points of the clipped polygon.
 			</description>
 		</method>
+		<method name="compute_convex_mesh_points">
+			<return type="PackedVector3Array" />
+			<param index="0" name="planes" type="Plane[]" />
+			<description>
+				Calculates and returns all the vertex points of a convex shape defined by an array of [param planes].
+			</description>
+		</method>
 		<method name="get_closest_point_to_segment">
 			<return type="Vector3" />
 			<param index="0" name="point" type="Vector3" />

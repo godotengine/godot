@@ -96,6 +96,14 @@ bool Basis::is_orthogonal() const {
 	return m.is_equal_approx(identity);
 }
 
+bool Basis::is_conformal() const {
+	const Vector3 x = get_column(0);
+	const Vector3 y = get_column(1);
+	const Vector3 z = get_column(2);
+	const real_t x_len_sq = x.length_squared();
+	return Math::is_equal_approx(x_len_sq, y.length_squared()) && Math::is_equal_approx(x_len_sq, z.length_squared()) && Math::is_zero_approx(x.dot(y)) && Math::is_zero_approx(x.dot(z)) && Math::is_zero_approx(y.dot(z));
+}
+
 bool Basis::is_diagonal() const {
 	return (
 			Math::is_zero_approx(rows[0][1]) && Math::is_zero_approx(rows[0][2]) &&

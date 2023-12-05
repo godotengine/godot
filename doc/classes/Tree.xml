@@ -458,7 +458,7 @@
 			<param index="1" name="column" type="int" />
 			<param index="2" name="selected" type="bool" />
 			<description>
-				Emitted instead of [code]item_selected[/code] if [code]select_mode[/code] is [constant SELECT_MULTI].
+				Emitted instead of [signal item_selected] if [member select_mode] is set to [constant SELECT_MULTI].
 			</description>
 		</signal>
 		<signal name="nothing_selected">
@@ -589,7 +589,7 @@
 			The right margin of the scrollbars. When negative, uses [theme_item panel] right margin.
 		</theme_item>
 		<theme_item name="scrollbar_margin_top" data_type="constant" type="int" default="-1">
-			The right margin of the vertical scrollbar. When negative, uses [theme_item panel] top margin.
+			The top margin of the vertical scrollbar. When negative, uses [theme_item panel] top margin.
 		</theme_item>
 		<theme_item name="scrollbar_v_separation" data_type="constant" type="int" default="4">
 			The vertical separation of tree content and scrollbar.
@@ -605,6 +605,9 @@
 		</theme_item>
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the item's text.
+		</theme_item>
+		<theme_item name="title_button_font_size" data_type="font_size" type="int">
+			Font size of the title button's text.
 		</theme_item>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">
 			The arrow icon used when a foldable item is not collapsed.

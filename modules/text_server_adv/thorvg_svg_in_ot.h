@@ -66,22 +66,8 @@ struct GL_State {
 	float y = 0;
 	float w = 0;
 	float h = 0;
-#ifndef GDEXTENSION
 	CharString xml_code;
-#else
-	// @todo After godot-cpp#1142 is fixed, use CharString just like when compiled as a Godot module.
-	char *xml_code = nullptr;
-	int xml_code_length = 0;
-#endif
 	tvg::Matrix m;
-
-#ifdef GDEXTENSION
-	~GL_State() {
-		if (xml_code) {
-			memdelete_arr(xml_code);
-		}
-	}
-#endif
 };
 
 struct TVG_State {

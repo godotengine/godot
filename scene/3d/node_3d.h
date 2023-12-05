@@ -182,6 +182,7 @@ public:
 	void set_scale(const Vector3 &p_scale);
 
 	void set_global_position(const Vector3 &p_position);
+	void set_global_basis(const Basis &p_basis);
 	void set_global_rotation(const Vector3 &p_euler_rad);
 	void set_global_rotation_degrees(const Vector3 &p_euler_degrees);
 
@@ -193,6 +194,7 @@ public:
 	Vector3 get_scale() const;
 
 	Vector3 get_global_position() const;
+	Basis get_global_basis() const;
 	Vector3 get_global_rotation() const;
 	Vector3 get_global_rotation_degrees() const;
 

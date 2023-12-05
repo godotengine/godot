@@ -1,0 +1,58 @@
+<Project>
+  <ItemGroup>
+    <TrimmerRootAssembly Include="GodotSharp" />
+    <TrimmerRootAssembly Include="$(TargetName)" />
+    <LinkerArg Include="-install_name '@rpath/$(TargetName)$(NativeBinaryExt)'" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <LinkStandardCPlusPlusLibrary>true</LinkStandardCPlusPlusLibrary>
+    <FindXCode Condition=" '$(XCodePath)' == '' and '$([MSBuild]::IsOsPlatform(OSX))' ">true</FindXCode>
+    <XCodePath Condition=" '$(XCodePath)' == '' ">/Applications/Xcode.app/Contents/Developer</XCodePath>
+    <XCodePath>$([MSBuild]::EnsureTrailingSlash('$(XCodePath)'))</XCodePath>
+  </PropertyGroup>
+  
+  <Target Name="PrepareBeforeIlcCompile"
+          BeforeTargets="IlcCompile">
+    
+    <Copy SourceFiles="%(ResolvedRuntimePack.PackageDirectory)/runtimes/$(RuntimeIdentifier)/native/icudt.dat" DestinationFolder="$(PublishDir)"/>
+
+    <!-- We need to find the path to Xcode so we can set manual linker args to the correct SDKs
+        Once https://github.com/dotnet/runtime/issues/88737 is released, we can take this out
+    -->
+
+    <Exec Command="xcrun xcode-select -p" ConsoleToMSBuild="true" Condition=" '$(FindXCode)' == 'true' ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="XcodeSelect" />
+    </Exec>
+
+    <PropertyGroup Condition=" '$(FindXCode)' == 'true' ">
+      <XCodePath>$(XcodeSelect)</XCodePath>
+      <XCodePath>$([MSBuild]::EnsureTrailingSlash('$(XCodePath)'))</XCodePath>
+    </PropertyGroup>
+    
+    <Message Importance="normal" Text="Found XCode at $(XcodeSelect)"  Condition=" '$(FindXCode)' == 'true' "/>
+    
+    <ItemGroup>
+      <LinkerArg Include="-mios-simulator-version-min=12.0 -isysroot %22$(XCodePath)Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk%22"
+                 Condition=" $(RuntimeIdentifier.Contains('simulator')) "/>
+      <LinkerArg Include="-miphoneos-version-min=12.0 -isysroot %22$(XCodePath)Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk%22"
+                 Condition=" !$(RuntimeIdentifier.Contains('simulator')) "/>
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="FixSymbols"
+          AfterTargets="Publish">
+
+    <RemoveDir Directories="$(PublishDir)$(TargetName).framework.dSYM"/>
+
+    <!-- create-xcframework (called from the export plugin wants the symbol files in a directory
+    with a slightly different name from the one created by dotnet publish, so we copy them over
+    to the correctly-named directory -->
+    <ItemGroup>
+      <SymbolFiles Include="$(NativeBinary).dsym\**\*.*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(SymbolFiles)" DestinationFolder="$(PublishDir)$(TargetName).framework.dSYM"/>
+  </Target>
+  
+</Project>

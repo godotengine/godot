@@ -5,6 +5,8 @@
 	</brief_description>
 	<description>
 		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles which are used to create grid-based maps. A TileMap may have several layers, layouting tiles on top of each other.
+		For performance reasons, all TileMap updates are batched at the end of a frame. Notably, this means that scene tiles from a [TileSetScenesCollectionSource] may be initialized after their parent.
+		To force an update earlier on, call [method update_internals].
 	</description>
 	<tutorials>
 		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
@@ -25,7 +27,7 @@
 				Called with a TileData object about to be used internally by the TileMap, allowing its modification at runtime.
 				This method is only called if [method _use_tile_data_runtime_update] is implemented and returns [code]true[/code] for the given tile [param coords] and [param layer].
 				[b]Warning:[/b] The [param tile_data] object's sub-resources are the same as the one in the TileSet. Modifying them might impact the whole TileSet. Instead, make sure to duplicate those resources.
-				[b]Note:[/b] If the properties of [param tile_data] object should change over time, use [method force_update] to trigger a TileMap update.
+				[b]Note:[/b] If the properties of [param tile_data] object should change over time, use [method notify_runtime_tile_data_update] to notify the TileMap it needs an update.
 			</description>
 		</method>
 		<method name="_use_tile_data_runtime_update" qualifiers="virtual">
@@ -35,6 +37,7 @@
 			<description>
 				Should return [code]true[/code] if the tile at coordinates [param coords] on layer [param layer] requires a runtime update.
 				[b]Warning:[/b] Make sure this function only return [code]true[/code] when needed. Any tile processed at runtime without a need for it will imply a significant performance penalty.
+				[b]Note:[/b] If the result of this function should changed, use [method notify_runtime_tile_data_update] to notify the TileMap it needs an update.
 			</description>
 		</method>
 		<method name="add_layer">
@@ -73,13 +76,11 @@
 				Clears cells that do not exist in the tileset.
 			</description>
 		</method>
-		<method name="force_update">
+		<method name="force_update" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="layer" type="int" default="-1" />
 			<description>
-				Triggers an update of the TileMap. If [param layer] is provided and is positive, only updates the given layer.
-				[b]Note:[/b] The TileMap node updates automatically when one of its properties is modified. A manual update is only needed if runtime modifications (implemented in [method _tile_data_runtime_update]) need to be applied.
-				[b]Warning:[/b] Updating the TileMap is computationally expensive and may impact performance. Try to limit the number of updates and the tiles they impact (by placing frequently updated tiles in a dedicated layer for example).
+				[i]Deprecated.[/i] See [method notify_runtime_tile_data_update] and [method update_internals].
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
@@ -261,6 +262,13 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
+		<method name="is_layer_navigation_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns if a layer's built-in navigation regions generation is enabled.
+			</description>
+		</method>
 		<method name="is_layer_y_sort_enabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer" type="int" />
@@ -299,6 +307,16 @@
 			<param index="1" name="to_position" type="int" />
 			<description>
 				Moves the layer at index [param layer] to the given position [param to_position] in the array.
+			</description>
+		</method>
+		<method name="notify_runtime_tile_data_update">
+			<return type="void" />
+			<param index="0" name="layer" type="int" default="-1" />
+			<description>
+				Notifies the TileMap node that calls to [method _use_tile_data_runtime_update] or [method _tile_data_runtime_update] will lead to different results. This will thus trigger a TileMap update.
+				If [param layer] is provided, only notifies changes for the given layer. Providing the [param layer] argument (when applicable) is usually preferred for performance reasons.
+				[b]Warning:[/b] Updating the TileMap is computationally expensive and may impact performance. Try to limit the number of calls to this function to avoid unnecessary update.
+				[b]Note:[/b] This does not trigger a direct update of the TileMap, the update will be done at the end of the frame as usual (unless you call [method update_internals]).
 			</description>
 		</method>
 		<method name="remove_layer">
@@ -379,6 +397,14 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
+		<method name="set_layer_navigation_enabled">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Enables or disables a layer's built-in navigation regions generation. Disable this if you need to bake navigation regions from a TileMap using a [NavigationRegion2D] node.
+			</description>
+		</method>
 		<method name="set_layer_navigation_map">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
@@ -437,11 +463,16 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
+		<method name="update_internals">
+			<return type="void" />
+			<description>
+				Triggers a direct update of the TileMap. Usually, calling this function is not needed, as TileMap node updates automatically when one of its properties or cells is modified.
+				However, for performance reasons, those updates are batched and delayed to the end of the frame. Calling this function will force the TileMap to update right away instead.
+				[b]Warning:[/b] Updating the TileMap is computationally expensive and may impact performance. Try to limit the number of updates and how many tiles they impact.
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size" default="16">
-			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
-		</member>
 		<member name="collision_animatable" type="bool" setter="set_collision_animatable" getter="is_collision_animatable" default="false">
 			If enabled, the TileMap will see its collisions synced to the physics tick and change its collision type from static to kinematic. This is required to create TileMap-based moving platform.
 			[b]Note:[/b] Enabling [member collision_animatable] may have a small performance impact, only do it if the TileMap is moving and has colliding tiles.
@@ -451,6 +482,11 @@
 		</member>
 		<member name="navigation_visibility_mode" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMap.VisibilityMode" default="0">
 			Show or hide the TileMap's navigation meshes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
+		</member>
+		<member name="rendering_quadrant_size" type="int" setter="set_rendering_quadrant_size" getter="get_rendering_quadrant_size" default="16">
+			The TileMap's quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quandrant size groups together [code]16 * 16 = 256[/code] tiles.
+			The quadrant size does not apply on Y-sorted layers, as tiles are be grouped by Y position instead in that case.
+			[b]Note:[/b] As quadrants are created according to the map's coordinate system, the quadrant's "square shape" might not look like square in the TileMap's local coordinate system.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].

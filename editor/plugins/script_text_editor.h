@@ -98,6 +98,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color safe_line_number_color = Color(1, 1, 1);
 
 	Color marked_line_color = Color(1, 1, 1);
+	Color folded_code_region_color = Color(1, 1, 1);
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
@@ -125,6 +126,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_UNINDENT,
 		EDIT_DELETE_LINE,
 		EDIT_DUPLICATE_SELECTION,
+		EDIT_DUPLICATE_LINES,
 		EDIT_PICK_COLOR,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
@@ -133,6 +135,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_TOGGLE_WORD_WRAP,
 		EDIT_TOGGLE_FOLD_LINE,
 		EDIT_FOLD_ALL_LINES,
+		EDIT_CREATE_CODE_REGION,
 		EDIT_UNFOLD_ALL_LINES,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,

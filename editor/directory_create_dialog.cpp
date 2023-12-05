@@ -51,13 +51,20 @@ String DirectoryCreateDialog::_validate_path(const String &p_path) const {
 		return TTR("Folder name cannot be empty.");
 	}
 
+	if (p_path.contains("\\") || p_path.contains(":") || p_path.contains("*") ||
+			p_path.contains("|") || p_path.contains(">")) {
+		return TTR("Folder name contains invalid characters.");
+	}
+
 	for (const String &part : p_path.split("/")) {
 		if (part.is_empty()) {
 			return TTR("Folder name cannot be empty.");
 		}
-		if (p_path.contains("\\") || p_path.contains(":") || p_path.contains("*") ||
-				p_path.contains("|") || p_path.contains(">") || p_path.ends_with(".") || p_path.ends_with(" ")) {
-			return TTR("Folder name contains invalid characters.");
+		if (part.ends_with(" ") || part[0] == ' ') {
+			return TTR("Folder name cannot begin or end with a space.");
+		}
+		if (part[0] == '.') {
+			return TTR("Folder name cannot begin with a dot.");
 		}
 	}
 

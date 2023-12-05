@@ -46,13 +46,17 @@
 # EngageIndo <engageindo@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
 # Septian Ganendra Savero Kurniawan <septgsk@outlook.com>, 2023.
+# GID <ghavind12345@gmail.com>, 2023.
+# Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
+# Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
+# Avirur Rahman <avirahmandev@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-08 10:53+0000\n"
-"Last-Translator: Septian Ganendra Savero Kurniawan <septgsk@outlook.com>\n"
+"PO-Revision-Date: 2023-10-11 22:02+0000\n"
+"Last-Translator: Avirur Rahman <avirahmandev@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/id/>\n"
 "Language: id\n"
@@ -60,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "Aplikasi"
@@ -77,11 +81,14 @@ msgstr "Lokalisasi Nama"
 msgid "Description"
 msgstr "Deskripsi"
 
+msgid "Version"
+msgstr "Versi"
+
 msgid "Run"
-msgstr "Jalankan"
+msgstr "Menjalankan"
 
 msgid "Main Scene"
-msgstr "Skena Utama"
+msgstr "Scene Utama"
 
 msgid "Disable stdout"
 msgstr "Nonaktifkan stdout"
@@ -179,11 +186,17 @@ msgstr "Tata Letak Bus Default"
 msgid "General"
 msgstr "Umum"
 
+msgid "Text to Speech"
+msgstr "Teks to Speech"
+
 msgid "2D Panning Strength"
 msgstr "Kekuatan Panning 2D"
 
 msgid "3D Panning Strength"
 msgstr "Kekuatan Panning 3D"
+
+msgid "iOS"
+msgstr "iOS"
 
 msgid "Editor"
 msgstr "Editor"
@@ -252,7 +265,7 @@ msgid "Window Log Size"
 msgstr "Ukuran Jendela Log"
 
 msgid "Zlib"
-msgstr "Zlib"
+msgstr "Software Zlib"
 
 msgid "Gzip"
 msgstr "Gzip"
@@ -264,7 +277,7 @@ msgid "Message"
 msgstr "Pesan"
 
 msgid "Rendering"
-msgstr "Rendering"
+msgstr "Proses membuat gambar"
 
 msgid "Occlusion Culling"
 msgstr "Pemusnahan Oklusi"
@@ -332,6 +345,12 @@ msgstr "Ukuran Maksimum (MB)"
 msgid "Texture Upload Region Size Px"
 msgstr "Ukuran Wilayah Unggah Tekstur Ukuran Px"
 
+msgid "Pipeline Cache"
+msgstr "Cache Alur"
+
+msgid "Save Chunk Size (MB)"
+msgstr "Simpan Ukuran Potongan"
+
 msgid "Vulkan"
 msgstr "Vulkan"
 
@@ -350,11 +369,17 @@ msgstr "Filter Tekstur Default"
 msgid "Default Texture Repeat"
 msgstr "Pengulangan Tekstur Default"
 
+msgid "Collada"
+msgstr "Collada"
+
+msgid "Use Ambient"
+msgstr "Gunakan Ambient"
+
 msgid "Low Processor Usage Mode"
 msgstr "Mode Penggunaan Processor Rendah"
 
-msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "Mode Penggunaan Prosesor Rendah Tidur (μsec)"
+msgid "Delta Smoothing"
+msgstr "Penyempurnaan Perubahan"
 
 msgid "Print Error Messages"
 msgstr "Cetak Pesan Kesalahan"
@@ -382,6 +407,12 @@ msgstr "Gunakan Akumulasi Masukan"
 
 msgid "Input Devices"
 msgstr "Perangkat Masukan"
+
+msgid "Compatibility"
+msgstr "Kecocokan"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "Tekan Tombol hanya Sekali"
 
 msgid "Device"
 msgstr "Perangkat"
@@ -437,6 +468,9 @@ msgstr "Faktor"
 msgid "Button Index"
 msgstr "Tombol Indeks"
 
+msgid "Canceled"
+msgstr "Dibatalkan"
+
 msgid "Double Click"
 msgstr "Klik ganda"
 
@@ -480,7 +514,7 @@ msgid "Channel"
 msgstr "Channel"
 
 msgid "Pitch"
-msgstr "Pitch"
+msgstr "Tingkat Nada"
 
 msgid "Instrument"
 msgstr "Instrumen"
@@ -546,7 +580,7 @@ msgid "Region"
 msgstr "Wilayah"
 
 msgid "Offset"
-msgstr "Offset"
+msgstr "Pengimbangan"
 
 msgid "Cell Size"
 msgstr "Ukuran Sel"
@@ -746,6 +780,9 @@ msgstr "Dapat dihapus"
 msgid "Distraction Free Mode"
 msgstr "Mode Tanpa Gangguan"
 
+msgid "Movie Maker Enabled"
+msgstr "Pembuat Film Enabled"
+
 msgid "Interface"
 msgstr "Antarmuka"
 
@@ -815,6 +852,12 @@ msgstr "Bahasa Editor"
 msgid "Display Scale"
 msgstr "Skala Tampilan"
 
+msgid "Editor Screen"
+msgstr "Layar Editor"
+
+msgid "Project Manager Screen"
+msgstr "Layar Manajer Project"
+
 msgid "Enable Pseudolocalization"
 msgstr "Aktifkan Pseudolokalisasi"
 
@@ -860,12 +903,6 @@ msgstr "Font Utama Tebal"
 msgid "Code Font"
 msgstr "Kode Font"
 
-msgid "Low Processor Mode Sleep (µsec)"
-msgstr "Mode Tidur Prosesor Rendah (µdetik)"
-
-msgid "Unfocused Low Processor Mode Sleep (µsec)"
-msgstr "Mode Tidur Prosesor Rendah yang Tidak Fokus (µdetik)"
-
 msgid "Separate Distraction Mode"
 msgstr "Mode Gangguan Terpisah"
 
@@ -892,6 +929,9 @@ msgstr "Item Dictionary Array Maks per Halaman"
 
 msgid "Show Low Level OpenType Features"
 msgstr "Tampilkan Fitur OpenType Tingkat Rendah"
+
+msgid "Float Drag Speed"
+msgstr "Float Kecepatan Tarikan"
 
 msgid "Theme"
 msgstr "Tema"
@@ -944,6 +984,9 @@ msgstr "Aktifkan Tekan Lama sebagai Klik Kanan"
 msgid "Enable Pan and Scale Gestures"
 msgstr "Aktifkan Gerakan Pan dan Scale"
 
+msgid "Scale Gizmo Handles"
+msgstr "Scale Gizmo Menangani"
+
 msgid "Display Close Button"
 msgstr "Tampilkan Tombol Tutup"
 
@@ -956,8 +999,17 @@ msgstr "Lebar Maksimum"
 msgid "Show Script Button"
 msgstr "Tampilkan Tombol Skrip"
 
+msgid "Multi Window"
+msgstr "Layar Ganda"
+
 msgid "Enable"
 msgstr "Aktifkan"
+
+msgid "Restore Windows on Load"
+msgstr "Pulihkan Windows saat Memuat"
+
+msgid "Maximize Window"
+msgstr "Maksimalkan Jendela"
 
 msgid "External Programs"
 msgstr "Program Eksternal"
@@ -1004,6 +1056,27 @@ msgstr "Mode Tampilan"
 msgid "Thumbnail Size"
 msgstr "Ukuran Gambar kecil"
 
+msgid "Import"
+msgstr "Impor"
+
+msgid "Blender"
+msgstr "Blender"
+
+msgid "Blender 3 Path"
+msgstr "Path Blender 3"
+
+msgid "RPC Port"
+msgstr "Port RPC"
+
+msgid "RPC Server Uptime"
+msgstr "Waktu Aktif Server RPC"
+
+msgid "FBX"
+msgstr "FBX"
+
+msgid "FBX2glTF Path"
+msgstr "Path FBX2glTF"
+
 msgid "Docks"
 msgstr "Dock"
 
@@ -1018,6 +1091,9 @@ msgstr "Perluas Otomatis ke yang Dipilih"
 
 msgid "Always Show Folders"
 msgstr "Selalu Tampilkan Folder"
+
+msgid "TextFile Extensions"
+msgstr "Ekstensi File Teks"
 
 msgid "Property Editor"
 msgstr "Editor Properti"
@@ -1038,7 +1114,7 @@ msgid "Caret"
 msgstr "Tanda sisipan"
 
 msgid "Caret Blink"
-msgstr "Caret Blink"
+msgstr "Caret Berkedip"
 
 msgid "Caret Blink Interval"
 msgstr "Interval Kedipan Caret"
@@ -1406,9 +1482,6 @@ msgstr "Tampilkan Garis Besar Sebelumnya"
 msgid "Autorename Animation Tracks"
 msgstr "Namai otomatis Trek Animasi"
 
-msgid "Confirm Insert Track"
-msgstr "Konfirmasi Sisipkan Trek"
-
 msgid "Default Create Bezier Tracks"
 msgstr "Buat Trek Bezier Default"
 
@@ -1420,6 +1493,12 @@ msgstr "Lapisan Onion Warna Lampau"
 
 msgid "Onion Layers Future Color"
 msgstr "Lapisan Onion Warna Masa Depan"
+
+msgid "Shader Editor"
+msgstr "Editor Shader"
+
+msgid "Restore Shaders on Load"
+msgstr "Pulihkan Shaders saat Dimuat"
 
 msgid "Visual Editors"
 msgstr "Editor Visual"
@@ -1447,6 +1526,9 @@ msgstr "Posisi Kotak Kustom"
 
 msgid "Screen"
 msgstr "Layar"
+
+msgid "Android Window"
+msgstr "Jendela Android"
 
 msgid "Auto Save"
 msgstr "Simpan Otomatis"
@@ -1476,7 +1558,7 @@ msgid "Editor TLS Certificates"
 msgstr "Sertifikat Editor TLS"
 
 msgid "Debugger"
-msgstr "Pengawakutu"
+msgstr "Pendebug"
 
 msgid "Auto Switch to Remote Scene Tree"
 msgstr "Beralih Otomatis Ke Pohon Adegan Remot"
@@ -1625,6 +1707,9 @@ msgstr "Template Kustom"
 msgid "Release"
 msgstr "Rilis"
 
+msgid "Export Console Wrapper"
+msgstr "Export Pembungkus Konsol"
+
 msgid "Binary Format"
 msgstr "Format Biner"
 
@@ -1747,12 +1832,6 @@ msgstr "Indeks Wajah"
 
 msgid "Transform"
 msgstr "Transformasi"
-
-msgid "Collada"
-msgstr "Collada"
-
-msgid "Use Ambient"
-msgstr "Gunakan Ambient"
 
 msgid "Retarget"
 msgstr "Targetkan ulang"
@@ -1880,9 +1959,6 @@ msgstr "Offset Mesh"
 msgid "Optimize Mesh"
 msgstr "Optimalkan Mesh"
 
-msgid "Import"
-msgstr "Impor"
-
 msgid "Skip Import"
 msgstr "Lewati Impor"
 
@@ -1894,6 +1970,21 @@ msgstr "Tipe Tubuh"
 
 msgid "Shape Type"
 msgstr "Tipe Bentuk"
+
+msgid "Physics Material Override"
+msgstr "Penggantian Material Fisika"
+
+msgid "Layer"
+msgstr "Lapisan"
+
+msgid "Mask"
+msgstr "Mask"
+
+msgid "Layers"
+msgstr "Lapisan"
+
+msgid "Cast Shadow"
+msgstr "Keluarkan Bayangan"
 
 msgid "Decomposition"
 msgstr "Dekomposisi"
@@ -2133,7 +2224,7 @@ msgid "Max Rate Hz"
 msgstr "Tingkat Maks Hz"
 
 msgid "Edit"
-msgstr "Edit"
+msgstr "Sunting"
 
 msgid "Trim"
 msgstr "Pangkas"
@@ -2234,6 +2325,9 @@ msgstr "Tampilkan Viewport Rotasi Gizmo"
 msgid "Show Viewport Navigation Gizmo"
 msgstr "Tampilkan Viewport Navigasi Gizmo"
 
+msgid "Gizmo Settings"
+msgstr "Pengaturan Gizmo"
+
 msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Muat Ulang Otomatis dan Tata Skrip Saat Disimpan"
 
@@ -2272,9 +2366,6 @@ msgstr "Kerangka"
 
 msgid "Selected Bone"
 msgstr "Tulang yang Dipilih"
-
-msgid "Gizmo Settings"
-msgstr "Pengaturan Gizmo"
 
 msgid "Bone Axis Length"
 msgstr "Panjang Sumbu Tulang"
@@ -2369,6 +2460,9 @@ msgstr "Tampilkan Pilihan Root Pohon Adegan"
 msgid "Derive Script Globals by Name"
 msgstr "Turunkan Script Globals berdasarkan Nama"
 
+msgid "Ask Before Deleting Related Animation Tracks"
+msgstr "Bertanya Sebelum Menghapus Trek Animasi Terkait"
+
 msgid "Use Favorites Root Selection"
 msgstr "Gunakan Pemilihan Root Favorit"
 
@@ -2400,10 +2494,13 @@ msgid "Max Log Files"
 msgstr "File Log Maks"
 
 msgid "Driver"
-msgstr "Driver"
+msgstr "Pengemudi"
 
 msgid "GL Compatibility"
 msgstr "Kompatibilitas GL"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia Nonaktifkan Optimasi Berulir"
 
 msgid "Renderer"
 msgstr "Perender"
@@ -2439,10 +2536,13 @@ msgid "Orientation"
 msgstr "Orientasi"
 
 msgid "V-Sync"
-msgstr "V-Sync"
+msgstr "Sinkronisasi Vertikal"
 
 msgid "V-Sync Mode"
 msgstr "Mode V-Sync"
+
+msgid "Output Latency"
+msgstr "Latensi Keluaran"
 
 msgid "stdout"
 msgstr "stdout"
@@ -2461,9 +2561,6 @@ msgstr "Penundaan Frame Milidetik"
 
 msgid "Low Processor Mode"
 msgstr "Mode Processor Rendah"
-
-msgid "iOS"
-msgstr "iOS"
 
 msgid "Allow High Refresh Rate"
 msgstr "Izinkan Kecepatan Refresh Tinggi"
@@ -2505,7 +2602,7 @@ msgid "In Editor"
 msgstr "Di Editor"
 
 msgid "Boot Splash"
-msgstr "Boot Splash"
+msgstr "Splash Boot"
 
 msgid "BG Color"
 msgstr "Warna Latar Belakang"
@@ -2544,7 +2641,7 @@ msgid "Windows Native Icon"
 msgstr "Ikon Windows"
 
 msgid "Buffering"
-msgstr "Buffering"
+msgstr "Proses Pengumpulan Data"
 
 msgid "Agile Event Flushing"
 msgstr "Flushing Event yang Tangkas"
@@ -2557,6 +2654,9 @@ msgstr "Emulasi Sentuhan Dari Mouse"
 
 msgid "Emulate Mouse From Touch"
 msgstr "Emulasi Mouse Dari Sentuhan"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Text Driver"
 msgstr "Driver Teks"
@@ -2588,6 +2688,9 @@ msgstr "Nama Assembly"
 msgid "Solution Directory"
 msgstr "Direktori Solusi"
 
+msgid "Assembly Reload Attempts"
+msgstr "Upaya Muat Ulang Perakitan"
+
 msgid "Operation"
 msgstr "Operasi"
 
@@ -2613,7 +2716,7 @@ msgid "Collision Priority"
 msgstr "Prioritas Collision"
 
 msgid "Flip Faces"
-msgstr "Flip Faces"
+msgstr "Ubah Wajah"
 
 msgid "Mesh"
 msgstr "Jala"
@@ -2777,6 +2880,21 @@ msgstr "Kecepatan Linear"
 msgid "Angular Velocity"
 msgstr "Kecepatan Sudut"
 
+msgid "Center of Mass"
+msgstr "Pusat Massa"
+
+msgid "Inertia Tensor"
+msgstr "Tensor Inersia"
+
+msgid "Is Trigger"
+msgstr "Adalah Pemicu"
+
+msgid "Mesh Index"
+msgstr "Mesh Indeks"
+
+msgid "Importer Mesh"
+msgstr "Pengimpor Mesh"
+
 msgid "Json"
 msgstr "Json"
 
@@ -2785,6 +2903,9 @@ msgstr "Versi Utama"
 
 msgid "Minor Version"
 msgstr "Versi Minor"
+
+msgid "Copyright"
+msgstr "Hak Cipta"
 
 msgid "GLB Data"
 msgstr "Data GLB"
@@ -2842,24 +2963,6 @@ msgstr "Animasi"
 
 msgid "Handle Binary Image"
 msgstr "Menangani Gambar Biner"
-
-msgid "Blender"
-msgstr "Blender"
-
-msgid "RPC Port"
-msgstr "Port RPC"
-
-msgid "RPC Server Uptime"
-msgstr "Waktu Aktif Server RPC"
-
-msgid "Blender 3 Path"
-msgstr "Path Blender 3"
-
-msgid "FBX"
-msgstr "FBX"
-
-msgid "FBX2glTF Path"
-msgstr "Path FBX2glTF"
 
 msgid "Buffer View"
 msgstr "Tampilan Penyangga"
@@ -2976,7 +3079,7 @@ msgid "Src Image"
 msgstr "Gambar Sumber"
 
 msgid "Sampler"
-msgstr "Sampler"
+msgstr "Contoh Acak"
 
 msgid "Mag Filter"
 msgstr "Filter Mag"
@@ -3019,12 +3122,6 @@ msgstr "Pusat Y"
 
 msgid "Center Z"
 msgstr "Pusat Z"
-
-msgid "Layer"
-msgstr "Lapisan"
-
-msgid "Mask"
-msgstr "Mask"
 
 msgid "Priority"
 msgstr "Prioritas"
@@ -3074,12 +3171,6 @@ msgstr "Jumlah Ray Probe Kualitas Ultra"
 msgid "Max Rays per Probe Pass"
 msgstr "Ray Maks per Probe Pass"
 
-msgid "Primitive Meshes"
-msgstr "Mesh Primitif"
-
-msgid "Texel Size"
-msgstr "Ukuran Texel"
-
 msgid "BPM"
 msgstr "BPM"
 
@@ -3128,6 +3219,9 @@ msgstr "Path Root"
 msgid "Replication Interval"
 msgstr "Interval Replikasi"
 
+msgid "Delta Interval"
+msgstr "Interval Delta"
+
 msgid "Visibility Update Mode"
 msgstr "Mode Pembaruan Visibilitas"
 
@@ -3148,6 +3242,12 @@ msgstr "Tolak Koneksi Baru"
 
 msgid "Server Relay"
 msgstr "Relai Server"
+
+msgid "Max Sync Packet Size"
+msgstr "Ukuran Maksimum Paket Sinkronisasi"
+
+msgid "Max Delta Packet Size"
+msgstr "Ukuran Paket Maksimum Delta"
 
 msgid "Noise Type"
 msgstr "Tipe Kebisingan"
@@ -3248,6 +3348,9 @@ msgstr "Path Profil Interaksi"
 msgid "Display Refresh Rate"
 msgstr "Kecepatan Refresh Layar"
 
+msgid "Render Target Size Multiplier"
+msgstr "Render Pengganda Ukuran Target"
+
 msgid "Hand"
 msgstr "Tangan"
 
@@ -3293,14 +3396,14 @@ msgstr "IGD Alamat Kami"
 msgid "IGD Status"
 msgstr "Status IGD"
 
-msgid "Write Mode"
-msgstr "Mode Tulis"
-
 msgid "WebRTC"
 msgstr "WebRTC"
 
 msgid "Max Channel in Buffer (KB)"
 msgstr "Saluran Maksimal dalam Buffer (KB)"
+
+msgid "Write Mode"
+msgstr "Mode Tulis"
 
 msgid "Supported Protocols"
 msgstr "Protokol yang Didukung"
@@ -3337,9 +3440,6 @@ msgstr "Jenis Ruang Referensi"
 
 msgid "Visibility State"
 msgstr "Status Visibilitas"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Jalur Android SDK"
@@ -3410,9 +3510,6 @@ msgstr "Lepaskan Pengguna"
 msgid "Release Password"
 msgstr "Lepaskan Kata Sandi"
 
-msgid "Version"
-msgstr "Versi"
-
 msgid "Code"
 msgstr "Kode"
 
@@ -3445,15 +3542,6 @@ msgstr "Fitur XR"
 
 msgid "XR Mode"
 msgstr "Mode XR"
-
-msgid "Hand Tracking"
-msgstr "Pelacakan Tangan"
-
-msgid "Hand Tracking Frequency"
-msgstr "Frekuensi Pelacakan Tangan"
-
-msgid "Passthrough"
-msgstr "Melewati"
 
 msgid "Immersive Mode"
 msgstr "Mode Imersif"
@@ -3698,17 +3786,44 @@ msgstr "macOS"
 msgid "rcodesign"
 msgstr "rcodesign"
 
-msgid "Copyright"
-msgstr "Hak Cipta"
+msgid "Distribution Type"
+msgstr "Jenis Distribusi"
 
 msgid "Copyright Localized"
 msgstr "Hak Cipta Dilokalkan"
 
+msgid "Min macOS Version"
+msgstr "Versi macOS Minimal"
+
 msgid "High Res"
 msgstr "Resolusi Tinggi"
 
+msgid "Xcode"
+msgstr "Xcode"
+
+msgid "Platform Build"
+msgstr "Membangun Platform"
+
+msgid "SDK Version"
+msgstr "Versi Kit Pengembangan Perangkat Lunak"
+
+msgid "SDK Build"
+msgstr "Membangun Kit Pengembangan Perangkat Lunak"
+
+msgid "SDK Name"
+msgstr "Nama Kit Pengembangan Perangkat Lunak"
+
+msgid "Xcode Version"
+msgstr "Versi Xcode"
+
+msgid "Xcode Build"
+msgstr "Membangun Xcode"
+
 msgid "Codesign"
 msgstr "Codesign"
+
+msgid "Installer Identity"
+msgstr "Identitas Pemasang"
 
 msgid "Apple Team ID"
 msgstr "ID Tim Apple"
@@ -3721,6 +3836,9 @@ msgstr "File Sertifikat"
 
 msgid "Certificate Password"
 msgstr "Kata Sandi Sertifikat"
+
+msgid "Provisioning Profile"
+msgstr "Profil Penyediaan"
 
 msgid "Entitlements"
 msgstr "Hak"
@@ -3866,102 +3984,6 @@ msgstr "Deskripsi Penggunaan Volume yang Dapat Dilepas"
 msgid "Removable Volumes Usage Description Localized"
 msgstr "Volume yang Dapat Dilepas Deskripsi Penggunaan Dilokalisasi"
 
-msgid "UWP"
-msgstr "UWP"
-
-msgid "signtool"
-msgstr "alat tanda"
-
-msgid "Debug Certificate"
-msgstr "Sertifikat Awakutu"
-
-msgid "Debug Algorithm"
-msgstr "Algoritma Awakutu"
-
-msgid "Display Name"
-msgstr "Nama Tampilan"
-
-msgid "Short Name"
-msgstr "Nama Singkat"
-
-msgid "Publisher"
-msgstr "Penerbit"
-
-msgid "Publisher Display Name"
-msgstr "Nama Tampilan Penerbit"
-
-msgid "Product GUID"
-msgstr "GUID Produk"
-
-msgid "Publisher GUID"
-msgstr "GUID Penerbit"
-
-msgid "Signing"
-msgstr "Penandatanganan"
-
-msgid "Certificate"
-msgstr "Sertifikat"
-
-msgid "Algorithm"
-msgstr "Algoritma"
-
-msgid "Major"
-msgstr "Mayor"
-
-msgid "Minor"
-msgstr "Minor"
-
-msgid "Build"
-msgstr "Build"
-
-msgid "Revision"
-msgstr "Revisi"
-
-msgid "Landscape"
-msgstr "Lanskap"
-
-msgid "Portrait"
-msgstr "Potret"
-
-msgid "Landscape Flipped"
-msgstr "Lanskap Terbalik"
-
-msgid "Portrait Flipped"
-msgstr "Potret Terbalik"
-
-msgid "Store Logo"
-msgstr "Logo Store"
-
-msgid "Square 44 X 44 Logo"
-msgstr "Logo Persegi 44 X 44"
-
-msgid "Square 71 X 71 Logo"
-msgstr "Logo Persegi 71 X 71"
-
-msgid "Square 150 X 150 Logo"
-msgstr "Logo Persegi 150 X 150"
-
-msgid "Square 310 X 310 Logo"
-msgstr "Logo Persegi 310 X 310"
-
-msgid "Wide 310 X 150 Logo"
-msgstr "Logo Lebar 310 X 150"
-
-msgid "Splash Screen"
-msgstr "Splash Screen"
-
-msgid "Tiles"
-msgstr "Ubin"
-
-msgid "Show Name on Square 150 X 150"
-msgstr "Tampilkan Nama Pada Persegi 150 X 150"
-
-msgid "Show Name on Wide 310 X 150"
-msgstr "Tampilkan Nama Dalam Lebar 310 X 150"
-
-msgid "Show Name on Square 310 X 310"
-msgstr "Tampilkan Nama Pada Persegi 310 X 310"
-
 msgid "Web"
 msgstr "Situs"
 
@@ -4036,6 +4058,9 @@ msgstr "Windows"
 
 msgid "rcedit"
 msgstr "rcedit"
+
+msgid "signtool"
+msgstr "alat tanda"
 
 msgid "osslsigncode"
 msgstr "osslsigncode"
@@ -4476,13 +4501,28 @@ msgid "Node B"
 msgstr "Node B"
 
 msgid "Bias"
-msgstr "Bias"
+msgstr "ketidakseimbangan"
 
 msgid "Disable Collision"
 msgstr "Nonaktifkan Tabrakan"
 
 msgid "Softness"
 msgstr "Kelembutan"
+
+msgid "Angular Limit"
+msgstr "Batas Sudut"
+
+msgid "Lower"
+msgstr "Bawah"
+
+msgid "Upper"
+msgstr "Atas"
+
+msgid "Motor"
+msgstr "Motor"
+
+msgid "Target Velocity"
+msgstr "Kecepatan Target"
 
 msgid "Length"
 msgstr "Panjang"
@@ -4622,8 +4662,23 @@ msgstr "Jarak Tetangga"
 msgid "Max Neighbors"
 msgstr "Tetangga Maks"
 
+msgid "Time Horizon Agents"
+msgstr "Agen Cakrawala Waktu"
+
+msgid "Time Horizon Obstacles"
+msgstr "Hambatan Cakrawala Waktu"
+
 msgid "Max Speed"
 msgstr "Kecepatan Maks"
+
+msgid "Avoidance Layers"
+msgstr "Lapisan Penghindaran"
+
+msgid "Avoidance Mask"
+msgstr "Masker Penghindaran"
+
+msgid "Avoidance Priority"
+msgstr "Prioritas Penghindaran"
 
 msgid "Use Custom"
 msgstr "Gunakan Kustom"
@@ -4652,8 +4707,17 @@ msgstr "Biaya Masuk"
 msgid "Travel Cost"
 msgstr "Biaya Perjalanan"
 
+msgid "Vertices"
+msgstr "Sudut"
+
 msgid "Navigation Polygon"
 msgstr "Poligon Navigasi"
+
+msgid "Use Edge Connections"
+msgstr "unakan Koneksi Tepi"
+
+msgid "Constrain Avoidance"
+msgstr "Penghindaran Pembatasan"
 
 msgid "Skew"
 msgstr "Condong"
@@ -4718,9 +4782,6 @@ msgstr "Simulasi Fisika"
 msgid "Follow Bone When Simulating"
 msgstr "Ikuti Tulang Saat Simulasi"
 
-msgid "Physics Material Override"
-msgstr "Penggantian Material Fisika"
-
 msgid "Constant Linear Velocity"
 msgstr "Kecepatan Linear Konstan"
 
@@ -4730,29 +4791,14 @@ msgstr "Kecepatan Sudut Konstan"
 msgid "Sync to Physics"
 msgstr "Sinkron Dengan Fisika"
 
-msgid "Inertia"
-msgstr "Inersia"
+msgid "Gravity Scale"
+msgstr "Skala Gravitasi"
 
 msgid "Center of Mass Mode"
 msgstr "Pusat Mode Massa"
 
-msgid "Center of Mass"
-msgstr "Pusat Massa"
-
-msgid "Gravity Scale"
-msgstr "Skala Gravitasi"
-
-msgid "Custom Integrator"
-msgstr "Integrator Kustom"
-
-msgid "Continuous CD"
-msgstr "CD Berkelanjutan"
-
-msgid "Max Contacts Reported"
-msgstr "Kontak Maks Dilaporkan"
-
-msgid "Contact Monitor"
-msgstr "Monitor Kontak"
+msgid "Inertia"
+msgstr "Inersia"
 
 msgid "Sleeping"
 msgstr "Tidur"
@@ -4768,6 +4814,21 @@ msgstr "Membeku"
 
 msgid "Freeze Mode"
 msgstr "Modus Beku"
+
+msgid "Solver"
+msgstr "Pemecah Masalah"
+
+msgid "Custom Integrator"
+msgstr "Integrator Kustom"
+
+msgid "Continuous CD"
+msgstr "CD Berkelanjutan"
+
+msgid "Max Contacts Reported"
+msgstr "Kontak Maks Dilaporkan"
+
+msgid "Contact Monitor"
+msgstr "Monitor Kontak"
 
 msgid "Linear"
 msgstr "Linier"
@@ -4910,9 +4971,6 @@ msgstr "Klip Filter Diaktifkan"
 msgid "Tile Set"
 msgstr "Set Tile"
 
-msgid "Cell Quadrant Size"
-msgstr "Ukuran Kuadran Sel"
-
 msgid "Collision Animatable"
 msgstr "Tabrakan yang Dapat Dianimasikan"
 
@@ -4921,9 +4979,6 @@ msgstr "Mode Visibilitas Tabrakan"
 
 msgid "Navigation Visibility Mode"
 msgstr "Mode Visibilitas Navigasi"
-
-msgid "Layers"
-msgstr "Lapisan"
 
 msgid "Texture Normal"
 msgstr "Tekstur Normal"
@@ -5141,6 +5196,21 @@ msgstr "Arah"
 msgid "Skeleton Path"
 msgstr "Path Kerangka"
 
+msgid "Visibility Range"
+msgstr "Rentang Visibilitas"
+
+msgid "Begin Margin"
+msgstr "Mulai Margin"
+
+msgid "End"
+msgstr "Akhir"
+
+msgid "End Margin"
+msgstr "Margin Akhir"
+
+msgid "Fade Mode"
+msgstr "Mode Pudar"
+
 msgid "Solver Priority"
 msgstr "Prioritas Penyelesaian"
 
@@ -5153,23 +5223,8 @@ msgstr "Param"
 msgid "Impulse Clamp"
 msgstr "Penjepit Impuls"
 
-msgid "Angular Limit"
-msgstr "Batas Sudut"
-
-msgid "Upper"
-msgstr "Atas"
-
-msgid "Lower"
-msgstr "Bawah"
-
 msgid "Relaxation"
 msgstr "Relaksasi"
-
-msgid "Motor"
-msgstr "Motor"
-
-msgid "Target Velocity"
-msgstr "Kecepatan Target"
 
 msgid "Max Impulse"
 msgstr "Impuls Maks"
@@ -5302,6 +5357,9 @@ msgstr "Penjajaran Vertikal"
 
 msgid "Uppercase"
 msgstr "Huruf Besar"
+
+msgid "Justification Flags"
+msgstr "Pembenaran Flags"
 
 msgid "BiDi"
 msgstr "BiDi"
@@ -5441,6 +5499,12 @@ msgstr "Data Cahaya"
 msgid "Surface Material Override"
 msgstr "Penggantian Material Permukaan"
 
+msgid "Path Height Offset"
+msgstr "Path Jarak Ketinggian"
+
+msgid "Use 3D Avoidance"
+msgstr "Gunakan Penghindaran 3D"
+
 msgid "Navigation Mesh"
 msgstr "Mesh Navigasi"
 
@@ -5473,6 +5537,9 @@ msgstr "Bake"
 
 msgid "Rotation Mode"
 msgstr "Mode Rotasi"
+
+msgid "Use Model Front"
+msgstr "Gunakan Model Depan"
 
 msgid "Tilt Enabled"
 msgstr "Kemiringan Diaktifkan"
@@ -5593,6 +5660,9 @@ msgstr "Mode Redam Linear"
 
 msgid "Angular Damp Mode"
 msgstr "Mode Redam Sudut"
+
+msgid "Hit Back Faces"
+msgstr "Kena Muka Belakang"
 
 msgid "Debug Shape"
 msgstr "Bentuk Debug"
@@ -5756,9 +5826,6 @@ msgstr "Hamparan Overlay"
 msgid "Transparency"
 msgstr "Transparansi"
 
-msgid "Cast Shadow"
-msgstr "Keluarkan Bayangan"
-
 msgid "Extra Cull Margin"
 msgstr "Margin Cull Ekstra"
 
@@ -5776,21 +5843,6 @@ msgstr "Penerangan Global"
 
 msgid "Lightmap Scale"
 msgstr "Skala Peta Cahaya"
-
-msgid "Visibility Range"
-msgstr "Rentang Visibilitas"
-
-msgid "Begin Margin"
-msgstr "Mulai Margin"
-
-msgid "End"
-msgstr "Akhir"
-
-msgid "End Margin"
-msgstr "Margin Akhir"
-
-msgid "Fade Mode"
-msgstr "Mode Pudar"
 
 msgid "Dynamic Range"
 msgstr "Jarak Dinamis"
@@ -5822,8 +5874,14 @@ msgstr "Mode Campuran"
 msgid "Fadein Time"
 msgstr "Waktu Fadein"
 
+msgid "Fadein Curve"
+msgstr "Kurva Pemudaran Masuk"
+
 msgid "Fadeout Time"
 msgstr "Waktu Fadeout"
+
+msgid "Fadeout Curve"
+msgstr "Kurva Pemudaran Keluar"
 
 msgid "Auto Restart"
 msgstr "Mulai Ulang Otomatis"
@@ -5855,11 +5913,17 @@ msgstr "Permintaan"
 msgid "Active"
 msgstr "Aktif"
 
+msgid "Internal Active"
+msgstr "Internal yang Aktif"
+
 msgid "Add Amount"
 msgstr "Tambahkan Jumlah"
 
 msgid "Blend Amount"
 msgstr "Jumlah Campuran"
+
+msgid "Sub Amount"
+msgstr "Jumlah Pengurangan"
 
 msgid "Seek Request"
 msgstr "Mencari Permintaan"
@@ -5872,6 +5936,21 @@ msgstr "Kondisi saat ini"
 
 msgid "Transition Request"
 msgstr "Permintaan Transisi"
+
+msgid "Libraries"
+msgstr "Library"
+
+msgid "Reset on Save"
+msgstr "Atur ulang pada Simpan"
+
+msgid "Root Node"
+msgstr "Node Akar"
+
+msgid "Root Motion"
+msgstr "Gerakan Root"
+
+msgid "Track"
+msgstr "Trek"
 
 msgid "Reset"
 msgstr "Reset"
@@ -5891,32 +5970,20 @@ msgstr "Kondisi"
 msgid "Expression"
 msgstr "Ekspresi"
 
-msgid "Libraries"
-msgstr "Library"
+msgid "State Machine Type"
+msgstr "Jenis Mesin Keadaan"
 
-msgid "Root Node"
-msgstr "Node Akar"
+msgid "Reset Ends"
+msgstr "Reset Berakhir"
 
 msgid "Current Animation"
 msgstr "Animasi Saat Ini"
 
-msgid "Reset on Save"
-msgstr "Atur ulang pada Simpan"
-
 msgid "Playback Options"
 msgstr "Opsi Pemutaran"
 
-msgid "Process Mode"
-msgstr "Mode Proses"
-
 msgid "Default Blend Time"
 msgstr "Waktu Campuran Default"
-
-msgid "Method Call Mode"
-msgstr "Mode Panggilan Metode"
-
-msgid "Audio Max Polyphony"
-msgstr "Polifoni Maks Audio"
 
 msgid "Movie Quit on Finish"
 msgstr "Film Berhenti saat Selesai"
@@ -5924,17 +5991,11 @@ msgstr "Film Berhenti saat Selesai"
 msgid "Tree Root"
 msgstr "Akar Pohon"
 
-msgid "Anim Player"
-msgstr "Pemain Anim"
-
 msgid "Advance Expression Base Node"
 msgstr "Node Basis Ekspresi Lanjutan"
 
-msgid "Root Motion"
-msgstr "Gerakan Root"
-
-msgid "Track"
-msgstr "Trek"
+msgid "Anim Player"
+msgstr "Pemain Anim"
 
 msgid "Animation Path"
 msgstr "Path Animasi"
@@ -5975,6 +6036,9 @@ msgstr "Pintasan di Tooltip"
 msgid "Button Shortcut Feedback Highlight Time"
 msgstr "Tombol Pintasan Umpan Balik Sorot Waktu"
 
+msgid "Allow Unpress"
+msgstr "Izinkan Pemencetan Ulang"
+
 msgid "Text Behavior"
 msgstr "Perilaku Teks"
 
@@ -5989,6 +6053,9 @@ msgstr "Perilaku Ikon"
 
 msgid "Icon Alignment"
 msgstr "Penjajaran Ikon"
+
+msgid "Vertical Icon Alignment"
+msgstr "Penyelarasan Icon Secara Vertikal"
 
 msgid "Expand Icon"
 msgstr "Perluas Ikon"
@@ -6206,20 +6273,14 @@ msgstr "Mode Menimpa Judul"
 msgid "Root Subfolder"
 msgstr "Subfolder Akar"
 
-msgid "Right Disconnects"
-msgstr "Pemutusan Kanan"
-
 msgid "Scroll Offset"
 msgstr "Gulir Offset"
 
-msgid "Snap Distance"
-msgstr "Jarak Snap"
-
-msgid "Use Snap"
-msgstr "Gunakan Snap"
-
 msgid "Panning Scheme"
 msgstr "Skema Panning"
+
+msgid "Right Disconnects"
+msgstr "Pemutusan Kanan"
 
 msgid "Connection Lines"
 msgstr "Jalur Koneksi"
@@ -6239,20 +6300,8 @@ msgstr "Langkah Zoom"
 msgid "Show Zoom Label"
 msgstr "Tampilkan Label Zoom"
 
-msgid "UI"
-msgstr "UI"
-
-msgid "Arrange Nodes Button Hidden"
-msgstr "Atur Tombol Node Tersembunyi"
-
-msgid "Title"
-msgstr "Judul"
-
 msgid "Position Offset"
 msgstr "Offset Posisi"
-
-msgid "Show Close"
-msgstr "Tampilkan Tutup"
 
 msgid "Draggable"
 msgstr "Dapat diseret"
@@ -6263,11 +6312,8 @@ msgstr "Dapat dipilih"
 msgid "Selected"
 msgstr "Dipilih"
 
-msgid "Comment"
-msgstr "Komentar"
-
-msgid "Overlay"
-msgstr "Overlay"
+msgid "Title"
+msgstr "Judul"
 
 msgid "Select Mode"
 msgstr "Mode Seleksi"
@@ -6311,6 +6357,9 @@ msgstr "Ukuran Ikon Tetap"
 msgid "Label Settings"
 msgstr "Pengaturan Label"
 
+msgid "Tab Stops"
+msgstr "Tab Berhenti"
+
 msgid "Displayed Text"
 msgstr "Teks yang Ditampilkan"
 
@@ -6334,12 +6383,6 @@ msgstr "Teks Placeholder"
 
 msgid "Max Length"
 msgstr "Panjang Maks"
-
-msgid "Secret"
-msgstr "Rahasia"
-
-msgid "Secret Character"
-msgstr "Karakter Rahasia"
 
 msgid "Expand to Text Length"
 msgstr "Perluas ke Panjang Teks"
@@ -6368,6 +6411,9 @@ msgstr "Memilih Diaktifkan"
 msgid "Deselect on Focus Loss Enabled"
 msgstr "Batalkan Pilihan pada Kehilangan Fokus Diaktifkan"
 
+msgid "Drag and Drop Selection Enabled"
+msgstr "Pilihan Seret dan Jatuhkan Diaktifkan"
+
 msgid "Right Icon"
 msgstr "Ikon Kanan"
 
@@ -6391,6 +6437,12 @@ msgstr "Paksa Ditampilkan"
 
 msgid "Mid Grapheme"
 msgstr "Skema Pertengahan"
+
+msgid "Secret"
+msgstr "Rahasia"
+
+msgid "Secret Character"
+msgstr "Karakter Rahasia"
 
 msgid "Underline"
 msgstr "Garis Bawah"
@@ -6477,7 +6529,7 @@ msgid "Outline"
 msgstr "Garis besar"
 
 msgid "Env"
-msgstr "Env"
+msgstr "Lingkungan"
 
 msgid "Glyph Index"
 msgstr "Indeks Glyph"
@@ -6536,6 +6588,12 @@ msgstr "Langkah Kustom"
 msgid "Follow Focus"
 msgstr "Ikuti Fokus"
 
+msgid "Horizontal Custom Step"
+msgstr "Langkah Kustom Horizontal"
+
+msgid "Vertical Custom Step"
+msgstr "Langkah Kustom Vertikal"
+
 msgid "Horizontal Scroll Mode"
 msgstr "Mode Gulir Horizontal"
 
@@ -6564,7 +6622,7 @@ msgid "Custom Arrow Step"
 msgstr "Langkah Panah Kustom"
 
 msgid "Split Offset"
-msgstr "Split Offset"
+msgstr "Pemisahan Posisi"
 
 msgid "Collapsed"
 msgstr "Runtuh"
@@ -6574,6 +6632,9 @@ msgstr "Visibilitas Penyeret"
 
 msgid "Stretch Shrink"
 msgstr "Peregangan Menyusut"
+
+msgid "Tabs"
+msgstr "Tab"
 
 msgid "Current Tab"
 msgstr "Tab Saat Ini"
@@ -6605,9 +6666,6 @@ msgstr "Gulir ke Dipilih"
 msgid "Select With RMB"
 msgstr "Pilih Dengan RMB"
 
-msgid "Tabs"
-msgstr "Tab"
-
 msgid "Tabs Visible"
 msgstr "Tab Terlihat"
 
@@ -6617,14 +6675,8 @@ msgstr "Semua Tab di Depan"
 msgid "Use Hidden Tabs for Min Size"
 msgstr "Gunakan Tab Tersembunyi untuk Ukuran Min"
 
-msgid "Drag and Drop Selection Enabled"
-msgstr "Pilihan Seret dan Jatuhkan Diaktifkan"
-
 msgid "Wrap Mode"
 msgstr "Mode Bungkus"
-
-msgid "Syntax Highlighter"
-msgstr "Penyorot Sintaks"
 
 msgid "Smooth"
 msgstr "Mulus"
@@ -6638,11 +6690,17 @@ msgstr "Ketinggian Konten yang Sesuai"
 msgid "Draw"
 msgstr "Menggambar"
 
+msgid "Draw When Editable Disabled"
+msgstr "Gambar saat Tidak Dapat Diedit"
+
 msgid "Move on Right Click"
 msgstr "Pindah ke Klik Kanan"
 
 msgid "Multiple"
 msgstr "Beberapa"
+
+msgid "Syntax Highlighter"
+msgstr "Penyorot Sintaks"
 
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Edit Teks Deteksi Idle (detik)"
@@ -6792,7 +6850,7 @@ msgid "Max Redirects"
 msgstr "Pengalihan Maks"
 
 msgid "Timeout"
-msgstr "Timeout"
+msgstr "Waktu Habis"
 
 msgid "Transfer Mode"
 msgstr "Mode Transfer"
@@ -6805,6 +6863,21 @@ msgstr "Nama Node Pemisah Angka"
 
 msgid "Node Name Casing"
 msgstr "Casing Nama Node"
+
+msgid "Physics Priority"
+msgstr "Prioritas Fisika"
+
+msgid "Thread Group"
+msgstr "Grup Benang"
+
+msgid "Group"
+msgstr "Kelompok"
+
+msgid "Group Order"
+msgstr "Pemesanan Kelompok"
+
+msgid "Messages"
+msgstr "Pesan"
 
 msgid "Editor Description"
 msgstr "Deskripsi Editor"
@@ -7091,6 +7164,18 @@ msgstr "Fisik 3D"
 msgid "3D Navigation"
 msgstr "Navigasi 3D"
 
+msgid "Frames"
+msgstr "Bingkai-bingkai"
+
+msgid "Pause"
+msgstr "Jeda"
+
+msgid "Atlas"
+msgstr "Atlas"
+
+msgid "Filter Clip"
+msgstr "Klip Filter"
+
 msgid "Polyphony"
 msgstr "Polifoni"
 
@@ -7149,7 +7234,7 @@ msgid "Max Sensitivity"
 msgstr "Sensitivitas Maks"
 
 msgid "Frustum"
-msgstr "Frustum"
+msgstr "Bangun Tumpul"
 
 msgid "Focus Distance"
 msgstr "Jarak Fokus"
@@ -7169,6 +7254,15 @@ msgstr "Nilai Eksposur Min"
 msgid "Max Exposure Value"
 msgstr "Nilai Eksposur Maks"
 
+msgid "Camera Feed ID"
+msgstr "ID Halaman Beranda Kamera"
+
+msgid "Which Feed"
+msgstr "Umpan yang Mana"
+
+msgid "Camera Is Active"
+msgstr "Kamera Aktif"
+
 msgid "Light Mode"
 msgstr "Mode Cahaya"
 
@@ -7184,6 +7278,9 @@ msgstr "Partikel Animasi Frame V"
 msgid "Particles Anim Loop"
 msgstr "Partikel Anim Loop"
 
+msgid "Load Path"
+msgstr "Jalur Muat"
+
 msgid "Segments"
 msgstr "Segmen"
 
@@ -7194,10 +7291,1057 @@ msgid "Bake Resolution"
 msgstr "Bake Resolusi"
 
 msgid "Bake Interval"
-msgstr "Bake Interval"
+msgstr "Waktu Pemanggangan"
 
 msgid "Up Vector"
 msgstr "Vektor Atas"
+
+msgid "Curve X"
+msgstr "Kurva X"
+
+msgid "Curve Y"
+msgstr "Kurva Y"
+
+msgid "Curve Z"
+msgstr "Kurva Z"
+
+msgid "Background"
+msgstr "Latar Belakang"
+
+msgid "Energy Multiplier"
+msgstr "Pengganda Energi"
+
+msgid "Canvas Max Layer"
+msgstr "Lapisan Maksimum Kanvas"
+
+msgid "Sky"
+msgstr "Langit"
+
+msgid "Custom FOV"
+msgstr "Kostum FOV"
+
+msgid "Ambient Light"
+msgstr "Cahaya Lingkungan"
+
+msgid "Source"
+msgstr "Sumber"
+
+msgid "Sky Contribution"
+msgstr "Kontribusi Langit"
+
+msgid "Reflected Light"
+msgstr "Cahaya Pantulan"
+
+msgid "Tonemap"
+msgstr "Tonemap"
+
+msgid "White"
+msgstr "Putih"
+
+msgid "SSR"
+msgstr "SSR"
+
+msgid "Max Steps"
+msgstr "Langkah Maksimum"
+
+msgid "Fade In"
+msgstr "Memudar"
+
+msgid "Fade Out"
+msgstr "Memudar"
+
+msgid "Depth Tolerance"
+msgstr "Toleransi Kedalaman"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "Power"
+msgstr "Kekuatan"
+
+msgid "Detail"
+msgstr "Detil"
+
+msgid "Horizon"
+msgstr "Garis Cakrawala"
+
+msgid "Sharpness"
+msgstr "Ketajaman"
+
+msgid "Light Affect"
+msgstr "Efek Cahaya"
+
+msgid "AO Channel Affect"
+msgstr "Efek AO Channel"
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "Normal Rejection"
+msgstr "Penolakan Normal"
+
+msgid "SDFGI"
+msgstr "SDFGI"
+
+msgid "Use Occlusion"
+msgstr "Menggunakan Penghalangan"
+
+msgid "Read Sky Light"
+msgstr "Membaca Cahaya Langit"
+
+msgid "Bounce Feedback"
+msgstr "Umpan Balik Bounce"
+
+msgid "Cascades"
+msgstr "Bertumpukan"
+
+msgid "Min Cell Size"
+msgstr "Ukuran Sel Minimal"
+
+msgid "Cascade 0 Distance"
+msgstr "Jarak Tumpuan 0"
+
+msgid "Y Scale"
+msgstr "Scale Y"
+
+msgid "Probe Bias"
+msgstr "Kecenderungan Probe"
+
+msgid "Glow"
+msgstr "Bersinar"
+
+msgid "Levels"
+msgstr "Tingkat"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "4"
+msgstr "4"
+
+msgid "5"
+msgstr "5"
+
+msgid "6"
+msgstr "6"
+
+msgid "7"
+msgstr "7"
+
+msgid "Mix"
+msgstr "Bercampur"
+
+msgid "Bloom"
+msgstr "Mekar"
+
+msgid "HDR Threshold"
+msgstr "Ambang Dinamik Tinggi"
+
+msgid "HDR Scale"
+msgstr "Scale HDR"
+
+msgid "HDR Luminance Cap"
+msgstr "Batas Cahaya HDR"
+
+msgid "Map Strength"
+msgstr "Kekuatan Pemetaan"
+
+msgid "Map"
+msgstr "Peta"
+
+msgid "Fog"
+msgstr "Kabut"
+
+msgid "Light Color"
+msgstr "Color Cahaya"
+
+msgid "Light Energy"
+msgstr "Energi Cahaya"
+
+msgid "Sun Scatter"
+msgstr "Taburan Cahaya Matahari"
+
+msgid "Density"
+msgstr "Kepadatan"
+
+msgid "Aerial Perspective"
+msgstr "Perspektif Udara"
+
+msgid "Sky Affect"
+msgstr "Pengaruh Langit"
+
+msgid "Height Density"
+msgstr "Kepadatan Tinggi"
+
+msgid "Volumetric Fog"
+msgstr "Kabut Berbentuk Volume"
+
+msgid "GI Inject"
+msgstr "Injeksi GI"
+
+msgid "Anisotropy"
+msgstr "Anisotrop"
+
+msgid "Detail Spread"
+msgstr "Penyebaran Detail"
+
+msgid "Ambient Inject"
+msgstr "Penyisipan Ambient"
+
+msgid "Temporal Reprojection"
+msgstr "Temporal Reprojection"
+
+msgid "Adjustments"
+msgstr "Penyesuaian"
+
+msgid "Brightness"
+msgstr "Kecerahan"
+
+msgid "Saturation"
+msgstr "Ketepatan Warna"
+
+msgid "Color Correction"
+msgstr "Koreksi Color"
+
+msgid "Height Falloff"
+msgstr "Penurunan Ketinggian"
+
+msgid "Edge Fade"
+msgstr "Pelepasan Tepi"
+
+msgid "Density Texture"
+msgstr "Tekstur Ketebalan"
+
+msgid "Base Font"
+msgstr "Huruf Dasar"
+
+msgid "Features"
+msgstr "Fitur-fitur"
+
+msgid "Extra Spacing"
+msgstr "Jarak Tambahan"
+
+msgid "Glyph"
+msgstr "Glyph"
+
+msgid "Space"
+msgstr "Spasi"
+
+msgid "Font Names"
+msgstr "Nama-nama Huruf"
+
+msgid "Font Italic"
+msgstr "Huruf Miring"
+
+msgid "Font Weight"
+msgstr "Tebal Huruf"
+
+msgid "Font Stretch"
+msgstr "Perlebaran Huruf"
+
+msgid "Color Space"
+msgstr "Ruang Color"
+
+msgid "Raw Data"
+msgstr "Data Mentah"
+
+msgid "Offsets"
+msgstr "Perpindahan"
+
+msgid "Use HDR"
+msgstr "Gunakan HDR"
+
+msgid "From"
+msgstr "Dari"
+
+msgid "To"
+msgstr "Ke"
+
+msgid "Map Width"
+msgstr "Lebar Peta"
+
+msgid "Map Depth"
+msgstr "Kedalaman Peta"
+
+msgid "Map Data"
+msgstr "Data Peta"
+
+msgid "Next Pass"
+msgstr "Pass Selanjutnya"
+
+msgid "Shader"
+msgstr "Shader"
+
+msgid "Depth Draw Mode"
+msgstr "Mode Menggambar Kedalaman"
+
+msgid "Shading"
+msgstr "Pengarsiran"
+
+msgid "Shading Mode"
+msgstr "Mode Pengarsiran"
+
+msgid "Diffuse Mode"
+msgstr "Mode Difus"
+
+msgid "Specular Mode"
+msgstr "Mode Spekular"
+
+msgid "Disable Ambient Light"
+msgstr "Matikan Cahaya Lingkungan"
+
+msgid "Disable Fog"
+msgstr "Nonaktifkan Kabut"
+
+msgid "Vertex Color"
+msgstr "Color Titik-Titik"
+
+msgid "Use as Albedo"
+msgstr "Gunakan sebagai Albedo"
+
+msgid "Is sRGB"
+msgstr "Adalah sRGB"
+
+msgid "Texture Force sRGB"
+msgstr "Kekuatan Tekstur dalam Format Warna sRGB"
+
+msgid "Texture MSDF"
+msgstr "Tekstur MSDF"
+
+msgid "ORM"
+msgstr "ORM"
+
+msgid "Metallic"
+msgstr "Berbahan Logam"
+
+msgid "Texture Channel"
+msgstr "Tekstur Channel"
+
+msgid "Operator"
+msgstr "Operator"
+
+msgid "On UV2"
+msgstr "Di UV2"
+
+msgid "Rim"
+msgstr "Lingkaran Luar"
+
+msgid "Clearcoat"
+msgstr "Lapisan Bening"
+
+msgid "Flowmap"
+msgstr "Peta Aliran"
+
+msgid "Ambient Occlusion"
+msgstr "Ambient Occlusion"
+
+msgid "Deep Parallax"
+msgstr "Efek Kedalaman Mendalam"
+
+msgid "Min Layers"
+msgstr "Jumlah Lapisan Minimum"
+
+msgid "Max Layers"
+msgstr "Jumlah Lapisan Maksimum"
+
+msgid "Flip Tangent"
+msgstr "Pembalikan Garis Singgung"
+
+msgid "Flip Binormal"
+msgstr "Membalikkan Normal"
+
+msgid "Flip Texture"
+msgstr "Memutar Teksur"
+
+msgid "Subsurface Scattering"
+msgstr "Subsurface Scattering"
+
+msgid "Skin Mode"
+msgstr "Mode Skin"
+
+msgid "Transmittance"
+msgstr "Transmisi"
+
+msgid "Boost"
+msgstr "Meningkatkan"
+
+msgid "Back Lighting"
+msgstr "Pencahayaan dari Belakang"
+
+msgid "Backlight"
+msgstr "Cahaya dari Belakang"
+
+msgid "Refraction"
+msgstr "Refraction"
+
+msgid "UV Layer"
+msgstr "Lapisan UV"
+
+msgid "UV1"
+msgstr "UV1"
+
+msgid "Triplanar"
+msgstr "Tiga Dimensi"
+
+msgid "Triplanar Sharpness"
+msgstr "Ketajaman dalam Tiga Dimensi"
+
+msgid "World Triplanar"
+msgstr "Dunia Tiga Dimensi"
+
+msgid "UV2"
+msgstr "UV2"
+
+msgid "Sampling"
+msgstr "Contoh"
+
+msgid "Shadows"
+msgstr "Bayangan"
+
+msgid "Disable Receive Shadows"
+msgstr "Nonaktifkan Terima Bayangan"
+
+msgid "Shadow to Opacity"
+msgstr "Bayangan to Kebas-transparan"
+
+msgid "Keep Scale"
+msgstr "Menjaga Scale"
+
+msgid "Particles Anim"
+msgstr "Animasi Partikel"
+
+msgid "H Frames"
+msgstr "Bingkai H"
+
+msgid "V Frames"
+msgstr "Bingkai V"
+
+msgid "Grow"
+msgstr "Tumbuh"
+
+msgid "Use Point Size"
+msgstr "Gunakan Ukuran Titik"
+
+msgid "Point Size"
+msgstr "Ukuran Titik"
+
+msgid "Use Particle Trails"
+msgstr "Gunakan Jejak Partikel"
+
+msgid "Proximity Fade"
+msgstr "Pudarnya dengan Jarak Dekat"
+
+msgid "Distance"
+msgstr "Jarak"
+
+msgid "MSDF"
+msgstr "MSDF"
+
+msgid "Pixel Range"
+msgstr "Rentang Piksel"
+
+msgid "Convex Hull Downsampling"
+msgstr "Convex Hull Downsampling"
+
+msgid "Convex Hull Approximation"
+msgstr "Perkiraan Convex Hull"
+
+msgid "Lightmap Size Hint"
+msgstr "Petunjuk Ukuran Lightmap"
+
+msgid "Blend Shape Mode"
+msgstr "Mode Bentuk Gabungan"
+
+msgid "Shadow Mesh"
+msgstr "Mesh Bayangan"
+
+msgid "Item"
+msgstr "Item"
+
+msgid "Mesh Transform"
+msgstr "Mesh Transform"
+
+msgid "Navigation Mesh Transform"
+msgstr "Navigasi Mesh Transform"
+
+msgid "Preview"
+msgstr "Pratinjau"
+
+msgid "Base Texture"
+msgstr "Tekstur Dasar"
+
+msgid "Image Size"
+msgstr "Ukuran Gambar"
+
+msgid "Transform Format"
+msgstr "Format Transformasi"
+
+msgid "Use Colors"
+msgstr "Gunakan Warna"
+
+msgid "Use Custom Data"
+msgstr "Gunakan Data Kustom"
+
+msgid "Instance Count"
+msgstr "Jumlah Instance"
+
+msgid "Visible Instance Count"
+msgstr "Jumlah Instance Terlihat"
+
+msgid "Partition Type"
+msgstr "Tipe Partisi"
+
+msgid "Parsed Geometry Type"
+msgstr "Jenis Geometri yang Diuraikan"
+
+msgid "Source Geometry Mode"
+msgstr "Mode Geometri Sumber"
+
+msgid "Source Group Name"
+msgstr "Nama Grup Sumber"
+
+msgid "Cells"
+msgstr "Cell"
+
+msgid "Agents"
+msgstr "Agen"
+
+msgid "Max Climb"
+msgstr "Maksimum Kenaikan"
+
+msgid "Max Slope"
+msgstr "Kemiringan Maksimum"
+
+msgid "Regions"
+msgstr "Wilayah"
+
+msgid "Merge Size"
+msgstr "Ukuran Gabungan"
+
+msgid "Edges"
+msgstr "Ujung"
+
+msgid "Max Error"
+msgstr "Error Maksimal"
+
+msgid "Vertices per Polygon"
+msgstr "Titik per Poligon"
+
+msgid "Details"
+msgstr "Detail"
+
+msgid "Sample Distance"
+msgstr "Jarak sampel"
+
+msgid "Sample Max Error"
+msgstr "Sampel Error Maksimal"
+
+msgid "Low Hanging Obstacles"
+msgstr "Hambatan yang Mudah Dihindari"
+
+msgid "Ledge Spans"
+msgstr "Jarak Antara Aliran Batu"
+
+msgid "Walkable Low Height Spans"
+msgstr "Jembatan Ketinggian Rendah yang Bisa Dijalani Kaki"
+
+msgid "Baking AABB"
+msgstr "Membuat AABB"
+
+msgid "Baking AABB Offset"
+msgstr "Jarak Baking AABB"
+
+msgid "Bundled"
+msgstr "Dikemas Bersama"
+
+msgid "Attractor Interaction"
+msgstr "Interaksi Penarik"
+
+msgid "Scale Min"
+msgstr "Skala Minimal"
+
+msgid "Scale Max"
+msgstr "Skala Maksimal"
+
+msgid "Scale Curve"
+msgstr "Skala Kurva"
+
+msgid "Turbulence"
+msgstr "Turbulence"
+
+msgid "Noise Strength"
+msgstr "Kekuatan Noise"
+
+msgid "Noise Scale"
+msgstr "Skala Noise"
+
+msgid "Noise Speed"
+msgstr "Kecepatan Suara"
+
+msgid "Noise Speed Random"
+msgstr "Kecepatan Noise Acak"
+
+msgid "Influence Min"
+msgstr "Pengaruh Minimum"
+
+msgid "Influence Max"
+msgstr "Pengaruh Maksimum"
+
+msgid "Initial Displacement Min"
+msgstr "Jarak Awal Minimum"
+
+msgid "Initial Displacement Max"
+msgstr "Perpindahan Awal Maksimum"
+
+msgid "Influence over Life"
+msgstr "Pengaruh terhadap Kehidupan"
+
+msgid "Use Scale"
+msgstr "Gunakan Skala"
+
+msgid "Amount at End"
+msgstr "Jumlah di Akhir"
+
+msgid "Amount at Collision"
+msgstr "Jumlah saat Tabrakan"
+
+msgid "Keep Velocity"
+msgstr "Pertahankan Kecepatan"
+
+msgid "Rough"
+msgstr "Kasar"
+
+msgid "Absorbent"
+msgstr "Bahan Penyerap"
+
+msgid "Size Override"
+msgstr "Timpa Ukuran"
+
+msgid "Keep Compressed Buffer"
+msgstr "Menyimpan Buffer yang Tertekan"
+
+msgid "Add UV2"
+msgstr "Tambah UV2"
+
+msgid "UV2 Padding"
+msgstr "Padding UV2"
+
+msgid "Subdivide Width"
+msgstr "Membagi Lebar"
+
+msgid "Subdivide Height"
+msgstr "Pemisahan Tinggi"
+
+msgid "Subdivide Depth"
+msgstr "Kedalaman Pembagian Subbagian"
+
+msgid "Top Radius"
+msgstr "Radius Atas"
+
+msgid "Bottom Radius"
+msgstr "Radius Bawah"
+
+msgid "Cap Top"
+msgstr "Cap Atas"
+
+msgid "Cap Bottom"
+msgstr "Cap Bawah"
+
+msgid "Left to Right"
+msgstr "Kiri ke Kanan"
+
+msgid "Is Hemisphere"
+msgstr "Adalah Selatan Belahan Bumi"
+
+msgid "Ring Segments"
+msgstr "Segmen Cincin"
+
+msgid "Radial Steps"
+msgstr "Langkah-langkah Radial"
+
+msgid "Section Length"
+msgstr "Panjang Bagian"
+
+msgid "Section Rings"
+msgstr "Cincin Bagian"
+
+msgid "Section Segments"
+msgstr "Bagian Segmen"
+
+msgid "Curve Step"
+msgstr "Step Kurva"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Slide on Slope"
+msgstr "Geser pada Kemiringan"
+
+msgid "Custom Solver Bias"
+msgstr "Penyesuaian Penyelesaian Kustom"
+
+msgid "Execution Mode"
+msgstr "Mode Eksekusi"
+
+msgid "Target Nodepath"
+msgstr "Target Jalur node"
+
+msgid "Tip Nodepath"
+msgstr "Tip Jalur node"
+
+msgid "CCDIK Data Chain Length"
+msgstr "CCDIK Panjang Rantai Data"
+
+msgid "FABRIK Data Chain Length"
+msgstr "FABRIK Panjang Rantai Data"
+
+msgid "Jiggle Data Chain Length"
+msgstr "Panjang Rantai Data Getar"
+
+msgid "Default Joint Settings"
+msgstr "Pengaturan Persendian Bawaan"
+
+msgid "Use Gravity"
+msgstr "Gunakan Gravitasi"
+
+msgid "Bone Index"
+msgstr "Indeks Bone"
+
+msgid "Bone 2D Node"
+msgstr "Node Bone 2D"
+
+msgid "Physical Bone Chain Length"
+msgstr "Panjang Rantai Bone Fisik"
+
+msgid "Target Minimum Distance"
+msgstr "Jarak Minimum Target"
+
+msgid "Target Maximum Distance"
+msgstr "Jarak Maksimum Target"
+
+msgid "Flip Bend Direction"
+msgstr "Balik Arah Tikungan"
+
+msgid "Modification Count"
+msgstr "Jumlah Modifikasi"
+
+msgid "Scale Base Bone"
+msgstr "Skala Bone Dasar"
+
+msgid "Group Size"
+msgstr "Ukuran Grup"
+
+msgid "Bone Size"
+msgstr "Ukuran Bone"
+
+msgid "Bind Count"
+msgstr "Jumlah Ikatan"
+
+msgid "Bind"
+msgstr "Ikatan"
+
+msgid "Bone"
+msgstr "Tulang"
+
+msgid "Sky Material"
+msgstr "Bahan Langit"
+
+msgid "Process Mode"
+msgstr "Mode Proses"
+
+msgid "Radiance Size"
+msgstr "Ukuran Pancaran"
+
+msgid "Top Color"
+msgstr "Warna Atas"
+
+msgid "Horizon Color"
+msgstr "Warna Horizon"
+
+msgid "Cover"
+msgstr "Sampul"
+
+msgid "Cover Modulate"
+msgstr "Modulasi Sampul"
+
+msgid "Ground"
+msgstr "Tanah"
+
+msgid "Bottom Color"
+msgstr "Warna Bawah"
+
+msgid "Sun"
+msgstr "Matahari"
+
+msgid "Panorama"
+msgstr "Pemandangan Luas"
+
+msgid "Rayleigh"
+msgstr "Rayleigh"
+
+msgid "Coefficient"
+msgstr "Koefisien"
+
+msgid "Mie"
+msgstr "Mie"
+
+msgid "Eccentricity"
+msgstr "Keanehan"
+
+msgid "Turbidity"
+msgstr "Kekeruhan"
+
+msgid "Sun Disk Scale"
+msgstr "Skala Cakram Matahari"
+
+msgid "Ground Color"
+msgstr "Warna Daratan"
+
+msgid "Night Sky"
+msgstr "Langit Malam"
+
+msgid "Content Margins"
+msgstr "Batas Konten"
+
+msgid "Blend"
+msgstr "Berbaur"
+
+msgid "Top Left"
+msgstr "Kiri Atas"
+
+msgid "Top Right"
+msgstr "Kanan Atas"
+
+msgid "Bottom Right"
+msgstr "Kanan Bawah"
+
+msgid "Bottom Left"
+msgstr "Kiri Bawah"
+
+msgid "Corner Detail"
+msgstr "Detail Sudut"
+
+msgid "Expand Margins"
+msgstr "Perluas Batas"
+
+msgid "Grow Begin"
+msgstr "Tumbuh Dimulai"
+
+msgid "Grow End"
+msgstr "Tumbuh Berakhir"
+
+msgid "Texture Margins"
+msgstr "Batas Tekstur"
+
+msgid "Sub-Region"
+msgstr "Sub-Wilayah"
+
+msgid "Keyword Colors"
+msgstr "Kata Kunci Warna"
+
+msgid "Member Keyword Colors"
+msgstr "Anggota Kata Kunci Warna"
+
+msgid "Color Regions"
+msgstr "Wilayah Warna"
+
+msgid "Preserve Invalid"
+msgstr "Mempertahankan Tidak Valid"
+
+msgid "Preserve Control"
+msgstr "Pertahankan Kontrol"
+
+msgid "Custom Punctuation"
+msgstr "Tanda Baca Kustom"
+
+msgid "Break Flags"
+msgstr "Hancurkan Flags"
+
+msgid "Default Base Scale"
+msgstr "Skala Dasar Bawaan"
+
+msgid "Default Font"
+msgstr "Font Bawaan"
+
+msgid "Default Font Size"
+msgstr "Ukuran Font Bawaan"
+
+msgid "Terrains"
+msgstr "Lahan"
+
+msgid "Custom Data"
+msgstr "Data Kustom"
+
+msgid "Tile Proxies"
+msgstr "Proksi Tile"
+
+msgid "Source Level"
+msgstr "Tingkat Sumber"
+
+msgid "Coords Level"
+msgstr "Tingkat Koordinat"
+
+msgid "Alternative Level"
+msgstr "Tingkat Alternatif"
+
+msgid "Tile Shape"
+msgstr "Bentuk Tile"
+
+msgid "Tile Layout"
+msgstr "Tata Letak Tile"
+
+msgid "Tile Offset Axis"
+msgstr "Sumbu Offset Tile"
+
+msgid "Tile Size"
+msgstr "Ukuran Tile"
+
+msgid "UV Clipping"
+msgstr "Pemotongan UV"
+
+msgid "Occlusion Layers"
+msgstr "Layer Halangan"
+
+msgid "Physics Layers"
+msgstr "Layer Fisika"
+
+msgid "Terrain Sets"
+msgstr "Set Medan"
+
+msgid "Custom Data Layers"
+msgstr "Lapisan Data Kustom"
+
+msgid "Scenes"
+msgstr "Adegan"
+
+msgid "Scene"
+msgstr "Adegan"
+
+msgid "Display Placeholder"
+msgstr "Tampilan Placeholder"
+
+msgid "Polygons Count"
+msgstr "Jumlah Poligon"
+
+msgid "One Way"
+msgstr "Satu Cara"
+
+msgid "One Way Margin"
+msgstr "Batas Satu Arah"
+
+msgid "Transpose"
+msgstr "Mengubah urutan"
+
+msgid "Texture Origin"
+msgstr "Asal Tekstur"
+
+msgid "Y Sort Origin"
+msgstr "Asal Urutan Y"
+
+msgid "Terrain Set"
+msgstr "Set Medan"
+
+msgid "Terrain"
+msgstr "Lahan"
+
+msgid "Miscellaneous"
+msgstr "Lain-lain"
+
+msgid "Probability"
+msgstr "Kemungkinan"
+
+msgid "File"
+msgstr "File"
+
+msgid "Output Port for Preview"
+msgstr "Output Port untuk Preview"
+
+msgid "Modes"
+msgstr "Mode"
+
+msgid "Varyings"
+msgstr "Bervariasi"
+
+msgid "Input Name"
+msgstr "Nama Masukan"
+
+msgid "Parameter Name"
+msgstr "Nama Parameter"
+
+msgid "Qualifier"
+msgstr "Pengkualifikasi"
+
+msgid "Varying Name"
+msgstr "Memvariasikan Nama"
+
+msgid "Varying Type"
+msgstr "Memvariasikan Tipe"
+
+msgid "Op Type"
+msgstr "Tipe Op"
+
+msgid "Constant"
+msgstr "Konstan"
+
+msgid "Texture Type"
+msgstr "Tipe Tekstur"
+
+msgid "Texture Array"
+msgstr "Susunan Tekstur"
+
+msgid "Cube Map"
+msgstr "Peta Kubus"
+
+msgid "Function"
+msgstr "Fungsi"
+
+msgid "Hint"
+msgstr "Petunjuk"
+
+msgid "Default Value Enabled"
+msgstr "Nilai Bawaan Diaktifkan"
+
+msgid "Default Value"
+msgstr "Nilai Bawaan"
+
+msgid "Color Default"
+msgstr "Warna Bawaan"
+
+msgid "Texture Repeat"
+msgstr "Ulangi Tekstur"
+
+msgid "Texture Source"
+msgstr "Sumber Tekstur"
+
+msgid "Billboard Type"
+msgstr "Tipe Billboard"
+
+msgid "Mode 2D"
+msgstr "Mode 2D"
+
+msgid "Use All Surfaces"
+msgstr "Gunakan Semua Permukaan"
+
+msgid "Surface Index"
+msgstr "Indeks Permukaan"
+
+msgid "Degrees Mode"
+msgstr "Mode Derajat"
+
+msgid "Fallback Environment"
+msgstr "Lingkungan Pengganti"
+
+msgid "Plane"
+msgstr "Pesawat"
 
 msgid "Panel"
 msgstr "Panel"
@@ -7243,6 +8387,9 @@ msgstr "Ikon Warna yang Dinonaktifkan"
 
 msgid "H Separation"
 msgstr "Pemisahan H"
+
+msgid "Icon Max Width"
+msgstr "Icon Lebar Maksimum"
 
 msgid "Underline Spacing"
 msgstr "Menggarisbawahi Spasi"
@@ -7343,20 +8490,14 @@ msgstr "Lebar Caret"
 msgid "Clear"
 msgstr "Bersihkan"
 
-msgid "Background"
-msgstr "Latar Belakang"
-
 msgid "Tab"
 msgstr "Tab"
-
-msgid "Space"
-msgstr "Spasi"
 
 msgid "Font Readonly Color"
 msgstr "Warna Hanya Baca Font"
 
 msgid "Breakpoint"
-msgstr "Breakpoint"
+msgstr "Titik Batas"
 
 msgid "Bookmark"
 msgstr "Bookmark"
@@ -7427,6 +8568,9 @@ msgstr "Perampas Dinonaktifkan"
 msgid "Tick"
 msgstr "Centang"
 
+msgid "Center Grabber"
+msgstr "Pengambil Pusat"
+
 msgid "Grabber Offset"
 msgstr "Offset Perampas"
 
@@ -7490,9 +8634,6 @@ msgstr "Alihkan Tersembunyi"
 msgid "Folder"
 msgstr "Folder"
 
-msgid "File"
-msgstr "File"
-
 msgid "Folder Icon Color"
 msgstr "Warna Ikon Folder"
 
@@ -7501,9 +8642,6 @@ msgstr "Warna Ikon File"
 
 msgid "File Disabled Color"
 msgstr "Warna File Dinonaktifkan"
-
-msgid "Panel Disabled"
-msgstr "Panel Dinonaktifkan"
 
 msgid "Separator"
 msgstr "Pemisah"
@@ -7515,7 +8653,7 @@ msgid "Labeled Separator Right"
 msgstr "Pemisah Berlabel Kanan"
 
 msgid "Submenu"
-msgstr "Submenu"
+msgstr "Menu Tambahan"
 
 msgid "Submenu Mirrored"
 msgstr "Submenu Dicerminkan"
@@ -7547,35 +8685,14 @@ msgstr "Padding Awal Item"
 msgid "Item End Padding"
 msgstr "Padding Akhir Item"
 
-msgid "Selected Frame"
-msgstr "Frame yang Dipilih"
-
-msgid "Comment Focus"
-msgstr "Fokus Komentar"
-
 msgid "Slot"
 msgstr "Slot"
 
 msgid "Resizer"
 msgstr "Pengubah Ukuran"
 
-msgid "Close Color"
-msgstr "Tutup Warna"
-
 msgid "Resizer Color"
 msgstr "Warna Pengubah Ukuran"
-
-msgid "Title Offset"
-msgstr "Offset Judul"
-
-msgid "Title H Offset"
-msgstr "Judul H Offset"
-
-msgid "Close Offset"
-msgstr "Tutup Offset"
-
-msgid "Port Offset"
-msgstr "Port Offset"
 
 msgid "Selected Focus"
 msgstr "Fokus yang Dipilih"
@@ -7670,14 +8787,41 @@ msgstr "Perbatasan Gulir"
 msgid "Scroll Speed"
 msgstr "Kecepatan Gulir"
 
+msgid "Scrollbar Margin Left"
+msgstr "Scrollbar Jarak Kiri"
+
+msgid "Scrollbar Margin Top"
+msgstr "Scrollbar Jarak Atas"
+
+msgid "Scrollbar Margin Right"
+msgstr "Scrollbar Jarak Kanan"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Scrollbar Jarak Bawah"
+
+msgid "Scrollbar H Separation"
+msgstr "Scrollbar Pemisah H"
+
+msgid "Scrollbar V Separation"
+msgstr "Scrollbar Pemisah V"
+
 msgid "Icon Margin"
 msgstr "Ikon Margin"
 
 msgid "Line Separation"
 msgstr "Pemisahan Garis"
 
+msgid "Font Hovered Color"
+msgstr "Color Font Melayang"
+
+msgid "Hovered"
+msgstr "Melayang"
+
 msgid "Tab Selected"
 msgstr "Tab Dipilih"
+
+msgid "Tab Hovered"
+msgstr "Tab Melayang"
 
 msgid "Tab Unselected"
 msgstr "Tab Tidak Dipilih"
@@ -7726,6 +8870,9 @@ msgstr "Lebar H"
 
 msgid "Label Width"
 msgstr "Lebar Label"
+
+msgid "Center Slider Grabbers"
+msgstr "Pengait Pusat Slider"
 
 msgid "Folded Arrow"
 msgstr "Panah Terlipat"
@@ -7811,128 +8958,143 @@ msgstr "Pemisah H Tabel"
 msgid "Table V Separation"
 msgstr "Pemisah V Tabel"
 
+msgid "Table Odd Row BG"
+msgstr "Latar Belakang Baris Ganjil pada Tabel"
+
+msgid "Table Even Row BG"
+msgstr "Latar Belakang Baris Genap pada Tabel"
+
+msgid "Table Border"
+msgstr "Batas Tabel"
+
+msgid "Text Highlight H Padding"
+msgstr "Jarak H Penyorotan Teks"
+
+msgid "Text Highlight V Padding"
+msgstr "Jarak V Penyorotan Teks"
+
+msgid "H Grabber"
+msgstr "Pengait H"
+
+msgid "V Grabber"
+msgstr "Pengait V"
+
+msgid "Margin Left"
+msgstr "Jarak Kiri"
+
+msgid "Margin Top"
+msgstr "Jarak Atas"
+
+msgid "Margin Right"
+msgstr "Jarak Kanan"
+
+msgid "Margin Bottom"
+msgstr "Jarak Bawah"
+
+msgid "Minimum Grab Thickness"
+msgstr "Tebal Minimum yang Dapat Diambil"
+
+msgid "Autohide"
+msgstr "Otomatis Tersembunyi"
+
+msgid "Grid Minor"
+msgstr "Garis Pembantu"
+
+msgid "Grid Major"
+msgstr "Garis Utama"
+
+msgid "Selection Fill"
+msgstr "Pengisian Seleksi"
+
+msgid "Selection Stroke"
+msgstr "Garis Seleksi"
+
+msgid "Activity"
+msgstr "Aktifitas"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "Batas Bagian Dalam Area Pusat Panas"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Batas Bagian Luar Area Pusat Panas"
+
 msgid "Node"
 msgstr "Node"
 
-msgid "Source"
-msgstr "Sumber"
-
-msgid "SSAO"
-msgstr "SSAO"
-
-msgid "SSIL"
-msgstr "SSIL"
-
-msgid "2"
-msgstr "2"
-
-msgid "Mix"
-msgstr "Bercampur"
-
-msgid "Features"
-msgstr "Fitur-fitur"
-
-msgid "Shader"
-msgstr "Shader"
-
-msgid "Shading"
-msgstr "Shading"
-
-msgid "Shadows"
-msgstr "Bayangan"
-
-msgid "MSDF"
-msgstr "MSDF"
-
-msgid "Item"
-msgstr "Item"
-
-msgid "Preview"
-msgstr "Pratinjau"
-
-msgid "Parsed Geometry Type"
-msgstr "Jenis Geometri yang Diuraikan"
-
-msgid "Sample Distance"
-msgstr "Jarak sampel"
-
-msgid "Point Texture"
-msgstr "Tekstur Titik"
-
-msgid "Normal Texture"
-msgstr "Texture Normal"
-
-msgid "Top Radius"
-msgstr "Radius Atas"
-
-msgid "Bottom Radius"
-msgstr "Radius Bawah"
-
-msgid "B"
-msgstr "B"
-
-msgid "Radiance Size"
-msgstr "Ukuran Pancaran"
-
-msgid "Horizon Color"
-msgstr "Warna Horizon"
-
-msgid "Rayleigh"
-msgstr "Rayleigh"
-
-msgid "Ground Color"
-msgstr "Warna Daratan"
-
-msgid "Blend"
-msgstr "Berbaur"
-
-msgid "Top Left"
-msgstr "Kiri Atas"
-
-msgid "Top Right"
-msgstr "Kanan Atas"
-
-msgid "Bottom Right"
-msgstr "Kanan Bawah"
-
-msgid "Bottom Left"
-msgstr "Kiri Bawah"
-
-msgid "Image Size"
-msgstr "Ukuran Gambar"
-
-msgid "Use HDR"
-msgstr "Gunakan HDR"
-
-msgid "To"
-msgstr "Ke"
-
-msgid "Frames"
-msgstr "Bingkai-bingkai"
-
-msgid "Scene"
-msgstr "Adegan"
-
-msgid "Transpose"
-msgstr "Mengubah urutan"
-
-msgid "Constant"
-msgstr "Konstan"
-
-msgid "Function"
-msgstr "Fungsi"
-
-msgid "Plane"
-msgstr "Plane"
+msgid "Default Theme Scale"
+msgstr "Skala Tema Bawaan"
 
 msgid "Custom"
 msgstr "Kustom"
 
+msgid "Custom Font"
+msgstr "Font Kustom"
+
+msgid "Default Font Antialiasing"
+msgstr "Antialiasing Font Bawaan"
+
+msgid "Default Font Hinting"
+msgstr "Hinting Font Bawaan"
+
+msgid "Default Font Subpixel Positioning"
+msgstr "Penempatan Subpiksel Font Bawaan"
+
+msgid "Default Font Multichannel Signed Distance Field"
+msgstr "Font Standar Multichannel Signed Distance Field"
+
+msgid "Default Font Generate Mipmaps"
+msgstr "Hasilkan Mipmaps Font Bawaan"
+
+msgid "LCD Subpixel Layout"
+msgstr "Tata Letak Subpiksel LCD"
+
+msgid "Fallback values"
+msgstr "Nilai pengganti"
+
+msgid "Playback Mode"
+msgstr "Mode Pemutaran"
+
 msgid "Random Pitch"
 msgstr "Pitch Acak"
 
+msgid "Random Volume Offset dB"
+msgstr "Penyesuaian Volume Acak dalam dB"
+
+msgid "Streams"
+msgstr "Aliran"
+
+msgid "Buffer Length"
+msgstr "Panjang Buffer"
+
+msgid "Voice Count"
+msgstr "Jumlah Suara"
+
+msgid "Dry"
+msgstr "Kering"
+
+msgid "Wet"
+msgstr "Basah"
+
+msgid "Voice"
+msgstr "Suara"
+
+msgid "Delay (ms)"
+msgstr "Jeda (milidetik)"
+
+msgid "Rate Hz"
+msgstr "Laju Hz"
+
+msgid "Depth (ms)"
+msgstr "Kedalaman (ms)"
+
+msgid "Level dB"
+msgstr "Tingkat dB"
+
 msgid "Pan"
 msgstr "Pan"
+
+msgid "Release (ms)"
+msgstr "Rilis (ms)"
 
 msgid "Sidechain"
 msgstr "Sidechain"
@@ -7943,17 +9105,326 @@ msgstr "Tap 1"
 msgid "Tap 2"
 msgstr "Tap 2"
 
+msgid "Feedback"
+msgstr "Umpan balik"
+
+msgid "Low-pass"
+msgstr "Pass-rendah"
+
+msgid "Pre Gain"
+msgstr "Penyetelan Awal Gain"
+
+msgid "Keep Hf Hz"
+msgstr "Pertahankan Frekuensi Tinggi dalam Hertz"
+
+msgid "Drive"
+msgstr "Drive"
+
+msgid "Post Gain"
+msgstr "Gain Sesudah"
+
+msgid "Resonance"
+msgstr "Resonansi"
+
+msgid "Ceiling dB"
+msgstr "Atap dB"
+
+msgid "Threshold dB"
+msgstr "Batas Minimum dB"
+
 msgid "Soft Clip dB"
 msgstr "Soft Clip dB"
 
 msgid "Soft Clip Ratio"
 msgstr "Rasio Soft Clip"
 
+msgid "Range Min Hz"
+msgstr "Rentang Frekuensi Minimum"
+
+msgid "Range Max Hz"
+msgstr "Rentang Frekuensi Maksimum"
+
 msgid "FFT Size"
 msgstr "Ukuran FFT"
 
+msgid "Predelay"
+msgstr "Lagu Awal Echo"
+
+msgid "Msec"
+msgstr "Milidetik"
+
+msgid "Room Size"
+msgstr "Ukuran Room"
+
+msgid "High-pass"
+msgstr "Pass-tinggi"
+
+msgid "Tap Back Pos"
+msgstr "Posisi Tap Kembali"
+
+msgid "Pan Pullout"
+msgstr "Lemari Keluar Pan"
+
+msgid "Time Pullout (ms)"
+msgstr "Penarikan Waktu (ms)"
+
+msgid "Surround"
+msgstr "Sekitar"
+
+msgid "Enable Input"
+msgstr "Aktifkan Masukan"
+
+msgid "Channel Disable Threshold dB"
+msgstr "Channel Ambang dB Nonaktif"
+
+msgid "Channel Disable Time"
+msgstr "Waktu Penonaktifan Saluran"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "Pengompensasian Tunda Video (ms)"
+
+msgid "Bus Count"
+msgstr "Jumlah Bus"
+
+msgid "Output Device"
+msgstr "Perangkat Keluaran"
+
+msgid "Input Device"
+msgstr "Perangkat Masukan"
+
+msgid "Playback Speed Scale"
+msgstr "Skala Kecepatan Pemutaran"
+
+msgid "Feed"
+msgstr "Makanan"
+
+msgid "Is Active"
+msgstr "Aktif"
+
+msgid "Movie Writer"
+msgstr "Penulis Film"
+
+msgid "Speaker Mode"
+msgstr "Mode Pembicara"
+
+msgid "MJPEG Quality"
+msgstr "Kualitas MJPEG"
+
+msgid "Movie File"
+msgstr "Berkas Film"
+
+msgid "Disable V-Sync"
+msgstr "Nonaktifkan V-Sync"
+
+msgid "Metadata Flags"
+msgstr "Metadata Flags"
+
+msgid "Path Types"
+msgstr "Jenis alur"
+
+msgid "Path Rids"
+msgstr "Menyingkirkan Path"
+
+msgid "Path Owner IDs"
+msgstr "Path Pemilik ID"
+
+msgid "Default Cell Size"
+msgstr "Ukuran Cell Bawaan"
+
+msgid "Default Edge Connection Margin"
+msgstr "Batas Pinggiran Koneksi Standar"
+
+msgid "Default Link Connection Radius"
+msgstr "Jarak Standar Koneksi Tautan"
+
+msgid "Default Cell Height"
+msgstr "Tinggi Cell Bawaan"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "Cegah Gunakan Banyak Thread"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "Menghindari Penggunaan Utas Prioritas Tinggi"
+
+msgid "Edge Connection Color"
+msgstr "Color Koneksi Tepi"
+
+msgid "Geometry Edge Color"
+msgstr "Warna Tepi Geometri"
+
+msgid "Geometry Face Color"
+msgstr "Warna Wajah Geometri"
+
+msgid "Geometry Edge Disabled Color"
+msgstr "Warna Tepi Geometri Nonaktif"
+
+msgid "Geometry Face Disabled Color"
+msgstr "Warna Geometri Wajah Nonaktif"
+
+msgid "Link Connection Color"
+msgstr "Warna Sambungan Tautan"
+
+msgid "Link Connection Disabled Color"
+msgstr "Warna Koneksi Tautan Nonaktif"
+
+msgid "Agent Path Color"
+msgstr "Warna Jalur Agen"
+
+msgid "Enable Edge Connections"
+msgstr "Aktifkan Koneksi Tepi"
+
+msgid "Enable Edge Connections X-Ray"
+msgstr "Aktifkan Koneksi Tepi X-Ray"
+
+msgid "Enable Edge Lines"
+msgstr "Aktifkan Garis Tepi"
+
+msgid "Enable Edge Lines X-Ray"
+msgstr "Aktifkan Garis-Garis Tepi X-Ray"
+
+msgid "Enable Geometry Face Random Color"
+msgstr "Aktifkan Warna Acak Wajah Geometri"
+
+msgid "Enable Link Connections"
+msgstr "Aktifkan Koneksi Tautan"
+
+msgid "Enable Link Connections X-Ray"
+msgstr "Aktifkan X-Ray Koneksi Tautan"
+
+msgid "Enable Agent Paths"
+msgstr "Aktifkan Jalur Agen"
+
+msgid "Enable Agent Paths X-Ray"
+msgstr "Aktifkan Fitur X-Ray pada Jalur Agen"
+
+msgid "Agent Path Point Size"
+msgstr "Ukuran Titik Jalur Agen"
+
+msgid "Agents Radius Color"
+msgstr "Warna Radius Agen"
+
+msgid "Obstacles Radius Color"
+msgstr "Radius Hambatan Color"
+
+msgid "Obstacles Static Face Pushin Color"
+msgstr "Color untuk Mendorong Rintangan Tidak Bergerak pada Sisi Tetap"
+
+msgid "Obstacles Static Edge Pushin Color"
+msgstr "Color Dorongan Pinggiran untuk Menghindari Halangan Statis"
+
+msgid "Obstacles Static Face Pushout Color"
+msgstr "Color Pendorong Wajah Tetap Halangan"
+
+msgid "Obstacles Static Edge Pushout Color"
+msgstr "Color Pendorong Tepi Statik untuk Kendala"
+
+msgid "Enable Agents Radius"
+msgstr "Aktifkan Radius Agen"
+
+msgid "Enable Obstacles Radius"
+msgstr "Aktifkan Radius Hambatan"
+
+msgid "Enable Obstacles Static"
+msgstr "Aktifkan Rintangan yang Statis"
+
+msgid "Inverse Mass"
+msgstr "Massa Terbalik"
+
+msgid "Inverse Inertia"
+msgstr "Inersia Terbalik"
+
+msgid "Total Angular Damp"
+msgstr "Peredaman Sudut Total"
+
+msgid "Total Linear Damp"
+msgstr "Lembab Linier Total"
+
+msgid "Total Gravity"
+msgstr "Gravitasi Total"
+
+msgid "Center of Mass Local"
+msgstr "Pusat Massa Lokal"
+
+msgid "Exclude"
+msgstr "Mengesampingkan"
+
+msgid "Collide With Bodies"
+msgstr "Bertabrakan Dengan Badan"
+
+msgid "Collide With Areas"
+msgstr "Tabrak Dengan Area"
+
+msgid "Canvas Instance ID"
+msgstr "D Instance Kanvas"
+
+msgid "Shape RID"
+msgstr "ID Bentuk"
+
+msgid "Collide Separation Ray"
+msgstr "Sinar Pemisahan Tabrakan"
+
+msgid "Exclude Bodies"
+msgstr "Kecualikan Badan"
+
+msgid "Exclude Objects"
+msgstr "Kecualikan Objek"
+
+msgid "Recovery as Collision"
+msgstr "Pemulihan sebagai Tabrakan"
+
 msgid "Default Gravity"
 msgstr "Gravitasi Baku"
+
+msgid "Default Gravity Vector"
+msgstr "Vektor Gravitasi Bawaan"
+
+msgid "Default Linear Damp"
+msgstr "Lembab Linier Bawaan"
+
+msgid "Default Angular Damp"
+msgstr "Lembab Sudut Bawaan"
+
+msgid "Sleep Threshold Linear"
+msgstr "Ambang Tidur Linier"
+
+msgid "Sleep Threshold Angular"
+msgstr "Ambang Batas Sudut Tidur"
+
+msgid "Time Before Sleep"
+msgstr "Waktu Sebelum Tidur"
+
+msgid "Solver Iterations"
+msgstr "Iterasi Penyelesai"
+
+msgid "Contact Recycle Radius"
+msgstr "Radius Kontak Daur Ulang"
+
+msgid "Contact Max Separation"
+msgstr "Jarak Maksimum Kontak"
+
+msgid "Contact Max Allowed Penetration"
+msgstr "Kontak Maksimal yang Diizinkan untuk Penetrasi"
+
+msgid "Default Contact Bias"
+msgstr "Bias Kontak Bawaan"
+
+msgid "Default Constraint Bias"
+msgstr "Bias Batasan Bawaan"
+
+msgid "Physics Engine"
+msgstr "Mesin Fisika"
+
+msgid "Inverse Inertia Tensor"
+msgstr "Tensor Inersia Terbalik"
+
+msgid "Principal Inertia Axes"
+msgstr "Sumbu Inersia Utama"
+
+msgid "Max Collisions"
+msgstr "Tabrakan Maksimal"
 
 msgid "Vertex"
 msgstr "Titik"
@@ -7961,8 +9432,107 @@ msgstr "Titik"
 msgid "Fragment"
 msgstr "Fragmen"
 
+msgid "Tesselation Control"
+msgstr "Kontrol Tesselasi"
+
+msgid "Tesselation Evaluation"
+msgstr "Evaluasi Pengekerutan"
+
+msgid "Compute"
+msgstr "Hitung"
+
+msgid "Syntax"
+msgstr "Tata Bahasa"
+
+msgid "Bytecode"
+msgstr "Kode Byte"
+
+msgid "Compile Error"
+msgstr "Error Kompilasi"
+
+msgid "Base Error"
+msgstr "Error Dasar"
+
+msgid "IDs"
+msgstr "ID"
+
+msgid "Constant ID"
+msgstr "ID Konstan"
+
+msgid "Sample Masks"
+msgstr "Sample Mask"
+
+msgid "Depth Draw"
+msgstr "Penarikan Kedalaman"
+
+msgid "Depth Prepass Alpha"
+msgstr "Pra-Penjelajahan Kedalaman Alfa"
+
+msgid "Depth Test Disabled"
+msgstr "Uji Kedalaman Dinonaktifkan"
+
+msgid "SSS Mode Skin"
+msgstr "Mode Skin SSS"
+
 msgid "Cull"
 msgstr "Cull"
+
+msgid "Unshaded"
+msgstr "Tanpa bayangan"
+
+msgid "Wireframe"
+msgstr "Gambar rangka"
+
+msgid "Skip Vertex Transform"
+msgstr "Lewati Transformasi Vertex"
+
+msgid "World Vertex Coords"
+msgstr "Koordinat Vertex Dunia"
+
+msgid "Ensure Correct Normals"
+msgstr "Pastikan Normal yang Benar"
+
+msgid "Shadows Disabled"
+msgstr "Bayangan Dinonaktifkan"
+
+msgid "Ambient Light Disabled"
+msgstr "Cahaya Sekitar Dinonaktifkan"
+
+msgid "Vertex Lighting"
+msgstr "Pencahayaan Verteks"
+
+msgid "Particle Trails"
+msgstr "Jalur Partikel"
+
+msgid "Alpha to Coverage"
+msgstr "Alfa to Tutupan"
+
+msgid "Alpha to Coverage and One"
+msgstr "Alfa to Tutupan and Satu"
+
+msgid "Debug Shadow Splits"
+msgstr "Debug Perpecahan Bayangan"
+
+msgid "Light Only"
+msgstr "Hanya Cahaya"
+
+msgid "Collision Use Scale"
+msgstr "Skala Penggunaan Tabrakan"
+
+msgid "Disable Force"
+msgstr "Nonaktifkan Kekuatan"
+
+msgid "Disable Velocity"
+msgstr "Nonaktifkan Percepatan"
+
+msgid "Keep Data"
+msgstr "Jaga Data"
+
+msgid "Use Half Res Pass"
+msgstr "Gunakan Pass Setengah Resolusi"
+
+msgid "Use Quarter Res Pass"
+msgstr "Menggunakan Pass Resolusi Kuartal"
 
 msgid "Render Loop Enabled"
 msgstr "Render Loop Diaktifkan"
@@ -7970,26 +9540,266 @@ msgstr "Render Loop Diaktifkan"
 msgid "VRAM Compression"
 msgstr "Kompresi VRAM"
 
+msgid "Import S3TC BPTC"
+msgstr "Impor S3TC BPTC"
+
+msgid "Import ETC2 ASTC"
+msgstr "Impor ETC2 ASTC"
+
+msgid "Lossless Compression"
+msgstr "Kompresi Tanpa Hilang"
+
 msgid "Force PNG"
 msgstr "Paksa PNG"
+
+msgid "WebP Compression"
+msgstr "Kompresi WebP"
+
+msgid "Compression Method"
+msgstr "Metode Kompresi"
+
+msgid "Lossless Compression Factor"
+msgstr "Faktor Kompresi Lossless"
+
+msgid "Time Rollover Secs"
+msgstr "Detik Bergulir Waktu"
+
+msgid "Use Physical Light Units"
+msgstr "Gunakan Satuan Cahaya Fisik"
+
+msgid "Soft Shadow Filter Quality"
+msgstr "Kualitas Filter Bayangan Lembut"
 
 msgid "Shadow Atlas"
 msgstr "Atlas Bayangan"
 
+msgid "Item Buffer Size"
+msgstr "Ukuran Buffer Item"
+
+msgid "Shader Compiler"
+msgstr "Kompiler Shader"
+
+msgid "Shader Cache"
+msgstr "Penyimpanan Shader"
+
+msgid "Use Zstd Compression"
+msgstr "Gunakan Kompresi Zstd"
+
+msgid "Strip Debug"
+msgstr "Kupas Debug"
+
 msgid "Reflections"
 msgstr "Refleksi"
+
+msgid "Sky Reflections"
+msgstr "Refleksi Langit"
+
+msgid "Roughness Layers"
+msgstr "Layer Kekasaran"
 
 msgid "Texture Array Reflections"
 msgstr "Refleksi Tekstur Array"
 
+msgid "GGX Samples"
+msgstr "Sampel GGX"
+
+msgid "Fast Filter High Quality"
+msgstr "Filter Cepat Kualitas Tinggi"
+
+msgid "Reflection Atlas"
+msgstr "Atlas Refleksi"
+
+msgid "Reflection Size"
+msgstr "Ukuran Refleksi"
+
+msgid "Reflection Count"
+msgstr "Jumlah Refleksi"
+
+msgid "GI"
+msgstr "GI"
+
+msgid "Use Half Resolution"
+msgstr "Gunakan Setengah Resolusi"
+
 msgid "Overrides"
 msgstr "Menimpa"
+
+msgid "Force Vertex Shading"
+msgstr "Pemberian Efek Warna Titik Paksa"
+
+msgid "Force Lambert over Burley"
+msgstr "Paksa Lambert atas Burley"
+
+msgid "Depth Prepass"
+msgstr "Pra-penjelajahan Kedalaman"
+
+msgid "Disable for Vendors"
+msgstr "Nonaktifkan untuk Vendor"
+
+msgid "Default Filters"
+msgstr "Filter Bawaan"
+
+msgid "Use Nearest Mipmap Filter"
+msgstr "Gunakan Mipmap Filter Terdekat"
+
+msgid "Anisotropic Filtering Level"
+msgstr "Tingkat Penyaringan Anisotropik"
+
+msgid "Depth of Field"
+msgstr "Kedalaman Tampilan"
+
+msgid "Depth of Field Bokeh Shape"
+msgstr "Bentuk Kedalaman Tampilan Bokeh"
+
+msgid "Depth of Field Bokeh Quality"
+msgstr "Kualitas Kedalaman Tampilan Bokeh"
+
+msgid "Depth of Field Use Jitter"
+msgstr "Getaran Penggunaan Kedalaman Bidang"
+
+msgid "Half Size"
+msgstr "Ukuran Setengah"
+
+msgid "Adaptive Target"
+msgstr "Sasaran yang Beradaptasi"
+
+msgid "Blur Passes"
+msgstr "Blur Data"
+
+msgid "Fadeout From"
+msgstr "Meredupkan Dari"
+
+msgid "Fadeout To"
+msgstr "Meredupkan To"
+
+msgid "Screen Space Roughness Limiter"
+msgstr "Pembatasan Roughness Ruang Layar"
+
+msgid "Decals"
+msgstr "Decals"
+
+msgid "Light Projectors"
+msgstr "Proyektor Cahaya"
+
+msgid "Occlusion Rays per Thread"
+msgstr "Sinar Penyembunyian per Utas"
+
+msgid "Upscale Mode"
+msgstr "Mode Skala naik"
+
+msgid "Screen Space Reflection"
+msgstr "Refleksi Ruang Layar"
+
+msgid "Roughness Quality"
+msgstr "Kualitas Kekasaran"
+
+msgid "Subsurface Scattering Quality"
+msgstr "Kualitas Subsurface Scattering"
+
+msgid "Subsurface Scattering Scale"
+msgstr "Skala Subsurface Scattering"
+
+msgid "Subsurface Scattering Depth Scale"
+msgstr "Subsurface Scattering Kedalaman Scale"
+
+msgid "Global Shader Variables"
+msgstr "Variabel Shader Global"
+
+msgid "Buffer Size"
+msgstr "Ukuran Buffer"
+
+msgid "Probe Capture"
+msgstr "Gambar Probe"
+
+msgid "Update Speed"
+msgstr "Kecepatan Pembaruan"
+
+msgid "Primitive Meshes"
+msgstr "Mesh Primitif"
+
+msgid "Texel Size"
+msgstr "Ukuran Texel"
+
+msgid "Probe Ray Count"
+msgstr "Jumlah Probe Sinar"
+
+msgid "Frames to Converge"
+msgstr "Bingkai to Dikonvergensi"
+
+msgid "Frames to Update Lights"
+msgstr "Bingkai to Perbarui Lampu"
+
+msgid "Volume Size"
+msgstr "Ukuran Volume"
+
+msgid "Volume Depth"
+msgstr "Kedalaman Volume"
+
+msgid "Spatial Indexer"
+msgstr "Pengindeks Spasial"
+
+msgid "Update Iterations per Frame"
+msgstr "Perulangan Pembaruan per Frame"
+
+msgid "Threaded Cull Minimum Instances"
+msgstr "Instance Minimum Cull Berulir"
+
+msgid "Forward Renderer"
+msgstr "Perender Maju"
+
+msgid "Threaded Render Minimum Instances"
+msgstr "Instance Minimum Render Berulir"
+
+msgid "Cluster Builder"
+msgstr "Pembangun Kelompok"
+
+msgid "Max Clustered Elements"
+msgstr "Elemen Terkelompok Maksimal"
+
+msgid "OpenGL"
+msgstr "OpenGL"
+
+msgid "Max Renderable Elements"
+msgstr "Elemen yang Dapat Dihentikan Sebanyak Maksimal"
+
+msgid "Max Renderable Lights"
+msgstr "Jumlah Lampu yang Bisa Dihitung Maksimal"
+
+msgid "Max Lights per Object"
+msgstr "Maksimal Lampu per Object"
+
+msgid "Shaders"
+msgstr "Shader"
 
 msgid "Shader Language"
 msgstr "Bahasa Shader"
 
 msgid "Treat Warnings as Errors"
 msgstr "Perlakukan Peringatan Sebagai Error"
+
+msgid "Is Primary"
+msgstr "Adalah Pertama"
+
+msgid "Play Area Mode"
+msgstr "Mode Area Bermain"
+
+msgid "AR"
+msgstr "AR"
+
+msgid "Is Anchor Detection Enabled"
+msgstr "Adalah Deteksi Pemancangan Enabled"
+
+msgid "Has Tracking Data"
+msgstr "Memiliki Data Pelacakan"
+
+msgid "Tracking Confidence"
+msgstr "Keyakinan Pelacakan"
+
+msgid "World Origin"
+msgstr "Pangkal Dunia"
+
+msgid "Primary Interface"
+msgstr "Antarmuka Utama"
 
 msgid "Property"
 msgstr "Properti"

@@ -60,21 +60,23 @@ bool SkeletonModification2DCCDIK::_set(const StringName &p_path, const Variant &
 		} else if (what == "constraint_in_localspace") {
 			set_ccdik_joint_constraint_in_localspace(which, p_value);
 		}
-
 #ifdef TOOLS_ENABLED
-		if (what.begins_with("editor_draw_gizmo")) {
+		else if (what.begins_with("editor_draw_gizmo")) {
 			set_ccdik_joint_editor_draw_gizmo(which, p_value);
 		}
 #endif // TOOLS_ENABLED
-
-		return true;
+		else {
+			return false;
+		}
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
+	else if (path.begins_with("editor/draw_gizmo")) {
 		set_editor_draw_gizmo(p_value);
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -104,21 +106,23 @@ bool SkeletonModification2DCCDIK::_get(const StringName &p_path, Variant &r_ret)
 		} else if (what == "constraint_in_localspace") {
 			r_ret = get_ccdik_joint_constraint_in_localspace(which);
 		}
-
 #ifdef TOOLS_ENABLED
-		if (what.begins_with("editor_draw_gizmo")) {
+		else if (what.begins_with("editor_draw_gizmo")) {
 			r_ret = get_ccdik_joint_editor_draw_gizmo(which);
 		}
 #endif // TOOLS_ENABLED
-
-		return true;
+		else {
+			return false;
+		}
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
+	else if (path.begins_with("editor/draw_gizmo")) {
 		r_ret = get_editor_draw_gizmo();
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }

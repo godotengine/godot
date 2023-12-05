@@ -88,6 +88,17 @@ public:
 	static _ALWAYS_INLINE_ double atan2(double p_y, double p_x) { return ::atan2(p_y, p_x); }
 	static _ALWAYS_INLINE_ float atan2(float p_y, float p_x) { return ::atan2f(p_y, p_x); }
 
+	static _ALWAYS_INLINE_ double asinh(double p_x) { return ::asinh(p_x); }
+	static _ALWAYS_INLINE_ float asinh(float p_x) { return ::asinhf(p_x); }
+
+	// Always does clamping so always safe to use.
+	static _ALWAYS_INLINE_ double acosh(double p_x) { return p_x < 1 ? 0 : ::acosh(p_x); }
+	static _ALWAYS_INLINE_ float acosh(float p_x) { return p_x < 1 ? 0 : ::acoshf(p_x); }
+
+	// Always does clamping so always safe to use.
+	static _ALWAYS_INLINE_ double atanh(double p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanh(p_x)); }
+	static _ALWAYS_INLINE_ float atanh(float p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanhf(p_x)); }
+
 	static _ALWAYS_INLINE_ double sqrt(double p_x) { return ::sqrt(p_x); }
 	static _ALWAYS_INLINE_ float sqrt(float p_x) { return ::sqrtf(p_x); }
 
@@ -388,15 +399,20 @@ public:
 		return d;
 	}
 
-	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
+	static _ALWAYS_INLINE_ double angle_difference(double p_from, double p_to) {
 		double difference = fmod(p_to - p_from, Math_TAU);
-		double distance = fmod(2.0 * difference, Math_TAU) - difference;
-		return p_from + distance * p_weight;
+		return fmod(2.0 * difference, Math_TAU) - difference;
+	}
+	static _ALWAYS_INLINE_ float angle_difference(float p_from, float p_to) {
+		float difference = fmod(p_to - p_from, (float)Math_TAU);
+		return fmod(2.0f * difference, (float)Math_TAU) - difference;
+	}
+
+	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
+		return p_from + Math::angle_difference(p_from, p_to) * p_weight;
 	}
 	static _ALWAYS_INLINE_ float lerp_angle(float p_from, float p_to, float p_weight) {
-		float difference = fmod(p_to - p_from, (float)Math_TAU);
-		float distance = fmod(2.0f * difference, (float)Math_TAU) - difference;
-		return p_from + distance * p_weight;
+		return p_from + Math::angle_difference(p_from, p_to) * p_weight;
 	}
 
 	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) {
@@ -427,11 +443,25 @@ public:
 		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return s * s * (3.0f - 2.0f * s);
 	}
+
 	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) {
 		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
 	}
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
 		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+	}
+
+	static _ALWAYS_INLINE_ double rotate_toward(double p_from, double p_to, double p_delta) {
+		double difference = Math::angle_difference(p_from, p_to);
+		double abs_difference = Math::abs(difference);
+		// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
+		return p_from + CLAMP(p_delta, abs_difference - Math_PI, abs_difference) * (difference >= 0.0 ? 1.0 : -1.0);
+	}
+	static _ALWAYS_INLINE_ float rotate_toward(float p_from, float p_to, float p_delta) {
+		float difference = Math::angle_difference(p_from, p_to);
+		float abs_difference = Math::abs(difference);
+		// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
+		return p_from + CLAMP(p_delta, abs_difference - (float)Math_PI, abs_difference) * (difference >= 0.0f ? 1.0f : -1.0f);
 	}
 
 	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) {

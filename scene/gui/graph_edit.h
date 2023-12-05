@@ -32,21 +32,24 @@
 #define GRAPH_EDIT_H
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
 #include "scene/gui/graph_node.h"
-#include "scene/gui/label.h"
-#include "scene/gui/scroll_bar.h"
-#include "scene/gui/spin_box.h"
 
+class Button;
 class GraphEdit;
 class GraphEditArranger;
+class HScrollBar;
+class Label;
+class PanelContainer;
+class SpinBox;
 class ViewPanner;
+class VScrollBar;
 
 class GraphEditFilter : public Control {
 	GDCLASS(GraphEditFilter, Control);
 
 	friend class GraphEdit;
 	friend class GraphEditMinimap;
+
 	GraphEdit *ge = nullptr;
 
 	virtual bool has_point(const Point2 &p_point) const override;
@@ -63,24 +66,24 @@ class GraphEditMinimap : public Control {
 
 	GraphEdit *ge = nullptr;
 
-public:
-	GraphEditMinimap(GraphEdit *p_edit);
-
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
-
-	void update_minimap();
-	Rect2 get_camera_rect();
-
-private:
 	Vector2 minimap_padding;
 	Vector2 minimap_offset;
-	Vector2 graph_proportions;
-	Vector2 graph_padding;
-	Vector2 camera_position;
-	Vector2 camera_size;
+	Vector2 graph_proportions = Vector2(1, 1);
+	Vector2 graph_padding = Vector2(0, 0);
+	Vector2 camera_position = Vector2(100, 50);
+	Vector2 camera_size = Vector2(200, 200);
 
-	bool is_pressing;
-	bool is_resizing;
+	bool is_pressing = false;
+	bool is_resizing = false;
+
+	struct ThemeCache {
+		Ref<StyleBox> panel;
+		Ref<StyleBox> node_style;
+		Ref<StyleBox> camera_style;
+
+		Ref<Texture2D> resizer;
+		Color resizer_color;
+	} theme_cache;
 
 	Vector2 _get_render_size();
 	Vector2 _get_graph_offset();
@@ -92,6 +95,17 @@ private:
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
 	void _adjust_graph_scroll(const Vector2 &p_offset);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
+	void update_minimap();
+	Rect2 get_camera_rect();
+
+	GraphEditMinimap(GraphEdit *p_edit);
 };
 
 class GraphEdit : public Control {
@@ -142,21 +156,22 @@ private:
 
 	Button *toggle_snapping_button = nullptr;
 	SpinBox *snapping_distance_spinbox = nullptr;
-	Button *show_grid_button = nullptr;
+	Button *toggle_grid_button = nullptr;
 	Button *minimap_button = nullptr;
-
-	Button *layout_button = nullptr;
+	Button *arrange_button = nullptr;
 
 	HScrollBar *h_scrollbar = nullptr;
 	VScrollBar *v_scrollbar = nullptr;
 
-	float port_hotzone_inner_extent = 0.0;
-	float port_hotzone_outer_extent = 0.0;
-
 	Ref<ViewPanner> panner;
 	bool warped_panning = true;
 
-	bool arrange_nodes_button_hidden = false;
+	bool show_menu = true;
+	bool show_zoom_label = false;
+	bool show_grid_buttons = true;
+	bool show_zoom_buttons = true;
+	bool show_minimap_button = true;
+	bool show_arrange_button = true;
 
 	bool snapping_enabled = true;
 	int snapping_distance = 20;
@@ -195,7 +210,7 @@ private:
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;
-	List<GraphNode *> prev_selected;
+	List<GraphElement *> prev_selected;
 
 	bool setting_scroll_offset = false;
 	bool right_disconnects = false;
@@ -207,6 +222,7 @@ private:
 	float lines_curvature = 0.5f;
 	bool lines_antialiased = true;
 
+	PanelContainer *menu_panel = nullptr;
 	HBoxContainer *menu_hbox = nullptr;
 	Control *connections_layer = nullptr;
 	GraphEditFilter *top_layer = nullptr;
@@ -218,7 +234,32 @@ private:
 	HashSet<int> valid_left_disconnect_types;
 	HashSet<int> valid_right_disconnect_types;
 
-	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	struct ThemeCache {
+		float base_scale = 1.0;
+
+		Ref<StyleBox> panel;
+		Color grid_major;
+		Color grid_minor;
+
+		Color activity_color;
+		Color selection_fill;
+		Color selection_stroke;
+
+		Ref<StyleBox> menu_panel;
+
+		Ref<Texture2D> zoom_in;
+		Ref<Texture2D> zoom_out;
+		Ref<Texture2D> zoom_reset;
+
+		Ref<Texture2D> snapping_toggle;
+		Ref<Texture2D> grid_toggle;
+		Ref<Texture2D> minimap_toggle;
+		Ref<Texture2D> layout;
+
+		float port_hotzone_inner_extent = 0.0;
+		float port_hotzone_outer_extent = 0.0;
+	} theme_cache;
+
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
@@ -229,12 +270,12 @@ private:
 
 	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom);
 
-	void _graph_node_selected(Node *p_gn);
-	void _graph_node_deselected(Node *p_gn);
-	void _graph_node_moved_to_front(Node *p_gn);
-	void _graph_node_resized(Vector2 p_new_minsize, Node *p_gn);
-	void _graph_node_moved(Node *p_gn);
-	void _graph_node_slot_updated(int p_index, Node *p_gn);
+	void _graph_element_selected(Node *p_node);
+	void _graph_element_deselected(Node *p_node);
+	void _graph_element_moved_to_front(Node *p_node);
+	void _graph_element_resized(Vector2 p_new_minsize, Node *p_node);
+	void _graph_element_moved(Node *p_node);
+	void _graph_node_slot_updated(int p_index, Node *p_node);
 
 	void _update_scroll();
 	void _update_scroll_offset();
@@ -261,16 +302,25 @@ private:
 
 	bool _check_clickable_control(Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset);
 
+#ifndef DISABLE_DEPRECATED
+	bool _is_arrange_nodes_button_hidden_bind_compat_81582() const;
+	void _set_arrange_nodes_button_hidden_bind_compat_81582(bool p_enable);
+#endif
+
 protected:
-	static void _bind_methods();
+	virtual void _update_theme_item_cache() override;
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
 	void _notification(int p_what);
+	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
 
-	virtual bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
-	virtual bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	virtual bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	virtual bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
 
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
 	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
@@ -313,9 +363,6 @@ public:
 	void set_zoom_step(float p_zoom_step);
 	float get_zoom_step() const;
 
-	void set_show_zoom_label(bool p_enable);
-	bool is_showing_zoom_label() const;
-
 	void set_minimap_size(Vector2 p_size);
 	Vector2 get_minimap_size() const;
 	void set_minimap_opacity(float p_opacity);
@@ -324,8 +371,18 @@ public:
 	void set_minimap_enabled(bool p_enable);
 	bool is_minimap_enabled() const;
 
-	void set_arrange_nodes_button_hidden(bool p_enable);
-	bool is_arrange_nodes_button_hidden() const;
+	void set_show_menu(bool p_hidden);
+	bool is_showing_menu() const;
+	void set_show_zoom_label(bool p_hidden);
+	bool is_showing_zoom_label() const;
+	void set_show_grid_buttons(bool p_hidden);
+	bool is_showing_grid_buttons() const;
+	void set_show_zoom_buttons(bool p_hidden);
+	bool is_showing_zoom_buttons() const;
+	void set_show_minimap_button(bool p_hidden);
+	bool is_showing_minimap_button() const;
+	void set_show_arrange_button(bool p_hidden);
+	bool is_showing_arrange_button() const;
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	GraphEditMinimap *get_minimap() const { return minimap; }

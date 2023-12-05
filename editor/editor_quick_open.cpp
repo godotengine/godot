@@ -250,14 +250,14 @@ void EditorQuickOpen::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
 	}
-}
-
-void EditorQuickOpen::_theme_changed() {
-	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 }
 
 void EditorQuickOpen::_bind_methods() {
@@ -266,7 +266,6 @@ void EditorQuickOpen::_bind_methods() {
 
 EditorQuickOpen::EditorQuickOpen() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->connect("theme_changed", callable_mp(this, &EditorQuickOpen::_theme_changed));
 	add_child(vbc);
 
 	search_box = memnew(LineEdit);

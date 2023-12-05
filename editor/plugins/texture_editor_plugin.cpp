@@ -31,6 +31,7 @@
 #include "texture_editor_plugin.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/animated_texture.h"
@@ -55,11 +56,11 @@ void TexturePreview::_notification(int p_what) {
 			}
 
 			if (metadata_label) {
-				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), SNAME("EditorFonts"));
+				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				metadata_label->add_theme_font_override("font", metadata_label_font);
 			}
 
-			checkerboard->set_texture(get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons")));
+			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
 		} break;
 	}
 }
@@ -166,7 +167,7 @@ void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 		Ref<Image> image(Object::cast_to<Image>(p_object));
 		texture = ImageTexture::create_from_image(image);
 
-		ERR_FAIL_COND_MSG(texture == nullptr, "Failed to create the texture from an invalid image.");
+		ERR_FAIL_NULL_MSG(texture, "Failed to create the texture from an invalid image.");
 	}
 
 	add_custom_control(memnew(TexturePreview(texture, true)));

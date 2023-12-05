@@ -1240,6 +1240,11 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 		types.insert(E.key);
 	}
 
+	// Variations.
+	for (const KeyValue<StringName, StringName> &E : variation_map) {
+		types.insert(E.key);
+	}
+
 	for (const StringName &E : types) {
 		p_list->push_back(E);
 	}
@@ -1263,11 +1268,7 @@ void Theme::get_type_dependencies(const StringName &p_base_type, const StringNam
 	}
 
 	// Continue building the chain using native class hierarchy.
-	StringName class_name = p_base_type;
-	while (class_name != StringName()) {
-		p_list->push_back(class_name);
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
-	}
+	ThemeDB::get_singleton()->get_native_type_dependencies(p_base_type, p_list);
 }
 
 // Internal methods for getting lists as a Vector of String (compatible with public API).

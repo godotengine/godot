@@ -51,7 +51,6 @@ class ReplicationEditor : public VBoxContainer {
 private:
 	MultiplayerSynchronizer *current = nullptr;
 
-	AcceptDialog *error_dialog = nullptr;
 	ConfirmationDialog *delete_dialog = nullptr;
 	Button *add_pick_button = nullptr;
 	Button *add_from_path_button = nullptr;
@@ -72,12 +71,13 @@ private:
 	Ref<Texture2D> _get_class_icon(const Node *p_node);
 
 	void _add_pressed();
+	void _np_text_submitted(const String &p_newtext);
 	void _tree_item_edited();
 	void _tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
-	void _update_checked(const NodePath &p_prop, int p_column, bool p_checked);
+	void _update_value(const NodePath &p_prop, int p_column, int p_checked);
 	void _update_config();
 	void _dialog_closed(bool p_confirmed);
-	void _add_property(const NodePath &p_property, bool p_spawn = true, bool p_sync = true, bool p_watch = false);
+	void _add_property(const NodePath &p_property, bool p_spawn, SceneReplicationConfig::ReplicationMode p_mode);
 
 	void _pick_node_filter_text_changed(const String &p_newtext);
 	void _pick_node_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);

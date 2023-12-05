@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CPUParticles2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		CPU-based 2D particle emitter.
+		A CPU-based 2D particle emitter.
 	</brief_description>
 	<description>
 		CPU-based 2D particle node used to create a variety of particle systems and effects.
@@ -297,7 +297,7 @@
 			Particles are drawn in the order emitted.
 		</constant>
 		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
-			Particles are drawn in order of remaining lifetime.
+			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
 		</constant>
 		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
 			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set initial velocity properties.

@@ -266,7 +266,7 @@ struct hb_serialize_context_t
 	   propagate_error (std::forward<Ts> (os)...); }
 
   /* To be called around main operation. */
-  template <typename Type>
+  template <typename Type=char>
   __attribute__((returns_nonnull))
   Type *start_serialize ()
   {

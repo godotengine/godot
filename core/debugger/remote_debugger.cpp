@@ -415,7 +415,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	Array msg;
 	msg.push_back(p_can_continue);
 	msg.push_back(error_str);
-	ERR_FAIL_COND(!script_lang);
+	ERR_FAIL_NULL(script_lang);
 	msg.push_back(script_lang->debug_get_stack_level_count() > 0);
 	msg.push_back(Thread::get_caller_id() == Thread::get_main_id() ? String(RTR("Main Thread")) : itos(Thread::get_caller_id()));
 	if (allow_focus_steal_fn) {
@@ -485,7 +485,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 			} else if (command == "get_stack_frame_vars") {
 				ERR_FAIL_COND(data.size() != 1);
-				ERR_FAIL_COND(!script_lang);
+				ERR_FAIL_NULL(script_lang);
 				int lv = data[0];
 
 				List<String> members;

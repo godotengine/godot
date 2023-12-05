@@ -72,9 +72,7 @@ enum TOperator {
     EOpFunctionCall,
     EOpFunction,        // For function definition
     EOpParameters,      // an aggregate listing the parameters to a function
-#ifndef GLSLANG_WEB
     EOpSpirvInst,
-#endif
 
     //
     // Unary operators
@@ -629,6 +627,9 @@ enum TOperator {
     EOpCooperativeMatrixLoad,
     EOpCooperativeMatrixStore,
     EOpCooperativeMatrixMulAdd,
+    EOpCooperativeMatrixLoadNV,
+    EOpCooperativeMatrixStoreNV,
+    EOpCooperativeMatrixMulAddNV,
 
     EOpBeginInvocationInterlock, // Fragment only
     EOpEndInvocationInterlock, // Fragment only
@@ -766,7 +767,8 @@ enum TOperator {
     EOpConstructTextureSampler,
     EOpConstructNonuniform,     // expected to be transformed away, not present in final AST
     EOpConstructReference,
-    EOpConstructCooperativeMatrix,
+    EOpConstructCooperativeMatrixNV,
+    EOpConstructCooperativeMatrixKHR,
     EOpConstructAccStruct,
     EOpConstructGuardEnd,
 
@@ -1331,12 +1333,7 @@ public:
     // per process threadPoolAllocator, then it causes increased memory usage per compile
     // it is essential to use "symbol = sym" to assign to symbol
     TIntermSymbol(long long i, const TString& n, const TType& t)
-        : TIntermTyped(t), id(i),
-#ifndef GLSLANG_WEB
-        flattenSubset(-1),
-#endif
-        constSubtree(nullptr)
-          { name = n; }
+        : TIntermTyped(t), id(i), flattenSubset(-1), constSubtree(nullptr) { name = n; }
     virtual long long getId() const { return id; }
     virtual void changeId(long long i) { id = i; }
     virtual const TString& getName() const { return name; }
@@ -1347,12 +1344,10 @@ public:
     const TConstUnionArray& getConstArray() const { return constArray; }
     void setConstSubtree(TIntermTyped* subtree) { constSubtree = subtree; }
     TIntermTyped* getConstSubtree() const { return constSubtree; }
-#ifndef GLSLANG_WEB
     void setFlattenSubset(int subset) { flattenSubset = subset; }
     virtual const TString& getAccessName() const;
 
     int getFlattenSubset() const { return flattenSubset; } // -1 means full object
-#endif
 
     // This is meant for cases where a node has already been constructed, and
     // later on, it becomes necessary to switch to a different symbol.
@@ -1360,9 +1355,7 @@ public:
 
 protected:
     long long id;                // the unique id of the symbol this node represents
-#ifndef GLSLANG_WEB
     int flattenSubset;           // how deeply the flattened object rooted at id has been dereferenced
-#endif
     TString name;                // the name of the symbol this node represents
     TConstUnionArray constArray; // if the symbol is a front-end compile-time constant, this is its value
     TIntermTyped* constSubtree;
@@ -1417,19 +1410,11 @@ public:
     bool isConstructor() const;
     bool isTexture()  const { return op > EOpTextureGuardBegin  && op < EOpTextureGuardEnd; }
     bool isSampling() const { return op > EOpSamplingGuardBegin && op < EOpSamplingGuardEnd; }
-#ifdef GLSLANG_WEB
-    bool isImage()          const { return false; }
-    bool isSparseTexture()  const { return false; }
-    bool isImageFootprint() const { return false; }
-    bool isSparseImage()    const { return false; }
-    bool isSubgroup()       const { return false; }
-#else
     bool isImage()    const { return op > EOpImageGuardBegin    && op < EOpImageGuardEnd; }
     bool isSparseTexture() const { return op > EOpSparseTextureGuardBegin && op < EOpSparseTextureGuardEnd; }
     bool isImageFootprint() const { return op > EOpImageFootprintGuardBegin && op < EOpImageFootprintGuardEnd; }
     bool isSparseImage()   const { return op == EOpSparseImageLoad; }
     bool isSubgroup() const { return op > EOpSubgroupGuardStart && op < EOpSubgroupGuardStop; }
-#endif
 
     void setOperationPrecision(TPrecisionQualifier p) { operationPrecision = p; }
     TPrecisionQualifier getOperationPrecision() const { return operationPrecision != EpqNone ?
@@ -1535,7 +1520,6 @@ public:
             cracked.offset = true;
             cracked.proj = true;
             break;
-#ifndef GLSLANG_WEB
         case EOpTextureClamp:
         case EOpSparseTextureClamp:
             cracked.lodClamp = true;
@@ -1622,7 +1606,6 @@ public:
         case EOpColorAttachmentReadEXT:
             cracked.attachmentEXT = true;
             break;
-#endif
         default:
             break;
         }
@@ -1673,15 +1656,11 @@ public:
     virtual       TIntermUnary* getAsUnaryNode()       { return this; }
     virtual const TIntermUnary* getAsUnaryNode() const { return this; }
     virtual void updatePrecision();
-#ifndef GLSLANG_WEB
     void setSpirvInstruction(const TSpirvInstruction& inst) { spirvInst = inst; }
     const TSpirvInstruction& getSpirvInstruction() const { return spirvInst; }
-#endif
 protected:
     TIntermTyped* operand;
-#ifndef GLSLANG_WEB
     TSpirvInstruction spirvInst;
-#endif
 };
 
 typedef TVector<TIntermNode*> TIntermSequence;
@@ -1713,10 +1692,8 @@ public:
     bool getDebug() const { return debug; }
     void setPragmaTable(const TPragmaTable& pTable);
     const TPragmaTable& getPragmaTable() const { return *pragmaTable; }
-#ifndef GLSLANG_WEB
     void setSpirvInstruction(const TSpirvInstruction& inst) { spirvInst = inst; }
     const TSpirvInstruction& getSpirvInstruction() const { return spirvInst; }
-#endif
 protected:
     TIntermAggregate(const TIntermAggregate&); // disallow copy constructor
     TIntermAggregate& operator=(const TIntermAggregate&); // disallow assignment operator
@@ -1727,9 +1704,7 @@ protected:
     bool optimize;
     bool debug;
     TPragmaTable* pragmaTable;
-#ifndef GLSLANG_WEB
     TSpirvInstruction spirvInst;
-#endif
 };
 
 //

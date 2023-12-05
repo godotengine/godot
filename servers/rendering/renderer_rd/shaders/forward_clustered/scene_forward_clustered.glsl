@@ -10,17 +10,17 @@
 
 /* INPUT ATTRIBS */
 
-layout(location = 0) in vec3 vertex_attrib;
+// Always contains vertex position in XYZ, can contain tangent angle in W.
+layout(location = 0) in vec4 vertex_angle_attrib;
 
 //only for pure render depth when normal is not used
 
-#ifdef NORMAL_USED
-layout(location = 1) in vec2 normal_attrib;
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+// Contains Normal/Axis in RG, can contain tangent in BA.
+layout(location = 1) in vec4 axis_tangent_attrib;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 2) in vec2 tangent_attrib;
-#endif
+// Location 2 is unused.
 
 #if defined(COLOR_USED)
 layout(location = 3) in vec4 color_attrib;
@@ -58,11 +58,30 @@ layout(location = 10) in uvec4 bone_attrib;
 layout(location = 11) in vec4 weight_attrib;
 #endif
 
+#ifdef MOTION_VECTORS
+layout(location = 12) in vec4 previous_vertex_attrib;
+
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+layout(location = 13) in vec4 previous_normal_attrib;
+#endif
+
+#endif // MOTION_VECTORS
+
 vec3 oct_to_vec3(vec2 e) {
 	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
 	float t = max(-v.z, 0.0);
 	v.xy += t * -sign(v.xy);
 	return normalize(v);
+}
+
+void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binormal, out vec3 normal) {
+	float c = cos(angle);
+	float s = sin(angle);
+	vec3 omc_axis = (1.0 - c) * axis;
+	vec3 s_axis = s * axis;
+	tangent = omc_axis.xxx * axis + vec3(c, -s_axis.z, s_axis.y);
+	binormal = omc_axis.yyy * axis + vec3(s_axis.z, c, -s_axis.x);
+	normal = omc_axis.zzz * axis + vec3(-s_axis.y, s_axis.x, c);
 }
 
 /* Varyings */
@@ -85,7 +104,7 @@ layout(location = 3) out vec2 uv_interp;
 layout(location = 4) out vec2 uv2_interp;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 layout(location = 5) out vec3 tangent_interp;
 layout(location = 6) out vec3 binormal_interp;
 #endif
@@ -161,7 +180,15 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 }
 #endif
 
-void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
+void vertex_shader(vec3 vertex_input,
+#ifdef NORMAL_USED
+		in vec3 normal_input,
+#endif
+#ifdef TANGENT_USED
+		in vec3 tangent_input,
+		in vec3 binormal_input,
+#endif
+		in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
@@ -289,16 +316,14 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 		model_normal_matrix = model_normal_matrix * mat3(matrix);
 	}
 
-	vec3 vertex = vertex_attrib;
+	vec3 vertex = vertex_input;
 #ifdef NORMAL_USED
-	vec3 normal = oct_to_vec3(normal_attrib * 2.0 - 1.0);
+	vec3 normal = normal_input;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec2 signed_tangent_attrib = tangent_attrib * 2.0 - 1.0;
-	vec3 tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
-	float binormalf = sign(signed_tangent_attrib.y);
-	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
+#ifdef TANGENT_USED
+	vec3 tangent = tangent_input;
+	vec3 binormal = binormal_input;
 #endif
 
 #ifdef UV_USED
@@ -308,6 +333,17 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
 	uv2_interp = uv2_attrib;
 #endif
+
+	vec4 uv_scale = instances.data[instance_index].uv_scale;
+
+	if (uv_scale != vec4(0.0)) { // Compression enabled
+#ifdef UV_USED
+		uv_interp = (uv_interp - 0.5) * uv_scale.xy;
+#endif
+#if defined(UV2_USED) || defined(USE_LIGHTMAP)
+		uv2_interp = (uv2_interp - 0.5) * uv_scale.zw;
+#endif
+	}
 
 #ifdef OVERRIDE_POSITION
 	vec4 position;
@@ -333,7 +369,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 	normal = model_normal_matrix * normal;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 
 	tangent = model_normal_matrix * tangent;
 	binormal = model_normal_matrix * binormal;
@@ -375,13 +411,12 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 	normal = modelview_normal * normal;
 #endif
 
-#endif
-
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 
 	binormal = modelview_normal * binormal;
 	tangent = modelview_normal * tangent;
 #endif
+#endif // !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
@@ -391,7 +426,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 	normal = (scene_data.view_matrix * vec4(normal, 0.0)).xyz;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 	binormal = (scene_data.view_matrix * vec4(binormal, 0.0)).xyz;
 	tangent = (scene_data.view_matrix * vec4(tangent, 0.0)).xyz;
 #endif
@@ -403,7 +438,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 	normal_interp = normal;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 	tangent_interp = tangent;
 	binormal_interp = binormal;
 #endif
@@ -461,6 +496,46 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 #endif
 }
 
+void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position, vec3 p_compressed_aabb_size,
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+		vec4 p_normal_in,
+#ifdef NORMAL_USED
+		out vec3 r_normal,
+#endif
+		out vec3 r_tangent,
+		out vec3 r_binormal,
+#endif
+		out vec3 r_vertex) {
+
+	r_vertex = p_vertex_in.xyz * p_compressed_aabb_size + p_compressed_aabb_position;
+#ifdef NORMAL_USED
+	r_normal = oct_to_vec3(p_normal_in.xy * 2.0 - 1.0);
+#endif
+
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+
+	float binormal_sign;
+
+	// This works because the oct value (0, 1) maps onto (0, 0, -1) which encodes to (1, 1).
+	// Accordingly, if p_normal_in.z contains octahedral values, it won't equal (0, 1).
+	if (p_normal_in.z > 0.0 || p_normal_in.w < 1.0) {
+		// Uncompressed format.
+		vec2 signed_tangent_attrib = p_normal_in.zw * 2.0 - 1.0;
+		r_tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
+		binormal_sign = sign(signed_tangent_attrib.y);
+		r_binormal = normalize(cross(r_normal, r_tangent) * binormal_sign);
+	} else {
+		// Compressed format.
+		float angle = p_vertex_in.w;
+		binormal_sign = angle > 0.5 ? 1.0 : -1.0; // 0.5 does not exist in UNORM16, so values are either greater or smaller.
+		angle = abs(angle * 2.0 - 1.0) * M_PI; // 0.5 is basically zero, allowing to encode both signs reliably.
+		vec3 axis = r_normal;
+		axis_angle_to_tbn(axis, angle, r_tangent, r_binormal, r_normal);
+		r_binormal *= binormal_sign;
+	}
+#endif
+}
+
 void main() {
 	uint instance_index = draw_call.instance_index;
 
@@ -472,16 +547,82 @@ void main() {
 	instance_index_interp = instance_index;
 
 	mat4 model_matrix = instances.data[instance_index].transform;
-#if defined(MOTION_VECTORS)
-	global_time = scene_data_block.prev_data.time;
-	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
-	global_time = scene_data_block.data.time;
-	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
-#else
-	global_time = scene_data_block.data.time;
-	vec4 screen_position;
-	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
+
+#ifdef MOTION_VECTORS
+	// Previous vertex.
+	vec3 prev_vertex;
+#ifdef NORMAL_USED
+	vec3 prev_normal;
 #endif
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+	vec3 prev_tangent;
+	vec3 prev_binormal;
+#endif
+
+	_unpack_vertex_attributes(
+			previous_vertex_attrib,
+			instances.data[instance_index].compressed_aabb_position_pad.xyz,
+			instances.data[instance_index].compressed_aabb_size_pad.xyz,
+
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+			previous_normal_attrib,
+#ifdef NORMAL_USED
+			prev_normal,
+#endif
+			prev_tangent,
+			prev_binormal,
+#endif
+			prev_vertex);
+
+	global_time = scene_data_block.prev_data.time;
+	vertex_shader(prev_vertex,
+#ifdef NORMAL_USED
+			prev_normal,
+#endif
+#ifdef TANGENT_USED
+			prev_tangent,
+			prev_binormal,
+#endif
+			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+#else
+	// Unused output.
+	vec4 screen_position;
+#endif
+
+	vec3 vertex;
+#ifdef NORMAL_USED
+	vec3 normal;
+#endif
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+	vec3 tangent;
+	vec3 binormal;
+#endif
+
+	_unpack_vertex_attributes(
+			vertex_angle_attrib,
+			instances.data[instance_index].compressed_aabb_position_pad.xyz,
+			instances.data[instance_index].compressed_aabb_size_pad.xyz,
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+			axis_tangent_attrib,
+#ifdef NORMAL_USED
+			normal,
+#endif
+			tangent,
+			binormal,
+#endif
+			vertex);
+
+	// Current vertex.
+	global_time = scene_data_block.data.time;
+	vertex_shader(vertex,
+#ifdef NORMAL_USED
+			normal,
+#endif
+#ifdef TANGENT_USED
+			tangent,
+			binormal,
+#endif
+			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
 }
 
 #[fragment]
@@ -535,7 +676,7 @@ layout(location = 3) in vec2 uv_interp;
 layout(location = 4) in vec2 uv2_interp;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 layout(location = 5) in vec3 tangent_interp;
 layout(location = 6) in vec3 binormal_interp;
 #endif
@@ -758,7 +899,9 @@ void fragment_shader(in SceneData scene_data) {
 	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
+#ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0);
+#endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance = vec4(0.0);
 #endif
@@ -771,7 +914,7 @@ void fragment_shader(in SceneData scene_data) {
 
 	float alpha = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 	vec3 binormal = normalize(binormal_interp);
 	vec3 tangent = normalize(tangent_interp);
 #else
@@ -876,13 +1019,11 @@ void fragment_shader(in SceneData scene_data) {
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
 #ifdef MODE_RENDER_DEPTH
-#ifdef USE_OPAQUE_PREPASS
-#ifndef ALPHA_SCISSOR_USED
+#if defined(USE_OPAQUE_PREPASS) || defined(ALPHA_ANTIALIASING_EDGE_USED)
 	if (alpha < scene_data.opaque_prepass_threshold) {
 		discard;
 	}
-#endif // !ALPHA_SCISSOR_USED
-#endif // USE_OPAQUE_PREPASS
+#endif // USE_OPAQUE_PREPASS || ALPHA_ANTIALIASING_EDGE_USED
 #endif // MODE_RENDER_DEPTH
 
 #endif // !USE_SHADOW_TO_OPACITY
@@ -918,6 +1059,7 @@ void fragment_shader(in SceneData scene_data) {
 	/////////////////////// FOG //////////////////////
 #ifndef MODE_RENDER_DEPTH
 
+#ifndef FOG_DISABLED
 #ifndef CUSTOM_FOG_USED
 	// fog must be processed as early as possible and then packed.
 	// to maximize VGPR usage
@@ -953,6 +1095,7 @@ void fragment_shader(in SceneData scene_data) {
 	uint fog_rg = packHalf2x16(fog.rg);
 	uint fog_ba = packHalf2x16(fog.ba);
 
+#endif //!FOG_DISABLED
 #endif //!MODE_RENDER_DEPTH
 
 	/////////////////////// DECALS ////////////////////////////////
@@ -1229,9 +1372,10 @@ void fragment_shader(in SceneData scene_data) {
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
 		uint ofs = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint slice = instances.data[instance_index].gi_offset >> 16;
 		vec3 uvw;
 		uvw.xy = uv2 * instances.data[instance_index].lightmap_uv_scale.zw + instances.data[instance_index].lightmap_uv_scale.xy;
-		uvw.z = float((instances.data[instance_index].gi_offset >> 16) & 0xFFFF);
+		uvw.z = float(slice);
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
@@ -1240,9 +1384,8 @@ void fragment_shader(in SceneData scene_data) {
 			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
 			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
 
-			uint idx = instances.data[instance_index].gi_offset >> 20;
-			vec3 n = normalize(lightmaps.data[idx].normal_xform * normal);
-			float en = lightmaps.data[idx].exposure_normalization;
+			vec3 n = normalize(lightmaps.data[ofs].normal_xform * normal);
+			float en = lightmaps.data[ofs].exposure_normalization;
 
 			ambient_light += lm_light_l0 * 0.282095f * en;
 			ambient_light += lm_light_l1n1 * 0.32573 * n.y * en;
@@ -1256,8 +1399,7 @@ void fragment_shader(in SceneData scene_data) {
 			}
 
 		} else {
-			uint idx = instances.data[instance_index].gi_offset >> 20;
-			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[idx].exposure_normalization;
+			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
 		}
 	}
 #else
@@ -2206,8 +2348,10 @@ void fragment_shader(in SceneData scene_data) {
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
 
+#ifndef FOG_DISABLED
 	//restore fog
 	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+#endif //!FOG_DISABLED
 
 #ifdef MODE_SEPARATE_SPECULAR
 
@@ -2224,10 +2368,14 @@ void fragment_shader(in SceneData scene_data) {
 	specular_buffer = vec4(specular_light, metallic);
 #endif
 
+#ifndef FOG_DISABLED
 	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
 	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
+#endif //!FOG_DISABLED
 
 #else //MODE_SEPARATE_SPECULAR
+
+	alpha *= scene_data.pass_alpha_multiplier;
 
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
@@ -2236,8 +2384,10 @@ void fragment_shader(in SceneData scene_data) {
 //frag_color = vec4(1.0);
 #endif //USE_NO_SHADING
 
+#ifndef FOG_DISABLED
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+#endif //!FOG_DISABLED
 
 #endif //MODE_SEPARATE_SPECULAR
 
@@ -2249,7 +2399,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 position_uv = position_clip * vec2(0.5, 0.5);
 	vec2 prev_position_uv = prev_position_clip * vec2(0.5, 0.5);
 
-	motion_vector = position_uv - prev_position_uv;
+	motion_vector = prev_position_uv - position_uv;
 #endif
 }
 

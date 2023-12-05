@@ -11,7 +11,7 @@
 		[b]Note:[/b] [RenderingDevice] is not available when running in headless mode or when using the Compatibility rendering method.
 	</description>
 	<tutorials>
-		<link title="Using compute shaders">https://docs.godotengine.org/en/latest/tutorials/shaders/compute_shaders.html</link>
+		<link title="Using compute shaders">$DOCS_URL/tutorials/shaders/compute_shaders.html</link>
 	</tutorials>
 	<methods>
 		<method name="barrier">
@@ -29,6 +29,12 @@
 			<param index="2" name="size_bytes" type="int" />
 			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
+				Clears the contents of the [param buffer], clearing [param size_bytes] bytes, starting at [param offset]. Always raises a memory barrier.
+				Prints an error if:
+				- the size isn't a multiple of four
+				- the region specified by [param offset] + [param size_bytes] exceeds the buffer
+				- a draw list is currently active (created by [method draw_list_begin])
+				- a compute list is currently active (created by [method compute_list_begin])
 			</description>
 		</method>
 		<method name="buffer_get_data">
@@ -48,6 +54,11 @@
 			<param index="3" name="data" type="PackedByteArray" />
 			<param index="4" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
+				Updates a region of [param size_bytes] bytes, starting at [param offset], in the buffer, with the specified [param data]. Raises a memory barrier except when [param post_barrier] is set to [constant BARRIER_MASK_NO_BARRIER].
+				Prints an error if:
+				- the region specified by [param offset] + [param size_bytes] exceeds the buffer
+				- a draw list is currently active (created by [method draw_list_begin])
+				- a compute list is currently active (created by [method compute_list_begin])
 			</description>
 		</method>
 		<method name="capture_timestamp">
@@ -61,6 +72,7 @@
 			<return type="void" />
 			<param index="0" name="compute_list" type="int" />
 			<description>
+				Raises a Vulkan compute barrier in the specified [param compute_list].
 			</description>
 		</method>
 		<method name="compute_list_begin">
@@ -92,6 +104,7 @@
 			<param index="0" name="compute_list" type="int" />
 			<param index="1" name="compute_pipeline" type="RID" />
 			<description>
+				Tells the GPU what compute pipeline to use when processing the compute list. If the shader has changed since the last time this function was called, Godot will unbind all descriptor sets and will re-bind them inside [method compute_list_dispatch].
 			</description>
 		</method>
 		<method name="compute_list_bind_uniform_set">
@@ -100,6 +113,7 @@
 			<param index="1" name="uniform_set" type="RID" />
 			<param index="2" name="set_index" type="int" />
 			<description>
+				Binds the [param uniform_set] to this [param compute_list]. Godot ensures that all textures in the uniform set have the correct Vulkan access masks. If Godot had to change access masks of textures, it will raise a Vulkan image memory barrier.
 			</description>
 		</method>
 		<method name="compute_list_dispatch">
@@ -644,6 +658,7 @@
 			<return type="int" />
 			<param index="0" name="shader" type="RID" />
 			<description>
+				Returns the internal vertex input mask. Internally, the vertex input mask is an unsigned integer consisting of the locations (specified in GLSL via. [code]layout(location = ...)[/code]) of the input variables (specified in GLSL by the [code]in[/code] keyword).
 			</description>
 		</method>
 		<method name="storage_buffer_create">
@@ -691,7 +706,7 @@
 			<param index="5" name="layer_count" type="int" />
 			<param index="6" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
-				Clears the specified [param texture] by replacing all of its pixels with the specified [param color]. [param base_mipmap] and [param mipmap_count] determine which mipmaps of the texture are affected by this clear operation, while [param base_layer] and [param layer_count] determine which layers of a 3D texture (or texture array) are affected by this clear operation. For 2D textures (which only have one layer by design), [param base_layer] and [param layer_count] must both be [code]0[/code].
+				Clears the specified [param texture] by replacing all of its pixels with the specified [param color]. [param base_mipmap] and [param mipmap_count] determine which mipmaps of the texture are affected by this clear operation, while [param base_layer] and [param layer_count] determine which layers of a 3D texture (or texture array) are affected by this clear operation. For 2D textures (which only have one layer by design), [param base_layer] must be [code]0[/code] and [param layer_count] must be [code]1[/code].
 				[b]Note:[/b] [param texture] can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to clear this texture.
 			</description>
 		</method>
@@ -725,6 +740,21 @@
 				Creates a new texture. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 				[b]Note:[/b] Not to be confused with [method RenderingServer.texture_2d_create], which creates the Godot-specific [Texture2D] resource as opposed to the graphics API's own texture type.
+			</description>
+		</method>
+		<method name="texture_create_from_extension">
+			<return type="RID" />
+			<param index="0" name="type" type="int" enum="RenderingDevice.TextureType" />
+			<param index="1" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="2" name="samples" type="int" enum="RenderingDevice.TextureSamples" />
+			<param index="3" name="usage_flags" type="int" enum="RenderingDevice.TextureUsageBits" is_bitfield="true" />
+			<param index="4" name="image" type="int" />
+			<param index="5" name="width" type="int" />
+			<param index="6" name="height" type="int" />
+			<param index="7" name="depth" type="int" />
+			<param index="8" name="layers" type="int" />
+			<description>
+				Returns an RID for an existing [param image] ([code]VkImage[/code]) with the given [param type], [param format], [param samples], [param usage_flags], [param width], [param height], [param depth], and [param layers]. This can be used to allow Godot to render onto foreign images.
 			</description>
 		</method>
 		<method name="texture_create_shared">
@@ -830,7 +860,7 @@
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
-				It can be accessed with the RID that is returned.
+				Creates a new uniform buffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
@@ -840,7 +870,7 @@
 			<param index="1" name="shader" type="RID" />
 			<param index="2" name="shader_set" type="int" />
 			<description>
-				It can be accessed with the RID that is returned.
+				Creates a new uniform set. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
@@ -848,6 +878,7 @@
 			<return type="bool" />
 			<param index="0" name="uniform_set" type="RID" />
 			<description>
+				Checks if the [param uniform_set] is valid, i.e. is owned.
 			</description>
 		</method>
 		<method name="vertex_array_create">

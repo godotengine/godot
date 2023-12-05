@@ -74,6 +74,8 @@ class PopupMenu : public Popup {
 		Ref<Shortcut> shortcut;
 		bool shortcut_is_global = false;
 		bool shortcut_is_disabled = false;
+		bool allow_echo = false;
+		bool submenu_bound = false;
 
 		// Returns (0,0) if icon is null.
 		Size2 get_icon_size() const {
@@ -86,6 +88,8 @@ class PopupMenu : public Popup {
 			checkable_type = CHECKABLE_TYPE_NONE;
 		}
 	};
+
+	String global_menu_name;
 
 	bool close_allowed = false;
 	bool activated_by_keyboard = false;
@@ -189,15 +193,21 @@ class PopupMenu : public Popup {
 	void _menu_changed();
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	void _add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void _add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void _clear_bind_compat_79965();
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
@@ -205,6 +215,9 @@ public:
 	static const int ITEM_PROPERTY_SIZE = 10;
 
 	virtual void _parent_focused() override;
+
+	String bind_global_menu();
+	void unbind_global_menu();
 
 	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
@@ -215,8 +228,8 @@ public:
 
 	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, Key p_accel = Key::NONE);
 
-	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false, bool p_allow_echo = false);
+	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false, bool p_allow_echo = false);
 	void add_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
@@ -286,11 +299,14 @@ public:
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
 	void activate_item(int p_idx);
 
+	void _about_to_popup();
+	void _about_to_close();
+
 	void remove_item(int p_idx);
 
 	void add_separator(const String &p_text = String(), int p_id = -1);
 
-	void clear();
+	void clear(bool p_free_submenus = true);
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
 

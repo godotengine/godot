@@ -39,6 +39,8 @@
 #include "net_socket_android.h"
 
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension_manager.h"
+#include "core/io/xml_parser.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
@@ -58,10 +60,10 @@ String _remove_symlink(const String &dir) {
 	// Change directory to the external data directory.
 	chdir(dir.utf8().get_data());
 	// Get the actual directory without the potential symlink.
-	char dir_name_wihout_symlink[2048];
-	getcwd(dir_name_wihout_symlink, 2048);
+	char dir_name_without_symlink[2048];
+	getcwd(dir_name_without_symlink, 2048);
 	// Convert back to a String.
-	String dir_without_symlink(dir_name_wihout_symlink);
+	String dir_without_symlink(dir_name_without_symlink);
 	// Restore original current directory.
 	chdir(current_dir_name);
 	return dir_without_symlink;
@@ -162,11 +164,39 @@ Vector<String> OS_Android::get_granted_permissions() const {
 
 Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path;
+	bool so_file_exists = true;
 	if (!FileAccess::exists(path)) {
 		path = p_path.get_file();
+		so_file_exists = false;
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
+	if (!p_library_handle && so_file_exists) {
+		// The library may be on the sdcard and thus inaccessible. Try to copy it to the internal
+		// directory.
+		uint64_t so_modified_time = FileAccess::get_modified_time(p_path);
+		String dynamic_library_path = get_dynamic_libraries_path().path_join(String::num_uint64(so_modified_time));
+		String internal_path = dynamic_library_path.path_join(p_path.get_file());
+
+		bool internal_so_file_exists = FileAccess::exists(internal_path);
+		if (!internal_so_file_exists) {
+			Ref<DirAccess> da_ref = DirAccess::create_for_path(p_path);
+			if (da_ref.is_valid()) {
+				Error create_dir_result = da_ref->make_dir_recursive(dynamic_library_path);
+				if (create_dir_result == OK || create_dir_result == ERR_ALREADY_EXISTS) {
+					internal_so_file_exists = da_ref->copy(path, internal_path) == OK;
+				}
+			}
+		}
+
+		if (internal_so_file_exists) {
+			p_library_handle = dlopen(internal_path.utf8().get_data(), RTLD_NOW);
+			if (p_library_handle) {
+				path = internal_path;
+			}
+		}
+	}
+
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
 	if (r_resolved_path != nullptr) {
@@ -584,6 +614,10 @@ String OS_Android::get_user_data_dir() const {
 	return ".";
 }
 
+String OS_Android::get_dynamic_libraries_path() const {
+	return get_cache_path().path_join("dynamic_libraries");
+}
+
 String OS_Android::get_cache_path() const {
 	if (!cache_dir_cache.is_empty()) {
 		return cache_dir_cache;
@@ -715,6 +749,11 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 		return true;
 	}
 #endif
+
+	if (godot_java->has_feature(p_feature)) {
+		return true;
+	}
+
 	return false;
 }
 
@@ -789,6 +828,14 @@ Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_por
 		FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_RESOURCES);
 	}
 	return err;
+}
+
+void OS_Android::load_platform_gdextensions() const {
+	Vector<String> extension_list_config_file = godot_java->get_gdextension_list_config_file();
+	for (String config_file_path : extension_list_config_file) {
+		GDExtensionManager::LoadStatus err = GDExtensionManager::get_singleton()->load_extension(config_file_path);
+		ERR_CONTINUE_MSG(err == GDExtensionManager::LOAD_STATUS_FAILED, "Error loading platform extension: " + config_file_path);
+	}
 }
 
 OS_Android::~OS_Android() {

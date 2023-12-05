@@ -131,7 +131,7 @@ struct PairPosFormat2_4
     if (likely (index == NOT_COVERED)) return_trace (false);
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset_fast (buffer->idx, 1);
+    skippy_iter.reset_fast (buffer->idx);
     unsigned unsafe_to;
     if (unlikely (!skippy_iter.next (&unsafe_to)))
     {
@@ -163,7 +163,7 @@ struct PairPosFormat2_4
 
 
     /* Isolate simple kerning and apply it half to each side.
-     * Results in better cursor positinoing / underline drawing.
+     * Results in better cursor positioning / underline drawing.
      *
      * Disabled, because causes issues... :-(
      * https://github.com/harfbuzz/harfbuzz/issues/3408

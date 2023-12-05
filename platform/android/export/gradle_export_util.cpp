@@ -269,7 +269,12 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 
 	manifest_activity_text += "            <intent-filter>\n"
 							  "                <action android:name=\"android.intent.action.MAIN\" />\n"
-							  "                <category android:name=\"android.intent.category.LAUNCHER\" />\n";
+							  "                <category android:name=\"android.intent.category.DEFAULT\" />\n";
+
+	bool show_in_app_library = p_preset->get("package/show_in_app_library");
+	if (show_in_app_library) {
+		manifest_activity_text += "                <category android:name=\"android.intent.category.LAUNCHER\" />\n";
+	}
 
 	bool uses_leanback_category = p_preset->get("package/show_in_android_tv");
 	if (uses_leanback_category) {
@@ -279,7 +284,6 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 	bool uses_home_category = p_preset->get("package/show_as_launcher_app");
 	if (uses_home_category) {
 		manifest_activity_text += "                <category android:name=\"android.intent.category.HOME\" />\n";
-		manifest_activity_text += "                <category android:name=\"android.intent.category.DEFAULT\" />\n";
 	}
 
 	manifest_activity_text += "            </intent-filter>\n";

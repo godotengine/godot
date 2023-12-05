@@ -33,10 +33,11 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/animation/animation_tree.h"
-#include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
 
+class Button;
 class EditorFileDialog;
+class ScrollContainer;
 
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);

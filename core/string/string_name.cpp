@@ -100,11 +100,9 @@ void StringName::cleanup() {
 				lost_strings++;
 
 				if (OS::get_singleton()->is_stdout_verbose()) {
-					if (d->cname) {
-						print_line("Orphan StringName: " + String(d->cname));
-					} else {
-						print_line("Orphan StringName: " + String(d->name));
-					}
+					String dname = String(d->cname ? d->cname : d->name);
+
+					print_line(vformat("Orphan StringName: %s (static: %d, total: %d)", dname, d->static_count.get(), d->refcount.get()));
 				}
 			}
 
@@ -113,7 +111,7 @@ void StringName::cleanup() {
 		}
 	}
 	if (lost_strings) {
-		print_verbose("StringName: " + itos(lost_strings) + " unclaimed string names at exit.");
+		print_verbose(vformat("StringName: %d unclaimed string names at exit.", lost_strings));
 	}
 	configured = false;
 }
@@ -124,7 +122,7 @@ void StringName::unref() {
 	if (_data && _data->refcount.unref()) {
 		MutexLock lock(mutex);
 
-		if (_data->static_count.get() > 0) {
+		if (CoreGlobals::leak_reporting_enabled && _data->static_count.get() > 0) {
 			if (_data->cname) {
 				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->cname));
 			} else {
@@ -390,7 +388,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 StringName StringName::search(const char *p_name) {
 	ERR_FAIL_COND_V(!configured, StringName());
 
-	ERR_FAIL_COND_V(!p_name, StringName());
+	ERR_FAIL_NULL_V(p_name, StringName());
 	if (!p_name[0]) {
 		return StringName();
 	}
@@ -426,7 +424,7 @@ StringName StringName::search(const char *p_name) {
 StringName StringName::search(const char32_t *p_name) {
 	ERR_FAIL_COND_V(!configured, StringName());
 
-	ERR_FAIL_COND_V(!p_name, StringName());
+	ERR_FAIL_NULL_V(p_name, StringName());
 	if (!p_name[0]) {
 		return StringName();
 	}

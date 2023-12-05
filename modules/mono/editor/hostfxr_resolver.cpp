@@ -80,7 +80,7 @@ SOFTWARE.
 namespace {
 
 String get_hostfxr_file_name() {
-#if defined(WINDOWS_ENABLED) || defined(UWP_ENABLED)
+#if defined(WINDOWS_ENABLED)
 	return "hostfxr.dll";
 #elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	return "libhostfxr.dylib";
@@ -320,7 +320,12 @@ bool get_dotnet_root_from_env(String &r_dotnet_root) {
 
 bool godotsharp::hostfxr_resolver::try_get_path_from_dotnet_root(const String &p_dotnet_root, String &r_fxr_path) {
 	String fxr_dir = path::join(p_dotnet_root, "host", "fxr");
-	ERR_FAIL_COND_V_MSG(!DirAccess::exists(fxr_dir), false, "The host fxr folder does not exist: " + fxr_dir);
+	if (!DirAccess::exists(fxr_dir)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT("The host fxr folder does not exist: " + fxr_dir + ".");
+		}
+		return false;
+	}
 	return get_latest_fxr(fxr_dir, r_fxr_path);
 }
 

@@ -49,8 +49,6 @@ class NavigationRegion3D : public Node3D {
 
 	Transform3D current_global_transform;
 
-	Thread bake_thread;
-
 	void _navigation_mesh_changed();
 
 #ifdef DEBUG_ENABLED
@@ -75,6 +73,8 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
+	RID get_rid() const;
+
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 

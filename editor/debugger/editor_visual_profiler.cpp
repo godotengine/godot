@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/resources/image_texture.h"
 
 void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
@@ -124,11 +125,11 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 }
 
 Color EditorVisualProfiler::_get_color_from_signature(const StringName &p_signature) const {
-	Color bc = get_theme_color(SNAME("error_color"), SNAME("Editor"));
+	Color bc = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
-	return c.lerp(get_theme_color(SNAME("base_color"), SNAME("Editor")), 0.07);
+	return c.lerp(get_theme_color(SNAME("base_color"), EditorStringName(Editor)), 0.07);
 }
 
 void EditorVisualProfiler::_item_selected() {
@@ -158,7 +159,7 @@ void EditorVisualProfiler::_update_plot() {
 	}
 
 	uint8_t *wr = graph_image.ptrw();
-	const Color background_color = get_theme_color("dark_color_2", "Editor");
+	const Color background_color = get_theme_color("dark_color_2", EditorStringName(Editor));
 
 	// Clear the previous frame and set the background color.
 	for (int i = 0; i < desired_len; i += 4) {
@@ -318,7 +319,7 @@ void EditorVisualProfiler::_update_plot() {
 void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 	int cursor_metric = _get_cursor_index();
 
-	Ref<Texture> track_icon = get_theme_icon(SNAME("TrackColor"), SNAME("EditorIcons"));
+	Ref<Texture> track_icon = get_editor_theme_icon(SNAME("TrackColor"));
 
 	ERR_FAIL_INDEX(cursor_metric, frame_metrics.size());
 
@@ -407,12 +408,12 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 
 void EditorVisualProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+		activate->set_icon(get_editor_theme_icon(SNAME("Stop")));
 		activate->set_text(TTR("Stop"));
 		_clear_pressed(); //always clear on start
 		clear_button->set_disabled(false);
 	} else {
-		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+		activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 		activate->set_text(TTR("Start"));
 	}
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
@@ -431,11 +432,11 @@ void EditorVisualProfiler::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_layout_rtl()) {
-				activate->set_icon(get_theme_icon(SNAME("PlayBackwards"), SNAME("EditorIcons")));
+				activate->set_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
 			} else {
-				activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+				activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 			}
-			clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
 		} break;
 	}
 }
@@ -447,7 +448,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	const Color color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+	const Color color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 
 	if (seeking) {
 		int max_frames = frame_metrics.size();
@@ -653,10 +654,10 @@ void EditorVisualProfiler::_bind_methods() {
 
 void EditorVisualProfiler::_update_button_text() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+		activate->set_icon(get_editor_theme_icon(SNAME("Stop")));
 		activate->set_text(TTR("Stop"));
 	} else {
-		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+		activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 		activate->set_text(TTR("Start"));
 	}
 }

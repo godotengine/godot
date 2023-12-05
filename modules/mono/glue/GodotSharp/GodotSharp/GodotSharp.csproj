@@ -11,16 +11,13 @@
     <LangVersion>10</LangVersion>
 
     <AnalysisMode>Recommended</AnalysisMode>
-
-    <!-- Disabled temporarily as it pollutes the warnings, but we need to document public APIs. -->
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <Description>Godot C# Core API.</Description>
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>GodotSharp</PackageId>
-    <Version>4.2.0</Version>
+    <Version>4.3.0</Version>
     <PackageVersion>$(PackageVersion_GodotSharp)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/glue/GodotSharp/GodotSharp</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>

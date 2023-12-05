@@ -33,6 +33,7 @@
 #endif
 
 #include "tvgXmlParser.h"
+#include "tvgStr.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -237,14 +238,6 @@ static SimpleXMLType _getXMLType(const char* itr, const char* itrEnd, size_t &to
     return SimpleXMLType::Open;
 }
 
-
-static char* _strndup(const char* src, unsigned len)
-{
-    auto ret = (char*)malloc(len + 1);
-    if (!ret) return nullptr;
-    ret[len] = '\0';
-    return (char*)memcpy(ret, src, len);
-}
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -564,10 +557,10 @@ const char* simpleXmlParseCSSAttribute(const char* buf, unsigned bufLength, char
     }
 
     if (p == itr) *tag = strdup("all");
-    else *tag = _strndup(itr, p - itr);
+    else *tag = strDuplicate(itr, p - itr);
 
     if (p == itrEnd) *name = nullptr;
-    else *name = _strndup(p + 1, itrEnd - p - 1);
+    else *name = strDuplicate(p + 1, itrEnd - p - 1);
 
     return (nextElement ? nextElement + 1 : nullptr);
 }

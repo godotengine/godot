@@ -86,20 +86,6 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
     bool   combined : 1;  // true means texture is combined with a sampler, false means texture with no sampler
     bool    sampler : 1;  // true means a pure sampler, other fields should be clear()
 
-#ifdef GLSLANG_WEB
-    bool is1D()          const { return false; }
-    bool isBuffer()      const { return false; }
-    bool isRect()        const { return false; }
-    bool isSubpass()     const { return false; }
-    bool isAttachmentEXT()  const { return false; }
-    bool isCombined()    const { return true; }
-    bool isImage()       const { return false; }
-    bool isImageClass()  const { return false; }
-    bool isMultiSample() const { return false; }
-    bool isExternal()    const { return false; }
-    void setExternal(bool e) { }
-    bool isYuv()         const { return false; }
-#else
     unsigned int vectorSize : 3;  // vector return type size.
     // Some languages support structures as sample results.  Storing the whole structure in the
     // TSampler is too large, so there is an index to a separate table.
@@ -132,7 +118,6 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
     bool isExternal()    const { return external; }
     void setExternal(bool e) { external = e; }
     bool isYuv()         const { return yuv; }
-#endif
     bool isTexture()     const { return !sampler && !image; }
     bool isPureSampler() const { return sampler; }
 
@@ -152,10 +137,8 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         image = false;
         combined = false;
         sampler = false;
-#ifndef GLSLANG_WEB
         external = false;
         yuv = false;
-#endif
 
 #ifdef ENABLE_HLSL
         clearReturnStruct();
@@ -207,7 +190,6 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         shadow = s;
     }
 
-#ifndef GLSLANG_WEB
     // make a subpass input attachment
     void setSubpass(TBasicType t, bool m = false)
     {
@@ -226,7 +208,6 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         image = true;
         dim = EsdAttachmentEXT;
     }
-#endif
 
     bool operator==(const TSampler& right) const
     {
@@ -264,7 +245,6 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         switch (type) {
         case EbtInt:    s.append("i");   break;
         case EbtUint:   s.append("u");   break;
-#ifndef GLSLANG_WEB
         case EbtFloat16: s.append("f16"); break;
         case EbtInt8:   s.append("i8");  break;
         case EbtUint16: s.append("u8");  break;
@@ -272,7 +252,6 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         case EbtUint8:  s.append("u16"); break;
         case EbtInt64:  s.append("i64"); break;
         case EbtUint64: s.append("u64"); break;
-#endif
         default:  break;
         }
         if (isImageClass()) {
@@ -298,13 +277,11 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         case Esd2D:      s.append("2D");      break;
         case Esd3D:      s.append("3D");      break;
         case EsdCube:    s.append("Cube");    break;
-#ifndef GLSLANG_WEB
         case Esd1D:         s.append("1D");      break;
         case EsdRect:       s.append("2DRect");  break;
         case EsdBuffer:     s.append("Buffer");  break;
         case EsdSubpass:    s.append("Input"); break;
         case EsdAttachmentEXT: s.append(""); break;
-#endif
         default:  break;  // some compilers want this
         }
         if (isMultiSample())
@@ -533,12 +510,10 @@ public:
         invariant = false;
         makeTemporary();
         declaredBuiltIn = EbvNone;
-#ifndef GLSLANG_WEB
         noContraction = false;
         nullInit = false;
         spirvByReference = false;
         spirvLiteral = false;
-#endif
         defaultBlock = false;
     }
 
@@ -555,21 +530,17 @@ public:
         nullInit = false;
         defaultBlock = false;
         clearLayout();
-#ifndef GLSLANG_WEB
         spirvStorageClass = -1;
         spirvDecorate = nullptr;
         spirvByReference = false;
         spirvLiteral = false;
-#endif
     }
 
     void clearInterstage()
     {
         clearInterpolation();
-#ifndef GLSLANG_WEB
         patch = false;
         sample = false;
-#endif
     }
 
     void clearInterpolation()
@@ -577,20 +548,17 @@ public:
         centroid     = false;
         smooth       = false;
         flat         = false;
-#ifndef GLSLANG_WEB
         nopersp      = false;
         explicitInterp = false;
         pervertexNV = false;
         perPrimitiveNV = false;
         perViewNV = false;
         perTaskNV = false;
-#endif
         pervertexEXT = false;
     }
 
     void clearMemory()
     {
-#ifndef GLSLANG_WEB
         coherent     = false;
         devicecoherent = false;
         queuefamilycoherent = false;
@@ -602,7 +570,6 @@ public:
         restrict     = false;
         readonly     = false;
         writeonly    = false;
-#endif
     }
 
     const char*         semanticName;
@@ -621,31 +588,6 @@ public:
     bool explicitOffset   : 1;
     bool defaultBlock : 1; // default blocks with matching names have structures merged when linking
 
-#ifdef GLSLANG_WEB
-    bool isWriteOnly() const { return false; }
-    bool isReadOnly() const { return false; }
-    bool isRestrict() const { return false; }
-    bool isCoherent() const { return false; }
-    bool isVolatile() const { return false; }
-    bool isSample() const { return false; }
-    bool isMemory() const { return false; }
-    bool isMemoryQualifierImageAndSSBOOnly() const { return false; }
-    bool bufferReferenceNeedsVulkanMemoryModel() const { return false; }
-    bool isInterpolation() const { return flat || smooth; }
-    bool isExplicitInterpolation() const { return false; }
-    bool isAuxiliary() const { return centroid; }
-    bool isPatch() const { return false; }
-    bool isNoContraction() const { return false; }
-    void setNoContraction() { }
-    bool isPervertexNV() const { return false; }
-    bool isPervertexEXT() const { return pervertexEXT; }
-    void setNullInit() {}
-    bool isNullInit() const { return false; }
-    void setSpirvByReference() { }
-    bool isSpirvByReference() { return false; }
-    void setSpirvLiteral() { }
-    bool isSpirvLiteral() { return false; }
-#else
     bool noContraction: 1; // prevent contraction and reassociation, e.g., for 'precise' keyword, and expressions it affects
     bool nopersp      : 1;
     bool explicitInterp : 1;
@@ -712,7 +654,6 @@ public:
     bool isSpirvByReference() const { return spirvByReference; }
     void setSpirvLiteral() { spirvLiteral = true; }
     bool isSpirvLiteral() const { return spirvLiteral; }
-#endif
 
     bool isPipeInput() const
     {
@@ -843,9 +784,7 @@ public:
     }
 
     void setBlockStorage(TBlockStorageClass newBacking) {
-#ifndef GLSLANG_WEB
         layoutPushConstant = (newBacking == EbsPushConstant);
-#endif
         switch (newBacking) {
         case EbsUniform :
             if (layoutPacking == ElpStd430) {
@@ -857,23 +796,16 @@ public:
         case EbsStorageBuffer :
             storage = EvqBuffer;
             break;
-#ifndef GLSLANG_WEB
         case EbsPushConstant :
             storage = EvqUniform;
             layoutSet = TQualifier::layoutSetEnd;
             layoutBinding = TQualifier::layoutBindingEnd;
             break;
-#endif
         default:
             break;
         }
     }
 
-#ifdef GLSLANG_WEB
-    bool isPerView() const { return false; }
-    bool isTaskMemory() const { return false; }
-    bool isArrayedIo(EShLanguage language) const { return false; }
-#else
     bool isPerPrimitive() const { return perPrimitiveNV; }
     bool isPerView() const { return perViewNV; }
     bool isTaskMemory() const { return perTaskNV; }
@@ -907,14 +839,12 @@ public:
             return false;
         }
     }
-#endif
 
     // Implementing an embedded layout-qualifier class here, since C++ can't have a real class bitfield
     void clearLayout()  // all layout
     {
         clearUniformLayout();
 
-#ifndef GLSLANG_WEB
         layoutPushConstant = false;
         layoutBufferReference = false;
         layoutPassthrough = false;
@@ -927,7 +857,6 @@ public:
         layoutBindlessImage = false;
         layoutBufferReferenceAlign = layoutBufferReferenceAlignEnd;
         layoutFormat = ElfNone;
-#endif
 
         clearInterstageLayout();
 
@@ -937,14 +866,11 @@ public:
     {
         layoutLocation = layoutLocationEnd;
         layoutComponent = layoutComponentEnd;
-#ifndef GLSLANG_WEB
         layoutIndex = layoutIndexEnd;
         clearStreamLayout();
         clearXfbLayout();
-#endif
     }
 
-#ifndef GLSLANG_WEB
     void clearStreamLayout()
     {
         layoutStream = layoutStreamEnd;
@@ -955,7 +881,6 @@ public:
         layoutXfbStride = layoutXfbStrideEnd;
         layoutXfbOffset = layoutXfbOffsetEnd;
     }
-#endif
 
     bool hasNonXfbLayout() const
     {
@@ -1011,7 +936,6 @@ public:
                  unsigned int layoutSpecConstantId       : 11;
     static const unsigned int layoutSpecConstantIdEnd = 0x7FF;
 
-#ifndef GLSLANG_WEB
     // stored as log2 of the actual alignment value
                  unsigned int layoutBufferReferenceAlign :  6;
     static const unsigned int layoutBufferReferenceAlignEnd = 0x3F;
@@ -1032,7 +956,6 @@ public:
 
     bool layoutBindlessSampler;
     bool layoutBindlessImage;
-#endif
 
     bool hasUniformLayout() const
     {
@@ -1052,9 +975,7 @@ public:
 
         layoutSet = layoutSetEnd;
         layoutBinding = layoutBindingEnd;
-#ifndef GLSLANG_WEB
         layoutAttachment = layoutAttachmentEnd;
-#endif
     }
 
     bool hasMatrix() const
@@ -1087,26 +1008,6 @@ public:
     {
         return layoutBinding != layoutBindingEnd;
     }
-#ifdef GLSLANG_WEB
-    bool hasOffset() const { return false; }
-    bool isNonPerspective() const { return false; }
-    bool hasIndex() const { return false; }
-    unsigned getIndex() const { return 0; }
-    bool hasComponent() const { return false; }
-    bool hasStream() const { return false; }
-    bool hasFormat() const { return false; }
-    bool hasXfb() const { return false; }
-    bool hasXfbBuffer() const { return false; }
-    bool hasXfbStride() const { return false; }
-    bool hasXfbOffset() const { return false; }
-    bool hasAttachment() const { return false; }
-    TLayoutFormat getFormat() const { return ElfNone; }
-    bool isPushConstant() const { return false; }
-    bool isShaderRecord() const { return false; }
-    bool hasBufferReference() const { return false; }
-    bool hasBufferReferenceAlign() const { return false; }
-    bool isNonUniform() const { return false; }
-#else
     bool hasOffset() const
     {
         return layoutOffset != layoutNotSet;
@@ -1181,7 +1082,7 @@ public:
     const TSpirvDecorate& getSpirvDecorate() const { assert(spirvDecorate); return *spirvDecorate; }
     TSpirvDecorate& getSpirvDecorate() { assert(spirvDecorate); return *spirvDecorate; }
     TString getSpirvDecorateQualifierString() const;
-#endif
+
     bool hasSpecConstantId() const
     {
         // Not the same thing as being a specialization constant, this
@@ -1215,12 +1116,10 @@ public:
     {
         switch (packing) {
         case ElpStd140:   return "std140";
-#ifndef GLSLANG_WEB
         case ElpPacked:   return "packed";
         case ElpShared:   return "shared";
         case ElpStd430:   return "std430";
         case ElpScalar:   return "scalar";
-#endif
         default:          return "none";
         }
     }
@@ -1232,9 +1131,6 @@ public:
         default:             return "none";
         }
     }
-#ifdef GLSLANG_WEB
-    static const char* getLayoutFormatString(TLayoutFormat f) { return "none"; }
-#else
     static const char* getLayoutFormatString(TLayoutFormat f)
     {
         switch (f) {
@@ -1388,7 +1284,6 @@ public:
         default:                                return "none";
         }
     }
-#endif
 };
 
 // Qualifiers that don't need to be keep per object.  They have shader scope, not object scope.
@@ -1405,7 +1300,6 @@ struct TShaderQualifiers {
     int localSize[3];         // compute shader
     bool localSizeNotDefault[3];        // compute shader
     int localSizeSpecId[3];   // compute shader specialization id for gl_WorkGroupSize
-#ifndef GLSLANG_WEB
     bool earlyFragmentTests;  // fragment input
     bool postDepthCoverage;   // fragment input
     bool earlyAndLateFragmentTestsAMD; //fragment input
@@ -1424,9 +1318,6 @@ struct TShaderQualifiers {
     bool layoutPrimitiveCulling;        // true if layout primitive_culling set
     TLayoutDepth getDepth() const { return layoutDepth; }
     TLayoutStencil getStencil() const { return layoutStencil; }
-#else
-    TLayoutDepth getDepth() const { return EldNone; }
-#endif
 
     void init()
     {
@@ -1447,7 +1338,6 @@ struct TShaderQualifiers {
         localSizeSpecId[0] = TQualifier::layoutNotSet;
         localSizeSpecId[1] = TQualifier::layoutNotSet;
         localSizeSpecId[2] = TQualifier::layoutNotSet;
-#ifndef GLSLANG_WEB
         earlyFragmentTests = false;
         earlyAndLateFragmentTestsAMD = false;
         postDepthCoverage = false;
@@ -1464,14 +1354,9 @@ struct TShaderQualifiers {
         layoutPrimitiveCulling      = false;
         primitives                  = TQualifier::layoutNotSet;
         interlockOrdering = EioNone;
-#endif
     }
 
-#ifdef GLSLANG_WEB
-    bool hasBlendEquation() const { return false; }
-#else
     bool hasBlendEquation() const { return blendEquation; }
-#endif
 
     // Merge in characteristics from the 'src' qualifier.  They can override when
     // set, but never erase when not set.
@@ -1504,7 +1389,6 @@ struct TShaderQualifiers {
             if (src.localSizeSpecId[i] != TQualifier::layoutNotSet)
                 localSizeSpecId[i] = src.localSizeSpecId[i];
         }
-#ifndef GLSLANG_WEB
         if (src.earlyFragmentTests)
             earlyFragmentTests = true;
         if (src.earlyAndLateFragmentTestsAMD)
@@ -1537,8 +1421,20 @@ struct TShaderQualifiers {
             interlockOrdering = src.interlockOrdering;
         if (src.layoutPrimitiveCulling)
             layoutPrimitiveCulling = src.layoutPrimitiveCulling;
-#endif
     }
+};
+
+class TTypeParameters {
+public:
+    POOL_ALLOCATOR_NEW_DELETE(GetThreadPoolAllocator())
+
+    TTypeParameters() : basicType(EbtVoid), arraySizes(nullptr) {}
+
+    TBasicType basicType;
+    TArraySizes *arraySizes;
+
+    bool operator==(const TTypeParameters& rhs) const { return basicType == rhs.basicType && *arraySizes == *rhs.arraySizes; }
+    bool operator!=(const TTypeParameters& rhs) const { return basicType != rhs.basicType || *arraySizes != *rhs.arraySizes; }
 };
 
 //
@@ -1555,24 +1451,21 @@ public:
     TSampler sampler;
     TQualifier qualifier;
     TShaderQualifiers shaderQualifiers;
-    int vectorSize : 4;
-    int matrixCols : 4;
-    int matrixRows : 4;
-    bool coopmat   : 1;
+    int vectorSize  : 4;
+    int matrixCols  : 4;
+    int matrixRows  : 4;
+    bool coopmatNV  : 1;
+    bool coopmatKHR : 1;
     TArraySizes* arraySizes;
     const TType* userDef;
     TSourceLoc loc;
-    TArraySizes* typeParameters;
-#ifndef GLSLANG_WEB
+    TTypeParameters* typeParameters;
     // SPIR-V type defined by spirv_type directive
     TSpirvType* spirvType;
-#endif
 
-#ifdef GLSLANG_WEB
-    bool isCoopmat() const { return false; }
-#else
-    bool isCoopmat() const { return coopmat; }
-#endif
+    bool isCoopmat() const { return coopmatNV || coopmatKHR; }
+    bool isCoopmatNV() const { return coopmatNV; }
+    bool isCoopmatKHR() const { return coopmatKHR; }
 
     void initType(const TSourceLoc& l)
     {
@@ -1584,10 +1477,9 @@ public:
         userDef = nullptr;
         loc = l;
         typeParameters = nullptr;
-        coopmat = false;
-#ifndef GLSLANG_WEB
+        coopmatNV = false;
+        coopmatKHR = false;
         spirvType = nullptr;
-#endif
     }
 
     void initQualifiers(bool global = false)
@@ -1624,10 +1516,8 @@ public:
         return matrixCols == 0 && vectorSize == 1 && arraySizes == nullptr && userDef == nullptr;
     }
 
-#ifndef GLSLANG_WEB
     // GL_EXT_spirv_intrinsics
     void setSpirvType(const TSpirvInstruction& spirvInst, const TSpirvTypeParameters* typeParams = nullptr);
-#endif
 
     // "Image" is a superset of "Subpass"
     bool isImage()      const { return basicType == EbtSampler && sampler.isImage(); }
@@ -1645,11 +1535,9 @@ public:
     // for "empty" type (no args) or simple scalar/vector/matrix
     explicit TType(TBasicType t = EbtVoid, TStorageQualifier q = EvqTemporary, int vs = 1, int mc = 0, int mr = 0,
                    bool isVector = false) :
-                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1), coopmat(false),
-                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr)
-#ifndef GLSLANG_WEB
-                            , spirvType(nullptr)
-#endif
+                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr),
+                            spirvType(nullptr)
                             {
                                 sampler.clear();
                                 qualifier.clear();
@@ -1659,11 +1547,9 @@ public:
     // for explicit precision qualifier
     TType(TBasicType t, TStorageQualifier q, TPrecisionQualifier p, int vs = 1, int mc = 0, int mr = 0,
           bool isVector = false) :
-                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1), coopmat(false),
-                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr)
-#ifndef GLSLANG_WEB
-                            , spirvType(nullptr)
-#endif
+                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr),
+                            spirvType(nullptr)
                             {
                                 sampler.clear();
                                 qualifier.clear();
@@ -1675,11 +1561,9 @@ public:
     // for turning a TPublicType into a TType, using a shallow copy
     explicit TType(const TPublicType& p) :
                             basicType(p.basicType),
-                            vectorSize(p.vectorSize), matrixCols(p.matrixCols), matrixRows(p.matrixRows), vector1(false), coopmat(p.coopmat),
-                            arraySizes(p.arraySizes), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(p.typeParameters)
-#ifndef GLSLANG_WEB
-                            , spirvType(p.spirvType)
-#endif
+                            vectorSize(p.vectorSize), matrixCols(p.matrixCols), matrixRows(p.matrixRows), vector1(false), coopmatNV(p.coopmatNV), coopmatKHR(p.coopmatKHR), coopmatKHRuse(-1),
+                            arraySizes(p.arraySizes), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(p.typeParameters),
+                            spirvType(p.spirvType)
                             {
                                 if (basicType == EbtSampler)
                                     sampler = p.sampler;
@@ -1695,28 +1579,39 @@ public:
                                     }
                                     typeName = NewPoolTString(p.userDef->getTypeName().c_str());
                                 }
-                                if (p.isCoopmat() && p.typeParameters && p.typeParameters->getNumDims() > 0) {
-                                    int numBits = p.typeParameters->getDimSize(0);
+                                if (p.isCoopmatNV() && p.typeParameters && p.typeParameters->arraySizes->getNumDims() > 0) {
+                                    int numBits = p.typeParameters->arraySizes->getDimSize(0);
                                     if (p.basicType == EbtFloat && numBits == 16) {
                                         basicType = EbtFloat16;
                                         qualifier.precision = EpqNone;
                                     } else if (p.basicType == EbtUint && numBits == 8) {
                                         basicType = EbtUint8;
                                         qualifier.precision = EpqNone;
+                                    } else if (p.basicType == EbtUint && numBits == 16) {
+                                        basicType = EbtUint16;
+                                        qualifier.precision = EpqNone;
                                     } else if (p.basicType == EbtInt && numBits == 8) {
                                         basicType = EbtInt8;
                                         qualifier.precision = EpqNone;
+                                    } else if (p.basicType == EbtInt && numBits == 16) {
+                                        basicType = EbtInt16;
+                                        qualifier.precision = EpqNone;
+                                    }
+                                }
+                                if (p.isCoopmatKHR() && p.typeParameters && p.typeParameters->arraySizes->getNumDims() > 0) {
+                                    basicType = p.typeParameters->basicType;
+
+                                    if (p.typeParameters->arraySizes->getNumDims() == 4) {
+                                        coopmatKHRuse = p.typeParameters->arraySizes->getDimSize(3);
+                                        p.typeParameters->arraySizes->removeLastSize();
                                     }
                                 }
                             }
     // for construction of sampler types
     TType(const TSampler& sampler, TStorageQualifier q = EvqUniform, TArraySizes* as = nullptr) :
-        basicType(EbtSampler), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmat(false),
+        basicType(EbtSampler), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
         arraySizes(as), structure(nullptr), fieldName(nullptr), typeName(nullptr),
-        sampler(sampler), typeParameters(nullptr)
-#ifndef GLSLANG_WEB
-        , spirvType(nullptr)
-#endif
+        sampler(sampler), typeParameters(nullptr), spirvType(nullptr)
     {
         qualifier.clear();
         qualifier.storage = q;
@@ -1758,18 +1653,18 @@ public:
                                         vectorSize = 1;
                                         vector1 = false;
                                     } else if (isCoopMat()) {
-                                        coopmat = false;
+                                        coopmatNV = false;
+                                        coopmatKHR = false;
+                                        coopmatKHRuse = -1;
                                         typeParameters = nullptr;
                                     }
                                 }
                             }
     // for making structures, ...
     TType(TTypeList* userDef, const TString& n) :
-                            basicType(EbtStruct), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmat(false),
-                            arraySizes(nullptr), structure(userDef), fieldName(nullptr), typeParameters(nullptr)
-#ifndef GLSLANG_WEB
-                            , spirvType(nullptr)
-#endif
+                            basicType(EbtStruct), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            arraySizes(nullptr), structure(userDef), fieldName(nullptr), typeParameters(nullptr),
+                            spirvType(nullptr)
                             {
                                 sampler.clear();
                                 qualifier.clear();
@@ -1777,25 +1672,22 @@ public:
                             }
     // For interface blocks
     TType(TTypeList* userDef, const TString& n, const TQualifier& q) :
-                            basicType(EbtBlock), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmat(false),
-                            qualifier(q), arraySizes(nullptr), structure(userDef), fieldName(nullptr), typeParameters(nullptr)
-#ifndef GLSLANG_WEB
-                            , spirvType(nullptr)
-#endif
+                            basicType(EbtBlock), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            qualifier(q), arraySizes(nullptr), structure(userDef), fieldName(nullptr), typeParameters(nullptr),
+                            spirvType(nullptr)
                             {
                                 sampler.clear();
                                 typeName = NewPoolTString(n.c_str());
                             }
     // for block reference (first parameter must be EbtReference)
     explicit TType(TBasicType t, const TType &p, const TString& n) :
-                            basicType(t), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false),
-                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr)
-#ifndef GLSLANG_WEB
-                            , spirvType(nullptr)
-#endif
+                            basicType(t), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr),
+                            spirvType(nullptr)
                             {
                                 assert(t == EbtReference);
                                 typeName = NewPoolTString(n.c_str());
+                                sampler.clear();
                                 qualifier.clear();
                                 qualifier.storage = p.qualifier.storage;
                                 referentType = p.clone();
@@ -1823,10 +1715,10 @@ public:
             referentType = copyOf.referentType;
         }
         typeParameters = copyOf.typeParameters;
-#ifndef GLSLANG_WEB
         spirvType = copyOf.spirvType;
-#endif
-        coopmat = copyOf.isCoopMat();
+        coopmatNV = copyOf.isCoopMatNV();
+        coopmatKHR = copyOf.isCoopMatKHR();
+        coopmatKHRuse = copyOf.coopmatKHRuse;
     }
 
     // Make complete copy of the whole type graph rooted at 'copyOf'.
@@ -1902,17 +1794,13 @@ public:
     virtual int getOuterArraySize()  const { return arraySizes->getOuterSize(); }
     virtual TIntermTyped*  getOuterArrayNode() const { return arraySizes->getOuterNode(); }
     virtual int getCumulativeArraySize()  const { return arraySizes->getCumulativeSize(); }
-#ifdef GLSLANG_WEB
-    bool isArrayOfArrays() const { return false; }
-#else
     bool isArrayOfArrays() const { return arraySizes != nullptr && arraySizes->getNumDims() > 1; }
-#endif
     virtual int getImplicitArraySize() const { return arraySizes->getImplicitSize(); }
     virtual const TArraySizes* getArraySizes() const { return arraySizes; }
     virtual       TArraySizes* getArraySizes()       { return arraySizes; }
     virtual TType* getReferentType() const { return referentType; }
-    virtual const TArraySizes* getTypeParameters() const { return typeParameters; }
-    virtual       TArraySizes* getTypeParameters()       { return typeParameters; }
+    virtual const TTypeParameters* getTypeParameters() const { return typeParameters; }
+    virtual       TTypeParameters* getTypeParameters()       { return typeParameters; }
 
     virtual bool isScalar() const { return ! isVector() && ! isMatrix() && ! isStruct() && ! isArray(); }
     virtual bool isScalarOrVec1() const { return isScalar() || vector1; }
@@ -1948,11 +1836,8 @@ public:
         return false;
     }
     virtual bool isOpaque() const { return basicType == EbtSampler
-#ifndef GLSLANG_WEB
-            || basicType == EbtAtomicUint || basicType == EbtAccStruct || basicType == EbtRayQuery 
-            || basicType == EbtHitObjectNV
-#endif
-        ; }
+            || basicType == EbtAtomicUint || basicType == EbtAccStruct || basicType == EbtRayQuery
+            || basicType == EbtHitObjectNV; }
     virtual bool isBuiltIn() const { return getQualifier().builtIn != EbvNone; }
 
     virtual bool isAttachmentEXT() const { return basicType == EbtSampler && getSampler().isAttachmentEXT(); }
@@ -1964,17 +1849,13 @@ public:
     // Check the block-name convention of creating a block without populating it's members:
     virtual bool isUnusableName() const { return isStruct() && structure == nullptr; }
     virtual bool isParameterized()  const { return typeParameters != nullptr; }
-#ifdef GLSLANG_WEB
-    bool isAtomic() const { return false; }
-    bool isCoopMat() const { return false; }
-    bool isReference() const { return false; }
-    bool isSpirvType() const { return false; }
-#else
     bool isAtomic() const { return basicType == EbtAtomicUint; }
-    bool isCoopMat() const { return coopmat; }
+    bool isCoopMat() const { return coopmatNV || coopmatKHR; }
+    bool isCoopMatNV() const { return coopmatNV; }
+    bool isCoopMatKHR() const { return coopmatKHR; }
     bool isReference() const { return getBasicType() == EbtReference; }
     bool isSpirvType() const { return getBasicType() == EbtSpirvType; }
-#endif
+    int getCoopMatKHRuse() const { return coopmatKHRuse; }
 
     // return true if this type contains any subtype which satisfies the given predicate.
     template <typename P>
@@ -2060,15 +1941,6 @@ public:
         return contains([](const TType* t) { return t->isArray() && t->arraySizes->isOuterSpecialization(); } );
     }
 
-#ifdef GLSLANG_WEB
-    bool containsDouble() const { return false; }
-    bool contains16BitFloat() const { return false; }
-    bool contains64BitInt() const { return false; }
-    bool contains16BitInt() const { return false; }
-    bool contains8BitInt() const { return false; }
-    bool containsCoopMat() const { return false; }
-    bool containsReference() const { return false; }
-#else
     bool containsDouble() const
     {
         return containsBasicType(EbtDouble);
@@ -2091,13 +1963,12 @@ public:
     }
     bool containsCoopMat() const
     {
-        return contains([](const TType* t) { return t->coopmat; } );
+        return contains([](const TType* t) { return t->coopmatNV || t->coopmatKHR; } );
     }
     bool containsReference() const
     {
         return containsBasicType(EbtReference);
     }
-#endif
 
     // Array editing methods.  Array descriptors can be shared across
     // type instances.  This allows all uses of the same array
@@ -2173,42 +2044,11 @@ public:
         }
     }
 
-
-    void updateTypeParameters(const TType& type)
-    {
-        // For when we may already be sharing existing array descriptors,
-        // keeping the pointers the same, just updating the contents.
-        assert(typeParameters != nullptr);
-        assert(type.typeParameters != nullptr);
-        *typeParameters = *type.typeParameters;
-    }
-    void copyTypeParameters(const TArraySizes& s)
+    void copyTypeParameters(const TTypeParameters& s)
     {
         // For setting a fresh new set of type parameters, not yet worrying about sharing.
-        typeParameters = new TArraySizes;
+        typeParameters = new TTypeParameters;
         *typeParameters = s;
-    }
-    void transferTypeParameters(TArraySizes* s)
-    {
-        // For setting an already allocated set of sizes that this type can use
-        // (no copy made).
-        typeParameters = s;
-    }
-    void clearTypeParameters()
-    {
-        typeParameters = nullptr;
-    }
-
-    // Add inner array sizes, to any existing sizes, via copy; the
-    // sizes passed in can still be reused for other purposes.
-    void copyTypeParametersInnerSizes(const TArraySizes* s)
-    {
-        if (s != nullptr) {
-            if (typeParameters == nullptr)
-                copyTypeParameters(*s);
-            else
-                typeParameters->addInnerSizes(*s);
-        }
     }
 
     const char* getBasicString() const
@@ -2223,7 +2063,6 @@ public:
         case EbtInt:               return "int";
         case EbtUint:              return "uint";
         case EbtSampler:           return "sampler/image";
-#ifndef GLSLANG_WEB
         case EbtVoid:              return "void";
         case EbtDouble:            return "double";
         case EbtFloat16:           return "float16_t";
@@ -2242,18 +2081,11 @@ public:
         case EbtReference:         return "reference";
         case EbtString:            return "string";
         case EbtSpirvType:         return "spirv_type";
-#endif
+        case EbtCoopmat:           return "coopmat";
         default:                   return "unknown type";
         }
     }
 
-#ifdef GLSLANG_WEB
-    TString getCompleteString() const { return ""; }
-    const char* getStorageQualifierString() const { return ""; }
-    const char* getBuiltInVariableString() const { return ""; }
-    const char* getPrecisionQualifierString() const { return ""; }
-    TString getBasicTypeString() const { return ""; }
-#else
     TString getCompleteString(bool syntactic = false, bool getQualifiers = true, bool getPrecision = true,
                               bool getType = true, TString name = "", TString structName = "") const
     {
@@ -2552,11 +2384,20 @@ public:
               }
             }
             if (isParameterized()) {
+              if (isCoopMatKHR()) {
+                appendStr(" ");
+                appendStr("coopmat");
+              }
+
               appendStr("<");
-              for (int i = 0; i < (int)typeParameters->getNumDims(); ++i) {
-                appendInt(typeParameters->getDimSize(i));
-                if (i != (int)typeParameters->getNumDims() - 1)
+              for (int i = 0; i < (int)typeParameters->arraySizes->getNumDims(); ++i) {
+                appendInt(typeParameters->arraySizes->getDimSize(i));
+                if (i != (int)typeParameters->arraySizes->getNumDims() - 1)
                   appendStr(", ");
+              }
+              if (coopmatKHRuse != -1) {
+                  appendStr(", ");
+                  appendInt(coopmatKHRuse);
               }
               appendStr(">");
             }
@@ -2618,7 +2459,6 @@ public:
     const char* getStorageQualifierString() const { return GetStorageQualifierString(qualifier.storage); }
     const char* getBuiltInVariableString() const { return GetBuiltInVariableString(qualifier.builtIn); }
     const char* getPrecisionQualifierString() const { return GetPrecisionQualifierString(qualifier.precision); }
-#endif
 
     const TTypeList* getStruct() const { assert(isStruct()); return structure; }
     void setStruct(TTypeList* s) { assert(isStruct()); structure = s; }
@@ -2812,14 +2652,12 @@ public:
                 (typeParameters != nullptr && right.typeParameters != nullptr && *typeParameters == *right.typeParameters));
     }
 
-#ifndef GLSLANG_WEB
     // See if two type's SPIR-V type contents match
     bool sameSpirvType(const TType& right) const
     {
         return ((spirvType == nullptr && right.spirvType == nullptr) ||
                 (spirvType != nullptr && right.spirvType != nullptr && *spirvType == *right.spirvType));
     }
-#endif
 
     // See if two type's elements match in all ways except basic type
     // If mismatch in structure members, return member indices in lpidx and rpidx.
@@ -2834,7 +2672,8 @@ public:
                matrixCols == right.matrixCols &&
                matrixRows == right.matrixRows &&
                   vector1 == right.vector1    &&
-              isCoopMat() == right.isCoopMat() &&
+              isCoopMatNV() == right.isCoopMatNV() &&
+              isCoopMatKHR() == right.isCoopMatKHR() &&
                sameStructType(right, lpidx, rpidx) &&
                sameReferenceType(right);
     }
@@ -2843,32 +2682,69 @@ public:
     // an OK function parameter
     bool coopMatParameterOK(const TType& right) const
     {
-        return isCoopMat() && right.isCoopMat() && (getBasicType() == right.getBasicType()) &&
-               typeParameters == nullptr && right.typeParameters != nullptr;
+        if (isCoopMatNV()) {
+            return right.isCoopMatNV() && (getBasicType() == right.getBasicType()) && typeParameters == nullptr &&
+                   right.typeParameters != nullptr;
+        }
+        if (isCoopMatKHR() && right.isCoopMatKHR()) {
+            return ((getBasicType() == right.getBasicType()) || (getBasicType() == EbtCoopmat) ||
+                    (right.getBasicType() == EbtCoopmat)) &&
+                   typeParameters == nullptr && right.typeParameters != nullptr;
+        }
+        return false;
     }
 
     bool sameCoopMatBaseType(const TType &right) const {
-        bool rv = coopmat && right.coopmat;
-        if (getBasicType() == EbtFloat || getBasicType() == EbtFloat16)
-            rv = right.getBasicType() == EbtFloat || right.getBasicType() == EbtFloat16;
-        else if (getBasicType() == EbtUint || getBasicType() == EbtUint8)
-            rv = right.getBasicType() == EbtUint || right.getBasicType() == EbtUint8;
-        else if (getBasicType() == EbtInt || getBasicType() == EbtInt8)
-            rv = right.getBasicType() == EbtInt || right.getBasicType() == EbtInt8;
-        else
-            rv = false;
+        bool rv = false;
+
+        if (isCoopMatNV()) {
+            rv = isCoopMatNV() && right.isCoopMatNV();
+            if (getBasicType() == EbtFloat || getBasicType() == EbtFloat16)
+                rv = right.getBasicType() == EbtFloat || right.getBasicType() == EbtFloat16;
+            else if (getBasicType() == EbtUint || getBasicType() == EbtUint8 || getBasicType() == EbtUint16)
+                rv = right.getBasicType() == EbtUint || right.getBasicType() == EbtUint8 || right.getBasicType() == EbtUint16;
+            else if (getBasicType() == EbtInt || getBasicType() == EbtInt8 || getBasicType() == EbtInt16)
+                rv = right.getBasicType() == EbtInt || right.getBasicType() == EbtInt8 || right.getBasicType() == EbtInt16;
+            else
+                rv = false;
+        } else if (isCoopMatKHR() && right.isCoopMatKHR()) {
+            if (getBasicType() == EbtFloat || getBasicType() == EbtFloat16)
+                rv = right.getBasicType() == EbtFloat || right.getBasicType() == EbtFloat16 || right.getBasicType() == EbtCoopmat;
+            else if (getBasicType() == EbtUint || getBasicType() == EbtUint8 || getBasicType() == EbtUint16)
+                rv = right.getBasicType() == EbtUint || right.getBasicType() == EbtUint8 || right.getBasicType() == EbtUint16 || right.getBasicType() == EbtCoopmat;
+            else if (getBasicType() == EbtInt || getBasicType() == EbtInt8 || getBasicType() == EbtInt16)
+                rv = right.getBasicType() == EbtInt || right.getBasicType() == EbtInt8 || right.getBasicType() == EbtInt16 || right.getBasicType() == EbtCoopmat;
+            else
+                rv = false;
+        }
         return rv;
     }
 
+    bool sameCoopMatUse(const TType &right) const {
+        return coopmatKHRuse == right.coopmatKHRuse;
+    }
+
+    bool sameCoopMatShapeAndUse(const TType &right) const
+    {
+        if (!isCoopMat() || !right.isCoopMat() || isCoopMatKHR() != right.isCoopMatKHR())
+            return false;
+
+        if (coopmatKHRuse != right.coopmatKHRuse)
+            return false;
+
+        // Skip bit width type parameter (first array size) for coopmatNV
+        int firstArrayDimToCompare = isCoopMatNV() ? 1 : 0;
+        for (int i = firstArrayDimToCompare; i < typeParameters->arraySizes->getNumDims(); ++i) {
+            if (typeParameters->arraySizes->getDimSize(i) != right.typeParameters->arraySizes->getDimSize(i))
+                return false;
+        }
+        return true;
+    }
 
     // See if two types match in all ways (just the actual type, not qualification)
     bool operator==(const TType& right) const
     {
-#ifndef GLSLANG_WEB
-        return sameElementType(right) && sameArrayness(right) && sameTypeParameters(right) && sameSpirvType(right);
-#else
-        return sameElementType(right) && sameArrayness(right) && sameTypeParameters(right);
-#endif
+        return sameElementType(right) && sameArrayness(right) && sameTypeParameters(right) && sameCoopMatUse(right) && sameSpirvType(right);
     }
 
     bool operator!=(const TType& right) const
@@ -2878,18 +2754,14 @@ public:
 
     unsigned int getBufferReferenceAlignment() const
     {
-#ifndef GLSLANG_WEB
         if (getBasicType() == glslang::EbtReference) {
             return getReferentType()->getQualifier().hasBufferReferenceAlign() ?
                         (1u << getReferentType()->getQualifier().layoutBufferReferenceAlign) : 16u;
         }
-#endif
         return 0;
     }
 
-#ifndef GLSLANG_WEB
     const TSpirvType& getSpirvType() const { assert(spirvType); return *spirvType; }
-#endif
 
 protected:
     // Require consumer to pick between deep copy and shallow copy.
@@ -2903,7 +2775,6 @@ protected:
     {
         shallowCopy(copyOf);
 
-#ifndef GLSLANG_WEB
         // GL_EXT_spirv_intrinsics
         if (copyOf.qualifier.spirvDecorate) {
             qualifier.spirvDecorate = new TSpirvDecorate;
@@ -2914,7 +2785,6 @@ protected:
             spirvType = new TSpirvType;
             *spirvType = *copyOf.spirvType;
         }
-#endif
 
         if (copyOf.arraySizes) {
             arraySizes = new TArraySizes;
@@ -2922,8 +2792,10 @@ protected:
         }
 
         if (copyOf.typeParameters) {
-            typeParameters = new TArraySizes;
-            *typeParameters = *copyOf.typeParameters;
+            typeParameters = new TTypeParameters;
+            typeParameters->arraySizes = new TArraySizes;
+            *typeParameters->arraySizes = *copyOf.typeParameters->arraySizes;
+            typeParameters->basicType = copyOf.basicType;
         }
 
         if (copyOf.isStruct() && copyOf.structure) {
@@ -2961,7 +2833,9 @@ protected:
                                // functionality is added.
                                // HLSL does have a 1-component vectors, so this will be true to disambiguate
                                // from a scalar.
-    bool coopmat         : 1;
+    bool coopmatNV       : 1;
+    bool coopmatKHR      : 1;
+    int coopmatKHRuse    : 4;  // Accepts one of three values: 0, 1, 2 (gl_MatrixUseA, gl_MatrixUseB, gl_MatrixUseAccumulator)
     TQualifier qualifier;
 
     TArraySizes* arraySizes;    // nullptr unless an array; can be shared across types
@@ -2974,10 +2848,8 @@ protected:
     TString *fieldName;         // for structure field names
     TString *typeName;          // for structure type name
     TSampler sampler;
-    TArraySizes* typeParameters;// nullptr unless a parameterized type; can be shared across types
-#ifndef GLSLANG_WEB
+    TTypeParameters *typeParameters;// nullptr unless a parameterized type; can be shared across types
     TSpirvType* spirvType;  // SPIR-V type defined by spirv_type directive
-#endif
 };
 
 } // end namespace glslang

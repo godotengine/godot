@@ -54,7 +54,6 @@
 // Godot is currently restricted to C++17 which doesn't allow this notation. Make sure critical fields are set.
 
 // forward declarations, we don't want to include these fully
-class OpenXRVulkanExtension;
 class OpenXRInterface;
 
 class OpenXRAPI {
@@ -140,6 +139,7 @@ private:
 		void *swapchain_graphics_data = nullptr;
 		uint32_t image_index = 0;
 		bool image_acquired = false;
+		bool skip_acquire_swapchain = false;
 	};
 
 	OpenXRSwapChainInfo swapchains[OPENXR_SWAPCHAIN_MAX];
@@ -289,7 +289,7 @@ private:
 	bool on_state_loss_pending();
 	bool on_state_exiting();
 
-	// convencience
+	// convenience
 	void copy_string_to_char_buffer(const String p_string, char *p_buffer, int p_buffer_len);
 
 public:
@@ -356,6 +356,7 @@ public:
 
 	void pre_render();
 	bool pre_draw_viewport(RID p_render_target);
+	XrSwapchain get_color_swapchain();
 	RID get_color_texture();
 	RID get_depth_texture();
 	void post_draw_viewport(RID p_render_target);
@@ -370,6 +371,15 @@ public:
 	double get_render_target_size_multiplier() const;
 	void set_render_target_size_multiplier(double multiplier);
 
+	// Foveation settings
+	bool is_foveation_supported() const;
+
+	int get_foveation_level() const;
+	void set_foveation_level(int p_foveation_level);
+
+	bool get_foveation_dynamic() const;
+	void set_foveation_dynamic(bool p_foveation_dynamic);
+
 	// action map
 	String get_default_action_map_resource_name();
 
@@ -380,7 +390,7 @@ public:
 
 	RID action_set_create(const String p_name, const String p_localized_name, const int p_priority);
 	String action_set_get_name(RID p_action_set);
-	bool action_set_attach(RID p_action_set);
+	bool attach_action_sets(const Vector<RID> &p_action_sets);
 	void action_set_free(RID p_action_set);
 
 	RID action_create(RID p_action_set, const String p_name, const String p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> &p_trackers);
@@ -405,7 +415,9 @@ public:
 	void unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
 
 	const XrEnvironmentBlendMode *get_supported_environment_blend_modes(uint32_t &count);
-	bool set_environment_blend_mode(XrEnvironmentBlendMode mode);
+	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
+	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
+	XrEnvironmentBlendMode get_environment_blend_mode() const { return environment_blend_mode; }
 
 	OpenXRAPI();
 	~OpenXRAPI();

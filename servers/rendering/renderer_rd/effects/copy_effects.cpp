@@ -104,9 +104,9 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		copy_modes.push_back("\n"); // COPY_TO_FB_COPY
 		copy_modes.push_back("\n#define MODE_PANORAMA_TO_DP\n"); // COPY_TO_FB_COPY_PANORAMA_TO_DP
 		copy_modes.push_back("\n#define MODE_TWO_SOURCES\n"); // COPY_TO_FB_COPY2
+		copy_modes.push_back("\n#define MODE_SET_COLOR\n"); // COPY_TO_FB_SET_COLOR
 		copy_modes.push_back("\n#define MULTIVIEW\n"); // COPY_TO_FB_MULTIVIEW
 		copy_modes.push_back("\n#define MULTIVIEW\n#define MODE_TWO_SOURCES\n"); // COPY_TO_FB_MULTIVIEW_WITH_DEPTH
-		copy_modes.push_back("\n#define MODE_SET_COLOR\n"); // COPY_TO_FB_SET_COLOR
 
 		copy_to_fb.shader.initialize(copy_modes);
 
@@ -281,8 +281,8 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		ba.enable_blend = true;
 		ba.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
 		ba.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
-		ba.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-		ba.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.src_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+		ba.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
 		ba.color_blend_op = RD::BLEND_OP_ADD;
 		ba.alpha_blend_op = RD::BLEND_OP_ADD;
 

@@ -665,8 +665,8 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 	}
 }
 
-double AnimationNodeStateMachinePlayback::process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
-	double rem = _process(p_base_path, p_state_machine, p_time, p_seek, p_is_external_seeking, p_test_only);
+double AnimationNodeStateMachinePlayback::process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
+	double rem = _process(p_base_path, p_state_machine, p_playback_info, p_test_only);
 	start_request = StringName();
 	next_request = false;
 	stop_request = false;
@@ -674,10 +674,14 @@ double AnimationNodeStateMachinePlayback::process(const String &p_base_path, Ani
 	return rem;
 }
 
-double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
+double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	_set_base_path(p_base_path);
 
-	AnimationTree *tree = p_state_machine->state->tree;
+	AnimationTree *tree = p_state_machine->process_state->tree;
+
+	double p_time = p_playback_info.time;
+	bool p_seek = p_playback_info.seeked;
+	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
 	// Check seek to 0 (means reset) by parent AnimationNode.
 	if (p_time == 0 && p_seek && !p_is_external_seeking) {
@@ -686,9 +690,9 @@ double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, An
 			if (p_state_machine->get_state_machine_type() != AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
 				path.clear();
 				_clear_path_children(tree, p_state_machine, p_test_only);
+				_start(p_state_machine);
 			}
 			reset_request = true;
-			_start(p_state_machine);
 		} else {
 			// Reset current state.
 			reset_request = true;
@@ -767,6 +771,8 @@ double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, An
 		}
 	}
 
+	AnimationMixer::PlaybackInfo pi = p_playback_info;
+
 	if (teleport_request) {
 		teleport_request = false;
 		// Clear fadeing on teleport.
@@ -774,7 +780,13 @@ double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, An
 		fading_pos = 0;
 		// Init current length.
 		pos_current = 0; // Overwritten suddenly in main process.
-		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, false, 0, AnimationNode::FILTER_IGNORE, true, true);
+
+		pi.time = 0;
+		pi.seeked = true;
+		pi.is_external_seeking = false;
+		pi.weight = 0;
+
+		len_current = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true);
 		// Don't process first node if not necessary, insteads process next node.
 		_transition_to_next_recursive(tree, p_state_machine, p_test_only);
 	}
@@ -818,12 +830,16 @@ double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, An
 
 	// Main process.
 	double rem = 0.0;
+	pi = p_playback_info;
+	pi.weight = fade_blend;
 	if (reset_request) {
 		reset_request = false;
-		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, fade_blend, AnimationNode::FILTER_IGNORE, true, p_test_only);
+		pi.time = 0;
+		pi.seeked = true;
+		len_current = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, p_test_only);
 		rem = len_current;
 	} else {
-		rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, fade_blend, AnimationNode::FILTER_IGNORE, true, p_test_only); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+		rem = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, p_test_only); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 	}
 
 	// Cross-fade process.
@@ -837,12 +853,14 @@ double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, An
 		}
 
 		float fading_from_rem = 0.0;
+		pi = p_playback_info;
+		pi.weight = fade_blend_inv;
 		if (_reset_request_for_fading_from) {
 			_reset_request_for_fading_from = false;
-			fading_from_rem = p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, 0, true, p_is_external_seeking, fade_blend_inv, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
-		} else {
-			fading_from_rem = p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, fade_blend_inv, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+			pi.time = 0;
+			pi.seeked = true;
 		}
+		fading_from_rem = p_state_machine->blend_node(p_state_machine->states[fading_from].node, fading_from, pi, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
 		// Guess playback position.
 		if (fading_from_rem > len_fade_from) { /// Weird but ok.
@@ -900,6 +918,7 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 
 	bool is_state_changed = false;
 
+	AnimationMixer::PlaybackInfo pi;
 	NextInfo next;
 	Vector<StringName> transition_path;
 	transition_path.push_back(current);
@@ -926,7 +945,11 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 		} else {
 			if (reset_request) {
 				// There is no possibility of processing doubly. Now we can apply reset actually in here.
-				p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, false, 0, AnimationNode::FILTER_IGNORE, true, p_test_only);
+				pi.time = 0;
+				pi.seeked = true;
+				pi.is_external_seeking = false;
+				pi.weight = 0;
+				p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, p_test_only);
 			}
 			fading_from = StringName();
 			fading_time = 0;
@@ -949,16 +972,25 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 		len_fade_from = len_current;
 
 		if (next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
-			p_state_machine->blend_node(current, p_state_machine->states[current].node, MIN(pos_current, len_current), true, false, 0, AnimationNode::FILTER_IGNORE, true);
+			pi.time = MIN(pos_current, len_current);
+			pi.seeked = true;
+			pi.is_external_seeking = false;
+			pi.weight = 0;
+			p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true);
 		}
 
 		// Just get length to find next recursive.
 		double rem = 0.0;
+		pi.time = 0;
+		pi.is_external_seeking = false;
+		pi.weight = 0;
 		if (next.is_reset) {
-			len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, false, 0, AnimationNode::FILTER_IGNORE, true, true); // Just retrieve remain length, don't process.
+			pi.seeked = true;
+			len_current = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true); // Just retrieve remain length, don't process.
 			rem = len_current;
 		} else {
-			rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, false, false, 0, AnimationNode::FILTER_IGNORE, true, true); // Just retrieve remain length, don't process.
+			pi.seeked = false;
+			rem = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true); // Just retrieve remain length, don't process.
 		}
 
 		// Guess playback position.
@@ -1100,7 +1132,7 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 
 	if (transition->expression.is_valid()) {
 		AnimationTree *tree_base = state_machine->get_animation_tree();
-		ERR_FAIL_COND_V(tree_base == nullptr, false);
+		ERR_FAIL_NULL_V(tree_base, false);
 
 		NodePath advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
 		Node *expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
@@ -1158,7 +1190,7 @@ Ref<AnimationNodeStateMachine> AnimationNodeStateMachinePlayback::_get_parent_st
 	Vector<String> split = base_path.split("/");
 	ERR_FAIL_COND_V_MSG(split.size() < 3, Ref<AnimationNodeStateMachine>(), "Path is too short.");
 	split = split.slice(1, split.size() - 2);
-	Ref<AnimationNode> root = p_tree->get_tree_root();
+	Ref<AnimationNode> root = p_tree->get_root_animation_node();
 	ERR_FAIL_COND_V_MSG(root.is_null(), Ref<AnimationNodeStateMachine>(), "There is no root AnimationNode in AnimationTree: " + String(p_tree->get_name()));
 	String anodesm_path = String("/").join(split);
 	Ref<AnimationNodeStateMachine> anodesm = !anodesm_path.size() ? root : root->find_node_by_path(anodesm_path);
@@ -1590,14 +1622,14 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
-double AnimationNodeStateMachine::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
+double AnimationNodeStateMachine::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	Ref<AnimationNodeStateMachinePlayback> playback_new = get_parameter(playback);
 	ERR_FAIL_COND_V(playback_new.is_null(), 0.0);
 	playback_new->_set_grouped(state_machine_type == STATE_MACHINE_TYPE_GROUPED);
 	if (p_test_only) {
 		playback_new = playback_new->duplicate(); // Don't process original when testing.
 	}
-	return playback_new->process(base_path, this, p_time, p_seek, p_is_external_seeking, p_test_only);
+	return playback_new->process(node_state.base_path, this, p_playback_info, p_test_only);
 }
 
 String AnimationNodeStateMachine::get_caption() const {

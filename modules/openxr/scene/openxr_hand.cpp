@@ -113,7 +113,7 @@ void OpenXRHand::_set_motion_range() {
 			break;
 	}
 
-	hand_tracking_ext->set_motion_range(hand, xr_motion_range);
+	hand_tracking_ext->set_motion_range(OpenXRHandTrackingExtension::HandTrackedHands(hand), xr_motion_range);
 }
 
 Skeleton3D *OpenXRHand::get_skeleton() {
@@ -204,7 +204,7 @@ void OpenXRHand::_update_skeleton() {
 	Quaternion inv_quaternions[XR_HAND_JOINT_COUNT_EXT];
 	Vector3 positions[XR_HAND_JOINT_COUNT_EXT];
 
-	const OpenXRHandTrackingExtension::HandTracker *hand_tracker = hand_tracking_ext->get_hand_tracker(hand);
+	const OpenXRHandTrackingExtension::HandTracker *hand_tracker = hand_tracking_ext->get_hand_tracker(OpenXRHandTrackingExtension::HandTrackedHands(hand));
 	const float ws = XRServer::get_singleton()->get_world_scale();
 
 	if (hand_tracker->is_initialized && hand_tracker->locations.isActive) {
@@ -213,8 +213,8 @@ void OpenXRHand::_update_skeleton() {
 			quaternions[i] = Quaternion();
 			positions[i] = Vector3();
 
-			const auto &location = hand_tracker->joint_locations[i];
-			const auto &pose = location.pose;
+			const XrHandJointLocationEXT &location = hand_tracker->joint_locations[i];
+			const XrPosef &pose = location.pose;
 
 			if (location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
 				if (pose.orientation.x != 0 || pose.orientation.y != 0 || pose.orientation.z != 0 || pose.orientation.w != 0) {
@@ -243,26 +243,27 @@ void OpenXRHand::_update_skeleton() {
 					// Get our target quaternion
 					Quaternion q = quaternions[i];
 
+					// Get our target position
+					Vector3 p = positions[i];
+
 					// get local translation, parent should already be processed
 					if (parent == -1) {
 						// use our palm location here, that is what we are tracking
 						q = inv_quaternions[XR_HAND_JOINT_PALM_EXT] * q;
+						p = inv_quaternions[XR_HAND_JOINT_PALM_EXT].xform(p - positions[XR_HAND_JOINT_PALM_EXT]);
 					} else {
 						int found = false;
 						for (int b = 0; b < XR_HAND_JOINT_COUNT_EXT && !found; b++) {
 							if (bones[b] == parent) {
 								q = inv_quaternions[b] * q;
+								p = inv_quaternions[b].xform(p - positions[b]);
 								found = true;
 							}
 						}
 					}
 
-					// And get the movement from our rest position
-					// Transform3D rest = skeleton->get_bone_rest(bones[i]);
-					// q = rest.basis.get_quaternion().inverse() * q;
-
 					// and set our pose
-					// skeleton->set_bone_pose_position(bones[i], v);
+					skeleton->set_bone_pose_position(bones[i], p);
 					skeleton->set_bone_pose_rotation(bones[i], q);
 				}
 			}

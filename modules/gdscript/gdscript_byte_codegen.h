@@ -97,7 +97,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	int max_locals = 0;
 	int current_line = 0;
 	int instr_args_max = 0;
-	int ptrcall_max = 0;
 
 #ifdef DEBUG_ENABLED
 	List<int> temp_stack;
@@ -143,7 +142,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	// Lists since these can be nested.
 	List<int> if_jmp_addrs;
 	List<int> for_jmp_addrs;
-	List<Address> for_iterator_variables;
 	List<Address> for_counter_variables;
 	List<Address> for_container_variables;
 	List<int> while_jmp_addrs;
@@ -347,12 +345,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
-	void alloc_ptrcall(int p_params) {
-		if (p_params >= ptrcall_max) {
-			ptrcall_max = p_params;
-		}
-	}
-
 	CallTarget get_call_target(const Address &p_target, Variant::Type p_type = Variant::NIL);
 
 	int address_of(const Address &p_address) {
@@ -520,7 +512,7 @@ public:
 	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
@@ -536,8 +528,8 @@ public:
 	virtual void write_jump_if_shared(const Address &p_value) override;
 	virtual void write_end_jump_if_shared() override;
 	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) override;
-	virtual void write_for_assignment(const Address &p_variable, const Address &p_list) override;
-	virtual void write_for() override;
+	virtual void write_for_assignment(const Address &p_list) override;
+	virtual void write_for(const Address &p_variable, bool p_use_conversion) override;
 	virtual void write_endfor() override;
 	virtual void start_while_condition() override;
 	virtual void write_while(const Address &p_condition) override;

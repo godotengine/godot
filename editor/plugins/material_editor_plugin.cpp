@@ -63,13 +63,13 @@ void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 void MaterialEditor::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
-	theme_cache.light_1_icon = get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons"));
-	theme_cache.light_2_icon = get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons"));
+	theme_cache.light_1_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
+	theme_cache.light_2_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
 
-	theme_cache.sphere_icon = get_theme_icon(SNAME("MaterialPreviewSphere"), SNAME("EditorIcons"));
-	theme_cache.box_icon = get_theme_icon(SNAME("MaterialPreviewCube"), SNAME("EditorIcons"));
+	theme_cache.sphere_icon = get_editor_theme_icon(SNAME("MaterialPreviewSphere"));
+	theme_cache.box_icon = get_editor_theme_icon(SNAME("MaterialPreviewCube"));
 
-	theme_cache.checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+	theme_cache.checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 }
 
 void MaterialEditor::_notification(int p_what) {
@@ -346,7 +346,7 @@ EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
 	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
 
-	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &EditorInspectorPluginMaterial::_undo_redo_inspector_callback));
+	EditorNode::get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &EditorInspectorPluginMaterial::_undo_redo_inspector_callback));
 }
 
 MaterialEditorPlugin::MaterialEditorPlugin() {

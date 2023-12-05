@@ -2297,34 +2297,6 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-
-			text_edit->set_caret_mid_grapheme_enabled(false);
-			CHECK_FALSE(text_edit->is_caret_mid_grapheme_enabled());
-
-			text_edit->start_action(TextEdit::EditAction::ACTION_NONE);
-
-			text_edit->undo();
-			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "ffi some test text.ffi some test text.");
-
-			SIGNAL_DISCARD("text_set");
-			SIGNAL_DISCARD("text_changed");
-			SIGNAL_DISCARD("lines_edited_from");
-			SIGNAL_DISCARD("caret_changed");
-
-			SEND_GUI_ACTION("ui_text_delete");
-			CHECK(text_edit->get_viewport()->is_input_handled());
-			CHECK(text_edit->get_text() == " some test text. some test text.");
-			CHECK(text_edit->get_caret_line() == 0);
-			CHECK(text_edit->get_caret_column() == 0);
-			CHECK_FALSE(text_edit->has_selection(0));
-
-			CHECK(text_edit->get_caret_line(1) == 0);
-			CHECK(text_edit->get_caret_column(1) == 16);
-			CHECK_FALSE(text_edit->has_selection(1));
-			SIGNAL_CHECK("caret_changed", empty_signal_args);
-			SIGNAL_CHECK("text_changed", empty_signal_args);
-			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_word_left") {
@@ -3221,7 +3193,7 @@ TEST_CASE("[SceneTree][TextEdit] search") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
-	text_edit->set_text("hay needle, hay\nHAY NEEDLE, HAY");
+	text_edit->set_text("hay needle, hay\nHAY NEEDLE, HAY\nwordword.word.word");
 	int length = text_edit->get_line(1).length();
 
 	CHECK(text_edit->search("test", 0, 0, 0) == Point2i(-1, -1));
@@ -3253,6 +3225,11 @@ TEST_CASE("[SceneTree][TextEdit] search") {
 	CHECK(text_edit->search("need", TextEdit::SEARCH_WHOLE_WORDS | TextEdit::SEARCH_MATCH_CASE, 0, 0) == Point2i(-1, -1));
 	CHECK(text_edit->search("need", TextEdit::SEARCH_WHOLE_WORDS | TextEdit::SEARCH_MATCH_CASE | TextEdit::SEARCH_BACKWARDS, 0, 0) == Point2i(-1, -1));
 
+	CHECK(text_edit->search("word", TextEdit::SEARCH_WHOLE_WORDS, 2, 0) == Point2i(9, 2));
+	CHECK(text_edit->search("word", TextEdit::SEARCH_WHOLE_WORDS, 2, 10) == Point2i(14, 2));
+	CHECK(text_edit->search(".word", TextEdit::SEARCH_WHOLE_WORDS, 2, 0) == Point2i(8, 2));
+	CHECK(text_edit->search("word.", TextEdit::SEARCH_WHOLE_WORDS, 2, 0) == Point2i(9, 2));
+
 	ERR_PRINT_OFF;
 	CHECK(text_edit->search("", 0, 0, 0) == Point2i(-1, -1));
 	CHECK(text_edit->search("needle", 0, -1, 0) == Point2i(-1, -1));
@@ -3269,6 +3246,15 @@ TEST_CASE("[SceneTree][TextEdit] mouse") {
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
 	text_edit->set_size(Size2(800, 200));
+
+	CHECK(text_edit->get_rect_at_line_column(0, 0).get_position() == Point2i(0, 0));
+
+	text_edit->set_line(0, "A");
+	MessageQueue::get_singleton()->flush();
+	CHECK(text_edit->get_rect_at_line_column(0, 1).get_position().x > 0);
+
+	text_edit->clear(); // Necessary, otherwise the following test cases fail.
+
 	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	MessageQueue::get_singleton()->flush();
 
@@ -3334,18 +3320,6 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 
 	SEND_GUI_ACTION("ui_text_caret_left");
 	CHECK(text_edit->get_caret_column() == 2);
-
-	text_edit->set_caret_mid_grapheme_enabled(false);
-	CHECK_FALSE(text_edit->is_caret_mid_grapheme_enabled());
-
-	SEND_GUI_ACTION("ui_text_caret_left");
-	CHECK(text_edit->get_caret_column() == 0);
-
-	SEND_GUI_ACTION("ui_text_caret_right");
-	CHECK(text_edit->get_caret_column() == 3);
-
-	SEND_GUI_ACTION("ui_text_caret_left");
-	CHECK(text_edit->get_caret_column() == 0);
 
 	text_edit->set_line(0, "Lorem  ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	for (int i = 0; i < 3; i++) {
@@ -3939,7 +3913,8 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_h_scroll() == 0);
 
 	text_edit->set_h_scroll(10000000);
-	CHECK(text_edit->get_h_scroll() == 314);
+	CHECK(text_edit->get_h_scroll() == 306);
+	CHECK(text_edit->get_h_scroll_bar()->get_combined_minimum_size().x == 8);
 
 	text_edit->set_h_scroll(-100);
 	CHECK(text_edit->get_h_scroll() == 0);

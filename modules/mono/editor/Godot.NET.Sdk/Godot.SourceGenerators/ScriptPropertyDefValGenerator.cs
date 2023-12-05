@@ -88,16 +88,20 @@ namespace Godot.SourceGenerators
             if (isInnerClass)
             {
                 var containingType = symbol.ContainingType;
+                AppendPartialContainingTypeDeclarations(containingType);
 
-                while (containingType != null)
+                void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
                 {
+                    if (containingType == null)
+                        return;
+
+                    AppendPartialContainingTypeDeclarations(containingType.ContainingType);
+
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
                     source.Append(containingType.NameWithTypeParameters());
                     source.Append("\n{\n");
-
-                    containingType = containingType.ContainingType;
                 }
             }
 
@@ -164,6 +168,15 @@ namespace Godot.SourceGenerators
                 {
                     Common.ReportExportedMemberTypeNotSupported(context, property);
                     continue;
+                }
+
+                if (marshalType == MarshalType.GodotObjectOrDerived)
+                {
+                    if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
+                        propertyType.InheritsFrom("GodotSharp", "Godot.Node"))
+                    {
+                        Common.ReportOnlyNodesShouldExportNodes(context, property);
+                    }
                 }
 
                 var propertyDeclarationSyntax = property.DeclaringSyntaxReferences
@@ -259,6 +272,15 @@ namespace Godot.SourceGenerators
                 {
                     Common.ReportExportedMemberTypeNotSupported(context, field);
                     continue;
+                }
+
+                if (marshalType == MarshalType.GodotObjectOrDerived)
+                {
+                    if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
+                        fieldType.InheritsFrom("GodotSharp", "Godot.Node"))
+                    {
+                        Common.ReportOnlyNodesShouldExportNodes(context, field);
+                    }
                 }
 
                 EqualsValueClauseSyntax? initializer = field.DeclaringSyntaxReferences

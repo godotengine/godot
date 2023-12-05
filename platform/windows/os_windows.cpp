@@ -395,7 +395,7 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 		}
 	}
 #else
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, format_error_message(GetLastError())));
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, format_error_message(GetLastError())));
 #endif
 
 	if (cookie) {
@@ -1356,18 +1356,13 @@ Error OS_Windows::shell_open(String p_uri) {
 }
 
 Error OS_Windows::shell_show_in_file_manager(String p_path, bool p_open_folder) {
-	p_path = p_path.trim_suffix("file://");
-
 	bool open_folder = false;
 	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
 		open_folder = true;
 	}
 
-	if (p_path.begins_with("\"")) {
-		p_path = String("\"") + p_path;
-	}
-	if (p_path.ends_with("\"")) {
-		p_path = p_path + String("\"");
+	if (!p_path.is_quoted()) {
+		p_path = p_path.quote();
 	}
 	p_path = p_path.replace("/", "\\");
 
@@ -1683,7 +1678,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 
 String OS_Windows::get_system_ca_certificates() {
 	HCERTSTORE cert_store = CertOpenSystemStoreA(0, "ROOT");
-	ERR_FAIL_COND_V_MSG(!cert_store, "", "Failed to read the root certificate store.");
+	ERR_FAIL_NULL_V_MSG(cert_store, "", "Failed to read the root certificate store.");
 
 	FILETIME curr_time;
 	GetSystemTimeAsFileTime(&curr_time);

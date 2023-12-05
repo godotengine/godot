@@ -30,7 +30,9 @@
 
 #include "lightmap_gi_gizmo_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/lightmap_gi.h"
 
@@ -45,10 +47,11 @@ LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 	mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, false);
+	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 	add_material("lightmap_probe_material", mat);
 
-	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoLightmapGI"), SNAME("EditorIcons")));
+	create_icon_material("baked_indirect_light_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoLightmapGI"), EditorStringName(EditorIcons)));
 }
 
 bool LightmapGIGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -68,16 +71,16 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	LightmapGI *baker = Object::cast_to<LightmapGI>(p_gizmo->get_node_3d());
 	Ref<LightmapGIData> data = baker->get_light_data();
 
+	p_gizmo->clear();
+
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 
-	if (data.is_null()) {
+	if (data.is_null() || !p_gizmo->is_selected()) {
 		return;
 	}
 
 	Ref<Material> material_lines = get_material("lightmap_lines", p_gizmo);
 	Ref<Material> material_probes = get_material("lightmap_probe_material", p_gizmo);
-
-	p_gizmo->clear();
 
 	Vector<Vector3> lines;
 	HashSet<Vector2i> lines_found;

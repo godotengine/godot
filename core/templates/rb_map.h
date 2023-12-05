@@ -96,6 +96,8 @@ public:
 	typedef KeyValue<K, V> ValueType;
 
 	struct Iterator {
+		friend class RBMap<K, V, C, A>;
+
 		_FORCE_INLINE_ KeyValue<K, V> &operator*() const {
 			return E->key_value();
 		}

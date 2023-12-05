@@ -409,9 +409,6 @@ void validate_method(const Context &p_context, const ExposedClass &p_class, cons
 	if (p_method.return_type.name != StringName()) {
 		const ExposedClass *return_class = p_context.find_exposed_class(p_method.return_type);
 		if (return_class) {
-			TEST_COND(return_class->is_singleton,
-					"Method return type is a singleton: '", p_class.name, ".", p_method.name, "'.");
-
 			if (p_class.api_type == ClassDB::API_CORE) {
 				TEST_COND(return_class->api_type == ClassDB::API_EDITOR,
 						"Method '", p_class.name, ".", p_method.name, "' has return type '", return_class->name,

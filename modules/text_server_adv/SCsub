@@ -39,7 +39,15 @@ freetype_enabled = "freetype" in env.module_list
 msdfgen_enabled = "msdfgen" in env.module_list
 
 if "svg" in env.module_list:
-    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/thorvg/inc", "#thirdparty/thorvg/src/lib"])
+    env_text_server_adv.Prepend(
+        CPPPATH=[
+            "#thirdparty/thorvg/inc",
+            "#thirdparty/thorvg/src/common",
+            "#thirdparty/thorvg/src/renderer",
+        ]
+    )
+    # Enable ThorVG static object linking.
+    env_text_server_adv.Append(CPPDEFINES=["TVG_STATIC"])
 
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()

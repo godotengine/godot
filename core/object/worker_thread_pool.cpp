@@ -30,12 +30,13 @@
 
 #include "worker_thread_pool.h"
 
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
 
 void WorkerThreadPool::Task::free_template_userdata() {
-	ERR_FAIL_COND(!template_userdata);
-	ERR_FAIL_COND(native_func_userdata == nullptr);
+	ERR_FAIL_NULL(template_userdata);
+	ERR_FAIL_NULL(native_func_userdata);
 	BaseTemplateUserdata *btu = (BaseTemplateUserdata *)native_func_userdata;
 	memdelete(btu);
 }
@@ -60,6 +61,14 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		set_current_thread_safe_for_nodes(false);
 		pool_thread_index = thread_ids[Thread::get_caller_id()];
 		ThreadData &curr_thread = threads[pool_thread_index];
+		// Since the WorkerThreadPool is started before the script server,
+		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
+		// Therefore, we do it late at the first opportunity, so in case the task
+		// about to be run uses scripting, guarantees are held.
+		if (!curr_thread.ready_for_scripting && ScriptServer::are_languages_initialized()) {
+			ScriptServer::thread_enter();
+			curr_thread.ready_for_scripting = true;
+		}
 		task_mutex.lock();
 		p_task->pool_thread_index = pool_thread_index;
 		if (low_priority) {
@@ -75,10 +84,6 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	if (p_task->group) {
 		// Handling a group
 		bool do_post = false;
-		Callable::CallError ce;
-		Variant ret;
-		Variant arg;
-		Variant *argptr = &arg;
 
 		while (true) {
 			uint32_t work_index = p_task->group->index.postincrement();
@@ -91,8 +96,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 			} else if (p_task->template_userdata) {
 				p_task->template_userdata->callback_indexed(work_index);
 			} else {
-				arg = work_index;
-				p_task->callable.callp((const Variant **)&argptr, 1, ret, ce);
+				p_task->callable.call(work_index);
 			}
 
 			// This is the only way to ensure posting is done when all tasks are really complete.
@@ -141,9 +145,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 			p_task->template_userdata->callback();
 			memdelete(p_task->template_userdata);
 		} else {
-			Callable::CallError ce;
-			Variant ret;
-			p_task->callable.callp(nullptr, 0, ret, ce);
+			p_task->callable.call();
 		}
 
 		task_mutex.lock();

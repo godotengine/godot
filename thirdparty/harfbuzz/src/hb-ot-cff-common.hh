@@ -94,10 +94,10 @@ struct CFFIndex
     for (const auto &_ : +it)
     {
       unsigned len = _.length;
+      if (!len)
+	continue;
       if (len <= 1)
       {
-        if (!len)
-	  continue;
 	*ret++ = *_.arrayZ;
 	continue;
       }

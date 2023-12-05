@@ -52,9 +52,12 @@ class VulkanContext {
 public:
 	struct SubgroupCapabilities {
 		uint32_t size;
+		uint32_t min_size;
+		uint32_t max_size;
 		VkShaderStageFlags supportedStages;
 		VkSubgroupFeatureFlags supportedOperations;
 		VkBool32 quadOperationsInAllStages;
+		bool size_control_is_supported;
 
 		uint32_t supported_stages_flags_rd() const;
 		String supported_stages_desc() const;
@@ -116,6 +119,7 @@ private:
 	VRSCapabilities vrs_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
+	bool pipeline_cache_control_support = false;
 
 	String device_vendor;
 	String device_name;
@@ -281,6 +285,7 @@ public:
 	const ShaderCapabilities &get_shader_capabilities() const { return shader_capabilities; };
 	const StorageBufferCapabilities &get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
 	const VkPhysicalDeviceFeatures &get_physical_device_features() const { return physical_device_features; };
+	bool get_pipeline_cache_control_support() const { return pipeline_cache_control_support; };
 
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();

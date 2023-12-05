@@ -41,6 +41,7 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_script.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export_platform.h"
@@ -132,6 +133,8 @@ void register_editor_types() {
 
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
+
+	EditorStringNames::create();
 
 	GDREGISTER_CLASS(EditorPaths);
 	GDREGISTER_CLASS(EditorPlugin);
@@ -254,8 +257,8 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton2DEditorPlugin>();
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
-	EditorPlugins::add_by_type<TileMapEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
+	EditorPlugins::add_by_type<TileMapEditorPlugin>();
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");
@@ -275,6 +278,9 @@ void register_editor_types() {
 	GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
 
 	EditorInterface::create();
+	Engine::Singleton ei_singleton = Engine::Singleton("EditorInterface", EditorInterface::get_singleton());
+	ei_singleton.editor_only = true;
+	Engine::get_singleton()->add_singleton(ei_singleton);
 
 	OS::get_singleton()->benchmark_end_measure("register_editor_types");
 }
@@ -288,6 +294,7 @@ void unregister_editor_types() {
 	if (EditorPaths::get_singleton()) {
 		EditorPaths::free();
 	}
+	EditorStringNames::free();
 
 	OS::get_singleton()->benchmark_end_measure("unregister_editor_types");
 }

@@ -34,6 +34,8 @@
 #include "core/io/resource_saver.h"
 #include "servers/rendering/rendering_server_globals.h"
 
+#include "extensions/openxr_eye_gaze_interaction.h"
+
 void OpenXRInterface::_bind_methods() {
 	// lifecycle signals
 	ADD_SIGNAL(MethodInfo("session_begun"));
@@ -52,11 +54,84 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_render_target_size_multiplier", "multiplier"), &OpenXRInterface::set_render_target_size_multiplier);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "render_target_size_multiplier"), "set_render_target_size_multiplier", "get_render_target_size_multiplier");
 
+	// Foveation level
+	ClassDB::bind_method(D_METHOD("is_foveation_supported"), &OpenXRInterface::is_foveation_supported);
+
+	ClassDB::bind_method(D_METHOD("get_foveation_level"), &OpenXRInterface::get_foveation_level);
+	ClassDB::bind_method(D_METHOD("set_foveation_level", "foveation_level"), &OpenXRInterface::set_foveation_level);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "foveation_level"), "set_foveation_level", "get_foveation_level");
+
+	ClassDB::bind_method(D_METHOD("get_foveation_dynamic"), &OpenXRInterface::get_foveation_dynamic);
+	ClassDB::bind_method(D_METHOD("set_foveation_dynamic", "foveation_dynamic"), &OpenXRInterface::set_foveation_dynamic);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "foveation_dynamic"), "set_foveation_dynamic", "get_foveation_dynamic");
+
+	// Action sets
 	ClassDB::bind_method(D_METHOD("is_action_set_active", "name"), &OpenXRInterface::is_action_set_active);
 	ClassDB::bind_method(D_METHOD("set_action_set_active", "name", "active"), &OpenXRInterface::set_action_set_active);
 	ClassDB::bind_method(D_METHOD("get_action_sets"), &OpenXRInterface::get_action_sets);
 
+	// Refresh rates
 	ClassDB::bind_method(D_METHOD("get_available_display_refresh_rates"), &OpenXRInterface::get_available_display_refresh_rates);
+
+	// Hand tracking.
+	ClassDB::bind_method(D_METHOD("set_motion_range", "hand", "motion_range"), &OpenXRInterface::set_motion_range);
+	ClassDB::bind_method(D_METHOD("get_motion_range", "hand"), &OpenXRInterface::get_motion_range);
+
+	ClassDB::bind_method(D_METHOD("get_hand_joint_flags", "hand", "joint"), &OpenXRInterface::get_hand_joint_flags);
+
+	ClassDB::bind_method(D_METHOD("get_hand_joint_rotation", "hand", "joint"), &OpenXRInterface::get_hand_joint_rotation);
+	ClassDB::bind_method(D_METHOD("get_hand_joint_position", "hand", "joint"), &OpenXRInterface::get_hand_joint_position);
+	ClassDB::bind_method(D_METHOD("get_hand_joint_radius", "hand", "joint"), &OpenXRInterface::get_hand_joint_radius);
+
+	ClassDB::bind_method(D_METHOD("get_hand_joint_linear_velocity", "hand", "joint"), &OpenXRInterface::get_hand_joint_linear_velocity);
+	ClassDB::bind_method(D_METHOD("get_hand_joint_angular_velocity", "hand", "joint"), &OpenXRInterface::get_hand_joint_angular_velocity);
+
+	ClassDB::bind_method(D_METHOD("is_hand_tracking_supported"), &OpenXRInterface::is_hand_tracking_supported);
+	ClassDB::bind_method(D_METHOD("is_eye_gaze_interaction_supported"), &OpenXRInterface::is_eye_gaze_interaction_supported);
+
+	BIND_ENUM_CONSTANT(HAND_LEFT);
+	BIND_ENUM_CONSTANT(HAND_RIGHT);
+	BIND_ENUM_CONSTANT(HAND_MAX);
+
+	BIND_ENUM_CONSTANT(HAND_MOTION_RANGE_UNOBSTRUCTED);
+	BIND_ENUM_CONSTANT(HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER);
+	BIND_ENUM_CONSTANT(HAND_MOTION_RANGE_MAX);
+
+	BIND_ENUM_CONSTANT(HAND_JOINT_PALM);
+	BIND_ENUM_CONSTANT(HAND_JOINT_WRIST);
+	BIND_ENUM_CONSTANT(HAND_JOINT_THUMB_METACARPAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_THUMB_PROXIMAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_THUMB_DISTAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_THUMB_TIP);
+	BIND_ENUM_CONSTANT(HAND_JOINT_INDEX_METACARPAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_INDEX_PROXIMAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_INDEX_INTERMEDIATE);
+	BIND_ENUM_CONSTANT(HAND_JOINT_INDEX_DISTAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_INDEX_TIP);
+	BIND_ENUM_CONSTANT(HAND_JOINT_MIDDLE_METACARPAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_MIDDLE_PROXIMAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_MIDDLE_INTERMEDIATE);
+	BIND_ENUM_CONSTANT(HAND_JOINT_MIDDLE_DISTAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_MIDDLE_TIP);
+	BIND_ENUM_CONSTANT(HAND_JOINT_RING_METACARPAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_RING_PROXIMAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_RING_INTERMEDIATE);
+	BIND_ENUM_CONSTANT(HAND_JOINT_RING_DISTAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_RING_TIP);
+	BIND_ENUM_CONSTANT(HAND_JOINT_LITTLE_METACARPAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_LITTLE_PROXIMAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_LITTLE_INTERMEDIATE);
+	BIND_ENUM_CONSTANT(HAND_JOINT_LITTLE_DISTAL);
+	BIND_ENUM_CONSTANT(HAND_JOINT_LITTLE_TIP);
+	BIND_ENUM_CONSTANT(HAND_JOINT_MAX);
+
+	BIND_BITFIELD_FLAG(HAND_JOINT_NONE);
+	BIND_BITFIELD_FLAG(HAND_JOINT_ORIENTATION_VALID);
+	BIND_BITFIELD_FLAG(HAND_JOINT_ORIENTATION_TRACKED);
+	BIND_BITFIELD_FLAG(HAND_JOINT_POSITION_VALID);
+	BIND_BITFIELD_FLAG(HAND_JOINT_POSITION_TRACKED);
+	BIND_BITFIELD_FLAG(HAND_JOINT_LINEAR_VELOCITY_VALID);
+	BIND_BITFIELD_FLAG(HAND_JOINT_ANGULAR_VELOCITY_VALID);
 }
 
 StringName OpenXRInterface::get_name() const {
@@ -90,7 +165,9 @@ PackedStringArray OpenXRInterface::get_suggested_tracker_names() const {
 		"/user/vive_tracker_htcx/role/waist",
 		"/user/vive_tracker_htcx/role/chest",
 		"/user/vive_tracker_htcx/role/camera",
-		"/user/vive_tracker_htcx/role/keyboard"
+		"/user/vive_tracker_htcx/role/keyboard",
+
+		"/user/eyes_ext",
 	};
 
 	return arr;
@@ -555,9 +632,11 @@ bool OpenXRInterface::initialize() {
 	xr_server->add_tracker(head);
 
 	// attach action sets
+	Vector<RID> loaded_action_sets;
 	for (int i = 0; i < action_sets.size(); i++) {
-		openxr_api->action_set_attach(action_sets[i]->action_set_rid);
+		loaded_action_sets.append(action_sets[i]->action_set_rid);
 	}
+	openxr_api->attach_action_sets(loaded_action_sets);
 
 	// make this our primary interface
 	xr_server->set_primary_interface(this);
@@ -641,6 +720,36 @@ Array OpenXRInterface::get_available_display_refresh_rates() const {
 	}
 }
 
+bool OpenXRInterface::is_hand_tracking_supported() {
+	if (openxr_api == nullptr) {
+		return false;
+	} else if (!openxr_api->is_initialized()) {
+		return false;
+	} else {
+		OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+		if (hand_tracking_ext == nullptr) {
+			return false;
+		} else {
+			return hand_tracking_ext->get_active();
+		}
+	}
+}
+
+bool OpenXRInterface::is_eye_gaze_interaction_supported() {
+	if (openxr_api == nullptr) {
+		return false;
+	} else if (!openxr_api->is_initialized()) {
+		return false;
+	} else {
+		OpenXREyeGazeInteractionExtension *eye_gaze_ext = OpenXREyeGazeInteractionExtension::get_singleton();
+		if (eye_gaze_ext == nullptr) {
+			return false;
+		} else {
+			return eye_gaze_ext->supports_eye_gaze_interaction();
+		}
+	}
+}
+
 bool OpenXRInterface::is_action_set_active(const String &p_action_set) const {
 	for (ActionSet *action_set : action_sets) {
 		if (action_set->action_set_name == p_action_set) {
@@ -686,6 +795,46 @@ void OpenXRInterface::set_render_target_size_multiplier(double multiplier) {
 		return;
 	} else {
 		openxr_api->set_render_target_size_multiplier(multiplier);
+	}
+}
+
+bool OpenXRInterface::is_foveation_supported() const {
+	if (openxr_api == nullptr) {
+		return false;
+	} else {
+		return openxr_api->is_foveation_supported();
+	}
+}
+
+int OpenXRInterface::get_foveation_level() const {
+	if (openxr_api == nullptr) {
+		return 0;
+	} else {
+		return openxr_api->get_foveation_level();
+	}
+}
+
+void OpenXRInterface::set_foveation_level(int p_foveation_level) {
+	if (openxr_api == nullptr) {
+		return;
+	} else {
+		openxr_api->set_foveation_level(p_foveation_level);
+	}
+}
+
+bool OpenXRInterface::get_foveation_dynamic() const {
+	if (openxr_api == nullptr) {
+		return false;
+	} else {
+		return openxr_api->get_foveation_dynamic();
+	}
+}
+
+void OpenXRInterface::set_foveation_dynamic(bool p_foveation_dynamic) {
+	if (openxr_api == nullptr) {
+		return;
+	} else {
+		openxr_api->set_foveation_dynamic(p_foveation_dynamic);
 	}
 }
 
@@ -784,6 +933,48 @@ RID OpenXRInterface::get_depth_texture() {
 	}
 }
 
+void OpenXRInterface::handle_hand_tracking(const String &p_path, OpenXRHandTrackingExtension::HandTrackedHands p_hand) {
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		OpenXRInterface::Tracker *tracker = find_tracker(p_path);
+		if (tracker && tracker->positional_tracker.is_valid()) {
+			XrSpaceLocationFlags location_flags = hand_tracking_ext->get_hand_joint_location_flags(p_hand, XR_HAND_JOINT_PALM_EXT);
+
+			if (location_flags & (XR_SPACE_LOCATION_ORIENTATION_VALID_BIT + XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
+				static const XrSpaceLocationFlags all_location_flags = XR_SPACE_LOCATION_ORIENTATION_VALID_BIT + XR_SPACE_LOCATION_POSITION_VALID_BIT + XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT + XR_SPACE_LOCATION_POSITION_TRACKED_BIT;
+				XRPose::TrackingConfidence confidence = XRPose::XR_TRACKING_CONFIDENCE_LOW;
+				Transform3D transform;
+				Vector3 linear_velocity;
+				Vector3 angular_velocity;
+
+				if ((location_flags & all_location_flags) == all_location_flags) {
+					// All flags set? confidence is high!
+					confidence = XRPose::XR_TRACKING_CONFIDENCE_HIGH;
+				}
+
+				if (location_flags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+					transform.basis = Basis(hand_tracking_ext->get_hand_joint_rotation(p_hand, XR_HAND_JOINT_PALM_EXT));
+				}
+				if (location_flags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
+					transform.origin = hand_tracking_ext->get_hand_joint_position(p_hand, XR_HAND_JOINT_PALM_EXT);
+				}
+
+				XrSpaceVelocityFlags velocity_flags = hand_tracking_ext->get_hand_joint_location_flags(p_hand, XR_HAND_JOINT_PALM_EXT);
+				if (velocity_flags & XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
+					linear_velocity = hand_tracking_ext->get_hand_joint_linear_velocity(p_hand, XR_HAND_JOINT_PALM_EXT);
+				}
+				if (velocity_flags & XR_SPACE_VELOCITY_ANGULAR_VALID_BIT) {
+					angular_velocity = hand_tracking_ext->get_hand_joint_angular_velocity(p_hand, XR_HAND_JOINT_PALM_EXT);
+				}
+
+				tracker->positional_tracker->set_pose("skeleton", transform, linear_velocity, angular_velocity, confidence);
+			} else {
+				tracker->positional_tracker->invalidate_pose("skeleton");
+			}
+		}
+	}
+}
+
 void OpenXRInterface::process() {
 	if (openxr_api) {
 		// do our normal process
@@ -791,8 +982,8 @@ void OpenXRInterface::process() {
 			Transform3D t;
 			Vector3 linear_velocity;
 			Vector3 angular_velocity;
-			XRPose::TrackingConfidence confidence = openxr_api->get_head_center(t, linear_velocity, angular_velocity);
-			if (confidence != XRPose::XR_TRACKING_CONFIDENCE_NONE) {
+			head_confidence = openxr_api->get_head_center(t, linear_velocity, angular_velocity);
+			if (head_confidence != XRPose::XR_TRACKING_CONFIDENCE_NONE) {
 				// Only update our transform if we have one to update it with
 				// note that poses are stored without world scale and reference frame applied!
 				head_transform = t;
@@ -814,14 +1005,14 @@ void OpenXRInterface::process() {
 				handle_tracker(trackers[i]);
 			}
 		}
+
+		// Handle hand tracking
+		handle_hand_tracking("/user/hand/left", OpenXRHandTrackingExtension::OPENXR_TRACKED_LEFT_HAND);
+		handle_hand_tracking("/user/hand/right", OpenXRHandTrackingExtension::OPENXR_TRACKED_RIGHT_HAND);
 	}
 
 	if (head.is_valid()) {
-		// TODO figure out how to get our velocities
-
-		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity);
-
-		// TODO set confidence on pose once we support tracking this..
+		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity, head_confidence);
 	}
 }
 
@@ -934,6 +1125,27 @@ Array OpenXRInterface::get_supported_environment_blend_modes() {
 	return modes;
 }
 
+XRInterface::EnvironmentBlendMode OpenXRInterface::get_environment_blend_mode() const {
+	if (openxr_api) {
+		XrEnvironmentBlendMode oxr_blend_mode = openxr_api->get_environment_blend_mode();
+		switch (oxr_blend_mode) {
+			case XR_ENVIRONMENT_BLEND_MODE_OPAQUE: {
+				return XR_ENV_BLEND_MODE_OPAQUE;
+			} break;
+			case XR_ENVIRONMENT_BLEND_MODE_ADDITIVE: {
+				return XR_ENV_BLEND_MODE_ADDITIVE;
+			} break;
+			case XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND: {
+				return XR_ENV_BLEND_MODE_ALPHA_BLEND;
+			} break;
+			default:
+				break;
+		}
+	}
+
+	return XR_ENV_BLEND_MODE_OPAQUE;
+}
+
 bool OpenXRInterface::set_environment_blend_mode(XRInterface::EnvironmentBlendMode mode) {
 	if (openxr_api) {
 		XrEnvironmentBlendMode oxr_blend_mode;
@@ -974,6 +1186,127 @@ void OpenXRInterface::on_state_stopping() {
 
 void OpenXRInterface::on_pose_recentered() {
 	emit_signal(SNAME("pose_recentered"));
+}
+
+/** Hand tracking. */
+void OpenXRInterface::set_motion_range(const Hand p_hand, const HandMotionRange p_motion_range) {
+	ERR_FAIL_INDEX(p_hand, HAND_MAX);
+	ERR_FAIL_INDEX(p_motion_range, HAND_MOTION_RANGE_MAX);
+
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		XrHandJointsMotionRangeEXT xr_motion_range;
+		switch (p_motion_range) {
+			case HAND_MOTION_RANGE_UNOBSTRUCTED:
+				xr_motion_range = XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT;
+				break;
+			case HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER:
+				xr_motion_range = XR_HAND_JOINTS_MOTION_RANGE_CONFORMING_TO_CONTROLLER_EXT;
+				break;
+			default:
+				// Shouldn't get here, ERR_FAIL_INDEX should have caught this...
+				xr_motion_range = XR_HAND_JOINTS_MOTION_RANGE_CONFORMING_TO_CONTROLLER_EXT;
+				break;
+		}
+
+		hand_tracking_ext->set_motion_range(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), xr_motion_range);
+	}
+}
+
+OpenXRInterface::HandMotionRange OpenXRInterface::get_motion_range(const Hand p_hand) const {
+	ERR_FAIL_INDEX_V(p_hand, HAND_MAX, HAND_MOTION_RANGE_MAX);
+
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		XrHandJointsMotionRangeEXT xr_motion_range = hand_tracking_ext->get_motion_range(OpenXRHandTrackingExtension::HandTrackedHands(p_hand));
+
+		switch (xr_motion_range) {
+			case XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT:
+				return HAND_MOTION_RANGE_UNOBSTRUCTED;
+			case XR_HAND_JOINTS_MOTION_RANGE_CONFORMING_TO_CONTROLLER_EXT:
+				return HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER;
+			default:
+				ERR_FAIL_V_MSG(HAND_MOTION_RANGE_MAX, "Unknown motion range returned by OpenXR");
+		}
+	}
+
+	return HAND_MOTION_RANGE_MAX;
+}
+
+BitField<OpenXRInterface::HandJointFlags> OpenXRInterface::get_hand_joint_flags(Hand p_hand, HandJoints p_joint) const {
+	BitField<OpenXRInterface::HandJointFlags> bits;
+
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		XrSpaceLocationFlags location_flags = hand_tracking_ext->get_hand_joint_location_flags(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
+		if (location_flags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+			bits.set_flag(HAND_JOINT_ORIENTATION_VALID);
+		}
+		if (location_flags & XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT) {
+			bits.set_flag(HAND_JOINT_ORIENTATION_TRACKED);
+		}
+		if (location_flags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
+			bits.set_flag(HAND_JOINT_POSITION_VALID);
+		}
+		if (location_flags & XR_SPACE_LOCATION_POSITION_TRACKED_BIT) {
+			bits.set_flag(HAND_JOINT_POSITION_TRACKED);
+		}
+
+		XrSpaceVelocityFlags velocity_flags = hand_tracking_ext->get_hand_joint_velocity_flags(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
+		if (velocity_flags & XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
+			bits.set_flag(HAND_JOINT_LINEAR_VELOCITY_VALID);
+		}
+		if (velocity_flags & XR_SPACE_VELOCITY_ANGULAR_VALID_BIT) {
+			bits.set_flag(HAND_JOINT_ANGULAR_VELOCITY_VALID);
+		}
+	}
+
+	return bits;
+}
+
+Quaternion OpenXRInterface::get_hand_joint_rotation(Hand p_hand, HandJoints p_joint) const {
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		return hand_tracking_ext->get_hand_joint_rotation(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
+	}
+
+	return Quaternion();
+}
+
+Vector3 OpenXRInterface::get_hand_joint_position(Hand p_hand, HandJoints p_joint) const {
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		return hand_tracking_ext->get_hand_joint_position(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
+	}
+
+	return Vector3();
+}
+
+float OpenXRInterface::get_hand_joint_radius(Hand p_hand, HandJoints p_joint) const {
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		return hand_tracking_ext->get_hand_joint_radius(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
+	}
+
+	return 0.0;
+}
+
+Vector3 OpenXRInterface::get_hand_joint_linear_velocity(Hand p_hand, HandJoints p_joint) const {
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		return hand_tracking_ext->get_hand_joint_linear_velocity(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
+	}
+
+	return Vector3();
+}
+
+Vector3 OpenXRInterface::get_hand_joint_angular_velocity(Hand p_hand, HandJoints p_joint) const {
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		return hand_tracking_ext->get_hand_joint_angular_velocity(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
+	}
+
+	return Vector3();
 }
 
 OpenXRInterface::OpenXRInterface() {

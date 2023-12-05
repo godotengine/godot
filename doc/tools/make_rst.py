@@ -401,6 +401,15 @@ class State:
         self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0].lower()))
 
 
+class TagState:
+    def __init__(self, raw: str, name: str, arguments: List[str], closing: bool) -> None:
+        self.raw = raw
+
+        self.name = name
+        self.arguments = arguments
+        self.closing = closing
+
+
 class TypeName:
     def __init__(self, type_name: str, enum: Optional[str] = None, is_bitfield: bool = False) -> None:
         self.type_name = type_name
@@ -694,6 +703,8 @@ def main() -> None:
 
     print("")
 
+    # Print out warnings and errors, or lack thereof, and exit with an appropriate code.
+
     if state.num_warnings >= 2:
         print(
             f'{STYLES["yellow"]}{state.num_warnings} warnings were found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
@@ -703,19 +714,20 @@ def main() -> None:
             f'{STYLES["yellow"]}1 warning was found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
         )
 
-    if state.num_errors == 0:
-        print(f'{STYLES["green"]}No errors found in the class reference XML.{STYLES["reset"]}')
+    if state.num_errors >= 2:
+        print(
+            f'{STYLES["red"]}{state.num_errors} errors were found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
+        )
+    elif state.num_errors == 1:
+        print(
+            f'{STYLES["red"]}1 error was found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
+        )
+
+    if state.num_warnings == 0 and state.num_errors == 0:
+        print(f'{STYLES["green"]}No warnings or errors found in the class reference XML.{STYLES["reset"]}')
         if not args.dry_run:
             print(f"Wrote reStructuredText files for each class to: {args.output}")
     else:
-        if state.num_errors >= 2:
-            print(
-                f'{STYLES["red"]}{state.num_errors} errors were found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
-            )
-        else:
-            print(
-                f'{STYLES["red"]}1 error was found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
-            )
         exit(1)
 
 
@@ -1212,7 +1224,11 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 # Create method signature and anchor point.
 
                 if i == 0:
-                    f.write(f".. _class_{class_name}_method_{m.name}:\n\n")
+                    method_qualifier = ""
+                    if m.name.startswith("_"):
+                        method_qualifier = "private_"
+
+                    f.write(f".. _class_{class_name}_{method_qualifier}method_{m.name}:\n\n")
 
                 f.write(".. rst-class:: classref-method\n\n")
 
@@ -1376,6 +1392,11 @@ def make_method_signature(
             for parameter in definition.parameters:
                 out += f"_{parameter.type_name.type_name}"
             out += f">` "
+        elif ref_type == "method":
+            ref_type_qualifier = ""
+            if definition.name.startswith("_"):
+                ref_type_qualifier = "private_"
+            out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type_qualifier}{ref_type}_{definition.name}>` "
         else:
             out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type}_{definition.name}>` "
     else:
@@ -1515,8 +1536,9 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
     else:
         f = open(os.path.join(output_dir, "index.rst"), "w", encoding="utf-8")
 
-    # Remove the "Edit on Github" button from the online docs page.
-    f.write(":github_url: hide\n\n")
+    # Remove the "Edit on Github" button from the online docs page, and disallow user-contributed notes
+    # on the index page. User-contributed notes are allowed on individual class pages.
+    f.write(":github_url: hide\n:allow_comments: False\n\n")
 
     # Warn contributors not to edit this file directly.
     # Also provide links to the source files for reference.
@@ -1562,8 +1584,20 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
 
 
 RESERVED_FORMATTING_TAGS = ["i", "b", "u", "code", "kbd", "center", "url", "br"]
-RESERVED_CODEBLOCK_TAGS = ["codeblocks", "codeblock", "gdscript", "csharp"]
-RESERVED_CROSSLINK_TAGS = ["method", "member", "signal", "constant", "enum", "annotation", "theme_item", "param"]
+RESERVED_LAYOUT_TAGS = ["codeblocks"]
+RESERVED_CODEBLOCK_TAGS = ["codeblock", "gdscript", "csharp"]
+RESERVED_CROSSLINK_TAGS = [
+    "method",
+    "constructor",
+    "operator",
+    "member",
+    "signal",
+    "constant",
+    "enum",
+    "annotation",
+    "theme_item",
+    "param",
+]
 
 
 def is_in_tagset(tag_text: str, tagset: List[str]) -> bool:
@@ -1579,6 +1613,35 @@ def is_in_tagset(tag_text: str, tagset: List[str]) -> bool:
             return True
 
     return False
+
+
+def get_tag_and_args(tag_text: str) -> TagState:
+    tag_name = tag_text
+    arguments: List[str] = []
+
+    assign_pos = tag_text.find("=")
+    if assign_pos >= 0:
+        tag_name = tag_text[:assign_pos]
+        arguments = [tag_text[assign_pos + 1 :].strip()]
+    else:
+        space_pos = tag_text.find(" ")
+        if space_pos >= 0:
+            tag_name = tag_text[:space_pos]
+            arguments = [tag_text[space_pos + 1 :].strip()]
+
+    closing = False
+    if tag_name.startswith("/"):
+        tag_name = tag_name[1:]
+        closing = True
+
+    return TagState(tag_text, tag_name, arguments, closing)
+
+
+def parse_link_target(link_target: str, state: State, context_name: str) -> List[str]:
+    if link_target.find(".") != -1:
+        return link_target.split(".")
+    else:
+        return [state.current_class, link_target]
 
 
 def format_text_block(
@@ -1603,11 +1666,15 @@ def format_text_block(
         # Handle codeblocks
         if (
             post_text.startswith("[codeblock]")
+            or post_text.startswith("[codeblock ")
             or post_text.startswith("[gdscript]")
+            or post_text.startswith("[gdscript ")
             or post_text.startswith("[csharp]")
+            or post_text.startswith("[csharp ")
         ):
-            block_type = post_text[1:].split("]")[0]
-            result = format_codeblock(block_type, post_text, indent_level, state)
+            tag_text = post_text[1:].split("]", 1)[0]
+            tag_state = get_tag_and_args(tag_text)
+            result = format_codeblock(tag_state, post_text, indent_level, state)
             if result is None:
                 return ""
             text = f"{pre_text}{result[0]}"
@@ -1627,6 +1694,8 @@ def format_text_block(
     inside_code = False
     inside_code_tag = ""
     inside_code_tabs = False
+    ignore_code_warnings = False
+
     pos = 0
     tag_depth = 0
     while True:
@@ -1657,33 +1726,34 @@ def format_text_block(
 
         # Tag is a cross-reference or a formatting directive.
         else:
-            cmd = tag_text
-            space_pos = tag_text.find(" ")
+            tag_state = get_tag_and_args(tag_text)
 
             # Anything identified as a tag inside of a code block is valid,
             # unless it's a matching closing tag.
             if inside_code:
                 # Exiting codeblocks and inline code tags.
 
-                if inside_code_tag == cmd[1:]:
-                    if cmd == "/codeblock" or cmd == "/gdscript" or cmd == "/csharp":
+                if tag_state.closing and tag_state.name == inside_code_tag:
+                    if is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
                         tag_text = ""
                         tag_depth -= 1
                         inside_code = False
+                        ignore_code_warnings = False
                         # Strip newline if the tag was alone on one
                         if pre_text[-1] == "\n":
                             pre_text = pre_text[:-1]
 
-                    elif cmd == "/code":
+                    elif is_in_tagset(tag_state.name, ["code"]):
                         tag_text = "``"
                         tag_depth -= 1
                         inside_code = False
+                        ignore_code_warnings = False
                         escape_post = True
 
                 else:
-                    if cmd.startswith("/"):
+                    if not ignore_code_warnings and tag_state.closing:
                         print_warning(
-                            f'{state.current_class}.xml: Potential error inside of a code tag, found a string that looks like a closing tag "[{cmd}]" in {context_name}.',
+                            f'{state.current_class}.xml: Found a code string that looks like a closing tag "[{tag_state.raw}]" in {context_name}.',
                             state,
                         )
 
@@ -1691,26 +1761,27 @@ def format_text_block(
 
             # Entering codeblocks and inline code tags.
 
-            elif cmd == "codeblocks":
-                tag_depth += 1
-                tag_text = "\n.. tabs::"
-                inside_code_tabs = True
-            elif cmd == "/codeblocks":
-                tag_depth -= 1
-                tag_text = ""
-                inside_code_tabs = False
+            elif tag_state.name == "codeblocks":
+                if tag_state.closing:
+                    tag_depth -= 1
+                    tag_text = ""
+                    inside_code_tabs = False
+                else:
+                    tag_depth += 1
+                    tag_text = "\n.. tabs::"
+                    inside_code_tabs = True
 
-            elif cmd == "codeblock" or cmd == "gdscript" or cmd == "csharp":
+            elif is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
                 tag_depth += 1
 
-                if cmd == "gdscript":
+                if tag_state.name == "gdscript":
                     if not inside_code_tabs:
                         print_error(
                             f"{state.current_class}.xml: GDScript code block is used outside of [codeblocks] in {context_name}.",
                             state,
                         )
                     tag_text = "\n .. code-tab:: gdscript\n"
-                elif cmd == "csharp":
+                elif tag_state.name == "csharp":
                     if not inside_code_tabs:
                         print_error(
                             f"{state.current_class}.xml: C# code block is used outside of [codeblocks] in {context_name}.",
@@ -1721,17 +1792,19 @@ def format_text_block(
                     tag_text = "\n::\n"
 
                 inside_code = True
-                inside_code_tag = cmd
+                inside_code_tag = tag_state.name
+                ignore_code_warnings = "skip-lint" in tag_state.arguments
 
-            elif cmd == "code":
+            elif is_in_tagset(tag_state.name, ["code"]):
                 tag_text = "``"
                 tag_depth += 1
+
                 inside_code = True
-                inside_code_tag = cmd
+                inside_code_tag = "code"
+                ignore_code_warnings = "skip-lint" in tag_state.arguments
                 escape_pre = True
 
-                valid_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
-                if valid_context:
+                if not ignore_code_warnings:
                     endcode_pos = text.find("[/code]", endq_pos + 1)
                     if endcode_pos == -1:
                         print_error(
@@ -1741,110 +1814,178 @@ def format_text_block(
                         break
 
                     inside_code_text = text[endq_pos + 1 : endcode_pos]
-                    context_params: List[ParameterDef] = context.parameters  # type: ignore
-                    for param_def in context_params:
-                        if param_def.name == inside_code_text:
+                    if inside_code_text.endswith("()"):
+                        # It's formatted like a call for some reason, may still be a mistake.
+                        inside_code_text = inside_code_text[:-2]
+
+                    if inside_code_text in state.classes:
+                        print_warning(
+                            f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the known classes in {context_name}.',
+                            state,
+                        )
+
+                    target_class_name, target_name, *rest = parse_link_target(inside_code_text, state, context_name)
+                    if len(rest) == 0 and target_class_name in state.classes:
+                        class_def = state.classes[target_class_name]
+
+                        if target_name in class_def.methods:
                             print_warning(
-                                f'{state.current_class}.xml: Potential error inside of a code tag, found a string "{inside_code_text}" that matches one of the parameters in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} method in {context_name}.',
                                 state,
                             )
-                            break
+
+                        elif target_name in class_def.constructors:
+                            print_warning(
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constructor in {context_name}.',
+                                state,
+                            )
+
+                        elif target_name in class_def.operators:
+                            print_warning(
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} operator in {context_name}.',
+                                state,
+                            )
+
+                        elif target_name in class_def.properties:
+                            print_warning(
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} member in {context_name}.',
+                                state,
+                            )
+
+                        elif target_name in class_def.signals:
+                            print_warning(
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} signal in {context_name}.',
+                                state,
+                            )
+
+                        elif target_name in class_def.annotations:
+                            print_warning(
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} annotation in {context_name}.',
+                                state,
+                            )
+
+                        elif target_name in class_def.theme_items:
+                            print_warning(
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} theme item in {context_name}.',
+                                state,
+                            )
+
+                        elif target_name in class_def.constants:
+                            print_warning(
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constant in {context_name}.',
+                                state,
+                            )
+
+                        else:
+                            for enum in class_def.enums.values():
+                                if target_name in enum.values:
+                                    print_warning(
+                                        f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} enum value in {context_name}.',
+                                        state,
+                                    )
+                                    break
+
+                    valid_param_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
+                    if valid_param_context:
+                        context_params: List[ParameterDef] = context.parameters  # type: ignore
+                        for param_def in context_params:
+                            if param_def.name == inside_code_text:
+                                print_warning(
+                                    f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the parameters in {context_name}.',
+                                    state,
+                                )
+                                break
 
             # Cross-references to items in this or other class documentation pages.
-            elif is_in_tagset(cmd, RESERVED_CROSSLINK_TAGS):
-                link_type: str = ""
-                link_target: str = ""
-                if space_pos >= 0:
-                    link_type = tag_text[:space_pos]
-                    link_target = tag_text[space_pos + 1 :].strip()
+            elif is_in_tagset(tag_state.name, RESERVED_CROSSLINK_TAGS):
+                link_target: str = tag_state.arguments[0] if len(tag_state.arguments) > 0 else ""
 
                 if link_target == "":
                     print_error(
-                        f'{state.current_class}.xml: Empty cross-reference link "{cmd}" in {context_name}.',
+                        f'{state.current_class}.xml: Empty cross-reference link "[{tag_state.raw}]" in {context_name}.',
                         state,
                     )
                     tag_text = ""
                 else:
                     if (
-                        cmd.startswith("method")
-                        or cmd.startswith("constructor")
-                        or cmd.startswith("operator")
-                        or cmd.startswith("member")
-                        or cmd.startswith("signal")
-                        or cmd.startswith("annotation")
-                        or cmd.startswith("theme_item")
-                        or cmd.startswith("constant")
+                        tag_state.name == "method"
+                        or tag_state.name == "constructor"
+                        or tag_state.name == "operator"
+                        or tag_state.name == "member"
+                        or tag_state.name == "signal"
+                        or tag_state.name == "annotation"
+                        or tag_state.name == "theme_item"
+                        or tag_state.name == "constant"
                     ):
-                        if link_target.find(".") != -1:
-                            ss = link_target.split(".")
-                            if len(ss) > 2:
-                                print_error(
-                                    f'{state.current_class}.xml: Bad reference "{link_target}" in {context_name}.',
-                                    state,
-                                )
-                            class_param, method_param = ss
-
-                        else:
-                            class_param = state.current_class
-                            method_param = link_target
+                        target_class_name, target_name, *rest = parse_link_target(link_target, state, context_name)
+                        if len(rest) > 0:
+                            print_error(
+                                f'{state.current_class}.xml: Bad reference "{link_target}" in {context_name}.',
+                                state,
+                            )
 
                         # Default to the tag command name. This works by default for most tags,
-                        # but member and theme_item have special cases.
-                        ref_type = "_{}".format(link_type)
-                        if link_type == "member":
-                            ref_type = "_property"
+                        # but method, member, and theme_item have special cases.
+                        ref_type = "_{}".format(tag_state.name)
 
-                        if class_param in state.classes:
-                            class_def = state.classes[class_param]
+                        if target_class_name in state.classes:
+                            class_def = state.classes[target_class_name]
 
-                            if cmd.startswith("method") and method_param not in class_def.methods:
-                                print_error(
-                                    f'{state.current_class}.xml: Unresolved method reference "{link_target}" in {context_name}.',
-                                    state,
-                                )
+                            if tag_state.name == "method":
+                                if target_name.startswith("_"):
+                                    ref_type = "_private_method"
 
-                            elif cmd.startswith("constructor") and method_param not in class_def.constructors:
+                                if target_name not in class_def.methods:
+                                    print_error(
+                                        f'{state.current_class}.xml: Unresolved method reference "{link_target}" in {context_name}.',
+                                        state,
+                                    )
+
+                            elif tag_state.name == "constructor" and target_name not in class_def.constructors:
                                 print_error(
                                     f'{state.current_class}.xml: Unresolved constructor reference "{link_target}" in {context_name}.',
                                     state,
                                 )
 
-                            elif cmd.startswith("operator") and method_param not in class_def.operators:
+                            elif tag_state.name == "operator" and target_name not in class_def.operators:
                                 print_error(
                                     f'{state.current_class}.xml: Unresolved operator reference "{link_target}" in {context_name}.',
                                     state,
                                 )
 
-                            elif cmd.startswith("member") and method_param not in class_def.properties:
-                                print_error(
-                                    f'{state.current_class}.xml: Unresolved member reference "{link_target}" in {context_name}.',
-                                    state,
-                                )
+                            elif tag_state.name == "member":
+                                ref_type = "_property"
 
-                            elif cmd.startswith("signal") and method_param not in class_def.signals:
+                                if target_name not in class_def.properties:
+                                    print_error(
+                                        f'{state.current_class}.xml: Unresolved member reference "{link_target}" in {context_name}.',
+                                        state,
+                                    )
+
+                            elif tag_state.name == "signal" and target_name not in class_def.signals:
                                 print_error(
                                     f'{state.current_class}.xml: Unresolved signal reference "{link_target}" in {context_name}.',
                                     state,
                                 )
 
-                            elif cmd.startswith("annotation") and method_param not in class_def.annotations:
+                            elif tag_state.name == "annotation" and target_name not in class_def.annotations:
                                 print_error(
                                     f'{state.current_class}.xml: Unresolved annotation reference "{link_target}" in {context_name}.',
                                     state,
                                 )
 
-                            elif cmd.startswith("theme_item"):
-                                if method_param not in class_def.theme_items:
+                            elif tag_state.name == "theme_item":
+                                if target_name not in class_def.theme_items:
                                     print_error(
                                         f'{state.current_class}.xml: Unresolved theme item reference "{link_target}" in {context_name}.',
                                         state,
                                     )
                                 else:
                                     # Needs theme data type to be properly linked, which we cannot get without a class.
-                                    name = class_def.theme_items[method_param].data_name
+                                    name = class_def.theme_items[target_name].data_name
                                     ref_type = f"_theme_{name}"
 
-                            elif cmd.startswith("constant"):
+                            elif tag_state.name == "constant":
                                 found = False
 
                                 # Search in the current class
@@ -1855,14 +1996,14 @@ def format_text_block(
                                     search_class_defs.append(state.classes["@GlobalScope"])
 
                                 for search_class_def in search_class_defs:
-                                    if method_param in search_class_def.constants:
-                                        class_param = search_class_def.name
+                                    if target_name in search_class_def.constants:
+                                        target_class_name = search_class_def.name
                                         found = True
 
                                     else:
                                         for enum in search_class_def.enums.values():
-                                            if method_param in enum.values:
-                                                class_param = search_class_def.name
+                                            if target_name in enum.values:
+                                                target_class_name = search_class_def.name
                                                 found = True
                                                 break
 
@@ -1874,25 +2015,25 @@ def format_text_block(
 
                         else:
                             print_error(
-                                f'{state.current_class}.xml: Unresolved type reference "{class_param}" in method reference "{link_target}" in {context_name}.',
+                                f'{state.current_class}.xml: Unresolved type reference "{target_class_name}" in method reference "{link_target}" in {context_name}.',
                                 state,
                             )
 
-                        repl_text = method_param
-                        if class_param != state.current_class:
-                            repl_text = f"{class_param}.{method_param}"
-                        tag_text = f":ref:`{repl_text}<class_{class_param}{ref_type}_{method_param}>`"
+                        repl_text = target_name
+                        if target_class_name != state.current_class:
+                            repl_text = f"{target_class_name}.{target_name}"
+                        tag_text = f":ref:`{repl_text}<class_{target_class_name}{ref_type}_{target_name}>`"
                         escape_pre = True
                         escape_post = True
 
-                    elif cmd.startswith("enum"):
+                    elif tag_state.name == "enum":
                         tag_text = make_enum(link_target, False, state)
                         escape_pre = True
                         escape_post = True
 
-                    elif cmd.startswith("param"):
-                        valid_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
-                        if not valid_context:
+                    elif tag_state.name == "param":
+                        valid_param_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
+                        if not valid_param_context:
                             print_error(
                                 f'{state.current_class}.xml: Argument reference "{link_target}" used outside of method, signal, or annotation context in {context_name}.',
                                 state,
@@ -1916,11 +2057,17 @@ def format_text_block(
 
             # Formatting directives.
 
-            elif is_in_tagset(cmd, ["url"]):
-                if cmd.startswith("url="):
-                    # URLs are handled in full here as we need to extract the optional link
-                    # title to use `make_link`.
-                    link_url = cmd[4:]
+            elif is_in_tagset(tag_state.name, ["url"]):
+                url_target = tag_state.arguments[0] if len(tag_state.arguments) > 0 else ""
+
+                if url_target == "":
+                    print_error(
+                        f'{state.current_class}.xml: Misformatted [url] tag "[{tag_state.raw}]" in {context_name}.',
+                        state,
+                    )
+                else:
+                    # Unlike other tags, URLs are handled in full here, as we need to extract
+                    # the optional link title to use `make_link`.
                     endurl_pos = text.find("[/url]", endq_pos + 1)
                     if endurl_pos == -1:
                         print_error(
@@ -1929,7 +2076,7 @@ def format_text_block(
                         )
                         break
                     link_title = text[endq_pos + 1 : endurl_pos]
-                    tag_text = make_link(link_url, link_title)
+                    tag_text = make_link(url_target, link_title)
 
                     pre_text = text[:pos]
                     post_text = text[endurl_pos + 6 :]
@@ -1942,28 +2089,23 @@ def format_text_block(
                     text = pre_text + tag_text + post_text
                     pos = len(pre_text) + len(tag_text)
                     continue
-                else:
-                    print_error(
-                        f'{state.current_class}.xml: Misformatted [url] tag "{cmd}" in {context_name}.',
-                        state,
-                    )
 
-            elif cmd == "br":
+            elif tag_state.name == "br":
                 # Make a new paragraph instead of a linebreak, rst is not so linebreak friendly
                 tag_text = "\n\n"
                 # Strip potential leading spaces
                 while post_text[0] == " ":
                     post_text = post_text[1:]
 
-            elif cmd == "center" or cmd == "/center":
-                if cmd == "/center":
+            elif tag_state.name == "center":
+                if tag_state.closing:
                     tag_depth -= 1
                 else:
                     tag_depth += 1
                 tag_text = ""
 
-            elif cmd == "i" or cmd == "/i":
-                if cmd == "/i":
+            elif tag_state.name == "i":
+                if tag_state.closing:
                     tag_depth -= 1
                     escape_post = True
                 else:
@@ -1971,8 +2113,8 @@ def format_text_block(
                     escape_pre = True
                 tag_text = "*"
 
-            elif cmd == "b" or cmd == "/b":
-                if cmd == "/b":
+            elif tag_state.name == "b":
+                if tag_state.closing:
                     tag_depth -= 1
                     escape_post = True
                 else:
@@ -1980,8 +2122,8 @@ def format_text_block(
                     escape_pre = True
                 tag_text = "**"
 
-            elif cmd == "u" or cmd == "/u":
-                if cmd == "/u":
+            elif tag_state.name == "u":
+                if tag_state.closing:
                     tag_depth -= 1
                     escape_post = True
                 else:
@@ -1989,9 +2131,9 @@ def format_text_block(
                     escape_pre = True
                 tag_text = ""
 
-            elif cmd == "kbd" or cmd == "/kbd":
+            elif tag_state.name == "kbd":
                 tag_text = "`"
-                if cmd == "/kbd":
+                if tag_state.closing:
                     tag_depth -= 1
                     escape_post = True
                 else:
@@ -1999,18 +2141,24 @@ def format_text_block(
                     tag_depth += 1
                     escape_pre = True
 
-            # Invalid syntax checks.
-            elif cmd.startswith("/"):
-                print_error(f'{state.current_class}.xml: Unrecognized closing tag "{cmd}" in {context_name}.', state)
-
-                tag_text = f"[{tag_text}]"
-
+            # Invalid syntax.
             else:
-                print_error(f'{state.current_class}.xml: Unrecognized opening tag "{cmd}" in {context_name}.', state)
+                if tag_state.closing:
+                    print_error(
+                        f'{state.current_class}.xml: Unrecognized closing tag "[{tag_state.raw}]" in {context_name}.',
+                        state,
+                    )
 
-                tag_text = f"``{tag_text}``"
-                escape_pre = True
-                escape_post = True
+                    tag_text = f"[{tag_text}]"
+                else:
+                    print_error(
+                        f'{state.current_class}.xml: Unrecognized opening tag "[{tag_state.raw}]" in {context_name}.',
+                        state,
+                    )
+
+                    tag_text = f"``{tag_text}``"
+                    escape_pre = True
+                    escape_post = True
 
         # Properly escape things like `[Node]s`
         if escape_pre and pre_text and pre_text[-1] not in MARKUP_ALLOWED_PRECEDENT:
@@ -2092,13 +2240,22 @@ def escape_rst(text: str, until_pos: int = -1) -> str:
     return text
 
 
-def format_codeblock(code_type: str, post_text: str, indent_level: int, state: State) -> Union[Tuple[str, int], None]:
-    end_pos = post_text.find("[/" + code_type + "]")
+def format_codeblock(
+    tag_state: TagState, post_text: str, indent_level: int, state: State
+) -> Union[Tuple[str, int], None]:
+    end_pos = post_text.find("[/" + tag_state.name + "]")
     if end_pos == -1:
-        print_error(f"{state.current_class}.xml: [{code_type}] without a closing tag.", state)
+        print_error(
+            f"{state.current_class}.xml: Tag depth mismatch for [{tag_state.name}]: no closing [/{tag_state.name}].",
+            state,
+        )
         return None
 
-    code_text = post_text[len(f"[{code_type}]") : end_pos]
+    opening_formatted = tag_state.name
+    if len(tag_state.arguments) > 0:
+        opening_formatted += " " + " ".join(tag_state.arguments)
+
+    code_text = post_text[len(f"[{opening_formatted}]") : end_pos]
     post_text = post_text[end_pos:]
 
     # Remove extraneous tabs
@@ -2114,7 +2271,7 @@ def format_codeblock(code_type: str, post_text: str, indent_level: int, state: S
 
         if to_skip > indent_level:
             print_error(
-                f"{state.current_class}.xml: Four spaces should be used for indentation within [{code_type}].",
+                f"{state.current_class}.xml: Four spaces should be used for indentation within [{tag_state.name}].",
                 state,
             )
 
@@ -2124,7 +2281,7 @@ def format_codeblock(code_type: str, post_text: str, indent_level: int, state: S
         else:
             code_text = f"{code_text[:code_pos]}\n    {code_text[code_pos + to_skip + 1 :]}"
             code_pos += 5 - to_skip
-    return (f"\n[{code_type}]{code_text}{post_text}", len(f"\n[{code_type}]{code_text}"))
+    return (f"\n[{opening_formatted}]{code_text}{post_text}", len(f"\n[{opening_formatted}]{code_text}"))
 
 
 def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_columns: bool = False) -> None:

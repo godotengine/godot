@@ -424,6 +424,8 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 }
 
 ShaderGlobalsEditor::ShaderGlobalsEditor() {
+	ProjectSettings::get_singleton()->add_hidden_prefix("shader_globals/");
+
 	HBoxContainer *add_menu_hb = memnew(HBoxContainer);
 	add_child(add_menu_hb);
 

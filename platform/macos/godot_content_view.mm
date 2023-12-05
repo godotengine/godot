@@ -40,6 +40,7 @@
 - (id)init {
 	self = [super init];
 	window_id = DisplayServer::INVALID_WINDOW_ID;
+	need_redraw = false;
 	return self;
 }
 
@@ -47,13 +48,18 @@
 	window_id = wid;
 }
 
+- (void)setNeedRedraw:(bool)redraw {
+	need_redraw = redraw;
+}
+
 - (void)displayLayer:(CALayer *)layer {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing()) {
+	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing() && need_redraw) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
 		}
+		need_redraw = false;
 	}
 }
 
@@ -93,6 +99,7 @@
 	}
 
 	[super setFrameSize:newSize];
+	[layer_delegate setNeedRedraw:true];
 	[self.layer setNeedsDisplay]; // Force "drawRect" call.
 }
 
@@ -130,12 +137,6 @@
 
 - (CALayer *)makeBackingLayer {
 	return [[CAMetalLayer class] layer];
-}
-
-- (void)updateLayer {
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	ds->window_update(window_id);
-	[super updateLayer];
 }
 
 - (BOOL)wantsUpdateLayer {
@@ -322,12 +323,7 @@
 			NSString *file = [NSURL URLWithString:url].path;
 			files.push_back(String::utf8([file UTF8String]));
 		}
-
-		Variant v = files;
-		Variant *vp = &v;
-		Variant ret;
-		Callable::CallError ce;
-		wd.drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
+		wd.drop_files_callback.call(files);
 	}
 
 	return NO;

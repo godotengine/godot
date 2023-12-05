@@ -39,6 +39,7 @@
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
 
@@ -73,7 +74,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 		icon.instantiate();
 		const String icon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
 		if (icon_path.is_empty() || ImageLoader::load_image(icon_path, icon) != OK) {
-			return EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("DefaultProjectIcon"), SNAME("EditorIcons"))->get_image();
+			return EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("DefaultProjectIcon"), EditorStringName(EditorIcons))->get_image();
 		}
 		return icon;
 	}

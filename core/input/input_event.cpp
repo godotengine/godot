@@ -1722,7 +1722,27 @@ String InputEventMIDI::as_text() const {
 }
 
 String InputEventMIDI::to_string() {
-	return vformat("InputEventMIDI: channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d, controller_number=%d, controller_value=%d", channel, message, pitch, velocity, pressure, controller_number, controller_value);
+	String ret;
+	switch (message) {
+		case MIDIMessage::NOTE_ON:
+			ret = vformat("Note On: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
+			break;
+		case MIDIMessage::NOTE_OFF:
+			ret = vformat("Note Off: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
+			break;
+		case MIDIMessage::PITCH_BEND:
+			ret = vformat("Pitch Bend: channel=%d, pitch=%d", channel, pitch);
+			break;
+		case MIDIMessage::CHANNEL_PRESSURE:
+			ret = vformat("Channel Pressure: channel=%d, pressure=%d", channel, pressure);
+			break;
+		case MIDIMessage::CONTROL_CHANGE:
+			ret = vformat("Control Change: channel=%d, controller_number=%d, controller_value=%d", channel, controller_number, controller_value);
+			break;
+		default:
+			ret = vformat("channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d, controller_number=%d, controller_value=%d, instrument=%d", channel, message, pitch, velocity, pressure, controller_number, controller_value, instrument);
+	}
+	return "InputEventMIDI: " + ret;
 }
 
 void InputEventMIDI::_bind_methods() {
@@ -1781,4 +1801,8 @@ String InputEventShortcut::to_string() {
 	ERR_FAIL_COND_V(shortcut.is_null(), "None");
 
 	return vformat("InputEventShortcut: shortcut=%s", shortcut->get_as_text());
+}
+
+InputEventShortcut::InputEventShortcut() {
+	pressed = true;
 }

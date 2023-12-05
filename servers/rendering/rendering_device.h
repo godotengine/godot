@@ -518,6 +518,22 @@ public:
 		TextureSwizzle swizzle_b;
 		TextureSwizzle swizzle_a;
 
+		bool operator==(const TextureView &p_view) const {
+			if (format_override != p_view.format_override) {
+				return false;
+			} else if (swizzle_r != p_view.swizzle_r) {
+				return false;
+			} else if (swizzle_g != p_view.swizzle_g) {
+				return false;
+			} else if (swizzle_b != p_view.swizzle_b) {
+				return false;
+			} else if (swizzle_a != p_view.swizzle_a) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+
 		TextureView() {
 			format_override = DATA_FORMAT_MAX; //means, use same as format
 			swizzle_r = TEXTURE_SWIZZLE_R;
@@ -529,7 +545,7 @@ public:
 
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>()) = 0;
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture) = 0;
-	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) = 0;
+	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) = 0;
 
 	enum TextureSliceType {
 		TEXTURE_SLICE_2D,
@@ -742,7 +758,7 @@ public:
 	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID()) = 0;
 	virtual RID shader_create_placeholder() = 0;
 
-	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
+	virtual uint64_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
 
 	/******************/
 	/**** UNIFORMS ****/
@@ -840,6 +856,7 @@ public:
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata) = 0;
 
+	virtual Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0) = 0; // This causes stall, only use to retrieve large buffers for saving.
@@ -1269,6 +1286,8 @@ public:
 		LIMIT_MAX_VIEWPORT_DIMENSIONS_X,
 		LIMIT_MAX_VIEWPORT_DIMENSIONS_Y,
 		LIMIT_SUBGROUP_SIZE,
+		LIMIT_SUBGROUP_MIN_SIZE,
+		LIMIT_SUBGROUP_MAX_SIZE,
 		LIMIT_SUBGROUP_IN_SHADERS, // Set flags using SHADER_STAGE_VERTEX_BIT, SHADER_STAGE_FRAGMENT_BIT, etc.
 		LIMIT_SUBGROUP_OPERATIONS,
 		LIMIT_VRS_TEXEL_WIDTH,
@@ -1352,7 +1371,7 @@ protected:
 
 	struct SpirvReflectionData {
 		BitField<ShaderStage> stages_mask;
-		uint32_t vertex_input_mask;
+		uint64_t vertex_input_mask;
 		uint32_t fragment_output_mask;
 		bool is_compute;
 		uint32_t compute_local_size[3];
@@ -1382,6 +1401,13 @@ protected:
 	};
 
 	Error _reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, SpirvReflectionData &r_reflection_data);
+
+#ifndef DISABLE_DEPRECATED
+	BitField<BarrierMask> _convert_barrier_mask_81356(BitField<BarrierMask> p_old_barrier);
+	void _draw_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
+	void _compute_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
+	void _barrier_bind_compat_81356(BitField<BarrierMask> p_from, BitField<BarrierMask> p_to);
+#endif
 };
 
 VARIANT_ENUM_CAST(RenderingDevice::DeviceType)

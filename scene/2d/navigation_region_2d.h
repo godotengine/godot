@@ -76,6 +76,7 @@ public:
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
+	RID get_rid() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -113,6 +114,9 @@ public:
 	bool get_avoidance_layer_value(int p_layer_number) const;
 
 	PackedStringArray get_configuration_warnings() const override;
+
+	void bake_navigation_polygon(bool p_on_thread);
+	void _bake_finished(Ref<NavigationPolygon> p_navigation_polygon);
 
 	NavigationRegion2D();
 	~NavigationRegion2D();

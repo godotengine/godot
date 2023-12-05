@@ -71,7 +71,7 @@ Viewport *OpenXRFbPassthroughExtensionWrapper::get_main_viewport() {
 		return nullptr;
 	}
 
-	auto *scene_tree = Object::cast_to<SceneTree>(main_loop);
+	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 	if (!scene_tree) {
 		print_error("Unable to retrieve scene tree");
 		return nullptr;

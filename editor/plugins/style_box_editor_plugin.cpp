@@ -57,8 +57,8 @@ void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 void StyleBoxPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			set_texture(get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons")));
-			grid_preview->set_icon(get_theme_icon(SNAME("StyleBoxGrid"), SNAME("EditorIcons")));
+			set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
+			grid_preview->set_icon(get_editor_theme_icon(SNAME("StyleBoxGrid")));
 		} break;
 		case NOTIFICATION_DRAW: {
 			_redraw();
@@ -68,7 +68,7 @@ void StyleBoxPreview::_notification(int p_what) {
 
 void StyleBoxPreview::_redraw() {
 	if (stylebox.is_valid()) {
-		float grid_button_width = get_theme_icon(SNAME("StyleBoxGrid"), SNAME("EditorIcons"))->get_size().x;
+		float grid_button_width = get_editor_theme_icon(SNAME("StyleBoxGrid"))->get_size().x;
 		Rect2 preview_rect = get_rect();
 		preview_rect = preview_rect.grow(-grid_button_width);
 

@@ -78,31 +78,30 @@ void init_autoloads() {
 			scn.instantiate();
 			scn->set_path(info.path);
 			scn->reload_from_file();
-			ERR_CONTINUE_MSG(!scn.is_valid(), vformat("Can't autoload: %s.", info.path));
+			ERR_CONTINUE_MSG(!scn.is_valid(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
 			if (scn.is_valid()) {
 				n = scn->instantiate();
 			}
 		} else {
 			Ref<Resource> res = ResourceLoader::load(info.path);
-			ERR_CONTINUE_MSG(res.is_null(), vformat("Can't autoload: %s.", info.path));
+			ERR_CONTINUE_MSG(res.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
 			Ref<Script> scr = res;
 			if (scr.is_valid()) {
 				StringName ibt = scr->get_instance_base_type();
 				bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-				ERR_CONTINUE_MSG(!valid_type, vformat("Script does not inherit from Node: %s.", info.path));
+				ERR_CONTINUE_MSG(!valid_type, vformat("Failed to instantiate an autoload, script '%s' does not inherit from 'Node'.", info.path));
 
 				Object *obj = ClassDB::instantiate(ibt);
-
-				ERR_CONTINUE_MSG(!obj, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
+				ERR_CONTINUE_MSG(!obj, vformat("Failed to instantiate an autoload, cannot instantiate '%s'.", ibt));
 
 				n = Object::cast_to<Node>(obj);
 				n->set_script(scr);
 			}
 		}
 
-		ERR_CONTINUE_MSG(!n, vformat("Path in autoload not a node or script: %s.", info.path));
+		ERR_CONTINUE_MSG(!n, vformat("Failed to instantiate an autoload, path is not pointing to a scene or a script: %s.", info.path));
 		n->set_name(info.name);
 
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -149,6 +148,10 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
+		if (i == GDScriptWarning::UNTYPED_DECLARATION || i == GDScriptWarning::INFERRED_DECLARATION) {
+			// TODO: Add ability for test scripts to specify which warnings to enable/disable for testing.
+			continue;
+		}
 		String warning_setting = GDScriptWarning::get_settings_path_from_code((GDScriptWarning::Code)i);
 		ProjectSettings::get_singleton()->set_setting(warning_setting, (int)GDScriptWarning::WARN);
 	}

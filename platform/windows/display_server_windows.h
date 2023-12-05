@@ -59,8 +59,9 @@
 #endif
 
 #if defined(GLES3_ENABLED)
-#include "gl_manager_windows.h"
-#endif
+#include "gl_manager_windows_angle.h"
+#include "gl_manager_windows_native.h"
+#endif // GLES3_ENABLED
 
 #include <io.h>
 #include <stdio.h>
@@ -261,6 +262,7 @@ typedef struct tagPOINTER_PEN_INFO {
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
 typedef BOOL(WINAPI *LogicalToPhysicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
+typedef BOOL(WINAPI *PhysicalToLogicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
 
 typedef struct {
 	BYTE bWidth; // Width, in pixels, of the image
@@ -308,6 +310,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	// DPI conversion API
 	static LogicalToPhysicalPointForPerMonitorDPIPtr win81p_LogicalToPhysicalPointForPerMonitorDPI;
+	static PhysicalToLogicalPointForPerMonitorDPIPtr win81p_PhysicalToLogicalPointForPerMonitorDPI;
 
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
 	String tablet_driver;
@@ -335,7 +338,8 @@ class DisplayServerWindows : public DisplayServer {
 	Point2i center;
 
 #if defined(GLES3_ENABLED)
-	GLManager_Windows *gl_manager = nullptr;
+	GLManagerANGLE_Windows *gl_manager_angle = nullptr;
+	GLManagerNative_Windows *gl_manager_native = nullptr;
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -567,6 +571,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;

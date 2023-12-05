@@ -175,17 +175,16 @@ void TextParagraph::_shape_lines() {
 			for (int i = 0; i < line_breaks.size(); i = i + 2) {
 				RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
-				if (v_offset < h) {
-					TS->free_rid(line);
-					break;
-				}
 				if (!tab_stops.is_empty()) {
 					TS->shaped_text_tab_align(line, tab_stops);
 				}
-				dropcap_lines++;
-				v_offset -= h;
 				start = line_breaks[i + 1];
 				lines_rid.push_back(line);
+				if (v_offset < h) {
+					break;
+				}
+				dropcap_lines++;
+				v_offset -= h;
 			}
 		}
 		// Use fixed for the rest of lines.
@@ -397,9 +396,6 @@ bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_font, i
 	TS->shaped_text_clear(dropcap_rid);
 	dropcap_margins = p_dropcap_margins;
 	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);
-	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-		TS->shaped_text_set_spacing(dropcap_rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
-	}
 	lines_dirty = true;
 	return res;
 }
@@ -415,9 +411,6 @@ bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_font, in
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(p_font.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language, p_meta);
-	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-		TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
-	}
 	lines_dirty = true;
 	return res;
 }
@@ -1050,9 +1043,6 @@ TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_font, int 
 	rid = TS->create_shaped_text(p_direction, p_orientation);
 	if (p_font.is_valid()) {
 		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
-		}
 	}
 	width = p_width;
 }

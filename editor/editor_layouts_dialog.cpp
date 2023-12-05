@@ -42,7 +42,7 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
-		if (k->is_action_pressed(SNAME("ui_accept"), false, true)) {
+		if (k->is_action_pressed(SNAME("ui_text_submit"), false, true)) {
 			if (get_hide_on_ok()) {
 				hide();
 			}

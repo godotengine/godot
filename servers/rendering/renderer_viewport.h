@@ -63,6 +63,7 @@ public:
 		float fsr_sharpness = 0.2f;
 		float texture_mipmap_bias = 0.0f;
 		bool fsr_enabled = false;
+		uint32_t jitter_phase_count = 0;
 		RS::ViewportUpdateMode update_mode = RenderingServer::VIEWPORT_UPDATE_WHEN_VISIBLE;
 		RID render_target;
 		RID render_target_texture;
@@ -198,9 +199,12 @@ public:
 	int total_vertices_drawn = 0;
 	int total_draw_calls_used = 0;
 
+	int num_viewports_with_motion_vectors = 0;
+
 private:
 	Vector<Viewport *> _sort_active_viewports();
 	void _viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count);
+	bool _viewport_requires_motion_vectors(Viewport *p_viewport);
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);
@@ -295,13 +299,14 @@ public:
 	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);
 
 	void set_default_clear_color(const Color &p_color);
-	void draw_viewports();
+	void draw_viewports(bool p_swap_buffers);
 
 	bool free(RID p_rid);
 
 	int get_total_objects_drawn() const;
 	int get_total_primitives_drawn() const;
 	int get_total_draw_calls_used() const;
+	int get_num_viewports_with_motion_vectors() const;
 
 	// Workaround for setting this on thread.
 	void call_set_vsync_mode(DisplayServer::VSyncMode p_mode, DisplayServer::WindowID p_window);

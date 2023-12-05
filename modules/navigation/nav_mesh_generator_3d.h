@@ -34,6 +34,7 @@
 #ifndef _3D_DISABLED
 
 #include "core/object/class_db.h"
+#include "core/object/worker_thread_pool.h"
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
 class Node;
@@ -44,6 +45,31 @@ class NavMeshGenerator3D : public Object {
 	static NavMeshGenerator3D *singleton;
 
 	static Mutex baking_navmesh_mutex;
+	static Mutex generator_task_mutex;
+
+	static bool use_threads;
+	static bool baking_use_multiple_threads;
+	static bool baking_use_high_priority_threads;
+
+	struct NavMeshGeneratorTask3D {
+		enum TaskStatus {
+			BAKING_STARTED,
+			BAKING_FINISHED,
+			BAKING_FAILED,
+			CALLBACK_DISPATCHED,
+			CALLBACK_FAILED,
+		};
+
+		Ref<NavigationMesh> navigation_mesh;
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
+		Callable callback;
+		WorkerThreadPool::TaskID thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
+		NavMeshGeneratorTask3D::TaskStatus status = NavMeshGeneratorTask3D::TaskStatus::BAKING_STARTED;
+	};
+
+	static HashMap<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> generator_tasks;
+
+	static void generator_thread_bake(void *p_arg);
 
 	static HashSet<Ref<NavigationMesh>> baking_navmeshes;
 
@@ -66,11 +92,13 @@ class NavMeshGenerator3D : public Object {
 public:
 	static NavMeshGenerator3D *get_singleton();
 
+	static void sync();
 	static void cleanup();
 	static void finish();
 
-	static void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
-	static void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable());
+	static void parse_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
+	static void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback = Callable());
+	static void bake_from_source_geometry_data_async(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback = Callable());
 
 	NavMeshGenerator3D();
 	~NavMeshGenerator3D();

@@ -68,6 +68,7 @@ private:
 
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void _load_texture_files(const Vector<String> &p_paths);
 
 	void _update_sources_list(int force_selected_id = -1);
 
@@ -78,7 +79,6 @@ private:
 	MenuButton *sources_advanced_menu_button = nullptr;
 	ItemList *sources_list = nullptr;
 	Ref<Texture2D> missing_texture_texture;
-	void _texture_file_selected(const String &p_path);
 	void _source_selected(int p_source_index);
 	void _source_delete_pressed();
 	void _source_add_id_pressed(int p_id_pressed);

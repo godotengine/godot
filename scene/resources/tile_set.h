@@ -50,7 +50,6 @@
 #endif
 
 class TileMap;
-struct TileMapQuadrant;
 class TileSetSource;
 class TileSetAtlasSource;
 class TileData;
@@ -63,10 +62,10 @@ class TileSetPluginAtlasNavigation;
 
 union TileMapCell {
 	struct {
-		int32_t source_id : 16;
-		int16_t coord_x : 16;
-		int16_t coord_y : 16;
-		int32_t alternative_tile : 16;
+		int16_t source_id;
+		int16_t coord_x;
+		int16_t coord_y;
+		int16_t alternative_tile;
 	};
 
 	uint64_t _u64t;
@@ -138,6 +137,7 @@ public:
 	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
 	int get_cell_alternative_tile(const Vector2i &p_coords) const;
 
+	const HashMap<Vector2i, TileMapCell> &get_pattern() const { return pattern; }
 	TypedArray<Vector2i> get_used_cells() const;
 
 	Size2i get_size() const;
@@ -599,6 +599,12 @@ public:
 		TILE_ANIMATION_MODE_MAX,
 	};
 
+	enum TransformBits {
+		TRANSFORM_FLIP_H = 1 << 12,
+		TRANSFORM_FLIP_V = 1 << 13,
+		TRANSFORM_TRANSPOSE = 1 << 14,
+	};
+
 private:
 	struct TileAlternativesData {
 		Vector2i size_in_atlas = Vector2i(1, 1);
@@ -634,12 +640,11 @@ private:
 	void _clear_coords_mapping_cache(Vector2i p_atlas_coords);
 	void _create_coords_mapping_cache(Vector2i p_atlas_coords);
 
-	void _clear_tiles_outside_texture();
-
 	bool use_texture_padding = true;
-	Ref<ImageTexture> padded_texture;
+	Ref<CanvasTexture> padded_texture;
 	bool padded_texture_needs_update = false;
 	void _queue_update_padded_texture();
+	Ref<ImageTexture> _create_padded_image_texture(const Ref<Texture2D> &p_source);
 	void _update_padded_texture();
 
 protected:
@@ -702,6 +707,10 @@ public:
 	PackedVector2Array get_tiles_to_be_removed_on_change(Ref<Texture2D> p_texture, Vector2i p_margins, Vector2i p_separation, Vector2i p_texture_region_size);
 	Vector2i get_tile_at_coords(Vector2i p_atlas_coords) const;
 
+	bool has_tiles_outside_texture() const;
+	Vector<Vector2i> get_tiles_outside_texture() const;
+	void clear_tiles_outside_texture();
+
 	// Animation.
 	void set_tile_animation_columns(const Vector2i p_atlas_coords, int p_frame_columns);
 	int get_tile_animation_columns(const Vector2i p_atlas_coords) const;
@@ -734,6 +743,8 @@ public:
 	Vector2i get_atlas_grid_size() const;
 	Rect2i get_tile_texture_region(Vector2i p_atlas_coords, int p_frame = 0) const;
 	bool is_position_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Vector2 p_position) const;
+
+	static int alternative_no_transform(int p_alternative_id);
 
 	// Getters for texture and tile region (padded or not)
 	Ref<Texture2D> get_runtime_texture() const;

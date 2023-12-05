@@ -141,6 +141,9 @@ public:
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
 
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+
 	virtual Rect2i get_display_safe_area() const override;
 
 	virtual int get_screen_count() const override;

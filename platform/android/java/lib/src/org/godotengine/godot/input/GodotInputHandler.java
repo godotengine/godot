@@ -95,7 +95,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 
 	/**
 	 * Enable multi-fingers pan & scale gestures. This is false by default.
-	 *
+	 * <p>
 	 * Note: This may interfere with multi-touch handling / support.
 	 */
 	public void enablePanningAndScalingGestures(boolean enable) {
@@ -433,7 +433,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 	}
 
 	private static boolean isMouseEvent(int eventSource) {
-		boolean mouseSource = ((eventSource & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) || ((eventSource & (InputDevice.SOURCE_TOUCHSCREEN | InputDevice.SOURCE_STYLUS)) == InputDevice.SOURCE_STYLUS);
+		boolean mouseSource = ((eventSource & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) || ((eventSource & InputDevice.SOURCE_STYLUS) == InputDevice.SOURCE_STYLUS);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			mouseSource = mouseSource || ((eventSource & InputDevice.SOURCE_MOUSE_RELATIVE) == InputDevice.SOURCE_MOUSE_RELATIVE);
 		}
@@ -470,13 +470,27 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 		final float y = event.getY();
 		final int buttonsMask = event.getButtonState();
 
+		final float pressure = event.getPressure();
+
+		// Orientation is returned as a radian value between 0 to pi clockwise or 0 to -pi counterclockwise.
+		final float orientation = event.getOrientation();
+
+		// Tilt is zero is perpendicular to the screen and pi/2 is flat on the surface.
+		final float tilt = event.getAxisValue(MotionEvent.AXIS_TILT);
+
+		float tiltMult = (float)Math.sin(tilt);
+
+		// To be consistent with expected tilt.
+		final float tiltX = (float)-Math.sin(orientation) * tiltMult;
+		final float tiltY = (float)Math.cos(orientation) * tiltMult;
+
 		final float verticalFactor = event.getAxisValue(MotionEvent.AXIS_VSCROLL);
 		final float horizontalFactor = event.getAxisValue(MotionEvent.AXIS_HSCROLL);
 		boolean sourceMouseRelative = false;
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 			sourceMouseRelative = event.isFromSource(InputDevice.SOURCE_MOUSE_RELATIVE);
 		}
-		return handleMouseEvent(eventAction, buttonsMask, x, y, horizontalFactor, verticalFactor, false, sourceMouseRelative);
+		return handleMouseEvent(eventAction, buttonsMask, x, y, horizontalFactor, verticalFactor, false, sourceMouseRelative, pressure, tiltX, tiltY);
 	}
 
 	static boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y) {
@@ -484,6 +498,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 	}
 
 	static boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative) {
+		return handleMouseEvent(eventAction, buttonsMask, x, y, deltaX, deltaY, doubleClick, sourceMouseRelative, 1, 0, 0);
+	}
+
+	static boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY) {
 		// Fix the buttonsMask
 		switch (eventAction) {
 			case MotionEvent.ACTION_CANCEL:
@@ -511,7 +529,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			case MotionEvent.ACTION_HOVER_MOVE:
 			case MotionEvent.ACTION_MOVE:
 			case MotionEvent.ACTION_SCROLL: {
-				GodotLib.dispatchMouseEvent(eventAction, buttonsMask, x, y, deltaX, deltaY, doubleClick, sourceMouseRelative);
+				GodotLib.dispatchMouseEvent(eventAction, buttonsMask, x, y, deltaX, deltaY, doubleClick, sourceMouseRelative, pressure, tiltX, tiltY);
 				return true;
 			}
 		}

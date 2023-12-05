@@ -33,6 +33,8 @@
 
 #ifdef GLES3_ENABLED
 
+#include "platform_gl.h"
+
 #include "config.h"
 #include "core/os/os.h"
 #include "core/templates/rid_owner.h"
@@ -40,14 +42,6 @@
 #include "servers/rendering/storage/texture_storage.h"
 
 #include "drivers/gles3/shaders/canvas_sdf.glsl.gen.h"
-
-// This must come first to avoid windows.h mess
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
 
 namespace GLES3 {
 
@@ -117,10 +111,6 @@ namespace GLES3 {
 #define _GL_TEXTURE_EXTERNAL_OES 0x8D65
 
 #define _EXT_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
-
-#ifndef GLES_OVER_GL
-#define glClearDepth glClearDepthf
-#endif //!GLES_OVER_GL
 
 enum DefaultGLTexture {
 	DEFAULT_GL_TEXTURE_WHITE,
@@ -629,6 +619,9 @@ public:
 	void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
+	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override {}
+	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override { return false; }
+	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override {}
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override { return false; }
 
@@ -679,7 +672,7 @@ public:
 };
 
 inline String TextureStorage::get_framebuffer_error(GLenum p_status) {
-#if defined(DEBUG_ENABLED) && defined(GLES_OVER_GL)
+#if defined(DEBUG_ENABLED) && defined(GL_API_ENABLED)
 	if (p_status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
 		return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
 	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {

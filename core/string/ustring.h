@@ -305,6 +305,7 @@ public:
 	String replace(const char *p_key, const char *p_with) const;
 	String replacen(const String &p_key, const String &p_with) const;
 	String repeat(int p_count) const;
+	String reverse() const;
 	String insert(int p_at_pos, const String &p_string) const;
 	String erase(int p_pos, int p_chars = 1) const;
 	String pad_decimals(int p_digits) const;
@@ -436,7 +437,7 @@ public:
 	String property_name_encode() const;
 
 	// node functions
-	static String get_invalid_node_name_characters();
+	static String get_invalid_node_name_characters(bool p_allow_internal = false);
 	String validate_node_name() const;
 	String validate_identifier() const;
 	String validate_filename() const;

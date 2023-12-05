@@ -1006,10 +1006,11 @@ typedef ptrdiff_t  FT_PtrDist;
    *
    * For other cases, using binary splits is actually slightly faster.
    */
-#if defined( __SSE2__ )                            || \
-    ( defined( __x86_64__ ) && !defined( __VMS ) ) || \
-    defined( _M_AMD64 )                            || \
-    ( defined( _M_IX86_FP ) && _M_IX86_FP >= 2 )
+#if ( defined( __SSE2__ )                          ||   \
+      defined( __x86_64__ )                        ||   \
+      defined( _M_AMD64 )                          ||   \
+      ( defined( _M_IX86_FP ) && _M_IX86_FP >= 2 ) ) && \
+    !defined( __VMS )
 #  define FT_SSE2 1
 #else
 #  define FT_SSE2 0
@@ -1933,7 +1934,7 @@ typedef ptrdiff_t  FT_PtrDist;
       if ( continued )
         FT_Trace_Enable();
 
-      FT_TRACE7(( "band [%d..%d]: %ld cell%s remaining/\n",
+      FT_TRACE7(( "band [%d..%d]: %td cell%s remaining/\n",
                   ras.min_ey,
                   ras.max_ey,
                   ras.cell_null - ras.cell_free,

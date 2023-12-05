@@ -38,7 +38,7 @@
 			[b]VRAM Compressed:[/b] Reduced quality, low memory usage, low size on disk, slowest import. Only use for textures in 3D scenes, not for 2D elements.
 			[b]VRAM Uncompressed:[/b] Original quality, high memory usage, highest size on disk, fastest import.
 			[b]Basis Universal:[/b] Reduced quality, low memory usage, lowest size on disk, slow import. Only use for textures in 3D scenes, not for 2D elements.
-			See [url=https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/importing_images.html#compress-mode]Compress mode[/url] in the manual for more details.
+			See [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#compress-mode]Compress mode[/url] in the manual for more details.
 		</member>
 		<member name="mipmaps/generate" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], smaller versions of the texture are generated on import. For example, a 64×64 texture will generate 6 mipmaps (32×32, 16×16, 8×8, 4×4, 2×2, 1×1). This has several benefits:

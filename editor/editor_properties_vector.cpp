@@ -71,7 +71,7 @@ void EditorPropertyVectorN::_value_changed(double val, const String &p_name) {
 	Variant::construct(vector_type, v, nullptr, 0, cerror);
 
 	for (int i = 0; i < component_count; i++) {
-		if (angle_in_radians) {
+		if (radians_as_degrees) {
 			v.set(i, Math::deg_to_rad(spin_sliders[i]->get_value()));
 		} else {
 			v.set(i, spin_sliders[i]->get_value());
@@ -83,7 +83,7 @@ void EditorPropertyVectorN::_value_changed(double val, const String &p_name) {
 void EditorPropertyVectorN::update_property() {
 	Variant val = get_edited_property_value();
 	for (int i = 0; i < component_count; i++) {
-		if (angle_in_radians) {
+		if (radians_as_degrees) {
 			spin_sliders[i]->set_value_no_signal(Math::rad_to_deg((real_t)val.get(i)));
 		} else {
 			spin_sliders[i]->set_value_no_signal(val.get(i));
@@ -136,8 +136,8 @@ void EditorPropertyVectorN::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_editor_theme_icon(SNAME("Unlinked")));
+			linked->set_texture_pressed(get_editor_theme_icon(SNAME("Instance")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < component_count; i++) {
@@ -147,8 +147,8 @@ void EditorPropertyVectorN::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_angle_in_radians) {
-	angle_in_radians = p_angle_in_radians;
+void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_radians_as_degrees) {
+	radians_as_degrees = p_radians_as_degrees;
 
 	for (EditorSpinSlider *spin : spin_sliders) {
 		spin->set_min(p_min);

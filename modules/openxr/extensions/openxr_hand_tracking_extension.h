@@ -32,12 +32,17 @@
 #define OPENXR_HAND_TRACKING_EXTENSION_H
 
 #include "../util.h"
+#include "core/math/quaternion.h"
 #include "openxr_extension_wrapper.h"
-
-#define MAX_OPENXR_TRACKED_HANDS 2
 
 class OpenXRHandTrackingExtension : public OpenXRExtensionWrapper {
 public:
+	enum HandTrackedHands {
+		OPENXR_TRACKED_LEFT_HAND,
+		OPENXR_TRACKED_RIGHT_HAND,
+		OPENXR_MAX_TRACKED_HANDS
+	};
+
 	struct HandTracker {
 		bool is_initialized = false;
 		XrHandJointsMotionRangeEXT motion_range = XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT;
@@ -46,7 +51,6 @@ public:
 		XrHandJointLocationEXT joint_locations[XR_HAND_JOINT_COUNT_EXT];
 		XrHandJointVelocityEXT joint_velocities[XR_HAND_JOINT_COUNT_EXT];
 
-		XrHandTrackingAimStateFB aimState;
 		XrHandJointVelocitiesEXT velocities;
 		XrHandJointLocationsEXT locations;
 	};
@@ -68,22 +72,30 @@ public:
 	virtual void on_state_stopping() override;
 
 	bool get_active();
-	const HandTracker *get_hand_tracker(uint32_t p_hand) const;
+	const HandTracker *get_hand_tracker(HandTrackedHands p_hand) const;
 
-	XrHandJointsMotionRangeEXT get_motion_range(uint32_t p_hand) const;
-	void set_motion_range(uint32_t p_hand, XrHandJointsMotionRangeEXT p_motion_range);
+	XrHandJointsMotionRangeEXT get_motion_range(HandTrackedHands p_hand) const;
+	void set_motion_range(HandTrackedHands p_hand, XrHandJointsMotionRangeEXT p_motion_range);
+
+	XrSpaceLocationFlags get_hand_joint_location_flags(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
+	Quaternion get_hand_joint_rotation(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
+	Vector3 get_hand_joint_position(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
+	float get_hand_joint_radius(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
+
+	XrSpaceVelocityFlags get_hand_joint_velocity_flags(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
+	Vector3 get_hand_joint_linear_velocity(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
+	Vector3 get_hand_joint_angular_velocity(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
 
 private:
 	static OpenXRHandTrackingExtension *singleton;
 
 	// state
 	XrSystemHandTrackingPropertiesEXT handTrackingSystemProperties;
-	HandTracker hand_trackers[MAX_OPENXR_TRACKED_HANDS]; // Fixed for left and right hand
+	HandTracker hand_trackers[OPENXR_MAX_TRACKED_HANDS]; // Fixed for left and right hand
 
 	// related extensions
 	bool hand_tracking_ext = false;
 	bool hand_motion_range_ext = false;
-	bool hand_tracking_aim_state_ext = false;
 
 	// functions
 	void cleanup_hand_tracking();

@@ -109,6 +109,47 @@ TEST_CASE("[PackedScene] Instantiate Packed Scene") {
 	memdelete(instance);
 }
 
+TEST_CASE("[PackedScene] Instantiate Packed Scene With Children") {
+	// Create a scene to pack.
+	Node *scene = memnew(Node);
+	scene->set_name("TestScene");
+
+	// Add persisting child nodes to the scene.
+	Node *child1 = memnew(Node);
+	child1->set_name("Child1");
+	scene->add_child(child1);
+	child1->set_owner(scene);
+
+	Node *child2 = memnew(Node);
+	child2->set_name("Child2");
+	scene->add_child(child2);
+	child2->set_owner(scene);
+
+	// Add non persisting child node to the scene.
+	Node *child3 = memnew(Node);
+	child3->set_name("Child3");
+	scene->add_child(child3);
+
+	// Pack the scene.
+	PackedScene packed_scene;
+	packed_scene.pack(scene);
+
+	// Instantiate the packed scene.
+	Node *instance = packed_scene.instantiate();
+	CHECK(instance != nullptr);
+	CHECK(instance->get_name() == "TestScene");
+
+	// Validate the child nodes of the instantiated scene.
+	CHECK(instance->get_child_count() == 2);
+	CHECK(instance->get_child(0)->get_name() == "Child1");
+	CHECK(instance->get_child(1)->get_name() == "Child2");
+	CHECK(instance->get_child(0)->get_owner() == instance);
+	CHECK(instance->get_child(1)->get_owner() == instance);
+
+	memdelete(scene);
+	memdelete(instance);
+}
+
 } // namespace TestPackedScene
 
 #endif // TEST_PACKED_SCENE_H

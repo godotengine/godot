@@ -45,6 +45,8 @@ class ProjectSettings : public Object {
 	_THREAD_SAFE_CLASS_
 	friend class TestProjectSettingsInternalsAccessor;
 
+	bool is_changed = false;
+
 public:
 	typedef HashMap<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
@@ -102,6 +104,7 @@ protected:
 	HashSet<String> custom_features;
 	HashMap<StringName, LocalVector<Pair<StringName, StringName>>> feature_overrides;
 
+	LocalVector<String> hidden_prefixes;
 	HashMap<StringName, AutoloadInfo> autoloads;
 
 	Array global_class_list;
@@ -114,6 +117,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
+	void _queue_changed();
+	void _emit_changed();
 
 	static ProjectSettings *singleton;
 
@@ -163,6 +169,7 @@ public:
 	void set_restart_if_changed(const String &p_name, bool p_restart);
 	void set_ignore_value_in_docs(const String &p_name, bool p_ignore);
 	bool get_ignore_value_in_docs(const String &p_name) const;
+	void add_hidden_prefix(const String &p_prefix);
 
 	String get_project_data_dir_name() const;
 	String get_project_data_path() const;

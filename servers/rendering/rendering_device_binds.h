@@ -696,7 +696,7 @@ public:
 	RD_SETGET(Color, blend_constant)
 
 	void set_attachments(const TypedArray<RDPipelineColorBlendStateAttachment> &p_attachments) {
-		attachments.push_back(p_attachments);
+		attachments = p_attachments;
 	}
 
 	TypedArray<RDPipelineColorBlendStateAttachment> get_attachments() const {

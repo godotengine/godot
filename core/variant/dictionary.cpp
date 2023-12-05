@@ -210,7 +210,7 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 	recursion_count++;
 	for (const KeyValue<Variant, Variant> &this_E : _p->variant_map) {
 		HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
-		if (!other_E || !this_E.value.hash_compare(other_E->value, recursion_count)) {
+		if (!other_E || !this_E.value.hash_compare(other_E->value, recursion_count, false)) {
 			return false;
 		}
 	}
@@ -248,7 +248,7 @@ void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
 }
 
 void Dictionary::_unref() const {
-	ERR_FAIL_COND(!_p);
+	ERR_FAIL_NULL(_p);
 	if (_p->refcount.unref()) {
 		if (_p->read_only) {
 			memdelete(_p->read_only);

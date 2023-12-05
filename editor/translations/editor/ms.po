@@ -121,9 +121,6 @@ msgstr "Kembali, Sony Pilih, Xbox Kembali, Nintendo -"
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Panduan, Sony PS, Xbox Home"
 
-msgid "Start, Nintendo +"
-msgstr "Mula, Nintendo +"
-
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Batang Kiri, Sony L3, Xbox L/LS"
 
@@ -677,11 +674,11 @@ msgstr ""
 "Pilihan ini tidak berfungsi untuk pengeditan Bezier, kerana ia hanya satu "
 "trek."
 
-msgid "Warning: Editing imported animation"
-msgstr "Amaran: Mengedit animasi yang diimport"
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Pilih nod AnimationPlayer untuk mencipta dan mengedit animasi."
+
+msgid "Warning: Editing imported animation"
+msgstr "Amaran: Mengedit animasi yang diimport"
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Hanya tunjukkan trek dari nod yang dipilih di pokok."
@@ -879,9 +876,6 @@ msgstr "Tutup"
 msgid "Connect"
 msgstr "Sambung"
 
-msgid "Signal:"
-msgstr "Isyarat:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Sambungkan '% s' ke '% s'"
 
@@ -902,8 +896,7 @@ msgstr "Sambungkan Isyarat ke Kaedah"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
-"Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat \"% "
-"s\"?"
+"Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat \"% s\"?"
 
 msgid "Signals"
 msgstr "Isyarat"
@@ -911,6 +904,9 @@ msgstr "Isyarat"
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
 "Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat ini?"
+
+msgid "Open Documentation"
+msgstr "Buka Dokumentasi"
 
 msgid "Disconnect All"
 msgstr "Putuskan Semua"
@@ -992,8 +988,7 @@ msgid ""
 "functions called by that function.\n"
 "Use this to find individual functions to optimize."
 msgstr ""
-"Inklusif: Termasuk masa daripada fungsi lain yang dipanggil oleh fungsi "
-"ini.\n"
+"Inklusif: Termasuk masa daripada fungsi lain yang dipanggil oleh fungsi ini.\n"
 "Gunakan ini untuk mengesan kesesakan.\n"
 "\n"
 "Diri: Hanya kira masa yang dihabiskan dalam fungsi itu sendiri, bukan dalam "
@@ -1073,8 +1068,8 @@ msgstr "Buka"
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
-"Depending on your filesystem configuration, the files will either be moved "
-"to the system trash or deleted permanently."
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
 msgstr ""
 "Keluarkan fail terpilih dari projek? (Tidak boleh buat asal.)\n"
 "Bergantung kepada konfigurasi sistem fail anda, fail yang dikeluarkan akan "
@@ -1084,11 +1079,10 @@ msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
 "Remove them anyway? (Cannot be undone.)\n"
-"Depending on your filesystem configuration, the files will either be moved "
-"to the system trash or deleted permanently."
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
 msgstr ""
-"Fail yang akan dikeluarkan diperlukan oleh sumber lain agar dapat "
-"berfungsi.\n"
+"Fail yang akan dikeluarkan diperlukan oleh sumber lain agar dapat berfungsi.\n"
 "Masih mahu keluarkan fail tersebut? (Tidak boleh buat asal.)\n"
 "Bergantung kepada konfigurasi sistem fail anda, fail yang dikeluarkan akan "
 "dipindah ke tong sampah atau dipadamkan secara kekal."
@@ -1165,21 +1159,6 @@ msgstr "Penaja Emas"
 msgid "Silver Sponsors"
 msgstr "Penderma Perak"
 
-msgid "Bronze Sponsors"
-msgstr "Penderma Gangsa"
-
-msgid "Mini Sponsors"
-msgstr "Penaja Mini"
-
-msgid "Gold Donors"
-msgstr "Penderma Emas"
-
-msgid "Silver Donors"
-msgstr "Penderma Perak"
-
-msgid "Bronze Donors"
-msgstr "Penderma Gangsa"
-
 msgid "Donors"
 msgstr "Penderma"
 
@@ -1191,14 +1170,14 @@ msgstr "Lesen Pihak Ketiga"
 
 msgid ""
 "Godot Engine relies on a number of third-party free and open source "
-"libraries, all compatible with the terms of its MIT license. The following "
-"is an exhaustive list of all such third-party components with their "
-"respective copyright statements and license terms."
+"libraries, all compatible with the terms of its MIT license. The following is "
+"an exhaustive list of all such third-party components with their respective "
+"copyright statements and license terms."
 msgstr ""
 "Enjin Godot bergantung kepada beberapa perpustakaan sumber terbuka dan bebas "
 "pihak ketiga, semuanya serasi dengan syarat-syarat lesen MITnya. Berikut "
-"adalah senarai lengkap semua komponen pihak ketiga tersebut dengan "
-"pernyataan hak cipta dan syarat lesen masing-masing."
+"adalah senarai lengkap semua komponen pihak ketiga tersebut dengan pernyataan "
+"hak cipta dan syarat lesen masing-masing."
 
 msgid "All Components"
 msgstr "Semua Komponen"
@@ -1214,12 +1193,6 @@ msgstr "Ralat membuka fail aset untuk \"%s\" (bukan dalam format ZIP)."
 
 msgid "%s (already exists)"
 msgstr "%s (sudah wujud)"
-
-msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr "Kandungan aset \"%s\" - fail-fail %d bercanggah dengan projek anda:"
-
-msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr "Kandungan aset \"%s\" - Tiada fail-fail bercanggah dengan projek anda:"
 
 msgid "Uncompressing Assets"
 msgstr "Nyahmampatkan Aset"
@@ -1238,9 +1211,6 @@ msgstr "Berjaya!"
 
 msgid "Install"
 msgstr "Pasang"
-
-msgid "Asset Installer"
-msgstr "Pemasang Aset"
 
 msgid "Speakers"
 msgstr "Pembesar suara"
@@ -1485,8 +1455,7 @@ msgid "Allows editing the node hierarchy in the Scene dock."
 msgstr "Membenarkan suntingan hierarki nod di dalam dok Adegan."
 
 msgid ""
-"Allows to work with signals and groups of the node selected in the Scene "
-"dock."
+"Allows to work with signals and groups of the node selected in the Scene dock."
 msgstr ""
 "Membenarkan fungsi isyarat dan kumpulan nod yang telah dipilih di dalam dok "
 "Adegan."
@@ -1538,8 +1507,7 @@ msgid "Main Features:"
 msgstr "Ciri-ciri Utama:"
 
 msgid ""
-"Profile '%s' already exists. Remove it first before importing, import "
-"aborted."
+"Profile '%s' already exists. Remove it first before importing, import aborted."
 msgstr ""
 "Profil '%s' sudah wujud. Keluarkannya terlebih dahulu sebelum mengimport, "
 "import dibatalkan."
@@ -1674,6 +1642,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "Penerangan Kaedah"
 
+msgid "Property:"
+msgstr "Sifat:"
+
+msgid "Signal:"
+msgstr "Isyarat:"
+
 msgid "%d match."
 msgstr "%d padan."
 
@@ -1731,25 +1705,15 @@ msgstr "Sifat"
 msgid "Theme Property"
 msgstr "Sifat Tema"
 
-msgid "Property:"
-msgstr "Sifat:"
-
-msgid ""
-"Pinning a value forces it to be saved even if it's equal to the default."
+msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "Menyemat nilai memaksanya untuk disimpan walaupun ia sama dengan nilai asal."
-
-msgid "Open Documentation"
-msgstr "Buka Dokumentasi"
 
 msgid "Resize Array"
 msgstr "Ubah saiz Array"
 
 msgid "Set %s"
 msgstr "Tetapkan %s"
-
-msgid "Set Multiple:"
-msgstr "Tetapkan Pelbagai:"
 
 msgid "Pinned %s"
 msgstr "Dipinkan %s"
@@ -1780,9 +1744,6 @@ msgstr "Kosongkan Keluaran"
 
 msgid "Copy Selection"
 msgstr "Salin Pilihan"
-
-msgid "New Window"
-msgstr "Tetingkap Baru"
 
 msgid ""
 "Spins when the editor window redraws.\n"
@@ -1888,8 +1849,7 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"Sumber ini tergolong dalam adegan yang diimport, maka ia tidak dapat "
-"diedit.\n"
+"Sumber ini tergolong dalam adegan yang diimport, maka ia tidak dapat diedit.\n"
 "Sila baca dokumentasi yang berkaitan dengan pengimportan adegan untuk lebih "
 "memahami aliran kerja ini."
 
@@ -1919,8 +1879,8 @@ msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s tidak lagi wujud! Sila nyatakan lokasi simpan baru."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) "
-"were saved anyway."
+"The current scene has no root node, but %d modified external resource(s) were "
+"saved anyway."
 msgstr ""
 "Adegan semasa tidak mempunyai nod akar, tetapi %d sumber luaran yang diubah "
 "suai telah disimpan juga."
@@ -1961,8 +1921,8 @@ msgid ""
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 "Adegan semasa mempunyai perubahan yang belum disimpan.\n"
-"Masih muat semula adegan yang telah disimpan? Tindakan ini tidak boleh "
-"dibuat asal."
+"Masih muat semula adegan yang telah disimpan? Tindakan ini tidak boleh dibuat "
+"asal."
 
 msgid "Save & Quit"
 msgstr "Simpan & Keluar"
@@ -2005,8 +1965,8 @@ msgid ""
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Tidak dapat memuat skrip addon dari laluan: '%s'. Ini mungkin disebabkan "
-"oleh kod ralat dalam skrip tersebut.\n"
+"Tidak dapat memuat skrip addon dari laluan: '%s'. Ini mungkin disebabkan oleh "
+"kod ralat dalam skrip tersebut.\n"
 "Menyahdayakan addon pada '%s' untuk mengelakkan ralat selanjutnya."
 
 msgid ""
@@ -2017,8 +1977,8 @@ msgstr ""
 
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
-"Tidak dapat memuat skrip addon dari laluan: Skrip '%s' tidak berada dalam "
-"mod alat."
+"Tidak dapat memuat skrip addon dari laluan: Skrip '%s' tidak berada dalam mod "
+"alat."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -2028,8 +1988,8 @@ msgstr ""
 "Untuk membuat perubahan, pemandangan baru yang diwarisi dapat dibuat."
 
 msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to "
-"open the scene, then save it inside the project path."
+"Error loading scene, it must be inside the project path. Use 'Import' to open "
+"the scene, then save it inside the project path."
 msgstr ""
 "Ralat memuatkan adegan, ia mesti berada di dalam laluan projek. Gunakan "
 "'Import' untuk membuka adegan, kemudian simpan di dalam laluan projek."
@@ -2082,30 +2042,6 @@ msgstr "Lalai"
 msgid "Save & Close"
 msgstr "Simpan & Tutup"
 
-msgid "Save changes to '%s' before closing?"
-msgstr "Simpan perubahan pada '%s' sebelum menutup?"
-
-msgid "Show in FileSystem"
-msgstr "Tunjukkan dalam FileSystem"
-
-msgid "Play This Scene"
-msgstr "Mainkan Adegan Ini"
-
-msgid "Close Tab"
-msgstr "Tutup Tab"
-
-msgid "Undo Close Tab"
-msgstr "Buat Asal Tutup Tab"
-
-msgid "Close Other Tabs"
-msgstr "Tutup Tab-tab Lain"
-
-msgid "Close Tabs to the Right"
-msgstr "Tutup Tab-tab ke Kanan"
-
-msgid "Close All Tabs"
-msgstr "Tutup Semua Tab"
-
 msgid "%d more files or folders"
 msgstr "%d lebih banyak fail-fail atau folder-folder"
 
@@ -2121,9 +2057,6 @@ msgstr "Pandangan Pan"
 msgid "Dock Position"
 msgstr "Kedudukan Dok"
 
-msgid "Add a new scene."
-msgstr "Tambah adegan baru."
-
 msgid "Distraction Free Mode"
 msgstr "Mod Bebas Gangguan"
 
@@ -2135,9 +2068,6 @@ msgstr "Adegan"
 
 msgid "Operations with scene files."
 msgstr "Operasi dengan fail adegan."
-
-msgid "Go to previously opened scene."
-msgstr "Pergi ke adegan yang dibuka sebelum ini."
 
 msgid "Copy Text"
 msgstr "Salin Teks"
@@ -2241,6 +2171,9 @@ msgstr "Dokumentasi Dalam Talian"
 msgid "Questions & Answers"
 msgstr "Soalan & Jawapan"
 
+msgid "Community"
+msgstr "Komuniti"
+
 msgid "Report a Bug"
 msgstr "Laporkan Pepijat"
 
@@ -2249,9 +2182,6 @@ msgstr "Cadangkan Ciri"
 
 msgid "Send Docs Feedback"
 msgstr "Hantar Maklum Balas Dokumen"
-
-msgid "Community"
-msgstr "Komuniti"
 
 msgid "About Godot"
 msgstr "Tentang Godot"
@@ -2413,18 +2343,18 @@ msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
-"Tidak dapat mencipta ViewportTexture pada sumber-sumber yang disimpan "
-"sebagai fail.\n"
+"Tidak dapat mencipta ViewportTexture pada sumber-sumber yang disimpan sebagai "
+"fail.\n"
 "Sumber perlu tergolong dalam satu adegan."
 
 msgid ""
-"Can't create a ViewportTexture on this resource because it's not set as "
-"local to scene.\n"
+"Can't create a ViewportTexture on this resource because it's not set as local "
+"to scene.\n"
 "Please switch on the 'local to scene' property on it (and all resources "
 "containing it up to a node)."
 msgstr ""
-"Tidak dapat mencipta ViewportTexture pada sumber ini kerana ia tidak "
-"disetkan sebagai adegan tempatan.\n"
+"Tidak dapat mencipta ViewportTexture pada sumber ini kerana ia tidak disetkan "
+"sebagai adegan tempatan.\n"
 "Sila hidupkan sifat 'tempatan ke tempat kejadian' di atasnya (dan semua "
 "sumber yang mengandunginya sehingga ke nod)."
 
@@ -2450,8 +2380,8 @@ msgid "Add Key/Value Pair"
 msgstr "Tambah Pasangan Kunci/Nilai"
 
 msgid ""
-"The selected resource (%s) does not match any type expected for this "
-"property (%s)."
+"The selected resource (%s) does not match any type expected for this property "
+"(%s)."
 msgstr ""
 "Sumber yang dipilih (%s) tidak sesuai dengan jenis yang diharapkan untuk "
 "sifat ini (%s)."
@@ -2461,6 +2391,12 @@ msgstr "Muatan Cepat"
 
 msgid "Make Unique"
 msgstr "Buat Unik"
+
+msgid "Save As..."
+msgstr "Simpan Sebagai..."
+
+msgid "Show in FileSystem"
+msgstr "Tunjukkan dalam FileSystem"
 
 msgid "Convert to %s"
 msgstr "Tukar ke %s"
@@ -2670,8 +2606,8 @@ msgid "Download and Install"
 msgstr "Muat Turun dan Pasang"
 
 msgid ""
-"Download and install templates for the current version from the best "
-"possible mirror."
+"Download and install templates for the current version from the best possible "
+"mirror."
 msgstr "Muat turun dan pasang templat untuk versi semasa dari mirror terbaik."
 
 msgid "Official export templates aren't available for development builds."
@@ -2725,8 +2661,7 @@ msgstr "Lihat barang sebagai senarai."
 
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"Status: Import fail gagal. Sila betulkan fail dan import semula secara "
-"manual."
+"Status: Import fail gagal. Sila betulkan fail dan import semula secara manual."
 
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
@@ -2746,9 +2681,6 @@ msgstr "Ralat semasa memindahkan:"
 msgid "Error duplicating:"
 msgstr "Ralat penduaan:"
 
-msgid "Unable to update dependencies:"
-msgstr "Tidak dapat mengemaskini kebergantungan:"
-
 msgid "A file or folder with this name already exists."
 msgstr "Fail atau folder dengan nama ini sudah wujud."
 
@@ -2760,9 +2692,6 @@ msgstr "Menduakan folder:"
 
 msgid "New Inherited Scene"
 msgstr "Adegan Baru Yang Diwarisi"
-
-msgid "Set As Main Scene"
-msgstr "Tetapkan Sebagai Adegan Utama"
 
 msgid "Open Scenes"
 msgstr "Buka Adegan-adegan"
@@ -2778,6 +2707,9 @@ msgstr "Tambah ke Kegemaran"
 
 msgid "Remove from Favorites"
 msgstr "Alih keluar dari Kegemaran"
+
+msgid "Reimport"
+msgstr "Import semula"
 
 msgid "Open in File Manager"
 msgstr "Buka dalam Pengurus Fail"
@@ -2823,9 +2755,6 @@ msgstr "Namakan semula..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Imbas Semula Sistem Fail"
-
-msgid "Toggle Split Mode"
-msgstr "Togol Mod Berpisah"
 
 msgid ""
 "Scanning Files,\n"
@@ -3018,8 +2947,29 @@ msgstr "Mainkan adegan yang diedit."
 msgid "Quick Run Scene..."
 msgstr "Jalan Cepat Adegan..."
 
-msgid "Reimport"
-msgstr "Import semula"
+msgid "Play This Scene"
+msgstr "Mainkan Adegan Ini"
+
+msgid "Close Tab"
+msgstr "Tutup Tab"
+
+msgid "Undo Close Tab"
+msgstr "Buat Asal Tutup Tab"
+
+msgid "Close Other Tabs"
+msgstr "Tutup Tab-tab Lain"
+
+msgid "Close Tabs to the Right"
+msgstr "Tutup Tab-tab ke Kanan"
+
+msgid "Close All Tabs"
+msgstr "Tutup Semua Tab"
+
+msgid "New Window"
+msgstr "Tetingkap Baru"
+
+msgid "Add a new scene."
+msgstr "Tambah adegan baru."
 
 msgid "Importing Scene..."
 msgstr "Mengimport Adegan..."
@@ -3047,9 +2997,6 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
-
-msgid "Select Importer"
-msgstr "Pilih Pengimport"
 
 msgid "Importer:"
 msgstr "Pengimport:"
@@ -3083,21 +3030,9 @@ msgstr "Import Sebagai:"
 msgid "Preset"
 msgstr "Pratetap"
 
-msgid "Save Scenes, Re-Import, and Restart"
-msgstr "Simpan Adegan, Import semula, dan Mula Semula"
-
-msgid "Changing the type of an imported file requires editor restart."
-msgstr "Mengubah jenis fail yang diimport memerlukan editor dimulakan semula."
-
 msgid ""
-"WARNING: Assets exist that use this resource, they may stop loading properly."
-msgstr ""
-"AMARAN: Terdapat aset-aset yang menggunakan sumber ini, mereka mungkin "
-"berhenti memuat dengan betul."
-
-msgid ""
-"Select a resource file in the filesystem or in the inspector to adjust "
-"import settings."
+"Select a resource file in the filesystem or in the inspector to adjust import "
+"settings."
 msgstr ""
 "Pilih fail sumber dalam sistem fail atau dalam pemeriksa untuk melaraskan "
 "tetapan import."
@@ -3122,9 +3057,6 @@ msgstr "Muatkan sumber sedia ada dari cakera dan suntingnya."
 
 msgid "Save the currently edited resource."
 msgstr "Simpan sumber yang sedang disunting."
-
-msgid "Save As..."
-msgstr "Simpan Sebagai..."
 
 msgid "Extra resource options."
 msgstr "Pilihan sumber tambahan."
@@ -3300,9 +3232,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 "Jana segi tiga-segi tiga campuran secara automatik (bukan secara manual)"
 
-msgid "Parameter Changed:"
-msgstr "Parameter Berubah:"
-
 msgid "Output node can't be added to the blend tree."
 msgstr "Nod keluaran tidak boleh ditambah ke pokok adunan."
 
@@ -3337,15 +3266,6 @@ msgstr "Togol Filter Hidup/Mati"
 
 msgid "Change Filter"
 msgstr "Tukar Filter"
-
-msgid "No animation player set, so unable to retrieve track names."
-msgstr ""
-"Tiada pemain animasi ditetapkan, jadi tidak dapat memperolehi semula nama "
-"trek."
-
-msgid "Player path set is invalid, so unable to retrieve track names."
-msgstr ""
-"Set laluan pemain tidak sah, jadi tidak dapat mendapatkan semula nama trek."
 
 msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
@@ -3492,14 +3412,14 @@ msgstr "Pin AnimationPlayer"
 msgid "Error!"
 msgstr "Ralat!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Masa Adunan Animasi Silang"
+
 msgid "Blend Times:"
 msgstr "Masa Adunan:"
 
 msgid "Next (Auto Queue):"
 msgstr "Seterusnya (Baris Gilir Automatik):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Masa Adunan Animasi Silang"
 
 msgid "Move Node"
 msgstr "Pindahkan Nod"
@@ -3708,9 +3628,6 @@ msgstr "Langkah Grid:"
 msgid "Primary Line Every:"
 msgstr "Garis Utama Setiap:"
 
-msgid "steps"
-msgstr "langkah-langkah"
-
 msgid "Rotation Offset:"
 msgstr "Offset Putaran:"
 
@@ -3777,16 +3694,12 @@ msgstr "Terkunci"
 msgid "Grouped"
 msgstr "Terkumpul"
 
-msgid "Add Node Here"
-msgstr "Tambah Nod Di Sini"
-
 msgid ""
 "Project Camera Override\n"
 "Overrides the running project's camera with the editor viewport camera."
 msgstr ""
 "Penggantian Kamera Projek\n"
-"Menggantikan kamera projek yang sedang berjalan dengan kamera viewport "
-"editor."
+"Menggantikan kamera projek yang sedang berjalan dengan kamera viewport editor."
 
 msgid ""
 "Project Camera Override\n"
@@ -4008,8 +3921,7 @@ msgid ""
 msgstr ""
 "Masukkan kekunci automatik apabila objek diterjemahkan, diputarkan atau "
 "diskalakan (berdasarkan topeng).\n"
-"Kekunci hanya ditambahkan pada trek sedia ada, tiada trek baru akan "
-"dicipta.\n"
+"Kekunci hanya ditambahkan pada trek sedia ada, tiada trek baru akan dicipta.\n"
 "Kekunci mesti dimasukkan secara manual untuk kali pertama."
 
 msgid "Auto Insert Key"
@@ -4114,12 +4026,6 @@ msgstr "Piksel Sempadan"
 msgid "Directed Border Pixels"
 msgstr "Piksel Sempadan Diarahkan"
 
-msgid "Capture from Pixel"
-msgstr "Tangkap daripada Pixel"
-
-msgid "Emission Colors"
-msgstr "Warna Emission"
-
 msgid "Create Emission Points From Node"
 msgstr "Cipta Titik Emission Daripada Nod"
 
@@ -4178,8 +4084,8 @@ msgstr ""
 "hanya akan mengeksport executable tanpa data projek.\n"
 "Sistem fail akan disediakan dari projek oleh editor melalui rangkaian.\n"
 "Pada Android, proses deploy akan menggunakan kabel USB untuk prestasi yang "
-"lebih pantas. Pilihan ini mempercepatkan pengujian untuk projek-projek "
-"dengan aset besar."
+"lebih pantas. Pilihan ini mempercepatkan pengujian untuk projek-projek dengan "
+"aset besar."
 
 msgid "Visible Collision Shapes"
 msgstr "Bentuk Perlanggaran Yang Boleh Dilihat"
@@ -4188,8 +4094,8 @@ msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
 "3D) will be visible in the running project."
 msgstr ""
-"Apabila pilihan ini diaktifkan, bentuk perlanggaran dan nod raycast (untuk "
-"2D dan 3D) akan dapat dilihat dalam projek yang sedang berjalan."
+"Apabila pilihan ini diaktifkan, bentuk perlanggaran dan nod raycast (untuk 2D "
+"dan 3D) akan dapat dilihat dalam projek yang sedang berjalan."
 
 msgid "Visible Navigation"
 msgstr "Navigasi Yang Boleh Dilihat"
@@ -4205,8 +4111,8 @@ msgid "Synchronize Scene Changes"
 msgstr "Segerakkan Perubahan Adegan"
 
 msgid ""
-"When this option is enabled, any changes made to the scene in the editor "
-"will be replicated in the running project.\n"
+"When this option is enabled, any changes made to the scene in the editor will "
+"be replicated in the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
@@ -4219,8 +4125,8 @@ msgid "Synchronize Script Changes"
 msgstr "Segerakkan Perubahan Skrip"
 
 msgid ""
-"When this option is enabled, any script that is saved will be reloaded in "
-"the running project.\n"
+"When this option is enabled, any script that is saved will be reloaded in the "
+"running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
@@ -4231,9 +4137,6 @@ msgstr ""
 
 msgid "Clear Emission Mask"
 msgstr "Keluarkan Topeng Emission"
-
-msgid "Gradient Edited"
-msgstr "Kecerunan Disunting"
 
 msgid "Create Occluder Polygon"
 msgstr "Cipta Poligon Occluder"
@@ -4285,8 +4188,7 @@ msgid "Create Polygon3D"
 msgstr "Cipta Poligon3D"
 
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr ""
-"Tidak dapat membuka '% s'. Fail mungkin telah dipindahkan atau dipadam."
+msgstr "Tidak dapat membuka '% s'. Fail mungkin telah dipindahkan atau dipadam."
 
 msgid "Run"
 msgstr "Jalankan"
@@ -4407,9 +4309,6 @@ msgstr "Padam nod \"%s\"?"
 
 msgid "Filters"
 msgstr "Penapis"
-
-msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "Benarkan: a-z, A-Z, 0-9, _ dan ."
 
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Argumen jenis tidak sah untuk convert(), guna pemalar TYPE_*."

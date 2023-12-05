@@ -258,7 +258,8 @@ struct hb_sanitize_context_t :
       this->max_ops = -1;
       return false;
     }
-    return (this->max_ops -= (int) count) > 0;
+    this->max_ops -= (int) count;
+    return true;
   }
 
 #ifndef HB_OPTIMIZE_SIZE
@@ -381,6 +382,9 @@ struct hb_sanitize_context_t :
   }
 
   template <typename Type>
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   bool check_struct (const Type *obj) const
   {
     if (sizeof (uintptr_t) == sizeof (uint32_t))
@@ -449,7 +453,7 @@ struct hb_sanitize_context_t :
 	edit_count = 0;
 	sane = t->sanitize (this);
 	if (edit_count) {
-	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILLING", edit_count);
+	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILING", edit_count);
 	  sane = false;
 	}
       }

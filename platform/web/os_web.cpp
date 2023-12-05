@@ -132,6 +132,10 @@ int OS_Web::get_processor_count() const {
 	return godot_js_os_hw_concurrency_get();
 }
 
+String OS_Web::get_unique_id() const {
+	ERR_FAIL_V_MSG("", "OS::get_unique_id() is not available on the Web platform.");
+}
+
 bool OS_Web::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "web") {
 		return true;
@@ -154,6 +158,12 @@ Error OS_Web::shell_open(String p_uri) {
 
 String OS_Web::get_name() const {
 	return "Web";
+}
+
+void OS_Web::add_frame_delay(bool p_can_draw) {
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	OS::add_frame_delay(p_can_draw);
+#endif
 }
 
 void OS_Web::vibrate_handheld(int p_duration_ms) {
@@ -232,7 +242,7 @@ bool OS_Web::is_userfs_persistent() const {
 Error OS_Web::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.get_file();
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = path;

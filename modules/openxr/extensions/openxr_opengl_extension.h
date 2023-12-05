@@ -39,39 +39,8 @@
 
 #include "core/templates/vector.h"
 
-#ifdef ANDROID_ENABLED
-#define XR_USE_GRAPHICS_API_OPENGL_ES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <GLES3/gl3.h>
-#include <GLES3/gl3ext.h>
-#else
-#define XR_USE_GRAPHICS_API_OPENGL
-#endif
-
-#ifdef WINDOWS_ENABLED
-// Including windows.h here is absolutely evil, we shouldn't be doing this outside of platform
-// however due to the way the openxr headers are put together, we have no choice.
-#include <windows.h>
-#endif
-
-#ifdef X11_ENABLED
-#include OPENGL_INCLUDE_H
-#define GL_GLEXT_PROTOTYPES 1
-#define GL3_PROTOTYPES 1
-#include "thirdparty/glad/glad/gl.h"
-#include "thirdparty/glad/glad/glx.h"
-
-#include <X11/Xlib.h>
-#endif
-
-#ifdef ANDROID_ENABLED
-// The jobject type from jni.h is used by openxr_platform.h on Android.
-#include <jni.h>
-#endif
-
-// Include platform dependent structs.
-#include <openxr/openxr_platform.h>
+// always include this as late as possible
+#include "../openxr_platform_inc.h"
 
 class OpenXROpenGLExtension : public OpenXRGraphicsExtensionWrapper {
 public:

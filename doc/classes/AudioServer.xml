@@ -132,7 +132,8 @@
 		<method name="get_output_latency" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the audio driver's output latency. This can be expensive, it is not recommended to call this every frame.
+				Returns the audio driver's effective output latency. This is based on [member ProjectSettings.audio/driver/output_latency], but the exact returned value will differ depending on the operating system and audio driver.
+				[b]Note:[/b] This can be expensive; it is not recommended to call [method get_output_latency] every frame.
 			</description>
 		</method>
 		<method name="get_speaker_mode" qualifiers="const">
@@ -316,7 +317,15 @@
 	<signals>
 		<signal name="bus_layout_changed">
 			<description>
-				Emitted when the [AudioBusLayout] changes.
+				Emitted when an audio bus is added, deleted, or moved.
+			</description>
+		</signal>
+		<signal name="bus_renamed">
+			<param index="0" name="bus_index" type="int" />
+			<param index="1" name="old_name" type="StringName" />
+			<param index="2" name="new_name" type="StringName" />
+			<description>
+				Emitted when the audio bus at [param bus_index] is renamed from [param old_name] to [param new_name].
 			</description>
 		</signal>
 	</signals>

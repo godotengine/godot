@@ -125,44 +125,44 @@ void PropertySelector::_update_search() {
 		bool found = false;
 
 		Ref<Texture2D> type_icons[] = {
-			search_options->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("String"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Vector2i"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Rect2"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Rect2i"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Vector4i"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Projection"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("RID"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("MiniObject"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Callable"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Dictionary"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Array"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("PackedByteArray"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("PackedInt32Array"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("PackedInt64Array"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("PackedFloat32Array"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("PackedFloat64Array"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("PackedStringArray"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("PackedVector2Array"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
+			search_options->get_editor_theme_icon(SNAME("Variant")),
+			search_options->get_editor_theme_icon(SNAME("bool")),
+			search_options->get_editor_theme_icon(SNAME("int")),
+			search_options->get_editor_theme_icon(SNAME("float")),
+			search_options->get_editor_theme_icon(SNAME("String")),
+			search_options->get_editor_theme_icon(SNAME("Vector2")),
+			search_options->get_editor_theme_icon(SNAME("Vector2i")),
+			search_options->get_editor_theme_icon(SNAME("Rect2")),
+			search_options->get_editor_theme_icon(SNAME("Rect2i")),
+			search_options->get_editor_theme_icon(SNAME("Vector3")),
+			search_options->get_editor_theme_icon(SNAME("Vector3i")),
+			search_options->get_editor_theme_icon(SNAME("Transform2D")),
+			search_options->get_editor_theme_icon(SNAME("Vector4")),
+			search_options->get_editor_theme_icon(SNAME("Vector4i")),
+			search_options->get_editor_theme_icon(SNAME("Plane")),
+			search_options->get_editor_theme_icon(SNAME("Quaternion")),
+			search_options->get_editor_theme_icon(SNAME("AABB")),
+			search_options->get_editor_theme_icon(SNAME("Basis")),
+			search_options->get_editor_theme_icon(SNAME("Transform3D")),
+			search_options->get_editor_theme_icon(SNAME("Projection")),
+			search_options->get_editor_theme_icon(SNAME("Color")),
+			search_options->get_editor_theme_icon(SNAME("StringName")),
+			search_options->get_editor_theme_icon(SNAME("NodePath")),
+			search_options->get_editor_theme_icon(SNAME("RID")),
+			search_options->get_editor_theme_icon(SNAME("MiniObject")),
+			search_options->get_editor_theme_icon(SNAME("Callable")),
+			search_options->get_editor_theme_icon(SNAME("Signal")),
+			search_options->get_editor_theme_icon(SNAME("Dictionary")),
+			search_options->get_editor_theme_icon(SNAME("Array")),
+			search_options->get_editor_theme_icon(SNAME("PackedByteArray")),
+			search_options->get_editor_theme_icon(SNAME("PackedInt32Array")),
+			search_options->get_editor_theme_icon(SNAME("PackedInt64Array")),
+			search_options->get_editor_theme_icon(SNAME("PackedFloat32Array")),
+			search_options->get_editor_theme_icon(SNAME("PackedFloat64Array")),
+			search_options->get_editor_theme_icon(SNAME("PackedStringArray")),
+			search_options->get_editor_theme_icon(SNAME("PackedVector2Array")),
+			search_options->get_editor_theme_icon(SNAME("PackedVector3Array")),
+			search_options->get_editor_theme_icon(SNAME("PackedColorArray"))
 		};
 		static_assert((sizeof(type_icons) / sizeof(type_icons[0])) == Variant::VARIANT_MAX, "Number of type icons doesn't match the number of Variant types.");
 
@@ -177,7 +177,7 @@ void PropertySelector::_update_search() {
 
 				Ref<Texture2D> icon;
 				if (E.name == "Script Variables") {
-					icon = search_options->get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
+					icon = search_options->get_editor_theme_icon(SNAME("Script"));
 				} else {
 					icon = EditorNode::get_singleton()->get_class_icon(E.name);
 				}
@@ -257,7 +257,7 @@ void PropertySelector::_update_search() {
 				script_methods = false;
 				String rep = mi.name.replace("*", "");
 				if (mi.name == "*Script Methods") {
-					icon = search_options->get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
+					icon = search_options->get_editor_theme_icon(SNAME("Script"));
 					script_methods = true;
 				} else {
 					icon = EditorNode::get_singleton()->get_class_icon(rep);
@@ -370,46 +370,15 @@ void PropertySelector::_item_selected() {
 		class_type = instance->get_class();
 	}
 
-	DocTools *dd = EditorHelp::get_doc_data();
 	String text;
-	if (properties) {
-		while (!class_type.is_empty()) {
-			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
-			if (E) {
-				for (int i = 0; i < E->value.properties.size(); i++) {
-					if (E->value.properties[i].name == name) {
-						text = DTR(E->value.properties[i].description);
-						break;
-					}
-				}
-			}
-
-			if (!text.is_empty()) {
-				break;
-			}
-
-			// The property may be from a parent class, keep looking.
-			class_type = ClassDB::get_parent_class(class_type);
+	while (!class_type.is_empty()) {
+		text = properties ? help_bit->get_property_description(class_type, name) : help_bit->get_method_description(class_type, name);
+		if (!text.is_empty()) {
+			break;
 		}
-	} else {
-		while (!class_type.is_empty()) {
-			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
-			if (E) {
-				for (int i = 0; i < E->value.methods.size(); i++) {
-					if (E->value.methods[i].name == name) {
-						text = DTR(E->value.methods[i].description);
-						break;
-					}
-				}
-			}
 
-			if (!text.is_empty()) {
-				break;
-			}
-
-			// The method may be from a parent class, keep looking.
-			class_type = ClassDB::get_parent_class(class_type);
-		}
+		// It may be from a parent class, keep looking.
+		class_type = ClassDB::get_parent_class(class_type);
 	}
 
 	if (!text.is_empty()) {
@@ -600,5 +569,7 @@ PropertySelector::PropertySelector() {
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
+	help_bit->get_rich_text()->set_fit_content(false);
+	help_bit->get_rich_text()->set_custom_minimum_size(Size2(help_bit->get_rich_text()->get_minimum_size().x, 135 * EDSCALE));
 	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 }

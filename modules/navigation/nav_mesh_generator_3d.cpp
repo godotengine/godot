@@ -32,6 +32,7 @@
 
 #include "nav_mesh_generator_3d.h"
 
+#include "core/config/project_settings.h"
 #include "core/math/convex_hull.h"
 #include "core/os/thread.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -63,7 +64,12 @@
 
 NavMeshGenerator3D *NavMeshGenerator3D::singleton = nullptr;
 Mutex NavMeshGenerator3D::baking_navmesh_mutex;
+Mutex NavMeshGenerator3D::generator_task_mutex;
+bool NavMeshGenerator3D::use_threads = true;
+bool NavMeshGenerator3D::baking_use_multiple_threads = true;
+bool NavMeshGenerator3D::baking_use_high_priority_threads = true;
 HashSet<Ref<NavigationMesh>> NavMeshGenerator3D::baking_navmeshes;
+HashMap<WorkerThreadPool::TaskID, NavMeshGenerator3D::NavMeshGeneratorTask3D *> NavMeshGenerator3D::generator_tasks;
 
 NavMeshGenerator3D *NavMeshGenerator3D::get_singleton() {
 	return singleton;
@@ -72,15 +78,67 @@ NavMeshGenerator3D *NavMeshGenerator3D::get_singleton() {
 NavMeshGenerator3D::NavMeshGenerator3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
+
+	baking_use_multiple_threads = GLOBAL_GET("navigation/baking/thread_model/baking_use_multiple_threads");
+	baking_use_high_priority_threads = GLOBAL_GET("navigation/baking/thread_model/baking_use_high_priority_threads");
+
+	// Using threads might cause problems on certain exports or with the Editor on certain devices.
+	// This is the main switch to turn threaded navmesh baking off should the need arise.
+	use_threads = baking_use_multiple_threads && !Engine::get_singleton()->is_editor_hint();
 }
 
 NavMeshGenerator3D::~NavMeshGenerator3D() {
 	cleanup();
 }
 
+void NavMeshGenerator3D::sync() {
+	if (generator_tasks.size() == 0) {
+		return;
+	}
+
+	baking_navmesh_mutex.lock();
+	generator_task_mutex.lock();
+
+	LocalVector<WorkerThreadPool::TaskID> finished_task_ids;
+
+	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
+		if (WorkerThreadPool::get_singleton()->is_task_completed(E.key)) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+			finished_task_ids.push_back(E.key);
+
+			NavMeshGeneratorTask3D *generator_task = E.value;
+			DEV_ASSERT(generator_task->status == NavMeshGeneratorTask3D::TaskStatus::BAKING_FINISHED);
+
+			baking_navmeshes.erase(generator_task->navigation_mesh);
+			if (generator_task->callback.is_valid()) {
+				generator_emit_callback(generator_task->callback);
+			}
+			memdelete(generator_task);
+		}
+	}
+
+	for (WorkerThreadPool::TaskID finished_task_id : finished_task_ids) {
+		generator_tasks.erase(finished_task_id);
+	}
+
+	generator_task_mutex.unlock();
+	baking_navmesh_mutex.unlock();
+}
+
 void NavMeshGenerator3D::cleanup() {
 	baking_navmesh_mutex.lock();
+	generator_task_mutex.lock();
+
 	baking_navmeshes.clear();
+
+	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+		NavMeshGeneratorTask3D *generator_task = E.value;
+		memdelete(generator_task);
+	}
+	generator_tasks.clear();
+
+	generator_task_mutex.unlock();
 	baking_navmesh_mutex.unlock();
 }
 
@@ -88,10 +146,10 @@ void NavMeshGenerator3D::finish() {
 	cleanup();
 }
 
-void NavMeshGenerator3D::parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
+void NavMeshGenerator3D::parse_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 	ERR_FAIL_COND(!p_navigation_mesh.is_valid());
-	ERR_FAIL_COND(p_root_node == nullptr);
+	ERR_FAIL_NULL(p_root_node);
 	ERR_FAIL_COND(!p_root_node->is_inside_tree());
 	ERR_FAIL_COND(!p_source_geometry_data.is_valid());
 
@@ -102,19 +160,25 @@ void NavMeshGenerator3D::parse_source_geometry_data(const Ref<NavigationMesh> &p
 	}
 }
 
-void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
+void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback) {
 	ERR_FAIL_COND(!p_navigation_mesh.is_valid());
 	ERR_FAIL_COND(!p_source_geometry_data.is_valid());
-	ERR_FAIL_COND(!p_source_geometry_data->has_data());
+
+	if (!p_source_geometry_data->has_data()) {
+		p_navigation_mesh->clear();
+		if (p_callback.is_valid()) {
+			generator_emit_callback(p_callback);
+		}
+		return;
+	}
 
 	baking_navmesh_mutex.lock();
 	if (baking_navmeshes.has(p_navigation_mesh)) {
 		baking_navmesh_mutex.unlock();
 		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
-	} else {
-		baking_navmeshes.insert(p_navigation_mesh);
-		baking_navmesh_mutex.unlock();
 	}
+	baking_navmeshes.insert(p_navigation_mesh);
+	baking_navmesh_mutex.unlock();
 
 	generator_bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data);
 
@@ -125,6 +189,51 @@ void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_na
 	if (p_callback.is_valid()) {
 		generator_emit_callback(p_callback);
 	}
+}
+
+void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback) {
+	ERR_FAIL_COND(!p_navigation_mesh.is_valid());
+	ERR_FAIL_COND(!p_source_geometry_data.is_valid());
+
+	if (!p_source_geometry_data->has_data()) {
+		p_navigation_mesh->clear();
+		if (p_callback.is_valid()) {
+			generator_emit_callback(p_callback);
+		}
+		return;
+	}
+
+	if (!use_threads) {
+		bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_callback);
+		return;
+	}
+
+	baking_navmesh_mutex.lock();
+	if (baking_navmeshes.has(p_navigation_mesh)) {
+		baking_navmesh_mutex.unlock();
+		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
+		return;
+	}
+	baking_navmeshes.insert(p_navigation_mesh);
+	baking_navmesh_mutex.unlock();
+
+	generator_task_mutex.lock();
+	NavMeshGeneratorTask3D *generator_task = memnew(NavMeshGeneratorTask3D);
+	generator_task->navigation_mesh = p_navigation_mesh;
+	generator_task->source_geometry_data = p_source_geometry_data;
+	generator_task->callback = p_callback;
+	generator_task->status = NavMeshGeneratorTask3D::TaskStatus::BAKING_STARTED;
+	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator3D::generator_thread_bake, generator_task, NavMeshGenerator3D::baking_use_high_priority_threads, SNAME("NavMeshGeneratorBake3D"));
+	generator_tasks.insert(generator_task->thread_task_id, generator_task);
+	generator_task_mutex.unlock();
+}
+
+void NavMeshGenerator3D::generator_thread_bake(void *p_arg) {
+	NavMeshGeneratorTask3D *generator_task = static_cast<NavMeshGeneratorTask3D *>(p_arg);
+
+	generator_bake_from_source_geometry_data(generator_task->navigation_mesh, generator_task->source_geometry_data);
+
+	generator_task->status = NavMeshGeneratorTask3D::TaskStatus::BAKING_FINISHED;
 }
 
 void NavMeshGenerator3D::generator_parse_geometry_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node, bool p_recurse_children) {
@@ -275,33 +384,23 @@ void NavMeshGenerator3D::generator_parse_staticbody3d_node(const Ref<NavigationM
 							const Vector<real_t> &map_data = heightmap_shape->get_map_data();
 
 							Vector2 heightmap_gridsize(heightmap_width - 1, heightmap_depth - 1);
-							Vector2 start = heightmap_gridsize * -0.5;
+							Vector3 start = Vector3(heightmap_gridsize.x, 0, heightmap_gridsize.y) * -0.5;
 
 							Vector<Vector3> vertex_array;
 							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
-							int map_data_current_index = 0;
+							Vector3 *vertex_array_ptrw = vertex_array.ptrw();
+							const real_t *map_data_ptr = map_data.ptr();
+							int vertex_index = 0;
 
-							for (int d = 0; d < heightmap_depth; d++) {
-								for (int w = 0; w < heightmap_width; w++) {
-									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
-										float top_left_height = map_data[map_data_current_index];
-										float top_right_height = map_data[map_data_current_index + 1];
-										float bottom_left_height = map_data[map_data_current_index + heightmap_depth];
-										float bottom_right_height = map_data[map_data_current_index + 1 + heightmap_depth];
-
-										Vector3 top_left = Vector3(start.x + w, top_left_height, start.y + d);
-										Vector3 top_right = Vector3(start.x + w + 1.0, top_right_height, start.y + d);
-										Vector3 bottom_left = Vector3(start.x + w, bottom_left_height, start.y + d + 1.0);
-										Vector3 bottom_right = Vector3(start.x + w + 1.0, bottom_right_height, start.y + d + 1.0);
-
-										vertex_array.push_back(top_right);
-										vertex_array.push_back(bottom_left);
-										vertex_array.push_back(top_left);
-										vertex_array.push_back(top_right);
-										vertex_array.push_back(bottom_right);
-										vertex_array.push_back(bottom_left);
-									}
-									map_data_current_index += 1;
+							for (int d = 0; d < heightmap_depth - 1; d++) {
+								for (int w = 0; w < heightmap_width - 1; w++) {
+									vertex_array_ptrw[vertex_index] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + w], d);
+									vertex_array_ptrw[vertex_index + 1] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
+									vertex_array_ptrw[vertex_index + 2] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
+									vertex_array_ptrw[vertex_index + 3] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
+									vertex_array_ptrw[vertex_index + 4] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + heightmap_width + w + 1], d + 1);
+									vertex_array_ptrw[vertex_index + 5] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
+									vertex_index += 6;
 								}
 							}
 							if (vertex_array.size() > 0) {
@@ -431,33 +530,23 @@ void NavMeshGenerator3D::generator_parse_gridmap_node(const Ref<NavigationMesh> 
 							const Vector<real_t> &map_data = dict["heights"];
 
 							Vector2 heightmap_gridsize(heightmap_width - 1, heightmap_depth - 1);
-							Vector2 start = heightmap_gridsize * -0.5;
+							Vector3 start = Vector3(heightmap_gridsize.x, 0, heightmap_gridsize.y) * -0.5;
 
 							Vector<Vector3> vertex_array;
 							vertex_array.resize((heightmap_depth - 1) * (heightmap_width - 1) * 6);
-							int map_data_current_index = 0;
+							Vector3 *vertex_array_ptrw = vertex_array.ptrw();
+							const real_t *map_data_ptr = map_data.ptr();
+							int vertex_index = 0;
 
-							for (int d = 0; d < heightmap_depth; d++) {
-								for (int w = 0; w < heightmap_width; w++) {
-									if (map_data_current_index + 1 + heightmap_depth < map_data.size()) {
-										float top_left_height = map_data[map_data_current_index];
-										float top_right_height = map_data[map_data_current_index + 1];
-										float bottom_left_height = map_data[map_data_current_index + heightmap_depth];
-										float bottom_right_height = map_data[map_data_current_index + 1 + heightmap_depth];
-
-										Vector3 top_left = Vector3(start.x + w, top_left_height, start.y + d);
-										Vector3 top_right = Vector3(start.x + w + 1.0, top_right_height, start.y + d);
-										Vector3 bottom_left = Vector3(start.x + w, bottom_left_height, start.y + d + 1.0);
-										Vector3 bottom_right = Vector3(start.x + w + 1.0, bottom_right_height, start.y + d + 1.0);
-
-										vertex_array.push_back(top_right);
-										vertex_array.push_back(bottom_left);
-										vertex_array.push_back(top_left);
-										vertex_array.push_back(top_right);
-										vertex_array.push_back(bottom_right);
-										vertex_array.push_back(bottom_left);
-									}
-									map_data_current_index += 1;
+							for (int d = 0; d < heightmap_depth - 1; d++) {
+								for (int w = 0; w < heightmap_width - 1; w++) {
+									vertex_array_ptrw[vertex_index] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + w], d);
+									vertex_array_ptrw[vertex_index + 1] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
+									vertex_array_ptrw[vertex_index + 2] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
+									vertex_array_ptrw[vertex_index + 3] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
+									vertex_array_ptrw[vertex_index + 4] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + heightmap_width + w + 1], d + 1);
+									vertex_array_ptrw[vertex_index + 5] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
+									vertex_index += 6;
 								}
 							}
 							if (vertex_array.size() > 0) {
@@ -504,8 +593,8 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		return;
 	}
 
-	const Vector<float> vertices = p_source_geometry_data->get_vertices();
-	const Vector<int> indices = p_source_geometry_data->get_indices();
+	const Vector<float> &vertices = p_source_geometry_data->get_vertices();
+	const Vector<int> &indices = p_source_geometry_data->get_indices();
 
 	if (vertices.size() < 3 || indices.size() < 3) {
 		return;
@@ -605,7 +694,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	bake_state = "Creating heightfield..."; // step #3
 	hf = rcAllocHeightfield();
 
-	ERR_FAIL_COND(!hf);
+	ERR_FAIL_NULL(hf);
 	ERR_FAIL_COND(!rcCreateHeightfield(&ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch));
 
 	bake_state = "Marking walkable triangles..."; // step #4
@@ -635,7 +724,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	chf = rcAllocCompactHeightfield();
 
-	ERR_FAIL_COND(!chf);
+	ERR_FAIL_NULL(chf);
 	ERR_FAIL_COND(!rcBuildCompactHeightfield(&ctx, cfg.walkableHeight, cfg.walkableClimb, *hf, *chf));
 
 	rcFreeHeightField(hf);
@@ -660,17 +749,17 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	cset = rcAllocContourSet();
 
-	ERR_FAIL_COND(!cset);
+	ERR_FAIL_NULL(cset);
 	ERR_FAIL_COND(!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset));
 
 	bake_state = "Creating polymesh..."; // step #9
 
 	poly_mesh = rcAllocPolyMesh();
-	ERR_FAIL_COND(!poly_mesh);
+	ERR_FAIL_NULL(poly_mesh);
 	ERR_FAIL_COND(!rcBuildPolyMesh(&ctx, *cset, cfg.maxVertsPerPoly, *poly_mesh));
 
 	detail_mesh = rcAllocPolyMeshDetail();
-	ERR_FAIL_COND(!detail_mesh);
+	ERR_FAIL_NULL(detail_mesh);
 	ERR_FAIL_COND(!rcBuildPolyMeshDetail(&ctx, *poly_mesh, *chf, cfg.detailSampleDist, cfg.detailSampleMaxError, *detail_mesh));
 
 	rcFreeCompactHeightfield(chf);

@@ -256,6 +256,7 @@ public:
 		FLAG_SUBSURFACE_MODE_SKIN,
 		FLAG_PARTICLE_TRAILS_MODE,
 		FLAG_ALBEDO_TEXTURE_MSDF,
+		FLAG_DISABLE_FOG,
 		FLAG_MAX
 	};
 
@@ -324,6 +325,7 @@ private:
 		uint64_t emission_op : get_num_bits(EMISSION_OP_MAX - 1);
 		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
 		// booleans
+		uint64_t invalid_key : 1;
 		uint64_t deep_parallax : 1;
 		uint64_t grow : 1;
 		uint64_t proximity_fade : 1;

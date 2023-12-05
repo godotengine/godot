@@ -74,7 +74,7 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 
 	void *mem = malloc(p_bytes + (prepad ? PAD_ALIGN : 0));
 
-	ERR_FAIL_COND_V(!mem, nullptr);
+	ERR_FAIL_NULL_V(mem, nullptr);
 
 	alloc_count.increment();
 
@@ -127,7 +127,7 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 			*s = p_bytes;
 
 			mem = (uint8_t *)realloc(mem, p_bytes + PAD_ALIGN);
-			ERR_FAIL_COND_V(!mem, nullptr);
+			ERR_FAIL_NULL_V(mem, nullptr);
 
 			s = (uint64_t *)mem;
 
@@ -145,7 +145,7 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 }
 
 void Memory::free_static(void *p_ptr, bool p_pad_align) {
-	ERR_FAIL_COND(p_ptr == nullptr);
+	ERR_FAIL_NULL(p_ptr);
 
 	uint8_t *mem = (uint8_t *)p_ptr;
 

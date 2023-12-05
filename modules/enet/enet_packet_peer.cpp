@@ -31,51 +31,51 @@
 #include "enet_packet_peer.h"
 
 void ENetPacketPeer::peer_disconnect(int p_data) {
-	ERR_FAIL_COND(!peer);
+	ERR_FAIL_NULL(peer);
 	enet_peer_disconnect(peer, p_data);
 }
 
 void ENetPacketPeer::peer_disconnect_later(int p_data) {
-	ERR_FAIL_COND(!peer);
+	ERR_FAIL_NULL(peer);
 	enet_peer_disconnect_later(peer, p_data);
 }
 
 void ENetPacketPeer::peer_disconnect_now(int p_data) {
-	ERR_FAIL_COND(!peer);
+	ERR_FAIL_NULL(peer);
 	enet_peer_disconnect_now(peer, p_data);
 	_on_disconnect();
 }
 
 void ENetPacketPeer::ping() {
-	ERR_FAIL_COND(!peer);
+	ERR_FAIL_NULL(peer);
 	enet_peer_ping(peer);
 }
 
 void ENetPacketPeer::ping_interval(int p_interval) {
-	ERR_FAIL_COND(!peer);
+	ERR_FAIL_NULL(peer);
 	enet_peer_ping_interval(peer, p_interval);
 }
 
 int ENetPacketPeer::send(uint8_t p_channel, ENetPacket *p_packet) {
-	ERR_FAIL_COND_V(peer == nullptr, -1);
-	ERR_FAIL_COND_V(p_packet == nullptr, -1);
+	ERR_FAIL_NULL_V(peer, -1);
+	ERR_FAIL_NULL_V(p_packet, -1);
 	ERR_FAIL_COND_V_MSG(p_channel >= peer->channelCount, -1, vformat("Unable to send packet on channel %d, max channels: %d", p_channel, (int)peer->channelCount));
 	return enet_peer_send(peer, p_channel, p_packet);
 }
 
 void ENetPacketPeer::reset() {
-	ERR_FAIL_COND_MSG(peer == nullptr, "Peer not connected");
+	ERR_FAIL_NULL_MSG(peer, "Peer not connected.");
 	enet_peer_reset(peer);
 	_on_disconnect();
 }
 
 void ENetPacketPeer::throttle_configure(int p_interval, int p_acceleration, int p_deceleration) {
-	ERR_FAIL_COND_MSG(peer == nullptr, "Peer not connected");
+	ERR_FAIL_NULL_MSG(peer, "Peer not connected.");
 	enet_peer_throttle_configure(peer, p_interval, p_acceleration, p_deceleration);
 }
 
 void ENetPacketPeer::set_timeout(int p_timeout, int p_timeout_min, int p_timeout_max) {
-	ERR_FAIL_COND_MSG(peer == nullptr, "Peer not connected");
+	ERR_FAIL_NULL_MSG(peer, "Peer not connected.");
 	ERR_FAIL_COND_MSG(p_timeout > p_timeout_min || p_timeout_min > p_timeout_max, "Timeout limit must be less than minimum timeout, which itself must be less than maximum timeout");
 	enet_peer_timeout(peer, p_timeout, p_timeout_min, p_timeout_max);
 }
@@ -89,7 +89,7 @@ int ENetPacketPeer::get_available_packet_count() const {
 }
 
 Error ENetPacketPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-	ERR_FAIL_COND_V(!peer, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(peer, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!packet_queue.size(), ERR_UNAVAILABLE);
 	if (last_packet) {
 		enet_packet_destroy(last_packet);
@@ -103,13 +103,13 @@ Error ENetPacketPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 }
 
 Error ENetPacketPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-	ERR_FAIL_COND_V(!peer, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(peer, ERR_UNCONFIGURED);
 	ENetPacket *packet = enet_packet_create(p_buffer, p_buffer_size, ENET_PACKET_FLAG_RELIABLE);
 	return send(0, packet) < 0 ? FAILED : OK;
 }
 
 IPAddress ENetPacketPeer::get_remote_address() const {
-	ERR_FAIL_COND_V(!peer, IPAddress());
+	ERR_FAIL_NULL_V(peer, IPAddress());
 	IPAddress out;
 #ifdef GODOT_ENET
 	out.set_ipv6((uint8_t *)&(peer->address.host));
@@ -120,7 +120,7 @@ IPAddress ENetPacketPeer::get_remote_address() const {
 }
 
 int ENetPacketPeer::get_remote_port() const {
-	ERR_FAIL_COND_V(!peer, 0);
+	ERR_FAIL_NULL_V(peer, 0);
 	return peer->address.port;
 }
 
@@ -129,7 +129,7 @@ bool ENetPacketPeer::is_active() const {
 }
 
 double ENetPacketPeer::get_statistic(PeerStatistic p_stat) {
-	ERR_FAIL_COND_V(!peer, 0);
+	ERR_FAIL_NULL_V(peer, 0);
 	switch (p_stat) {
 		case PEER_PACKET_LOSS:
 			return peer->packetLoss;
@@ -171,7 +171,7 @@ ENetPacketPeer::PeerState ENetPacketPeer::get_state() const {
 }
 
 int ENetPacketPeer::get_channels() const {
-	ERR_FAIL_COND_V_MSG(!peer, 0, "The ENetConnection instance isn't currently active.");
+	ERR_FAIL_NULL_V_MSG(peer, 0, "The ENetConnection instance isn't currently active.");
 	return peer->channelCount;
 }
 
@@ -183,12 +183,12 @@ void ENetPacketPeer::_on_disconnect() {
 }
 
 void ENetPacketPeer::_queue_packet(ENetPacket *p_packet) {
-	ERR_FAIL_COND(!peer);
+	ERR_FAIL_NULL(peer);
 	packet_queue.push_back(p_packet);
 }
 
 Error ENetPacketPeer::_send(int p_channel, PackedByteArray p_packet, int p_flags) {
-	ERR_FAIL_COND_V_MSG(peer == nullptr, ERR_UNCONFIGURED, "Peer not connected");
+	ERR_FAIL_NULL_V_MSG(peer, ERR_UNCONFIGURED, "Peer not connected.");
 	ERR_FAIL_COND_V_MSG(p_channel < 0 || p_channel > (int)peer->channelCount, ERR_INVALID_PARAMETER, "Invalid channel");
 	ERR_FAIL_COND_V_MSG(p_flags & ~FLAG_ALLOWED, ERR_INVALID_PARAMETER, "Invalid flags");
 	ENetPacket *packet = enet_packet_create(p_packet.ptr(), p_packet.size(), p_flags);

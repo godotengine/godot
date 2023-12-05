@@ -423,7 +423,7 @@ private:
 
 	bool move_caret_on_right_click = true;
 
-	bool caret_mid_grapheme_enabled = true;
+	bool caret_mid_grapheme_enabled = false;
 
 	bool multi_carets_enabled = true;
 
@@ -500,8 +500,8 @@ private:
 	double _get_visible_lines_offset() const;
 	double _get_v_scroll_offset() const;
 
-	void _scroll_up(real_t p_delta);
-	void _scroll_down(real_t p_delta);
+	void _scroll_up(real_t p_delta, bool p_animate);
+	void _scroll_down(real_t p_delta, bool p_animate);
 
 	void _scroll_lines_up();
 	void _scroll_lines_down();
@@ -542,11 +542,6 @@ private:
 	/* Visual. */
 	struct ThemeCache {
 		float base_scale = 1.0;
-
-		/* Internal API for CodeEdit */
-		Color brace_mismatch_color;
-		Color code_folding_color = Color(1, 1, 1);
-		Ref<Texture2D> folded_eol_icon;
 
 		/* Search */
 		Color search_result_color = Color(1, 1, 1);
@@ -632,7 +627,7 @@ protected:
 	virtual void _update_theme_item_cache() override;
 
 	/* Internal API for CodeEdit, pending public API. */
-	// brace matching
+	// Brace matching.
 	struct BraceMatchingData {
 		int open_match_line = -1;
 		int open_match_column = -1;
@@ -660,6 +655,11 @@ protected:
 	// Symbol lookup.
 	String lookup_symbol_word;
 	void _set_symbol_lookup_word(const String &p_symbol);
+
+	// Theme items.
+	virtual Color _get_brace_mismatch_color() const { return Color(); };
+	virtual Color _get_code_folding_color() const { return Color(); };
+	virtual Ref<Texture2D> _get_folded_eol_icon() const { return Ref<Texture2D>(); };
 
 	/* Text manipulation */
 
@@ -1026,6 +1026,8 @@ public:
 
 	void set_draw_spaces(bool p_enabled);
 	bool is_drawing_spaces() const;
+
+	Color get_font_color() const;
 
 	TextEdit(const String &p_placeholder = String());
 };

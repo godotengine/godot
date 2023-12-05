@@ -31,6 +31,7 @@
 #include "lightmap_gi_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
 void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
@@ -103,6 +104,9 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 			case LightmapGI::BAKE_ERROR_FOREIGN_DATA: {
 				EditorNode::get_singleton()->show_warning(TTR("Lightmap data is not local to the scene."));
 			} break;
+			case LightmapGI::BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL: {
+				EditorNode::get_singleton()->show_warning(TTR("Maximum texture size is too small for the lightmap images."));
+			} break;
 			default: {
 			} break;
 		}
@@ -139,7 +143,7 @@ EditorProgress *LightmapGIEditorPlugin::tmp_progress = nullptr;
 bool LightmapGIEditorPlugin::bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh) {
 	if (!tmp_progress) {
 		tmp_progress = memnew(EditorProgress("bake_lightmaps", TTR("Bake Lightmaps"), 1000, false));
-		ERR_FAIL_COND_V(tmp_progress == nullptr, false);
+		ERR_FAIL_NULL_V(tmp_progress, false);
 	}
 	return tmp_progress->step(p_description, p_progress * 1000, p_refresh);
 }
@@ -164,8 +168,10 @@ void LightmapGIEditorPlugin::_bind_methods() {
 
 LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	bake = memnew(Button);
-	bake->set_flat(true);
-	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_theme_type_variation("FlatButton");
+	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
+	// when the editor theme updates.
+	bake->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake Lightmaps"));
 	bake->hide();
 	bake->connect("pressed", Callable(this, "_bake"));

@@ -7,6 +7,7 @@
 	</description>
 	<tutorials>
 		<link title="Exporting for the Web">$DOCS_URL/tutorials/export/exporting_for_web.html</link>
+		<link title="Web documentation index">$DOCS_URL/tutorials/platform/web/index.html</link>
 	</tutorials>
 	<members>
 		<member name="custom_template/debug" type="String" setter="" getter="">

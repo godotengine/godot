@@ -111,13 +111,13 @@ struct TrackData
 	break;
       }
     }
-    if (!trackTableEntry) return 0.;
+    if (!trackTableEntry) return 0;
 
     /*
      * Choose size.
      */
     unsigned int sizes = nSizes;
-    if (!sizes) return 0.;
+    if (!sizes) return 0;
     if (sizes == 1) return trackTableEntry->get_value (base, 0, sizes);
 
     hb_array_t<const F16DOT16> size_table ((base+sizeTable).arrayZ, sizes);

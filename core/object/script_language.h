@@ -33,6 +33,7 @@
 
 #include "core/doc_data.h"
 #include "core/io/resource.h"
+#include "core/object/script_instance.h"
 #include "core/templates/pair.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
@@ -51,9 +52,11 @@ class ScriptServer {
 
 	static ScriptLanguage *_languages[MAX_LANGUAGES];
 	static int _language_count;
+	static bool languages_ready;
+	static Mutex languages_mutex;
+
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
-	static SafeFlag languages_finished; // Used until GH-76581 is fixed properly.
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -97,11 +100,9 @@ public:
 
 	static void init_languages();
 	static void finish_languages();
-
-	static bool are_languages_finished() { return languages_finished.is_set(); }
+	static bool are_languages_initialized();
 };
 
-class ScriptInstance;
 class PlaceHolderScriptInstance;
 
 class Script : public Resource {
@@ -141,14 +142,19 @@ public:
 
 #ifdef TOOLS_ENABLED
 	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;
+	virtual String get_class_icon_path() const = 0;
 	virtual PropertyInfo get_class_category() const;
 #endif // TOOLS_ENABLED
 
+	// TODO: In the next compat breakage rename to `*_script_*` to disambiguate from `Object::has_method()`.
 	virtual bool has_method(const StringName &p_method) const = 0;
+	virtual bool has_static_method(const StringName &p_method) const { return false; }
+
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
 	virtual bool is_valid() const = 0;
+	virtual bool is_abstract() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
 
@@ -171,64 +177,6 @@ public:
 	virtual const Variant get_rpc_config() const = 0;
 
 	Script() {}
-};
-
-class ScriptInstance {
-public:
-	virtual bool set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual bool get(const StringName &p_name, Variant &r_ret) const = 0;
-	virtual void get_property_list(List<PropertyInfo> *p_properties) const = 0;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const = 0;
-
-	virtual bool property_can_revert(const StringName &p_name) const = 0;
-	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const = 0;
-
-	virtual Object *get_owner() { return nullptr; }
-	virtual void get_property_state(List<Pair<StringName, Variant>> &state);
-
-	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
-	virtual bool has_method(const StringName &p_method) const = 0;
-
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = 0;
-
-	template <typename... VarArgs>
-	Variant call(const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-		Callable::CallError cerr;
-		return callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
-	}
-
-	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error); // implement if language supports const functions
-	virtual void notification(int p_notification) = 0;
-	virtual String to_string(bool *r_valid) {
-		if (r_valid) {
-			*r_valid = false;
-		}
-		return String();
-	}
-
-	//this is used by script languages that keep a reference counter of their own
-	//you can make make Ref<> not die when it reaches zero, so deleting the reference
-	//depends entirely from the script
-
-	virtual void refcount_incremented() {}
-	virtual bool refcount_decremented() { return true; } //return true if it can die
-
-	virtual Ref<Script> get_script() const = 0;
-
-	virtual bool is_placeholder() const { return false; }
-
-	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
-	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
-
-	virtual const Variant get_rpc_config() const { return get_script()->get_rpc_config(); }
-
-	virtual ScriptLanguage *get_language() = 0;
-	virtual ~ScriptInstance();
 };
 
 class ScriptCodeCompletionCache {
@@ -292,6 +240,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
 	virtual bool is_control_flow_keyword(String p_string) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
+	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) { return Vector<ScriptTemplate>(); }
@@ -299,7 +248,9 @@ public:
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;
+#ifndef DISABLE_DEPRECATED
 	virtual bool has_named_classes() const = 0;
+#endif
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() const { return false; }
@@ -342,14 +293,16 @@ public:
 		Vector<Pair<int, int>> matches;
 		Vector<Pair<int, int>> last_matches = { { -1, -1 } }; // This value correspond to an impossible match
 		int location = LOCATION_OTHER;
+		String theme_color_name;
 
 		CodeCompletionOption() {}
 
-		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER) {
+		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER, const String &p_theme_color_name = "") {
 			display = p_text;
 			insert_text = p_text;
 			kind = p_kind;
 			location = p_location;
+			theme_color_name = p_theme_color_name;
 		}
 
 		TypedArray<int> get_option_characteristics(const String &p_base);
@@ -462,6 +415,7 @@ public:
 	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const override;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
+	virtual void validate_property(PropertyInfo &p_property) const override {}
 
 	virtual bool property_can_revert(const StringName &p_name) const override { return false; };
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override { return false; };
@@ -473,7 +427,7 @@ public:
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
-	virtual void notification(int p_notification) override {}
+	virtual void notification(int p_notification, bool p_reversed = false) override {}
 
 	virtual Ref<Script> get_script() const override { return script; }
 
