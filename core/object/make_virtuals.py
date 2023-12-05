@@ -121,7 +121,9 @@ def generate_version(argcount, const=False, returns=False):
         callargtext += f"m_type{i + 1} arg{i + 1}"
         callsiargs += f"Variant(arg{i + 1})"
         callsiargptrs += f"&vargs[{i}]"
-        callptrargs += f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1} = arg{i + 1};\\\n"
+        callptrargs += (
+            f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1} = (PtrToArg<m_type{i + 1}>::EncodeT)arg{i + 1};\\\n"
+        )
         callptrargsptr += f"&argval{i + 1}"
         if method_info:
             method_info += "\\\n\t\t"
