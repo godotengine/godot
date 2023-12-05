@@ -120,6 +120,8 @@ ivec3 modi(ivec3 value, ivec3 p_y) {
 	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
 }
 
+
+
 #define OCC_DISTANCE_MAX 15.0
 
 void main() {
@@ -197,12 +199,13 @@ void main() {
 		tex_posf.xy /= vec2(ivec2(params.probe_axis_size.x * (oct_size + 2*oct_margin), params.probe_axis_size.z * params.probe_axis_size.y * (oct_size + 2*oct_margin)));
 
 
-		float occ = textureLod(sampler2DArray(lightprobe_texture, linear_sampler), tex_posf, 0.0).r;				
+		float occ = textureLod(sampler2DArray(lightprobe_texture, linear_sampler), tex_posf, 0.0).g;
 		color_interp = vec3(0.5,0.5,1.0); // hit nothing
 
 #define OCC16_DISTANCE_MAX 256.0
 
 		occ *= OCC16_DISTANCE_MAX;
+		occ = sqrt(occ);
 		vertex = vertex * occ / 8.0;
 		//vertex = clamp(vertex,vec3(-1.0),vec3(1.0));
 		vertex *= probe_cell_size;

@@ -26,6 +26,9 @@ layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, l
 
 #ifdef MODE_PROCESS
 
+
+#define TRACE_SUBPIXEL
+
 layout(rg32ui, set = 0, binding = 1) uniform restrict readonly uimage3D voxel_cascades;
 layout(r8ui, set = 0, binding = 2) uniform restrict readonly uimage3D voxel_region_cascades;
 
@@ -37,8 +40,8 @@ layout(r32ui, set = 0, binding = 7) uniform restrict writeonly uimage2DArray lig
 layout(r32ui, set = 0, binding = 8) uniform restrict uimage2DArray ray_hit_cache;
 layout(r16ui, set = 0, binding = 9) uniform restrict uimage2DArray ray_hit_cache_version;
 layout(r16ui, set = 0, binding = 10) uniform restrict uimage3D region_versions;
-layout(rgba16ui, set = 0, binding = 11) uniform restrict uimage2DArray lightprobe_moving_average_history;
-layout(rgba16ui, set = 0, binding = 12) uniform restrict uimage2DArray lightprobe_moving_average;
+layout(r32ui, set = 0, binding = 11) uniform restrict uimage2DArray lightprobe_moving_average_history;
+layout(r32ui, set = 0, binding = 12) uniform restrict uimage2DArray lightprobe_moving_average;
 
 
 #ifdef USE_CUBEMAP_ARRAY
@@ -103,33 +106,6 @@ layout(push_constant, std430) uniform Params {
 }
 params;
 
-#define HISTORY_FRACT_BITS 10
-#define HISTORY_BITS 16
-
-uvec3 history_encode_16(vec3 p_color) {
-	return uvec3(clamp(p_color * float(1<<HISTORY_FRACT_BITS),vec3(0.0),vec3(float((1<<HISTORY_BITS)-1))));
-}
-
-vec3 history_decode_16(uvec3 p_color) {
-	return vec3(p_color) / vec3(1<<HISTORY_FRACT_BITS);
-}
-
-uvec4 history_encode_21(uvec3 p_color16) {
-	uvec4 enc;
-	const uint mask = ((1<<HISTORY_BITS)-1);
-	p_color16 = min(p_color16,uvec3( (1<<21) -1 ));
-	enc.rgb = p_color16 & uvec3(mask); // lower 16
-	enc.a = (p_color16.r >> HISTORY_BITS) | ((p_color16.g&~mask) >> (HISTORY_BITS-5)) | ((p_color16.b&~mask) >> (HISTORY_BITS-10));
-	return enc;
-}
-
-uvec3 history_decode_21(uvec4 p_color21) {
-	uvec3 dec;
-	dec = p_color21.rgb;
-	dec |= ((uvec3(p_color21.a) >> uvec3(0,5,10)) & uvec3(0x1F)) << uvec3(16);
-	return dec;
-}
-
 uvec3 hash3(uvec3 x) {
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
@@ -180,6 +156,21 @@ vec3 rgbe_decode(uint p_rgbe) {
 	vec4 rgbef = vec4((uvec4(p_rgbe) >> uvec4(0,9,18,27)) & uvec4(0x1FF,0x1FF,0x1FF,0x1F));
 	return rgbef.rgb * pow( 2.0, rgbef.a - 15.0 - 9.0 );
 }
+
+#define FP_BITS 14
+#define FP_MAX ((1<<22)-1)
+
+uvec3 rgbe_decode_fp(uint p_rgbe,int p_bits) {
+	uvec4 rgbe = (uvec4(p_rgbe) >> uvec4(0,9,18,27)) & uvec4(0x1FF,0x1FF,0x1FF,0x1F);
+	int shift = int(rgbe.a) - 15 - 9 + p_bits;
+	if (shift >= 0) {
+		rgbe.rgb <<= uint(shift);
+	} else {
+		rgbe.rgb >>= uint(-shift);
+	}
+	return rgbe.rgb;
+}
+
 
 #ifdef MODE_PROCESS
 
@@ -363,16 +354,32 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade, out ivec3 r_cell,o
 #if LIGHTPROBE_OCT_SIZE == 4
 const uint neighbour_max_weights = 8;
 const uint neighbour_weights[128]= uint[](15544, 73563, 135085, 206971, 270171, 528301, 796795, 988221, 8569, 82130, 144347, 200892, 272100, 336249, 397500, 0, 4284, 78811, 147666, 205177, 331964, 401785, 468708, 0, 10363, 69549, 139099, 212152, 466779, 724909, 791613, 993403, 8569, 75492, 278738, 336249, 537563, 594108, 790716, 0, 73563, 135085, 270171, 343224, 403579, 528301, 600187, 660541, 69549, 139099, 338043, 408760, 466779, 595005, 665723, 724909, 141028, 205177, 401785, 475346, 659644, 734171, 987324, 0, 4284, 275419, 331964, 540882, 598393, 795001, 861924, 0, 266157, 338043, 398397, 532315, 605368, 665723, 859995, 921517, 332861, 403579, 462765, 600187, 670904, 728923, 855981, 925531, 200892, 397500, 472027, 663929, 737490, 927460, 991609, 0, 10363, 201789, 266157, 532315, 801976, 859995, 921517, 993403, 534244, 598393, 659644, 795001, 868562, 930779, 987324, 0, 594108, 663929, 730852, 790716, 865243, 934098, 991609, 0, 5181, 206971, 462765, 728923, 796795, 855981, 925531, 998584);
+const uint wrap_neighbours[(LIGHTPROBE_OCT_SIZE+2) * (LIGHTPROBE_OCT_SIZE+2)]=uint[](196611, 3, 2, 1, 0, 196608, 196608, 0, 1, 2, 3, 196611, 131072, 65536, 65537, 65538, 65539, 131075, 65536, 131072, 131073, 131074, 131075, 65539, 0, 196608, 196609, 196610, 196611, 3, 3, 196611, 196610, 196609, 196608, 0);
 #endif
 
 #if LIGHTPROBE_OCT_SIZE == 5
 const uint neighbour_max_weights = 15;
 const uint neighbour_weights[375]= uint[](11139, 72624, 131886, 201671, 271258, 334768, 394335, 590836, 656174, 988103, 1319834, 1377268, 1579952, 0, 0, 6839, 76283, 139717, 205401, 267029, 334519, 400776, 461448, 527528, 590801, 657717, 984017, 1311697, 0, 0, 778, 74103, 141723, 205175, 262922, 330016, 400965, 466633, 532037, 592160, 655986, 723045, 789015, 854117, 918130, 4885, 74329, 139717, 207355, 268983, 328657, 396456, 461448, 531848, 596663, 919861, 1246161, 1573841, 0, 0, 9114, 70599, 131886, 203696, 273283, 328692, 525407, 596912, 918318, 1250247, 1317808, 1508340, 1581978, 0, 0, 6839, 72375, 133429, 197585, 263121, 338427, 400776, 664005, 723592, 991833, 1051816, 1315605, 1377233, 0, 0, 1026, 72722, 138504, 199687, 334866, 403430, 465362, 525422, 662792, 727506, 789836, 986119, 1049710, 0, 0, 68049, 138485, 199121, 399699, 468771, 530771, 657381, 727832, 794768, 858904, 919525, 1117965, 0, 0, 0, 68615, 138504, 203794, 263170, 394350, 465362, 534502, 597010, 789836, 858578, 924936, 1180782, 1248263, 0, 0, 977, 66513, 133429, 203447, 268983, 531848, 600571, 854664, 926149, 1182888, 1253977, 1508305, 1577749, 0, 0, 778, 67872, 131698, 336247, 400965, 460901, 666011, 728777, 789015, 991607, 1056325, 1116261, 1311498, 1378592, 1442418, 133093, 330193, 399699, 465688, 662773, 730915, 794768, 855821, 985553, 1055059, 1121048, 1443813, 0, 0, 0, 133468, 396510, 466974, 527582, 657756, 729118, 796314, 860190, 919900, 1051870, 1122334, 1182942, 1444188, 0, 0, 133093, 465688, 530771, 592337, 724749, 794768, 861987, 924917, 1121048, 1186131, 1247697, 1443813, 0, 0, 0, 131698, 198944, 262922, 460901, 532037, 598391, 789015, 859849, 928155, 1116261, 1187397, 1253751, 1442418, 1509664, 1573642, 4885, 66513, 336473, 396456, 664005, 723592, 993787, 1056136, 1317559, 1383095, 1444149, 1508305, 1573841, 0, 0, 330759, 394350, 662792, 727506, 789836, 990226, 1058790, 1120722, 1180782, 1311746, 1383442, 1449224, 1510407, 0, 0, 462605, 657381, 727832, 794768, 858904, 919525, 1055059, 1124131, 1186131, 1378769, 1449205, 1509841, 0, 0, 0, 525422, 592903, 789836, 858578, 924936, 1049710, 1120722, 1189862, 1252370, 1379335, 1449224, 1514514, 1573890, 0, 0, 197585, 267029, 527528, 598617, 854664, 926149, 1187208, 1255931, 1311697, 1377233, 1444149, 1514167, 1579703, 0, 0, 9114, 66548, 269232, 332743, 656174, 990128, 1049695, 1246196, 1321859, 1383344, 1442606, 1512391, 1581978, 0, 0, 977, 328657, 657717, 989879, 1056136, 1116808, 1182888, 1246161, 1317559, 1387003, 1450437, 1516121, 1577749, 0, 0, 655986, 723045, 789015, 854117, 918130, 985376, 1056325, 1121993, 1187397, 1247520, 1311498, 1384823, 1452443, 1515895, 1573642, 263121, 590801, 919861, 984017, 1051816, 1116808, 1187208, 1252023, 1315605, 1385049, 1450437, 1518075, 1579703, 0, 0, 7088, 197620, 271258, 594887, 918318, 984052, 1180767, 1252272, 1319834, 1381319, 1442606, 1514416, 1584003, 0, 0);
+const uint wrap_neighbours[(LIGHTPROBE_OCT_SIZE+2) * (LIGHTPROBE_OCT_SIZE+2)]=uint[](262148, 4, 3, 2, 1, 0, 262144, 262144, 0, 1, 2, 3, 4, 262148, 196608, 65536, 65537, 65538, 65539, 65540, 196612, 131072, 131072, 131073, 131074, 131075, 131076, 131076, 65536, 196608, 196609, 196610, 196611, 196612, 65540, 0, 262144, 262145, 262146, 262147, 262148, 4, 4, 262148, 262147, 262146, 262145, 262144, 0);
 #endif
 
+shared uvec3 neighbours_accum[LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE];
 shared vec3 neighbours[LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE];
 
+// MODE_PROCESS
 #endif
+/*
+#if LIGHTPROBE_OCT_SIZE == 4
+const vec3 oct_directions[16]=vec3[](vec3( (-0.408248, -0.408248, -0.816497)), vec3( (-0.316228, -0.948683, 0)), vec3( (0.316228, -0.948683, 0)), vec3( (0.408248, -0.408248, -0.816497)), vec3( (-0.948683, -0.316228, 0)), vec3( (-0.408248, -0.408248, 0.816497)), vec3( (0.408248, -0.408248, 0.816497)), vec3( (0.948683, -0.316228, 0)), vec3( (-0.948683, 0.316228, 0)), vec3( (-0.408248, 0.408248, 0.816497)), vec3( (0.408248, 0.408248, 0.816497)), vec3( (0.948683, 0.316228, 0)), vec3( (-0.408248, 0.408248, -0.816497)), vec3( (-0.316228, 0.948683, 0)), vec3( (0.316228, 0.948683, 0)), vec3( (0.408248, 0.408248, -0.816497)));
+#endif
+
+#if LIGHTPROBE_OCT_SIZE == 5
+const vec3 oct_directions[25]=vec3[](vec3( (-0.301511, -0.301511, -0.904534)), vec3( (-0.301511, -0.904534, -0.301511)), vec3( (0, -0.970142, 0.242536)), vec3( (0.301511, -0.904534, -0.301511)), vec3( (0.301511, -0.301511, -0.904534)), vec3( (-0.904534, -0.301511, -0.301511)), vec3( (-0.666667, -0.666667, 0.333333)), vec3( (0, -0.5547, 0.83205)), vec3( (0.666667, -0.666667, 0.333333)), vec3( (0.904534, -0.301511, -0.301511)), vec3( (-0.970142, 0, 0.242536)), vec3( (-0.5547, 0, 0.83205)), vec3( (0, 0, 1)), vec3( (0.5547, 0, 0.83205)), vec3( (0.970142, 0, 0.242536)), vec3( (-0.904534, 0.301511, -0.301511)), vec3( (-0.666667, 0.666667, 0.333333)), vec3( (0, 0.5547, 0.83205)), vec3( (0.666667, 0.666667, 0.333333)), vec3( (0.904534, 0.301511, -0.301511)), vec3( (-0.301511, 0.301511, -0.904534)), vec3( (-0.301511, 0.904534, -0.301511)), vec3( (0, 0.970142, 0.242536)), vec3( (0.301511, 0.904534, -0.301511)), vec3( (0.301511, 0.301511, -0.904534)));
+#endif
+
+shared uvec3 neighbours[LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE];
+*/
+
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
 	// GLSL Specification says:
@@ -381,6 +388,7 @@ ivec3 modi(ivec3 value, ivec3 p_y) {
 	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
 }
 
+
 void main() {
 
 #ifdef MODE_PROCESS
@@ -388,6 +396,9 @@ void main() {
 	ivec2 pos = ivec2(gl_WorkGroupID.xy);
 	ivec2 local_pos = ivec2(gl_LocalInvocationID.xy);
 	uint probe_index = gl_LocalInvocationID.x + gl_LocalInvocationID.y * LIGHTPROBE_OCT_SIZE;
+
+	// clear
+	neighbours_accum[probe_index]=uvec3(0);
 
 	float probe_cell_size = float(params.grid_size.x) / float(params.probe_axis_size.x - 1) / cascades.data[params.cascade].to_cell;
 
@@ -404,8 +415,8 @@ void main() {
 	uvec3 h3 = hash3(uvec3((uvec3(probe_world_pos) * LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE + uvec3(probe_index)) * uvec3(params.history_size) + uvec3(params.history_index)));
 	uint h = (h3.x ^ h3.y) ^ h3.z;
 	vec2 sample_ofs = vec2(ivec2(h>>16,h&0xFFFF)) / vec2(0xFFFF);
-
 	vec3 ray_dir = octahedron_decode( (vec2(local_pos) + sample_ofs) / vec2(LIGHTPROBE_OCT_SIZE) );
+
 	ray_dir.y *= params.y_mult;
 	ray_dir = normalize(ray_dir);
 
@@ -483,6 +494,35 @@ void main() {
 	}
 
 
+	memoryBarrierShared();
+	barrier();
+
+
+	// Plot the light to the octahedron using bilinear filtering
+#ifdef TRACE_SUBPIXEL
+	sample_ofs = sample_ofs * 2.0 - 1.0;
+	ivec2 bilinear_base = ivec2(1) + local_pos - mix(ivec2(0),ivec2(1),lessThan(sample_ofs,vec2(0)));
+	vec2 blend = mix(sample_ofs, 1.0 + sample_ofs,lessThan(sample_ofs,vec2(0)));
+	for(int i=0;i<2;i++) {
+		float i_w = i==0 ? 1.0 - blend.y : blend.y;
+		for(int j=0;j<2;j++) {
+			float j_w = j==0 ? 1.0 - blend.x : blend.x;
+			uint wrap_neighbour = wrap_neighbours[(bilinear_base.y + i) * (LIGHTPROBE_OCT_SIZE+2) + (bilinear_base.x + j)];
+			ivec2 write_to = ivec2(wrap_neighbour & 0xFFFF, wrap_neighbour >> 16);
+			int write_offset = write_to.y * LIGHTPROBE_OCT_SIZE + write_to.x;
+			float write_weight = i_w * j_w;
+
+			uvec3 lightu = uvec3(clamp((light * write_weight) * float(1<<FP_BITS), 0, float(FP_MAX)));
+			atomicAdd(neighbours_accum[write_offset].r, lightu.r);
+			atomicAdd(neighbours_accum[write_offset].g, lightu.g);
+			atomicAdd(neighbours_accum[write_offset].b, lightu.b);
+		}
+	}
+#else
+
+	neighbours[probe_index]=light;
+#endif
+
 	if (!cache_valid) {
 
 		cache_entry = CACHE_IS_VALID;
@@ -522,33 +562,60 @@ void main() {
 	}
 
 
-	// Blend with existing light
+	groupMemoryBarrier();
+	barrier();
 
+	// convert back to float and do moving average
 
 	{
-		// Do moving average
+#ifdef TRACE_SUBPIXEL
+		light = vec3(neighbours_accum[probe_index]) / float(1<<FP_BITS);
+#else
+		light = neighbours[probe_index];
+#endif
 
-		uvec3 moving_avg = history_decode_21( imageLoad(lightprobe_moving_average,ivec3(cache_texture_pos.xy,params.cascade)) );
-		uvec3 prev_val16 = imageLoad(lightprobe_moving_average_history,cache_texture_pos).rgb;
-		moving_avg -= prev_val16;
-		uvec3 new_val = history_encode_16(light);
-		imageStore(lightprobe_moving_average_history,cache_texture_pos,uvec4(new_val,0));
-		moving_avg+=new_val;
-		imageStore(lightprobe_moving_average,ivec3(cache_texture_pos.xy,params.cascade), history_encode_21(moving_avg) );
-		light = history_decode_16( moving_avg / uvec3(params.history_size) );
+		// Encode to RGBE to store in accumulator
+
+		uint light_rgbe = rgbe_encode(light);
+
+		ivec3 ma_pos = ivec3(cache_texture_pos.xy * ivec2(3,1), params.cascade);
+
+		uvec3 moving_average = uvec3(
+					imageLoad(lightprobe_moving_average, ma_pos + ivec3(0,0,0)).r,
+					imageLoad(lightprobe_moving_average, ma_pos + ivec3(1,0,0)).r,
+					imageLoad(lightprobe_moving_average, ma_pos + ivec3(2,0,0)).r
+					);
+
+
+
+
+		ivec3 history_pos = ivec3(probe_texture_pos.xy * 4 + ivec2(probe_index % 4, probe_index /4), probe_texture_pos.z * params.history_size + params.history_index);
+
+		uvec3 prev_val = rgbe_decode_fp( imageLoad(lightprobe_moving_average_history, cache_texture_pos).r, FP_BITS );
+
+		moving_average -= prev_val;
+		uvec3 new_val = rgbe_decode_fp(light_rgbe, FP_BITS); // Round trip to ensure integer consistency
+		moving_average += new_val;
+
+		imageStore(lightprobe_moving_average_history, cache_texture_pos, uvec4(light_rgbe) );
+
+		imageStore(lightprobe_moving_average, ma_pos + ivec3(0,0,0), uvec4(moving_average.r));
+		imageStore(lightprobe_moving_average, ma_pos + ivec3(1,0,0), uvec4(moving_average.g));
+		imageStore(lightprobe_moving_average, ma_pos + ivec3(2,0,0), uvec4(moving_average.b));
+
+		light = vec3(moving_average / params.history_size) / float(1<<FP_BITS);
+		neighbours[probe_index] = light;
 	}
-
-	probe_texture_pos = ivec3(probe_texture_pos.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1),probe_texture_pos.z);
-	ivec3 probe_read_pos = probe_texture_pos + ivec3(local_pos,0);
-
-	neighbours[ probe_index ] = light;
-
 
 	groupMemoryBarrier();
 	barrier();
 
-	// Filter with neighbours
-	vec3 diffuse_light = vec3(0.0);
+	// Compute specular, diffuse, ambient
+
+	vec3 ambient_light = vec3(0);
+	vec3 diffuse_light = vec3(0);
+	vec3 specular_light = light;
+
 	for(uint i=0;i<neighbour_max_weights;i++) {
 		uint n = neighbour_weights[ probe_index * neighbour_max_weights + i];
 		uint index = n>>16;
@@ -556,26 +623,27 @@ void main() {
 		diffuse_light += neighbours[index] * weight;
 	}
 
-	//if (cache_invalidated_debug!=vec3(0.0)) {
-	//	diffuse_light = cache_invalidated_debug;
-	//}
+	probe_texture_pos = ivec3(probe_texture_pos.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1),probe_texture_pos.z);
+	ivec3 probe_read_pos = probe_texture_pos + ivec3(local_pos,0);
 
-	vec3 ambient_light = vec3(0);
 	if (params.store_ambient_texture) {
 #ifdef USE_SUBGROUPS
-		ambient_light = subgroupAdd(diffuse_light) / float(LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE);
+		ambient_light = subgroupAdd(specular_light);
 #else
-		neighbours[ probe_index ] = diffuse_light;
-		groupMemoryBarrier();
-		barrier();
-		for(uint i=0;i<LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE;i++) {
-			ambient_light+=neighbours[ i ];
+
+		if (probe_index == 0) {
+			for(int i=0;i<LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE;i++) {
+				ambient_light += neighbours[i];
+			}
+
+			ambient_light/=float(LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE);
 		}
-		ambient_light /= float(LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE);
 #endif
 	}
 
-//	diffuse_light = vec3(probe_cache_pos) / vec3(17.0);
+	//if (cache_invalidated_debug!=vec3(0.0)) {
+	//	diffuse_light = cache_invalidated_debug;
+	//}
 
 	// Store in octahedral map
 
@@ -608,19 +676,20 @@ void main() {
 		copy_to[1] = probe_texture_pos + ivec3(local_pos.x + 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
 	}
 
-	uint light_rgbe = rgbe_encode(light);
+	uint light_rgbe = rgbe_encode(specular_light);
 	uint diffuse_rgbe = rgbe_encode(diffuse_light);
 	uint ambient_rgbe;
-	if (params.store_ambient_texture) {
+	if (params.store_ambient_texture && probe_index==0) {
 		ambient_rgbe = rgbe_encode(ambient_light);
 	}
+
 	for (int i = 0; i < 4; i++) {
 		if (copy_to[i] == ivec3(-2, -2, -2)) {
 			continue;
 		}
 		imageStore(lightprobe_texture_data, copy_to[i], uvec4(light_rgbe));
 		imageStore(lightprobe_diffuse_data, copy_to[i], uvec4(diffuse_rgbe));
-		if (params.store_ambient_texture) {
+		if (params.store_ambient_texture && probe_index==0) {
 			imageStore(lightprobe_ambient_data, copy_to[i], uvec4(ambient_rgbe));
 		}
 		// also to diffuse

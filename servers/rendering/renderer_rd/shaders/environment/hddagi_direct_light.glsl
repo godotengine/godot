@@ -140,7 +140,7 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 #define REGION_SIZE 8
 
 
-bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
+bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,float p_distance,int p_cascade) {
 
 	const int LEVEL_CASCADE = -1;
 	const int LEVEL_REGION = 0;
@@ -185,6 +185,9 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
 	bool hit = false;
 
 	ivec3 pos;
+	float distance = p_distance;
+	ivec3 distance_limit;
+	bool distance_limit_valid;
 
 	while(true) {
 		// This loop is written so there is only one single main interation.
@@ -236,9 +239,11 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
 		} else if (level == LEVEL_CASCADE) {
 			// Return to global
 			if (cascade >= p_cascade) {
+
 				ray_pos = vec3(pos) / float(1<<fp_bits);
 				ray_pos /= cascades.data[cascade].to_cell;
 				ray_pos += cascades.data[cascade].offset;
+				distance /= cascades.data[cascade].to_cell;
 			}
 
 			cascade++;
@@ -248,11 +253,30 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
 
 			ray_pos -= cascades.data[cascade].offset;
 			ray_pos *= cascades.data[cascade].to_cell;
+
 			pos = ivec3(ray_pos * float(1<<fp_bits));
 			if (any(lessThan(pos,ivec3(0))) || any(greaterThanEqual(pos,params.grid_size<<fp_bits))) {
 				// Outside this cascade, go to next.
 				continue;
 			}
+
+			distance *= cascades.data[cascade].to_cell;
+
+			vec3 box = (vec3(params.grid_size * step) - ray_pos) / ray_dir;
+			float advance_to_bounds = min(box.x,min(box.y,box.z));
+
+			if (distance < advance_to_bounds) {
+				// Can hit the distance in this cascade?
+				distance_limit = pos + ray_sign * ivec3(distance * (1<<fp_bits));
+				distance_limit_valid = true;
+			} else {
+				// We can't so subtract the advance to the end of the cascade.
+				distance -= advance_to_bounds;
+				distance_limit = ray_sign * 0xFFF << fp_bits; // Unreachable limit
+				distance_limit_valid = false;
+			}
+
+
 
 			cascade_base = ivec3(0,int(params.grid_size.y/REGION_SIZE) * cascade , 0);
 			level = LEVEL_REGION;
@@ -274,6 +298,15 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir,int p_cascade) {
 		ivec3 adv_t = (ray_dir_fp * t) >> fp_bits;
 
 		pos += mix(adv_t,adv_box,equal(ivec3(t),tv));
+
+
+		if (distance_limit_valid) {  // Test against distance limit.
+			bvec3 limit = lessThan(pos,distance_limit);
+			bvec3 eq = equal(limit,limit_dir);
+			if (!all(eq)) {
+				break; // Reached limit, break.
+			}
+		}
 
 		while(true) {
 			bvec3 limit = lessThan(pos,limits[level]);
@@ -463,7 +496,9 @@ void main() {
 		ray_pos += ray_dir * 0.4 * cell_size; //apply a small bias from there
 		*/
 
-		hit = trace_ray_hdda(ray_pos,ray_dir,params.cascade);
+		if (lights.data[i].has_shadow) {
+			hit = trace_ray_hdda(ray_pos,ray_dir,light_distance,params.cascade);
+		}
 
 		if (!hit) {
 			light_accum += albedo * lights.data[i].color.rgb * lights.data[i].energy * attenuation;

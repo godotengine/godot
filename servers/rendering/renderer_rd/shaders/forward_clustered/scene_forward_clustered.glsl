@@ -2171,11 +2171,13 @@ void fragment_shader(in SceneData scene_data) {
 		vec3 ddy_vertex = dFdy(vertex);
 		vec3 geometric_normal = normalize(cross(ddx_vertex, ddy_vertex));
 
-		/*if (abs(dot(vec3(0,0,1),geometric_normal)) < 0.55) {
+		/* This optimization needs more benchmark, does not seem to make a difference.
+		if (abs(dot(vec3(0,0,1),geometric_normal)) < 0.55) {
 			// Conservative value to discard this fragment if not belonging to this view
 			discard;
-		}
+		}*/
 
+		/* This optimization breaks the image somehow, I have no idea why.
 		if (gl_HelperInvocation) {
 			return;
 		}*/

@@ -582,11 +582,16 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 		tf_cache_data.format = RD::DATA_FORMAT_R16_UINT;
 		lightprobe_hit_cache_version_data = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Hit Cache Version"));
 
-		tf_cache_data.format = RD::DATA_FORMAT_R16G16B16A16_UINT;
-		lightprobe_moving_average_history = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Moving Average History"));
+		{
+			tf_cache_data.format = RD::DATA_FORMAT_R32_UINT;
 
-		tf_cache_data.array_layers = cascades.size();
-		lightprobe_moving_average = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Moving Average"));
+			lightprobe_moving_average_history = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Moving Average History"));
+
+			RD::TextureFormat tf_moving_average = tf_cache_data;
+			tf_moving_average.width *= 3; // no RGB32 UI so..
+			tf_moving_average.array_layers = cascades.size(); // Return to just cascades, no history.
+			lightprobe_moving_average = create_clear_texture(tf_moving_average, String("HDDAGI Lighprobe Moving Average"));
+		}
 
 		RD::TextureFormat tf_ambient = tf_lightprobes;
 		tf_ambient.width = (PROBE_DIVISOR.x + 1);
@@ -1504,7 +1509,7 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::PreprocessPushConstant));
-		RD::get_singleton()->compute_list_dispatch(compute_list, dispatch_size.x / PROBE_CELLS, dispatch_size.y / PROBE_CELLS, dispatch_size.z / PROBE_CELLS);
+		RD::get_singleton()->compute_list_dispatch(compute_list, dispatch_size.x / PROBE_CELLS * 2, dispatch_size.y / PROBE_CELLS * 2, dispatch_size.z / PROBE_CELLS);
 	}
 
 	{
@@ -2899,7 +2904,7 @@ void GI::HDDAGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderSce
 
 		if (dl_push_constant.light_count > 0) {
 			RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
-					gi->hddagi_shader.direct_light_shader_version[HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC],
+					gi->hddagi_shader.direct_light_shader_version[HDDAGIShader::DIRECT_LIGHT_MODE_STATIC],
 					0,
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex),
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex),
@@ -2907,8 +2912,8 @@ void GI::HDDAGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderSce
 					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 4, cc.light_process_dispatch_buffer_copy),
 					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, cc.light_process_buffer),
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, light_tex_data),
-					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 9, cascades_ubo),
-					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 10, cc.light_position_bufer));
+					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, cascades_ubo),
+					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 8, cc.light_position_bufer));
 
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &dl_push_constant, sizeof(HDDAGIShader::DirectLightPushConstant));
@@ -3836,7 +3841,7 @@ void GI::init(SkyRD *p_sky) {
 		preprocess_modes.push_back("\n#define MODE_OCCLUSION_STORE\n");
 		preprocess_modes.push_back("\n#define MODE_LIGHTPROBE_SCROLL\n");
 
-		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(HDDAGI::OCCLUSION_OCT_SIZE) + "\n";
+		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(HDDAGI::OCCLUSION_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE_HALF " + itos(HDDAGI::OCCLUSION_OCT_SIZE / 2) + "\n";
 
 		hddagi_shader.preprocess.initialize(preprocess_modes, defines);
 		hddagi_shader.preprocess_shader = hddagi_shader.preprocess.version_create();
