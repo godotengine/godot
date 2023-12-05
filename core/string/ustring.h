@@ -432,6 +432,8 @@ public:
 	String c_escape_multiline() const;
 	String c_unescape() const;
 	String json_escape() const;
+	String enum_hint_escape() const;
+	String enum_hint_unescape() const;
 	Error parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path) const;
 
 	String property_name_encode() const;

@@ -157,7 +157,7 @@ void SkeletonProfile::_get_property_list(List<PropertyInfo> *p_list) const {
 		if (i > 0) {
 			group_names = group_names + ",";
 		}
-		group_names = group_names + groups[i].group_name;
+		group_names = group_names + String(groups[i].group_name).enum_hint_escape();
 	}
 	for (int i = 0; i < bones.size(); i++) {
 		String path = "bones/" + itos(i) + "/";

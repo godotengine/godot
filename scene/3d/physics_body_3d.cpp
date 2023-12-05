@@ -2888,7 +2888,7 @@ void PhysicalBone3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			if (i > 0) {
 				names += ",";
 			}
-			names += parent->get_bone_name(i);
+			names += parent->get_bone_name(i).enum_hint_escape();
 		}
 
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("bone_name"), PROPERTY_HINT_ENUM, names));

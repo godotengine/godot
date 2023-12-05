@@ -920,7 +920,7 @@ const String PhysicsServer2DManager::setting_property_name(PNAME("physics/2d/phy
 void PhysicsServer2DManager::on_servers_changed() {
 	String physics_servers("DEFAULT");
 	for (int i = get_servers_count() - 1; 0 <= i; --i) {
-		physics_servers += "," + get_server_name(i);
+		physics_servers += "," + get_server_name(i).enum_hint_escape();
 	}
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers));
 	ProjectSettings::get_singleton()->set_restart_if_changed(setting_property_name, true);

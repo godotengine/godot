@@ -341,7 +341,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Languages */
 
 	{
-		String lang_hint = "en";
+		String lang_hint = vformat("[en] %s:en", TranslationServer::get_singleton()->get_locale_name("en").enum_hint_escape());
 		String host_lang = OS::get_singleton()->get_locale();
 
 		// Skip locales if Text server lack required features.
@@ -378,7 +378,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			}
 
 			lang_hint += ",";
-			lang_hint += locale;
+			lang_hint += vformat("[%s] %s:%s", locale, TranslationServer::get_singleton()->get_locale_name(locale).enum_hint_escape(), locale);
 
 			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
 			if (score > 0 && score >= best_score) {
@@ -786,12 +786,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 #if defined(WEB_ENABLED)
 	// Web platform only supports `gl_compatibility`.
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", "gl_compatibility", "forward_plus,mobile,gl_compatibility")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", "gl_compatibility", "Forward+:forward_plus,Mobile:mobile,OpenGL (Compatibility):gl_compatibility")
 #elif defined(ANDROID_ENABLED)
 	// Use more suitable rendering method by default.
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", "mobile", "forward_plus,mobile,gl_compatibility")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", "mobile", "Forward+:forward_plus,Mobile:mobile,OpenGL (Compatibility):gl_compatibility")
 #else
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", "forward_plus", "forward_plus,mobile,gl_compatibility")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", "forward_plus", "Forward+:forward_plus,Mobile:mobile,OpenGL (Compatibility):gl_compatibility")
 #endif
 
 	if (p_extra_config.is_valid()) {
@@ -1286,7 +1286,7 @@ void EditorSettings::list_text_editor_themes() {
 
 		custom_themes.sort();
 		for (const String &E : custom_themes) {
-			themes += "," + E;
+			themes += "," + E.enum_hint_escape();
 		}
 	}
 	add_property_hint(PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, themes));

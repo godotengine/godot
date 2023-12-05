@@ -113,6 +113,7 @@ class EditorPropertyTextEnum : public EditorProperty {
 	Button *cancel_button = nullptr;
 
 	Vector<String> options;
+	Vector<String> values;
 	bool string_name = false;
 	bool loose_mode = false;
 

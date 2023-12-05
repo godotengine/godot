@@ -1083,7 +1083,7 @@ const String PhysicsServer3DManager::setting_property_name(PNAME("physics/3d/phy
 void PhysicsServer3DManager::on_servers_changed() {
 	String physics_servers2("DEFAULT");
 	for (int i = get_servers_count() - 1; 0 <= i; --i) {
-		physics_servers2 += "," + get_server_name(i);
+		physics_servers2 += "," + get_server_name(i).enum_hint_escape();
 	}
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers2));
 	ProjectSettings::get_singleton()->set_restart_if_changed(setting_property_name, true);

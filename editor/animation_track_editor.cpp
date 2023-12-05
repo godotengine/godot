@@ -607,7 +607,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 							animations += ",";
 						}
 
-						animations += String(E);
+						animations += String(E).enum_hint_escape();
 					}
 				}
 			}
@@ -1209,7 +1209,7 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 								animations += ",";
 							}
 
-							animations += String(G->get());
+							animations += String(G->get()).enum_hint_escape();
 						}
 					}
 				}

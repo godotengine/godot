@@ -55,7 +55,7 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 			if (i > 0) {
 				anims += ",";
 			}
-			anims += String(names[i]);
+			anims += String(names[i]).enum_hint_escape();
 		}
 		if (!anims.is_empty()) {
 			p_property.hint = PROPERTY_HINT_ENUM;
@@ -873,7 +873,7 @@ void AnimationNodeTransition::get_parameter_list(List<PropertyInfo> *r_list) con
 		if (i > 0) {
 			anims += ",";
 		}
-		anims += inputs[i].name;
+		anims += inputs[i].name.enum_hint_escape();
 	}
 
 	r_list->push_back(PropertyInfo(Variant::STRING, current_state, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY)); // For interface.

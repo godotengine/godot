@@ -337,7 +337,7 @@ void SkeletonIK3D::_validate_property(PropertyInfo &p_property) const {
 				if (i > 0) {
 					names += ",";
 				}
-				names += skeleton->get_bone_name(i);
+				names += skeleton->get_bone_name(i).enum_hint_escape();
 			}
 
 			p_property.hint = PROPERTY_HINT_ENUM;
