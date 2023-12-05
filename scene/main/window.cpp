@@ -967,6 +967,10 @@ Size2i Window::_clamp_window_size(const Size2i &p_size) {
 
 void Window::_update_window_size() {
 	Size2i size_limit = get_clamped_minimum_size();
+	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID && keep_title_visible) {
+		Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
+		size_limit = size_limit.max(title_size);
+	}
 
 	size = size.max(size_limit);
 
@@ -998,12 +1002,6 @@ void Window::_update_window_size() {
 		}
 
 		DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
-
-		if (keep_title_visible) {
-			Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
-			size_limit = size_limit.max(title_size);
-		}
-
 		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
 		DisplayServer::get_singleton()->window_set_size(size, window_id);
 	}
