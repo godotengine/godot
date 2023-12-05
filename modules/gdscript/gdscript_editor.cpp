@@ -2667,6 +2667,11 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 	if (p_context.base == nullptr) {
 		return false;
 	}
+	if (p_subscript->base->datatype.type_source == GDScriptParser::DataType::ANNOTATED_EXPLICIT) {
+		// Annotated type takes precedence.
+		return false;
+	}
+
 	const GDScriptParser::GetNodeNode *get_node = nullptr;
 
 	switch (p_subscript->base->type) {
@@ -2715,10 +2720,19 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 			if (r_base != nullptr) {
 				*r_base = node;
 			}
-			r_base_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-			r_base_type.kind = GDScriptParser::DataType::NATIVE;
+
+			r_base_type.type_source = GDScriptParser::DataType::INFERRED;
 			r_base_type.builtin_type = Variant::OBJECT;
 			r_base_type.native_type = node->get_class_name();
+
+			Ref<Script> scr = node->get_script();
+			if (scr.is_null()) {
+				r_base_type.kind = GDScriptParser::DataType::NATIVE;
+			} else {
+				r_base_type.kind = GDScriptParser::DataType::SCRIPT;
+				r_base_type.script_type = scr;
+			}
+
 			return true;
 		}
 	}
