@@ -2074,15 +2074,21 @@ bool EditorExportPlatformIOS::is_package_name_valid(const String &p_package, Str
 bool EditorExportPlatformIOS::_check_xcode_install() {
 	static bool xcode_found = false;
 	if (!xcode_found) {
-		String xcode_path;
-		List<String> args;
-		args.push_back("-p");
-		int ec = 0;
-		Error err = OS::get_singleton()->execute("xcode-select", args, &xcode_path, &ec, true);
-		if (err != OK || ec != 0) {
-			return false;
+		Vector<String> mdfind_paths;
+		List<String> mdfind_args;
+		mdfind_args.push_back("kMDItemCFBundleIdentifier=com.apple.dt.Xcode");
+
+		String output;
+		Error err = OS::get_singleton()->execute("mdfind", mdfind_args, &output);
+		if (err == OK) {
+			mdfind_paths = output.split("\n");
 		}
-		xcode_found = DirAccess::dir_exists_absolute(xcode_path.strip_edges());
+		for (const String &found_path : mdfind_paths) {
+			xcode_found = !found_path.is_empty() && DirAccess::dir_exists_absolute(found_path.strip_edges());
+			if (xcode_found) {
+				break;
+			}
+		}
 	}
 	return xcode_found;
 }
