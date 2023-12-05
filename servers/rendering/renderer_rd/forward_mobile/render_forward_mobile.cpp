@@ -79,7 +79,7 @@ void RenderForwardMobile::fill_push_constant_instance_indices(SceneState::Instan
     fill_push_constant_buffer(p_instance_data->reflection_probes, p_instance->reflection_probe_count, RendererRD::FORWARD_ID_TYPE_REFLECTION_PROBE, forward_id_storage_mobile, current_frame);
 }
 
-void RenderForwardMobile::fill_push_constant_buffer(uint32_t* buffer, uint32_t count, RendererRD::ForwardIDType type, ForwardIDStorageMobile* storage, uint64_t current_frame) {
+void RenderForwardMobile::fill_push_constant_buffer(uint32_t *p_buffer, uint32_t p_count, RendererRD::ForwardIDType p_type, ForwardIDStorageMobile *p_storage, uint64_t p_current_frame) {
     buffer[0] = 0xFFFFFFFF;
     buffer[1] = 0xFFFFFFFF;
 
