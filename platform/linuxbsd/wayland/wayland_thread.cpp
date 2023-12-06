@@ -925,6 +925,11 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 	ws->frame_callback = wl_surface_frame(ws->wl_surface),
 	wl_callback_add_listener(ws->frame_callback, &frame_wl_callback_listener, ws);
 	wl_surface_commit(ws->wl_surface);
+
+	if (ws->wl_surface) {
+		// NOTE: This will be committed next time, so we have a proper buffer.
+		wl_surface_set_buffer_scale(ws->wl_surface, ws->buffer_scale);
+	}
 }
 
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
@@ -2637,8 +2642,6 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	}
 
 	if (p_ws->wl_surface && (size_changed || scale_changed)) {
-		wl_surface_set_buffer_scale(p_ws->wl_surface, preferred_buffer_scale);
-
 		if (p_ws->wp_viewport) {
 			wp_viewport_set_destination(p_ws->wp_viewport, p_width, p_height);
 		}
