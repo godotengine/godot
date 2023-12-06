@@ -1083,7 +1083,6 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     + "\n\n"
                 )
 
-
             f.write("\n\n")
 
     # Annotation descriptions
