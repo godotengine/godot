@@ -88,12 +88,6 @@ vec3 reinhard_inverse(vec3 sdr) {
 	return sdr / (1.0 - sdr);
 }
 
-const vec3 lumCoeff = vec3(0.299f, 0.587f, 0.114f);
-
-float luminance(vec3 color) {
-	return max(dot(color, lumCoeff), 0.0001f);
-}
-
 float get_depth(ivec2 thread_id) {
 	return texelFetch(depth_buffer, thread_id, 0).r;
 }
@@ -170,7 +164,7 @@ void depth_test_min(uvec2 pos, inout float min_depth, inout uvec2 min_pos) {
 	}
 }
 
-// Returns velocity with closest depth (3x3 neighborhood) - Currently horribly broken, DO NOT USE!
+// Returns velocity with closest depth (3x3 neighborhood)
 void get_closest_pixel_velocity_3x3(in uvec2 group_pos, uvec2 group_top_left, out vec2 velocity) {
 	float min_depth = 1.0;
 	uvec2 min_pos = group_pos;
@@ -274,34 +268,44 @@ vec3 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec3 p, vec3 q) {
 }
 
 // Clip history to the neighbourhood of the current sample
-float luminance_clip_history_3x3(vec3 color_history, vec3 s1, vec3 s2, vec3 s3, vec3 s4, vec3 s5, vec3 s6, vec3 s7, vec3 s8, vec3 s9) {
-	// Sample a 3x3 neighbourhood
-	float ls1 = luminance(s1);
-	float ls2 = luminance(s2);
-	float ls3 = luminance(s3);
-	float ls4 = luminance(s4);
-	float ls5 = luminance(s5);
-	float ls6 = luminance(s6);
-	float ls7 = luminance(s7);
-	float ls8 = luminance(s8);
-	float ls9 = luminance(s9);
+vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history) {
+	// Sample a 3x3 neighbourhood, reinhard to prevent speculars from pixelizing
+	vec3 s1 = reinhard(load_color(group_pos + kOffsets3x3[0]));
+	vec3 s2 = reinhard(load_color(group_pos + kOffsets3x3[1]));
+	vec3 s3 = reinhard(load_color(group_pos + kOffsets3x3[2]));
+	vec3 s4 = reinhard(load_color(group_pos + kOffsets3x3[3]));
+	vec3 s5 = reinhard(load_color(group_pos + kOffsets3x3[4]));
+	vec3 s6 = reinhard(load_color(group_pos + kOffsets3x3[5]));
+	vec3 s7 = reinhard(load_color(group_pos + kOffsets3x3[6]));
+	vec3 s8 = reinhard(load_color(group_pos + kOffsets3x3[7]));
+	vec3 s9 = reinhard(load_color(group_pos + kOffsets3x3[8]));
 
-	// Compute min and max luminance
-	float min = min(ls1, min(ls2, min(ls3, min(ls4, min(ls5, min(ls6, min(ls7, min(ls8, ls9))))))));
-	float max = max(ls1, max(ls2, max(ls3, max(ls4, max(ls5, max(ls6, max(ls7, max(ls8, ls9))))))));
-	float history = luminance(color_history);
+	// Compute min and max (with an adaptive box size, which greatly reduces ghosting)
+	vec3 color_avg = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
+	vec3 color_avg2 = ((s1 * s1) + (s2 * s2) + (s3 * s3) + (s4 * s4) + (s5 * s5) + (s6 * s6) + (s7 * s7) + (s8 * s8) + (s9 * s9)) * RPC_9;
+	// if the box size multiplier is too high it'll create ringing ghosts, so don't touch
+	vec3 dev = sqrt(abs(color_avg2 - (color_avg * color_avg))) * 0.25f;
+	vec3 color_min = color_avg - dev;
+	vec3 color_max = color_avg + dev;
 
-	// Take current sample if old sample isn't within the brightness range of current 3x3 grid
-	if (min < history && history < max) {
-		return 0.0;
-	} else {
-		return 1.0;
-	}
+	// Variance clipping
+	vec3 color = clip_aabb(color_min, color_max, clamp(color_avg, color_min, color_max), color_history);
+
+	// Clamp to prevent NaNs
+	color = clamp(color, FLT_MIN, FLT_MAX);
+
+	return color;
 }
 
 /*------------------------------------------------------------------------------
 									TAA
 ------------------------------------------------------------------------------*/
+
+const vec3 lumCoeff = vec3(0.299f, 0.587f, 0.114f);
+
+float luminance(vec3 color) {
+	return max(dot(color, lumCoeff), 0.0001f);
+}
 
 float get_factor_disocclusion(vec2 uv_reprojected, vec2 velocity) {
 	vec2 velocity_previous = imageLoad(last_velocity_buffer, ivec2(uv_reprojected * params.resolution)).xy;
@@ -318,37 +322,49 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	// Get reprojected uv
 	vec2 uv_reprojected = uv + velocity;
 
-	// Sample a 3x3 neighbourhood
-	vec3 s1 = reinhard(load_color(pos_group + kOffsets3x3[0]));
-	vec3 s2 = reinhard(load_color(pos_group + kOffsets3x3[1]));
-	vec3 s3 = reinhard(load_color(pos_group + kOffsets3x3[2]));
-	vec3 s4 = reinhard(load_color(pos_group + kOffsets3x3[3]));
-	vec3 s5 = reinhard(load_color(pos_group + kOffsets3x3[4]));
-	vec3 s6 = reinhard(load_color(pos_group + kOffsets3x3[5]));
-	vec3 s7 = reinhard(load_color(pos_group + kOffsets3x3[6]));
-	vec3 s8 = reinhard(load_color(pos_group + kOffsets3x3[7]));
-	vec3 s9 = reinhard(load_color(pos_group + kOffsets3x3[8]));
-
 	// Get input color
-	vec3 color_input = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
+	vec3 color_input = reinhard(load_color(pos_group));
 
 	// Get history color (catmull-rom reduces a lot of the blurring that you get under motion)
 	vec3 color_history = reinhard(sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb);
 
-	// Compute disoccusion
-	float disocclusion = get_factor_disocclusion(uv_reprojected, velocity);
-
-	// If re-projected UV is out of screen, converge to current color immediately
-	float off_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
-
-	// This greatly reduces Shadow and Specular Ghosting
-	float luminance_check = luminance_clip_history_3x3(color_history, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
+	//	vec2 velocity_closest = vec2(0.0); // This is best done by using the velocity with the closest depth.
+	//	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity_closest);
+	color_history = clip_history_3x3(pos_group, color_history);
 
 	// Compute blend factor
-	float blend_factor = clamp(1.0 - RPC_16 - disocclusion - off_screen - luminance_check, 0.0, 1.0);
+	float blend_factor = RPC_16; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
+	{
+		// If re-projected UV is out of screen, converge to current color immediatel
+		float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
 
-	// Resolve, all colors are processed with reinhard to prevent specular pixelization, so you have to convert it back here.
-	return reinhard_inverse(mix(color_input, color_history, blend_factor));
+		// Increase blend factor when there is disocclusion (fixes a lot of the remaining ghosting).
+		float factor_disocclusion = get_factor_disocclusion(uv_reprojected, velocity);
+
+		// Add to the blend factor
+		blend_factor = clamp(blend_factor + factor_screen + factor_disocclusion, 0.0, 1.0);
+	}
+
+	// Resolve
+	vec3 color_resolved = vec3(0.0);
+	{
+		// Reduce flickering
+		float lum_color = luminance(color_input);
+		float lum_history = luminance(color_history);
+		float diff = abs(lum_color - lum_history) / max(lum_color, max(lum_history, 1.001));
+		diff = 1.0 - diff;
+		diff = diff * diff;
+		blend_factor = mix(0.0, blend_factor, diff);
+
+		// Lerp/blend
+		color_resolved = mix(color_history, color_input, blend_factor);
+
+		// Inverse tonemap
+		color_resolved = reinhard_inverse(color_resolved);
+	}
+
+	return color_resolved;
 }
 
 void main() {

@@ -63,7 +63,7 @@ void TAA::resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_pr
 	push_constant.resolution_width = p_resolution.width;
 	push_constant.resolution_height = p_resolution.height;
 	push_constant.disocclusion_threshold = 0.025f;
-	push_constant.disocclusion_scale = 10.0f;
+	push_constant.disocclusion_scale = 0.0001f;
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipeline);
