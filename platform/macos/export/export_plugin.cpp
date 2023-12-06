@@ -1266,10 +1266,16 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
-	String src_pkg_name;
+	const String base_dir = p_path.get_base_dir();
+
+	if (!DirAccess::exists(base_dir)) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
+		return ERR_FILE_BAD_PATH;
+	}
 
 	EditorProgress ep("export", TTR("Exporting for macOS"), 3, true);
 
+	String src_pkg_name;
 	if (p_debug) {
 		src_pkg_name = p_preset->get("custom_template/debug");
 	} else {
@@ -1280,14 +1286,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		String err;
 		src_pkg_name = find_export_template("macos.zip", &err);
 		if (src_pkg_name.is_empty()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found.") + "\n" + err);
 			return ERR_FILE_NOT_FOUND;
 		}
-	}
-
-	if (!DirAccess::exists(p_path.get_base_dir())) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("The given export path doesn't exist."));
-		return ERR_FILE_BAD_PATH;
 	}
 
 	Ref<FileAccess> io_fa;
