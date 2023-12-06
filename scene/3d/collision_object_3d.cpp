@@ -291,16 +291,12 @@ void CollisionObject3D::_input_event_call(Camera3D *p_camera, const Ref<InputEve
 }
 
 void CollisionObject3D::_mouse_enter() {
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
-	}
+	GDVIRTUAL_CALL(_mouse_enter);
 	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
 }
 
 void CollisionObject3D::_mouse_exit() {
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
-	}
+	GDVIRTUAL_CALL(_mouse_exit);
 	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 }
 
