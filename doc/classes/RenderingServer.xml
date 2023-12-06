@@ -3225,9 +3225,11 @@
 		<method name="texture_2d_create">
 			<return type="RID" />
 			<param index="0" name="image" type="Image" />
+			<param index="1" name="immutable" type="bool" default="false" />
 			<description>
 				Creates a 2-dimensional texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				Consider creating this texture as immutable (which prevents further updates via [method RenderingServer.texture_2d_update]) if you don't plan on modifying it later. This can significantly improve performance.
 				[b]Note:[/b] The equivalent resource is [Texture2D].
 				[b]Note:[/b] Not to be confused with [method RenderingDevice.texture_create], which creates the graphics API's own texture type as opposed to the Godot-specific [Texture2D] resource.
 			</description>
@@ -3257,9 +3259,11 @@
 			<return type="RID" />
 			<param index="0" name="layers" type="Image[]" />
 			<param index="1" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" />
+			<param index="2" name="immutable" type="bool" default="false" />
 			<description>
 				Creates a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				Consider creating this texture as immutable (which prevents further updates via [method RenderingServer.texture_2d_update]) if you don't plan on modifying it later. This can significantly improve performance.
 				[b]Note:[/b] The equivalent resource is [TextureLayered].
 			</description>
 		</method>
@@ -3297,7 +3301,9 @@
 			<param index="3" name="depth" type="int" />
 			<param index="4" name="mipmaps" type="bool" />
 			<param index="5" name="data" type="Image[]" />
+			<param index="6" name="immutable" type="bool" default="false" />
 			<description>
+				Consider creating this texture as immutable (which prevents further updates via [method RenderingServer.texture_3d_update]) if you don't plan on modifying it later. This can significantly improve performance.
 				[b]Note:[/b] The equivalent resource is [Texture3D].
 			</description>
 		</method>

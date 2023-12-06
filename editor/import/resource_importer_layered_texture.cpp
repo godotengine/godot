@@ -147,6 +147,7 @@ void ResourceImporterLayeredTexture::get_import_options(const String &p_path, Li
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized,Normal Map (RG Channels)"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimization/immutable"), true));
 
 	if (mode == MODE_2D_ARRAY || mode == MODE_3D) {
 		r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/horizontal", PROPERTY_HINT_RANGE, "1,256,1"), 8));
@@ -161,7 +162,7 @@ void ResourceImporterLayeredTexture::get_import_options(const String &p_path, Li
 	}
 }
 
-void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2) {
+void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2, bool p_immutable) {
 	Vector<Ref<Image>> mipmap_images; //for 3D
 
 	if (mode == MODE_3D) {
@@ -269,7 +270,12 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	f->store_32(CompressedTextureLayered::FORMAT_VERSION);
 	f->store_32(p_images.size()); // For 2d layers or 3d depth.
 	f->store_32(mode);
-	f->store_32(0);
+	uint32_t flags = 0;
+	if (p_immutable) {
+		flags |= CompressedTextureLayered::FORMAT_BIT_IMMUTABLE;
+	}
+
+	f->store_32(flags);
 
 	f->store_32(0);
 	f->store_32(mipmap_images.size()); // Adjust the amount of mipmaps.
@@ -291,6 +297,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	bool high_quality = p_options["compress/high_quality"];
 	int hdr_compression = p_options["compress/hdr_compression"];
 	bool mipmaps = p_options["mipmaps/generate"];
+	bool immutable = p_options["optimization/immutable"];
 
 	int channel_pack = p_options["compress/channel_pack"];
 	int hslices = (p_options.has("slices/horizontal")) ? int(p_options["slices/horizontal"]) : 0;
@@ -397,6 +404,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	texture_import->mipmaps = mipmaps;
 	texture_import->used_channels = used_channels;
 	texture_import->high_quality = high_quality;
+	texture_import->immutable = immutable;
 
 	_check_compress_ctex(p_source_file, texture_import);
 	if (r_metadata) {
@@ -494,7 +502,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	ERR_FAIL_NULL(r_texture_import->csource);
 	if (r_texture_import->compress_mode != COMPRESS_VRAM_COMPRESSED) {
 		// Import normally.
-		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, Image::COMPRESS_S3TC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false);
+		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, Image::COMPRESS_S3TC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false, r_texture_import->immutable);
 		return;
 	}
 	// Must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
@@ -549,7 +557,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	}
 
 	if (use_uncompressed) {
-		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, COMPRESS_VRAM_UNCOMPRESSED, r_texture_import->lossy, Image::COMPRESS_S3TC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false);
+		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, COMPRESS_VRAM_UNCOMPRESSED, r_texture_import->lossy, Image::COMPRESS_S3TC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false, r_texture_import->immutable);
 	} else {
 		if (can_s3tc_bptc) {
 			Image::CompressMode image_compress_mode;
@@ -561,7 +569,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 				image_compress_mode = Image::COMPRESS_S3TC;
 				image_compress_format = "s3tc";
 			}
-			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, image_compress_mode, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true);
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, image_compress_mode, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true, r_texture_import->immutable);
 			r_texture_import->platform_variants->push_back(image_compress_format);
 		}
 
@@ -575,7 +583,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 				image_compress_mode = Image::COMPRESS_ETC2;
 				image_compress_format = "etc2";
 			}
-			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, image_compress_mode, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true);
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, image_compress_mode, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true, r_texture_import->immutable);
 			r_texture_import->platform_variants->push_back(image_compress_format);
 		}
 	}

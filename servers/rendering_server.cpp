@@ -29,13 +29,13 @@
 /**************************************************************************/
 
 #include "rendering_server.h"
-
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_warnings.h"
+#include "servers/rendering_server.compat.inc"
 
 RenderingServer *RenderingServer::singleton = nullptr;
 RenderingServer *(*RenderingServer::create_func)() = nullptr;
@@ -1886,11 +1886,11 @@ static Vector<Ref<Image>> _get_imgvec(const TypedArray<Image> &p_layers) {
 	}
 	return images;
 }
-RID RenderingServer::_texture_2d_layered_create(const TypedArray<Image> &p_layers, TextureLayeredType p_layered_type) {
-	return texture_2d_layered_create(_get_imgvec(p_layers), p_layered_type);
+RID RenderingServer::_texture_2d_layered_create(const TypedArray<Image> &p_layers, TextureLayeredType p_layered_type, bool p_immutable) {
+	return texture_2d_layered_create(_get_imgvec(p_layers), p_layered_type, p_immutable);
 }
-RID RenderingServer::_texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data) {
-	return texture_3d_create(p_format, p_width, p_height, p_depth, p_mipmaps, _get_imgvec(p_data));
+RID RenderingServer::_texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data, bool p_immutable) {
+	return texture_3d_create(p_format, p_width, p_height, p_depth, p_mipmaps, _get_imgvec(p_data), p_immutable);
 }
 
 void RenderingServer::_texture_3d_update(RID p_texture, const TypedArray<Image> &p_data) {
@@ -2207,9 +2207,9 @@ void RenderingServer::_bind_methods() {
 
 	/* TEXTURE */
 
-	ClassDB::bind_method(D_METHOD("texture_2d_create", "image"), &RenderingServer::texture_2d_create);
-	ClassDB::bind_method(D_METHOD("texture_2d_layered_create", "layers", "layered_type"), &RenderingServer::_texture_2d_layered_create);
-	ClassDB::bind_method(D_METHOD("texture_3d_create", "format", "width", "height", "depth", "mipmaps", "data"), &RenderingServer::_texture_3d_create);
+	ClassDB::bind_method(D_METHOD("texture_2d_create", "image", "immutable"), &RenderingServer::texture_2d_create, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_2d_layered_create", "layers", "layered_type", "immutable"), &RenderingServer::_texture_2d_layered_create, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_3d_create", "format", "width", "height", "depth", "mipmaps", "data", "immutable"), &RenderingServer::_texture_3d_create, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("texture_proxy_create", "base"), &RenderingServer::texture_proxy_create);
 
 	ClassDB::bind_method(D_METHOD("texture_2d_update", "texture", "image", "layer"), &RenderingServer::texture_2d_update);

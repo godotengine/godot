@@ -57,6 +57,7 @@ public:
 		//FORMAT_BIT_DETECT_SRGB = 1 << 25,
 		FORMAT_BIT_DETECT_NORMAL = 1 << 26,
 		FORMAT_BIT_DETECT_ROUGNESS = 1 << 27,
+		FORMAT_BIT_IMMUTABLE = 1 << 28,
 	};
 
 private:
@@ -67,7 +68,7 @@ private:
 	int h = 0;
 	mutable Ref<BitMap> alpha_cache;
 
-	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
+	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit, bool &r_immutable);
 	virtual void reload_from_file() override;
 
 	static void _requested_3d(void *p_ud);
@@ -137,10 +138,11 @@ public:
 	enum FormatBits {
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
+		FORMAT_BIT_IMMUTABLE = 1 << 24,
 	};
 
 private:
-	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit = 0);
+	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit, bool &r_immutable);
 	String path_to_file;
 	mutable RID texture;
 	Image::Format format = Image::FORMAT_L8;
@@ -225,10 +227,11 @@ public:
 	enum FormatBits {
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
+		FORMAT_BIT_IMMUTABLE = 1 << 24,
 	};
 
 private:
-	Error _load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps);
+	Error _load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps, bool &r_immutable);
 	String path_to_file;
 	mutable RID texture;
 	Image::Format format = Image::FORMAT_L8;

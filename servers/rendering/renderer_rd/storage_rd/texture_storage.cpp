@@ -789,7 +789,7 @@ void TextureStorage::texture_free(RID p_texture) {
 	texture_owner.free(p_texture);
 }
 
-void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) {
+void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_image, bool p_immutable) {
 	ERR_FAIL_COND(p_image.is_null());
 
 	TextureToRDFormat ret_format;
@@ -806,6 +806,7 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	texture.depth = 1;
 	texture.format = p_image->get_format();
 	texture.validated_format = image->get_format();
+	texture.is_immutable = p_immutable;
 
 	texture.rd_type = RD::TEXTURE_TYPE_2D;
 	texture.rd_format = ret_format.format;
@@ -822,7 +823,11 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 		rd_format.mipmaps = texture.mipmaps;
 		rd_format.texture_type = texture.rd_type;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		if (!p_immutable) {
+			rd_format.usage_bits |= RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		}
+
 		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
 			rd_format.shareable_formats.push_back(texture.rd_format);
 			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
@@ -858,7 +863,7 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	texture_owner.initialize_rid(p_texture, texture);
 }
 
-void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
+void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type, bool p_immutable) {
 	ERR_FAIL_COND(p_layers.size() == 0);
 
 	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
@@ -903,6 +908,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	texture.depth = 1;
 	texture.format = p_layers[0]->get_format();
 	texture.validated_format = images[0]->get_format();
+	texture.is_immutable = p_immutable;
 
 	switch (p_layered_type) {
 		case RS::TEXTURE_LAYERED_2D_ARRAY: {
@@ -932,7 +938,11 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 		rd_format.mipmaps = texture.mipmaps;
 		rd_format.texture_type = texture.rd_type;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		if (!p_immutable) {
+			rd_format.usage_bits |= RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		}
+
 		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
 			rd_format.shareable_formats.push_back(texture.rd_format);
 			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
@@ -970,7 +980,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	texture_owner.initialize_rid(p_texture, texture);
 }
 
-void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
+void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data, bool p_immutable) {
 	ERR_FAIL_COND(p_data.size() == 0);
 
 	Image::Image3DValidateError verr = Image::validate_3d_image(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
@@ -1032,6 +1042,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 	texture.mipmaps = mipmap_count;
 	texture.format = p_data[0]->get_format();
 	texture.validated_format = validated_format;
+	texture.is_immutable = p_immutable;
 
 	texture.buffer_size_3d = all_data.size();
 	texture.buffer_slices_3d = slices;
@@ -1051,7 +1062,11 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 		rd_format.mipmaps = texture.mipmaps;
 		rd_format.texture_type = texture.rd_type;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		if (!p_immutable) {
+			rd_format.usage_bits |= RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		}
+
 		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
 			rd_format.shareable_formats.push_back(texture.rd_format);
 			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
@@ -1116,6 +1131,7 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 	ERR_FAIL_COND(tex->is_render_target);
 	ERR_FAIL_COND(p_image->get_width() != tex->width || p_image->get_height() != tex->height);
 	ERR_FAIL_COND(p_image->get_format() != tex->format);
+	ERR_FAIL_COND_MSG(tex->is_immutable, "Texture was created immutable so it can't be further updated. See import options or RenderingServer::texture_*_create arguments.");
 
 	if (tex->type == TextureStorage::TYPE_LAYERED) {
 		ERR_FAIL_INDEX(p_layer, tex->layers);
@@ -1138,6 +1154,7 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(tex);
 	ERR_FAIL_COND(tex->type != TextureStorage::TYPE_3D);
+	ERR_FAIL_COND_MSG(tex->is_immutable, "Texture was created immutable so it can't be further updated. See import options or RenderingServer::texture_*_create arguments.");
 
 	Image::Image3DValidateError verr = Image::validate_3d_image(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps > 1, p_data);
 	if (verr != Image::VALIDATE_3D_OK) {

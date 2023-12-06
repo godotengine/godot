@@ -32,7 +32,7 @@
 
 #include "scene/resources/bit_map.h"
 
-Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
+Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit, bool &r_immutable) {
 	alpha_cache.unref();
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
@@ -77,6 +77,10 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 #endif
 	if (!(df & FORMAT_BIT_STREAM)) {
 		p_size_limit = 0;
+	}
+
+	if (df & FORMAT_BIT_IMMUTABLE) {
+		r_immutable = true;
 	}
 
 	image = load_image_from_file(f, p_size_limit);
@@ -134,17 +138,18 @@ Error CompressedTexture2D::load(const String &p_path) {
 	bool request_normal;
 	bool request_roughness;
 	int mipmap_limit;
+	bool immutable;
 
-	Error err = _load_data(p_path, lw, lh, image, request_3d, request_normal, request_roughness, mipmap_limit);
+	Error err = _load_data(p_path, lw, lh, image, request_3d, request_normal, request_roughness, mipmap_limit, 0, immutable);
 	if (err) {
 		return err;
 	}
 
 	if (texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_2d_create(image);
+		RID new_texture = RS::get_singleton()->texture_2d_create(image, immutable);
 		RS::get_singleton()->texture_replace(texture, new_texture);
 	} else {
-		texture = RS::get_singleton()->texture_2d_create(image);
+		texture = RS::get_singleton()->texture_2d_create(image, immutable);
 	}
 	if (lw || lh) {
 		RS::get_singleton()->texture_set_size_override(texture, lw, lh);
@@ -507,7 +512,7 @@ Image::Format CompressedTexture3D::get_format() const {
 	return format;
 }
 
-Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps) {
+Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps, bool &r_immutable) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
@@ -524,8 +529,10 @@ Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &
 
 	r_depth = f->get_32(); //depth
 	f->get_32(); //ignored (mode)
-	f->get_32(); // ignored (data format)
-
+	uint32_t flags = f->get_32();
+	if (flags & FORMAT_BIT_IMMUTABLE) {
+		r_immutable = true;
+	}
 	f->get_32(); //ignored
 	int mipmap_count = f->get_32();
 	f->get_32(); //ignored
@@ -555,17 +562,18 @@ Error CompressedTexture3D::load(const String &p_path) {
 	int tw, th, td;
 	Image::Format tfmt;
 	bool tmm;
+	bool immutable;
 
-	Error err = _load_data(p_path, data, tfmt, tw, th, td, tmm);
+	Error err = _load_data(p_path, data, tfmt, tw, th, td, tmm, immutable);
 	if (err) {
 		return err;
 	}
 
 	if (texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_3d_create(tfmt, tw, th, td, tmm, data);
+		RID new_texture = RS::get_singleton()->texture_3d_create(tfmt, tw, th, td, tmm, data, immutable);
 		RS::get_singleton()->texture_replace(texture, new_texture);
 	} else {
-		texture = RS::get_singleton()->texture_3d_create(tfmt, tw, th, td, tmm, data);
+		texture = RS::get_singleton()->texture_3d_create(tfmt, tw, th, td, tmm, data, immutable);
 	}
 
 	w = tw;
@@ -696,7 +704,7 @@ Image::Format CompressedTextureLayered::get_format() const {
 	return format;
 }
 
-Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit) {
+Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit, bool &r_immutable) {
 	ERR_FAIL_COND_V(images.size() != 0, ERR_INVALID_PARAMETER);
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
@@ -719,6 +727,7 @@ Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Imag
 	ERR_FAIL_COND_V((int)type != layered_type, ERR_INVALID_DATA);
 
 	uint32_t df = f->get_32(); //data format
+	r_immutable = df & FORMAT_BIT_IMMUTABLE;
 	mipmap_limit = int(f->get_32());
 	//reserved
 	f->get_32();
@@ -744,17 +753,18 @@ Error CompressedTextureLayered::load(const String &p_path) {
 	Vector<Ref<Image>> images;
 
 	int mipmap_limit;
+	bool immutable;
 
-	Error err = _load_data(p_path, images, mipmap_limit);
+	Error err = _load_data(p_path, images, mipmap_limit, 0, immutable);
 	if (err) {
 		return err;
 	}
 
 	if (texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TextureLayeredType(layered_type));
+		RID new_texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TextureLayeredType(layered_type), immutable);
 		RS::get_singleton()->texture_replace(texture, new_texture);
 	} else {
-		texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TextureLayeredType(layered_type));
+		texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TextureLayeredType(layered_type), immutable);
 	}
 
 	w = images[0]->get_width();

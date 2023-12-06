@@ -312,3 +312,12 @@ GH-84419
 Validate extension JSON: API was removed: classes/Node/constants/NOTIFICATION_NODE_RECACHE_REQUESTED
 
 Removed unused NOTIFICATION_NODE_RECACHE_REQUESTED notification. It also used to conflict with CanvasItem.NOTIFICATION_DRAW and Window.NOTIFICATION_VISIBILITY_CHANGED (which still need to be resolved).
+
+
+GH-85830
+--------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/texture_2
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/texture_2
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/texture_3
+
+Added `immutable` argument with default value.

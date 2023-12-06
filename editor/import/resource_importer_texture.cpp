@@ -221,6 +221,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate"), (p_preset == PRESET_3D ? true : false)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimization/immutable"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
@@ -329,7 +330,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 	}
 }
 
-void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
+void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel, bool p_immutable) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 	f->store_8('G');
@@ -358,6 +359,9 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	}
 	if (p_detect_normal) {
 		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_NORMAL;
+	}
+	if (p_immutable) {
+		flags |= CompressedTexture2D::FORMAT_BIT_IMMUTABLE;
 	}
 
 	f->store_32(flags);
@@ -443,6 +447,9 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	const bool stream = false;
 	const int size_limit = p_options["process/size_limit"];
 	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
+
+	const bool immutable = p_options["optimization/immutable"];
+
 	if (hdr_as_srgb) {
 		loader_flags |= ImageFormatLoader::FLAG_FORCE_LINEAR;
 	}
@@ -638,7 +645,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 
 		if (use_uncompressed) {
-			_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+			_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, immutable);
 		} else {
 			if (can_s3tc_bptc) {
 				Image::CompressMode image_compress_mode;
@@ -650,7 +657,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 					image_compress_mode = Image::COMPRESS_S3TC;
 					image_compress_format = "s3tc";
 				}
-				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, immutable);
 				r_platform_variants->push_back(image_compress_format);
 			}
 
@@ -664,17 +671,17 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 					image_compress_mode = Image::COMPRESS_ETC2;
 					image_compress_format = "etc2";
 				}
-				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, immutable);
 				r_platform_variants->push_back(image_compress_format);
 			}
 		}
 	} else {
 		// Import normally.
-		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, immutable);
 	}
 
 	if (editor_image.is_valid()) {
-		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, immutable);
 
 		// Generate and save editor-specific metadata, which we cannot save to the .import file.
 		Dictionary editor_meta;

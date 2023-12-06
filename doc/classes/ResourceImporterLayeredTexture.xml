@@ -50,6 +50,8 @@
 		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
 			Unimplemented. This currently has no effect when changed.
 		</member>
+		<member name="optimization/immutable" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="slices/arrangement" type="int" setter="" getter="" default="1">
 			Controls how the cubemap's texture is internally laid out. When using high-resolution cubemaps, [b]2×3[/b] and [b]3×2[/b] are less prone to exceeding hardware texture size limits compared to [b]1×6[/b] and [b]6×1[/b].
 		</member>

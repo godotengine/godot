@@ -103,9 +103,9 @@ public:
 		CUBEMAP_LAYER_BACK
 	};
 
-	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
-	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, TextureLayeredType p_layered_type) = 0;
-	virtual RID texture_3d_create(Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0; //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_2d_create(const Ref<Image> &p_image, bool p_immutable = false) = 0;
+	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, TextureLayeredType p_layered_type, bool p_immutable = false) = 0;
+	virtual RID texture_3d_create(Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data, bool p_immutable = false) = 0; //all slices, then all the mipmaps, must be coherent
 	virtual RID texture_proxy_create(RID p_base) = 0;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
@@ -1646,8 +1646,8 @@ public:
 
 private:
 	// Binder helpers
-	RID _texture_2d_layered_create(const TypedArray<Image> &p_layers, TextureLayeredType p_layered_type);
-	RID _texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data);
+	RID _texture_2d_layered_create(const TypedArray<Image> &p_layers, TextureLayeredType p_layered_type, bool p_immutable);
+	RID _texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data, bool p_immutable);
 	void _texture_3d_update(RID p_texture, const TypedArray<Image> &p_data);
 	TypedArray<Image> _texture_3d_get(RID p_texture) const;
 	TypedArray<Dictionary> _shader_get_shader_parameter_list(RID p_shader) const;
@@ -1660,6 +1660,13 @@ private:
 #ifdef TOOLS_ENABLED
 	SurfaceUpgradeCallback surface_upgrade_callback = nullptr;
 	bool warn_on_surface_upgrade = true;
+#endif
+
+#ifndef DISABLE_DEPRECATED
+	RID _texture_2d_create_85830(const Ref<Image> &p_image);
+	RID _texture_2d_layered_create_85830(const TypedArray<Image> &p_layers, TextureLayeredType p_layered_type);
+	RID _texture_3d_create_85830(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data);
+	static void _bind_compatibility_methods();
 #endif
 };
 
