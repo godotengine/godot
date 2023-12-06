@@ -954,8 +954,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 	bool using_hddagi = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_gi_inject(p_settings.env) > 0.0001 && RendererSceneRenderRD::get_singleton()->environment_get_hddagi_enabled(p_settings.env) && (p_settings.hddagi.is_valid());
 
-	if (false && using_hddagi) {
-#if 0
+	if (using_hddagi) {
 		if (fog->hddagi_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(fog->hddagi_uniform_set)) {
 			Vector<RD::Uniform> uniforms;
 
@@ -971,7 +970,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 1;
-				u.append_id(p_settings.hddagi->ambient_texture);
+				u.append_id(p_settings.hddagi->lightprobe_ambient_tex);
 				uniforms.push_back(u);
 			}
 
@@ -979,13 +978,14 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 2;
-				u.append_id(p_settings.hddagi->occlusion_texture);
+				Vector<RID> occ = p_settings.hddagi->get_lightprobe_occlusion_textures();
+				u.append_id(occ[0]);
+				u.append_id(occ[1]);
 				uniforms.push_back(u);
 			}
 
 			fog->hddagi_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_HDDAGI), 1);
 		}
-#endif
 	}
 
 	fog->length = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_length(p_settings.env);

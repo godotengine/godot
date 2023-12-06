@@ -144,17 +144,16 @@ struct HDDAGIProbeCascadeData {
 };
 
 layout(set = 0, binding = 15, std140) uniform HDDAGI {
-
 	ivec3 grid_size;
 	int max_cascades;
 
 	float normal_bias;
 	float energy;
 	float y_mult;
-	uint pad;
+	float reflection_bias;
 
 	ivec3 probe_axis_size;
-	uint pad2;
+	float esm_strength;
 
 	uvec4 pad3;
 
@@ -250,7 +249,6 @@ cluster_buffer;
 layout(r16ui, set = 1, binding = 10) uniform restrict writeonly uimage3D albedo_volume_grid;
 layout(r32ui, set = 1, binding = 11) uniform restrict writeonly uimage3D emission_grid;
 layout(r32ui, set = 1, binding = 12) uniform restrict writeonly uimage3D emission_aniso_grid;
-layout(r32ui, set = 1, binding = 13) uniform restrict uimage3D geom_solid_bits[2];
 layout(r32ui, set = 1, binding = 14) uniform restrict uimage3D geom_normal_bits;
 
 //still need to be present for shaders that use it, so remap them to something
@@ -284,7 +282,7 @@ layout(set = 1, binding = 16) uniform texture2D ambient_reflection_blend_buffer;
 
 layout(set = 1, binding = 17) uniform texture2DArray hddagi_lightprobe_specular;
 layout(set = 1, binding = 18) uniform texture2DArray hddagi_lightprobe_diffuse;
-layout(set = 1, binding = 19) uniform texture2DArray hddagi_occlusion_probes;
+layout(set = 1, binding = 19) uniform texture3D hddagi_occlusion[2];
 
 struct VoxelGIData {
 	mat4 xform; // 64 - 64

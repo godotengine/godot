@@ -724,7 +724,7 @@ public:
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
 
-	FUNC14(environment_set_hddagi, RID, bool, int, EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, bool, bool)
+	FUNC15(environment_set_hddagi, RID, bool, int, EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
 	FUNC1(environment_set_hddagi_frames_to_converge, EnvironmentHDDAGIFramesToConverge)
 	FUNC1(environment_set_hddagi_frames_to_update_light, EnvironmentHDDAGIFramesToUpdateLight)
 

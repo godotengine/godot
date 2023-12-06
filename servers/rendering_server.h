@@ -1131,7 +1131,7 @@ public:
 		ENV_HDDAGI_CASCADE_FORMAT_MAX,
 	};
 
-	virtual void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, bool p_filter_reflection, bool p_filter_ambient) = 0;
+	virtual void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_sharpness, bool p_filter_reflection, bool p_filter_ambient) = 0;
 
 	enum EnvironmentHDDAGIFramesToConverge {
 		ENV_HDDAGI_CONVERGE_IN_6_FRAMES,

@@ -2779,7 +2779,7 @@ void RenderForwardClustered::_render_uv2(const PagedArray<RenderGeometryInstance
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardClustered::_render_hddagi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_solid_bits_texture0, const RID &p_solid_bits_texture1, const RID &p_normal_bits_texture, float p_exposure_normalization) {
+void RenderForwardClustered::_render_hddagi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_normal_bits_texture, float p_exposure_normalization) {
 	RENDER_TIMESTAMP("Render HDDAGI");
 
 	RD::get_singleton()->draw_command_begin_label("Render HDDAGI Voxel");
@@ -2806,8 +2806,6 @@ void RenderForwardClustered::_render_hddagi(Ref<RenderSceneBuffersRD> p_render_b
 		p_albedo_texture,
 		p_emission_texture,
 		p_emission_aniso_texture,
-		p_solid_bits_texture0,
-		p_solid_bits_texture1,
 		p_normal_bits_texture
 	};
 
@@ -2827,8 +2825,8 @@ void RenderForwardClustered::_render_hddagi(Ref<RenderSceneBuffersRD> p_render_b
 		right[right_axis] = 1.0;
 
 		Size2i fb_size;
-		fb_size.x = p_size[right_axis] * 4; // solid bits are x 4
-		fb_size.y = p_size[up_axis] * 4;
+		fb_size.x = p_size[right_axis];
+		fb_size.y = p_size[up_axis];
 
 		scene_data.cam_transform.origin = center + axis * half_size;
 		scene_data.cam_transform.basis.set_column(0, right);
@@ -2852,7 +2850,7 @@ void RenderForwardClustered::_render_hddagi(Ref<RenderSceneBuffersRD> p_render_b
 		scene_data.emissive_exposure_normalization = p_exposure_normalization;
 		_setup_environment(&render_data, true, Vector2(1, 1), false, Color());
 
-		RID rp_uniform_set = _setup_hddagi_render_pass_uniform_set(p_albedo_texture, p_emission_texture, p_emission_aniso_texture, p_solid_bits_texture0, p_solid_bits_texture1, p_normal_bits_texture);
+		RID rp_uniform_set = _setup_hddagi_render_pass_uniform_set(p_albedo_texture, p_emission_texture, p_emission_aniso_texture, p_normal_bits_texture);
 
 		HashMap<Size2i, RID>::Iterator E = hddagi_framebuffer_size_cache.find(fb_size);
 		if (!E) {
@@ -3262,7 +3260,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RID t;
 		if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_HDDAGI)) {
 			Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
-			t = hddagi->get_lightprobe_diffuse_texture();
+			t = hddagi->get_lightprobe_specular_texture();
 		}
 		if (t.is_null()) {
 			t = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
@@ -3277,7 +3275,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RID t;
 		if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_HDDAGI)) {
 			Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
-			t = hddagi->get_lightprobe_specular_texture();
+			t = hddagi->get_lightprobe_diffuse_texture();
 		}
 		if (t.is_null()) {
 			t = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
@@ -3289,15 +3287,17 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RD::Uniform u;
 		u.binding = 19;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		RID t;
+
 		if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_HDDAGI)) {
 			Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
-			t = hddagi->get_lightprobe_occlusion_texture();
+			Vector<RID> t = hddagi->get_lightprobe_occlusion_textures();
+			u.append_id(t[0]);
+			u.append_id(t[1]);
+		} else {
+			RID r = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+			u.append_id(r);
+			u.append_id(r);
 		}
-		if (t.is_null()) {
-			t = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
-		}
-		u.append_id(t);
 		uniforms.push_back(u);
 	}
 
@@ -3343,7 +3343,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 	return UniformSetCacheRD::get_singleton()->get_cache_vec(scene_shader.default_shader_rd, RENDER_PASS_UNIFORM_SET, uniforms);
 }
 
-RID RenderForwardClustered::_setup_hddagi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_solid_bits_texture0, RID p_solid_bits_texture1, RID p_normal_bits_texture) {
+RID RenderForwardClustered::_setup_hddagi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_normal_bits_texture) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	Vector<RD::Uniform> uniforms;
 
@@ -3475,14 +3475,6 @@ RID RenderForwardClustered::_setup_hddagi_render_pass_uniform_set(RID p_albedo_t
 	{
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-		u.binding = 13;
-		u.append_id(p_solid_bits_texture0);
-		u.append_id(p_solid_bits_texture1);
-		uniforms.push_back(u);
-	}
-	{
-		RD::Uniform u;
-		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 		u.binding = 14;
 		u.append_id(p_normal_bits_texture);
 		uniforms.push_back(u);
@@ -3553,7 +3545,7 @@ void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_rend
 	static const uint32_t history_frames_to_converge[RS::ENV_HDDAGI_CONVERGE_MAX] = { 6, 12, 18, 24, 32 };
 	uint32_t requested_history_size = history_frames_to_converge[gi.hddagi_frames_to_converge];
 
-	if (hddagi.is_valid() && (hddagi->num_cascades != environment_get_hddagi_cascades(p_environment) || hddagi->min_cell_size != environment_get_hddagi_min_cell_size(p_environment) || hddagi->cascade_format != environment_get_hddagi_cascade_format(p_environment) || hddagi->frames_to_converge != requested_history_size)) {
+	if (hddagi.is_valid() && (hddagi->num_cascades != environment_get_hddagi_cascades(p_environment) || hddagi->min_cell_size != environment_get_hddagi_min_cell_size(p_environment) || hddagi->cascade_format != environment_get_hddagi_cascade_format(p_environment) || hddagi->frames_to_converge != requested_history_size || hddagi->occlusion_sharpness != environment_get_hddagi_occlusion_sharpness(p_environment))) {
 		//configuration changed, erase
 		hddagi.unref();
 		rb->set_custom_data(RB_SCOPE_HDDAGI, hddagi);

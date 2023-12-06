@@ -303,7 +303,7 @@ private:
 			uint32_t ray_hit_cache_frames;
 
 			uint32_t upper_region_world_pos[3];
-			uint32_t pad;
+			int occlusion_offset;
 		};
 
 		HddagiPreprocessShaderRD preprocess;
@@ -315,9 +315,9 @@ private:
 			float grid_size[3];
 			uint32_t max_cascades;
 
-			int32_t screen_size[2];
+			uint32_t screen_size;
+			float esm_strength;
 			float y_mult;
-
 			float z_near;
 
 			float inv_projection[3][4];
@@ -335,8 +335,6 @@ private:
 			PROBE_DEBUG_PROBES_MULTIVIEW,
 			PROBE_DEBUG_OCCLUSION,
 			PROBE_DEBUG_OCCLUSION_MULTIVIEW,
-			PROBE_DEBUG_LINES,
-			PROBE_DEBUG_LINES_MULTIVIEW,
 			PROBE_DEBUG_MAX
 		};
 
@@ -574,15 +572,13 @@ public:
 			MAX_CASCADES = 8,
 			CASCADE_H_SIZE = 128,
 			CASCADE_V_SIZE = 64,
-			PROBE_CELLS = 8,
 			REGION_CELLS = 8,
-			SDF_REGION_SIZE = 8,
-			ANISOTROPY_SIZE = 6,
 			MAX_DYNAMIC_LIGHTS = 128,
 			MAX_STATIC_LIGHTS = 1024,
 			LIGHTPROBE_OCT_SIZE = 4,
-			LIGHTPROBE_HISTORY_FRAMES = 6,
+			LIGHTPROBE_HISTORY_FRAMES = 2,
 			OCCLUSION_OCT_SIZE = 14,
+			OCCLUSION_SUBPIXELS = 4,
 			SH_SIZE = 16
 		};
 
@@ -623,34 +619,6 @@ public:
 			uint32_t motion_accum = 0;
 			uint16_t latest_version = 0;
 
-#if 0
-
-			RID light_aniso_0_tex;
-			RID light_aniso_1_tex;
-
-			RID light_data;
-			RID light_aniso_0_data;
-			RID light_aniso_1_data;
-
-
-
-			RID solid_cell_dispatch_buffer; //buffer for indirect compute dispatch
-			RID solid_cell_buffer;
-
-			RID lightprobe_average_tex;
-
-			RID sdf_store_uniform_set;
-			RID sdf_direct_light_static_uniform_set;
-			RID sdf_direct_light_dynamic_uniform_set;
-			RID scroll_uniform_set;
-			RID scroll_occlusion_uniform_set;
-			RID integrate_uniform_set;
-			RID lights_buffer;
-
-
-
-			bool all_dynamic_lights_dirty = true;
-#endif
 			float baked_exposure_normalization = 1.0;
 		};
 
@@ -658,7 +626,6 @@ public:
 		GI *gi = nullptr;
 
 		RID render_albedo; //x6, anisotropic
-		RID render_solid_bits[2];
 		RID render_aniso_normals;
 		RID render_emission;
 		RID render_emission_aniso;
@@ -685,10 +652,10 @@ public:
 		RID lightprobe_hit_cache_version_data;
 		RID lightprobe_moving_average;
 		RID lightprobe_moving_average_history;
-		RID lightprobe_neighbour_map;
+		RID lightprobe_neighbour_visibility_map;
 
-		RID occlusion_process;
-		RID occlusion_tex;
+		RID occlusion_data[2];
+		RID occlusion_tex[2];
 
 		LocalVector<Cascade> cascades;
 
@@ -703,39 +670,6 @@ public:
 		bool using_reflection_filter = true;
 		bool using_ambient_filter = true;
 
-#if 0
-		// used for rendering (voxelization)
-		RID render_albedo;
-		RID render_emission;
-		RID render_emission_aniso;
-		RID render_occlusion[8];
-		RID render_geom_facing;
-
-		RID render_sdf[2];
-		RID render_sdf_half[2];
-
-		// used for ping pong processing in cascades
-		RID sdf_initialize_uniform_set;
-		RID sdf_initialize_half_uniform_set;
-		RID jump_flood_uniform_set[2];
-		RID jump_flood_half_uniform_set[2];
-		RID sdf_upscale_uniform_set;
-		int upscale_jfa_uniform_set_index;
-		RID occlusion_uniform_set;
-
-
-
-		RID lightprobe_texture;
-		RID lightprobe_data;
-		RID occlusion_texture;
-		RID occlusion_data;
-		RID ambient_texture; //integrates with volumetric fog
-
-		RID lightprobe_history_scroll; //used for scrolling lightprobes
-		RID lightprobe_average_scroll; //used for scrolling lightprobes
-
-		uint32_t history_size = 0;
-#endif
 		int num_cascades = 6;
 		float min_cell_size = 0;
 
@@ -748,6 +682,7 @@ public:
 		float normal_bias = 1.1;
 		float reflection_bias = 2.0;
 		float probe_bias = 1.1;
+		float occlusion_sharpness = 1.0;
 		RS::EnvironmentHDDAGICascadeFormat cascade_format = RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16;
 
 		float y_mult = 1.0;
@@ -784,8 +719,9 @@ public:
 			return lightprobe_specular_tex;
 		}
 
-		RID get_lightprobe_occlusion_texture() {
-			return occlusion_tex;
+		Vector<RID> get_lightprobe_occlusion_textures() {
+			Vector<RID> ret = { occlusion_tex[0], occlusion_tex[1] };
+			return ret;
 		}
 
 		void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
@@ -823,7 +759,7 @@ public:
 		float reflection_bias;
 
 		int32_t probe_axis_size[3];
-		uint32_t pad2;
+		float esm_strength;
 
 		uint32_t pad3[4];
 

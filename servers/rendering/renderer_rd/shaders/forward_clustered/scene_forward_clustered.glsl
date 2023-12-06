@@ -1413,12 +1413,10 @@ void fragment_shader(in SceneData scene_data) {
 
 		vec4 ret_ambient;
 		vec4 ret_reflection;
-		hddagi_process(cam_vertex,cam_normal,cam_reflection, roughness, ret_ambient, ret_reflection);
+		hddagi_process(cam_vertex, cam_normal, cam_reflection, roughness, ret_ambient, ret_reflection);
 
-		ambient_light = mix( ambient_light, ret_ambient.rgb, ret_ambient.a);
-		specular_light = mix( specular_light, ret_reflection.rgb, ret_reflection.a);
-
-
+		ambient_light = mix(ambient_light, ret_ambient.rgb, ret_ambient.a);
+		specular_light = mix(specular_light, ret_reflection.rgb, ret_reflection.a);
 	}
 
 	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
@@ -1461,10 +1459,8 @@ void fragment_shader(in SceneData scene_data) {
 		ivec2 coord = ivec2(gl_FragCoord.xy);
 
 		if (implementation_data.gi_upscale) {
-
-
-			if (implementation_data.gi_upscale_shift>0) {
-				coord-=coord&1;
+			if (implementation_data.gi_upscale_shift > 0) {
+				coord -= coord & 1;
 			}
 
 			ivec2 closest_coord = coord;
@@ -1480,7 +1476,7 @@ void fragment_shader(in SceneData scene_data) {
 			closest_ang -= abs(closest_r - roughness) * 0.5;
 
 			for (int i = 0; i < 4; i++) {
-				const ivec2 neighbours[4]=ivec2[](ivec2(1,0),ivec2(0,1),ivec2(-1,0),ivec2(0,-1));
+				const ivec2 neighbours[4] = ivec2[](ivec2(1, 0), ivec2(0, 1), ivec2(-1, 0), ivec2(0, -1));
 				ivec2 neighbour_coord = coord + (neighbours[i] << implementation_data.gi_upscale_shift);
 #ifdef USE_MULTIVIEW
 				closest_nr = texelFetch(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), ivec3(neighbour_coord, ViewIndex), 0);
@@ -2164,8 +2160,6 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef MODE_RENDER_SDF
 
 	{
-
-
 		// Compute geometric normal
 		vec3 ddx_vertex = dFdx(vertex);
 		vec3 ddy_vertex = dFdy(vertex);
@@ -2182,7 +2176,6 @@ void fragment_shader(in SceneData scene_data) {
 			return;
 		}*/
 
-
 		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normalize(normal_interp);
 		vec3 cam_geom_normal = mat3(scene_data.inv_view_matrix) * normalize(geometric_normal);
 		if (gl_FrontFacing) {
@@ -2195,19 +2188,13 @@ void fragment_shader(in SceneData scene_data) {
 
 		// Compute solid bits
 
-		ivec3 isubgrid_pos = min(ivec3((grid_pos - vec3(igrid_pos)) * 4.0),ivec3(3,3,3));
-
-		uint bit_ofs = 16 * isubgrid_pos.z + 4 * isubgrid_pos.y + isubgrid_pos.x;
-
-
 		// Compute normal bits.
 		// Lower 6 are inclusive (depending on axis vector.
 
-
 		// upper 26 are exclusive (With some margin), used to save something closer to the normal.
 
-		const int facing_direction_count =  26 ;
-		const vec3 facing_directions[ 26 ]=vec3[]( vec3(-1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 0.0, 1.0), vec3(-0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, -0.7071067811865475, 0.0), vec3(-0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(-0.7071067811865475, 0.0, -0.7071067811865475), vec3(-0.7071067811865475, 0.0, 0.7071067811865475), vec3(-0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, 0.7071067811865475, 0.0), vec3(-0.5773502691896258, 0.5773502691896258, 0.5773502691896258), vec3(0.0, -0.7071067811865475, -0.7071067811865475), vec3(0.0, -0.7071067811865475, 0.7071067811865475), vec3(0.0, 0.7071067811865475, -0.7071067811865475), vec3(0.0, 0.7071067811865475, 0.7071067811865475), vec3(0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, -0.7071067811865475, 0.0), vec3(0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(0.7071067811865475, 0.0, -0.7071067811865475), vec3(0.7071067811865475, 0.0, 0.7071067811865475), vec3(0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, 0.7071067811865475, 0.0), vec3(0.5773502691896258, 0.5773502691896258, 0.5773502691896258) );
+		const int facing_direction_count = 26;
+		const vec3 facing_directions[26] = vec3[](vec3(-1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 0.0, 1.0), vec3(-0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, -0.7071067811865475, 0.0), vec3(-0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(-0.7071067811865475, 0.0, -0.7071067811865475), vec3(-0.7071067811865475, 0.0, 0.7071067811865475), vec3(-0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, 0.7071067811865475, 0.0), vec3(-0.5773502691896258, 0.5773502691896258, 0.5773502691896258), vec3(0.0, -0.7071067811865475, -0.7071067811865475), vec3(0.0, -0.7071067811865475, 0.7071067811865475), vec3(0.0, 0.7071067811865475, -0.7071067811865475), vec3(0.0, 0.7071067811865475, 0.7071067811865475), vec3(0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, -0.7071067811865475, 0.0), vec3(0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(0.7071067811865475, 0.0, -0.7071067811865475), vec3(0.7071067811865475, 0.0, 0.7071067811865475), vec3(0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, 0.7071067811865475, 0.0), vec3(0.5773502691896258, 0.5773502691896258, 0.5773502691896258));
 
 		uint bit_normal = 0;
 
@@ -2215,42 +2202,23 @@ void fragment_shader(in SceneData scene_data) {
 		const float exclusive_threshold = 0.7; // given min cos is 0.70710676908493
 		const float inclusive_threshold = 0.001;
 
-		for(int i=0;i<facing_direction_count;i++) {
-			float dp = dot(cam_geom_normal,facing_directions[i]);
+		for (int i = 0; i < facing_direction_count; i++) {
+			float dp = dot(cam_geom_normal, facing_directions[i]);
 
-			if ( i < 6 && dp > inclusive_threshold) {
-				bit_normal |= uint(1<<i);
+			if (i < 6 && dp > inclusive_threshold) {
+				bit_normal |= uint(1 << i);
 			}
 
-			if (dp > exclusive_threshold ) {
-				bit_normal |= uint(1<<(i+6));
+			if (dp > exclusive_threshold) {
+				bit_normal |= uint(1 << (i + 6));
 			}
 		}
 
-		// Subgroup merge and store solid and normal bits
-
+		// Subgroup merge and store normal bits
 
 		{
-
-
-			if (bit_ofs < 32) {
 #ifdef MOLTENVK_USED
-				imageStore(geom_solid_bits[0], igrid_pos, uvec4(imageLoad(geom_solid_bits[0], igrid_pos).r | (1<<bit_ofs))); //store solid bits
-#else
-				imageAtomicOr(geom_solid_bits[0], igrid_pos, 1<<bit_ofs); //store solid bits
-#endif
-			} else {
-				bit_ofs-=32;
-#ifdef MOLTENVK_USED
-				imageStore(geom_solid_bits[1], igrid_pos, uvec4(imageLoad(geom_solid_bits[1], igrid_pos).r | (1<<bit_ofs))); //store solid bits
-#else
-				imageAtomicOr(geom_solid_bits[1], igrid_pos, 1<<bit_ofs); //store solid bits
-#endif
-
-			}
-
-#ifdef MOLTENVK_USED
-			imageStore(geom_normal_bits, igrid_pos, uvec4(imageLoad(geom_normal_bits, igrid_pos).r | (1<<bit_ofs))); //store solid bits
+			imageStore(geom_normal_bits, igrid_pos, uvec4(imageLoad(geom_normal_bits, igrid_pos).r | (1 << bit_ofs))); //store solid bits
 #else
 			imageAtomicOr(geom_normal_bits, igrid_pos, bit_normal); //store solid bits
 #endif
@@ -2266,18 +2234,16 @@ void fragment_shader(in SceneData scene_data) {
 				vec3(0, 0, -1),
 				vec3(0, 0, 1));
 
-
 		for (int i = 0; i < 6; i++) {
 			float d = dot(cam_normal, aniso_dir[i]);
 			if (d > 0.0) {
-
 				vec4 aniso_albedo = vec4(albedo, 1.0);
 
 				uint albedo16 = 0;
 				albedo16 |= clamp(uint(aniso_albedo.r * 31.0), 0, 31) << 0;
 				albedo16 |= clamp(uint(aniso_albedo.g * 63.0), 0, 63) << 5;
 				albedo16 |= clamp(uint(aniso_albedo.b * 31.0), 0, 31) << 11;
-				ivec3 store_pos = igrid_pos>>1;
+				ivec3 store_pos = igrid_pos >> 1;
 				store_pos.z = store_pos.z * 6 + i;
 				imageStore(albedo_volume_grid, store_pos, uvec4(albedo16));
 			}
@@ -2307,7 +2273,6 @@ void fragment_shader(in SceneData scene_data) {
 			uint light_rgbe;
 
 			{
-
 				vec3 rgb = light_total.rgb;
 
 				const float rgbe_max = uintBitsToFloat(0x477F8000);
@@ -2324,8 +2289,8 @@ void fragment_shader(in SceneData scene_data) {
 				light_rgbe = e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
 			}
 
-			imageStore(emission_grid, igrid_pos>>1, uvec4(light_rgbe));
-			imageStore(emission_aniso_grid, igrid_pos>>1, uvec4(light_aniso));
+			imageStore(emission_grid, igrid_pos >> 1, uvec4(light_rgbe));
+			imageStore(emission_aniso_grid, igrid_pos >> 1, uvec4(light_aniso));
 		}
 	}
 

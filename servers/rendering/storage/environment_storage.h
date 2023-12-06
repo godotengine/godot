@@ -138,6 +138,7 @@ private:
 		float hddagi_normal_bias = 1.1;
 		float hddagi_reflection_bias = 2.0;
 		float hddagi_probe_bias = 2.0;
+		float hddagi_occlusion_sharpness = 1.0;
 		RS::EnvironmentHDDAGICascadeFormat hddagi_cascade_format = RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16;
 
 		// Adjustments
@@ -266,7 +267,7 @@ public:
 	float environment_get_ssil_normal_rejection(RID p_env) const;
 
 	// HDDAGI
-	void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RS::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, bool p_filter_reflection, bool p_filter_ambient);
+	void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RS::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_sharpness, bool p_filter_reflection, bool p_filter_ambient);
 	bool environment_get_hddagi_enabled(RID p_env) const;
 	int environment_get_hddagi_cascades(RID p_env) const;
 	float environment_get_hddagi_min_cell_size(RID p_env) const;
@@ -277,6 +278,7 @@ public:
 	float environment_get_hddagi_normal_bias(RID p_env) const;
 	float environment_get_hddagi_reflection_bias(RID p_env) const;
 	float environment_get_hddagi_probe_bias(RID p_env) const;
+	float environment_get_hddagi_occlusion_sharpness(RID p_env) const;
 	bool environment_get_hddagi_filter_ambient(RID p_env) const;
 	bool environment_get_hddagi_filter_reflection(RID p_env) const;
 	RS::EnvironmentHDDAGICascadeFormat environment_get_hddagi_cascade_format(RID p_env) const;

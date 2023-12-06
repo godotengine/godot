@@ -599,6 +599,15 @@ float Environment::get_dynamic_gi_probe_bias() const {
 	return dynamic_gi_probe_bias;
 }
 
+void Environment::set_dynamic_gi_occlusion_sharpness(float p_bias) {
+	dynamic_gi_occlusion_sharpness = p_bias;
+	_update_dynamic_gi();
+}
+
+float Environment::get_dynamic_gi_occlusion_sharpness() const {
+	return dynamic_gi_occlusion_sharpness;
+}
+
 void Environment::_update_dynamic_gi() {
 	RS::get_singleton()->environment_set_hddagi(
 			environment,
@@ -613,6 +622,7 @@ void Environment::_update_dynamic_gi() {
 			dynamic_gi_normal_bias,
 			dynamic_gi_reflection_bias,
 			dynamic_gi_probe_bias,
+			dynamic_gi_occlusion_sharpness,
 			dynamic_gi_filter_reflections,
 			dynamic_gi_filter_ambient);
 }
@@ -1342,6 +1352,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_reflection_bias"), &Environment::get_dynamic_gi_reflection_bias);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_probe_bias", "bias"), &Environment::set_dynamic_gi_probe_bias);
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_probe_bias"), &Environment::get_dynamic_gi_probe_bias);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_occlusion_sharpness", "bias"), &Environment::set_dynamic_gi_occlusion_sharpness);
+	ClassDB::bind_method(D_METHOD("get_dynamic_gi_occlusion_sharpness"), &Environment::get_dynamic_gi_occlusion_sharpness);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_ambient", "enable"), &Environment::set_dynamic_gi_filter_ambient);
 	ClassDB::bind_method(D_METHOD("is_dynamic_gi_filtering_ambient"), &Environment::is_dynamic_gi_filtering_ambient);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_reflections", "enable"), &Environment::set_dynamic_gi_filter_reflections);
@@ -1371,6 +1383,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_normal_bias"), "set_dynamic_gi_normal_bias", "get_dynamic_gi_normal_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_reflection_bias"), "set_dynamic_gi_reflection_bias", "get_dynamic_gi_reflection_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_probe_bias"), "set_dynamic_gi_probe_bias", "get_dynamic_gi_probe_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_occlusion_sharpness"), "set_dynamic_gi_occlusion_sharpness", "get_dynamic_gi_occlusion_sharpness");
 
 	// Glow
 

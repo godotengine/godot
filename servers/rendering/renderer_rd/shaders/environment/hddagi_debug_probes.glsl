@@ -42,14 +42,12 @@ layout(push_constant, std430) uniform Params {
 }
 params;
 
-
 // https://in4k.untergrund.net/html_articles/hugi_27_-_coding_corner_polaris_sphere_tessellation_101.htm
 
 vec3 get_sphere_vertex(uint p_vertex_id) {
 	float x_angle = float(p_vertex_id & 1u) + (p_vertex_id >> params.band_power);
 
-	float y_angle =
-			float((p_vertex_id & params.band_mask) >> 1) + ((p_vertex_id >> params.band_power) * params.sections_in_band);
+	float y_angle = float((p_vertex_id & params.band_mask) >> 1) + ((p_vertex_id >> params.band_power) * params.sections_in_band);
 
 	x_angle *= params.section_arc * 0.5f; // remember - 180AA x rot not 360
 	y_angle *= -params.section_arc;
@@ -59,11 +57,9 @@ vec3 get_sphere_vertex(uint p_vertex_id) {
 	return point;
 }
 
-
 layout(location = 0) out vec3 normal_interp;
 layout(location = 1) out flat uint probe_index;
-layout(location = 2) out vec3 color_interp;
-
+layout(location = 2) out vec4 color_interp;
 
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
@@ -78,7 +74,7 @@ layout(set = 0, binding = 1, std140) uniform Cascades {
 }
 cascades;
 
-layout(set = 0, binding = 2) uniform texture2DArray lightprobe_texture;
+layout(set = 0, binding = 2) uniform texture3D occlusion_texture[2];
 
 layout(set = 0, binding = 3) uniform sampler linear_sampler;
 
@@ -86,7 +82,6 @@ layout(set = 0, binding = 4, std140) uniform SceneData {
 	mat4 projection[MAX_VIEWS];
 }
 scene_data;
-
 
 vec2 octahedron_wrap(vec2 v) {
 	vec2 signVal;
@@ -117,20 +112,75 @@ ivec3 modi(ivec3 value, ivec3 p_y) {
 	// GLSL Specification says:
 	// "Results are undefined if one or both operands are negative."
 	// So..
-	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
+	return mix(value % p_y, p_y - ((abs(value) - ivec3(1)) % p_y) - 1, lessThan(sign(value), ivec3(0)));
 }
 
-
-
-#define OCC_DISTANCE_MAX 15.0
+#define OCC_DISTANCE_MAX 16.0
 
 void main() {
-
-#if defined(MODE_OCCLUSION_FILTER) || defined(MODE_OCCLUSION_LINES)
+#if defined(MODE_OCCLUSION)
 	probe_index = params.probe_debug_index;
+
+	int probe_voxels = int(params.grid_size.x) / int(params.probe_axis_size.x - 1);
+
+	ivec3 probe_cell;
+	probe_cell.x = int(probe_index) % params.probe_axis_size.x;
+	probe_cell.y = (int(probe_index) / params.probe_axis_size.x) % params.probe_axis_size.y;
+	probe_cell.z = int(probe_index) / (params.probe_axis_size.x * params.probe_axis_size.y);
+
+	vec3 vertex = get_sphere_vertex(gl_VertexIndex) * 0.01;
+
+	int occluder_index = int(gl_InstanceIndex);
+
+	int diameter = probe_voxels * 2;
+	ivec3 occluder_pos;
+	occluder_pos.x = int(occluder_index % diameter);
+	occluder_pos.y = int((occluder_index / diameter) % diameter);
+	occluder_pos.z = int(occluder_index / (diameter * diameter));
+
+	float cell_size = 1.0 / cascades.data[params.cascade].to_cell;
+	vec3 probe_cell_size = (params.grid_size / vec3(params.probe_axis_size - 1)) / cascades.data[params.cascade].to_cell;
+
+	occluder_pos -= ivec3(diameter / 2);
+	vec3 occluder_offset = (vec3(occluder_pos) + 0.5) * cell_size;
+
+	vertex += (cascades.data[params.cascade].offset + vec3(probe_cell) * probe_cell_size + occluder_offset) / vec3(1.0, params.y_mult, 1.0);
+
+	ivec3 global_probe_pos = probe_cell + cascades.data[params.cascade].region_world_offset;
+
+	ivec3 tex_pos = (global_probe_pos * probe_voxels + occluder_pos) & (ivec3(params.grid_size) - 1);
+	tex_pos += ivec3(1.0); // margin
+
+	uint occlusion_layer = 0;
+	if ((global_probe_pos.x & 1) != 0) {
+		occlusion_layer |= 1;
+	}
+	if ((global_probe_pos.y & 1) != 0) {
+		occlusion_layer |= 2;
+	}
+	if ((global_probe_pos.z & 1) != 0) {
+		occlusion_layer |= 4;
+	}
+
+	const vec4 layer_axis[4] = vec4[](
+			vec4(1, 0, 0, 0),
+			vec4(0, 1, 0, 0),
+			vec4(0, 0, 1, 0),
+			vec4(0, 0, 0, 1));
+
+	float visibility;
+	if (occlusion_layer < 4) {
+		visibility = dot(texelFetch(sampler3D(occlusion_texture[0], linear_sampler), tex_pos, 0), layer_axis[occlusion_layer]);
+	} else {
+		visibility = dot(texelFetch(sampler3D(occlusion_texture[1], linear_sampler), tex_pos, 0), layer_axis[occlusion_layer - 4]);
+	}
+
+	gl_Position = scene_data.projection[ViewIndex] * vec4(vertex, 1.0);
+
+	color_interp = mix(vec4(1, 0, 0, 1), vec4(0.0, 1, 0.0, 1), visibility);
 #else
+
 	probe_index = gl_InstanceIndex;
-#endif
 
 	vec3 probe_cell_size = (params.grid_size / vec3(params.probe_axis_size - 1)) / cascades.data[params.cascade].to_cell;
 
@@ -139,91 +189,14 @@ void main() {
 	probe_cell.y = (int(probe_index) / params.probe_axis_size.x) % params.probe_axis_size.y;
 	probe_cell.z = int(probe_index) / (params.probe_axis_size.x * params.probe_axis_size.y);
 
-
-
-
-#ifdef MODE_OCCLUSION_LINES
-
-	vec3 vertex = vec3(0.0);
-
-	color_interp = vec3(0.5,1,0.5);
-
-
-	ivec3 world_cell=cascades.data[params.cascade].region_world_offset;
-
-	world_cell = modi(world_cell + probe_cell,ivec3(params.probe_axis_size));
-	int oct_size = params.oct_size;
-	int oct_margin = 1;
-
-	int idx = int(gl_VertexIndex >> 1);
-	ivec2 tex_posi = ivec2( idx % params.oct_size, idx / params.oct_size );
-
-	ivec3 tex_pos = ivec3( (world_cell.xy + ivec2(0,world_cell.z * int(params.probe_axis_size.y))) * (oct_size+oct_margin*2) + ivec2(oct_margin) + tex_posi , params.cascade);
-
-	float d = texelFetch(sampler2DArray(lightprobe_texture, linear_sampler), tex_pos, 0).r;
-	d *= OCC_DISTANCE_MAX;
-	if (d == 0.0) {
-		color_interp = vec3(1.0,0.5,0.5);
-		d = OCC_DISTANCE_MAX;
-	} else {
-		d = max(0.0, d - 0.1);
-	}
-
-	if (bool(gl_VertexIndex & 1)) {
-		vertex += octahedron_decode( (vec2(tex_posi) + 0.5) / float(oct_size) ) * d / 8.0;
-		vertex *= probe_cell_size;
-	}
-
-
-
-
-
-#elif defined(MODE_OCCLUSION_FILTER)
-
-	normal_interp = get_sphere_vertex(gl_VertexIndex);
-	vec3 vertex = normal_interp;
-
-	{
-
-		int oct_size = params.oct_size;
-		int oct_margin = 1;
-
-		ivec3 world_cell=cascades.data[params.cascade].region_world_offset;
-
-		world_cell = modi(world_cell + probe_cell,ivec3(params.probe_axis_size));
-
-		vec3 tex_posf = vec3(ivec3( (world_cell.xy + ivec2(0,world_cell.z * int(params.probe_axis_size.y))) * (oct_size+oct_margin*2) + ivec2(oct_margin) , params.cascade));
-
-		//vec3 tex_pos_ofs = vec3(octahedron_encode(normal_interp) * float(oct_size), 0.0);
-		tex_posf += vec3(clamp(octahedron_encode(normalize(normal_interp)) * float(oct_size),vec2(0.5),vec2(float(oct_size)-0.5)), 0.0);
-		tex_posf.xy /= vec2(ivec2(params.probe_axis_size.x * (oct_size + 2*oct_margin), params.probe_axis_size.z * params.probe_axis_size.y * (oct_size + 2*oct_margin)));
-
-
-		float occ = textureLod(sampler2DArray(lightprobe_texture, linear_sampler), tex_posf, 0.0).g;
-		color_interp = vec3(0.5,0.5,1.0); // hit nothing
-
-#define OCC16_DISTANCE_MAX 256.0
-
-		occ *= OCC16_DISTANCE_MAX;
-		occ = sqrt(occ);
-		vertex = vertex * occ / 8.0;
-		//vertex = clamp(vertex,vec3(-1.0),vec3(1.0));
-		vertex *= probe_cell_size;
-
-
-	}
-#else
 	normal_interp = get_sphere_vertex(gl_VertexIndex);
 	vec3 vertex = normal_interp;
 	vertex *= 0.2;
-#endif
-
-
 
 	vertex += (cascades.data[params.cascade].offset + vec3(probe_cell) * probe_cell_size) / vec3(1.0, params.y_mult, 1.0);
 
 	gl_Position = scene_data.projection[ViewIndex] * vec4(vertex, 1.0);
-
+#endif
 }
 
 #[fragment]
@@ -253,9 +226,9 @@ void main() {
 
 layout(location = 0) out vec4 frag_color;
 
-layout(set = 0, binding = 2) uniform texture2DArray lightprobe_texture;
+#if !defined(MODE_OCCLUSION_FILTER) && !defined(MODE_OCCLUSION_LINES)
 layout(set = 0, binding = 3) uniform sampler linear_sampler;
-layout(set = 0, binding = 5) uniform texture2DArray lightprobe_specular_texture;
+layout(set = 0, binding = 5) uniform texture2DArray lightprobe_texture;
 
 layout(push_constant, std430) uniform Params {
 	uint band_power;
@@ -275,10 +248,11 @@ layout(push_constant, std430) uniform Params {
 	uint pad2;
 }
 params;
+#endif
 
 layout(location = 0) in vec3 normal_interp;
 layout(location = 1) in flat uint probe_index;
-layout(location = 2) in vec3 color_interp;
+layout(location = 2) in vec4 color_interp;
 
 vec2 octahedron_wrap(vec2 v) {
 	vec2 signVal;
@@ -299,9 +273,8 @@ ivec3 modi(ivec3 value, ivec3 p_y) {
 	// GLSL Specification says:
 	// "Results are undefined if one or both operands are negative."
 	// So..
-	return mix( value % p_y, p_y - ((abs(value)-ivec3(1)) % p_y) -1, lessThan(sign(value), ivec3(0)) );
+	return mix(value % p_y, p_y - ((abs(value) - ivec3(1)) % p_y) - 1, lessThan(sign(value), ivec3(0)));
 }
-
 
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
@@ -317,9 +290,8 @@ layout(set = 0, binding = 1, std140) uniform Cascades {
 cascades;
 
 void main() {
-
-#if defined(MODE_OCCLUSION_FILTER) || defined(MODE_OCCLUSION_LINES)
-	frag_color = vec4(color_interp,0.5);
+#if defined(MODE_OCCLUSION)
+	frag_color = color_interp;
 #else
 	int oct_size = params.oct_size;
 	int oct_margin = 1;
@@ -328,15 +300,15 @@ void main() {
 	probe_cell.x = int(probe_index) % params.probe_axis_size.x;
 	probe_cell.y = (int(probe_index) / params.probe_axis_size.x) % params.probe_axis_size.y;
 	probe_cell.z = int(probe_index) / (params.probe_axis_size.x * params.probe_axis_size.y);
-	probe_cell+=cascades.data[params.cascade].region_world_offset;
+	probe_cell += cascades.data[params.cascade].region_world_offset;
 
-	probe_cell = modi(probe_cell ,ivec3(params.probe_axis_size));
+	probe_cell = modi(probe_cell, ivec3(params.probe_axis_size));
 
-	vec3 tex_posf = vec3(ivec3( (probe_cell.xy + ivec2(0,probe_cell.z * int(params.probe_axis_size.y))) * (oct_size+oct_margin*2) + ivec2(oct_margin) , params.cascade));
+	vec3 tex_posf = vec3(ivec3((probe_cell.xy + ivec2(0, probe_cell.z * int(params.probe_axis_size.y))) * (oct_size + oct_margin * 2) + ivec2(oct_margin), params.cascade));
 
 	//vec3 tex_pos_ofs = vec3(octahedron_encode(normal_interp) * float(oct_size), 0.0);
 	tex_posf += vec3(octahedron_encode(normalize(normal_interp)) * float(oct_size), 0.0);
-	tex_posf.xy /= vec2(ivec2(params.probe_axis_size.x * (oct_size + 2*oct_margin), params.probe_axis_size.z * params.probe_axis_size.y * (oct_size + 2*oct_margin)));
+	tex_posf.xy /= vec2(ivec2(params.probe_axis_size.x * (oct_size + 2 * oct_margin), params.probe_axis_size.z * params.probe_axis_size.y * (oct_size + 2 * oct_margin)));
 
 	vec4 indirect_light = textureLod(sampler2DArray(lightprobe_texture, linear_sampler), tex_posf, 0.0);
 

@@ -156,6 +156,7 @@ private:
 	float dynamic_gi_normal_bias = 1.1;
 	float dynamic_gi_reflection_bias = 2.0;
 	float dynamic_gi_probe_bias = 1.1;
+	float dynamic_gi_occlusion_sharpness = 1.0;
 	bool dynamic_gi_filter_ambient = true;
 	bool dynamic_gi_filter_reflections = true;
 	void _update_dynamic_gi();
@@ -336,6 +337,8 @@ public:
 	float get_dynamic_gi_reflection_bias() const;
 	void set_dynamic_gi_probe_bias(float p_bias);
 	float get_dynamic_gi_probe_bias() const;
+	void set_dynamic_gi_occlusion_sharpness(float p_bias);
+	float get_dynamic_gi_occlusion_sharpness() const;
 	void set_dynamic_gi_filter_ambient(bool p_enabled);
 	bool is_dynamic_gi_filtering_ambient() const;
 	void set_dynamic_gi_filter_reflections(bool p_enabled);

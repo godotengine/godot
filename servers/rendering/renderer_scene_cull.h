@@ -1243,7 +1243,7 @@ public:
 
 	// HDDAGI
 
-	PASS14(environment_set_hddagi, RID, bool, int, RS::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, bool, bool)
+	PASS15(environment_set_hddagi, RID, bool, int, RS::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
 
 	PASS1RC(bool, environment_get_hddagi_enabled, RID)
 	PASS1RC(RS::EnvironmentHDDAGICascadeFormat, environment_get_hddagi_cascade_format, RID)
@@ -1256,6 +1256,7 @@ public:
 	PASS1RC(float, environment_get_hddagi_normal_bias, RID)
 	PASS1RC(float, environment_get_hddagi_reflection_bias, RID)
 	PASS1RC(float, environment_get_hddagi_probe_bias, RID)
+	PASS1RC(float, environment_get_hddagi_occlusion_sharpness, RID)
 	PASS1RC(float, environment_get_hddagi_filter_ambient, RID)
 	PASS1RC(float, environment_get_hddagi_filter_reflection, RID)
 
