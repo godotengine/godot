@@ -114,7 +114,7 @@ class SceneTreeEditor : public Control {
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 
 	void _selection_changed();
-	Node *get_scene_node();
+	Node *get_scene_node() const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
