@@ -161,7 +161,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_INDEX_V(m_index, m_size, m_retval)                                                             \
 	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                     \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
+		GODOT_DEPRECATED_BEGIN                                                                                  \
 		return m_retval;                                                                                        \
+		GODOT_DEPRECATED_END                                                                                    \
 	} else                                                                                                      \
 		((void)0)
 
@@ -172,7 +174,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                         \
 	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                            \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
+		GODOT_DEPRECATED_BEGIN                                                                                         \
 		return m_retval;                                                                                               \
+		GODOT_DEPRECATED_END                                                                                           \
 	} else                                                                                                             \
 		((void)0)
 
@@ -182,7 +186,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                             \
 	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
+		GODOT_DEPRECATED_BEGIN                                                                                               \
 		return m_retval;                                                                                                     \
+		GODOT_DEPRECATED_END                                                                                                 \
 	} else                                                                                                                   \
 		((void)0)
 
@@ -264,7 +270,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval)                                                    \
 	if (unlikely((m_index) >= (m_size))) {                                                                      \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
+		GODOT_DEPRECATED_BEGIN                                                                                  \
 		return m_retval;                                                                                        \
+		GODOT_DEPRECATED_END                                                                                    \
 	} else                                                                                                      \
 		((void)0)
 
@@ -275,7 +283,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_UNSIGNED_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                \
 	if (unlikely((m_index) >= (m_size))) {                                                                             \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
+		GODOT_DEPRECATED_BEGIN                                                                                         \
 		return m_retval;                                                                                               \
+		GODOT_DEPRECATED_END                                                                                           \
 	} else                                                                                                             \
 		((void)0)
 
@@ -285,7 +295,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_UNSIGNED_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                    \
 	if (unlikely((m_index) >= (m_size))) {                                                                                   \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
+		GODOT_DEPRECATED_BEGIN                                                                                               \
 		return m_retval;                                                                                                     \
+		GODOT_DEPRECATED_END                                                                                                 \
 	} else                                                                                                                   \
 		((void)0)
 
@@ -367,7 +379,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_NULL_V(m_param, m_retval)                                                              \
 	if (unlikely(m_param == nullptr)) {                                                                 \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null."); \
+		GODOT_DEPRECATED_BEGIN                                                                          \
 		return m_retval;                                                                                \
+		GODOT_DEPRECATED_END                                                                            \
 	} else                                                                                              \
 		((void)0)
 
@@ -378,7 +392,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_NULL_V_MSG(m_param, m_retval, m_msg)                                                          \
 	if (unlikely(m_param == nullptr)) {                                                                        \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg); \
+		GODOT_DEPRECATED_BEGIN                                                                                 \
 		return m_retval;                                                                                       \
+		GODOT_DEPRECATED_END                                                                                   \
 	} else                                                                                                     \
 		((void)0)
 
@@ -388,7 +404,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_NULL_V_EDMSG(m_param, m_retval, m_msg)                                                              \
 	if (unlikely(m_param == nullptr)) {                                                                              \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg, true); \
+		GODOT_DEPRECATED_BEGIN                                                                                       \
 		return m_retval;                                                                                             \
+		GODOT_DEPRECATED_END                                                                                         \
 	} else                                                                                                           \
 		((void)0)
 
@@ -444,7 +462,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_COND_V(m_cond, m_retval)                                                                                         \
 	if (unlikely(m_cond)) {                                                                                                       \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Returning: " _STR(m_retval)); \
+		GODOT_DEPRECATED_BEGIN                                                                                                    \
 		return m_retval;                                                                                                          \
+		GODOT_DEPRECATED_END                                                                                                      \
 	} else                                                                                                                        \
 		((void)0)
 
@@ -458,7 +478,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_COND_V_MSG(m_cond, m_retval, m_msg)                                                                                     \
 	if (unlikely(m_cond)) {                                                                                                              \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Returning: " _STR(m_retval), m_msg); \
+		GODOT_DEPRECATED_BEGIN                                                                                                           \
 		return m_retval;                                                                                                                 \
+		GODOT_DEPRECATED_END                                                                                                             \
 	} else                                                                                                                               \
 		((void)0)
 
@@ -468,7 +490,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_COND_V_EDMSG(m_cond, m_retval, m_msg)                                                                                         \
 	if (unlikely(m_cond)) {                                                                                                                    \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Returning: " _STR(m_retval), m_msg, true); \
+		GODOT_DEPRECATED_BEGIN                                                                                                                 \
 		return m_retval;                                                                                                                       \
+		GODOT_DEPRECATED_END                                                                                                                   \
 	} else                                                                                                                                     \
 		((void)0)
 
@@ -622,7 +646,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_V(m_retval)                                                                                      \
 	if (true) {                                                                                                   \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval)); \
+		GODOT_DEPRECATED_BEGIN                                                                                    \
 		return m_retval;                                                                                          \
+		GODOT_DEPRECATED_END                                                                                      \
 	} else                                                                                                        \
 		((void)0)
 
@@ -635,7 +661,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_V_MSG(m_retval, m_msg)                                                                                  \
 	if (true) {                                                                                                          \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval), m_msg); \
+		GODOT_DEPRECATED_BEGIN                                                                                           \
 		return m_retval;                                                                                                 \
+		GODOT_DEPRECATED_END                                                                                             \
 	} else                                                                                                               \
 		((void)0)
 
@@ -645,7 +673,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define ERR_FAIL_V_EDMSG(m_retval, m_msg)                                                                                      \
 	if (true) {                                                                                                                \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval), m_msg, true); \
+		GODOT_DEPRECATED_BEGIN                                                                                                 \
 		return m_retval;                                                                                                       \
+		GODOT_DEPRECATED_END                                                                                                   \
 	} else                                                                                                                     \
 		((void)0)
 
