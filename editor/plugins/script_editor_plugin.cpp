@@ -1000,6 +1000,7 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 		}
 	}
 
+	_sort_list_on_update = true;
 	_update_script_names();
 	trigger_live_script_reload();
 }
@@ -2062,6 +2063,11 @@ void ScriptEditor::_update_script_names() {
 				} break;
 				case SORT_BY_PATH: {
 					sd.sort_key = path;
+				} break;
+				case SORT_BY_MODIFIED: {
+					// XOR with UINT64_MAX results in descending order
+					uint64_t modified_time_desc = se->get_edited_resource()->get_last_modified_time() ^ UINT64_MAX;
+					sd.sort_key = String::num_uint64(modified_time_desc);
 				} break;
 				case SORT_BY_NONE: {
 					sd.sort_key = "";
@@ -4373,7 +4379,7 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	EDITOR_DEF("text_editor/script_list/script_temperature_enabled", true);
 	EDITOR_DEF("text_editor/script_list/script_temperature_history_size", 15);
 	EDITOR_DEF("text_editor/script_list/group_help_pages", true);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/sort_scripts_by", PROPERTY_HINT_ENUM, "Name,Path,None"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/sort_scripts_by", PROPERTY_HINT_ENUM, "Name,Path,Modified,None"));
 	EDITOR_DEF("text_editor/script_list/sort_scripts_by", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/list_script_names_as", PROPERTY_HINT_ENUM, "Name,Parent Directory And Name,Full Path"));
 	EDITOR_DEF("text_editor/script_list/list_script_names_as", 0);
