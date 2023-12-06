@@ -7292,9 +7292,9 @@ void GLTFDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_node_mode", "root_node_mode"), &GLTFDocument::set_root_node_mode);
 	ClassDB::bind_method(D_METHOD("get_root_node_mode"), &GLTFDocument::get_root_node_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_format"), "set_image_format", "get_image_format");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "image_format"), "set_image_format", "get_image_format");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
 
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("register_gltf_document_extension", "extension", "first_priority"),
 			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));

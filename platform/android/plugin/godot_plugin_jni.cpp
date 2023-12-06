@@ -61,7 +61,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 
 	String mname = jstring_to_string(name, env);
 	String retval = jstring_to_string(ret, env);
-	Vector<Variant::Type> types;
+	Vector<VariantType> types;
 	String cs = "(";
 
 	int stringCount = env->GetArrayLength(args);
@@ -92,7 +92,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	JNISingleton *singleton = jni_singletons.get(singleton_name);
 
 	String signal_name = jstring_to_string(j_signal_name, env);
-	Vector<Variant::Type> types;
+	Vector<VariantType> types;
 
 	int stringCount = env->GetArrayLength(j_signal_param_types);
 

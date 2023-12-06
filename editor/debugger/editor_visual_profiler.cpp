@@ -649,7 +649,7 @@ void EditorVisualProfiler::_combo_changed(int) {
 }
 
 void EditorVisualProfiler::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
+	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(VariantType::BOOL, "enable")));
 }
 
 void EditorVisualProfiler::_update_button_text() {

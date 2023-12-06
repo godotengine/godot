@@ -183,7 +183,7 @@ void VideoStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStream::set_file);
 	ClassDB::bind_method(D_METHOD("get_file"), &VideoStream::get_file);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file"), "set_file", "get_file");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "file"), "set_file", "get_file");
 
 	GDVIRTUAL_BIND(_instantiate_playback);
 }

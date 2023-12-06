@@ -206,10 +206,10 @@ void CollisionPolygon3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CollisionPolygon3D::_is_editable_3d_polygon);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_NONE, "suffix:m"), "set_depth", "get_depth");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001,suffix:m"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "depth", PROPERTY_HINT_NONE, "suffix:m"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001,suffix:m"), "set_margin", "get_margin");
 }
 
 CollisionPolygon3D::CollisionPolygon3D() {

@@ -46,13 +46,13 @@ public:
 		_ref(p_array);
 	}
 	_FORCE_INLINE_ TypedArray(const Variant &p_variant) :
-			Array(Array(p_variant), Variant::OBJECT, T::get_class_static(), Variant()) {
+			Array(Array(p_variant), VariantType::OBJECT, T::get_class_static(), Variant()) {
 	}
 	_FORCE_INLINE_ TypedArray(const Array &p_array) :
-			Array(p_array, Variant::OBJECT, T::get_class_static(), Variant()) {
+			Array(p_array, VariantType::OBJECT, T::get_class_static(), Variant()) {
 	}
 	_FORCE_INLINE_ TypedArray() {
-		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
+		set_typed(VariantType::OBJECT, T::get_class_static(), Variant());
 	}
 };
 
@@ -88,48 +88,48 @@ struct VariantInternalAccessor<const TypedArray<T> &> {
 		}                                                                                                        \
 	};
 
-MAKE_TYPED_ARRAY(bool, Variant::BOOL)
-MAKE_TYPED_ARRAY(uint8_t, Variant::INT)
-MAKE_TYPED_ARRAY(int8_t, Variant::INT)
-MAKE_TYPED_ARRAY(uint16_t, Variant::INT)
-MAKE_TYPED_ARRAY(int16_t, Variant::INT)
-MAKE_TYPED_ARRAY(uint32_t, Variant::INT)
-MAKE_TYPED_ARRAY(int32_t, Variant::INT)
-MAKE_TYPED_ARRAY(uint64_t, Variant::INT)
-MAKE_TYPED_ARRAY(int64_t, Variant::INT)
-MAKE_TYPED_ARRAY(float, Variant::FLOAT)
-MAKE_TYPED_ARRAY(double, Variant::FLOAT)
-MAKE_TYPED_ARRAY(String, Variant::STRING)
-MAKE_TYPED_ARRAY(Vector2, Variant::VECTOR2)
-MAKE_TYPED_ARRAY(Vector2i, Variant::VECTOR2I)
-MAKE_TYPED_ARRAY(Rect2, Variant::RECT2)
-MAKE_TYPED_ARRAY(Rect2i, Variant::RECT2I)
-MAKE_TYPED_ARRAY(Vector3, Variant::VECTOR3)
-MAKE_TYPED_ARRAY(Vector3i, Variant::VECTOR3I)
-MAKE_TYPED_ARRAY(Transform2D, Variant::TRANSFORM2D)
-MAKE_TYPED_ARRAY(Plane, Variant::PLANE)
-MAKE_TYPED_ARRAY(Quaternion, Variant::QUATERNION)
-MAKE_TYPED_ARRAY(AABB, Variant::AABB)
-MAKE_TYPED_ARRAY(Basis, Variant::BASIS)
-MAKE_TYPED_ARRAY(Transform3D, Variant::TRANSFORM3D)
-MAKE_TYPED_ARRAY(Color, Variant::COLOR)
-MAKE_TYPED_ARRAY(StringName, Variant::STRING_NAME)
-MAKE_TYPED_ARRAY(NodePath, Variant::NODE_PATH)
-MAKE_TYPED_ARRAY(RID, Variant::RID)
-MAKE_TYPED_ARRAY(Callable, Variant::CALLABLE)
-MAKE_TYPED_ARRAY(Signal, Variant::SIGNAL)
-MAKE_TYPED_ARRAY(Dictionary, Variant::DICTIONARY)
-MAKE_TYPED_ARRAY(Array, Variant::ARRAY)
-MAKE_TYPED_ARRAY(Vector<uint8_t>, Variant::PACKED_BYTE_ARRAY)
-MAKE_TYPED_ARRAY(Vector<int32_t>, Variant::PACKED_INT32_ARRAY)
-MAKE_TYPED_ARRAY(Vector<int64_t>, Variant::PACKED_INT64_ARRAY)
-MAKE_TYPED_ARRAY(Vector<float>, Variant::PACKED_FLOAT32_ARRAY)
-MAKE_TYPED_ARRAY(Vector<double>, Variant::PACKED_FLOAT64_ARRAY)
-MAKE_TYPED_ARRAY(Vector<String>, Variant::PACKED_STRING_ARRAY)
-MAKE_TYPED_ARRAY(Vector<Vector2>, Variant::PACKED_VECTOR2_ARRAY)
-MAKE_TYPED_ARRAY(Vector<Vector3>, Variant::PACKED_VECTOR3_ARRAY)
-MAKE_TYPED_ARRAY(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
-MAKE_TYPED_ARRAY(IPAddress, Variant::STRING)
+MAKE_TYPED_ARRAY(bool, VariantType::BOOL)
+MAKE_TYPED_ARRAY(uint8_t, VariantType::INT)
+MAKE_TYPED_ARRAY(int8_t, VariantType::INT)
+MAKE_TYPED_ARRAY(uint16_t, VariantType::INT)
+MAKE_TYPED_ARRAY(int16_t, VariantType::INT)
+MAKE_TYPED_ARRAY(uint32_t, VariantType::INT)
+MAKE_TYPED_ARRAY(int32_t, VariantType::INT)
+MAKE_TYPED_ARRAY(uint64_t, VariantType::INT)
+MAKE_TYPED_ARRAY(int64_t, VariantType::INT)
+MAKE_TYPED_ARRAY(float, VariantType::FLOAT)
+MAKE_TYPED_ARRAY(double, VariantType::FLOAT)
+MAKE_TYPED_ARRAY(String, VariantType::STRING)
+MAKE_TYPED_ARRAY(Vector2, VariantType::VECTOR2)
+MAKE_TYPED_ARRAY(Vector2i, VariantType::VECTOR2I)
+MAKE_TYPED_ARRAY(Rect2, VariantType::RECT2)
+MAKE_TYPED_ARRAY(Rect2i, VariantType::RECT2I)
+MAKE_TYPED_ARRAY(Vector3, VariantType::VECTOR3)
+MAKE_TYPED_ARRAY(Vector3i, VariantType::VECTOR3I)
+MAKE_TYPED_ARRAY(Transform2D, VariantType::TRANSFORM2D)
+MAKE_TYPED_ARRAY(Plane, VariantType::PLANE)
+MAKE_TYPED_ARRAY(Quaternion, VariantType::QUATERNION)
+MAKE_TYPED_ARRAY(AABB, VariantType::AABB)
+MAKE_TYPED_ARRAY(Basis, VariantType::BASIS)
+MAKE_TYPED_ARRAY(Transform3D, VariantType::TRANSFORM3D)
+MAKE_TYPED_ARRAY(Color, VariantType::COLOR)
+MAKE_TYPED_ARRAY(StringName, VariantType::STRING_NAME)
+MAKE_TYPED_ARRAY(NodePath, VariantType::NODE_PATH)
+MAKE_TYPED_ARRAY(RID, VariantType::RID)
+MAKE_TYPED_ARRAY(Callable, VariantType::CALLABLE)
+MAKE_TYPED_ARRAY(Signal, VariantType::SIGNAL)
+MAKE_TYPED_ARRAY(Dictionary, VariantType::DICTIONARY)
+MAKE_TYPED_ARRAY(Array, VariantType::ARRAY)
+MAKE_TYPED_ARRAY(Vector<uint8_t>, VariantType::PACKED_BYTE_ARRAY)
+MAKE_TYPED_ARRAY(Vector<int32_t>, VariantType::PACKED_INT32_ARRAY)
+MAKE_TYPED_ARRAY(Vector<int64_t>, VariantType::PACKED_INT64_ARRAY)
+MAKE_TYPED_ARRAY(Vector<float>, VariantType::PACKED_FLOAT32_ARRAY)
+MAKE_TYPED_ARRAY(Vector<double>, VariantType::PACKED_FLOAT64_ARRAY)
+MAKE_TYPED_ARRAY(Vector<String>, VariantType::PACKED_STRING_ARRAY)
+MAKE_TYPED_ARRAY(Vector<Vector2>, VariantType::PACKED_VECTOR2_ARRAY)
+MAKE_TYPED_ARRAY(Vector<Vector3>, VariantType::PACKED_VECTOR3_ARRAY)
+MAKE_TYPED_ARRAY(Vector<Color>, VariantType::PACKED_COLOR_ARRAY)
+MAKE_TYPED_ARRAY(IPAddress, VariantType::STRING)
 
 template <class T>
 struct PtrToArg<TypedArray<T>> {
@@ -152,82 +152,82 @@ struct PtrToArg<const TypedArray<T> &> {
 
 template <class T>
 struct GetTypeInfo<TypedArray<T>> {
-	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const VariantType VARIANT_TYPE = VariantType::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
+		return PropertyInfo(VariantType::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
 	}
 };
 
 template <class T>
 struct GetTypeInfo<const TypedArray<T> &> {
-	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const VariantType VARIANT_TYPE = VariantType::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
+		return PropertyInfo(VariantType::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
 	}
 };
 
-#define MAKE_TYPED_ARRAY_INFO(m_type, m_variant_type)                                                                        \
-	template <>                                                                                                              \
-	struct GetTypeInfo<TypedArray<m_type>> {                                                                                 \
-		static const Variant::Type VARIANT_TYPE = Variant::ARRAY;                                                            \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                        \
-		static inline PropertyInfo get_class_info() {                                                                        \
-			return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, Variant::get_type_name(m_variant_type)); \
-		}                                                                                                                    \
-	};                                                                                                                       \
-	template <>                                                                                                              \
-	struct GetTypeInfo<const TypedArray<m_type> &> {                                                                         \
-		static const Variant::Type VARIANT_TYPE = Variant::ARRAY;                                                            \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                        \
-		static inline PropertyInfo get_class_info() {                                                                        \
-			return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, Variant::get_type_name(m_variant_type)); \
-		}                                                                                                                    \
+#define MAKE_TYPED_ARRAY_INFO(m_type, m_variant_type)                                                                            \
+	template <>                                                                                                                  \
+	struct GetTypeInfo<TypedArray<m_type>> {                                                                                     \
+		static const VariantType VARIANT_TYPE = VariantType::ARRAY;                                                              \
+		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                            \
+		static inline PropertyInfo get_class_info() {                                                                            \
+			return PropertyInfo(VariantType::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, Variant::get_type_name(m_variant_type)); \
+		}                                                                                                                        \
+	};                                                                                                                           \
+	template <>                                                                                                                  \
+	struct GetTypeInfo<const TypedArray<m_type> &> {                                                                             \
+		static const VariantType VARIANT_TYPE = VariantType::ARRAY;                                                              \
+		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                            \
+		static inline PropertyInfo get_class_info() {                                                                            \
+			return PropertyInfo(VariantType::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, Variant::get_type_name(m_variant_type)); \
+		}                                                                                                                        \
 	};
 
-MAKE_TYPED_ARRAY_INFO(bool, Variant::BOOL)
-MAKE_TYPED_ARRAY_INFO(uint8_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(int8_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(uint16_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(int16_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(uint32_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(int32_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(uint64_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(int64_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(float, Variant::FLOAT)
-MAKE_TYPED_ARRAY_INFO(double, Variant::FLOAT)
-MAKE_TYPED_ARRAY_INFO(String, Variant::STRING)
-MAKE_TYPED_ARRAY_INFO(Vector2, Variant::VECTOR2)
-MAKE_TYPED_ARRAY_INFO(Vector2i, Variant::VECTOR2I)
-MAKE_TYPED_ARRAY_INFO(Rect2, Variant::RECT2)
-MAKE_TYPED_ARRAY_INFO(Rect2i, Variant::RECT2I)
-MAKE_TYPED_ARRAY_INFO(Vector3, Variant::VECTOR3)
-MAKE_TYPED_ARRAY_INFO(Vector3i, Variant::VECTOR3I)
-MAKE_TYPED_ARRAY_INFO(Transform2D, Variant::TRANSFORM2D)
-MAKE_TYPED_ARRAY_INFO(Plane, Variant::PLANE)
-MAKE_TYPED_ARRAY_INFO(Quaternion, Variant::QUATERNION)
-MAKE_TYPED_ARRAY_INFO(AABB, Variant::AABB)
-MAKE_TYPED_ARRAY_INFO(Basis, Variant::BASIS)
-MAKE_TYPED_ARRAY_INFO(Transform3D, Variant::TRANSFORM3D)
-MAKE_TYPED_ARRAY_INFO(Color, Variant::COLOR)
-MAKE_TYPED_ARRAY_INFO(StringName, Variant::STRING_NAME)
-MAKE_TYPED_ARRAY_INFO(NodePath, Variant::NODE_PATH)
-MAKE_TYPED_ARRAY_INFO(RID, Variant::RID)
-MAKE_TYPED_ARRAY_INFO(Callable, Variant::CALLABLE)
-MAKE_TYPED_ARRAY_INFO(Signal, Variant::SIGNAL)
-MAKE_TYPED_ARRAY_INFO(Dictionary, Variant::DICTIONARY)
-MAKE_TYPED_ARRAY_INFO(Array, Variant::ARRAY)
-MAKE_TYPED_ARRAY_INFO(Vector<uint8_t>, Variant::PACKED_BYTE_ARRAY)
-MAKE_TYPED_ARRAY_INFO(Vector<int32_t>, Variant::PACKED_INT32_ARRAY)
-MAKE_TYPED_ARRAY_INFO(Vector<int64_t>, Variant::PACKED_INT64_ARRAY)
-MAKE_TYPED_ARRAY_INFO(Vector<float>, Variant::PACKED_FLOAT32_ARRAY)
-MAKE_TYPED_ARRAY_INFO(Vector<double>, Variant::PACKED_FLOAT64_ARRAY)
-MAKE_TYPED_ARRAY_INFO(Vector<String>, Variant::PACKED_STRING_ARRAY)
-MAKE_TYPED_ARRAY_INFO(Vector<Vector2>, Variant::PACKED_VECTOR2_ARRAY)
-MAKE_TYPED_ARRAY_INFO(Vector<Vector3>, Variant::PACKED_VECTOR3_ARRAY)
-MAKE_TYPED_ARRAY_INFO(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
-MAKE_TYPED_ARRAY_INFO(IPAddress, Variant::STRING)
+MAKE_TYPED_ARRAY_INFO(bool, VariantType::BOOL)
+MAKE_TYPED_ARRAY_INFO(uint8_t, VariantType::INT)
+MAKE_TYPED_ARRAY_INFO(int8_t, VariantType::INT)
+MAKE_TYPED_ARRAY_INFO(uint16_t, VariantType::INT)
+MAKE_TYPED_ARRAY_INFO(int16_t, VariantType::INT)
+MAKE_TYPED_ARRAY_INFO(uint32_t, VariantType::INT)
+MAKE_TYPED_ARRAY_INFO(int32_t, VariantType::INT)
+MAKE_TYPED_ARRAY_INFO(uint64_t, VariantType::INT)
+MAKE_TYPED_ARRAY_INFO(int64_t, VariantType::INT)
+MAKE_TYPED_ARRAY_INFO(float, VariantType::FLOAT)
+MAKE_TYPED_ARRAY_INFO(double, VariantType::FLOAT)
+MAKE_TYPED_ARRAY_INFO(String, VariantType::STRING)
+MAKE_TYPED_ARRAY_INFO(Vector2, VariantType::VECTOR2)
+MAKE_TYPED_ARRAY_INFO(Vector2i, VariantType::VECTOR2I)
+MAKE_TYPED_ARRAY_INFO(Rect2, VariantType::RECT2)
+MAKE_TYPED_ARRAY_INFO(Rect2i, VariantType::RECT2I)
+MAKE_TYPED_ARRAY_INFO(Vector3, VariantType::VECTOR3)
+MAKE_TYPED_ARRAY_INFO(Vector3i, VariantType::VECTOR3I)
+MAKE_TYPED_ARRAY_INFO(Transform2D, VariantType::TRANSFORM2D)
+MAKE_TYPED_ARRAY_INFO(Plane, VariantType::PLANE)
+MAKE_TYPED_ARRAY_INFO(Quaternion, VariantType::QUATERNION)
+MAKE_TYPED_ARRAY_INFO(AABB, VariantType::AABB)
+MAKE_TYPED_ARRAY_INFO(Basis, VariantType::BASIS)
+MAKE_TYPED_ARRAY_INFO(Transform3D, VariantType::TRANSFORM3D)
+MAKE_TYPED_ARRAY_INFO(Color, VariantType::COLOR)
+MAKE_TYPED_ARRAY_INFO(StringName, VariantType::STRING_NAME)
+MAKE_TYPED_ARRAY_INFO(NodePath, VariantType::NODE_PATH)
+MAKE_TYPED_ARRAY_INFO(RID, VariantType::RID)
+MAKE_TYPED_ARRAY_INFO(Callable, VariantType::CALLABLE)
+MAKE_TYPED_ARRAY_INFO(Signal, VariantType::SIGNAL)
+MAKE_TYPED_ARRAY_INFO(Dictionary, VariantType::DICTIONARY)
+MAKE_TYPED_ARRAY_INFO(Array, VariantType::ARRAY)
+MAKE_TYPED_ARRAY_INFO(Vector<uint8_t>, VariantType::PACKED_BYTE_ARRAY)
+MAKE_TYPED_ARRAY_INFO(Vector<int32_t>, VariantType::PACKED_INT32_ARRAY)
+MAKE_TYPED_ARRAY_INFO(Vector<int64_t>, VariantType::PACKED_INT64_ARRAY)
+MAKE_TYPED_ARRAY_INFO(Vector<float>, VariantType::PACKED_FLOAT32_ARRAY)
+MAKE_TYPED_ARRAY_INFO(Vector<double>, VariantType::PACKED_FLOAT64_ARRAY)
+MAKE_TYPED_ARRAY_INFO(Vector<String>, VariantType::PACKED_STRING_ARRAY)
+MAKE_TYPED_ARRAY_INFO(Vector<Vector2>, VariantType::PACKED_VECTOR2_ARRAY)
+MAKE_TYPED_ARRAY_INFO(Vector<Vector3>, VariantType::PACKED_VECTOR3_ARRAY)
+MAKE_TYPED_ARRAY_INFO(Vector<Color>, VariantType::PACKED_COLOR_ARRAY)
+MAKE_TYPED_ARRAY_INFO(IPAddress, VariantType::STRING)
 
 #undef MAKE_TYPED_ARRAY
 #undef MAKE_TYPED_ARRAY_INFO

@@ -35,15 +35,15 @@
 void OpenXRAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_localized_name", "localized_name"), &OpenXRAction::set_localized_name);
 	ClassDB::bind_method(D_METHOD("get_localized_name"), &OpenXRAction::get_localized_name);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "localized_name"), "set_localized_name", "get_localized_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "localized_name"), "set_localized_name", "get_localized_name");
 
 	ClassDB::bind_method(D_METHOD("set_action_type", "action_type"), &OpenXRAction::set_action_type);
 	ClassDB::bind_method(D_METHOD("get_action_type"), &OpenXRAction::get_action_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_type", PROPERTY_HINT_ENUM, "bool,float,vector2,pose"), "set_action_type", "get_action_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "action_type", PROPERTY_HINT_ENUM, "bool,float,vector2,pose"), "set_action_type", "get_action_type");
 
 	ClassDB::bind_method(D_METHOD("set_toplevel_paths", "toplevel_paths"), &OpenXRAction::set_toplevel_paths);
 	ClassDB::bind_method(D_METHOD("get_toplevel_paths"), &OpenXRAction::get_toplevel_paths);
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "toplevel_paths"), "set_toplevel_paths", "get_toplevel_paths");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "toplevel_paths"), "set_toplevel_paths", "get_toplevel_paths");
 
 	BIND_ENUM_CONSTANT(OPENXR_ACTION_BOOL);
 	BIND_ENUM_CONSTANT(OPENXR_ACTION_FLOAT);

@@ -365,112 +365,112 @@ List<String> EditorExportPlatformMacOS::get_binary_extensions(const Ref<EditorEx
 
 void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options) const {
 #ifdef MACOS_ENABLED
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "export/distribution_type", PROPERTY_HINT_ENUM, "Testing,Distribution,App Store"), 1, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "export/distribution_type", PROPERTY_HINT_ENUM, "Testing,Distribution,App Store"), 1, true));
 #else
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "export/distribution_type", PROPERTY_HINT_ENUM, "Testing,Distribution"), 1, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "export/distribution_type", PROPERTY_HINT_ENUM, "Testing,Distribution"), 1, true));
 #endif
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "universal,x86_64,arm64", PROPERTY_USAGE_STORAGE), "universal"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "universal,x86_64,arm64", PROPERTY_USAGE_STORAGE), "universal"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_category", PROPERTY_HINT_ENUM, "Business,Developer-tools,Education,Entertainment,Finance,Games,Action-games,Adventure-games,Arcade-games,Board-games,Card-games,Casino-games,Dice-games,Educational-games,Family-games,Kids-games,Music-games,Puzzle-games,Racing-games,Role-playing-games,Simulation-games,Sports-games,Strategy-games,Trivia-games,Word-games,Graphics-design,Healthcare-fitness,Lifestyle,Medical,Music,News,Photography,Productivity,Reference,Social-networking,Sports,Travel,Utilities,Video,Weather"), "Games"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version"), "10.12"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/signature"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/app_category", PROPERTY_HINT_ENUM, "Business,Developer-tools,Education,Entertainment,Finance,Games,Action-games,Adventure-games,Arcade-games,Board-games,Card-games,Casino-games,Dice-games,Educational-games,Family-games,Kids-games,Music-games,Puzzle-games,Racing-games,Role-playing-games,Simulation-games,Sports-games,Strategy-games,Trivia-games,Word-games,Graphics-design,Healthcare-fitness,Lifestyle,Medical,Music,News,Photography,Productivity,Reference,Social-networking,Sports,Travel,Utilities,Video,Weather"), "Games"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/copyright"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/min_macos_version"), "10.12"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "display/high_res"), true));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/platform_build"), "14C18"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_version"), "13.1"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_build"), "22C55"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_name"), "macosx13.1"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/xcode_version"), "1420"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/xcode_build"), "14C18"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "xcode/platform_build"), "14C18"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "xcode/sdk_version"), "13.1"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "xcode/sdk_build"), "22C55"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "xcode/sdk_name"), "macosx13.1"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "xcode/xcode_version"), "1420"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "xcode/xcode_build"), "14C18"));
 
 #ifdef MACOS_ENABLED
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),rcodesign,Xcode codesign"), 3, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),rcodesign,Xcode codesign"), 3, true));
 #else
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),rcodesign"), 1, true, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),rcodesign"), 1, true, true));
 #endif
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/installer_identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "3rd Party Mac Developer Installer: (ID)"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/apple_team_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "ID"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/installer_identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "3rd Party Mac Developer Installer: (ID)"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/apple_team_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "ID"), "", false, true));
 	// "codesign" only options:
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
 	// "rcodesign" only options:
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/certificate_file", PROPERTY_HINT_GLOBAL_FILE, "*.pfx,*.p12", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/certificate_password", PROPERTY_HINT_PASSWORD, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/certificate_file", PROPERTY_HINT_GLOBAL_FILE, "*.pfx,*.p12", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/certificate_password", PROPERTY_HINT_PASSWORD, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	// "codesign" and "rcodesign" only options:
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/provisioning_profile", PROPERTY_HINT_GLOBAL_FILE, "*.provisionprofile", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/provisioning_profile", PROPERTY_HINT_GLOBAL_FILE, "*.provisionprofile", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/custom_file", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), "", true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_jit_code_execution"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_unsigned_executable_memory"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_dyld_environment_variables"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/disable_library_validation"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/audio_input"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/camera"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/location"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/address_book"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/calendars"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/photos_library"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/apple_events"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/debugging"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/enabled"), false, true, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/network_server"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/network_client"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/device_usb"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/device_bluetooth"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_downloads", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_pictures", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_music", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_user_selected", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::ARRAY, "codesign/entitlements/app_sandbox/helper_executables", PROPERTY_HINT_ARRAY_TYPE, itos(Variant::STRING) + "/" + itos(PROPERTY_HINT_GLOBAL_FILE) + ":"), Array()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/entitlements/custom_file", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), "", true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/allow_jit_code_execution"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/allow_unsigned_executable_memory"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/allow_dyld_environment_variables"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/disable_library_validation"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/audio_input"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/camera"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/location"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/address_book"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/calendars"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/photos_library"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/apple_events"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/debugging"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/app_sandbox/enabled"), false, true, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/app_sandbox/network_server"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/app_sandbox/network_client"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/app_sandbox/device_usb"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/entitlements/app_sandbox/device_bluetooth"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "codesign/entitlements/app_sandbox/files_downloads", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "codesign/entitlements/app_sandbox/files_pictures", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "codesign/entitlements/app_sandbox/files_music", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "codesign/entitlements/app_sandbox/files_user_selected", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::ARRAY, "codesign/entitlements/app_sandbox/helper_executables", PROPERTY_HINT_ARRAY_TYPE, itos((int)VariantType::STRING) + "/" + itos(PROPERTY_HINT_GLOBAL_FILE) + ":"), Array()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 #ifdef MACOS_ENABLED
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,rcodesign,Xcode notarytool"), 0, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,rcodesign,Xcode notarytool"), 0, true));
 #else
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,rcodesign"), 0, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "notarization/notarization", PROPERTY_HINT_ENUM, "Disabled,rcodesign"), 0, true));
 #endif
 	// "notarytool" only options:
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple ID email", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_password", PROPERTY_HINT_PASSWORD, "Enable two-factor authentication and provide app-specific password", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "notarization/apple_id_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple ID email", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "notarization/apple_id_password", PROPERTY_HINT_PASSWORD, "Enable two-factor authentication and provide app-specific password", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
 	// "notarytool" and "rcodesign" only options:
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_uuid", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect issuer ID UUID", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_key", PROPERTY_HINT_GLOBAL_FILE, "*.p8", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_key_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect API key ID", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "notarization/api_uuid", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect issuer ID UUID", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "notarization/api_key", PROPERTY_HINT_GLOBAL_FILE, "*.p8", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "notarization/api_key_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect API key ID", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "", false, true));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/microphone_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/camera_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the camera"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/camera_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/location_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the location information"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/location_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/address_book_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the address book"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/address_book_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/calendar_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the calendar"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/calendar_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photos_library_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the photo library"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photos_library_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/desktop_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Desktop folder"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/desktop_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/documents_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Documents folder"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/documents_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/downloads_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Downloads folder"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/downloads_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/network_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use network volumes"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/network_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/removable_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use removable volumes"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/removable_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/microphone_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/camera_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the camera"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/camera_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/location_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the location information"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/location_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/address_book_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the address book"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/address_book_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/calendar_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the calendar"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/calendar_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/photos_library_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the photo library"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/photos_library_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/desktop_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Desktop folder"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/desktop_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/documents_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Documents folder"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/documents_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/downloads_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Downloads folder"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/downloads_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/network_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use network volumes"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/network_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "privacy/removable_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use removable volumes"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::DICTIONARY, "privacy/removable_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
 	String run_script = "#!/usr/bin/env bash\n"
 						"unzip -o -q \"{temp_dir}/{archive_name}\" -d \"{temp_dir}\"\n"
@@ -480,14 +480,14 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 							"kill $(pgrep -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\")\n"
 							"rm -rf \"{temp_dir}\"";
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "ssh_remote_deploy/enabled"), false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/port"), "22"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
 }
 
 void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {

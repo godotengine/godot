@@ -32,6 +32,7 @@
 #define ARRAY_H
 
 #include "core/typedefs.h"
+#include "core/variant/variant_enums.h"
 
 #include <climits>
 
@@ -119,17 +120,17 @@ public:
 
 	const void *id() const;
 
-	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	void set_typed(VariantType p_type, const StringName &p_class_name, const Variant &p_script);
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
-	uint32_t get_typed_builtin() const;
+	VariantType get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
 
 	void make_read_only();
 	bool is_read_only() const;
 
-	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	Array(const Array &p_base, VariantType p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array();
 	~Array();

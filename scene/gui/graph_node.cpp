@@ -137,15 +137,15 @@ void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		String base = "slot/" + itos(idx) + "/";
 
-		p_list->push_back(PropertyInfo(Variant::BOOL, base + "left_enabled"));
-		p_list->push_back(PropertyInfo(Variant::INT, base + "left_type"));
-		p_list->push_back(PropertyInfo(Variant::COLOR, base + "left_color"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "left_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, base + "right_enabled"));
-		p_list->push_back(PropertyInfo(Variant::INT, base + "right_type"));
-		p_list->push_back(PropertyInfo(Variant::COLOR, base + "right_color"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, base + "draw_stylebox"));
+		p_list->push_back(PropertyInfo(VariantType::BOOL, base + "left_enabled"));
+		p_list->push_back(PropertyInfo(VariantType::INT, base + "left_type"));
+		p_list->push_back(PropertyInfo(VariantType::COLOR, base + "left_color"));
+		p_list->push_back(PropertyInfo(VariantType::OBJECT, base + "left_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+		p_list->push_back(PropertyInfo(VariantType::BOOL, base + "right_enabled"));
+		p_list->push_back(PropertyInfo(VariantType::INT, base + "right_type"));
+		p_list->push_back(PropertyInfo(VariantType::COLOR, base + "right_color"));
+		p_list->push_back(PropertyInfo(VariantType::OBJECT, base + "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+		p_list->push_back(PropertyInfo(VariantType::BOOL, base + "draw_stylebox"));
 		idx++;
 	}
 }
@@ -823,8 +823,8 @@ void GraphNode::_bind_methods() {
 
 	GDVIRTUAL_BIND(_draw_port, "slot_index", "position", "left", "color")
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "slot_index")));
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "title"), "set_title", "get_title");
+	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(VariantType::INT, "slot_index")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel_selected);

@@ -570,7 +570,7 @@ namespace GodotTools
 
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
-                ["type"] = (int)Variant.Type.Int,
+                ["type"] = (int)VariantType.Int,
                 ["name"] = Settings.ExternalEditor,
                 ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = settingsHintStr
@@ -578,14 +578,14 @@ namespace GodotTools
 
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
-                ["type"] = (int)Variant.Type.String,
+                ["type"] = (int)VariantType.String,
                 ["name"] = Settings.CustomExecPath,
                 ["hint"] = (int)PropertyHint.GlobalFile,
             });
 
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
-                ["type"] = (int)Variant.Type.String,
+                ["type"] = (int)VariantType.String,
                 ["name"] = Settings.CustomExecPathArgs,
             });
             _editorSettings.SetInitialValue(Settings.CustomExecPathArgs, "{file}", false);
@@ -593,7 +593,7 @@ namespace GodotTools
             var verbosityLevels = Enum.GetValues<VerbosityLevelId>().Select(level => $"{Enum.GetName(level)}:{(int)level}");
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
-                ["type"] = (int)Variant.Type.Int,
+                ["type"] = (int)VariantType.Int,
                 ["name"] = Settings.VerbosityLevel,
                 ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = string.Join(",", verbosityLevels),
@@ -601,7 +601,7 @@ namespace GodotTools
 
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
-                ["type"] = (int)Variant.Type.Int,
+                ["type"] = (int)VariantType.Int,
                 ["name"] = Settings.ProblemsLayout,
                 ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = "View as List,View as Tree",

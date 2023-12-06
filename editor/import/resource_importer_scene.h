@@ -137,7 +137,7 @@ protected:
 public:
 	Variant get_option_value(const StringName &p_name) const;
 	void add_import_option(const String &p_name, Variant p_default_value);
-	void add_import_option_advanced(Variant::Type p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
+	void add_import_option_advanced(VariantType p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
 
 	virtual void get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_internal_option_visibility(InternalImportCategory p_category, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options) const;

@@ -41,7 +41,7 @@ void EncodedObjectAsID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_object_id", "id"), &EncodedObjectAsID::set_object_id);
 	ClassDB::bind_method(D_METHOD("get_object_id"), &EncodedObjectAsID::get_object_id);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "object_id"), "set_object_id", "get_object_id");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "object_id"), "set_object_id", "get_object_id");
 }
 
 void EncodedObjectAsID::set_object_id(ObjectID p_id) {
@@ -103,7 +103,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 	uint32_t type = decode_uint32(buf);
 
-	ERR_FAIL_COND_V((type & ENCODE_MASK) >= Variant::VARIANT_MAX, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V((type & ENCODE_MASK) >= (int)VariantType::MAX, ERR_INVALID_DATA);
 
 	buf += 4;
 	len -= 4;
@@ -114,11 +114,11 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 	// Note: We cannot use sizeof(real_t) for decoding, in case a different size is encoded.
 	// Decoding math types always checks for the encoded size, while encoding always uses compilation setting.
 	// This does lead to some code duplication for decoding, but compatibility is the priority.
-	switch (type & ENCODE_MASK) {
-		case Variant::NIL: {
+	switch (VariantType(type & ENCODE_MASK)) {
+		case VariantType::NIL: {
 			r_variant = Variant();
 		} break;
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			bool val = decode_uint32(buf);
 			r_variant = val;
@@ -126,7 +126,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				(*r_len) += 4;
 			}
 		} break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
 				int64_t val = decode_uint64(buf);
@@ -145,7 +145,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double), ERR_INVALID_DATA);
 				double val = decode_double(buf);
@@ -163,7 +163,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			String str;
 			Error err = _decode_string(buf, len, r_len, str);
 			if (err) {
@@ -174,7 +174,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 
 		// math types
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			Vector2 val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 2, ERR_INVALID_DATA);
@@ -196,7 +196,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			ERR_FAIL_COND_V(len < 4 * 2, ERR_INVALID_DATA);
 			Vector2i val;
 			val.x = decode_uint32(&buf[0]);
@@ -208,7 +208,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			Rect2 val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
@@ -234,7 +234,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::RECT2I: {
+		case VariantType::RECT2I: {
 			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
 			Rect2i val;
 			val.position.x = decode_uint32(&buf[0]);
@@ -248,7 +248,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			Vector3 val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 3, ERR_INVALID_DATA);
@@ -272,7 +272,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			ERR_FAIL_COND_V(len < 4 * 3, ERR_INVALID_DATA);
 			Vector3i val;
 			val.x = decode_uint32(&buf[0]);
@@ -285,7 +285,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			Vector4 val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
@@ -311,7 +311,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
 			Vector4i val;
 			val.x = decode_uint32(&buf[0]);
@@ -325,7 +325,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			Transform2D val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 6, ERR_INVALID_DATA);
@@ -353,7 +353,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			Plane val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
@@ -379,7 +379,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			Quaternion val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
@@ -405,7 +405,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::AABB: {
+		case VariantType::AABB: {
 			AABB val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 6, ERR_INVALID_DATA);
@@ -435,7 +435,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			Basis val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 9, ERR_INVALID_DATA);
@@ -463,7 +463,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			Transform3D val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 12, ERR_INVALID_DATA);
@@ -497,7 +497,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = val;
 
 		} break;
-		case Variant::PROJECTION: {
+		case VariantType::PROJECTION: {
 			Projection val;
 			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 16, ERR_INVALID_DATA);
@@ -525,7 +525,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 		} break;
 		// misc types
-		case Variant::COLOR: {
+		case VariantType::COLOR: {
 			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
 			Color val;
 			val.r = decode_float(&buf[0]);
@@ -538,7 +538,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				(*r_len) += 4 * 4; // Colors should always be in single-precision.
 			}
 		} break;
-		case Variant::STRING_NAME: {
+		case VariantType::STRING_NAME: {
 			String str;
 			Error err = _decode_string(buf, len, r_len, str);
 			if (err) {
@@ -548,7 +548,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 		} break;
 
-		case Variant::NODE_PATH: {
+		case VariantType::NODE_PATH: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t strlen = decode_uint32(buf);
 
@@ -598,7 +598,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::RID: {
+		case VariantType::RID: {
 			ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
 			uint64_t id = decode_uint64(buf);
 			if (r_len) {
@@ -607,7 +607,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			r_variant = RID::from_uint64(id);
 		} break;
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			if (type & ENCODE_FLAG_OBJECT_AS_ID) {
 				//this _is_ allowed
 				ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
@@ -683,10 +683,10 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::CALLABLE: {
+		case VariantType::CALLABLE: {
 			r_variant = Callable();
 		} break;
-		case Variant::SIGNAL: {
+		case VariantType::SIGNAL: {
 			String name;
 			Error err = _decode_string(buf, len, r_len, name);
 			if (err) {
@@ -701,7 +701,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			r_variant = Signal(id, StringName(name));
 		} break;
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			//  bool shared = count&0x80000000;
@@ -744,7 +744,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = d;
 
 		} break;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			//  bool shared = count&0x80000000;
@@ -777,7 +777,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 
 		// arrays
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			buf += 4;
@@ -804,7 +804,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::PACKED_INT32_ARRAY: {
+		case VariantType::PACKED_INT32_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			buf += 4;
@@ -828,7 +828,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::PACKED_INT64_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			buf += 4;
@@ -852,7 +852,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::PACKED_FLOAT32_ARRAY: {
+		case VariantType::PACKED_FLOAT32_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			buf += 4;
@@ -877,7 +877,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::PACKED_FLOAT64_ARRAY: {
+		case VariantType::PACKED_FLOAT64_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			buf += 4;
@@ -901,7 +901,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::PACKED_STRING_ARRAY: {
+		case VariantType::PACKED_STRING_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 
@@ -926,7 +926,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = strings;
 
 		} break;
-		case Variant::PACKED_VECTOR2_ARRAY: {
+		case VariantType::PACKED_VECTOR2_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			buf += 4;
@@ -986,7 +986,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = varray;
 
 		} break;
-		case Variant::PACKED_VECTOR3_ARRAY: {
+		case VariantType::PACKED_VECTOR3_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			buf += 4;
@@ -1050,7 +1050,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = varray;
 
 		} break;
-		case Variant::PACKED_COLOR_ARRAY: {
+		case VariantType::PACKED_COLOR_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 			buf += 4;
@@ -1123,26 +1123,26 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 	uint32_t flags = 0;
 
 	switch (p_variant.get_type()) {
-		case Variant::INT: {
+		case VariantType::INT: {
 			int64_t val = p_variant;
 			if (val > (int64_t)INT_MAX || val < (int64_t)INT_MIN) {
 				flags |= ENCODE_FLAG_64;
 			}
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			double d = p_variant;
 			float f = d;
 			if (double(f) != d) {
 				flags |= ENCODE_FLAG_64;
 			}
 		} break;
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			// Test for potential wrong values sent by the debugger when it breaks.
 			Object *obj = p_variant.get_validated_object();
 			if (!obj) {
 				// Object is invalid, send a nullptr instead.
 				if (buf) {
-					encode_uint32(Variant::NIL, buf);
+					encode_uint32((int)VariantType::NIL, buf);
 				}
 				r_len += 4;
 				return OK;
@@ -1153,19 +1153,19 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 		} break;
 #ifdef REAL_T_IS_DOUBLE
-		case Variant::VECTOR2:
-		case Variant::VECTOR3:
-		case Variant::VECTOR4:
-		case Variant::PACKED_VECTOR2_ARRAY:
-		case Variant::PACKED_VECTOR3_ARRAY:
-		case Variant::TRANSFORM2D:
-		case Variant::TRANSFORM3D:
-		case Variant::PROJECTION:
-		case Variant::QUATERNION:
-		case Variant::PLANE:
-		case Variant::BASIS:
-		case Variant::RECT2:
-		case Variant::AABB: {
+		case VariantType::VECTOR2:
+		case VariantType::VECTOR3:
+		case VariantType::VECTOR4:
+		case VariantType::PACKED_VECTOR2_ARRAY:
+		case VariantType::PACKED_VECTOR3_ARRAY:
+		case VariantType::TRANSFORM2D:
+		case VariantType::TRANSFORM3D:
+		case VariantType::PROJECTION:
+		case VariantType::QUATERNION:
+		case VariantType::PLANE:
+		case VariantType::BASIS:
+		case VariantType::RECT2:
+		case VariantType::AABB: {
 			flags |= ENCODE_FLAG_64;
 		} break;
 #endif // REAL_T_IS_DOUBLE
@@ -1174,16 +1174,16 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 	}
 
 	if (buf) {
-		encode_uint32(p_variant.get_type() | flags, buf);
+		encode_uint32((int)p_variant.get_type() | flags, buf);
 		buf += 4;
 	}
 	r_len += 4;
 
 	switch (p_variant.get_type()) {
-		case Variant::NIL: {
+		case VariantType::NIL: {
 			//nothing to do
 		} break;
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			if (buf) {
 				encode_uint32(p_variant.operator bool(), buf);
 			}
@@ -1191,7 +1191,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4;
 
 		} break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			if (flags & ENCODE_FLAG_64) {
 				//64 bits
 				if (buf) {
@@ -1207,7 +1207,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				r_len += 4;
 			}
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			if (flags & ENCODE_FLAG_64) {
 				if (buf) {
 					encode_double(p_variant.operator double(), buf);
@@ -1224,7 +1224,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 		} break;
-		case Variant::NODE_PATH: {
+		case VariantType::NODE_PATH: {
 			NodePath np = p_variant;
 			if (buf) {
 				encode_uint32(uint32_t(np.get_name_count()) | 0x80000000, buf); //for compatibility with the old format
@@ -1271,14 +1271,14 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 		} break;
-		case Variant::STRING:
-		case Variant::STRING_NAME: {
+		case VariantType::STRING:
+		case VariantType::STRING_NAME: {
 			_encode_string(p_variant, buf, r_len);
 
 		} break;
 
 		// math types
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			if (buf) {
 				Vector2 v2 = p_variant;
 				encode_real(v2.x, &buf[0]);
@@ -1288,7 +1288,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 2 * sizeof(real_t);
 
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			if (buf) {
 				Vector2i v2 = p_variant;
 				encode_uint32(v2.x, &buf[0]);
@@ -1298,7 +1298,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 2 * 4;
 
 		} break;
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			if (buf) {
 				Rect2 r2 = p_variant;
 				encode_real(r2.position.x, &buf[0]);
@@ -1309,7 +1309,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * sizeof(real_t);
 
 		} break;
-		case Variant::RECT2I: {
+		case VariantType::RECT2I: {
 			if (buf) {
 				Rect2i r2 = p_variant;
 				encode_uint32(r2.position.x, &buf[0]);
@@ -1320,7 +1320,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * 4;
 
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			if (buf) {
 				Vector3 v3 = p_variant;
 				encode_real(v3.x, &buf[0]);
@@ -1331,7 +1331,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 3 * sizeof(real_t);
 
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			if (buf) {
 				Vector3i v3 = p_variant;
 				encode_uint32(v3.x, &buf[0]);
@@ -1342,7 +1342,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 3 * 4;
 
 		} break;
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			if (buf) {
 				Transform2D val = p_variant;
 				for (int i = 0; i < 3; i++) {
@@ -1355,7 +1355,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 6 * sizeof(real_t);
 
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			if (buf) {
 				Vector4 v4 = p_variant;
 				encode_real(v4.x, &buf[0]);
@@ -1367,7 +1367,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * sizeof(real_t);
 
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			if (buf) {
 				Vector4i v4 = p_variant;
 				encode_uint32(v4.x, &buf[0]);
@@ -1379,7 +1379,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * 4;
 
 		} break;
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			if (buf) {
 				Plane p = p_variant;
 				encode_real(p.normal.x, &buf[0]);
@@ -1391,7 +1391,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * sizeof(real_t);
 
 		} break;
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			if (buf) {
 				Quaternion q = p_variant;
 				encode_real(q.x, &buf[0]);
@@ -1403,7 +1403,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * sizeof(real_t);
 
 		} break;
-		case Variant::AABB: {
+		case VariantType::AABB: {
 			if (buf) {
 				AABB aabb = p_variant;
 				encode_real(aabb.position.x, &buf[0]);
@@ -1417,7 +1417,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 6 * sizeof(real_t);
 
 		} break;
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			if (buf) {
 				Basis val = p_variant;
 				for (int i = 0; i < 3; i++) {
@@ -1430,7 +1430,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 9 * sizeof(real_t);
 
 		} break;
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			if (buf) {
 				Transform3D val = p_variant;
 				for (int i = 0; i < 3; i++) {
@@ -1447,7 +1447,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 12 * sizeof(real_t);
 
 		} break;
-		case Variant::PROJECTION: {
+		case VariantType::PROJECTION: {
 			if (buf) {
 				Projection val = p_variant;
 				for (int i = 0; i < 4; i++) {
@@ -1462,7 +1462,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		} break;
 
 		// misc types
-		case Variant::COLOR: {
+		case VariantType::COLOR: {
 			if (buf) {
 				Color c = p_variant;
 				encode_float(c.r, &buf[0]);
@@ -1474,7 +1474,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * 4; // Colors should always be in single-precision.
 
 		} break;
-		case Variant::RID: {
+		case VariantType::RID: {
 			RID rid = p_variant;
 
 			if (buf) {
@@ -1482,7 +1482,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 			r_len += 8;
 		} break;
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			if (p_full_objects) {
 				Object *obj = p_variant;
 				if (!obj) {
@@ -1544,9 +1544,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 		} break;
-		case Variant::CALLABLE: {
+		case VariantType::CALLABLE: {
 		} break;
-		case Variant::SIGNAL: {
+		case VariantType::SIGNAL: {
 			Signal signal = p_variant;
 
 			_encode_string(signal.get_name(), buf, r_len);
@@ -1556,7 +1556,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 			r_len += 8;
 		} break;
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			Dictionary d = p_variant;
 
 			if (buf) {
@@ -1589,7 +1589,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 		} break;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			Array v = p_variant;
 
 			if (buf) {
@@ -1612,7 +1612,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 		} break;
 		// arrays
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			Vector<uint8_t> data = p_variant;
 			int datalen = data.size();
 			int datasize = sizeof(uint8_t);
@@ -1636,7 +1636,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 		} break;
-		case Variant::PACKED_INT32_ARRAY: {
+		case VariantType::PACKED_INT32_ARRAY: {
 			Vector<int32_t> data = p_variant;
 			int datalen = data.size();
 			int datasize = sizeof(int32_t);
@@ -1653,7 +1653,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 + datalen * datasize;
 
 		} break;
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::PACKED_INT64_ARRAY: {
 			Vector<int64_t> data = p_variant;
 			int datalen = data.size();
 			int datasize = sizeof(int64_t);
@@ -1670,7 +1670,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 + datalen * datasize;
 
 		} break;
-		case Variant::PACKED_FLOAT32_ARRAY: {
+		case VariantType::PACKED_FLOAT32_ARRAY: {
 			Vector<float> data = p_variant;
 			int datalen = data.size();
 			int datasize = sizeof(float);
@@ -1687,7 +1687,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 + datalen * datasize;
 
 		} break;
-		case Variant::PACKED_FLOAT64_ARRAY: {
+		case VariantType::PACKED_FLOAT64_ARRAY: {
 			Vector<double> data = p_variant;
 			int datalen = data.size();
 			int datasize = sizeof(double);
@@ -1704,7 +1704,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 + datalen * datasize;
 
 		} break;
-		case Variant::PACKED_STRING_ARRAY: {
+		case VariantType::PACKED_STRING_ARRAY: {
 			Vector<String> data = p_variant;
 			int len = data.size();
 
@@ -1735,7 +1735,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 		} break;
-		case Variant::PACKED_VECTOR2_ARRAY: {
+		case VariantType::PACKED_VECTOR2_ARRAY: {
 			Vector<Vector2> data = p_variant;
 			int len = data.size();
 
@@ -1759,7 +1759,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += sizeof(real_t) * 2 * len;
 
 		} break;
-		case Variant::PACKED_VECTOR3_ARRAY: {
+		case VariantType::PACKED_VECTOR3_ARRAY: {
 			Vector<Vector3> data = p_variant;
 			int len = data.size();
 
@@ -1784,7 +1784,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += sizeof(real_t) * 3 * len;
 
 		} break;
-		case Variant::PACKED_COLOR_ARRAY: {
+		case VariantType::PACKED_COLOR_ARRAY: {
 			Vector<Color> data = p_variant;
 			int len = data.size();
 

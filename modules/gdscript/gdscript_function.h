@@ -59,7 +59,7 @@ public:
 	Kind kind = UNINITIALIZED;
 
 	bool has_type = false;
-	Variant::Type builtin_type = Variant::NIL;
+	VariantType builtin_type = VariantType::NIL;
 	StringName native_type;
 	Script *script_type = nullptr;
 	Ref<Script> script_type_ref;
@@ -73,13 +73,13 @@ public:
 			case UNINITIALIZED:
 				break;
 			case BUILTIN: {
-				Variant::Type var_type = p_variant.get_type();
+				VariantType var_type = p_variant.get_type();
 				bool valid = builtin_type == var_type;
-				if (valid && builtin_type == Variant::ARRAY && has_container_element_type(0)) {
+				if (valid && builtin_type == VariantType::ARRAY && has_container_element_type(0)) {
 					Array array = p_variant;
 					if (array.is_typed()) {
 						GDScriptDataType array_container_type = get_container_element_type(0);
-						Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
+						VariantType array_builtin_type = array.get_typed_builtin();
 						StringName array_native_type = array.get_typed_class_name();
 						Ref<Script> array_script_type_ref = array.get_typed_script();
 
@@ -99,10 +99,10 @@ public:
 				return valid;
 			} break;
 			case NATIVE: {
-				if (p_variant.get_type() == Variant::NIL) {
+				if (p_variant.get_type() == VariantType::NIL) {
 					return true;
 				}
-				if (p_variant.get_type() != Variant::OBJECT) {
+				if (p_variant.get_type() != VariantType::OBJECT) {
 					return false;
 				}
 
@@ -119,10 +119,10 @@ public:
 			} break;
 			case SCRIPT:
 			case GDSCRIPT: {
-				if (p_variant.get_type() == Variant::NIL) {
+				if (p_variant.get_type() == VariantType::NIL) {
 					return true;
 				}
-				if (p_variant.get_type() != Variant::OBJECT) {
+				if (p_variant.get_type() != VariantType::OBJECT) {
 					return false;
 				}
 
@@ -394,7 +394,7 @@ private:
 
 	SelfList<GDScriptFunction> function_list{ this };
 	mutable Variant nil;
-	HashMap<int, Variant::Type> temporary_slots;
+	HashMap<int, VariantType> temporary_slots;
 	List<StackDebug> stack_debug;
 
 	Vector<int> code;

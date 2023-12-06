@@ -419,7 +419,7 @@ void EditorResourcePreview::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_preview_generator", "generator"), &EditorResourcePreview::remove_preview_generator);
 	ClassDB::bind_method(D_METHOD("check_for_invalidation", "path"), &EditorResourcePreview::check_for_invalidation);
 
-	ADD_SIGNAL(MethodInfo("preview_invalidated", PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(MethodInfo("preview_invalidated", PropertyInfo(VariantType::STRING, "path")));
 }
 
 void EditorResourcePreview::check_for_invalidation(const String &p_path) {

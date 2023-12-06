@@ -36,8 +36,8 @@
 #include "editor/editor_string_names.h"
 
 void EditorNetworkProfiler::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
-	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(VariantType::BOOL, "enable")));
+	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(VariantType::STRING, "path")));
 }
 
 void EditorNetworkProfiler::_notification(int p_what) {

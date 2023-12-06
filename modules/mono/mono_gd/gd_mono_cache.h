@@ -59,7 +59,7 @@ namespace GDMonoCache {
 struct godotsharp_property_info {
 	godot_string_name name; // Not owned
 	godot_string hint_string;
-	Variant::Type type;
+	VariantType type;
 	PropertyHint hint;
 	PropertyUsageFlags usage;
 	bool exported;

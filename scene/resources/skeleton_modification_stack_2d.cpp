@@ -34,7 +34,7 @@
 void SkeletonModificationStack2D::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < modifications.size(); i++) {
 		p_list->push_back(
-				PropertyInfo(Variant::OBJECT, "modifications/" + itos(i),
+				PropertyInfo(VariantType::OBJECT, "modifications/" + itos(i),
 						PROPERTY_HINT_RESOURCE_TYPE,
 						"SkeletonModification2D",
 						PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
@@ -261,9 +261,9 @@ void SkeletonModificationStack2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &SkeletonModificationStack2D::get_skeleton);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0, 1, 0.001"), "set_strength", "get_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "modification_count", PROPERTY_HINT_RANGE, "0, 100, 1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Modifications,modifications/"), "set_modification_count", "get_modification_count");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "enabled"), "set_enabled", "get_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "strength", PROPERTY_HINT_RANGE, "0, 1, 0.001"), "set_strength", "get_strength");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "modification_count", PROPERTY_HINT_RANGE, "0, 100, 1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Modifications,modifications/"), "set_modification_count", "get_modification_count");
 }
 
 SkeletonModificationStack2D::SkeletonModificationStack2D() {

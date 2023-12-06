@@ -89,9 +89,9 @@ public:
 #endif
 	virtual void set_initial_line(int p_line) = 0;
 
-	virtual void write_type_adjust(const Address &p_target, Variant::Type p_new_type) = 0;
-	virtual void write_unary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand) = 0;
-	virtual void write_binary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) = 0;
+	virtual void write_type_adjust(const Address &p_target, VariantType p_new_type) = 0;
+	virtual void write_unary_operator(const Address &p_target, VariantOperator p_operator, const Address &p_left_operand) = 0;
+	virtual void write_binary_operator(const Address &p_target, VariantOperator p_operator, const Address &p_left_operand, const Address &p_right_operand) = 0;
 	virtual void write_type_test(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) = 0;
 	virtual void write_and_left_operand(const Address &p_left_operand) = 0;
 	virtual void write_and_right_operand(const Address &p_right_operand) = 0;
@@ -125,8 +125,8 @@ public:
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_gdscript_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) = 0;
-	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
-	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
+	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, VariantType p_type, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
+	virtual void write_call_builtin_type_static(const Address &p_target, VariantType p_type, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) = 0;
@@ -134,7 +134,7 @@ public:
 	virtual void write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) = 0;
-	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) = 0;
+	virtual void write_construct(const Address &p_target, VariantType p_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) = 0;

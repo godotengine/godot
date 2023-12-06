@@ -323,7 +323,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					} else {
 						Variant value = props[nprops[j].value];
 
-						if (value.get_type() == Variant::OBJECT) {
+						if (value.get_type() == VariantType::OBJECT) {
 							//handle resources that are local to scene by duplicating them if needed
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
@@ -352,23 +352,23 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								}
 							}
 						}
-						if (value.get_type() == Variant::ARRAY) {
+						if (value.get_type() == VariantType::ARRAY) {
 							Array set_array = value;
 							bool is_get_valid = false;
 							Variant get_value = node->get(snames[nprops[j].name], &is_get_valid);
-							if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
+							if (is_get_valid && get_value.get_type() == VariantType::ARRAY) {
 								Array get_array = get_value;
 								if (!set_array.is_same_typed(get_array)) {
 									value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
 								}
 							}
 						}
-						if (p_edit_state == GEN_EDIT_STATE_INSTANCE && value.get_type() != Variant::OBJECT) {
+						if (p_edit_state == GEN_EDIT_STATE_INSTANCE && value.get_type() != VariantType::OBJECT) {
 							value = value.duplicate(true); // Duplicate arrays and dictionaries for the editor
 						}
 
 						bool set_valid = true;
-						if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled() && value.get_type() == Variant::OBJECT) {
+						if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled() && value.get_type() == VariantType::OBJECT) {
 							Ref<MissingResource> mr = value;
 							if (mr.is_valid()) {
 								missing_resource_properties[snames[nprops[j].name]] = mr;
@@ -485,7 +485,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
 		// Replace properties stored as NodePaths with actual Nodes.
-		if (dnp.value.get_type() == Variant::ARRAY) {
+		if (dnp.value.get_type() == VariantType::ARRAY) {
 			Array paths = dnp.value;
 
 			bool valid;
@@ -680,23 +680,23 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		Variant value = p_node->get(name);
 		bool use_deferred_node_path_bit = false;
 
-		if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
-			if (value.get_type() == Variant::OBJECT) {
+		if (E.type == VariantType::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
+			if (value.get_type() == VariantType::OBJECT) {
 				if (Node *n = Object::cast_to<Node>(value)) {
 					value = p_node->get_path_to(n);
 				}
 				use_deferred_node_path_bit = true;
 			}
-			if (value.get_type() != Variant::NODE_PATH) {
+			if (value.get_type() != VariantType::NODE_PATH) {
 				continue; //was never set, ignore.
 			}
-		} else if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
+		} else if (E.type == VariantType::OBJECT && missing_resource_properties.has(E.name)) {
 			// Was this missing resource overridden? If so do not save the old value.
 			Ref<Resource> ures = value;
 			if (ures.is_null()) {
 				value = missing_resource_properties[E.name];
 			}
-		} else if (E.type == Variant::ARRAY && E.hint == PROPERTY_HINT_TYPE_STRING) {
+		} else if (E.type == VariantType::ARRAY && E.hint == PROPERTY_HINT_TYPE_STRING) {
 			int hint_subtype_separator = E.hint_string.find(":");
 			if (hint_subtype_separator >= 0) {
 				String subtype_string = E.hint_string.substr(0, hint_subtype_separator);
@@ -706,15 +706,15 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					subtype_hint = PropertyHint(subtype_string.get_slice("/", 1).to_int());
 					subtype_string = subtype_string.substr(0, slash_pos);
 				}
-				Variant::Type subtype = Variant::Type(subtype_string.to_int());
+				VariantType subtype = VariantType(subtype_string.to_int());
 
-				if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
+				if (subtype == VariantType::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
 					use_deferred_node_path_bit = true;
 					Array array = value;
 					Array new_array;
 					for (int i = 0; i < array.size(); i++) {
 						Variant elem = array[i];
-						if (elem.get_type() == Variant::OBJECT) {
+						if (elem.get_type() == VariantType::OBJECT) {
 							if (Node *n = Object::cast_to<Node>(elem)) {
 								new_array.push_back(p_node->get_path_to(n));
 								continue;
@@ -1997,7 +1997,7 @@ void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);
 	ClassDB::bind_method(D_METHOD("get_state"), &PackedScene::get_state);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_bundled"), "_set_bundled_scene", "_get_bundled_scene");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "_bundled"), "_set_bundled_scene", "_get_bundled_scene");
 
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_DISABLED);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);

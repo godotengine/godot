@@ -49,15 +49,15 @@
 #endif
 
 // This function is used to determine that a type is "built-in" as opposed to native
-// and custom classes. So `Variant::NIL` and `Variant::OBJECT` are excluded:
-// `Variant::NIL` - `null` is literal, not a type.
-// `Variant::OBJECT` - `Object` should be treated as a class, not as a built-in type.
-static HashMap<StringName, Variant::Type> builtin_types;
-Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
+// and custom classes. So `VariantType::NIL` and `VariantType::OBJECT` are excluded:
+// `VariantType::NIL` - `null` is literal, not a type.
+// `VariantType::OBJECT` - `Object` should be treated as a class, not as a built-in type.
+static HashMap<StringName, VariantType> builtin_types;
+VariantType GDScriptParser::get_builtin_type(const StringName &p_type) {
 	if (unlikely(builtin_types.is_empty())) {
-		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-			Variant::Type type = (Variant::Type)i;
-			if (type != Variant::NIL && type != Variant::OBJECT) {
+		for (int i = 0; i < (int)VariantType::MAX; i++) {
+			VariantType type = (VariantType)i;
+			if (type != VariantType::NIL && type != VariantType::OBJECT) {
 				builtin_types[Variant::get_type_name(type)] = type;
 			}
 		}
@@ -66,7 +66,7 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	if (builtin_types.has(p_type)) {
 		return builtin_types[p_type];
 	}
-	return Variant::VARIANT_MAX;
+	return VariantType::MAX;
 }
 
 #ifdef TOOLS_ENABLED
@@ -91,39 +91,39 @@ GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	// TODO: Should this be static?
 	register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
-	register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
+	register_annotation(MethodInfo("@icon", PropertyInfo(VariantType::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 	register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 
 	register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 	// Export annotations.
-	register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
-	register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
-	register_annotation(MethodInfo("@export_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FILE, Variant::STRING>, varray(""), true);
-	register_annotation(MethodInfo("@export_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_DIR, Variant::STRING>);
-	register_annotation(MethodInfo("@export_global_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_FILE, Variant::STRING>, varray(""), true);
-	register_annotation(MethodInfo("@export_global_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_DIR, Variant::STRING>);
-	register_annotation(MethodInfo("@export_multiline"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_MULTILINE_TEXT, Variant::STRING>);
-	register_annotation(MethodInfo("@export_placeholder", PropertyInfo(Variant::STRING, "placeholder")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_PLACEHOLDER_TEXT, Variant::STRING>);
-	register_annotation(MethodInfo("@export_range", PropertyInfo(Variant::FLOAT, "min"), PropertyInfo(Variant::FLOAT, "max"), PropertyInfo(Variant::FLOAT, "step"), PropertyInfo(Variant::STRING, "extra_hints")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_RANGE, Variant::FLOAT>, varray(1.0, ""), true);
-	register_annotation(MethodInfo("@export_exp_easing", PropertyInfo(Variant::STRING, "hints")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_EXP_EASING, Variant::FLOAT>, varray(""), true);
-	register_annotation(MethodInfo("@export_color_no_alpha"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_COLOR_NO_ALPHA, Variant::COLOR>);
-	register_annotation(MethodInfo("@export_node_path", PropertyInfo(Variant::STRING, "type")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NODE_PATH_VALID_TYPES, Variant::NODE_PATH>, varray(""), true);
-	register_annotation(MethodInfo("@export_flags", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FLAGS, Variant::INT>, varray(), true);
-	register_annotation(MethodInfo("@export_flags_2d_render"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_RENDER, Variant::INT>);
-	register_annotation(MethodInfo("@export_flags_2d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_PHYSICS, Variant::INT>);
-	register_annotation(MethodInfo("@export_flags_2d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_NAVIGATION, Variant::INT>);
-	register_annotation(MethodInfo("@export_flags_3d_render"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_RENDER, Variant::INT>);
-	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
-	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
-	register_annotation(MethodInfo("@export_flags_avoidance"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_AVOIDANCE, Variant::INT>);
+	register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, VariantType::NIL>);
+	register_annotation(MethodInfo("@export_enum", PropertyInfo(VariantType::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, VariantType::NIL>, varray(), true);
+	register_annotation(MethodInfo("@export_file", PropertyInfo(VariantType::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FILE, VariantType::STRING>, varray(""), true);
+	register_annotation(MethodInfo("@export_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_DIR, VariantType::STRING>);
+	register_annotation(MethodInfo("@export_global_file", PropertyInfo(VariantType::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_FILE, VariantType::STRING>, varray(""), true);
+	register_annotation(MethodInfo("@export_global_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_DIR, VariantType::STRING>);
+	register_annotation(MethodInfo("@export_multiline"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_MULTILINE_TEXT, VariantType::STRING>);
+	register_annotation(MethodInfo("@export_placeholder", PropertyInfo(VariantType::STRING, "placeholder")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_PLACEHOLDER_TEXT, VariantType::STRING>);
+	register_annotation(MethodInfo("@export_range", PropertyInfo(VariantType::FLOAT, "min"), PropertyInfo(VariantType::FLOAT, "max"), PropertyInfo(VariantType::FLOAT, "step"), PropertyInfo(VariantType::STRING, "extra_hints")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_RANGE, VariantType::FLOAT>, varray(1.0, ""), true);
+	register_annotation(MethodInfo("@export_exp_easing", PropertyInfo(VariantType::STRING, "hints")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_EXP_EASING, VariantType::FLOAT>, varray(""), true);
+	register_annotation(MethodInfo("@export_color_no_alpha"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_COLOR_NO_ALPHA, VariantType::COLOR>);
+	register_annotation(MethodInfo("@export_node_path", PropertyInfo(VariantType::STRING, "type")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NODE_PATH_VALID_TYPES, VariantType::NODE_PATH>, varray(""), true);
+	register_annotation(MethodInfo("@export_flags", PropertyInfo(VariantType::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FLAGS, VariantType::INT>, varray(), true);
+	register_annotation(MethodInfo("@export_flags_2d_render"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_RENDER, VariantType::INT>);
+	register_annotation(MethodInfo("@export_flags_2d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_PHYSICS, VariantType::INT>);
+	register_annotation(MethodInfo("@export_flags_2d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_NAVIGATION, VariantType::INT>);
+	register_annotation(MethodInfo("@export_flags_3d_render"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_RENDER, VariantType::INT>);
+	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, VariantType::INT>);
+	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, VariantType::INT>);
+	register_annotation(MethodInfo("@export_flags_avoidance"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_AVOIDANCE, VariantType::INT>);
 	// Export grouping annotations.
-	register_annotation(MethodInfo("@export_category", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
-	register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
-	register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
+	register_annotation(MethodInfo("@export_category", PropertyInfo(VariantType::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
+	register_annotation(MethodInfo("@export_group", PropertyInfo(VariantType::STRING, "name"), PropertyInfo(VariantType::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
+	register_annotation(MethodInfo("@export_subgroup", PropertyInfo(VariantType::STRING, "name"), PropertyInfo(VariantType::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
 	// Warning annotations.
-	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
+	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(VariantType::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0));
+	register_annotation(MethodInfo("@rpc", PropertyInfo(VariantType::STRING, "mode"), PropertyInfo(VariantType::STRING, "sync"), PropertyInfo(VariantType::STRING, "transfer_mode"), PropertyInfo(VariantType::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0));
 
 #ifdef DEBUG_ENABLED
 	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
@@ -236,7 +236,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node
 	completion_context = context;
 }
 
-void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force) {
+void GDScriptParser::make_completion_context(CompletionType p_type, VariantType p_builtin_type, bool p_force) {
 	if (!for_completion || (!p_force && completion_context.type != COMPLETION_NONE)) {
 		return;
 	}
@@ -528,7 +528,7 @@ void GDScriptParser::parse_program() {
 					break;
 				}
 			}
-		} else if (check(GDScriptTokenizer::Token::LITERAL) && current.literal.get_type() == Variant::STRING) {
+		} else if (check(GDScriptTokenizer::Token::LITERAL) && current.literal.get_type() == VariantType::STRING) {
 			// Allow strings in class body as multiline comments.
 			advance();
 			if (!match(GDScriptTokenizer::Token::NEWLINE)) {
@@ -560,7 +560,7 @@ void GDScriptParser::parse_program() {
 				}
 				break;
 			case GDScriptTokenizer::Token::LITERAL:
-				if (current.literal.get_type() == Variant::STRING) {
+				if (current.literal.get_type() == VariantType::STRING) {
 					// Allow strings in class body as multiline comments.
 					advance();
 					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
@@ -723,7 +723,7 @@ void GDScriptParser::parse_extends() {
 	int chain_index = 0;
 
 	if (match(GDScriptTokenizer::Token::LITERAL)) {
-		if (previous.literal.get_type() != Variant::STRING) {
+		if (previous.literal.get_type() != VariantType::STRING) {
 			push_error(vformat(R"(Only strings or identifiers can be used after "extends", found "%s" instead.)", Variant::get_type_name(previous.literal.get_type())));
 		}
 		current_class->extends_path = previous.literal;
@@ -884,7 +884,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				class_end = true;
 				break;
 			case GDScriptTokenizer::Token::LITERAL:
-				if (current.literal.get_type() == Variant::STRING) {
+				if (current.literal.get_type() == VariantType::STRING) {
 					// Allow strings in class body as multiline comments.
 					advance();
 					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
@@ -1761,7 +1761,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);
 						break;
 					case Node::LITERAL:
-						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() == Variant::STRING) {
+						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() == VariantType::STRING) {
 							// Allow strings as multiline comments.
 							break;
 						}
@@ -2436,7 +2436,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionN
 	switch (op_type) {
 		case GDScriptTokenizer::Token::MINUS:
 			operation->operation = UnaryOpNode::OP_NEGATIVE;
-			operation->variant_op = Variant::OP_NEGATE;
+			operation->variant_op = VariantOperator::NEGATE;
 			operation->operand = parse_precedence(PREC_SIGN, false);
 			if (operation->operand == nullptr) {
 				push_error(R"(Expected expression after "-" operator.)");
@@ -2444,7 +2444,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionN
 			break;
 		case GDScriptTokenizer::Token::PLUS:
 			operation->operation = UnaryOpNode::OP_POSITIVE;
-			operation->variant_op = Variant::OP_POSITIVE;
+			operation->variant_op = VariantOperator::POSITIVE;
 			operation->operand = parse_precedence(PREC_SIGN, false);
 			if (operation->operand == nullptr) {
 				push_error(R"(Expected expression after "+" operator.)");
@@ -2452,7 +2452,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionN
 			break;
 		case GDScriptTokenizer::Token::TILDE:
 			operation->operation = UnaryOpNode::OP_COMPLEMENT;
-			operation->variant_op = Variant::OP_BIT_NEGATE;
+			operation->variant_op = VariantOperator::BIT_NEGATE;
 			operation->operand = parse_precedence(PREC_BIT_NOT, false);
 			if (operation->operand == nullptr) {
 				push_error(R"(Expected expression after "~" operator.)");
@@ -2461,7 +2461,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionN
 		case GDScriptTokenizer::Token::NOT:
 		case GDScriptTokenizer::Token::BANG:
 			operation->operation = UnaryOpNode::OP_LOGIC_NOT;
-			operation->variant_op = Variant::OP_NOT;
+			operation->variant_op = VariantOperator::NOT;
 			operation->operand = parse_precedence(PREC_LOGIC_NOT, false);
 			if (operation->operand == nullptr) {
 				push_error(vformat(R"(Expected expression after "%s" operator.)", op_type == GDScriptTokenizer::Token::NOT ? "not" : "!"));
@@ -2484,7 +2484,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_not_in_operator(Exp
 	consume(GDScriptTokenizer::Token::IN, R"(Expected "in" after "not" in content-test operator.)");
 	ExpressionNode *in_operation = parse_binary_operator(p_previous_operand, p_can_assign);
 	operation->operation = UnaryOpNode::OP_LOGIC_NOT;
-	operation->variant_op = Variant::OP_NOT;
+	operation->variant_op = VariantOperator::NOT;
 	operation->operand = in_operation;
 	complete_extents(operation);
 	return operation;
@@ -2509,85 +2509,85 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 	switch (op.type) {
 		case GDScriptTokenizer::Token::PLUS:
 			operation->operation = BinaryOpNode::OP_ADDITION;
-			operation->variant_op = Variant::OP_ADD;
+			operation->variant_op = VariantOperator::ADD;
 			break;
 		case GDScriptTokenizer::Token::MINUS:
 			operation->operation = BinaryOpNode::OP_SUBTRACTION;
-			operation->variant_op = Variant::OP_SUBTRACT;
+			operation->variant_op = VariantOperator::SUBTRACT;
 			break;
 		case GDScriptTokenizer::Token::STAR:
 			operation->operation = BinaryOpNode::OP_MULTIPLICATION;
-			operation->variant_op = Variant::OP_MULTIPLY;
+			operation->variant_op = VariantOperator::MULTIPLY;
 			break;
 		case GDScriptTokenizer::Token::SLASH:
 			operation->operation = BinaryOpNode::OP_DIVISION;
-			operation->variant_op = Variant::OP_DIVIDE;
+			operation->variant_op = VariantOperator::DIVIDE;
 			break;
 		case GDScriptTokenizer::Token::PERCENT:
 			operation->operation = BinaryOpNode::OP_MODULO;
-			operation->variant_op = Variant::OP_MODULE;
+			operation->variant_op = VariantOperator::MODULE;
 			break;
 		case GDScriptTokenizer::Token::STAR_STAR:
 			operation->operation = BinaryOpNode::OP_POWER;
-			operation->variant_op = Variant::OP_POWER;
+			operation->variant_op = VariantOperator::POWER;
 			break;
 		case GDScriptTokenizer::Token::LESS_LESS:
 			operation->operation = BinaryOpNode::OP_BIT_LEFT_SHIFT;
-			operation->variant_op = Variant::OP_SHIFT_LEFT;
+			operation->variant_op = VariantOperator::SHIFT_LEFT;
 			break;
 		case GDScriptTokenizer::Token::GREATER_GREATER:
 			operation->operation = BinaryOpNode::OP_BIT_RIGHT_SHIFT;
-			operation->variant_op = Variant::OP_SHIFT_RIGHT;
+			operation->variant_op = VariantOperator::SHIFT_RIGHT;
 			break;
 		case GDScriptTokenizer::Token::AMPERSAND:
 			operation->operation = BinaryOpNode::OP_BIT_AND;
-			operation->variant_op = Variant::OP_BIT_AND;
+			operation->variant_op = VariantOperator::BIT_AND;
 			break;
 		case GDScriptTokenizer::Token::PIPE:
 			operation->operation = BinaryOpNode::OP_BIT_OR;
-			operation->variant_op = Variant::OP_BIT_OR;
+			operation->variant_op = VariantOperator::BIT_OR;
 			break;
 		case GDScriptTokenizer::Token::CARET:
 			operation->operation = BinaryOpNode::OP_BIT_XOR;
-			operation->variant_op = Variant::OP_BIT_XOR;
+			operation->variant_op = VariantOperator::BIT_XOR;
 			break;
 		case GDScriptTokenizer::Token::AND:
 		case GDScriptTokenizer::Token::AMPERSAND_AMPERSAND:
 			operation->operation = BinaryOpNode::OP_LOGIC_AND;
-			operation->variant_op = Variant::OP_AND;
+			operation->variant_op = VariantOperator::AND;
 			break;
 		case GDScriptTokenizer::Token::OR:
 		case GDScriptTokenizer::Token::PIPE_PIPE:
 			operation->operation = BinaryOpNode::OP_LOGIC_OR;
-			operation->variant_op = Variant::OP_OR;
+			operation->variant_op = VariantOperator::OR;
 			break;
 		case GDScriptTokenizer::Token::IN:
 			operation->operation = BinaryOpNode::OP_CONTENT_TEST;
-			operation->variant_op = Variant::OP_IN;
+			operation->variant_op = VariantOperator::OP_IN;
 			break;
 		case GDScriptTokenizer::Token::EQUAL_EQUAL:
 			operation->operation = BinaryOpNode::OP_COMP_EQUAL;
-			operation->variant_op = Variant::OP_EQUAL;
+			operation->variant_op = VariantOperator::EQUAL;
 			break;
 		case GDScriptTokenizer::Token::BANG_EQUAL:
 			operation->operation = BinaryOpNode::OP_COMP_NOT_EQUAL;
-			operation->variant_op = Variant::OP_NOT_EQUAL;
+			operation->variant_op = VariantOperator::NOT_EQUAL;
 			break;
 		case GDScriptTokenizer::Token::LESS:
 			operation->operation = BinaryOpNode::OP_COMP_LESS;
-			operation->variant_op = Variant::OP_LESS;
+			operation->variant_op = VariantOperator::LESS;
 			break;
 		case GDScriptTokenizer::Token::LESS_EQUAL:
 			operation->operation = BinaryOpNode::OP_COMP_LESS_EQUAL;
-			operation->variant_op = Variant::OP_LESS_EQUAL;
+			operation->variant_op = VariantOperator::LESS_EQUAL;
 			break;
 		case GDScriptTokenizer::Token::GREATER:
 			operation->operation = BinaryOpNode::OP_COMP_GREATER;
-			operation->variant_op = Variant::OP_GREATER;
+			operation->variant_op = VariantOperator::GREATER;
 			break;
 		case GDScriptTokenizer::Token::GREATER_EQUAL:
 			operation->operation = BinaryOpNode::OP_COMP_GREATER_EQUAL;
-			operation->variant_op = Variant::OP_GREATER_EQUAL;
+			operation->variant_op = VariantOperator::GREATER_EQUAL;
 			break;
 		default:
 			return nullptr; // Unreachable.
@@ -2680,54 +2680,54 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	switch (previous.type) {
 		case GDScriptTokenizer::Token::EQUAL:
 			assignment->operation = AssignmentNode::OP_NONE;
-			assignment->variant_op = Variant::OP_MAX;
+			assignment->variant_op = VariantOperator::MAX;
 #ifdef DEBUG_ENABLED
 			has_operator = false;
 #endif
 			break;
 		case GDScriptTokenizer::Token::PLUS_EQUAL:
 			assignment->operation = AssignmentNode::OP_ADDITION;
-			assignment->variant_op = Variant::OP_ADD;
+			assignment->variant_op = VariantOperator::ADD;
 			break;
 		case GDScriptTokenizer::Token::MINUS_EQUAL:
 			assignment->operation = AssignmentNode::OP_SUBTRACTION;
-			assignment->variant_op = Variant::OP_SUBTRACT;
+			assignment->variant_op = VariantOperator::SUBTRACT;
 			break;
 		case GDScriptTokenizer::Token::STAR_EQUAL:
 			assignment->operation = AssignmentNode::OP_MULTIPLICATION;
-			assignment->variant_op = Variant::OP_MULTIPLY;
+			assignment->variant_op = VariantOperator::MULTIPLY;
 			break;
 		case GDScriptTokenizer::Token::STAR_STAR_EQUAL:
 			assignment->operation = AssignmentNode::OP_POWER;
-			assignment->variant_op = Variant::OP_POWER;
+			assignment->variant_op = VariantOperator::POWER;
 			break;
 		case GDScriptTokenizer::Token::SLASH_EQUAL:
 			assignment->operation = AssignmentNode::OP_DIVISION;
-			assignment->variant_op = Variant::OP_DIVIDE;
+			assignment->variant_op = VariantOperator::DIVIDE;
 			break;
 		case GDScriptTokenizer::Token::PERCENT_EQUAL:
 			assignment->operation = AssignmentNode::OP_MODULO;
-			assignment->variant_op = Variant::OP_MODULE;
+			assignment->variant_op = VariantOperator::MODULE;
 			break;
 		case GDScriptTokenizer::Token::LESS_LESS_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_SHIFT_LEFT;
-			assignment->variant_op = Variant::OP_SHIFT_LEFT;
+			assignment->variant_op = VariantOperator::SHIFT_LEFT;
 			break;
 		case GDScriptTokenizer::Token::GREATER_GREATER_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_SHIFT_RIGHT;
-			assignment->variant_op = Variant::OP_SHIFT_RIGHT;
+			assignment->variant_op = VariantOperator::SHIFT_RIGHT;
 			break;
 		case GDScriptTokenizer::Token::AMPERSAND_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_AND;
-			assignment->variant_op = Variant::OP_BIT_AND;
+			assignment->variant_op = VariantOperator::BIT_AND;
 			break;
 		case GDScriptTokenizer::Token::PIPE_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_OR;
-			assignment->variant_op = Variant::OP_BIT_OR;
+			assignment->variant_op = VariantOperator::BIT_OR;
 			break;
 		case GDScriptTokenizer::Token::CARET_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_XOR;
-			assignment->variant_op = Variant::OP_BIT_XOR;
+			assignment->variant_op = VariantOperator::BIT_XOR;
 			break;
 		default:
 			break; // Unreachable.
@@ -2833,7 +2833,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 						advance();
 						break;
 					}
-					if (key != nullptr && key->type == Node::LITERAL && static_cast<LiteralNode *>(key)->value.get_type() != Variant::STRING) {
+					if (key != nullptr && key->type == Node::LITERAL && static_cast<LiteralNode *>(key)->value.get_type() != VariantType::STRING) {
 						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }").)");
 						advance();
 						break;
@@ -2905,8 +2905,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 		bool is_builtin = false;
 		if (p_previous_operand && p_previous_operand->type == Node::IDENTIFIER) {
 			const IdentifierNode *id = static_cast<const IdentifierNode *>(p_previous_operand);
-			Variant::Type builtin_type = get_builtin_type(id->name);
-			if (builtin_type < Variant::VARIANT_MAX) {
+			VariantType builtin_type = get_builtin_type(id->name);
+			if (builtin_type < VariantType::MAX) {
 				make_completion_context(COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, builtin_type, true);
 				is_builtin = true;
 			}
@@ -3071,7 +3071,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 	}
 
 	if (check(GDScriptTokenizer::Token::LITERAL)) {
-		if (current.literal.get_type() != Variant::STRING) {
+		if (current.literal.get_type() != VariantType::STRING) {
 			push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
 			return nullptr;
 		}
@@ -3122,7 +3122,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument++);
 
 		if (match(GDScriptTokenizer::Token::LITERAL)) {
-			if (previous.literal.get_type() != Variant::STRING) {
+			if (previous.literal.get_type() != VariantType::STRING) {
 				String previous_token;
 				switch (path_state) {
 					case PATH_STATE_START:
@@ -3836,7 +3836,7 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 
 		Variant value = static_cast<LiteralNode *>(argument)->value;
 
-		if (value.get_type() != Variant::STRING) {
+		if (value.get_type() != VariantType::STRING) {
 			push_error(R"(Argument 1 of annotation "@icon" must be a string literal.)", argument);
 			return false;
 		}
@@ -3912,7 +3912,7 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 	return true;
 }
 
-template <PropertyHint t_hint, Variant::Type t_type>
+template <PropertyHint t_hint, VariantType t_type>
 bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
 	ERR_FAIL_NULL_V(p_class, false);
@@ -3999,32 +3999,32 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	DataType export_type = variable->get_datatype();
 
 	if (p_annotation->name == SNAME("@export_range")) {
-		if (export_type.builtin_type == Variant::INT) {
-			variable->export_info.type = Variant::INT;
+		if (export_type.builtin_type == VariantType::INT) {
+			variable->export_info.type = VariantType::INT;
 		}
 	} else if (p_annotation->name == SNAME("@export_multiline")) {
-		if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type(0)) {
+		if (export_type.builtin_type == VariantType::ARRAY && export_type.has_container_element_type(0)) {
 			DataType inner_type = export_type.get_container_element_type(0);
-			if (inner_type.builtin_type != Variant::STRING) {
+			if (inner_type.builtin_type != VariantType::STRING) {
 				push_error(vformat(R"("%s" annotation on arrays requires a string type but type "%s" was given instead.)", p_annotation->name.operator String(), inner_type.to_string()), variable);
 				return false;
 			}
 
-			String hint_prefix = itos(inner_type.builtin_type) + "/" + itos(variable->export_info.hint);
+			String hint_prefix = itos((int)inner_type.builtin_type) + "/" + itos(variable->export_info.hint);
 			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
 			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
-			variable->export_info.type = Variant::ARRAY;
+			variable->export_info.type = VariantType::ARRAY;
 
 			return true;
-		} else if (export_type.builtin_type == Variant::DICTIONARY) {
-			variable->export_info.type = Variant::DICTIONARY;
+		} else if (export_type.builtin_type == VariantType::DICTIONARY) {
+			variable->export_info.type = VariantType::DICTIONARY;
 
 			return true;
-		} else if (export_type.builtin_type == Variant::PACKED_STRING_ARRAY) {
-			String hint_prefix = itos(Variant::STRING) + "/" + itos(variable->export_info.hint);
+		} else if (export_type.builtin_type == VariantType::PACKED_STRING_ARRAY) {
+			String hint_prefix = itos((int)VariantType::STRING) + "/" + itos(variable->export_info.hint);
 			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
 			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
-			variable->export_info.type = Variant::PACKED_STRING_ARRAY;
+			variable->export_info.type = VariantType::PACKED_STRING_ARRAY;
 
 			return true;
 		}
@@ -4040,7 +4040,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 		bool is_array = false;
 
-		if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type(0)) {
+		if (export_type.builtin_type == VariantType::ARRAY && export_type.has_container_element_type(0)) {
 			export_type = export_type.get_container_element_type(0); // Use inner type for.
 			is_array = true;
 		}
@@ -4058,11 +4058,11 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				break;
 			case GDScriptParser::DataType::NATIVE:
 				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
-					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.type = VariantType::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = export_type.native_type;
 				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
-					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.type = VariantType::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
 					variable->export_info.hint_string = export_type.native_type;
 				} else {
@@ -4072,11 +4072,11 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				break;
 			case GDScriptParser::DataType::CLASS:
 				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
-					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.type = VariantType::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = export_type.to_string();
 				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
-					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.type = VariantType::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
 					variable->export_info.hint_string = export_type.to_string();
 				} else {
@@ -4100,16 +4100,16 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 					}
 				}
 				if (class_name != StringName() && native_base != StringName() && ClassDB::is_parent_class(native_base, SNAME("Resource"))) {
-					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.type = VariantType::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = class_name;
 				}
 			} break;
 			case GDScriptParser::DataType::ENUM: {
 				if (export_type.is_meta_type) {
-					variable->export_info.type = Variant::DICTIONARY;
+					variable->export_info.type = VariantType::DICTIONARY;
 				} else {
-					variable->export_info.type = Variant::INT;
+					variable->export_info.type = VariantType::INT;
 					variable->export_info.hint = PROPERTY_HINT_ENUM;
 
 					String enum_hint_string;
@@ -4141,23 +4141,23 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		}
 
 		if (is_array) {
-			String hint_prefix = itos(variable->export_info.type);
+			String hint_prefix = itos((int)variable->export_info.type);
 			if (variable->export_info.hint) {
 				hint_prefix += "/" + itos(variable->export_info.hint);
 			}
 			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
 			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
-			variable->export_info.type = Variant::ARRAY;
+			variable->export_info.type = VariantType::ARRAY;
 		}
 	} else if (p_annotation->name == SNAME("@export_enum")) {
-		Variant::Type enum_type = Variant::INT;
+		VariantType enum_type = VariantType::INT;
 
-		if (export_type.kind == DataType::BUILTIN && export_type.builtin_type == Variant::STRING) {
-			enum_type = Variant::STRING;
+		if (export_type.kind == DataType::BUILTIN && export_type.builtin_type == VariantType::STRING) {
+			enum_type = VariantType::STRING;
 		} else if (export_type.is_variant() && variable->initializer != nullptr) {
 			DataType initializer_type = variable->initializer->get_datatype();
-			if (initializer_type.kind == DataType::BUILTIN && initializer_type.builtin_type == Variant::STRING) {
-				enum_type = Variant::STRING;
+			if (initializer_type.kind == DataType::BUILTIN && initializer_type.builtin_type == VariantType::STRING) {
+				enum_type = VariantType::STRING;
 			}
 		}
 
@@ -4171,7 +4171,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		// Validate variable type with export.
 		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != t_type)) {
 			// Allow float/int conversion.
-			if ((t_type != Variant::FLOAT || export_type.builtin_type != Variant::INT) && (t_type != Variant::INT || export_type.builtin_type != Variant::FLOAT)) {
+			if ((t_type != VariantType::FLOAT || export_type.builtin_type != VariantType::INT) && (t_type != VariantType::INT || export_type.builtin_type != VariantType::FLOAT)) {
 				push_error(vformat(R"("%s" annotation requires a variable of type "%s" but type "%s" was given instead.)", p_annotation->name.operator String(), Variant::get_type_name(t_type), export_type.to_string()), variable);
 				return false;
 			}
@@ -4239,7 +4239,7 @@ bool GDScriptParser::rpc_annotation(const AnnotationNode *p_annotation, Node *p_
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::FUNCTION, false, vformat(R"("%s" annotation can only be applied to functions.)", p_annotation->name));
 
 	FunctionNode *function = static_cast<FunctionNode *>(p_target);
-	if (function->rpc_config.get_type() != Variant::NIL) {
+	if (function->rpc_config.get_type() != VariantType::NIL) {
 		push_error(R"(RPC annotations can only be used once per function.)", p_annotation);
 		return false;
 	}
@@ -4348,10 +4348,10 @@ String GDScriptParser::DataType::to_string() const {
 		case VARIANT:
 			return "Variant";
 		case BUILTIN:
-			if (builtin_type == Variant::NIL) {
+			if (builtin_type == VariantType::NIL) {
 				return "null";
 			}
-			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
+			if (builtin_type == VariantType::ARRAY && has_container_element_type(0)) {
 				return vformat("Array[%s]", container_element_types[0].to_string());
 			}
 			return Variant::get_type_name(builtin_type);
@@ -4405,7 +4405,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 	switch (kind) {
 		case BUILTIN:
 			result.type = builtin_type;
-			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
+			if (builtin_type == VariantType::ARRAY && has_container_element_type(0)) {
 				const DataType elem_type = get_container_element_type(0);
 				switch (elem_type.kind) {
 					case BUILTIN:
@@ -4444,7 +4444,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 			}
 			break;
 		case NATIVE:
-			result.type = Variant::OBJECT;
+			result.type = VariantType::OBJECT;
 			if (is_meta_type) {
 				result.class_name = GDScriptNativeClass::get_class_static();
 			} else {
@@ -4452,7 +4452,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 			}
 			break;
 		case SCRIPT:
-			result.type = Variant::OBJECT;
+			result.type = VariantType::OBJECT;
 			if (is_meta_type) {
 				result.class_name = script_type.is_valid() ? script_type->get_class() : Script::get_class_static();
 			} else if (script_type.is_valid() && script_type->get_global_name() != StringName()) {
@@ -4462,7 +4462,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 			}
 			break;
 		case CLASS:
-			result.type = Variant::OBJECT;
+			result.type = VariantType::OBJECT;
 			if (is_meta_type) {
 				result.class_name = GDScript::get_class_static();
 			} else if (class_type != nullptr && class_type->get_global_name() != StringName()) {
@@ -4473,9 +4473,9 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 			break;
 		case ENUM:
 			if (is_meta_type) {
-				result.type = Variant::DICTIONARY;
+				result.type = VariantType::DICTIONARY;
 			} else {
-				result.type = Variant::INT;
+				result.type = VariantType::INT;
 				result.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
 				result.class_name = String(native_type).replace("::", ".");
 			}
@@ -4490,30 +4490,30 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 	return result;
 }
 
-static Variant::Type _variant_type_to_typed_array_element_type(Variant::Type p_type) {
+static VariantType _variant_type_to_typed_array_element_type(VariantType p_type) {
 	switch (p_type) {
-		case Variant::PACKED_BYTE_ARRAY:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY:
-			return Variant::INT;
-		case Variant::PACKED_FLOAT32_ARRAY:
-		case Variant::PACKED_FLOAT64_ARRAY:
-			return Variant::FLOAT;
-		case Variant::PACKED_STRING_ARRAY:
-			return Variant::STRING;
-		case Variant::PACKED_VECTOR2_ARRAY:
-			return Variant::VECTOR2;
-		case Variant::PACKED_VECTOR3_ARRAY:
-			return Variant::VECTOR3;
-		case Variant::PACKED_COLOR_ARRAY:
-			return Variant::COLOR;
+		case VariantType::PACKED_BYTE_ARRAY:
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY:
+			return VariantType::INT;
+		case VariantType::PACKED_FLOAT32_ARRAY:
+		case VariantType::PACKED_FLOAT64_ARRAY:
+			return VariantType::FLOAT;
+		case VariantType::PACKED_STRING_ARRAY:
+			return VariantType::STRING;
+		case VariantType::PACKED_VECTOR2_ARRAY:
+			return VariantType::VECTOR2;
+		case VariantType::PACKED_VECTOR3_ARRAY:
+			return VariantType::VECTOR3;
+		case VariantType::PACKED_COLOR_ARRAY:
+			return VariantType::COLOR;
 		default:
-			return Variant::NIL;
+			return VariantType::NIL;
 	}
 }
 
 bool GDScriptParser::DataType::is_typed_container_type() const {
-	return kind == GDScriptParser::DataType::BUILTIN && _variant_type_to_typed_array_element_type(builtin_type) != Variant::NIL;
+	return kind == GDScriptParser::DataType::BUILTIN && _variant_type_to_typed_array_element_type(builtin_type) != VariantType::NIL;
 }
 
 GDScriptParser::DataType GDScriptParser::DataType::get_typed_container_type() const {
@@ -5065,13 +5065,13 @@ void GDScriptParser::TreePrinter::print_lambda(LambdaNode *p_lambda) {
 void GDScriptParser::TreePrinter::print_literal(LiteralNode *p_literal) {
 	// Prefix for string types.
 	switch (p_literal->value.get_type()) {
-		case Variant::NODE_PATH:
+		case VariantType::NODE_PATH:
 			push_text("^\"");
 			break;
-		case Variant::STRING:
+		case VariantType::STRING:
 			push_text("\"");
 			break;
-		case Variant::STRING_NAME:
+		case VariantType::STRING_NAME:
 			push_text("&\"");
 			break;
 		default:
@@ -5080,9 +5080,9 @@ void GDScriptParser::TreePrinter::print_literal(LiteralNode *p_literal) {
 	push_text(p_literal->value);
 	// Suffix for string types.
 	switch (p_literal->value.get_type()) {
-		case Variant::NODE_PATH:
-		case Variant::STRING:
-		case Variant::STRING_NAME:
+		case VariantType::NODE_PATH:
+		case VariantType::STRING:
+		case VariantType::STRING_NAME:
 			push_text("\"");
 			break;
 		default:

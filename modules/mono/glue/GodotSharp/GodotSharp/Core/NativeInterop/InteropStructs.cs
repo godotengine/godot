@@ -98,9 +98,9 @@ namespace Godot.NativeInterop
             set => argument = value;
         }
 
-        public Godot.Variant.Type Expected
+        public Godot.VariantType Expected
         {
-            readonly get => (Godot.Variant.Type)expected;
+            readonly get => (Godot.VariantType)expected;
             set => expected = (int)value;
         }
     }
@@ -113,7 +113,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_variant* GetUnsafeAddress()
             => (godot_variant*)Unsafe.AsPointer(ref Unsafe.AsRef(in _typeField));
 
-        // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
+        // VariantType is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
         private int _typeField;
 
         // There's padding here
@@ -177,10 +177,10 @@ namespace Godot.NativeInterop
             }
         }
 
-        public Variant.Type Type
+        public VariantType Type
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            readonly get => (Variant.Type)_typeField;
+            readonly get => (VariantType)_typeField;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _typeField = (int)value;
         }
@@ -401,34 +401,34 @@ namespace Godot.NativeInterop
         {
             switch (Type)
             {
-                case Variant.Type.Nil:
-                case Variant.Type.Bool:
-                case Variant.Type.Int:
-                case Variant.Type.Float:
-                case Variant.Type.Vector2:
-                case Variant.Type.Vector2I:
-                case Variant.Type.Rect2:
-                case Variant.Type.Rect2I:
-                case Variant.Type.Vector3:
-                case Variant.Type.Vector3I:
-                case Variant.Type.Vector4:
-                case Variant.Type.Vector4I:
-                case Variant.Type.Plane:
-                case Variant.Type.Quaternion:
-                case Variant.Type.Color:
-                case Variant.Type.Rid:
+                case VariantType.Nil:
+                case VariantType.Bool:
+                case VariantType.Int:
+                case VariantType.Float:
+                case VariantType.Vector2:
+                case VariantType.Vector2I:
+                case VariantType.Rect2:
+                case VariantType.Rect2I:
+                case VariantType.Vector3:
+                case VariantType.Vector3I:
+                case VariantType.Vector4:
+                case VariantType.Vector4I:
+                case VariantType.Plane:
+                case VariantType.Quaternion:
+                case VariantType.Color:
+                case VariantType.Rid:
                     return;
             }
 
             NativeFuncs.godotsharp_variant_destroy(ref this);
-            Type = Variant.Type.Nil;
+            Type = VariantType.Nil;
         }
 
         [StructLayout(LayoutKind.Explicit)]
         // ReSharper disable once InconsistentNaming
         internal struct movable
         {
-            // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
+            // VariantType is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
             [FieldOffset(0)] private int _typeField;
 
             // There's padding here

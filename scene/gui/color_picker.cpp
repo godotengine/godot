@@ -1683,22 +1683,22 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_picker_shape", "shape"), &ColorPicker::set_picker_shape);
 	ClassDB::bind_method(D_METHOD("get_picker_shape"), &ColorPicker::get_picker_shape);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW,OKHSL"), "set_color_mode", "get_color_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,None"), "set_picker_shape", "get_picker_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_add_swatches"), "set_can_add_swatches", "are_swatches_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "color"), "set_pick_color", "get_pick_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "color_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW,OKHSL"), "set_color_mode", "get_color_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,None"), "set_picker_shape", "get_picker_shape");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "can_add_swatches"), "set_can_add_swatches", "are_swatches_enabled");
 	ADD_GROUP("Customization", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sampler_visible"), "set_sampler_visible", "is_sampler_visible");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "color_modes_visible"), "set_modes_visible", "are_modes_visible");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sliders_visible"), "set_sliders_visible", "are_sliders_visible");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hex_visible"), "set_hex_visible", "is_hex_visible");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_visible"), "set_presets_visible", "are_presets_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "sampler_visible"), "set_sampler_visible", "is_sampler_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "color_modes_visible"), "set_modes_visible", "are_modes_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "sliders_visible"), "set_sliders_visible", "are_sliders_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "hex_visible"), "set_hex_visible", "is_hex_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "presets_visible"), "set_presets_visible", "are_presets_visible");
 
-	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
-	ADD_SIGNAL(MethodInfo("preset_added", PropertyInfo(Variant::COLOR, "color")));
-	ADD_SIGNAL(MethodInfo("preset_removed", PropertyInfo(Variant::COLOR, "color")));
+	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(VariantType::COLOR, "color")));
+	ADD_SIGNAL(MethodInfo("preset_added", PropertyInfo(VariantType::COLOR, "color")));
+	ADD_SIGNAL(MethodInfo("preset_removed", PropertyInfo(VariantType::COLOR, "color")));
 
 	BIND_ENUM_CONSTANT(MODE_RGB);
 	BIND_ENUM_CONSTANT(MODE_HSV);
@@ -2106,11 +2106,11 @@ void ColorPickerButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPickerButton::is_editing_alpha);
 	ClassDB::bind_method(D_METHOD("_about_to_popup"), &ColorPickerButton::_about_to_popup);
 
-	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
+	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(VariantType::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("popup_closed"));
 	ADD_SIGNAL(MethodInfo("picker_created"));
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "color"), "set_pick_color", "get_pick_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ColorPickerButton, normal_style, "normal");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ColorPickerButton, background_icon, "bg");

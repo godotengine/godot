@@ -90,8 +90,8 @@ void MissingNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_recording_properties"), &MissingNode::is_recording_properties);
 
 	// Expose, but not save.
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_class", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_original_class", "get_original_class");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recording_properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_recording_properties", "is_recording_properties");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "original_class", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_original_class", "get_original_class");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "recording_properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_recording_properties", "is_recording_properties");
 }
 
 MissingNode::MissingNode() {

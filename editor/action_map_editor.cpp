@@ -365,11 +365,11 @@ void ActionMapEditor::_notification(int p_what) {
 }
 
 void ActionMapEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("action_added", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("action_edited", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::DICTIONARY, "new_action")));
-	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
-	ADD_SIGNAL(MethodInfo("action_reordered", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::STRING, "relative_to"), PropertyInfo(Variant::BOOL, "before")));
+	ADD_SIGNAL(MethodInfo("action_added", PropertyInfo(VariantType::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("action_edited", PropertyInfo(VariantType::STRING, "name"), PropertyInfo(VariantType::DICTIONARY, "new_action")));
+	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(VariantType::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(VariantType::STRING, "old_name"), PropertyInfo(VariantType::STRING, "new_name")));
+	ADD_SIGNAL(MethodInfo("action_reordered", PropertyInfo(VariantType::STRING, "action_name"), PropertyInfo(VariantType::STRING, "relative_to"), PropertyInfo(VariantType::BOOL, "before")));
 	ADD_SIGNAL(MethodInfo(SNAME("filter_focused")));
 	ADD_SIGNAL(MethodInfo(SNAME("filter_unfocused")));
 }

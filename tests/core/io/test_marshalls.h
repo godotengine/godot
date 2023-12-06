@@ -160,8 +160,8 @@ TEST_CASE("[Marshalls] NIL Variant encoding") {
 	uint8_t buffer[4];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 4, "Length == 4 bytes for Variant::Type");
-	CHECK_MESSAGE(buffer[0] == 0x00, "Variant::NIL");
+	CHECK_MESSAGE(r_len == 4, "Length == 4 bytes for VariantType");
+	CHECK_MESSAGE(buffer[0] == 0x00, "VariantType::NIL");
 	CHECK(buffer[1] == 0x00);
 	CHECK(buffer[2] == 0x00);
 	CHECK(buffer[3] == 0x00);
@@ -174,8 +174,8 @@ TEST_CASE("[Marshalls] INT 32 bit Variant encoding") {
 	uint8_t buffer[8];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 8, "Length == 4 bytes for Variant::Type + 4 bytes for int32_t");
-	CHECK_MESSAGE(buffer[0] == 0x02, "Variant::INT");
+	CHECK_MESSAGE(r_len == 8, "Length == 4 bytes for VariantType + 4 bytes for int32_t");
+	CHECK_MESSAGE(buffer[0] == 0x02, "VariantType::INT");
 	CHECK(buffer[1] == 0x00);
 	CHECK(buffer[2] == 0x00);
 	CHECK(buffer[3] == 0x00);
@@ -192,8 +192,8 @@ TEST_CASE("[Marshalls] INT 64 bit Variant encoding") {
 	uint8_t buffer[12];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 12, "Length == 4 bytes for Variant::Type + 8 bytes for int64_t");
-	CHECK_MESSAGE(buffer[0] == 0x02, "Variant::INT");
+	CHECK_MESSAGE(r_len == 12, "Length == 4 bytes for VariantType + 8 bytes for int64_t");
+	CHECK_MESSAGE(buffer[0] == 0x02, "VariantType::INT");
 	CHECK(buffer[1] == 0x00);
 	CHECK_MESSAGE(buffer[2] == 0x01, "ENCODE_FLAG_64");
 	CHECK(buffer[3] == 0x00);
@@ -214,8 +214,8 @@ TEST_CASE("[Marshalls] FLOAT single precision Variant encoding") {
 	uint8_t buffer[8];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 8, "Length == 4 bytes for Variant::Type + 4 bytes for float");
-	CHECK_MESSAGE(buffer[0] == 0x03, "Variant::FLOAT");
+	CHECK_MESSAGE(r_len == 8, "Length == 4 bytes for VariantType + 4 bytes for float");
+	CHECK_MESSAGE(buffer[0] == 0x03, "VariantType::FLOAT");
 	CHECK(buffer[1] == 0x00);
 	CHECK(buffer[2] == 0x00);
 	CHECK(buffer[3] == 0x00);
@@ -232,8 +232,8 @@ TEST_CASE("[Marshalls] FLOAT double precision Variant encoding") {
 	uint8_t buffer[12];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 12, "Length == 4 bytes for Variant::Type + 8 bytes for double");
-	CHECK_MESSAGE(buffer[0] == 0x03, "Variant::FLOAT");
+	CHECK_MESSAGE(r_len == 12, "Length == 4 bytes for VariantType + 8 bytes for double");
+	CHECK_MESSAGE(buffer[0] == 0x03, "VariantType::FLOAT");
 	CHECK(buffer[1] == 0x00);
 	CHECK_MESSAGE(buffer[2] == 0x01, "ENCODE_FLAG_64");
 	CHECK(buffer[3] == 0x00);
@@ -252,7 +252,7 @@ TEST_CASE("[Marshalls] Invalid data Variant decoding") {
 	Variant variant;
 	int r_len = 0;
 	uint8_t some_buffer[1] = { 0x00 };
-	uint8_t out_of_range_type_buffer[4] = { 0xff }; // Greater than Variant::VARIANT_MAX
+	uint8_t out_of_range_type_buffer[4] = { 0xff }; // Greater than VariantType::MAX
 
 	ERR_PRINT_OFF;
 	CHECK(decode_variant(variant, some_buffer, /* less than 4 */ 1, &r_len) == ERR_INVALID_DATA);
@@ -267,7 +267,7 @@ TEST_CASE("[Marshalls] NIL Variant decoding") {
 	Variant variant;
 	int r_len;
 	uint8_t buffer[] = {
-		0x00, 0x00, 0x00, 0x00 // Variant::NIL
+		0x00, 0x00, 0x00, 0x00 // VariantType::NIL
 	};
 
 	CHECK(decode_variant(variant, buffer, 4, &r_len) == OK);
@@ -279,7 +279,7 @@ TEST_CASE("[Marshalls] INT 32 bit Variant decoding") {
 	Variant variant;
 	int r_len;
 	uint8_t buffer[] = {
-		0x02, 0x00, 0x00, 0x00, // Variant::INT
+		0x02, 0x00, 0x00, 0x00, // VariantType::INT
 		0x78, 0x56, 0x34, 0x12 // value
 	};
 
@@ -292,7 +292,7 @@ TEST_CASE("[Marshalls] INT 64 bit Variant decoding") {
 	Variant variant;
 	int r_len;
 	uint8_t buffer[] = {
-		0x02, 0x00, 0x01, 0x00, // Variant::INT & ENCODE_FLAG_64
+		0x02, 0x00, 0x01, 0x00, // VariantType::INT & ENCODE_FLAG_64
 		0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0xf1 // value
 	};
 
@@ -305,7 +305,7 @@ TEST_CASE("[Marshalls] FLOAT single precision Variant decoding") {
 	Variant variant;
 	int r_len;
 	uint8_t buffer[] = {
-		0x03, 0x00, 0x00, 0x00, // Variant::FLOAT
+		0x03, 0x00, 0x00, 0x00, // VariantType::FLOAT
 		0x00, 0x00, 0x20, 0x3e // value
 	};
 
@@ -318,7 +318,7 @@ TEST_CASE("[Marshalls] FLOAT double precision Variant decoding") {
 	Variant variant;
 	int r_len;
 	uint8_t buffer[] = {
-		0x03, 0x00, 0x01, 0x00, // Variant::FLOAT & ENCODE_FLAG_64
+		0x03, 0x00, 0x01, 0x00, // VariantType::FLOAT & ENCODE_FLAG_64
 		0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0xd5, 0x3f // value
 	};
 

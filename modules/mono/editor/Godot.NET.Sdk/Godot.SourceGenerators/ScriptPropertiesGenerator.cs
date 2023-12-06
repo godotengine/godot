@@ -368,7 +368,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendGroupingPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
-            source.Append("        properties.Add(new(type: (global::Godot.Variant.Type)")
+            source.Append("        properties.Add(new(type: (global::Godot.VariantType)")
                 .Append((int)VariantType.Nil)
                 .Append(", name: \"")
                 .Append(propertyInfo.Name)
@@ -383,7 +383,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
-            source.Append("        properties.Add(new(type: (global::Godot.Variant.Type)")
+            source.Append("        properties.Add(new(type: (global::Godot.VariantType)")
                 .Append((int)propertyInfo.Type)
                 .Append(", name: PropertyName.")
                 .Append(propertyInfo.Name)

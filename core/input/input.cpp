@@ -144,8 +144,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_using_accumulated_input"), &Input::is_using_accumulated_input);
 	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::flush_buffered_events);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -171,7 +171,7 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
 
-	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "device"), PropertyInfo(Variant::BOOL, "connected")));
+	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(VariantType::INT, "device"), PropertyInfo(VariantType::BOOL, "connected")));
 }
 
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {

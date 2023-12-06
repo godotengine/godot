@@ -169,8 +169,8 @@ void Translation::_bind_methods() {
 	GDVIRTUAL_BIND(_get_plural_message, "src_message", "src_plural_message", "n", "context");
 	GDVIRTUAL_BIND(_get_message, "src_message", "context");
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "locale"), "set_locale", "get_locale");
 }
 
 ///////////////////////////////////////////////
@@ -701,7 +701,7 @@ void TranslationServer::setup() {
 	pseudolocalization_skip_placeholders_enabled = GLOBAL_DEF("internationalization/pseudolocalization/skip_placeholders", true);
 
 #ifdef TOOLS_ENABLED
-	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "internationalization/locale/fallback", PROPERTY_HINT_LOCALE_ID, ""));
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(VariantType::STRING, "internationalization/locale/fallback", PROPERTY_HINT_LOCALE_ID, ""));
 #endif
 }
 
@@ -1017,7 +1017,7 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_enabled", "enabled"), &TranslationServer::set_pseudolocalization_enabled);
 	ClassDB::bind_method(D_METHOD("reload_pseudolocalization"), &TranslationServer::reload_pseudolocalization);
 	ClassDB::bind_method(D_METHOD("pseudolocalize", "message"), &TranslationServer::pseudolocalize);
-	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_enabled"), "set_pseudolocalization_enabled", "is_pseudolocalization_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "pseudolocalization_enabled"), "set_pseudolocalization_enabled", "is_pseudolocalization_enabled");
 }
 
 void TranslationServer::load_translations() {

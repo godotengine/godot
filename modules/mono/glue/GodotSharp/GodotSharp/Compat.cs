@@ -243,4 +243,13 @@ partial class UndoRedo
     }
 }
 
+// partial struct Variant
+// {
+//     [EditorBrowsable(EditorBrowsableState.Never)]
+//     public enum Type {}
+
+//     [EditorBrowsable(EditorBrowsableState.Never)]
+//     public enum Operator {}
+// }
+
 #pragma warning restore CS1734

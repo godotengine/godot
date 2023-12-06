@@ -200,7 +200,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 			break;
 		} else if (token.type == GDScriptTokenizer::Token::LITERAL) {
 			const Variant &const_val = token.literal;
-			if (const_val.get_type() == Variant::STRING) {
+			if (const_val.get_type() == VariantType::STRING) {
 				String scr_path = const_val;
 				bool exists = fs->file_exists(scr_path);
 				if (!exists) {
@@ -330,7 +330,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 
 				const Variant &default_value = m.constant->initializer->reduced_value;
 				String value_text;
-				if (default_value.get_type() == Variant::OBJECT) {
+				if (default_value.get_type() == VariantType::OBJECT) {
 					Ref<Resource> res = default_value;
 					if (res.is_valid() && !res->get_path().is_empty()) {
 						value_text = "preload(\"" + res->get_path() + "\")";

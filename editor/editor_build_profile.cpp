@@ -645,7 +645,7 @@ void EditorBuildProfileManager::_class_list_item_selected() {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+	if (md.get_type() == VariantType::STRING || md.get_type() == VariantType::STRING_NAME) {
 		String text = description_bit->get_class_description(md);
 		if (!text.is_empty()) {
 			// Display both class name and description, since the help bit may be displayed
@@ -657,7 +657,7 @@ void EditorBuildProfileManager::_class_list_item_selected() {
 			description_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", md)));
 			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 		}
-	} else if (md.get_type() == Variant::INT) {
+	} else if (md.get_type() == VariantType::INT) {
 		String build_option_description = EditorBuildProfile::get_build_option_description(EditorBuildProfile::BuildOption((int)md));
 		description_bit->set_text(vformat("[b]%s[/b]: %s", TTR(item->get_text(0)), TTRGET(build_option_description)));
 		description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
@@ -677,11 +677,11 @@ void EditorBuildProfileManager::_class_list_item_edited() {
 	bool checked = item->is_checked(0);
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+	if (md.get_type() == VariantType::STRING || md.get_type() == VariantType::STRING_NAME) {
 		String class_selected = md;
 		edited->set_disable_class(class_selected, !checked);
 		_update_edited_profile();
-	} else if (md.get_type() == Variant::INT) {
+	} else if (md.get_type() == VariantType::INT) {
 		int build_option_selected = md;
 		edited->set_disable_build_option(EditorBuildProfile::BuildOption(build_option_selected), !checked);
 	}
@@ -698,7 +698,7 @@ void EditorBuildProfileManager::_class_list_item_collapsed(Object *p_item) {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
+	if (md.get_type() != VariantType::STRING && md.get_type() != VariantType::STRING_NAME) {
 		return;
 	}
 
@@ -713,9 +713,9 @@ void EditorBuildProfileManager::_update_edited_profile() {
 
 	if (class_list->get_selected()) {
 		Variant md = class_list->get_selected()->get_metadata(0);
-		if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+		if (md.get_type() == VariantType::STRING || md.get_type() == VariantType::STRING_NAME) {
 			class_selected = md;
-		} else if (md.get_type() == Variant::INT) {
+		} else if (md.get_type() == VariantType::INT) {
 			build_option_selected = md;
 		}
 	}

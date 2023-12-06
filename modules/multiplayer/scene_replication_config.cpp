@@ -41,7 +41,7 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 		String what = prop_name.get_slicec('/', 2);
 
 		if (properties.size() == idx && what == "path") {
-			ERR_FAIL_COND_V(p_value.get_type() != Variant::NODE_PATH, false);
+			ERR_FAIL_COND_V(p_value.get_type() != VariantType::NODE_PATH, false);
 			NodePath path = p_value;
 			ERR_FAIL_COND_V(path.is_empty() || path.get_subname_count() == 0, false);
 			add_property(path);
@@ -50,13 +50,13 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 		ERR_FAIL_INDEX_V(idx, properties.size(), false);
 		ReplicationProperty &prop = properties[idx];
 		if (what == "replication_mode") {
-			ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+			ERR_FAIL_COND_V(p_value.get_type() != VariantType::INT, false);
 			ReplicationMode mode = (ReplicationMode)p_value.operator int();
 			ERR_FAIL_COND_V(mode < REPLICATION_MODE_NEVER || mode > REPLICATION_MODE_ON_CHANGE, false);
 			property_set_replication_mode(prop.name, mode);
 			return true;
 		}
-		ERR_FAIL_COND_V(p_value.get_type() != Variant::BOOL, false);
+		ERR_FAIL_COND_V(p_value.get_type() != VariantType::BOOL, false);
 		if (what == "spawn") {
 			property_set_spawn(prop.name, p_value);
 			return true;
@@ -97,9 +97,9 @@ bool SceneReplicationConfig::_get(const StringName &p_name, Variant &r_ret) cons
 
 void SceneReplicationConfig::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < properties.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/spawn", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::INT, "properties/" + itos(i) + "/replication_mode", PROPERTY_HINT_ENUM, "Never,Always,On Change", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::STRING, "properties/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::STRING, "properties/" + itos(i) + "/spawn", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::INT, "properties/" + itos(i) + "/replication_mode", PROPERTY_HINT_ENUM, "Never,Always,On Change", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 }
 

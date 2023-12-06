@@ -2178,7 +2178,7 @@ void GodotHeightMapShape3D::_setup(const Vector<real_t> &p_heights, int p_width,
 }
 
 void GodotHeightMapShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::DICTIONARY);
 
 	Dictionary d = p_data;
 	ERR_FAIL_COND(!d.has("width"));
@@ -2194,13 +2194,13 @@ void GodotHeightMapShape3D::set_data(const Variant &p_data) {
 	Variant heights_variant = d["heights"];
 	Vector<real_t> heights_buffer;
 #ifdef REAL_T_IS_DOUBLE
-	if (heights_variant.get_type() == Variant::PACKED_FLOAT64_ARRAY) {
+	if (heights_variant.get_type() == VariantType::PACKED_FLOAT64_ARRAY) {
 #else
-	if (heights_variant.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+	if (heights_variant.get_type() == VariantType::PACKED_FLOAT32_ARRAY) {
 #endif
 		// Ready-to-use heights can be passed.
 		heights_buffer = heights_variant;
-	} else if (heights_variant.get_type() == Variant::OBJECT) {
+	} else if (heights_variant.get_type() == VariantType::OBJECT) {
 		// If an image is passed, we have to convert it.
 		// This would be expensive to do with a script, so it's nice to have it here.
 		Ref<Image> image = heights_variant;

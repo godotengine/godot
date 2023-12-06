@@ -40,7 +40,7 @@ void UDPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("stop"), &UDPServer::stop);
 	ClassDB::bind_method(D_METHOD("set_max_pending_connections", "max_pending_connections"), &UDPServer::set_max_pending_connections);
 	ClassDB::bind_method(D_METHOD("get_max_pending_connections"), &UDPServer::get_max_pending_connections);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_pending_connections", PROPERTY_HINT_RANGE, "0,256,1"), "set_max_pending_connections", "get_max_pending_connections");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_pending_connections", PROPERTY_HINT_RANGE, "0,256,1"), "set_max_pending_connections", "get_max_pending_connections");
 }
 
 Error UDPServer::poll() {

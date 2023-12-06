@@ -323,14 +323,14 @@ void NavigationRegion2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_navigation_polygon_changed"), &NavigationRegion2D::_navigation_polygon_changed);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_polygon", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"), "set_navigation_polygon", "get_navigation_polygon");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "constrain_avoidance"), "set_constrain_avoidance", "get_constrain_avoidance");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "navigation_polygon", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"), "set_navigation_polygon", "get_navigation_polygon");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "constrain_avoidance"), "set_constrain_avoidance", "get_constrain_avoidance");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
 
 	ADD_SIGNAL(MethodInfo("navigation_polygon_changed"));
 	ADD_SIGNAL(MethodInfo("bake_finished"));

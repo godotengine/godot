@@ -240,21 +240,21 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &ReflectionProbe::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &ReflectionProbe::get_update_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Once (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_intensity", "get_intensity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384,0.1,or_greater,exp,suffix:m"), "set_max_distance", "get_max_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "origin_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_origin_offset", "get_origin_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "box_projection"), "set_enable_box_projection", "is_box_projection_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_as_interior", "is_set_as_interior");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_shadows"), "set_enable_shadows", "are_shadows_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "update_mode", PROPERTY_HINT_ENUM, "Once (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_intensity", "get_intensity");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384,0.1,or_greater,exp,suffix:m"), "set_max_distance", "get_max_distance");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "origin_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_origin_offset", "get_origin_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "box_projection"), "set_enable_box_projection", "is_box_projection_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "interior"), "set_as_interior", "is_set_as_interior");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "enable_shadows"), "set_enable_shadows", "are_shadows_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
 
 	ADD_GROUP("Ambient", "ambient_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_mode", PROPERTY_HINT_ENUM, "Disabled,Environment,Constant Color"), "set_ambient_mode", "get_ambient_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ambient_color", "get_ambient_color");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ambient_color_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_color_energy", "get_ambient_color_energy");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "ambient_mode", PROPERTY_HINT_ENUM, "Disabled,Environment,Constant Color"), "set_ambient_mode", "get_ambient_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "ambient_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ambient_color", "get_ambient_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "ambient_color_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_color_energy", "get_ambient_color_energy");
 
 	BIND_ENUM_CONSTANT(UPDATE_ONCE);
 	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);

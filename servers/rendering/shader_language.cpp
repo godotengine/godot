@@ -4071,38 +4071,38 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 	PropertyInfo pi;
 	switch (p_uniform.type) {
 		case ShaderLanguage::TYPE_VOID:
-			pi.type = Variant::NIL;
+			pi.type = VariantType::NIL;
 			break;
 		case ShaderLanguage::TYPE_BOOL:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.type = VariantType::PACKED_INT32_ARRAY;
 			} else {
-				pi.type = Variant::BOOL;
+				pi.type = VariantType::BOOL;
 			}
 			break;
 		case ShaderLanguage::TYPE_BVEC2:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.type = VariantType::PACKED_INT32_ARRAY;
 			} else {
-				pi.type = Variant::INT;
+				pi.type = VariantType::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
 				pi.hint_string = "x,y";
 			}
 			break;
 		case ShaderLanguage::TYPE_BVEC3:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.type = VariantType::PACKED_INT32_ARRAY;
 			} else {
-				pi.type = Variant::INT;
+				pi.type = VariantType::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
 				pi.hint_string = "x,y,z";
 			}
 			break;
 		case ShaderLanguage::TYPE_BVEC4:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.type = VariantType::PACKED_INT32_ARRAY;
 			} else {
-				pi.type = Variant::INT;
+				pi.type = VariantType::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
 				pi.hint_string = "x,y,z,w";
 			}
@@ -4110,9 +4110,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_UINT:
 		case ShaderLanguage::TYPE_INT: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.type = VariantType::PACKED_INT32_ARRAY;
 			} else {
-				pi.type = Variant::INT;
+				pi.type = VariantType::INT;
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 					pi.hint = PROPERTY_HINT_RANGE;
 					pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
@@ -4122,32 +4122,32 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_UVEC2:
 		case ShaderLanguage::TYPE_IVEC2: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.type = VariantType::PACKED_INT32_ARRAY;
 			} else {
-				pi.type = Variant::VECTOR2I;
+				pi.type = VariantType::VECTOR2I;
 			}
 		} break;
 		case ShaderLanguage::TYPE_UVEC3:
 		case ShaderLanguage::TYPE_IVEC3: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.type = VariantType::PACKED_INT32_ARRAY;
 			} else {
-				pi.type = Variant::VECTOR3I;
+				pi.type = VariantType::VECTOR3I;
 			}
 		} break;
 		case ShaderLanguage::TYPE_UVEC4:
 		case ShaderLanguage::TYPE_IVEC4: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.type = VariantType::PACKED_INT32_ARRAY;
 			} else {
-				pi.type = Variant::VECTOR4I;
+				pi.type = VariantType::VECTOR4I;
 			}
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_FLOAT32_ARRAY;
+				pi.type = VariantType::PACKED_FLOAT32_ARRAY;
 			} else {
-				pi.type = Variant::FLOAT;
+				pi.type = VariantType::FLOAT;
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 					pi.hint = PROPERTY_HINT_RANGE;
 					pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
@@ -4156,73 +4156,73 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		} break;
 		case ShaderLanguage::TYPE_VEC2:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_VECTOR2_ARRAY;
+				pi.type = VariantType::PACKED_VECTOR2_ARRAY;
 			} else {
-				pi.type = Variant::VECTOR2;
+				pi.type = VariantType::VECTOR2;
 			}
 			break;
 		case ShaderLanguage::TYPE_VEC3:
 			if (p_uniform.array_size > 0) {
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
-					pi.type = Variant::PACKED_COLOR_ARRAY;
+					pi.type = VariantType::PACKED_COLOR_ARRAY;
 				} else {
-					pi.type = Variant::PACKED_VECTOR3_ARRAY;
+					pi.type = VariantType::PACKED_VECTOR3_ARRAY;
 				}
 			} else {
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
-					pi.type = Variant::COLOR;
+					pi.type = VariantType::COLOR;
 				} else {
-					pi.type = Variant::VECTOR3;
+					pi.type = VariantType::VECTOR3;
 				}
 			}
 			break;
 		case ShaderLanguage::TYPE_VEC4: {
 			if (p_uniform.array_size > 0) {
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
-					pi.type = Variant::PACKED_COLOR_ARRAY;
+					pi.type = VariantType::PACKED_COLOR_ARRAY;
 				} else {
-					pi.type = Variant::PACKED_FLOAT32_ARRAY;
+					pi.type = VariantType::PACKED_FLOAT32_ARRAY;
 				}
 			} else {
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
-					pi.type = Variant::COLOR;
+					pi.type = VariantType::COLOR;
 				} else {
-					pi.type = Variant::VECTOR4;
+					pi.type = VariantType::VECTOR4;
 				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_FLOAT32_ARRAY;
+				pi.type = VariantType::PACKED_FLOAT32_ARRAY;
 			} else {
-				pi.type = Variant::TRANSFORM2D;
+				pi.type = VariantType::TRANSFORM2D;
 			}
 			break;
 		case ShaderLanguage::TYPE_MAT3:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_FLOAT32_ARRAY;
+				pi.type = VariantType::PACKED_FLOAT32_ARRAY;
 			} else {
-				pi.type = Variant::BASIS;
+				pi.type = VariantType::BASIS;
 			}
 			break;
 		case ShaderLanguage::TYPE_MAT4:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_FLOAT32_ARRAY;
+				pi.type = VariantType::PACKED_FLOAT32_ARRAY;
 			} else {
-				pi.type = Variant::PROJECTION;
+				pi.type = VariantType::PROJECTION;
 			}
 			break;
 		case ShaderLanguage::TYPE_SAMPLER2D:
 		case ShaderLanguage::TYPE_ISAMPLER2D:
 		case ShaderLanguage::TYPE_USAMPLER2D: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::ARRAY;
+				pi.type = VariantType::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
 				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("Texture2D");
 			} else {
-				pi.type = Variant::OBJECT;
+				pi.type = VariantType::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 				pi.hint_string = "Texture2D";
 			}
@@ -4233,11 +4233,11 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_SAMPLERCUBE:
 		case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::ARRAY;
+				pi.type = VariantType::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
 				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("TextureLayered");
 			} else {
-				pi.type = Variant::OBJECT;
+				pi.type = VariantType::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 				pi.hint_string = "TextureLayered";
 			}
@@ -4246,11 +4246,11 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_ISAMPLER3D:
 		case ShaderLanguage::TYPE_USAMPLER3D: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::ARRAY;
+				pi.type = VariantType::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
 				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("Texture3D");
 			} else {
-				pi.type = Variant::OBJECT;
+				pi.type = VariantType::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 				pi.hint_string = "Texture3D";
 			}

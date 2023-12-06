@@ -227,20 +227,20 @@ void GraphElement::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position_offset", "offset"), &GraphElement::set_position_offset);
 	ClassDB::bind_method(D_METHOD("get_position_offset"), &GraphElement::get_position_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position_offset"), "set_position_offset", "get_position_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable"), "set_resizable", "is_resizable");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draggable"), "set_draggable", "is_draggable");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selectable"), "set_selectable", "is_selectable");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "position_offset"), "set_position_offset", "get_position_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "resizable"), "set_resizable", "is_resizable");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "draggable"), "set_draggable", "is_draggable");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "selectable"), "set_selectable", "is_selectable");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "selected"), "set_selected", "is_selected");
 
 	ADD_SIGNAL(MethodInfo("node_selected"));
 	ADD_SIGNAL(MethodInfo("node_deselected"));
 
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("delete_request"));
-	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
+	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(VariantType::VECTOR2, "new_minsize")));
 
-	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
+	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(VariantType::VECTOR2, "from"), PropertyInfo(VariantType::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphElement, resizer);

@@ -218,63 +218,63 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 	}
 
 	switch (p_val.get_type()) {
-		case Variant::NIL:
+		case VariantType::NIL:
 			return p_context.find_exposed_class(p_arg_type) ||
 					p_context.names_cache.is_nullable_type(p_arg_type.name);
-		case Variant::BOOL:
+		case VariantType::BOOL:
 			return p_arg_type.name == p_context.names_cache.bool_type;
-		case Variant::INT:
+		case VariantType::INT:
 			return p_arg_type.name == p_context.names_cache.int_type ||
 					p_arg_type.name == p_context.names_cache.float_type ||
 					p_arg_type.is_enum;
-		case Variant::FLOAT:
+		case VariantType::FLOAT:
 			return p_arg_type.name == p_context.names_cache.float_type;
-		case Variant::STRING:
-		case Variant::STRING_NAME:
+		case VariantType::STRING:
+		case VariantType::STRING_NAME:
 			return p_arg_type.name == p_context.names_cache.string_type ||
 					p_arg_type.name == p_context.names_cache.string_name_type ||
 					p_arg_type.name == p_context.names_cache.node_path_type;
-		case Variant::NODE_PATH:
+		case VariantType::NODE_PATH:
 			return p_arg_type.name == p_context.names_cache.node_path_type;
-		case Variant::TRANSFORM3D:
-		case Variant::TRANSFORM2D:
-		case Variant::BASIS:
-		case Variant::QUATERNION:
-		case Variant::PLANE:
-		case Variant::AABB:
-		case Variant::COLOR:
-		case Variant::VECTOR2:
-		case Variant::RECT2:
-		case Variant::VECTOR3:
-		case Variant::RID:
-		case Variant::ARRAY:
-		case Variant::DICTIONARY:
-		case Variant::PACKED_BYTE_ARRAY:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY:
-		case Variant::PACKED_FLOAT32_ARRAY:
-		case Variant::PACKED_FLOAT64_ARRAY:
-		case Variant::PACKED_STRING_ARRAY:
-		case Variant::PACKED_VECTOR2_ARRAY:
-		case Variant::PACKED_VECTOR3_ARRAY:
-		case Variant::PACKED_COLOR_ARRAY:
-		case Variant::CALLABLE:
-		case Variant::SIGNAL:
+		case VariantType::TRANSFORM3D:
+		case VariantType::TRANSFORM2D:
+		case VariantType::BASIS:
+		case VariantType::QUATERNION:
+		case VariantType::PLANE:
+		case VariantType::AABB:
+		case VariantType::COLOR:
+		case VariantType::VECTOR2:
+		case VariantType::RECT2:
+		case VariantType::VECTOR3:
+		case VariantType::RID:
+		case VariantType::ARRAY:
+		case VariantType::DICTIONARY:
+		case VariantType::PACKED_BYTE_ARRAY:
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY:
+		case VariantType::PACKED_FLOAT32_ARRAY:
+		case VariantType::PACKED_FLOAT64_ARRAY:
+		case VariantType::PACKED_STRING_ARRAY:
+		case VariantType::PACKED_VECTOR2_ARRAY:
+		case VariantType::PACKED_VECTOR3_ARRAY:
+		case VariantType::PACKED_COLOR_ARRAY:
+		case VariantType::CALLABLE:
+		case VariantType::SIGNAL:
 			return p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		case Variant::OBJECT:
+		case VariantType::OBJECT:
 			return p_context.find_exposed_class(p_arg_type);
-		case Variant::VECTOR2I:
+		case VariantType::VECTOR2I:
 			return p_arg_type.name == p_context.names_cache.vector2_type ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		case Variant::RECT2I:
+		case VariantType::RECT2I:
 			return p_arg_type.name == p_context.names_cache.rect2_type ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		case Variant::VECTOR3I:
+		case VariantType::VECTOR3I:
 			return p_arg_type.name == p_context.names_cache.vector3_type ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		default:
 			if (r_err_msg) {
-				*r_err_msg = "Unexpected Variant type: " + itos(p_val.get_type());
+				*r_err_msg = "Unexpected Variant type: " + itos((int)p_val.get_type());
 			}
 			break;
 	}
@@ -513,7 +513,7 @@ void add_exposed_classes(Context &r_context) {
 		HashMap<StringName, StringName> accessor_methods;
 
 		for (const PropertyInfo &property : property_list) {
-			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
+			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == VariantType::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
 				continue;
 			}
 
@@ -590,7 +590,7 @@ void add_exposed_classes(Context &r_context) {
 						(exposed_class.name != r_context.names_cache.object_class || String(method.name) != "free"),
 						warn_msg.utf8().get_data());
 
-			} else if (return_info.type == Variant::INT && return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
+			} else if (return_info.type == VariantType::INT && return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 				method.return_type.name = return_info.class_name;
 				method.return_type.is_enum = true;
 			} else if (return_info.class_name != StringName()) {
@@ -602,9 +602,9 @@ void add_exposed_classes(Context &r_context) {
 						exposed_class.name, ".", method.name, "'.");
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				method.return_type.name = return_info.hint_string;
-			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+			} else if (return_info.type == VariantType::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
 				method.return_type.name = r_context.names_cache.variant_type;
-			} else if (return_info.type == Variant::NIL) {
+			} else if (return_info.type == VariantType::NIL) {
 				method.return_type.name = r_context.names_cache.void_type;
 			} else {
 				// NOTE: We don't care about the size and sign of int and float in these tests
@@ -620,14 +620,14 @@ void add_exposed_classes(Context &r_context) {
 				arg.name = orig_arg_name;
 				arg.position = i;
 
-				if (arg_info.type == Variant::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
+				if (arg_info.type == VariantType::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					arg.type.name = arg_info.class_name;
 					arg.type.is_enum = true;
 				} else if (arg_info.class_name != StringName()) {
 					arg.type.name = arg_info.class_name;
 				} else if (arg_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					arg.type.name = arg_info.hint_string;
-				} else if (arg_info.type == Variant::NIL) {
+				} else if (arg_info.type == VariantType::NIL) {
 					arg.type.name = r_context.names_cache.variant_type;
 				} else {
 					// NOTE: We don't care about the size and sign of int and float in these tests
@@ -695,14 +695,14 @@ void add_exposed_classes(Context &r_context) {
 				arg.name = orig_arg_name;
 				arg.position = i;
 
-				if (arg_info.type == Variant::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
+				if (arg_info.type == VariantType::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					arg.type.name = arg_info.class_name;
 					arg.type.is_enum = true;
 				} else if (arg_info.class_name != StringName()) {
 					arg.type.name = arg_info.class_name;
 				} else if (arg_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					arg.type.name = arg_info.hint_string;
-				} else if (arg_info.type == Variant::NIL) {
+				} else if (arg_info.type == VariantType::NIL) {
 					arg.type.name = r_context.names_cache.variant_type;
 				} else {
 					// NOTE: We don't care about the size and sign of int and float in these tests
@@ -778,8 +778,8 @@ void add_exposed_classes(Context &r_context) {
 
 void add_builtin_types(Context &r_context) {
 	// NOTE: We don't care about the size and sign of int and float in these tests
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		r_context.builtin_types.push_back(Variant::get_type_name(Variant::Type(i)));
+	for (int i = 0; i < (int)VariantType::MAX; i++) {
+		r_context.builtin_types.push_back(Variant::get_type_name(VariantType(i)));
 	}
 
 	r_context.builtin_types.push_back(_STR(Variant));

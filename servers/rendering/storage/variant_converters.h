@@ -195,18 +195,18 @@ T construct_vector(const std::initializer_list<P> &values) {
 
 template <typename T>
 T convert_to_vector(const Variant &p_variant, bool p_linear_color = false) {
-	const Variant::Type type = p_variant.get_type();
+	const VariantType type = p_variant.get_type();
 
-	if (type == Variant::QUATERNION) {
+	if (type == VariantType::QUATERNION) {
 		Quaternion quat = p_variant;
 		return construct_vector<T>({ quat.x, quat.y, quat.z, quat.w });
-	} else if (type == Variant::PLANE) {
+	} else if (type == VariantType::PLANE) {
 		Plane p = p_variant;
 		return construct_vector<T>({ p.normal.x, p.normal.y, p.normal.z, p.d });
-	} else if (type == Variant::RECT2 || type == Variant::RECT2I) {
+	} else if (type == VariantType::RECT2 || type == VariantType::RECT2I) {
 		Rect2 r = p_variant;
 		return construct_vector<T>({ r.position.x, r.position.y, r.size.x, r.size.y });
-	} else if (type == Variant::COLOR) {
+	} else if (type == VariantType::COLOR) {
 		Color c = p_variant;
 		if (p_linear_color) {
 			c = c.srgb_to_linear();
@@ -235,11 +235,11 @@ inline bool is_number_array(const Array &p_array) {
 	return true;
 }
 
-inline bool is_convertible_array(Variant::Type type) {
-	return type == Variant::ARRAY ||
-			type == Variant::PACKED_VECTOR2_ARRAY ||
-			type == Variant::PACKED_VECTOR3_ARRAY ||
-			type == Variant::PACKED_COLOR_ARRAY;
+inline bool is_convertible_array(VariantType type) {
+	return type == VariantType::ARRAY ||
+			type == VariantType::PACKED_VECTOR2_ARRAY ||
+			type == VariantType::PACKED_VECTOR3_ARRAY ||
+			type == VariantType::PACKED_COLOR_ARRAY;
 }
 
 template <class, class = void>

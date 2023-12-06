@@ -226,15 +226,15 @@ void VoxelGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &VoxelGIData::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &VoxelGIData::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_range", PROPERTY_HINT_RANGE, "1,8,0.01"), "set_dynamic_range", "get_dynamic_range");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_energy", "get_energy");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_bias", "get_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_normal_bias", "get_normal_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "propagation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_propagation", "get_propagation");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_two_bounces"), "set_use_two_bounces", "is_using_two_bounces");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "dynamic_range", PROPERTY_HINT_RANGE, "1,8,0.01"), "set_dynamic_range", "get_dynamic_range");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_energy", "get_energy");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_bias", "get_bias");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "normal_bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_normal_bias", "get_normal_bias");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "propagation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_propagation", "get_propagation");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_two_bounces"), "set_use_two_bounces", "is_using_two_bounces");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "interior"), "set_interior", "is_interior");
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -546,10 +546,10 @@ void VoxelGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("debug_bake"), &VoxelGI::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdiv", PROPERTY_HINT_ENUM, "64,128,256,512"), "set_subdiv", "get_subdiv");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "data", PROPERTY_HINT_RESOURCE_TYPE, "VoxelGIData", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE), "set_probe_data", "get_probe_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "subdiv", PROPERTY_HINT_ENUM, "64,128,256,512"), "set_subdiv", "get_subdiv");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "data", PROPERTY_HINT_RESOURCE_TYPE, "VoxelGIData", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE), "set_probe_data", "get_probe_data");
 
 	BIND_ENUM_CONSTANT(SUBDIV_64);
 	BIND_ENUM_CONSTANT(SUBDIV_128);

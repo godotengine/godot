@@ -99,7 +99,7 @@ void CanvasModulate::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &CanvasModulate::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &CanvasModulate::get_color);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "color"), "set_color", "get_color");
 }
 
 void CanvasModulate::set_color(const Color &p_color) {

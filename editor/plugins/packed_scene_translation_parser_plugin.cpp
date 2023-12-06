@@ -77,7 +77,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			}
 
 			Variant property_value = state->get_node_property_value(i, j);
-			if (property_name == "script" && property_value.get_type() == Variant::OBJECT && !property_value.is_null()) {
+			if (property_name == "script" && property_value.get_type() == VariantType::OBJECT && !property_value.is_null()) {
 				// Parse built-in script.
 				Ref<Script> s = Object::cast_to<Script>(property_value);
 				String extension = s->get_language()->get_extension();
@@ -106,7 +106,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 						parsed_strings.push_back(desc);
 					}
 				}
-			} else if (property_value.get_type() == Variant::STRING) {
+			} else if (property_value.get_type() == VariantType::STRING) {
 				String str_value = String(property_value);
 				// Prevent reading text containing only spaces.
 				if (!str_value.strip_edges().is_empty()) {

@@ -147,7 +147,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &NavigationServer2D::set_debug_enabled);
 	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationServer2D::get_debug_enabled);
 
-	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
+	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(VariantType::RID, "map")));
 
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
 }

@@ -41,20 +41,20 @@ namespace Godot
 
         /// <summary>
         /// Converts <paramref name="what"/> to <paramref name="type"/> in the best way possible.
-        /// The <paramref name="type"/> parameter uses the <see cref="Variant.Type"/> values.
+        /// The <paramref name="type"/> parameter uses the <see cref="VariantType"/> values.
         /// </summary>
         /// <example>
         /// <code>
         /// Variant a = new Godot.Collections.Array { 4, 2.5, 1.2 };
-        /// GD.Print(a.VariantType == Variant.Type.Array); // Prints true
+        /// GD.Print(a.VariantType == VariantType.Array); // Prints true
         ///
-        /// var b = GD.Convert(a, Variant.Type.PackedByteArray);
+        /// var b = GD.Convert(a, VariantType.PackedByteArray);
         /// GD.Print(b); // Prints [4, 2, 1]
-        /// GD.Print(b.VariantType == Variant.Type.Array); // Prints false
+        /// GD.Print(b.VariantType == VariantType.Array); // Prints false
         /// </code>
         /// </example>
         /// <returns>The <c>Variant</c> converted to the given <paramref name="type"/>.</returns>
-        public static Variant Convert(Variant what, Variant.Type type)
+        public static Variant Convert(Variant what, VariantType type)
         {
             NativeFuncs.godotsharp_convert((godot_variant)what.NativeVar, (int)type, out godot_variant ret);
             return Variant.CreateTakingOwnershipOfDisposableValue(ret);
@@ -675,10 +675,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Get the <see cref="Variant.Type"/> that corresponds for the given <see cref="Type"/>.
+        /// Get the <see cref="VariantType"/> that corresponds for the given <see cref="Type"/>.
         /// </summary>
-        /// <returns>The <see cref="Variant.Type"/> for the given <paramref name="type"/>.</returns>
-        public static Variant.Type TypeToVariantType(Type type)
+        /// <returns>The <see cref="VariantType"/> for the given <paramref name="type"/>.</returns>
+        public static VariantType TypeToVariantType(Type type)
         {
             return Marshaling.ConvertManagedTypeToVariantType(type, out bool _);
         }

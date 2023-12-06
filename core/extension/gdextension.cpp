@@ -172,7 +172,7 @@ class GDExtensionMethodBind : public MethodBind {
 #endif
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual VariantType _gen_argument_type(int p_arg) const override {
 		if (p_arg < 0) {
 			return return_value_info.type;
 		} else {
@@ -235,12 +235,12 @@ public:
 			void *ret_opaque = nullptr;
 			if (r_ret) {
 				VariantInternal::initialize(r_ret, return_value_info.type);
-				ret_opaque = r_ret->get_type() == Variant::NIL ? r_ret : VariantInternal::get_opaque_pointer(r_ret);
+				ret_opaque = r_ret->get_type() == VariantType::NIL ? r_ret : VariantInternal::get_opaque_pointer(r_ret);
 			}
 
 			ptrcall(p_object, argptrs, ret_opaque);
 
-			if (r_ret && r_ret->get_type() == Variant::OBJECT) {
+			if (r_ret && r_ret->get_type() == VariantType::OBJECT) {
 				VariantInternal::update_object_id(r_ret);
 			}
 		}
@@ -273,7 +273,7 @@ public:
 			return false;
 		}
 
-		if (has_return() && return_value_info.type != (Variant::Type)p_method_info->return_value_info->type) {
+		if (has_return() && return_value_info.type != (VariantType)p_method_info->return_value_info->type) {
 			return false;
 		}
 
@@ -282,7 +282,7 @@ public:
 		}
 
 		for (uint32_t i = 0; i < p_method_info->argument_count; i++) {
-			if (arguments_info[i].type != (Variant::Type)p_method_info->arguments_info[i].type) {
+			if (arguments_info[i].type != (VariantType)p_method_info->arguments_info[i].type) {
 				return false;
 			}
 		}
@@ -1040,11 +1040,11 @@ void GDExtension::prepare_reload() {
 				Variant value = obj->get(P.name);
 				Variant default_value = ClassDB::class_get_default_property_value(obj->get_class_name(), P.name);
 
-				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
+				if (default_value.get_type() != VariantType::NIL && bool(Variant::evaluate(VariantOperator::EQUAL, value, default_value))) {
 					continue;
 				}
 
-				if (P.type == Variant::OBJECT && value.is_zero() && !(P.usage & PROPERTY_USAGE_STORE_IF_NULL)) {
+				if (P.type == VariantType::OBJECT && value.is_zero() && !(P.usage & PROPERTY_USAGE_STORE_IF_NULL)) {
 					continue;
 				}
 

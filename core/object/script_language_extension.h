@@ -707,16 +707,16 @@ public:
 			}
 		}
 	}
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override {
+	virtual VariantType get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override {
 		if (native_info->get_property_type_func) {
 			GDExtensionBool is_valid = 0;
 			GDExtensionVariantType type = native_info->get_property_type_func(instance, (GDExtensionConstStringNamePtr)&p_name, &is_valid);
 			if (r_is_valid) {
 				*r_is_valid = is_valid != 0;
 			}
-			return Variant::Type(type);
+			return VariantType(type);
 		}
-		return Variant::NIL;
+		return VariantType::NIL;
 	}
 	virtual void validate_property(PropertyInfo &p_property) const override {
 		if (native_info->validate_property_func) {
@@ -731,7 +731,7 @@ public:
 				p_property.usage,
 			};
 			if (native_info->validate_property_func(instance, &gdext_prop)) {
-				p_property.type = (Variant::Type)gdext_prop.type;
+				p_property.type = (VariantType)gdext_prop.type;
 				p_property.name = *reinterpret_cast<StringName *>(gdext_prop.name);
 				p_property.class_name = *reinterpret_cast<StringName *>(gdext_prop.class_name);
 				p_property.hint = (PropertyHint)gdext_prop.hint;

@@ -52,14 +52,14 @@ class MethodBind {
 	bool _returns_raw_obj_ptr = false;
 
 protected:
-	Variant::Type *argument_types = nullptr;
+	VariantType *argument_types = nullptr;
 #ifdef DEBUG_METHODS_ENABLED
 	Vector<StringName> arg_names;
 #endif
 	void _set_const(bool p_const);
 	void _set_static(bool p_static);
 	void _set_returns(bool p_returns);
-	virtual Variant::Type _gen_argument_type(int p_arg) const = 0;
+	virtual VariantType _gen_argument_type(int p_arg) const = 0;
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const = 0;
 	void _generate_argument_types(int p_count);
 
@@ -89,8 +89,8 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
-		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, Variant::NIL);
+	_FORCE_INLINE_ VariantType get_argument_type(int p_argument) const {
+		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, VariantType::NIL);
 		return argument_types[p_argument + 1];
 	}
 
@@ -154,11 +154,11 @@ public:
 		} else if (p_arg < method_info.arguments.size()) {
 			return method_info.arguments[p_arg];
 		} else {
-			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
+			return PropertyInfo(VariantType::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
 		}
 	}
 
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual VariantType _gen_argument_type(int p_arg) const override {
 		return _gen_argument_type_info(p_arg).type;
 	}
 
@@ -186,7 +186,7 @@ public:
 			bool p_return_nil_is_variant) :
 			method(p_method), method_info(p_method_info) {
 		set_argument_count(method_info.arguments.size());
-		Variant::Type *at = memnew_arr(Variant::Type, method_info.arguments.size() + 1);
+		VariantType *at = memnew_arr(VariantType, method_info.arguments.size() + 1);
 		at[0] = _gen_return_type_info().type;
 		if (method_info.arguments.size()) {
 #ifdef DEBUG_METHODS_ENABLED
@@ -307,11 +307,11 @@ class MethodBindT : public MethodBind {
 	void (MB_T::*method)(P...);
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual VariantType _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
-			return Variant::NIL;
+			return VariantType::NIL;
 		}
 	}
 
@@ -382,11 +382,11 @@ class MethodBindTC : public MethodBind {
 	void (MB_T::*method)(P...) const;
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual VariantType _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
-			return Variant::NIL;
+			return VariantType::NIL;
 		}
 	}
 
@@ -459,7 +459,7 @@ class MethodBindTR : public MethodBind {
 	(P...);
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual VariantType _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
@@ -546,7 +546,7 @@ class MethodBindTRC : public MethodBind {
 	(P...) const;
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual VariantType _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
@@ -630,11 +630,11 @@ class MethodBindTS : public MethodBind {
 	void (*function)(P...);
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual VariantType _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
-			return Variant::NIL;
+			return VariantType::NIL;
 		}
 	}
 
@@ -689,7 +689,7 @@ class MethodBindTRS : public MethodBind {
 	(P...);
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual VariantType _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {

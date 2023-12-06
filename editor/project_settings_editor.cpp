@@ -117,7 +117,7 @@ void ProjectSettingsEditor::_add_setting() {
 	// Initialize the property with the default value for the given type.
 	Callable::CallError ce;
 	Variant value;
-	Variant::construct(Variant::Type(type_box->get_selected_id()), value, nullptr, 0, ce);
+	Variant::construct(VariantType(type_box->get_selected_id()), value, nullptr, 0, ce);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Project Setting"));
@@ -222,8 +222,8 @@ void ProjectSettingsEditor::_update_property_box() {
 	}
 }
 
-void ProjectSettingsEditor::_select_type(Variant::Type p_type) {
-	type_box->select(type_box->get_item_index(p_type));
+void ProjectSettingsEditor::_select_type(VariantType p_type) {
+	type_box->select(type_box->get_item_index((int)p_type));
 }
 
 void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
@@ -541,12 +541,12 @@ void ProjectSettingsEditor::_update_theme() {
 	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 	type_box->clear();
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (i == Variant::NIL || i == Variant::OBJECT || i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
+	for (int i = 0; i < (int)VariantType::MAX; i++) {
+		if (i == (int)VariantType::NIL || i == (int)VariantType::OBJECT || i == (int)VariantType::CALLABLE || i == (int)VariantType::SIGNAL || i == (int)VariantType::RID) {
 			// These types can't be serialized properly, so skip them.
 			continue;
 		}
-		String type = Variant::get_type_name(Variant::Type(i));
+		String type = Variant::get_type_name(VariantType(i));
 		type_box->add_icon_item(get_editor_theme_icon(type), type, i);
 	}
 }

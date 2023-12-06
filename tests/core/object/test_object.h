@@ -50,7 +50,7 @@ protected:
 	static void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("set_property", "property"), &_TestDerivedObject::set_property);
 		ClassDB::bind_method(D_METHOD("get_property"), &_TestDerivedObject::get_property);
-		ADD_PROPERTY(PropertyInfo(Variant::INT, "property"), "set_property", "get_property");
+		ADD_PROPERTY(PropertyInfo(VariantType::INT, "property"), "set_property", "get_property");
 	}
 
 public:
@@ -79,8 +79,8 @@ public:
 	}
 	void get_property_list(List<PropertyInfo> *p_properties) const override {
 	}
-	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override {
-		return Variant::PACKED_FLOAT32_ARRAY;
+	VariantType get_property_type(const StringName &p_name, bool *r_is_valid) const override {
+		return VariantType::PACKED_FLOAT32_ARRAY;
 	}
 	virtual void validate_property(PropertyInfo &p_property) const override {
 	}

@@ -90,14 +90,14 @@ void SkeletonModification2DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 	for (int i = 0; i < fabrik_data_chain.size(); i++) {
 		String base_string = "joint_data/" + itos(i) + "/";
 
-		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, base_string + "bone2d_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(VariantType::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(VariantType::NODE_PATH, base_string + "bone2d_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT));
 
 		if (i > 0) {
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, base_string + "magnet_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+			p_list->push_back(PropertyInfo(VariantType::VECTOR2, base_string + "magnet_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		}
 		if (i == fabrik_data_chain.size() - 1) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "use_target_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+			p_list->push_back(PropertyInfo(VariantType::BOOL, base_string + "use_target_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		}
 	}
 }
@@ -437,8 +437,8 @@ void SkeletonModification2DFABRIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fabrik_joint_use_target_rotation", "joint_idx", "use_target_rotation"), &SkeletonModification2DFABRIK::set_fabrik_joint_use_target_rotation);
 	ClassDB::bind_method(D_METHOD("get_fabrik_joint_use_target_rotation", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_use_target_rotation);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fabrik_data_chain_length", PROPERTY_HINT_RANGE, "0, 100, 1"), "set_fabrik_data_chain_length", "get_fabrik_data_chain_length");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "fabrik_data_chain_length", PROPERTY_HINT_RANGE, "0, 100, 1"), "set_fabrik_data_chain_length", "get_fabrik_data_chain_length");
 }
 
 SkeletonModification2DFABRIK::SkeletonModification2DFABRIK() {

@@ -279,11 +279,11 @@ void PhysicalBone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_follow_bone_when_simulating", "follow_bone"), &PhysicalBone2D::set_follow_bone_when_simulating);
 	ClassDB::bind_method(D_METHOD("get_follow_bone_when_simulating"), &PhysicalBone2D::get_follow_bone_when_simulating);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "bone2d_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D"), "set_bone2d_nodepath", "get_bone2d_nodepath");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone2d_index", PROPERTY_HINT_RANGE, "-1, 1000, 1"), "set_bone2d_index", "get_bone2d_index");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_configure_joint"), "set_auto_configure_joint", "get_auto_configure_joint");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simulate_physics"), "set_simulate_physics", "get_simulate_physics");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_bone_when_simulating"), "set_follow_bone_when_simulating", "get_follow_bone_when_simulating");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "bone2d_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D"), "set_bone2d_nodepath", "get_bone2d_nodepath");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bone2d_index", PROPERTY_HINT_RANGE, "-1, 1000, 1"), "set_bone2d_index", "get_bone2d_index");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "auto_configure_joint"), "set_auto_configure_joint", "get_auto_configure_joint");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "simulate_physics"), "set_simulate_physics", "get_simulate_physics");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "follow_bone_when_simulating"), "set_follow_bone_when_simulating", "get_follow_bone_when_simulating");
 }
 
 PhysicalBone2D::PhysicalBone2D() {

@@ -50,11 +50,11 @@ void GLTFCamera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_depth_near"), &GLTFCamera::get_depth_near);
 	ClassDB::bind_method(D_METHOD("set_depth_near", "zdepth_near"), &GLTFCamera::set_depth_near);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "perspective"), "set_perspective", "get_perspective");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov"), "set_fov", "get_fov");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_mag"), "set_size_mag", "get_size_mag");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_far"), "set_depth_far", "get_depth_far");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_near"), "set_depth_near", "get_depth_near");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "perspective"), "set_perspective", "get_perspective");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "fov"), "set_fov", "get_fov");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "size_mag"), "set_size_mag", "get_size_mag");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "depth_far"), "set_depth_far", "get_depth_far");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "depth_near"), "set_depth_near", "get_depth_near");
 }
 
 Ref<GLTFCamera> GLTFCamera::from_node(const Camera3D *p_camera) {

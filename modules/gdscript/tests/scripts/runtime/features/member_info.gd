@@ -20,13 +20,13 @@ var test_var_weak_variant_type = TYPE_NIL
 @export var test_var_weak_variant_type_exported = TYPE_NIL
 var test_var_hard_variant: Variant
 var test_var_hard_int: int
-var test_var_hard_variant_type: Variant.Type
-@export var test_var_hard_variant_type_exported: Variant.Type
+var test_var_hard_variant_type: VariantType
+@export var test_var_hard_variant_type_exported: VariantType
 var test_var_hard_node_process_mode: Node.ProcessMode
 var test_var_hard_my_enum: MyEnum
 var test_var_hard_array: Array
 var test_var_hard_array_int: Array[int]
-var test_var_hard_array_variant_type: Array[Variant.Type]
+var test_var_hard_array_variant_type: Array[VariantType]
 var test_var_hard_array_node_process_mode: Array[Node.ProcessMode]
 var test_var_hard_array_my_enum: Array[MyEnum]
 var test_var_hard_array_resource: Array[Resource]
@@ -50,7 +50,7 @@ func test_func_args_2(_a = 1, _b = _a, _c = [2], _d = 3): pass
 signal test_signal_1()
 signal test_signal_2(a: Variant, b)
 signal test_signal_3(a: int, b: Array[int])
-signal test_signal_4(a: Variant.Type, b: Array[Variant.Type])
+signal test_signal_4(a: VariantType, b: Array[VariantType])
 signal test_signal_5(a: MyEnum, b: Array[MyEnum])
 signal test_signal_6(a: Resource, b: Array[Resource])
 signal test_signal_7(a: TestMemberInfo, b: Array[TestMemberInfo])

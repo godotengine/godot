@@ -75,7 +75,7 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 		String encoded_key = String(keys[i]).uri_encode();
 		Variant value = p_dict[keys[i]];
 		switch (value.get_type()) {
-			case Variant::ARRAY: {
+			case VariantType::ARRAY: {
 				// Repeat the key with every values
 				Array values = value;
 				for (int j = 0; j < values.size(); ++j) {
@@ -83,7 +83,7 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 				}
 				break;
 			}
-			case Variant::NIL: {
+			case VariantType::NIL: {
 				// Add the key with no value
 				query += "&" + encoded_key;
 				break;
@@ -167,9 +167,9 @@ void HTTPClient::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("query_string_from_dict", "fields"), &HTTPClient::query_string_from_dict);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_mode_enabled"), "set_blocking_mode", "is_blocking_mode_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_connection", "get_connection");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "read_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_read_chunk_size", "get_read_chunk_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "blocking_mode_enabled"), "set_blocking_mode", "is_blocking_mode_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_connection", "get_connection");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "read_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_read_chunk_size", "get_read_chunk_size");
 
 	BIND_ENUM_CONSTANT(METHOD_GET);
 	BIND_ENUM_CONSTANT(METHOD_HEAD);

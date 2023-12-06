@@ -72,9 +72,9 @@ void WebRTCPeerConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gathering_state"), &WebRTCPeerConnection::get_gathering_state);
 	ClassDB::bind_method(D_METHOD("get_signaling_state"), &WebRTCPeerConnection::get_signaling_state);
 
-	ADD_SIGNAL(MethodInfo("session_description_created", PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::STRING, "sdp")));
-	ADD_SIGNAL(MethodInfo("ice_candidate_created", PropertyInfo(Variant::STRING, "media"), PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("data_channel_received", PropertyInfo(Variant::OBJECT, "channel", PROPERTY_HINT_RESOURCE_TYPE, "WebRTCDataChannel")));
+	ADD_SIGNAL(MethodInfo("session_description_created", PropertyInfo(VariantType::STRING, "type"), PropertyInfo(VariantType::STRING, "sdp")));
+	ADD_SIGNAL(MethodInfo("ice_candidate_created", PropertyInfo(VariantType::STRING, "media"), PropertyInfo(VariantType::INT, "index"), PropertyInfo(VariantType::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("data_channel_received", PropertyInfo(VariantType::OBJECT, "channel", PROPERTY_HINT_RESOURCE_TYPE, "WebRTCDataChannel")));
 
 	BIND_ENUM_CONSTANT(STATE_NEW);
 	BIND_ENUM_CONSTANT(STATE_CONNECTING);

@@ -70,7 +70,7 @@ void EditorLayoutsDialog::_deselect_layout_names() {
 }
 
 void EditorLayoutsDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("name_confirmed", PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("name_confirmed", PropertyInfo(VariantType::STRING, "name")));
 }
 
 void EditorLayoutsDialog::ok_pressed() {

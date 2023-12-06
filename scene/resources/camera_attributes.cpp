@@ -121,13 +121,13 @@ void CameraAttributes::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_auto_exposure_scale"), &CameraAttributes::get_auto_exposure_scale);
 
 	ADD_GROUP("Exposure", "exposure_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_sensitivity", PROPERTY_HINT_RANGE, "0.1,32000.0,0.1,suffix:ISO"), "set_exposure_sensitivity", "get_exposure_sensitivity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_multiplier", PROPERTY_HINT_RANGE, "0.0,8.0,0.001,or_greater"), "set_exposure_multiplier", "get_exposure_multiplier");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "exposure_sensitivity", PROPERTY_HINT_RANGE, "0.1,32000.0,0.1,suffix:ISO"), "set_exposure_sensitivity", "get_exposure_sensitivity");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "exposure_multiplier", PROPERTY_HINT_RANGE, "0.0,8.0,0.001,or_greater"), "set_exposure_multiplier", "get_exposure_multiplier");
 
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_exposure_enabled"), "set_auto_exposure_enabled", "is_auto_exposure_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_scale", "get_auto_exposure_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_speed", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_speed", "get_auto_exposure_speed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "auto_exposure_enabled"), "set_auto_exposure_enabled", "is_auto_exposure_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "auto_exposure_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_scale", "get_auto_exposure_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "auto_exposure_speed", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_speed", "get_auto_exposure_speed");
 }
 
 CameraAttributes::CameraAttributes() {
@@ -284,17 +284,17 @@ void CameraAttributesPractical::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_auto_exposure_min_sensitivity"), &CameraAttributesPractical::get_auto_exposure_min_sensitivity);
 
 	ADD_GROUP("DOF Blur", "dof_blur_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_far_enabled"), "set_dof_blur_far_enabled", "is_dof_blur_far_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp,suffix:m"), "set_dof_blur_far_distance", "get_dof_blur_far_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_transition", PROPERTY_HINT_RANGE, "-1,8192,0.01"), "set_dof_blur_far_transition", "get_dof_blur_far_transition");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_near_enabled"), "set_dof_blur_near_enabled", "is_dof_blur_near_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp,suffix:m"), "set_dof_blur_near_distance", "get_dof_blur_near_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_transition", PROPERTY_HINT_RANGE, "-1,8192,0.01"), "set_dof_blur_near_transition", "get_dof_blur_near_transition");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dof_blur_amount", "get_dof_blur_amount");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "dof_blur_far_enabled"), "set_dof_blur_far_enabled", "is_dof_blur_far_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "dof_blur_far_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp,suffix:m"), "set_dof_blur_far_distance", "get_dof_blur_far_distance");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "dof_blur_far_transition", PROPERTY_HINT_RANGE, "-1,8192,0.01"), "set_dof_blur_far_transition", "get_dof_blur_far_transition");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "dof_blur_near_enabled"), "set_dof_blur_near_enabled", "is_dof_blur_near_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "dof_blur_near_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp,suffix:m"), "set_dof_blur_near_distance", "get_dof_blur_near_distance");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "dof_blur_near_transition", PROPERTY_HINT_RANGE, "-1,8192,0.01"), "set_dof_blur_near_transition", "get_dof_blur_near_transition");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "dof_blur_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dof_blur_amount", "get_dof_blur_amount");
 
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_min_sensitivity", PROPERTY_HINT_RANGE, "0,1600,0.01,or_greater,suffic:ISO"), "set_auto_exposure_min_sensitivity", "get_auto_exposure_min_sensitivity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_max_sensitivity", PROPERTY_HINT_RANGE, "0,64000,0.1,or_greater,suffic:ISO"), "set_auto_exposure_max_sensitivity", "get_auto_exposure_max_sensitivity");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "auto_exposure_min_sensitivity", PROPERTY_HINT_RANGE, "0,1600,0.01,or_greater,suffic:ISO"), "set_auto_exposure_min_sensitivity", "get_auto_exposure_min_sensitivity");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "auto_exposure_max_sensitivity", PROPERTY_HINT_RANGE, "0,64000,0.1,or_greater,suffic:ISO"), "set_auto_exposure_max_sensitivity", "get_auto_exposure_max_sensitivity");
 }
 
 CameraAttributesPractical::CameraAttributesPractical() {
@@ -480,18 +480,18 @@ void CameraAttributesPhysical::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_auto_exposure_min_exposure_value"), &CameraAttributesPhysical::get_auto_exposure_min_exposure_value);
 
 	ADD_GROUP("Frustum", "frustum_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frustum_focus_distance", PROPERTY_HINT_RANGE, "0.01,4000.0,0.01,suffix:m"), "set_focus_distance", "get_focus_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frustum_focal_length", PROPERTY_HINT_RANGE, "1.0,800.0,0.01,exp,suffix:mm"), "set_focal_length", "get_focal_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frustum_near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp,suffix:m"), "set_near", "get_near");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frustum_far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp,suffix:m"), "set_far", "get_far");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "frustum_focus_distance", PROPERTY_HINT_RANGE, "0.01,4000.0,0.01,suffix:m"), "set_focus_distance", "get_focus_distance");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "frustum_focal_length", PROPERTY_HINT_RANGE, "1.0,800.0,0.01,exp,suffix:mm"), "set_focal_length", "get_focal_length");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "frustum_near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp,suffix:m"), "set_near", "get_near");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "frustum_far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp,suffix:m"), "set_far", "get_far");
 
 	ADD_GROUP("Exposure", "exposure_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_aperture", PROPERTY_HINT_RANGE, "0.5,64.0,0.01,exp,suffix:f-stop"), "set_aperture", "get_aperture");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_shutter_speed", PROPERTY_HINT_RANGE, "0.1,8000.0,0.001,suffix:1/s"), "set_shutter_speed", "get_shutter_speed");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "exposure_aperture", PROPERTY_HINT_RANGE, "0.5,64.0,0.01,exp,suffix:f-stop"), "set_aperture", "get_aperture");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "exposure_shutter_speed", PROPERTY_HINT_RANGE, "0.1,8000.0,0.001,suffix:1/s"), "set_shutter_speed", "get_shutter_speed");
 
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_min_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_min_exposure_value", "get_auto_exposure_min_exposure_value");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_max_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_max_exposure_value", "get_auto_exposure_max_exposure_value");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "auto_exposure_min_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_min_exposure_value", "get_auto_exposure_min_exposure_value");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "auto_exposure_max_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_max_exposure_value", "get_auto_exposure_max_exposure_value");
 };
 
 CameraAttributesPhysical::CameraAttributesPhysical() {

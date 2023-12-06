@@ -30,11 +30,11 @@
 
 #include "jni_utils.h"
 
-jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject) {
+jvalret _variant_to_jvalue(JNIEnv *env, VariantType p_type, const Variant *p_arg, bool force_jobject) {
 	jvalret v;
 
 	switch (p_type) {
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			if (force_jobject) {
 				jclass bclass = env->FindClass("java/lang/Boolean");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(Z)V");
@@ -48,7 +48,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 				v.val.z = *p_arg;
 			}
 		} break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			if (force_jobject) {
 				jclass bclass = env->FindClass("java/lang/Integer");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(I)V");
@@ -63,7 +63,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 				v.val.i = *p_arg;
 			}
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			if (force_jobject) {
 				jclass bclass = env->FindClass("java/lang/Double");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(D)V");
@@ -78,13 +78,13 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 				v.val.f = *p_arg;
 			}
 		} break;
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			String s = *p_arg;
 			jstring jStr = env->NewStringUTF(s.utf8().get_data());
 			v.val.l = jStr;
 			v.obj = jStr;
 		} break;
-		case Variant::PACKED_STRING_ARRAY: {
+		case VariantType::PACKED_STRING_ARRAY: {
 			Vector<String> sarray = *p_arg;
 			jobjectArray arr = env->NewObjectArray(sarray.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
 
@@ -98,7 +98,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 
 		} break;
 
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			Dictionary dict = *p_arg;
 			jclass dclass = env->FindClass("org/godotengine/godot/Dictionary");
 			jmethodID ctor = env->GetMethodID(dclass, "<init>", "()V");
@@ -140,7 +140,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = jdict;
 		} break;
 
-		case Variant::PACKED_INT32_ARRAY: {
+		case VariantType::PACKED_INT32_ARRAY: {
 			Vector<int> array = *p_arg;
 			jintArray arr = env->NewIntArray(array.size());
 			const int *r = array.ptr();
@@ -149,7 +149,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::PACKED_INT64_ARRAY: {
 			Vector<int64_t> array = *p_arg;
 			jlongArray arr = env->NewLongArray(array.size());
 			const int64_t *r = array.ptr();
@@ -158,7 +158,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			Vector<uint8_t> array = *p_arg;
 			jbyteArray arr = env->NewByteArray(array.size());
 			const uint8_t *r = array.ptr();
@@ -167,7 +167,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
-		case Variant::PACKED_FLOAT32_ARRAY: {
+		case VariantType::PACKED_FLOAT32_ARRAY: {
 			Vector<float> array = *p_arg;
 			jfloatArray arr = env->NewFloatArray(array.size());
 			const float *r = array.ptr();
@@ -176,7 +176,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
-		case Variant::PACKED_FLOAT64_ARRAY: {
+		case VariantType::PACKED_FLOAT64_ARRAY: {
 			Vector<double> array = *p_arg;
 			jdoubleArray arr = env->NewDoubleArray(array.size());
 			const double *r = array.ptr();
@@ -363,26 +363,26 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 	return Variant();
 }
 
-Variant::Type get_jni_type(const String &p_type) {
+VariantType get_jni_type(const String &p_type) {
 	static struct {
 		const char *name;
-		Variant::Type type;
+		VariantType type;
 	} _type_to_vtype[] = {
-		{ "void", Variant::NIL },
-		{ "boolean", Variant::BOOL },
-		{ "int", Variant::INT },
-		{ "long", Variant::INT },
-		{ "float", Variant::FLOAT },
-		{ "double", Variant::FLOAT },
-		{ "java.lang.String", Variant::STRING },
-		{ "[I", Variant::PACKED_INT32_ARRAY },
-		{ "[J", Variant::PACKED_INT64_ARRAY },
-		{ "[B", Variant::PACKED_BYTE_ARRAY },
-		{ "[F", Variant::PACKED_FLOAT32_ARRAY },
-		{ "[D", Variant::PACKED_FLOAT64_ARRAY },
-		{ "[Ljava.lang.String;", Variant::PACKED_STRING_ARRAY },
-		{ "org.godotengine.godot.Dictionary", Variant::DICTIONARY },
-		{ nullptr, Variant::NIL }
+		{ "void", VariantType::NIL },
+		{ "boolean", VariantType::BOOL },
+		{ "int", VariantType::INT },
+		{ "long", VariantType::INT },
+		{ "float", VariantType::FLOAT },
+		{ "double", VariantType::FLOAT },
+		{ "java.lang.String", VariantType::STRING },
+		{ "[I", VariantType::PACKED_INT32_ARRAY },
+		{ "[J", VariantType::PACKED_INT64_ARRAY },
+		{ "[B", VariantType::PACKED_BYTE_ARRAY },
+		{ "[F", VariantType::PACKED_FLOAT32_ARRAY },
+		{ "[D", VariantType::PACKED_FLOAT64_ARRAY },
+		{ "[Ljava.lang.String;", VariantType::PACKED_STRING_ARRAY },
+		{ "org.godotengine.godot.Dictionary", VariantType::DICTIONARY },
+		{ nullptr, VariantType::NIL }
 	};
 
 	int idx = 0;
@@ -395,7 +395,7 @@ Variant::Type get_jni_type(const String &p_type) {
 		idx++;
 	}
 
-	return Variant::NIL;
+	return VariantType::NIL;
 }
 
 const char *get_jni_sig(const String &p_type) {

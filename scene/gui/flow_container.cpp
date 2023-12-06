@@ -338,8 +338,8 @@ void FlowContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
 	BIND_ENUM_CONSTANT(ALIGNMENT_END);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "vertical"), "set_vertical", "is_vertical");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FlowContainer, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FlowContainer, v_separation);

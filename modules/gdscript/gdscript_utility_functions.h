@@ -43,9 +43,9 @@ public:
 
 	static FunctionPtr get_function(const StringName &p_function);
 	static bool has_function_return_value(const StringName &p_function);
-	static Variant::Type get_function_return_type(const StringName &p_function);
+	static VariantType get_function_return_type(const StringName &p_function);
 	static StringName get_function_return_class(const StringName &p_function);
-	static Variant::Type get_function_argument_type(const StringName &p_function, int p_arg);
+	static VariantType get_function_argument_type(const StringName &p_function, int p_arg);
 	static int get_function_argument_count(const StringName &p_function, int p_arg);
 	static bool is_function_vararg(const StringName &p_function);
 	static bool is_function_constant(const StringName &p_function);

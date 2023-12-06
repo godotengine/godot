@@ -1196,12 +1196,12 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 	}
 
 	Vector2 texture_origin = tile_data->get_texture_origin();
-	if (value.get_type() == Variant::BOOL) {
+	if (value.get_type() == VariantType::BOOL) {
 		Ref<Texture2D> texture = (bool)value ? tile_bool_checked : tile_bool_unchecked;
 		int size = MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 3;
 		Rect2 rect = p_transform.xform(Rect2(Vector2(-size / 2, -size / 2) - texture_origin, Vector2(size, size)));
 		p_canvas_item->draw_texture_rect(texture, rect);
-	} else if (value.get_type() == Variant::COLOR) {
+	} else if (value.get_type() == VariantType::COLOR) {
 		int size = MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 3;
 		Rect2 rect = p_transform.xform(Rect2(Vector2(-size / 2, -size / 2) - texture_origin, Vector2(size, size)));
 		p_canvas_item->draw_rect(rect, value);
@@ -1211,12 +1211,12 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 		String text;
 		// Round floating point precision to 2 digits, as tiles don't have that much space.
 		switch (value.get_type()) {
-			case Variant::FLOAT:
+			case VariantType::FLOAT:
 				text = vformat("%.2f", value);
 				break;
-			case Variant::VECTOR2:
-			case Variant::VECTOR3:
-			case Variant::VECTOR4:
+			case VariantType::VECTOR2:
+			case VariantType::VECTOR3:
+			case VariantType::VECTOR4:
 				text = vformat("%.2v", value);
 				break;
 			default:
@@ -1232,7 +1232,7 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 			color = selection_color;
 		} else if (is_visible_in_tree()) {
 			Variant painted_value = _get_painted_value();
-			bool equal = (painted_value.get_type() == Variant::FLOAT && value.get_type() == Variant::FLOAT) ? Math::is_equal_approx(float(painted_value), float(value)) : painted_value == value;
+			bool equal = (painted_value.get_type() == VariantType::FLOAT && value.get_type() == VariantType::FLOAT) ? Math::is_equal_approx(float(painted_value), float(value)) : painted_value == value;
 			if (equal) {
 				color = Color(0.7, 0.7, 0.7);
 			}
@@ -1244,7 +1244,7 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 	}
 }
 
-void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p_property, String p_label, Variant p_default_value) {
+void TileDataDefaultEditor::setup_property_editor(VariantType p_type, String p_property, String p_label, Variant p_default_value) {
 	ERR_FAIL_COND_MSG(!property.is_empty(), "Cannot setup TileDataDefaultEditor twice");
 	property = p_property;
 	property_type = p_type;
@@ -1292,7 +1292,7 @@ void TileDataDefaultEditor::_notification(int p_what) {
 	}
 }
 
-Variant::Type TileDataDefaultEditor::get_property_type() {
+VariantType TileDataDefaultEditor::get_property_type() {
 	return property_type;
 }
 
@@ -1357,7 +1357,7 @@ void TileDataPositionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 	if (!valid) {
 		return;
 	}
-	ERR_FAIL_COND(value.get_type() != Variant::VECTOR2I && value.get_type() != Variant::VECTOR2);
+	ERR_FAIL_COND(value.get_type() != VariantType::VECTOR2I && value.get_type() != VariantType::VECTOR2);
 
 	Color color = Color(1.0, 1.0, 1.0);
 	if (p_selected) {
@@ -1511,7 +1511,7 @@ void TileDataCollisionEditor::_polygons_changed() {
 		}
 
 		if (!property_editors.has(one_way_property)) {
-			EditorProperty *one_way_property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::BOOL, one_way_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+			EditorProperty *one_way_property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, VariantType::BOOL, one_way_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 			one_way_property_editor->set_object_and_property(dummy_object, one_way_property);
 			one_way_property_editor->set_label(one_way_property);
 			one_way_property_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
@@ -1523,7 +1523,7 @@ void TileDataCollisionEditor::_polygons_changed() {
 		}
 
 		if (!property_editors.has(one_way_margin_property)) {
-			EditorProperty *one_way_margin_property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::FLOAT, one_way_margin_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+			EditorProperty *one_way_margin_property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, VariantType::FLOAT, one_way_margin_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 			one_way_margin_property_editor->set_object_and_property(dummy_object, one_way_margin_property);
 			one_way_margin_property_editor->set_label(one_way_margin_property);
 			one_way_margin_property_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
@@ -1689,7 +1689,7 @@ TileDataCollisionEditor::TileDataCollisionEditor() {
 	dummy_object->add_dummy_property("angular_velocity");
 	dummy_object->set("angular_velocity", 0.0);
 
-	EditorProperty *linear_velocity_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::VECTOR2, "linear_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+	EditorProperty *linear_velocity_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, VariantType::VECTOR2, "linear_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	linear_velocity_editor->set_object_and_property(dummy_object, "linear_velocity");
 	linear_velocity_editor->set_label("linear_velocity");
 	linear_velocity_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
@@ -1699,7 +1699,7 @@ TileDataCollisionEditor::TileDataCollisionEditor() {
 	add_child(linear_velocity_editor);
 	property_editors["linear_velocity"] = linear_velocity_editor;
 
-	EditorProperty *angular_velocity_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::FLOAT, "angular_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+	EditorProperty *angular_velocity_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, VariantType::FLOAT, "angular_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	angular_velocity_editor->set_object_and_property(dummy_object, "angular_velocity");
 	angular_velocity_editor->set_label("angular_velocity");
 	angular_velocity_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));

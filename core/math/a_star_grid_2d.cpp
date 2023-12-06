@@ -647,15 +647,15 @@ void AStarGrid2D::_bind_methods() {
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2I, "region"), "set_region", "get_region");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::RECT2I, "region"), "set_region", "get_region");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "jumping_enabled"), "set_jumping_enabled", "is_jumping_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_compute_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_compute_heuristic", "get_default_compute_heuristic");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_estimate_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_estimate_heuristic", "get_default_estimate_heuristic");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Never,Always,At Least One Walkable,Only If No Obstacles"), "set_diagonal_mode", "get_diagonal_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "jumping_enabled"), "set_jumping_enabled", "is_jumping_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "default_compute_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_compute_heuristic", "get_default_compute_heuristic");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "default_estimate_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_estimate_heuristic", "get_default_estimate_heuristic");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Never,Always,At Least One Walkable,Only If No Obstacles"), "set_diagonal_mode", "get_diagonal_mode");
 
 	BIND_ENUM_CONSTANT(HEURISTIC_EUCLIDEAN);
 	BIND_ENUM_CONSTANT(HEURISTIC_MANHATTAN);

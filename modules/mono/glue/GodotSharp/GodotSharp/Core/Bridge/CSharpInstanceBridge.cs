@@ -112,7 +112,7 @@ namespace Godot.Bridge
 
                 Variant ret = godotObject._Get(nameManaged);
 
-                if (ret.VariantType == Variant.Type.Nil)
+                if (ret.Type == VariantType.Nil)
                 {
                     *outRet = default;
                     return godot_bool.False;

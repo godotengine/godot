@@ -58,7 +58,7 @@ void AudioStreamPolyphonic::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polyphony", "voices"), &AudioStreamPolyphonic::set_polyphony);
 	ClassDB::bind_method(D_METHOD("get_polyphony"), &AudioStreamPolyphonic::get_polyphony);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "polyphony", PROPERTY_HINT_RANGE, "1,128,1"), "set_polyphony", "get_polyphony");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "polyphony", PROPERTY_HINT_RANGE, "1,128,1"), "set_polyphony", "get_polyphony");
 }
 
 AudioStreamPolyphonic::AudioStreamPolyphonic() {

@@ -118,7 +118,7 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF("dotnet/project/assembly_name", "");
 #ifdef TOOLS_ENABLED
 	GLOBAL_DEF("dotnet/project/solution_directory", "");
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -407,7 +407,7 @@ bool CSharpLanguage::supports_builtin_mode() const {
 
 #ifdef TOOLS_ENABLED
 struct VariantCsName {
-	Variant::Type variant_type;
+	VariantType variant_type;
 	const String cs_type;
 };
 
@@ -420,90 +420,90 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		return pascal_to_pascal_case(p_var_type_name);
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::OBJECT)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::OBJECT)) {
 		return "GodotObject";
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::INT)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::INT)) {
 		return "long";
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::FLOAT)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::FLOAT)) {
 		return "double";
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::STRING)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::STRING)) {
 		return "string"; // I prefer this one >:[
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::DICTIONARY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::DICTIONARY)) {
 		return "Collections.Dictionary";
 	}
 
-	if (p_var_type_name.begins_with(Variant::get_type_name(Variant::ARRAY) + "[")) {
-		String element_type = p_var_type_name.trim_prefix(Variant::get_type_name(Variant::ARRAY) + "[").trim_suffix("]");
+	if (p_var_type_name.begins_with(Variant::get_type_name(VariantType::ARRAY) + "[")) {
+		String element_type = p_var_type_name.trim_prefix(Variant::get_type_name(VariantType::ARRAY) + "[").trim_suffix("]");
 		return "Collections.Array<" + variant_type_to_managed_name(element_type) + ">";
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::ARRAY)) {
 		return "Collections.Array";
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_BYTE_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::PACKED_BYTE_ARRAY)) {
 		return "byte[]";
 	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT32_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::PACKED_INT32_ARRAY)) {
 		return "int[]";
 	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT64_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::PACKED_INT64_ARRAY)) {
 		return "long[]";
 	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT32_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::PACKED_FLOAT32_ARRAY)) {
 		return "float[]";
 	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT64_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::PACKED_FLOAT64_ARRAY)) {
 		return "double[]";
 	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_STRING_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::PACKED_STRING_ARRAY)) {
 		return "string[]";
 	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR2_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::PACKED_VECTOR2_ARRAY)) {
 		return "Vector2[]";
 	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR3_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::PACKED_VECTOR3_ARRAY)) {
 		return "Vector3[]";
 	}
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_COLOR_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::PACKED_COLOR_ARRAY)) {
 		return "Color[]";
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::SIGNAL)) {
+	if (p_var_type_name == Variant::get_type_name(VariantType::SIGNAL)) {
 		return "Signal";
 	}
 
 	const VariantCsName var_types[] = {
-		{ Variant::BOOL, "bool" },
-		{ Variant::INT, "long" },
-		{ Variant::VECTOR2, "Vector2" },
-		{ Variant::VECTOR2I, "Vector2I" },
-		{ Variant::RECT2, "Rect2" },
-		{ Variant::RECT2I, "Rect2I" },
-		{ Variant::VECTOR3, "Vector3" },
-		{ Variant::VECTOR3I, "Vector3I" },
-		{ Variant::TRANSFORM2D, "Transform2D" },
-		{ Variant::VECTOR4, "Vector4" },
-		{ Variant::VECTOR4I, "Vector4I" },
-		{ Variant::PLANE, "Plane" },
-		{ Variant::QUATERNION, "Quaternion" },
-		{ Variant::AABB, "Aabb" },
-		{ Variant::BASIS, "Basis" },
-		{ Variant::TRANSFORM3D, "Transform3D" },
-		{ Variant::PROJECTION, "Projection" },
-		{ Variant::COLOR, "Color" },
-		{ Variant::STRING_NAME, "StringName" },
-		{ Variant::NODE_PATH, "NodePath" },
-		{ Variant::RID, "Rid" },
-		{ Variant::CALLABLE, "Callable" },
+		{ VariantType::BOOL, "bool" },
+		{ VariantType::INT, "long" },
+		{ VariantType::VECTOR2, "Vector2" },
+		{ VariantType::VECTOR2I, "Vector2I" },
+		{ VariantType::RECT2, "Rect2" },
+		{ VariantType::RECT2I, "Rect2I" },
+		{ VariantType::VECTOR3, "Vector3" },
+		{ VariantType::VECTOR3I, "Vector3I" },
+		{ VariantType::TRANSFORM2D, "Transform2D" },
+		{ VariantType::VECTOR4, "Vector4" },
+		{ VariantType::VECTOR4I, "Vector4I" },
+		{ VariantType::PLANE, "Plane" },
+		{ VariantType::QUATERNION, "Quaternion" },
+		{ VariantType::AABB, "Aabb" },
+		{ VariantType::BASIS, "Basis" },
+		{ VariantType::TRANSFORM3D, "Transform3D" },
+		{ VariantType::PROJECTION, "Projection" },
+		{ VariantType::COLOR, "Color" },
+		{ VariantType::STRING_NAME, "StringName" },
+		{ VariantType::NODE_PATH, "NodePath" },
+		{ VariantType::RID, "Rid" },
+		{ VariantType::CALLABLE, "Callable" },
 	};
 
 	for (unsigned int i = 0; i < sizeof(var_types) / sizeof(VariantCsName); i++) {
@@ -1671,7 +1671,7 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	}
 }
 
-Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
+VariantType CSharpInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
 	if (script->member_info.has(p_name)) {
 		if (r_is_valid) {
 			*r_is_valid = true;
@@ -1683,7 +1683,7 @@ Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *
 		*r_is_valid = false;
 	}
 
-	return Variant::NIL;
+	return VariantType::NIL;
 }
 
 bool CSharpInstance::property_can_revert(const StringName &p_name) const {
@@ -2149,7 +2149,7 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 
 #ifdef TOOLS_ENABLED
 	p_script->exported_members_cache.push_back(PropertyInfo(
-			Variant::NIL, *p_current_class_name, PROPERTY_HINT_NONE,
+			VariantType::NIL, *p_current_class_name, PROPERTY_HINT_NONE,
 			p_script->get_path(), PROPERTY_USAGE_CATEGORY));
 #endif
 
@@ -2273,7 +2273,7 @@ bool CSharpScript::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void CSharpScript::_get_property_list(List<PropertyInfo> *p_properties) const {
-	p_properties->push_back(PropertyInfo(Variant::STRING, SNAME("script/source"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+	p_properties->push_back(PropertyInfo(VariantType::STRING, SNAME("script/source"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void CSharpScript::_bind_methods() {
@@ -2359,7 +2359,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 		for (int j = 0; j < params.size(); j++) {
 			Dictionary param = params[j];
 
-			Variant::Type param_type = (Variant::Type)(int)param["type"];
+			VariantType param_type = (VariantType)(int)param["type"];
 			PropertyInfo arg_info = PropertyInfo(param_type, (String)param["name"]);
 			arg_info.usage = (uint32_t)param["usage"];
 			if (param.has("class_name")) {
@@ -2394,7 +2394,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 		for (int i = 0; i < params.size(); i++) {
 			Dictionary param = params[i];
 
-			Variant::Type param_type = (Variant::Type)(int)param["type"];
+			VariantType param_type = (VariantType)(int)param["type"];
 			PropertyInfo arg_info = PropertyInfo(param_type, (String)param["name"]);
 			arg_info.usage = (uint32_t)param["usage"];
 			if (param.has("class_name")) {

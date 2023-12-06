@@ -223,7 +223,7 @@ void EditorResourcePicker::_update_menu_items() {
 			edited_resource->get_property_list(&property_list);
 			bool has_subresources = false;
 			for (PropertyInfo &p : property_list) {
-				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get(p.name) != nullptr)) {
+				if ((p.type == VariantType::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get(p.name) != nullptr)) {
 					has_subresources = true;
 					break;
 				}
@@ -799,13 +799,13 @@ void EditorResourcePicker::_bind_methods() {
 	GDVIRTUAL_BIND(_set_create_options, "menu_node");
 	GDVIRTUAL_BIND(_handle_menu_selected, "id");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "base_type"), "set_base_type", "get_base_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "inspect")));
-	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(VariantType::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(VariantType::BOOL, "inspect")));
+	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(VariantType::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 }
 
 void EditorResourcePicker::_notification(int p_what) {
@@ -991,7 +991,7 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 	p_resource->get_property_list(&plist);
 
 	for (const PropertyInfo &E : plist) {
-		if (!(E.usage & PROPERTY_USAGE_STORAGE) || E.type != Variant::OBJECT || E.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE) || E.type != VariantType::OBJECT || E.hint != PROPERTY_HINT_RESOURCE_TYPE) {
 			continue;
 		}
 
@@ -1123,7 +1123,7 @@ void EditorScriptPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_script_owner", "owner_node"), &EditorScriptPicker::set_script_owner);
 	ClassDB::bind_method(D_METHOD("get_script_owner"), &EditorScriptPicker::get_script_owner);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "script_owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_script_owner", "get_script_owner");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "script_owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_script_owner", "get_script_owner");
 }
 
 EditorScriptPicker::EditorScriptPicker() {

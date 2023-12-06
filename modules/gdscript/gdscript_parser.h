@@ -130,7 +130,7 @@ public:
 		bool is_pseudo_type = false; // For global names that can't be used standalone.
 		bool is_coroutine = false; // For function calls.
 
-		Variant::Type builtin_type = Variant::NIL;
+		VariantType builtin_type = VariantType::NIL;
 		StringName native_type;
 		StringName enum_type; // Enum name or the value name in an enum.
 		Ref<Script> script_type;
@@ -428,7 +428,7 @@ public:
 		};
 
 		Operation operation = OP_NONE;
-		Variant::Operator variant_op = Variant::OP_MAX;
+		VariantOperator variant_op = VariantOperator::MAX;
 		ExpressionNode *assignee = nullptr;
 		ExpressionNode *assigned_value = nullptr;
 		bool use_conversion_assign = false;
@@ -471,7 +471,7 @@ public:
 		};
 
 		OpType operation = OpType::OP_ADDITION;
-		Variant::Operator variant_op = Variant::OP_MAX;
+		VariantOperator variant_op = VariantOperator::MAX;
 		ExpressionNode *left_operand = nullptr;
 		ExpressionNode *right_operand = nullptr;
 
@@ -1221,7 +1221,7 @@ public:
 		};
 
 		OpType operation = OP_POSITIVE;
-		Variant::Operator variant_op = Variant::OP_MAX;
+		VariantOperator variant_op = VariantOperator::MAX;
 		ExpressionNode *operand = nullptr;
 
 		UnaryOpNode() {
@@ -1303,7 +1303,7 @@ public:
 		SuiteNode *current_suite = nullptr;
 		int current_line = -1;
 		int current_argument = -1;
-		Variant::Type builtin_type = Variant::VARIANT_MAX;
+		VariantType builtin_type = VariantType::MAX;
 		Node *node = nullptr;
 		Object *base = nullptr;
 		List<Ref<GDScriptParserRef>> dependent_parsers;
@@ -1437,7 +1437,7 @@ private:
 #endif
 
 	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);
-	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = false);
+	void make_completion_context(CompletionType p_type, VariantType p_builtin_type, bool p_force = false);
 	void push_completion_call(Node *p_call);
 	void pop_completion_call();
 	void set_last_completion_call_arg(int p_argument);
@@ -1476,7 +1476,7 @@ private:
 	bool tool_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	template <PropertyHint t_hint, Variant::Type t_type>
+	template <PropertyHint t_hint, VariantType t_type>
 	bool export_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1544,7 +1544,7 @@ public:
 	bool is_tool() const { return _is_tool; }
 	ClassNode *find_class(const String &p_qualified_name) const;
 	bool has_class(const GDScriptParser::ClassNode *p_class) const;
-	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
+	static VariantType get_builtin_type(const StringName &p_type); // Excluding `VariantType::NIL` and `VariantType::OBJECT`.
 
 	CompletionContext get_completion_context() const { return completion_context; }
 	CompletionCall get_completion_call() const { return completion_call; }

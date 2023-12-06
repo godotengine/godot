@@ -95,17 +95,17 @@ String dict_to_python(const Dictionary &p_dict) {
 		Variant raw_value = p_dict[key];
 
 		switch (raw_value.get_type()) {
-			case Variant::Type::BOOL: {
+			case VariantType::BOOL: {
 				value = raw_value ? "True" : "False";
 				break;
 			}
-			case Variant::Type::STRING:
-			case Variant::Type::STRING_NAME: {
+			case VariantType::STRING:
+			case VariantType::STRING_NAME: {
 				value = raw_value;
 				value = vformat("'%s'", value.c_escape());
 				break;
 			}
-			case Variant::Type::DICTIONARY: {
+			case VariantType::DICTIONARY: {
 				value = dict_to_python(raw_value);
 				break;
 			}
@@ -128,17 +128,17 @@ String dict_to_xmlrpc(const Dictionary &p_dict) {
 		Variant raw_value = p_dict[key];
 
 		switch (raw_value.get_type()) {
-			case Variant::Type::BOOL: {
+			case VariantType::BOOL: {
 				value = vformat("<boolean>%d</boolean>", raw_value ? 1 : 0);
 				break;
 			}
-			case Variant::Type::STRING:
-			case Variant::Type::STRING_NAME: {
+			case VariantType::STRING:
+			case VariantType::STRING_NAME: {
 				value = raw_value;
 				value = vformat("<string>%s</string>", value.xml_escape());
 				break;
 			}
-			case Variant::Type::DICTIONARY: {
+			case VariantType::DICTIONARY: {
 				value = dict_to_xmlrpc(raw_value);
 				break;
 			}

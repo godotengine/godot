@@ -380,15 +380,15 @@ void AcceptDialog::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
 	ADD_SIGNAL(MethodInfo("canceled"));
-	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));
+	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(VariantType::STRING_NAME, "action")));
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ok_button_text"), "set_ok_button_text", "get_ok_button_text");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "ok_button_text"), "set_ok_button_text", "get_ok_button_text");
 
 	ADD_GROUP("Dialog", "dialog_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_close_on_escape"), "set_close_on_escape", "get_close_on_escape");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "dialog_close_on_escape"), "set_close_on_escape", "get_close_on_escape");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, AcceptDialog, panel_style, "panel");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_separation);
@@ -450,7 +450,7 @@ void ConfirmationDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cancel_button_text", "text"), &ConfirmationDialog::set_cancel_button_text);
 	ClassDB::bind_method(D_METHOD("get_cancel_button_text"), &ConfirmationDialog::get_cancel_button_text);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "cancel_button_text"), "set_cancel_button_text", "get_cancel_button_text");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "cancel_button_text"), "set_cancel_button_text", "get_cancel_button_text");
 }
 
 Button *ConfirmationDialog::get_cancel_button() {

@@ -33,7 +33,7 @@
 void OpenXRActionMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action_sets", "action_sets"), &OpenXRActionMap::set_action_sets);
 	ClassDB::bind_method(D_METHOD("get_action_sets"), &OpenXRActionMap::get_action_sets);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "action_sets", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRActionSet", PROPERTY_USAGE_NO_EDITOR), "set_action_sets", "get_action_sets");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "action_sets", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRActionSet", PROPERTY_USAGE_NO_EDITOR), "set_action_sets", "get_action_sets");
 
 	ClassDB::bind_method(D_METHOD("get_action_set_count"), &OpenXRActionMap::get_action_set_count);
 	ClassDB::bind_method(D_METHOD("find_action_set", "name"), &OpenXRActionMap::find_action_set);
@@ -43,7 +43,7 @@ void OpenXRActionMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_interaction_profiles", "interaction_profiles"), &OpenXRActionMap::set_interaction_profiles);
 	ClassDB::bind_method(D_METHOD("get_interaction_profiles"), &OpenXRActionMap::get_interaction_profiles);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "interaction_profiles", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRInteractionProfile", PROPERTY_USAGE_NO_EDITOR), "set_interaction_profiles", "get_interaction_profiles");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "interaction_profiles", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRInteractionProfile", PROPERTY_USAGE_NO_EDITOR), "set_interaction_profiles", "get_interaction_profiles");
 
 	ClassDB::bind_method(D_METHOD("get_interaction_profile_count"), &OpenXRActionMap::get_interaction_profile_count);
 	ClassDB::bind_method(D_METHOD("find_interaction_profile", "name"), &OpenXRActionMap::find_interaction_profile);

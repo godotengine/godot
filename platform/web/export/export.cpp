@@ -46,9 +46,9 @@ void register_web_exporter() {
 	EDITOR_DEF("export/web/use_tls", false);
 	EDITOR_DEF("export/web/tls_key", "");
 	EDITOR_DEF("export/web/tls_certificate", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/web/http_port", PROPERTY_HINT_RANGE, "1,65535,1"));
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/tls_key", PROPERTY_HINT_GLOBAL_FILE, "*.key"));
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/tls_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::INT, "export/web/http_port", PROPERTY_HINT_RANGE, "1,65535,1"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::STRING, "export/web/tls_key", PROPERTY_HINT_GLOBAL_FILE, "*.key"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::STRING, "export/web/tls_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
 #endif
 
 	Ref<EditorExportPlatformWeb> platform;

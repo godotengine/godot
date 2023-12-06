@@ -117,14 +117,14 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<int, Item> &E : item_map) {
 		String prop_name = vformat("%s/%d/", PNAME("item"), E.key);
-		p_list->push_back(PropertyInfo(Variant::STRING, prop_name + PNAME("name")));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
-		p_list->push_back(PropertyInfo(Variant::ARRAY, prop_name + PNAME("shapes")));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
-		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("navigation_layers"), PROPERTY_HINT_LAYERS_3D_NAVIGATION));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(VariantType::STRING, prop_name + PNAME("name")));
+		p_list->push_back(PropertyInfo(VariantType::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
+		p_list->push_back(PropertyInfo(VariantType::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(VariantType::ARRAY, prop_name + PNAME("shapes")));
+		p_list->push_back(PropertyInfo(VariantType::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
+		p_list->push_back(PropertyInfo(VariantType::TRANSFORM3D, prop_name + PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(VariantType::INT, prop_name + PNAME("navigation_layers"), PROPERTY_HINT_LAYERS_3D_NAVIGATION));
+		p_list->push_back(PropertyInfo(VariantType::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT));
 	}
 }
 

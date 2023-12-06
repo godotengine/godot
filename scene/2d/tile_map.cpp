@@ -3642,7 +3642,7 @@ PackedVector2Array TileMap::_get_transformed_vertices(const PackedVector2Array &
 bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (p_name == "format") {
-		if (p_value.get_type() == Variant::INT) {
+		if (p_value.get_type() == VariantType::INT) {
 			format = (TileMapLayer::DataFormat)(p_value.operator int64_t()); // Set format used for loading.
 			return true;
 		}
@@ -3769,8 +3769,8 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-	p_list->push_back(PropertyInfo(Variant::NIL, "Layers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(VariantType::INT, "format", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+	p_list->push_back(PropertyInfo(VariantType::NIL, "Layers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 
 #define MAKE_LAYER_PROPERTY(m_type, m_name, m_hint)                                                                                                                                                      \
 	{                                                                                                                                                                                                    \
@@ -3779,14 +3779,14 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (uint32_t i = 0; i < layers.size(); i++) {
-		MAKE_LAYER_PROPERTY(Variant::STRING, "name", "");
-		MAKE_LAYER_PROPERTY(Variant::BOOL, "enabled", "");
-		MAKE_LAYER_PROPERTY(Variant::COLOR, "modulate", "");
-		MAKE_LAYER_PROPERTY(Variant::BOOL, "y_sort_enabled", "");
-		MAKE_LAYER_PROPERTY(Variant::INT, "y_sort_origin", "suffix:px");
-		MAKE_LAYER_PROPERTY(Variant::INT, "z_index", "");
-		MAKE_LAYER_PROPERTY(Variant::BOOL, "navigation_enabled", "");
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("layer_%d/tile_data", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		MAKE_LAYER_PROPERTY(VariantType::STRING, "name", "");
+		MAKE_LAYER_PROPERTY(VariantType::BOOL, "enabled", "");
+		MAKE_LAYER_PROPERTY(VariantType::COLOR, "modulate", "");
+		MAKE_LAYER_PROPERTY(VariantType::BOOL, "y_sort_enabled", "");
+		MAKE_LAYER_PROPERTY(VariantType::INT, "y_sort_origin", "suffix:px");
+		MAKE_LAYER_PROPERTY(VariantType::INT, "z_index", "");
+		MAKE_LAYER_PROPERTY(VariantType::BOOL, "navigation_enabled", "");
+		p_list->push_back(PropertyInfo(VariantType::OBJECT, vformat("layer_%d/tile_data", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 #undef MAKE_LAYER_PROPERTY
@@ -4829,11 +4829,11 @@ void TileMap::_bind_methods() {
 	GDVIRTUAL_BIND(_use_tile_data_runtime_update, "layer", "coords");
 	GDVIRTUAL_BIND(_tile_data_runtime_update, "layer", "coords", "tile_data");
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "rendering_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 
 	ADD_ARRAY("layers", "layer_");
 

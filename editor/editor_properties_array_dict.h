@@ -92,8 +92,8 @@ class EditorPropertyArray : public EditorProperty {
 	EditorSpinSlider *size_slider = nullptr;
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
-	Variant::Type array_type;
-	Variant::Type subtype;
+	VariantType array_type;
+	VariantType subtype;
 	PropertyHint subtype_hint;
 	String subtype_hint_string;
 
@@ -136,7 +136,7 @@ protected:
 	virtual void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
-	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
+	void setup(VariantType p_array_type, const String &p_hint_string = "");
 	virtual void update_property() override;
 	EditorPropertyArray();
 };

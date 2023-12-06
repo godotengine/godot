@@ -36,27 +36,27 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextParagraph::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextParagraph::get_direction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Light-to-right,Right-to-left"), "set_direction", "get_direction");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Light-to-right,Right-to-left"), "set_direction", "get_direction");
 
 	ClassDB::bind_method(D_METHOD("set_custom_punctuation", "custom_punctuation"), &TextParagraph::set_custom_punctuation);
 	ClassDB::bind_method(D_METHOD("get_custom_punctuation"), &TextParagraph::get_custom_punctuation);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "custom_punctuation"), "set_custom_punctuation", "get_custom_punctuation");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "custom_punctuation"), "set_custom_punctuation", "get_custom_punctuation");
 
 	ClassDB::bind_method(D_METHOD("set_orientation", "orientation"), &TextParagraph::set_orientation);
 	ClassDB::bind_method(D_METHOD("get_orientation"), &TextParagraph::get_orientation);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_ENUM, "Horizontal,Orientation"), "set_orientation", "get_orientation");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "orientation", PROPERTY_HINT_ENUM, "Horizontal,Orientation"), "set_orientation", "get_orientation");
 
 	ClassDB::bind_method(D_METHOD("set_preserve_invalid", "enabled"), &TextParagraph::set_preserve_invalid);
 	ClassDB::bind_method(D_METHOD("get_preserve_invalid"), &TextParagraph::get_preserve_invalid);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "preserve_invalid"), "set_preserve_invalid", "get_preserve_invalid");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "preserve_invalid"), "set_preserve_invalid", "get_preserve_invalid");
 
 	ClassDB::bind_method(D_METHOD("set_preserve_control", "enabled"), &TextParagraph::set_preserve_control);
 	ClassDB::bind_method(D_METHOD("get_preserve_control"), &TextParagraph::get_preserve_control);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "preserve_control"), "set_preserve_control", "get_preserve_control");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "preserve_control"), "set_preserve_control", "get_preserve_control");
 
 	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextParagraph::set_bidi_override);
 
@@ -70,29 +70,29 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &TextParagraph::set_alignment);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &TextParagraph::get_alignment);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_alignment", "get_alignment");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_alignment", "get_alignment");
 
 	ClassDB::bind_method(D_METHOD("tab_align", "tab_stops"), &TextParagraph::tab_align);
 
 	ClassDB::bind_method(D_METHOD("set_break_flags", "flags"), &TextParagraph::set_break_flags);
 	ClassDB::bind_method(D_METHOD("get_break_flags"), &TextParagraph::get_break_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "break_flags", PROPERTY_HINT_FLAGS, "Mandatory,Word Bound,Grapheme Bound,Adaptive,Trim Spaces"), "set_break_flags", "get_break_flags");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "break_flags", PROPERTY_HINT_FLAGS, "Mandatory,Word Bound,Grapheme Bound,Adaptive,Trim Spaces"), "set_break_flags", "get_break_flags");
 
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "flags"), &TextParagraph::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &TextParagraph::get_justification_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Trim Edge Spaces After Justification:4,Justify Only After Last Tab:8,Constrain Ellipsis:16,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Trim Edge Spaces After Justification:4,Justify Only After Last Tab:8,Constrain Ellipsis:16,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextParagraph::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextParagraph::get_text_overrun_behavior);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextParagraph::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextParagraph::get_width);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "width"), "set_width", "get_width");
 
 	ClassDB::bind_method(D_METHOD("get_non_wrapped_size"), &TextParagraph::get_non_wrapped_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &TextParagraph::get_size);
@@ -106,7 +106,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_lines_visible", "max_lines_visible"), &TextParagraph::set_max_lines_visible);
 	ClassDB::bind_method(D_METHOD("get_max_lines_visible"), &TextParagraph::get_max_lines_visible);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible"), "set_max_lines_visible", "get_max_lines_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_lines_visible"), "set_max_lines_visible", "get_max_lines_visible");
 
 	ClassDB::bind_method(D_METHOD("get_line_objects", "line"), &TextParagraph::get_line_objects);
 	ClassDB::bind_method(D_METHOD("get_line_object_rect", "line", "key"), &TextParagraph::get_line_object_rect);

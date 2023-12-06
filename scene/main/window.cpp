@@ -50,7 +50,7 @@ bool Window::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
-	if (p_value.get_type() == Variant::NIL || (p_value.get_type() == Variant::OBJECT && (Object *)p_value == nullptr)) {
+	if (p_value.get_type() == VariantType::NIL || (p_value.get_type() == VariantType::OBJECT && (Object *)p_value == nullptr)) {
 		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (theme_icon_override.has(dname)) {
@@ -152,7 +152,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
 
-	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Theme Overrides", "theme_override_"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(VariantType::NIL, GNAME("Theme Overrides", "theme_override_"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
 	{
 		List<StringName> names;
@@ -163,7 +163,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::COLOR, PNAME("theme_override_colors") + String("/") + E, PROPERTY_HINT_NONE, "", usage));
+			p_list->push_back(PropertyInfo(VariantType::COLOR, PNAME("theme_override_colors") + String("/") + E, PROPERTY_HINT_NONE, "", usage));
 		}
 	}
 	{
@@ -175,7 +175,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_constants") + String("/") + E, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+			p_list->push_back(PropertyInfo(VariantType::INT, PNAME("theme_override_constants") + String("/") + E, PROPERTY_HINT_RANGE, "-16384,16384", usage));
 		}
 	}
 	{
@@ -187,7 +187,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_fonts") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
+			p_list->push_back(PropertyInfo(VariantType::OBJECT, PNAME("theme_override_fonts") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
 		}
 	}
 	{
@@ -199,7 +199,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_font_sizes") + String("/") + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px", usage));
+			p_list->push_back(PropertyInfo(VariantType::INT, PNAME("theme_override_font_sizes") + String("/") + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px", usage));
 		}
 	}
 	{
@@ -211,7 +211,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_icons") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
+			p_list->push_back(PropertyInfo(VariantType::OBJECT, PNAME("theme_override_icons") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
 		}
 	}
 	{
@@ -223,7 +223,7 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
+			p_list->push_back(PropertyInfo(VariantType::OBJECT, PNAME("theme_override_styles") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
 		}
 	}
 }
@@ -2830,53 +2830,53 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_exclusive_centered_clamped", "from_node", "minsize", "fallback_ratio"), &Window::popup_exclusive_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
 	// Keep the enum values in sync with the `Mode` enum.
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), "set_mode", "get_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "title"), "set_title", "get_title");
 
 	// Keep the enum values in sync with the `WindowInitialPosition` enum.
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Main Window Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), "set_initial_position", "get_initial_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_current_screen", "get_current_screen");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Main Window Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), "set_initial_position", "get_initial_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "current_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_current_screen", "get_current_screen");
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");
 
 	ADD_GROUP("Flags", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_controls"), "set_wrap_controls", "is_wrapping_controls");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient"), "set_transient", "is_transient");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "is_exclusive");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unresizable"), "set_flag", "get_flag", FLAG_RESIZE_DISABLED);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "borderless"), "set_flag", "get_flag", FLAG_BORDERLESS);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "extend_to_title"), "set_flag", "get_flag", FLAG_EXTEND_TO_TITLE);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "mouse_passthrough"), "set_flag", "get_flag", FLAG_MOUSE_PASSTHROUGH);
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "visible"), "set_visible", "is_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "wrap_controls"), "set_wrap_controls", "is_wrapping_controls");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "transient"), "set_transient", "is_transient");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "exclusive"), "set_exclusive", "is_exclusive");
+	ADD_PROPERTYI(PropertyInfo(VariantType::BOOL, "unresizable"), "set_flag", "get_flag", FLAG_RESIZE_DISABLED);
+	ADD_PROPERTYI(PropertyInfo(VariantType::BOOL, "borderless"), "set_flag", "get_flag", FLAG_BORDERLESS);
+	ADD_PROPERTYI(PropertyInfo(VariantType::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
+	ADD_PROPERTYI(PropertyInfo(VariantType::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
+	ADD_PROPERTYI(PropertyInfo(VariantType::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
+	ADD_PROPERTYI(PropertyInfo(VariantType::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
+	ADD_PROPERTYI(PropertyInfo(VariantType::BOOL, "extend_to_title"), "set_flag", "get_flag", FLAG_EXTEND_TO_TITLE);
+	ADD_PROPERTYI(PropertyInfo(VariantType::BOOL, "mouse_passthrough"), "set_flag", "get_flag", FLAG_MOUSE_PASSTHROUGH);
 
 	ADD_GROUP("Limits", "");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size", PROPERTY_HINT_NONE, "suffix:px"), "set_max_size", "get_max_size");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_title_visible"), "set_keep_title_visible", "get_keep_title_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "max_size", PROPERTY_HINT_NONE, "suffix:px"), "set_max_size", "get_max_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "keep_title_visible"), "set_keep_title_visible", "get_keep_title_visible");
 
 	ADD_GROUP("Content Scale", "content_scale_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Canvas Items,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_stretch", PROPERTY_HINT_ENUM, "Fractional,Integer"), "set_content_scale_stretch", "get_content_scale_stretch");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Canvas Items,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "content_scale_stretch", PROPERTY_HINT_ENUM, "Fractional,Integer"), "set_content_scale_stretch", "get_content_scale_stretch");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
 
 	ADD_GROUP("Localization", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
 	ADD_GROUP("Theme", "theme_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
 
-	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
+	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(VariantType::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(VariantType::PACKED_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 	ADD_SIGNAL(MethodInfo("focus_entered"));

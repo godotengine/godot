@@ -1878,7 +1878,7 @@ void EditorAnimationMultiTransitionEdit::_get_property_list(List<PropertyInfo> *
 		transitions[i].transition->get_property_list(&plist, true);
 
 		PropertyInfo prop_transition_path;
-		prop_transition_path.type = Variant::STRING;
+		prop_transition_path.type = VariantType::STRING;
 		prop_transition_path.name = itos(i) + "/" + "transition_path";
 		p_list->push_back(prop_transition_path);
 

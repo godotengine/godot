@@ -597,44 +597,44 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_corner_detail", "detail"), &StyleBoxFlat::set_corner_detail);
 	ClassDB::bind_method(D_METHOD("get_corner_detail"), &StyleBoxFlat::get_corner_detail);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "bg_color"), "set_bg_color", "get_bg_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "bg_color"), "set_bg_color", "get_bg_color");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "skew"), "set_skew", "get_skew");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "skew"), "set_skew", "get_skew");
 
 	ADD_GROUP("Border Width", "border_width_");
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_width_left", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_border_width", "get_border_width", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_width_top", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_border_width", "get_border_width", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_width_right", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_border_width", "get_border_width", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_width_bottom", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_border_width", "get_border_width", SIDE_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(VariantType::INT, "border_width_left", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_border_width", "get_border_width", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(VariantType::INT, "border_width_top", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_border_width", "get_border_width", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(VariantType::INT, "border_width_right", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_border_width", "get_border_width", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(VariantType::INT, "border_width_bottom", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_border_width", "get_border_width", SIDE_BOTTOM);
 
 	ADD_GROUP("Border", "border_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "border_color"), "set_border_color", "get_border_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "border_color"), "set_border_color", "get_border_color");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "border_blend"), "set_border_blend", "get_border_blend");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "border_blend"), "set_border_blend", "get_border_blend");
 
 	ADD_GROUP("Corner Radius", "corner_radius_");
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_top_left", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_TOP_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_top_right", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_TOP_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_bottom_right", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_BOTTOM_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_bottom_left", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_BOTTOM_LEFT);
+	ADD_PROPERTYI(PropertyInfo(VariantType::INT, "corner_radius_top_left", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_TOP_LEFT);
+	ADD_PROPERTYI(PropertyInfo(VariantType::INT, "corner_radius_top_right", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_TOP_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(VariantType::INT, "corner_radius_bottom_right", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_BOTTOM_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(VariantType::INT, "corner_radius_bottom_left", PROPERTY_HINT_RANGE, "0,1024,1,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_BOTTOM_LEFT);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "corner_detail", PROPERTY_HINT_RANGE, "1,20,1"), "set_corner_detail", "get_corner_detail");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "corner_detail", PROPERTY_HINT_RANGE, "1,20,1"), "set_corner_detail", "get_corner_detail");
 
 	ADD_GROUP("Expand Margins", "expand_margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_left", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(VariantType::FLOAT, "expand_margin_left", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(VariantType::FLOAT, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(VariantType::FLOAT, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(VariantType::FLOAT, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_BOTTOM);
 
 	ADD_GROUP("Shadow", "shadow_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
 
 	ADD_GROUP("Anti Aliasing", "anti_aliasing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "anti_aliasing"), "set_anti_aliased", "is_anti_aliased");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anti_aliasing_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,suffix:px"), "set_aa_size", "get_aa_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "anti_aliasing"), "set_anti_aliased", "is_anti_aliased");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "anti_aliasing_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,suffix:px"), "set_aa_size", "get_aa_size");
 }
 
 StyleBoxFlat::StyleBoxFlat() {}

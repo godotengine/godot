@@ -181,19 +181,19 @@ void MeshConvexDecompositionSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_project_hull_vertices", "project_hull_vertices"), &MeshConvexDecompositionSettings::set_project_hull_vertices);
 	ClassDB::bind_method(D_METHOD("get_project_hull_vertices"), &MeshConvexDecompositionSettings::get_project_hull_vertices);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_concavity", PROPERTY_HINT_RANGE, "0.001,1.0,0.001"), "set_max_concavity", "get_max_concavity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_symmetry_planes_clipping_bias", "get_symmetry_planes_clipping_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_revolution_axes_clipping_bias", "get_revolution_axes_clipping_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_volume_per_convex_hull", PROPERTY_HINT_RANGE, "0.0001,0.01,0.0001"), "set_min_volume_per_convex_hull", "get_min_volume_per_convex_hull");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution"), "set_resolution", "get_resolution");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_num_vertices_per_convex_hull"), "set_max_num_vertices_per_convex_hull", "get_max_num_vertices_per_convex_hull");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1"), "set_plane_downsampling", "get_plane_downsampling");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "convex_hull_downsampling", PROPERTY_HINT_RANGE, "1,16,1"), "set_convex_hull_downsampling", "get_convex_hull_downsampling");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize_mesh"), "set_normalize_mesh", "get_normalize_mesh");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "convex_hull_approximation"), "set_convex_hull_approximation", "get_convex_hull_approximation");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_convex_hulls"), "set_max_convex_hulls", "get_max_convex_hulls");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "project_hull_vertices"), "set_project_hull_vertices", "get_project_hull_vertices");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "max_concavity", PROPERTY_HINT_RANGE, "0.001,1.0,0.001"), "set_max_concavity", "get_max_concavity");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_symmetry_planes_clipping_bias", "get_symmetry_planes_clipping_bias");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_revolution_axes_clipping_bias", "get_revolution_axes_clipping_bias");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "min_volume_per_convex_hull", PROPERTY_HINT_RANGE, "0.0001,0.01,0.0001"), "set_min_volume_per_convex_hull", "get_min_volume_per_convex_hull");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "resolution"), "set_resolution", "get_resolution");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_num_vertices_per_convex_hull"), "set_max_num_vertices_per_convex_hull", "get_max_num_vertices_per_convex_hull");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1"), "set_plane_downsampling", "get_plane_downsampling");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "convex_hull_downsampling", PROPERTY_HINT_RANGE, "1,16,1"), "set_convex_hull_downsampling", "get_convex_hull_downsampling");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "normalize_mesh"), "set_normalize_mesh", "get_normalize_mesh");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "convex_hull_approximation"), "set_convex_hull_approximation", "get_convex_hull_approximation");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_convex_hulls"), "set_max_convex_hulls", "get_max_convex_hulls");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "project_hull_vertices"), "set_project_hull_vertices", "get_project_hull_vertices");
 
 	BIND_ENUM_CONSTANT(CONVEX_DECOMPOSITION_MODE_VOXEL);
 	BIND_ENUM_CONSTANT(CONVEX_DECOMPOSITION_MODE_TETRAHEDRON);
@@ -597,7 +597,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 		} else {
 			int vcount = 0;
 			for (int j = 0; j < arrays.size(); j++) {
-				if (arrays[j].get_type() == Variant::NIL || a[j].get_type() == Variant::NIL) {
+				if (arrays[j].get_type() == VariantType::NIL || a[j].get_type() == VariantType::NIL) {
 					//mismatch, do not use
 					arrays[j] = Variant();
 					continue;
@@ -799,7 +799,7 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
 	ClassDB::bind_method(D_METHOD("get_faces"), &Mesh::_get_faces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
 
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &Mesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("surface_get_arrays", "surf_idx"), &Mesh::surface_get_arrays);
@@ -1732,11 +1732,11 @@ void ArrayMesh::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (int i = 0; i < surfaces.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, "surface_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(VariantType::STRING, "surface_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		if (surfaces[i].is_2d) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial", PROPERTY_USAGE_EDITOR));
+			p_list->push_back(PropertyInfo(VariantType::OBJECT, "surface_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial", PROPERTY_USAGE_EDITOR));
 		} else {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_EDITOR));
+			p_list->push_back(PropertyInfo(VariantType::OBJECT, "surface_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_EDITOR));
 		}
 	}
 }
@@ -2297,11 +2297,11 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_surfaces", "surfaces"), &ArrayMesh::_set_surfaces);
 	ClassDB::bind_method(D_METHOD("_get_surfaces"), &ArrayMesh::_get_surfaces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "_blend_shape_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_blend_shape_names", "_get_blend_shape_names");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shadow_mesh", PROPERTY_HINT_RESOURCE_TYPE, "ArrayMesh"), "set_shadow_mesh", "get_shadow_mesh");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "_blend_shape_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_blend_shape_names", "_get_blend_shape_names");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "shadow_mesh", PROPERTY_HINT_RESOURCE_TYPE, "ArrayMesh"), "set_shadow_mesh", "get_shadow_mesh");
 }
 
 void ArrayMesh::reload_from_file() {
@@ -2330,7 +2330,7 @@ ArrayMesh::~ArrayMesh() {
 
 void PlaceholderMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_aabb", "aabb"), &PlaceholderMesh::set_aabb);
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_aabb", "get_aabb");
+	ADD_PROPERTY(PropertyInfo(VariantType::AABB, "aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_aabb", "get_aabb");
 }
 
 PlaceholderMesh::PlaceholderMesh() {

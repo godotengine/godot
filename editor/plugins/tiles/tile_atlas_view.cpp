@@ -588,7 +588,7 @@ void TileAtlasView::_notification(int p_what) {
 }
 
 void TileAtlasView::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("transform_changed", PropertyInfo(Variant::FLOAT, "zoom"), PropertyInfo(Variant::VECTOR2, "scroll")));
+	ADD_SIGNAL(MethodInfo("transform_changed", PropertyInfo(VariantType::FLOAT, "zoom"), PropertyInfo(VariantType::VECTOR2, "scroll")));
 }
 
 TileAtlasView::TileAtlasView() {

@@ -34,12 +34,12 @@ struct VariantConstructData {
 	void (*construct)(Variant &r_base, const Variant **p_args, Callable::CallError &r_error) = nullptr;
 	Variant::ValidatedConstructor validated_construct = nullptr;
 	Variant::PTRConstructor ptr_construct = nullptr;
-	Variant::Type (*get_argument_type)(int) = nullptr;
+	VariantType (*get_argument_type)(int) = nullptr;
 	int argument_count = 0;
 	Vector<String> arg_names;
 };
 
-static LocalVector<VariantConstructData> construct_data[Variant::VARIANT_MAX];
+static LocalVector<VariantConstructData> construct_data[(int)VariantType::MAX];
 
 template <class T>
 static void add_constructor(const Vector<String> &arg_names) {
@@ -52,7 +52,7 @@ static void add_constructor(const Vector<String> &arg_names) {
 	cd.get_argument_type = T::get_argument_type;
 	cd.argument_count = T::get_argument_count();
 	cd.arg_names = arg_names;
-	construct_data[T::get_base_type()].push_back(cd);
+	construct_data[(int)T::get_base_type()].push_back(cd);
 }
 
 void Variant::_register_variant_constructors() {
@@ -144,9 +144,9 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<Quaternion, Vector3, Vector3>>(sarray("arc_from", "arc_to"));
 	add_constructor<VariantConstructor<Quaternion, double, double, double, double>>(sarray("x", "y", "z", "w"));
 
-	add_constructor<VariantConstructNoArgs<::AABB>>(sarray());
-	add_constructor<VariantConstructor<::AABB, ::AABB>>(sarray("from"));
-	add_constructor<VariantConstructor<::AABB, Vector3, Vector3>>(sarray("position", "size"));
+	add_constructor<VariantConstructNoArgs<AABB>>(sarray());
+	add_constructor<VariantConstructor<AABB, AABB>>(sarray("from"));
+	add_constructor<VariantConstructor<AABB, Vector3, Vector3>>(sarray("position", "size"));
 
 	add_constructor<VariantConstructNoArgs<Basis>>(sarray());
 	add_constructor<VariantConstructor<Basis, Basis>>(sarray("from"));
@@ -181,8 +181,8 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<NodePath, NodePath>>(sarray("from"));
 	add_constructor<VariantConstructor<NodePath, String>>(sarray("from"));
 
-	add_constructor<VariantConstructNoArgs<::RID>>(sarray());
-	add_constructor<VariantConstructor<::RID, ::RID>>(sarray("from"));
+	add_constructor<VariantConstructNoArgs<RID>>(sarray());
+	add_constructor<VariantConstructor<RID, RID>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgsObject>(sarray());
 	add_constructor<VariantConstructorObject>(sarray("from"));
@@ -250,22 +250,22 @@ void Variant::_register_variant_constructors() {
 }
 
 void Variant::_unregister_variant_constructors() {
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+	for (int i = 0; i < (int)VariantType::MAX; i++) {
 		construct_data[i].clear();
 	}
 }
 
-void Variant::construct(Variant::Type p_type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
-	uint32_t s = construct_data[p_type].size();
+void Variant::construct(VariantType p_type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	ERR_FAIL_INDEX((int)p_type, (int)VariantType::MAX);
+	uint32_t s = construct_data[(int)p_type].size();
 	for (uint32_t i = 0; i < s; i++) {
-		int argc = construct_data[p_type][i].argument_count;
+		int argc = construct_data[(int)p_type][i].argument_count;
 		if (argc != p_argcount) {
 			continue;
 		}
 		bool args_match = true;
 		for (int j = 0; j < argc; j++) {
-			if (!Variant::can_convert_strict(p_args[j]->get_type(), construct_data[p_type][i].get_argument_type(j))) {
+			if (!Variant::can_convert_strict(p_args[j]->get_type(), construct_data[(int)p_type][i].get_argument_type(j))) {
 				args_match = false;
 				break;
 			}
@@ -275,46 +275,46 @@ void Variant::construct(Variant::Type p_type, Variant &base, const Variant **p_a
 			continue;
 		}
 
-		construct_data[p_type][i].construct(base, p_args, r_error);
+		construct_data[(int)p_type][i].construct(base, p_args, r_error);
 		return;
 	}
 
 	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 }
 
-int Variant::get_constructor_count(Variant::Type p_type) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
-	return construct_data[p_type].size();
+int Variant::get_constructor_count(VariantType p_type) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, -1);
+	return construct_data[(int)p_type].size();
 }
 
-Variant::ValidatedConstructor Variant::get_validated_constructor(Variant::Type p_type, int p_constructor) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), nullptr);
-	return construct_data[p_type][p_constructor].validated_construct;
+Variant::ValidatedConstructor Variant::get_validated_constructor(VariantType p_type, int p_constructor) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, nullptr);
+	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[(int)p_type].size(), nullptr);
+	return construct_data[(int)p_type][p_constructor].validated_construct;
 }
 
-Variant::PTRConstructor Variant::get_ptr_constructor(Variant::Type p_type, int p_constructor) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), nullptr);
-	return construct_data[p_type][p_constructor].ptr_construct;
+Variant::PTRConstructor Variant::get_ptr_constructor(VariantType p_type, int p_constructor) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, nullptr);
+	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[(int)p_type].size(), nullptr);
+	return construct_data[(int)p_type][p_constructor].ptr_construct;
 }
 
-int Variant::get_constructor_argument_count(Variant::Type p_type, int p_constructor) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), -1);
-	return construct_data[p_type][p_constructor].argument_count;
+int Variant::get_constructor_argument_count(VariantType p_type, int p_constructor) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, -1);
+	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[(int)p_type].size(), -1);
+	return construct_data[(int)p_type][p_constructor].argument_count;
 }
 
-Variant::Type Variant::get_constructor_argument_type(Variant::Type p_type, int p_constructor, int p_argument) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::VARIANT_MAX);
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), Variant::VARIANT_MAX);
-	return construct_data[p_type][p_constructor].get_argument_type(p_argument);
+VariantType Variant::get_constructor_argument_type(VariantType p_type, int p_constructor, int p_argument) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, VariantType::MAX);
+	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[(int)p_type].size(), VariantType::MAX);
+	return construct_data[(int)p_type][p_constructor].get_argument_type(p_argument);
 }
 
-String Variant::get_constructor_argument_name(Variant::Type p_type, int p_constructor, int p_argument) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), String());
-	return construct_data[p_type][p_constructor].arg_names[p_argument];
+String Variant::get_constructor_argument_name(VariantType p_type, int p_constructor, int p_argument) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, String());
+	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[(int)p_type].size(), String());
+	return construct_data[(int)p_type][p_constructor].arg_names[p_argument];
 }
 
 void VariantInternal::refcounted_object_assign(Variant *v, const RefCounted *rc) {
@@ -347,8 +347,8 @@ void VariantInternal::object_assign(Variant *v, const Object *o) {
 	}
 }
 
-void Variant::get_constructor_list(Type p_type, List<MethodInfo> *r_list) {
-	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
+void Variant::get_constructor_list(VariantType p_type, List<MethodInfo> *r_list) {
+	ERR_FAIL_INDEX((int)p_type, (int)VariantType::MAX);
 
 	MethodInfo mi;
 	mi.return_val.type = p_type;

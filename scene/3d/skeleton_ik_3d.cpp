@@ -386,16 +386,16 @@ void SkeletonIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "one_time"), &SkeletonIK3D::start, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &SkeletonIK3D::stop);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "root_bone"), "set_root_bone", "get_root_bone");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "tip_bone"), "set_tip_bone", "get_tip_bone");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interpolation", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_interpolation", "get_interpolation");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "target", PROPERTY_HINT_NONE, "suffix:m"), "set_target_transform", "get_target_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_tip_basis"), "set_override_tip_basis", "is_override_tip_basis");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_magnet"), "set_use_magnet", "is_using_magnet");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "magnet", PROPERTY_HINT_NONE, "suffix:m"), "set_magnet_position", "get_magnet_position");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_node"), "set_target_node", "get_target_node");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_distance", PROPERTY_HINT_NONE, "suffix:m"), "set_min_distance", "get_min_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_iterations"), "set_max_iterations", "get_max_iterations");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "root_bone"), "set_root_bone", "get_root_bone");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "tip_bone"), "set_tip_bone", "get_tip_bone");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "interpolation", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_interpolation", "get_interpolation");
+	ADD_PROPERTY(PropertyInfo(VariantType::TRANSFORM3D, "target", PROPERTY_HINT_NONE, "suffix:m"), "set_target_transform", "get_target_transform");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "override_tip_basis"), "set_override_tip_basis", "is_override_tip_basis");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_magnet"), "set_use_magnet", "is_using_magnet");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "magnet", PROPERTY_HINT_NONE, "suffix:m"), "set_magnet_position", "get_magnet_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "target_node"), "set_target_node", "get_target_node");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "min_distance", PROPERTY_HINT_NONE, "suffix:m"), "set_min_distance", "get_min_distance");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_iterations"), "set_max_iterations", "get_max_iterations");
 }
 
 void SkeletonIK3D::_notification(int p_what) {

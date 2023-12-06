@@ -263,11 +263,11 @@ void register_editor_types() {
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");
 
-	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR), "res://script_templates");
+	GLOBAL_DEF(PropertyInfo(VariantType::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR), "res://script_templates");
 
 	GLOBAL_DEF("editor/naming/default_signal_callback_name", "_on_{node_name}_{signal_name}");
 	GLOBAL_DEF("editor/naming/default_signal_callback_to_self_name", "_on_{signal_name}");
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"), EditorNode::SCENE_NAME_CASING_SNAKE_CASE);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"), EditorNode::SCENE_NAME_CASING_SNAKE_CASE);
 
 	GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
 	GLOBAL_DEF("editor/import/use_multiple_threads", true);

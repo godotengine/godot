@@ -165,21 +165,21 @@ void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, boo
 	}
 }
 
-EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_wide, bool p_horizontal) {
+EditorPropertyVectorN::EditorPropertyVectorN(VariantType p_type, bool p_force_wide, bool p_horizontal) {
 	vector_type = p_type;
 	switch (vector_type) {
-		case Variant::VECTOR2:
-		case Variant::VECTOR2I:
+		case VariantType::VECTOR2:
+		case VariantType::VECTOR2I:
 			component_count = 2;
 			break;
 
-		case Variant::VECTOR3:
-		case Variant::VECTOR3I:
+		case VariantType::VECTOR3:
+		case VariantType::VECTOR3I:
 			component_count = 3;
 			break;
 
-		case Variant::VECTOR4:
-		case Variant::VECTOR4I:
+		case VariantType::VECTOR4:
+		case VariantType::VECTOR4I:
 			component_count = 4;
 			break;
 
@@ -242,19 +242,19 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 }
 
 EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR2, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector2_editing")) {}
+		EditorPropertyVectorN(VariantType::VECTOR2, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector2_editing")) {}
 
 EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR2I, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector2_editing")) {}
+		EditorPropertyVectorN(VariantType::VECTOR2I, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector2_editing")) {}
 
 EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR3, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
+		EditorPropertyVectorN(VariantType::VECTOR3, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
 
 EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR3I, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
+		EditorPropertyVectorN(VariantType::VECTOR3I, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
 
 EditorPropertyVector4::EditorPropertyVector4(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR4, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
+		EditorPropertyVectorN(VariantType::VECTOR4, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
 
 EditorPropertyVector4i::EditorPropertyVector4i(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR4I, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
+		EditorPropertyVectorN(VariantType::VECTOR4I, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}

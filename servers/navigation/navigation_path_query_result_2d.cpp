@@ -84,10 +84,10 @@ void NavigationPathQueryResult2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("reset"), &NavigationPathQueryResult2D::reset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "path"), "set_path", "get_path");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "path_types"), "set_path_types", "get_path_types");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "path_rids", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_path_rids", "get_path_rids");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT64_ARRAY, "path_owner_ids"), "set_path_owner_ids", "get_path_owner_ids");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_VECTOR2_ARRAY, "path"), "set_path", "get_path");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_INT32_ARRAY, "path_types"), "set_path_types", "get_path_types");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "path_rids", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_path_rids", "get_path_rids");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_INT64_ARRAY, "path_owner_ids"), "set_path_owner_ids", "get_path_owner_ids");
 
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_REGION);
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_LINK);

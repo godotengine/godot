@@ -212,7 +212,7 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 
 uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpdata, HashMap<String, uint32_t> &string_cache) {
 	switch (p_data.get_type()) {
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			String s = p_data;
 			if (string_cache.has(s)) {
 				return string_cache[s];
@@ -222,30 +222,30 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 			[[fallthrough]];
 		}
-		case Variant::NIL:
-		case Variant::BOOL:
-		case Variant::INT:
-		case Variant::FLOAT:
-		case Variant::VECTOR2:
-		case Variant::RECT2:
-		case Variant::VECTOR3:
-		case Variant::TRANSFORM2D:
-		case Variant::PLANE:
-		case Variant::QUATERNION:
-		case Variant::AABB:
-		case Variant::BASIS:
-		case Variant::TRANSFORM3D:
-		case Variant::PACKED_BYTE_ARRAY:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY:
-		case Variant::PACKED_FLOAT32_ARRAY:
-		case Variant::PACKED_FLOAT64_ARRAY:
-		case Variant::PACKED_STRING_ARRAY:
-		case Variant::PACKED_VECTOR2_ARRAY:
-		case Variant::PACKED_VECTOR3_ARRAY:
-		case Variant::PACKED_COLOR_ARRAY:
-		case Variant::STRING_NAME:
-		case Variant::NODE_PATH: {
+		case VariantType::NIL:
+		case VariantType::BOOL:
+		case VariantType::INT:
+		case VariantType::FLOAT:
+		case VariantType::VECTOR2:
+		case VariantType::RECT2:
+		case VariantType::VECTOR3:
+		case VariantType::TRANSFORM2D:
+		case VariantType::PLANE:
+		case VariantType::QUATERNION:
+		case VariantType::AABB:
+		case VariantType::BASIS:
+		case VariantType::TRANSFORM3D:
+		case VariantType::PACKED_BYTE_ARRAY:
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY:
+		case VariantType::PACKED_FLOAT32_ARRAY:
+		case VariantType::PACKED_FLOAT64_ARRAY:
+		case VariantType::PACKED_STRING_ARRAY:
+		case VariantType::PACKED_VECTOR2_ARRAY:
+		case VariantType::PACKED_VECTOR3_ARRAY:
+		case VariantType::PACKED_COLOR_ARRAY:
+		case VariantType::STRING_NAME:
+		case VariantType::NODE_PATH: {
 			uint32_t pos = tmpdata.size();
 			int len;
 			encode_variant(p_data, nullptr, len, false);
@@ -255,11 +255,11 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 		} break;
 		// misc types
-		case Variant::RID:
-		case Variant::OBJECT: {
+		case VariantType::RID:
+		case VariantType::OBJECT: {
 			return _pack(Variant(), tmpdata, string_cache);
 		} break;
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			Dictionary d = p_data;
 			//size is known, use sort
 			uint32_t pos = tmpdata.size();
@@ -294,7 +294,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			return pos;
 
 		} break;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			Array a = p_data;
 			//size is known, use sort
 			uint32_t pos = tmpdata.size();
@@ -320,7 +320,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 }
 
 Error PackedDataContainer::pack(const Variant &p_data) {
-	ERR_FAIL_COND_V_MSG(p_data.get_type() != Variant::ARRAY && p_data.get_type() != Variant::DICTIONARY, ERR_INVALID_DATA, "PackedDataContainer can pack only Array and Dictionary type.");
+	ERR_FAIL_COND_V_MSG(p_data.get_type() != VariantType::ARRAY && p_data.get_type() != VariantType::DICTIONARY, ERR_INVALID_DATA, "PackedDataContainer can pack only Array and Dictionary type.");
 
 	Vector<uint8_t> tmpdata;
 	HashMap<String, uint32_t> string_cache;
@@ -365,7 +365,7 @@ void PackedDataContainer::_bind_methods() {
 
 	BIND_METHOD_ERR_RETURN_DOC("pack", ERR_INVALID_DATA);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "__data__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_BYTE_ARRAY, "__data__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
 
 //////////////////

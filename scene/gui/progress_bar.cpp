@@ -139,8 +139,8 @@ void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
 	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_percentage"), "set_show_percentage", "is_percentage_shown");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "show_percentage"), "set_show_percentage", "is_percentage_shown");
 
 	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);
 	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);

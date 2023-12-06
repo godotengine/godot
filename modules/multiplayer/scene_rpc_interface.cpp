@@ -74,17 +74,17 @@ int get_packet_len(uint32_t p_node_target, int p_packet_len) {
 }
 
 void SceneRPCInterface::_parse_rpc_config(const Variant &p_config, bool p_for_node, RPCConfigCache &r_cache) {
-	if (p_config.get_type() == Variant::NIL) {
+	if (p_config.get_type() == VariantType::NIL) {
 		return;
 	}
-	ERR_FAIL_COND(p_config.get_type() != Variant::DICTIONARY);
+	ERR_FAIL_COND(p_config.get_type() != VariantType::DICTIONARY);
 	const Dictionary config = p_config;
 	Array names = config.keys();
 	names.sort(); // Ensure ID order
 	for (int i = 0; i < names.size(); i++) {
-		ERR_CONTINUE(names[i].get_type() != Variant::STRING && names[i].get_type() != Variant::STRING_NAME);
+		ERR_CONTINUE(names[i].get_type() != VariantType::STRING && names[i].get_type() != VariantType::STRING_NAME);
 		String name = names[i].operator String();
-		ERR_CONTINUE(config[name].get_type() != Variant::DICTIONARY);
+		ERR_CONTINUE(config[name].get_type() != VariantType::DICTIONARY);
 		ERR_CONTINUE(!config[name].operator Dictionary().has("rpc_mode"));
 		Dictionary dict = config[name];
 		RPCConfig cfg;

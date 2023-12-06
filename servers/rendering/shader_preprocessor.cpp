@@ -498,7 +498,7 @@ void ShaderPreprocessor::process_elif(Tokenizer *p_tokenizer) {
 	}
 
 	Variant v = expression.execute(Array(), nullptr, false);
-	if (v.get_type() == Variant::NIL) {
+	if (v.get_type() == VariantType::NIL) {
 		set_error(RTR("Condition evaluation error."), line);
 		return;
 	}
@@ -603,7 +603,7 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 	}
 
 	Variant v = expression.execute(Array(), nullptr, false);
-	if (v.get_type() == Variant::NIL) {
+	if (v.get_type() == VariantType::NIL) {
 		set_error(RTR("Condition evaluation error."), line);
 		return;
 	}

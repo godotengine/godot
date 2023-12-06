@@ -175,8 +175,8 @@ void ArrayOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_indices", "indices"), &ArrayOccluder3D::set_indices);
 	ClassDB::bind_method(D_METHOD("get_indices"), &ArrayOccluder3D::get_indices);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_vertices", "get_vertices");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_indices", "get_indices");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_indices", "get_indices");
 }
 
 ArrayOccluder3D::ArrayOccluder3D() {
@@ -220,7 +220,7 @@ void QuadOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &QuadOccluder3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &QuadOccluder3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 }
 
 QuadOccluder3D::QuadOccluder3D() {
@@ -286,7 +286,7 @@ void BoxOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &BoxOccluder3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &BoxOccluder3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 }
 
 BoxOccluder3D::BoxOccluder3D() {
@@ -355,7 +355,7 @@ void SphereOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &SphereOccluder3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &SphereOccluder3D::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_NONE, "suffix:m"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "radius", PROPERTY_HINT_NONE, "suffix:m"), "set_radius", "get_radius");
 }
 
 SphereOccluder3D::SphereOccluder3D() {
@@ -416,7 +416,7 @@ void PolygonOccluder3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_has_editable_3d_polygon_no_depth"), &PolygonOccluder3D::_has_editable_3d_polygon_no_depth);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 }
 
 PolygonOccluder3D::PolygonOccluder3D() {
@@ -744,10 +744,10 @@ void OccluderInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &OccluderInstance3D::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_get_editable_3d_polygon_resource"), &OccluderInstance3D::_get_editable_3d_polygon_resource);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "Occluder3D"), "set_occluder", "get_occluder");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "Occluder3D"), "set_occluder", "get_occluder");
 	ADD_GROUP("Bake", "bake_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,suffix:m"), "set_bake_simplification_distance", "get_bake_simplification_distance");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "bake_simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,suffix:m"), "set_bake_simplification_distance", "get_bake_simplification_distance");
 }
 
 OccluderInstance3D::OccluderInstance3D() {

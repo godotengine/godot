@@ -40,7 +40,7 @@ uint32_t MethodBind::get_hash() const {
 
 	for (int i = (has_return() ? -1 : 0); i < get_argument_count(); i++) {
 		PropertyInfo pi = i == -1 ? get_return_info() : get_argument_info(i);
-		hash = hash_murmur3_one_32(get_argument_type(i), hash);
+		hash = hash_murmur3_one_32((int)get_argument_type(i), hash);
 		if (pi.class_name != StringName()) {
 			hash = hash_murmur3_one_32(pi.class_name.operator String().hash(), hash);
 		}
@@ -115,7 +115,7 @@ void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
 void MethodBind::_generate_argument_types(int p_count) {
 	set_argument_count(p_count);
 
-	Variant::Type *argt = memnew_arr(Variant::Type, p_count + 1);
+	VariantType *argt = memnew_arr(VariantType, p_count + 1);
 	argt[0] = _gen_argument_type(-1); // return type
 
 	for (int i = 0; i < p_count; i++) {

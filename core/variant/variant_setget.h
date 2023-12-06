@@ -69,7 +69,7 @@
 			b.m_member = PtrToArg<m_member_type>::convert(member);                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                  \
 		}                                                                                                                            \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                         \
+		static VariantType get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                           \
 	};
 
 #define SETGET_NUMBER_STRUCT(m_base_type, m_member_type, m_member)                                                                \
@@ -85,10 +85,10 @@
 			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_member, member);                               \
 		}                                                                                                                         \
 		static void set(Variant *base, const Variant *value, bool &valid) {                                                       \
-			if (value->get_type() == Variant::FLOAT) {                                                                            \
+			if (value->get_type() == VariantType::FLOAT) {                                                                        \
 				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member = *VariantGetInternalPtr<double>::get_ptr(value);     \
 				valid = true;                                                                                                     \
-			} else if (value->get_type() == Variant::INT) {                                                                       \
+			} else if (value->get_type() == VariantType::INT) {                                                                   \
 				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member = *VariantGetInternalPtr<int64_t>::get_ptr(value);    \
 				valid = true;                                                                                                     \
 			} else {                                                                                                              \
@@ -103,7 +103,7 @@
 			b.m_member = PtrToArg<m_member_type>::convert(member);                                                                \
 			PtrToArg<m_base_type>::encode(b, base);                                                                               \
 		}                                                                                                                         \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                      \
+		static VariantType get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
 	};
 
 #define SETGET_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                                         \
@@ -134,7 +134,7 @@
 			b.m_custom = PtrToArg<m_member_type>::convert(member);                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                  \
 		}                                                                                                                            \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                         \
+		static VariantType get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                           \
 	};
 
 #define SETGET_NUMBER_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                               \
@@ -150,10 +150,10 @@
 			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_custom, member);                               \
 		}                                                                                                                         \
 		static void set(Variant *base, const Variant *value, bool &valid) {                                                       \
-			if (value->get_type() == Variant::FLOAT) {                                                                            \
+			if (value->get_type() == VariantType::FLOAT) {                                                                        \
 				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom = *VariantGetInternalPtr<double>::get_ptr(value);     \
 				valid = true;                                                                                                     \
-			} else if (value->get_type() == Variant::INT) {                                                                       \
+			} else if (value->get_type() == VariantType::INT) {                                                                   \
 				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom = *VariantGetInternalPtr<int64_t>::get_ptr(value);    \
 				valid = true;                                                                                                     \
 			} else {                                                                                                              \
@@ -168,7 +168,7 @@
 			b.m_custom = PtrToArg<m_member_type>::convert(member);                                                                \
 			PtrToArg<m_base_type>::encode(b, base);                                                                               \
 		}                                                                                                                         \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                      \
+		static VariantType get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
 	};
 
 #define SETGET_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                                \
@@ -199,7 +199,7 @@
 			b.m_setter(PtrToArg<m_member_type>::convert(member));                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                 \
 		}                                                                                                                           \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
+		static VariantType get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                          \
 	};
 
 #define SETGET_NUMBER_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                         \
@@ -215,10 +215,10 @@
 			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_getter(), member);                               \
 		}                                                                                                                           \
 		static void set(Variant *base, const Variant *value, bool &valid) {                                                         \
-			if (value->get_type() == Variant::FLOAT) {                                                                              \
+			if (value->get_type() == VariantType::FLOAT) {                                                                          \
 				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_setter(*VariantGetInternalPtr<double>::get_ptr(value));        \
 				valid = true;                                                                                                       \
-			} else if (value->get_type() == Variant::INT) {                                                                         \
+			} else if (value->get_type() == VariantType::INT) {                                                                     \
 				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_setter(*VariantGetInternalPtr<int64_t>::get_ptr(value));       \
 				valid = true;                                                                                                       \
 			} else {                                                                                                                \
@@ -233,7 +233,7 @@
 			b.m_setter(PtrToArg<m_member_type>::convert(member));                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                 \
 		}                                                                                                                           \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
+		static VariantType get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                          \
 	};
 
 #define SETGET_STRUCT_FUNC_INDEX(m_base_type, m_member_type, m_member, m_setter, m_getter, m_index)                                          \
@@ -264,7 +264,7 @@
 			b.m_setter(m_index, PtrToArg<m_member_type>::convert(member));                                                                   \
 			PtrToArg<m_base_type>::encode(b, base);                                                                                          \
 		}                                                                                                                                    \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                                 \
+		static VariantType get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                                   \
 	};
 
 SETGET_NUMBER_STRUCT(Vector2, double, x)

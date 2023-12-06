@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  variant_destruct.cpp                                                  */
+/*  variant_enums.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,46 +28,101 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "variant_destruct.h"
+#ifndef VARIANT_ENUMS_H
+#define VARIANT_ENUMS_H
 
-#include "core/templates/local_vector.h"
+// If these change, the table in variant_op must be updated
 
-static Variant::PTRDestructor destruct_pointers[(int)VariantType::MAX] = { nullptr };
+enum class VariantType {
+	NIL,
 
-template <class T>
-static void add_destructor() {
-	destruct_pointers[(int)T::get_base_type()] = T::ptr_destruct;
-}
+	// Atomic types
+	BOOL,
+	INT,
+	FLOAT,
+	STRING,
 
-void Variant::_register_variant_destructors() {
-	add_destructor<VariantDestruct<String>>();
-	add_destructor<VariantDestruct<StringName>>();
-	add_destructor<VariantDestruct<NodePath>>();
-	add_destructor<VariantDestruct<Callable>>();
-	add_destructor<VariantDestruct<Signal>>();
-	add_destructor<VariantDestruct<Dictionary>>();
-	add_destructor<VariantDestruct<Array>>();
-	add_destructor<VariantDestruct<PackedByteArray>>();
-	add_destructor<VariantDestruct<PackedInt32Array>>();
-	add_destructor<VariantDestruct<PackedInt64Array>>();
-	add_destructor<VariantDestruct<PackedFloat32Array>>();
-	add_destructor<VariantDestruct<PackedFloat64Array>>();
-	add_destructor<VariantDestruct<PackedStringArray>>();
-	add_destructor<VariantDestruct<PackedVector2Array>>();
-	add_destructor<VariantDestruct<PackedVector3Array>>();
-	add_destructor<VariantDestruct<PackedColorArray>>();
-}
+	// Math types
+	VECTOR2,
+	VECTOR2I,
+	RECT2,
+	RECT2I,
+	VECTOR3,
+	VECTOR3I,
+	TRANSFORM2D,
+	VECTOR4,
+	VECTOR4I,
+	PLANE,
+	QUATERNION,
+	AABB,
+	BASIS,
+	TRANSFORM3D,
+	PROJECTION,
 
-void Variant::_unregister_variant_destructors() {
-	// Nothing to be done.
-}
+	// Misc types
+	COLOR,
+	STRING_NAME,
+	NODE_PATH,
+	RID,
+	OBJECT,
+	CALLABLE,
+	SIGNAL,
+	DICTIONARY,
+	ARRAY,
 
-Variant::PTRDestructor Variant::get_ptr_destructor(VariantType p_type) {
-	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, nullptr);
-	return destruct_pointers[(int)p_type];
-}
+	// Typed arrays
+	PACKED_BYTE_ARRAY,
+	PACKED_INT32_ARRAY,
+	PACKED_INT64_ARRAY,
+	PACKED_FLOAT32_ARRAY,
+	PACKED_FLOAT64_ARRAY,
+	PACKED_STRING_ARRAY,
+	PACKED_VECTOR2_ARRAY,
+	PACKED_VECTOR3_ARRAY,
+	PACKED_COLOR_ARRAY,
 
-bool Variant::has_destructor(VariantType p_type) {
-	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, false);
-	return destruct_pointers[(int)p_type] != nullptr;
-}
+	// VariantType size
+	MAX,
+};
+
+enum class VariantOperator {
+	// Comparison
+	EQUAL,
+	NOT_EQUAL,
+	LESS,
+	LESS_EQUAL,
+	GREATER,
+	GREATER_EQUAL,
+
+	// Mathematic
+	ADD,
+	SUBTRACT,
+	MULTIPLY,
+	DIVIDE,
+	NEGATE,
+	POSITIVE,
+	MODULE,
+	POWER,
+
+	// Bitwise
+	SHIFT_LEFT,
+	SHIFT_RIGHT,
+	BIT_AND,
+	BIT_OR,
+	BIT_XOR,
+	BIT_NEGATE,
+
+	// Logic
+	AND,
+	OR,
+	XOR,
+	NOT,
+
+	// Containment
+	OP_IN,
+
+	// VariantOperator size
+	MAX,
+};
+
+#endif // VARIANT_ENUMS_H

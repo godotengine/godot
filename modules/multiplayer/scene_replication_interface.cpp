@@ -157,7 +157,7 @@ void SceneReplicationInterface::on_network_process() {
 
 Error SceneReplicationInterface::on_spawn(Object *p_obj, Variant p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!node || p_config.get_type() != VariantType::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(p_config.get_validated_object());
 	ERR_FAIL_NULL_V(spawner, ERR_INVALID_PARAMETER);
 	// Track node.
@@ -200,7 +200,7 @@ void SceneReplicationInterface::_node_ready(const ObjectID &p_oid) {
 
 Error SceneReplicationInterface::on_despawn(Object *p_obj, Variant p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!node || p_config.get_type() != VariantType::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(p_config.get_validated_object());
 	ERR_FAIL_COND_V(!p_obj || !spawner, ERR_INVALID_PARAMETER);
 	// Forcibly despawn to all peers that knowns me.
@@ -228,7 +228,7 @@ Error SceneReplicationInterface::on_despawn(Object *p_obj, Variant p_config) {
 
 Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!node || p_config.get_type() != VariantType::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(p_config.get_validated_object());
 	ERR_FAIL_NULL_V(sync, ERR_INVALID_PARAMETER);
 
@@ -272,7 +272,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 
 Error SceneReplicationInterface::on_replication_stop(Object *p_obj, Variant p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!node || p_config.get_type() != VariantType::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(p_config.get_validated_object());
 	ERR_FAIL_NULL_V(sync, ERR_INVALID_PARAMETER);
 	sync->disconnect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed));

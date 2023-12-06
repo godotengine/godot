@@ -211,7 +211,7 @@ public:
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				ScriptServer::get_language(i)->profiling_start();
 			}
-			if (p_opts.size() == 1 && p_opts[0].get_type() == Variant::INT) {
+			if (p_opts.size() == 1 && p_opts[0].get_type() == VariantType::INT) {
 				max_frame_functions = MAX(0, int(p_opts[0]));
 			}
 		} else {

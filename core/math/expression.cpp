@@ -477,8 +477,8 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (id == "self") {
 						r_token.type = TK_SELF;
 					} else {
-						for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-							if (id == Variant::get_type_name(Variant::Type(i))) {
+						for (int i = 0; i < (int)VariantType::MAX; i++) {
+							if (id == Variant::get_type_name(VariantType(i))) {
 								r_token.type = TK_BASIC_TYPE;
 								r_token.value = i;
 								return OK;
@@ -744,7 +744,7 @@ Expression::ENode *Expression::_parse_expression() {
 			case TK_BASIC_TYPE: {
 				//constructor..
 
-				Variant::Type bt = Variant::Type(int(tk.value));
+				VariantType bt = VariantType(int(tk.value));
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error("Expected '('");
@@ -836,14 +836,14 @@ Expression::ENode *Expression::_parse_expression() {
 			case TK_OP_SUB: {
 				ExpressionNode e;
 				e.is_op = true;
-				e.op = Variant::OP_NEGATE;
+				e.op = VariantOperator::NEGATE;
 				expression_nodes.push_back(e);
 				continue;
 			} break;
 			case TK_OP_NOT: {
 				ExpressionNode e;
 				e.is_op = true;
-				e.op = Variant::OP_NOT;
+				e.op = VariantOperator::NOT;
 				expression_nodes.push_back(e);
 				continue;
 			} break;
@@ -970,80 +970,80 @@ Expression::ENode *Expression::_parse_expression() {
 			return nullptr;
 		}
 
-		Variant::Operator op = Variant::OP_MAX;
+		VariantOperator op = VariantOperator::MAX;
 
 		switch (tk.type) {
 			case TK_OP_IN:
-				op = Variant::OP_IN;
+				op = VariantOperator::OP_IN;
 				break;
 			case TK_OP_EQUAL:
-				op = Variant::OP_EQUAL;
+				op = VariantOperator::EQUAL;
 				break;
 			case TK_OP_NOT_EQUAL:
-				op = Variant::OP_NOT_EQUAL;
+				op = VariantOperator::NOT_EQUAL;
 				break;
 			case TK_OP_LESS:
-				op = Variant::OP_LESS;
+				op = VariantOperator::LESS;
 				break;
 			case TK_OP_LESS_EQUAL:
-				op = Variant::OP_LESS_EQUAL;
+				op = VariantOperator::LESS_EQUAL;
 				break;
 			case TK_OP_GREATER:
-				op = Variant::OP_GREATER;
+				op = VariantOperator::GREATER;
 				break;
 			case TK_OP_GREATER_EQUAL:
-				op = Variant::OP_GREATER_EQUAL;
+				op = VariantOperator::GREATER_EQUAL;
 				break;
 			case TK_OP_AND:
-				op = Variant::OP_AND;
+				op = VariantOperator::AND;
 				break;
 			case TK_OP_OR:
-				op = Variant::OP_OR;
+				op = VariantOperator::OR;
 				break;
 			case TK_OP_NOT:
-				op = Variant::OP_NOT;
+				op = VariantOperator::NOT;
 				break;
 			case TK_OP_ADD:
-				op = Variant::OP_ADD;
+				op = VariantOperator::ADD;
 				break;
 			case TK_OP_SUB:
-				op = Variant::OP_SUBTRACT;
+				op = VariantOperator::SUBTRACT;
 				break;
 			case TK_OP_MUL:
-				op = Variant::OP_MULTIPLY;
+				op = VariantOperator::MULTIPLY;
 				break;
 			case TK_OP_DIV:
-				op = Variant::OP_DIVIDE;
+				op = VariantOperator::DIVIDE;
 				break;
 			case TK_OP_MOD:
-				op = Variant::OP_MODULE;
+				op = VariantOperator::MODULE;
 				break;
 			case TK_OP_POW:
-				op = Variant::OP_POWER;
+				op = VariantOperator::POWER;
 				break;
 			case TK_OP_SHIFT_LEFT:
-				op = Variant::OP_SHIFT_LEFT;
+				op = VariantOperator::SHIFT_LEFT;
 				break;
 			case TK_OP_SHIFT_RIGHT:
-				op = Variant::OP_SHIFT_RIGHT;
+				op = VariantOperator::SHIFT_RIGHT;
 				break;
 			case TK_OP_BIT_AND:
-				op = Variant::OP_BIT_AND;
+				op = VariantOperator::BIT_AND;
 				break;
 			case TK_OP_BIT_OR:
-				op = Variant::OP_BIT_OR;
+				op = VariantOperator::BIT_OR;
 				break;
 			case TK_OP_BIT_XOR:
-				op = Variant::OP_BIT_XOR;
+				op = VariantOperator::BIT_XOR;
 				break;
 			case TK_OP_BIT_INVERT:
-				op = Variant::OP_BIT_NEGATE;
+				op = VariantOperator::BIT_NEGATE;
 				break;
 			default: {
 			}
 		}
 
-		if (op == Variant::OP_MAX) { //stop appending stuff
+		if (op == VariantOperator::MAX) { //stop appending stuff
 			str_ofs = cofs;
 			break;
 		}
@@ -1074,62 +1074,62 @@ Expression::ENode *Expression::_parse_expression() {
 			bool unary = false;
 
 			switch (expression_nodes[i].op) {
-				case Variant::OP_POWER:
+				case VariantOperator::POWER:
 					priority = 0;
 					break;
-				case Variant::OP_BIT_NEGATE:
+				case VariantOperator::BIT_NEGATE:
 					priority = 1;
 					unary = true;
 					break;
-				case Variant::OP_NEGATE:
+				case VariantOperator::NEGATE:
 					priority = 2;
 					unary = true;
 					break;
-				case Variant::OP_MULTIPLY:
-				case Variant::OP_DIVIDE:
-				case Variant::OP_MODULE:
+				case VariantOperator::MULTIPLY:
+				case VariantOperator::DIVIDE:
+				case VariantOperator::MODULE:
 					priority = 3;
 					break;
-				case Variant::OP_ADD:
-				case Variant::OP_SUBTRACT:
+				case VariantOperator::ADD:
+				case VariantOperator::SUBTRACT:
 					priority = 4;
 					break;
-				case Variant::OP_SHIFT_LEFT:
-				case Variant::OP_SHIFT_RIGHT:
+				case VariantOperator::SHIFT_LEFT:
+				case VariantOperator::SHIFT_RIGHT:
 					priority = 5;
 					break;
-				case Variant::OP_BIT_AND:
+				case VariantOperator::BIT_AND:
 					priority = 6;
 					break;
-				case Variant::OP_BIT_XOR:
+				case VariantOperator::BIT_XOR:
 					priority = 7;
 					break;
-				case Variant::OP_BIT_OR:
+				case VariantOperator::BIT_OR:
 					priority = 8;
 					break;
-				case Variant::OP_LESS:
-				case Variant::OP_LESS_EQUAL:
-				case Variant::OP_GREATER:
-				case Variant::OP_GREATER_EQUAL:
-				case Variant::OP_EQUAL:
-				case Variant::OP_NOT_EQUAL:
+				case VariantOperator::LESS:
+				case VariantOperator::LESS_EQUAL:
+				case VariantOperator::GREATER:
+				case VariantOperator::GREATER_EQUAL:
+				case VariantOperator::EQUAL:
+				case VariantOperator::NOT_EQUAL:
 					priority = 9;
 					break;
-				case Variant::OP_IN:
+				case VariantOperator::OP_IN:
 					priority = 11;
 					break;
-				case Variant::OP_NOT:
+				case VariantOperator::NOT:
 					priority = 12;
 					unary = true;
 					break;
-				case Variant::OP_AND:
+				case VariantOperator::AND:
 					priority = 13;
 					break;
-				case Variant::OP_OR:
+				case VariantOperator::OR:
 					priority = 14;
 					break;
 				default: {
-					_set_error("Parser bug, invalid operator in expression: " + itos(expression_nodes[i].op));
+					_set_error("Parser bug, invalid operator in expression: " + itos((int)expression_nodes[i].op));
 					return nullptr;
 				}
 			}

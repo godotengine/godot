@@ -862,7 +862,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						E->value = global_textures_pass;
 					}
 
-					textures.push_back(v->override.get_type() != Variant::NIL ? v->override : v->value);
+					textures.push_back(v->override.get_type() != VariantType::NIL ? v->override : v->value);
 				}
 
 			} else {
@@ -1825,7 +1825,7 @@ void MaterialStorage::global_shader_parameter_set(const StringName &p_name, cons
 	ERR_FAIL_COND(!global_shader_uniforms.variables.has(p_name));
 	GlobalShaderUniforms::Variable &gv = global_shader_uniforms.variables[p_name];
 	gv.value = p_value;
-	if (gv.override.get_type() == Variant::NIL) {
+	if (gv.override.get_type() == VariantType::NIL) {
 		if (gv.buffer_index >= 0) {
 			//buffer
 			_global_shader_uniform_store_in_buffer(gv.buffer_index, gv.type, gv.value);
@@ -1847,7 +1847,7 @@ void MaterialStorage::global_shader_parameter_set_override(const StringName &p_n
 		return; //variable may not exist
 	}
 
-	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
+	ERR_FAIL_COND(p_value.get_type() == VariantType::OBJECT);
 
 	GlobalShaderUniforms::Variable &gv = global_shader_uniforms.variables[p_name];
 
@@ -1855,7 +1855,7 @@ void MaterialStorage::global_shader_parameter_set_override(const StringName &p_n
 
 	if (gv.buffer_index >= 0) {
 		//buffer
-		if (gv.override.get_type() == Variant::NIL) {
+		if (gv.override.get_type() == VariantType::NIL) {
 			_global_shader_uniform_store_in_buffer(gv.buffer_index, gv.type, gv.value);
 		} else {
 			_global_shader_uniform_store_in_buffer(gv.buffer_index, gv.type, gv.override);
@@ -2021,10 +2021,10 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 	}
 	ERR_FAIL_INDEX(p_index, ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
 
-	Variant::Type value_type = p_value.get_type();
-	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(value_type)); //anything greater not supported
+	VariantType value_type = p_value.get_type();
+	ERR_FAIL_COND_MSG(p_value.get_type() > VariantType::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(value_type)); //anything greater not supported
 
-	ShaderLanguage::DataType datatype_from_value[Variant::COLOR + 1] = {
+	ShaderLanguage::DataType datatype_from_value[(int)VariantType::COLOR + 1] = {
 		ShaderLanguage::TYPE_MAX, //nil
 		ShaderLanguage::TYPE_BOOL, //bool
 		ShaderLanguage::TYPE_INT, //int
@@ -2049,7 +2049,7 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 	};
 
 	ShaderLanguage::DataType datatype = ShaderLanguage::TYPE_MAX;
-	if (value_type == Variant::INT && p_flags_count > 0) {
+	if (value_type == VariantType::INT && p_flags_count > 0) {
 		switch (p_flags_count) {
 			case 1:
 				datatype = ShaderLanguage::TYPE_BVEC2;
@@ -2062,7 +2062,7 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 				break;
 		}
 	} else {
-		datatype = datatype_from_value[value_type];
+		datatype = datatype_from_value[(int)value_type];
 	}
 
 	ERR_FAIL_COND_MSG(datatype == ShaderLanguage::TYPE_MAX, "Unsupported variant type for instance parameter: " + Variant::get_type_name(value_type)); //anything greater not supported
@@ -2356,7 +2356,7 @@ void MaterialStorage::material_free(RID p_rid) {
 	// Need to clear texture arrays to prevent spin locking of their RID's.
 	// This happens when the app is being closed.
 	for (KeyValue<StringName, Variant> &E : material->params) {
-		if (E.value.get_type() == Variant::ARRAY) {
+		if (E.value.get_type() == VariantType::ARRAY) {
 			Array(E.value).clear();
 		}
 	}
@@ -2414,10 +2414,10 @@ void MaterialStorage::material_set_param(RID p_material, const StringName &p_par
 	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
 
-	if (p_value.get_type() == Variant::NIL) {
+	if (p_value.get_type() == VariantType::NIL) {
 		material->params.erase(p_param);
 	} else {
-		ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT); //object not allowed
+		ERR_FAIL_COND(p_value.get_type() == VariantType::OBJECT); //object not allowed
 		material->params[p_param] = p_value;
 	}
 

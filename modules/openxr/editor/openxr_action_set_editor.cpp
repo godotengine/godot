@@ -40,8 +40,8 @@ void OpenXRActionSetEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_add_action_editor", "action_editor"), &OpenXRActionSetEditor::_do_add_action_editor);
 	ClassDB::bind_method(D_METHOD("_do_remove_action_editor", "action_editor"), &OpenXRActionSetEditor::_do_remove_action_editor);
 
-	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(Variant::OBJECT, "action_set_editor")));
-	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::OBJECT, "action")));
+	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(VariantType::OBJECT, "action_set_editor")));
+	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(VariantType::OBJECT, "action")));
 }
 
 void OpenXRActionSetEditor::_set_fold_icon() {

@@ -284,15 +284,15 @@ static Vector<RenderingDevice::PipelineSpecializationConstant> _get_spec_constan
 		RenderingDevice::PipelineSpecializationConstant &sc = ret.write[i];
 		Variant value = c->get_value();
 		switch (value.get_type()) {
-			case Variant::BOOL: {
+			case VariantType::BOOL: {
 				sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
 				sc.bool_value = value;
 			} break;
-			case Variant::INT: {
+			case VariantType::INT: {
 				sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
 				sc.int_value = value;
 			} break;
-			case Variant::FLOAT: {
+			case VariantType::FLOAT: {
 				sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
 				sc.float_value = value;
 			} break;

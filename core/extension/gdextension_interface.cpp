@@ -267,7 +267,7 @@ static void gdextension_variant_call(GDExtensionVariantPtr p_self, GDExtensionCo
 }
 
 static void gdextension_variant_call_static(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argcount, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error) {
-	Variant::Type type = (Variant::Type)p_type;
+	VariantType type = (VariantType)p_type;
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
 	Callable::CallError error;
@@ -283,7 +283,7 @@ static void gdextension_variant_call_static(GDExtensionVariantType p_type, GDExt
 }
 
 static void gdextension_variant_evaluate(GDExtensionVariantOperator p_op, GDExtensionConstVariantPtr p_a, GDExtensionConstVariantPtr p_b, GDExtensionUninitializedVariantPtr r_return, GDExtensionBool *r_valid) {
-	Variant::Operator op = (Variant::Operator)p_op;
+	VariantOperator op = (VariantOperator)p_op;
 	const Variant *a = (const Variant *)p_a;
 	const Variant *b = (const Variant *)p_b;
 	bool valid;
@@ -446,7 +446,7 @@ static GDExtensionBool gdextension_variant_has_method(GDExtensionConstVariantPtr
 }
 
 static GDExtensionBool gdextension_variant_has_member(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_member) {
-	return Variant::has_member((Variant::Type)p_type, *((const StringName *)p_member));
+	return Variant::has_member((VariantType)p_type, *((const StringName *)p_member));
 }
 
 static GDExtensionBool gdextension_variant_has_key(GDExtensionConstVariantPtr p_self, GDExtensionConstVariantPtr p_key, GDExtensionBool *r_valid) {
@@ -459,16 +459,16 @@ static GDExtensionBool gdextension_variant_has_key(GDExtensionConstVariantPtr p_
 }
 
 static void gdextension_variant_get_type_name(GDExtensionVariantType p_type, GDExtensionUninitializedVariantPtr r_ret) {
-	String name = Variant::get_type_name((Variant::Type)p_type);
+	String name = Variant::get_type_name((VariantType)p_type);
 	memnew_placement(r_ret, String(name));
 }
 
 static GDExtensionBool gdextension_variant_can_convert(GDExtensionVariantType p_from, GDExtensionVariantType p_to) {
-	return Variant::can_convert((Variant::Type)p_from, (Variant::Type)p_to);
+	return Variant::can_convert((VariantType)p_from, (VariantType)p_to);
 }
 
 static GDExtensionBool gdextension_variant_can_convert_strict(GDExtensionVariantType p_from, GDExtensionVariantType p_to) {
-	return Variant::can_convert_strict((Variant::Type)p_from, (Variant::Type)p_to);
+	return Variant::can_convert_strict((VariantType)p_from, (VariantType)p_to);
 }
 
 // Variant interaction.
@@ -640,30 +640,30 @@ static GDExtensionTypeFromVariantConstructorFunc gdextension_get_variant_to_type
 
 // ptrcalls
 static GDExtensionPtrOperatorEvaluator gdextension_variant_get_ptr_operator_evaluator(GDExtensionVariantOperator p_operator, GDExtensionVariantType p_type_a, GDExtensionVariantType p_type_b) {
-	return (GDExtensionPtrOperatorEvaluator)Variant::get_ptr_operator_evaluator(Variant::Operator(p_operator), Variant::Type(p_type_a), Variant::Type(p_type_b));
+	return (GDExtensionPtrOperatorEvaluator)Variant::get_ptr_operator_evaluator(VariantOperator(p_operator), VariantType(p_type_a), VariantType(p_type_b));
 }
 static GDExtensionPtrBuiltInMethod gdextension_variant_get_ptr_builtin_method(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_method, GDExtensionInt p_hash) {
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
-	uint32_t hash = Variant::get_builtin_method_hash(Variant::Type(p_type), method);
+	uint32_t hash = Variant::get_builtin_method_hash(VariantType(p_type), method);
 	if (hash != p_hash) {
 		ERR_PRINT_ONCE("Error getting method " + method + ", hash mismatch.");
 		return nullptr;
 	}
 
-	return (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method(Variant::Type(p_type), method);
+	return (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method(VariantType(p_type), method);
 }
 static GDExtensionPtrConstructor gdextension_variant_get_ptr_constructor(GDExtensionVariantType p_type, int32_t p_constructor) {
-	return (GDExtensionPtrConstructor)Variant::get_ptr_constructor(Variant::Type(p_type), p_constructor);
+	return (GDExtensionPtrConstructor)Variant::get_ptr_constructor(VariantType(p_type), p_constructor);
 }
 static GDExtensionPtrDestructor gdextension_variant_get_ptr_destructor(GDExtensionVariantType p_type) {
-	return (GDExtensionPtrDestructor)Variant::get_ptr_destructor(Variant::Type(p_type));
+	return (GDExtensionPtrDestructor)Variant::get_ptr_destructor(VariantType(p_type));
 }
 static void gdextension_variant_construct(GDExtensionVariantType p_type, GDExtensionUninitializedVariantPtr r_base, const GDExtensionConstVariantPtr *p_args, int32_t p_argument_count, GDExtensionCallError *r_error) {
 	memnew_placement(r_base, Variant);
 	Variant *base = reinterpret_cast<Variant *>(r_base);
 
 	Callable::CallError error;
-	Variant::construct(Variant::Type(p_type), *base, (const Variant **)p_args, p_argument_count, error);
+	Variant::construct(VariantType(p_type), *base, (const Variant **)p_args, p_argument_count, error);
 
 	if (r_error) {
 		r_error->error = (GDExtensionCallErrorType)(error.error);
@@ -673,30 +673,30 @@ static void gdextension_variant_construct(GDExtensionVariantType p_type, GDExten
 }
 static GDExtensionPtrSetter gdextension_variant_get_ptr_setter(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_member) {
 	const StringName member = *reinterpret_cast<const StringName *>(p_member);
-	return (GDExtensionPtrSetter)Variant::get_member_ptr_setter(Variant::Type(p_type), member);
+	return (GDExtensionPtrSetter)Variant::get_member_ptr_setter(VariantType(p_type), member);
 }
 static GDExtensionPtrGetter gdextension_variant_get_ptr_getter(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_member) {
 	const StringName member = *reinterpret_cast<const StringName *>(p_member);
-	return (GDExtensionPtrGetter)Variant::get_member_ptr_getter(Variant::Type(p_type), member);
+	return (GDExtensionPtrGetter)Variant::get_member_ptr_getter(VariantType(p_type), member);
 }
 static GDExtensionPtrIndexedSetter gdextension_variant_get_ptr_indexed_setter(GDExtensionVariantType p_type) {
-	return (GDExtensionPtrIndexedSetter)Variant::get_member_ptr_indexed_setter(Variant::Type(p_type));
+	return (GDExtensionPtrIndexedSetter)Variant::get_member_ptr_indexed_setter(VariantType(p_type));
 }
 static GDExtensionPtrIndexedGetter gdextension_variant_get_ptr_indexed_getter(GDExtensionVariantType p_type) {
-	return (GDExtensionPtrIndexedGetter)Variant::get_member_ptr_indexed_getter(Variant::Type(p_type));
+	return (GDExtensionPtrIndexedGetter)Variant::get_member_ptr_indexed_getter(VariantType(p_type));
 }
 static GDExtensionPtrKeyedSetter gdextension_variant_get_ptr_keyed_setter(GDExtensionVariantType p_type) {
-	return (GDExtensionPtrKeyedSetter)Variant::get_member_ptr_keyed_setter(Variant::Type(p_type));
+	return (GDExtensionPtrKeyedSetter)Variant::get_member_ptr_keyed_setter(VariantType(p_type));
 }
 static GDExtensionPtrKeyedGetter gdextension_variant_get_ptr_keyed_getter(GDExtensionVariantType p_type) {
-	return (GDExtensionPtrKeyedGetter)Variant::get_member_ptr_keyed_getter(Variant::Type(p_type));
+	return (GDExtensionPtrKeyedGetter)Variant::get_member_ptr_keyed_getter(VariantType(p_type));
 }
 static GDExtensionPtrKeyedChecker gdextension_variant_get_ptr_keyed_checker(GDExtensionVariantType p_type) {
-	return (GDExtensionPtrKeyedChecker)Variant::get_member_ptr_keyed_checker(Variant::Type(p_type));
+	return (GDExtensionPtrKeyedChecker)Variant::get_member_ptr_keyed_checker(VariantType(p_type));
 }
 static void gdextension_variant_get_constant_value(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_constant, GDExtensionUninitializedVariantPtr r_ret) {
 	StringName constant = *reinterpret_cast<const StringName *>(p_constant);
-	memnew_placement(r_ret, Variant(Variant::get_constant_value(Variant::Type(p_type), constant)));
+	memnew_placement(r_ret, Variant(Variant::get_constant_value(VariantType(p_type), constant)));
 }
 static GDExtensionPtrUtilityFunction gdextension_variant_get_ptr_utility_function(GDExtensionConstStringNamePtr p_function, GDExtensionInt p_hash) {
 	StringName function = *reinterpret_cast<const StringName *>(p_function);
@@ -1093,7 +1093,7 @@ void gdextension_array_set_typed(GDExtensionTypePtr p_self, GDExtensionVariantTy
 	Array *self = reinterpret_cast<Array *>(p_self);
 	const StringName *class_name = reinterpret_cast<const StringName *>(p_class_name);
 	const Variant *script = reinterpret_cast<const Variant *>(p_script);
-	self->set_typed((uint32_t)p_type, *class_name, *script);
+	self->set_typed((VariantType)p_type, *class_name, *script);
 }
 
 /* Dictionary functions */

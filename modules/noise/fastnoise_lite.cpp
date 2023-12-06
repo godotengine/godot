@@ -414,33 +414,33 @@ void FastNoiseLite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_changed"), &FastNoiseLite::_changed);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "noise_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Smooth,Cellular,Perlin,Value Cubic,Value"), "set_noise_type", "get_noise_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frequency", PROPERTY_HINT_RANGE, ".0001,1,.0001,exp"), "set_frequency", "get_frequency");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "offset", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_less,or_greater"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "noise_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Smooth,Cellular,Perlin,Value Cubic,Value"), "set_noise_type", "get_noise_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "seed"), "set_seed", "get_seed");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "frequency", PROPERTY_HINT_RANGE, ".0001,1,.0001,exp"), "set_frequency", "get_frequency");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "offset", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_less,or_greater"), "set_offset", "get_offset");
 
 	ADD_GROUP("Fractal", "fractal_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fractal_type", PROPERTY_HINT_ENUM, "None,FBM,Ridged,Ping-Pong"), "set_fractal_type", "get_fractal_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fractal_octaves", PROPERTY_HINT_RANGE, "1,10,1"), "set_fractal_octaves", "get_fractal_octaves");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_lacunarity"), "set_fractal_lacunarity", "get_fractal_lacunarity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_gain"), "set_fractal_gain", "get_fractal_gain");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_weighted_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fractal_weighted_strength", "get_fractal_weighted_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_ping_pong_strength"), "set_fractal_ping_pong_strength", "get_fractal_ping_pong_strength");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "fractal_type", PROPERTY_HINT_ENUM, "None,FBM,Ridged,Ping-Pong"), "set_fractal_type", "get_fractal_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "fractal_octaves", PROPERTY_HINT_RANGE, "1,10,1"), "set_fractal_octaves", "get_fractal_octaves");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "fractal_lacunarity"), "set_fractal_lacunarity", "get_fractal_lacunarity");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "fractal_gain"), "set_fractal_gain", "get_fractal_gain");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "fractal_weighted_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fractal_weighted_strength", "get_fractal_weighted_strength");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "fractal_ping_pong_strength"), "set_fractal_ping_pong_strength", "get_fractal_ping_pong_strength");
 
 	ADD_GROUP("Cellular", "cellular_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_distance_function", PROPERTY_HINT_ENUM, "Euclidean,Euclidean Squared,Manhattan,Hybrid"), "set_cellular_distance_function", "get_cellular_distance_function");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cellular_jitter"), "set_cellular_jitter", "get_cellular_jitter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_return_type", PROPERTY_HINT_ENUM, "Cell Value,Distance,Distance2,Distance2Add,Distance2Sub,Distance2Mul,Distance2Div"), "set_cellular_return_type", "get_cellular_return_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "cellular_distance_function", PROPERTY_HINT_ENUM, "Euclidean,Euclidean Squared,Manhattan,Hybrid"), "set_cellular_distance_function", "get_cellular_distance_function");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "cellular_jitter"), "set_cellular_jitter", "get_cellular_jitter");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "cellular_return_type", PROPERTY_HINT_ENUM, "Cell Value,Distance,Distance2,Distance2Add,Distance2Sub,Distance2Mul,Distance2Div"), "set_cellular_return_type", "get_cellular_return_type");
 
 	ADD_GROUP("Domain Warp", "domain_warp_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "domain_warp_enabled"), "set_domain_warp_enabled", "is_domain_warp_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Reduced,Basic Grid"), "set_domain_warp_type", "get_domain_warp_type");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_amplitude"), "set_domain_warp_amplitude", "get_domain_warp_amplitude");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_frequency"), "set_domain_warp_frequency", "get_domain_warp_frequency");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_fractal_type", PROPERTY_HINT_ENUM, "None,Progressive,Independent"), "set_domain_warp_fractal_type", "get_domain_warp_fractal_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_fractal_octaves", PROPERTY_HINT_RANGE, "1,10,1"), "set_domain_warp_fractal_octaves", "get_domain_warp_fractal_octaves");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_fractal_lacunarity"), "set_domain_warp_fractal_lacunarity", "get_domain_warp_fractal_lacunarity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_fractal_gain"), "set_domain_warp_fractal_gain", "get_domain_warp_fractal_gain");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "domain_warp_enabled"), "set_domain_warp_enabled", "is_domain_warp_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "domain_warp_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Reduced,Basic Grid"), "set_domain_warp_type", "get_domain_warp_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "domain_warp_amplitude"), "set_domain_warp_amplitude", "get_domain_warp_amplitude");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "domain_warp_frequency"), "set_domain_warp_frequency", "get_domain_warp_frequency");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "domain_warp_fractal_type", PROPERTY_HINT_ENUM, "None,Progressive,Independent"), "set_domain_warp_fractal_type", "get_domain_warp_fractal_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "domain_warp_fractal_octaves", PROPERTY_HINT_RANGE, "1,10,1"), "set_domain_warp_fractal_octaves", "get_domain_warp_fractal_octaves");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "domain_warp_fractal_lacunarity"), "set_domain_warp_fractal_lacunarity", "get_domain_warp_fractal_lacunarity");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "domain_warp_fractal_gain"), "set_domain_warp_fractal_gain", "get_domain_warp_fractal_gain");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_VALUE_CUBIC);

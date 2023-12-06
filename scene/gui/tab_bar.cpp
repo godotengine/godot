@@ -1693,13 +1693,13 @@ bool TabBar::_get(const StringName &p_name, Variant &r_ret) const {
 
 void TabBar::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < tabs.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("tab_%d/title", i)));
+		p_list->push_back(PropertyInfo(VariantType::STRING, vformat("tab_%d/title", i)));
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("tab_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		PropertyInfo pi = PropertyInfo(VariantType::OBJECT, vformat("tab_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 		pi.usage &= ~(get_tab_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("tab_%d/disabled", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("tab_%d/disabled", i));
 		pi.usage &= ~(!is_tab_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 	}
@@ -1759,28 +1759,28 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &TabBar::get_select_with_rmb);
 	ClassDB::bind_method(D_METHOD("clear_tabs"), &TabBar::clear_tabs);
 
-	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_rmb_clicked", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_close_pressed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
+	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_rmb_clicked", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_close_pressed", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(VariantType::INT, "idx_to")));
 
 	// "current_tab" property must come after "tab_count", otherwise the property isn't loaded correctly.
 	ADD_ARRAY_COUNT("Tabs", "tab_count", "set_tab_count", "get_tab_count", "tab_");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_tab_width", PROPERTY_HINT_RANGE, "0,99999,1,suffix:px"), "set_max_tab_width", "get_max_tab_width");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_to_selected"), "set_scroll_to_selected", "get_scroll_to_selected");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_tab_width", PROPERTY_HINT_RANGE, "0,99999,1,suffix:px"), "set_max_tab_width", "get_max_tab_width");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "scroll_to_selected"), "set_scroll_to_selected", "get_scroll_to_selected");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
 
 	BIND_ENUM_CONSTANT(ALIGNMENT_LEFT);
 	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);

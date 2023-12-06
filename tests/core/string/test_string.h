@@ -1803,7 +1803,7 @@ TEST_CASE("[String] Variant indexed get") {
 TEST_CASE("[String] Variant validated indexed get") {
 	Variant s = String("abcd");
 
-	Variant::ValidatedIndexedGetter getter = Variant::get_member_validated_indexed_getter(Variant::STRING);
+	Variant::ValidatedIndexedGetter getter = Variant::get_member_validated_indexed_getter(VariantType::STRING);
 
 	Variant r;
 	bool oob = true;
@@ -1816,7 +1816,7 @@ TEST_CASE("[String] Variant validated indexed get") {
 TEST_CASE("[String] Variant ptr indexed get") {
 	String s("abcd");
 
-	Variant::PTRIndexedGetter getter = Variant::get_member_ptr_indexed_getter(Variant::STRING);
+	Variant::PTRIndexedGetter getter = Variant::get_member_ptr_indexed_getter(VariantType::STRING);
 
 	String r;
 	getter(&s, 1, &r);
@@ -1839,7 +1839,7 @@ TEST_CASE("[String] Variant indexed set") {
 TEST_CASE("[String] Variant validated indexed set") {
 	Variant s = String("abcd");
 
-	Variant::ValidatedIndexedSetter setter = Variant::get_member_validated_indexed_setter(Variant::STRING);
+	Variant::ValidatedIndexedSetter setter = Variant::get_member_validated_indexed_setter(VariantType::STRING);
 
 	Variant v = String("z");
 	bool oob = true;
@@ -1852,7 +1852,7 @@ TEST_CASE("[String] Variant validated indexed set") {
 TEST_CASE("[String] Variant ptr indexed set") {
 	String s("abcd");
 
-	Variant::PTRIndexedSetter setter = Variant::get_member_ptr_indexed_setter(Variant::STRING);
+	Variant::PTRIndexedSetter setter = Variant::get_member_ptr_indexed_setter(VariantType::STRING);
 
 	String v("z");
 	setter(&s, 1, &v);

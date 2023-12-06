@@ -312,19 +312,19 @@ void Range::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("share", "with"), &Range::_share);
 	ClassDB::bind_method(D_METHOD("unshare"), &Range::unshare);
 
-	ADD_SIGNAL(MethodInfo("value_changed", PropertyInfo(Variant::FLOAT, "value")));
+	ADD_SIGNAL(MethodInfo("value_changed", PropertyInfo(VariantType::FLOAT, "value")));
 	ADD_SIGNAL(MethodInfo("changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value"), "set_min", "get_min");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value"), "set_max", "get_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step"), "set_step", "get_step");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "page"), "set_page", "get_page");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "value"), "set_value", "get_value");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_NONE), "set_as_ratio", "get_as_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exp_edit"), "set_exp_ratio", "is_ratio_exp");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "min_value"), "set_min", "get_min");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "max_value"), "set_max", "get_max");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "step"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "page"), "set_page", "get_page");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "value"), "set_value", "get_value");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_NONE), "set_as_ratio", "get_as_ratio");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "exp_edit"), "set_exp_ratio", "is_ratio_exp");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
 
 	GDVIRTUAL_BIND(_value_changed, "new_value");
 

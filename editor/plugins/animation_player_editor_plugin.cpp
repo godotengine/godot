@@ -1762,7 +1762,7 @@ bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
 				continue;
 			}
 			switch (p_anim->track_get_key_value(i, 0).get_type()) {
-				case Variant::QUATERNION: {
+				case VariantType::QUATERNION: {
 					for (int j = 0; j < key_len; j++) {
 						Quaternion q = Quaternion(p_anim->track_get_key_value(i, j));
 						if (!q.is_normalized()) {
@@ -1771,7 +1771,7 @@ bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
 						}
 					}
 				} break;
-				case Variant::TRANSFORM3D: {
+				case VariantType::TRANSFORM3D: {
 					for (int j = 0; j < key_len; j++) {
 						Transform3D t = Transform3D(p_anim->track_get_key_value(i, j));
 						if (!t.basis.orthonormalized().is_rotation()) {
@@ -1794,7 +1794,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_start_onion_skinning"), &AnimationPlayerEditor::_start_onion_skinning);
 	ClassDB::bind_method(D_METHOD("_stop_onion_skinning"), &AnimationPlayerEditor::_stop_onion_skinning);
 
-	ADD_SIGNAL(MethodInfo("animation_selected", PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("animation_selected", PropertyInfo(VariantType::STRING, "name")));
 }
 
 AnimationPlayerEditor *AnimationPlayerEditor::singleton = nullptr;

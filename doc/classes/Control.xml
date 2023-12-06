@@ -42,7 +42,7 @@
 				{
 				    // Check position if it is relevant to you
 				    // Otherwise, just check data
-				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().ContainsKey("expected");
+				    return data.VariantType == VariantType.Dictionary &amp;&amp; data.AsGodotDictionary().ContainsKey("expected");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -65,7 +65,7 @@
 				[csharp]
 				public override bool _CanDropData(Vector2 atPosition, Variant data)
 				{
-				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; dict.AsGodotDictionary().ContainsKey("color");
+				    return data.VariantType == VariantType.Dictionary &amp;&amp; dict.AsGodotDictionary().ContainsKey("color");
 				}
 
 				public override void _DropData(Vector2 atPosition, Variant data)

@@ -190,11 +190,11 @@ namespace Godot.NativeInterop
                     int errorarg = error.Argument;
                     // Handle the Object to Object case separately as we don't have further class details.
 #if DEBUG
-                    if (error.Expected == Variant.Type.Object && args[errorarg]->Type == error.Expected)
+                    if (error.Expected == VariantType.Object && args[errorarg]->Type == error.Expected)
                     {
                         return $"Invalid type in {where}. The Object-derived class of argument {errorarg + 1} (" + GetVariantTypeName(args[errorarg]) + ") is not a subclass of the expected argument class.";
                     }
-                    else if (error.Expected == Variant.Type.Array && args[errorarg]->Type == error.Expected)
+                    else if (error.Expected == VariantType.Array && args[errorarg]->Type == error.Expected)
                     {
                         return $"Invalid type in {where}. The array of argument {errorarg + 1} (" + GetVariantTypeName(args[errorarg]) + ") does not have the same element type as the expected typed array argument.";
                     }
@@ -220,7 +220,7 @@ namespace Godot.NativeInterop
 
         private unsafe static string GetVariantTypeName(godot_variant* variant)
         {
-            if (variant->Type == Variant.Type.Object)
+            if (variant->Type == VariantType.Object)
             {
                 GodotObject obj = VariantUtils.ConvertToGodotObject(*variant);
                 if (obj == null)

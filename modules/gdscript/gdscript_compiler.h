@@ -105,7 +105,7 @@ class GDScriptCompiler {
 			type.has_type = true;
 			type.kind = GDScriptDataType::BUILTIN;
 			type.builtin_type = p_constant.get_type();
-			if (type.builtin_type == Variant::OBJECT) {
+			if (type.builtin_type == VariantType::OBJECT) {
 				Object *obj = p_constant;
 				if (obj) {
 					type.kind = GDScriptDataType::NATIVE;
@@ -122,7 +122,7 @@ class GDScriptCompiler {
 						}
 					}
 				} else {
-					type.builtin_type = Variant::NIL;
+					type.builtin_type = VariantType::NIL;
 				}
 			}
 
@@ -149,8 +149,8 @@ class GDScriptCompiler {
 
 	void _set_error(const String &p_error, const GDScriptParser::Node *p_node);
 
-	Error _create_binary_operator(CodeGen &codegen, const GDScriptParser::BinaryOpNode *on, Variant::Operator op, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
-	Error _create_binary_operator(CodeGen &codegen, const GDScriptParser::ExpressionNode *p_left_operand, const GDScriptParser::ExpressionNode *p_right_operand, Variant::Operator op, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
+	Error _create_binary_operator(CodeGen &codegen, const GDScriptParser::BinaryOpNode *on, VariantOperator op, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
+	Error _create_binary_operator(CodeGen &codegen, const GDScriptParser::ExpressionNode *p_left_operand, const GDScriptParser::ExpressionNode *p_right_operand, VariantOperator op, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
 
 	GDScriptDataType _gdtype_from_datatype(const GDScriptParser::DataType &p_datatype, GDScript *p_owner, bool p_handle_metatype = true);
 

@@ -93,7 +93,7 @@ void VisibleOnScreenNotifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_aabb", "rect"), &VisibleOnScreenNotifier3D::set_aabb);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier3D::is_on_screen);
 
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_aabb", "get_aabb");
+	ADD_PROPERTY(PropertyInfo(VariantType::AABB, "aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_aabb", "get_aabb");
 
 	ADD_SIGNAL(MethodInfo("screen_entered"));
 	ADD_SIGNAL(MethodInfo("screen_exited"));
@@ -200,8 +200,8 @@ void VisibleOnScreenEnabler3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_enable_node_path"), &VisibleOnScreenEnabler3D::get_enable_node_path);
 
 	ADD_GROUP("Enabling", "enable_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_mode", PROPERTY_HINT_ENUM, "Inherit,Always,When Paused"), "set_enable_mode", "get_enable_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "enable_node_path"), "set_enable_node_path", "get_enable_node_path");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "enable_mode", PROPERTY_HINT_ENUM, "Inherit,Always,When Paused"), "set_enable_mode", "get_enable_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "enable_node_path"), "set_enable_node_path", "get_enable_node_path");
 
 	BIND_ENUM_CONSTANT(ENABLE_MODE_INHERIT);
 	BIND_ENUM_CONSTANT(ENABLE_MODE_ALWAYS);

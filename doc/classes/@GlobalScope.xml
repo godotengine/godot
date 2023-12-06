@@ -1391,9 +1391,9 @@
 			<param index="0" name="variant" type="Variant" />
 			<param index="1" name="type" type="int" />
 			<description>
-				Converts the given [param variant] to the given [param type], using the [enum Variant.Type] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
+				Converts the given [param variant] to the given [param type], using the [enum VariantType] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
 				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [constant Vector2.ZERO]. This method will never show error messages as long as [param type] is a valid Variant type.
-				The returned value is a [Variant], but the data inside and the [enum Variant.Type] will be the same as the requested type.
+				The returned value is a [Variant], but the data inside and the [enum VariantType] will be the same as the requested type.
 				[codeblock]
 				type_convert("Hi!", TYPE_INT) # Returns 0
 				type_convert("123", TYPE_INT) # Returns 123
@@ -1407,7 +1407,7 @@
 			<return type="String" />
 			<param index="0" name="type" type="int" />
 			<description>
-				Returns a human-readable name of the given [param type], using the [enum Variant.Type] values.
+				Returns a human-readable name of the given [param type], using the [enum VariantType] values.
 				[codeblock]
 				print(TYPE_INT) # Prints 2.
 				print(type_string(TYPE_INT)) # Prints "int".
@@ -1420,7 +1420,7 @@
 			<return type="int" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Returns the internal type of the given [param variable], using the [enum Variant.Type] values.
+				Returns the internal type of the given [param variable], using the [enum VariantType] values.
 				[codeblock]
 				var json = JSON.new()
 				json.parse('["a", "b", "c"]')
@@ -2845,11 +2845,11 @@
 			hintString = $"{elemType:D}:";
 			hintString = $"{elemType:}/{elemHint:D}:{elemHintString}";
 			// Two-dimensional array of elemType (array of arrays of elemType).
-			hintString = $"{Variant.Type.Array:D}:{elemType:D}:";
-			hintString = $"{Variant.Type.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
+			hintString = $"{VariantType.Array:D}:{elemType:D}:";
+			hintString = $"{VariantType.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
 			// Three-dimensional array of elemType (array of arrays of arrays of elemType).
-			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Array:D}:{elemType:D}:";
-			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
+			hintString = $"{VariantType.Array:D}:{VariantType.Array:D}:{elemType:D}:";
+			hintString = $"{VariantType.Array:D}:{VariantType.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
 			[/csharp]
 			[/codeblocks]
 			Examples:
@@ -2868,16 +2868,16 @@
 			hint_string = "%d:%d/%d:Texture2D" % [TYPE_ARRAY, TYPE_OBJECT, PROPERTY_HINT_RESOURCE_TYPE] # Two-dimensional array of textures.
 			[/gdscript]
 			[csharp]
-			hintString = $"{Variant.Type.Int:D}/{PropertyHint.Range:D}:1,10,1"; // Array of integers (in range from 1 to 10).
-			hintString = $"{Variant.Type.Int:D}/{PropertyHint.Enum:D}:Zero,One,Two"; // Array of integers (an enum).
-			hintString = $"{Variant.Type.Int:D}/{PropertyHint.Enum:D}:Zero,One,Three:3,Six:6"; // Array of integers (an enum).
-			hintString = $"{Variant.Type.String:D}/{PropertyHint.File:D}:*.png"; // Array of strings (file paths).
-			hintString = $"{Variant.Type.Object:D}/{PropertyHint.ResourceType:D}:Texture2D"; // Array of textures.
+			hintString = $"{VariantType.Int:D}/{PropertyHint.Range:D}:1,10,1"; // Array of integers (in range from 1 to 10).
+			hintString = $"{VariantType.Int:D}/{PropertyHint.Enum:D}:Zero,One,Two"; // Array of integers (an enum).
+			hintString = $"{VariantType.Int:D}/{PropertyHint.Enum:D}:Zero,One,Three:3,Six:6"; // Array of integers (an enum).
+			hintString = $"{VariantType.String:D}/{PropertyHint.File:D}:*.png"; // Array of strings (file paths).
+			hintString = $"{VariantType.Object:D}/{PropertyHint.ResourceType:D}:Texture2D"; // Array of textures.
 
-			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Float:D}:"; // Two-dimensional array of floats.
-			hintString = $"{Variant.Type.Array:D}:{Variant.Type.String:D}/{PropertyHint.MultilineText:D}:"; // Two-dimensional array of multiline strings.
-			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Float:D}/{PropertyHint.Range:D}:-1,1,0.1"; // Two-dimensional array of floats (in range from -1 to 1).
-			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Object:D}/{PropertyHint.ResourceType:D}:Texture2D"; // Two-dimensional array of textures.
+			hintString = $"{VariantType.Array:D}:{VariantType.Float:D}:"; // Two-dimensional array of floats.
+			hintString = $"{VariantType.Array:D}:{VariantType.String:D}/{PropertyHint.MultilineText:D}:"; // Two-dimensional array of multiline strings.
+			hintString = $"{VariantType.Array:D}:{VariantType.Float:D}/{PropertyHint.Range:D}:-1,1,0.1"; // Two-dimensional array of floats (in range from -1 to 1).
+			hintString = $"{VariantType.Array:D}:{VariantType.Object:D}/{PropertyHint.ResourceType:D}:Texture2D"; // Two-dimensional array of textures.
 			[/csharp]
 			[/codeblocks]
 			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
@@ -3047,200 +3047,200 @@
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags" is_bitfield="true">
 			Default method flags (normal).
 		</constant>
-		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
+		<constant name="TYPE_NIL" value="0" enum="VariantType">
 			Variable is [code]null[/code].
 		</constant>
-		<constant name="TYPE_BOOL" value="1" enum="Variant.Type">
+		<constant name="TYPE_BOOL" value="1" enum="VariantType">
 			Variable is of type [bool].
 		</constant>
-		<constant name="TYPE_INT" value="2" enum="Variant.Type">
+		<constant name="TYPE_INT" value="2" enum="VariantType">
 			Variable is of type [int].
 		</constant>
-		<constant name="TYPE_FLOAT" value="3" enum="Variant.Type">
+		<constant name="TYPE_FLOAT" value="3" enum="VariantType">
 			Variable is of type [float].
 		</constant>
-		<constant name="TYPE_STRING" value="4" enum="Variant.Type">
+		<constant name="TYPE_STRING" value="4" enum="VariantType">
 			Variable is of type [String].
 		</constant>
-		<constant name="TYPE_VECTOR2" value="5" enum="Variant.Type">
+		<constant name="TYPE_VECTOR2" value="5" enum="VariantType">
 			Variable is of type [Vector2].
 		</constant>
-		<constant name="TYPE_VECTOR2I" value="6" enum="Variant.Type">
+		<constant name="TYPE_VECTOR2I" value="6" enum="VariantType">
 			Variable is of type [Vector2i].
 		</constant>
-		<constant name="TYPE_RECT2" value="7" enum="Variant.Type">
+		<constant name="TYPE_RECT2" value="7" enum="VariantType">
 			Variable is of type [Rect2].
 		</constant>
-		<constant name="TYPE_RECT2I" value="8" enum="Variant.Type">
+		<constant name="TYPE_RECT2I" value="8" enum="VariantType">
 			Variable is of type [Rect2i].
 		</constant>
-		<constant name="TYPE_VECTOR3" value="9" enum="Variant.Type">
+		<constant name="TYPE_VECTOR3" value="9" enum="VariantType">
 			Variable is of type [Vector3].
 		</constant>
-		<constant name="TYPE_VECTOR3I" value="10" enum="Variant.Type">
+		<constant name="TYPE_VECTOR3I" value="10" enum="VariantType">
 			Variable is of type [Vector3i].
 		</constant>
-		<constant name="TYPE_TRANSFORM2D" value="11" enum="Variant.Type">
+		<constant name="TYPE_TRANSFORM2D" value="11" enum="VariantType">
 			Variable is of type [Transform2D].
 		</constant>
-		<constant name="TYPE_VECTOR4" value="12" enum="Variant.Type">
+		<constant name="TYPE_VECTOR4" value="12" enum="VariantType">
 			Variable is of type [Vector4].
 		</constant>
-		<constant name="TYPE_VECTOR4I" value="13" enum="Variant.Type">
+		<constant name="TYPE_VECTOR4I" value="13" enum="VariantType">
 			Variable is of type [Vector4i].
 		</constant>
-		<constant name="TYPE_PLANE" value="14" enum="Variant.Type">
+		<constant name="TYPE_PLANE" value="14" enum="VariantType">
 			Variable is of type [Plane].
 		</constant>
-		<constant name="TYPE_QUATERNION" value="15" enum="Variant.Type">
+		<constant name="TYPE_QUATERNION" value="15" enum="VariantType">
 			Variable is of type [Quaternion].
 		</constant>
-		<constant name="TYPE_AABB" value="16" enum="Variant.Type">
+		<constant name="TYPE_AABB" value="16" enum="VariantType">
 			Variable is of type [AABB].
 		</constant>
-		<constant name="TYPE_BASIS" value="17" enum="Variant.Type">
+		<constant name="TYPE_BASIS" value="17" enum="VariantType">
 			Variable is of type [Basis].
 		</constant>
-		<constant name="TYPE_TRANSFORM3D" value="18" enum="Variant.Type">
+		<constant name="TYPE_TRANSFORM3D" value="18" enum="VariantType">
 			Variable is of type [Transform3D].
 		</constant>
-		<constant name="TYPE_PROJECTION" value="19" enum="Variant.Type">
+		<constant name="TYPE_PROJECTION" value="19" enum="VariantType">
 			Variable is of type [Projection].
 		</constant>
-		<constant name="TYPE_COLOR" value="20" enum="Variant.Type">
+		<constant name="TYPE_COLOR" value="20" enum="VariantType">
 			Variable is of type [Color].
 		</constant>
-		<constant name="TYPE_STRING_NAME" value="21" enum="Variant.Type">
+		<constant name="TYPE_STRING_NAME" value="21" enum="VariantType">
 			Variable is of type [StringName].
 		</constant>
-		<constant name="TYPE_NODE_PATH" value="22" enum="Variant.Type">
+		<constant name="TYPE_NODE_PATH" value="22" enum="VariantType">
 			Variable is of type [NodePath].
 		</constant>
-		<constant name="TYPE_RID" value="23" enum="Variant.Type">
+		<constant name="TYPE_RID" value="23" enum="VariantType">
 			Variable is of type [RID].
 		</constant>
-		<constant name="TYPE_OBJECT" value="24" enum="Variant.Type">
+		<constant name="TYPE_OBJECT" value="24" enum="VariantType">
 			Variable is of type [Object].
 		</constant>
-		<constant name="TYPE_CALLABLE" value="25" enum="Variant.Type">
+		<constant name="TYPE_CALLABLE" value="25" enum="VariantType">
 			Variable is of type [Callable].
 		</constant>
-		<constant name="TYPE_SIGNAL" value="26" enum="Variant.Type">
+		<constant name="TYPE_SIGNAL" value="26" enum="VariantType">
 			Variable is of type [Signal].
 		</constant>
-		<constant name="TYPE_DICTIONARY" value="27" enum="Variant.Type">
+		<constant name="TYPE_DICTIONARY" value="27" enum="VariantType">
 			Variable is of type [Dictionary].
 		</constant>
-		<constant name="TYPE_ARRAY" value="28" enum="Variant.Type">
+		<constant name="TYPE_ARRAY" value="28" enum="VariantType">
 			Variable is of type [Array].
 		</constant>
-		<constant name="TYPE_PACKED_BYTE_ARRAY" value="29" enum="Variant.Type">
+		<constant name="TYPE_PACKED_BYTE_ARRAY" value="29" enum="VariantType">
 			Variable is of type [PackedByteArray].
 		</constant>
-		<constant name="TYPE_PACKED_INT32_ARRAY" value="30" enum="Variant.Type">
+		<constant name="TYPE_PACKED_INT32_ARRAY" value="30" enum="VariantType">
 			Variable is of type [PackedInt32Array].
 		</constant>
-		<constant name="TYPE_PACKED_INT64_ARRAY" value="31" enum="Variant.Type">
+		<constant name="TYPE_PACKED_INT64_ARRAY" value="31" enum="VariantType">
 			Variable is of type [PackedInt64Array].
 		</constant>
-		<constant name="TYPE_PACKED_FLOAT32_ARRAY" value="32" enum="Variant.Type">
+		<constant name="TYPE_PACKED_FLOAT32_ARRAY" value="32" enum="VariantType">
 			Variable is of type [PackedFloat32Array].
 		</constant>
-		<constant name="TYPE_PACKED_FLOAT64_ARRAY" value="33" enum="Variant.Type">
+		<constant name="TYPE_PACKED_FLOAT64_ARRAY" value="33" enum="VariantType">
 			Variable is of type [PackedFloat64Array].
 		</constant>
-		<constant name="TYPE_PACKED_STRING_ARRAY" value="34" enum="Variant.Type">
+		<constant name="TYPE_PACKED_STRING_ARRAY" value="34" enum="VariantType">
 			Variable is of type [PackedStringArray].
 		</constant>
-		<constant name="TYPE_PACKED_VECTOR2_ARRAY" value="35" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR2_ARRAY" value="35" enum="VariantType">
 			Variable is of type [PackedVector2Array].
 		</constant>
-		<constant name="TYPE_PACKED_VECTOR3_ARRAY" value="36" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR3_ARRAY" value="36" enum="VariantType">
 			Variable is of type [PackedVector3Array].
 		</constant>
-		<constant name="TYPE_PACKED_COLOR_ARRAY" value="37" enum="Variant.Type">
+		<constant name="TYPE_PACKED_COLOR_ARRAY" value="37" enum="VariantType">
 			Variable is of type [PackedColorArray].
 		</constant>
-		<constant name="TYPE_MAX" value="38" enum="Variant.Type">
-			Represents the size of the [enum Variant.Type] enum.
+		<constant name="TYPE_MAX" value="38" enum="VariantType">
+			Represents the size of the [enum VariantType] enum.
 		</constant>
-		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">
+		<constant name="OP_EQUAL" value="0" enum="VariantOperator">
 			Equality operator ([code]==[/code]).
 		</constant>
-		<constant name="OP_NOT_EQUAL" value="1" enum="Variant.Operator">
+		<constant name="OP_NOT_EQUAL" value="1" enum="VariantOperator">
 			Inequality operator ([code]!=[/code]).
 		</constant>
-		<constant name="OP_LESS" value="2" enum="Variant.Operator">
+		<constant name="OP_LESS" value="2" enum="VariantOperator">
 			Less than operator ([code]&lt;[/code]).
 		</constant>
-		<constant name="OP_LESS_EQUAL" value="3" enum="Variant.Operator">
+		<constant name="OP_LESS_EQUAL" value="3" enum="VariantOperator">
 			Less than or equal operator ([code]&lt;=[/code]).
 		</constant>
-		<constant name="OP_GREATER" value="4" enum="Variant.Operator">
+		<constant name="OP_GREATER" value="4" enum="VariantOperator">
 			Greater than operator ([code]&gt;[/code]).
 		</constant>
-		<constant name="OP_GREATER_EQUAL" value="5" enum="Variant.Operator">
+		<constant name="OP_GREATER_EQUAL" value="5" enum="VariantOperator">
 			Greater than or equal operator ([code]&gt;=[/code]).
 		</constant>
-		<constant name="OP_ADD" value="6" enum="Variant.Operator">
+		<constant name="OP_ADD" value="6" enum="VariantOperator">
 			Addition operator ([code]+[/code]).
 		</constant>
-		<constant name="OP_SUBTRACT" value="7" enum="Variant.Operator">
+		<constant name="OP_SUBTRACT" value="7" enum="VariantOperator">
 			Subtraction operator ([code]-[/code]).
 		</constant>
-		<constant name="OP_MULTIPLY" value="8" enum="Variant.Operator">
+		<constant name="OP_MULTIPLY" value="8" enum="VariantOperator">
 			Multiplication operator ([code]*[/code]).
 		</constant>
-		<constant name="OP_DIVIDE" value="9" enum="Variant.Operator">
+		<constant name="OP_DIVIDE" value="9" enum="VariantOperator">
 			Division operator ([code]/[/code]).
 		</constant>
-		<constant name="OP_NEGATE" value="10" enum="Variant.Operator">
+		<constant name="OP_NEGATE" value="10" enum="VariantOperator">
 			Unary negation operator ([code]-[/code]).
 		</constant>
-		<constant name="OP_POSITIVE" value="11" enum="Variant.Operator">
+		<constant name="OP_POSITIVE" value="11" enum="VariantOperator">
 			Unary plus operator ([code]+[/code]).
 		</constant>
-		<constant name="OP_MODULE" value="12" enum="Variant.Operator">
+		<constant name="OP_MODULE" value="12" enum="VariantOperator">
 			Remainder/modulo operator ([code]%[/code]).
 		</constant>
-		<constant name="OP_POWER" value="13" enum="Variant.Operator">
+		<constant name="OP_POWER" value="13" enum="VariantOperator">
 			Power operator ([code]**[/code]).
 		</constant>
-		<constant name="OP_SHIFT_LEFT" value="14" enum="Variant.Operator">
+		<constant name="OP_SHIFT_LEFT" value="14" enum="VariantOperator">
 			Left shift operator ([code]&lt;&lt;[/code]).
 		</constant>
-		<constant name="OP_SHIFT_RIGHT" value="15" enum="Variant.Operator">
+		<constant name="OP_SHIFT_RIGHT" value="15" enum="VariantOperator">
 			Right shift operator ([code]&gt;&gt;[/code]).
 		</constant>
-		<constant name="OP_BIT_AND" value="16" enum="Variant.Operator">
+		<constant name="OP_BIT_AND" value="16" enum="VariantOperator">
 			Bitwise AND operator ([code]&amp;[/code]).
 		</constant>
-		<constant name="OP_BIT_OR" value="17" enum="Variant.Operator">
+		<constant name="OP_BIT_OR" value="17" enum="VariantOperator">
 			Bitwise OR operator ([code]|[/code]).
 		</constant>
-		<constant name="OP_BIT_XOR" value="18" enum="Variant.Operator">
+		<constant name="OP_BIT_XOR" value="18" enum="VariantOperator">
 			Bitwise XOR operator ([code]^[/code]).
 		</constant>
-		<constant name="OP_BIT_NEGATE" value="19" enum="Variant.Operator">
+		<constant name="OP_BIT_NEGATE" value="19" enum="VariantOperator">
 			Bitwise NOT operator ([code]~[/code]).
 		</constant>
-		<constant name="OP_AND" value="20" enum="Variant.Operator">
+		<constant name="OP_AND" value="20" enum="VariantOperator">
 			Logical AND operator ([code]and[/code] or [code]&amp;&amp;[/code]).
 		</constant>
-		<constant name="OP_OR" value="21" enum="Variant.Operator">
+		<constant name="OP_OR" value="21" enum="VariantOperator">
 			Logical OR operator ([code]or[/code] or [code]||[/code]).
 		</constant>
-		<constant name="OP_XOR" value="22" enum="Variant.Operator">
+		<constant name="OP_XOR" value="22" enum="VariantOperator">
 			Logical XOR operator (not implemented in GDScript).
 		</constant>
-		<constant name="OP_NOT" value="23" enum="Variant.Operator">
+		<constant name="OP_NOT" value="23" enum="VariantOperator">
 			Logical NOT operator ([code]not[/code] or [code]![/code]).
 		</constant>
-		<constant name="OP_IN" value="24" enum="Variant.Operator">
+		<constant name="OP_IN" value="24" enum="VariantOperator">
 			Logical IN operator ([code]in[/code]).
 		</constant>
-		<constant name="OP_MAX" value="25" enum="Variant.Operator">
-			Represents the size of the [enum Variant.Operator] enum.
+		<constant name="OP_MAX" value="25" enum="VariantOperator">
+			Represents the size of the [enum VariantOperator] enum.
 		</constant>
 	</constants>
 </class>

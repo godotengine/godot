@@ -180,9 +180,9 @@ void EditorZoomWidget::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_zoom"), &EditorZoomWidget::get_zoom);
 	ClassDB::bind_method(D_METHOD("set_zoom_by_increments", "increment", "integer_only"), &EditorZoomWidget::set_zoom_by_increments);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom"), "set_zoom", "get_zoom");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "zoom"), "set_zoom", "get_zoom");
 
-	ADD_SIGNAL(MethodInfo("zoom_changed", PropertyInfo(Variant::FLOAT, "zoom")));
+	ADD_SIGNAL(MethodInfo("zoom_changed", PropertyInfo(VariantType::FLOAT, "zoom")));
 }
 
 void EditorZoomWidget::set_shortcut_context(Node *p_node) const {

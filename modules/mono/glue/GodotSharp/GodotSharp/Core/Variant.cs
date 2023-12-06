@@ -55,22 +55,22 @@ public partial struct Variant : IDisposable
 
         switch (nativeVar.Type)
         {
-            case Type.Nil:
-            case Type.Bool:
-            case Type.Int:
-            case Type.Float:
-            case Type.Vector2:
-            case Type.Vector2I:
-            case Type.Rect2:
-            case Type.Rect2I:
-            case Type.Vector3:
-            case Type.Vector3I:
-            case Type.Vector4:
-            case Type.Vector4I:
-            case Type.Plane:
-            case Type.Quaternion:
-            case Type.Color:
-            case Type.Rid:
+            case VariantType.Nil:
+            case VariantType.Bool:
+            case VariantType.Int:
+            case VariantType.Float:
+            case VariantType.Vector2:
+            case VariantType.Vector2I:
+            case VariantType.Rect2:
+            case VariantType.Rect2I:
+            case VariantType.Vector3:
+            case VariantType.Vector3I:
+            case VariantType.Vector4:
+            case VariantType.Vector4I:
+            case VariantType.Plane:
+            case VariantType.Quaternion:
+            case VariantType.Color:
+            case VariantType.Rid:
                 _disposer = null;
                 break;
             default:
@@ -104,53 +104,52 @@ public partial struct Variant : IDisposable
         _obj = null;
     }
 
-    // TODO: Consider renaming Variant.Type to VariantType and this property to Type. VariantType would also avoid ambiguity with System.Type.
-    public Type VariantType => NativeVar.DangerousSelfRef.Type;
+    public VariantType Type => NativeVar.DangerousSelfRef.Type;
 
     public override string ToString() => AsString();
 
     public object? Obj =>
         _obj ??= NativeVar.DangerousSelfRef.Type switch
         {
-            Type.Bool => AsBool(),
-            Type.Int => AsInt64(),
-            Type.Float => AsDouble(),
-            Type.String => AsString(),
-            Type.Vector2 => AsVector2(),
-            Type.Vector2I => AsVector2I(),
-            Type.Rect2 => AsRect2(),
-            Type.Rect2I => AsRect2I(),
-            Type.Vector3 => AsVector3(),
-            Type.Vector3I => AsVector3I(),
-            Type.Transform2D => AsTransform2D(),
-            Type.Vector4 => AsVector4(),
-            Type.Vector4I => AsVector4I(),
-            Type.Plane => AsPlane(),
-            Type.Quaternion => AsQuaternion(),
-            Type.Aabb => AsAabb(),
-            Type.Basis => AsBasis(),
-            Type.Transform3D => AsTransform3D(),
-            Type.Projection => AsProjection(),
-            Type.Color => AsColor(),
-            Type.StringName => AsStringName(),
-            Type.NodePath => AsNodePath(),
-            Type.Rid => AsRid(),
-            Type.Object => AsGodotObject(),
-            Type.Callable => AsCallable(),
-            Type.Signal => AsSignal(),
-            Type.Dictionary => AsGodotDictionary(),
-            Type.Array => AsGodotArray(),
-            Type.PackedByteArray => AsByteArray(),
-            Type.PackedInt32Array => AsInt32Array(),
-            Type.PackedInt64Array => AsInt64Array(),
-            Type.PackedFloat32Array => AsFloat32Array(),
-            Type.PackedFloat64Array => AsFloat64Array(),
-            Type.PackedStringArray => AsStringArray(),
-            Type.PackedVector2Array => AsVector2Array(),
-            Type.PackedVector3Array => AsVector3Array(),
-            Type.PackedColorArray => AsColorArray(),
-            Type.Nil => null,
-            Type.Max or _ =>
+            VariantType.Bool => AsBool(),
+            VariantType.Int => AsInt64(),
+            VariantType.Float => AsDouble(),
+            VariantType.String => AsString(),
+            VariantType.Vector2 => AsVector2(),
+            VariantType.Vector2I => AsVector2I(),
+            VariantType.Rect2 => AsRect2(),
+            VariantType.Rect2I => AsRect2I(),
+            VariantType.Vector3 => AsVector3(),
+            VariantType.Vector3I => AsVector3I(),
+            VariantType.Transform2D => AsTransform2D(),
+            VariantType.Vector4 => AsVector4(),
+            VariantType.Vector4I => AsVector4I(),
+            VariantType.Plane => AsPlane(),
+            VariantType.Quaternion => AsQuaternion(),
+            VariantType.Aabb => AsAabb(),
+            VariantType.Basis => AsBasis(),
+            VariantType.Transform3D => AsTransform3D(),
+            VariantType.Projection => AsProjection(),
+            VariantType.Color => AsColor(),
+            VariantType.StringName => AsStringName(),
+            VariantType.NodePath => AsNodePath(),
+            VariantType.Rid => AsRid(),
+            VariantType.Object => AsGodotObject(),
+            VariantType.Callable => AsCallable(),
+            VariantType.Signal => AsSignal(),
+            VariantType.Dictionary => AsGodotDictionary(),
+            VariantType.Array => AsGodotArray(),
+            VariantType.PackedByteArray => AsByteArray(),
+            VariantType.PackedInt32Array => AsInt32Array(),
+            VariantType.PackedInt64Array => AsInt64Array(),
+            VariantType.PackedFloat32Array => AsFloat32Array(),
+            VariantType.PackedFloat64Array => AsFloat64Array(),
+            VariantType.PackedStringArray => AsStringArray(),
+            VariantType.PackedVector2Array => AsVector2Array(),
+            VariantType.PackedVector3Array => AsVector3Array(),
+            VariantType.PackedColorArray => AsColorArray(),
+            VariantType.Nil => null,
+            VariantType.Max or _ =>
                 throw new InvalidOperationException($"Invalid Variant type: {NativeVar.DangerousSelfRef.Type}"),
         };
 

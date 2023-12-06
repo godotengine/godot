@@ -36,22 +36,22 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextLine::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextLine::get_direction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
 
 	ClassDB::bind_method(D_METHOD("set_orientation", "orientation"), &TextLine::set_orientation);
 	ClassDB::bind_method(D_METHOD("get_orientation"), &TextLine::get_orientation);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_ENUM, "Horizontal,Orientation"), "set_orientation", "get_orientation");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "orientation", PROPERTY_HINT_ENUM, "Horizontal,Orientation"), "set_orientation", "get_orientation");
 
 	ClassDB::bind_method(D_METHOD("set_preserve_invalid", "enabled"), &TextLine::set_preserve_invalid);
 	ClassDB::bind_method(D_METHOD("get_preserve_invalid"), &TextLine::get_preserve_invalid);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "preserve_invalid"), "set_preserve_invalid", "get_preserve_invalid");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "preserve_invalid"), "set_preserve_invalid", "get_preserve_invalid");
 
 	ClassDB::bind_method(D_METHOD("set_preserve_control", "enabled"), &TextLine::set_preserve_control);
 	ClassDB::bind_method(D_METHOD("get_preserve_control"), &TextLine::get_preserve_control);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "preserve_control"), "set_preserve_control", "get_preserve_control");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "preserve_control"), "set_preserve_control", "get_preserve_control");
 
 	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::set_bidi_override);
 
@@ -62,24 +62,24 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextLine::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextLine::get_width);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "width"), "set_width", "get_width");
 
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &TextLine::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &TextLine::get_horizontal_alignment);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 
 	ClassDB::bind_method(D_METHOD("tab_align", "tab_stops"), &TextLine::tab_align);
 
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &TextLine::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &TextLine::get_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justification,Word Justification,Trim Edge Spaces After Justification,Justify Only After Last Tab,Constrain Ellipsis"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justification,Word Justification,Trim Edge Spaces After Justification,Justify Only After Last Tab,Constrain Ellipsis"), "set_flags", "get_flags");
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextLine::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextLine::get_text_overrun_behavior);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 
 	ClassDB::bind_method(D_METHOD("get_objects"), &TextLine::get_objects);
 	ClassDB::bind_method(D_METHOD("get_object_rect", "key"), &TextLine::get_object_rect);

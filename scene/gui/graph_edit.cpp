@@ -1915,57 +1915,57 @@ void GraphEdit::_bind_methods() {
 	GDVIRTUAL_BIND(_get_connection_line, "from_position", "to_position")
 	GDVIRTUAL_BIND(_is_node_hover_valid, "from_node", "from_port", "to_node", "to_port");
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_scroll_offset", "get_scroll_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_grid"), "set_show_grid", "is_showing_grid");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snapping_enabled"), "set_snapping_enabled", "is_snapping_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "snapping_distance", PROPERTY_HINT_NONE, "suffix:px"), "set_snapping_distance", "get_snapping_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "scroll_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_scroll_offset", "get_scroll_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "show_grid"), "set_show_grid", "is_showing_grid");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "snapping_enabled"), "set_snapping_enabled", "is_snapping_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "snapping_distance", PROPERTY_HINT_NONE, "suffix:px"), "set_snapping_distance", "get_snapping_distance");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 
 	ADD_GROUP("Connection Lines", "connection_lines");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_curvature"), "set_connection_lines_curvature", "get_connection_lines_curvature");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_thickness", PROPERTY_HINT_NONE, "suffix:px"), "set_connection_lines_thickness", "get_connection_lines_thickness");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "connection_lines_antialiased"), "set_connection_lines_antialiased", "is_connection_lines_antialiased");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "connection_lines_curvature"), "set_connection_lines_curvature", "get_connection_lines_curvature");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "connection_lines_thickness", PROPERTY_HINT_NONE, "suffix:px"), "set_connection_lines_thickness", "get_connection_lines_thickness");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "connection_lines_antialiased"), "set_connection_lines_antialiased", "is_connection_lines_antialiased");
 
 	ADD_GROUP("Zoom", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom"), "set_zoom", "get_zoom");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_min"), "set_zoom_min", "get_zoom_min");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_max"), "set_zoom_max", "get_zoom_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_step"), "set_zoom_step", "get_zoom_step");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "zoom"), "set_zoom", "get_zoom");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "zoom_min"), "set_zoom_min", "get_zoom_min");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "zoom_max"), "set_zoom_max", "get_zoom_max");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "zoom_step"), "set_zoom_step", "get_zoom_step");
 
 	ADD_GROUP("Minimap", "minimap_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
 
 	ADD_GROUP("Toolbar Menu", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_menu"), "set_show_menu", "is_showing_menu");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_zoom_label"), "set_show_zoom_label", "is_showing_zoom_label");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_zoom_buttons"), "set_show_zoom_buttons", "is_showing_zoom_buttons");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_grid_buttons"), "set_show_grid_buttons", "is_showing_grid_buttons");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_minimap_button"), "set_show_minimap_button", "is_showing_minimap_button");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_arrange_button"), "set_show_arrange_button", "is_showing_arrange_button");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "show_menu"), "set_show_menu", "is_showing_menu");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "show_zoom_label"), "set_show_zoom_label", "is_showing_zoom_label");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "show_zoom_buttons"), "set_show_zoom_buttons", "is_showing_zoom_buttons");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "show_grid_buttons"), "set_show_grid_buttons", "is_showing_grid_buttons");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "show_minimap_button"), "set_show_minimap_button", "is_showing_minimap_button");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "show_arrange_button"), "set_show_arrange_button", "is_showing_arrange_button");
 
-	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::STRING_NAME, "to_node"), PropertyInfo(Variant::INT, "to_port")));
-	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::STRING_NAME, "to_node"), PropertyInfo(Variant::INT, "to_port")));
-	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::VECTOR2, "release_position")));
-	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING_NAME, "to_node"), PropertyInfo(Variant::INT, "to_port"), PropertyInfo(Variant::VECTOR2, "release_position")));
-	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(VariantType::STRING_NAME, "from_node"), PropertyInfo(VariantType::INT, "from_port"), PropertyInfo(VariantType::STRING_NAME, "to_node"), PropertyInfo(VariantType::INT, "to_port")));
+	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(VariantType::STRING_NAME, "from_node"), PropertyInfo(VariantType::INT, "from_port"), PropertyInfo(VariantType::STRING_NAME, "to_node"), PropertyInfo(VariantType::INT, "to_port")));
+	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(VariantType::STRING_NAME, "from_node"), PropertyInfo(VariantType::INT, "from_port"), PropertyInfo(VariantType::VECTOR2, "release_position")));
+	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(VariantType::STRING_NAME, "to_node"), PropertyInfo(VariantType::INT, "to_port"), PropertyInfo(VariantType::VECTOR2, "release_position")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(VariantType::STRING_NAME, "from_node"), PropertyInfo(VariantType::INT, "from_port"), PropertyInfo(VariantType::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
 	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
-	ADD_SIGNAL(MethodInfo("delete_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
+	ADD_SIGNAL(MethodInfo("delete_nodes_request", PropertyInfo(VariantType::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
 
-	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(VariantType::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(VariantType::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
-	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "position")));
+	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(VariantType::VECTOR2, "position")));
 
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
-	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "offset")));
+	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(VariantType::VECTOR2, "offset")));
 
 	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);
 	BIND_ENUM_CONSTANT(SCROLL_PANS);

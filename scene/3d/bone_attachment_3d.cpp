@@ -81,9 +81,9 @@ bool BoneAttachment3D::_get(const StringName &p_path, Variant &r_ret) const {
 }
 
 void BoneAttachment3D::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::BOOL, "use_external_skeleton", PROPERTY_HINT_NONE, ""));
+	p_list->push_back(PropertyInfo(VariantType::BOOL, "use_external_skeleton", PROPERTY_HINT_NONE, ""));
 	if (use_external_skeleton) {
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "external_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"));
+		p_list->push_back(PropertyInfo(VariantType::NODE_PATH, "external_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"));
 	}
 }
 
@@ -381,7 +381,7 @@ void BoneAttachment3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_external_skeleton", "external_skeleton"), &BoneAttachment3D::set_external_skeleton);
 	ClassDB::bind_method(D_METHOD("get_external_skeleton"), &BoneAttachment3D::get_external_skeleton);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_pose"), "set_override_pose", "get_override_pose");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "override_pose"), "set_override_pose", "get_override_pose");
 }

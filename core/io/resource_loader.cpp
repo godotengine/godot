@@ -146,7 +146,7 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Variant res;
 	if (GDVIRTUAL_CALL(_load, p_path, p_original_path, p_use_sub_threads, p_cache_mode, res)) {
-		if (res.get_type() == Variant::INT) { // Error code, abort.
+		if (res.get_type() == VariantType::INT) { // Error code, abort.
 			if (r_error) {
 				*r_error = (Error)res.operator int64_t();
 			}

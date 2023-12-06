@@ -59,7 +59,7 @@ void EditorDebuggerSession::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("started"));
 	ADD_SIGNAL(MethodInfo("stopped"));
-	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "can_debug")));
+	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(VariantType::BOOL, "can_debug")));
 	ADD_SIGNAL(MethodInfo("continued"));
 }
 

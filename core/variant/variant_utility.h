@@ -127,10 +127,10 @@ struct VariantUtilityFunctions {
 	// Utility
 	static Variant weakref(const Variant &obj, Callable::CallError &r_error);
 	static int64_t _typeof(const Variant &obj);
-	static Variant type_convert(const Variant &p_variant, const Variant::Type p_type);
+	static Variant type_convert(const Variant &p_variant, const VariantType p_type);
 	static String str(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static String error_string(Error error);
-	static String type_string(Variant::Type p_type);
+	static String type_string(VariantType p_type);
 	static void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static void print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 #undef print_verbose

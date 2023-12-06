@@ -39,38 +39,38 @@ void XRPositionalTracker::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tracker_type"), &XRPositionalTracker::get_tracker_type);
 	ClassDB::bind_method(D_METHOD("set_tracker_type", "type"), &XRPositionalTracker::set_tracker_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_tracker_type", "get_tracker_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "type"), "set_tracker_type", "get_tracker_type");
 
 	ClassDB::bind_method(D_METHOD("get_tracker_name"), &XRPositionalTracker::get_tracker_name);
 	ClassDB::bind_method(D_METHOD("set_tracker_name", "name"), &XRPositionalTracker::set_tracker_name);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_tracker_name", "get_tracker_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "name"), "set_tracker_name", "get_tracker_name");
 
 	ClassDB::bind_method(D_METHOD("get_tracker_desc"), &XRPositionalTracker::get_tracker_desc);
 	ClassDB::bind_method(D_METHOD("set_tracker_desc", "description"), &XRPositionalTracker::set_tracker_desc);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_tracker_desc", "get_tracker_desc");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "description"), "set_tracker_desc", "get_tracker_desc");
 
 	ClassDB::bind_method(D_METHOD("get_tracker_profile"), &XRPositionalTracker::get_tracker_profile);
 	ClassDB::bind_method(D_METHOD("set_tracker_profile", "profile"), &XRPositionalTracker::set_tracker_profile);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "profile"), "set_tracker_profile", "get_tracker_profile");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "profile"), "set_tracker_profile", "get_tracker_profile");
 
 	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRPositionalTracker::get_tracker_hand);
 	ClassDB::bind_method(D_METHOD("set_tracker_hand", "hand"), &XRPositionalTracker::set_tracker_hand);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand", PROPERTY_HINT_ENUM, "Unknown,Left,Right"), "set_tracker_hand", "get_tracker_hand");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "hand", PROPERTY_HINT_ENUM, "Unknown,Left,Right"), "set_tracker_hand", "get_tracker_hand");
 
 	ClassDB::bind_method(D_METHOD("has_pose", "name"), &XRPositionalTracker::has_pose);
 	ClassDB::bind_method(D_METHOD("get_pose", "name"), &XRPositionalTracker::get_pose);
 	ClassDB::bind_method(D_METHOD("invalidate_pose", "name"), &XRPositionalTracker::invalidate_pose);
 	ClassDB::bind_method(D_METHOD("set_pose", "name", "transform", "linear_velocity", "angular_velocity", "tracking_confidence"), &XRPositionalTracker::set_pose);
-	ADD_SIGNAL(MethodInfo("pose_changed", PropertyInfo(Variant::OBJECT, "pose", PROPERTY_HINT_RESOURCE_TYPE, "XRPose")));
-	ADD_SIGNAL(MethodInfo("pose_lost_tracking", PropertyInfo(Variant::OBJECT, "pose", PROPERTY_HINT_RESOURCE_TYPE, "XRPose")));
+	ADD_SIGNAL(MethodInfo("pose_changed", PropertyInfo(VariantType::OBJECT, "pose", PROPERTY_HINT_RESOURCE_TYPE, "XRPose")));
+	ADD_SIGNAL(MethodInfo("pose_lost_tracking", PropertyInfo(VariantType::OBJECT, "pose", PROPERTY_HINT_RESOURCE_TYPE, "XRPose")));
 
 	ClassDB::bind_method(D_METHOD("get_input", "name"), &XRPositionalTracker::get_input);
 	ClassDB::bind_method(D_METHOD("set_input", "name", "value"), &XRPositionalTracker::set_input);
-	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
-	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "vector")));
-	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(Variant::STRING, "role")));
+	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(VariantType::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(VariantType::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(VariantType::STRING, "name"), PropertyInfo(VariantType::FLOAT, "value")));
+	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(VariantType::STRING, "name"), PropertyInfo(VariantType::VECTOR2, "vector")));
+	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(VariantType::STRING, "role")));
 };
 
 void XRPositionalTracker::set_tracker_type(XRServer::TrackerType p_type) {
@@ -201,7 +201,7 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 
 		// emit signals to let the rest of the world know
 		switch (p_value.get_type()) {
-			case Variant::BOOL: {
+			case VariantType::BOOL: {
 				bool pressed = p_value;
 				if (pressed) {
 					emit_signal(SNAME("button_pressed"), p_action_name);
@@ -211,12 +211,12 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 
 				// TODO discuss whether we also want to create and emit an InputEventXRButton event
 			} break;
-			case Variant::FLOAT: {
+			case VariantType::FLOAT: {
 				emit_signal(SNAME("input_float_changed"), p_action_name, p_value);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRValue event
 			} break;
-			case Variant::VECTOR2: {
+			case VariantType::VECTOR2: {
 				emit_signal(SNAME("input_vector2_changed"), p_action_name, p_value);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRAxis event

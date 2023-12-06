@@ -62,21 +62,21 @@ void LabelSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_offset", "offset"), &LabelSettings::set_shadow_offset);
 	ClassDB::bind_method(D_METHOD("get_shadow_offset"), &LabelSettings::get_shadow_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 
 	ADD_GROUP("Font", "font_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,1024,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "font_color"), "set_font_color", "get_font_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "font_size", PROPERTY_HINT_RANGE, "1,1024,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "font_color"), "set_font_color", "get_font_color");
 
 	ADD_GROUP("Outline", "outline_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_outline_size", "get_outline_size");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_color"), "set_outline_color", "get_outline_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_outline_size", "get_outline_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "outline_color"), "set_outline_color", "get_outline_color");
 
 	ADD_GROUP("Shadow", "shadow_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
 }
 
 void LabelSettings::set_line_spacing(real_t p_spacing) {

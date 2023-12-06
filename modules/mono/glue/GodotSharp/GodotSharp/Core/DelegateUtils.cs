@@ -186,9 +186,9 @@ namespace Godot
                             {
                                 Type fieldType = field.GetType();
 
-                                Variant.Type variantType = GD.TypeToVariantType(fieldType);
+                                VariantType variantType = GD.TypeToVariantType(fieldType);
 
-                                if (variantType == Variant.Type.Nil)
+                                if (variantType == VariantType.Nil)
                                     return false;
 
                                 static byte[] VarToBytes(in godot_variant var)

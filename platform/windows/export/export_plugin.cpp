@@ -363,30 +363,30 @@ bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExpor
 void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformPC::get_export_options(r_options);
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64"), "x86_64"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64"), "x86_64"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/identity_type", PROPERTY_HINT_ENUM, "Select automatically,Use PKCS12 file (specify *.PFX/*.P12 file),Use certificate store (specify SHA-1 hash)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_GLOBAL_FILE, "*.pfx,*.p12", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/password", PROPERTY_HINT_PASSWORD, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/timestamp_server_url"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/digest_algorithm", PROPERTY_HINT_ENUM, "SHA1,SHA256"), 1));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/description"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/enable"), false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "codesign/identity_type", PROPERTY_HINT_ENUM, "Select automatically,Use PKCS12 file (specify *.PFX/*.P12 file),Use certificate store (specify SHA-1 hash)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), 0));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/identity", PROPERTY_HINT_GLOBAL_FILE, "*.pfx,*.p12", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/password", PROPERTY_HINT_PASSWORD, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "codesign/timestamp"), true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/timestamp_server_url"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "codesign/digest_algorithm", PROPERTY_HINT_ENUM, "SHA1,SHA256"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "codesign/description"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/modify_resources"), true, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico,*.png,*.webp,*.svg"), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/console_wrapper_icon", PROPERTY_HINT_FILE, "*.ico,*.png,*.webp,*.svg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_description"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/trademarks"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "application/modify_resources"), true, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico,*.png,*.webp,*.svg"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/console_wrapper_icon", PROPERTY_HINT_FILE, "*.ico,*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/product_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/file_description"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/copyright"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/trademarks"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
 
 	String run_script = "Expand-Archive -LiteralPath '{temp_dir}\\{archive_name}' -DestinationPath '{temp_dir}'\n"
 						"$action = New-ScheduledTaskAction -Execute '{temp_dir}\\{exe_name}' -Argument '{cmd_args}'\n"
@@ -402,14 +402,14 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 							"Unregister-ScheduledTask -TaskName godot_remote_debug -Confirm:$false -ErrorAction:SilentlyContinue\n"
 							"Remove-Item -Recurse -Force '{temp_dir}'";
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "ssh_remote_deploy/enabled"), false, true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/port"), "22"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
 }
 
 Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon) {

@@ -514,7 +514,7 @@ void EditorAssetLibraryItemDownload::_make_request() {
 }
 
 void EditorAssetLibraryItemDownload::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(VariantType::STRING, "zip_path"), PropertyInfo(VariantType::STRING, "name")));
 }
 
 EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
@@ -1438,7 +1438,7 @@ void EditorAssetLibrary::disable_community_support() {
 }
 
 void EditorAssetLibrary::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(VariantType::STRING, "zip_path"), PropertyInfo(VariantType::STRING, "name")));
 }
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {

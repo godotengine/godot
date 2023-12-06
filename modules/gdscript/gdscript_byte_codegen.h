@@ -37,11 +37,11 @@
 
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	struct StackSlot {
-		Variant::Type type = Variant::NIL;
+		VariantType type = VariantType::NIL;
 		Vector<int> bytecode_indices;
 
 		StackSlot() = default;
-		StackSlot(Variant::Type p_type) :
+		StackSlot(VariantType p_type) :
 				type(p_type) {}
 	};
 
@@ -88,7 +88,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	Vector<StackSlot> temporaries;
 	List<int> used_temporaries;
 	List<int> temporaries_pending_clear;
-	RBMap<Variant::Type, List<int>> temporaries_pool;
+	RBMap<VariantType, List<int>> temporaries_pool;
 
 	List<GDScriptFunction::StackDebug> stack_debug;
 	List<RBMap<StringName, int>> block_identifier_stack;
@@ -345,7 +345,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
-	CallTarget get_call_target(const Address &p_target, Variant::Type p_type = Variant::NIL);
+	CallTarget get_call_target(const Address &p_target, VariantType p_type = VariantType::NIL);
 
 	int address_of(const Address &p_address) {
 		switch (p_address.mode) {
@@ -381,6 +381,14 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	void append(int p_code) {
 		opcodes.push_back(p_code);
+	}
+
+	void append(VariantType p_code) {
+		opcodes.push_back((int)p_code);
+	}
+
+	void append(VariantOperator p_code) {
+		opcodes.push_back((int)p_code);
 	}
 
 	void append(const Address &p_address) {
@@ -471,9 +479,9 @@ public:
 #endif
 	virtual void set_initial_line(int p_line) override;
 
-	virtual void write_type_adjust(const Address &p_target, Variant::Type p_new_type) override;
-	virtual void write_unary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand) override;
-	virtual void write_binary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) override;
+	virtual void write_type_adjust(const Address &p_target, VariantType p_new_type) override;
+	virtual void write_unary_operator(const Address &p_target, VariantOperator p_operator, const Address &p_left_operand) override;
+	virtual void write_binary_operator(const Address &p_target, VariantOperator p_operator, const Address &p_left_operand, const Address &p_right_operand) override;
 	virtual void write_type_test(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) override;
 	virtual void write_and_left_operand(const Address &p_left_operand) override;
 	virtual void write_and_right_operand(const Address &p_right_operand) override;
@@ -506,10 +514,10 @@ public:
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) override;
-	void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, bool p_is_static, const Vector<Address> &p_arguments);
+	void write_call_builtin_type(const Address &p_target, const Address &p_base, VariantType p_type, const StringName &p_method, bool p_is_static, const Vector<Address> &p_arguments);
 	virtual void write_call_gdscript_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) override;
-	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, VariantType p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_builtin_type_static(const Address &p_target, VariantType p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
@@ -517,7 +525,7 @@ public:
 	virtual void write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) override;
-	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) override;
+	virtual void write_construct(const Address &p_target, VariantType p_type, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) override;

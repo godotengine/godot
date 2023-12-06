@@ -806,7 +806,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			bool set_valid = true;
-			if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+			if (value.get_type() == VariantType::OBJECT && missing_resource != nullptr) {
 				// If the property being set is a missing resource (and the parent is not),
 				// then setting it will most likely not work.
 				// Instead, save it as metadata.
@@ -818,11 +818,11 @@ Error ResourceLoaderBinary::load() {
 				}
 			}
 
-			if (value.get_type() == Variant::ARRAY) {
+			if (value.get_type() == VariantType::ARRAY) {
 				Array set_array = value;
 				bool is_get_valid = false;
 				Variant get_value = res->get(name, &is_get_valid);
-				if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
+				if (is_get_valid && get_value.get_type() == VariantType::ARRAY) {
 					Array get_array = get_value;
 					if (!set_array.is_same_typed(get_array)) {
 						value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
@@ -1530,16 +1530,16 @@ void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_byt
 
 void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
 	switch (p_property.get_type()) {
-		case Variant::NIL: {
+		case VariantType::NIL: {
 			f->store_32(VARIANT_NIL);
 			// don't store anything
 		} break;
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			f->store_32(VARIANT_BOOL);
 			bool val = p_property;
 			f->store_32(val);
 		} break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			int64_t val = p_property;
 			if (val > 0x7FFFFFFF || val < -(int64_t)0x80000000) {
 				f->store_32(VARIANT_INT64);
@@ -1551,7 +1551,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			double d = p_property;
 			float fl = d;
 			if (double(fl) != d) {
@@ -1563,27 +1563,27 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			f->store_32(VARIANT_STRING);
 			String val = p_property;
 			save_unicode_string(f, val);
 
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			f->store_32(VARIANT_VECTOR2);
 			Vector2 val = p_property;
 			f->store_real(val.x);
 			f->store_real(val.y);
 
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			f->store_32(VARIANT_VECTOR2I);
 			Vector2i val = p_property;
 			f->store_32(val.x);
 			f->store_32(val.y);
 
 		} break;
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			f->store_32(VARIANT_RECT2);
 			Rect2 val = p_property;
 			f->store_real(val.position.x);
@@ -1592,7 +1592,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.size.y);
 
 		} break;
-		case Variant::RECT2I: {
+		case VariantType::RECT2I: {
 			f->store_32(VARIANT_RECT2I);
 			Rect2i val = p_property;
 			f->store_32(val.position.x);
@@ -1601,7 +1601,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(val.size.y);
 
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			f->store_32(VARIANT_VECTOR3);
 			Vector3 val = p_property;
 			f->store_real(val.x);
@@ -1609,7 +1609,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.z);
 
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			f->store_32(VARIANT_VECTOR3I);
 			Vector3i val = p_property;
 			f->store_32(val.x);
@@ -1617,7 +1617,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(val.z);
 
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			f->store_32(VARIANT_VECTOR4);
 			Vector4 val = p_property;
 			f->store_real(val.x);
@@ -1626,7 +1626,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.w);
 
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			f->store_32(VARIANT_VECTOR4I);
 			Vector4i val = p_property;
 			f->store_32(val.x);
@@ -1635,7 +1635,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(val.w);
 
 		} break;
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			f->store_32(VARIANT_PLANE);
 			Plane val = p_property;
 			f->store_real(val.normal.x);
@@ -1644,7 +1644,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.d);
 
 		} break;
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			f->store_32(VARIANT_QUATERNION);
 			Quaternion val = p_property;
 			f->store_real(val.x);
@@ -1653,7 +1653,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.w);
 
 		} break;
-		case Variant::AABB: {
+		case VariantType::AABB: {
 			f->store_32(VARIANT_AABB);
 			AABB val = p_property;
 			f->store_real(val.position.x);
@@ -1664,7 +1664,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.size.z);
 
 		} break;
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			f->store_32(VARIANT_TRANSFORM2D);
 			Transform2D val = p_property;
 			f->store_real(val.columns[0].x);
@@ -1675,7 +1675,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.columns[2].y);
 
 		} break;
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			f->store_32(VARIANT_BASIS);
 			Basis val = p_property;
 			f->store_real(val.rows[0].x);
@@ -1689,7 +1689,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.rows[2].z);
 
 		} break;
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			f->store_32(VARIANT_TRANSFORM3D);
 			Transform3D val = p_property;
 			f->store_real(val.basis.rows[0].x);
@@ -1706,7 +1706,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.origin.z);
 
 		} break;
-		case Variant::PROJECTION: {
+		case VariantType::PROJECTION: {
 			f->store_32(VARIANT_PROJECTION);
 			Projection val = p_property;
 			f->store_real(val.columns[0].x);
@@ -1727,7 +1727,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_real(val.columns[3].w);
 
 		} break;
-		case Variant::COLOR: {
+		case VariantType::COLOR: {
 			f->store_32(VARIANT_COLOR);
 			Color val = p_property;
 			// Color are always floats
@@ -1737,14 +1737,14 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_float(val.a);
 
 		} break;
-		case Variant::STRING_NAME: {
+		case VariantType::STRING_NAME: {
 			f->store_32(VARIANT_STRING_NAME);
 			String val = p_property;
 			save_unicode_string(f, val);
 
 		} break;
 
-		case Variant::NODE_PATH: {
+		case VariantType::NODE_PATH: {
 			f->store_32(VARIANT_NODE_PATH);
 			NodePath np = p_property;
 			f->store_16(np.get_name_count());
@@ -1769,13 +1769,13 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::RID: {
+		case VariantType::RID: {
 			f->store_32(VARIANT_RID);
 			WARN_PRINT("Can't save RIDs.");
 			RID val = p_property;
 			f->store_32(val.get_id());
 		} break;
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			f->store_32(VARIANT_OBJECT);
 			Ref<Resource> res = p_property;
 			if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
@@ -1798,16 +1798,16 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::CALLABLE: {
+		case VariantType::CALLABLE: {
 			f->store_32(VARIANT_CALLABLE);
 			WARN_PRINT("Can't save Callables.");
 		} break;
-		case Variant::SIGNAL: {
+		case VariantType::SIGNAL: {
 			f->store_32(VARIANT_SIGNAL);
 			WARN_PRINT("Can't save Signals.");
 		} break;
 
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			f->store_32(VARIANT_DICTIONARY);
 			Dictionary d = p_property;
 			f->store_32(uint32_t(d.size()));
@@ -1821,7 +1821,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			f->store_32(VARIANT_ARRAY);
 			Array a = p_property;
 			f->store_32(uint32_t(a.size()));
@@ -1830,7 +1830,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			f->store_32(VARIANT_PACKED_BYTE_ARRAY);
 			Vector<uint8_t> arr = p_property;
 			int len = arr.size();
@@ -1840,7 +1840,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			_pad_buffer(f, len);
 
 		} break;
-		case Variant::PACKED_INT32_ARRAY: {
+		case VariantType::PACKED_INT32_ARRAY: {
 			f->store_32(VARIANT_PACKED_INT32_ARRAY);
 			Vector<int32_t> arr = p_property;
 			int len = arr.size();
@@ -1851,7 +1851,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::PACKED_INT64_ARRAY: {
 			f->store_32(VARIANT_PACKED_INT64_ARRAY);
 			Vector<int64_t> arr = p_property;
 			int len = arr.size();
@@ -1862,7 +1862,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::PACKED_FLOAT32_ARRAY: {
+		case VariantType::PACKED_FLOAT32_ARRAY: {
 			f->store_32(VARIANT_PACKED_FLOAT32_ARRAY);
 			Vector<float> arr = p_property;
 			int len = arr.size();
@@ -1873,7 +1873,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::PACKED_FLOAT64_ARRAY: {
+		case VariantType::PACKED_FLOAT64_ARRAY: {
 			f->store_32(VARIANT_PACKED_FLOAT64_ARRAY);
 			Vector<double> arr = p_property;
 			int len = arr.size();
@@ -1884,7 +1884,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::PACKED_STRING_ARRAY: {
+		case VariantType::PACKED_STRING_ARRAY: {
 			f->store_32(VARIANT_PACKED_STRING_ARRAY);
 			Vector<String> arr = p_property;
 			int len = arr.size();
@@ -1895,7 +1895,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::PACKED_VECTOR3_ARRAY: {
+		case VariantType::PACKED_VECTOR3_ARRAY: {
 			f->store_32(VARIANT_PACKED_VECTOR3_ARRAY);
 			Vector<Vector3> arr = p_property;
 			int len = arr.size();
@@ -1908,7 +1908,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::PACKED_VECTOR2_ARRAY: {
+		case VariantType::PACKED_VECTOR2_ARRAY: {
 			f->store_32(VARIANT_PACKED_VECTOR2_ARRAY);
 			Vector<Vector2> arr = p_property;
 			int len = arr.size();
@@ -1920,7 +1920,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-		case Variant::PACKED_COLOR_ARRAY: {
+		case VariantType::PACKED_COLOR_ARRAY: {
 			f->store_32(VARIANT_PACKED_COLOR_ARRAY);
 			Vector<Color> arr = p_property;
 			int len = arr.size();
@@ -1942,7 +1942,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 
 void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant, bool p_main) {
 	switch (p_variant.get_type()) {
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			Ref<Resource> res = p_variant;
 
 			if (res.is_null() || external_resources.has(res) || res->get_meta(SNAME("_skip_save_"), false)) {
@@ -1995,7 +1995,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 		} break;
 
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			Array varray = p_variant;
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
@@ -2005,7 +2005,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 		} break;
 
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			Dictionary d = p_variant;
 			List<Variant> keys;
 			d.get_key_list(&keys);
@@ -2015,7 +2015,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				_find_resources(v);
 			}
 		} break;
-		case Variant::NODE_PATH: {
+		case VariantType::NODE_PATH: {
 			//take the chance and save node path strings
 			NodePath np = p_variant;
 			for (int i = 0; i < np.get_name_count(); i++) {
@@ -2179,7 +2179,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 						p.value = E->get(F.name);
 					}
 
-					if (p.pi.type == Variant::OBJECT && missing_resource_properties.has(F.name)) {
+					if (p.pi.type == VariantType::OBJECT && missing_resource_properties.has(F.name)) {
 						// Was this missing resource overridden? If so do not save the old value.
 						Ref<Resource> res = p.value;
 						if (res.is_null()) {
@@ -2189,7 +2189,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 					Variant default_value = ClassDB::class_get_default_property_value(E->get_class(), F.name);
 
-					if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
+					if (default_value.get_type() != VariantType::NIL && bool(Variant::evaluate(VariantOperator::EQUAL, p.value, default_value))) {
 						continue;
 					}
 

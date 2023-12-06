@@ -132,7 +132,7 @@
 			</description>
 		</method>
 		<method name="get_custom_data_layer_type" qualifiers="const">
-			<return type="int" enum="Variant.Type" />
+			<return type="int" enum="VariantType" />
 			<param index="0" name="layer_index" type="int" />
 			<description>
 				Returns the type of the custom data layer identified by the given index.
@@ -504,7 +504,7 @@
 		<method name="set_custom_data_layer_type">
 			<return type="void" />
 			<param index="0" name="layer_index" type="int" />
-			<param index="1" name="layer_type" type="int" enum="Variant.Type" />
+			<param index="1" name="layer_type" type="int" enum="VariantType" />
 			<description>
 				Sets the type of the custom data layer identified by the given index.
 			</description>

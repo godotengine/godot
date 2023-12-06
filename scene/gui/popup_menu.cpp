@@ -2596,28 +2596,28 @@ bool PopupMenu::_get(const StringName &p_name, Variant &r_ret) const {
 
 void PopupMenu::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < items.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
+		p_list->push_back(PropertyInfo(VariantType::STRING, vformat("item_%d/text", i)));
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		PropertyInfo pi = PropertyInfo(VariantType::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 		pi.usage &= ~(get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button");
+		pi = PropertyInfo(VariantType::INT, vformat("item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button");
 		pi.usage &= ~(!is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/checked", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("item_%d/checked", i));
 		pi.usage &= ~(!is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
+		pi = PropertyInfo(VariantType::INT, vformat("item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/disabled", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("item_%d/disabled", i));
 		pi.usage &= ~(!is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/separator", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("item_%d/separator", i));
 		pi.usage &= ~(!is_item_separator(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 	}
@@ -2716,17 +2716,17 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &PopupMenu::set_allow_search);
 	ClassDB::bind_method(D_METHOD("get_allow_search"), &PopupMenu::get_allow_search);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "submenu_popup_delay", PROPERTY_HINT_NONE, "suffix:s"), "set_submenu_popup_delay", "get_submenu_popup_delay");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "submenu_popup_delay", PROPERTY_HINT_NONE, "suffix:s"), "set_submenu_popup_delay", "get_submenu_popup_delay");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 
-	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(VariantType::INT, "index")));
 	ADD_SIGNAL(MethodInfo("menu_changed"));
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, panel_style, "panel");

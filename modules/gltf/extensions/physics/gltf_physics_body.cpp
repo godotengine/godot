@@ -53,12 +53,12 @@ void GLTFPhysicsBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_inertia_tensor"), &GLTFPhysicsBody::get_inertia_tensor);
 	ClassDB::bind_method(D_METHOD("set_inertia_tensor", "inertia_tensor"), &GLTFPhysicsBody::set_inertia_tensor);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "body_type"), "set_body_type", "get_body_type");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass"), "set_mass", "get_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass"), "set_center_of_mass", "get_center_of_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "inertia_tensor"), "set_inertia_tensor", "get_inertia_tensor");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "body_type"), "set_body_type", "get_body_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "mass"), "set_mass", "get_mass");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "center_of_mass"), "set_center_of_mass", "get_center_of_mass");
+	ADD_PROPERTY(PropertyInfo(VariantType::BASIS, "inertia_tensor"), "set_inertia_tensor", "get_inertia_tensor");
 }
 
 String GLTFPhysicsBody::get_body_type() const {

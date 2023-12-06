@@ -61,25 +61,25 @@ int VisualShaderNode::get_output_port_for_preview() const {
 void VisualShaderNode::set_input_port_default_value(int p_port, const Variant &p_value, const Variant &p_prev_value) {
 	Variant value = p_value;
 
-	if (p_prev_value.get_type() != Variant::NIL) {
+	if (p_prev_value.get_type() != VariantType::NIL) {
 		switch (p_value.get_type()) {
-			case Variant::FLOAT: {
+			case VariantType::FLOAT: {
 				switch (p_prev_value.get_type()) {
-					case Variant::INT: {
+					case VariantType::INT: {
 						value = (float)p_prev_value;
 					} break;
-					case Variant::FLOAT: {
+					case VariantType::FLOAT: {
 						value = p_prev_value;
 					} break;
-					case Variant::VECTOR2: {
+					case VariantType::VECTOR2: {
 						Vector2 pv = p_prev_value;
 						value = pv.x;
 					} break;
-					case Variant::VECTOR3: {
+					case VariantType::VECTOR3: {
 						Vector3 pv = p_prev_value;
 						value = pv.x;
 					} break;
-					case Variant::QUATERNION: {
+					case VariantType::QUATERNION: {
 						Quaternion pv = p_prev_value;
 						value = pv.x;
 					} break;
@@ -87,23 +87,23 @@ void VisualShaderNode::set_input_port_default_value(int p_port, const Variant &p
 						break;
 				}
 			} break;
-			case Variant::INT: {
+			case VariantType::INT: {
 				switch (p_prev_value.get_type()) {
-					case Variant::INT: {
+					case VariantType::INT: {
 						value = p_prev_value;
 					} break;
-					case Variant::FLOAT: {
+					case VariantType::FLOAT: {
 						value = (int)p_prev_value;
 					} break;
-					case Variant::VECTOR2: {
+					case VariantType::VECTOR2: {
 						Vector2 pv = p_prev_value;
 						value = (int)pv.x;
 					} break;
-					case Variant::VECTOR3: {
+					case VariantType::VECTOR3: {
 						Vector3 pv = p_prev_value;
 						value = (int)pv.x;
 					} break;
-					case Variant::QUATERNION: {
+					case VariantType::QUATERNION: {
 						Quaternion pv = p_prev_value;
 						value = (int)pv.x;
 					} break;
@@ -111,24 +111,24 @@ void VisualShaderNode::set_input_port_default_value(int p_port, const Variant &p
 						break;
 				}
 			} break;
-			case Variant::VECTOR2: {
+			case VariantType::VECTOR2: {
 				switch (p_prev_value.get_type()) {
-					case Variant::INT: {
+					case VariantType::INT: {
 						float pv = (float)(int)p_prev_value;
 						value = Vector2(pv, pv);
 					} break;
-					case Variant::FLOAT: {
+					case VariantType::FLOAT: {
 						float pv = p_prev_value;
 						value = Vector2(pv, pv);
 					} break;
-					case Variant::VECTOR2: {
+					case VariantType::VECTOR2: {
 						value = p_prev_value;
 					} break;
-					case Variant::VECTOR3: {
+					case VariantType::VECTOR3: {
 						Vector3 pv = p_prev_value;
 						value = Vector2(pv.x, pv.y);
 					} break;
-					case Variant::QUATERNION: {
+					case VariantType::QUATERNION: {
 						Quaternion pv = p_prev_value;
 						value = Vector2(pv.x, pv.y);
 					} break;
@@ -136,24 +136,24 @@ void VisualShaderNode::set_input_port_default_value(int p_port, const Variant &p
 						break;
 				}
 			} break;
-			case Variant::VECTOR3: {
+			case VariantType::VECTOR3: {
 				switch (p_prev_value.get_type()) {
-					case Variant::INT: {
+					case VariantType::INT: {
 						float pv = (float)(int)p_prev_value;
 						value = Vector3(pv, pv, pv);
 					} break;
-					case Variant::FLOAT: {
+					case VariantType::FLOAT: {
 						float pv = p_prev_value;
 						value = Vector3(pv, pv, pv);
 					} break;
-					case Variant::VECTOR2: {
+					case VariantType::VECTOR2: {
 						Vector2 pv = p_prev_value;
 						value = Vector3(pv.x, pv.y, pv.y);
 					} break;
-					case Variant::VECTOR3: {
+					case VariantType::VECTOR3: {
 						value = p_prev_value;
 					} break;
-					case Variant::QUATERNION: {
+					case VariantType::QUATERNION: {
 						Quaternion pv = p_prev_value;
 						value = Vector3(pv.x, pv.y, pv.z);
 					} break;
@@ -161,25 +161,25 @@ void VisualShaderNode::set_input_port_default_value(int p_port, const Variant &p
 						break;
 				}
 			} break;
-			case Variant::QUATERNION: {
+			case VariantType::QUATERNION: {
 				switch (p_prev_value.get_type()) {
-					case Variant::INT: {
+					case VariantType::INT: {
 						float pv = (float)(int)p_prev_value;
 						value = Quaternion(pv, pv, pv, pv);
 					} break;
-					case Variant::FLOAT: {
+					case VariantType::FLOAT: {
 						float pv = p_prev_value;
 						value = Quaternion(pv, pv, pv, pv);
 					} break;
-					case Variant::VECTOR2: {
+					case VariantType::VECTOR2: {
 						Vector2 pv = p_prev_value;
 						value = Quaternion(pv.x, pv.y, pv.y, pv.y);
 					} break;
-					case Variant::VECTOR3: {
+					case VariantType::VECTOR3: {
 						Vector3 pv = p_prev_value;
 						value = Quaternion(pv.x, pv.y, pv.z, pv.z);
 					} break;
-					case Variant::QUATERNION: {
+					case VariantType::QUATERNION: {
 						value = p_prev_value;
 					} break;
 					default:
@@ -414,9 +414,9 @@ void VisualShaderNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_input_values", "values"), &VisualShaderNode::set_default_input_values);
 	ClassDB::bind_method(D_METHOD("get_default_input_values"), &VisualShaderNode::get_default_input_values);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_port_for_preview"), "set_output_port_for_preview", "get_output_port_for_preview");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_default_input_values", "get_default_input_values");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "expanded_output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_output_ports_expanded", "_get_output_ports_expanded");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "output_port_for_preview"), "set_output_port_for_preview", "get_output_port_for_preview");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_default_input_values", "get_default_input_values");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "expanded_output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_output_ports_expanded", "_get_output_ports_expanded");
 
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR_INT);
@@ -783,8 +783,8 @@ void VisualShaderNodeCustom::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_option_index", "option"), &VisualShaderNodeCustom::get_option_index);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "initialized", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_initialized", "_is_initialized");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_properties", "_get_properties");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "initialized", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_initialized", "_is_initialized");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_properties", "_get_properties");
 }
 
 VisualShaderNodeCustom::VisualShaderNodeCustom() {
@@ -1677,7 +1677,7 @@ void VisualShader::reset_state() {
 
 void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	//mode
-	p_list->push_back(PropertyInfo(Variant::INT, PNAME("mode"), PROPERTY_HINT_ENUM, "Node3D,CanvasItem,Particles,Sky,Fog"));
+	p_list->push_back(PropertyInfo(VariantType::INT, PNAME("mode"), PROPERTY_HINT_ENUM, "Node3D,CanvasItem,Particles,Sky,Fog"));
 	//render modes
 
 	HashMap<String, String> blend_mode_enums;
@@ -1706,15 +1706,15 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (const KeyValue<String, String> &E : blend_mode_enums) {
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("modes"), E.key), PROPERTY_HINT_ENUM, E.value));
+		p_list->push_back(PropertyInfo(VariantType::INT, vformat("%s/%s", PNAME("modes"), E.key), PROPERTY_HINT_ENUM, E.value));
 	}
 
 	for (const String &E : toggles) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("flags"), E)));
+		p_list->push_back(PropertyInfo(VariantType::BOOL, vformat("%s/%s", PNAME("flags"), E)));
 	}
 
 	for (const KeyValue<String, Varying> &E : varyings) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("%s/%s", PNAME("varyings"), E.key)));
+		p_list->push_back(PropertyInfo(VariantType::STRING, vformat("%s/%s", PNAME("varyings"), E.key)));
 	}
 
 	for (int i = 0; i < TYPE_MAX; i++) {
@@ -1724,20 +1724,20 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 			prop_name += "/" + itos(E.key);
 
 			if (E.key != NODE_ID_OUTPUT) {
-				p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
+				p_list->push_back(PropertyInfo(VariantType::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 			}
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+			p_list->push_back(PropertyInfo(VariantType::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 			if (Object::cast_to<VisualShaderNodeGroupBase>(E.value.node.ptr()) != nullptr) {
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+				p_list->push_back(PropertyInfo(VariantType::VECTOR2, prop_name + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+				p_list->push_back(PropertyInfo(VariantType::STRING, prop_name + "/input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+				p_list->push_back(PropertyInfo(VariantType::STRING, prop_name + "/output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 			}
 			if (Object::cast_to<VisualShaderNodeExpression>(E.value.node.ptr()) != nullptr) {
-				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+				p_list->push_back(PropertyInfo(VariantType::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 			}
 		}
-		p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(VariantType::PACKED_INT32_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 }
 
@@ -2027,11 +2027,11 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 			}
 
 			Variant defval = vsnode->get_input_port_default_value(i);
-			if (defval.get_type() == Variant::FLOAT) {
+			if (defval.get_type() == VariantType::FLOAT) {
 				float val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
 				node_code += "	float " + inputs[i] + " = " + vformat("%.5f", val) + ";\n";
-			} else if (defval.get_type() == Variant::INT) {
+			} else if (defval.get_type() == VariantType::INT) {
 				int val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
 				if (vsnode->get_input_port_type(i) == VisualShaderNode::PORT_TYPE_SCALAR_UINT) {
@@ -2039,23 +2039,23 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 				} else {
 					node_code += "	int " + inputs[i] + " = " + itos(val) + ";\n";
 				}
-			} else if (defval.get_type() == Variant::BOOL) {
+			} else if (defval.get_type() == VariantType::BOOL) {
 				bool val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
 				node_code += "	bool " + inputs[i] + " = " + (val ? "true" : "false") + ";\n";
-			} else if (defval.get_type() == Variant::VECTOR2) {
+			} else if (defval.get_type() == VariantType::VECTOR2) {
 				Vector2 val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
 				node_code += "	vec2 " + inputs[i] + " = " + vformat("vec2(%.5f, %.5f);\n", val.x, val.y);
-			} else if (defval.get_type() == Variant::VECTOR3) {
+			} else if (defval.get_type() == VariantType::VECTOR3) {
 				Vector3 val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
 				node_code += "	vec3 " + inputs[i] + " = " + vformat("vec3(%.5f, %.5f, %.5f);\n", val.x, val.y, val.z);
-			} else if (defval.get_type() == Variant::QUATERNION) {
+			} else if (defval.get_type() == VariantType::QUATERNION) {
 				Quaternion val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
 				node_code += "	vec4 " + inputs[i] + " = " + vformat("vec4(%.5f, %.5f, %.5f, %.5f);\n", val.x, val.y, val.z, val.w);
-			} else if (defval.get_type() == Variant::TRANSFORM3D) {
+			} else if (defval.get_type() == VariantType::TRANSFORM3D) {
 				Transform3D val = defval;
 				val.basis.transpose();
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
@@ -2783,7 +2783,7 @@ void VisualShader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_shader"), &VisualShader::_update_shader);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_graph_offset", "get_graph_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_graph_offset", "get_graph_offset");
 
 	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
 
@@ -3437,7 +3437,7 @@ void VisualShaderNodeInput::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_name"), &VisualShaderNodeInput::get_input_name);
 	ClassDB::bind_method(D_METHOD("get_input_real_name"), &VisualShaderNodeInput::get_input_real_name);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "input_name", PROPERTY_HINT_ENUM, ""), "set_input_name", "get_input_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "input_name", PROPERTY_HINT_ENUM, ""), "set_input_name", "get_input_name");
 	ADD_SIGNAL(MethodInfo("input_type_changed"));
 }
 
@@ -3701,8 +3701,8 @@ void VisualShaderNodeParameterRef::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_parameter_type", "type"), &VisualShaderNodeParameterRef::_set_parameter_type);
 	ClassDB::bind_method(D_METHOD("_get_parameter_type"), &VisualShaderNodeParameterRef::_get_parameter_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "parameter_name", PROPERTY_HINT_ENUM, ""), "set_parameter_name", "get_parameter_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "param_type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_parameter_type", "_get_parameter_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "parameter_name", PROPERTY_HINT_ENUM, ""), "set_parameter_name", "get_parameter_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "param_type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_parameter_type", "_get_parameter_type");
 }
 
 Vector<StringName> VisualShaderNodeParameterRef::get_editable_properties() const {
@@ -3975,8 +3975,8 @@ void VisualShaderNodeParameter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_qualifier", "qualifier"), &VisualShaderNodeParameter::set_qualifier);
 	ClassDB::bind_method(D_METHOD("get_qualifier"), &VisualShaderNodeParameter::get_qualifier);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "parameter_name"), "set_parameter_name", "get_parameter_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "qualifier", PROPERTY_HINT_ENUM, "None,Global,Instance"), "set_qualifier", "get_qualifier");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "parameter_name"), "set_parameter_name", "get_parameter_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "qualifier", PROPERTY_HINT_ENUM, "None,Global,Instance"), "set_qualifier", "get_qualifier");
 
 	BIND_ENUM_CONSTANT(QUAL_NONE);
 	BIND_ENUM_CONSTANT(QUAL_GLOBAL);
@@ -4125,7 +4125,7 @@ void VisualShaderNodeResizableBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &VisualShaderNodeResizableBase::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &VisualShaderNodeResizableBase::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "size"), "set_size", "get_size");
 }
 
 VisualShaderNodeResizableBase::VisualShaderNodeResizableBase() {
@@ -4189,8 +4189,8 @@ void VisualShaderNodeComment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeComment::set_description);
 	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeComment::get_description);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "description"), "set_description", "get_description");
 }
 
 VisualShaderNodeComment::VisualShaderNodeComment() {
@@ -4793,7 +4793,7 @@ void VisualShaderNodeExpression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_expression", "expression"), &VisualShaderNodeExpression::set_expression);
 	ClassDB::bind_method(D_METHOD("get_expression"), &VisualShaderNodeExpression::get_expression);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "expression"), "set_expression", "get_expression");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "expression"), "set_expression", "get_expression");
 }
 
 VisualShaderNodeExpression::VisualShaderNodeExpression() {
@@ -4894,8 +4894,8 @@ void VisualShaderNodeVarying::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_varying_type", "type"), &VisualShaderNodeVarying::set_varying_type);
 	ClassDB::bind_method(D_METHOD("get_varying_type"), &VisualShaderNodeVarying::get_varying_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "varying_name"), "set_varying_name", "get_varying_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "varying_type", PROPERTY_HINT_ENUM, "Float,Int,Vector2,Vector3,Vector4,Boolean,Transform"), "set_varying_type", "get_varying_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "varying_name"), "set_varying_name", "get_varying_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "varying_type", PROPERTY_HINT_ENUM, "Float,Int,Vector2,Vector3,Vector4,Boolean,Transform"), "set_varying_type", "get_varying_type");
 }
 
 String VisualShaderNodeVarying::get_type_str() const {

@@ -81,7 +81,7 @@ Variant Dictionary::get_value_at_index(int p_index) const {
 
 Variant &Dictionary::operator[](const Variant &p_key) {
 	if (unlikely(_p->read_only)) {
-		if (p_key.get_type() == Variant::STRING_NAME) {
+		if (p_key.get_type() == VariantType::STRING_NAME) {
 			const StringName *sn = VariantInternal::get_string_name(&p_key);
 			const String &key = sn->operator String();
 			if (likely(_p->variant_map.has(key))) {
@@ -97,7 +97,7 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 
 		return *_p->read_only;
 	} else {
-		if (p_key.get_type() == Variant::STRING_NAME) {
+		if (p_key.get_type() == VariantType::STRING_NAME) {
 			const StringName *sn = VariantInternal::get_string_name(&p_key);
 			return _p->variant_map[sn->operator String()];
 		} else {
@@ -268,7 +268,7 @@ uint32_t Dictionary::recursive_hash(int recursion_count) const {
 		return 0;
 	}
 
-	uint32_t h = hash_murmur3_one_32(Variant::DICTIONARY);
+	uint32_t h = hash_murmur3_one_32((int)VariantType::DICTIONARY);
 
 	recursion_count++;
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {

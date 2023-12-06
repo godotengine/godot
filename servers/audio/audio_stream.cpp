@@ -701,10 +701,10 @@ bool AudioStreamRandomizer::_set(const StringName &p_name, const Variant &p_valu
 
 void AudioStreamRandomizer::_get_property_list(List<PropertyInfo> *p_list) const {
 	AudioStream::_get_property_list(p_list); // Define the trivial scalar properties.
-	p_list->push_back(PropertyInfo(Variant::NIL, "Streams", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(VariantType::NIL, "Streams", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < audio_stream_pool.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("stream_%d/stream", i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("stream_%d/weight", i), PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"));
+		p_list->push_back(PropertyInfo(VariantType::OBJECT, vformat("stream_%d/stream", i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
+		p_list->push_back(PropertyInfo(VariantType::FLOAT, vformat("stream_%d/weight", i), PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"));
 	}
 }
 
@@ -730,11 +730,11 @@ void AudioStreamRandomizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_playback_mode", "mode"), &AudioStreamRandomizer::set_playback_mode);
 	ClassDB::bind_method(D_METHOD("get_playback_mode"), &AudioStreamRandomizer::get_playback_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_mode", PROPERTY_HINT_ENUM, "Random (Avoid Repeats),Random,Sequential"), "set_playback_mode", "get_playback_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch", PROPERTY_HINT_RANGE, "1,16,0.01"), "set_random_pitch", "get_random_pitch");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_volume_offset_db", PROPERTY_HINT_RANGE, "0,40,0.01,suffix:dB"), "set_random_volume_offset_db", "get_random_volume_offset_db");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "playback_mode", PROPERTY_HINT_ENUM, "Random (Avoid Repeats),Random,Sequential"), "set_playback_mode", "get_playback_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "random_pitch", PROPERTY_HINT_RANGE, "1,16,0.01"), "set_random_pitch", "get_random_pitch");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "random_volume_offset_db", PROPERTY_HINT_RANGE, "0,40,0.01,suffix:dB"), "set_random_volume_offset_db", "get_random_volume_offset_db");
 	ADD_ARRAY("streams", "stream_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "streams_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_streams_count", "get_streams_count");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "streams_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_streams_count", "get_streams_count");
 
 	BIND_ENUM_CONSTANT(PLAYBACK_RANDOM_NO_REPEATS);
 	BIND_ENUM_CONSTANT(PLAYBACK_RANDOM);

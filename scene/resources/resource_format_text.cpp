@@ -600,7 +600,7 @@ Error ResourceLoaderText::load() {
 				if (do_assign) {
 					bool set_valid = true;
 
-					if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+					if (value.get_type() == VariantType::OBJECT && missing_resource != nullptr) {
 						// If the property being set is a missing resource (and the parent is not),
 						// then setting it will most likely not work.
 						// Instead, save it as metadata.
@@ -612,11 +612,11 @@ Error ResourceLoaderText::load() {
 						}
 					}
 
-					if (value.get_type() == Variant::ARRAY) {
+					if (value.get_type() == VariantType::ARRAY) {
 						Array set_array = value;
 						bool is_get_valid = false;
 						Variant get_value = res->get(assign, &is_get_valid);
-						if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
+						if (is_get_valid && get_value.get_type() == VariantType::ARRAY) {
 							Array get_array = get_value;
 							if (!set_array.is_same_typed(get_array)) {
 								value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
@@ -722,7 +722,7 @@ Error ResourceLoaderText::load() {
 			if (!assign.is_empty()) {
 				bool set_valid = true;
 
-				if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+				if (value.get_type() == VariantType::OBJECT && missing_resource != nullptr) {
 					// If the property being set is a missing resource (and the parent is not),
 					// then setting it will most likely not work.
 					// Instead, save it as metadata.
@@ -734,11 +734,11 @@ Error ResourceLoaderText::load() {
 					}
 				}
 
-				if (value.get_type() == Variant::ARRAY) {
+				if (value.get_type() == VariantType::ARRAY) {
 					Array set_array = value;
 					bool is_get_valid = false;
 					Variant get_value = resource->get(assign, &is_get_valid);
-					if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
+					if (is_get_valid && get_value.get_type() == VariantType::ARRAY) {
 						Array get_array = get_value;
 						if (!set_array.is_same_typed(get_array)) {
 							value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
@@ -1858,7 +1858,7 @@ String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res
 
 void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {
 	switch (p_variant.get_type()) {
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			Ref<Resource> res = p_variant;
 
 			if (res.is_null() || external_resources.has(res) || res->get_meta(SNAME("_skip_save_"), false)) {
@@ -1921,7 +1921,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			saved_resources.push_back(res); // Saved after, so the children it needs are available when loaded
 
 		} break;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			Array varray = p_variant;
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
@@ -1930,13 +1930,13 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			}
 
 		} break;
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			Dictionary d = p_variant;
 			List<Variant> keys;
 			d.get_key_list(&keys);
 			for (const Variant &E : keys) {
 				// Of course keys should also be cached, after all we can't prevent users from using resources as keys, right?
-				// See also ResourceFormatSaverBinaryInstance::_find_resources (when p_variant is of type Variant::DICTIONARY)
+				// See also ResourceFormatSaverBinaryInstance::_find_resources (when p_variant is of type VariantType::DICTIONARY)
 				_find_resources(E);
 				Variant v = d[E];
 				_find_resources(v);
@@ -2176,7 +2176,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 					value = res->get(name);
 				}
 
-				if (PE->get().type == Variant::OBJECT && missing_resource_properties.has(PE->get().name)) {
+				if (PE->get().type == VariantType::OBJECT && missing_resource_properties.has(PE->get().name)) {
 					// Was this missing resource overridden? If so do not save the old value.
 					Ref<Resource> ures = value;
 					if (ures.is_null()) {
@@ -2186,11 +2186,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 				Variant default_value = ClassDB::class_get_default_property_value(res->get_class(), name);
 
-				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
+				if (default_value.get_type() != VariantType::NIL && bool(Variant::evaluate(VariantOperator::EQUAL, value, default_value))) {
 					continue;
 				}
 
-				if (PE->get().type == Variant::OBJECT && value.is_zero() && !(PE->get().usage & PROPERTY_USAGE_STORE_IF_NULL)) {
+				if (PE->get().type == VariantType::OBJECT && value.is_zero() && !(PE->get().usage & PROPERTY_USAGE_STORE_IF_NULL)) {
 					continue;
 				}
 

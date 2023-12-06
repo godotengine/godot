@@ -225,13 +225,13 @@ void RemoteTransform2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_scale", "update_remote_scale"), &RemoteTransform2D::set_update_scale);
 	ClassDB::bind_method(D_METHOD("get_update_scale"), &RemoteTransform2D::get_update_scale);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_remote_node", "get_remote_node");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_global_coordinates"), "set_use_global_coordinates", "get_use_global_coordinates");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "remote_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_remote_node", "get_remote_node");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_global_coordinates"), "set_use_global_coordinates", "get_use_global_coordinates");
 
 	ADD_GROUP("Update", "update_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_position"), "set_update_position", "get_update_position");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_rotation"), "set_update_rotation", "get_update_rotation");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_scale"), "set_update_scale", "get_update_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "update_position"), "set_update_position", "get_update_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "update_rotation"), "set_update_rotation", "get_update_rotation");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "update_scale"), "set_update_scale", "get_update_scale");
 }
 
 RemoteTransform2D::RemoteTransform2D() {

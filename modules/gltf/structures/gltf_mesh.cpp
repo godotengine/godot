@@ -40,9 +40,9 @@ void GLTFMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_materials"), &GLTFMesh::get_instance_materials);
 	ClassDB::bind_method(D_METHOD("set_instance_materials", "instance_materials"), &GLTFMesh::set_instance_materials);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh"), "set_mesh", "get_mesh");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "blend_weights"), "set_blend_weights", "get_blend_weights"); // Vector<float>
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "instance_materials"), "set_instance_materials", "get_instance_materials");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_FLOAT32_ARRAY, "blend_weights"), "set_blend_weights", "get_blend_weights"); // Vector<float>
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "instance_materials"), "set_instance_materials", "get_instance_materials");
 }
 
 Ref<ImporterMesh> GLTFMesh::get_mesh() {

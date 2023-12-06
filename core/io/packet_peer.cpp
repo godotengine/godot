@@ -147,7 +147,7 @@ void PacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_encode_buffer_max_size"), &PacketPeer::get_encode_buffer_max_size);
 	ClassDB::bind_method(D_METHOD("set_encode_buffer_max_size", "max_size"), &PacketPeer::set_encode_buffer_max_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "encode_buffer_max_size"), "set_encode_buffer_max_size", "get_encode_buffer_max_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "encode_buffer_max_size"), "set_encode_buffer_max_size", "get_encode_buffer_max_size");
 }
 
 /***************/
@@ -187,9 +187,9 @@ void PacketPeerStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_buffer_max_size"), &PacketPeerStream::get_input_buffer_max_size);
 	ClassDB::bind_method(D_METHOD("get_output_buffer_max_size"), &PacketPeerStream::get_output_buffer_max_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_buffer_max_size"), "set_input_buffer_max_size", "get_input_buffer_max_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_buffer_max_size"), "set_output_buffer_max_size", "get_output_buffer_max_size");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream_peer", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_stream_peer", "get_stream_peer");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "input_buffer_max_size"), "set_input_buffer_max_size", "get_input_buffer_max_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "output_buffer_max_size"), "set_output_buffer_max_size", "get_output_buffer_max_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "stream_peer", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_stream_peer", "get_stream_peer");
 }
 
 Error PacketPeerStream::_poll_buffer() const {

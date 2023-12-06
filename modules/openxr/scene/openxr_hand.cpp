@@ -46,9 +46,9 @@ void OpenXRHand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_motion_range", "motion_range"), &OpenXRHand::set_motion_range);
 	ClassDB::bind_method(D_METHOD("get_motion_range"), &OpenXRHand::get_motion_range);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand", PROPERTY_HINT_ENUM, "Left,Right"), "set_hand", "get_hand");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_range", PROPERTY_HINT_ENUM, "Unobstructed,Conform to controller"), "set_motion_range", "get_motion_range");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "hand_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_hand_skeleton", "get_hand_skeleton");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "hand", PROPERTY_HINT_ENUM, "Left,Right"), "set_hand", "get_hand");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "motion_range", PROPERTY_HINT_ENUM, "Unobstructed,Conform to controller"), "set_motion_range", "get_motion_range");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "hand_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_hand_skeleton", "get_hand_skeleton");
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);

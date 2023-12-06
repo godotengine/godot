@@ -150,18 +150,18 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_advance_expression", "text"), &AnimationNodeStateMachineTransition::set_advance_expression);
 	ClassDB::bind_method(D_METHOD("get_advance_expression"), &AnimationNodeStateMachineTransition::get_advance_expression);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,240,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,240,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset"), "set_reset", "is_reset");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "reset"), "set_reset", "is_reset");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
 	ADD_GROUP("Switch", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
 	ADD_GROUP("Advance", "advance_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Auto"), "set_advance_mode", "get_advance_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "advance_expression", PROPERTY_HINT_EXPRESSION, ""), "set_advance_expression", "get_advance_expression");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "advance_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Auto"), "set_advance_mode", "get_advance_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "advance_expression", PROPERTY_HINT_EXPRESSION, ""), "set_advance_expression", "get_advance_expression");
 
 	BIND_ENUM_CONSTANT(SWITCH_MODE_IMMEDIATE);
 	BIND_ENUM_CONSTANT(SWITCH_MODE_SYNC);
@@ -1233,7 +1233,7 @@ AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 ///////////////////////////////////////////////////////
 
 void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeStateMachinePlayback", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE)); // Don't store this object in .tres, it always needs to be made as unique object.
+	r_list->push_back(PropertyInfo(VariantType::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeStateMachinePlayback", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE)); // Don't store this object in .tres, it always needs to be made as unique object.
 	List<StringName> advance_conditions;
 	for (int i = 0; i < transitions.size(); i++) {
 		StringName ac = transitions[i].transition->get_advance_condition_name();
@@ -1244,7 +1244,7 @@ void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) c
 
 	advance_conditions.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : advance_conditions) {
-		r_list->push_back(PropertyInfo(Variant::BOOL, E));
+		r_list->push_back(PropertyInfo(VariantType::BOOL, E));
 	}
 }
 
@@ -1724,12 +1724,12 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	names.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &prop_name : names) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(VariantType::OBJECT, "states/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(VariantType::VECTOR2, "states/" + prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(VariantType::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(VariantType::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 	for (PropertyInfo &E : *p_list) {
 		_validate_property(E);
@@ -1826,9 +1826,9 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_reset_ends", "enable"), &AnimationNodeStateMachine::set_reset_ends);
 	ClassDB::bind_method(D_METHOD("are_ends_reset"), &AnimationNodeStateMachine::are_ends_reset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "state_machine_type", PROPERTY_HINT_ENUM, "Root,Nested,Grouped"), "set_state_machine_type", "get_state_machine_type");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_ends"), "set_reset_ends", "are_ends_reset");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "state_machine_type", PROPERTY_HINT_ENUM, "Root,Nested,Grouped"), "set_state_machine_type", "get_state_machine_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "reset_ends"), "set_reset_ends", "are_ends_reset");
 
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_ROOT);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_NESTED);

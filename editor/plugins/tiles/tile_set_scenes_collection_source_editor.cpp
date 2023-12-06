@@ -92,7 +92,7 @@ bool TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_g
 }
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, ""));
+	p_list->push_back(PropertyInfo(VariantType::STRING, "name", PROPERTY_HINT_NONE, ""));
 }
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_bind_methods() {
@@ -100,9 +100,9 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_b
 	ClassDB::bind_method(D_METHOD("set_id", "id"), &TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::set_id);
 	ClassDB::bind_method(D_METHOD("get_id"), &TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::get_id);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "id"), "set_id", "get_id");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "id"), "set_id", "get_id");
 
-	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
+	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(VariantType::STRING, "what")));
 }
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
@@ -191,9 +191,9 @@ void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_get_property_li
 		return;
 	}
 
-	p_list->push_back(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_NONE, ""));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "scene", PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "display_placeholder", PROPERTY_HINT_NONE, ""));
+	p_list->push_back(PropertyInfo(VariantType::INT, "id", PROPERTY_HINT_NONE, ""));
+	p_list->push_back(PropertyInfo(VariantType::OBJECT, "scene", PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"));
+	p_list->push_back(PropertyInfo(VariantType::BOOL, "display_placeholder", PROPERTY_HINT_NONE, ""));
 }
 
 void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::edit(TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_scene_id) {
@@ -211,7 +211,7 @@ void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::edit(TileSetScen
 }
 
 void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
+	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(VariantType::STRING, "what")));
 }
 
 void TileSetScenesCollectionSourceEditor::_scenes_collection_source_proxy_object_changed(String p_what) {
@@ -494,7 +494,7 @@ bool TileSetScenesCollectionSourceEditor::_can_drop_data_fw(const Point2 &p_poin
 }
 
 void TileSetScenesCollectionSourceEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
+	ADD_SIGNAL(MethodInfo("source_id_changed", PropertyInfo(VariantType::INT, "source_id")));
 
 	ClassDB::bind_method(D_METHOD("_scene_thumbnail_done"), &TileSetScenesCollectionSourceEditor::_scene_thumbnail_done);
 }

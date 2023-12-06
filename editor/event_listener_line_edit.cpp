@@ -222,7 +222,7 @@ void EventListenerLineEdit::_notification(int p_what) {
 }
 
 void EventListenerLineEdit::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(VariantType::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 }
 
 EventListenerLineEdit::EventListenerLineEdit() {

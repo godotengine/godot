@@ -749,7 +749,7 @@ godot_quaternion godotsharp_variant_as_quaternion(const Variant *p_self) {
 godot_aabb godotsharp_variant_as_aabb(const Variant *p_self) {
 	godot_aabb raw_dest;
 	AABB *dest = (AABB *)&raw_dest;
-	memnew_placement(dest, AABB(p_self->operator ::AABB()));
+	memnew_placement(dest, AABB(p_self->operator AABB()));
 	return raw_dest;
 }
 
@@ -798,7 +798,7 @@ godot_node_path godotsharp_variant_as_node_path(const Variant *p_self) {
 godot_rid godotsharp_variant_as_rid(const Variant *p_self) {
 	godot_rid raw_dest;
 	RID *dest = (RID *)&raw_dest;
-	memnew_placement(dest, RID(p_self->operator ::RID()));
+	memnew_placement(dest, RID(p_self->operator RID()));
 	return raw_dest;
 }
 
@@ -1387,12 +1387,12 @@ void godotsharp_convert(const godot_variant *p_what, int32_t p_type, godot_varia
 	const Variant *args[1] = { reinterpret_cast<const Variant *>(p_what) };
 	Callable::CallError ce;
 	Variant ret;
-	Variant::construct(Variant::Type(p_type), ret, args, 1, ce);
+	Variant::construct(VariantType(p_type), ret, args, 1, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		memnew_placement(r_ret, Variant);
 		ERR_FAIL_MSG("Unable to convert parameter from '" +
 				Variant::get_type_name(reinterpret_cast<const Variant *>(p_what)->get_type()) +
-				"' to '" + Variant::get_type_name(Variant::Type(p_type)) + "'.");
+				"' to '" + Variant::get_type_name(VariantType(p_type)) + "'.");
 	}
 	memnew_placement(r_ret, Variant(ret));
 }

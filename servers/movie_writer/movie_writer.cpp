@@ -139,13 +139,13 @@ void MovieWriter::_bind_methods() {
 	GDVIRTUAL_BIND(_write_frame, "frame_image", "audio_frame_block")
 	GDVIRTUAL_BIND(_write_end)
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/mix_rate", PROPERTY_HINT_RANGE, "8000,192000,1,suffix:Hz"), 48000);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/speaker_mode", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"), 0);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/movie_writer/mjpeg_quality", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.75);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "editor/movie_writer/mix_rate", PROPERTY_HINT_RANGE, "8000,192000,1,suffix:Hz"), 48000);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "editor/movie_writer/speaker_mode", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"), 0);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "editor/movie_writer/mjpeg_quality", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.75);
 	// Used by the editor.
 	GLOBAL_DEF_BASIC("editor/movie_writer/movie_file", "");
 	GLOBAL_DEF_BASIC("editor/movie_writer/disable_vsync", false);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "editor/movie_writer/fps", PROPERTY_HINT_RANGE, "1,300,1,suffix:FPS"), 60);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::INT, "editor/movie_writer/fps", PROPERTY_HINT_RANGE, "1,300,1,suffix:FPS"), 60);
 }
 
 void MovieWriter::set_extensions_hint() {
@@ -166,7 +166,7 @@ void MovieWriter::set_extensions_hint() {
 		}
 		ext_hint += "*." + S;
 	}
-	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "editor/movie_writer/movie_file", PROPERTY_HINT_GLOBAL_SAVE_FILE, ext_hint));
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(VariantType::STRING, "editor/movie_writer/movie_file", PROPERTY_HINT_GLOBAL_SAVE_FILE, ext_hint));
 }
 
 void MovieWriter::add_frame() {

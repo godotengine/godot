@@ -231,7 +231,7 @@ void ThemeEditorPreview::_notification(int p_what) {
 }
 
 void ThemeEditorPreview::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("control_picked", PropertyInfo(Variant::STRING, "class_name")));
+	ADD_SIGNAL(MethodInfo("control_picked", PropertyInfo(VariantType::STRING, "class_name")));
 }
 
 ThemeEditorPreview::ThemeEditorPreview() {

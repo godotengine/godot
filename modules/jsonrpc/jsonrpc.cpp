@@ -96,7 +96,7 @@ Dictionary JSONRPC::make_request(const String &p_method, const Variant &p_params
 
 Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elements) {
 	Variant ret;
-	if (p_action.get_type() == Variant::DICTIONARY) {
+	if (p_action.get_type() == VariantType::DICTIONARY) {
 		Dictionary dict = p_action;
 		String method = dict.get("method", "");
 		if (method.begins_with("$/")) {
@@ -106,7 +106,7 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 		Array args;
 		if (dict.has("params")) {
 			Variant params = dict.get("params", Variant());
-			if (params.get_type() == Variant::ARRAY) {
+			if (params.get_type() == VariantType::ARRAY) {
 				args = params;
 			} else {
 				args.push_back(params);
@@ -128,11 +128,11 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found: " + method, id);
 		} else {
 			Variant call_ret = object->callv(method, args);
-			if (id.get_type() != Variant::NIL) {
+			if (id.get_type() != VariantType::NIL) {
 				ret = make_response(call_ret, id);
 			}
 		}
-	} else if (p_action.get_type() == Variant::ARRAY && p_process_arr_elements) {
+	} else if (p_action.get_type() == VariantType::ARRAY && p_process_arr_elements) {
 		Array arr = p_action;
 		int size = arr.size();
 		if (size) {
@@ -164,7 +164,7 @@ String JSONRPC::process_string(const String &p_input) {
 		ret = make_response_error(JSONRPC::PARSE_ERROR, "Parse error");
 	}
 
-	if (ret.get_type() == Variant::NIL) {
+	if (ret.get_type() == VariantType::NIL) {
 		return "";
 	}
 	return ret.to_json_string();

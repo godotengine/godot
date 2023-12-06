@@ -38,14 +38,14 @@ class Expression : public RefCounted {
 
 private:
 	struct Input {
-		Variant::Type type = Variant::NIL;
+		VariantType type = VariantType::NIL;
 		String name;
 
 		Input() {}
 	};
 
 	Vector<Input> inputs;
-	Variant::Type output_type = Variant::NIL;
+	VariantType output_type = VariantType::NIL;
 
 	String expression;
 
@@ -147,7 +147,7 @@ private:
 	struct ExpressionNode {
 		bool is_op = false;
 		union {
-			Variant::Operator op;
+			VariantOperator op;
 			ENode *node = nullptr;
 		};
 	};
@@ -162,14 +162,14 @@ private:
 	};
 
 	struct ConstantNode : public ENode {
-		Variant value = Variant::NIL;
+		Variant value = VariantType::NIL;
 		ConstantNode() {
 			type = TYPE_CONSTANT;
 		}
 	};
 
 	struct OperatorNode : public ENode {
-		Variant::Operator op = Variant::Operator::OP_ADD;
+		VariantOperator op = VariantOperator::ADD;
 
 		ENode *nodes[2] = { nullptr, nullptr };
 
@@ -203,7 +203,7 @@ private:
 	};
 
 	struct ConstructorNode : public ENode {
-		Variant::Type data_type = Variant::Type::NIL;
+		VariantType data_type = VariantType::NIL;
 		Vector<ENode *> arguments;
 
 		ConstructorNode() {

@@ -131,7 +131,7 @@ void InputEvent::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "device"), "set_device", "get_device");
 }
 
 ///////////////////////////////////
@@ -139,7 +139,7 @@ void InputEvent::_bind_methods() {
 void InputEventFromWindow::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_window_id", "id"), &InputEventFromWindow::set_window_id);
 	ClassDB::bind_method(D_METHOD("get_window_id"), &InputEventFromWindow::get_window_id);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "window_id"), "set_window_id", "get_window_id");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "window_id"), "set_window_id", "get_window_id");
 }
 
 void InputEventFromWindow::set_window_id(int64_t p_id) {
@@ -298,11 +298,11 @@ void InputEventWithModifiers::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_modifiers_mask"), &InputEventWithModifiers::get_modifiers_mask);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_or_control_autoremap"), "set_command_or_control_autoremap", "is_command_or_control_autoremap");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alt_pressed"), "set_alt_pressed", "is_alt_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift_pressed"), "set_shift_pressed", "is_shift_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ctrl_pressed"), "set_ctrl_pressed", "is_ctrl_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_pressed"), "set_meta_pressed", "is_meta_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "command_or_control_autoremap"), "set_command_or_control_autoremap", "is_command_or_control_autoremap");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "alt_pressed"), "set_alt_pressed", "is_alt_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "shift_pressed"), "set_shift_pressed", "is_shift_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "ctrl_pressed"), "set_ctrl_pressed", "is_ctrl_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "meta_pressed"), "set_meta_pressed", "is_meta_pressed");
 }
 
 void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const {
@@ -604,12 +604,12 @@ void InputEventKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("as_text_physical_keycode"), &InputEventKey::as_text_physical_keycode);
 	ClassDB::bind_method(D_METHOD("as_text_key_label"), &InputEventKey::as_text_key_label);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "keycode"), "set_keycode", "get_keycode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_keycode"), "set_physical_keycode", "get_physical_keycode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "key_label"), "set_key_label", "get_key_label");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "keycode"), "set_keycode", "get_keycode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "physical_keycode"), "set_physical_keycode", "get_physical_keycode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "key_label"), "set_key_label", "get_key_label");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "unicode"), "set_unicode", "get_unicode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "echo"), "set_echo", "is_echo");
 }
 
 ///////////////////////////////////
@@ -649,9 +649,9 @@ void InputEventMouse::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_position", "global_position"), &InputEventMouse::set_global_position);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &InputEventMouse::get_global_position);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask"), "set_button_mask", "get_button_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "button_mask"), "set_button_mask", "get_button_mask");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
 }
 
 ///////////////////////////////////
@@ -844,11 +844,11 @@ void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_double_click", "double_click"), &InputEventMouseButton::set_double_click);
 	ClassDB::bind_method(D_METHOD("is_double_click"), &InputEventMouseButton::is_double_click);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "factor"), "set_factor", "get_factor");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "canceled"), "set_canceled", "is_canceled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_click"), "set_double_click", "is_double_click");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "factor"), "set_factor", "get_factor");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "button_index"), "set_button_index", "get_button_index");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "canceled"), "set_canceled", "is_canceled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "double_click"), "set_double_click", "is_double_click");
 }
 
 ///////////////////////////////////
@@ -1006,11 +1006,11 @@ void InputEventMouseMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventMouseMotion::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventMouseMotion::get_velocity);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "tilt"), "set_tilt", "get_tilt");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
@@ -1125,8 +1125,8 @@ void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis_value", "axis_value"), &InputEventJoypadMotion::set_axis_value);
 	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventJoypadMotion::get_axis_value);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "axis_value"), "set_axis_value", "get_axis_value");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "axis"), "set_axis", "get_axis");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "axis_value"), "set_axis_value", "get_axis_value");
 }
 
 ///////////////////////////////////
@@ -1245,9 +1245,9 @@ void InputEventJoypadButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventJoypadButton::set_pressed);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "button_index"), "set_button_index", "get_button_index");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
 ///////////////////////////////////
@@ -1323,11 +1323,11 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_double_tap", "double_tap"), &InputEventScreenTouch::set_double_tap);
 	ClassDB::bind_method(D_METHOD("is_double_tap"), &InputEventScreenTouch::is_double_tap);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "canceled"), "set_canceled", "is_canceled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_tap"), "set_double_tap", "is_double_tap");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "index"), "set_index", "get_index");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "canceled"), "set_canceled", "is_canceled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "double_tap"), "set_double_tap", "is_double_tap");
 }
 
 ///////////////////////////////////
@@ -1454,13 +1454,13 @@ void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventScreenDrag::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventScreenDrag::get_velocity);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "index"), "set_index", "get_index");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "tilt"), "set_tilt", "get_tilt");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
@@ -1549,9 +1549,9 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &InputEventAction::set_strength);
 	ClassDB::bind_method(D_METHOD("get_strength"), &InputEventAction::get_strength);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "action"), "set_action", "get_action");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
 }
 
 ///////////////////////////////////
@@ -1564,7 +1564,7 @@ void InputEventGesture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventGesture::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &InputEventGesture::get_position);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 }
 
 Vector2 InputEventGesture::get_position() const {
@@ -1608,7 +1608,7 @@ void InputEventMagnifyGesture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_factor", "factor"), &InputEventMagnifyGesture::set_factor);
 	ClassDB::bind_method(D_METHOD("get_factor"), &InputEventMagnifyGesture::get_factor);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "factor"), "set_factor", "get_factor");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "factor"), "set_factor", "get_factor");
 }
 
 ///////////////////////////////////
@@ -1648,7 +1648,7 @@ void InputEventPanGesture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_delta", "delta"), &InputEventPanGesture::set_delta);
 	ClassDB::bind_method(D_METHOD("get_delta"), &InputEventPanGesture::get_delta);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "delta"), "set_delta", "get_delta");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "delta"), "set_delta", "get_delta");
 }
 
 ///////////////////////////////////
@@ -1763,14 +1763,14 @@ void InputEventMIDI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_controller_value", "controller_value"), &InputEventMIDI::set_controller_value);
 	ClassDB::bind_method(D_METHOD("get_controller_value"), &InputEventMIDI::get_controller_value);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel"), "set_channel", "get_channel");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "message"), "set_message", "get_message");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "pitch"), "set_pitch", "get_pitch");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "velocity"), "set_velocity", "get_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "instrument"), "set_instrument", "get_instrument");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "pressure"), "set_pressure", "get_pressure");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_number"), "set_controller_number", "get_controller_number");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_value"), "set_controller_value", "get_controller_value");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "channel"), "set_channel", "get_channel");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "message"), "set_message", "get_message");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "pitch"), "set_pitch", "get_pitch");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "velocity"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "instrument"), "set_instrument", "get_instrument");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "controller_number"), "set_controller_number", "get_controller_number");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "controller_value"), "set_controller_value", "get_controller_value");
 }
 
 ///////////////////////////////////
@@ -1788,7 +1788,7 @@ void InputEventShortcut::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &InputEventShortcut::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &InputEventShortcut::get_shortcut);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
 }
 
 String InputEventShortcut::as_text() const {

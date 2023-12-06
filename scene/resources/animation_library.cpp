@@ -154,12 +154,12 @@ void AnimationLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &AnimationLibrary::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &AnimationLibrary::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
-	ADD_SIGNAL(MethodInfo("animation_added", PropertyInfo(Variant::STRING_NAME, "name")));
-	ADD_SIGNAL(MethodInfo("animation_removed", PropertyInfo(Variant::STRING_NAME, "name")));
-	ADD_SIGNAL(MethodInfo("animation_renamed", PropertyInfo(Variant::STRING_NAME, "name"), PropertyInfo(Variant::STRING_NAME, "to_name")));
-	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "name")));
+	ADD_SIGNAL(MethodInfo("animation_added", PropertyInfo(VariantType::STRING_NAME, "name")));
+	ADD_SIGNAL(MethodInfo("animation_removed", PropertyInfo(VariantType::STRING_NAME, "name")));
+	ADD_SIGNAL(MethodInfo("animation_renamed", PropertyInfo(VariantType::STRING_NAME, "name"), PropertyInfo(VariantType::STRING_NAME, "to_name")));
+	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(VariantType::STRING_NAME, "name")));
 }
 AnimationLibrary::AnimationLibrary() {
 }

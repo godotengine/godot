@@ -262,7 +262,7 @@ class AnimationTrackEdit : public Control {
 
 	void _path_submitted(const String &p_text);
 	void _play_position_draw();
-	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
+	bool _is_value_key_valid(const Variant &p_key_value, VariantType &r_valid_type) const;
 
 	Ref<Texture2D> _get_key_type_icon() const;
 
@@ -327,7 +327,7 @@ class AnimationTrackEditPlugin : public RefCounted {
 	GDCLASS(AnimationTrackEditPlugin, RefCounted);
 
 public:
-	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);
+	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, VariantType p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);
 	virtual AnimationTrackEdit *create_audio_track_edit();
 	virtual AnimationTrackEdit *create_animation_track_edit(Object *p_object);
 };

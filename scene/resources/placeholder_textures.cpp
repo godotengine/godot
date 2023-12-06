@@ -60,7 +60,7 @@ RID PlaceholderTexture2D::get_rid() const {
 void PlaceholderTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTexture2D::set_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 }
 
 PlaceholderTexture2D::PlaceholderTexture2D() {
@@ -117,7 +117,7 @@ RID PlaceholderTexture3D::get_rid() const {
 void PlaceholderTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTexture3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &PlaceholderTexture3D::get_size);
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 }
 
 PlaceholderTexture3D::PlaceholderTexture3D() {
@@ -182,8 +182,8 @@ void PlaceholderTextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTextureLayered::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &PlaceholderTextureLayered::get_size);
 	ClassDB::bind_method(D_METHOD("set_layers", "layers"), &PlaceholderTextureLayered::set_layers);
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_RANGE, "1,4096"), "set_layers", "get_layers");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "layers", PROPERTY_HINT_RANGE, "1,4096"), "set_layers", "get_layers");
 }
 
 PlaceholderTextureLayered::PlaceholderTextureLayered(LayeredType p_type) {

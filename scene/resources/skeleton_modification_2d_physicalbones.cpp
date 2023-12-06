@@ -88,14 +88,14 @@ bool SkeletonModification2DPhysicalBones::_get(const StringName &p_path, Variant
 void SkeletonModification2DPhysicalBones::_get_property_list(List<PropertyInfo> *p_list) const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "fetch_bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(VariantType::BOOL, "fetch_bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	}
 #endif //TOOLS_ENABLED
 
 	for (int i = 0; i < physical_bone_chain.size(); i++) {
 		String base_string = "joint_" + itos(i) + "_";
 
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, base_string + "nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicalBone2D", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(VariantType::NODE_PATH, base_string + "nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicalBone2D", PROPERTY_USAGE_DEFAULT));
 	}
 }
 
@@ -282,7 +282,7 @@ void SkeletonModification2DPhysicalBones::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start_simulation", "bones"), &SkeletonModification2DPhysicalBones::start_simulation, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("stop_simulation", "bones"), &SkeletonModification2DPhysicalBones::stop_simulation, DEFVAL(Array()));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_bone_chain_length", PROPERTY_HINT_RANGE, "0,100,1"), "set_physical_bone_chain_length", "get_physical_bone_chain_length");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "physical_bone_chain_length", PROPERTY_HINT_RANGE, "0,100,1"), "set_physical_bone_chain_length", "get_physical_bone_chain_length");
 }
 
 SkeletonModification2DPhysicalBones::SkeletonModification2DPhysicalBones() {

@@ -60,12 +60,12 @@ void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<in
 			continue;
 		}
 
-		if (r_arrays[i].get_type() == Variant::NIL) {
+		if (r_arrays[i].get_type() == VariantType::NIL) {
 			continue;
 		}
 
 		switch (r_arrays[i].get_type()) {
-			case Variant::PACKED_VECTOR3_ARRAY: {
+			case VariantType::PACKED_VECTOR3_ARRAY: {
 				PackedVector3Array data = r_arrays[i];
 				data.resize(final_vertex_count);
 				Vector3 *data_ptr = data.ptrw();
@@ -79,7 +79,7 @@ void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<in
 				}
 				r_arrays[i] = data;
 			} break;
-			case Variant::PACKED_VECTOR2_ARRAY: {
+			case VariantType::PACKED_VECTOR2_ARRAY: {
 				PackedVector2Array data = r_arrays[i];
 				data.resize(final_vertex_count);
 				Vector2 *data_ptr = data.ptrw();
@@ -88,7 +88,7 @@ void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<in
 				}
 				r_arrays[i] = data;
 			} break;
-			case Variant::PACKED_FLOAT32_ARRAY: {
+			case VariantType::PACKED_FLOAT32_ARRAY: {
 				PackedFloat32Array data = r_arrays[i];
 				int elements = data.size() / current_vertex_count;
 				data.resize(final_vertex_count * elements);
@@ -98,7 +98,7 @@ void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<in
 				}
 				r_arrays[i] = data;
 			} break;
-			case Variant::PACKED_INT32_ARRAY: {
+			case VariantType::PACKED_INT32_ARRAY: {
 				PackedInt32Array data = r_arrays[i];
 				int elements = data.size() / current_vertex_count;
 				data.resize(final_vertex_count * elements);
@@ -108,7 +108,7 @@ void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<in
 				}
 				r_arrays[i] = data;
 			} break;
-			case Variant::PACKED_BYTE_ARRAY: {
+			case VariantType::PACKED_BYTE_ARRAY: {
 				PackedByteArray data = r_arrays[i];
 				int elements = data.size() / current_vertex_count;
 				data.resize(final_vertex_count * elements);
@@ -118,7 +118,7 @@ void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<in
 				}
 				r_arrays[i] = data;
 			} break;
-			case Variant::PACKED_COLOR_ARRAY: {
+			case VariantType::PACKED_COLOR_ARRAY: {
 				PackedColorArray data = r_arrays[i];
 				data.resize(final_vertex_count);
 				Color *data_ptr = data.ptrw();
@@ -282,7 +282,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 
 	LocalVector<Transform3D> bone_transform_vector;
 	for (int i = 0; i < p_bone_transform_array.size(); i++) {
-		ERR_FAIL_COND(p_bone_transform_array[i].get_type() != Variant::TRANSFORM3D);
+		ERR_FAIL_COND(p_bone_transform_array[i].get_type() != VariantType::TRANSFORM3D);
 		bone_transform_vector.push_back(p_bone_transform_array[i]);
 	}
 
@@ -752,10 +752,10 @@ void ImporterMesh::create_shadow_mesh() {
 	}
 	//no shadow mesh for skeletons
 	for (int i = 0; i < surfaces.size(); i++) {
-		if (surfaces[i].arrays[RS::ARRAY_BONES].get_type() != Variant::NIL) {
+		if (surfaces[i].arrays[RS::ARRAY_BONES].get_type() != VariantType::NIL) {
 			return;
 		}
-		if (surfaces[i].arrays[RS::ARRAY_WEIGHTS].get_type() != Variant::NIL) {
+		if (surfaces[i].arrays[RS::ARRAY_WEIGHTS].get_type() != VariantType::NIL) {
 			return;
 		}
 	}
@@ -1374,5 +1374,5 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &ImporterMesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &ImporterMesh::get_lightmap_size_hint);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
 }

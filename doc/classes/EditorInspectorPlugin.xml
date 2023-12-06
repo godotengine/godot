@@ -56,7 +56,7 @@
 		<method name="_parse_property" qualifiers="virtual">
 			<return type="bool" />
 			<param index="0" name="object" type="Object" />
-			<param index="1" name="type" type="int" enum="Variant.Type" />
+			<param index="1" name="type" type="int" enum="VariantType" />
 			<param index="2" name="name" type="String" />
 			<param index="3" name="hint_type" type="int" enum="PropertyHint" />
 			<param index="4" name="hint_string" type="String" />

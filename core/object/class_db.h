@@ -94,7 +94,7 @@ public:
 		StringName getter;
 		MethodBind *_setptr = nullptr;
 		MethodBind *_getptr = nullptr;
-		Variant::Type type;
+		VariantType type;
 	};
 
 	struct ClassInfo {
@@ -394,7 +394,7 @@ public:
 	static bool get_property(Object *p_object, const StringName &p_property, Variant &r_value);
 	static bool has_property(const StringName &p_class, const StringName &p_property, bool p_no_inheritance = false);
 	static int get_property_index(const StringName &p_class, const StringName &p_property, bool *r_is_valid = nullptr);
-	static Variant::Type get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid = nullptr);
+	static VariantType get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid = nullptr);
 	static StringName get_property_setter(const StringName &p_class, const StringName &p_property);
 	static StringName get_property_getter(const StringName &p_class, const StringName &p_property);
 

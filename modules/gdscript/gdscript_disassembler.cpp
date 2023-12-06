@@ -37,13 +37,13 @@
 
 static String _get_variant_string(const Variant &p_variant) {
 	String txt;
-	if (p_variant.get_type() == Variant::STRING) {
+	if (p_variant.get_type() == VariantType::STRING) {
 		txt = "\"" + String(p_variant) + "\"";
-	} else if (p_variant.get_type() == Variant::STRING_NAME) {
+	} else if (p_variant.get_type() == VariantType::STRING_NAME) {
 		txt = "&\"" + String(p_variant) + "\"";
-	} else if (p_variant.get_type() == Variant::NODE_PATH) {
+	} else if (p_variant.get_type() == VariantType::NODE_PATH) {
 		txt = "^\"" + String(p_variant) + "\"";
-	} else if (p_variant.get_type() == Variant::OBJECT) {
+	} else if (p_variant.get_type() == VariantType::OBJECT) {
 		Object *obj = p_variant;
 		if (!obj) {
 			txt = "null";
@@ -122,7 +122,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(1);
 				text += " ";
-				text += Variant::get_operator_name(Variant::Operator(operation));
+				text += Variant::get_operator_name(VariantOperator(operation));
 				text += " ";
 				text += DADDR(2);
 
@@ -147,7 +147,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(2);
 				text += " is ";
-				text += Variant::get_type_name(Variant::Type(_code_ptr[ip + 3]));
+				text += Variant::get_type_name(VariantType(_code_ptr[ip + 3]));
 
 				incr += 4;
 			} break;
@@ -159,7 +159,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " is Array[";
 
 				Ref<Script> script_type = get_constant(_code_ptr[ip + 3] & ADDR_MASK);
-				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
+				VariantType builtin_type = (VariantType)_code_ptr[ip + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + 5]);
 
 				if (script_type.is_valid() && script_type->is_valid()) {
@@ -376,7 +376,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			} break;
 			case OPCODE_ASSIGN_TYPED_BUILTIN: {
 				text += "assign typed builtin (";
-				text += Variant::get_type_name((Variant::Type)_code_ptr[ip + 3]);
+				text += Variant::get_type_name((VariantType)_code_ptr[ip + 3]);
 				text += ") ";
 				text += DADDR(1);
 				text += " = ";
@@ -420,7 +420,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(1);
 				text += " as ";
-				text += Variant::get_type_name(Variant::Type(_code_ptr[ip + 1]));
+				text += Variant::get_type_name(VariantType(_code_ptr[ip + 1]));
 
 				incr += 4;
 			} break;
@@ -446,7 +446,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			} break;
 			case OPCODE_CONSTRUCT: {
 				int instr_var_args = _code_ptr[++ip];
-				Variant::Type t = Variant::Type(_code_ptr[ip + 3 + instr_var_args]);
+				VariantType t = VariantType(_code_ptr[ip + 3 + instr_var_args]);
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
 				text += "construct ";
@@ -507,7 +507,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
 				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2] & ADDR_MASK);
-				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + argc + 4];
+				VariantType builtin_type = (VariantType)_code_ptr[ip + argc + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + argc + 5]);
 
 				String type_name;
@@ -626,7 +626,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			} break;
 			case OPCODE_CALL_BUILTIN_STATIC: {
 				int instr_var_args = _code_ptr[++ip];
-				Variant::Type type = (Variant::Type)_code_ptr[ip + 1 + instr_var_args];
+				VariantType type = (VariantType)_code_ptr[ip + 1 + instr_var_args];
 				int argc = _code_ptr[ip + 3 + instr_var_args];
 
 				text += "call built-in method static ";
@@ -915,7 +915,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			} break;
 			case OPCODE_RETURN_TYPED_BUILTIN: {
 				text += "return typed builtin (";
-				text += Variant::get_type_name((Variant::Type)_code_ptr[ip + 2]);
+				text += Variant::get_type_name((VariantType)_code_ptr[ip + 2]);
 				text += ") ";
 				text += DADDR(1);
 

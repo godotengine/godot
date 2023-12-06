@@ -144,7 +144,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 	struct FeatureInfo {
 		StringName name;
-		Variant::Type vtype = Variant::INT;
+		VariantType vtype = VariantType::INT;
 		bool hidden = false;
 	};
 
@@ -153,7 +153,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 	void _insert_num_systems_lang();
 	void _insert_feature_sets();
-	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag, Variant::Type p_vtype = Variant::INT, bool p_hidden = false);
+	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag, VariantType p_vtype = VariantType::INT, bool p_hidden = false);
 
 	// ICU support data.
 
@@ -383,7 +383,7 @@ class TextServerAdvanced : public TextServerExtension {
 	}
 
 	_FORCE_INLINE_ double _get_extra_advance(RID p_font_rid, int p_font_size) const;
-	_FORCE_INLINE_ Variant::Type _get_tag_type(int64_t p_tag) const;
+	_FORCE_INLINE_ VariantType _get_tag_type(int64_t p_tag) const;
 	_FORCE_INLINE_ bool _get_tag_hidden(int64_t p_tag) const;
 	_FORCE_INLINE_ int _font_get_weight_by_name(const String &p_sty_name) const {
 		String sty_name = p_sty_name.replace(" ", "").replace("-", "");

@@ -1730,17 +1730,17 @@ bool ItemList::_get(const StringName &p_name, Variant &r_ret) const {
 
 void ItemList::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < items.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
+		p_list->push_back(PropertyInfo(VariantType::STRING, vformat("item_%d/text", i)));
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		PropertyInfo pi = PropertyInfo(VariantType::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 		pi.usage &= ~(get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/selectable", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("item_%d/selectable", i));
 		pi.usage &= ~(is_item_selectable(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/disabled", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("item_%d/disabled", i));
 		pi.usage &= ~(!is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 	}
@@ -1859,22 +1859,22 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_update_list_size"), &ItemList::force_update_list_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), "set_max_text_lines", "get_max_text_lines");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_text_lines", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), "set_max_text_lines", "get_max_text_lines");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 	ADD_GROUP("Columns", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_columns", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), "set_max_columns", "get_max_columns");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "same_column_width"), "set_same_column_width", "is_same_column_width");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_column_width", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_fixed_column_width", "get_fixed_column_width");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_columns", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), "set_max_columns", "get_max_columns");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "same_column_width"), "set_same_column_width", "is_same_column_width");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "fixed_column_width", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_fixed_column_width", "get_fixed_column_width");
 	ADD_GROUP("Icon", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_mode", PROPERTY_HINT_ENUM, "Top,Left"), "set_icon_mode", "get_icon_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "icon_scale"), "set_icon_scale", "get_icon_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "fixed_icon_size", PROPERTY_HINT_NONE, "suffix:px"), "set_fixed_icon_size", "get_fixed_icon_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "icon_mode", PROPERTY_HINT_ENUM, "Top,Left"), "set_icon_mode", "get_icon_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "icon_scale"), "set_icon_scale", "get_icon_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "fixed_icon_size", PROPERTY_HINT_NONE, "suffix:px"), "set_fixed_icon_size", "get_fixed_icon_size");
 
 	BIND_ENUM_CONSTANT(ICON_MODE_TOP);
 	BIND_ENUM_CONSTANT(ICON_MODE_LEFT);
@@ -1882,11 +1882,11 @@ void ItemList::_bind_methods() {
 	BIND_ENUM_CONSTANT(SELECT_SINGLE);
 	BIND_ENUM_CONSTANT(SELECT_MULTI);
 
-	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
-	ADD_SIGNAL(MethodInfo("item_clicked", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
-	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
-	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(VariantType::INT, "index")));
+	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(VariantType::VECTOR2, "at_position"), PropertyInfo(VariantType::INT, "mouse_button_index")));
+	ADD_SIGNAL(MethodInfo("item_clicked", PropertyInfo(VariantType::INT, "index"), PropertyInfo(VariantType::VECTOR2, "at_position"), PropertyInfo(VariantType::INT, "mouse_button_index")));
+	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(VariantType::INT, "index"), PropertyInfo(VariantType::BOOL, "selected")));
+	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(VariantType::INT, "index")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, v_separation);

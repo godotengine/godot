@@ -1241,40 +1241,40 @@ DynamicFontImportSettings *DynamicFontImportSettings::get_singleton() {
 DynamicFontImportSettings::DynamicFontImportSettings() {
 	singleton = this;
 
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
 
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel"), 1));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), 1));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel"), 1));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "generate_mipmaps"), false));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "allow_system_fallback"), true));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "force_autohinter"), false));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), 1));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Metadata Overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "language_support"), Dictionary()));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "script_support"), Dictionary()));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "opentype_features"), Dictionary()));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::NIL, "Metadata Overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::DICTIONARY, "language_support"), Dictionary()));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::DICTIONARY, "script_support"), Dictionary()));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::DICTIONARY, "opentype_features"), Dictionary()));
 
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Fallbacks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::NIL, "Fallbacks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
 
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Compress", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "compress", PROPERTY_HINT_NONE, ""), false));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::NIL, "Compress", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "compress", PROPERTY_HINT_NONE, ""), false));
 
-	options_text.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "opentype_features"), Dictionary()));
-	options_text.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), ""));
+	options_text.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::DICTIONARY, "opentype_features"), Dictionary()));
+	options_text.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), ""));
 
-	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_RANGE, "0,127,1"), 16));
-	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1"), 0));
-	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Variation", PROPERTY_HINT_NONE, "variation", PROPERTY_USAGE_GROUP), Variant()));
-	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "variation_opentype"), Dictionary()));
-	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "variation_embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), 0));
-	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "variation_face_index"), 0));
-	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::TRANSFORM2D, "variation_transform"), Transform2D()));
+	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, "size", PROPERTY_HINT_RANGE, "0,127,1"), 16));
+	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1"), 0));
+	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::NIL, "Variation", PROPERTY_HINT_NONE, "variation", PROPERTY_USAGE_GROUP), Variant()));
+	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::DICTIONARY, "variation_opentype"), Dictionary()));
+	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::FLOAT, "variation_embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), 0));
+	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, "variation_face_index"), 0));
+	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::TRANSFORM2D, "variation_transform"), Transform2D()));
 
 	// Root layout
 

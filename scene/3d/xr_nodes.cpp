@@ -223,18 +223,18 @@ XRCamera3D::~XRCamera3D() {
 void XRNode3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tracker", "tracker_name"), &XRNode3D::set_tracker);
 	ClassDB::bind_method(D_METHOD("get_tracker"), &XRNode3D::get_tracker);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tracker", PROPERTY_HINT_ENUM_SUGGESTION), "set_tracker", "get_tracker");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "tracker", PROPERTY_HINT_ENUM_SUGGESTION), "set_tracker", "get_tracker");
 
 	ClassDB::bind_method(D_METHOD("set_pose_name", "pose"), &XRNode3D::set_pose_name);
 	ClassDB::bind_method(D_METHOD("get_pose_name"), &XRNode3D::get_pose_name);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pose", PROPERTY_HINT_ENUM_SUGGESTION), "set_pose_name", "get_pose_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "pose", PROPERTY_HINT_ENUM_SUGGESTION), "set_pose_name", "get_pose_name");
 
 	ClassDB::bind_method(D_METHOD("get_is_active"), &XRNode3D::get_is_active);
 	ClassDB::bind_method(D_METHOD("get_has_tracking_data"), &XRNode3D::get_has_tracking_data);
 	ClassDB::bind_method(D_METHOD("get_pose"), &XRNode3D::get_pose);
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRNode3D::trigger_haptic_pulse);
 
-	ADD_SIGNAL(MethodInfo("tracking_changed", PropertyInfo(Variant::BOOL, "tracking")));
+	ADD_SIGNAL(MethodInfo("tracking_changed", PropertyInfo(VariantType::BOOL, "tracking")));
 };
 
 void XRNode3D::_validate_property(PropertyInfo &p_property) const {
@@ -457,10 +457,10 @@ void XRController3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRController3D::get_tracker_hand);
 
-	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
-	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
+	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(VariantType::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(VariantType::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(VariantType::STRING, "name"), PropertyInfo(VariantType::FLOAT, "value")));
+	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(VariantType::STRING, "name"), PropertyInfo(VariantType::VECTOR2, "value")));
 };
 
 void XRController3D::_bind_tracker() {
@@ -529,11 +529,11 @@ float XRController3D::get_float(const StringName &p_name) const {
 		// Inputs should already be of the correct type, our XR runtime handles conversions between raw input and the desired type, but just in case we convert
 		Variant input = tracker->get_input(p_name);
 		switch (input.get_type()) {
-			case Variant::BOOL: {
+			case VariantType::BOOL: {
 				bool value = input;
 				return value ? 1.0 : 0.0;
 			} break;
-			case Variant::FLOAT: {
+			case VariantType::FLOAT: {
 				float value = input;
 				return value;
 			} break;
@@ -550,15 +550,15 @@ Vector2 XRController3D::get_vector2(const StringName &p_name) const {
 		// Inputs should already be of the correct type, our XR runtime handles conversions between raw input and the desired type, but just in case we convert
 		Variant input = tracker->get_input(p_name);
 		switch (input.get_type()) {
-			case Variant::BOOL: {
+			case VariantType::BOOL: {
 				bool value = input;
 				return Vector2(value ? 1.0 : 0.0, 0.0);
 			} break;
-			case Variant::FLOAT: {
+			case VariantType::FLOAT: {
 				float value = input;
 				return Vector2(value, 0.0);
 			} break;
-			case Variant::VECTOR2: {
+			case VariantType::VECTOR2: {
 				Vector2 axis = input;
 				return axis;
 			}
@@ -632,11 +632,11 @@ PackedStringArray XROrigin3D::get_configuration_warnings() const {
 void XROrigin3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_scale", "world_scale"), &XROrigin3D::set_world_scale);
 	ClassDB::bind_method(D_METHOD("get_world_scale"), &XROrigin3D::get_world_scale);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
 
 	ClassDB::bind_method(D_METHOD("set_current", "enabled"), &XROrigin3D::set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &XROrigin3D::is_current);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "current"), "set_current", "is_current");
 }
 
 real_t XROrigin3D::get_world_scale() const {

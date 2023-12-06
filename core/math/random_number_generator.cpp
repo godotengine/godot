@@ -44,8 +44,8 @@ void RandomNumberGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("randi_range", "from", "to"), &RandomNumberGenerator::randi_range);
 	ClassDB::bind_method(D_METHOD("randomize"), &RandomNumberGenerator::randomize);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "state"), "set_state", "get_state");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "seed"), "set_seed", "get_seed");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "state"), "set_state", "get_state");
 	// Default values are non-deterministic, override for doc generation purposes.
 	ADD_PROPERTY_DEFAULT("seed", 0);
 	ADD_PROPERTY_DEFAULT("state", 0);

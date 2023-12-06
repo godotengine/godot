@@ -65,7 +65,7 @@
 				        new Godot.Collections.Dictionary()
 				        {
 				            { "name", "FakeProperty" },
-				            { "type", (int)Variant.Type.Int }
+				            { "type", (int)VariantType.Int }
 				        }
 				    };
 				}
@@ -141,7 +141,7 @@
 				        properties.Add(new Godot.Collections.Dictionary()
 				        {
 				            { "name", "HammerType" },
-				            { "type", (int)Variant.Type.Int },
+				            { "type", (int)VariantType.Int },
 				            { "usage", (int)propertyUsage }, // See above assignment.
 				            { "hint", (int)PropertyHint.Enum },
 				            { "hint_string", "Wooden,Iron,Golden,Enchanted" }
@@ -248,7 +248,7 @@
 				        new Godot.Collections.Dictionary()
 				        {
 				            { "name", "FakeProperty" },
-				            { "type", (int)Variant.Type.Int }
+				            { "type", (int)VariantType.Int }
 				        }
 				    };
 				}
@@ -328,7 +328,7 @@
 			<param index="0" name="signal" type="String" />
 			<param index="1" name="arguments" type="Array" default="[]" />
 			<description>
-				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal].
+				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum VariantType]). See also [method has_user_signal].
 				[codeblocks]
 				[gdscript]
 				add_user_signal("hurt", [
@@ -342,12 +342,12 @@
 				    new Godot.Collections.Dictionary()
 				    {
 				        { "name", "damage" },
-				        { "type", (int)Variant.Type.Int }
+				        { "type", (int)VariantType.Int }
 				    },
 				    new Godot.Collections.Dictionary()
 				    {
 				        { "name", "source" },
-				        { "type", (int)Variant.Type.Object }
+				        { "type", (int)VariantType.Object }
 				    }
 				});
 				[/csharp]
@@ -701,7 +701,7 @@
 				Returns the object's property list as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
 				- [code]name[/code] is the property's name, as a [String];
 				- [code]class_name[/code] is an empty [StringName], unless the property is [constant TYPE_OBJECT] and it inherits from a class;
-				- [code]type[/code] is the property's type, as an [int] (see [enum Variant.Type]);
+				- [code]type[/code] is the property's type, as an [int] (see [enum VariantType]);
 				- [code]hint[/code] is [i]how[/i] the property is meant to be edited (see [enum PropertyHint]);
 				- [code]hint_string[/code] depends on the hint (see [enum PropertyHint]);
 				- [code]usage[/code] is a combination of [enum PropertyUsageFlags].

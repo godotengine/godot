@@ -994,10 +994,10 @@ bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
 	return p_object->is_class("TileSetAtlasSourceProxyObject") || p_object->is_class("TileSetScenesCollectionProxyObject");
 }
 
-bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+bool TileSourceInspectorPlugin::parse_property(Object *p_object, const VariantType p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (p_path == "id") {
 		const Variant value = p_object->get("id");
-		if (value.get_type() == Variant::NIL) { // May happen if the object is not yet initialized.
+		if (value.get_type() == VariantType::NIL) { // May happen if the object is not yet initialized.
 			return true;
 		}
 

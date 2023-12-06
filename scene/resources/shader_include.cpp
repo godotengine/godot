@@ -78,7 +78,7 @@ void ShaderInclude::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_code", "code"), &ShaderInclude::set_code);
 	ClassDB::bind_method(D_METHOD("get_code"), &ShaderInclude::get_code);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
 }
 
 // ResourceFormatLoaderShaderInclude

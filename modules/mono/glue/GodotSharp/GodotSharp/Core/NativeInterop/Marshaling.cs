@@ -14,176 +14,176 @@ namespace Godot.NativeInterop
 {
     public static class Marshaling
     {
-        internal static Variant.Type ConvertManagedTypeToVariantType(Type type, out bool r_nil_is_variant)
+        internal static VariantType ConvertManagedTypeToVariantType(Type type, out bool r_nil_is_variant)
         {
             r_nil_is_variant = false;
 
             switch (Type.GetTypeCode(type))
             {
                 case TypeCode.Boolean:
-                    return Variant.Type.Bool;
+                    return VariantType.Bool;
                 case TypeCode.Char:
-                    return Variant.Type.Int;
+                    return VariantType.Int;
                 case TypeCode.SByte:
-                    return Variant.Type.Int;
+                    return VariantType.Int;
                 case TypeCode.Int16:
-                    return Variant.Type.Int;
+                    return VariantType.Int;
                 case TypeCode.Int32:
-                    return Variant.Type.Int;
+                    return VariantType.Int;
                 case TypeCode.Int64:
-                    return Variant.Type.Int;
+                    return VariantType.Int;
                 case TypeCode.Byte:
-                    return Variant.Type.Int;
+                    return VariantType.Int;
                 case TypeCode.UInt16:
-                    return Variant.Type.Int;
+                    return VariantType.Int;
                 case TypeCode.UInt32:
-                    return Variant.Type.Int;
+                    return VariantType.Int;
                 case TypeCode.UInt64:
-                    return Variant.Type.Int;
+                    return VariantType.Int;
                 case TypeCode.Single:
-                    return Variant.Type.Float;
+                    return VariantType.Float;
                 case TypeCode.Double:
-                    return Variant.Type.Float;
+                    return VariantType.Float;
                 case TypeCode.String:
-                    return Variant.Type.String;
+                    return VariantType.String;
                 default:
                 {
                     if (type == typeof(Vector2))
-                        return Variant.Type.Vector2;
+                        return VariantType.Vector2;
 
                     if (type == typeof(Vector2I))
-                        return Variant.Type.Vector2I;
+                        return VariantType.Vector2I;
 
                     if (type == typeof(Rect2))
-                        return Variant.Type.Rect2;
+                        return VariantType.Rect2;
 
                     if (type == typeof(Rect2I))
-                        return Variant.Type.Rect2I;
+                        return VariantType.Rect2I;
 
                     if (type == typeof(Transform2D))
-                        return Variant.Type.Transform2D;
+                        return VariantType.Transform2D;
 
                     if (type == typeof(Vector3))
-                        return Variant.Type.Vector3;
+                        return VariantType.Vector3;
 
                     if (type == typeof(Vector3I))
-                        return Variant.Type.Vector3I;
+                        return VariantType.Vector3I;
 
                     if (type == typeof(Vector4))
-                        return Variant.Type.Vector4;
+                        return VariantType.Vector4;
 
                     if (type == typeof(Vector4I))
-                        return Variant.Type.Vector4I;
+                        return VariantType.Vector4I;
 
                     if (type == typeof(Basis))
-                        return Variant.Type.Basis;
+                        return VariantType.Basis;
 
                     if (type == typeof(Quaternion))
-                        return Variant.Type.Quaternion;
+                        return VariantType.Quaternion;
 
                     if (type == typeof(Transform3D))
-                        return Variant.Type.Transform3D;
+                        return VariantType.Transform3D;
 
                     if (type == typeof(Projection))
-                        return Variant.Type.Projection;
+                        return VariantType.Projection;
 
                     if (type == typeof(Aabb))
-                        return Variant.Type.Aabb;
+                        return VariantType.Aabb;
 
                     if (type == typeof(Color))
-                        return Variant.Type.Color;
+                        return VariantType.Color;
 
                     if (type == typeof(Plane))
-                        return Variant.Type.Plane;
+                        return VariantType.Plane;
 
                     if (type == typeof(Callable))
-                        return Variant.Type.Callable;
+                        return VariantType.Callable;
 
                     if (type == typeof(Signal))
-                        return Variant.Type.Signal;
+                        return VariantType.Signal;
 
                     if (type.IsEnum)
-                        return Variant.Type.Int;
+                        return VariantType.Int;
 
                     if (type.IsArray || type.IsSZArray)
                     {
                         if (type == typeof(byte[]))
-                            return Variant.Type.PackedByteArray;
+                            return VariantType.PackedByteArray;
 
                         if (type == typeof(int[]))
-                            return Variant.Type.PackedInt32Array;
+                            return VariantType.PackedInt32Array;
 
                         if (type == typeof(long[]))
-                            return Variant.Type.PackedInt64Array;
+                            return VariantType.PackedInt64Array;
 
                         if (type == typeof(float[]))
-                            return Variant.Type.PackedFloat32Array;
+                            return VariantType.PackedFloat32Array;
 
                         if (type == typeof(double[]))
-                            return Variant.Type.PackedFloat64Array;
+                            return VariantType.PackedFloat64Array;
 
                         if (type == typeof(string[]))
-                            return Variant.Type.PackedStringArray;
+                            return VariantType.PackedStringArray;
 
                         if (type == typeof(Vector2[]))
-                            return Variant.Type.PackedVector2Array;
+                            return VariantType.PackedVector2Array;
 
                         if (type == typeof(Vector3[]))
-                            return Variant.Type.PackedVector3Array;
+                            return VariantType.PackedVector3Array;
 
                         if (type == typeof(Color[]))
-                            return Variant.Type.PackedColorArray;
+                            return VariantType.PackedColorArray;
 
                         if (type == typeof(StringName[]))
-                            return Variant.Type.Array;
+                            return VariantType.Array;
 
                         if (type == typeof(NodePath[]))
-                            return Variant.Type.Array;
+                            return VariantType.Array;
 
                         if (type == typeof(Rid[]))
-                            return Variant.Type.Array;
+                            return VariantType.Array;
 
                         if (typeof(GodotObject[]).IsAssignableFrom(type))
-                            return Variant.Type.Array;
+                            return VariantType.Array;
                     }
                     else if (type.IsGenericType)
                     {
                         if (typeof(GodotObject).IsAssignableFrom(type))
-                            return Variant.Type.Object;
+                            return VariantType.Object;
 
                         // We use `IsAssignableFrom` with our helper interfaces to detect generic Godot collections
                         // because `GetGenericTypeDefinition` is not supported in NativeAOT reflection-free mode.
 
                         if (typeof(IGenericGodotDictionary).IsAssignableFrom(type))
-                            return Variant.Type.Dictionary;
+                            return VariantType.Dictionary;
 
                         if (typeof(IGenericGodotArray).IsAssignableFrom(type))
-                            return Variant.Type.Array;
+                            return VariantType.Array;
                     }
                     else if (type == typeof(Variant))
                     {
                         r_nil_is_variant = true;
-                        return Variant.Type.Nil;
+                        return VariantType.Nil;
                     }
                     else
                     {
                         if (typeof(GodotObject).IsAssignableFrom(type))
-                            return Variant.Type.Object;
+                            return VariantType.Object;
 
                         if (typeof(StringName) == type)
-                            return Variant.Type.StringName;
+                            return VariantType.StringName;
 
                         if (typeof(NodePath) == type)
-                            return Variant.Type.NodePath;
+                            return VariantType.NodePath;
 
                         if (typeof(Rid) == type)
-                            return Variant.Type.Rid;
+                            return VariantType.Rid;
 
                         if (typeof(Collections.Dictionary) == type)
-                            return Variant.Type.Dictionary;
+                            return VariantType.Dictionary;
 
                         if (typeof(Collections.Array) == type)
-                            return Variant.Type.Array;
+                            return VariantType.Array;
                     }
 
                     break;
@@ -191,7 +191,7 @@ namespace Godot.NativeInterop
             }
 
             // Unknown
-            return Variant.Type.Nil;
+            return VariantType.Nil;
         }
 
         // String

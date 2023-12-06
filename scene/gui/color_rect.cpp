@@ -54,5 +54,5 @@ void ColorRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &ColorRect::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &ColorRect::get_color);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "color"), "set_color", "get_color");
 }

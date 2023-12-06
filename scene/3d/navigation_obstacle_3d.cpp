@@ -66,13 +66,13 @@ void NavigationObstacle3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_3d_avoidance"), &NavigationObstacle3D::get_use_3d_avoidance);
 
 	ADD_GROUP("Avoidance", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.0,100,0.01,suffix:m"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.0,100,0.01,suffix:m"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices"), "set_vertices", "get_vertices");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_3d_avoidance"), "set_use_3d_avoidance", "get_use_3d_avoidance");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.0,100,0.01,suffix:m"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "height", PROPERTY_HINT_RANGE, "0.0,100,0.01,suffix:m"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_VECTOR3_ARRAY, "vertices"), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_3d_avoidance"), "set_use_3d_avoidance", "get_use_3d_avoidance");
 }
 
 void NavigationObstacle3D::_notification(int p_what) {

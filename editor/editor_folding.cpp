@@ -112,7 +112,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 	p_node->get_property_list(&plist);
 	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_EDITOR) {
-			if (E.type == Variant::OBJECT) {
+			if (E.type == VariantType::OBJECT) {
 				Ref<Resource> res = p_node->get(E.name);
 				if (res.is_valid() && !resources.has(res) && !res->get_path().is_empty() && !res->get_path().is_resource_file()) {
 					Vector<String> res_unfolds = _get_unfolds(res.ptr());
@@ -258,7 +258,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, HashSet<Ref<Resource>> 
 				}
 			}
 
-			if (E.type == Variant::OBJECT) {
+			if (E.type == VariantType::OBJECT) {
 				Ref<Resource> res = p_object->get(E.name);
 				if (res.is_valid() && !resources.has(res) && !res->get_path().is_empty() && !res->get_path().is_resource_file()) {
 					resources.insert(res);

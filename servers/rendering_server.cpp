@@ -104,7 +104,7 @@ PackedInt64Array RenderingServer::_instances_cull_convex_bind(const TypedArray<P
 	Vector<Plane> planes;
 	for (int i = 0; i < p_convex.size(); ++i) {
 		Variant v = p_convex[i];
-		ERR_FAIL_COND_V(v.get_type() != Variant::PLANE, PackedInt64Array());
+		ERR_FAIL_COND_V(v.get_type() != VariantType::PLANE, PackedInt64Array());
 		planes.push_back(v);
 	}
 
@@ -477,17 +477,17 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						}
 
 						// Validate normal and tangent arrays.
-						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
+						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != VariantType::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<Vector3> normal_array = p_arrays[RS::ARRAY_NORMAL];
 						ERR_FAIL_COND_V(normal_array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 						const Vector3 *normal_src = normal_array.ptr();
 
-						Variant::Type tangent_type = p_arrays[RS::ARRAY_TANGENT].get_type();
-						ERR_FAIL_COND_V(tangent_type != Variant::PACKED_FLOAT32_ARRAY && tangent_type != Variant::PACKED_FLOAT64_ARRAY && tangent_type != Variant::NIL, ERR_INVALID_PARAMETER);
+						VariantType tangent_type = p_arrays[RS::ARRAY_TANGENT].get_type();
+						ERR_FAIL_COND_V(tangent_type != VariantType::PACKED_FLOAT32_ARRAY && tangent_type != VariantType::PACKED_FLOAT64_ARRAY && tangent_type != VariantType::NIL, ERR_INVALID_PARAMETER);
 
 						// We need a different version if using double precision tangents.
-						if (tangent_type == Variant::PACKED_FLOAT32_ARRAY) {
+						if (tangent_type == VariantType::PACKED_FLOAT32_ARRAY) {
 							Vector<float> tangent_array = p_arrays[RS::ARRAY_TANGENT];
 							ERR_FAIL_COND_V(tangent_array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 							const float *tangent_src = tangent_array.ptr();
@@ -523,7 +523,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 									memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
 								}
 							}
-						} else if (tangent_type == Variant::PACKED_FLOAT64_ARRAY) {
+						} else if (tangent_type == VariantType::PACKED_FLOAT64_ARRAY) {
 							Vector<double> tangent_array = p_arrays[RS::ARRAY_TANGENT];
 							ERR_FAIL_COND_V(tangent_array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 							const double *tangent_src = tangent_array.ptr();
@@ -613,7 +613,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 			case RS::ARRAY_NORMAL: {
 				// If using compression we store normal while storing vertices.
 				if (!(p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
-					ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
+					ERR_FAIL_COND_V(p_arrays[ai].get_type() != VariantType::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
 
 					Vector<Vector3> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
@@ -634,10 +634,10 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 			case RS::ARRAY_TANGENT: {
 				// If using compression we store tangent while storing vertices.
 				if (!(p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
-					Variant::Type type = p_arrays[ai].get_type();
-					ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY && type != Variant::NIL, ERR_INVALID_PARAMETER);
+					VariantType type = p_arrays[ai].get_type();
+					ERR_FAIL_COND_V(type != VariantType::PACKED_FLOAT32_ARRAY && type != VariantType::PACKED_FLOAT64_ARRAY && type != VariantType::NIL, ERR_INVALID_PARAMETER);
 
-					if (type == Variant::PACKED_FLOAT32_ARRAY) {
+					if (type == VariantType::PACKED_FLOAT32_ARRAY) {
 						Vector<float> array = p_arrays[ai];
 						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 						const float *src_ptr = array.ptr();
@@ -658,7 +658,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
-					} else if (type == Variant::PACKED_FLOAT64_ARRAY) {
+					} else if (type == VariantType::PACKED_FLOAT64_ARRAY) {
 						Vector<double> array = p_arrays[ai];
 						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 						const double *src_ptr = array.ptr();
@@ -680,7 +680,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
 					} else { // No tangent array.
-						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
+						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != VariantType::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<Vector3> normal_array = p_arrays[RS::ARRAY_NORMAL];
 						ERR_FAIL_COND_V(normal_array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
@@ -707,7 +707,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				}
 			} break;
 			case RS::ARRAY_COLOR: {
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_COLOR_ARRAY, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_arrays[ai].get_type() != VariantType::PACKED_COLOR_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<Color> array = p_arrays[ai];
 
@@ -725,7 +725,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				}
 			} break;
 			case RS::ARRAY_TEX_UV: {
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_arrays[ai].get_type() != VariantType::PACKED_VECTOR3_ARRAY && p_arrays[ai].get_type() != VariantType::PACKED_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<Vector2> array = p_arrays[ai];
 
@@ -752,7 +752,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 			} break;
 
 			case RS::ARRAY_TEX_UV2: {
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_arrays[ai].get_type() != VariantType::PACKED_VECTOR3_ARRAY && p_arrays[ai].get_type() != VariantType::PACKED_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<Vector2> array = p_arrays[ai];
 
@@ -787,7 +787,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 					case ARRAY_CUSTOM_RGBA8_SNORM:
 					case ARRAY_CUSTOM_RG_HALF: {
 						// Size 4
-						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
+						ERR_FAIL_COND_V(p_arrays[ai].get_type() != VariantType::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<uint8_t> array = p_arrays[ai];
 
@@ -802,7 +802,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 					} break;
 					case ARRAY_CUSTOM_RGBA_HALF: {
 						// Size 8
-						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
+						ERR_FAIL_COND_V(p_arrays[ai].get_type() != VariantType::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<uint8_t> array = p_arrays[ai];
 
@@ -819,7 +819,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 					case ARRAY_CUSTOM_RGB_FLOAT:
 					case ARRAY_CUSTOM_RGBA_FLOAT: {
 						// RF
-						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
+						ERR_FAIL_COND_V(p_arrays[ai].get_type() != VariantType::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<float> array = p_arrays[ai];
 						int32_t s = type - ARRAY_CUSTOM_R_FLOAT + 1;
@@ -838,10 +838,10 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 			} break;
 			case RS::ARRAY_WEIGHTS: {
-				Variant::Type type = p_arrays[ai].get_type();
-				ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY, ERR_INVALID_PARAMETER);
+				VariantType type = p_arrays[ai].get_type();
+				ERR_FAIL_COND_V(type != VariantType::PACKED_FLOAT32_ARRAY && type != VariantType::PACKED_FLOAT64_ARRAY, ERR_INVALID_PARAMETER);
 				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
-				if (type == Variant::PACKED_FLOAT32_ARRAY) {
+				if (type == VariantType::PACKED_FLOAT32_ARRAY) {
 					Vector<float> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
 					const float *src = array.ptr();
@@ -872,7 +872,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				}
 			} break;
 			case RS::ARRAY_BONES: {
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT32_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_arrays[ai].get_type() != VariantType::PACKED_INT32_ARRAY && p_arrays[ai].get_type() != VariantType::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<int> array = p_arrays[ai];
 
@@ -898,7 +898,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 			case RS::ARRAY_INDEX: {
 				ERR_FAIL_NULL_V(iw, ERR_INVALID_DATA);
 				ERR_FAIL_COND_V(p_index_array_len <= 0, ERR_INVALID_DATA);
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT32_ARRAY, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_arrays[ai].get_type() != VariantType::PACKED_INT32_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<int> indices = p_arrays[ai];
 				ERR_FAIL_COND_V(indices.size() == 0, ERR_INVALID_PARAMETER);
@@ -1174,7 +1174,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	int array_len = 0;
 
 	for (int i = 0; i < p_arrays.size(); i++) {
-		if (p_arrays[i].get_type() == Variant::NIL) {
+		if (p_arrays[i].get_type() == VariantType::NIL) {
 			continue;
 		}
 
@@ -1182,12 +1182,12 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 
 		if (i == RS::ARRAY_VERTEX) {
 			switch (p_arrays[i].get_type()) {
-				case Variant::PACKED_VECTOR2_ARRAY: {
+				case VariantType::PACKED_VECTOR2_ARRAY: {
 					Vector<Vector2> v2 = p_arrays[i];
 					array_len = v2.size();
 					format |= ARRAY_FLAG_USE_2D_VERTICES;
 				} break;
-				case Variant::PACKED_VECTOR3_ARRAY: {
+				case VariantType::PACKED_VECTOR3_ARRAY: {
 					ERR_FAIL_COND_V(p_compress_format & ARRAY_FLAG_USE_2D_VERTICES, ERR_INVALID_PARAMETER);
 					Vector<Vector3> v3 = p_arrays[i];
 					array_len = v3.size();
@@ -1198,13 +1198,13 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			}
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
 		} else if (i == RS::ARRAY_NORMAL) {
-			if (p_arrays[RS::ARRAY_TANGENT].get_type() == Variant::NIL) {
+			if (p_arrays[RS::ARRAY_TANGENT].get_type() == VariantType::NIL) {
 				// We must use tangents if using normals.
 				format |= (1ULL << RS::ARRAY_TANGENT);
 			}
 		} else if (i == RS::ARRAY_BONES) {
 			switch (p_arrays[i].get_type()) {
-				case Variant::PACKED_INT32_ARRAY: {
+				case VariantType::PACKED_INT32_ARRAY: {
 					Vector<Vector3> vertices = p_arrays[RS::ARRAY_VERTEX];
 					Vector<int32_t> bones = p_arrays[i];
 					int32_t bone_8_group_count = bones.size() / (ARRAY_WEIGHTS_SIZE * 2);
@@ -1228,7 +1228,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			uint32_t bsformat = 0;
 			Array arr = p_blend_shapes[i];
 			for (int j = 0; j < arr.size(); j++) {
-				if (arr[j].get_type() != Variant::NIL) {
+				if (arr[j].get_type() != VariantType::NIL) {
 					bsformat |= (1 << j);
 				}
 			}
@@ -3341,7 +3341,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_frame_setup_time_cpu"), &RenderingServer::get_frame_setup_time_cpu);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_loop_enabled"), "set_render_loop_enabled", "is_render_loop_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "render_loop_enabled"), "set_render_loop_enabled", "is_render_loop_enabled");
 
 	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
@@ -3433,26 +3433,26 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/webp_compression/compression_method", PROPERTY_HINT_RANGE, "0,6,1"), 2);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/textures/webp_compression/lossless_compression_factor", PROPERTY_HINT_RANGE, "0,100,1"), 25);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/textures/webp_compression/compression_method", PROPERTY_HINT_RANGE, "0,6,1"), 2);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/textures/webp_compression/lossless_compression_factor", PROPERTY_HINT_RANGE, "0,100,1"), 25);
 
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 3600);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 3600);
 
 	GLOBAL_DEF_RST("rendering/lights_and_shadows/use_physical_light_units", false);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"), 4096);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/lights_and_shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"), 4096);
 	GLOBAL_DEF("rendering/lights_and_shadows/directional_shadow/size.mobile", 2048);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
 	GLOBAL_DEF("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile", 0);
 	GLOBAL_DEF("rendering/lights_and_shadows/directional_shadow/16_bits", true);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
 	GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality.mobile", 0);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/2d/shadow_atlas/size", PROPERTY_HINT_RANGE, "128,16384"), 2048);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/2d/shadow_atlas/size", PROPERTY_HINT_RANGE, "128,16384"), 2048);
 
 	// Number of commands that can be drawn per frame.
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/gl_compatibility/item_buffer_size", PROPERTY_HINT_RANGE, "128,1048576,1"), 16384);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "rendering/gl_compatibility/item_buffer_size", PROPERTY_HINT_RANGE, "128,1048576,1"), 16384);
 
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/compress", true);
@@ -3472,7 +3472,7 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/voxel_gi/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"), 0);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/global_illumination/voxel_gi/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"), 0);
 
 	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading.mobile", true);
@@ -3483,72 +3483,72 @@ void RenderingServer::init() {
 	GLOBAL_DEF_RST("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
 	GLOBAL_DEF_RST("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16× (Slow)")), 2);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16× (Slow)")), 2);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slowest)"), 1);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slowest)"), 1);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
 	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_use_jitter", false);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"), 2);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"), 2);
 	GLOBAL_DEF("rendering/environment/ssao/half_size", true);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.5);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/ssao/blur_passes", PROPERTY_HINT_RANGE, "0,6"), 2);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"), 50.0);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"), 300.0);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/environment/ssao/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.5);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/ssao/blur_passes", PROPERTY_HINT_RANGE, "0,6"), 2);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/environment/ssao/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"), 50.0);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/environment/ssao/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"), 300.0);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/ssil/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"), 2);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/ssil/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"), 2);
 	GLOBAL_DEF("rendering/environment/ssil/half_size", true);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.5);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/ssil/blur_passes", PROPERTY_HINT_RANGE, "0,6"), 4);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"), 50.0);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"), 300.0);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/environment/ssil/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.5);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/ssil/blur_passes", PROPERTY_HINT_RANGE, "0,6"), 4);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/environment/ssil/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"), 50.0);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/environment/ssil/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"), 300.0);
 
 	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/enabled", true);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"), 0.25);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.18);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"), 0.25);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.18);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode", PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast),FSR 2.2 (Slow)"), 0);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), 1.0);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), 0.2f);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/textures/default_filters/texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), 0.0f);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/scaling_3d/mode", PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast),FSR 2.2 (Slow)"), 0);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/scaling_3d/scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), 1.0);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/scaling_3d/fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), 0.2f);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/textures/default_filters/texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), 0.0f);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), DECAL_FILTER_LINEAR_MIPMAPS);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), DECAL_FILTER_LINEAR_MIPMAPS);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
 
 	GLOBAL_DEF_RST("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"), 1);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"), 1);
 	GLOBAL_DEF("rendering/environment/glow/upscale_mode.mobile", 0);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/subsurface_scattering/subsurface_scattering_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"), 0.05);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"), 0.01);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/subsurface_scattering/subsurface_scattering_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"), 0.05);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"), 0.01);
 
 	GLOBAL_DEF("rendering/limits/global_shader_variables/buffer_size", 65536);
 
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"), 15);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/primitive_meshes/texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"), 15);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/lightmapping/primitive_meshes/texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"), 1);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"), 5);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"), 2);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"), 1);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/global_illumination/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"), 5);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/global_illumination/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"), 2);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"), 64);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/volume_depth", PROPERTY_HINT_RANGE, "16,512,1"), 64);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/use_filter", PROPERTY_HINT_ENUM, "No (Faster),Yes (Higher Quality)"), 1);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"), 64);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/volumetric_fog/volume_depth", PROPERTY_HINT_RANGE, "16,512,1"), 64);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/environment/volumetric_fog/use_filter", PROPERTY_HINT_ENUM, "No (Faster),Yes (Higher Quality)"), 1);
 
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/update_iterations_per_frame", PROPERTY_HINT_RANGE, "0,1024,1"), 10);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"), 1000);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"), 500);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "rendering/limits/spatial_indexer/update_iterations_per_frame", PROPERTY_HINT_RANGE, "0,1024,1"), 10);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "rendering/limits/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"), 1000);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "rendering/limits/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"), 500);
 
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"), 512);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"), 512);
 
 	// OpenGL limits
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_elements", PROPERTY_HINT_RANGE, "1024,65536,1"), 65536);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_lights", PROPERTY_HINT_RANGE, "2,256,1"), 32);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/opengl/max_lights_per_object", PROPERTY_HINT_RANGE, "2,1024,1"), 8);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "rendering/limits/opengl/max_renderable_elements", PROPERTY_HINT_RANGE, "1024,65536,1"), 65536);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "rendering/limits/opengl/max_renderable_lights", PROPERTY_HINT_RANGE, "2,256,1"), 32);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "rendering/limits/opengl/max_lights_per_object", PROPERTY_HINT_RANGE, "2,1024,1"), 8);
 
 	GLOBAL_DEF_RST_BASIC("xr/shaders/enabled", false);
 

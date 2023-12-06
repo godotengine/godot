@@ -247,7 +247,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			return;
 		}
 
-		// Case order is important here to correctly handle edge cases like Variant.Type in @GlobalScope.
+		// Case order is important here to correctly handle edge cases like VariantType in @GlobalScope.
 		if (table->has(link)) {
 			// Found in the current page.
 			if (class_desc->is_ready()) {

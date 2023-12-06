@@ -62,13 +62,13 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 	}
 
 	switch (p_var.get_type()) {
-		case Variant::NIL:
+		case VariantType::NIL:
 			return "null";
-		case Variant::BOOL:
+		case VariantType::BOOL:
 			return p_var.operator bool() ? "true" : "false";
-		case Variant::INT:
+		case VariantType::INT:
 			return itos(p_var);
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			double num = p_var;
 			if (p_full_precision) {
 				// Store unreliable digits (17) instead of just reliable
@@ -79,12 +79,12 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 				return String::num(num, 14 - (int)floor(log10(num)));
 			}
 		}
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY:
-		case Variant::PACKED_FLOAT32_ARRAY:
-		case Variant::PACKED_FLOAT64_ARRAY:
-		case Variant::PACKED_STRING_ARRAY:
-		case Variant::ARRAY: {
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY:
+		case VariantType::PACKED_FLOAT32_ARRAY:
+		case VariantType::PACKED_FLOAT64_ARRAY:
+		case VariantType::PACKED_STRING_ARRAY:
+		case VariantType::ARRAY: {
 			Array a = p_var;
 			if (a.size() == 0) {
 				return "[]";
@@ -106,7 +106,7 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 			p_markers.erase(a.id());
 			return s;
 		}
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			String s = "{";
 			s += end_statement;
 			Dictionary d = p_var;
@@ -585,7 +585,7 @@ void JSON::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_error_line"), &JSON::get_error_line);
 	ClassDB::bind_method(D_METHOD("get_error_message"), &JSON::get_error_message);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NIL, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT), "set_data", "get_data"); // Ensures that it can be serialized as binary.
+	ADD_PROPERTY(PropertyInfo(VariantType::NIL, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT), "set_data", "get_data"); // Ensures that it can be serialized as binary.
 }
 
 ////

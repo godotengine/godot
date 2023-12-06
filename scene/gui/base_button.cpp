@@ -473,20 +473,20 @@ void BaseButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("button_up"));
 	ADD_SIGNAL(MethodInfo("button_down"));
-	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "toggled_on")));
+	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(VariantType::BOOL, "toggled_on")));
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "button_pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "button_pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
 
 	ADD_GROUP("Shortcut", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);
@@ -497,7 +497,7 @@ void BaseButton::_bind_methods() {
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_PRESS);
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_RELEASE);
 
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/button_shortcut_feedback_highlight_time", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), 0.2);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "gui/timers/button_shortcut_feedback_highlight_time", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), 0.2);
 }
 
 BaseButton::BaseButton() {
@@ -548,9 +548,9 @@ void ButtonGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_unpress", "enabled"), &ButtonGroup::set_allow_unpress);
 	ClassDB::bind_method(D_METHOD("is_allow_unpress"), &ButtonGroup::is_allow_unpress);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_unpress"), "set_allow_unpress", "is_allow_unpress");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_unpress"), "set_allow_unpress", "is_allow_unpress");
 
-	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
+	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(VariantType::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
 }
 
 ButtonGroup::ButtonGroup() {

@@ -37,7 +37,7 @@ void OpenXRActionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_set_localized_name", "name"), &OpenXRActionEditor::_do_set_localized_name);
 	ClassDB::bind_method(D_METHOD("_do_set_action_type", "type"), &OpenXRActionEditor::_do_set_action_type);
 
-	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(Variant::OBJECT, "action_editor")));
+	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(VariantType::OBJECT, "action_editor")));
 }
 
 void OpenXRActionEditor::_theme_changed() {

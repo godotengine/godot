@@ -52,12 +52,12 @@ void GLTFLight::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_outer_cone_angle"), &GLTFLight::get_outer_cone_angle);
 	ClassDB::bind_method(D_METHOD("set_outer_cone_angle", "outer_cone_angle"), &GLTFLight::set_outer_cone_angle);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color"); // Color
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity"), "set_intensity", "get_intensity"); // float
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "light_type"), "set_light_type", "get_light_type"); // String
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "range"), "set_range", "get_range"); // float
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inner_cone_angle"), "set_inner_cone_angle", "get_inner_cone_angle"); // float
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "outer_cone_angle"), "set_outer_cone_angle", "get_outer_cone_angle"); // float
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "color"), "set_color", "get_color"); // Color
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "intensity"), "set_intensity", "get_intensity"); // float
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "light_type"), "set_light_type", "get_light_type"); // String
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "range"), "set_range", "get_range"); // float
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "inner_cone_angle"), "set_inner_cone_angle", "get_inner_cone_angle"); // float
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "outer_cone_angle"), "set_outer_cone_angle", "get_outer_cone_angle"); // float
 }
 
 Color GLTFLight::get_color() {

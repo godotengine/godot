@@ -106,9 +106,9 @@ void MultiplayerPeer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_server_relay_supported"), &MultiplayerPeer::is_server_relay_supported);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_mode", PROPERTY_HINT_ENUM, "Unreliable,Unreliable Ordered,Reliable"), "set_transfer_mode", "get_transfer_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_channel", PROPERTY_HINT_RANGE, "0,255,1"), "set_transfer_channel", "get_transfer_channel");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "transfer_mode", PROPERTY_HINT_ENUM, "Unreliable,Unreliable Ordered,Reliable"), "set_transfer_mode", "get_transfer_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "transfer_channel", PROPERTY_HINT_RANGE, "0,255,1"), "set_transfer_channel", "get_transfer_channel");
 
 	BIND_ENUM_CONSTANT(CONNECTION_DISCONNECTED);
 	BIND_ENUM_CONSTANT(CONNECTION_CONNECTING);
@@ -121,8 +121,8 @@ void MultiplayerPeer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRANSFER_MODE_UNRELIABLE_ORDERED);
 	BIND_ENUM_CONSTANT(TRANSFER_MODE_RELIABLE);
 
-	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(VariantType::INT, "id")));
 }
 
 /*************/

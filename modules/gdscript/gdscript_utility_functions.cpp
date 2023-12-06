@@ -57,10 +57,10 @@
 	}
 
 #define VALIDATE_ARG_INT(m_arg)                                           \
-	if (p_args[m_arg]->get_type() != Variant::INT) {                      \
+	if (p_args[m_arg]->get_type() != VariantType::INT) {                  \
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; \
 		r_error.argument = m_arg;                                         \
-		r_error.expected = Variant::INT;                                  \
+		r_error.expected = (int)VariantType::INT;                         \
 		*r_ret = Variant();                                               \
 		return;                                                           \
 	}
@@ -69,7 +69,7 @@
 	if (!p_args[m_arg]->is_num()) {                                       \
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; \
 		r_error.argument = m_arg;                                         \
-		r_error.expected = Variant::FLOAT;                                \
+		r_error.expected = (int)VariantType::FLOAT;                       \
 		*r_ret = Variant();                                               \
 		return;                                                           \
 	}
@@ -88,17 +88,17 @@ struct GDScriptUtilityFunctionsDefinitions {
 		VALIDATE_ARG_COUNT(2);
 		VALIDATE_ARG_INT(1);
 		int type = *p_args[1];
-		if (type < 0 || type >= Variant::VARIANT_MAX) {
+		if (type < 0 || type >= (int)VariantType::MAX) {
 			*r_ret = RTR("Invalid type argument to convert(), use TYPE_* constants.");
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::INT;
+			r_error.expected = (int)VariantType::INT;
 			return;
 
 		} else {
-			Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
+			Variant::construct(VariantType(type), *r_ret, p_args, 1, r_error);
 			if (r_error.error != Callable::CallError::CALL_OK) {
-				*r_ret = vformat(RTR(R"(Cannot convert "%s" to "%s".)"), Variant::get_type_name(p_args[0]->get_type()), Variant::get_type_name(Variant::Type(type)));
+				*r_ret = vformat(RTR(R"(Cannot convert "%s" to "%s".)"), Variant::get_type_name(p_args[0]->get_type()), Variant::get_type_name(VariantType(type)));
 			}
 		}
 	}
@@ -232,10 +232,10 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 	static inline void load(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
-		if (p_args[0]->get_type() != Variant::STRING) {
+		if (p_args[0]->get_type() != VariantType::STRING) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::STRING;
+			r_error.expected = (int)VariantType::STRING;
 			*r_ret = Variant();
 		} else {
 			*r_ret = ResourceLoader::load(*p_args[0]);
@@ -245,12 +245,12 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void inst_to_dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 
-		if (p_args[0]->get_type() == Variant::NIL) {
+		if (p_args[0]->get_type() == VariantType::NIL) {
 			*r_ret = Variant();
-		} else if (p_args[0]->get_type() != Variant::OBJECT) {
+		} else if (p_args[0]->get_type() != VariantType::OBJECT) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::OBJECT;
+			r_error.expected = (int)VariantType::OBJECT;
 			*r_ret = Variant();
 		} else {
 			Object *obj = *p_args[0];
@@ -260,7 +260,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 			} else if (!obj->get_script_instance() || obj->get_script_instance()->get_language() != GDScriptLanguage::get_singleton()) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
-				r_error.expected = Variant::DICTIONARY;
+				r_error.expected = (int)VariantType::DICTIONARY;
 				*r_ret = RTR("Not a script with an instance");
 				return;
 			} else {
@@ -269,7 +269,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				if (base.is_null()) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = 0;
-					r_error.expected = Variant::DICTIONARY;
+					r_error.expected = (int)VariantType::DICTIONARY;
 					*r_ret = RTR("Not based on a script");
 					return;
 				}
@@ -287,7 +287,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				if (!path.is_resource_file()) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = 0;
-					r_error.expected = Variant::DICTIONARY;
+					r_error.expected = (int)VariantType::DICTIONARY;
 					*r_ret = Variant();
 
 					*r_ret = RTR("Not based on a resource file");
@@ -314,10 +314,10 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void dict_to_inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 
-		if (p_args[0]->get_type() != Variant::DICTIONARY) {
+		if (p_args[0]->get_type() != VariantType::DICTIONARY) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::DICTIONARY;
+			r_error.expected = (int)VariantType::DICTIONARY;
 			*r_ret = Variant();
 
 			return;
@@ -328,7 +328,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		if (!d.has("@path")) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::OBJECT;
+			r_error.expected = (int)VariantType::OBJECT;
 			*r_ret = RTR("Invalid instance dictionary format (missing @path)");
 
 			return;
@@ -338,7 +338,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		if (!scr.is_valid()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::OBJECT;
+			r_error.expected = (int)VariantType::OBJECT;
 			*r_ret = RTR("Invalid instance dictionary format (can't load script at @path)");
 			return;
 		}
@@ -348,7 +348,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		if (!gdscr.is_valid()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::OBJECT;
+			r_error.expected = (int)VariantType::OBJECT;
 			*r_ret = Variant();
 			*r_ret = RTR("Invalid instance dictionary format (invalid script at @path)");
 			return;
@@ -364,7 +364,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 			if (!gdscr.is_valid()) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
+				r_error.expected = (int)VariantType::OBJECT;
 				*r_ret = Variant();
 				*r_ret = RTR("Invalid instance dictionary (invalid subclasses)");
 				return;
@@ -470,58 +470,58 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void len(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 		switch (p_args[0]->get_type()) {
-			case Variant::STRING: {
+			case VariantType::STRING: {
 				String d = *p_args[0];
 				*r_ret = d.length();
 			} break;
-			case Variant::DICTIONARY: {
+			case VariantType::DICTIONARY: {
 				Dictionary d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::ARRAY: {
+			case VariantType::ARRAY: {
 				Array d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::PACKED_BYTE_ARRAY: {
+			case VariantType::PACKED_BYTE_ARRAY: {
 				Vector<uint8_t> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::PACKED_INT32_ARRAY: {
+			case VariantType::PACKED_INT32_ARRAY: {
 				Vector<int32_t> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::PACKED_INT64_ARRAY: {
+			case VariantType::PACKED_INT64_ARRAY: {
 				Vector<int64_t> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::PACKED_FLOAT32_ARRAY: {
+			case VariantType::PACKED_FLOAT32_ARRAY: {
 				Vector<float> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::PACKED_FLOAT64_ARRAY: {
+			case VariantType::PACKED_FLOAT64_ARRAY: {
 				Vector<double> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::PACKED_STRING_ARRAY: {
+			case VariantType::PACKED_STRING_ARRAY: {
 				Vector<String> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::PACKED_VECTOR2_ARRAY: {
+			case VariantType::PACKED_VECTOR2_ARRAY: {
 				Vector<Vector2> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::PACKED_VECTOR3_ARRAY: {
+			case VariantType::PACKED_VECTOR3_ARRAY: {
 				Vector<Vector3> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
-			case Variant::PACKED_COLOR_ARRAY: {
+			case VariantType::PACKED_COLOR_ARRAY: {
 				Vector<Color> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
 			default: {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
-				r_error.expected = Variant::NIL;
+				r_error.expected = (int)VariantType::NIL;
 				*r_ret = vformat(RTR("Value of type '%s' can't provide a length."), Variant::get_type_name(p_args[0]->get_type()));
 			}
 		}
@@ -530,16 +530,16 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void is_instance_of(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(2);
 
-		if (p_args[1]->get_type() == Variant::INT) {
+		if (p_args[1]->get_type() == VariantType::INT) {
 			int builtin_type = *p_args[1];
-			if (builtin_type < 0 || builtin_type >= Variant::VARIANT_MAX) {
+			if (builtin_type < 0 || builtin_type >= (int)VariantType::MAX) {
 				*r_ret = RTR("Invalid type argument for is_instance_of(), use TYPE_* constants for built-in types.");
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 1;
-				r_error.expected = Variant::NIL;
+				r_error.expected = (int)VariantType::NIL;
 				return;
 			}
-			*r_ret = p_args[0]->get_type() == builtin_type;
+			*r_ret = (int)p_args[0]->get_type() == builtin_type;
 			return;
 		}
 
@@ -549,14 +549,14 @@ struct GDScriptUtilityFunctionsDefinitions {
 			*r_ret = RTR("Type argument is a previously freed instance.");
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 1;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return;
 		}
 		if (!type_object) {
 			*r_ret = RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script.");
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 1;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return;
 		}
 
@@ -566,7 +566,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 			*r_ret = RTR("Value argument is a previously freed instance.");
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return;
 		}
 		if (!value_object) {
@@ -600,7 +600,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script.");
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = Variant::NIL;
+		r_error.expected = (int)VariantType::NIL;
 	}
 };
 
@@ -668,7 +668,7 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 			name = name.substr(1, name.length() - 1);                                            \
 		}                                                                                        \
 		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
-		info.return_val.type = Variant::NIL;                                                     \
+		info.return_val.type = VariantType::NIL;                                                 \
 		info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;                                  \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
 	}
@@ -680,7 +680,7 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 			name = name.substr(1, name.length() - 1);                                            \
 		}                                                                                        \
 		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
-		info.return_val.type = Variant::OBJECT;                                                  \
+		info.return_val.type = VariantType::OBJECT;                                              \
 		info.return_val.hint = PROPERTY_HINT_RESOURCE_TYPE;                                      \
 		info.return_val.class_name = m_return_type;                                              \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
@@ -702,24 +702,24 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 	PropertyInfo(m_type, m_name)
 
 #define VARARG(m_name) \
-	PropertyInfo(Variant::NIL, m_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT)
+	PropertyInfo(VariantType::NIL, m_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT)
 
 void GDScriptUtilityFunctions::register_functions() {
 #ifndef DISABLE_DEPRECATED
-	REGISTER_VARIANT_FUNC(convert, true, VARARG("what"), ARG("type", Variant::INT));
+	REGISTER_VARIANT_FUNC(convert, true, VARARG("what"), ARG("type", VariantType::INT));
 #endif // DISABLE_DEPRECATED
-	REGISTER_FUNC(type_exists, true, Variant::BOOL, ARG("type", Variant::STRING_NAME));
-	REGISTER_FUNC(_char, true, Variant::STRING, ARG("char", Variant::INT));
-	REGISTER_VARARG_FUNC(range, false, Variant::ARRAY);
-	REGISTER_CLASS_FUNC(load, false, "Resource", ARG("path", Variant::STRING));
-	REGISTER_FUNC(inst_to_dict, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT));
-	REGISTER_FUNC(dict_to_inst, false, Variant::OBJECT, ARG("dictionary", Variant::DICTIONARY));
-	REGISTER_FUNC_DEF(Color8, true, 255, Variant::COLOR, ARG("r8", Variant::INT), ARG("g8", Variant::INT), ARG("b8", Variant::INT), ARG("a8", Variant::INT));
-	REGISTER_VARARG_FUNC(print_debug, false, Variant::NIL);
-	REGISTER_FUNC_NO_ARGS(print_stack, false, Variant::NIL);
-	REGISTER_FUNC_NO_ARGS(get_stack, false, Variant::ARRAY);
-	REGISTER_FUNC(len, true, Variant::INT, VARARG("var"));
-	REGISTER_FUNC(is_instance_of, true, Variant::BOOL, VARARG("value"), VARARG("type"));
+	REGISTER_FUNC(type_exists, true, VariantType::BOOL, ARG("type", VariantType::STRING_NAME));
+	REGISTER_FUNC(_char, true, VariantType::STRING, ARG("char", VariantType::INT));
+	REGISTER_VARARG_FUNC(range, false, VariantType::ARRAY);
+	REGISTER_CLASS_FUNC(load, false, "Resource", ARG("path", VariantType::STRING));
+	REGISTER_FUNC(inst_to_dict, false, VariantType::DICTIONARY, ARG("instance", VariantType::OBJECT));
+	REGISTER_FUNC(dict_to_inst, false, VariantType::OBJECT, ARG("dictionary", VariantType::DICTIONARY));
+	REGISTER_FUNC_DEF(Color8, true, 255, VariantType::COLOR, ARG("r8", VariantType::INT), ARG("g8", VariantType::INT), ARG("b8", VariantType::INT), ARG("a8", VariantType::INT));
+	REGISTER_VARARG_FUNC(print_debug, false, VariantType::NIL);
+	REGISTER_FUNC_NO_ARGS(print_stack, false, VariantType::NIL);
+	REGISTER_FUNC_NO_ARGS(get_stack, false, VariantType::ARRAY);
+	REGISTER_FUNC(len, true, VariantType::INT, VARARG("var"));
+	REGISTER_FUNC(is_instance_of, true, VariantType::BOOL, VARARG("value"), VARARG("type"));
 }
 
 void GDScriptUtilityFunctions::unregister_functions() {
@@ -736,12 +736,12 @@ GDScriptUtilityFunctions::FunctionPtr GDScriptUtilityFunctions::get_function(con
 bool GDScriptUtilityFunctions::has_function_return_value(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
 	ERR_FAIL_NULL_V(info, false);
-	return info->info.return_val.type != Variant::NIL || bool(info->info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
+	return info->info.return_val.type != VariantType::NIL || bool(info->info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 }
 
-Variant::Type GDScriptUtilityFunctions::get_function_return_type(const StringName &p_function) {
+VariantType GDScriptUtilityFunctions::get_function_return_type(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_NULL_V(info, Variant::NIL);
+	ERR_FAIL_NULL_V(info, VariantType::NIL);
 	return info->info.return_val.type;
 }
 
@@ -751,10 +751,10 @@ StringName GDScriptUtilityFunctions::get_function_return_class(const StringName 
 	return info->info.return_val.class_name;
 }
 
-Variant::Type GDScriptUtilityFunctions::get_function_argument_type(const StringName &p_function, int p_arg) {
+VariantType GDScriptUtilityFunctions::get_function_argument_type(const StringName &p_function, int p_arg) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_NULL_V(info, Variant::NIL);
-	ERR_FAIL_COND_V(p_arg >= info->info.arguments.size(), Variant::NIL);
+	ERR_FAIL_NULL_V(info, VariantType::NIL);
+	ERR_FAIL_COND_V(p_arg >= info->info.arguments.size(), VariantType::NIL);
 	return info->info.arguments[p_arg].type;
 }
 

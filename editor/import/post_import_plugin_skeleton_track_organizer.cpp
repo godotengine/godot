@@ -37,9 +37,9 @@
 
 void PostImportPluginSkeletonTrackOrganizer::get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options) {
 	if (p_category == INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE) {
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/remove_tracks/except_bone_transform"), false));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/remove_tracks/unimportant_positions"), true));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/remove_tracks/unmapped_bones"), false));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "retarget/remove_tracks/except_bone_transform"), false));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "retarget/remove_tracks/unimportant_positions"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "retarget/remove_tracks/unmapped_bones"), false));
 	}
 }
 

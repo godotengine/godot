@@ -44,8 +44,8 @@ class JNISingleton : public Object {
 #ifdef ANDROID_ENABLED
 	struct MethodData {
 		jmethodID method;
-		Variant::Type ret_type;
-		Vector<Variant::Type> argtypes;
+		VariantType ret_type;
+		Vector<VariantType> argtypes;
 	};
 
 	jobject instance;
@@ -102,31 +102,31 @@ public:
 		Variant ret;
 
 		switch (E->get().ret_type) {
-			case Variant::NIL: {
+			case VariantType::NIL: {
 				env->CallVoidMethodA(instance, E->get().method, v);
 			} break;
-			case Variant::BOOL: {
+			case VariantType::BOOL: {
 				ret = env->CallBooleanMethodA(instance, E->get().method, v) == JNI_TRUE;
 			} break;
-			case Variant::INT: {
+			case VariantType::INT: {
 				ret = env->CallIntMethodA(instance, E->get().method, v);
 			} break;
-			case Variant::FLOAT: {
+			case VariantType::FLOAT: {
 				ret = env->CallFloatMethodA(instance, E->get().method, v);
 			} break;
-			case Variant::STRING: {
+			case VariantType::STRING: {
 				jobject o = env->CallObjectMethodA(instance, E->get().method, v);
 				ret = jstring_to_string((jstring)o, env);
 				env->DeleteLocalRef(o);
 			} break;
-			case Variant::PACKED_STRING_ARRAY: {
+			case VariantType::PACKED_STRING_ARRAY: {
 				jobjectArray arr = (jobjectArray)env->CallObjectMethodA(instance, E->get().method, v);
 
 				ret = _jobject_to_variant(env, arr);
 
 				env->DeleteLocalRef(arr);
 			} break;
-			case Variant::PACKED_INT32_ARRAY: {
+			case VariantType::PACKED_INT32_ARRAY: {
 				jintArray arr = (jintArray)env->CallObjectMethodA(instance, E->get().method, v);
 
 				int fCount = env->GetArrayLength(arr);
@@ -138,7 +138,7 @@ public:
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
-			case Variant::PACKED_INT64_ARRAY: {
+			case VariantType::PACKED_INT64_ARRAY: {
 				jlongArray arr = (jlongArray)env->CallObjectMethodA(instance, E->get().method, v);
 
 				int fCount = env->GetArrayLength(arr);
@@ -150,7 +150,7 @@ public:
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
-			case Variant::PACKED_FLOAT32_ARRAY: {
+			case VariantType::PACKED_FLOAT32_ARRAY: {
 				jfloatArray arr = (jfloatArray)env->CallObjectMethodA(instance, E->get().method, v);
 
 				int fCount = env->GetArrayLength(arr);
@@ -162,7 +162,7 @@ public:
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
-			case Variant::PACKED_FLOAT64_ARRAY: {
+			case VariantType::PACKED_FLOAT64_ARRAY: {
 				jdoubleArray arr = (jdoubleArray)env->CallObjectMethodA(instance, E->get().method, v);
 
 				int fCount = env->GetArrayLength(arr);
@@ -174,7 +174,7 @@ public:
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
-			case Variant::DICTIONARY: {
+			case VariantType::DICTIONARY: {
 				jobject obj = env->CallObjectMethodA(instance, E->get().method, v);
 				ret = _jobject_to_variant(env, obj);
 				env->DeleteLocalRef(obj);
@@ -210,7 +210,7 @@ public:
 		instance = p_instance;
 	}
 
-	void add_method(const StringName &p_name, jmethodID p_method, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type) {
+	void add_method(const StringName &p_name, jmethodID p_method, const Vector<VariantType> &p_args, VariantType p_ret_type) {
 		MethodData md;
 		md.method = p_method;
 		md.argtypes = p_args;
@@ -218,7 +218,7 @@ public:
 		method_map[p_name] = md;
 	}
 
-	void add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args) {
+	void add_signal(const StringName &p_name, const Vector<VariantType> &p_args) {
 		if (p_args.size() == 0) {
 			ADD_SIGNAL(MethodInfo(p_name));
 		} else if (p_args.size() == 1) {

@@ -8,38 +8,38 @@ namespace Godot.NativeInterop
         {
             switch (src.Type)
             {
-                case Variant.Type.Nil:
+                case VariantType.Nil:
                     return default;
-                case Variant.Type.Bool:
-                    return new godot_variant() { Bool = src.Bool, Type = Variant.Type.Bool };
-                case Variant.Type.Int:
-                    return new godot_variant() { Int = src.Int, Type = Variant.Type.Int };
-                case Variant.Type.Float:
-                    return new godot_variant() { Float = src.Float, Type = Variant.Type.Float };
-                case Variant.Type.Vector2:
-                    return new godot_variant() { Vector2 = src.Vector2, Type = Variant.Type.Vector2 };
-                case Variant.Type.Vector2I:
-                    return new godot_variant() { Vector2I = src.Vector2I, Type = Variant.Type.Vector2I };
-                case Variant.Type.Rect2:
-                    return new godot_variant() { Rect2 = src.Rect2, Type = Variant.Type.Rect2 };
-                case Variant.Type.Rect2I:
-                    return new godot_variant() { Rect2I = src.Rect2I, Type = Variant.Type.Rect2I };
-                case Variant.Type.Vector3:
-                    return new godot_variant() { Vector3 = src.Vector3, Type = Variant.Type.Vector3 };
-                case Variant.Type.Vector3I:
-                    return new godot_variant() { Vector3I = src.Vector3I, Type = Variant.Type.Vector3I };
-                case Variant.Type.Vector4:
-                    return new godot_variant() { Vector4 = src.Vector4, Type = Variant.Type.Vector4 };
-                case Variant.Type.Vector4I:
-                    return new godot_variant() { Vector4I = src.Vector4I, Type = Variant.Type.Vector4I };
-                case Variant.Type.Plane:
-                    return new godot_variant() { Plane = src.Plane, Type = Variant.Type.Plane };
-                case Variant.Type.Quaternion:
-                    return new godot_variant() { Quaternion = src.Quaternion, Type = Variant.Type.Quaternion };
-                case Variant.Type.Color:
-                    return new godot_variant() { Color = src.Color, Type = Variant.Type.Color };
-                case Variant.Type.Rid:
-                    return new godot_variant() { Rid = src.Rid, Type = Variant.Type.Rid };
+                case VariantType.Bool:
+                    return new godot_variant() { Bool = src.Bool, Type = VariantType.Bool };
+                case VariantType.Int:
+                    return new godot_variant() { Int = src.Int, Type = VariantType.Int };
+                case VariantType.Float:
+                    return new godot_variant() { Float = src.Float, Type = VariantType.Float };
+                case VariantType.Vector2:
+                    return new godot_variant() { Vector2 = src.Vector2, Type = VariantType.Vector2 };
+                case VariantType.Vector2I:
+                    return new godot_variant() { Vector2I = src.Vector2I, Type = VariantType.Vector2I };
+                case VariantType.Rect2:
+                    return new godot_variant() { Rect2 = src.Rect2, Type = VariantType.Rect2 };
+                case VariantType.Rect2I:
+                    return new godot_variant() { Rect2I = src.Rect2I, Type = VariantType.Rect2I };
+                case VariantType.Vector3:
+                    return new godot_variant() { Vector3 = src.Vector3, Type = VariantType.Vector3 };
+                case VariantType.Vector3I:
+                    return new godot_variant() { Vector3I = src.Vector3I, Type = VariantType.Vector3I };
+                case VariantType.Vector4:
+                    return new godot_variant() { Vector4 = src.Vector4, Type = VariantType.Vector4 };
+                case VariantType.Vector4I:
+                    return new godot_variant() { Vector4I = src.Vector4I, Type = VariantType.Vector4I };
+                case VariantType.Plane:
+                    return new godot_variant() { Plane = src.Plane, Type = VariantType.Plane };
+                case VariantType.Quaternion:
+                    return new godot_variant() { Quaternion = src.Quaternion, Type = VariantType.Quaternion };
+                case VariantType.Color:
+                    return new godot_variant() { Color = src.Color, Type = VariantType.Color };
+                case VariantType.Rid:
+                    return new godot_variant() { Rid = src.Rid, Type = VariantType.Rid };
             }
 
             godotsharp_variant_new_copy(out godot_variant ret, src);

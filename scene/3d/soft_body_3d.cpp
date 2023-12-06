@@ -169,13 +169,13 @@ bool SoftBody3D::_get(const StringName &p_name, Variant &r_ret) const {
 void SoftBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	const int pinned_points_indices_size = pinned_points.size();
 
-	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, PNAME("pinned_points")));
+	p_list->push_back(PropertyInfo(VariantType::PACKED_INT32_ARRAY, PNAME("pinned_points")));
 
 	for (int i = 0; i < pinned_points_indices_size; ++i) {
 		const String prefix = vformat("%s/%d/", PNAME("attachments"), i);
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + PNAME("point_index")));
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, prefix + PNAME("spatial_attachment_path")));
-		p_list->push_back(PropertyInfo(Variant::VECTOR3, prefix + PNAME("offset")));
+		p_list->push_back(PropertyInfo(VariantType::INT, prefix + PNAME("point_index")));
+		p_list->push_back(PropertyInfo(VariantType::NODE_PATH, prefix + PNAME("spatial_attachment_path")));
+		p_list->push_back(PropertyInfo(VariantType::VECTOR3, prefix + PNAME("offset")));
 	}
 }
 
@@ -354,20 +354,20 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &SoftBody3D::is_ray_pickable);
 
 	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_collision_ignore", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject3D"), "set_parent_collision_ignore", "get_parent_collision_ignore");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "parent_collision_ignore", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject3D"), "set_parent_collision_ignore", "get_parent_collision_ignore");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,KeepActive"), "set_disable_mode", "get_disable_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,KeepActive"), "set_disable_mode", "get_disable_mode");
 
 	BIND_ENUM_CONSTANT(DISABLE_MODE_REMOVE);
 	BIND_ENUM_CONSTANT(DISABLE_MODE_KEEP_ACTIVE);

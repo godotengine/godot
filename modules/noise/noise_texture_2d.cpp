@@ -86,18 +86,18 @@ void NoiseTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture2D::set_noise);
 	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture2D::get_noise);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_width", "get_width");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert"), "set_invert", "get_invert");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "in_3d_space"), "set_in_3d_space", "is_in_3d_space");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "is_generating_mipmaps");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normal_map"), "set_as_normal_map", "is_normal_map");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize"), "set_normalize", "is_normalized");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "invert"), "set_invert", "get_invert");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "in_3d_space"), "set_in_3d_space", "is_in_3d_space");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "is_generating_mipmaps");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "seamless"), "set_seamless", "get_seamless");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "as_normal_map"), "set_as_normal_map", "is_normal_map");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "normalize"), "set_normalize", "is_normalized");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
 }
 
 void NoiseTexture2D::_validate_property(PropertyInfo &p_property) const {

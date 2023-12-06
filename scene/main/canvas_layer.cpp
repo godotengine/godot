@@ -344,18 +344,18 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasLayer::get_canvas);
 
 	ADD_GROUP("Layer", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_GROUP("Transform", "");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.1,or_less,or_greater,radians_as_degrees"), "set_rotation", "get_rotation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale", PROPERTY_HINT_LINK), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "suffix:px"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.1,or_less,or_greater,radians_as_degrees"), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "scale", PROPERTY_HINT_LINK), "set_scale", "get_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "suffix:px"), "set_transform", "get_transform");
 	ADD_GROUP("", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_GROUP("Follow Viewport", "follow_viewport");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enabled"), "set_follow_viewport", "is_following_viewport");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_less"), "set_follow_viewport_scale", "get_follow_viewport_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "follow_viewport_enabled"), "set_follow_viewport", "is_following_viewport");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_less"), "set_follow_viewport_scale", "get_follow_viewport_scale");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 }

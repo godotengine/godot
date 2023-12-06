@@ -651,9 +651,9 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &OS::get_granted_permissions);
 	ClassDB::bind_method(D_METHOD("revoke_granted_permissions"), &OS::revoke_granted_permissions);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
 
 	// Those default values need to be specified for the docs generator,
 	// to avoid using values from the documentation writer's own OS instance.
@@ -1768,12 +1768,12 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
 	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &Engine::is_printing_error_messages);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_ticks_per_second"), "set_physics_ticks_per_second", "get_physics_ticks_per_second");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_physics_steps_per_frame"), "set_max_physics_steps_per_frame", "get_max_physics_steps_per_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "physics_ticks_per_second"), "set_physics_ticks_per_second", "get_physics_ticks_per_second");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_physics_steps_per_frame"), "set_max_physics_steps_per_frame", "get_max_physics_steps_per_frame");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_fps"), "set_max_fps", "get_max_fps");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
 }
 
 Engine *Engine::singleton = nullptr;
@@ -1851,7 +1851,7 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 	Callable::CallError err;
 	capture.callp(args, 2, retval, err);
 	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, FAILED, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(capture, args, 2, err));
-	ERR_FAIL_COND_V_MSG(retval.get_type() != Variant::BOOL, FAILED, "Error calling 'capture' to callable: " + String(capture) + ". Return type is not bool.");
+	ERR_FAIL_COND_V_MSG(retval.get_type() != VariantType::BOOL, FAILED, "Error calling 'capture' to callable: " + String(capture) + ". Return type is not bool.");
 	r_captured = retval;
 	return OK;
 }

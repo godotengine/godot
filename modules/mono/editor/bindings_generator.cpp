@@ -2828,10 +2828,10 @@ const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface
 	return params;
 }
 
-StringName BindingsGenerator::_get_type_name_from_meta(Variant::Type p_type, GodotTypeInfo::Metadata p_meta) {
-	if (p_type == Variant::INT) {
+StringName BindingsGenerator::_get_type_name_from_meta(VariantType p_type, GodotTypeInfo::Metadata p_meta) {
+	if (p_type == VariantType::INT) {
 		return _get_int_type_name_from_meta(p_meta);
-	} else if (p_type == Variant::FLOAT) {
+	} else if (p_type == VariantType::FLOAT) {
 		return _get_float_type_name_from_meta(p_meta);
 	} else {
 		return Variant::get_type_name(p_type);
@@ -2891,12 +2891,12 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 	}
 
 	switch (p_val.get_type()) {
-		case Variant::NIL:
+		case VariantType::NIL:
 			return p_arg_type.is_object_type ||
 					name_cache.is_nullable_type(p_arg_type.name);
-		case Variant::BOOL:
+		case VariantType::BOOL:
 			return p_arg_type.name == name_cache.type_bool;
-		case Variant::INT:
+		case VariantType::INT:
 			return p_arg_type.name == name_cache.type_sbyte ||
 					p_arg_type.name == name_cache.type_short ||
 					p_arg_type.name == name_cache.type_int ||
@@ -2908,56 +2908,56 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 					p_arg_type.name == name_cache.type_float ||
 					p_arg_type.name == name_cache.type_double ||
 					p_arg_type.is_enum;
-		case Variant::FLOAT:
+		case VariantType::FLOAT:
 			return p_arg_type.name == name_cache.type_float ||
 					p_arg_type.name == name_cache.type_double;
-		case Variant::STRING:
-		case Variant::STRING_NAME:
+		case VariantType::STRING:
+		case VariantType::STRING_NAME:
 			return p_arg_type.name == name_cache.type_String ||
 					p_arg_type.name == name_cache.type_StringName ||
 					p_arg_type.name == name_cache.type_NodePath;
-		case Variant::NODE_PATH:
+		case VariantType::NODE_PATH:
 			return p_arg_type.name == name_cache.type_NodePath;
-		case Variant::TRANSFORM2D:
-		case Variant::TRANSFORM3D:
-		case Variant::BASIS:
-		case Variant::QUATERNION:
-		case Variant::PLANE:
-		case Variant::AABB:
-		case Variant::COLOR:
-		case Variant::VECTOR2:
-		case Variant::RECT2:
-		case Variant::VECTOR3:
-		case Variant::RID:
-		case Variant::PACKED_BYTE_ARRAY:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY:
-		case Variant::PACKED_FLOAT32_ARRAY:
-		case Variant::PACKED_FLOAT64_ARRAY:
-		case Variant::PACKED_STRING_ARRAY:
-		case Variant::PACKED_VECTOR2_ARRAY:
-		case Variant::PACKED_VECTOR3_ARRAY:
-		case Variant::PACKED_COLOR_ARRAY:
-		case Variant::CALLABLE:
-		case Variant::SIGNAL:
+		case VariantType::TRANSFORM2D:
+		case VariantType::TRANSFORM3D:
+		case VariantType::BASIS:
+		case VariantType::QUATERNION:
+		case VariantType::PLANE:
+		case VariantType::AABB:
+		case VariantType::COLOR:
+		case VariantType::VECTOR2:
+		case VariantType::RECT2:
+		case VariantType::VECTOR3:
+		case VariantType::RID:
+		case VariantType::PACKED_BYTE_ARRAY:
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY:
+		case VariantType::PACKED_FLOAT32_ARRAY:
+		case VariantType::PACKED_FLOAT64_ARRAY:
+		case VariantType::PACKED_STRING_ARRAY:
+		case VariantType::PACKED_VECTOR2_ARRAY:
+		case VariantType::PACKED_VECTOR3_ARRAY:
+		case VariantType::PACKED_COLOR_ARRAY:
+		case VariantType::CALLABLE:
+		case VariantType::SIGNAL:
 			return p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		case Variant::ARRAY:
+		case VariantType::ARRAY:
 			return p_arg_type.name == Variant::get_type_name(p_val.get_type()) || p_arg_type.cname == name_cache.type_Array_generic;
-		case Variant::DICTIONARY:
+		case VariantType::DICTIONARY:
 			return p_arg_type.name == Variant::get_type_name(p_val.get_type()) || p_arg_type.cname == name_cache.type_Dictionary_generic;
-		case Variant::OBJECT:
+		case VariantType::OBJECT:
 			return p_arg_type.is_object_type;
-		case Variant::VECTOR2I:
+		case VariantType::VECTOR2I:
 			return p_arg_type.name == name_cache.type_Vector2 ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		case Variant::RECT2I:
+		case VariantType::RECT2I:
 			return p_arg_type.name == name_cache.type_Rect2 ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		case Variant::VECTOR3I:
+		case VariantType::VECTOR3I:
 			return p_arg_type.name == name_cache.type_Vector3 ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		default:
-			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));
+			CRASH_NOW_MSG("Unexpected Variant type: " + itos((int)p_val.get_type()));
 			break;
 	}
 
@@ -2965,11 +2965,11 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 }
 
 bool method_has_ptr_parameter(MethodInfo p_method_info) {
-	if (p_method_info.return_val.type == Variant::INT && p_method_info.return_val.hint == PROPERTY_HINT_INT_IS_POINTER) {
+	if (p_method_info.return_val.type == VariantType::INT && p_method_info.return_val.hint == PROPERTY_HINT_INT_IS_POINTER) {
 		return true;
 	}
 	for (PropertyInfo arg : p_method_info.arguments) {
-		if (arg.type == Variant::INT && arg.hint == PROPERTY_HINT_INT_IS_POINTER) {
+		if (arg.type == VariantType::INT && arg.hint == PROPERTY_HINT_INT_IS_POINTER) {
 			return true;
 		}
 	}
@@ -3055,7 +3055,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		HashMap<StringName, StringName> accessor_methods;
 
 		for (const PropertyInfo &property : property_list) {
-			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
+			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == VariantType::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
 				continue;
 			}
 
@@ -3187,7 +3187,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 							   " We only expected Object.free, but found '" +
 							itype.name + "." + imethod.name + "'.");
 				}
-			} else if (return_info.type == Variant::INT && return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
+			} else if (return_info.type == VariantType::INT && return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 				imethod.return_type.cname = return_info.class_name;
 				imethod.return_type.is_enum = true;
 			} else if (return_info.class_name != StringName()) {
@@ -3198,14 +3198,14 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				ERR_FAIL_COND_V_MSG(bad_reference_hint, false,
 						String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
 								" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
-			} else if (return_info.type == Variant::ARRAY && return_info.hint == PROPERTY_HINT_ARRAY_TYPE) {
+			} else if (return_info.type == VariantType::ARRAY && return_info.hint == PROPERTY_HINT_ARRAY_TYPE) {
 				imethod.return_type.cname = Variant::get_type_name(return_info.type) + "_@generic";
 				imethod.return_type.generic_type_parameters.push_back(TypeReference(return_info.hint_string));
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				imethod.return_type.cname = return_info.hint_string;
-			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+			} else if (return_info.type == VariantType::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
 				imethod.return_type.cname = name_cache.type_Variant;
-			} else if (return_info.type == Variant::NIL) {
+			} else if (return_info.type == VariantType::NIL) {
 				imethod.return_type.cname = name_cache.type_void;
 			} else {
 				imethod.return_type.cname = _get_type_name_from_meta(return_info.type, m ? m->get_argument_meta(-1) : (GodotTypeInfo::Metadata)method_info.return_val_metadata);
@@ -3219,17 +3219,17 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				ArgumentInterface iarg;
 				iarg.name = orig_arg_name;
 
-				if (arginfo.type == Variant::INT && arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
+				if (arginfo.type == VariantType::INT && arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					iarg.type.cname = arginfo.class_name;
 					iarg.type.is_enum = true;
 				} else if (arginfo.class_name != StringName()) {
 					iarg.type.cname = arginfo.class_name;
-				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+				} else if (arginfo.type == VariantType::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 					iarg.type.cname = Variant::get_type_name(arginfo.type) + "_@generic";
 					iarg.type.generic_type_parameters.push_back(TypeReference(arginfo.hint_string));
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type.cname = arginfo.hint_string;
-				} else if (arginfo.type == Variant::NIL) {
+				} else if (arginfo.type == VariantType::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
 					iarg.type.cname = _get_type_name_from_meta(arginfo.type, m ? m->get_argument_meta(i) : (GodotTypeInfo::Metadata)method_info.get_argument_meta(i));
@@ -3336,17 +3336,17 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				ArgumentInterface iarg;
 				iarg.name = orig_arg_name;
 
-				if (arginfo.type == Variant::INT && arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
+				if (arginfo.type == VariantType::INT && arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					iarg.type.cname = arginfo.class_name;
 					iarg.type.is_enum = true;
 				} else if (arginfo.class_name != StringName()) {
 					iarg.type.cname = arginfo.class_name;
-				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+				} else if (arginfo.type == VariantType::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 					iarg.type.cname = Variant::get_type_name(arginfo.type) + "_@generic";
 					iarg.type.generic_type_parameters.push_back(TypeReference(arginfo.hint_string));
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type.cname = arginfo.hint_string;
-				} else if (arginfo.type == Variant::NIL) {
+				} else if (arginfo.type == VariantType::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
 					iarg.type.cname = _get_type_name_from_meta(arginfo.type, (GodotTypeInfo::Metadata)method_info.get_argument_meta(i));
@@ -3497,27 +3497,27 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 	r_iarg.default_argument = p_val.operator String();
 
 	switch (p_val.get_type()) {
-		case Variant::NIL:
+		case VariantType::NIL:
 			// Either Object type or Variant
 			r_iarg.default_argument = "default";
 			break;
 		// Atomic types
-		case Variant::BOOL:
+		case VariantType::BOOL:
 			r_iarg.default_argument = bool(p_val) ? "true" : "false";
 			break;
-		case Variant::INT:
+		case VariantType::INT:
 			if (r_iarg.type.cname != name_cache.type_int) {
 				r_iarg.default_argument = "(%s)(" + r_iarg.default_argument + ")";
 			}
 			break;
-		case Variant::FLOAT:
+		case VariantType::FLOAT:
 			if (r_iarg.type.cname == name_cache.type_float) {
 				r_iarg.default_argument += "f";
 			}
 			break;
-		case Variant::STRING:
-		case Variant::STRING_NAME:
-		case Variant::NODE_PATH:
+		case VariantType::STRING:
+		case VariantType::STRING_NAME:
+		case VariantType::NODE_PATH:
 			if (r_iarg.type.cname == name_cache.type_StringName || r_iarg.type.cname == name_cache.type_NodePath) {
 				if (r_iarg.default_argument.length() > 0) {
 					r_iarg.default_argument = "(%s)\"" + r_iarg.default_argument + "\"";
@@ -3531,53 +3531,53 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 				r_iarg.default_argument = "\"" + r_iarg.default_argument + "\"";
 			}
 			break;
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			Plane plane = p_val.operator Plane();
 			r_iarg.default_argument = "new Plane(new Vector3" + plane.normal.operator String() + ", " + rtos(plane.d) + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::AABB: {
-			AABB aabb = p_val.operator ::AABB();
+		case VariantType::AABB: {
+			AABB aabb = p_val.operator AABB();
 			r_iarg.default_argument = "new Aabb(new Vector3" + aabb.position.operator String() + ", new Vector3" + aabb.size.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			Rect2 rect = p_val.operator Rect2();
 			r_iarg.default_argument = "new Rect2(new Vector2" + rect.position.operator String() + ", new Vector2" + rect.size.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::RECT2I: {
+		case VariantType::RECT2I: {
 			Rect2i rect = p_val.operator Rect2i();
 			r_iarg.default_argument = "new Rect2I(new Vector2I" + rect.position.operator String() + ", new Vector2I" + rect.size.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::COLOR:
-		case Variant::VECTOR2:
-		case Variant::VECTOR2I:
-		case Variant::VECTOR3:
-		case Variant::VECTOR3I:
+		case VariantType::COLOR:
+		case VariantType::VECTOR2:
+		case VariantType::VECTOR2I:
+		case VariantType::VECTOR3:
+		case VariantType::VECTOR3I:
 			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
-		case Variant::VECTOR4:
-		case Variant::VECTOR4I:
+		case VariantType::VECTOR4:
+		case VariantType::VECTOR4I:
 			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
-		case Variant::OBJECT:
+		case VariantType::OBJECT:
 			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
 					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
 
 			r_iarg.default_argument = "null";
 			break;
-		case Variant::DICTIONARY:
+		case VariantType::DICTIONARY:
 			ERR_FAIL_COND_V_MSG(!p_val.operator Dictionary().is_empty(), false,
 					"Default value of type 'Dictionary' must be an empty dictionary.");
 			// The [cs_in] expression already interprets null values as empty dictionaries.
 			r_iarg.default_argument = "null";
 			r_iarg.def_param_mode = ArgumentInterface::CONSTANT;
 			break;
-		case Variant::RID:
+		case VariantType::RID:
 			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_RID, false,
 					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_RID) + "'.");
 
@@ -3586,26 +3586,26 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 
 			r_iarg.default_argument = "default";
 			break;
-		case Variant::ARRAY:
+		case VariantType::ARRAY:
 			ERR_FAIL_COND_V_MSG(!p_val.operator Array().is_empty(), false,
 					"Default value of type 'Array' must be an empty array.");
 			// The [cs_in] expression already interprets null values as empty arrays.
 			r_iarg.default_argument = "null";
 			r_iarg.def_param_mode = ArgumentInterface::CONSTANT;
 			break;
-		case Variant::PACKED_BYTE_ARRAY:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY:
-		case Variant::PACKED_FLOAT32_ARRAY:
-		case Variant::PACKED_FLOAT64_ARRAY:
-		case Variant::PACKED_STRING_ARRAY:
-		case Variant::PACKED_VECTOR2_ARRAY:
-		case Variant::PACKED_VECTOR3_ARRAY:
-		case Variant::PACKED_COLOR_ARRAY:
+		case VariantType::PACKED_BYTE_ARRAY:
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY:
+		case VariantType::PACKED_FLOAT32_ARRAY:
+		case VariantType::PACKED_FLOAT64_ARRAY:
+		case VariantType::PACKED_STRING_ARRAY:
+		case VariantType::PACKED_VECTOR2_ARRAY:
+		case VariantType::PACKED_VECTOR3_ARRAY:
+		case VariantType::PACKED_COLOR_ARRAY:
 			r_iarg.default_argument = "Array.Empty<%s>()";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			break;
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			Transform2D transform = p_val.operator Transform2D();
 			if (transform == Transform2D()) {
 				r_iarg.default_argument = "Transform2D.Identity";
@@ -3614,7 +3614,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			Transform3D transform = p_val.operator Transform3D();
 			if (transform == Transform3D()) {
 				r_iarg.default_argument = "Transform3D.Identity";
@@ -3624,7 +3624,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::PROJECTION: {
+		case VariantType::PROJECTION: {
 			Projection projection = p_val.operator Projection();
 			if (projection == Projection()) {
 				r_iarg.default_argument = "Projection.Identity";
@@ -3633,7 +3633,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			Basis basis = p_val.operator Basis();
 			if (basis == Basis()) {
 				r_iarg.default_argument = "Basis.Identity";
@@ -3642,7 +3642,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			Quaternion quaternion = p_val.operator Quaternion();
 			if (quaternion == Quaternion()) {
 				r_iarg.default_argument = "Quaternion.Identity";
@@ -3651,14 +3651,14 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::CALLABLE:
+		case VariantType::CALLABLE:
 			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_Callable, false,
 					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_Callable) + "'.");
 			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
 					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
 			r_iarg.default_argument = "default";
 			break;
-		case Variant::SIGNAL:
+		case VariantType::SIGNAL:
 			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_Signal, false,
 					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_Signal) + "'.");
 			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
@@ -3666,7 +3666,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.default_argument = "default";
 			break;
 		default:
-			ERR_FAIL_V_MSG(false, "Unexpected Variant type: " + itos(p_val.get_type()));
+			ERR_FAIL_V_MSG(false, "Unexpected Variant type: " + itos((int)p_val.get_type()));
 			break;
 	}
 

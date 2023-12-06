@@ -98,7 +98,7 @@ void ConvexPolygonShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &ConvexPolygonShape2D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &ConvexPolygonShape2D::get_points);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 }
 
 void ConvexPolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {

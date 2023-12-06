@@ -142,7 +142,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 						}
 						Variant value = src_tile_data->get(property.name);
 						Variant default_value = ClassDB::class_get_default_property_value("TileData", property.name);
-						if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
+						if (default_value.get_type() != VariantType::NIL && bool(Variant::evaluate(VariantOperator::EQUAL, value, default_value))) {
 							continue;
 						}
 						dst_tile_data->set(property.name, value);
@@ -243,7 +243,7 @@ void AtlasMergingDialog::custom_action(const String &p_action) {
 }
 
 bool AtlasMergingDialog::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "next_line_after_column" && p_value.get_type() == Variant::INT) {
+	if (p_name == "next_line_after_column" && p_value.get_type() == VariantType::INT) {
 		next_line_after_column = p_value;
 		_update_texture();
 		return true;

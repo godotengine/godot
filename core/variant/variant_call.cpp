@@ -245,62 +245,62 @@ static _FORCE_INLINE_ int vc_get_argument_count_static(R (*method)(P...)) {
 }
 
 template <class R, class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(R (T::*method)(P...), int p_arg) {
+static _FORCE_INLINE_ VariantType vc_get_argument_type(R (T::*method)(P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 template <class R, class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(R (T::*method)(P...) const, int p_arg) {
+static _FORCE_INLINE_ VariantType vc_get_argument_type(R (T::*method)(P...) const, int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
 template <class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(void (T::*method)(P...), int p_arg) {
+static _FORCE_INLINE_ VariantType vc_get_argument_type(void (T::*method)(P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
 template <class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(void (T::*method)(P...) const, int p_arg) {
+static _FORCE_INLINE_ VariantType vc_get_argument_type(void (T::*method)(P...) const, int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
 template <class R, class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(R (*method)(T *, P...), int p_arg) {
+static _FORCE_INLINE_ VariantType vc_get_argument_type(R (*method)(T *, P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
 template <class R, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type_static(R (*method)(P...), int p_arg) {
+static _FORCE_INLINE_ VariantType vc_get_argument_type_static(R (*method)(P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
 template <class R, class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(R (T::*method)(P...)) {
+static _FORCE_INLINE_ VariantType vc_get_return_type(R (T::*method)(P...)) {
 	return GetTypeInfo<R>::VARIANT_TYPE;
 }
 
 template <class R, class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(R (T::*method)(P...) const) {
+static _FORCE_INLINE_ VariantType vc_get_return_type(R (T::*method)(P...) const) {
 	return GetTypeInfo<R>::VARIANT_TYPE;
 }
 
 template <class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(void (T::*method)(P...)) {
-	return Variant::NIL;
+static _FORCE_INLINE_ VariantType vc_get_return_type(void (T::*method)(P...)) {
+	return VariantType::NIL;
 }
 
 template <class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(void (T::*method)(P...) const) {
-	return Variant::NIL;
+static _FORCE_INLINE_ VariantType vc_get_return_type(void (T::*method)(P...) const) {
+	return VariantType::NIL;
 }
 
 template <class R, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(R (*method)(P...)) {
+static _FORCE_INLINE_ VariantType vc_get_return_type(R (*method)(P...)) {
 	return GetTypeInfo<R>::VARIANT_TYPE;
 }
 
 template <class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(void (*method)(P...)) {
-	return Variant::NIL;
+static _FORCE_INLINE_ VariantType vc_get_return_type(void (*method)(P...)) {
+	return VariantType::NIL;
 }
 
 template <class R, class T, class... P>
@@ -352,21 +352,21 @@ static _FORCE_INLINE_ bool vc_is_const(void (T::*method)(P...) const) {
 }
 
 template <class R, class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_base_type(R (T::*method)(P...)) {
+static _FORCE_INLINE_ VariantType vc_get_base_type(R (T::*method)(P...)) {
 	return GetTypeInfo<T>::VARIANT_TYPE;
 }
 template <class R, class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_base_type(R (T::*method)(P...) const) {
+static _FORCE_INLINE_ VariantType vc_get_base_type(R (T::*method)(P...) const) {
 	return GetTypeInfo<T>::VARIANT_TYPE;
 }
 
 template <class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...)) {
+static _FORCE_INLINE_ VariantType vc_get_base_type(void (T::*method)(P...)) {
 	return GetTypeInfo<T>::VARIANT_TYPE;
 }
 
 template <class T, class... P>
-static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) const) {
+static _FORCE_INLINE_ VariantType vc_get_base_type(void (T::*method)(P...) const) {
 	return GetTypeInfo<T>::VARIANT_TYPE;
 }
 
@@ -384,10 +384,10 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 		static int get_argument_count() {                                                                                                                         \
 			return vc_get_argument_count(m_method_ptr);                                                                                                           \
 		}                                                                                                                                                         \
-		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
+		static VariantType get_argument_type(int p_arg) {                                                                                                         \
 			return vc_get_argument_type(m_method_ptr, p_arg);                                                                                                     \
 		}                                                                                                                                                         \
-		static Variant::Type get_return_type() {                                                                                                                  \
+		static VariantType get_return_type() {                                                                                                                    \
 			return vc_get_return_type(m_method_ptr);                                                                                                              \
 		}                                                                                                                                                         \
 		static bool has_return_type() {                                                                                                                           \
@@ -402,7 +402,7 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 		static bool is_vararg() {                                                                                                                                 \
 			return false;                                                                                                                                         \
 		}                                                                                                                                                         \
-		static Variant::Type get_base_type() {                                                                                                                    \
+		static VariantType get_base_type() {                                                                                                                      \
 			return vc_get_base_type(m_method_ptr);                                                                                                                \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
@@ -424,10 +424,10 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 		static int get_argument_count() {                                                                                                                         \
 			return vc_get_argument_count(m_method_ptr);                                                                                                           \
 		}                                                                                                                                                         \
-		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
+		static VariantType get_argument_type(int p_arg) {                                                                                                         \
 			return vc_get_argument_type(m_method_ptr, p_arg);                                                                                                     \
 		}                                                                                                                                                         \
-		static Variant::Type get_return_type() {                                                                                                                  \
+		static VariantType get_return_type() {                                                                                                                    \
 			return vc_get_return_type(m_method_ptr);                                                                                                              \
 		}                                                                                                                                                         \
 		static bool has_return_type() {                                                                                                                           \
@@ -442,7 +442,7 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 		static bool is_vararg() {                                                                                                                                 \
 			return false;                                                                                                                                         \
 		}                                                                                                                                                         \
-		static Variant::Type get_base_type() {                                                                                                                    \
+		static VariantType get_base_type() {                                                                                                                      \
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
@@ -474,10 +474,10 @@ static _FORCE_INLINE_ void vc_static_ptrcall(void (*method)(P...), const void **
 		static int get_argument_count() {                                                                                                                         \
 			return vc_get_argument_count_static(m_method_ptr);                                                                                                    \
 		}                                                                                                                                                         \
-		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
+		static VariantType get_argument_type(int p_arg) {                                                                                                         \
 			return vc_get_argument_type_static(m_method_ptr, p_arg);                                                                                              \
 		}                                                                                                                                                         \
-		static Variant::Type get_return_type() {                                                                                                                  \
+		static VariantType get_return_type() {                                                                                                                    \
 			return vc_get_return_type(m_method_ptr);                                                                                                              \
 		}                                                                                                                                                         \
 		static bool has_return_type() {                                                                                                                           \
@@ -492,7 +492,7 @@ static _FORCE_INLINE_ void vc_static_ptrcall(void (*method)(P...), const void **
 		static bool is_vararg() {                                                                                                                                 \
 			return false;                                                                                                                                         \
 		}                                                                                                                                                         \
-		static Variant::Type get_base_type() {                                                                                                                    \
+		static VariantType get_base_type() {                                                                                                                      \
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
@@ -524,10 +524,10 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		static int get_argument_count() {                                                                                                                         \
 			return vc_get_argument_count(m_method_ptr);                                                                                                           \
 		}                                                                                                                                                         \
-		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
+		static VariantType get_argument_type(int p_arg) {                                                                                                         \
 			return vc_get_argument_type(m_method_ptr, p_arg);                                                                                                     \
 		}                                                                                                                                                         \
-		static Variant::Type get_return_type() {                                                                                                                  \
+		static VariantType get_return_type() {                                                                                                                    \
 			return vc_get_return_type(m_method_ptr);                                                                                                              \
 		}                                                                                                                                                         \
 		static bool has_return_type() {                                                                                                                           \
@@ -542,7 +542,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		static bool is_vararg() {                                                                                                                                 \
 			return false;                                                                                                                                         \
 		}                                                                                                                                                         \
-		static Variant::Type get_base_type() {                                                                                                                    \
+		static VariantType get_base_type() {                                                                                                                      \
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
@@ -580,10 +580,10 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		static int get_argument_count() {                                                                                                                         \
 			return 0;                                                                                                                                             \
 		}                                                                                                                                                         \
-		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
-			return Variant::NIL;                                                                                                                                  \
+		static VariantType get_argument_type(int p_arg) {                                                                                                         \
+			return VariantType::NIL;                                                                                                                              \
 		}                                                                                                                                                         \
-		static Variant::Type get_return_type() {                                                                                                                  \
+		static VariantType get_return_type() {                                                                                                                    \
 			return GetTypeInfo<m_return_type>::VARIANT_TYPE;                                                                                                      \
 		}                                                                                                                                                         \
 		static bool has_return_type() {                                                                                                                           \
@@ -598,7 +598,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		static bool is_vararg() {                                                                                                                                 \
 			return true;                                                                                                                                          \
 		}                                                                                                                                                         \
-		static Variant::Type get_base_type() {                                                                                                                    \
+		static VariantType get_base_type() {                                                                                                                      \
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
@@ -632,11 +632,11 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		static int get_argument_count() {                                                                                                                         \
 			return 1;                                                                                                                                             \
 		}                                                                                                                                                         \
-		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
+		static VariantType get_argument_type(int p_arg) {                                                                                                         \
 			return m_arg_type;                                                                                                                                    \
 		}                                                                                                                                                         \
-		static Variant::Type get_return_type() {                                                                                                                  \
-			return Variant::NIL;                                                                                                                                  \
+		static VariantType get_return_type() {                                                                                                                    \
+			return VariantType::NIL;                                                                                                                              \
 		}                                                                                                                                                         \
 		static bool has_return_type() {                                                                                                                           \
 			return false;                                                                                                                                         \
@@ -650,7 +650,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		static bool is_vararg() {                                                                                                                                 \
 			return true;                                                                                                                                          \
 		}                                                                                                                                                         \
-		static Variant::Type get_base_type() {                                                                                                                    \
+		static VariantType get_base_type() {                                                                                                                      \
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
@@ -1038,10 +1038,10 @@ struct _VariantCall {
 		if (p_argcount == 0) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.expected = 1;
-		} else if (p_args[0]->get_type() != Variant::INT) {
+		} else if (p_args[0]->get_type() != VariantType::INT) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::INT;
+			r_error.expected = (int)VariantType::INT;
 		} else {
 			Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
 			callable->rpcp(*p_args[0], &p_args[1], p_argcount - 1, r_error);
@@ -1071,17 +1071,17 @@ struct _VariantCall {
 
 	static ConstantData *constant_data;
 
-	static void add_constant(int p_type, StringName p_constant_name, int64_t p_constant_value) {
-		constant_data[p_type].value[p_constant_name] = p_constant_value;
+	static void add_constant(VariantType p_type, StringName p_constant_name, int64_t p_constant_value) {
+		constant_data[(int)p_type].value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
-		constant_data[p_type].value_ordered.push_back(p_constant_name);
+		constant_data[(int)p_type].value_ordered.push_back(p_constant_name);
 #endif
 	}
 
-	static void add_variant_constant(int p_type, StringName p_constant_name, const Variant &p_constant_value) {
-		constant_data[p_type].variant_value[p_constant_name] = p_constant_value;
+	static void add_variant_constant(VariantType p_type, StringName p_constant_name, const Variant &p_constant_value) {
+		constant_data[(int)p_type].variant_value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
-		constant_data[p_type].variant_value_ordered.push_back(p_constant_name);
+		constant_data[(int)p_type].variant_value_ordered.push_back(p_constant_name);
 #endif
 	}
 
@@ -1091,8 +1091,8 @@ struct _VariantCall {
 
 	static EnumData *enum_data;
 
-	static void add_enum_constant(int p_type, StringName p_enum_type_name, StringName p_enumeration_name, int p_enum_value) {
-		enum_data[p_type].value[p_enum_type_name][p_enumeration_name] = p_enum_value;
+	static void add_enum_constant(VariantType p_type, StringName p_enum_type_name, StringName p_enumeration_name, int p_enum_value) {
+		enum_data[(int)p_type].value[p_enum_type_name][p_enumeration_name] = p_enum_value;
 	}
 };
 
@@ -1111,9 +1111,9 @@ struct VariantBuiltInMethodInfo {
 	bool is_static = false;
 	bool has_return_type = false;
 	bool is_vararg = false;
-	Variant::Type return_type;
+	VariantType return_type;
 	int argument_count = 0;
-	Variant::Type (*get_argument_type)(int p_arg) = nullptr;
+	VariantType (*get_argument_type)(int p_arg) = nullptr;
 };
 
 typedef OAHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
@@ -1124,7 +1124,7 @@ template <class T>
 static void register_builtin_method(const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
 	StringName name = T::get_name();
 
-	ERR_FAIL_COND(builtin_method_info[T::get_base_type()].has(name));
+	ERR_FAIL_COND(builtin_method_info[(int)T::get_base_type()].has(name));
 
 	VariantBuiltInMethodInfo imi;
 
@@ -1146,12 +1146,12 @@ static void register_builtin_method(const Vector<String> &p_argnames, const Vect
 	ERR_FAIL_COND(!imi.is_vararg && imi.argument_count != imi.argument_names.size());
 #endif
 
-	builtin_method_info[T::get_base_type()].insert(name, imi);
-	builtin_method_names[T::get_base_type()].push_back(name);
+	builtin_method_info[(int)T::get_base_type()].insert(name, imi);
+	builtin_method_names[(int)T::get_base_type()].push_back(name);
 }
 
 void Variant::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
-	if (type == Variant::OBJECT) {
+	if (type == VariantType::OBJECT) {
 		//call object
 		Object *obj = _get_obj().obj;
 		if (!obj) {
@@ -1170,7 +1170,7 @@ void Variant::callp(const StringName &p_method, const Variant **p_args, int p_ar
 	} else {
 		r_error.error = Callable::CallError::CALL_OK;
 
-		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].lookup_ptr(p_method);
+		const VariantBuiltInMethodInfo *imf = builtin_method_info[(int)type].lookup_ptr(p_method);
 
 		if (!imf) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1182,7 +1182,7 @@ void Variant::callp(const StringName &p_method, const Variant **p_args, int p_ar
 }
 
 void Variant::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
-	if (type == Variant::OBJECT) {
+	if (type == VariantType::OBJECT) {
 		//call object
 		Object *obj = _get_obj().obj;
 		if (!obj) {
@@ -1202,7 +1202,7 @@ void Variant::call_const(const StringName &p_method, const Variant **p_args, int
 	} else {
 		r_error.error = Callable::CallError::CALL_OK;
 
-		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].lookup_ptr(p_method);
+		const VariantBuiltInMethodInfo *imf = builtin_method_info[(int)type].lookup_ptr(p_method);
 
 		if (!imf) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1218,10 +1218,10 @@ void Variant::call_const(const StringName &p_method, const Variant **p_args, int
 	}
 }
 
-void Variant::call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
+void Variant::call_static(VariantType p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	const VariantBuiltInMethodInfo *imf = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *imf = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 
 	if (!imf) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1237,7 +1237,7 @@ void Variant::call_static(Variant::Type p_type, const StringName &p_method, cons
 }
 
 bool Variant::has_method(const StringName &p_method) const {
-	if (type == OBJECT) {
+	if (type == VariantType::OBJECT) {
 		Object *obj = get_validated_object();
 		if (!obj) {
 			return false;
@@ -1246,46 +1246,46 @@ bool Variant::has_method(const StringName &p_method) const {
 		return obj->has_method(p_method);
 	}
 
-	return builtin_method_info[type].has(p_method);
+	return builtin_method_info[(int)type].has(p_method);
 }
 
-bool Variant::has_builtin_method(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	return builtin_method_info[p_type].has(p_method);
+bool Variant::has_builtin_method(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, false);
+	return builtin_method_info[(int)p_type].has(p_method);
 }
 
-Variant::ValidatedBuiltInMethod Variant::get_validated_builtin_method(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+Variant::ValidatedBuiltInMethod Variant::get_validated_builtin_method(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, nullptr);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, nullptr);
 	return method->validated_call;
 }
 
-Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, nullptr);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, nullptr);
 	return method->ptrcall;
 }
 
-int Variant::get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+int Variant::get_builtin_method_argument_count(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, 0);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, 0);
 	return method->argument_count;
 }
 
-Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_NULL_V(method, Variant::NIL);
-	ERR_FAIL_INDEX_V(p_argument, method->argument_count, Variant::NIL);
+VariantType Variant::get_builtin_method_argument_type(VariantType p_type, const StringName &p_method, int p_argument) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, VariantType::NIL);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
+	ERR_FAIL_NULL_V(method, VariantType::NIL);
+	ERR_FAIL_INDEX_V(p_argument, method->argument_count, VariantType::NIL);
 	return method->get_argument_type(p_argument);
 }
 
-String Variant::get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+String Variant::get_builtin_method_argument_name(VariantType p_type, const StringName &p_method, int p_argument) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, String());
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, String());
 #ifdef DEBUG_METHODS_ENABLED
 	ERR_FAIL_INDEX_V(p_argument, method->argument_count, String());
@@ -1295,88 +1295,88 @@ String Variant::get_builtin_method_argument_name(Variant::Type p_type, const Str
 #endif
 }
 
-Vector<Variant> Variant::get_builtin_method_default_arguments(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Vector<Variant>());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+Vector<Variant> Variant::get_builtin_method_default_arguments(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, Vector<Variant>());
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, Vector<Variant>());
 	return method->default_arguments;
 }
 
-bool Variant::has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+bool Variant::has_builtin_method_return_value(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, false);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->has_return_type;
 }
 
-void Variant::get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list) {
-	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
-	for (const StringName &E : builtin_method_names[p_type]) {
+void Variant::get_builtin_method_list(VariantType p_type, List<StringName> *p_list) {
+	ERR_FAIL_INDEX((int)p_type, (int)VariantType::MAX);
+	for (const StringName &E : builtin_method_names[(int)p_type]) {
 		p_list->push_back(E);
 	}
 }
 
-int Variant::get_builtin_method_count(Variant::Type p_type) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
-	return builtin_method_names[p_type].size();
+int Variant::get_builtin_method_count(VariantType p_type) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, -1);
+	return builtin_method_names[(int)p_type].size();
 }
 
-Variant::Type Variant::get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_NULL_V(method, Variant::NIL);
+VariantType Variant::get_builtin_method_return_type(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, VariantType::NIL);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
+	ERR_FAIL_NULL_V(method, VariantType::NIL);
 	return method->return_type;
 }
 
-bool Variant::is_builtin_method_const(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+bool Variant::is_builtin_method_const(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, false);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->is_const;
 }
 
-bool Variant::is_builtin_method_static(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+bool Variant::is_builtin_method_static(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, false);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->is_static;
 }
 
-bool Variant::is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+bool Variant::is_builtin_method_vararg(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, false);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->is_vararg;
 }
 
-uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName &p_method) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+uint32_t Variant::get_builtin_method_hash(VariantType p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, 0);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[(int)p_type].lookup_ptr(p_method);
 	ERR_FAIL_NULL_V(method, 0);
 	uint32_t hash = hash_murmur3_one_32(method->is_const);
 	hash = hash_murmur3_one_32(method->is_static, hash);
 	hash = hash_murmur3_one_32(method->is_vararg, hash);
 	hash = hash_murmur3_one_32(method->has_return_type, hash);
 	if (method->has_return_type) {
-		hash = hash_murmur3_one_32(method->return_type, hash);
+		hash = hash_murmur3_one_32((int)method->return_type, hash);
 	}
 	hash = hash_murmur3_one_32(method->argument_count, hash);
 	for (int i = 0; i < method->argument_count; i++) {
-		hash = hash_murmur3_one_32(method->get_argument_type(i), hash);
+		hash = hash_murmur3_one_32((int)method->get_argument_type(i), hash);
 	}
 
 	return hash_fmix32(hash);
 }
 
 void Variant::get_method_list(List<MethodInfo> *p_list) const {
-	if (type == OBJECT) {
+	if (type == VariantType::OBJECT) {
 		Object *obj = get_validated_object();
 		if (obj) {
 			obj->get_method_list(p_list);
 		}
 	} else {
-		for (const StringName &E : builtin_method_names[type]) {
-			const VariantBuiltInMethodInfo *method = builtin_method_info[type].lookup_ptr(E);
+		for (const StringName &E : builtin_method_names[(int)type]) {
+			const VariantBuiltInMethodInfo *method = builtin_method_info[(int)type].lookup_ptr(E);
 			ERR_CONTINUE(!method);
 
 			MethodInfo mi;
@@ -1385,7 +1385,7 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 			//return type
 			if (method->has_return_type) {
 				mi.return_val.type = method->return_type;
-				if (mi.return_val.type == Variant::NIL) {
+				if (mi.return_val.type == VariantType::NIL) {
 					mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 				}
 			}
@@ -1407,7 +1407,7 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 				pi.name = "arg" + itos(i + 1);
 #endif
 				pi.type = method->get_argument_type(i);
-				if (pi.type == Variant::NIL) {
+				if (pi.type == VariantType::NIL) {
 					pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 				}
 				mi.arguments.push_back(pi);
@@ -1419,10 +1419,10 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 
-void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants) {
-	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
+void Variant::get_constants_for_type(VariantType p_type, List<StringName> *p_constants) {
+	ERR_FAIL_INDEX((int)p_type, (int)VariantType::MAX);
 
-	const _VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
+	const _VariantCall::ConstantData &cd = _VariantCall::constant_data[(int)p_type];
 
 #ifdef DEBUG_ENABLED
 	for (const List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
@@ -1443,26 +1443,26 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	}
 }
 
-int Variant::get_constants_count_for_type(Variant::Type p_type) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
-	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
+int Variant::get_constants_count_for_type(VariantType p_type) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, -1);
+	_VariantCall::ConstantData &cd = _VariantCall::constant_data[(int)p_type];
 
 	return cd.value.size() + cd.variant_value.size();
 }
 
-bool Variant::has_constant(Variant::Type p_type, const StringName &p_value) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
+bool Variant::has_constant(VariantType p_type, const StringName &p_value) {
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, false);
+	_VariantCall::ConstantData &cd = _VariantCall::constant_data[(int)p_type];
 	return cd.value.has(p_value) || cd.variant_value.has(p_value);
 }
 
-Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid) {
+Variant Variant::get_constant_value(VariantType p_type, const StringName &p_value, bool *r_valid) {
 	if (r_valid) {
 		*r_valid = false;
 	}
 
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, 0);
+	_VariantCall::ConstantData &cd = _VariantCall::constant_data[(int)p_type];
 
 	HashMap<StringName, int64_t>::Iterator E = cd.value.find(p_value);
 	if (!E) {
@@ -1483,20 +1483,20 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	return E->value;
 }
 
-void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums) {
-	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
+void Variant::get_enums_for_type(VariantType p_type, List<StringName> *p_enums) {
+	ERR_FAIL_INDEX((int)p_type, (int)VariantType::MAX);
 
-	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
+	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[(int)p_type];
 
 	for (const KeyValue<StringName, HashMap<StringName, int>> &E : enum_data.value) {
 		p_enums->push_back(E.key);
 	}
 }
 
-void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations) {
-	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
+void Variant::get_enumerations_for_enum(VariantType p_type, StringName p_enum_name, List<StringName> *p_enumerations) {
+	ERR_FAIL_INDEX((int)p_type, (int)VariantType::MAX);
 
-	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
+	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[(int)p_type];
 
 	for (const KeyValue<StringName, HashMap<StringName, int>> &E : enum_data.value) {
 		for (const KeyValue<StringName, int> &V : E.value) {
@@ -1505,14 +1505,14 @@ void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_
 	}
 }
 
-int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid) {
+int Variant::get_enum_value(VariantType p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid) {
 	if (r_valid) {
 		*r_valid = false;
 	}
 
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
+	ERR_FAIL_INDEX_V((int)p_type, (int)VariantType::MAX, -1);
 
-	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
+	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[(int)p_type];
 
 	HashMap<StringName, HashMap<StringName, int>>::Iterator E = enum_data.value.find(p_enum_name);
 	if (!E) {
@@ -1618,10 +1618,10 @@ int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, String
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(m_arg_name), Vector<Variant>());
 
 static void _register_variant_builtin_methods() {
-	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
-	_VariantCall::enum_data = memnew_arr(_VariantCall::EnumData, Variant::VARIANT_MAX);
-	builtin_method_info = memnew_arr(BuiltinMethodMap, Variant::VARIANT_MAX);
-	builtin_method_names = memnew_arr(List<StringName>, Variant::VARIANT_MAX);
+	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, (int)VariantType::MAX);
+	_VariantCall::enum_data = memnew_arr(_VariantCall::EnumData, (int)VariantType::MAX);
+	builtin_method_info = memnew_arr(BuiltinMethodMap, (int)VariantType::MAX);
+	builtin_method_names = memnew_arr(List<StringName>, (int)VariantType::MAX);
 
 	/* String */
 
@@ -2038,7 +2038,7 @@ static void _register_variant_builtin_methods() {
 	bind_custom(Callable, call, _VariantCall::func_Callable_call, true, Variant);
 	bind_custom(Callable, call_deferred, _VariantCall::func_Callable_call_deferred, false, Variant);
 	bind_custom(Callable, rpc, _VariantCall::func_Callable_rpc, false, Variant);
-	bind_custom1(Callable, rpc_id, _VariantCall::func_Callable_rpc_id, Variant::INT, "peer_id");
+	bind_custom1(Callable, rpc_id, _VariantCall::func_Callable_rpc_id, VariantType::INT, "peer_id");
 	bind_custom(Callable, bind, _VariantCall::func_Callable_bind, true, Callable);
 
 	/* Signal */
@@ -2508,156 +2508,156 @@ static void _register_variant_builtin_methods() {
 
 	int ncc = Color::get_named_color_count();
 	for (int i = 0; i < ncc; i++) {
-		_VariantCall::add_variant_constant(Variant::COLOR, Color::get_named_color_name(i), Color::get_named_color(i));
+		_VariantCall::add_variant_constant(VariantType::COLOR, Color::get_named_color_name(i), Color::get_named_color(i));
 	}
 
-	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_X", Vector3::AXIS_X);
-	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Y", Vector3::AXIS_Y);
-	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Z", Vector3::AXIS_Z);
+	_VariantCall::add_constant(VariantType::VECTOR3, "AXIS_X", Vector3::AXIS_X);
+	_VariantCall::add_constant(VariantType::VECTOR3, "AXIS_Y", Vector3::AXIS_Y);
+	_VariantCall::add_constant(VariantType::VECTOR3, "AXIS_Z", Vector3::AXIS_Z);
 
-	_VariantCall::add_enum_constant(Variant::VECTOR3, "Axis", "AXIS_X", Vector3::AXIS_X);
-	_VariantCall::add_enum_constant(Variant::VECTOR3, "Axis", "AXIS_Y", Vector3::AXIS_Y);
-	_VariantCall::add_enum_constant(Variant::VECTOR3, "Axis", "AXIS_Z", Vector3::AXIS_Z);
+	_VariantCall::add_enum_constant(VariantType::VECTOR3, "Axis", "AXIS_X", Vector3::AXIS_X);
+	_VariantCall::add_enum_constant(VariantType::VECTOR3, "Axis", "AXIS_Y", Vector3::AXIS_Y);
+	_VariantCall::add_enum_constant(VariantType::VECTOR3, "Axis", "AXIS_Z", Vector3::AXIS_Z);
 
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "ZERO", Vector3(0, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "ONE", Vector3(1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "INF", Vector3(INFINITY, INFINITY, INFINITY));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "LEFT", Vector3(-1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "RIGHT", Vector3(1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "UP", Vector3(0, 1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "DOWN", Vector3(0, -1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "FORWARD", Vector3(0, 0, -1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "BACK", Vector3(0, 0, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "ZERO", Vector3(0, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "ONE", Vector3(1, 1, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "INF", Vector3(INFINITY, INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "LEFT", Vector3(-1, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "RIGHT", Vector3(1, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "UP", Vector3(0, 1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "DOWN", Vector3(0, -1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "FORWARD", Vector3(0, 0, -1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "BACK", Vector3(0, 0, 1));
 
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_LEFT", Vector3(1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_RIGHT", Vector3(-1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_TOP", Vector3(0, 1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_BOTTOM", Vector3(0, -1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_FRONT", Vector3(0, 0, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_REAR", Vector3(0, 0, -1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "MODEL_LEFT", Vector3(1, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "MODEL_RIGHT", Vector3(-1, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "MODEL_TOP", Vector3(0, 1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "MODEL_BOTTOM", Vector3(0, -1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "MODEL_FRONT", Vector3(0, 0, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3, "MODEL_REAR", Vector3(0, 0, -1));
 
-	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_X", Vector4::AXIS_X);
-	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Y", Vector4::AXIS_Y);
-	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Z", Vector4::AXIS_Z);
-	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_W", Vector4::AXIS_W);
+	_VariantCall::add_constant(VariantType::VECTOR4, "AXIS_X", Vector4::AXIS_X);
+	_VariantCall::add_constant(VariantType::VECTOR4, "AXIS_Y", Vector4::AXIS_Y);
+	_VariantCall::add_constant(VariantType::VECTOR4, "AXIS_Z", Vector4::AXIS_Z);
+	_VariantCall::add_constant(VariantType::VECTOR4, "AXIS_W", Vector4::AXIS_W);
 
-	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_X", Vector4::AXIS_X);
-	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_Y", Vector4::AXIS_Y);
-	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_Z", Vector4::AXIS_Z);
-	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_W", Vector4::AXIS_W);
-	_VariantCall::add_variant_constant(Variant::VECTOR4, "ZERO", Vector4(0, 0, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR4, "ONE", Vector4(1, 1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR4, "INF", Vector4(INFINITY, INFINITY, INFINITY, INFINITY));
+	_VariantCall::add_enum_constant(VariantType::VECTOR4, "Axis", "AXIS_X", Vector4::AXIS_X);
+	_VariantCall::add_enum_constant(VariantType::VECTOR4, "Axis", "AXIS_Y", Vector4::AXIS_Y);
+	_VariantCall::add_enum_constant(VariantType::VECTOR4, "Axis", "AXIS_Z", Vector4::AXIS_Z);
+	_VariantCall::add_enum_constant(VariantType::VECTOR4, "Axis", "AXIS_W", Vector4::AXIS_W);
+	_VariantCall::add_variant_constant(VariantType::VECTOR4, "ZERO", Vector4(0, 0, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR4, "ONE", Vector4(1, 1, 1, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR4, "INF", Vector4(INFINITY, INFINITY, INFINITY, INFINITY));
 
-	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_X", Vector3i::AXIS_X);
-	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Y", Vector3i::AXIS_Y);
-	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Z", Vector3i::AXIS_Z);
+	_VariantCall::add_constant(VariantType::VECTOR3I, "AXIS_X", Vector3i::AXIS_X);
+	_VariantCall::add_constant(VariantType::VECTOR3I, "AXIS_Y", Vector3i::AXIS_Y);
+	_VariantCall::add_constant(VariantType::VECTOR3I, "AXIS_Z", Vector3i::AXIS_Z);
 
-	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_X", Vector3i::AXIS_X);
-	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_Y", Vector3i::AXIS_Y);
-	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_Z", Vector3i::AXIS_Z);
+	_VariantCall::add_enum_constant(VariantType::VECTOR3I, "Axis", "AXIS_X", Vector3i::AXIS_X);
+	_VariantCall::add_enum_constant(VariantType::VECTOR3I, "Axis", "AXIS_Y", Vector3i::AXIS_Y);
+	_VariantCall::add_enum_constant(VariantType::VECTOR3I, "Axis", "AXIS_Z", Vector3i::AXIS_Z);
 
-	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_X", Vector4i::AXIS_X);
-	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_Y", Vector4i::AXIS_Y);
-	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_Z", Vector4i::AXIS_Z);
-	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_W", Vector4i::AXIS_W);
+	_VariantCall::add_constant(VariantType::VECTOR4I, "AXIS_X", Vector4i::AXIS_X);
+	_VariantCall::add_constant(VariantType::VECTOR4I, "AXIS_Y", Vector4i::AXIS_Y);
+	_VariantCall::add_constant(VariantType::VECTOR4I, "AXIS_Z", Vector4i::AXIS_Z);
+	_VariantCall::add_constant(VariantType::VECTOR4I, "AXIS_W", Vector4i::AXIS_W);
 
-	_VariantCall::add_enum_constant(Variant::VECTOR4I, "Axis", "AXIS_X", Vector4i::AXIS_X);
-	_VariantCall::add_enum_constant(Variant::VECTOR4I, "Axis", "AXIS_Y", Vector4i::AXIS_Y);
-	_VariantCall::add_enum_constant(Variant::VECTOR4I, "Axis", "AXIS_Z", Vector4i::AXIS_Z);
-	_VariantCall::add_enum_constant(Variant::VECTOR4I, "Axis", "AXIS_W", Vector4i::AXIS_W);
+	_VariantCall::add_enum_constant(VariantType::VECTOR4I, "Axis", "AXIS_X", Vector4i::AXIS_X);
+	_VariantCall::add_enum_constant(VariantType::VECTOR4I, "Axis", "AXIS_Y", Vector4i::AXIS_Y);
+	_VariantCall::add_enum_constant(VariantType::VECTOR4I, "Axis", "AXIS_Z", Vector4i::AXIS_Z);
+	_VariantCall::add_enum_constant(VariantType::VECTOR4I, "Axis", "AXIS_W", Vector4i::AXIS_W);
 
-	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ZERO", Vector4i(0, 0, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ONE", Vector4i(1, 1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MIN", Vector4i(INT32_MIN, INT32_MIN, INT32_MIN, INT32_MIN));
-	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MAX", Vector4i(INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX));
+	_VariantCall::add_variant_constant(VariantType::VECTOR4I, "ZERO", Vector4i(0, 0, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR4I, "ONE", Vector4i(1, 1, 1, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR4I, "MIN", Vector4i(INT32_MIN, INT32_MIN, INT32_MIN, INT32_MIN));
+	_VariantCall::add_variant_constant(VariantType::VECTOR4I, "MAX", Vector4i(INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX));
 
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ZERO", Vector3i(0, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ONE", Vector3i(1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MIN", Vector3i(INT32_MIN, INT32_MIN, INT32_MIN));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MAX", Vector3i(INT32_MAX, INT32_MAX, INT32_MAX));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "LEFT", Vector3i(-1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "RIGHT", Vector3i(1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "UP", Vector3i(0, 1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "DOWN", Vector3i(0, -1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "FORWARD", Vector3i(0, 0, -1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "BACK", Vector3i(0, 0, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "ZERO", Vector3i(0, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "ONE", Vector3i(1, 1, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "MIN", Vector3i(INT32_MIN, INT32_MIN, INT32_MIN));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "MAX", Vector3i(INT32_MAX, INT32_MAX, INT32_MAX));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "LEFT", Vector3i(-1, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "RIGHT", Vector3i(1, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "UP", Vector3i(0, 1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "DOWN", Vector3i(0, -1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "FORWARD", Vector3i(0, 0, -1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR3I, "BACK", Vector3i(0, 0, 1));
 
-	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_X", Vector2::AXIS_X);
-	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_Y", Vector2::AXIS_Y);
+	_VariantCall::add_constant(VariantType::VECTOR2, "AXIS_X", Vector2::AXIS_X);
+	_VariantCall::add_constant(VariantType::VECTOR2, "AXIS_Y", Vector2::AXIS_Y);
 
-	_VariantCall::add_enum_constant(Variant::VECTOR2, "Axis", "AXIS_X", Vector2::AXIS_X);
-	_VariantCall::add_enum_constant(Variant::VECTOR2, "Axis", "AXIS_Y", Vector2::AXIS_Y);
+	_VariantCall::add_enum_constant(VariantType::VECTOR2, "Axis", "AXIS_X", Vector2::AXIS_X);
+	_VariantCall::add_enum_constant(VariantType::VECTOR2, "Axis", "AXIS_Y", Vector2::AXIS_Y);
 
-	_VariantCall::add_constant(Variant::VECTOR2I, "AXIS_X", Vector2i::AXIS_X);
-	_VariantCall::add_constant(Variant::VECTOR2I, "AXIS_Y", Vector2i::AXIS_Y);
+	_VariantCall::add_constant(VariantType::VECTOR2I, "AXIS_X", Vector2i::AXIS_X);
+	_VariantCall::add_constant(VariantType::VECTOR2I, "AXIS_Y", Vector2i::AXIS_Y);
 
-	_VariantCall::add_enum_constant(Variant::VECTOR2I, "Axis", "AXIS_X", Vector2i::AXIS_X);
-	_VariantCall::add_enum_constant(Variant::VECTOR2I, "Axis", "AXIS_Y", Vector2i::AXIS_Y);
+	_VariantCall::add_enum_constant(VariantType::VECTOR2I, "Axis", "AXIS_X", Vector2i::AXIS_X);
+	_VariantCall::add_enum_constant(VariantType::VECTOR2I, "Axis", "AXIS_Y", Vector2i::AXIS_Y);
 
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "ZERO", Vector2(0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "ONE", Vector2(1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "INF", Vector2(INFINITY, INFINITY));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "LEFT", Vector2(-1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "RIGHT", Vector2(1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2(0, -1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "DOWN", Vector2(0, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2, "ZERO", Vector2(0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2, "ONE", Vector2(1, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2, "INF", Vector2(INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2, "LEFT", Vector2(-1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2, "RIGHT", Vector2(1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2, "UP", Vector2(0, -1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2, "DOWN", Vector2(0, 1));
 
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ZERO", Vector2i(0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ONE", Vector2i(1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MIN", Vector2i(INT32_MIN, INT32_MIN));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MAX", Vector2i(INT32_MAX, INT32_MAX));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "LEFT", Vector2i(-1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i(1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i(0, -1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "DOWN", Vector2i(0, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2I, "ZERO", Vector2i(0, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2I, "ONE", Vector2i(1, 1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2I, "MIN", Vector2i(INT32_MIN, INT32_MIN));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2I, "MAX", Vector2i(INT32_MAX, INT32_MAX));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2I, "LEFT", Vector2i(-1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2I, "RIGHT", Vector2i(1, 0));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2I, "UP", Vector2i(0, -1));
+	_VariantCall::add_variant_constant(VariantType::VECTOR2I, "DOWN", Vector2i(0, 1));
 
-	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "IDENTITY", Transform2D());
-	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_Y", Transform2D(1, 0, 0, -1, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::TRANSFORM2D, "IDENTITY", Transform2D());
+	_VariantCall::add_variant_constant(VariantType::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));
+	_VariantCall::add_variant_constant(VariantType::TRANSFORM2D, "FLIP_Y", Transform2D(1, 0, 0, -1, 0, 0));
 
 	Transform3D identity_transform;
 	Transform3D flip_x_transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
 	Transform3D flip_y_transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);
 	Transform3D flip_z_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "IDENTITY", identity_transform);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_X", flip_x_transform);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_Y", flip_y_transform);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_Z", flip_z_transform);
+	_VariantCall::add_variant_constant(VariantType::TRANSFORM3D, "IDENTITY", identity_transform);
+	_VariantCall::add_variant_constant(VariantType::TRANSFORM3D, "FLIP_X", flip_x_transform);
+	_VariantCall::add_variant_constant(VariantType::TRANSFORM3D, "FLIP_Y", flip_y_transform);
+	_VariantCall::add_variant_constant(VariantType::TRANSFORM3D, "FLIP_Z", flip_z_transform);
 
 	Basis identity_basis;
 	Basis flip_x_basis = Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1);
 	Basis flip_y_basis = Basis(1, 0, 0, 0, -1, 0, 0, 0, 1);
 	Basis flip_z_basis = Basis(1, 0, 0, 0, 1, 0, 0, 0, -1);
-	_VariantCall::add_variant_constant(Variant::BASIS, "IDENTITY", identity_basis);
-	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_X", flip_x_basis);
-	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_Y", flip_y_basis);
-	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_Z", flip_z_basis);
+	_VariantCall::add_variant_constant(VariantType::BASIS, "IDENTITY", identity_basis);
+	_VariantCall::add_variant_constant(VariantType::BASIS, "FLIP_X", flip_x_basis);
+	_VariantCall::add_variant_constant(VariantType::BASIS, "FLIP_Y", flip_y_basis);
+	_VariantCall::add_variant_constant(VariantType::BASIS, "FLIP_Z", flip_z_basis);
 
-	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_YZ", Plane(Vector3(1, 0, 0), 0));
-	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XZ", Plane(Vector3(0, 1, 0), 0));
-	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XY", Plane(Vector3(0, 0, 1), 0));
+	_VariantCall::add_variant_constant(VariantType::PLANE, "PLANE_YZ", Plane(Vector3(1, 0, 0), 0));
+	_VariantCall::add_variant_constant(VariantType::PLANE, "PLANE_XZ", Plane(Vector3(0, 1, 0), 0));
+	_VariantCall::add_variant_constant(VariantType::PLANE, "PLANE_XY", Plane(Vector3(0, 0, 1), 0));
 
-	_VariantCall::add_variant_constant(Variant::QUATERNION, "IDENTITY", Quaternion(0, 0, 0, 1));
+	_VariantCall::add_variant_constant(VariantType::QUATERNION, "IDENTITY", Quaternion(0, 0, 0, 1));
 
-	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_NEAR", Projection::PLANE_NEAR);
-	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_FAR", Projection::PLANE_FAR);
-	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_LEFT", Projection::PLANE_LEFT);
-	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_TOP", Projection::PLANE_TOP);
-	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_RIGHT", Projection::PLANE_RIGHT);
-	_VariantCall::add_constant(Variant::PROJECTION, "PLANE_BOTTOM", Projection::PLANE_BOTTOM);
+	_VariantCall::add_constant(VariantType::PROJECTION, "PLANE_NEAR", Projection::PLANE_NEAR);
+	_VariantCall::add_constant(VariantType::PROJECTION, "PLANE_FAR", Projection::PLANE_FAR);
+	_VariantCall::add_constant(VariantType::PROJECTION, "PLANE_LEFT", Projection::PLANE_LEFT);
+	_VariantCall::add_constant(VariantType::PROJECTION, "PLANE_TOP", Projection::PLANE_TOP);
+	_VariantCall::add_constant(VariantType::PROJECTION, "PLANE_RIGHT", Projection::PLANE_RIGHT);
+	_VariantCall::add_constant(VariantType::PROJECTION, "PLANE_BOTTOM", Projection::PLANE_BOTTOM);
 
-	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_NEAR", Projection::PLANE_NEAR);
-	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_FAR", Projection::PLANE_FAR);
-	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_LEFT", Projection::PLANE_LEFT);
-	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_TOP", Projection::PLANE_TOP);
-	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_RIGHT", Projection::PLANE_RIGHT);
-	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_BOTTOM", Projection::PLANE_BOTTOM);
+	_VariantCall::add_enum_constant(VariantType::PROJECTION, "Planes", "PLANE_NEAR", Projection::PLANE_NEAR);
+	_VariantCall::add_enum_constant(VariantType::PROJECTION, "Planes", "PLANE_FAR", Projection::PLANE_FAR);
+	_VariantCall::add_enum_constant(VariantType::PROJECTION, "Planes", "PLANE_LEFT", Projection::PLANE_LEFT);
+	_VariantCall::add_enum_constant(VariantType::PROJECTION, "Planes", "PLANE_TOP", Projection::PLANE_TOP);
+	_VariantCall::add_enum_constant(VariantType::PROJECTION, "Planes", "PLANE_RIGHT", Projection::PLANE_RIGHT);
+	_VariantCall::add_enum_constant(VariantType::PROJECTION, "Planes", "PLANE_BOTTOM", Projection::PLANE_BOTTOM);
 
 	Projection p;
-	_VariantCall::add_variant_constant(Variant::PROJECTION, "IDENTITY", p);
+	_VariantCall::add_variant_constant(VariantType::PROJECTION, "IDENTITY", p);
 	p.set_zero();
-	_VariantCall::add_variant_constant(Variant::PROJECTION, "ZERO", p);
+	_VariantCall::add_variant_constant(VariantType::PROJECTION, "ZERO", p);
 }
 
 void Variant::_register_variant_methods() {

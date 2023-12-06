@@ -7,3 +7,15 @@ should instead be used to justify these changes and describe how users should wo
 Add new entries at the end of the file.
 
 ## Changes between 4.2-stable and 4.3-stable
+
+
+GH-85934
+--------
+Validate extension JSON: API was removed: global_enums/Variant.Type
+Validate extension JSON: API was removed: global_enums/Variant.Operator
+Validate extension JSON: Error: Field 'classes/EditorInspectorPlugin/methods/_parse_property/arguments/1': type changed value in new API, from "enum::Variant.Type" to "enum::VariantType".
+Validate extension JSON: Error: Field 'classes/EditorScenePostImportPlugin/methods/add_import_option_advanced/arguments/0': type changed value in new API, from "enum::Variant.Type" to "enum::VariantType".
+Validate extension JSON: Error: Field 'classes/TileSet/methods/set_custom_data_layer_type/arguments/1': type changed value in new API, from "enum::Variant.Type" to "enum::VariantType".
+Validate extension JSON: Error: Field 'classes/TileSet/methods/get_custom_data_layer_type/return_value': type changed value in new API, from "enum::Variant.Type" to "enum::VariantType".
+
+Nested Variant enums were migrated to a standalone file.

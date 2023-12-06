@@ -194,46 +194,46 @@ ReplicationEditor::ReplicationEditor() {
 	// Filter out properties that cannot be synchronized.
 	// * RIDs do not match across network.
 	// * Objects are too large for replication.
-	Vector<Variant::Type> types = {
-		Variant::BOOL,
-		Variant::INT,
-		Variant::FLOAT,
-		Variant::STRING,
+	Vector<VariantType> types = {
+		VariantType::BOOL,
+		VariantType::INT,
+		VariantType::FLOAT,
+		VariantType::STRING,
 
-		Variant::VECTOR2,
-		Variant::VECTOR2I,
-		Variant::RECT2,
-		Variant::RECT2I,
-		Variant::VECTOR3,
-		Variant::VECTOR3I,
-		Variant::TRANSFORM2D,
-		Variant::VECTOR4,
-		Variant::VECTOR4I,
-		Variant::PLANE,
-		Variant::QUATERNION,
-		Variant::AABB,
-		Variant::BASIS,
-		Variant::TRANSFORM3D,
-		Variant::PROJECTION,
+		VariantType::VECTOR2,
+		VariantType::VECTOR2I,
+		VariantType::RECT2,
+		VariantType::RECT2I,
+		VariantType::VECTOR3,
+		VariantType::VECTOR3I,
+		VariantType::TRANSFORM2D,
+		VariantType::VECTOR4,
+		VariantType::VECTOR4I,
+		VariantType::PLANE,
+		VariantType::QUATERNION,
+		VariantType::AABB,
+		VariantType::BASIS,
+		VariantType::TRANSFORM3D,
+		VariantType::PROJECTION,
 
-		Variant::COLOR,
-		Variant::STRING_NAME,
-		Variant::NODE_PATH,
-		// Variant::RID,
-		// Variant::OBJECT,
-		Variant::SIGNAL,
-		Variant::DICTIONARY,
-		Variant::ARRAY,
+		VariantType::COLOR,
+		VariantType::STRING_NAME,
+		VariantType::NODE_PATH,
+		// VariantType::RID,
+		// VariantType::OBJECT,
+		VariantType::SIGNAL,
+		VariantType::DICTIONARY,
+		VariantType::ARRAY,
 
-		Variant::PACKED_BYTE_ARRAY,
-		Variant::PACKED_INT32_ARRAY,
-		Variant::PACKED_INT64_ARRAY,
-		Variant::PACKED_FLOAT32_ARRAY,
-		Variant::PACKED_FLOAT64_ARRAY,
-		Variant::PACKED_STRING_ARRAY,
-		Variant::PACKED_VECTOR2_ARRAY,
-		Variant::PACKED_VECTOR3_ARRAY,
-		Variant::PACKED_COLOR_ARRAY
+		VariantType::PACKED_BYTE_ARRAY,
+		VariantType::PACKED_INT32_ARRAY,
+		VariantType::PACKED_INT64_ARRAY,
+		VariantType::PACKED_FLOAT32_ARRAY,
+		VariantType::PACKED_FLOAT64_ARRAY,
+		VariantType::PACKED_STRING_ARRAY,
+		VariantType::PACKED_VECTOR2_ARRAY,
+		VariantType::PACKED_VECTOR3_ARRAY,
+		VariantType::PACKED_COLOR_ARRAY
 	};
 	prop_selector->set_type_filter(types);
 	prop_selector->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_property_selected));
@@ -538,14 +538,14 @@ Ref<Texture2D> ReplicationEditor::_get_class_icon(const Node *p_node) {
 
 static bool can_sync(const Variant &p_var) {
 	switch (p_var.get_type()) {
-		case Variant::RID:
-		case Variant::OBJECT:
+		case VariantType::RID:
+		case VariantType::OBJECT:
 			return false;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			const Array &arr = p_var;
 			if (arr.is_typed()) {
-				const uint32_t type = arr.get_typed_builtin();
-				return (type != Variant::RID) && (type != Variant::OBJECT);
+				const VariantType type = arr.get_typed_builtin();
+				return (type != VariantType::RID) && (type != VariantType::OBJECT);
 			}
 			return true;
 		}

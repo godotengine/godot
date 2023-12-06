@@ -60,11 +60,11 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 	}
 	switch (p_gdtype.kind) {
 		case GDType::BUILTIN:
-			if (p_gdtype.builtin_type == Variant::NIL) {
+			if (p_gdtype.builtin_type == VariantType::NIL) {
 				r_type = p_is_return ? "void" : "null";
 				return;
 			}
-			if (p_gdtype.builtin_type == Variant::ARRAY && p_gdtype.has_container_element_type(0)) {
+			if (p_gdtype.builtin_type == VariantType::ARRAY && p_gdtype.has_container_element_type(0)) {
 				_doctype_from_gdtype(p_gdtype.get_container_element_type(0), r_type, r_enum);
 				if (!r_enum.is_empty()) {
 					r_type = "int[]";
@@ -141,11 +141,11 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 	constexpr int MAX_RECURSION_LEVEL = 2;
 
 	switch (p_variant.get_type()) {
-		case Variant::STRING:
+		case VariantType::STRING:
 			return String(p_variant).c_escape().quote();
-		case Variant::OBJECT:
+		case VariantType::OBJECT:
 			return "<Object>";
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			const Dictionary dict = p_variant;
 
 			if (dict.is_empty()) {
@@ -170,11 +170,11 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 
 			return "{" + data + "}";
 		} break;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			const Array array = p_variant;
 			String result;
 
-			if (array.get_typed_builtin() != Variant::NIL) {
+			if (array.get_typed_builtin() != VariantType::NIL) {
 				result += "Array[";
 
 				Ref<Script> script = array.get_typed_script();
@@ -189,7 +189,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 				} else if (array.get_typed_class_name() != StringName()) {
 					result += array.get_typed_class_name();
 				} else {
-					result += Variant::get_type_name((Variant::Type)array.get_typed_builtin());
+					result += Variant::get_type_name(array.get_typed_builtin());
 				}
 
 				result += "](";
@@ -210,7 +210,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 				result += "]";
 			}
 
-			if (array.get_typed_builtin() != Variant::NIL) {
+			if (array.get_typed_builtin() != VariantType::NIL) {
 				result += ")";
 			}
 

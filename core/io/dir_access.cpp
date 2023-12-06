@@ -589,6 +589,6 @@ void DirAccess::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_case_sensitive", "path"), &DirAccess::is_case_sensitive);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
 }

@@ -122,7 +122,7 @@ void VelocityTracker3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tracked_linear_velocity"), &VelocityTracker3D::get_tracked_linear_velocity);
 	ClassDB::bind_method(D_METHOD("reset", "position"), &VelocityTracker3D::reset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "track_physics_step"), "set_track_physics_step", "is_tracking_physics_step");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "track_physics_step"), "set_track_physics_step", "is_tracking_physics_step");
 }
 
 VelocityTracker3D::VelocityTracker3D() {

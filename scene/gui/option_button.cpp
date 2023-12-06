@@ -200,20 +200,20 @@ bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
 
 void OptionButton::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < popup->get_item_count(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("popup/item_%d/text", i)));
+		p_list->push_back(PropertyInfo(VariantType::STRING, vformat("popup/item_%d/text", i)));
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		PropertyInfo pi = PropertyInfo(VariantType::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
+		pi = PropertyInfo(VariantType::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/disabled", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("popup/item_%d/disabled", i));
 		pi.usage &= ~(!popup->is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/separator", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("popup/item_%d/separator", i));
 		pi.usage &= ~(!popup->is_item_separator(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 	}
@@ -576,12 +576,12 @@ void OptionButton::_bind_methods() {
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "selected"), "_select_int", "get_selected");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
 
-	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(VariantType::INT, "index")));
+	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(VariantType::INT, "index")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, OptionButton, normal);
 

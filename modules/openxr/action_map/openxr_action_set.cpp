@@ -33,16 +33,16 @@
 void OpenXRActionSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_localized_name", "localized_name"), &OpenXRActionSet::set_localized_name);
 	ClassDB::bind_method(D_METHOD("get_localized_name"), &OpenXRActionSet::get_localized_name);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "localized_name"), "set_localized_name", "get_localized_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "localized_name"), "set_localized_name", "get_localized_name");
 
 	ClassDB::bind_method(D_METHOD("set_priority", "priority"), &OpenXRActionSet::set_priority);
 	ClassDB::bind_method(D_METHOD("get_priority"), &OpenXRActionSet::get_priority);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority"), "set_priority", "get_priority");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "priority"), "set_priority", "get_priority");
 
 	ClassDB::bind_method(D_METHOD("get_action_count"), &OpenXRActionSet::get_action_count);
 	ClassDB::bind_method(D_METHOD("set_actions", "actions"), &OpenXRActionSet::set_actions);
 	ClassDB::bind_method(D_METHOD("get_actions"), &OpenXRActionSet::get_actions);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "actions", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRAction", PROPERTY_USAGE_NO_EDITOR), "set_actions", "get_actions");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "actions", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRAction", PROPERTY_USAGE_NO_EDITOR), "set_actions", "get_actions");
 
 	ClassDB::bind_method(D_METHOD("add_action", "action"), &OpenXRActionSet::add_action);
 	ClassDB::bind_method(D_METHOD("remove_action", "action"), &OpenXRActionSet::remove_action);

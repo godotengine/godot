@@ -60,20 +60,20 @@ void GLTFAccessor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sparse_values_byte_offset"), &GLTFAccessor::get_sparse_values_byte_offset);
 	ClassDB::bind_method(D_METHOD("set_sparse_values_byte_offset", "sparse_values_byte_offset"), &GLTFAccessor::set_sparse_values_byte_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffer_view"), "set_buffer_view", "get_buffer_view"); // GLTFBufferViewIndex
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "byte_offset"), "set_byte_offset", "get_byte_offset"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "component_type"), "set_component_type", "get_component_type"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalized"), "set_normalized", "get_normalized"); // bool
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "count"), "set_count", "get_count"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // GLTFType
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "min"), "set_min", "get_min"); // Vector<real_t>
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "max"), "set_max", "get_max"); // Vector<real_t>
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_count"), "set_sparse_count", "get_sparse_count"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_indices_buffer_view"), "set_sparse_indices_buffer_view", "get_sparse_indices_buffer_view"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_indices_byte_offset"), "set_sparse_indices_byte_offset", "get_sparse_indices_byte_offset"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_indices_component_type"), "set_sparse_indices_component_type", "get_sparse_indices_component_type"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_values_buffer_view"), "set_sparse_values_buffer_view", "get_sparse_values_buffer_view"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_values_byte_offset"), "set_sparse_values_byte_offset", "get_sparse_values_byte_offset"); // int
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "buffer_view"), "set_buffer_view", "get_buffer_view"); // GLTFBufferViewIndex
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "byte_offset"), "set_byte_offset", "get_byte_offset"); // int
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "component_type"), "set_component_type", "get_component_type"); // int
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "normalized"), "set_normalized", "get_normalized"); // bool
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "count"), "set_count", "get_count"); // int
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "type"), "set_type", "get_type"); // GLTFType
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_FLOAT64_ARRAY, "min"), "set_min", "get_min"); // Vector<real_t>
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_FLOAT64_ARRAY, "max"), "set_max", "get_max"); // Vector<real_t>
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "sparse_count"), "set_sparse_count", "get_sparse_count"); // int
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "sparse_indices_buffer_view"), "set_sparse_indices_buffer_view", "get_sparse_indices_buffer_view"); // int
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "sparse_indices_byte_offset"), "set_sparse_indices_byte_offset", "get_sparse_indices_byte_offset"); // int
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "sparse_indices_component_type"), "set_sparse_indices_component_type", "get_sparse_indices_component_type"); // int
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "sparse_values_buffer_view"), "set_sparse_values_buffer_view", "get_sparse_values_buffer_view"); // int
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "sparse_values_byte_offset"), "set_sparse_values_byte_offset", "get_sparse_values_byte_offset"); // int
 }
 
 GLTFBufferViewIndex GLTFAccessor::get_buffer_view() {

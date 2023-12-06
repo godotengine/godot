@@ -1182,9 +1182,9 @@ bool ProjectConverter3To4::test_array_names() {
 			all_functions.insert(builtin_types_excluded_functions[current_index]);
 		}
 
-		//for (int type = Variant::Type::NIL + 1; type < Variant::Type::VARIANT_MAX; type++) {
+		//for (int type = VariantType::NIL + 1; type < VariantType::MAX; type++) {
 		//	List<MethodInfo> method_list;
-		//	Variant::get_method_list_by_type(&method_list, Variant::Type(type));
+		//	Variant::get_method_list_by_type(&method_list, VariantType(type));
 		//	for (MethodInfo &function_data : method_list) {
 		//		if (!all_functions.has(function_data.name)) {
 		//			all_functions.insert(function_data.name);

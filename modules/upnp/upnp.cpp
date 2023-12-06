@@ -351,15 +351,15 @@ void UPNP::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_discover_multicast_if", "m_if"), &UPNP::set_discover_multicast_if);
 	ClassDB::bind_method(D_METHOD("get_discover_multicast_if"), &UPNP::get_discover_multicast_if);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "discover_multicast_if"), "set_discover_multicast_if", "get_discover_multicast_if");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "discover_multicast_if"), "set_discover_multicast_if", "get_discover_multicast_if");
 
 	ClassDB::bind_method(D_METHOD("set_discover_local_port", "port"), &UPNP::set_discover_local_port);
 	ClassDB::bind_method(D_METHOD("get_discover_local_port"), &UPNP::get_discover_local_port);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "discover_local_port", PROPERTY_HINT_RANGE, "0,65535"), "set_discover_local_port", "get_discover_local_port");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "discover_local_port", PROPERTY_HINT_RANGE, "0,65535"), "set_discover_local_port", "get_discover_local_port");
 
 	ClassDB::bind_method(D_METHOD("set_discover_ipv6", "ipv6"), &UPNP::set_discover_ipv6);
 	ClassDB::bind_method(D_METHOD("is_discover_ipv6"), &UPNP::is_discover_ipv6);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "discover_ipv6"), "set_discover_ipv6", "is_discover_ipv6");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "discover_ipv6"), "set_discover_ipv6", "is_discover_ipv6");
 
 	BIND_ENUM_CONSTANT(UPNP_RESULT_SUCCESS);
 	BIND_ENUM_CONSTANT(UPNP_RESULT_NOT_AUTHORIZED);

@@ -41,8 +41,8 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_help.h"
 
-static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
-	if (p_type == Variant::NIL) {
+static String get_builtin_or_variant_type_name(const VariantType p_type) {
+	if (p_type == VariantType::NIL) {
 		return "Variant";
 	} else {
 		return Variant::get_type_name(p_type);
@@ -50,23 +50,23 @@ static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 }
 
 static String get_property_info_type_name(const PropertyInfo &p_info) {
-	if (p_info.type == Variant::INT && (p_info.hint == PROPERTY_HINT_INT_IS_POINTER)) {
+	if (p_info.type == VariantType::INT && (p_info.hint == PROPERTY_HINT_INT_IS_POINTER)) {
 		if (p_info.hint_string.is_empty()) {
 			return "void*";
 		} else {
 			return p_info.hint_string + "*";
 		}
 	}
-	if (p_info.type == Variant::ARRAY && (p_info.hint == PROPERTY_HINT_ARRAY_TYPE)) {
+	if (p_info.type == VariantType::ARRAY && (p_info.hint == PROPERTY_HINT_ARRAY_TYPE)) {
 		return String("typedarray::") + p_info.hint_string;
 	}
-	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM))) {
+	if (p_info.type == VariantType::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM))) {
 		return String("enum::") + String(p_info.class_name);
 	}
-	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_BITFIELD))) {
+	if (p_info.type == VariantType::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_BITFIELD))) {
 		return String("bitfield::") + String(p_info.class_name);
 	}
-	if (p_info.type == Variant::INT && (p_info.usage & PROPERTY_USAGE_ARRAY)) {
+	if (p_info.type == VariantType::INT && (p_info.usage & PROPERTY_USAGE_ARRAY)) {
 		return "int";
 	}
 	if (p_info.class_name != StringName()) {
@@ -75,10 +75,10 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 	if (p_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 		return p_info.hint_string;
 	}
-	if (p_info.type == Variant::NIL && (p_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
+	if (p_info.type == VariantType::NIL && (p_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
 		return "Variant";
 	}
-	if (p_info.type == Variant::NIL) {
+	if (p_info.type == VariantType::NIL) {
 		return "void";
 	}
 	return get_builtin_or_variant_type_name(p_info.type);
@@ -127,7 +127,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	{
 		//type sizes
 		constexpr struct {
-			Variant::Type type;
+			VariantType type;
 			uint32_t size_32_bits_real_float;
 			uint32_t size_64_bits_real_float;
 			uint32_t size_32_bits_real_double;
@@ -150,87 +150,87 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				}
 				return -1;
 			}
-		} type_size_array[Variant::VARIANT_MAX + 1] = {
-			{ Variant::NIL, 0, 0, 0, 0 },
-			{ Variant::BOOL, sizeof(uint8_t), sizeof(uint8_t), sizeof(uint8_t), sizeof(uint8_t) },
-			{ Variant::INT, sizeof(int64_t), sizeof(int64_t), sizeof(int64_t), sizeof(int64_t) },
-			{ Variant::FLOAT, sizeof(double), sizeof(double), sizeof(double), sizeof(double) },
-			{ Variant::STRING, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::VECTOR2, 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
-			{ Variant::VECTOR2I, 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t) },
-			{ Variant::RECT2, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
-			{ Variant::RECT2I, 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t) },
-			{ Variant::VECTOR3, vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
-			{ Variant::VECTOR3I, 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t) },
-			{ Variant::TRANSFORM2D, 6 * sizeof(float), 6 * sizeof(float), 6 * sizeof(double), 6 * sizeof(double) },
-			{ Variant::VECTOR4, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
-			{ Variant::VECTOR4I, 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t) },
-			{ Variant::PLANE, (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(double), (vec3_elems + 1) * sizeof(double) },
-			{ Variant::QUATERNION, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
-			{ Variant::AABB, (vec3_elems * 2) * sizeof(float), (vec3_elems * 2) * sizeof(float), (vec3_elems * 2) * sizeof(double), (vec3_elems * 2) * sizeof(double) },
-			{ Variant::BASIS, (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(double), (vec3_elems * 3) * sizeof(double) },
-			{ Variant::TRANSFORM3D, (vec3_elems * 4) * sizeof(float), (vec3_elems * 4) * sizeof(float), (vec3_elems * 4) * sizeof(double), (vec3_elems * 4) * sizeof(double) },
-			{ Variant::PROJECTION, (vec4_elems * 4) * sizeof(float), (vec4_elems * 4) * sizeof(float), (vec4_elems * 4) * sizeof(double), (vec4_elems * 4) * sizeof(double) },
-			{ Variant::COLOR, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(float) },
-			{ Variant::STRING_NAME, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::NODE_PATH, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::RID, sizeof(uint64_t), sizeof(uint64_t), sizeof(uint64_t), sizeof(uint64_t) },
-			{ Variant::OBJECT, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::CALLABLE, sizeof(Callable), sizeof(Callable), sizeof(Callable), sizeof(Callable) }, // Hardcoded align.
-			{ Variant::SIGNAL, sizeof(Signal), sizeof(Signal), sizeof(Signal), sizeof(Signal) }, // Hardcoded align.
-			{ Variant::DICTIONARY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::PACKED_BYTE_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
-			{ Variant::PACKED_INT32_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
-			{ Variant::PACKED_INT64_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
-			{ Variant::PACKED_FLOAT32_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
-			{ Variant::PACKED_FLOAT64_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
-			{ Variant::PACKED_STRING_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
-			{ Variant::PACKED_VECTOR2_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
-			{ Variant::PACKED_VECTOR3_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
-			{ Variant::PACKED_COLOR_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
-			{ Variant::VARIANT_MAX, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(double) * 4, sizeof(uint64_t) + sizeof(double) * 4 },
+		} type_size_array[(int)VariantType::MAX + 1] = {
+			{ VariantType::NIL, 0, 0, 0, 0 },
+			{ VariantType::BOOL, sizeof(uint8_t), sizeof(uint8_t), sizeof(uint8_t), sizeof(uint8_t) },
+			{ VariantType::INT, sizeof(int64_t), sizeof(int64_t), sizeof(int64_t), sizeof(int64_t) },
+			{ VariantType::FLOAT, sizeof(double), sizeof(double), sizeof(double), sizeof(double) },
+			{ VariantType::STRING, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
+			{ VariantType::VECTOR2, 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
+			{ VariantType::VECTOR2I, 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t) },
+			{ VariantType::RECT2, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ VariantType::RECT2I, 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t) },
+			{ VariantType::VECTOR3, vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
+			{ VariantType::VECTOR3I, 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t) },
+			{ VariantType::TRANSFORM2D, 6 * sizeof(float), 6 * sizeof(float), 6 * sizeof(double), 6 * sizeof(double) },
+			{ VariantType::VECTOR4, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ VariantType::VECTOR4I, 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t) },
+			{ VariantType::PLANE, (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(float), (vec3_elems + 1) * sizeof(double), (vec3_elems + 1) * sizeof(double) },
+			{ VariantType::QUATERNION, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ VariantType::AABB, (vec3_elems * 2) * sizeof(float), (vec3_elems * 2) * sizeof(float), (vec3_elems * 2) * sizeof(double), (vec3_elems * 2) * sizeof(double) },
+			{ VariantType::BASIS, (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(double), (vec3_elems * 3) * sizeof(double) },
+			{ VariantType::TRANSFORM3D, (vec3_elems * 4) * sizeof(float), (vec3_elems * 4) * sizeof(float), (vec3_elems * 4) * sizeof(double), (vec3_elems * 4) * sizeof(double) },
+			{ VariantType::PROJECTION, (vec4_elems * 4) * sizeof(float), (vec4_elems * 4) * sizeof(float), (vec4_elems * 4) * sizeof(double), (vec4_elems * 4) * sizeof(double) },
+			{ VariantType::COLOR, 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(float) },
+			{ VariantType::STRING_NAME, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
+			{ VariantType::NODE_PATH, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
+			{ VariantType::RID, sizeof(uint64_t), sizeof(uint64_t), sizeof(uint64_t), sizeof(uint64_t) },
+			{ VariantType::OBJECT, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
+			{ VariantType::CALLABLE, sizeof(Callable), sizeof(Callable), sizeof(Callable), sizeof(Callable) }, // Hardcoded align.
+			{ VariantType::SIGNAL, sizeof(Signal), sizeof(Signal), sizeof(Signal), sizeof(Signal) }, // Hardcoded align.
+			{ VariantType::DICTIONARY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
+			{ VariantType::ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
+			{ VariantType::PACKED_BYTE_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ VariantType::PACKED_INT32_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ VariantType::PACKED_INT64_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ VariantType::PACKED_FLOAT32_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ VariantType::PACKED_FLOAT64_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ VariantType::PACKED_STRING_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ VariantType::PACKED_VECTOR2_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ VariantType::PACKED_VECTOR3_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ VariantType::PACKED_COLOR_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ VariantType::MAX, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(double) * 4, sizeof(uint64_t) + sizeof(double) * 4 },
 		};
 
 		// Validate sizes at compile time for the current build configuration.
-		static_assert(type_size_array[Variant::BOOL][sizeof(void *)] == sizeof(GDExtensionBool), "Size of bool mismatch");
-		static_assert(type_size_array[Variant::INT][sizeof(void *)] == sizeof(GDExtensionInt), "Size of int mismatch");
-		static_assert(type_size_array[Variant::FLOAT][sizeof(void *)] == sizeof(double), "Size of float mismatch");
-		static_assert(type_size_array[Variant::STRING][sizeof(void *)] == sizeof(String), "Size of String mismatch");
-		static_assert(type_size_array[Variant::VECTOR2][sizeof(void *)] == sizeof(Vector2), "Size of Vector2 mismatch");
-		static_assert(type_size_array[Variant::VECTOR2I][sizeof(void *)] == sizeof(Vector2i), "Size of Vector2i mismatch");
-		static_assert(type_size_array[Variant::RECT2][sizeof(void *)] == sizeof(Rect2), "Size of Rect2 mismatch");
-		static_assert(type_size_array[Variant::RECT2I][sizeof(void *)] == sizeof(Rect2i), "Size of Rect2i mismatch");
-		static_assert(type_size_array[Variant::VECTOR3][sizeof(void *)] == sizeof(Vector3), "Size of Vector3 mismatch");
-		static_assert(type_size_array[Variant::VECTOR3I][sizeof(void *)] == sizeof(Vector3i), "Size of Vector3i mismatch");
-		static_assert(type_size_array[Variant::TRANSFORM2D][sizeof(void *)] == sizeof(Transform2D), "Size of Transform2D mismatch");
-		static_assert(type_size_array[Variant::VECTOR4][sizeof(void *)] == sizeof(Vector4), "Size of Vector4 mismatch");
-		static_assert(type_size_array[Variant::VECTOR4I][sizeof(void *)] == sizeof(Vector4i), "Size of Vector4i mismatch");
-		static_assert(type_size_array[Variant::PLANE][sizeof(void *)] == sizeof(Plane), "Size of Plane mismatch");
-		static_assert(type_size_array[Variant::QUATERNION][sizeof(void *)] == sizeof(Quaternion), "Size of Quaternion mismatch");
-		static_assert(type_size_array[Variant::AABB][sizeof(void *)] == sizeof(AABB), "Size of AABB mismatch");
-		static_assert(type_size_array[Variant::BASIS][sizeof(void *)] == sizeof(Basis), "Size of Basis mismatch");
-		static_assert(type_size_array[Variant::TRANSFORM3D][sizeof(void *)] == sizeof(Transform3D), "Size of Transform3D mismatch");
-		static_assert(type_size_array[Variant::PROJECTION][sizeof(void *)] == sizeof(Projection), "Size of Projection mismatch");
-		static_assert(type_size_array[Variant::COLOR][sizeof(void *)] == sizeof(Color), "Size of Color mismatch");
-		static_assert(type_size_array[Variant::STRING_NAME][sizeof(void *)] == sizeof(StringName), "Size of StringName mismatch");
-		static_assert(type_size_array[Variant::NODE_PATH][sizeof(void *)] == sizeof(NodePath), "Size of NodePath mismatch");
-		static_assert(type_size_array[Variant::RID][sizeof(void *)] == sizeof(RID), "Size of RID mismatch");
-		static_assert(type_size_array[Variant::OBJECT][sizeof(void *)] == sizeof(Object *), "Size of Object mismatch");
-		static_assert(type_size_array[Variant::CALLABLE][sizeof(void *)] == sizeof(Callable), "Size of Callable mismatch");
-		static_assert(type_size_array[Variant::SIGNAL][sizeof(void *)] == sizeof(Signal), "Size of Signal mismatch");
-		static_assert(type_size_array[Variant::DICTIONARY][sizeof(void *)] == sizeof(Dictionary), "Size of Dictionary mismatch");
-		static_assert(type_size_array[Variant::ARRAY][sizeof(void *)] == sizeof(Array), "Size of Array mismatch");
-		static_assert(type_size_array[Variant::PACKED_BYTE_ARRAY][sizeof(void *)] == sizeof(PackedByteArray), "Size of PackedByteArray mismatch");
-		static_assert(type_size_array[Variant::PACKED_INT32_ARRAY][sizeof(void *)] == sizeof(PackedInt32Array), "Size of PackedInt32Array mismatch");
-		static_assert(type_size_array[Variant::PACKED_INT64_ARRAY][sizeof(void *)] == sizeof(PackedInt64Array), "Size of PackedInt64Array mismatch");
-		static_assert(type_size_array[Variant::PACKED_FLOAT32_ARRAY][sizeof(void *)] == sizeof(PackedFloat32Array), "Size of PackedFloat32Array mismatch");
-		static_assert(type_size_array[Variant::PACKED_FLOAT64_ARRAY][sizeof(void *)] == sizeof(PackedFloat64Array), "Size of PackedFloat64Array mismatch");
-		static_assert(type_size_array[Variant::PACKED_STRING_ARRAY][sizeof(void *)] == sizeof(PackedStringArray), "Size of PackedStringArray mismatch");
-		static_assert(type_size_array[Variant::PACKED_VECTOR2_ARRAY][sizeof(void *)] == sizeof(PackedVector2Array), "Size of PackedVector2Array mismatch");
-		static_assert(type_size_array[Variant::PACKED_VECTOR3_ARRAY][sizeof(void *)] == sizeof(PackedVector3Array), "Size of PackedVector3Array mismatch");
-		static_assert(type_size_array[Variant::PACKED_COLOR_ARRAY][sizeof(void *)] == sizeof(PackedColorArray), "Size of PackedColorArray mismatch");
-		static_assert(type_size_array[Variant::VARIANT_MAX][sizeof(void *)] == sizeof(Variant), "Size of Variant mismatch");
+		static_assert(type_size_array[(int)VariantType::BOOL][sizeof(void *)] == sizeof(GDExtensionBool), "Size of bool mismatch");
+		static_assert(type_size_array[(int)VariantType::INT][sizeof(void *)] == sizeof(GDExtensionInt), "Size of int mismatch");
+		static_assert(type_size_array[(int)VariantType::FLOAT][sizeof(void *)] == sizeof(double), "Size of float mismatch");
+		static_assert(type_size_array[(int)VariantType::STRING][sizeof(void *)] == sizeof(String), "Size of String mismatch");
+		static_assert(type_size_array[(int)VariantType::VECTOR2][sizeof(void *)] == sizeof(Vector2), "Size of Vector2 mismatch");
+		static_assert(type_size_array[(int)VariantType::VECTOR2I][sizeof(void *)] == sizeof(Vector2i), "Size of Vector2i mismatch");
+		static_assert(type_size_array[(int)VariantType::RECT2][sizeof(void *)] == sizeof(Rect2), "Size of Rect2 mismatch");
+		static_assert(type_size_array[(int)VariantType::RECT2I][sizeof(void *)] == sizeof(Rect2i), "Size of Rect2i mismatch");
+		static_assert(type_size_array[(int)VariantType::VECTOR3][sizeof(void *)] == sizeof(Vector3), "Size of Vector3 mismatch");
+		static_assert(type_size_array[(int)VariantType::VECTOR3I][sizeof(void *)] == sizeof(Vector3i), "Size of Vector3i mismatch");
+		static_assert(type_size_array[(int)VariantType::TRANSFORM2D][sizeof(void *)] == sizeof(Transform2D), "Size of Transform2D mismatch");
+		static_assert(type_size_array[(int)VariantType::VECTOR4][sizeof(void *)] == sizeof(Vector4), "Size of Vector4 mismatch");
+		static_assert(type_size_array[(int)VariantType::VECTOR4I][sizeof(void *)] == sizeof(Vector4i), "Size of Vector4i mismatch");
+		static_assert(type_size_array[(int)VariantType::PLANE][sizeof(void *)] == sizeof(Plane), "Size of Plane mismatch");
+		static_assert(type_size_array[(int)VariantType::QUATERNION][sizeof(void *)] == sizeof(Quaternion), "Size of Quaternion mismatch");
+		static_assert(type_size_array[(int)VariantType::AABB][sizeof(void *)] == sizeof(AABB), "Size of AABB mismatch");
+		static_assert(type_size_array[(int)VariantType::BASIS][sizeof(void *)] == sizeof(Basis), "Size of Basis mismatch");
+		static_assert(type_size_array[(int)VariantType::TRANSFORM3D][sizeof(void *)] == sizeof(Transform3D), "Size of Transform3D mismatch");
+		static_assert(type_size_array[(int)VariantType::PROJECTION][sizeof(void *)] == sizeof(Projection), "Size of Projection mismatch");
+		static_assert(type_size_array[(int)VariantType::COLOR][sizeof(void *)] == sizeof(Color), "Size of Color mismatch");
+		static_assert(type_size_array[(int)VariantType::STRING_NAME][sizeof(void *)] == sizeof(StringName), "Size of StringName mismatch");
+		static_assert(type_size_array[(int)VariantType::NODE_PATH][sizeof(void *)] == sizeof(NodePath), "Size of NodePath mismatch");
+		static_assert(type_size_array[(int)VariantType::RID][sizeof(void *)] == sizeof(RID), "Size of RID mismatch");
+		static_assert(type_size_array[(int)VariantType::OBJECT][sizeof(void *)] == sizeof(Object *), "Size of Object mismatch");
+		static_assert(type_size_array[(int)VariantType::CALLABLE][sizeof(void *)] == sizeof(Callable), "Size of Callable mismatch");
+		static_assert(type_size_array[(int)VariantType::SIGNAL][sizeof(void *)] == sizeof(Signal), "Size of Signal mismatch");
+		static_assert(type_size_array[(int)VariantType::DICTIONARY][sizeof(void *)] == sizeof(Dictionary), "Size of Dictionary mismatch");
+		static_assert(type_size_array[(int)VariantType::ARRAY][sizeof(void *)] == sizeof(Array), "Size of Array mismatch");
+		static_assert(type_size_array[(int)VariantType::PACKED_BYTE_ARRAY][sizeof(void *)] == sizeof(PackedByteArray), "Size of PackedByteArray mismatch");
+		static_assert(type_size_array[(int)VariantType::PACKED_INT32_ARRAY][sizeof(void *)] == sizeof(PackedInt32Array), "Size of PackedInt32Array mismatch");
+		static_assert(type_size_array[(int)VariantType::PACKED_INT64_ARRAY][sizeof(void *)] == sizeof(PackedInt64Array), "Size of PackedInt64Array mismatch");
+		static_assert(type_size_array[(int)VariantType::PACKED_FLOAT32_ARRAY][sizeof(void *)] == sizeof(PackedFloat32Array), "Size of PackedFloat32Array mismatch");
+		static_assert(type_size_array[(int)VariantType::PACKED_FLOAT64_ARRAY][sizeof(void *)] == sizeof(PackedFloat64Array), "Size of PackedFloat64Array mismatch");
+		static_assert(type_size_array[(int)VariantType::PACKED_STRING_ARRAY][sizeof(void *)] == sizeof(PackedStringArray), "Size of PackedStringArray mismatch");
+		static_assert(type_size_array[(int)VariantType::PACKED_VECTOR2_ARRAY][sizeof(void *)] == sizeof(PackedVector2Array), "Size of PackedVector2Array mismatch");
+		static_assert(type_size_array[(int)VariantType::PACKED_VECTOR3_ARRAY][sizeof(void *)] == sizeof(PackedVector3Array), "Size of PackedVector3Array mismatch");
+		static_assert(type_size_array[(int)VariantType::PACKED_COLOR_ARRAY][sizeof(void *)] == sizeof(PackedColorArray), "Size of PackedColorArray mismatch");
+		static_assert(type_size_array[(int)VariantType::MAX][sizeof(void *)] == sizeof(Variant), "Size of Variant mismatch");
 
 		Array core_type_sizes;
 
@@ -238,9 +238,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			Dictionary d;
 			d["build_configuration"] = build_config_name[i];
 			Array sizes;
-			for (int j = 0; j <= Variant::VARIANT_MAX; j++) {
-				Variant::Type t = type_size_array[j].type;
-				String name = t == Variant::VARIANT_MAX ? String("Variant") : Variant::get_type_name(t);
+			for (int j = 0; j <= (int)VariantType::MAX; j++) {
+				VariantType t = type_size_array[j].type;
+				String name = t == VariantType::MAX ? String("Variant") : Variant::get_type_name(t);
 				Dictionary d2;
 				d2["name"] = name;
 				uint32_t size = 0;
@@ -327,7 +327,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	}
 
 		struct {
-			Variant::Type type;
+			VariantType type;
 			const char *member;
 			const char *member_meta_32_bits_real_float;
 			const uint32_t member_size_32_bits_real_float;
@@ -339,69 +339,69 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			const uint32_t member_size_64_bits_real_double;
 		} member_offset_array[] = {
 			// Vector2
-			REAL_MEMBER_OFFSET(Variant::VECTOR2, "x"),
-			REAL_MEMBER_OFFSET(Variant::VECTOR2, "y"),
+			REAL_MEMBER_OFFSET(VariantType::VECTOR2, "x"),
+			REAL_MEMBER_OFFSET(VariantType::VECTOR2, "y"),
 			// Vector2i
-			INT32_MEMBER_OFFSET(Variant::VECTOR2I, "x"),
-			INT32_MEMBER_OFFSET(Variant::VECTOR2I, "y"),
+			INT32_MEMBER_OFFSET(VariantType::VECTOR2I, "x"),
+			INT32_MEMBER_OFFSET(VariantType::VECTOR2I, "y"),
 			// Rect2
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::RECT2, "position", "Vector2", 2),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::RECT2, "size", "Vector2", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::RECT2, "position", "Vector2", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::RECT2, "size", "Vector2", 2),
 			// Rect2i
-			INT32_BASED_BUILTIN_MEMBER_OFFSET(Variant::RECT2I, "position", "Vector2i", 2),
-			INT32_BASED_BUILTIN_MEMBER_OFFSET(Variant::RECT2I, "size", "Vector2i", 2),
+			INT32_BASED_BUILTIN_MEMBER_OFFSET(VariantType::RECT2I, "position", "Vector2i", 2),
+			INT32_BASED_BUILTIN_MEMBER_OFFSET(VariantType::RECT2I, "size", "Vector2i", 2),
 			// Vector3
-			REAL_MEMBER_OFFSET(Variant::VECTOR3, "x"),
-			REAL_MEMBER_OFFSET(Variant::VECTOR3, "y"),
-			REAL_MEMBER_OFFSET(Variant::VECTOR3, "z"),
+			REAL_MEMBER_OFFSET(VariantType::VECTOR3, "x"),
+			REAL_MEMBER_OFFSET(VariantType::VECTOR3, "y"),
+			REAL_MEMBER_OFFSET(VariantType::VECTOR3, "z"),
 			// Vector3i
-			INT32_MEMBER_OFFSET(Variant::VECTOR3I, "x"),
-			INT32_MEMBER_OFFSET(Variant::VECTOR3I, "y"),
-			INT32_MEMBER_OFFSET(Variant::VECTOR3I, "z"),
+			INT32_MEMBER_OFFSET(VariantType::VECTOR3I, "x"),
+			INT32_MEMBER_OFFSET(VariantType::VECTOR3I, "y"),
+			INT32_MEMBER_OFFSET(VariantType::VECTOR3I, "z"),
 			// Transform2D
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2D, "x", "Vector2", 2),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2D, "y", "Vector2", 2),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2D, "origin", "Vector2", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::TRANSFORM2D, "x", "Vector2", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::TRANSFORM2D, "y", "Vector2", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::TRANSFORM2D, "origin", "Vector2", 2),
 			// Vector4
-			REAL_MEMBER_OFFSET(Variant::VECTOR4, "x"),
-			REAL_MEMBER_OFFSET(Variant::VECTOR4, "y"),
-			REAL_MEMBER_OFFSET(Variant::VECTOR4, "z"),
-			REAL_MEMBER_OFFSET(Variant::VECTOR4, "w"),
+			REAL_MEMBER_OFFSET(VariantType::VECTOR4, "x"),
+			REAL_MEMBER_OFFSET(VariantType::VECTOR4, "y"),
+			REAL_MEMBER_OFFSET(VariantType::VECTOR4, "z"),
+			REAL_MEMBER_OFFSET(VariantType::VECTOR4, "w"),
 			// Vector4i
-			INT32_MEMBER_OFFSET(Variant::VECTOR4I, "x"),
-			INT32_MEMBER_OFFSET(Variant::VECTOR4I, "y"),
-			INT32_MEMBER_OFFSET(Variant::VECTOR4I, "z"),
-			INT32_MEMBER_OFFSET(Variant::VECTOR4I, "w"),
+			INT32_MEMBER_OFFSET(VariantType::VECTOR4I, "x"),
+			INT32_MEMBER_OFFSET(VariantType::VECTOR4I, "y"),
+			INT32_MEMBER_OFFSET(VariantType::VECTOR4I, "z"),
+			INT32_MEMBER_OFFSET(VariantType::VECTOR4I, "w"),
 			// Plane
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PLANE, "normal", "Vector3", vec3_elems),
-			REAL_MEMBER_OFFSET(Variant::PLANE, "d"),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::PLANE, "normal", "Vector3", vec3_elems),
+			REAL_MEMBER_OFFSET(VariantType::PLANE, "d"),
 			// Quaternion
-			REAL_MEMBER_OFFSET(Variant::QUATERNION, "x"),
-			REAL_MEMBER_OFFSET(Variant::QUATERNION, "y"),
-			REAL_MEMBER_OFFSET(Variant::QUATERNION, "z"),
-			REAL_MEMBER_OFFSET(Variant::QUATERNION, "w"),
+			REAL_MEMBER_OFFSET(VariantType::QUATERNION, "x"),
+			REAL_MEMBER_OFFSET(VariantType::QUATERNION, "y"),
+			REAL_MEMBER_OFFSET(VariantType::QUATERNION, "z"),
+			REAL_MEMBER_OFFSET(VariantType::QUATERNION, "w"),
 			// AABB
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::AABB, "position", "Vector3", vec3_elems),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::AABB, "size", "Vector3", vec3_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::AABB, "position", "Vector3", vec3_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::AABB, "size", "Vector3", vec3_elems),
 			// Basis (remember that basis vectors are flipped!)
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::BASIS, "x", "Vector3", vec3_elems),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::BASIS, "y", "Vector3", vec3_elems),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::BASIS, "z", "Vector3", vec3_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::BASIS, "x", "Vector3", vec3_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::BASIS, "y", "Vector3", vec3_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::BASIS, "z", "Vector3", vec3_elems),
 			// Transform3D
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM3D, "basis", "Basis", vec3_elems * 3),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM3D, "origin", "Vector3", vec3_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::TRANSFORM3D, "basis", "Basis", vec3_elems * 3),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::TRANSFORM3D, "origin", "Vector3", vec3_elems),
 			// Projection
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PROJECTION, "x", "Vector4", vec4_elems),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PROJECTION, "y", "Vector4", vec4_elems),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PROJECTION, "z", "Vector4", vec4_elems),
-			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PROJECTION, "w", "Vector4", vec4_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::PROJECTION, "x", "Vector4", vec4_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::PROJECTION, "y", "Vector4", vec4_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::PROJECTION, "z", "Vector4", vec4_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(VariantType::PROJECTION, "w", "Vector4", vec4_elems),
 			// Color (always composed of 4bytes floats)
-			{ Variant::COLOR, "r", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
-			{ Variant::COLOR, "g", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
-			{ Variant::COLOR, "b", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
-			{ Variant::COLOR, "a", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
+			{ VariantType::COLOR, "r", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
+			{ VariantType::COLOR, "g", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
+			{ VariantType::COLOR, "b", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
+			{ VariantType::COLOR, "a", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
 			// End marker, must stay last
-			{ Variant::NIL, nullptr, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0 },
+			{ VariantType::NIL, nullptr, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0 },
 		};
 
 		Array core_type_member_offsets;
@@ -412,24 +412,24 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			Array type_offsets;
 			uint32_t idx = 0;
 
-			Variant::Type previous_type = Variant::NIL;
+			VariantType previous_type = VariantType::NIL;
 
 			Dictionary d2;
 			Array members;
 			uint32_t offset = 0;
 
 			while (true) {
-				Variant::Type t = member_offset_array[idx].type;
+				VariantType t = member_offset_array[idx].type;
 				if (t != previous_type) {
-					if (previous_type != Variant::NIL) {
+					if (previous_type != VariantType::NIL) {
 						d2["members"] = members;
 						type_offsets.push_back(d2);
 					}
-					if (t == Variant::NIL) {
+					if (t == VariantType::NIL) {
 						break;
 					}
 
-					String name = t == Variant::VARIANT_MAX ? String("Variant") : Variant::get_type_name(t);
+					String name = t == VariantType::MAX ? String("Variant") : Variant::get_type_name(t);
 					d2 = Dictionary();
 					members = Array();
 					offset = 0;
@@ -561,8 +561,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			Dictionary func;
 			func["name"] = String(name);
 			if (Variant::has_utility_function_return_value(name)) {
-				Variant::Type rt = Variant::get_utility_function_return_type(name);
-				func["return_type"] = rt == Variant::NIL ? String("Variant") : Variant::get_type_name(rt);
+				VariantType rt = Variant::get_utility_function_return_type(name);
+				func["return_type"] = rt == VariantType::NIL ? String("Variant") : Variant::get_type_name(rt);
 			}
 			switch (Variant::get_utility_function_type(name)) {
 				case Variant::UTILITY_FUNC_TYPE_MATH:
@@ -613,12 +613,12 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 		Array builtins;
 
-		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-			if (i == Variant::OBJECT) {
+		for (int i = 0; i < (int)VariantType::MAX; i++) {
+			if (i == (int)VariantType::OBJECT) {
 				continue;
 			}
 
-			Variant::Type type = Variant::Type(i);
+			VariantType type = VariantType(i);
 
 			Dictionary d;
 			d["name"] = Variant::get_type_name(type);
@@ -735,17 +735,17 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				//operators
 				Array operators;
 
-				for (int j = 0; j < Variant::VARIANT_MAX; j++) {
-					for (int k = 0; k < Variant::OP_MAX; k++) {
-						Variant::Type rt = Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j));
-						if (rt != Variant::NIL) {
+				for (int j = 0; j < (int)VariantType::MAX; j++) {
+					for (int k = 0; k < (int)VariantOperator::MAX; k++) {
+						VariantType rt = Variant::get_operator_return_type(VariantOperator(k), type, VariantType(j));
+						if (rt != VariantType::NIL) {
 							Dictionary d2;
-							String operator_name = Variant::get_operator_name(Variant::Operator(k));
+							String operator_name = Variant::get_operator_name(VariantOperator(k));
 							d2["name"] = operator_name;
-							if (k != Variant::OP_NEGATE && k != Variant::OP_POSITIVE && k != Variant::OP_NOT && k != Variant::OP_BIT_NEGATE) {
-								d2["right_type"] = get_builtin_or_variant_type_name(Variant::Type(j));
+							if (k != (int)VariantOperator::NEGATE && k != (int)VariantOperator::POSITIVE && k != (int)VariantOperator::NOT && k != (int)VariantOperator::BIT_NEGATE) {
+								d2["right_type"] = get_builtin_or_variant_type_name(VariantType(j));
 							}
-							d2["return_type"] = get_builtin_or_variant_type_name(Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j)));
+							d2["return_type"] = get_builtin_or_variant_type_name(Variant::get_operator_return_type(VariantOperator(k), type, VariantType(j)));
 
 							if (p_include_docs && builtin_doc != nullptr) {
 								for (const DocData::MethodDoc &operator_doc : builtin_doc->operators) {
@@ -774,8 +774,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					Dictionary d2;
 					d2["name"] = String(method_name);
 					if (Variant::has_builtin_method_return_value(type, method_name)) {
-						Variant::Type ret_type = Variant::get_builtin_method_return_type(type, method_name);
-						d2["return_type"] = ret_type == Variant::NIL ? String("Variant") : Variant::get_type_name(ret_type);
+						VariantType ret_type = Variant::get_builtin_method_return_type(type, method_name);
+						d2["return_type"] = ret_type == VariantType::NIL ? String("Variant") : Variant::get_type_name(ret_type);
 					}
 					d2["is_vararg"] = Variant::is_builtin_method_vararg(type, method_name);
 					d2["is_const"] = Variant::is_builtin_method_const(type, method_name);
@@ -1010,7 +1010,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
 						// virtual functions have no hash since no MethodBind is involved
-						bool has_return = mi.return_val.type != Variant::NIL || (mi.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
+						bool has_return = mi.return_val.type != VariantType::NIL || (mi.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 						Array arguments;
 						for (int i = (has_return ? -1 : 0); i < mi.arguments.size(); i++) {
 							PropertyInfo pinfo = i == -1 ? mi.return_val : mi.arguments[i];
@@ -1179,7 +1179,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				List<PropertyInfo> property_list;
 				ClassDB::get_property_list(class_name, &property_list, true);
 				for (const PropertyInfo &F : property_list) {
-					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP || (F.type == Variant::NIL && F.usage & PROPERTY_USAGE_ARRAY)) {
+					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP || (F.type == VariantType::NIL && F.usage & PROPERTY_USAGE_ARRAY)) {
 						continue; //not real properties
 					}
 					if (F.name.begins_with("_")) {
@@ -1294,7 +1294,7 @@ void GDExtensionAPIDump::generate_extension_json_file(const String &p_path, bool
 static bool compare_value(const String &p_path, const String &p_field, const Variant &p_old_value, const Variant &p_new_value, bool p_allow_name_change) {
 	bool failed = false;
 	String path = p_path + "/" + p_field;
-	if (p_old_value.get_type() == Variant::ARRAY && p_new_value.get_type() == Variant::ARRAY) {
+	if (p_old_value.get_type() == VariantType::ARRAY && p_new_value.get_type() == VariantType::ARRAY) {
 		Array old_array = p_old_value;
 		Array new_array = p_new_value;
 		if (!compare_value(path, "size", old_array.size(), new_array.size(), p_allow_name_change)) {
@@ -1305,7 +1305,7 @@ static bool compare_value(const String &p_path, const String &p_field, const Var
 				failed = true;
 			}
 		}
-	} else if (p_old_value.get_type() == Variant::DICTIONARY && p_new_value.get_type() == Variant::DICTIONARY) {
+	} else if (p_old_value.get_type() == VariantType::DICTIONARY && p_new_value.get_type() == VariantType::DICTIONARY) {
 		Dictionary old_dict = p_old_value;
 		Dictionary new_dict = p_new_value;
 		Array old_keys = old_dict.keys();
@@ -1332,7 +1332,7 @@ static bool compare_value(const String &p_path, const String &p_field, const Var
 			}
 		}
 	} else {
-		bool equal = Variant::evaluate(Variant::OP_EQUAL, p_old_value, p_new_value);
+		bool equal = Variant::evaluate(VariantOperator::EQUAL, p_old_value, p_new_value);
 		if (!equal) {
 			print_error(vformat("Validate extension JSON: Error: Field '%s': %s changed value in new API, from %s to %s.", p_path, p_field, p_old_value.get_construct_string(), p_new_value.get_construct_string()));
 			return false;

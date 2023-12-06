@@ -585,7 +585,7 @@ void EditorData::instantiate_object_properties(Object *p_object) {
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		PropertyInfo pi = E->get();
-		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
+		if (pi.type == VariantType::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
 			Object *prop = ClassDB::instantiate(pi.class_name);
 			p_object->set(pi.name, prop);
 		}

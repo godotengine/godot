@@ -1486,7 +1486,7 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);
 
-	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
+	ERR_FAIL_COND(p_value.get_type() == VariantType::OBJECT);
 
 	HashMap<StringName, Instance::InstanceShaderParameter>::Iterator E = instance->instance_shader_uniforms.find(p_parameter);
 
@@ -3970,7 +3970,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 					geom->geometry_instance->set_instance_shader_uniforms_offset(p_instance->instance_allocated_shader_uniforms_offset);
 
 					for (const KeyValue<StringName, Instance::InstanceShaderParameter> &E : p_instance->instance_shader_uniforms) {
-						if (E.value.value.get_type() != Variant::NIL) {
+						if (E.value.value.get_type() != VariantType::NIL) {
 							int flags_count = 0;
 							if (E.value.info.hint == PROPERTY_HINT_FLAGS) {
 								// A small hack to detect boolean flags count and prevent overhead.

@@ -3987,8 +3987,8 @@ Dictionary Node3DEditorViewport::get_state() const {
 void Node3DEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &Node3DEditorViewport::update_transform_gizmo_view); // Used by call_deferred.
 
-	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
-	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
+	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(VariantType::OBJECT, "viewport")));
+	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(VariantType::OBJECT, "viewport")));
 }
 
 void Node3DEditorViewport::reset() {
@@ -8620,9 +8620,9 @@ Node3DEditor::Node3DEditor() {
 	add_to_group("_spatial_editor_group");
 
 	EDITOR_DEF("editors/3d/manipulator_gizmo_size", 80);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/3d/manipulator_gizmo_size", PROPERTY_HINT_RANGE, "16,160,1"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::INT, "editors/3d/manipulator_gizmo_size", PROPERTY_HINT_RANGE, "16,160,1"));
 	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity", 0.9);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT, "editors/3d/manipulator_gizmo_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::FLOAT, "editors/3d/manipulator_gizmo_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"));
 	EDITOR_DEF("editors/3d/navigation/show_viewport_rotation_gizmo", true);
 	EDITOR_DEF("editors/3d/navigation/show_viewport_navigation_gizmo", DisplayServer::get_singleton()->is_touchscreen_available());
 

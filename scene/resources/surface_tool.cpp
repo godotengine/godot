@@ -854,8 +854,8 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 	}
 
 	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
-		ERR_CONTINUE_MSG(p_arrays[RS::ARRAY_CUSTOM0 + i].get_type() == Variant::PACKED_BYTE_ARRAY, "Extracting Byte/Half formats is not supported");
-		if (p_arrays[RS::ARRAY_CUSTOM0 + i].get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+		ERR_CONTINUE_MSG(p_arrays[RS::ARRAY_CUSTOM0 + i].get_type() == VariantType::PACKED_BYTE_ARRAY, "Extracting Byte/Half formats is not supported");
+		if (p_arrays[RS::ARRAY_CUSTOM0 + i].get_type() == VariantType::PACKED_FLOAT32_ARRAY) {
 			lformat |= custom_mask[i];
 			custom_float[i] = p_arrays[RS::ARRAY_CUSTOM0 + i];
 			int fmt = custom_float[i].size() / varr.size();

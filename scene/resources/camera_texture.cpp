@@ -42,9 +42,9 @@ void CameraTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_active", "active"), &CameraTexture::set_camera_active);
 	ClassDB::bind_method(D_METHOD("get_camera_active"), &CameraTexture::get_camera_active);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera_feed_id"), "set_camera_feed_id", "get_camera_feed_id");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "which_feed"), "set_which_feed", "get_which_feed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "camera_is_active"), "set_camera_active", "get_camera_active");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "camera_feed_id"), "set_camera_feed_id", "get_camera_feed_id");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "which_feed"), "set_which_feed", "get_which_feed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "camera_is_active"), "set_camera_active", "get_camera_active");
 }
 
 int CameraTexture::get_width() const {

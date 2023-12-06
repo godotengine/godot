@@ -231,7 +231,7 @@ protected:
 
 	StringName type;
 	String property;
-	Variant::Type property_type;
+	VariantType property_type;
 	void _notification(int p_what);
 
 	virtual Variant _get_painted_value();
@@ -248,8 +248,8 @@ public:
 	virtual void forward_painting_alternatives_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event) override;
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;
 
-	void setup_property_editor(Variant::Type p_type, String p_property, String p_label = "", Variant p_default_value = Variant());
-	Variant::Type get_property_type();
+	void setup_property_editor(VariantType p_type, String p_property, String p_label = "", Variant p_default_value = Variant());
+	VariantType get_property_type();
 
 	TileDataDefaultEditor();
 	~TileDataDefaultEditor();

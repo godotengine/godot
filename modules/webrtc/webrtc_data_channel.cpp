@@ -49,7 +49,7 @@ void WebRTCDataChannel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_negotiated"), &WebRTCDataChannel::is_negotiated);
 	ClassDB::bind_method(D_METHOD("get_buffered_amount"), &WebRTCDataChannel::get_buffered_amount);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "write_mode", PROPERTY_HINT_ENUM), "set_write_mode", "get_write_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "write_mode", PROPERTY_HINT_ENUM), "set_write_mode", "get_write_mode");
 
 	BIND_ENUM_CONSTANT(WRITE_MODE_TEXT);
 	BIND_ENUM_CONSTANT(WRITE_MODE_BINARY);

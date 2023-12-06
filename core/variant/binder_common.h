@@ -169,8 +169,51 @@ VARIANT_ENUM_CAST(VerticalAlignment);
 VARIANT_ENUM_CAST(InlineAlignment);
 VARIANT_ENUM_CAST(PropertyHint);
 VARIANT_BITFIELD_CAST(PropertyUsageFlags);
-VARIANT_ENUM_CAST(Variant::Type);
-VARIANT_ENUM_CAST(Variant::Operator);
+// VARIANT_ENUM_CAST(VariantType);
+template <>
+struct GetTypeInfo<VariantType> {
+	static const VariantType VARIANT_TYPE = VariantType::INT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() { return PropertyInfo(VariantType::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, godot::details::enum_qualified_name_to_class_info_name(String("VariantType"))); }
+};
+template <>
+struct GetTypeInfo<VariantType const> {
+	static const VariantType VARIANT_TYPE = VariantType::INT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() { return PropertyInfo(VariantType::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, godot::details::enum_qualified_name_to_class_info_name(String("VariantType"))); }
+};
+template <>
+struct GetTypeInfo<VariantType &> {
+	static const VariantType VARIANT_TYPE = VariantType::INT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() { return PropertyInfo(VariantType::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, godot::details::enum_qualified_name_to_class_info_name(String("VariantType"))); }
+};
+template <>
+struct GetTypeInfo<const VariantType &> {
+	static const VariantType VARIANT_TYPE = VariantType::INT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() { return PropertyInfo(VariantType::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, godot::details::enum_qualified_name_to_class_info_name(String("VariantType"))); }
+};
+template <>
+struct VariantCaster<VariantType> {
+	static inline VariantType cast(const Variant &p_variant) { return (VariantType)p_variant.operator int64_t(); }
+};
+template <>
+struct PtrToArg<VariantType> {
+	inline static VariantType convert(const void *p_ptr) { return VariantType(*reinterpret_cast<const int64_t *>(p_ptr)); }
+	typedef int64_t EncodeT;
+	inline static void encode(VariantType p_val, const void *p_ptr) { *(int64_t *)p_ptr = (int64_t)p_val; }
+};
+template <>
+struct ZeroInitializer<VariantType> {
+	static void initialize(VariantType &value) { value = (VariantType)0; }
+};
+template <>
+struct VariantInternalAccessor<VariantType> {
+	static inline VariantType get(const Variant *v) { return VariantType(*VariantInternal::get_int(v)); }
+	static inline void set(Variant *v, VariantType p_value) { *VariantInternal::get_int(v) = (int64_t)p_value; }
+};
+VARIANT_ENUM_CAST(VariantOperator);
 
 // Key
 
@@ -251,12 +294,12 @@ struct VariantObjectClassChecker<const Ref<T> &> {
 template <class T>
 struct VariantCasterAndValidate {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
+		VariantType argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
 				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
+			r_error.expected = (int)argtype;
 		}
 
 		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
@@ -266,12 +309,12 @@ struct VariantCasterAndValidate {
 template <class T>
 struct VariantCasterAndValidate<T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
+		VariantType argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
 				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
+			r_error.expected = (int)argtype;
 		}
 
 		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
@@ -281,12 +324,12 @@ struct VariantCasterAndValidate<T &> {
 template <class T>
 struct VariantCasterAndValidate<const T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
+		VariantType argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
 				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
+			r_error.expected = (int)argtype;
 		}
 
 		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
@@ -684,7 +727,7 @@ void call_with_validated_object_instance_args_static_retc(T *base, R (*p_method)
 #endif
 
 template <class Q>
-void call_get_argument_type_helper(int p_arg, int &index, Variant::Type &type) {
+void call_get_argument_type_helper(int p_arg, int &index, VariantType &type) {
 	if (p_arg == index) {
 		type = GetTypeInfo<Q>::VARIANT_TYPE;
 	}
@@ -692,8 +735,8 @@ void call_get_argument_type_helper(int p_arg, int &index, Variant::Type &type) {
 }
 
 template <class... P>
-Variant::Type call_get_argument_type(int p_arg) {
-	Variant::Type type = Variant::NIL;
+VariantType call_get_argument_type(int p_arg) {
+	VariantType type = VariantType::NIL;
 	int index = 0;
 	// I think rocket science is simpler than modern C++.
 	using expand_type = int[];

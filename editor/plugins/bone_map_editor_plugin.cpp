@@ -154,7 +154,7 @@ void BoneMapperItem::_notification(int p_what) {
 }
 
 void BoneMapperItem::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("pick", PropertyInfo(Variant::STRING_NAME, "profile_bone_name")));
+	ADD_SIGNAL(MethodInfo("pick", PropertyInfo(VariantType::STRING_NAME, "profile_bone_name")));
 }
 
 BoneMapperItem::BoneMapperItem(Ref<BoneMap> &p_bone_map, const StringName &p_profile_bone_name) {
@@ -1303,8 +1303,8 @@ void BoneMapper::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_group_idx"), &BoneMapper::get_current_group_idx);
 	ClassDB::bind_method(D_METHOD("set_current_bone_idx", "current_bone_idx"), &BoneMapper::set_current_bone_idx);
 	ClassDB::bind_method(D_METHOD("get_current_bone_idx"), &BoneMapper::get_current_bone_idx);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_group_idx"), "set_current_group_idx", "get_current_group_idx");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_bone_idx"), "set_current_bone_idx", "get_current_bone_idx");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "current_group_idx"), "set_current_group_idx", "get_current_group_idx");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "current_bone_idx"), "set_current_bone_idx", "get_current_bone_idx");
 }
 
 void BoneMapper::_notification(int p_what) {

@@ -159,7 +159,7 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 	if (self.is_null()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = p_argcount - 1;
-		r_error.expected = Variant::OBJECT;
+		r_error.expected = (int)VariantType::OBJECT;
 		return Variant();
 	}
 
@@ -274,7 +274,7 @@ void GDScriptFunctionState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_valid", "extended_check"), &GDScriptFunctionState::is_valid, DEFVAL(false));
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDScriptFunctionState::_signal_callback, MethodInfo("_signal_callback"));
 
-	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
+	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(VariantType::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 }
 
 GDScriptFunctionState::GDScriptFunctionState() :

@@ -921,23 +921,23 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tab_focus_mode", "focus_mode"), &TabContainer::set_tab_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_tab_focus_mode"), &TabContainer::get_tab_focus_mode);
 
-	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
-	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(VariantType::INT, "idx_to")));
+	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(VariantType::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(VariantType::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_tab_focus_mode", "get_tab_focus_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "tab_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_tab_focus_mode", "get_tab_focus_mode");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, side_margin);
 

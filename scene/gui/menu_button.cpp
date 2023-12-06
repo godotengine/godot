@@ -196,28 +196,28 @@ bool MenuButton::_get(const StringName &p_name, Variant &r_ret) const {
 
 void MenuButton::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < popup->get_item_count(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("popup/item_%d/text", i)));
+		p_list->push_back(PropertyInfo(VariantType::STRING, vformat("popup/item_%d/text", i)));
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		PropertyInfo pi = PropertyInfo(VariantType::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As Checkbox,As Radio Button");
+		pi = PropertyInfo(VariantType::INT, vformat("popup/item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As Checkbox,As Radio Button");
 		pi.usage &= ~(!popup->is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/checked", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("popup/item_%d/checked", i));
 		pi.usage &= ~(!popup->is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
+		pi = PropertyInfo(VariantType::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/disabled", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("popup/item_%d/disabled", i));
 		pi.usage &= ~(!popup->is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/separator", i));
+		pi = PropertyInfo(VariantType::BOOL, vformat("popup/item_%d/separator", i));
 		pi.usage &= ~(!popup->is_item_separator(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 	}
@@ -233,7 +233,7 @@ void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &MenuButton::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &MenuButton::get_item_count);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("about_to_popup"));

@@ -32,7 +32,7 @@
 #include "servers/rendering/renderer_compositor.h"
 
 void XRInterface::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
+	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(VariantType::INT, "mode")));
 
 	ClassDB::bind_method(D_METHOD("get_name"), &XRInterface::get_name);
 	ClassDB::bind_method(D_METHOD("get_capabilities"), &XRInterface::get_capabilities);
@@ -53,7 +53,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "tracker_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRInterface::trigger_haptic_pulse);
 
 	ADD_GROUP("Interface", "interface_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_primary", "is_primary");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "interface_is_primary"), "set_primary", "is_primary");
 
 	// methods and properties specific to VR...
 	ClassDB::bind_method(D_METHOD("supports_play_area_mode", "mode"), &XRInterface::supports_play_area_mode);
@@ -62,7 +62,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_play_area"), &XRInterface::get_play_area);
 
 	ADD_GROUP("XR", "xr_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "xr_play_area_mode", PROPERTY_HINT_ENUM, "Unknown,3DOF,Sitting,Roomscale,Stage"), "set_play_area_mode", "get_play_area_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "xr_play_area_mode", PROPERTY_HINT_ENUM, "Unknown,3DOF,Sitting,Roomscale,Stage"), "set_play_area_mode", "get_play_area_mode");
 
 	// methods and properties specific to AR....
 	ClassDB::bind_method(D_METHOD("get_anchor_detection_is_enabled"), &XRInterface::get_anchor_detection_is_enabled);
@@ -80,10 +80,10 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_environment_blend_modes"), &XRInterface::get_supported_environment_blend_modes);
 	ClassDB::bind_method(D_METHOD("set_environment_blend_mode", "mode"), &XRInterface::set_environment_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_environment_blend_mode"), &XRInterface::get_environment_blend_mode);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_blend_mode"), "set_environment_blend_mode", "get_environment_blend_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "environment_blend_mode"), "set_environment_blend_mode", "get_environment_blend_mode");
 
 	ADD_GROUP("AR", "ar_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ar_is_anchor_detection_enabled"), "set_anchor_detection_is_enabled", "get_anchor_detection_is_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "ar_is_anchor_detection_enabled"), "set_anchor_detection_is_enabled", "get_anchor_detection_is_enabled");
 
 	BIND_ENUM_CONSTANT(XR_NONE);
 	BIND_ENUM_CONSTANT(XR_MONO);

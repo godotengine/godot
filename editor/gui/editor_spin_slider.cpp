@@ -546,7 +546,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 	}
 
 	Variant v = expr->execute(Array(), nullptr, false, true);
-	if (v.get_type() == Variant::NIL) {
+	if (v.get_type() == VariantType::NIL) {
 		return;
 	}
 	set_value(v);
@@ -661,11 +661,11 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hide_slider", "hide_slider"), &EditorSpinSlider::set_hide_slider);
 	ClassDB::bind_method(D_METHOD("is_hiding_slider"), &EditorSpinSlider::is_hiding_slider);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "label"), "set_label", "get_label");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "suffix"), "set_suffix", "get_suffix");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "read_only"), "set_read_only", "is_read_only");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "flat"), "set_flat", "is_flat");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
 
 	ADD_SIGNAL(MethodInfo("grabbed"));
 	ADD_SIGNAL(MethodInfo("ungrabbed"));

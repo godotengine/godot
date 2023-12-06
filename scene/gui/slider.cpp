@@ -374,12 +374,12 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_scrollable"), &Slider::is_scrollable);
 
 	ADD_SIGNAL(MethodInfo("drag_started"));
-	ADD_SIGNAL(MethodInfo("drag_ended", PropertyInfo(Variant::BOOL, "value_changed")));
+	ADD_SIGNAL(MethodInfo("drag_ended", PropertyInfo(VariantType::BOOL, "value_changed")));
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_style, "slider");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_style, "grabber_area");

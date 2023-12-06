@@ -237,10 +237,10 @@ void Joint2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rid"), &Joint2D::get_rid);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_a", "get_node_a");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_b", "get_node_b");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,0.9,0.001"), "set_bias", "get_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_collision"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_a", "get_node_a");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_b", "get_node_b");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,0.9,0.001"), "set_bias", "get_bias");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "disable_collision"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
 }
 
 Joint2D::Joint2D() {
@@ -388,14 +388,14 @@ void PinJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_angular_limit_enabled", "enabled"), &PinJoint2D::set_angular_limit_enabled);
 	ClassDB::bind_method(D_METHOD("is_angular_limit_enabled"), &PinJoint2D::is_angular_limit_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "softness", PROPERTY_HINT_RANGE, "0.00,16,0.01,exp"), "set_softness", "get_softness");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "softness", PROPERTY_HINT_RANGE, "0.00,16,0.01,exp"), "set_softness", "get_softness");
 	ADD_GROUP("Angular Limit", "angular_limit_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "angular_limit_enabled"), "set_angular_limit_enabled", "is_angular_limit_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.1,radians_as_degrees"), "set_angular_limit_lower", "get_angular_limit_lower");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.1,radians_as_degrees"), "set_angular_limit_upper", "get_angular_limit_upper");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "angular_limit_enabled"), "set_angular_limit_enabled", "is_angular_limit_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.1,radians_as_degrees"), "set_angular_limit_lower", "get_angular_limit_lower");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.1,radians_as_degrees"), "set_angular_limit_upper", "get_angular_limit_upper");
 	ADD_GROUP("Motor", "motor_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motor_enabled"), "set_motor_enabled", "is_motor_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motor_target_velocity", PROPERTY_HINT_RANGE, U"-200,200,0.01,or_greater,or_less,radians_as_degrees,suffix:\u00B0/s"), "set_motor_target_velocity", "get_motor_target_velocity");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "motor_enabled"), "set_motor_enabled", "is_motor_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "motor_target_velocity", PROPERTY_HINT_RANGE, U"-200,200,0.01,or_greater,or_less,radians_as_degrees,suffix:\u00B0/s"), "set_motor_target_velocity", "get_motor_target_velocity");
 }
 
 PinJoint2D::PinJoint2D() {
@@ -457,8 +457,8 @@ void GrooveJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_initial_offset", "offset"), &GrooveJoint2D::set_initial_offset);
 	ClassDB::bind_method(D_METHOD("get_initial_offset"), &GrooveJoint2D::get_initial_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "initial_offset", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_initial_offset", "get_initial_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "initial_offset", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_initial_offset", "get_initial_offset");
 }
 
 GrooveJoint2D::GrooveJoint2D() {
@@ -554,10 +554,10 @@ void DampedSpringJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_damping", "damping"), &DampedSpringJoint2D::set_damping);
 	ClassDB::bind_method(D_METHOD("get_damping"), &DampedSpringJoint2D::get_damping);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rest_length", PROPERTY_HINT_RANGE, "0,65535,1,exp,suffix:px"), "set_rest_length", "get_rest_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stiffness", PROPERTY_HINT_RANGE, "0.1,64,0.1,exp"), "set_stiffness", "get_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping", PROPERTY_HINT_RANGE, "0.01,16,0.01,exp"), "set_damping", "get_damping");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "rest_length", PROPERTY_HINT_RANGE, "0,65535,1,exp,suffix:px"), "set_rest_length", "get_rest_length");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "stiffness", PROPERTY_HINT_RANGE, "0.1,64,0.1,exp"), "set_stiffness", "get_stiffness");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "damping", PROPERTY_HINT_RANGE, "0.01,16,0.01,exp"), "set_damping", "get_damping");
 }
 
 DampedSpringJoint2D::DampedSpringJoint2D() {

@@ -169,7 +169,7 @@ class AnimationTrackEditDefaultPlugin : public AnimationTrackEditPlugin {
 	GDCLASS(AnimationTrackEditDefaultPlugin, AnimationTrackEditPlugin);
 
 public:
-	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) override;
+	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, VariantType p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) override;
 	virtual AnimationTrackEdit *create_audio_track_edit() override;
 	virtual AnimationTrackEdit *create_animation_track_edit(Object *p_object) override;
 };

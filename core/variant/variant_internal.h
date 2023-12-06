@@ -43,78 +43,78 @@ class VariantInternal {
 
 public:
 	// Set type.
-	_FORCE_INLINE_ static void initialize(Variant *v, Variant::Type p_type) {
+	_FORCE_INLINE_ static void initialize(Variant *v, VariantType p_type) {
 		v->clear();
 		v->type = p_type;
 
 		switch (p_type) {
-			case Variant::STRING:
+			case VariantType::STRING:
 				init_string(v);
 				break;
-			case Variant::TRANSFORM2D:
+			case VariantType::TRANSFORM2D:
 				init_transform2d(v);
 				break;
-			case Variant::AABB:
+			case VariantType::AABB:
 				init_aabb(v);
 				break;
-			case Variant::BASIS:
+			case VariantType::BASIS:
 				init_basis(v);
 				break;
-			case Variant::TRANSFORM3D:
+			case VariantType::TRANSFORM3D:
 				init_transform3d(v);
 				break;
-			case Variant::PROJECTION:
+			case VariantType::PROJECTION:
 				init_projection(v);
 				break;
-			case Variant::COLOR:
+			case VariantType::COLOR:
 				init_color(v);
 				break;
-			case Variant::STRING_NAME:
+			case VariantType::STRING_NAME:
 				init_string_name(v);
 				break;
-			case Variant::NODE_PATH:
+			case VariantType::NODE_PATH:
 				init_node_path(v);
 				break;
-			case Variant::CALLABLE:
+			case VariantType::CALLABLE:
 				init_callable(v);
 				break;
-			case Variant::SIGNAL:
+			case VariantType::SIGNAL:
 				init_signal(v);
 				break;
-			case Variant::DICTIONARY:
+			case VariantType::DICTIONARY:
 				init_dictionary(v);
 				break;
-			case Variant::ARRAY:
+			case VariantType::ARRAY:
 				init_array(v);
 				break;
-			case Variant::PACKED_BYTE_ARRAY:
+			case VariantType::PACKED_BYTE_ARRAY:
 				init_byte_array(v);
 				break;
-			case Variant::PACKED_INT32_ARRAY:
+			case VariantType::PACKED_INT32_ARRAY:
 				init_int32_array(v);
 				break;
-			case Variant::PACKED_INT64_ARRAY:
+			case VariantType::PACKED_INT64_ARRAY:
 				init_int64_array(v);
 				break;
-			case Variant::PACKED_FLOAT32_ARRAY:
+			case VariantType::PACKED_FLOAT32_ARRAY:
 				init_float32_array(v);
 				break;
-			case Variant::PACKED_FLOAT64_ARRAY:
+			case VariantType::PACKED_FLOAT64_ARRAY:
 				init_float64_array(v);
 				break;
-			case Variant::PACKED_STRING_ARRAY:
+			case VariantType::PACKED_STRING_ARRAY:
 				init_string_array(v);
 				break;
-			case Variant::PACKED_VECTOR2_ARRAY:
+			case VariantType::PACKED_VECTOR2_ARRAY:
 				init_vector2_array(v);
 				break;
-			case Variant::PACKED_VECTOR3_ARRAY:
+			case VariantType::PACKED_VECTOR3_ARRAY:
 				init_vector3_array(v);
 				break;
-			case Variant::PACKED_COLOR_ARRAY:
+			case VariantType::PACKED_COLOR_ARRAY:
 				init_color_array(v);
 				break;
-			case Variant::OBJECT:
+			case VariantType::OBJECT:
 				init_object(v);
 				break;
 			default:
@@ -159,8 +159,8 @@ public:
 	_FORCE_INLINE_ static const Plane *get_plane(const Variant *v) { return reinterpret_cast<const Plane *>(v->_data._mem); }
 	_FORCE_INLINE_ static Quaternion *get_quaternion(Variant *v) { return reinterpret_cast<Quaternion *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Quaternion *get_quaternion(const Variant *v) { return reinterpret_cast<const Quaternion *>(v->_data._mem); }
-	_FORCE_INLINE_ static ::AABB *get_aabb(Variant *v) { return v->_data._aabb; }
-	_FORCE_INLINE_ static const ::AABB *get_aabb(const Variant *v) { return v->_data._aabb; }
+	_FORCE_INLINE_ static AABB *get_aabb(Variant *v) { return v->_data._aabb; }
+	_FORCE_INLINE_ static const AABB *get_aabb(const Variant *v) { return v->_data._aabb; }
 	_FORCE_INLINE_ static Basis *get_basis(Variant *v) { return v->_data._basis; }
 	_FORCE_INLINE_ static const Basis *get_basis(const Variant *v) { return v->_data._basis; }
 	_FORCE_INLINE_ static Transform3D *get_transform(Variant *v) { return v->_data._transform3d; }
@@ -175,8 +175,8 @@ public:
 	_FORCE_INLINE_ static const StringName *get_string_name(const Variant *v) { return reinterpret_cast<const StringName *>(v->_data._mem); }
 	_FORCE_INLINE_ static NodePath *get_node_path(Variant *v) { return reinterpret_cast<NodePath *>(v->_data._mem); }
 	_FORCE_INLINE_ static const NodePath *get_node_path(const Variant *v) { return reinterpret_cast<const NodePath *>(v->_data._mem); }
-	_FORCE_INLINE_ static ::RID *get_rid(Variant *v) { return reinterpret_cast<::RID *>(v->_data._mem); }
-	_FORCE_INLINE_ static const ::RID *get_rid(const Variant *v) { return reinterpret_cast<const ::RID *>(v->_data._mem); }
+	_FORCE_INLINE_ static RID *get_rid(Variant *v) { return reinterpret_cast<RID *>(v->_data._mem); }
+	_FORCE_INLINE_ static const RID *get_rid(const Variant *v) { return reinterpret_cast<const RID *>(v->_data._mem); }
 	_FORCE_INLINE_ static Callable *get_callable(Variant *v) { return reinterpret_cast<Callable *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Callable *get_callable(const Variant *v) { return reinterpret_cast<const Callable *>(v->_data._mem); }
 	_FORCE_INLINE_ static Signal *get_signal(Variant *v) { return reinterpret_cast<Signal *>(v->_data._mem); }
@@ -216,106 +216,106 @@ public:
 		v->type = GetTypeInfo<T>::VARIANT_TYPE;
 	}
 
-	// Should be in the same order as Variant::Type for consistency.
+	// Should be in the same order as VariantType for consistency.
 	// Those primitive and vector types don't need an `init_` method:
 	// Nil, bool, float, Vector2/i, Rect2/i, Vector3/i, Plane, Quat, RID.
 	// Object is a special case, handled via `object_assign_null`.
 	_FORCE_INLINE_ static void init_string(Variant *v) {
 		memnew_placement(v->_data._mem, String);
-		v->type = Variant::STRING;
+		v->type = VariantType::STRING;
 	}
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
 		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
 		memnew_placement(v->_data._transform2d, Transform2D);
-		v->type = Variant::TRANSFORM2D;
+		v->type = VariantType::TRANSFORM2D;
 	}
 	_FORCE_INLINE_ static void init_aabb(Variant *v) {
 		v->_data._aabb = (AABB *)Variant::Pools::_bucket_small.alloc();
 		memnew_placement(v->_data._aabb, AABB);
-		v->type = Variant::AABB;
+		v->type = VariantType::AABB;
 	}
 	_FORCE_INLINE_ static void init_basis(Variant *v) {
 		v->_data._basis = (Basis *)Variant::Pools::_bucket_medium.alloc();
 		memnew_placement(v->_data._basis, Basis);
-		v->type = Variant::BASIS;
+		v->type = VariantType::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform3d(Variant *v) {
 		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
 		memnew_placement(v->_data._transform3d, Transform3D);
-		v->type = Variant::TRANSFORM3D;
+		v->type = VariantType::TRANSFORM3D;
 	}
 	_FORCE_INLINE_ static void init_projection(Variant *v) {
 		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
 		memnew_placement(v->_data._projection, Projection);
-		v->type = Variant::PROJECTION;
+		v->type = VariantType::PROJECTION;
 	}
 	_FORCE_INLINE_ static void init_color(Variant *v) {
 		memnew_placement(v->_data._mem, Color);
-		v->type = Variant::COLOR;
+		v->type = VariantType::COLOR;
 	}
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {
 		memnew_placement(v->_data._mem, StringName);
-		v->type = Variant::STRING_NAME;
+		v->type = VariantType::STRING_NAME;
 	}
 	_FORCE_INLINE_ static void init_node_path(Variant *v) {
 		memnew_placement(v->_data._mem, NodePath);
-		v->type = Variant::NODE_PATH;
+		v->type = VariantType::NODE_PATH;
 	}
 	_FORCE_INLINE_ static void init_callable(Variant *v) {
 		memnew_placement(v->_data._mem, Callable);
-		v->type = Variant::CALLABLE;
+		v->type = VariantType::CALLABLE;
 	}
 	_FORCE_INLINE_ static void init_signal(Variant *v) {
 		memnew_placement(v->_data._mem, Signal);
-		v->type = Variant::SIGNAL;
+		v->type = VariantType::SIGNAL;
 	}
 	_FORCE_INLINE_ static void init_dictionary(Variant *v) {
 		memnew_placement(v->_data._mem, Dictionary);
-		v->type = Variant::DICTIONARY;
+		v->type = VariantType::DICTIONARY;
 	}
 	_FORCE_INLINE_ static void init_array(Variant *v) {
 		memnew_placement(v->_data._mem, Array);
-		v->type = Variant::ARRAY;
+		v->type = VariantType::ARRAY;
 	}
 	_FORCE_INLINE_ static void init_byte_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<uint8_t>::create(Vector<uint8_t>());
-		v->type = Variant::PACKED_BYTE_ARRAY;
+		v->type = VariantType::PACKED_BYTE_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_int32_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<int32_t>::create(Vector<int32_t>());
-		v->type = Variant::PACKED_INT32_ARRAY;
+		v->type = VariantType::PACKED_INT32_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_int64_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<int64_t>::create(Vector<int64_t>());
-		v->type = Variant::PACKED_INT64_ARRAY;
+		v->type = VariantType::PACKED_INT64_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_float32_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<float>::create(Vector<float>());
-		v->type = Variant::PACKED_FLOAT32_ARRAY;
+		v->type = VariantType::PACKED_FLOAT32_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_float64_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<double>::create(Vector<double>());
-		v->type = Variant::PACKED_FLOAT64_ARRAY;
+		v->type = VariantType::PACKED_FLOAT64_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_string_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<String>::create(Vector<String>());
-		v->type = Variant::PACKED_STRING_ARRAY;
+		v->type = VariantType::PACKED_STRING_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_vector2_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<Vector2>::create(Vector<Vector2>());
-		v->type = Variant::PACKED_VECTOR2_ARRAY;
+		v->type = VariantType::PACKED_VECTOR2_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_vector3_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<Vector3>::create(Vector<Vector3>());
-		v->type = Variant::PACKED_VECTOR3_ARRAY;
+		v->type = VariantType::PACKED_VECTOR3_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_color_array(Variant *v) {
 		v->_data.packed_array = Variant::PackedArrayRef<Color>::create(Vector<Color>());
-		v->type = Variant::PACKED_COLOR_ARRAY;
+		v->type = VariantType::PACKED_COLOR_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_object(Variant *v) {
 		object_assign_null(v);
-		v->type = Variant::OBJECT;
+		v->type = VariantType::OBJECT;
 	}
 
 	_FORCE_INLINE_ static void clear(Variant *v) {
@@ -343,83 +343,83 @@ public:
 
 	_FORCE_INLINE_ static void *get_opaque_pointer(Variant *v) {
 		switch (v->type) {
-			case Variant::NIL:
+			case VariantType::NIL:
 				return nullptr;
-			case Variant::BOOL:
+			case VariantType::BOOL:
 				return get_bool(v);
-			case Variant::INT:
+			case VariantType::INT:
 				return get_int(v);
-			case Variant::FLOAT:
+			case VariantType::FLOAT:
 				return get_float(v);
-			case Variant::STRING:
+			case VariantType::STRING:
 				return get_string(v);
-			case Variant::VECTOR2:
+			case VariantType::VECTOR2:
 				return get_vector2(v);
-			case Variant::VECTOR2I:
+			case VariantType::VECTOR2I:
 				return get_vector2i(v);
-			case Variant::VECTOR3:
+			case VariantType::VECTOR3:
 				return get_vector3(v);
-			case Variant::VECTOR3I:
+			case VariantType::VECTOR3I:
 				return get_vector3i(v);
-			case Variant::VECTOR4:
+			case VariantType::VECTOR4:
 				return get_vector4(v);
-			case Variant::VECTOR4I:
+			case VariantType::VECTOR4I:
 				return get_vector4i(v);
-			case Variant::RECT2:
+			case VariantType::RECT2:
 				return get_rect2(v);
-			case Variant::RECT2I:
+			case VariantType::RECT2I:
 				return get_rect2i(v);
-			case Variant::TRANSFORM3D:
+			case VariantType::TRANSFORM3D:
 				return get_transform(v);
-			case Variant::PROJECTION:
+			case VariantType::PROJECTION:
 				return get_projection(v);
-			case Variant::TRANSFORM2D:
+			case VariantType::TRANSFORM2D:
 				return get_transform2d(v);
-			case Variant::QUATERNION:
+			case VariantType::QUATERNION:
 				return get_quaternion(v);
-			case Variant::PLANE:
+			case VariantType::PLANE:
 				return get_plane(v);
-			case Variant::BASIS:
+			case VariantType::BASIS:
 				return get_basis(v);
-			case Variant::AABB:
+			case VariantType::AABB:
 				return get_aabb(v);
-			case Variant::COLOR:
+			case VariantType::COLOR:
 				return get_color(v);
-			case Variant::STRING_NAME:
+			case VariantType::STRING_NAME:
 				return get_string_name(v);
-			case Variant::NODE_PATH:
+			case VariantType::NODE_PATH:
 				return get_node_path(v);
-			case Variant::RID:
+			case VariantType::RID:
 				return get_rid(v);
-			case Variant::CALLABLE:
+			case VariantType::CALLABLE:
 				return get_callable(v);
-			case Variant::SIGNAL:
+			case VariantType::SIGNAL:
 				return get_signal(v);
-			case Variant::DICTIONARY:
+			case VariantType::DICTIONARY:
 				return get_dictionary(v);
-			case Variant::ARRAY:
+			case VariantType::ARRAY:
 				return get_array(v);
-			case Variant::PACKED_BYTE_ARRAY:
+			case VariantType::PACKED_BYTE_ARRAY:
 				return get_byte_array(v);
-			case Variant::PACKED_INT32_ARRAY:
+			case VariantType::PACKED_INT32_ARRAY:
 				return get_int32_array(v);
-			case Variant::PACKED_INT64_ARRAY:
+			case VariantType::PACKED_INT64_ARRAY:
 				return get_int64_array(v);
-			case Variant::PACKED_FLOAT32_ARRAY:
+			case VariantType::PACKED_FLOAT32_ARRAY:
 				return get_float32_array(v);
-			case Variant::PACKED_FLOAT64_ARRAY:
+			case VariantType::PACKED_FLOAT64_ARRAY:
 				return get_float64_array(v);
-			case Variant::PACKED_STRING_ARRAY:
+			case VariantType::PACKED_STRING_ARRAY:
 				return get_string_array(v);
-			case Variant::PACKED_VECTOR2_ARRAY:
+			case VariantType::PACKED_VECTOR2_ARRAY:
 				return get_vector2_array(v);
-			case Variant::PACKED_VECTOR3_ARRAY:
+			case VariantType::PACKED_VECTOR3_ARRAY:
 				return get_vector3_array(v);
-			case Variant::PACKED_COLOR_ARRAY:
+			case VariantType::PACKED_COLOR_ARRAY:
 				return get_color_array(v);
-			case Variant::OBJECT:
+			case VariantType::OBJECT:
 				return get_object(v);
-			case Variant::VARIANT_MAX:
+			case VariantType::MAX:
 				ERR_FAIL_V(nullptr);
 		}
 		ERR_FAIL_V(nullptr);
@@ -427,83 +427,83 @@ public:
 
 	_FORCE_INLINE_ static const void *get_opaque_pointer(const Variant *v) {
 		switch (v->type) {
-			case Variant::NIL:
+			case VariantType::NIL:
 				return nullptr;
-			case Variant::BOOL:
+			case VariantType::BOOL:
 				return get_bool(v);
-			case Variant::INT:
+			case VariantType::INT:
 				return get_int(v);
-			case Variant::FLOAT:
+			case VariantType::FLOAT:
 				return get_float(v);
-			case Variant::STRING:
+			case VariantType::STRING:
 				return get_string(v);
-			case Variant::VECTOR2:
+			case VariantType::VECTOR2:
 				return get_vector2(v);
-			case Variant::VECTOR2I:
+			case VariantType::VECTOR2I:
 				return get_vector2i(v);
-			case Variant::VECTOR3:
+			case VariantType::VECTOR3:
 				return get_vector3(v);
-			case Variant::VECTOR3I:
+			case VariantType::VECTOR3I:
 				return get_vector3i(v);
-			case Variant::VECTOR4:
+			case VariantType::VECTOR4:
 				return get_vector4(v);
-			case Variant::VECTOR4I:
+			case VariantType::VECTOR4I:
 				return get_vector4i(v);
-			case Variant::RECT2:
+			case VariantType::RECT2:
 				return get_rect2(v);
-			case Variant::RECT2I:
+			case VariantType::RECT2I:
 				return get_rect2i(v);
-			case Variant::TRANSFORM3D:
+			case VariantType::TRANSFORM3D:
 				return get_transform(v);
-			case Variant::PROJECTION:
+			case VariantType::PROJECTION:
 				return get_projection(v);
-			case Variant::TRANSFORM2D:
+			case VariantType::TRANSFORM2D:
 				return get_transform2d(v);
-			case Variant::QUATERNION:
+			case VariantType::QUATERNION:
 				return get_quaternion(v);
-			case Variant::PLANE:
+			case VariantType::PLANE:
 				return get_plane(v);
-			case Variant::BASIS:
+			case VariantType::BASIS:
 				return get_basis(v);
-			case Variant::AABB:
+			case VariantType::AABB:
 				return get_aabb(v);
-			case Variant::COLOR:
+			case VariantType::COLOR:
 				return get_color(v);
-			case Variant::STRING_NAME:
+			case VariantType::STRING_NAME:
 				return get_string_name(v);
-			case Variant::NODE_PATH:
+			case VariantType::NODE_PATH:
 				return get_node_path(v);
-			case Variant::RID:
+			case VariantType::RID:
 				return get_rid(v);
-			case Variant::CALLABLE:
+			case VariantType::CALLABLE:
 				return get_callable(v);
-			case Variant::SIGNAL:
+			case VariantType::SIGNAL:
 				return get_signal(v);
-			case Variant::DICTIONARY:
+			case VariantType::DICTIONARY:
 				return get_dictionary(v);
-			case Variant::ARRAY:
+			case VariantType::ARRAY:
 				return get_array(v);
-			case Variant::PACKED_BYTE_ARRAY:
+			case VariantType::PACKED_BYTE_ARRAY:
 				return get_byte_array(v);
-			case Variant::PACKED_INT32_ARRAY:
+			case VariantType::PACKED_INT32_ARRAY:
 				return get_int32_array(v);
-			case Variant::PACKED_INT64_ARRAY:
+			case VariantType::PACKED_INT64_ARRAY:
 				return get_int64_array(v);
-			case Variant::PACKED_FLOAT32_ARRAY:
+			case VariantType::PACKED_FLOAT32_ARRAY:
 				return get_float32_array(v);
-			case Variant::PACKED_FLOAT64_ARRAY:
+			case VariantType::PACKED_FLOAT64_ARRAY:
 				return get_float64_array(v);
-			case Variant::PACKED_STRING_ARRAY:
+			case VariantType::PACKED_STRING_ARRAY:
 				return get_string_array(v);
-			case Variant::PACKED_VECTOR2_ARRAY:
+			case VariantType::PACKED_VECTOR2_ARRAY:
 				return get_vector2_array(v);
-			case Variant::PACKED_VECTOR3_ARRAY:
+			case VariantType::PACKED_VECTOR3_ARRAY:
 				return get_vector3_array(v);
-			case Variant::PACKED_COLOR_ARRAY:
+			case VariantType::PACKED_COLOR_ARRAY:
 				return get_color_array(v);
-			case Variant::OBJECT:
+			case VariantType::OBJECT:
 				return get_object(v);
-			case Variant::VARIANT_MAX:
+			case VariantType::MAX:
 				ERR_FAIL_V(nullptr);
 		}
 		ERR_FAIL_V(nullptr);
@@ -682,9 +682,9 @@ struct VariantGetInternalPtr<Quaternion> {
 };
 
 template <>
-struct VariantGetInternalPtr<::AABB> {
-	static ::AABB *get_ptr(Variant *v) { return VariantInternal::get_aabb(v); }
-	static const ::AABB *get_ptr(const Variant *v) { return VariantInternal::get_aabb(v); }
+struct VariantGetInternalPtr<AABB> {
+	static AABB *get_ptr(Variant *v) { return VariantInternal::get_aabb(v); }
+	static const AABB *get_ptr(const Variant *v) { return VariantInternal::get_aabb(v); }
 };
 
 template <>
@@ -714,9 +714,9 @@ struct VariantGetInternalPtr<NodePath> {
 };
 
 template <>
-struct VariantGetInternalPtr<::RID> {
-	static ::RID *get_ptr(Variant *v) { return VariantInternal::get_rid(v); }
-	static const ::RID *get_ptr(const Variant *v) { return VariantInternal::get_rid(v); }
+struct VariantGetInternalPtr<RID> {
+	static RID *get_ptr(Variant *v) { return VariantInternal::get_rid(v); }
+	static const RID *get_ptr(const Variant *v) { return VariantInternal::get_rid(v); }
 };
 
 template <>
@@ -974,9 +974,9 @@ struct VariantInternalAccessor<NodePath> {
 };
 
 template <>
-struct VariantInternalAccessor<::RID> {
-	static _FORCE_INLINE_ const ::RID &get(const Variant *v) { return *VariantInternal::get_rid(v); }
-	static _FORCE_INLINE_ void set(Variant *v, const ::RID &p_value) { *VariantInternal::get_rid(v) = p_value; }
+struct VariantInternalAccessor<RID> {
+	static _FORCE_INLINE_ const RID &get(const Variant *v) { return *VariantInternal::get_rid(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const RID &p_value) { *VariantInternal::get_rid(v) = p_value; }
 };
 
 template <>
@@ -1227,8 +1227,8 @@ struct VariantInitializer<NodePath> {
 };
 
 template <>
-struct VariantInitializer<::RID> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<::RID>(v); }
+struct VariantInitializer<RID> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<RID>(v); }
 };
 
 template <>
@@ -1421,7 +1421,7 @@ struct VariantZeroAssigner<NodePath> {
 };
 
 template <>
-struct VariantZeroAssigner<::RID> {
+struct VariantZeroAssigner<RID> {
 	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_rid(v) = RID(); }
 };
 
@@ -1493,13 +1493,13 @@ struct VariantZeroAssigner<PackedColorArray> {
 template <class T>
 struct VariantTypeChanger {
 	static _FORCE_INLINE_ void change(Variant *v) {
-		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= Variant::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
+		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= VariantType::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
 			VariantInternal::clear(v);
 			VariantInitializer<T>::init(v);
 		}
 	}
 	static _FORCE_INLINE_ void change_and_reset(Variant *v) {
-		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= Variant::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
+		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= VariantType::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
 			VariantInternal::clear(v);
 			VariantInitializer<T>::init(v);
 		}

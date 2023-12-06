@@ -107,7 +107,7 @@ void Shape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "color"), &Shape2D::draw);
 	ClassDB::bind_method(D_METHOD("get_rect"), &Shape2D::get_rect);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_solver_bias", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_custom_solver_bias", "get_custom_solver_bias");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "custom_solver_bias", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_custom_solver_bias", "get_custom_solver_bias");
 }
 
 bool Shape2D::is_collision_outline_enabled() {

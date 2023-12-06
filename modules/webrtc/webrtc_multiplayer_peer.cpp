@@ -211,7 +211,7 @@ Error WebRTCMultiplayerPeer::_initialize(int p_self_id, NetworkMode p_mode, Arra
 	channels_modes.push_back(TRANSFER_MODE_UNRELIABLE_ORDERED);
 	channels_modes.push_back(TRANSFER_MODE_UNRELIABLE);
 	for (int i = 0; i < p_channels_config.size(); i++) {
-		ERR_FAIL_COND_V_MSG(p_channels_config[i].get_type() != Variant::INT, ERR_INVALID_PARAMETER, "The 'channels_config' array must contain only enum values from 'MultiplayerPeer.TransferMode'");
+		ERR_FAIL_COND_V_MSG(p_channels_config[i].get_type() != VariantType::INT, ERR_INVALID_PARAMETER, "The 'channels_config' array must contain only enum values from 'MultiplayerPeer.TransferMode'");
 		int mode = p_channels_config[i].operator int();
 		// Initialize data channel configurations.
 		Dictionary cfg;

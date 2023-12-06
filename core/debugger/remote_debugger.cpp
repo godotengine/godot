@@ -356,9 +356,9 @@ void RemoteDebugger::_poll_messages() {
 	while (peer->has_message()) {
 		Array cmd = peer->get_message();
 		ERR_CONTINUE(cmd.size() != 3);
-		ERR_CONTINUE(cmd[0].get_type() != Variant::STRING);
-		ERR_CONTINUE(cmd[1].get_type() != Variant::INT);
-		ERR_CONTINUE(cmd[2].get_type() != Variant::ARRAY);
+		ERR_CONTINUE(cmd[0].get_type() != VariantType::STRING);
+		ERR_CONTINUE(cmd[1].get_type() != VariantType::INT);
+		ERR_CONTINUE(cmd[2].get_type() != VariantType::ARRAY);
 
 		Thread::ID thread = cmd[1];
 
@@ -446,8 +446,8 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			Array cmd = _get_message();
 
 			ERR_CONTINUE(cmd.size() != 2);
-			ERR_CONTINUE(cmd[0].get_type() != Variant::STRING);
-			ERR_CONTINUE(cmd[1].get_type() != Variant::ARRAY);
+			ERR_CONTINUE(cmd[0].get_type() != VariantType::STRING);
+			ERR_CONTINUE(cmd[1].get_type() != VariantType::ARRAY);
 
 			String command = cmd[0];
 			Array data = cmd[1];
@@ -570,8 +570,8 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 		Array arr = _get_message();
 
 		ERR_CONTINUE(arr.size() != 2);
-		ERR_CONTINUE(arr[0].get_type() != Variant::STRING);
-		ERR_CONTINUE(arr[1].get_type() != Variant::ARRAY);
+		ERR_CONTINUE(arr[0].get_type() != VariantType::STRING);
+		ERR_CONTINUE(arr[1].get_type() != VariantType::ARRAY);
 
 		const String cmd = arr[0];
 		const int idx = cmd.find(":");
@@ -627,11 +627,11 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 Error RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured) {
 	r_captured = false;
 	ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(p_data[0].get_type() != Variant::BOOL, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_data[0].get_type() != VariantType::BOOL, ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(!has_profiler(p_cmd), ERR_UNAVAILABLE);
 	Array opts;
 	if (p_data.size() > 1) { // Optional profiler parameters.
-		ERR_FAIL_COND_V(p_data[1].get_type() != Variant::ARRAY, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_data[1].get_type() != VariantType::ARRAY, ERR_INVALID_DATA);
 		opts = p_data[1];
 	}
 	r_captured = true;

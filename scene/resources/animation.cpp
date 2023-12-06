@@ -832,22 +832,22 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 
 void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (compression.enabled) {
-		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "_compression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::DICTIONARY, "_compression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 	for (int i = 0; i < tracks.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, "tracks/" + itos(i) + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "tracks/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::STRING, "tracks/" + itos(i) + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::BOOL, "tracks/" + itos(i) + "/imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::BOOL, "tracks/" + itos(i) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::NODE_PATH, "tracks/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		if (track_is_compressed(i)) {
-			p_list->push_back(PropertyInfo(Variant::INT, "tracks/" + itos(i) + "/compressed_track", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(VariantType::INT, "tracks/" + itos(i) + "/compressed_track", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		} else {
-			p_list->push_back(PropertyInfo(Variant::INT, "tracks/" + itos(i) + "/interp", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-			p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(VariantType::INT, "tracks/" + itos(i) + "/interp", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(VariantType::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(VariantType::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 		if (track_get_type(i) == TYPE_AUDIO) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/use_blend", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(VariantType::BOOL, "tracks/" + itos(i) + "/use_blend", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
 }
@@ -1637,25 +1637,25 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 
 	switch (t->type) {
 		case TYPE_POSITION_3D: {
-			ERR_FAIL_COND_V((p_key.get_type() != Variant::VECTOR3) && (p_key.get_type() != Variant::VECTOR3I), -1);
+			ERR_FAIL_COND_V((p_key.get_type() != VariantType::VECTOR3) && (p_key.get_type() != VariantType::VECTOR3I), -1);
 			ret = position_track_insert_key(p_track, p_time, p_key);
 			track_set_key_transition(p_track, ret, p_transition);
 
 		} break;
 		case TYPE_ROTATION_3D: {
-			ERR_FAIL_COND_V((p_key.get_type() != Variant::QUATERNION) && (p_key.get_type() != Variant::BASIS), -1);
+			ERR_FAIL_COND_V((p_key.get_type() != VariantType::QUATERNION) && (p_key.get_type() != VariantType::BASIS), -1);
 			ret = rotation_track_insert_key(p_track, p_time, p_key);
 			track_set_key_transition(p_track, ret, p_transition);
 
 		} break;
 		case TYPE_SCALE_3D: {
-			ERR_FAIL_COND_V((p_key.get_type() != Variant::VECTOR3) && (p_key.get_type() != Variant::VECTOR3I), -1);
+			ERR_FAIL_COND_V((p_key.get_type() != VariantType::VECTOR3) && (p_key.get_type() != VariantType::VECTOR3I), -1);
 			ret = scale_track_insert_key(p_track, p_time, p_key);
 			track_set_key_transition(p_track, ret, p_transition);
 
 		} break;
 		case TYPE_BLEND_SHAPE: {
-			ERR_FAIL_COND_V((p_key.get_type() != Variant::FLOAT) && (p_key.get_type() != Variant::INT), -1);
+			ERR_FAIL_COND_V((p_key.get_type() != VariantType::FLOAT) && (p_key.get_type() != VariantType::INT), -1);
 			ret = blend_shape_track_insert_key(p_track, p_time, p_key);
 			track_set_key_transition(p_track, ret, p_transition);
 
@@ -1673,10 +1673,10 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 
-			ERR_FAIL_COND_V(p_key.get_type() != Variant::DICTIONARY, -1);
+			ERR_FAIL_COND_V(p_key.get_type() != VariantType::DICTIONARY, -1);
 
 			Dictionary d = p_key;
-			ERR_FAIL_COND_V(!d.has("method") || (d["method"].get_type() != Variant::STRING_NAME && d["method"].get_type() != Variant::STRING), -1);
+			ERR_FAIL_COND_V(!d.has("method") || (d["method"].get_type() != VariantType::STRING_NAME && d["method"].get_type() != VariantType::STRING), -1);
 			ERR_FAIL_COND_V(!d.has("args") || !d["args"].is_array(), -1);
 
 			MethodKey k;
@@ -2161,7 +2161,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 	switch (t->type) {
 		case TYPE_POSITION_3D: {
-			ERR_FAIL_COND((p_value.get_type() != Variant::VECTOR3) && (p_value.get_type() != Variant::VECTOR3I));
+			ERR_FAIL_COND((p_value.get_type() != VariantType::VECTOR3) && (p_value.get_type() != VariantType::VECTOR3I));
 			PositionTrack *tt = static_cast<PositionTrack *>(t);
 			ERR_FAIL_COND(tt->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, tt->positions.size());
@@ -2170,7 +2170,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 		} break;
 		case TYPE_ROTATION_3D: {
-			ERR_FAIL_COND((p_value.get_type() != Variant::QUATERNION) && (p_value.get_type() != Variant::BASIS));
+			ERR_FAIL_COND((p_value.get_type() != VariantType::QUATERNION) && (p_value.get_type() != VariantType::BASIS));
 			RotationTrack *rt = static_cast<RotationTrack *>(t);
 			ERR_FAIL_COND(rt->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, rt->rotations.size());
@@ -2179,7 +2179,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 		} break;
 		case TYPE_SCALE_3D: {
-			ERR_FAIL_COND((p_value.get_type() != Variant::VECTOR3) && (p_value.get_type() != Variant::VECTOR3I));
+			ERR_FAIL_COND((p_value.get_type() != VariantType::VECTOR3) && (p_value.get_type() != VariantType::VECTOR3I));
 			ScaleTrack *st = static_cast<ScaleTrack *>(t);
 			ERR_FAIL_COND(st->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, st->scales.size());
@@ -2188,7 +2188,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 		} break;
 		case TYPE_BLEND_SHAPE: {
-			ERR_FAIL_COND((p_value.get_type() != Variant::FLOAT) && (p_value.get_type() != Variant::INT));
+			ERR_FAIL_COND((p_value.get_type() != VariantType::FLOAT) && (p_value.get_type() != VariantType::INT));
 			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
 			ERR_FAIL_COND(bst->compressed_track >= 0);
 			ERR_FAIL_INDEX(p_key_idx, bst->blend_shapes.size());
@@ -2371,11 +2371,11 @@ real_t Animation::_interpolate(const real_t &p_a, const real_t &p_b, real_t p_c)
 }
 
 Variant Animation::_interpolate_angle(const Variant &p_a, const Variant &p_b, real_t p_c) const {
-	Variant::Type type_a = p_a.get_type();
-	Variant::Type type_b = p_b.get_type();
-	uint32_t vformat = 1 << type_a;
-	vformat |= 1 << type_b;
-	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
+	VariantType type_a = p_a.get_type();
+	VariantType type_b = p_b.get_type();
+	uint32_t vformat = 1 << (int)type_a;
+	vformat |= 1 << (int)type_b;
+	if (vformat == ((1 << (int)VariantType::INT) | (1 << (int)VariantType::FLOAT)) || vformat == (1 << (int)VariantType::FLOAT)) {
 		real_t a = p_a;
 		real_t b = p_b;
 		return Math::fposmod((float)Math::lerp_angle(a, b, p_c), (float)Math_TAU);
@@ -2394,19 +2394,19 @@ Quaternion Animation::_cubic_interpolate_in_time(const Quaternion &p_pre_a, cons
 }
 
 Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
-	Variant::Type type_a = p_a.get_type();
-	Variant::Type type_b = p_b.get_type();
-	Variant::Type type_pa = p_pre_a.get_type();
-	Variant::Type type_pb = p_post_b.get_type();
+	VariantType type_a = p_a.get_type();
+	VariantType type_b = p_b.get_type();
+	VariantType type_pa = p_pre_a.get_type();
+	VariantType type_pb = p_post_b.get_type();
 
 	//make int and real play along
 
-	uint32_t vformat = 1 << type_a;
-	vformat |= 1 << type_b;
-	vformat |= 1 << type_pa;
-	vformat |= 1 << type_pb;
+	uint32_t vformat = 1 << (int)type_a;
+	vformat |= 1 << (int)type_b;
+	vformat |= 1 << (int)type_pa;
+	vformat |= 1 << (int)type_pb;
 
-	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
+	if (vformat == ((1 << (int)VariantType::INT) | (1 << (int)VariantType::FLOAT)) || vformat == (1 << (int)VariantType::FLOAT)) {
 		//mix of real and int
 		real_t a = p_a;
 		real_t b = p_b;
@@ -2419,7 +2419,7 @@ Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Vari
 	}
 
 	switch (type_a) {
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			Vector2 a = p_a;
 			Vector2 b = p_b;
 			Vector2 pa = p_pre_a;
@@ -2427,7 +2427,7 @@ Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Vari
 
 			return a.cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
 		}
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			Rect2 a = p_a;
 			Rect2 b = p_b;
 			Rect2 pa = p_pre_a;
@@ -2437,7 +2437,7 @@ Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Vari
 					a.position.cubic_interpolate_in_time(b.position, pa.position, pb.position, p_c, p_b_t, p_pre_a_t, p_post_b_t),
 					a.size.cubic_interpolate_in_time(b.size, pa.size, pb.size, p_c, p_b_t, p_pre_a_t, p_post_b_t));
 		}
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			Vector3 a = p_a;
 			Vector3 b = p_b;
 			Vector3 pa = p_pre_a;
@@ -2445,7 +2445,7 @@ Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Vari
 
 			return a.cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
 		}
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			Quaternion a = p_a;
 			Quaternion b = p_b;
 			Quaternion pa = p_pre_a;
@@ -2453,7 +2453,7 @@ Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Vari
 
 			return a.spherical_cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
 		}
-		case Variant::AABB: {
+		case VariantType::AABB: {
 			AABB a = p_a;
 			AABB b = p_b;
 			AABB pa = p_pre_a;
@@ -2474,15 +2474,15 @@ real_t Animation::_cubic_interpolate_in_time(const real_t &p_pre_a, const real_t
 }
 
 Variant Animation::_cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
-	Variant::Type type_a = p_a.get_type();
-	Variant::Type type_b = p_b.get_type();
-	Variant::Type type_pa = p_pre_a.get_type();
-	Variant::Type type_pb = p_post_b.get_type();
-	uint32_t vformat = 1 << type_a;
-	vformat |= 1 << type_b;
-	vformat |= 1 << type_pa;
-	vformat |= 1 << type_pb;
-	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
+	VariantType type_a = p_a.get_type();
+	VariantType type_b = p_b.get_type();
+	VariantType type_pa = p_pre_a.get_type();
+	VariantType type_pb = p_post_b.get_type();
+	uint32_t vformat = 1 << (int)type_a;
+	vformat |= 1 << (int)type_b;
+	vformat |= 1 << (int)type_pa;
+	vformat |= 1 << (int)type_pb;
+	if (vformat == ((1 << (int)VariantType::INT) | (1 << (int)VariantType::FLOAT)) || vformat == (1 << (int)VariantType::FLOAT)) {
 		real_t a = p_a;
 		real_t b = p_b;
 		real_t pa = p_pre_a;
@@ -3911,9 +3911,9 @@ void Animation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("compress", "page_size", "fps", "split_tolerance"), &Animation::compress, DEFVAL(8192), DEFVAL(120), DEFVAL(4.0));
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001,suffix:s"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001,suffix:s"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);
@@ -4197,7 +4197,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 	if (vt->values.size() == 0) {
 		return;
 	}
-	Variant::Type type = vt->values[0].value.get_type();
+	VariantType type = vt->values[0].value.get_type();
 
 	// Special case for angle interpolation.
 	bool is_using_angle = vt->interpolation == Animation::INTERPOLATION_LINEAR_ANGLE || vt->interpolation == Animation::INTERPOLATION_CUBIC_ANGLE;
@@ -4205,7 +4205,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 	while (i < vt->values.size() - 2) {
 		bool erase = false;
 		switch (type) {
-			case Variant::FLOAT: {
+			case VariantType::FLOAT: {
 				TKey<float> t0;
 				TKey<float> t1;
 				TKey<float> t2;
@@ -4226,7 +4226,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 				}
 				erase = _float_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_precision_error);
 			} break;
-			case Variant::VECTOR2: {
+			case VariantType::VECTOR2: {
 				TKey<Vector2> t0;
 				TKey<Vector2> t1;
 				TKey<Vector2> t2;
@@ -4238,7 +4238,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 				t2.value = vt->values[i + 2].value;
 				erase = _vector2_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 			} break;
-			case Variant::VECTOR3: {
+			case VariantType::VECTOR3: {
 				TKey<Vector3> t0;
 				TKey<Vector3> t1;
 				TKey<Vector3> t2;
@@ -4250,7 +4250,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 				t2.value = vt->values[i + 2].value;
 				erase = _vector3_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 			} break;
-			case Variant::QUATERNION: {
+			case VariantType::QUATERNION: {
 				TKey<Quaternion> t0;
 				TKey<Quaternion> t1;
 				TKey<Quaternion> t2;
@@ -4276,7 +4276,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 	if (vt->values.size() == 2) {
 		bool single_key = false;
 		switch (type) {
-			case Variant::FLOAT: {
+			case VariantType::FLOAT: {
 				float val_0 = vt->values[0].value;
 				float val_1 = vt->values[1].value;
 				if (is_using_angle) {
@@ -4285,17 +4285,17 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 				}
 				single_key = abs(val_0 - val_1) < p_allowed_precision_error;
 			} break;
-			case Variant::VECTOR2: {
+			case VariantType::VECTOR2: {
 				Vector2 val_0 = vt->values[0].value;
 				Vector2 val_1 = vt->values[1].value;
 				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
 			} break;
-			case Variant::VECTOR3: {
+			case VariantType::VECTOR3: {
 				Vector3 val_0 = vt->values[0].value;
 				Vector3 val_1 = vt->values[1].value;
 				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
 			} break;
-			case Variant::QUATERNION: {
+			case VariantType::QUATERNION: {
 				Quaternion val_0 = vt->values[0].value;
 				Quaternion val_1 = vt->values[1].value;
 				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
@@ -5477,36 +5477,36 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 
 // Helper math functions for Variant.
 bool Animation::is_variant_interpolatable(const Variant p_value) {
-	Variant::Type type = p_value.get_type();
-	return (type >= Variant::BOOL && type <= Variant::STRING_NAME) || type == Variant::ARRAY || type >= Variant::PACKED_INT32_ARRAY; // PackedByteArray is unsigned, so it would be better to ignore since blending uses float.
+	VariantType type = p_value.get_type();
+	return (type >= VariantType::BOOL && type <= VariantType::STRING_NAME) || type == VariantType::ARRAY || type >= VariantType::PACKED_INT32_ARRAY; // PackedByteArray is unsigned, so it would be better to ignore since blending uses float.
 }
 
 Variant Animation::cast_to_blendwise(const Variant p_value) {
 	switch (p_value.get_type()) {
-		case Variant::BOOL:
-		case Variant::INT: {
+		case VariantType::BOOL:
+		case VariantType::INT: {
 			return p_value.operator real_t();
 		} break;
-		case Variant::STRING:
-		case Variant::STRING_NAME: {
+		case VariantType::STRING:
+		case VariantType::STRING_NAME: {
 			return string_to_array(p_value);
 		} break;
-		case Variant::RECT2I: {
+		case VariantType::RECT2I: {
 			return p_value.operator Rect2();
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			return p_value.operator Vector2();
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			return p_value.operator Vector3();
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			return p_value.operator Vector4();
 		} break;
-		case Variant::PACKED_INT32_ARRAY: {
+		case VariantType::PACKED_INT32_ARRAY: {
 			return p_value.operator PackedFloat32Array();
 		} break;
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::PACKED_INT64_ARRAY: {
 			return p_value.operator PackedFloat64Array();
 		} break;
 		default: {
@@ -5515,33 +5515,33 @@ Variant Animation::cast_to_blendwise(const Variant p_value) {
 	return p_value;
 }
 
-Variant Animation::cast_from_blendwise(const Variant p_value, const Variant::Type p_type) {
+Variant Animation::cast_from_blendwise(const Variant p_value, const VariantType p_type) {
 	switch (p_type) {
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			return p_value.operator real_t() >= 0.5;
 		} break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			return (int)Math::round(p_value.operator real_t());
 		} break;
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			return array_to_string(p_value);
 		} break;
-		case Variant::STRING_NAME: {
+		case VariantType::STRING_NAME: {
 			return StringName(array_to_string(p_value));
 		} break;
-		case Variant::RECT2I: {
+		case VariantType::RECT2I: {
 			return Rect2i(p_value.operator Rect2().round());
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			return Vector2i(p_value.operator Vector2().round());
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			return Vector3i(p_value.operator Vector3().round());
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			return Vector4i(p_value.operator Vector4().round());
 		} break;
-		case Variant::PACKED_INT32_ARRAY: {
+		case VariantType::PACKED_INT32_ARRAY: {
 			PackedFloat32Array old_val = p_value.operator PackedFloat32Array();
 			PackedInt32Array new_val;
 			new_val.resize(old_val.size());
@@ -5551,7 +5551,7 @@ Variant Animation::cast_from_blendwise(const Variant p_value, const Variant::Typ
 			}
 			return new_val;
 		} break;
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::PACKED_INT64_ARRAY: {
 			PackedFloat64Array old_val = p_value.operator PackedFloat64Array();
 			PackedInt64Array new_val;
 			for (int i = 0; i < old_val.size(); i++) {
@@ -5599,56 +5599,56 @@ Variant Animation::add_variant(const Variant &a, const Variant &b) {
 	}
 
 	switch (a.get_type()) {
-		case Variant::NIL: {
+		case VariantType::NIL: {
 			return Variant();
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return (a.operator real_t()) + (b.operator real_t());
 		} break;
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			const Rect2 ra = a.operator Rect2();
 			const Rect2 rb = b.operator Rect2();
 			return Rect2(ra.position + rb.position, ra.size + rb.size);
 		} break;
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			const Plane pa = a.operator Plane();
 			const Plane pb = b.operator Plane();
 			return Plane(pa.normal + pb.normal, pa.d + pb.d);
 		} break;
-		case Variant::AABB: {
-			const ::AABB aa = a.operator ::AABB();
-			const ::AABB ab = b.operator ::AABB();
-			return ::AABB(aa.position + ab.position, aa.size + ab.size);
+		case VariantType::AABB: {
+			const AABB aa = a.operator AABB();
+			const AABB ab = b.operator AABB();
+			return AABB(aa.position + ab.position, aa.size + ab.size);
 		} break;
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			return (a.operator Basis()) * (b.operator Basis());
 		} break;
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			return (a.operator Quaternion()) * (b.operator Quaternion());
 		} break;
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			return (a.operator Transform2D()) * (b.operator Transform2D());
 		} break;
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			return (a.operator Transform3D()) * (b.operator Transform3D());
 		} break;
-		case Variant::INT:
-		case Variant::RECT2I:
-		case Variant::VECTOR2I:
-		case Variant::VECTOR3I:
-		case Variant::VECTOR4I:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::INT:
+		case VariantType::RECT2I:
+		case VariantType::VECTOR2I:
+		case VariantType::VECTOR3I:
+		case VariantType::VECTOR4I:
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY: {
 			// Fallback the interpolatable value which needs casting.
 			return cast_from_blendwise(add_variant(cast_to_blendwise(a), cast_to_blendwise(b)), a.get_type());
 		} break;
-		case Variant::BOOL:
-		case Variant::STRING:
-		case Variant::STRING_NAME: {
+		case VariantType::BOOL:
+		case VariantType::STRING:
+		case VariantType::STRING_NAME: {
 			// Specialized for Tween.
 			return b;
 		} break;
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			// Skip.
 		} break;
 		default: {
@@ -5700,7 +5700,7 @@ Variant Animation::add_variant(const Variant &a, const Variant &b) {
 			}
 		} break;
 	}
-	return Variant::evaluate(Variant::OP_ADD, a, b);
+	return Variant::evaluate(VariantOperator::ADD, a, b);
 }
 
 Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
@@ -5709,56 +5709,56 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 	}
 
 	switch (a.get_type()) {
-		case Variant::NIL: {
+		case VariantType::NIL: {
 			return Variant();
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return (a.operator real_t()) - (b.operator real_t());
 		} break;
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			const Rect2 ra = a.operator Rect2();
 			const Rect2 rb = b.operator Rect2();
 			return Rect2(ra.position - rb.position, ra.size - rb.size);
 		} break;
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			const Plane pa = a.operator Plane();
 			const Plane pb = b.operator Plane();
 			return Plane(pa.normal - pb.normal, pa.d - pb.d);
 		} break;
-		case Variant::AABB: {
-			const ::AABB aa = a.operator ::AABB();
-			const ::AABB ab = b.operator ::AABB();
-			return ::AABB(aa.position - ab.position, aa.size - ab.size);
+		case VariantType::AABB: {
+			const AABB aa = a.operator AABB();
+			const AABB ab = b.operator AABB();
+			return AABB(aa.position - ab.position, aa.size - ab.size);
 		} break;
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			return (b.operator Basis()).inverse() * (a.operator Basis());
 		} break;
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			return (b.operator Quaternion()).inverse() * (a.operator Quaternion());
 		} break;
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			return (b.operator Transform2D()).affine_inverse() * (a.operator Transform2D());
 		} break;
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			return (b.operator Transform3D()).affine_inverse() * (a.operator Transform3D());
 		} break;
-		case Variant::INT:
-		case Variant::RECT2I:
-		case Variant::VECTOR2I:
-		case Variant::VECTOR3I:
-		case Variant::VECTOR4I:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::INT:
+		case VariantType::RECT2I:
+		case VariantType::VECTOR2I:
+		case VariantType::VECTOR3I:
+		case VariantType::VECTOR4I:
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY: {
 			// Fallback the interpolatable value which needs casting.
 			return cast_from_blendwise(subtract_variant(cast_to_blendwise(a), cast_to_blendwise(b)), a.get_type());
 		} break;
-		case Variant::BOOL:
-		case Variant::STRING:
-		case Variant::STRING_NAME: {
+		case VariantType::BOOL:
+		case VariantType::STRING:
+		case VariantType::STRING_NAME: {
 			// Specialized for Tween.
 			return a;
 		} break;
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			// Skip.
 		} break;
 		default: {
@@ -5810,7 +5810,7 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 			}
 		} break;
 	}
-	return Variant::evaluate(Variant::OP_SUBTRACT, a, b);
+	return Variant::evaluate(VariantOperator::SUBTRACT, a, b);
 }
 
 Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
@@ -5819,64 +5819,64 @@ Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
 	}
 
 	switch (a.get_type()) {
-		case Variant::NIL: {
+		case VariantType::NIL: {
 			return Variant();
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return (a.operator real_t()) + (b.operator real_t()) * c;
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			return (a.operator Vector2()) + (b.operator Vector2()) * c;
 		} break;
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			const Rect2 ra = a.operator Rect2();
 			const Rect2 rb = b.operator Rect2();
 			return Rect2(ra.position + rb.position * c, ra.size + rb.size * c);
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			return (a.operator Vector3()) + (b.operator Vector3()) * c;
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			return (a.operator Vector4()) + (b.operator Vector4()) * c;
 		} break;
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			const Plane pa = a.operator Plane();
 			const Plane pb = b.operator Plane();
 			return Plane(pa.normal + pb.normal * c, pa.d + pb.d * c);
 		} break;
-		case Variant::COLOR: {
+		case VariantType::COLOR: {
 			return (a.operator Color()) + (b.operator Color()) * c;
 		} break;
-		case Variant::AABB: {
-			const ::AABB aa = a.operator ::AABB();
-			const ::AABB ab = b.operator ::AABB();
-			return ::AABB(aa.position + ab.position * c, aa.size + ab.size * c);
+		case VariantType::AABB: {
+			const AABB aa = a.operator AABB();
+			const AABB ab = b.operator AABB();
+			return AABB(aa.position + ab.position * c, aa.size + ab.size * c);
 		} break;
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			return (a.operator Basis()) + (b.operator Basis()) * c;
 		} break;
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			return (a.operator Quaternion()) * Quaternion().slerp((b.operator Quaternion()), c);
 		} break;
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			return (a.operator Transform2D()) * Transform2D().interpolate_with((b.operator Transform2D()), c);
 		} break;
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			return (a.operator Transform3D()) * Transform3D().interpolate_with((b.operator Transform3D()), c);
 		} break;
-		case Variant::BOOL:
-		case Variant::INT:
-		case Variant::RECT2I:
-		case Variant::VECTOR2I:
-		case Variant::VECTOR3I:
-		case Variant::VECTOR4I:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::BOOL:
+		case VariantType::INT:
+		case VariantType::RECT2I:
+		case VariantType::VECTOR2I:
+		case VariantType::VECTOR3I:
+		case VariantType::VECTOR4I:
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY: {
 			// Fallback the interpolatable value which needs casting.
 			return cast_from_blendwise(blend_variant(cast_to_blendwise(a), cast_to_blendwise(b), c), a.get_type());
 		} break;
-		case Variant::STRING:
-		case Variant::STRING_NAME: {
+		case VariantType::STRING:
+		case VariantType::STRING_NAME: {
 			Array arr_a = cast_to_blendwise(a);
 			Array arr_b = cast_to_blendwise(b);
 			int min_size = arr_a.size();
@@ -5890,7 +5890,7 @@ Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
 			}
 			return cast_from_blendwise(blend_variant(arr_a, arr_b, c), a.get_type());
 		} break;
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			// Skip.
 		} break;
 		default: {
@@ -5952,65 +5952,65 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 	}
 
 	switch (a.get_type()) {
-		case Variant::NIL: {
+		case VariantType::NIL: {
 			return Variant();
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			const real_t va = a.operator real_t();
 			return va + ((b.operator real_t()) - va) * c;
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			return (a.operator Vector2()).lerp(b.operator Vector2(), c);
 		} break;
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			const Rect2 ra = a.operator Rect2();
 			const Rect2 rb = b.operator Rect2();
 			return Rect2(ra.position.lerp(rb.position, c), ra.size.lerp(rb.size, c));
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			return (a.operator Vector3()).lerp(b.operator Vector3(), c);
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			return (a.operator Vector4()).lerp(b.operator Vector4(), c);
 		} break;
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			const Plane pa = a.operator Plane();
 			const Plane pb = b.operator Plane();
 			return Plane(pa.normal.lerp(pb.normal, c), pa.d + (pb.d - pa.d) * c);
 		} break;
-		case Variant::COLOR: {
+		case VariantType::COLOR: {
 			return (a.operator Color()).lerp(b.operator Color(), c);
 		} break;
-		case Variant::AABB: {
-			const ::AABB aa = a.operator ::AABB();
-			const ::AABB ab = b.operator ::AABB();
-			return ::AABB(aa.position.lerp(ab.position, c), aa.size.lerp(ab.size, c));
+		case VariantType::AABB: {
+			const AABB aa = a.operator AABB();
+			const AABB ab = b.operator AABB();
+			return AABB(aa.position.lerp(ab.position, c), aa.size.lerp(ab.size, c));
 		} break;
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			return (a.operator Basis()).lerp(b.operator Basis(), c);
 		} break;
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			return (a.operator Quaternion()).slerp(b.operator Quaternion(), c);
 		} break;
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			return (a.operator Transform2D()).interpolate_with(b.operator Transform2D(), c);
 		} break;
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			return (a.operator Transform3D()).interpolate_with(b.operator Transform3D(), c);
 		} break;
-		case Variant::BOOL:
-		case Variant::INT:
-		case Variant::RECT2I:
-		case Variant::VECTOR2I:
-		case Variant::VECTOR3I:
-		case Variant::VECTOR4I:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::BOOL:
+		case VariantType::INT:
+		case VariantType::RECT2I:
+		case VariantType::VECTOR2I:
+		case VariantType::VECTOR3I:
+		case VariantType::VECTOR4I:
+		case VariantType::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY: {
 			// Fallback the interpolatable value which needs casting.
 			return cast_from_blendwise(interpolate_variant(cast_to_blendwise(a), cast_to_blendwise(b), c), a.get_type());
 		} break;
-		case Variant::STRING:
-		case Variant::STRING_NAME: {
+		case VariantType::STRING:
+		case VariantType::STRING_NAME: {
 			Array arr_a = cast_to_blendwise(a);
 			Array arr_b = cast_to_blendwise(b);
 			int min_size = arr_a.size();
@@ -6024,7 +6024,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			}
 			return cast_from_blendwise(interpolate_variant(arr_a, arr_b, c, true), a.get_type());
 		} break;
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			// Skip.
 		} break;
 		default: {

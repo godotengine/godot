@@ -549,7 +549,7 @@ Variant CreateDialog::instantiate_selected() {
 
 	Variant md = selected->get_metadata(0);
 	Variant obj;
-	if (md.get_type() != Variant::NIL) {
+	if (md.get_type() != VariantType::NIL) {
 		String custom = md;
 		if (ScriptServer::is_global_class(custom)) {
 			obj = EditorNode::get_editor_data().script_class_instance(custom);

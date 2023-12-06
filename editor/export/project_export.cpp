@@ -1155,7 +1155,7 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);
 	ClassDB::bind_method("get_current_preset", &ProjectExportDialog::get_current_preset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "export_path"), "set_export_path", "get_export_path");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "export_path"), "set_export_path", "get_export_path");
 }
 
 ProjectExportDialog::ProjectExportDialog() {

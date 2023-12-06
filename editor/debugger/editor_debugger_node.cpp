@@ -202,12 +202,12 @@ void EditorDebuggerNode::_bind_methods() {
 	ClassDB::bind_method("live_debug_reparent_node", &EditorDebuggerNode::live_debug_reparent_node);
 
 	ADD_SIGNAL(MethodInfo("goto_script_line"));
-	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(VariantType::INT, "line")));
 	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
-	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug")));
-	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
-	ADD_SIGNAL(MethodInfo("breakpoint_set_in_tree", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled"), PropertyInfo(Variant::INT, "debugger")));
-	ADD_SIGNAL(MethodInfo("breakpoints_cleared_in_tree", PropertyInfo(Variant::INT, "debugger")));
+	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(VariantType::BOOL, "reallydid"), PropertyInfo(VariantType::BOOL, "can_debug")));
+	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(VariantType::STRING, "path"), PropertyInfo(VariantType::INT, "line"), PropertyInfo(VariantType::BOOL, "enabled")));
+	ADD_SIGNAL(MethodInfo("breakpoint_set_in_tree", PropertyInfo("script"), PropertyInfo(VariantType::INT, "line"), PropertyInfo(VariantType::BOOL, "enabled"), PropertyInfo(VariantType::INT, "debugger")));
+	ADD_SIGNAL(MethodInfo("breakpoints_cleared_in_tree", PropertyInfo(VariantType::INT, "debugger")));
 }
 
 void EditorDebuggerNode::register_undo_redo(UndoRedo *p_undo_redo) {

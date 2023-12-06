@@ -83,7 +83,7 @@
 		</method>
 		<method name="add_import_option_advanced">
 			<return type="void" />
-			<param index="0" name="type" type="int" enum="Variant.Type" />
+			<param index="0" name="type" type="int" enum="VariantType" />
 			<param index="1" name="name" type="String" />
 			<param index="2" name="default_value" type="Variant" />
 			<param index="3" name="hint" type="int" enum="PropertyHint" default="0" />

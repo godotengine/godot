@@ -553,11 +553,11 @@ String ResourceImporterOBJ::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterOBJ::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_tangents"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimize_mesh"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_disable_mesh_compression"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "generate_tangents"), true));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "optimize_mesh"), true));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "force_disable_mesh_compression"), false));
 }
 
 bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {

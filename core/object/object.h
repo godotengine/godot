@@ -140,11 +140,11 @@ enum PropertyUsageFlags {
 #define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
 
 // Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
-// PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
-#define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
+// PropertyInfo(VariantType::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
+#define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", VariantType::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
 struct PropertyInfo {
-	Variant::Type type = Variant::NIL;
+	VariantType type = VariantType::NIL;
 	String name;
 	StringName class_name; // For classes
 	PropertyHint hint = PROPERTY_HINT_NONE;
@@ -165,7 +165,7 @@ struct PropertyInfo {
 
 	PropertyInfo() {}
 
-	PropertyInfo(const Variant::Type p_type, const String p_name, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName()) :
+	PropertyInfo(const VariantType p_type, const String p_name, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName()) :
 			type(p_type),
 			name(p_name),
 			hint(p_hint),
@@ -179,11 +179,11 @@ struct PropertyInfo {
 	}
 
 	PropertyInfo(const StringName &p_class_name) :
-			type(Variant::OBJECT),
+			type(VariantType::OBJECT),
 			class_name(p_class_name) {}
 
 	explicit PropertyInfo(const GDExtensionPropertyInfo &pinfo) :
-			type((Variant::Type)pinfo.type),
+			type((VariantType)pinfo.type),
 			name(*reinterpret_cast<StringName *>(pinfo.name)),
 			class_name(*reinterpret_cast<StringName *>(pinfo.class_name)),
 			hint((PropertyHint)pinfo.hint),
@@ -276,14 +276,14 @@ struct MethodInfo {
 		_push_params(p_params...);
 	}
 
-	MethodInfo(Variant::Type ret) { return_val.type = ret; }
-	MethodInfo(Variant::Type ret, const String &p_name) {
+	MethodInfo(VariantType ret) { return_val.type = ret; }
+	MethodInfo(VariantType ret, const String &p_name) {
 		return_val.type = ret;
 		name = p_name;
 	}
 
 	template <typename... VarArgs>
-	MethodInfo(Variant::Type ret, const String &p_name, VarArgs... p_params) {
+	MethodInfo(VariantType ret, const String &p_name, VarArgs... p_params) {
 		name = p_name;
 		return_val.type = ret;
 		_push_params(p_params...);
@@ -501,7 +501,7 @@ protected:                                                                      
 		if (!p_reversed) {                                                                                                                       \
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                                 \
 		}                                                                                                                                        \
-		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY));      \
+		p_list->push_back(PropertyInfo(VariantType::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY));  \
 		if (!_is_gpl_reversed()) {                                                                                                               \
 			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                          \
 		}                                                                                                                                        \
@@ -944,8 +944,8 @@ public:
 	void set_block_signals(bool p_block);
 	bool is_blocking_signals() const;
 
-	Variant::Type get_static_property_type(const StringName &p_property, bool *r_valid = nullptr) const;
-	Variant::Type get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = nullptr) const;
+	VariantType get_static_property_type(const StringName &p_property, bool *r_valid = nullptr) const;
+	VariantType get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = nullptr) const;
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 

@@ -122,12 +122,12 @@ void FogMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_density_texture", "density_texture"), &FogMaterial::set_density_texture);
 	ClassDB::bind_method(D_METHOD("get_density_texture"), &FogMaterial::get_density_texture);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "density", PROPERTY_HINT_RANGE, "-8.0,8.0,0.0001,or_greater,or_less"), "set_density", "get_density");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "albedo", PROPERTY_HINT_COLOR_NO_ALPHA), "set_albedo", "get_albedo");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height_falloff", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_height_falloff", "get_height_falloff");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_fade", PROPERTY_HINT_EXP_EASING), "set_edge_fade", "get_edge_fade");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "density_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_density_texture", "get_density_texture");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "density", PROPERTY_HINT_RANGE, "-8.0,8.0,0.0001,or_greater,or_less"), "set_density", "get_density");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "albedo", PROPERTY_HINT_COLOR_NO_ALPHA), "set_albedo", "get_albedo");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "height_falloff", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_height_falloff", "get_height_falloff");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "edge_fade", PROPERTY_HINT_EXP_EASING), "set_edge_fade", "get_edge_fade");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "density_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_density_texture", "get_density_texture");
 }
 
 void FogMaterial::cleanup_shader() {

@@ -43,7 +43,7 @@ namespace GodotTools.Export
                         "option", new Godot.Collections.Dictionary()
                         {
                             { "name", "dotnet/include_scripts_content" },
-                            { "type", (int)Variant.Type.Bool }
+                            { "type", (int)VariantType.Bool }
                         }
                     },
                     { "default_value", false }
@@ -54,7 +54,7 @@ namespace GodotTools.Export
                         "option", new Godot.Collections.Dictionary()
                         {
                             { "name", "dotnet/include_debug_symbols" },
-                            { "type", (int)Variant.Type.Bool }
+                            { "type", (int)VariantType.Bool }
                         }
                     },
                     { "default_value", true }
@@ -65,7 +65,7 @@ namespace GodotTools.Export
                         "option", new Godot.Collections.Dictionary()
                         {
                             { "name", "dotnet/embed_build_outputs" },
-                            { "type", (int)Variant.Type.Bool }
+                            { "type", (int)VariantType.Bool }
                         }
                     },
                     { "default_value", false }

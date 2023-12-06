@@ -270,9 +270,9 @@ void ScriptTextEditor::_show_warnings_panel(bool p_show) {
 }
 
 void ScriptTextEditor::_warning_clicked(Variant p_line) {
-	if (p_line.get_type() == Variant::INT) {
+	if (p_line.get_type() == VariantType::INT) {
 		goto_line_centered(p_line.operator int64_t());
-	} else if (p_line.get_type() == Variant::DICTIONARY) {
+	} else if (p_line.get_type() == VariantType::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
 		const int line = meta["line"].operator int64_t() - 1;
 		const String code = meta["code"].operator String();
@@ -301,10 +301,10 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 }
 
 void ScriptTextEditor::_error_clicked(Variant p_line) {
-	if (p_line.get_type() == Variant::INT) {
+	if (p_line.get_type() == VariantType::INT) {
 		code_editor->get_text_editor()->remove_secondary_carets();
 		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
-	} else if (p_line.get_type() == Variant::DICTIONARY) {
+	} else if (p_line.get_type() == VariantType::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
 		const String path = meta["path"].operator String();
 		const int line = meta["line"].operator int64_t();

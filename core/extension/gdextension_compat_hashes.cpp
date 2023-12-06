@@ -297,7 +297,9 @@ void GDExtensionCompatHashes::initialize() {
 		{ "get_material", 3501703615, 974464017 },
 	});
 	mappings.insert("EditorScenePostImportPlugin", {
-		{ "add_import_option_advanced", 3774155785, 3674075649 },
+		{ "add_import_option_advanced", 3774155785, 3504128316 },
+		// Pre-existing compatibility hashes.
+		{ "add_import_option_advanced", 3674075649, 3504128316 },
 	});
 	mappings.insert("EditorUndoRedoManager", {
 		{ "create_action", 3577985681, 2107025470 },
@@ -754,6 +756,8 @@ void GDExtensionCompatHashes::initialize() {
 		{ "add_source", 276991387, 1059186179 },
 		{ "add_terrain", 3023605688, 1230568737 },
 		{ "add_pattern", 3009264082, 763712015 },
+		{ "set_custom_data_layer_type", 3492912874, 2264164981 },
+		{ "get_custom_data_layer_type", 2990820875, 563494422 },
 	});
 	mappings.insert("TileSetAtlasSource", {
 		{ "create_tile", 1583819816, 190528769 },

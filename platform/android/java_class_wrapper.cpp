@@ -64,14 +64,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		bool valid = true;
 
 		for (int i = 0; i < pc; i++) {
-			Variant::Type arg_expected = Variant::NIL;
+			VariantType arg_expected = VariantType::NIL;
 			switch (ptypes[i]) {
 				case ARG_TYPE_VOID: {
 					//bug?
 				} break;
 				case ARG_TYPE_BOOLEAN: {
-					if (p_args[i]->get_type() != Variant::BOOL) {
-						arg_expected = Variant::BOOL;
+					if (p_args[i]->get_type() != VariantType::BOOL) {
+						arg_expected = VariantType::BOOL;
 					}
 				} break;
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_BYTE:
@@ -85,7 +85,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_TYPE_INT:
 				case ARG_TYPE_LONG: {
 					if (!p_args[i]->is_num()) {
-						arg_expected = Variant::INT;
+						arg_expected = VariantType::INT;
 					}
 				} break;
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_FLOAT:
@@ -93,17 +93,17 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_TYPE_FLOAT:
 				case ARG_TYPE_DOUBLE: {
 					if (!p_args[i]->is_num()) {
-						arg_expected = Variant::FLOAT;
+						arg_expected = VariantType::FLOAT;
 					}
 				} break;
 				case ARG_TYPE_STRING: {
-					if (p_args[i]->get_type() != Variant::STRING) {
-						arg_expected = Variant::STRING;
+					if (p_args[i]->get_type() != VariantType::STRING) {
+						arg_expected = VariantType::STRING;
 					}
 				} break;
 				case ARG_TYPE_CLASS: {
-					if (p_args[i]->get_type() != Variant::OBJECT) {
-						arg_expected = Variant::OBJECT;
+					if (p_args[i]->get_type() != VariantType::OBJECT) {
+						arg_expected = VariantType::OBJECT;
 					} else {
 						Ref<RefCounted> ref = *p_args[i];
 						if (!ref.is_null()) {
@@ -112,27 +112,27 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 								//could be faster
 								jclass c = env->FindClass(E.param_sigs[i].operator String().utf8().get_data());
 								if (!c || !env->IsInstanceOf(jo->instance, c)) {
-									arg_expected = Variant::OBJECT;
+									arg_expected = VariantType::OBJECT;
 								} else {
 									//ok
 								}
 							} else {
-								arg_expected = Variant::OBJECT;
+								arg_expected = VariantType::OBJECT;
 							}
 						}
 					}
 				} break;
 				default: {
-					if (p_args[i]->get_type() != Variant::ARRAY) {
-						arg_expected = Variant::ARRAY;
+					if (p_args[i]->get_type() != VariantType::ARRAY) {
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 			}
 
-			if (arg_expected != Variant::NIL) {
+			if (arg_expected != VariantType::NIL) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = i;
-				r_error.expected = arg_expected;
+				r_error.expected = (int)arg_expected;
 				valid = false;
 				break;
 			}
@@ -1063,9 +1063,9 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 			}
 			bool this_valid = true;
 			for (int j = 0; j < E->get().param_types.size(); j++) {
-				Variant::Type _new;
+				VariantType _new;
 				float new_l;
-				Variant::Type existing;
+				VariantType existing;
 				float existing_l;
 				JavaClass::_convert_to_variant_type(E->get().param_types[j], existing, existing_l);
 				JavaClass::_convert_to_variant_type(mi.param_types[j], _new, new_l);

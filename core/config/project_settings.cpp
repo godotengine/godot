@@ -274,7 +274,7 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
-	if (p_value.get_type() == Variant::NIL) {
+	if (p_value.get_type() == VariantType::NIL) {
 		props.erase(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
 			String node_name = p_name.operator String().split("/")[1];
@@ -370,7 +370,7 @@ Variant ProjectSettings::get_setting_with_override(const StringName &p_name) con
 
 struct _VCSort {
 	String name;
-	Variant::Type type = Variant::VARIANT_MAX;
+	VariantType type = VariantType::MAX;
 	int order = 0;
 	uint32_t flags = 0;
 
@@ -481,7 +481,7 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 		// Converts the actions from array to dictionary (array of events to dictionary with deadzone + events)
 		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
 			Variant value = E.value.variant;
-			if (String(E.key).begins_with("input/") && value.get_type() == Variant::ARRAY) {
+			if (String(E.key).begins_with("input/") && value.get_type() == VariantType::ARRAY) {
 				Array array = value;
 				Dictionary action;
 				action["deadzone"] = Variant(0.5f);
@@ -1116,8 +1116,8 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 	PropertyInfo pinfo;
 	pinfo.name = p_info["name"];
 	ERR_FAIL_COND(!props.has(pinfo.name));
-	pinfo.type = Variant::Type(p_info["type"].operator int());
-	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
+	pinfo.type = VariantType(p_info["type"].operator int());
+	ERR_FAIL_INDEX((int)pinfo.type, (int)VariantType::MAX);
 
 	if (p_info.has("hint")) {
 		pinfo.hint = PropertyHint(p_info["hint"].operator int());
@@ -1296,11 +1296,11 @@ ProjectSettings::ProjectSettings() {
 	singleton = this;
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
 	GLOBAL_DEF_BASIC("application/config/version", "");
-	GLOBAL_DEF_INTERNAL(PropertyInfo(Variant::STRING, "application/config/tags"), PackedStringArray());
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res"), "");
+	GLOBAL_DEF_INTERNAL(PropertyInfo(VariantType::STRING, "application/config/tags"), PackedStringArray());
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res"), "");
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
 	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
@@ -1316,15 +1316,15 @@ ProjectSettings::ProjectSettings() {
 	// - Have a 16:9 aspect ratio,
 	// - Have both dimensions divisible by 8 to better play along with video recording,
 	// - Be displayable correctly in windowed mode on a 1366×768 display (tested on Windows 10 with default settings).
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/viewport_width", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 1152); // 8K resolution
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/viewport_height", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 648); // 8K resolution
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::INT, "display/window/size/viewport_width", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 1152); // 8K resolution
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::INT, "display/window/size/viewport_height", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 648); // 8K resolution
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::INT, "display/window/size/mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), 0);
 
 	// Keep the enum values in sync with the `DisplayServer::SCREEN_` enum.
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_position_type", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), 1);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::VECTOR2I, "display/window/size/initial_position"), Vector2i());
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::INT, "display/window/size/initial_position_type", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), 1);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::VECTOR2I, "display/window/size/initial_position"), Vector2i());
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::INT, "display/window/size/initial_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), 0);
 
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
 	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
@@ -1333,18 +1333,18 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/extend_to_title", false);
 	GLOBAL_DEF("display/window/size/no_focus", false);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor", false);
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/ios/session_category", PROPERTY_HINT_ENUM, "Ambient,Multi Route,Play and Record,Playback,Record,Solo Ambient"), 0);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "audio/general/ios/session_category", PROPERTY_HINT_ENUM, "Ambient,Multi Route,Play and Record,Playback,Record,Solo Ambient"), 0);
 	GLOBAL_DEF("audio/general/ios/mix_with_others", false);
 
 	PackedStringArray extensions;
@@ -1354,42 +1354,42 @@ ProjectSettings::ProjectSettings() {
 	}
 	extensions.push_back("gdshader");
 
-	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions);
+	GLOBAL_DEF(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions);
 
 	_add_builtin_input_map();
 
 	// Keep the enum values in sync with the `DisplayServer::ScreenOrientation` enum.
-	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::INT, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor");
+	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(VariantType::INT, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor");
 	GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 	// Keep the enum values in sync with the `DisplayServer::VSyncMode` enum.
-	custom_prop_info["display/window/vsync/vsync_mode"] = PropertyInfo(Variant::INT, "display/window/vsync/vsync_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Adaptive,Mailbox");
-	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
+	custom_prop_info["display/window/vsync/vsync_mode"] = PropertyInfo(VariantType::INT, "display/window/vsync/vsync_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Adaptive,Mailbox");
+	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(VariantType::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,canvas_items,viewport"), "disabled");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"), "keep");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "display/window/stretch/scale", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), 1.0);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/scale_mode", PROPERTY_HINT_ENUM, "fractional,integer"), "fractional");
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,canvas_items,viewport"), "disabled");
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"), "keep");
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::FLOAT, "display/window/stretch/scale", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), 1.0);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::STRING, "display/window/stretch/scale_mode", PROPERTY_HINT_ENUM, "fractional,integer"), "fractional");
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1"), 16384);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1"), 16384);
 
-	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching"), Compression::zstd_long_distance_matching);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1"), Compression::zstd_level);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zstd/window_log_size", PROPERTY_HINT_RANGE, "10,30,1"), Compression::zstd_window_log_size);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1"), Compression::zlib_level);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1"), Compression::gzip_level);
+	GLOBAL_DEF(PropertyInfo(VariantType::BOOL, "compression/formats/zstd/long_distance_matching"), Compression::zstd_long_distance_matching);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1"), Compression::zstd_level);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "compression/formats/zstd/window_log_size", PROPERTY_HINT_RANGE, "10,30,1"), Compression::zstd_window_log_size);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "compression/formats/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1"), Compression::zlib_level);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1"), Compression::gzip_level);
 
 	GLOBAL_DEF("debug/settings/crash_handler/message",
 			String("Please include this when reporting the bug to the project developer."));
 	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
 			String("Please include this when reporting the bug on: https://github.com/godotengine/godot/issues"));
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/occlusion_culling/bvh_build_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), 2);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1"), 60); // No negative and limit to 500 due to crashes.
+	GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "rendering/occlusion_culling/bvh_build_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), 2);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1"), 60); // No negative and limit to 500 due to crashes.
 	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "internationalization/rendering/root_node_layout_direction", PROPERTY_HINT_ENUM, "Based on Locale,Left-to-Right,Right-to-Left"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::INT, "internationalization/rendering/root_node_layout_direction", PROPERTY_HINT_ENUM, "Based on Locale,Left-to-Right,Right-to-Left"), 0);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 2000);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 2000);
 
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
@@ -1400,8 +1400,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("rendering/rendering_device/pipeline_cache/save_chunk_size_mb", 3.0);
 	GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
 
 	GLOBAL_DEF("collada/use_ambient", false);
 

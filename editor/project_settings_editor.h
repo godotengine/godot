@@ -83,7 +83,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _property_box_changed(const String &p_text);
 	void _update_property_box();
 	void _feature_selected(int p_index);
-	void _select_type(Variant::Type p_type);
+	void _select_type(VariantType p_type);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 

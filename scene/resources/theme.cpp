@@ -115,48 +115,48 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Type variations.
 	for (const KeyValue<StringName, StringName> &E : variation_map) {
-		list.push_back(PropertyInfo(Variant::STRING_NAME, String() + E.key + "/base_type"));
+		list.push_back(PropertyInfo(VariantType::STRING_NAME, String() + E.key + "/base_type"));
 	}
 
 	// Icons.
 	for (const KeyValue<StringName, ThemeIconMap> &E : icon_map) {
 		for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/icons/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(VariantType::OBJECT, String() + E.key + "/icons/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	// Styles.
 	for (const KeyValue<StringName, ThemeStyleMap> &E : style_map) {
 		for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/styles/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(VariantType::OBJECT, String() + E.key + "/styles/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	// Fonts.
 	for (const KeyValue<StringName, ThemeFontMap> &E : font_map) {
 		for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(VariantType::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	// Font sizes.
 	for (const KeyValue<StringName, ThemeFontSizeMap> &E : font_size_map) {
 		for (const KeyValue<StringName, int> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/font_sizes/" + F.key, PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"));
+			list.push_back(PropertyInfo(VariantType::INT, String() + E.key + "/font_sizes/" + F.key, PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"));
 		}
 	}
 
 	// Colors.
 	for (const KeyValue<StringName, ThemeColorMap> &E : color_map) {
 		for (const KeyValue<StringName, Color> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::COLOR, String() + E.key + "/colors/" + F.key));
+			list.push_back(PropertyInfo(VariantType::COLOR, String() + E.key + "/colors/" + F.key));
 		}
 	}
 
 	// Constants.
 	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
 		for (const KeyValue<StringName, int> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/constants/" + F.key));
+			list.push_back(PropertyInfo(VariantType::INT, String() + E.key + "/constants/" + F.key));
 		}
 	}
 
@@ -167,7 +167,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 		// Add groups for types so that their names are left unchanged in the inspector.
 		String current_type = E.name.get_slice("/", 0);
 		if (prev_type != current_type) {
-			p_list->push_back(PropertyInfo(Variant::NIL, current_type, PROPERTY_HINT_NONE, current_type + "/", PROPERTY_USAGE_GROUP));
+			p_list->push_back(PropertyInfo(VariantType::NIL, current_type, PROPERTY_HINT_NONE, current_type + "/", PROPERTY_USAGE_GROUP));
 			prev_type = current_type;
 		}
 
@@ -856,37 +856,37 @@ void Theme::get_constant_type_list(List<StringName> *p_list) const {
 void Theme::set_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type, const Variant &p_value) {
 	switch (p_data_type) {
 		case DATA_TYPE_COLOR: {
-			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::COLOR, "Theme item's data type (Color) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+			ERR_FAIL_COND_MSG(p_value.get_type() != VariantType::COLOR, "Theme item's data type (Color) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
 
 			Color color_value = p_value;
 			set_color(p_name, p_theme_type, color_value);
 		} break;
 		case DATA_TYPE_CONSTANT: {
-			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::INT, "Theme item's data type (int) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+			ERR_FAIL_COND_MSG(p_value.get_type() != VariantType::INT, "Theme item's data type (int) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
 
 			int constant_value = p_value;
 			set_constant(p_name, p_theme_type, constant_value);
 		} break;
 		case DATA_TYPE_FONT: {
-			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::OBJECT, "Theme item's data type (Object) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+			ERR_FAIL_COND_MSG(p_value.get_type() != VariantType::OBJECT, "Theme item's data type (Object) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
 
 			Ref<Font> font_value = Object::cast_to<Font>(p_value.get_validated_object());
 			set_font(p_name, p_theme_type, font_value);
 		} break;
 		case DATA_TYPE_FONT_SIZE: {
-			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::INT, "Theme item's data type (int) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+			ERR_FAIL_COND_MSG(p_value.get_type() != VariantType::INT, "Theme item's data type (int) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
 
 			int font_size_value = p_value;
 			set_font_size(p_name, p_theme_type, font_size_value);
 		} break;
 		case DATA_TYPE_ICON: {
-			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::OBJECT, "Theme item's data type (Object) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+			ERR_FAIL_COND_MSG(p_value.get_type() != VariantType::OBJECT, "Theme item's data type (Object) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
 
 			Ref<Texture2D> icon_value = Object::cast_to<Texture2D>(p_value.get_validated_object());
 			set_icon(p_name, p_theme_type, icon_value);
 		} break;
 		case DATA_TYPE_STYLEBOX: {
-			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::OBJECT, "Theme item's data type (Object) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+			ERR_FAIL_COND_MSG(p_value.get_type() != VariantType::OBJECT, "Theme item's data type (Object) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
 
 			Ref<StyleBox> stylebox_value = Object::cast_to<StyleBox>(p_value.get_validated_object());
 			set_stylebox(p_name, p_theme_type, stylebox_value);
@@ -1750,9 +1750,9 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("merge_with", "other"), &Theme::merge_with);
 	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_default_base_scale", "get_default_base_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_default_font_size", "get_default_font_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "default_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_default_base_scale", "get_default_base_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "default_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_default_font_size", "get_default_font_size");
 
 	BIND_ENUM_CONSTANT(DATA_TYPE_COLOR);
 	BIND_ENUM_CONSTANT(DATA_TYPE_CONSTANT);

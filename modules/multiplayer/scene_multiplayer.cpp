@@ -578,7 +578,7 @@ Error SceneMultiplayer::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 }
 
 Error SceneMultiplayer::object_configuration_add(Object *p_obj, Variant p_config) {
-	if (p_obj == nullptr && p_config.get_type() == Variant::NODE_PATH) {
+	if (p_obj == nullptr && p_config.get_type() == VariantType::NODE_PATH) {
 		set_root_path(p_config);
 		return OK;
 	}
@@ -593,7 +593,7 @@ Error SceneMultiplayer::object_configuration_add(Object *p_obj, Variant p_config
 }
 
 Error SceneMultiplayer::object_configuration_remove(Object *p_obj, Variant p_config) {
-	if (p_obj == nullptr && p_config.get_type() == Variant::NODE_PATH) {
+	if (p_obj == nullptr && p_config.get_type() == VariantType::NODE_PATH) {
 		ERR_FAIL_COND_V(root_path != p_config.operator NodePath(), ERR_INVALID_PARAMETER);
 		set_root_path(NodePath());
 		return OK;
@@ -662,20 +662,20 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_delta_packet_size"), &SceneMultiplayer::get_max_delta_packet_size);
 	ClassDB::bind_method(D_METHOD("set_max_delta_packet_size", "size"), &SceneMultiplayer::set_max_delta_packet_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
-	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auth_timeout", PROPERTY_HINT_RANGE, "0,30,0.1,or_greater,suffix:s"), "set_auth_timeout", "get_auth_timeout");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_sync_packet_size"), "set_max_sync_packet_size", "get_max_sync_packet_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_delta_packet_size"), "set_max_delta_packet_size", "get_max_delta_packet_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
+	ADD_PROPERTY(PropertyInfo(VariantType::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "auth_timeout", PROPERTY_HINT_RANGE, "0,30,0.1,or_greater,suffix:s"), "set_auth_timeout", "get_auth_timeout");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_sync_packet_size"), "set_max_sync_packet_size", "get_max_sync_packet_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_delta_packet_size"), "set_max_delta_packet_size", "get_max_delta_packet_size");
 
 	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
 
-	ADD_SIGNAL(MethodInfo("peer_authenticating", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("peer_authentication_failed", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("peer_packet", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet")));
+	ADD_SIGNAL(MethodInfo("peer_authenticating", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_authentication_failed", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_packet", PropertyInfo(VariantType::INT, "id"), PropertyInfo(VariantType::PACKED_BYTE_ARRAY, "packet")));
 }
 
 SceneMultiplayer::SceneMultiplayer() {

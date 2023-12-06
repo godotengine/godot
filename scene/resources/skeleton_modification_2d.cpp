@@ -229,8 +229,8 @@ void SkeletonModification2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editor_draw_gizmo", "draw_gizmo"), &SkeletonModification2D::set_editor_draw_gizmo);
 	ClassDB::bind_method(D_METHOD("get_editor_draw_gizmo"), &SkeletonModification2D::get_editor_draw_gizmo);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process,physics_process"), "set_execution_mode", "get_execution_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "enabled"), "set_enabled", "get_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "execution_mode", PROPERTY_HINT_ENUM, "process,physics_process"), "set_execution_mode", "get_execution_mode");
 }
 
 SkeletonModification2D::SkeletonModification2D() {

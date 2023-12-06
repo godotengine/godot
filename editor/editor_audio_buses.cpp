@@ -572,7 +572,7 @@ void EditorAudioBus::_effects_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::KEY_DELETE) {
 		TreeItem *current_effect = effects->get_selected();
-		if (current_effect && current_effect->get_metadata(0).get_type() == Variant::INT) {
+		if (current_effect && current_effect->get_metadata(0).get_type() == VariantType::INT) {
 			_delete_effect_pressed(0);
 			accept_event();
 		}
@@ -641,7 +641,7 @@ Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::INT) {
+	if (md.get_type() == VariantType::INT) {
 		Dictionary fxd;
 		fxd["type"] = "audio_bus_effect";
 		fxd["bus"] = get_index();
@@ -687,7 +687,7 @@ void EditorAudioBus::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	int bus = d["bus"];
 	int effect = d["effect"];
 
-	if (md.get_type() == Variant::INT) {
+	if (md.get_type() == VariantType::INT) {
 		paste_at = md;
 		if (pos > 0) {
 			paste_at++;
@@ -738,7 +738,7 @@ void EditorAudioBus::_delete_effect_pressed(int p_option) {
 		return;
 	}
 
-	if (item->get_metadata(0).get_type() != Variant::INT) {
+	if (item->get_metadata(0).get_type() != VariantType::INT) {
 		return;
 	}
 
@@ -764,7 +764,7 @@ void EditorAudioBus::_effect_rmb(const Vector2 &p_pos, MouseButton p_button) {
 		return;
 	}
 
-	if (item->get_metadata(0).get_type() != Variant::INT) {
+	if (item->get_metadata(0).get_type() != VariantType::INT) {
 		return;
 	}
 

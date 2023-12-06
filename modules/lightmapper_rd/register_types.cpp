@@ -59,7 +59,7 @@ void initialize_lightmapper_rd_module(ModuleInitializationLevel p_level) {
 	GLOBAL_DEF("rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count", 2048);
 	GLOBAL_DEF("rendering/lightmapping/bake_performance/max_rays_per_probe_pass", 64);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lightmapping/denoising/denoiser", PROPERTY_HINT_ENUM, "JNLM,OIDN"), 0);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "rendering/lightmapping/denoising/denoiser", PROPERTY_HINT_ENUM, "JNLM,OIDN"), 0);
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(LightmapperRD);
 	Lightmapper::create_gpu = create_lightmapper_rd;

@@ -103,17 +103,17 @@ void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_font"), &CharFXTransform::get_font);
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &CharFXTransform::set_font);
 
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "range"), "set_range", "get_range");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "elapsed_time"), "set_elapsed_time", "get_elapsed_time");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visibility", "is_visible");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "outline"), "set_outline", "is_outline");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "env"), "set_environment", "get_environment");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_index"), "set_glyph_index", "get_glyph_index");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_count"), "set_glyph_count", "get_glyph_count");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_flags"), "set_glyph_flags", "get_glyph_flags");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "relative_index"), "set_relative_index", "get_relative_index");
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "font"), "set_font", "get_font");
+	ADD_PROPERTY(PropertyInfo(VariantType::TRANSFORM2D, "transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "range"), "set_range", "get_range");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "elapsed_time"), "set_elapsed_time", "get_elapsed_time");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "visible"), "set_visibility", "is_visible");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "outline"), "set_outline", "is_outline");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "color"), "set_color", "get_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "env"), "set_environment", "get_environment");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "glyph_index"), "set_glyph_index", "get_glyph_index");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "glyph_count"), "set_glyph_count", "get_glyph_count");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "glyph_flags"), "set_glyph_flags", "get_glyph_flags");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "relative_index"), "set_relative_index", "get_relative_index");
+	ADD_PROPERTY(PropertyInfo(VariantType::RID, "font"), "set_font", "get_font");
 }

@@ -458,7 +458,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					}
 				}
 
-				if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == Variant::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
+				if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == VariantType::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
 					continue;
 				}
 
@@ -504,7 +504,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					}
 				}
 
-				if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
+				if (default_value_valid && default_value.get_type() != VariantType::OBJECT) {
 					prop.default_value = DocData::get_default_value_string(default_value);
 				}
 
@@ -521,19 +521,19 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 						PropertyInfo retinfo = mb->get_return_info();
 
 						found_type = true;
-						if (retinfo.type == Variant::INT && retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
+						if (retinfo.type == VariantType::INT && retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 							prop.enumeration = retinfo.class_name;
 							prop.is_bitfield = retinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 							prop.type = "int";
 						} else if (retinfo.class_name != StringName()) {
 							prop.type = retinfo.class_name;
-						} else if (retinfo.type == Variant::ARRAY && retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+						} else if (retinfo.type == VariantType::ARRAY && retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 							prop.type = retinfo.hint_string + "[]";
 						} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 							prop.type = retinfo.hint_string;
-						} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+						} else if (retinfo.type == VariantType::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
 							prop.type = "Variant";
-						} else if (retinfo.type == Variant::NIL) {
+						} else if (retinfo.type == VariantType::NIL) {
 							prop.type = "void";
 						} else {
 							prop.type = Variant::get_type_name(retinfo.type);
@@ -548,7 +548,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				}
 
 				if (!found_type) {
-					if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					if (E.type == VariantType::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 						prop.type = E.hint_string;
 					} else {
 						prop.type = Variant::get_type_name(E.type);
@@ -572,7 +572,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					// Don't skip parametric setters and getters, i.e. method which require
 					// one or more parameters to define what property should be set or retrieved.
 					// E.g. CPUParticles3D::set_param(Parameter param, float value).
-					if (E.arguments.size() == 0 /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
+					if (E.arguments.size() == 0 /* getter */ || (E.arguments.size() == 1 && E.return_val.type == VariantType::NIL /* setter */)) {
 						continue;
 					}
 				}
@@ -695,15 +695,15 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 	}
 
 	// Add Variant data types.
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (i == Variant::NIL) {
+	for (int i = 0; i < (int)VariantType::MAX; i++) {
+		if (i == (int)VariantType::NIL) {
 			continue; // Not exposed outside of 'null', should not be in class list.
 		}
-		if (i == Variant::OBJECT) {
+		if (i == (int)VariantType::OBJECT) {
 			continue; // Use the core type instead.
 		}
 
-		String cname = Variant::get_type_name(Variant::Type(i));
+		String cname = Variant::get_type_name(VariantType(i));
 
 		class_list[cname] = DocData::ClassDoc();
 		DocData::ClassDoc &c = class_list[cname];
@@ -711,33 +711,33 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 		Callable::CallError cerror;
 		Variant v;
-		Variant::construct(Variant::Type(i), v, nullptr, 0, cerror);
+		Variant::construct(VariantType(i), v, nullptr, 0, cerror);
 
 		List<MethodInfo> method_list;
 		v.get_method_list(&method_list);
-		Variant::get_constructor_list(Variant::Type(i), &method_list);
+		Variant::get_constructor_list(VariantType(i), &method_list);
 
-		for (int j = 0; j < Variant::OP_AND; j++) { // Showing above 'and' is pretty confusing and there are a lot of variations.
-			for (int k = 0; k < Variant::VARIANT_MAX; k++) {
+		for (int j = 0; j < (int)VariantOperator::AND; j++) { // Showing above 'and' is pretty confusing and there are a lot of variations.
+			for (int k = 0; k < (int)VariantType::MAX; k++) {
 				// Prevent generating for comparison with null.
-				if (Variant::Type(k) == Variant::NIL && (Variant::Operator(j) == Variant::OP_EQUAL || Variant::Operator(j) == Variant::OP_NOT_EQUAL)) {
+				if (VariantType(k) == VariantType::NIL && (VariantOperator(j) == VariantOperator::EQUAL || VariantOperator(j) == VariantOperator::NOT_EQUAL)) {
 					continue;
 				}
 
-				Variant::Type rt = Variant::get_operator_return_type(Variant::Operator(j), Variant::Type(i), Variant::Type(k));
-				if (rt != Variant::NIL) { // Has operator.
+				VariantType rt = Variant::get_operator_return_type(VariantOperator(j), VariantType(i), VariantType(k));
+				if (rt != VariantType::NIL) { // Has operator.
 					// Skip String % operator as it's registered separately for each Variant arg type,
 					// we'll add it manually below.
-					if ((i == Variant::STRING || i == Variant::STRING_NAME) && Variant::Operator(j) == Variant::OP_MODULE) {
+					if ((i == (int)VariantType::STRING || i == (int)VariantType::STRING_NAME) && VariantOperator(j) == VariantOperator::MODULE) {
 						continue;
 					}
 					MethodInfo mi;
-					mi.name = "operator " + Variant::get_operator_name(Variant::Operator(j));
+					mi.name = "operator " + Variant::get_operator_name(VariantOperator(j));
 					mi.return_val.type = rt;
-					if (k != Variant::NIL) {
+					if (k != (int)VariantType::NIL) {
 						PropertyInfo arg;
 						arg.name = "right";
-						arg.type = Variant::Type(k);
+						arg.type = VariantType(k);
 						mi.arguments.push_back(arg);
 					}
 					method_list.push_back(mi);
@@ -745,42 +745,42 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			}
 		}
 
-		if (i == Variant::STRING || i == Variant::STRING_NAME) {
+		if (i == (int)VariantType::STRING || i == (int)VariantType::STRING_NAME) {
 			// We skipped % operator above, and we register it manually once for Variant arg type here.
 			MethodInfo mi;
 			mi.name = "operator %";
-			mi.return_val.type = Variant::STRING;
+			mi.return_val.type = VariantType::STRING;
 
 			PropertyInfo arg;
 			arg.name = "right";
-			arg.type = Variant::NIL;
+			arg.type = VariantType::NIL;
 			arg.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 			mi.arguments.push_back(arg);
 
 			method_list.push_back(mi);
 		}
 
-		if (Variant::is_keyed(Variant::Type(i))) {
+		if (Variant::is_keyed(VariantType(i))) {
 			MethodInfo mi;
 			mi.name = "operator []";
-			mi.return_val.type = Variant::NIL;
+			mi.return_val.type = VariantType::NIL;
 			mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 
 			PropertyInfo arg;
 			arg.name = "key";
-			arg.type = Variant::NIL;
+			arg.type = VariantType::NIL;
 			arg.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 			mi.arguments.push_back(arg);
 
 			method_list.push_back(mi);
-		} else if (Variant::has_indexing(Variant::Type(i))) {
+		} else if (Variant::has_indexing(VariantType(i))) {
 			MethodInfo mi;
 			mi.name = "operator []";
-			mi.return_val.type = Variant::get_indexed_element_type(Variant::Type(i));
-			mi.return_val.usage = Variant::get_indexed_element_usage(Variant::Type(i));
+			mi.return_val.type = Variant::get_indexed_element_type(VariantType(i));
+			mi.return_val.usage = Variant::get_indexed_element_usage(VariantType(i));
 			PropertyInfo arg;
 			arg.name = "index";
-			arg.type = Variant::INT;
+			arg.type = VariantType::INT;
 			mi.arguments.push_back(arg);
 
 			method_list.push_back(mi);
@@ -851,13 +851,13 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		}
 
 		List<StringName> constants;
-		Variant::get_constants_for_type(Variant::Type(i), &constants);
+		Variant::get_constants_for_type(VariantType(i), &constants);
 
 		for (const StringName &E : constants) {
 			DocData::ConstantDoc constant;
 			constant.name = E;
-			Variant value = Variant::get_constant_value(Variant::Type(i), E);
-			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace("\n", " ");
+			Variant value = Variant::get_constant_value(VariantType(i), E);
+			constant.value = value.get_type() == VariantType::INT ? itos(value) : value.get_construct_string().replace("\n", " ");
 			constant.is_value_valid = true;
 			c.constants.push_back(constant);
 		}
@@ -914,7 +914,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			if (Variant::has_utility_function_return_value(E)) {
 				PropertyInfo pi;
 				pi.type = Variant::get_utility_function_return_type(E);
-				if (pi.type == Variant::NIL) {
+				if (pi.type == VariantType::NIL) {
 					pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 				}
 				DocData::ArgumentDoc ad;
@@ -930,7 +930,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					PropertyInfo pi;
 					pi.type = Variant::get_utility_function_argument_type(E, i);
 					pi.name = Variant::get_utility_function_argument_name(E, i);
-					if (pi.type == Variant::NIL) {
+					if (pi.type == VariantType::NIL) {
 						pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 					}
 					DocData::ArgumentDoc ad;

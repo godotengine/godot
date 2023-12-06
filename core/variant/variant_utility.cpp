@@ -112,34 +112,34 @@ int64_t VariantUtilityFunctions::posmod(int64_t b, int64_t r) {
 Variant VariantUtilityFunctions::floor(Variant x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
-		case Variant::INT: {
+		case VariantType::INT: {
 			return VariantInternalAccessor<int64_t>::get(&x);
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return Math::floor(VariantInternalAccessor<double>::get(&x));
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).floor();
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			return VariantInternalAccessor<Vector2i>::get(&x);
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&x).floor();
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			return VariantInternalAccessor<Vector3i>::get(&x);
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&x).floor();
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			return VariantInternalAccessor<Vector4i>::get(&x);
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
 		} break;
 	}
@@ -156,34 +156,34 @@ int64_t VariantUtilityFunctions::floori(double x) {
 Variant VariantUtilityFunctions::ceil(Variant x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
-		case Variant::INT: {
+		case VariantType::INT: {
 			return VariantInternalAccessor<int64_t>::get(&x);
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return Math::ceil(VariantInternalAccessor<double>::get(&x));
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).ceil();
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			return VariantInternalAccessor<Vector2i>::get(&x);
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&x).ceil();
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			return VariantInternalAccessor<Vector3i>::get(&x);
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&x).ceil();
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			return VariantInternalAccessor<Vector4i>::get(&x);
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
 		} break;
 	}
@@ -200,34 +200,34 @@ int64_t VariantUtilityFunctions::ceili(double x) {
 Variant VariantUtilityFunctions::round(Variant x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
-		case Variant::INT: {
+		case VariantType::INT: {
 			return VariantInternalAccessor<int64_t>::get(&x);
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return Math::round(VariantInternalAccessor<double>::get(&x));
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).round();
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			return VariantInternalAccessor<Vector2i>::get(&x);
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&x).round();
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			return VariantInternalAccessor<Vector3i>::get(&x);
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&x).round();
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			return VariantInternalAccessor<Vector4i>::get(&x);
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
 		} break;
 	}
@@ -244,34 +244,34 @@ int64_t VariantUtilityFunctions::roundi(double x) {
 Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
-		case Variant::INT: {
+		case VariantType::INT: {
 			return ABS(VariantInternalAccessor<int64_t>::get(&x));
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return Math::absd(VariantInternalAccessor<double>::get(&x));
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).abs();
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			return VariantInternalAccessor<Vector2i>::get(&x).abs();
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&x).abs();
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			return VariantInternalAccessor<Vector3i>::get(&x).abs();
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&x).abs();
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			return VariantInternalAccessor<Vector4i>::get(&x).abs();
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
 		} break;
 	}
@@ -288,34 +288,34 @@ int64_t VariantUtilityFunctions::absi(int64_t x) {
 Variant VariantUtilityFunctions::sign(const Variant &x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
-		case Variant::INT: {
+		case VariantType::INT: {
 			return SIGN(VariantInternalAccessor<int64_t>::get(&x));
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return SIGN(VariantInternalAccessor<double>::get(&x));
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).sign();
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			return VariantInternalAccessor<Vector2i>::get(&x).sign();
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&x).sign();
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			return VariantInternalAccessor<Vector3i>::get(&x).sign();
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&x).sign();
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			return VariantInternalAccessor<Vector4i>::get(&x).sign();
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
 		} break;
 	}
@@ -371,62 +371,62 @@ int VariantUtilityFunctions::step_decimals(float step) {
 
 Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, Callable::CallError &r_error) {
 	switch (x.get_type()) {
-		case Variant::INT:
-		case Variant::FLOAT:
-		case Variant::VECTOR2:
-		case Variant::VECTOR2I:
-		case Variant::VECTOR3:
-		case Variant::VECTOR3I:
-		case Variant::VECTOR4:
-		case Variant::VECTOR4I:
+		case VariantType::INT:
+		case VariantType::FLOAT:
+		case VariantType::VECTOR2:
+		case VariantType::VECTOR2I:
+		case VariantType::VECTOR3:
+		case VariantType::VECTOR3I:
+		case VariantType::VECTOR4:
+		case VariantType::VECTOR4I:
 			break;
 		default:
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
 	}
 
 	if (x.get_type() != step.get_type()) {
-		if (x.get_type() == Variant::INT || x.get_type() == Variant::FLOAT) {
-			if (step.get_type() != Variant::INT && step.get_type() != Variant::FLOAT) {
+		if (x.get_type() == VariantType::INT || x.get_type() == VariantType::FLOAT) {
+			if (step.get_type() != VariantType::INT && step.get_type() != VariantType::FLOAT) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 1;
-				r_error.expected = Variant::NIL;
+				r_error.expected = (int)VariantType::NIL;
 				return R"(Argument "step" must be "int" or "float".)";
 			}
 		} else {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 1;
-			r_error.expected = x.get_type();
+			r_error.expected = (int)x.get_type();
 			return Variant();
 		}
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (step.get_type()) {
-		case Variant::INT: {
+		case VariantType::INT: {
 			return snappedi(x, VariantInternalAccessor<int64_t>::get(&step));
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return snappedf(x, VariantInternalAccessor<double>::get(&step));
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).snapped(VariantInternalAccessor<Vector2>::get(&step));
 		} break;
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			return VariantInternalAccessor<Vector2i>::get(&x).snapped(VariantInternalAccessor<Vector2i>::get(&step));
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&x).snapped(VariantInternalAccessor<Vector3>::get(&step));
 		} break;
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			return VariantInternalAccessor<Vector3i>::get(&x).snapped(VariantInternalAccessor<Vector3i>::get(&step));
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&x).snapped(VariantInternalAccessor<Vector4>::get(&step));
 		} break;
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			return VariantInternalAccessor<Vector4i>::get(&x).snapped(VariantInternalAccessor<Vector4i>::get(&step));
 		} break;
 		default: {
@@ -445,53 +445,53 @@ int64_t VariantUtilityFunctions::snappedi(double x, int64_t step) {
 
 Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, double weight, Callable::CallError &r_error) {
 	switch (from.get_type()) {
-		case Variant::INT:
-		case Variant::FLOAT:
-		case Variant::VECTOR2:
-		case Variant::VECTOR3:
-		case Variant::VECTOR4:
-		case Variant::QUATERNION:
-		case Variant::BASIS:
-		case Variant::COLOR:
+		case VariantType::INT:
+		case VariantType::FLOAT:
+		case VariantType::VECTOR2:
+		case VariantType::VECTOR3:
+		case VariantType::VECTOR4:
+		case VariantType::QUATERNION:
+		case VariantType::BASIS:
+		case VariantType::COLOR:
 			break;
 		default:
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::NIL;
+			r_error.expected = (int)VariantType::NIL;
 			return R"(Argument "from" must be "int", "float", "Vector2", "Vector3", "Vector4", "Quaternion", "Basis, or "Color".)";
 	}
 
 	if (from.get_type() != to.get_type()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = from.get_type();
+		r_error.expected = (int)from.get_type();
 		return Variant();
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (from.get_type()) {
-		case Variant::INT: {
+		case VariantType::INT: {
 			return lerpf(VariantInternalAccessor<int64_t>::get(&from), to, weight);
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			return lerpf(VariantInternalAccessor<double>::get(&from), to, weight);
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&from).lerp(VariantInternalAccessor<Vector2>::get(&to), weight);
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&from).lerp(VariantInternalAccessor<Vector3>::get(&to), weight);
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&from).lerp(VariantInternalAccessor<Vector4>::get(&to), weight);
 		} break;
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			return VariantInternalAccessor<Quaternion>::get(&from).slerp(VariantInternalAccessor<Quaternion>::get(&to), weight);
 		} break;
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			return VariantInternalAccessor<Basis>::get(&from).slerp(VariantInternalAccessor<Basis>::get(&to), weight);
 		} break;
-		case Variant::COLOR: {
+		case VariantType::COLOR: {
 			return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
 		} break;
 		default: {
@@ -575,41 +575,41 @@ double VariantUtilityFunctions::db_to_linear(double db) {
 }
 
 Variant VariantUtilityFunctions::wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
-	Variant::Type x_type = p_x.get_type();
-	if (x_type != Variant::INT && x_type != Variant::FLOAT) {
+	VariantType x_type = p_x.get_type();
+	if (x_type != VariantType::INT && x_type != VariantType::FLOAT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::FLOAT;
+		r_error.expected = (int)VariantType::FLOAT;
 		return Variant();
 	}
 
-	Variant::Type min_type = p_min.get_type();
-	if (min_type != Variant::INT && min_type != Variant::FLOAT) {
+	VariantType min_type = p_min.get_type();
+	if (min_type != VariantType::INT && min_type != VariantType::FLOAT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = x_type;
+		r_error.expected = (int)x_type;
 		return Variant();
 	}
 
-	Variant::Type max_type = p_max.get_type();
-	if (max_type != Variant::INT && max_type != Variant::FLOAT) {
+	VariantType max_type = p_max.get_type();
+	if (max_type != VariantType::INT && max_type != VariantType::FLOAT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 2;
-		r_error.expected = x_type;
+		r_error.expected = (int)x_type;
 		return Variant();
 	}
 
 	Variant value;
 
 	switch (x_type) {
-		case Variant::INT: {
+		case VariantType::INT: {
 			if (x_type != min_type || x_type != max_type) {
 				value = wrapf((double)p_x, (double)p_min, (double)p_max);
 			} else {
 				value = wrapi((int)p_x, (int)p_min, (int)p_max);
 			}
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			value = wrapf((double)p_x, (double)p_min, (double)p_max);
 		} break;
 		default:
@@ -642,22 +642,22 @@ Variant VariantUtilityFunctions::max(const Variant **p_args, int p_argcount, Cal
 	Variant ret;
 
 	for (int i = 0; i < p_argcount; i++) {
-		Variant::Type arg_type = p_args[i]->get_type();
-		if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
+		VariantType arg_type = p_args[i]->get_type();
+		if (arg_type != VariantType::INT && arg_type != VariantType::FLOAT) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = i;
-			r_error.expected = Variant::FLOAT;
+			r_error.expected = (int)VariantType::FLOAT;
 			return Variant();
 		}
 		if (i == 0) {
 			continue;
 		}
 		bool valid;
-		Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
+		Variant::evaluate(VariantOperator::LESS, base, *p_args[i], ret, valid);
 		if (!valid) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = i;
-			r_error.expected = base.get_type();
+			r_error.expected = (int)base.get_type();
 			return Variant();
 		}
 		if (ret.booleanize()) {
@@ -686,22 +686,22 @@ Variant VariantUtilityFunctions::min(const Variant **p_args, int p_argcount, Cal
 	Variant ret;
 
 	for (int i = 0; i < p_argcount; i++) {
-		Variant::Type arg_type = p_args[i]->get_type();
-		if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
+		VariantType arg_type = p_args[i]->get_type();
+		if (arg_type != VariantType::INT && arg_type != VariantType::FLOAT) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = i;
-			r_error.expected = Variant::FLOAT;
+			r_error.expected = (int)VariantType::FLOAT;
 			return Variant();
 		}
 		if (i == 0) {
 			continue;
 		}
 		bool valid;
-		Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
+		Variant::evaluate(VariantOperator::GREATER, base, *p_args[i], ret, valid);
 		if (!valid) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = i;
-			r_error.expected = base.get_type();
+			r_error.expected = (int)base.get_type();
 			return Variant();
 		}
 		if (ret.booleanize()) {
@@ -726,21 +726,21 @@ Variant VariantUtilityFunctions::clamp(const Variant &x, const Variant &min, con
 	Variant ret;
 
 	bool valid;
-	Variant::evaluate(Variant::OP_LESS, value, min, ret, valid);
+	Variant::evaluate(VariantOperator::LESS, value, min, ret, valid);
 	if (!valid) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = value.get_type();
+		r_error.expected = (int)value.get_type();
 		return Variant();
 	}
 	if (ret.booleanize()) {
 		value = min;
 	}
-	Variant::evaluate(Variant::OP_GREATER, value, max, ret, valid);
+	Variant::evaluate(VariantOperator::GREATER, value, max, ret, valid);
 	if (!valid) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 2;
-		r_error.expected = value.get_type();
+		r_error.expected = (int)value.get_type();
 		return Variant();
 	}
 	if (ret.booleanize()) {
@@ -806,7 +806,7 @@ PackedInt64Array VariantUtilityFunctions::rand_from_seed(int64_t seed) {
 // Utility
 
 Variant VariantUtilityFunctions::weakref(const Variant &obj, Callable::CallError &r_error) {
-	if (obj.get_type() == Variant::OBJECT) {
+	if (obj.get_type() == VariantType::OBJECT) {
 		r_error.error = Callable::CallError::CALL_OK;
 		if (obj.is_ref_counted()) {
 			Ref<WeakRef> wref = memnew(WeakRef);
@@ -823,101 +823,101 @@ Variant VariantUtilityFunctions::weakref(const Variant &obj, Callable::CallError
 			}
 			return wref;
 		}
-	} else if (obj.get_type() == Variant::NIL) {
+	} else if (obj.get_type() == VariantType::NIL) {
 		r_error.error = Callable::CallError::CALL_OK;
 		Ref<WeakRef> wref = memnew(WeakRef);
 		return wref;
 	} else {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::OBJECT;
+		r_error.expected = (int)VariantType::OBJECT;
 		return Variant();
 	}
 }
 
 int64_t VariantUtilityFunctions::_typeof(const Variant &obj) {
-	return obj.get_type();
+	return (int)obj.get_type();
 }
 
-Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Variant::Type p_type) {
+Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const VariantType p_type) {
 	switch (p_type) {
-		case Variant::Type::NIL:
+		case VariantType::NIL:
 			return Variant();
-		case Variant::Type::BOOL:
+		case VariantType::BOOL:
 			return p_variant.operator bool();
-		case Variant::Type::INT:
+		case VariantType::INT:
 			return p_variant.operator int64_t();
-		case Variant::Type::FLOAT:
+		case VariantType::FLOAT:
 			return p_variant.operator double();
-		case Variant::Type::STRING:
+		case VariantType::STRING:
 			return p_variant.operator String();
-		case Variant::Type::VECTOR2:
+		case VariantType::VECTOR2:
 			return p_variant.operator Vector2();
-		case Variant::Type::VECTOR2I:
+		case VariantType::VECTOR2I:
 			return p_variant.operator Vector2i();
-		case Variant::Type::RECT2:
+		case VariantType::RECT2:
 			return p_variant.operator Rect2();
-		case Variant::Type::RECT2I:
+		case VariantType::RECT2I:
 			return p_variant.operator Rect2i();
-		case Variant::Type::VECTOR3:
+		case VariantType::VECTOR3:
 			return p_variant.operator Vector3();
-		case Variant::Type::VECTOR3I:
+		case VariantType::VECTOR3I:
 			return p_variant.operator Vector3i();
-		case Variant::Type::TRANSFORM2D:
+		case VariantType::TRANSFORM2D:
 			return p_variant.operator Transform2D();
-		case Variant::Type::VECTOR4:
+		case VariantType::VECTOR4:
 			return p_variant.operator Vector4();
-		case Variant::Type::VECTOR4I:
+		case VariantType::VECTOR4I:
 			return p_variant.operator Vector4i();
-		case Variant::Type::PLANE:
+		case VariantType::PLANE:
 			return p_variant.operator Plane();
-		case Variant::Type::QUATERNION:
+		case VariantType::QUATERNION:
 			return p_variant.operator Quaternion();
-		case Variant::Type::AABB:
-			return p_variant.operator ::AABB();
-		case Variant::Type::BASIS:
+		case VariantType::AABB:
+			return p_variant.operator AABB();
+		case VariantType::BASIS:
 			return p_variant.operator Basis();
-		case Variant::Type::TRANSFORM3D:
+		case VariantType::TRANSFORM3D:
 			return p_variant.operator Transform3D();
-		case Variant::Type::PROJECTION:
+		case VariantType::PROJECTION:
 			return p_variant.operator Projection();
-		case Variant::Type::COLOR:
+		case VariantType::COLOR:
 			return p_variant.operator Color();
-		case Variant::Type::STRING_NAME:
+		case VariantType::STRING_NAME:
 			return p_variant.operator StringName();
-		case Variant::Type::NODE_PATH:
+		case VariantType::NODE_PATH:
 			return p_variant.operator NodePath();
-		case Variant::Type::RID:
-			return p_variant.operator ::RID();
-		case Variant::Type::OBJECT:
+		case VariantType::RID:
+			return p_variant.operator RID();
+		case VariantType::OBJECT:
 			return p_variant.operator Object *();
-		case Variant::Type::CALLABLE:
+		case VariantType::CALLABLE:
 			return p_variant.operator Callable();
-		case Variant::Type::SIGNAL:
+		case VariantType::SIGNAL:
 			return p_variant.operator Signal();
-		case Variant::Type::DICTIONARY:
+		case VariantType::DICTIONARY:
 			return p_variant.operator Dictionary();
-		case Variant::Type::ARRAY:
+		case VariantType::ARRAY:
 			return p_variant.operator Array();
-		case Variant::Type::PACKED_BYTE_ARRAY:
+		case VariantType::PACKED_BYTE_ARRAY:
 			return p_variant.operator PackedByteArray();
-		case Variant::Type::PACKED_INT32_ARRAY:
+		case VariantType::PACKED_INT32_ARRAY:
 			return p_variant.operator PackedInt32Array();
-		case Variant::Type::PACKED_INT64_ARRAY:
+		case VariantType::PACKED_INT64_ARRAY:
 			return p_variant.operator PackedInt64Array();
-		case Variant::Type::PACKED_FLOAT32_ARRAY:
+		case VariantType::PACKED_FLOAT32_ARRAY:
 			return p_variant.operator PackedFloat32Array();
-		case Variant::Type::PACKED_FLOAT64_ARRAY:
+		case VariantType::PACKED_FLOAT64_ARRAY:
 			return p_variant.operator PackedFloat64Array();
-		case Variant::Type::PACKED_STRING_ARRAY:
+		case VariantType::PACKED_STRING_ARRAY:
 			return p_variant.operator PackedStringArray();
-		case Variant::Type::PACKED_VECTOR2_ARRAY:
+		case VariantType::PACKED_VECTOR2_ARRAY:
 			return p_variant.operator PackedVector2Array();
-		case Variant::Type::PACKED_VECTOR3_ARRAY:
+		case VariantType::PACKED_VECTOR3_ARRAY:
 			return p_variant.operator PackedVector3Array();
-		case Variant::Type::PACKED_COLOR_ARRAY:
+		case VariantType::PACKED_COLOR_ARRAY:
 			return p_variant.operator PackedColorArray();
-		case Variant::Type::VARIANT_MAX:
+		case VariantType::MAX:
 			ERR_PRINT("Invalid type argument to type_convert(), use the TYPE_* constants. Returning the unconverted Variant.");
 	}
 	return p_variant;
@@ -953,8 +953,8 @@ String VariantUtilityFunctions::error_string(Error error) {
 	return String(error_names[error]);
 }
 
-String VariantUtilityFunctions::type_string(Variant::Type p_type) {
-	ERR_FAIL_INDEX_V_MSG((int)p_type, (int)Variant::VARIANT_MAX, "<invalid type>", "Invalid type argument to type_string(), use the TYPE_* constants.");
+String VariantUtilityFunctions::type_string(VariantType p_type) {
+	ERR_FAIL_INDEX_V_MSG((int)p_type, (int)VariantType::MAX, "<invalid type>", "Invalid type argument to type_string(), use the TYPE_* constants.");
 	return Variant::get_type_name(p_type);
 }
 
@@ -1209,7 +1209,7 @@ bool VariantUtilityFunctions::is_instance_id_valid(int64_t p_id) {
 }
 
 bool VariantUtilityFunctions::is_instance_valid(const Variant &p_instance) {
-	if (p_instance.get_type() != Variant::OBJECT) {
+	if (p_instance.get_type() != VariantType::OBJECT) {
 		return false;
 	}
 	return p_instance.get_validated_object() != nullptr;
@@ -1276,12 +1276,12 @@ static _FORCE_INLINE_ int get_arg_count_helperr(R (*p_func)(P...)) {
 }
 
 template <class R, class... P>
-static _FORCE_INLINE_ Variant::Type get_arg_type_helperr(R (*p_func)(P...), int p_arg) {
+static _FORCE_INLINE_ VariantType get_arg_type_helperr(R (*p_func)(P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
 template <class R, class... P>
-static _FORCE_INLINE_ Variant::Type get_ret_type_helperr(R (*p_func)(P...)) {
+static _FORCE_INLINE_ VariantType get_ret_type_helperr(R (*p_func)(P...)) {
 	return GetTypeInfo<R>::VARIANT_TYPE;
 }
 
@@ -1328,13 +1328,13 @@ static _FORCE_INLINE_ int get_arg_count_helper(void (*p_func)(P...)) {
 }
 
 template <class... P>
-static _FORCE_INLINE_ Variant::Type get_arg_type_helper(void (*p_func)(P...), int p_arg) {
+static _FORCE_INLINE_ VariantType get_arg_type_helper(void (*p_func)(P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
 template <class... P>
-static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
-	return Variant::NIL;
+static _FORCE_INLINE_ VariantType get_ret_type_helper(void (*p_func)(P...)) {
+	return VariantType::NIL;
 }
 
 #define FUNCBINDR(m_func, m_args, m_category)                                                                    \
@@ -1352,10 +1352,10 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static int get_argument_count() {                                                                        \
 			return get_arg_count_helperr(VariantUtilityFunctions::m_func);                                       \
 		}                                                                                                        \
-		static Variant::Type get_argument_type(int p_arg) {                                                      \
+		static VariantType get_argument_type(int p_arg) {                                                        \
 			return get_arg_type_helperr(VariantUtilityFunctions::m_func, p_arg);                                 \
 		}                                                                                                        \
-		static Variant::Type get_return_type() {                                                                 \
+		static VariantType get_return_type() {                                                                   \
 			return get_ret_type_helperr(VariantUtilityFunctions::m_func);                                        \
 		}                                                                                                        \
 		static bool has_return_type() {                                                                          \
@@ -1384,11 +1384,11 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static int get_argument_count() {                                                                               \
 			return 1;                                                                                                   \
 		}                                                                                                               \
-		static Variant::Type get_argument_type(int p_arg) {                                                             \
-			return Variant::NIL;                                                                                        \
+		static VariantType get_argument_type(int p_arg) {                                                               \
+			return VariantType::NIL;                                                                                    \
 		}                                                                                                               \
-		static Variant::Type get_return_type() {                                                                        \
-			return Variant::NIL;                                                                                        \
+		static VariantType get_return_type() {                                                                          \
+			return VariantType::NIL;                                                                                    \
 		}                                                                                                               \
 		static bool has_return_type() {                                                                                 \
 			return true;                                                                                                \
@@ -1418,11 +1418,11 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static int get_argument_count() {                                                                                          \
 			return 2;                                                                                                              \
 		}                                                                                                                          \
-		static Variant::Type get_argument_type(int p_arg) {                                                                        \
-			return Variant::NIL;                                                                                                   \
+		static VariantType get_argument_type(int p_arg) {                                                                          \
+			return VariantType::NIL;                                                                                               \
 		}                                                                                                                          \
-		static Variant::Type get_return_type() {                                                                                   \
-			return Variant::NIL;                                                                                                   \
+		static VariantType get_return_type() {                                                                                     \
+			return VariantType::NIL;                                                                                               \
 		}                                                                                                                          \
 		static bool has_return_type() {                                                                                            \
 			return true;                                                                                                           \
@@ -1452,11 +1452,11 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static int get_argument_count() {                                                                                                                                 \
 			return 3;                                                                                                                                                     \
 		}                                                                                                                                                                 \
-		static Variant::Type get_argument_type(int p_arg) {                                                                                                               \
-			return Variant::NIL;                                                                                                                                          \
+		static VariantType get_argument_type(int p_arg) {                                                                                                                 \
+			return VariantType::NIL;                                                                                                                                      \
 		}                                                                                                                                                                 \
-		static Variant::Type get_return_type() {                                                                                                                          \
-			return Variant::NIL;                                                                                                                                          \
+		static VariantType get_return_type() {                                                                                                                            \
+			return VariantType::NIL;                                                                                                                                      \
 		}                                                                                                                                                                 \
 		static bool has_return_type() {                                                                                                                                   \
 			return true;                                                                                                                                                  \
@@ -1493,11 +1493,11 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static int get_argument_count() {                                                                        \
 			return 2;                                                                                            \
 		}                                                                                                        \
-		static Variant::Type get_argument_type(int p_arg) {                                                      \
-			return Variant::NIL;                                                                                 \
+		static VariantType get_argument_type(int p_arg) {                                                        \
+			return VariantType::NIL;                                                                             \
 		}                                                                                                        \
-		static Variant::Type get_return_type() {                                                                 \
-			return Variant::NIL;                                                                                 \
+		static VariantType get_return_type() {                                                                   \
+			return VariantType::NIL;                                                                             \
 		}                                                                                                        \
 		static bool has_return_type() {                                                                          \
 			return true;                                                                                         \
@@ -1538,11 +1538,11 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static int get_argument_count() {                                                                        \
 			return 1;                                                                                            \
 		}                                                                                                        \
-		static Variant::Type get_argument_type(int p_arg) {                                                      \
-			return Variant::NIL;                                                                                 \
+		static VariantType get_argument_type(int p_arg) {                                                        \
+			return VariantType::NIL;                                                                             \
 		}                                                                                                        \
-		static Variant::Type get_return_type() {                                                                 \
-			return Variant::STRING;                                                                              \
+		static VariantType get_return_type() {                                                                   \
+			return VariantType::STRING;                                                                          \
 		}                                                                                                        \
 		static bool has_return_type() {                                                                          \
 			return true;                                                                                         \
@@ -1582,11 +1582,11 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static int get_argument_count() {                                                                        \
 			return 1;                                                                                            \
 		}                                                                                                        \
-		static Variant::Type get_argument_type(int p_arg) {                                                      \
-			return Variant::NIL;                                                                                 \
+		static VariantType get_argument_type(int p_arg) {                                                        \
+			return VariantType::NIL;                                                                             \
 		}                                                                                                        \
-		static Variant::Type get_return_type() {                                                                 \
-			return Variant::NIL;                                                                                 \
+		static VariantType get_return_type() {                                                                   \
+			return VariantType::NIL;                                                                             \
 		}                                                                                                        \
 		static bool has_return_type() {                                                                          \
 			return false;                                                                                        \
@@ -1615,10 +1615,10 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static int get_argument_count() {                                                                        \
 			return get_arg_count_helper(VariantUtilityFunctions::m_func);                                        \
 		}                                                                                                        \
-		static Variant::Type get_argument_type(int p_arg) {                                                      \
+		static VariantType get_argument_type(int p_arg) {                                                        \
 			return get_arg_type_helper(VariantUtilityFunctions::m_func, p_arg);                                  \
 		}                                                                                                        \
-		static Variant::Type get_return_type() {                                                                 \
+		static VariantType get_return_type() {                                                                   \
 			return get_ret_type_helper(VariantUtilityFunctions::m_func);                                         \
 		}                                                                                                        \
 		static bool has_return_type() {                                                                          \
@@ -1637,8 +1637,8 @@ struct VariantUtilityFunctionInfo {
 	bool is_vararg = false;
 	bool returns_value = false;
 	int argcount = 0;
-	Variant::Type (*get_arg_type)(int) = nullptr;
-	Variant::Type return_type;
+	VariantType (*get_arg_type)(int) = nullptr;
+	VariantType return_type;
 	Variant::UtilityFunctionType type;
 };
 
@@ -1893,7 +1893,7 @@ MethodInfo Variant::get_utility_function_info(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (bfi) {
 		info.name = p_name;
-		if (bfi->returns_value && bfi->return_type == Variant::NIL) {
+		if (bfi->returns_value && bfi->return_type == VariantType::NIL) {
 			info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		}
 		info.return_val.type = bfi->return_type;
@@ -1919,10 +1919,10 @@ int Variant::get_utility_function_argument_count(const StringName &p_name) {
 	return bfi->argcount;
 }
 
-Variant::Type Variant::get_utility_function_argument_type(const StringName &p_name, int p_arg) {
+VariantType Variant::get_utility_function_argument_type(const StringName &p_name, int p_arg) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
-		return Variant::NIL;
+		return VariantType::NIL;
 	}
 
 	return bfi->get_arg_type(p_arg);
@@ -1946,10 +1946,10 @@ bool Variant::has_utility_function_return_value(const StringName &p_name) {
 	return bfi->returns_value;
 }
 
-Variant::Type Variant::get_utility_function_return_type(const StringName &p_name) {
+VariantType Variant::get_utility_function_return_type(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
-		return Variant::NIL;
+		return VariantType::NIL;
 	}
 
 	return bfi->return_type;
@@ -1971,11 +1971,11 @@ uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
 	uint32_t hash = hash_murmur3_one_32(bfi->is_vararg);
 	hash = hash_murmur3_one_32(bfi->returns_value, hash);
 	if (bfi->returns_value) {
-		hash = hash_murmur3_one_32(bfi->return_type, hash);
+		hash = hash_murmur3_one_32((int)bfi->return_type, hash);
 	}
 	hash = hash_murmur3_one_32(bfi->argcount, hash);
 	for (int i = 0; i < bfi->argcount; i++) {
-		hash = hash_murmur3_one_32(bfi->get_arg_type(i), hash);
+		hash = hash_murmur3_one_32((int)bfi->get_arg_type(i), hash);
 	}
 
 	return hash_fmix32(hash);

@@ -44,7 +44,7 @@ StringName AnimationNodeAnimation::get_animation() const {
 Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullptr;
 
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
@@ -208,8 +208,8 @@ void AnimationNodeAnimation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_play_mode", "mode"), &AnimationNodeAnimation::set_play_mode);
 	ClassDB::bind_method(D_METHOD("get_play_mode"), &AnimationNodeAnimation::get_play_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "play_mode", PROPERTY_HINT_ENUM, "Forward,Backward"), "set_play_mode", "get_play_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "animation"), "set_animation", "get_animation");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "play_mode", PROPERTY_HINT_ENUM, "Forward,Backward"), "set_play_mode", "get_play_mode");
 
 	BIND_ENUM_CONSTANT(PLAY_MODE_FORWARD);
 	BIND_ENUM_CONSTANT(PLAY_MODE_BACKWARD);
@@ -224,7 +224,7 @@ void AnimationNodeSync::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeSync::set_use_sync);
 	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeSync::is_using_sync);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "sync"), "set_use_sync", "is_using_sync");
 }
 
 void AnimationNodeSync::set_use_sync(bool p_sync) {
@@ -240,13 +240,13 @@ AnimationNodeSync::AnimationNodeSync() {
 
 ////////////////////////////////////////////////////////
 void AnimationNodeOneShot::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::BOOL, active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::BOOL, internal_active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::INT, request, PROPERTY_HINT_ENUM, ",Fire,Abort,Fade Out"));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, fade_out_remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time_to_restart, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(VariantType::BOOL, active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(VariantType::BOOL, internal_active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(VariantType::INT, request, PROPERTY_HINT_ENUM, ",Fire,Abort,Fade Out"));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, fade_out_remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, time_to_restart, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_parameter) const {
@@ -520,18 +520,18 @@ void AnimationNodeOneShot::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mix_mode", "mode"), &AnimationNodeOneShot::set_mix_mode);
 	ClassDB::bind_method(D_METHOD("get_mix_mode"), &AnimationNodeOneShot::get_mix_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_mode", PROPERTY_HINT_ENUM, "Blend,Add"), "set_mix_mode", "get_mix_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "mix_mode", PROPERTY_HINT_ENUM, "Blend,Add"), "set_mix_mode", "get_mix_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fadein_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_fadein_time", "get_fadein_time");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fadein_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_fadein_curve", "get_fadein_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fadeout_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_fadeout_time", "get_fadeout_time");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fadeout_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_fadeout_curve", "get_fadeout_curve");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "fadein_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_fadein_time", "get_fadein_time");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "fadein_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_fadein_curve", "get_fadein_curve");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "fadeout_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_fadeout_time", "get_fadeout_time");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "fadeout_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_fadeout_curve", "get_fadeout_curve");
 
 	ADD_GROUP("Auto Restart", "autorestart_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autorestart"), "set_autorestart", "has_autorestart");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "autorestart"), "set_autorestart", "has_autorestart");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "autorestart_delay", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_autorestart_delay", "get_autorestart_delay");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "autorestart_random_delay", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_autorestart_random_delay", "get_autorestart_random_delay");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "autorestart_delay", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_autorestart_delay", "get_autorestart_delay");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "autorestart_random_delay", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_autorestart_random_delay", "get_autorestart_random_delay");
 
 	BIND_ENUM_CONSTANT(ONE_SHOT_REQUEST_NONE);
 	BIND_ENUM_CONSTANT(ONE_SHOT_REQUEST_FIRE);
@@ -550,7 +550,7 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 ////////////////////////////////////////////////
 
 void AnimationNodeAdd2::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, add_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeAdd2::get_parameter_default_value(const StringName &p_parameter) const {
@@ -588,7 +588,7 @@ AnimationNodeAdd2::AnimationNodeAdd2() {
 ////////////////////////////////////////////////
 
 void AnimationNodeAdd3::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeAdd3::get_parameter_default_value(const StringName &p_parameter) const {
@@ -629,7 +629,7 @@ AnimationNodeAdd3::AnimationNodeAdd3() {
 /////////////////////////////////////////////
 
 void AnimationNodeBlend2::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeBlend2::get_parameter_default_value(const StringName &p_parameter) const {
@@ -667,7 +667,7 @@ AnimationNodeBlend2::AnimationNodeBlend2() {
 //////////////////////////////////////
 
 void AnimationNodeBlend3::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeBlend3::get_parameter_default_value(const StringName &p_parameter) const {
@@ -704,7 +704,7 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 ////////////////////////////////////////////////
 
 void AnimationNodeSub2::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, sub_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, sub_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeSub2::get_parameter_default_value(const StringName &p_parameter) const {
@@ -742,7 +742,7 @@ AnimationNodeSub2::AnimationNodeSub2() {
 /////////////////////////////////
 
 void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_less,or_greater"));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeTimeScale::get_parameter_default_value(const StringName &p_parameter) const {
@@ -775,7 +775,7 @@ AnimationNodeTimeScale::AnimationNodeTimeScale() {
 ////////////////////////////////////
 
 void AnimationNodeTimeSeek::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, seek_pos_request, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater")); // It will be reset to -1 after seeking the position immediately.
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, seek_pos_request, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater")); // It will be reset to -1 after seeking the position immediately.
 }
 
 Variant AnimationNodeTimeSeek::get_parameter_default_value(const StringName &p_parameter) const {
@@ -876,12 +876,12 @@ void AnimationNodeTransition::get_parameter_list(List<PropertyInfo> *r_list) con
 		anims += inputs[i].name;
 	}
 
-	r_list->push_back(PropertyInfo(Variant::STRING, current_state, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY)); // For interface.
-	r_list->push_back(PropertyInfo(Variant::STRING, transition_request, PROPERTY_HINT_ENUM, anims)); // For transition request. It will be cleared after setting the value immediately.
-	r_list->push_back(PropertyInfo(Variant::INT, current_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY)); // To avoid finding the index every frame, use this internally.
-	r_list->push_back(PropertyInfo(Variant::INT, prev_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, prev_xfading, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(VariantType::STRING, current_state, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY)); // For interface.
+	r_list->push_back(PropertyInfo(VariantType::STRING, transition_request, PROPERTY_HINT_ENUM, anims)); // For transition request. It will be cleared after setting the value immediately.
+	r_list->push_back(PropertyInfo(VariantType::INT, current_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY)); // To avoid finding the index every frame, use this internally.
+	r_list->push_back(PropertyInfo(VariantType::INT, prev_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, prev_xfading, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 Variant AnimationNodeTransition::get_parameter_default_value(const StringName &p_parameter) const {
@@ -1142,9 +1142,9 @@ double AnimationNodeTransition::_process(const AnimationMixer::PlaybackInfo p_pl
 
 void AnimationNodeTransition::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < get_input_count(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "/auto_advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "/reset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::STRING, "input_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::BOOL, "input_" + itos(i) + "/auto_advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(VariantType::BOOL, "input_" + itos(i) + "/reset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL));
 	}
 }
 
@@ -1166,10 +1166,10 @@ void AnimationNodeTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_transition_to_self", "enable"), &AnimationNodeTransition::set_allow_transition_to_self);
 	ClassDB::bind_method(D_METHOD("is_allow_transition_to_self"), &AnimationNodeTransition::is_allow_transition_to_self);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED, "Inputs,input_"), "set_input_count", "get_input_count");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "input_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED, "Inputs,input_"), "set_input_count", "get_input_count");
 }
 
 AnimationNodeTransition::AnimationNodeTransition() {
@@ -1510,12 +1510,12 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 	for (const StringName &E : names) {
 		String prop_name = E;
 		if (prop_name != "output") {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "nodes/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
+			p_list->push_back(PropertyInfo(VariantType::OBJECT, "nodes/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
 		}
-		p_list->push_back(PropertyInfo(Variant::VECTOR2, "nodes/" + prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(VariantType::VECTOR2, "nodes/" + prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "node_connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(VariantType::ARRAY, "node_connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 }
 
 void AnimationNodeBlendTree::_tree_changed() {
@@ -1559,7 +1559,7 @@ void AnimationNodeBlendTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &AnimationNodeBlendTree::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &AnimationNodeBlendTree::get_graph_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_graph_offset", "get_graph_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_graph_offset", "get_graph_offset");
 
 	BIND_CONSTANT(CONNECTION_OK);
 	BIND_CONSTANT(CONNECTION_ERROR_NO_INPUT);
@@ -1568,7 +1568,7 @@ void AnimationNodeBlendTree::_bind_methods() {
 	BIND_CONSTANT(CONNECTION_ERROR_SAME_NODE);
 	BIND_CONSTANT(CONNECTION_ERROR_CONNECTION_EXISTS);
 
-	ADD_SIGNAL(MethodInfo(SNAME("node_changed"), PropertyInfo(Variant::STRING_NAME, "node_name")));
+	ADD_SIGNAL(MethodInfo(SNAME("node_changed"), PropertyInfo(VariantType::STRING_NAME, "node_name")));
 }
 
 void AnimationNodeBlendTree::_initialize_node_tree() {

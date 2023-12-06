@@ -629,7 +629,7 @@ void ImportDock::_replace_resource_in_object(Object *p_object, const Ref<Resourc
 	p_object->get_property_list(&props);
 
 	for (const PropertyInfo &p : props) {
-		if (p.type != Variant::OBJECT || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+		if (p.type != VariantType::OBJECT || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
 			continue;
 		}
 

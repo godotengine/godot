@@ -317,7 +317,7 @@
 		<method name="get_typed_builtin" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the [enum Variant.Type] constant for a typed array. If the [Array] is not typed, returns [constant TYPE_NIL].
+				Returns the [enum VariantType] constant for a typed array. If the [Array] is not typed, returns [constant TYPE_NIL].
 			</description>
 		</method>
 		<method name="get_typed_class_name" qualifiers="const">
