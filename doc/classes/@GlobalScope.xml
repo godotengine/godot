@@ -1363,6 +1363,7 @@
 				GD.Print(dict["a"]);                              // Prints 1
 				[/csharp]
 				[/codeblocks]
+				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="tan">
@@ -1452,7 +1453,7 @@
 			<return type="String" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Converts a [Variant] [param variable] to a formatted [String] that can then be parsed using [method str_to_var].
+				Converts a [Variant] [param variable] to a formatted [String] that can then be parsed using [method str_to_var]. Encoding objects is allowed (and can potentially include executable code).
 				[codeblocks]
 				[gdscript]
 				var a = { "a": 1, "b": 2 }
