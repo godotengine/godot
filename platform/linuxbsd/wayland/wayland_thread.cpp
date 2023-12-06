@@ -901,7 +901,7 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 
 	// TODO: Handle multiple outputs?
 
-	ws->wl_output = wl_output;
+	ws->outputs.insert(wl_output);
 
 	// Workaround for buffer scaling as there's no guaranteed way of knowing the
 	// preferred scale.
@@ -928,6 +928,17 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 }
 
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+	if (!wl_output || !wl_proxy_is_godot((struct wl_proxy *)wl_output)) {
+		// This won't have the right data bound to it. Not worth it and would probably
+		// just break everything.
+		return;
+	}
+
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	ws->outputs.erase(wl_output);
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Window left output %x.\n", (size_t)wl_output));
 }
 
@@ -2562,24 +2573,29 @@ int WaylandThread::window_state_get_preferred_buffer_scale(WindowState *p_ws) {
 		return 1;
 	}
 
-	// TODO: Handle multiple screens (eg. two screens: one scale 2, one scale 1).
-
-	// TODO: Cache value?
-	ScreenState *ss = wl_output_get_screen_state(p_ws->wl_output);
-
-	if (ss) {
-		// NOTE: For some mystical reason, wl_output.done is emitted _after_ windows
-		// get resized but the scale event gets sent _before_ that. I'm still leaning
-		// towards the idea that rescaling when a window gets a resolution change is a
-		// pretty good approach, but this means that we'll have to use the screen data
-		// before it's "committed".
-		// FIXME: Use the committed data. Somehow.
-		return ss->pending_data.scale;
+	if (p_ws->outputs.is_empty()) {
+		DEBUG_LOG_WAYLAND_THREAD("Window has no output associated, returning buffer scale of 1.");
+		return 1;
 	}
 
-	DEBUG_LOG_WAYLAND_THREAD("Window has no output associated, returning buffer scale of 1.");
+	// TODO: Cache value?
+	int max_size = 1;
 
-	return 1;
+	for (struct wl_output *wl_output : p_ws->outputs) {
+		ScreenState *ss = wl_output_get_screen_state(wl_output);
+
+		if (ss && ss->pending_data.scale > max_size) {
+			// NOTE: For some mystical reason, wl_output.done is emitted _after_ windows
+			// get resized but the scale event gets sent _before_ that. I'm still leaning
+			// towards the idea that rescaling when a window gets a resolution change is a
+			// pretty good approach, but this means that we'll have to use the screen data
+			// before it's "committed".
+			// FIXME: Use the committed data. Somehow.
+			max_size = ss->pending_data.scale;
+		}
+	}
+
+	return max_size;
 }
 
 double WaylandThread::window_state_get_scale_factor(WindowState *p_ws) {

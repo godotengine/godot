@@ -182,7 +182,7 @@ public:
 		bool can_maximize = false;
 		bool can_fullscreen = false;
 
-		struct wl_output *wl_output = nullptr;
+		HashSet<struct wl_output *> outputs;
 
 		// NOTE: If for whatever reason this callback is destroyed _while_ the event
 		// thread is still running, it might be a good idea to set its user data to
