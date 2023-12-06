@@ -104,16 +104,16 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	Ref<Image> img;
 	img.instantiate();
 	Error err = ImageLoader::load_image(p_source_file, img);
-	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture:") + " \"" + p_source_file + "\".");
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: \"%s\".", p_source_file));
 
 	int count = columns * rows;
 	int chr_cell_width = (img->get_width() - img_margin.position.x - img_margin.size.x) / columns;
 	int chr_cell_height = (img->get_height() - img_margin.position.y - img_margin.size.y) / rows;
-	ERR_FAIL_COND_V_MSG(chr_cell_width <= 0 || chr_cell_height <= 0, ERR_FILE_CANT_READ, TTR("Image margin too big."));
+	ERR_FAIL_COND_V_MSG(chr_cell_width <= 0 || chr_cell_height <= 0, ERR_FILE_CANT_READ, "Image margin too big.");
 
 	int chr_width = chr_cell_width - char_margin.position.x - char_margin.size.x;
 	int chr_height = chr_cell_height - char_margin.position.y - char_margin.size.y;
-	ERR_FAIL_COND_V_MSG(chr_width <= 0 || chr_height <= 0, ERR_FILE_CANT_READ, TTR("Character margin too big."));
+	ERR_FAIL_COND_V_MSG(chr_width <= 0 || chr_height <= 0, ERR_FILE_CANT_READ, "Character margin too big.");
 
 	Ref<FontFile> font;
 	font.instantiate();

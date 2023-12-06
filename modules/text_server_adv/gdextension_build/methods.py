@@ -99,8 +99,8 @@ def make_icu_data(target, source, env):
 
 
 def write_macos_plist(target, binary_name, identifier, name):
-    os.makedirs(f"{target}/Resourece/", exist_ok=True)
-    f = open(f"{target}/Resourece/Info.plist", "w")
+    os.makedirs(f"{target}/Resource/", exist_ok=True)
+    f = open(f"{target}/Resource/Info.plist", "w")
 
     f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n')
     f.write(f'<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')

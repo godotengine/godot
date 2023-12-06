@@ -686,6 +686,8 @@ void TileMapLayer::_physics_update() {
 
 void TileMapLayer::_physics_notify_tilemap_change(TileMapLayer::DirtyFlags p_what) {
 	Transform2D gl_transform = tile_map_node->get_global_transform();
+	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
+
 	bool in_editor = false;
 #ifdef TOOLS_ENABLED
 	in_editor = Engine::get_singleton()->is_editor_hint();
@@ -693,6 +695,7 @@ void TileMapLayer::_physics_notify_tilemap_change(TileMapLayer::DirtyFlags p_wha
 
 	if (p_what == DIRTY_FLAGS_TILE_MAP_XFORM) {
 		if (tile_map_node->is_inside_tree() && (!tile_map_node->is_collision_animatable() || in_editor)) {
+			// Move the collisison shapes along with the TileMap.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
 				const CellData &cell_data = kv.value;
 
@@ -700,12 +703,13 @@ void TileMapLayer::_physics_notify_tilemap_change(TileMapLayer::DirtyFlags p_wha
 					if (body.is_valid()) {
 						Transform2D xform(0, tile_map_node->map_to_local(bodies_coords[body]));
 						xform = gl_transform * xform;
-						PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 					}
 				}
 			}
 		}
 	} else if (p_what == DIRTY_FLAGS_TILE_MAP_LOCAL_XFORM) {
+		// With collisions animatable, move the collisison shapes along with the TileMap only on local xform change (they are synchornized on physics tick instead).
 		if (tile_map_node->is_inside_tree() && tile_map_node->is_collision_animatable() && !in_editor) {
 			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
 				const CellData &cell_data = kv.value;
@@ -714,7 +718,22 @@ void TileMapLayer::_physics_notify_tilemap_change(TileMapLayer::DirtyFlags p_wha
 					if (body.is_valid()) {
 						Transform2D xform(0, tile_map_node->map_to_local(bodies_coords[body]));
 						xform = gl_transform * xform;
-						PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+					}
+				}
+			}
+		}
+	} else if (p_what == DIRTY_FLAGS_TILE_MAP_IN_TREE) {
+		// Changes in the tree may cause the space to change (e.g. when reparenting to a SubViewport).
+		if (tile_map_node->is_inside_tree()) {
+			RID space = tile_map_node->get_world_2d()->get_space();
+
+			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
+				const CellData &cell_data = kv.value;
+
+				for (RID body : cell_data.bodies) {
+					if (body.is_valid()) {
+						ps->body_set_space(body, space);
 					}
 				}
 			}
@@ -1172,7 +1191,7 @@ void TileMapLayer::_scenes_update() {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
+	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid();
 
 	if (forced_cleanup) {
 		// Clean everything.
@@ -3604,8 +3623,9 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 			format = (TileMapLayer::DataFormat)(p_value.operator int64_t()); // Set format used for loading.
 			return true;
 		}
+	}
 #ifndef DISABLE_DEPRECATED
-	} else if (p_name == "tile_data") { // Kept for compatibility reasons.
+	else if (p_name == "tile_data") { // Kept for compatibility reasons.
 		if (p_value.is_array()) {
 			if (layers.size() == 0) {
 				Ref<TileMapLayer> new_layer;
@@ -3619,10 +3639,12 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 			return true;
 		}
 		return false;
-	} else if (p_name == "rendering_quadrant_size") {
+	} else if (p_name == "cell_quadrant_size") {
 		set_rendering_quadrant_size(p_value);
+		return true;
+	}
 #endif // DISABLE_DEPRECATED
-	} else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
+	else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
 		int index = components[0].trim_prefix("layer_").to_int();
 		if (index < 0) {
 			return false;
@@ -3679,7 +3701,14 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "format") {
 		r_ret = TileMapLayer::FORMAT_MAX - 1; // When saving, always save highest format.
 		return true;
-	} else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
+	}
+#ifndef DISABLE_DEPRECATED
+	else if (p_name == "cell_quadrant_size") { // Kept for compatibility reasons.
+		r_ret = get_rendering_quadrant_size();
+		return true;
+	}
+#endif
+	else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
 		int index = components[0].trim_prefix("layer_").to_int();
 		if (index < 0 || index >= (int)layers.size()) {
 			return false;

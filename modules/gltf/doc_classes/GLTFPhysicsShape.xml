@@ -7,6 +7,7 @@
 		Represents a physics shape as defined by the [code]OMI_collider[/code] GLTF extension. This class is an intermediary between the GLTF data and Godot's nodes, and it's abstracted in a way that allows adding support for different GLTF physics extensions in the future.
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="OMI_collider GLTF extension">https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_collider</link>
 	</tutorials>
 	<methods>

@@ -285,6 +285,10 @@ struct _NO_DISCARD_ Rect2 {
 		return Rect2(Point2(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0)), size.abs());
 	}
 
+	_FORCE_INLINE_ Rect2 round() const {
+		return Rect2(position.round(), size.round());
+	}
+
 	Vector2 get_support(const Vector2 &p_normal) const {
 		Vector2 half_extents = size * 0.5f;
 		Vector2 ofs = position + half_extents;

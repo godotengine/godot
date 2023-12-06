@@ -42,6 +42,10 @@ class TextShaderEditor;
 class VisualShaderEditor;
 class WindowWrapper;
 
+#ifdef MINGW_ENABLED
+#undef FILE_OPEN
+#endif
+
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 

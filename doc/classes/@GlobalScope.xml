@@ -1477,7 +1477,7 @@
 			<return type="Variant" />
 			<param index="0" name="obj" type="Variant" />
 			<description>
-				Returns a weak reference to an object, or [code]null[/code] if [param obj] is invalid.
+				Returns a [WeakRef] instance holding a weak reference to [param obj]. Returns an empty [WeakRef] instance if [param obj] is [code]null[/code]. Prints an error and returns [code]null[/code] if [param obj] is neither [Object]-derived nor [code]null[/code].
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
@@ -2823,6 +2823,7 @@
 			Hints that a [Color] property should be edited without affecting its transparency ([member Color.a] is not editable).
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_ID" value="22" enum="PropertyHint">
+			Hints that the property's value is an object encoded as object ID, with its type specified in the hint string. Used by the debugger.
 		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
 			If a property is [String], hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
@@ -2881,21 +2882,30 @@
 			[/codeblocks]
 			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint" is_deprecated="true">
+			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
+			Hints that an object is too big to be sent via the debugger.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="26" enum="PropertyHint">
+			Hints that the hint string specifies valid node types for property of type [NodePath].
 		</constant>
 		<constant name="PROPERTY_HINT_SAVE_FILE" value="27" enum="PropertyHint">
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the project's directory. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the entire filesystem. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint" is_deprecated="true">
+			Hints that an [int] property is an object ID.
+			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="30" enum="PropertyHint">
+			Hints that an [int] property is a pointer. Used by GDExtension.
 		</constant>
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
+			Hints that a property is an [Array] with the stored type specified in the hint string.
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
@@ -2904,6 +2914,7 @@
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_TYPE" value="34" enum="PropertyHint">
+			Hints that a property is an instance of a [Node]-derived type, optionally specified via the hint string (e.g. [code]"Node2D"[/code]). Editing it will show a dialog for picking a node from the scene.
 		</constant>
 		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="35" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
@@ -2942,6 +2953,7 @@
 			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is a bitfield, i.e. it contains multiple flags represented as bits.
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags" is_bitfield="true">
 			The property does not save its state in [PackedScene].
@@ -2953,14 +2965,20 @@
 			The property is a script variable which should be serialized and saved in the scene file.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
+			The property value of type [Object] will be stored even if its value is [code]null[/code].
 		</constant>
 		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags" is_bitfield="true">
+			If this property is modified, all inspector fields will be refreshed.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" is_deprecated="true">
+			Signifies a default value from a placeholder script instance.
+			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is an enum, i.e. it only takes named integer constants from its associated enumeration.
 		</constant>
 		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags" is_bitfield="true">
+			If property has [code]nil[/code] as default value, its type will be [Variant].
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is an array.
@@ -2975,16 +2993,23 @@
 			The property is only shown in the editor if modern renderers are supported (the Compatibility rendering method is excluded).
 		</constant>
 		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags" is_bitfield="true">
+			The [NodePath] property will always be relative to the scene's root. Mostly useful for local resources.
 		</constant>
 		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags" is_bitfield="true">
+			Use when a resource is created on the fly, i.e. the getter will always return a different instance. [ResourceSaver] needs this information to properly save such resources.
 		</constant>
 		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags" is_bitfield="true">
+			Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true" is_deprecated="true">
+			When loading, the resource for this property can be set at the end of loading.
+			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags" is_bitfield="true">
+			When this property is a [Resource] and base object is a [Node], a resource instance will be automatically created whenever the node is created in the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is considered a basic setting and will appear even when advanced mode is disabled. Used for project settings.
 		</constant>
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].

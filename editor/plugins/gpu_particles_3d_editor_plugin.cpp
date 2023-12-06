@@ -223,6 +223,9 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_dialog->connect("confirmed", callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
 
 	emission_tree_dialog = memnew(SceneTreeDialog);
+	Vector<StringName> valid_types;
+	valid_types.push_back("MeshInstance3D");
+	emission_tree_dialog->set_valid_types(valid_types);
 	add_child(emission_tree_dialog);
 	emission_tree_dialog->connect("selected", callable_mp(this, &GPUParticles3DEditorBase::_node_selected));
 }

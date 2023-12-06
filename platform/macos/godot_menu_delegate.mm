@@ -64,7 +64,7 @@
 
 			value->hover_callback.callp(args, 1, ret, ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				ERR_PRINT(vformat(RTR("Failed to execute menu hover callback: %s."), Variant::get_callable_error_text(value->hover_callback, args, 1, ce)));
+				ERR_PRINT(vformat("Failed to execute menu hover callback: %s.", Variant::get_callable_error_text(value->hover_callback, args, 1, ce)));
 			}
 		}
 	}
@@ -89,7 +89,7 @@
 
 						value->key_callback.callp(args, 1, ret, ce);
 						if (ce.error != Callable::CallError::CALL_OK) {
-							ERR_PRINT(vformat(RTR("Failed to execute menu key callback: %s."), Variant::get_callable_error_text(value->key_callback, args, 1, ce)));
+							ERR_PRINT(vformat("Failed to execute menu key callback: %s.", Variant::get_callable_error_text(value->key_callback, args, 1, ce)));
 						}
 					} else {
 						// Otherwise redirect event to the engine.

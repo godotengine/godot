@@ -39,6 +39,7 @@
 	</description>
 	<tutorials>
 		<link title="File system">$DOCS_URL/tutorials/scripting/filesystem.html</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>

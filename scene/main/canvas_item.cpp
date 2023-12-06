@@ -462,6 +462,10 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 	_enter_canvas();
 
 	_notify_transform();
+
+	if (get_viewport()) {
+		get_viewport()->canvas_item_top_level_changed();
+	}
 }
 
 void CanvasItem::_top_level_changed() {

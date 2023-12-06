@@ -16,7 +16,7 @@
 # Jiyoon Kim <kimjiy@dickinson.edu>, 2019.
 # Ervin <zetsmart@gmail.com>, 2019.
 # Tilto_ <tilto0822@develable.xyz>, 2020.
-# Myeongjin Lee <aranet100@gmail.com>, 2020, 2021, 2022.
+# Myeongjin Lee <aranet100@gmail.com>, 2020, 2021, 2022, 2023.
 # Doyun Kwon <caen4516@gmail.com>, 2020.
 # Jun Hyung Shin <shmishmi79@gmail.com>, 2020.
 # Yongjin Jo <wnrhd114@gmail.com>, 2020.
@@ -48,13 +48,15 @@
 # 이정희 <daemul72@gmail.com>, 2023.
 # Zinccccc <velocity2772@gmail.com>, 2023.
 # rethinking21 <rethinking21@gmail.com>, 2023.
+# TQQQBuffett <tqqqbuffett@gmail.com>, 2023.
+# Kyjel Blue <kyjelblue@daum.net>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-01 21:59+0000\n"
-"Last-Translator: Taehun Yun <yooontehoon@naver.com>\n"
+"PO-Revision-Date: 2023-11-10 08:03+0000\n"
+"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -62,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -193,6 +195,9 @@ msgstr "2D 패닝 강도"
 msgid "3D Panning Strength"
 msgstr "3D 패닝 강도"
 
+msgid "iOS"
+msgstr "iOS"
+
 msgid "Editor"
 msgstr "에디터"
 
@@ -228,6 +233,9 @@ msgstr "양상"
 
 msgid "Scale"
 msgstr "크기"
+
+msgid "Scale Mode"
+msgstr "스케일 모드"
 
 msgid "Debug"
 msgstr "디버그"
@@ -2234,7 +2242,7 @@ msgid "Loop End"
 msgstr "루프 종료"
 
 msgid "Asset Library"
-msgstr "에셋 라이브러리"
+msgstr "애셋 라이브러리"
 
 msgid "Use Threads"
 msgstr "스레드 사용"
@@ -2320,6 +2328,9 @@ msgstr "뷰포트 회전 기즈모 표시"
 msgid "Show Viewport Navigation Gizmo"
 msgstr "뷰포트 네비게이션 기즈모 표시"
 
+msgid "Gizmo Settings"
+msgstr "기즈모 설정"
+
 msgid "Auto Reload and Parse Scripts on Save"
 msgstr "저장 시 스크립트 자동 리로드 및 파싱"
 
@@ -2358,9 +2369,6 @@ msgstr "스켈레톤"
 
 msgid "Selected Bone"
 msgstr "선택된 본"
-
-msgid "Gizmo Settings"
-msgstr "기즈모 설정"
 
 msgid "Bone Axis Length"
 msgstr "본 축 길이"
@@ -2557,9 +2565,6 @@ msgstr "프레임 딜레이 밀리초"
 msgid "Low Processor Mode"
 msgstr "낮은 프로세서 모드"
 
-msgid "iOS"
-msgstr "iOS"
-
 msgid "Allow High Refresh Rate"
 msgstr "높은 주사율 허용"
 
@@ -2652,6 +2657,9 @@ msgstr "마우스 터치 에뮬레이트"
 
 msgid "Emulate Mouse From Touch"
 msgstr "터치로 마우스 에뮬레이트"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Text Driver"
 msgstr "텍스트 드라이버"
@@ -3432,9 +3440,6 @@ msgstr "레퍼런스 공간 타입"
 
 msgid "Visibility State"
 msgstr "가시성 상태"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Android SDK 경로"
@@ -5930,7 +5935,7 @@ msgid "Theme Overrides"
 msgstr "테마 오버라이드"
 
 msgid "Constants"
-msgstr "제약"
+msgstr "상수"
 
 msgid "Font Sizes"
 msgstr "글꼴 크기"
@@ -6115,12 +6120,6 @@ msgstr "플레이스홀더 텍스트"
 msgid "Max Length"
 msgstr "최대 길이"
 
-msgid "Secret"
-msgstr "비밀번호"
-
-msgid "Secret Character"
-msgstr "비밀번호 문자"
-
 msgid "Expand to Text Length"
 msgstr "텍스트 길이에 따라 늘어남"
 
@@ -6172,6 +6171,12 @@ msgstr "항상 보이기"
 msgid "Mid Grapheme"
 msgstr "조합형 문자 단위 편집"
 
+msgid "Secret"
+msgstr "비밀번호"
+
+msgid "Secret Character"
+msgstr "비밀번호 문자"
+
 msgid "Underline"
 msgstr "밑줄"
 
@@ -6183,9 +6188,6 @@ msgstr "시작 인덱스"
 
 msgid "Step"
 msgstr "단계"
-
-msgid "Syntax Highlighter"
-msgstr "구문 강조"
 
 msgid "Smooth"
 msgstr "부드럽게"
@@ -6201,6 +6203,9 @@ msgstr "그리기"
 
 msgid "Draw When Editable Disabled"
 msgstr "편집 불가능할 때도 그리기"
+
+msgid "Syntax Highlighter"
+msgstr "구문 강조"
 
 msgid "Hover"
 msgstr "호버"
@@ -6889,17 +6894,8 @@ msgstr "이미지 크기"
 msgid "Bundled"
 msgstr "번들됨"
 
-msgid "Point Texture"
-msgstr "점 텍스처"
-
-msgid "Normal Texture"
-msgstr "노멀 텍스처"
-
-msgid "Color Texture"
-msgstr "색상 텍스처"
-
-msgid "Point Count"
-msgstr "점 개수"
+msgid "Attractor Interaction"
+msgstr "어트랙터 상호작용"
 
 msgid "Scale Min"
 msgstr "최소 크기"
@@ -6940,6 +6936,9 @@ msgstr "최대 초기 변위"
 msgid "Influence over Life"
 msgstr "시간에 따른 영향력"
 
+msgid "Use Scale"
+msgstr "스케일 사용"
+
 msgid "Amount at End"
 msgstr "끝에서의 양"
 
@@ -6948,12 +6947,6 @@ msgstr "충돌시의 양"
 
 msgid "Keep Velocity"
 msgstr "속도 유지"
-
-msgid "Attractor Interaction"
-msgstr "어트랙터 상호작용"
-
-msgid "Use Scale"
-msgstr "스케일 사용"
 
 msgid "Rough"
 msgstr "굵기"

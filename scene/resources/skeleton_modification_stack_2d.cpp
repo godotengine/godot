@@ -37,7 +37,7 @@ void SkeletonModificationStack2D::_get_property_list(List<PropertyInfo> *p_list)
 				PropertyInfo(Variant::OBJECT, "modifications/" + itos(i),
 						PROPERTY_HINT_RESOURCE_TYPE,
 						"SkeletonModification2D",
-						PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_ALWAYS_DUPLICATE));
+						PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 	}
 }
 

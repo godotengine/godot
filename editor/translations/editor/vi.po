@@ -33,13 +33,15 @@
 # duong cfa <duongcfa1@gmail.com>, 2023.
 # plantcraft94 <plantcraft60@gmail.com>, 2023.
 # Anh Hoang Nguyen <iam@hoanganh.dev>, 2023.
+# Huu Le <huuptag@gmail.com>, 2023.
+# Phaspez <tramtrimin@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-21 15:42+0000\n"
-"Last-Translator: Anh Hoang Nguyen <iam@hoanganh.dev>\n"
+"PO-Revision-Date: 2023-11-12 10:25+0000\n"
+"Last-Translator: Phaspez <tramtrimin@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -47,7 +49,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
+
+msgid "Main Thread"
+msgstr "Chủ đề chính"
 
 msgid "Unset"
 msgstr "Hủy bỏ"
@@ -69,6 +74,12 @@ msgstr "Lăn chuột Lên"
 
 msgid "Mouse Wheel Down"
 msgstr "Lăn chuột Xuống"
+
+msgid "Mouse Wheel Left"
+msgstr "Con lăn trái"
+
+msgid "Mouse Wheel Right"
+msgstr "Con lăn phải"
 
 msgid "Mouse Thumb Button 1"
 msgstr "Nút lật trang ngón cái 1"
@@ -118,6 +129,15 @@ msgstr "Trục Y của cần điều khiển 4"
 msgid "Unknown Joypad Axis"
 msgstr "Trục chưa định danh của bàn di chuột"
 
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Chuyển động của Joypad trên Trục %d (%s) với Giá trị %.2f"
+
+msgid "D-pad Up"
+msgstr "D-pad Trên"
+
+msgid "D-pad Down"
+msgstr "D-pad Dưới"
+
 msgid "D-pad Left"
 msgstr "D-pad trái"
 
@@ -126,6 +146,21 @@ msgstr "D-pad phải"
 
 msgid "canceled"
 msgstr "Huỷ bỏ"
+
+msgid "touched"
+msgstr "Đã chạm"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Cử chỉ Phóng to tại (%s) với hệ số (%s)"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Cử chỉ Điều hướng tại (%s) với delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Ngõ vào MIDI tại Kênh=%s Tin nhắn=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Sự kiện Đầu vào với Phím tắt=%s"
 
 msgid "Accept"
 msgstr "Xác nhận"
@@ -690,12 +725,6 @@ msgstr "Đóng"
 msgid "Connect"
 msgstr "Kết nối"
 
-msgid "Class:"
-msgstr "Lớp:"
-
-msgid "Signal:"
-msgstr "Tín hiệu:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Kết nối '%s' đến '%s'"
 
@@ -1010,21 +1039,6 @@ msgstr "Nhà tài trợ Vàng"
 
 msgid "Silver Sponsors"
 msgstr "Nhà tài trợ Bạc"
-
-msgid "Bronze Sponsors"
-msgstr "Nhà tài trợ Đồng"
-
-msgid "Mini Sponsors"
-msgstr "Nhà tài trợ Nhỏ"
-
-msgid "Gold Donors"
-msgstr "Người ủng hộ Vàng"
-
-msgid "Silver Donors"
-msgstr "Người ủng hộ Bạc"
-
-msgid "Bronze Donors"
-msgstr "Người ủng hộ Đồng"
 
 msgid "Donors"
 msgstr "Người ủng hộ"
@@ -1391,11 +1405,18 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Nhập lại tài nguyên"
 
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Giá trị này là một số nguyên được tính như là bitmask của những flags sau."
+
 msgid "Experimental"
 msgstr "Tính thử nghiệm"
 
 msgid "Top"
 msgstr "Trên đầu"
+
+msgid "Class:"
+msgstr "Lớp:"
 
 msgid "Inherits:"
 msgstr "Kế thừa:"
@@ -1473,6 +1494,12 @@ msgstr "Các mô tả phương thức"
 msgid "Operator Descriptions"
 msgstr "Các mô tả toán tử"
 
+msgid "Property:"
+msgstr "Thuộc tính:"
+
+msgid "Signal:"
+msgstr "Tín hiệu:"
+
 msgid "%d match."
 msgstr "%d khớp."
 
@@ -1529,9 +1556,6 @@ msgstr "Thuộc tính"
 
 msgid "Theme Property"
 msgstr "Cài đặt Tông màu"
-
-msgid "Property:"
-msgstr "Thuộc tính:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr "Ghim giá trị khiến nó phải được lưu dù nó bằng giá trị mặc định."
@@ -2174,6 +2198,9 @@ msgstr "Nạp nhanh"
 msgid "Make Unique"
 msgstr "Duy nhất"
 
+msgid "Save As..."
+msgstr "Lưu thành ..."
+
 msgid "Show in FileSystem"
 msgstr "Hiện trong Hệ thống tệp tin"
 
@@ -2492,9 +2519,6 @@ msgstr "Tạo bản sao thư mục:"
 msgid "New Inherited Scene"
 msgstr "Tạo Cảnh kế thừa mới"
 
-msgid "Set As Main Scene"
-msgstr "Chọn làm Scene chính"
-
 msgid "Open Scenes"
 msgstr "Mở cảnh"
 
@@ -2539,9 +2563,6 @@ msgstr "Đổi tên..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Quét lại hệ thống tập tin"
-
-msgid "Toggle Split Mode"
-msgstr "Chế độ Phân chia"
 
 msgid ""
 "Scanning Files,\n"
@@ -2861,9 +2882,6 @@ msgstr "Tải tài nguyên có sẵn trong đĩa rồi chỉnh sửa."
 
 msgid "Save the currently edited resource."
 msgstr "Lưu tài nguyên đã chỉnh sửa hiện tại."
-
-msgid "Save As..."
-msgstr "Lưu thành ..."
 
 msgid "Copy Resource"
 msgstr "Sao chép Tài nguyên"
@@ -5347,13 +5365,6 @@ msgid ""
 msgstr ""
 "Vô hiệu \"editable_instance\" sẽ khiến tất cả thuộc tính nút về lại mặc định."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Kích hoạt \"Load As Placeholder\" sẽ vô hiệu hoá \"Editable Children\" và "
-"khiến tất cả thuộc tính của nút về lại mặc định."
-
 msgid "Create Root Node:"
 msgstr "Tạo Nút Gốc:"
 
@@ -5657,13 +5668,6 @@ msgstr ""
 
 msgid "Building Android Project (gradle)"
 msgstr "Đang dựng dự án Android (gradle)"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Không thể sao chép và đổi tên tệp xuất, hãy kiểm tra thư mục Gradle của dự án "
-"để xem kết quả."
 
 msgid "Invalid Identifier:"
 msgstr "Định danh không hợp lệ:"

@@ -1193,7 +1193,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					array_len = v3.size();
 				} break;
 				default: {
-					ERR_FAIL_V(ERR_INVALID_DATA);
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Vertex array must be a PackedVector2Array or PackedVector3Array.");
 				} break;
 			}
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
@@ -1214,7 +1214,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					}
 				} break;
 				default: {
-					ERR_FAIL_V(ERR_INVALID_DATA);
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Bones array must be a PackedInt32Array.");
 				} break;
 			}
 		} else if (i == RS::ARRAY_INDEX) {
@@ -2148,45 +2148,47 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 		// The only difference for now is that Version 1 uses interleaved vertex positions while version 2 does not.
 		// I.e. PNTPNTPNT -> PPPNTNTNT.
 
-		int vertex_size = 0;
-		int normal_size = 0;
-		int tangent_size = 0;
-		if (p_surface.format & ARRAY_FORMAT_VERTEX) {
-			if (p_surface.format & ARRAY_FLAG_USE_2D_VERTICES) {
-				vertex_size = sizeof(float) * 2;
-			} else {
-				vertex_size = sizeof(float) * 3;
+		if (p_surface.vertex_data.size() > 0 && p_surface.vertex_count > 0) {
+			int vertex_size = 0;
+			int normal_size = 0;
+			int tangent_size = 0;
+			if (p_surface.format & ARRAY_FORMAT_VERTEX) {
+				if (p_surface.format & ARRAY_FLAG_USE_2D_VERTICES) {
+					vertex_size = sizeof(float) * 2;
+				} else {
+					vertex_size = sizeof(float) * 3;
+				}
 			}
-		}
-		if (p_surface.format & ARRAY_FORMAT_NORMAL) {
-			normal_size += sizeof(uint16_t) * 2;
-		}
-		if (p_surface.format & ARRAY_FORMAT_TANGENT) {
-			tangent_size = sizeof(uint16_t) * 2;
-		}
-		int stride = p_surface.vertex_data.size() / p_surface.vertex_count;
-		int position_stride = vertex_size;
-		int normal_tangent_stride = normal_size + tangent_size;
-
-		p_surface.vertex_data = _convert_surface_version_1_to_surface_version_2(p_surface.format, p_surface.vertex_data, p_surface.vertex_count, stride, vertex_size, normal_size, position_stride, normal_tangent_stride);
-
-		if (p_surface.blend_shape_data.size() > 0) {
-			// The size of one blend shape.
-			int divisor = (vertex_size + normal_size + tangent_size) * p_surface.vertex_count;
-			ERR_FAIL_COND((p_surface.blend_shape_data.size() % divisor) != 0);
-
-			uint32_t blend_shape_count = p_surface.blend_shape_data.size() / divisor;
-
-			Vector<uint8_t> new_blend_shape_data;
-			for (uint32_t i = 0; i < blend_shape_count; i++) {
-				Vector<uint8_t> bs_data = p_surface.blend_shape_data.slice(i * divisor, (i + 1) * divisor);
-				Vector<uint8_t> blend_shape = _convert_surface_version_1_to_surface_version_2(p_surface.format, bs_data, p_surface.vertex_count, stride, vertex_size, normal_size, position_stride, normal_tangent_stride);
-				new_blend_shape_data.append_array(blend_shape);
+			if (p_surface.format & ARRAY_FORMAT_NORMAL) {
+				normal_size += sizeof(uint16_t) * 2;
 			}
+			if (p_surface.format & ARRAY_FORMAT_TANGENT) {
+				tangent_size = sizeof(uint16_t) * 2;
+			}
+			int stride = p_surface.vertex_data.size() / p_surface.vertex_count;
+			int position_stride = vertex_size;
+			int normal_tangent_stride = normal_size + tangent_size;
 
-			ERR_FAIL_COND(p_surface.blend_shape_data.size() != new_blend_shape_data.size());
+			p_surface.vertex_data = _convert_surface_version_1_to_surface_version_2(p_surface.format, p_surface.vertex_data, p_surface.vertex_count, stride, vertex_size, normal_size, position_stride, normal_tangent_stride);
 
-			p_surface.blend_shape_data = new_blend_shape_data;
+			if (p_surface.blend_shape_data.size() > 0) {
+				// The size of one blend shape.
+				int divisor = (vertex_size + normal_size + tangent_size) * p_surface.vertex_count;
+				ERR_FAIL_COND((p_surface.blend_shape_data.size() % divisor) != 0);
+
+				uint32_t blend_shape_count = p_surface.blend_shape_data.size() / divisor;
+
+				Vector<uint8_t> new_blend_shape_data;
+				for (uint32_t i = 0; i < blend_shape_count; i++) {
+					Vector<uint8_t> bs_data = p_surface.blend_shape_data.slice(i * divisor, (i + 1) * divisor);
+					Vector<uint8_t> blend_shape = _convert_surface_version_1_to_surface_version_2(p_surface.format, bs_data, p_surface.vertex_count, stride, vertex_size, normal_size, position_stride, normal_tangent_stride);
+					new_blend_shape_data.append_array(blend_shape);
+				}
+
+				ERR_FAIL_COND(p_surface.blend_shape_data.size() != new_blend_shape_data.size());
+
+				p_surface.blend_shape_data = new_blend_shape_data;
+			}
 		}
 	}
 	p_surface.format &= ~(ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);

@@ -1762,6 +1762,8 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			}
 		} break;
 
+// FIXME: This approach causes a significant performance regression, see GH-84910.
+#if 0
 		case Variant::OBJECT: {
 			Resource *resource = Object::cast_to<Resource>(r_variant);
 			if (!resource) {
@@ -1792,6 +1794,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			}
 			break;
 		};
+#endif
 
 		default: {
 		}
@@ -2176,6 +2179,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		}
 
 		int child_pos = node->get_index(false);
+		bool reparented_to_container = Object::cast_to<Container>(new_parent) && Object::cast_to<Control>(node);
 
 		undo_redo->add_undo_method(node->get_parent(), "add_child", node, true);
 		undo_redo->add_undo_method(node->get_parent(), "move_child", node, child_pos);
@@ -2191,9 +2195,13 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			if (Object::cast_to<Node3D>(node)) {
 				undo_redo->add_undo_method(node, "set_transform", Object::cast_to<Node3D>(node)->get_transform());
 			}
-			if (Object::cast_to<Control>(node)) {
+			if (!reparented_to_container && Object::cast_to<Control>(node)) {
 				undo_redo->add_undo_method(node, "set_position", Object::cast_to<Control>(node)->get_position());
 			}
+		}
+
+		if (reparented_to_container) {
+			undo_redo->add_undo_method(node, "_edit_set_state", Object::cast_to<Control>(node)->_edit_get_state());
 		}
 	}
 
@@ -2706,7 +2714,7 @@ void SceneTreeDock::perform_node_replace(Node *p_base, Node *p_node, Node *p_by_
 			p_base->set(propertyname, updated_variant);
 			if (!warn_message.is_empty()) {
 				String node_path = (String(edited_scene->get_name()) + "/" + String(edited_scene->get_path_to(p_base))).trim_suffix("/.");
-				WARN_PRINT(warn_message + vformat(TTR("Removing the node from variable \"%s\" on node \"%s\"."), propertyname, node_path));
+				WARN_PRINT(warn_message + vformat("Removing the node from variable \"%s\" on node \"%s\".", propertyname, node_path));
 			}
 		}
 	}
@@ -2724,7 +2732,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 					r_variant = p_by_node;
 				} else {
 					r_variant = memnew(Object);
-					r_warn_message = vformat(TTR("The node's new type is incompatible with an exported variable (expected %s, but type is %s)."), type_hint, p_by_node->get_class());
+					r_warn_message = vformat("The node's new type is incompatible with an exported variable (expected %s, but type is %s).", type_hint, p_by_node->get_class());
 				}
 				return true;
 			}

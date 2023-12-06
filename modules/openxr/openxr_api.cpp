@@ -289,7 +289,7 @@ bool OpenXRAPI::create_instance() {
 	for (KeyValue<String, bool *> &requested_extension : requested_extensions) {
 		if (!is_extension_supported(requested_extension.key)) {
 			if (requested_extension.value == nullptr) {
-				// Null means this is a manditory extension so we fail.
+				// Null means this is a mandatory extension so we fail.
 				ERR_FAIL_V_MSG(false, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.key + String(" extension!"));
 			} else {
 				// Set this extension as not supported.

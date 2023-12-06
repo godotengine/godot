@@ -36,12 +36,13 @@
 # Олександр Тринадцятко <santri0303@gmail.com>, 2023.
 # Siked Siked <siked3@gmail.com>, 2023.
 # Kipя <yankirill@icloud.com>, 2023.
+# Kristian Sik <jemynanyt@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-27 19:04+0000\n"
+"PO-Revision-Date: 2023-10-13 02:30+0000\n"
 "Last-Translator: Siked Siked <siked3@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -52,6 +53,9 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 5.1-dev\n"
+
+msgid "Main Thread"
+msgstr "Головний потік"
 
 msgid "Unset"
 msgstr "Зняти"
@@ -149,6 +153,9 @@ msgstr "Назад, Sony Select, Xbox Back, Nintendo -"
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Посібник, Sony PS, Xbox Home"
 
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Старт, Xbox Меню, Nintendo +"
+
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Лівий стік, Sony L3, Xbox L/LS"
 
@@ -196,6 +203,9 @@ msgstr "Кнопка джойпада %d"
 
 msgid "Pressure:"
 msgstr "Тиск:"
+
+msgid "canceled"
+msgstr "скасовано"
 
 msgid "touched"
 msgstr "торкнувся"
@@ -742,6 +752,9 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Видалити доріжку"
 
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "Тримайте Shift, натискаючи на іконку, для того, щоб пропустити діалог."
+
 msgid "Create new track for %s and insert key?"
 msgstr "Створити нову доріжку для %s і вставити ключ?"
 
@@ -873,6 +886,9 @@ msgstr ""
 msgid "Animation Add RESET Keys"
 msgstr "Додати до анімації RESET-ключі"
 
+msgid "Bake Animation as Linear Keys"
+msgstr "Запекти анімацію як лінійні ключі"
+
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
 "will not be saved.\n"
@@ -900,6 +916,9 @@ msgstr "Імпортована сцена"
 
 msgid "Warning: Editing imported animation"
 msgstr "Попередження: Редагуємо імпортовану анімацію"
+
+msgid "Dummy Player"
+msgstr "Гравець-манекен"
 
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Перемикання між редактором кривих Безьє та редактором доріжок."
@@ -1017,8 +1036,14 @@ msgctxt "Transition Type"
 msgid "Sine"
 msgstr "Синусоїдний"
 
+msgid "FPS:"
+msgstr "FPS:"
+
 msgid "Animation Baker"
 msgstr "Запікання анімації"
+
+msgid "Blendshape Track:"
+msgstr "Доріжка змішаних форм:"
 
 msgid "Select Tracks to Copy"
 msgstr "Виберіть доріжки для копіювання"
@@ -1188,15 +1213,6 @@ msgstr "Закрити"
 
 msgid "Connect"
 msgstr "З'єднати"
-
-msgid "Class:"
-msgstr "Клас:"
-
-msgid "Signal:"
-msgstr "Сигнал:"
-
-msgid "No description."
-msgstr "Без опису."
 
 msgid "Connect '%s' to '%s'"
 msgstr "Приєднати '%s' до %s'"
@@ -1678,21 +1694,6 @@ msgstr "Золоті спонсори"
 
 msgid "Silver Sponsors"
 msgstr "Срібні донори"
-
-msgid "Bronze Sponsors"
-msgstr "Бронзові донори"
-
-msgid "Mini Sponsors"
-msgstr "Міні-спонсори"
-
-msgid "Gold Donors"
-msgstr "Золоті донори"
-
-msgid "Silver Donors"
-msgstr "Срібні донори"
-
-msgid "Bronze Donors"
-msgstr "Бронзові донори"
 
 msgid "Donors"
 msgstr "Донори"
@@ -2326,6 +2327,9 @@ msgstr "Повернуто коди помилок:"
 msgid "Top"
 msgstr "Верхівка"
 
+msgid "Class:"
+msgstr "Клас:"
+
 msgid "Inherits:"
 msgstr "Успадковує:"
 
@@ -2440,6 +2444,12 @@ msgstr "Описи методів"
 msgid "Operator Descriptions"
 msgstr "Описи операторів"
 
+msgid "Property:"
+msgstr "Властивість:"
+
+msgid "Signal:"
+msgstr "Сигнал:"
+
 msgid "%d match."
 msgstr "%d відповідник."
 
@@ -2517,9 +2527,6 @@ msgstr "Цей член позначено як застарілий."
 
 msgid "This member is marked as experimental."
 msgstr "Цей член позначений як експериментальний."
-
-msgid "Property:"
-msgstr "Властивість:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -3575,6 +3582,9 @@ msgstr "Зробити унікальним"
 msgid "Make Unique (Recursive)"
 msgstr "Зробити унікальним (Рекурсивним)"
 
+msgid "Save As..."
+msgstr "Зберегти як..."
+
 msgid "Show in FileSystem"
 msgstr "Показати у файловій системі"
 
@@ -3982,11 +3992,11 @@ msgstr ""
 "Щоб можна було скористатися пунктом «Експортувати усе», має бути визначено "
 "шлях для експортування для усіх наборів."
 
-msgid "Resources to export:"
-msgstr "Експортовані ресурси:"
-
 msgid "Delete preset '%s'?"
 msgstr "Вилучити набір «%s»?"
+
+msgid "Resources to export:"
+msgstr "Експортовані ресурси:"
 
 msgid "%s Export"
 msgstr "Експорт на %s"
@@ -4253,9 +4263,6 @@ msgstr "Дублювання теки:"
 msgid "New Inherited Scene"
 msgstr "Нова успадкована сцена"
 
-msgid "Set As Main Scene"
-msgstr "Встановити головною сценою"
-
 msgid "Open Scenes"
 msgstr "Відкрити сцени"
 
@@ -4264,6 +4271,9 @@ msgstr "Редагувати залежності..."
 
 msgid "View Owners..."
 msgstr "Переглянути власників..."
+
+msgid "Create New"
+msgstr "Створити новий"
 
 msgid "Folder..."
 msgstr "Тека..."
@@ -4351,9 +4361,6 @@ msgstr "Перейти до наступної теки/файлу."
 
 msgid "Re-Scan Filesystem"
 msgstr "Пересканування файлової системи"
-
-msgid "Toggle Split Mode"
-msgstr "Перемкнути режим поділу"
 
 msgid "Filter Files"
 msgstr "Фільтрувати файли"
@@ -4958,12 +4965,6 @@ msgstr "Динамічно відрендерений шрифт TrueType/OpenTy
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Попередньо відрендерене багатоканальне (+true) поле відстані зі знаком"
 
-msgid "Can't load font texture:"
-msgstr "Не вдається завантажити текстуру шрифту:"
-
-msgid "Image margin too big."
-msgstr "Занадто велике поле зображення."
-
 msgid "Pre-Import Scene"
 msgstr "Попередній імпорт сцени"
 
@@ -5309,9 +5310,6 @@ msgstr "Завантажити наявний ресурс із диска та 
 
 msgid "Save the currently edited resource."
 msgstr "Зберегти поточний редагований ресурс."
-
-msgid "Save As..."
-msgstr "Зберегти як..."
 
 msgid "Extra resource options."
 msgstr "Додаткові параметри ресурсу."
@@ -5949,14 +5947,14 @@ msgstr "Пришпилити AnimationPlayer"
 msgid "Error!"
 msgstr "Помилка!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Час між анімаціями"
+
 msgid "Blend Times:"
 msgstr "Час змішування:"
 
 msgid "Next (Auto Queue):"
 msgstr "Далі (автоматична черга):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Час між анімаціями"
 
 msgid "Move Node"
 msgstr "Пересунути вузол"
@@ -7258,9 +7256,6 @@ msgstr "Створити декілька опуклих форм"
 msgid "Create Navigation Mesh"
 msgstr "Створити навігаційну сітку"
 
-msgid "Contained Mesh is not of type ArrayMesh."
-msgstr "Вбудована сітка не має типу ArrayMesh."
-
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -7282,11 +7277,14 @@ msgstr ""
 "Сітка не може розгорнути UV, оскільки імпортована з файлу іншого типу. "
 "Спочатку зробіть її унікальною."
 
-msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr "UV-розгортка не вдалася, можливо у сітки не однозв'язна форма?"
-
 msgid "Unwrap UV2"
 msgstr "Розгорнути UV2"
+
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr "Вбудована сітка не має типу ArrayMesh."
+
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr "UV-розгортка не вдалася, можливо у сітки не однозв'язна форма?"
 
 msgid "No mesh to debug."
 msgstr "Немає сітки для налагодження."
@@ -8821,12 +8819,6 @@ msgstr "Створити LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "Попередній перегляд LightOccluder2D"
-
-msgid "Can't convert a Sprite2D from a foreign scene."
-msgstr "Не вдається конвертувати Sprite2D з другої сцени."
-
-msgid "Sprite2D is empty!"
-msgstr "Sprite2D порожній!"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -11682,6 +11674,15 @@ msgstr ""
 "\n"
 
 msgid ""
+"Warning: This project was last edited in Godot %s. Opening will change it to "
+"Godot %s.\n"
+"\n"
+msgstr ""
+"Попередження: Цей проект було створено на мові Godot %s.\n"
+"Відкриття проекту покращить або погіршить його якість до версії Godot %s.\n"
+"\n"
+
+msgid ""
 "Warning: This project uses the following features not supported by this build "
 "of Godot:\n"
 "\n"
@@ -12153,13 +12154,6 @@ msgstr ""
 "Вимикання «editable_instance» призведе до повернення типових значень для усіх "
 "властивостей вузла."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Вмикання «Завантажити як заповнювач» призведе до вимикання «Редаговані "
-"дочірні об'єкти» і повернення типових значень для усіх властивостей вузла."
-
 msgid "Make Local"
 msgstr "Зробити локальним"
 
@@ -12247,9 +12241,6 @@ msgstr "Усунути успадкування"
 
 msgid "Editable Children"
 msgstr "Редагований дочірній елемент"
-
-msgid "Load As Placeholder"
-msgstr "Завантажити як заповнювач"
 
 msgid "Auto Expand to Selected"
 msgstr "Автоматичне розширення до вибраного"
@@ -12724,9 +12715,6 @@ msgstr "Пряме освітлення ділянки"
 
 msgid "Integrate indirect lighting"
 msgstr "Інтеграція непрямого освітлення"
-
-msgid "Bounce %d/%d: Integrate indirect lighting %d%%"
-msgstr "Відскоки %d/%d: Інтегрувати непряме освітлення %d%%"
 
 msgid "Baking lightprobes"
 msgstr "Запікання світлових зондів"
@@ -13247,23 +13235,8 @@ msgstr "Не вдалося записати файл пакунка розши�
 msgid "Building Android Project (gradle)"
 msgstr "Збирання проєкту Android (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Не вдалося виконати збирання проєкту для Android. Ознайомтеся із виведеними "
-"даними, щоб визначити причину помилки. Крім того, можете відвідати docs."
-"godotengine.org і ознайомитися із документацією щодо збирання для Android."
-
 msgid "Moving output"
 msgstr "Пересування виведених даних"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Не вдалося скопіювати і перейменувати файл експортованих даних. Виведені дані "
-"можна знайти у каталозі проєкту gradle."
 
 msgid "Package not found: \"%s\"."
 msgstr "Пакунок не знайдено: \"%s\"."
@@ -13384,6 +13357,9 @@ msgstr "Завантаження скриптів..."
 msgid "Starting project..."
 msgstr "Старт проекту..."
 
+msgid "All Files"
+msgstr "Усі файли"
+
 msgid "Can't get filesystem access."
 msgstr "Не вдалося отримати доступ до файлової системи."
 
@@ -13447,12 +13423,6 @@ msgstr "Пароль Apple ID не вказано."
 msgid "App Store Connect API key ID not specified."
 msgstr "Не вказано ідентифікатор ключа API App Store Connect."
 
-msgid "Icon Creation"
-msgstr "Створення піктограми"
-
-msgid "Could not open icon file \"%s\"."
-msgstr "Не вдалося відкрити файл піктограми \"%s\"."
-
 msgid "Notarization"
 msgstr "Засвідчення"
 
@@ -13495,13 +13465,6 @@ msgstr "Інструменти командного рядка Xcode не вст
 
 msgid "Could not start xcrun executable."
 msgstr "Не вдалося запустити виконуваний файл xcrun."
-
-msgid ""
-"The notarization process generally takes less than an hour. When the process "
-"is completed, you'll receive an email."
-msgstr ""
-"Процес нотаріального засвідчення зазвичай займає менше години. Коли процес "
-"буде завершено, ви отримаєте повідомлення на електронну пошту."
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "Вбудований CodeSign не вдався з помилкою \"%s\"."
@@ -13670,6 +13633,9 @@ msgstr "Неправильний шаблон експорту: \"%s\"."
 msgid "Could not write file: \"%s\"."
 msgstr "Не вдалося записати файл: \"%s\"."
 
+msgid "Icon Creation"
+msgstr "Створення піктограми"
+
 msgid "Could not read file: \"%s\"."
 msgstr "Не вдалося прочитати файл: \"%s\"."
 
@@ -13782,6 +13748,15 @@ msgid ""
 msgstr ""
 "Ресурс SpriteFrames повинен бути створений або встановлений у властивості "
 "\"Frames\", щоб AnimatedSprite2D міг відображати кадри."
+
+msgid ""
+"Only one visible CanvasModulate is allowed per canvas.\n"
+"When there are more than one, only one of them will be active. Which one is "
+"undefined."
+msgstr ""
+"У сцені (або наборі екземплярів сцен) може бути лише один видимий "
+"CanvasModulate.\n"
+"Працюватиме перший зі створених, решту буде проігноровано."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -14542,9 +14517,6 @@ msgstr "Будь ласка, підтвердьте..."
 msgid "You don't have permission to access contents of this folder."
 msgstr "У вас немає дозволу на доступ до вмісту цієї папки."
 
-msgid "All Files"
-msgstr "Усі файли"
-
 msgid "Invalid extension, or empty filename."
 msgstr "Некоректний суфікс, або порожня назва файлу."
 
@@ -14665,15 +14637,6 @@ msgstr ""
 "ризику втрати даних."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"Встановлення назви вузла '%s' як унікального у сцені для '%s', але на неї вже "
-"претендує '%s'.\n"
-"'%s' більше не визначено як унікальну назву."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -14712,27 +14675,6 @@ msgid ""
 msgstr ""
 "Щоб програма могла хоч щось показати, розмір поля перегляду має бути більшим "
 "або рівним 2 пікселям в обох вимірах."
-
-msgid "Cannot open font from file: %s."
-msgstr "Не вдалося відкрити шрифт із файлу: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "Версія %d BMFont не підтримується (має бути 3)."
-
-msgid "Invalid BMFont info block size."
-msgstr "Некоректний розмір інформаційного блоку BMFont."
-
-msgid "Invalid BMFont common block size."
-msgstr "Неправильний загальний розмір блоку BMFont."
-
-msgid "Can't load font texture: %s."
-msgstr "Не вдається завантажити текстуру шрифту: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Непідтримуваний формат текстури BMFont."
-
-msgid "Invalid BMFont block type."
-msgstr "Недійсний тип блоку BMFont."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"
@@ -14978,9 +14920,6 @@ msgstr ""
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "Варіація '%s' не може бути передана для параметра '%s' у цьому контексті."
-
-msgid "A constant value cannot be passed for '%s' parameter."
-msgstr "Для параметра '%s' не можна передавати константне значення."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Невідомий ідентифікатор у виразі: '%s'."

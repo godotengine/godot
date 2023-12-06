@@ -1595,6 +1595,9 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 	// The following code assumes that the following holds:
 	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
 	// 2) ResourceLoader can use the new paths without needing to call rescan.
+
+	// The currently edited scene should be reloaded first, so get it's path (GH-82652).
+	const String &edited_scene_path = EditorNode::get_editor_data().get_scene_path(EditorNode::get_editor_data().get_edited_scene());
 	List<String> scenes_to_reload;
 	for (const String &E : p_file_owners) {
 		// Because we haven't called a rescan yet the found remap might still be an old path itself.
@@ -1604,7 +1607,11 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 		const Error err = ResourceLoader::rename_dependencies(file, p_renames);
 		if (err == OK) {
 			if (ResourceLoader::get_resource_type(file) == "PackedScene") {
-				scenes_to_reload.push_back(file);
+				if (file == edited_scene_path) {
+					scenes_to_reload.push_front(file);
+				} else {
+					scenes_to_reload.push_back(file);
+				}
 			}
 		} else {
 			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies for:") + "\n" + E + "\n");

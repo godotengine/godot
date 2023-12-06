@@ -54,13 +54,15 @@
 # 최시현 <hihyun1234@ajou.ac.kr>, 2023.
 # Zinccccc <velocity2772@gmail.com>, 2023.
 # 조현민 <chm49@naver.com>, 2023.
+# TQQQBuffett <tqqqbuffett@gmail.com>, 2023.
+# Kyjel Blue <kyjelblue@daum.net>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-01 21:58+0000\n"
-"Last-Translator: Taehun Yun <yooontehoon@naver.com>\n"
+"PO-Revision-Date: 2023-11-10 08:03+0000\n"
+"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -68,7 +70,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
+
+msgid "Main Thread"
+msgstr "메인 스레드"
 
 msgid "Unset"
 msgstr "설정 해제"
@@ -586,6 +591,15 @@ msgstr "모든 키 선택 해제"
 msgid "Animation Change Transition"
 msgstr "애니메이션 변경 전환"
 
+msgid "Animation Change Position3D"
+msgstr "애니메이션 변경 Position3D"
+
+msgid "Animation Change Rotation3D"
+msgstr "애니메이션 변경 Rotation3D"
+
+msgid "Animation Change Scale3D"
+msgstr "애니메이션 변경 Scale3D"
+
 msgid "Animation Change Keyframe Value"
 msgstr "애니메이션 변경 키프레임 값"
 
@@ -910,7 +924,7 @@ msgid "BlendShape"
 msgstr "블렌드 모양"
 
 msgid "Methods"
-msgstr "방법"
+msgstr "메서드"
 
 msgid "Bezier"
 msgstr "베지어"
@@ -1330,15 +1344,6 @@ msgstr "닫기"
 msgid "Connect"
 msgstr "연결"
 
-msgid "Class:"
-msgstr "클래스:"
-
-msgid "Signal:"
-msgstr "시그널:"
-
-msgid "No description."
-msgstr "설명이 없습니다."
-
 msgid "Connect '%s' to '%s'"
 msgstr "'%s'을(를) '%s'에 연결"
 
@@ -1364,7 +1369,7 @@ msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "\"%s\" 시그널의 모든 연결을 제거하시겠습니까?"
 
 msgid "Signals"
-msgstr "신호"
+msgstr "시그널"
 
 msgid "Filter Signals"
 msgstr "시그널 필터"
@@ -1870,21 +1875,6 @@ msgstr "골드 스폰서"
 msgid "Silver Sponsors"
 msgstr "실버 스폰서"
 
-msgid "Bronze Sponsors"
-msgstr "브론즈 스폰서"
-
-msgid "Mini Sponsors"
-msgstr "미니 스폰서"
-
-msgid "Gold Donors"
-msgstr "골드 기부자"
-
-msgid "Silver Donors"
-msgstr "실버 기부자"
-
-msgid "Bronze Donors"
-msgstr "브론즈 기부자"
-
 msgid "Donors"
 msgstr "기부자"
 
@@ -2329,7 +2319,7 @@ msgid "Script Editor"
 msgstr "스크립트 에디터"
 
 msgid "Asset Library"
-msgstr "에셋 라이브러리"
+msgstr "애셋 라이브러리"
 
 msgid "Scene Tree Editing"
 msgstr "씬 트리 편집"
@@ -2529,6 +2519,9 @@ msgstr "반환된 오류 코드:"
 msgid "Top"
 msgstr "위쪽"
 
+msgid "Class:"
+msgstr "클래스:"
+
 msgid "Inherits:"
 msgstr "상속:"
 
@@ -2583,13 +2576,13 @@ msgid "Operators"
 msgstr "연산자"
 
 msgid "Theme Properties"
-msgstr "테마 속성들"
+msgstr "테마 속성"
 
 msgid "Colors"
 msgstr "색상"
 
 msgid "Constants"
-msgstr "제약"
+msgstr "상수"
 
 msgid "Fonts"
 msgstr "글꼴"
@@ -2604,7 +2597,7 @@ msgid "Styles"
 msgstr "스타일"
 
 msgid "Enumerations"
-msgstr "목록"
+msgstr "열거형"
 
 msgid "Annotations"
 msgstr "어노테이션"
@@ -2643,6 +2636,12 @@ msgstr "메서드 설명"
 
 msgid "Operator Descriptions"
 msgstr "연산자 설명"
+
+msgid "Property:"
+msgstr "속성:"
+
+msgid "Signal:"
+msgstr "시그널:"
 
 msgid "%d match."
 msgstr "%d개 일치."
@@ -2721,9 +2720,6 @@ msgstr "이 멤버는 사용되지 않는 것으로 표시되어 있습니다."
 
 msgid "This member is marked as experimental."
 msgstr "이 멤버는 실험단계로 표시됩니다."
-
-msgid "Property:"
-msgstr "속성:"
 
 msgid "Pin Value"
 msgstr "값 고정"
@@ -3805,6 +3801,9 @@ msgstr "유일하게 만들기"
 msgid "Make Unique (Recursive)"
 msgstr "유일하게 만들기 (재귀적으로)"
 
+msgid "Save As..."
+msgstr "다른 이름으로 저장..."
+
 msgid "Show in FileSystem"
 msgstr "파일시스템에서 보기"
 
@@ -4249,14 +4248,14 @@ msgstr ""
 "모든 사전 설정에는 모두 내보내기가 작동하도록 정의된 내보내기 경로가 있어야 합"
 "니다."
 
+msgid "Delete preset '%s'?"
+msgstr "'%s' 프리셋을 삭제하시겠습니까?"
+
 msgid "Resources to exclude:"
 msgstr "제외하는 리소스:"
 
 msgid "Resources to export:"
 msgstr "내보내는 리소스:"
-
-msgid "Delete preset '%s'?"
-msgstr "'%s' 프리셋을 삭제하시겠습니까?"
 
 msgid "(Inherited)"
 msgstr "(상속됨)"
@@ -4542,9 +4541,6 @@ msgstr "폴더 복제 중:"
 msgid "New Inherited Scene"
 msgstr "새 상속된 씬"
 
-msgid "Set As Main Scene"
-msgstr "메인 씬으로 설정"
-
 msgid "Open Scenes"
 msgstr "씬 열기"
 
@@ -4658,9 +4654,6 @@ msgstr "다음 파일/폴더로 이동합니다."
 
 msgid "Re-Scan Filesystem"
 msgstr "파일시스템 다시 스캔"
-
-msgid "Toggle Split Mode"
-msgstr "분할 모드 토글"
 
 msgid "Filter Files"
 msgstr "파일 필터"
@@ -5254,12 +5247,6 @@ msgstr "동적으로 렌더링된 트루타입/오픈타입 글꼴"
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "미리 렌더링된 다중 채널(+true) 부호 있는 거리 필드 (Multichannel SDF)"
 
-msgid "Can't load font texture:"
-msgstr "글꼴 텍스처를 로드할 수 없습니다:"
-
-msgid "Image margin too big."
-msgstr "이미지 여백이 너무 큽니다."
-
 msgid "Pre-Import Scene"
 msgstr "씬 미리 가져오기"
 
@@ -5602,9 +5589,6 @@ msgstr "디스크에서 기존 리소스를 불러오고 편집합니다."
 
 msgid "Save the currently edited resource."
 msgstr "현재 편집하는 리소스를 저장합니다."
-
-msgid "Save As..."
-msgstr "다른 이름으로 저장..."
 
 msgid "Extra resource options."
 msgstr "다른 리소스 옵션입니다."
@@ -6231,23 +6215,20 @@ msgstr "강제 흰색 조절"
 msgid "Include Gizmos (3D)"
 msgstr "기즈모 포함 (3D)"
 
-msgid "Onion Skinning temporarily disabled due to rendering bug."
-msgstr "어니언 스키닝은 렌더링 버그로 인해 임시로 비활성화해 두었습니다."
-
 msgid "Pin AnimationPlayer"
 msgstr "AnimationPlayer 고정"
 
 msgid "Error!"
 msgstr "오류!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "교차-애니메이션 혼합 시간"
+
 msgid "Blend Times:"
 msgstr "혼합 시간:"
 
 msgid "Next (Auto Queue):"
 msgstr "다음 (자동 큐):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "교차-애니메이션 혼합 시간"
 
 msgid "Move Node"
 msgstr "노드 이동"
@@ -7577,9 +7558,6 @@ msgstr "내비게이션 메시 만들기"
 msgid "Create Debug Tangents"
 msgstr "디버그 접선 생성"
 
-msgid "Contained Mesh is not of type ArrayMesh."
-msgstr "포함된 메시가 ArrayMesh 타입이 아닙니다."
-
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -7601,11 +7579,14 @@ msgstr ""
 "이 메시는 다른 파일 타입에서 가져온 것이어서 UV 펼치기를 할 수 없습니다. 먼저 "
 "리소스를 유일하게 만드세요."
 
-msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr "UV 펼치기를 실패했습니다. 메시가 다양한 것 같은데요?"
-
 msgid "Unwrap UV2"
 msgstr "UV2 펼치기"
+
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr "포함된 메시가 ArrayMesh 타입이 아닙니다."
+
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr "UV 펼치기를 실패했습니다. 메시가 다양한 것 같은데요?"
 
 msgid "No mesh to debug."
 msgstr "디버그할 메시가 없습니다."
@@ -9191,12 +9172,6 @@ msgstr "LightOccluder2D 만들기"
 
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D 미리보기"
-
-msgid "Can't convert a Sprite2D from a foreign scene."
-msgstr "다른 씬으로부터 Sprite2D를 변환할 수 없습니다."
-
-msgid "Sprite2D is empty!"
-msgstr "Sprite2D가 비어 있습니다!"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "애니메이션 프레임을 사용하는 스프라이트를 메시로 변환할 수 없습니다."
@@ -12677,13 +12652,6 @@ msgid ""
 msgstr ""
 "\"editable_instance\"가 비활성화되면 노드의 모든 속성이 디폴트로 복원됩니다."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"\"자리 표시자로 불러오기\"를 활성화하면 \"편집할 수 있는 자식\" 설정이 비활성"
-"화되고, 그러면 그 노드의 모든 속성이 디폴트로 복원됩니다."
-
 msgid "Make Local"
 msgstr "로컬로 만들기"
 
@@ -12770,9 +12738,6 @@ msgstr "상속 지우기"
 
 msgid "Editable Children"
 msgstr "편집할 수 있는 자식"
-
-msgid "Load As Placeholder"
-msgstr "자리 표시자로 불러오기"
 
 msgid "Auto Expand to Selected"
 msgstr "선택으로 자동 확장"
@@ -13268,9 +13233,6 @@ msgstr "직접 조명 그리기"
 
 msgid "Integrate indirect lighting"
 msgstr "간접 조명 통합"
-
-msgid "Bounce %d/%d: Integrate indirect lighting %d%%"
-msgstr "바운스 %d/%d: 간접 조명 통합 %d%%"
 
 msgid "Baking lightprobes"
 msgstr "라이트 프로브 굽는 중"
@@ -13791,22 +13753,8 @@ msgstr "확장 패키지 파일을 쓸 수 없었습니다!"
 msgid "Building Android Project (gradle)"
 msgstr "Android 프로젝트 빌드 중 (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Android 프로젝트의 빌드에 실패했습니다, 출력된 오류를 확인하세요. 또는 docs."
-"godotengine.org에서 Android 빌드 문서를 찾아보세요."
-
 msgid "Moving output"
 msgstr "출력 이동 중"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"내보내기 파일을 복사하고 이름을 바꿀 수 없습니다, 출력에 대한 gradle 프로젝트 "
-"디렉토리를 확인하세요."
 
 msgid "Package not found: \"%s\"."
 msgstr "패키지를 찾을 수 없음: \"%s\"."
@@ -13873,20 +13821,6 @@ msgstr ""
 ".ipa는 macOS에서만 빌드할 수 있습니다. 패키지를 빌드하지 않고 Xcode 프로젝트"
 "를 종료합니다."
 
-msgid ""
-"Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. "
-"Use Godot 3 to target iOS with C#/Mono instead."
-msgstr ""
-"C#/.NET을 사용해 iOS로 내보내기는 현재 Godot 4에서 지원하지 않습니다. iOS 대상"
-"에서 C#/Mono를 사용하려면 Godot 3를 사용해주세요."
-
-msgid ""
-"If this project does not use C#, use a non-C# editor build to export the "
-"project."
-msgstr ""
-"프로젝트가 C#을 사용하지 않는다면, C# 빌드가 아닌 에디터를 사용해서 프로젝트"
-"를 내보내세요."
-
 msgid "Identifier is missing."
 msgstr "식별자가 누락되어 있습니다."
 
@@ -13949,6 +13883,9 @@ msgstr "스크립트 업로드하는 중..."
 
 msgid "Starting project..."
 msgstr "프로젝트 시작 중..."
+
+msgid "All Files"
+msgstr "모든 파일"
 
 msgid "Can't get filesystem access."
 msgstr "파일시스템 접근 권한을 얻지 못했습니다."
@@ -14013,12 +13950,6 @@ msgstr "Apple ID 비밀번호가 지정되지 않았습니다."
 msgid "App Store Connect issuer ID name not specified."
 msgstr "App Store Connect 발급자 ID 이름이 지정되지 않았습니다."
 
-msgid "Icon Creation"
-msgstr "아이콘 생성"
-
-msgid "Could not open icon file \"%s\"."
-msgstr "아이콘 파일 \"%s\"를 열 수 없습니다."
-
 msgid "Notarization"
 msgstr "공증"
 
@@ -14082,6 +14013,9 @@ msgstr "잘못된 내보내기 템플릿: \"%s\"."
 msgid "Could not write file: \"%s\"."
 msgstr "파일에 쓸 수 없음: \"%s\"."
 
+msgid "Icon Creation"
+msgstr "아이콘 생성"
+
 msgid "Could not read file: \"%s\"."
 msgstr "파일을 읽을 수 없음: \"%s\"."
 
@@ -14094,6 +14028,13 @@ msgid ""
 msgstr ""
 "C#/.NET을 사용하는 Godot 4에서는 아직 웹으로 내보내기를 지원하지 않습니다. 필"
 "요하다면 대신 C#/Mono를 사용하는 Godot 3을 사용하세요."
+
+msgid ""
+"If this project does not use C#, use a non-C# editor build to export the "
+"project."
+msgstr ""
+"프로젝트가 C#을 사용하지 않는다면, C# 빌드가 아닌 에디터를 사용해서 프로젝트"
+"를 내보내세요."
 
 msgid "Could not read HTML shell: \"%s\"."
 msgstr "HTML shell을 읽을 수 없음: \"%s\"."
@@ -14928,9 +14869,6 @@ msgstr "확인해주세요..."
 msgid "You don't have permission to access contents of this folder."
 msgstr "이 폴더에 접근할 권한이 없습니다."
 
-msgid "All Files"
-msgstr "모든 파일"
-
 msgid "Invalid extension, or empty filename."
 msgstr "잘못된 확장자이거나 파일명이 비어 있습니다."
 
@@ -15014,15 +14952,6 @@ msgstr ""
 "지됩니다. 따라서 데이터를 잃을 우려 없이 저장할 수 있습니다."
 
 msgid ""
-"Setting node name '%s' to be unique within scene for '%s', but it's already "
-"claimed by '%s'.\n"
-"'%s' is no longer set as having a unique name."
-msgstr ""
-"노드 이름 '%s'을(를) 씬에서 '%s'에 대해 고유하게 만들었지만, 그것은 이미 "
-"'%s'가 소유하고 있습니다.\n"
-"'%s'는 더 이상 고유 이름을 가지지 않게 됩니다."
-
-msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
 "Please check the Godot documentation for information about migration."
 msgstr ""
@@ -15033,13 +14962,6 @@ msgid ""
 "This node is marked as experimental and may be subject to removal or major "
 "changes in future versions."
 msgstr "이 노드는 실험적이며 이후 버전에서 삭제되거나 변경될 수도 있습니다."
-
-msgid ""
-"Default Environment as specified in the project setting \"rendering/"
-"environment/defaults/default_environment\" could not be loaded."
-msgstr ""
-"프로젝트 설정 \"rendering/environment/defaults/default_environment\"에 지정한 "
-"디폴트 환경을 불러올 수 없습니다."
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -15064,27 +14986,6 @@ msgid ""
 "dimensions to render anything."
 msgstr ""
 "무엇이든 렌더링하려면 뷰포트 크기가 양쪽 차원에서 2픽셀 이상이어야 합니다."
-
-msgid "Cannot open font from file: %s."
-msgstr "파일으로부터 글꼴을 열 수 없습니다: %s."
-
-msgid "Version %d of BMFont is not supported (should be 3)."
-msgstr "BMFont 버전 %d는 지원되지 않습니다 (3이어야 합니다)."
-
-msgid "Invalid BMFont info block size."
-msgstr "BMFont info block의 크기가 올바르지 않습니다."
-
-msgid "Invalid BMFont common block size."
-msgstr "BMFont common block의 크기가 올바르지 않습니다."
-
-msgid "Can't load font texture: %s."
-msgstr "글꼴 텍스쳐를 불러오지 못했습니다: %s."
-
-msgid "Unsupported BMFont texture format."
-msgstr "지원되지 않는 BMFont 텍스처 형식입니다."
-
-msgid "Invalid BMFont block type."
-msgstr "잘못된 BMFont block 타입입니다."
 
 msgid ""
 "An incoming node's name clashes with %s already in the scene (presumably, "
@@ -15250,9 +15151,6 @@ msgstr ""
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying '%s'은 해당 문맥에서 '%s' 인자로 전달할 수 없습니다."
-
-msgid "A constant value cannot be passed for '%s' parameter."
-msgstr "'%s' 매개 변수에 상수 값을 전달할 수 없습니다."
 
 msgid ""
 "Unable to pass a multiview texture sampler as a parameter to custom function. "

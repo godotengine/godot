@@ -70,7 +70,6 @@ public:
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);
 
-private:
 	TabContainer *sections = nullptr;
 
 	MenuButton *add_preset = nullptr;
@@ -117,6 +116,8 @@ private:
 	HBoxContainer *export_templates_error = nullptr;
 
 	String default_filename;
+
+	bool exporting = false;
 
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
@@ -187,7 +188,6 @@ private:
 	void _tab_changed(int);
 
 protected:
-	void _theme_changed();
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -198,6 +198,8 @@ public:
 	String get_export_path();
 
 	Ref<EditorExportPreset> get_current_preset() const;
+
+	bool is_exporting() const { return exporting; };
 
 	ProjectExportDialog();
 	~ProjectExportDialog();
