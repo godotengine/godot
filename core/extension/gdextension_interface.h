@@ -432,6 +432,7 @@ typedef enum {
 	GDEXTENSION_METHOD_ARGUMENT_METADATA_REAL_IS_DOUBLE,
 	GDEXTENSION_METHOD_ARGUMENT_METADATA_INT_IS_CHAR16,
 	GDEXTENSION_METHOD_ARGUMENT_METADATA_INT_IS_CHAR32,
+	GDEXTENSION_METHOD_ARGUMENT_METADATA_OBJECT_IS_REQUIRED,
 } GDExtensionClassMethodArgumentMetadata;
 
 typedef void (*GDExtensionClassMethodCall)(void *method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error);
