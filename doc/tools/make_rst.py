@@ -1075,13 +1075,13 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             if constant.text is not None and constant.text.strip() != "":
                 f.write(f"{format_text_block(constant.text.strip(), constant, state)}")
             else:
-                    f.write(".. container:: contribute\n\n\t")
-                    f.write(
-                        translate(
-                            "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
-                        )
-                        + "\n\n"
+                f.write(".. container:: contribute\n\n\t")
+                f.write(
+                    translate(
+                        "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
                     )
+                    + "\n\n"
+                )
 
 
             f.write("\n\n")
