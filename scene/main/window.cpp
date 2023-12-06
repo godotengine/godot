@@ -1301,7 +1301,13 @@ void Window::_notification(int p_what) {
 
 			if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
 				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
-				_update_window_size();
+				if (keep_title_visible) {
+					Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
+					Size2i size_limit = get_clamped_minimum_size();
+					if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
+						_update_window_size();
+					}
+				}
 			}
 		} break;
 
