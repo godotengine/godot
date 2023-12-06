@@ -35,6 +35,7 @@
 
 #include <ProcessDxtc.hpp>
 #include <ProcessRGB.hpp>
+#include <ProcessRgtc.hpp>
 
 EtcpakType _determine_etc_type(Image::UsedChannels p_channels) {
 	switch (p_channels) {
@@ -62,9 +63,9 @@ EtcpakType _determine_dxt_type(Image::UsedChannels p_channels) {
 		case Image::USED_CHANNELS_LA:
 			return EtcpakType::ETCPAK_TYPE_DXT5;
 		case Image::USED_CHANNELS_R:
-			return EtcpakType::ETCPAK_TYPE_DXT5;
+			return EtcpakType::ETCPAK_TYPE_RGTC_R;
 		case Image::USED_CHANNELS_RG:
-			return EtcpakType::ETCPAK_TYPE_DXT5_RA_AS_RG;
+			return EtcpakType::ETCPAK_TYPE_RGTC_RG;
 		case Image::USED_CHANNELS_RGB:
 			return EtcpakType::ETCPAK_TYPE_DXT1;
 		case Image::USED_CHANNELS_RGBA:
@@ -127,6 +128,10 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 		r_img->convert_rg_to_ra_rgba8();
 	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_DXT5) {
 		target_format = Image::FORMAT_DXT5;
+	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_RGTC_R) {
+		target_format = Image::FORMAT_RGTC_R;
+	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_RGTC_RG) {
+		target_format = Image::FORMAT_RGTC_RG;
 	} else {
 		ERR_FAIL_MSG("Invalid or unsupported etcpak compression format, not ETC or DXT.");
 	}
@@ -229,6 +234,10 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 			CompressDxt1Dither(src_mip_read, dest_mip_write, blocks, mip_w);
 		} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_DXT5 || p_compresstype == EtcpakType::ETCPAK_TYPE_DXT5_RA_AS_RG) {
 			CompressDxt5(src_mip_read, dest_mip_write, blocks, mip_w);
+		} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_RGTC_RG) {
+			CompressRgtcRG(src_mip_read, dest_mip_write, blocks, mip_w);
+		} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_RGTC_R) {
+			CompressRgtcR(src_mip_read, dest_mip_write, blocks, mip_w);
 		} else {
 			ERR_FAIL_MSG("etcpak: Invalid or unsupported compression format.");
 		}

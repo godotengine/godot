@@ -41,6 +41,8 @@ enum class EtcpakType {
 	ETCPAK_TYPE_DXT1,
 	ETCPAK_TYPE_DXT5,
 	ETCPAK_TYPE_DXT5_RA_AS_RG,
+	ETCPAK_TYPE_RGTC_R,
+	ETCPAK_TYPE_RGTC_RG,
 };
 
 void _compress_etc1(Image *r_img);
