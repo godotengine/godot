@@ -596,4 +596,28 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 			"Object was tail-deleted without crashes.");
 }
 
+int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &p_required) {
+	EXTRACT_PARAM_OR_FAIL_V(extract, p_required, false);
+	ERR_FAIL_COND_V(p_ref->get_reference_count() != extract->get_reference_count(), -1);
+	return p_ref->get_reference_count();
+}
+
+TEST_CASE("[Object] RequiredParam Ref<T>") {
+	Ref<RefCounted> ref;
+	ref.instantiate();
+
+	RequiredParam<RefCounted> required = ref;
+	EXTRACT_PARAM_OR_FAIL(extract, required);
+
+	static_assert(std::is_same_v<decltype(ref), decltype(extract)>);
+
+	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
+
+	const int count = required_param_compare(ref, ref);
+	CHECK_NE(count, -1);
+	CHECK_NE(count, ref->get_reference_count());
+
+	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
+}
+
 } // namespace TestObject
