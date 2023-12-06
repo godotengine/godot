@@ -929,6 +929,10 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 	if (ws->wl_surface) {
 		// NOTE: This will be committed next time, so we have a proper buffer.
 		wl_surface_set_buffer_scale(ws->wl_surface, ws->buffer_scale);
+		// NOTE: Remember to set here also other buffer-dependent states, to be as
+		// close as possible to an atomic surface update. Ideally we'd only have one
+		// surface commit, but it's not really doable given the current state of
+		// things.
 	}
 }
 
@@ -1155,10 +1159,8 @@ void WaylandThread::libdecor_frame_on_close(struct libdecor_frame *frame, void *
 }
 
 void WaylandThread::libdecor_frame_on_commit(struct libdecor_frame *frame, void *user_data) {
-	WindowState *ws = (WindowState *)user_data;
-	ERR_FAIL_NULL(ws);
-
-	wl_surface_commit(ws->wl_surface);
+	// We're skipping this as we don't really care about libdecor's commit for
+	// atomicity reasons. See `_frame_wl_callback_on_done` for more info.
 
 	DEBUG_LOG_WAYLAND_THREAD("libdecor frame on commit");
 }
@@ -2649,8 +2651,6 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		if (p_ws->xdg_surface) {
 			xdg_surface_set_window_geometry(p_ws->xdg_surface, 0, 0, p_width, p_height);
 		}
-
-		wl_surface_commit(p_ws->wl_surface);
 	}
 
 #ifdef LIBDECOR_ENABLED
@@ -2747,10 +2747,6 @@ void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
 	}
 
 	zwp_locked_pointer_v1_set_cursor_position_hint(p_ss->wp_locked_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y));
-
-	if (p_ss->pointed_surface) {
-		wl_surface_commit(p_ss->pointed_surface);
-	}
 }
 
 void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
@@ -2943,6 +2939,8 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 	ws.frame_callback = wl_surface_frame(ws.wl_surface);
 	wl_callback_add_listener(ws.frame_callback, &frame_wl_callback_listener, &ws);
 
+	// NOTE: This commit is only called once to start the whole frame callback
+	// "loop".
 	wl_surface_commit(ws.wl_surface);
 
 	// Wait for the surface to be configured before continuing.
@@ -2964,7 +2962,6 @@ void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, Siz
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_max_size(ws.xdg_toplevel, logical_max_size.width, logical_max_size.height);
-		wl_surface_commit(ws.wl_surface);
 	}
 
 #ifdef LIBDECOR_ENABLED
@@ -2984,7 +2981,6 @@ void WaylandThread::window_set_min_size(DisplayServer::WindowID p_window_id, Siz
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_min_size(ws.xdg_toplevel, logical_min_size.width, logical_min_size.height);
-		wl_surface_commit(ws.wl_surface);
 	}
 
 #ifdef LIBDECOR_ENABLED
