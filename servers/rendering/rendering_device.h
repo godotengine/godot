@@ -217,7 +217,7 @@ private:
 		BitField<RDD::BufferUsageBits> usage;
 		Vector<PersistentBufferSet> buffer_set;
 	};
-	RID_Owner<PersistentBuffer, true> persistent_buffer_owner;
+	RID_Owner<PersistentBuffer> persistent_buffer_owner;
 	void persistent_uniform_buffer_advance(RID p_buffer);
 	void persistent_uniform_buffers_reset();
 
