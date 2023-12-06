@@ -2958,9 +2958,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 		} break;
 		case WM_MOUSEACTIVATE: {
-			if (windows[window_id].no_focus) {
-				return MA_NOACTIVATEANDEAT; // Do not activate, and discard mouse messages.
-			} else if (windows[window_id].is_popup) {
+			if (windows[window_id].no_focus || windows[window_id].is_popup) {
 				return MA_NOACTIVATE; // Do not activate, but process mouse messages.
 			}
 		} break;

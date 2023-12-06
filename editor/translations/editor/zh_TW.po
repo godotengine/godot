@@ -48,13 +48,14 @@
 # Sand Smith <1105483764@qq.com>, 2023.
 # Skyter Lin <linskyter@gmail.com>, 2023.
 # powder <hhurhxhdyruw@gmail.com>, 2023.
+# Ink&Soul <mbyl_inkandsoul@foxmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-24 17:38+0000\n"
-"Last-Translator: Skyter Lin <linskyter@gmail.com>\n"
+"PO-Revision-Date: 2023-11-23 09:02+0000\n"
+"Last-Translator: Ink&Soul <mbyl_inkandsoul@foxmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -62,7 +63,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.1.1-dev\n"
+"X-Generator: Weblate 5.2.1-rc\n"
 
 msgid "Main Thread"
 msgstr "主執行緒"
@@ -2988,7 +2989,7 @@ msgid "Script:"
 msgstr "文字:"
 
 msgid "Country:"
-msgstr "國家:"
+msgstr "地區:"
 
 msgid "Language"
 msgstr "語言"
@@ -2998,7 +2999,7 @@ msgid "Script"
 msgstr "腳 本"
 
 msgid "Country"
-msgstr "國家"
+msgstr "地區"
 
 msgid "Variant"
 msgstr "變體"

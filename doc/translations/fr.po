@@ -104,6 +104,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.2-dev\n"
 
+msgid "Resources"
+msgstr "Ressources"
+
 msgid "Description"
 msgstr "Description"
 
@@ -16604,9 +16607,6 @@ msgid ""
 msgstr ""
 "L'appareil supporte plusieurs fils d'exécution. Cette énumération est "
 "actuellement inutilisée dans Godot 3.x."
-
-msgid "Resources"
-msgstr "Ressources"
 
 msgid "Loads a specific resource type from a file."
 msgstr "Charge un type de ressource spécifique depuis un fichier."

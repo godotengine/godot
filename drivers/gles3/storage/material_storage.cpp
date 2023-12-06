@@ -2968,17 +2968,17 @@ void SceneShaderData::set_code(const String &p_code) {
 	depth_test = DepthTest(depth_testi);
 	cull_mode = Cull(cull_modei);
 
-	vertex_input_mask = uint64_t(uses_normal);
-	vertex_input_mask |= uses_tangent << 1;
-	vertex_input_mask |= uses_color << 2;
-	vertex_input_mask |= uses_uv << 3;
-	vertex_input_mask |= uses_uv2 << 4;
-	vertex_input_mask |= uses_custom0 << 5;
-	vertex_input_mask |= uses_custom1 << 6;
-	vertex_input_mask |= uses_custom2 << 7;
-	vertex_input_mask |= uses_custom3 << 8;
-	vertex_input_mask |= uses_bones << 9;
-	vertex_input_mask |= uses_weights << 10;
+	vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL; // We can always read vertices and normals.
+	vertex_input_mask |= uses_tangent << RS::ARRAY_TANGENT;
+	vertex_input_mask |= uses_color << RS::ARRAY_COLOR;
+	vertex_input_mask |= uses_uv << RS::ARRAY_TEX_UV;
+	vertex_input_mask |= uses_uv2 << RS::ARRAY_TEX_UV2;
+	vertex_input_mask |= uses_custom0 << RS::ARRAY_CUSTOM0;
+	vertex_input_mask |= uses_custom1 << RS::ARRAY_CUSTOM1;
+	vertex_input_mask |= uses_custom2 << RS::ARRAY_CUSTOM2;
+	vertex_input_mask |= uses_custom3 << RS::ARRAY_CUSTOM3;
+	vertex_input_mask |= uses_bones << RS::ARRAY_BONES;
+	vertex_input_mask |= uses_weights << RS::ARRAY_WEIGHTS;
 
 	uses_screen_texture = gen_code.uses_screen_texture;
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;

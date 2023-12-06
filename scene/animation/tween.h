@@ -225,6 +225,7 @@ private:
 
 	double delay = 0;
 	bool do_continue = true;
+	bool do_continue_delayed = false;
 	bool relative = false;
 };
 

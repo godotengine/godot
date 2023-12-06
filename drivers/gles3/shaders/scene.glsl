@@ -139,6 +139,8 @@ layout(location = 14) in highp vec4 instance_xform2;
 layout(location = 15) in highp uvec4 instance_color_custom_data; // Color packed into xy, Custom data into zw.
 #endif
 
+#define FLAGS_NON_UNIFORM_SCALE (1 << 4)
+
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
@@ -242,6 +244,8 @@ uniform highp vec3 compressed_aabb_position;
 uniform highp vec3 compressed_aabb_size;
 uniform highp vec4 uv_scale;
 
+uniform highp uint model_flags;
+
 /* Varyings */
 
 out highp vec3 vertex_interp;
@@ -310,7 +314,14 @@ void main() {
 #ifdef NORMAL_USED
 	vec3 normal = oct_to_vec3(axis_tangent_attrib.xy * 2.0 - 1.0);
 #endif
-	highp mat3 model_normal_matrix = mat3(model_matrix);
+
+	highp mat3 model_normal_matrix;
+
+	if (bool(model_flags & uint(FLAGS_NON_UNIFORM_SCALE))) {
+		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
+	} else {
+		model_normal_matrix = mat3(model_matrix);
+	}
 
 #if defined(NORMAL_USED) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 
@@ -1600,6 +1611,8 @@ void main() {
 
 #if !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
 
+#ifndef SHADOWS_DISABLED
+
 // Orthogonal shadows
 #if !defined(LIGHT_USE_PSSM2) && !defined(LIGHT_USE_PSSM4)
 	float directional_shadow = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
@@ -1706,6 +1719,9 @@ void main() {
 	directional_shadow = mix(directional_shadow, 1.0, smoothstep(directional_shadows[directional_shadow_index].fade_from, directional_shadows[directional_shadow_index].fade_to, vertex.z));
 	directional_shadow = mix(1.0, directional_shadow, directional_lights[directional_shadow_index].shadow_opacity);
 
+#else
+	float directional_shadow = 1.0f;
+#endif // SHADOWS_DISABLED
 	light_compute(normal, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].size, directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, directional_shadow, f0, roughness, metallic, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
@@ -1725,11 +1741,12 @@ void main() {
 #endif // !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
 
 #ifdef ADDITIVE_OMNI
+	float omni_shadow = 1.0f;
+#ifndef SHADOWS_DISABLED
 	vec3 light_ray = ((positional_shadows[positional_shadow_index].shadow_matrix * vec4(shadow_coord.xyz, 1.0))).xyz;
-
-	float omni_shadow = texture(omni_shadow_texture, vec4(light_ray, length(light_ray) * omni_lights[omni_light_index].inv_radius));
+	omni_shadow = texture(omni_shadow_texture, vec4(light_ray, length(light_ray) * omni_lights[omni_light_index].inv_radius));
 	omni_shadow = mix(1.0, omni_shadow, omni_lights[omni_light_index].shadow_opacity);
-
+#endif // SHADOWS_DISABLED
 	light_process_omni(omni_light_index, vertex, view, normal, f0, roughness, metallic, omni_shadow, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
@@ -1748,9 +1765,11 @@ void main() {
 #endif // ADDITIVE_OMNI
 
 #ifdef ADDITIVE_SPOT
-	float spot_shadow = sample_shadow(spot_shadow_texture, positional_shadows[positional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
+	float spot_shadow = 1.0f;
+#ifndef SHADOWS_DISABLED
+	spot_shadow = sample_shadow(spot_shadow_texture, positional_shadows[positional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
 	spot_shadow = mix(1.0, spot_shadow, spot_lights[spot_light_index].shadow_opacity);
-
+#endif // SHADOWS_DISABLED
 	light_process_spot(spot_light_index, vertex, view, normal, f0, roughness, metallic, spot_shadow, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,

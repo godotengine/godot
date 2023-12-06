@@ -536,8 +536,11 @@ class Godot(private val context: Context) : SensorEventListener {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainDestroy()
 		}
-		GodotLib.ondestroy()
-		forceQuit()
+
+		runOnRenderThread {
+			GodotLib.ondestroy()
+			forceQuit()
+		}
 	}
 
 	/**

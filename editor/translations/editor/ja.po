@@ -68,8 +68,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-18 06:21+0000\n"
-"Last-Translator: ueshita <nalto32@gmail.com>\n"
+"PO-Revision-Date: 2023-11-26 13:51+0000\n"
+"Last-Translator: Koji Horaguchi <koji.horaguchi@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -77,7 +77,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.2.1-rc\n"
 
 msgid "Main Thread"
 msgstr "メインスレッド"
@@ -3652,6 +3652,9 @@ msgstr "ツール"
 
 msgid "Orphan Resource Explorer..."
 msgstr "孤立リソースエクスプローラー..."
+
+msgid "Upgrade Mesh Surfaces..."
+msgstr "メッシュサーフェスをアップグレード..."
 
 msgid "Reload Current Project"
 msgstr "現在のプロジェクトをリロード"
@@ -7729,8 +7732,8 @@ msgid ""
 "This is useful to troubleshoot low processor mode."
 msgstr ""
 "このオプションを有効にすると、2D オブジェクトの再描画リクエストが実行中のプロ"
-"ジェクトに (短いフラッシュとして) 表示されるようになります。 これは低プロセッ"
-"サ モードのトラブルシューティングに役立ちます。"
+"ジェクトに (短いフラッシュとして) 表示されるようになります。\n"
+"これは、低プロセッサモードのトラブルシューティングに役立ちます。"
 
 msgid "Synchronize Scene Changes"
 msgstr "シーン変更を同期"
@@ -8101,6 +8104,9 @@ msgstr "ナビゲーションメッシュを生成"
 msgid "Create Debug Tangents"
 msgstr "デバッグ接線を生成"
 
+msgid "No mesh to unwrap."
+msgstr "アンラップするメッシュがありません。"
+
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
 "it unique first."
@@ -8127,6 +8133,15 @@ msgstr "UV2のアンラップ"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "含まれているメッシュがArrayMesh型ではありません。"
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "メッシュはブレンドシェイプとアンラップできません。"
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "ライトマップのアンラップでは三角形のみがサポートされます。"
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "ライトマップのアンラップには法線が必要です。"
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "UV展開に失敗しました。メッシュが非多様体ではありませんか？"
@@ -13928,6 +13943,15 @@ msgstr "名前 '%s' は予約されたシェーダー言語キーワードです
 msgid "Add Shader Global Parameter"
 msgstr "シェーダーグローバルパラメーターを追加"
 
+msgid "Upgrading All Meshes in Project"
+msgstr "プロジェクト内のすべてのメッシュをアップグレード中"
+
+msgid "Attempting to re-save "
+msgstr "再保存を思考中 "
+
+msgid "Restart & Upgrade"
+msgstr "再起動とアップグレード"
+
 msgid "Make this panel floating in the screen %d."
 msgstr "このパネルを画面%dにフローティングさせます。"
 
@@ -14196,6 +14220,9 @@ msgstr "ダイレクトライティングをプロットする"
 
 msgid "Integrate indirect lighting"
 msgstr "間接ライティングを統合する"
+
+msgid "Integrate indirect lighting %d%%"
+msgstr "間接照明を統合します %d%%"
 
 msgid "Baking lightprobes"
 msgstr "ライトプローブをベイク"
@@ -14618,6 +14645,10 @@ msgstr "デバイスで実行できませんでした。"
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "C#/.NET を使用する場合の Android へのエクスポートは実験的です。"
 
+msgid "Android architecture %s not supported in C# projects."
+msgstr ""
+"Android アーキテクチャ %s は C# プロジェクトではサポートされていません。"
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14778,8 +14809,15 @@ msgstr "拡張パッケージファイルを書き込めませんでした！"
 msgid "Building Android Project (gradle)"
 msgstr "Androidプロジェクトの構築(gradle)"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr ""
+"Android プロジェクトのビルドに失敗しました。エラー出力を確認してください:"
+
 msgid "Moving output"
 msgstr "出力結果の移動中"
+
+msgid "Unable to copy and rename export file:"
+msgstr "エクスポートファイルのコピーと名前変更ができません:"
 
 msgid "Package not found: \"%s\"."
 msgstr "パッケージが見つかりません: \"%s\"。"
@@ -14853,6 +14891,14 @@ msgid ""
 "package."
 msgstr ""
 ".ipa は macOS でしかビルドできません。パッケージをビルドせずに終了します。"
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr ""
+"C#/.NET を使用する場合の iOS へのエクスポートは実験的であり、macOS が必要で"
+"す。"
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "C#/.NET を使用する場合の iOS へのエクスポートは実験的です。"
 
 msgid "Identifier is missing."
 msgstr "識別子がありません。"
@@ -15016,6 +15062,13 @@ msgstr "App Store の配布には、インストーラーの署名 ID が必要�
 
 msgid "App sandbox is required for App Store distribution."
 msgstr "App Store の配布にはアプリサンドボックスが必要です。"
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries (GDExtension or .NET)."
+msgstr ""
+"「rcodesign」は、組み込み動的ライブラリ (GDExtension または .NET) を使用したア"
+"プリケーションの署名をサポートしていません。"
 
 msgid "Code signing is required for App Store distribution."
 msgstr "App Storeでの配布にはコード署名が必要です。"
@@ -15208,6 +15261,13 @@ msgid ""
 msgstr ""
 "アドホック署名付きアプリケーションでは、動的ライブラリを読み込むために「ライブ"
 "ラリ検証を無効にする」の権限が必要です。"
+
+msgid ""
+"'rcodesign' doesn't support signing applications with embedded dynamic "
+"libraries."
+msgstr ""
+"「rcodesign」は、組み込み動的ライブラリを使用したアプリケーションの署名をサ"
+"ポートしていません。"
 
 msgid "Could not create entitlements file."
 msgstr "資格ファイルを作成できませんでした。"
@@ -15672,6 +15732,17 @@ msgid ""
 msgstr ""
 "TileMap レイヤーは Y ソートとして設定されていますが、TileMap ノード自体では Y "
 "ソートが有効になっていません。"
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"TileMap ノードは Y ソートとして設定されていますが、TileMap のどのレイヤーでも "
+"Y ソートが有効になっていません。\n"
+"Y ソートされていないレイヤーも含め全体として Y ソートされるため、望ましくない"
+"動作が発生する可能性があります。"
 
 msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled for "
@@ -16212,6 +16283,9 @@ msgstr ""
 msgid "New Code Region"
 msgstr "新しいコード領域"
 
+msgid "Copy this constructor in a script."
+msgstr "このコンストラクターをスクリプトにコピーします。"
+
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "16進コード (「#ff0000」) または名前付きの色 (「red」) を入力します。"
 
@@ -16311,6 +16385,13 @@ msgstr "グラフのミニマップを切り替えます。"
 
 msgid "Automatically arrange selected nodes."
 msgstr "選択したノードを自動的に配置します。"
+
+msgid ""
+"Labels with autowrapping enabled must have a custom minimum size configured "
+"to work correctly inside a container."
+msgstr ""
+"コンテナ内で正しく動作させるため、自動ラッピングが有効になっているラベルには、"
+"カスタム最小サイズの設定が必要です。"
 
 msgid ""
 "The current font does not support rendering one or more characters used in "
@@ -16785,6 +16866,9 @@ msgstr "メンバーとして識別子が必要です。"
 
 msgid "Cannot combine symbols from different sets in expression '.%s'."
 msgstr "式 '.%s' では異なるセットのシンボルを結合できません。"
+
+msgid "Invalid member for '%s' expression: '.%s'."
+msgstr "無効なメンバ '%s' が '.%s' 式にあります。"
 
 msgid "An object of type '%s' can't be indexed."
 msgstr "型「%s」のオブジェクトはインデックスできません。"

@@ -111,6 +111,7 @@ private:
 	void _process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started, bool p_is_current = false);
 	void _blend_playback_data(double p_delta, bool p_started);
 	void _stop_internal(bool p_reset, bool p_keep_state);
+	void _check_immediately_after_start();
 
 	bool playing = false;
 
@@ -182,6 +183,8 @@ public:
 	double get_current_animation_length() const;
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+
+	virtual void advance(double p_time) override;
 
 	AnimationPlayer();
 	~AnimationPlayer();

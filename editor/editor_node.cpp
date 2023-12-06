@@ -2943,8 +2943,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			feature_profile_manager->popup_centered_clamped(Size2(900, 800) * EDSCALE, 0.8);
 		} break;
 		case SETTINGS_TOGGLE_FULLSCREEN: {
-			DisplayServer::get_singleton()->window_set_mode(DisplayServer::get_singleton()->window_get_mode() == DisplayServer::WINDOW_MODE_FULLSCREEN ? DisplayServer::WINDOW_MODE_WINDOWED : DisplayServer::WINDOW_MODE_FULLSCREEN);
-
+			DisplayServer::WindowMode mode = DisplayServer::get_singleton()->window_get_mode();
+			if (mode == DisplayServer::WINDOW_MODE_FULLSCREEN || mode == DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				DisplayServer::get_singleton()->window_set_mode(prev_mode);
+			} else {
+				prev_mode = mode;
+				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_FULLSCREEN);
+			}
 		} break;
 		case EDITOR_SCREENSHOT: {
 			screenshot_timer->start();
@@ -3454,13 +3459,13 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		}
 
 		// Plugin init scripts must inherit from EditorPlugin and be tools.
-		if (String(scr->get_instance_base_type()) != "EditorPlugin") {
-			show_warning(vformat(TTR("Unable to load addon script from path: '%s' Base type is not EditorPlugin."), script_path));
+		if (!ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorPlugin")) {
+			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."), script_path));
 			return;
 		}
 
 		if (!scr->is_tool()) {
-			show_warning(vformat(TTR("Unable to load addon script from path: '%s' Script is not in tool mode."), script_path));
+			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. Script is not in tool mode."), script_path));
 			return;
 		}
 	}

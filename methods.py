@@ -708,25 +708,28 @@ def detect_visual_c_compiler_version(tools_env):
 
 
 def find_visual_c_batch_file(env):
-    from SCons.Tool.MSCommon.vc import (
-        get_default_version,
-        get_host_target,
-        find_batch_file,
-    )
+    from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file, find_vc_pdir
 
     # Syntax changed in SCons 4.4.0.
     from SCons import __version__ as scons_raw_version
 
     scons_ver = env._get_major_minor_revision(scons_raw_version)
 
-    version = get_default_version(env)
+    msvc_version = get_default_version(env)
 
     if scons_ver >= (4, 4, 0):
-        (host_platform, target_platform, _) = get_host_target(env, version)
+        (host_platform, target_platform, _) = get_host_target(env, msvc_version)
     else:
         (host_platform, target_platform, _) = get_host_target(env)
 
-    return find_batch_file(env, version, host_platform, target_platform)[0]
+    if scons_ver < (4, 6, 0):
+        return find_batch_file(env, msvc_version, host_platform, target_platform)[0]
+
+    # Scons 4.6.0+ removed passing env, so we need to get the product_dir ourselves first,
+    # then pass that as the last param instead of env as the first param as before.
+    # We should investigate if we can avoid relying on SCons internals here.
+    product_dir = find_vc_pdir(env, msvc_version)
+    return find_batch_file(msvc_version, host_platform, target_platform, product_dir)[0]
 
 
 def generate_cpp_hint_file(filename):
@@ -904,9 +907,16 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 defines=mono_defines,
             )
 
-        env["MSVSBUILDCOM"] = module_configs.build_commandline("scons")
-        env["MSVSREBUILDCOM"] = module_configs.build_commandline("scons vsproj=yes")
-        env["MSVSCLEANCOM"] = module_configs.build_commandline("scons --clean")
+        scons_cmd = "scons"
+
+        path_to_venv = os.getenv("VIRTUAL_ENV")
+        path_to_scons_exe = Path(str(path_to_venv)) / "Scripts" / "scons.exe"
+        if path_to_venv and path_to_scons_exe.exists():
+            scons_cmd = str(path_to_scons_exe)
+
+        env["MSVSBUILDCOM"] = module_configs.build_commandline(scons_cmd)
+        env["MSVSREBUILDCOM"] = module_configs.build_commandline(f"{scons_cmd} vsproj=yes")
+        env["MSVSCLEANCOM"] = module_configs.build_commandline(f"{scons_cmd} --clean")
         if not env.get("MSVS"):
             env["MSVS"]["PROJECTSUFFIX"] = ".vcxproj"
             env["MSVS"]["SOLUTIONSUFFIX"] = ".sln"

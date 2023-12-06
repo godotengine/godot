@@ -3207,7 +3207,9 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			}
 
 			// Send Mouse Enter Self notification.
-			gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_ENTER_SELF);
+			if (gui.mouse_over) {
+				gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_ENTER_SELF);
+			}
 
 			notify_embedded_viewports = true;
 		}

@@ -1771,7 +1771,7 @@ void RichTextLabel::_scroll_changed(double) {
 		return;
 	}
 
-	if (scroll_follow && vscroll->get_value() >= (vscroll->get_max() - vscroll->get_page())) {
+	if (scroll_follow && vscroll->get_value() >= (vscroll->get_max() - Math::round(vscroll->get_page()))) {
 		scroll_following = true;
 	} else {
 		scroll_following = false;
@@ -3120,6 +3120,8 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 		ItemText *t = static_cast<ItemText *>(p_item);
 		current_char_ofs += t->text.length();
 	} else if (p_item->type == ITEM_IMAGE) {
+		current_char_ofs++;
+	} else if (p_item->type == ITEM_NEWLINE) {
 		current_char_ofs++;
 	}
 
