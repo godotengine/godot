@@ -220,9 +220,13 @@ private:
 	RID_Owner<PersistentBuffer> persistent_buffer_owner;
 	void persistent_uniform_buffer_advance(RID p_buffer);
 	void persistent_uniform_buffers_reset();
-
+	void update_perf_report();
 	// flag for using persistent buffers;
 	bool persistent_buffer_enabled = true;
+	uint32_t gpu_copy_count = 0;
+	uint32_t direct_copy_count = 0;
+	uint32_t copy_bytes_count = 0;
+	String perf_report_text;
 	// </TF>
 	RID_Owner<Buffer> uniform_buffer_owner;
 	RID_Owner<Buffer> storage_buffer_owner;
@@ -877,6 +881,7 @@ public:
 	//RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 	//RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
+	String get_perf_report() const;
 	/*****************/
 	/**** BUFFERS ****/
 	/*****************/

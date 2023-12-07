@@ -466,11 +466,14 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 
 	// <TF>
 	// @ShadyTF - if persistent UMA is available, copy and skip the barrier
+	copy_bytes_count += p_size;
 	uint8_t *persistent_data_ptr = driver->buffer_get_persistent_address(buffer->driver_id);
 	if (persistent_data_ptr ) {
 		memcpy(persistent_data_ptr + p_offset, p_data, p_size);
+		direct_copy_count++;
 		return OK;
 	}
+	gpu_copy_count++;
 	// </TF>
 	return _buffer_update(buffer, p_buffer, p_offset, (uint8_t *)p_data, p_size, true);
 }
@@ -478,6 +481,10 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 
 // <TF>
 // @ShadyTF
+String RenderingDevice::get_perf_report() const {
+	return perf_report_text;
+
+}
 void RenderingDevice::persistent_uniform_buffer_advance(RID p_buffer) {
 	PersistentBuffer *linear_buffer = persistent_buffer_owner.get_or_null(p_buffer);
 	if (linear_buffer) {
@@ -501,6 +508,24 @@ void RenderingDevice::persistent_uniform_buffers_reset() {
 		PersistentBuffer* curr_linear_buffer = persistent_buffer_owner.get_or_null(curr);
 		curr_linear_buffer->buffer_set.ptrw()[frame].usage_index = -1;
 	}
+}
+
+void RenderingDevice::update_perf_report() {
+	perf_report_text = "";
+	perf_report_text += "Persistent buffers ";
+	if (persistent_buffer_enabled) {
+		perf_report_text +="Enabled ";
+	} else {
+		perf_report_text += "Disabled";
+	}
+	perf_report_text += " gpu:" + String::num_int64(gpu_copy_count);
+	perf_report_text += " direct:" + String::num_int64(direct_copy_count);
+	perf_report_text += " bytes:" + String::num_int64(copy_bytes_count);
+
+	gpu_copy_count = 0;
+	direct_copy_count = 0;
+	copy_bytes_count = 0;
+
 }
 // </TF>
 Error RenderingDevice::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size) {
@@ -4756,6 +4781,7 @@ void RenderingDevice::_begin_frame() {
 	// @ShadyTF persistently mapped buffers
 	// reset linear uniform buffers
 	persistent_uniform_buffers_reset();
+	update_perf_report();
 	// </TF>
 	// Create setup command buffer and set as the setup buffer.
 

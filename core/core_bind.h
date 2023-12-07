@@ -489,6 +489,10 @@ public:
 	double get_frames_per_second() const;
 	uint64_t get_physics_frames() const;
 	uint64_t get_process_frames() const;
+	// <TF>
+	// @ShadyTF script function to get performance report text
+	String get_perf_report() const;
+	// </TF>
 
 	int get_frames_drawn();
 
