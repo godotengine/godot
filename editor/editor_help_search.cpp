@@ -528,6 +528,21 @@ bool EditorHelpSearch::Runner::_phase_fill_member_items_init() {
 	return true;
 }
 
+TreeItem *EditorHelpSearch::Runner::_create_category_item(TreeItem *p_parent, const String &p_class, const StringName &p_icon, const String &p_metatype, const String &p_text) {
+	const String item_meta = "class_" + p_metatype + ":" + p_class;
+
+	TreeItem *item = nullptr;
+	if (_find_or_create_item(p_parent, item_meta, item)) {
+		item->set_icon(0, ui_service->get_editor_theme_icon(p_icon));
+		item->set_text(0, p_text);
+		item->set_selectable(0, false);
+		item->set_metadata(0, item_meta);
+	}
+	item->set_collapsed(true);
+
+	return item;
+}
+
 bool EditorHelpSearch::Runner::_phase_fill_member_items() {
 	if (matched_classes.is_empty()) {
 		return true;
@@ -551,44 +566,79 @@ bool EditorHelpSearch::Runner::_phase_fill_member_items() {
 			item->set_custom_color(1, disabled_color);
 		}
 
-		if (search_flags & SEARCH_CONSTRUCTORS) {
+		// Create common header if required.
+		const bool search_all = (search_flags & SEARCH_ALL) == SEARCH_ALL;
+
+		if ((search_flags & SEARCH_CONSTRUCTORS) && !class_doc->constructors.is_empty()) {
+			TreeItem *parent_item = item;
+			if (search_all) {
+				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberConstructor"), TTRC("Constructors"), "constructors");
+			}
 			for (const DocData::MethodDoc &constructor_doc : class_doc->constructors) {
-				_create_constructor_item(item, class_doc, &constructor_doc);
+				_create_constructor_item(parent_item, class_doc, &constructor_doc);
 			}
 		}
-		if (search_flags & SEARCH_METHODS) {
+		if ((search_flags & SEARCH_METHODS) && !class_doc->methods.is_empty()) {
+			TreeItem *parent_item = item;
+			if (search_all) {
+				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberMethod"), TTRC("Methods"), "methods");
+			}
 			for (const DocData::MethodDoc &method_doc : class_doc->methods) {
-				_create_method_item(item, class_doc, &method_doc);
+				_create_method_item(parent_item, class_doc, &method_doc);
 			}
 		}
-		if (search_flags & SEARCH_SIGNALS) {
+		if ((search_flags & SEARCH_OPERATORS) && !class_doc->operators.is_empty()) {
+			TreeItem *parent_item = item;
+			if (search_all) {
+				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberOperator"), TTRC("Operators"), "operators");
+			}
 			for (const DocData::MethodDoc &operator_doc : class_doc->operators) {
-				_create_operator_item(item, class_doc, &operator_doc);
+				_create_operator_item(parent_item, class_doc, &operator_doc);
 			}
 		}
-		if (search_flags & SEARCH_SIGNALS) {
+		if ((search_flags & SEARCH_SIGNALS) && !class_doc->signals.is_empty()) {
+			TreeItem *parent_item = item;
+			if (search_all) {
+				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberSignal"), TTRC("Signals"), "signals");
+			}
 			for (const DocData::MethodDoc &signal_doc : class_doc->signals) {
-				_create_signal_item(item, class_doc, &signal_doc);
+				_create_signal_item(parent_item, class_doc, &signal_doc);
 			}
 		}
-		if (search_flags & SEARCH_CONSTANTS) {
+		if ((search_flags & SEARCH_CONSTANTS) && !class_doc->constants.is_empty()) {
+			TreeItem *parent_item = item;
+			if (search_all) {
+				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberConstant"), TTRC("Constants"), "constants");
+			}
 			for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
-				_create_constant_item(item, class_doc, &constant_doc);
+				_create_constant_item(parent_item, class_doc, &constant_doc);
 			}
 		}
-		if (search_flags & SEARCH_PROPERTIES) {
+		if ((search_flags & SEARCH_PROPERTIES) && !class_doc->properties.is_empty()) {
+			TreeItem *parent_item = item;
+			if (search_all) {
+				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberProperty"), TTRC("Prtoperties"), "propertiess");
+			}
 			for (const DocData::PropertyDoc &property_doc : class_doc->properties) {
-				_create_property_item(item, class_doc, &property_doc);
+				_create_property_item(parent_item, class_doc, &property_doc);
 			}
 		}
-		if (search_flags & SEARCH_THEME_ITEMS) {
+		if ((search_flags & SEARCH_THEME_ITEMS) && !class_doc->theme_properties.is_empty()) {
+			TreeItem *parent_item = item;
+			if (search_all) {
+				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberTheme"), TTRC("Theme Properties"), "theme_items");
+			}
 			for (const DocData::ThemeItemDoc &theme_property_doc : class_doc->theme_properties) {
-				_create_theme_property_item(item, class_doc, &theme_property_doc);
+				_create_theme_property_item(parent_item, class_doc, &theme_property_doc);
 			}
 		}
-		if (search_flags & SEARCH_ANNOTATIONS) {
+		if ((search_flags & SEARCH_ANNOTATIONS) && !class_doc->annotations.is_empty()) {
+			TreeItem *parent_item = item;
+			if (search_all) {
+				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberAnnotation"), TTRC("Annotations"), "annotations");
+			}
 			for (const DocData::MethodDoc &annotation_doc : class_doc->annotations) {
-				_create_annotation_item(item, class_doc, &annotation_doc);
+				_create_annotation_item(parent_item, class_doc, &annotation_doc);
 			}
 		}
 	}
