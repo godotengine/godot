@@ -6850,18 +6850,10 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	render_pass_begin.pNext = nullptr;
 	render_pass_begin.renderPass = render_pass;
 	render_pass_begin.framebuffer = vkframebuffer;
-	/*
-	 * Given how API works, it makes sense to always fully operate on the whole framebuffer.
-	 * This allows better continue operations for operations like shadowmapping.
 	render_pass_begin.renderArea.extent.width = viewport_size.width;
 	render_pass_begin.renderArea.extent.height = viewport_size.height;
 	render_pass_begin.renderArea.offset.x = viewport_offset.x;
 	render_pass_begin.renderArea.offset.y = viewport_offset.y;
-	*/
-	render_pass_begin.renderArea.extent.width = framebuffer->size.width;
-	render_pass_begin.renderArea.extent.height = framebuffer->size.height;
-	render_pass_begin.renderArea.offset.x = 0;
-	render_pass_begin.renderArea.offset.y = 0;
 
 	Vector<VkClearValue> clear_values;
 	clear_values.resize(framebuffer->texture_ids.size());
