@@ -55,8 +55,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-10 08:03+0000\n"
-"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2023-12-04 01:29+0000\n"
+"Last-Translator: nulta <un5450@naver.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -64,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -2014,7 +2014,7 @@ msgid "Resolution"
 msgstr "해상도"
 
 msgid "Max Num Vertices per Convex Hull"
-msgstr "컨벡스 헐 당 최대 꼭지점 수"
+msgstr "컨벡스 헐 당 최대 꼭짓점 수"
 
 msgid "Plane Downsampling"
 msgstr "평면 다운샘플링"
@@ -2032,7 +2032,7 @@ msgid "Max Convex Hulls"
 msgstr "최대 컨벡스 헐"
 
 msgid "Project Hull Vertices"
-msgstr "프로젝트 헐 꼭지점"
+msgstr "프로젝트 헐 꼭짓점"
 
 msgid "Primitive"
 msgstr "프리미티브"
@@ -2155,7 +2155,7 @@ msgid "Import Script"
 msgstr "스크립트 가져오기"
 
 msgid "Normal Map"
-msgstr "일반 맵"
+msgstr "노멀 맵"
 
 msgid "Roughness"
 msgstr "굵기"
@@ -4822,7 +4822,7 @@ msgid "UV"
 msgstr "UV"
 
 msgid "Vertex Colors"
-msgstr "꼭짓점 색"
+msgstr "버텍스 컬러"
 
 msgid "Polygons"
 msgstr "폴리곤"
@@ -4900,7 +4900,7 @@ msgid "Navigation Visibility Mode"
 msgstr "네비게이션 가시성 모드"
 
 msgid "Texture Normal"
-msgstr "일반 텍스처"
+msgstr "노멀 텍스처"
 
 msgid "Texture Pressed"
 msgstr "눌림 텍스처"
@@ -6385,7 +6385,7 @@ msgid "Snap 2D Transforms to Pixel"
 msgstr "2D 변형을 픽셀에 스냅"
 
 msgid "Snap 2D Vertices to Pixel"
-msgstr "2D 꼭지점을 픽셀에 스냅"
+msgstr "2D 꼭짓점을 픽셀에 스냅"
 
 msgid "VRS"
 msgstr "VRS"
@@ -6733,7 +6733,7 @@ msgid "Disable Ambient Light"
 msgstr "환경광 비활성화"
 
 msgid "Vertex Color"
-msgstr "꼭짓점 색"
+msgstr "버텍스 컬러"
 
 msgid "Use as Albedo"
 msgstr "알베도로 사용"
@@ -7476,8 +7476,14 @@ msgstr "프래그먼트"
 msgid "Cull"
 msgstr "컬링"
 
+msgid "Skip Vertex Transform"
+msgstr "버텍스 변형 건너뛰기"
+
+msgid "World Vertex Coords"
+msgstr "전역 꼭짓점 좌표"
+
 msgid "Vertex Lighting"
-msgstr "꼭짓점 조명"
+msgstr "버텍스 라이팅"
 
 msgid "Shadow Atlas"
 msgstr "그림자 아틀라스"
@@ -7496,6 +7502,9 @@ msgstr "GI"
 
 msgid "Overrides"
 msgstr "오버라이드"
+
+msgid "Force Vertex Shading"
+msgstr "버텍스 셰이딩 강제"
 
 msgid "Global Shader Variables"
 msgstr "전역 셰이더 변수"

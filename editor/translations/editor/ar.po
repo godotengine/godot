@@ -3458,17 +3458,6 @@ msgstr ""
 "تعطيل الإضافة في '%s' لتجنب الأخطاء لاحقاً."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"غير قادر علي تحميل النص البرمجي الإضافي من المسار: '%s' النوع الأساسي ليس "
-"إضافة المُعدل."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"غير قادر علي تحميل النص البرمجي الإضافي من المسار: '%s' النص البرمجي ليس في "
-"وضع الأداة."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""

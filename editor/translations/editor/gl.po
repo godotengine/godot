@@ -2404,17 +2404,6 @@ msgstr ""
 "Desactive o complemento en '%s' para evitar máis erros."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Non se puido cargar o Script da característica adicional (Plugin): O tipo "
-"base de %s non é EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Non se puido cargar Script de característica adicional (Addon) na ruta: '%s'. "
-"O script non está en modo ferramenta (tool)."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""

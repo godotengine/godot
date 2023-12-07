@@ -1688,17 +1688,6 @@ msgstr ""
 "Dezactivez addon-ul de la '%s' pentru a preveni erori ulterioare."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Nu a putut fi încărcat scriptul add-on din calea: '%s' tipul de Bază nu este "
-"EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Nu a putut fi încărcat scriptul add-on din calea: '%s' Scriptul nu este în "
-"modul unealtă."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
