@@ -1552,16 +1552,11 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
 
     f.write(".. _doc_class_reference:\n\n")
 
-    main_title = translate("All classes")
-    f.write(f"{main_title}\n")
-    f.write(f"{'=' * len(main_title)}\n\n")
+    f.write(make_heading("All classes", "="))
 
     for group_name in CLASS_GROUPS:
         if group_name in grouped_classes:
-            group_title = translate(CLASS_GROUPS[group_name])
-
-            f.write(f"{group_title}\n")
-            f.write(f"{'=' * len(group_title)}\n\n")
+            f.write(make_heading(CLASS_GROUPS[group_name], "="))
 
             f.write(".. toctree::\n")
             f.write("    :maxdepth: 1\n")
