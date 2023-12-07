@@ -938,12 +938,19 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 	wl_surface_commit(ws->wl_surface);
 
 	if (ws->wl_surface) {
-		// NOTE: This will be committed next time, so we have a proper buffer.
+		// NOTE: We're only now setting the buffer scale as the idea is to get this
+		// data committed toghether with the new frame, all by the rendering driver.
+		// This is important because we might otherwise set an invalid combination of
+		// buffer size and scale (e.g. odd size and 2x scale). We're pretty much
+		// guaranteed to get a proper buffer in the next render loop as the rescaling
+		// method also informs the engine of a "window rect change", triggering
+		// rendering if needed.
 		wl_surface_set_buffer_scale(ws->wl_surface, ws->buffer_scale);
-		// NOTE: Remember to set here also other buffer-dependent states, to be as
-		// close as possible to an atomic surface update. Ideally we'd only have one
-		// surface commit, but it's not really doable given the current state of
-		// things.
+
+		// NOTE: Remember to set here also other buffer-dependent states (e.g. opaque
+		// region) if used, to be as close as possible to an atomic surface update.
+		// Ideally we'd only have one surface commit, but it's not really doable given
+		// the current state of things.
 	}
 }
 
