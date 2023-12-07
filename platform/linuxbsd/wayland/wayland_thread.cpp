@@ -440,11 +440,14 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 			zwp_primary_selection_device_v1_add_listener(ss->wp_primary_selection_device, &wp_primary_selection_device_listener, ss);
 		}
 
+#if 0
+		// FIXME: Broken.
 		if (!ss->wp_tablet_seat && registry->wp_tablet_manager) {
 			// Tablet.
 			ss->wp_tablet_seat = zwp_tablet_manager_v2_get_tablet_seat(registry->wp_tablet_manager, wl_seat);
 			zwp_tablet_seat_v2_add_listener(ss->wp_tablet_seat, &wp_tablet_seat_listener, ss);
 		}
+#endif
 
 		registry->wl_seats.push_back(wl_seat);
 
@@ -530,6 +533,8 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+#if 0
+	// FIXME: Broken.
 	if (strcmp(interface, zwp_tablet_manager_v2_interface.name) == 0) {
 		registry->wp_tablet_manager = (struct zwp_tablet_manager_v2 *)wl_registry_bind(wl_registry, name, &zwp_tablet_manager_v2_interface, 1);
 		registry->wp_tablet_manager_name = name;
@@ -545,6 +550,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 
 		return;
 	}
+#endif
 }
 
 void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
@@ -795,6 +801,8 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		return;
 	}
 
+#if 0
+	// FIXME: Broken.
 	if (name == registry->wp_tablet_manager_name) {
 		if (registry->wp_tablet_manager) {
 			zwp_tablet_manager_v2_destroy(registry->wp_tablet_manager);
@@ -820,6 +828,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 		return;
 	}
+#endif
 
 	{
 		// Iterate through all of the seats to find if any got removed.
@@ -839,6 +848,8 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 					wl_data_device_destroy(ss->wl_data_device);
 				}
 
+#if 0
+				// FIXME: Broken.
 				if (ss->wp_tablet_seat) {
 					zwp_tablet_seat_v2_destroy(ss->wp_tablet_seat);
 
@@ -854,7 +865,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 				memdelete(ss);
 				registry->wl_seats.erase(it);
-
+#endif
 				return;
 			}
 
@@ -3884,9 +3895,12 @@ void WaylandThread::destroy() {
 			zwp_confined_pointer_v1_destroy(ss->wp_confined_pointer);
 		}
 
+#if 0
+		// FIXME: Broken.
 		if (ss->wp_tablet_seat) {
 			zwp_tablet_seat_v2_destroy(ss->wp_tablet_seat);
 		}
+#endif
 
 		for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
 			zwp_tablet_tool_v2_destroy(tool);
