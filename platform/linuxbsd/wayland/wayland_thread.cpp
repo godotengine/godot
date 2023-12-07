@@ -937,7 +937,7 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 
 	if (ws->wl_surface && ws->buffer_scale_changed) {
 		// NOTE: We're only now setting the buffer scale as the idea is to get this
-		// data committed toghether with the new frame, all by the rendering driver.
+		// data committed together with the new frame, all by the rendering driver.
 		// This is important because we might otherwise set an invalid combination of
 		// buffer size and scale (e.g. odd size and 2x scale). We're pretty much
 		// guaranteed to get a proper buffer in the next render loop as the rescaling
