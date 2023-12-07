@@ -2151,6 +2151,13 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const Vector<ui
 	if (p_use_as_storage) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_STORAGE_BIT);
 	}
+	// <TF>
+	// @ShadyTF persistently mapped buffers
+	if (persistent_buffer_enabled) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_PERSISTENT_BIT);
+	}
+	// </TF>
+	
 	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
@@ -2163,7 +2170,6 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const Vector<ui
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-
 		// <TF>
 		// @ShadyTF - if persistent UMA is available, copy and skip the barrier
 		uint8_t *persistent_data_ptr = driver->buffer_get_persistent_address(buffer.driver_id);
@@ -2176,7 +2182,6 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const Vector<ui
 		// @ShadyTF 
 		}
 		// </TF>
-
 	}
 
 	buffer_memory += buffer.size;
@@ -2330,6 +2335,13 @@ RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferForm
 #endif
 	index_buffer.size = size_bytes;
 	index_buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_INDEX_BIT);
+	// <TF>
+	// @ShadyTF persistently mapped buffers
+	if (persistent_buffer_enabled) {
+		index_buffer.usage.set_flag(RDD::BUFFER_USAGE_PERSISTENT_BIT);
+	}
+	// </TF>
+
 	index_buffer.driver_id = driver->buffer_create(index_buffer.size, index_buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
 	ERR_FAIL_COND_V(!index_buffer.driver_id, RID());
 
@@ -2526,13 +2538,17 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 	Buffer buffer;
 	buffer.size = p_size_bytes;
 	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT);
-	if (persistent_buffer_enabled && p_creation_bits.has_flag(BUFFER_CREATION_PERSISTENT_BIT)) {
+	// <TF>
+	// @ShadyTF persistently mapped buffers
+	// all uniform buffers are persistent 
+	if (persistent_buffer_enabled ){
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_PERSISTENT_BIT);
 
 		if (p_creation_bits.has_flag(BUFFER_CREATION_LINEAR_BIT)) {
 			return linear_buffer_create(p_size_bytes, false);
 		}
 	}
+	// </TF>
 	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
