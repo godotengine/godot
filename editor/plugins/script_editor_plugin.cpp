@@ -2065,7 +2065,7 @@ void ScriptEditor::_update_script_names() {
 					sd.sort_key = path;
 				} break;
 				case SORT_BY_MODIFIED: {
-					// XOR with UINT64_MAX results in descending order
+					// XOR with UINT64_MAX results in descending order.
 					uint64_t modified_time_desc = se->get_edited_resource()->get_last_modified_time() ^ UINT64_MAX;
 					sd.sort_key = String::num_uint64(modified_time_desc);
 				} break;
