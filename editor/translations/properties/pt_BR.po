@@ -162,6 +162,7 @@
 # Felipe Bertola <eduardodelphinodepaula@gmail.com>, 2023.
 # Vittor Paulo Vieira da Costa <vittorpaulovc@gmail.com>, 2023.
 # Matheus Macedo <mmanganelidemacedo@gmail.com>, 2023.
+# Ricardo Bustamante <ricardo@busta.dev>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
@@ -3371,16 +3372,16 @@ msgid "Keystore"
 msgstr "Keystore"
 
 msgid "Debug User"
-msgstr "Depurar Usuário"
+msgstr "Usuário de Depuração"
 
 msgid "Debug Password"
-msgstr "Depurar Senha"
+msgstr "Senha de Depuração"
 
 msgid "Release User"
-msgstr "Liberar Usuário"
+msgstr "Usuário de Lançamento"
 
 msgid "Release Password"
-msgstr "Liberar Senha"
+msgstr "Senha de Depuração"
 
 msgid "Code"
 msgstr "Código"
