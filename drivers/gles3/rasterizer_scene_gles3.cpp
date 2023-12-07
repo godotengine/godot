@@ -2238,9 +2238,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	bool fb_cleared = false;
 
-	Size2i screen_size;
-	screen_size.x = rb->width;
-	screen_size.y = rb->height;
+	Size2i screen_size = rb->internal_size;
 
 	bool use_wireframe = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME;
 
@@ -2360,8 +2358,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
-	glViewport(0, 0, rb->width, rb->height);
+	GLuint fbo = rb->get_render_fbo();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glViewport(0, 0, rb->internal_size.x, rb->internal_size.y);
 
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
@@ -2463,25 +2463,48 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 
 	if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
-		texture_storage->copy_scene_to_backbuffer(rt, scene_state.used_screen_texture, scene_state.used_depth_texture);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
-		glReadBuffer(GL_COLOR_ATTACHMENT0);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rt->backbuffer_fbo);
-		if (scene_state.used_screen_texture) {
-			glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
-					0, 0, rt->size.x, rt->size.y,
-					GL_COLOR_BUFFER_BIT, GL_NEAREST);
-			glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 5);
-			glBindTexture(GL_TEXTURE_2D, rt->backbuffer);
+		Size2i size;
+		GLuint backbuffer_fbo = 0;
+		GLuint backbuffer = 0;
+		GLuint backbuffer_depth = 0;
+
+		if (rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_OFF) {
+			texture_storage->check_backbuffer(rt, scene_state.used_screen_texture, scene_state.used_depth_texture); // note, badly names, this just allocates!
+
+			size = rt->size;
+			backbuffer_fbo = rt->backbuffer_fbo;
+			backbuffer = rt->backbuffer;
+			backbuffer_depth = rt->backbuffer_depth;
+		} else {
+			rb->check_backbuffer(scene_state.used_screen_texture, scene_state.used_depth_texture);
+			size = rb->get_internal_size();
+			backbuffer_fbo = rb->get_backbuffer_fbo();
+			backbuffer = rb->get_backbuffer();
+			backbuffer_depth = rb->get_backbuffer_depth();
 		}
-		if (scene_state.used_depth_texture) {
-			glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
-					0, 0, rt->size.x, rt->size.y,
-					GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-			glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
-			glBindTexture(GL_TEXTURE_2D, rt->backbuffer_depth);
+
+		if (backbuffer_fbo != 0) {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, backbuffer_fbo);
+			if (scene_state.used_screen_texture) {
+				glBlitFramebuffer(0, 0, size.x, size.y,
+						0, 0, size.x, size.y,
+						GL_COLOR_BUFFER_BIT, GL_NEAREST);
+				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 5);
+				glBindTexture(GL_TEXTURE_2D, backbuffer);
+			}
+			if (scene_state.used_depth_texture) {
+				glBlitFramebuffer(0, 0, size.x, size.y,
+						0, 0, size.x, size.y,
+						GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
+				glBindTexture(GL_TEXTURE_2D, backbuffer_depth);
+			}
 		}
-		glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+
+		// Bound framebuffer may have changed, so change it back
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	}
 
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");
@@ -2498,12 +2521,108 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 
 	if (rb.is_valid()) {
-		_render_buffers_debug_draw(rb, p_shadow_atlas);
+		_render_buffers_debug_draw(rb, p_shadow_atlas, fbo);
 	}
 	glDisable(GL_BLEND);
+
+	_render_post_processing(&render_data);
+
 	texture_storage->render_target_disable_clear_request(rb->render_target);
 
 	glActiveTexture(GL_TEXTURE0);
+}
+
+void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_render_data) {
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	Ref<RenderSceneBuffersGLES3> rb = p_render_data->render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+
+	RID render_target = rb->get_render_target();
+	Size2i internal_size = rb->get_internal_size();
+	Size2i target_size = rb->get_target_size();
+	uint32_t view_count = rb->get_view_count();
+
+	// bool msaa2d_needs_resolve = texture_storage->render_target_get_msaa(render_target) != RS::VIEWPORT_MSAA_DISABLED && !GLES3::Config::get_singleton()->rt_msaa_supported;
+	bool msaa3d_needs_resolve = rb->get_msaa_needs_resolve();
+	GLuint fbo_msaa_3d = rb->get_msaa3d_fbo();
+	GLuint fbo_int = rb->get_internal_fbo();
+	GLuint fbo_rt = texture_storage->render_target_get_fbo(render_target); // TODO if MSAA 2D is enabled and we're not using rt_msaa, get 2D render target here.
+
+	if (view_count == 1) {
+		// Resolve if needed.
+		if (fbo_msaa_3d != 0 && msaa3d_needs_resolve) {
+			// We can use blit to copy things over
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_msaa_3d);
+
+			if (fbo_int != 0) {
+				// We can't combine resolve and scaling, so resolve into our internal buffer
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_int);
+			} else {
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_rt);
+			}
+			glBlitFramebuffer(0, 0, internal_size.x, internal_size.y, 0, 0, internal_size.x, internal_size.y, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		}
+
+		if (fbo_int != 0) {
+			// TODO If we have glow or other post processing, we upscale only depth here, post processing will also do scaling.
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_int);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_rt);
+			glBlitFramebuffer(0, 0, internal_size.x, internal_size.y, 0, 0, target_size.x, target_size.y, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+			glBlitFramebuffer(0, 0, internal_size.x, internal_size.y, 0, 0, target_size.x, target_size.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo_rt);
+	} else if ((fbo_msaa_3d != 0 && msaa3d_needs_resolve) || (fbo_int != 0)) {
+		// TODO investigate if it's smarter to cache these FBOs
+		GLuint fbos[2]; // read and write
+		glGenFramebuffers(2, fbos);
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[0]);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[1]);
+
+		if (fbo_msaa_3d != 0 && msaa3d_needs_resolve) {
+			GLuint read_color = rb->get_msaa3d_color();
+			GLuint read_depth = rb->get_msaa3d_depth();
+			GLuint write_color = 0;
+			GLuint write_depth = 0;
+
+			if (fbo_int != 0) {
+				write_color = rb->get_internal_color();
+				write_depth = rb->get_internal_depth();
+			} else {
+				write_color = texture_storage->render_target_get_color(render_target);
+				write_depth = texture_storage->render_target_get_depth(render_target);
+			}
+
+			for (uint32_t v = 0; v < view_count; v++) {
+				glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, read_color, 0, v);
+				glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, read_depth, 0, v);
+				glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, write_color, 0, v);
+				glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, write_depth, 0, v);
+				glBlitFramebuffer(0, 0, internal_size.x, internal_size.y, 0, 0, internal_size.x, internal_size.y, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			}
+		}
+
+		if (fbo_int != 0) {
+			GLuint read_color = rb->get_internal_color();
+			GLuint read_depth = rb->get_internal_depth();
+			GLuint write_color = texture_storage->render_target_get_color(render_target);
+			GLuint write_depth = texture_storage->render_target_get_depth(render_target);
+
+			for (uint32_t v = 0; v < view_count; v++) {
+				glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, read_color, 0, v);
+				glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, read_depth, 0, v);
+				glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, write_color, 0, v);
+				glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, write_depth, 0, v);
+
+				glBlitFramebuffer(0, 0, internal_size.x, internal_size.y, 0, 0, target_size.x, target_size.y, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+				glBlitFramebuffer(0, 0, internal_size.x, internal_size.y, 0, 0, target_size.x, target_size.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			}
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo_rt);
+		glDeleteFramebuffers(2, fbos);
+	}
 }
 
 template <PassMode p_pass_mode>
@@ -3125,7 +3244,7 @@ Ref<RenderSceneBuffers> RasterizerSceneGLES3::render_buffers_create() {
 	return rb;
 }
 
-void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES3> p_render_buffers, RID p_shadow_atlas) {
+void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES3> p_render_buffers, RID p_shadow_atlas, GLuint p_fbo) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
 	GLES3::CopyEffects *copy_effects = GLES3::CopyEffects::get_singleton();
@@ -3202,8 +3321,11 @@ void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES
 					}
 				}
 			}
-			glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
-			glViewport(0, 0, rt->size.width, rt->size.height);
+
+			// Set back to FBO
+			glBindFramebuffer(GL_FRAMEBUFFER, p_fbo);
+			Size2i size = p_render_buffers->get_internal_size();
+			glViewport(0, 0, size.width, size.height);
 			glBindTexture(GL_TEXTURE_2D, shadow_atlas_texture);
 
 			copy_effects->copy_to_rect(Rect2(Vector2(), Vector2(0.5, 0.5)));

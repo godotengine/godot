@@ -484,7 +484,7 @@ public:
 
 	/* Texture API */
 
-	Texture *get_texture(RID p_rid) {
+	Texture *get_texture(RID p_rid) const {
 		Texture *texture = texture_owner.get_or_null(p_rid);
 		if (texture && texture->is_proxy) {
 			return texture_owner.get_or_null(texture->proxy_to);
@@ -602,7 +602,7 @@ public:
 	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
 	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
 
-	void copy_scene_to_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture);
+	void check_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture);
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;
@@ -635,6 +635,10 @@ public:
 	Color render_target_get_clear_request_color(RID p_render_target) override;
 	void render_target_disable_clear_request(RID p_render_target) override;
 	void render_target_do_clear_request(RID p_render_target) override;
+
+	GLuint render_target_get_fbo(RID p_render_target) const;
+	GLuint render_target_get_color(RID p_render_target) const;
+	GLuint render_target_get_depth(RID p_render_target) const;
 
 	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override;
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const override;
