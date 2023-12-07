@@ -221,27 +221,27 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 	// List of all reachable navigation polys.
 	LocalVector<gd::NavigationPoly> navigation_polys;
-	navigation_polys.reserve(polygons.size() * 0.75);
+	navigation_polys.resize(polygons.size() + link_polygons.size());
 
-	// Add the start polygon to the reachable navigation polygons.
-	gd::NavigationPoly begin_navigation_poly = gd::NavigationPoly(begin_poly);
-	begin_navigation_poly.self_id = 0;
+	// Initialize the matching navigation polygon.
+	gd::NavigationPoly &begin_navigation_poly = navigation_polys[begin_poly->id];
+	begin_navigation_poly.poly = begin_poly;
 	begin_navigation_poly.entry = begin_point;
 	begin_navigation_poly.back_navigation_edge_pathway_start = begin_point;
 	begin_navigation_poly.back_navigation_edge_pathway_end = begin_point;
-	navigation_polys.push_back(begin_navigation_poly);
 
-	// List of polygon IDs to visit.
-	List<uint32_t> to_visit;
-	to_visit.push_back(0);
+	// Heap of polygons to travel next.
+	gd::Heap<gd::NavigationPoly *, gd::NavPolyTravelCostGreaterThan, gd::NavPolyHeapIndexer>
+			traversable_polys;
+	traversable_polys.reserve(polygons.size() * 0.25);
 
 	// This is an implementation of the A* algorithm.
-	int least_cost_id = 0;
+	int least_cost_id = begin_poly->id;
 	int prev_least_cost_id = -1;
 	bool found_route = false;
 
 	const gd::Polygon *reachable_end = nullptr;
-	real_t reachable_d = FLT_MAX;
+	real_t distance_to_reachable_end = FLT_MAX;
 	bool is_reachable = true;
 
 	while (true) {
@@ -260,51 +260,57 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				real_t poly_enter_cost = 0.0;
 				real_t poly_travel_cost = least_cost_poly.poly->owner->get_travel_cost();
 
-				if (prev_least_cost_id != -1 && (navigation_polys[prev_least_cost_id].poly->owner->get_self() != least_cost_poly.poly->owner->get_self())) {
+				if (prev_least_cost_id != -1 && navigation_polys[prev_least_cost_id].poly->owner->get_self() != least_cost_poly.poly->owner->get_self()) {
 					poly_enter_cost = least_cost_poly.poly->owner->get_enter_cost();
 				}
 				prev_least_cost_id = least_cost_id;
 
 				Vector3 pathway[2] = { connection.pathway_start, connection.pathway_end };
 				const Vector3 new_entry = Geometry3D::get_closest_point_to_segment(least_cost_poly.entry, pathway);
-				const real_t new_distance = (least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost) + poly_enter_cost + least_cost_poly.traveled_distance;
+				const real_t new_traveled_distance = least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + poly_enter_cost + least_cost_poly.traveled_distance;
 
-				int64_t already_visited_polygon_index = navigation_polys.find(gd::NavigationPoly(connection.polygon));
+				// Check if the neighbor polygon has already been processed.
+				gd::NavigationPoly &neighbor_poly = navigation_polys[connection.polygon->id];
+				if (neighbor_poly.poly != nullptr) {
+					// If the neighbor polygon hasn't been traversed yet and the new path leading to
+					// it is shorter, update the polygon.
+					if (neighbor_poly.traversable_poly_index < traversable_polys.size() &&
+							new_traveled_distance < neighbor_poly.traveled_distance) {
+						neighbor_poly.back_navigation_poly_id = least_cost_id;
+						neighbor_poly.back_navigation_edge = connection.edge;
+						neighbor_poly.back_navigation_edge_pathway_start = connection.pathway_start;
+						neighbor_poly.back_navigation_edge_pathway_end = connection.pathway_end;
+						neighbor_poly.traveled_distance = new_traveled_distance;
+						neighbor_poly.distance_to_destination =
+								new_entry.distance_to(end_point) *
+								neighbor_poly.poly->owner->get_travel_cost();
+						neighbor_poly.entry = new_entry;
 
-				if (already_visited_polygon_index != -1) {
-					// Polygon already visited, check if we can reduce the travel cost.
-					gd::NavigationPoly &avp = navigation_polys[already_visited_polygon_index];
-					if (new_distance < avp.traveled_distance) {
-						avp.back_navigation_poly_id = least_cost_id;
-						avp.back_navigation_edge = connection.edge;
-						avp.back_navigation_edge_pathway_start = connection.pathway_start;
-						avp.back_navigation_edge_pathway_end = connection.pathway_end;
-						avp.traveled_distance = new_distance;
-						avp.entry = new_entry;
+						// Update the priority of the polygon in the heap.
+						traversable_polys.shift(neighbor_poly.traversable_poly_index);
 					}
 				} else {
-					// Add the neighbor polygon to the reachable ones.
-					gd::NavigationPoly new_navigation_poly = gd::NavigationPoly(connection.polygon);
-					new_navigation_poly.self_id = navigation_polys.size();
-					new_navigation_poly.back_navigation_poly_id = least_cost_id;
-					new_navigation_poly.back_navigation_edge = connection.edge;
-					new_navigation_poly.back_navigation_edge_pathway_start = connection.pathway_start;
-					new_navigation_poly.back_navigation_edge_pathway_end = connection.pathway_end;
-					new_navigation_poly.traveled_distance = new_distance;
-					new_navigation_poly.entry = new_entry;
-					navigation_polys.push_back(new_navigation_poly);
+					// Initialize the matching navigation polygon.
+					neighbor_poly.poly = connection.polygon;
+					neighbor_poly.back_navigation_poly_id = least_cost_id;
+					neighbor_poly.back_navigation_edge = connection.edge;
+					neighbor_poly.back_navigation_edge_pathway_start = connection.pathway_start;
+					neighbor_poly.back_navigation_edge_pathway_end = connection.pathway_end;
+					neighbor_poly.traveled_distance = new_traveled_distance;
+					neighbor_poly.distance_to_destination =
+							new_entry.distance_to(end_point) *
+							neighbor_poly.poly->owner->get_travel_cost();
+					neighbor_poly.entry = new_entry;
 
-					// Add the neighbor polygon to the polygons to visit.
-					to_visit.push_back(navigation_polys.size() - 1);
+					// Add the polygon to the heap of polygons to traverse next.
+					traversable_polys.push(&neighbor_poly);
 				}
 			}
 		}
 
-		// Removes the least cost polygon from the list of polygons to visit so we can advance.
-		to_visit.erase(least_cost_id);
-
-		// When the list of polygons to visit is empty at this point it means the End Polygon is not reachable
-		if (to_visit.size() == 0) {
+		// When the heap of traversable polygons is empty at this point it means the end polygon is
+		// unreachable.
+		if (traversable_polys.is_empty()) {
 			// Thus use the further reachable polygon
 			ERR_BREAK_MSG(is_reachable == false, "It's not expect to not find the most reachable polygons");
 			is_reachable = false;
@@ -366,13 +372,12 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				return path;
 			}
 
-			// Reset open and navigation_polys
-			gd::NavigationPoly np = navigation_polys[0];
-			navigation_polys.clear();
-			navigation_polys.push_back(np);
-			to_visit.clear();
-			to_visit.push_back(0);
-			least_cost_id = 0;
+			for (gd::NavigationPoly &nav_poly : navigation_polys) {
+				nav_poly.poly = nullptr;
+			}
+			navigation_polys[begin_poly->id].poly = begin_poly;
+
+			least_cost_id = begin_poly->id;
 			prev_least_cost_id = -1;
 
 			reachable_end = nullptr;
@@ -380,26 +385,14 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			continue;
 		}
 
-		// Find the polygon with the minimum cost from the list of polygons to visit.
-		least_cost_id = -1;
-		real_t least_cost = FLT_MAX;
-		for (List<uint32_t>::Element *element = to_visit.front(); element != nullptr; element = element->next()) {
-			gd::NavigationPoly *np = &navigation_polys[element->get()];
-			real_t cost = np->traveled_distance;
-			cost += (np->entry.distance_to(end_point) * np->poly->owner->get_travel_cost());
-			if (cost < least_cost) {
-				least_cost_id = np->self_id;
-				least_cost = cost;
-			}
-		}
+		// Pop the polygon with the lowest travel cost from the heap of traversable polygons.
+		least_cost_id = traversable_polys.pop()->poly->id;
 
-		ERR_BREAK(least_cost_id == -1);
-
-		// Stores the further reachable end polygon, in case our goal is not reachable.
+		// Store the farthest reachable end polygon in case our goal is not reachable.
 		if (is_reachable) {
-			real_t d = navigation_polys[least_cost_id].entry.distance_to(p_destination);
-			if (reachable_d > d) {
-				reachable_d = d;
+			real_t distance = navigation_polys[least_cost_id].entry.distance_to(p_destination);
+			if (distance_to_reachable_end > distance) {
+				distance_to_reachable_end = distance;
 				reachable_end = navigation_polys[least_cost_id].poly;
 			}
 		}
@@ -943,29 +936,30 @@ void NavMap::sync() {
 		}
 
 		// Resize the polygon count.
-		int count = 0;
+		int polygon_count = 0;
 		for (const NavRegion *region : regions) {
 			if (!region->get_enabled()) {
 				continue;
 			}
-			count += region->get_polygons().size();
+			polygon_count += region->get_polygons().size();
 		}
-		polygons.resize(count);
+		polygons.resize(polygon_count);
 
 		// Copy all region polygons in the map.
-		count = 0;
+		polygon_count = 0;
 		for (const NavRegion *region : regions) {
 			if (!region->get_enabled()) {
 				continue;
 			}
 			const LocalVector<gd::Polygon> &polygons_source = region->get_polygons();
 			for (uint32_t n = 0; n < polygons_source.size(); n++) {
-				polygons[count + n] = polygons_source[n];
+				polygons[polygon_count] = polygons_source[n];
+				polygons[polygon_count].id = polygon_count;
+				polygon_count++;
 			}
-			count += region->get_polygons().size();
 		}
 
-		_new_pm_polygon_count = polygons.size();
+		_new_pm_polygon_count = polygon_count;
 
 		// Group all edges per key.
 		HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey> connections;
@@ -1136,6 +1130,7 @@ void NavMap::sync() {
 			// If we have both a start and end point, then create a synthetic polygon to route through.
 			if (closest_start_polygon && closest_end_polygon) {
 				gd::Polygon &new_polygon = link_polygons[link_poly_idx++];
+				new_polygon.id = polygon_count++;
 				new_polygon.owner = link;
 
 				new_polygon.edges.clear();

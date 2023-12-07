@@ -98,6 +98,9 @@ struct Edge {
 };
 
 struct Polygon {
+	/// Id of the polygon in the map.
+	uint32_t id = UINT32_MAX;
+
 	/// Navigation region or link that contains this polygon.
 	const NavBase *owner = nullptr;
 
@@ -111,9 +114,11 @@ struct Polygon {
 };
 
 struct NavigationPoly {
-	uint32_t self_id = 0;
 	/// This poly.
-	const Polygon *poly;
+	const Polygon *poly = nullptr;
+
+	/// Index in the heap of traversable polygons.
+	uint32_t traversable_poly_index = UINT32_MAX;
 
 	/// Those 4 variables are used to travel the path backwards.
 	int back_navigation_poly_id = -1;
@@ -123,20 +128,44 @@ struct NavigationPoly {
 
 	/// The entry position of this poly.
 	Vector3 entry;
-	/// The distance to the destination.
+	/// The distance traveled until now (g cost).
 	real_t traveled_distance = 0.0;
+	/// The distance to the destination (h cost).
+	real_t distance_to_destination = 0.0;
 
-	NavigationPoly() { poly = nullptr; }
-
-	NavigationPoly(const Polygon *p_poly) :
-			poly(p_poly) {}
-
-	bool operator==(const NavigationPoly &other) const {
-		return poly == other.poly;
+	/// The total travel cost (f cost).
+	real_t total_travel_cost() const {
+		return traveled_distance + distance_to_destination;
 	}
 
-	bool operator!=(const NavigationPoly &other) const {
-		return !operator==(other);
+	bool operator==(const NavigationPoly &p_other) const {
+		return poly == p_other.poly;
+	}
+
+	bool operator!=(const NavigationPoly &p_other) const {
+		return !(*this == p_other);
+	}
+};
+
+struct NavPolyTravelCostGreaterThan {
+	// Returns `true` if the travel cost of `a` is higher than that of `b`.
+	bool operator()(const NavigationPoly *p_poly_a, const NavigationPoly *p_poly_b) const {
+		real_t f_cost_a = p_poly_a->total_travel_cost();
+		real_t h_cost_a = p_poly_a->distance_to_destination;
+		real_t f_cost_b = p_poly_b->total_travel_cost();
+		real_t h_cost_b = p_poly_b->distance_to_destination;
+
+		if (f_cost_a != f_cost_b) {
+			return f_cost_a > f_cost_b;
+		} else {
+			return h_cost_a > h_cost_b;
+		}
+	}
+};
+
+struct NavPolyHeapIndexer {
+	void operator()(NavigationPoly *p_poly, uint32_t p_heap_index) const {
+		p_poly->traversable_poly_index = p_heap_index;
 	}
 };
 
@@ -146,6 +175,129 @@ struct ClosestPointQueryResult {
 	RID owner;
 };
 
+template <typename T>
+struct NoopIndexer {
+	void operator()(const T &p_value, uint32_t p_index) {}
+};
+
+/**
+ * A max-heap implementation that notifies of element index changes.
+ */
+template <typename T, typename LessThan = Comparator<T>, typename Indexer = NoopIndexer<T>>
+class Heap {
+	LocalVector<T> _buffer;
+
+	LessThan _less_than;
+	Indexer _indexer;
+
+public:
+	void reserve(uint32_t p_size) {
+		_buffer.reserve(p_size);
+	}
+
+	uint32_t size() const {
+		return _buffer.size();
+	}
+
+	bool is_empty() const {
+		return _buffer.is_empty();
+	}
+
+	void push(const T &p_element) {
+		_buffer.push_back(p_element);
+		_indexer(p_element, _buffer.size() - 1);
+		_shift_up(_buffer.size() - 1);
+	}
+
+	T pop() {
+		ERR_FAIL_COND_V_MSG(_buffer.is_empty(), T(), "Can't pop an empty heap.");
+		T value = _buffer[0];
+		_indexer(value, UINT32_MAX);
+		if (_buffer.size() > 1) {
+			_buffer[0] = _buffer[_buffer.size() - 1];
+			_indexer(_buffer[0], 0);
+			_buffer.remove_at(_buffer.size() - 1);
+			_shift_down(0);
+		} else {
+			_buffer.remove_at(_buffer.size() - 1);
+		}
+		return value;
+	}
+
+	/**
+	 * Update the position of the element in the heap if necessary.
+	 */
+	void shift(uint32_t p_index) {
+		ERR_FAIL_UNSIGNED_INDEX_MSG(p_index, _buffer.size(), "Heap element index is out of range.");
+		if (!_shift_up(p_index)) {
+			_shift_down(p_index);
+		}
+	}
+
+	void clear() {
+		for (const T &value : _buffer) {
+			_indexer(value, UINT32_MAX);
+		}
+		_buffer.clear();
+	}
+
+	Heap() {}
+
+	Heap(const LessThan &p_less_than) :
+			_less_than(p_less_than) {}
+
+	Heap(const Indexer &p_indexer) :
+			_indexer(p_indexer) {}
+
+	Heap(const LessThan &p_less_than, const Indexer &p_indexer) :
+			_less_than(p_less_than), _indexer(p_indexer) {}
+
+private:
+	bool _shift_up(uint32_t p_index) {
+		T value = _buffer[p_index];
+		uint32_t current_index = p_index;
+		uint32_t parent_index = (current_index - 1) / 2;
+		while (current_index > 0 && _less_than(_buffer[parent_index], value)) {
+			_buffer[current_index] = _buffer[parent_index];
+			_indexer(_buffer[current_index], current_index);
+			current_index = parent_index;
+			parent_index = (current_index - 1) / 2;
+		}
+		if (current_index != p_index) {
+			_buffer[current_index] = value;
+			_indexer(value, current_index);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	bool _shift_down(uint32_t p_index) {
+		T value = _buffer[p_index];
+		uint32_t current_index = p_index;
+		uint32_t child_index = 2 * current_index + 1;
+		while (child_index < _buffer.size()) {
+			if (child_index + 1 < _buffer.size() &&
+					_less_than(_buffer[child_index], _buffer[child_index + 1])) {
+				child_index++;
+			}
+			if (_less_than(_buffer[child_index], value)) {
+				break;
+			}
+			_buffer[current_index] = _buffer[child_index];
+			_indexer(_buffer[current_index], current_index);
+			current_index = child_index;
+			child_index = 2 * current_index + 1;
+		}
+		if (current_index != p_index) {
+			_buffer[current_index] = value;
+			_indexer(value, current_index);
+			return true;
+		} else {
+			return false;
+		}
+	}
+};
 } // namespace gd
 
 #endif // NAV_UTILS_H
