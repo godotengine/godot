@@ -116,6 +116,58 @@ void DisplayServerWayland::_resize_window(Size2i size) {
 	}
 }
 
+void DisplayServerWayland::_show_window() {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WindowData &wd = main_window;
+
+	if (!wd.visible) {
+		DEBUG_LOG_WAYLAND("Showing window.");
+
+		// Showing this window will reset its mode with whatever the compositor
+		// reports. We'll save the mode beforehand so that we can reapply it later.
+		// TODO: Fix/Port/Move/Whatever to `WaylandThread` APIs.
+		WindowMode setup_mode = wd.mode;
+
+		wayland_thread.window_create(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
+		wayland_thread.window_set_min_size(MAIN_WINDOW_ID, wd.min_size);
+		wayland_thread.window_set_max_size(MAIN_WINDOW_ID, wd.max_size);
+		wayland_thread.window_set_app_id(MAIN_WINDOW_ID, _get_app_id_from_context(context));
+		wayland_thread.window_set_borderless(MAIN_WINDOW_ID, window_get_flag(WINDOW_FLAG_BORDERLESS));
+
+		// NOTE: The XDG shell protocol is built in a way that causes the window to
+		// be immediately shown as soon as a valid buffer is assigned to it. Hence,
+		// the only acceptable way of implementing window showing is to move the
+		// graphics context window creation logic here.
+#ifdef VULKAN_ENABLED
+		if (context_vulkan) {
+			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
+			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wayland_thread.get_wl_display(), wl_surface, wd.rect.size.width, wd.rect.size.height);
+			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
+		}
+#endif
+
+#ifdef GLES3_ENABLED
+		if (egl_manager) {
+			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
+			wd.wl_egl_window = wl_egl_window_create(wl_surface, wd.rect.size.width, wd.rect.size.height);
+
+			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wayland_thread.get_wl_display(), wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
+			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
+
+			window_set_vsync_mode(wd.vsync_mode, MAIN_WINDOW_ID);
+		}
+#endif
+		// NOTE: The public window-handling methods might depend on this flag being
+		// set. Ensure to not make any of these calls before this assignment.
+		wd.visible = true;
+
+		// Actually try to apply the window's mode now that it's visible.
+		window_set_mode(setup_mode);
+
+		wayland_thread.window_set_title(MAIN_WINDOW_ID, wd.title);
+	}
+}
 // Interface methods.
 
 bool DisplayServerWayland::has_feature(Feature p_feature) const {
@@ -486,59 +538,6 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	ret.push_back(MAIN_WINDOW_ID);
 
 	return ret;
-}
-
-void DisplayServerWayland::_show_window() {
-	MutexLock mutex_lock(wayland_thread.mutex);
-
-	WindowData &wd = main_window;
-
-	if (!wd.visible) {
-		DEBUG_LOG_WAYLAND("Showing window.");
-
-		// Showing this window will reset its mode with whatever the compositor
-		// reports. We'll save the mode beforehand so that we can reapply it later.
-		// TODO: Fix/Port/Move/Whatever to `WaylandThread` APIs.
-		WindowMode setup_mode = wd.mode;
-
-		wayland_thread.window_create(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
-		wayland_thread.window_set_min_size(MAIN_WINDOW_ID, wd.min_size);
-		wayland_thread.window_set_max_size(MAIN_WINDOW_ID, wd.max_size);
-		wayland_thread.window_set_app_id(MAIN_WINDOW_ID, _get_app_id_from_context(context));
-		wayland_thread.window_set_borderless(MAIN_WINDOW_ID, window_get_flag(WINDOW_FLAG_BORDERLESS));
-
-		// NOTE: The XDG shell protocol is built in a way that causes the window to
-		// be immediately shown as soon as a valid buffer is assigned to it. Hence,
-		// the only acceptable way of implementing window showing is to move the
-		// graphics context window creation logic here.
-#ifdef VULKAN_ENABLED
-		if (context_vulkan) {
-			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
-			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wayland_thread.get_wl_display(), wl_surface, wd.rect.size.width, wd.rect.size.height);
-			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
-		}
-#endif
-
-#ifdef GLES3_ENABLED
-		if (egl_manager) {
-			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
-			wd.wl_egl_window = wl_egl_window_create(wl_surface, wd.rect.size.width, wd.rect.size.height);
-
-			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wayland_thread.get_wl_display(), wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
-			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
-
-			window_set_vsync_mode(wd.vsync_mode, MAIN_WINDOW_ID);
-		}
-#endif
-		// NOTE: The public window-handling methods might depend on this flag being
-		// set. Ensure to not make any of these calls before this assignment.
-		wd.visible = true;
-
-		// Actually try to apply the window's mode now that it's visible.
-		window_set_mode(setup_mode);
-
-		wayland_thread.window_set_title(MAIN_WINDOW_ID, wd.title);
-	}
 }
 
 DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(const Point2i &p_position) const {

@@ -145,6 +145,8 @@ class DisplayServerWayland : public DisplayServer {
 
 	void _resize_window(Size2i size);
 
+	virtual void _show_window();
+
 public:
 	virtual bool has_feature(Feature p_feature) const override;
 
@@ -192,8 +194,6 @@ public:
 	virtual bool screen_is_kept_on() const override;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
-
-	virtual void _show_window();
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 
