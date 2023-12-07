@@ -65,12 +65,13 @@
 # Jorge González <jlexgog@gmail.com>, 2023.
 # Jorge Julio Torres <jjulio.tlg.89@gmail.com>, 2023.
 # simomi 073 <arcemoyanomanuel@gmail.com>, 2023.
+# Alejandro Ruiz Esclapez <ruizesa24@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-10-25 16:15+0000\n"
-"Last-Translator: Jorge Julio Torres <jjulio.tlg.89@gmail.com>\n"
+"PO-Revision-Date: 2023-12-06 21:45+0000\n"
+"Last-Translator: Alejandro Ruiz Esclapez <ruizesa24@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/es/>\n"
 "Language: es\n"
@@ -78,10 +79,25 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1.1\n"
+"X-Generator: Weblate 5.3-dev\n"
+
+msgid "All classes"
+msgstr "Todas las clases"
+
+msgid "Globals"
+msgstr "Globales"
+
+msgid "Nodes"
+msgstr "Nodos"
 
 msgid "Resources"
 msgstr "Recursos"
+
+msgid "Other objects"
+msgstr "Otros objetos"
+
+msgid "Variant types"
+msgstr "Tipo de variantes"
 
 msgid "Description"
 msgstr "Descripción"
@@ -113,6 +129,9 @@ msgstr "Enumeraciones"
 msgid "Constants"
 msgstr "Constantes"
 
+msgid "Annotations"
+msgstr "Anotaciones"
+
 msgid "Property Descriptions"
 msgstr "Descripciones de Propiedades"
 
@@ -135,13 +154,10 @@ msgid "Inherited By:"
 msgstr "Heredado por:"
 
 msgid "(overrides %s)"
-msgstr "(sobreescribe %s)"
+msgstr "(sobrescribe %s)"
 
 msgid "Default"
 msgstr "Predeterminado"
-
-msgid "Setter"
-msgstr "Regulador o fijador"
 
 msgid "value"
 msgstr "valor"
@@ -152,7 +168,7 @@ msgstr "Método de Acceso al Valor o Getter"
 msgid ""
 "This method should typically be overridden by the user to have any effect."
 msgstr ""
-"Típicamente, este método debería ser sobreescrito por el usuario para que "
+"Normalmente, este método debería ser sobrescrito por el usuario para que "
 "tenga algún efecto."
 
 msgid ""

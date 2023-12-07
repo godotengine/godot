@@ -3422,16 +3422,6 @@ msgstr ""
 "Lepaskan addon di '%s' to mencegah kesalahan kedepan."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Tidak dapat memuat skrip addon dari jalur: '%s' karena jenis Basisnya bukan "
-"EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Tidak dapat memuat addon script dari jalur: '%s' Script tidak pada mode tool."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""

@@ -1628,16 +1628,6 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Kan ikke laste addon-skript fra bane: '%s'."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Kan ikke laste addon-skript fra stien: Basistypen '%s' er ikke en "
-"EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Kunne ikke laste tillegsskript fra sti: '%s' Script er ikke i verktøymodus."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""

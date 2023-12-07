@@ -1940,17 +1940,6 @@ msgstr ""
 "Desactivando el addon en '%s' para prevenir nuevos errores."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"No se pudo cargar el script de addon desde la ruta: El tipo base de '%s' no "
-"es EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"No se pudo cargar el script de addon desde la ruta: El script '%s' no está en "
-"modo tool."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
