@@ -4379,7 +4379,7 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	EDITOR_DEF("text_editor/script_list/script_temperature_enabled", true);
 	EDITOR_DEF("text_editor/script_list/script_temperature_history_size", 15);
 	EDITOR_DEF("text_editor/script_list/group_help_pages", true);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/sort_scripts_by", PROPERTY_HINT_ENUM, "Name,Path,Modified,None"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/sort_scripts_by", PROPERTY_HINT_ENUM, "Name,Path,Last Modified Time,None"));
 	EDITOR_DEF("text_editor/script_list/sort_scripts_by", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/list_script_names_as", PROPERTY_HINT_ENUM, "Name,Parent Directory And Name,Full Path"));
 	EDITOR_DEF("text_editor/script_list/list_script_names_as", 0);
