@@ -910,9 +910,7 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.\n", (size_t)wl_output));
 
-	// TODO: Handle multiple outputs?
-
-	ws->outputs.insert(wl_output);
+	ws->wl_outputs.insert(wl_output);
 
 	// Workaround for buffer scaling as there's no guaranteed way of knowing the
 	// preferred scale.
@@ -964,7 +962,7 @@ void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surfa
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	ws->outputs.erase(wl_output);
+	ws->wl_outputs.erase(wl_output);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Window left output %x.\n", (size_t)wl_output));
 }
@@ -2598,7 +2596,7 @@ int WaylandThread::window_state_get_preferred_buffer_scale(WindowState *p_ws) {
 		return 1;
 	}
 
-	if (p_ws->outputs.is_empty()) {
+	if (p_ws->wl_outputs.is_empty()) {
 		DEBUG_LOG_WAYLAND_THREAD("Window has no output associated, returning buffer scale of 1.");
 		return 1;
 	}
@@ -2612,7 +2610,7 @@ int WaylandThread::window_state_get_preferred_buffer_scale(WindowState *p_ws) {
 	// scale possible of a system on any window, despite of what screen it's onto.
 	// On this backend everything's already in place for dynamic window scale
 	// handling, but in the meantime we'll just select the biggest _global_ output.
-	// To restore dynamic scale selection, simply iterate over `p_ws->outputs`
+	// To restore dynamic scale selection, simply iterate over `p_ws->wl_outputs`
 	// instead.
 	for (struct wl_output *wl_output : p_ws->registry->wl_outputs) {
 		ScreenState *ss = wl_output_get_screen_state(wl_output);
