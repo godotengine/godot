@@ -518,8 +518,12 @@ String TranslationServer::get_country_name(const String &p_country) const {
 }
 
 void TranslationServer::set_locale(const String &p_locale) {
-	locale = standardize_locale(p_locale);
+	String new_locale = standardize_locale(p_locale);
+	if (locale == new_locale) {
+		return;
+	}
 
+	locale = new_locale;
 	ResourceLoader::reload_translation_remaps();
 
 	if (OS::get_singleton()->get_main_loop()) {

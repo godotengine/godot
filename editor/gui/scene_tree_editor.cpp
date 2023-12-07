@@ -50,7 +50,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
-Node *SceneTreeEditor::get_scene_node() {
+Node *SceneTreeEditor::get_scene_node() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
 	return get_tree()->get_edited_scene_root();
@@ -1218,11 +1218,8 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 
 		Node *n = get_node(np);
 		if (n) {
-			// Only allow selection if not part of an instantiated scene.
-			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_scene_file_path().is_empty()) {
-				selected_nodes.push_back(n);
-				icons.push_back(next->get_icon(0));
-			}
+			selected_nodes.push_back(n);
+			icons.push_back(next->get_icon(0));
 		}
 		next = tree->get_next_selected(next);
 	}
@@ -1336,7 +1333,21 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 	}
 
-	return String(d["type"]) == "nodes" && filter.is_empty();
+	if (filter.is_empty() && String(d["type"]) == "nodes") {
+		Array nodes = d["nodes"];
+
+		for (int i = 0; i < nodes.size(); i++) {
+			Node *n = get_node(nodes[i]);
+			// Nodes from an instantiated scene can't be rearranged.
+			if (n && n->get_owner() && n->get_owner() != get_scene_node() && !n->get_owner()->get_scene_file_path().is_empty()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {

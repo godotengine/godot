@@ -177,7 +177,6 @@ void OpenXRActionMap::create_default_action_sets() {
 	Ref<OpenXRAction> trigger_touch = action_set->add_new_action("trigger_touch", "Trigger touching", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip = action_set->add_new_action("grip", "Grip", OpenXRAction::OPENXR_ACTION_FLOAT, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip_click = action_set->add_new_action("grip_click", "Grip click", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
-	Ref<OpenXRAction> grip_touch = action_set->add_new_action("grip_touch", "Grip touching", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip_force = action_set->add_new_action("grip_force", "Grip force", OpenXRAction::OPENXR_ACTION_FLOAT, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> primary = action_set->add_new_action("primary", "Primary joystick/thumbstick/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> primary_click = action_set->add_new_action("primary_click", "Primary joystick/thumbstick/trackpad click", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");

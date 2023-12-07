@@ -2026,9 +2026,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
-	// Look for export templates (custom templates).
-	bool dvalid = false;
-	bool rvalid = false;
+	// Look for export templates (official templates first, then custom).
+	bool dvalid = exists_export_template("macos.zip", &err);
+	bool rvalid = dvalid; // Both in the same ZIP.
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -2041,12 +2041,6 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
-	}
-
-	// Look for export templates (official templates, check only is custom templates are not set).
-	if (!dvalid || !rvalid) {
-		dvalid = exists_export_template("macos.zip", &err);
-		rvalid = dvalid; // Both in the same ZIP.
 	}
 
 	bool valid = dvalid || rvalid;

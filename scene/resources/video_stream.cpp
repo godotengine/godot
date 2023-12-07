@@ -172,6 +172,7 @@ Ref<VideoStreamPlayback> VideoStream::instantiate_playback() {
 
 void VideoStream::set_file(const String &p_file) {
 	file = p_file;
+	emit_changed();
 }
 
 String VideoStream::get_file() {

@@ -83,10 +83,9 @@ class EditorCommandPalette : public ConfirmationDialog {
 	float _score_path(const String &p_search, const String &p_path);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _confirmed();
-	void _update_command_keys();
 	void _add_command(String p_command_name, String p_key_name, Callable p_binded_action, String p_shortcut_text = "None");
-	void _theme_changed();
 	void _save_history() const;
+
 	EditorCommandPalette();
 
 protected:
