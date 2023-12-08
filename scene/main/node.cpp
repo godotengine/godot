@@ -2528,44 +2528,6 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 	}
 
-	for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
-		Node *current_node = node->get_node(get_path_to(N->get()));
-		ERR_CONTINUE(!current_node);
-
-		if (p_flags & DUPLICATE_SCRIPTS) {
-			bool is_valid = false;
-			Variant scr = N->get()->get(script_property_name, &is_valid);
-			if (is_valid) {
-				current_node->set(script_property_name, scr);
-			}
-		}
-
-		List<PropertyInfo> plist;
-		N->get()->get_property_list(&plist);
-
-		for (const PropertyInfo &E : plist) {
-			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
-				continue;
-			}
-			String name = E.name;
-			if (name == script_property_name) {
-				continue;
-			}
-
-			Variant value = N->get()->get(name).duplicate(true);
-
-			if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
-				Resource *res = Object::cast_to<Resource>(value);
-				if (res) { // Duplicate only if it's a resource
-					current_node->set(name, res->duplicate());
-				}
-
-			} else {
-				current_node->set(name, value);
-			}
-		}
-	}
-
 	if (get_name() != String()) {
 		node->set_name(get_name());
 	}
@@ -2628,6 +2590,62 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 		if (pos < parent->get_child_count() - 1) {
 			parent->move_child(dup, pos);
+		}
+	}
+
+	for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
+		Node *current_node = node->get_node(get_path_to(N->get()));
+		ERR_CONTINUE(!current_node);
+
+		if (p_flags & DUPLICATE_SCRIPTS) {
+			bool is_valid = false;
+			Variant scr = N->get()->get(script_property_name, &is_valid);
+			if (is_valid) {
+				current_node->set(script_property_name, scr);
+			}
+		}
+
+		List<PropertyInfo> plist;
+		N->get()->get_property_list(&plist);
+
+		for (const PropertyInfo &E : plist) {
+			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+				continue;
+			}
+			String name = E.name;
+			if (name == script_property_name) {
+				continue;
+			}
+
+			Variant value = N->get()->get(name).duplicate(true);
+
+			if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
+				Resource *res = Object::cast_to<Resource>(value);
+				if (res) { // Duplicate only if it's a resource
+					current_node->set(name, res->duplicate());
+				}
+
+			} else {
+				// If property points to a node which is owned by a node we are duplicating, update its path.
+				if (value.get_type() == Variant::OBJECT) {
+					Node *property_node = Object::cast_to<Node>(value);
+					if (property_node && is_ancestor_of(property_node)) {
+						value = current_node->get_node_or_null(get_path_to(property_node));
+					}
+				} else if (value.get_type() == Variant::ARRAY) {
+					Array arr = value;
+					if (arr.get_typed_builtin() == Variant::OBJECT) {
+						for (int i = 0; i < arr.size(); i++) {
+							Node *property_node = Object::cast_to<Node>(arr[i]);
+							if (property_node && is_ancestor_of(property_node)) {
+								arr[i] = current_node->get_node_or_null(get_path_to(property_node));
+							}
+						}
+						value = arr;
+					}
+				}
+				current_node->set(name, value);
+			}
 		}
 	}
 
