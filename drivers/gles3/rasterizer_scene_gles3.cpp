@@ -2916,6 +2916,15 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				prev_index_array_gl = 0;
 			}
 
+			bool use_wireframe = false;
+			if (p_params->force_wireframe) {
+				GLuint wireframe_index_array_gl = mesh_storage->mesh_surface_get_index_buffer_wireframe(mesh_surface);
+				if (wireframe_index_array_gl) {
+					index_array_gl = wireframe_index_array_gl;
+					use_wireframe = true;
+				}
+			}
+
 			bool use_index_buffer = index_array_gl != 0;
 			if (prev_index_array_gl != index_array_gl) {
 				if (index_array_gl != 0) {
@@ -3166,6 +3175,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				count = mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface);
 			}
 
+			if (use_wireframe) {
+				// In this case we are using index count, and we need double the indices for the wireframe mesh.
+				count = count * 2;
+			}
+
 			if constexpr (p_pass_mode != PASS_MODE_DEPTH) {
 				// Don't count draw calls during depth pre-pass to match the RD renderers.
 				if (p_render_data->render_info) {
@@ -3220,17 +3234,25 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					glVertexAttribI4ui(15, default_color, default_color, default_custom, default_custom);
 				}
 
-				if (use_index_buffer) {
-					glDrawElementsInstanced(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0, inst->instance_count);
+				if (use_wireframe) {
+					glDrawElementsInstanced(GL_LINES, count, GL_UNSIGNED_INT, 0, inst->instance_count);
 				} else {
-					glDrawArraysInstanced(primitive_gl, 0, count, inst->instance_count);
+					if (use_index_buffer) {
+						glDrawElementsInstanced(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0, inst->instance_count);
+					} else {
+						glDrawArraysInstanced(primitive_gl, 0, count, inst->instance_count);
+					}
 				}
 			} else {
 				// Using regular Mesh.
-				if (use_index_buffer) {
-					glDrawElements(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0);
+				if (use_wireframe) {
+					glDrawElements(GL_LINES, count, GL_UNSIGNED_INT, 0);
 				} else {
-					glDrawArrays(primitive_gl, 0, count);
+					if (use_index_buffer) {
+						glDrawElements(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0);
+					} else {
+						glDrawArrays(primitive_gl, 0, count);
+					}
 				}
 			}
 

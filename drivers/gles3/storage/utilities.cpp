@@ -342,6 +342,8 @@ void Utilities::update_dirty_resources() {
 }
 
 void Utilities::set_debug_generate_wireframes(bool p_generate) {
+	Config *config = Config::get_singleton();
+	config->generate_wireframes = p_generate;
 }
 
 bool Utilities::has_os_feature(const String &p_feature) const {
