@@ -120,7 +120,8 @@ static ResourceUID *resource_uid = nullptr;
 static bool _is_core_extensions_registered = false;
 
 void register_core_types() {
-	OS::get_singleton()->benchmark_begin_measure("register_core_types");
+	OS::get_singleton()->benchmark_begin_measure("Core", "Register Types");
+
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
 
@@ -296,7 +297,7 @@ void register_core_types() {
 
 	worker_thread_pool = memnew(WorkerThreadPool);
 
-	OS::get_singleton()->benchmark_end_measure("register_core_types");
+	OS::get_singleton()->benchmark_end_measure("Core", "Register Types");
 }
 
 void register_core_settings() {
@@ -311,6 +312,8 @@ void register_core_settings() {
 }
 
 void register_core_singletons() {
+	OS::get_singleton()->benchmark_begin_measure("Core", "Register Singletons");
+
 	GDREGISTER_CLASS(ProjectSettings);
 	GDREGISTER_ABSTRACT_CLASS(IP);
 	GDREGISTER_CLASS(core_bind::Geometry2D);
@@ -346,25 +349,35 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GDExtensionManager", GDExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Register Singletons");
 }
 
 void register_core_extensions() {
+	OS::get_singleton()->benchmark_begin_measure("Core", "Register Extensions");
+
 	// Hardcoded for now.
 	GDExtension::initialize_gdextensions();
 	gdextension_manager->load_extensions();
 	gdextension_manager->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	_is_core_extensions_registered = true;
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Register Extensions");
 }
 
 void unregister_core_extensions() {
+	OS::get_singleton()->benchmark_begin_measure("Core", "Unregister Extensions");
+
 	if (_is_core_extensions_registered) {
 		gdextension_manager->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	}
 	GDExtension::finalize_gdextensions();
+
+	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Extensions");
 }
 
 void unregister_core_types() {
-	OS::get_singleton()->benchmark_begin_measure("unregister_core_types");
+	OS::get_singleton()->benchmark_begin_measure("Core", "Unregister Types");
 
 	// Destroy singletons in reverse order to ensure dependencies are not broken.
 
@@ -435,5 +448,5 @@ void unregister_core_types() {
 	CoreStringNames::free();
 	StringName::cleanup();
 
-	OS::get_singleton()->benchmark_end_measure("unregister_core_types");
+	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Types");
 }

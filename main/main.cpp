@@ -765,12 +765,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Benchmark tracking must be done after `OS::get_singleton()->initialize()` as on some
 	// platforms, it's used to set up the time utilities.
-	OS::get_singleton()->benchmark_begin_measure("startup_begin");
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Total");
 
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
-	OS::get_singleton()->benchmark_begin_measure("core");
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Core");
 
 	register_core_types();
 	register_core_driver_types();
@@ -2179,11 +2179,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
 	set_current_thread_safe_for_nodes(false);
 
+	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
+
 	if (p_second_phase) {
 		return setup2();
 	}
 
-	OS::get_singleton()->benchmark_end_measure("core");
 	return OK;
 
 error:
@@ -2237,7 +2238,7 @@ error:
 		memdelete(message_queue);
 	}
 
-	OS::get_singleton()->benchmark_end_measure("core");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
 
 	OS::get_singleton()->finalize_core();
 	locale = String();
@@ -2271,7 +2272,7 @@ Error Main::setup2() {
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
-	OS::get_singleton()->benchmark_begin_measure("servers");
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Servers");
 
 	tsman = memnew(TextServerManager);
 
@@ -2675,11 +2676,11 @@ Error Main::setup2() {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
 
-	OS::get_singleton()->benchmark_end_measure("servers");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Servers");
 
 	MAIN_PRINT("Main: Load Scene Types");
 
-	OS::get_singleton()->benchmark_begin_measure("scene");
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Scene");
 
 	// Initialize ThemeDB early so that scene types can register their theme items.
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
@@ -2765,7 +2766,7 @@ Error Main::setup2() {
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
 
-	OS::get_singleton()->benchmark_end_measure("scene");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Scene");
 
 	return OK;
 }
@@ -3169,7 +3170,7 @@ bool Main::start() {
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
-				OS::get_singleton()->benchmark_begin_measure("load_autoloads");
+				OS::get_singleton()->benchmark_begin_measure("Startup", "Load Autoloads");
 				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 				//first pass, add the constants so they exist before any script is loaded
@@ -3234,7 +3235,7 @@ bool Main::start() {
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}
-				OS::get_singleton()->benchmark_end_measure("load_autoloads");
+				OS::get_singleton()->benchmark_end_measure("Startup", "Load Autoloads");
 			}
 		}
 
@@ -3273,7 +3274,7 @@ bool Main::start() {
 
 		EditorNode *editor_node = nullptr;
 		if (editor) {
-			OS::get_singleton()->benchmark_begin_measure("editor");
+			OS::get_singleton()->benchmark_begin_measure("Startup", "Editor");
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
@@ -3282,7 +3283,7 @@ bool Main::start() {
 				game_path = ""; // Do not load anything.
 			}
 
-			OS::get_singleton()->benchmark_end_measure("editor");
+			OS::get_singleton()->benchmark_end_measure("Startup", "Editor");
 		}
 #endif
 		sml->set_auto_accept_quit(GLOBAL_GET("application/config/auto_accept_quit"));
@@ -3420,7 +3421,7 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 
-			OS::get_singleton()->benchmark_begin_measure("game_load");
+			OS::get_singleton()->benchmark_begin_measure("Startup", "Load Game");
 
 			// Load SSL Certificates from Project Settings (or builtin).
 			Crypto::load_default_certificates(GLOBAL_GET("network/tls/certificate_bundle_override"));
@@ -3462,19 +3463,19 @@ bool Main::start() {
 				}
 			}
 
-			OS::get_singleton()->benchmark_end_measure("game_load");
+			OS::get_singleton()->benchmark_end_measure("Startup", "Load Game");
 		}
 
 #ifdef TOOLS_ENABLED
 		if (project_manager) {
-			OS::get_singleton()->benchmark_begin_measure("project_manager");
+			OS::get_singleton()->benchmark_begin_measure("Startup", "Project Manager");
 			Engine::get_singleton()->set_editor_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
 			DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_PROJECTMAN);
-			OS::get_singleton()->benchmark_end_measure("project_manager");
+			OS::get_singleton()->benchmark_end_measure("Startup", "Project Manager");
 		}
 
 		if (project_manager || editor) {
@@ -3502,7 +3503,7 @@ bool Main::start() {
 		}
 	}
 
-	OS::get_singleton()->benchmark_end_measure("startup_begin");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Total");
 	OS::get_singleton()->benchmark_dump();
 
 	return true;
@@ -3751,7 +3752,7 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
-	OS::get_singleton()->benchmark_begin_measure("Main::cleanup");
+	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Total");
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
@@ -3892,7 +3893,7 @@ void Main::cleanup(bool p_force) {
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	unregister_core_types();
 
-	OS::get_singleton()->benchmark_end_measure("Main::cleanup");
+	OS::get_singleton()->benchmark_end_measure("Shutdown", "Total");
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();

@@ -172,7 +172,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onCreate(Bundle icicle) {
-		BenchmarkUtils.beginBenchmarkMeasure("GodotFragment::onCreate");
+		BenchmarkUtils.beginBenchmarkMeasure("Startup", "GodotFragment::onCreate");
 		super.onCreate(icicle);
 
 		final Activity activity = getActivity();
@@ -180,7 +180,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 		godot = new Godot(requireContext());
 		performEngineInitialization();
-		BenchmarkUtils.endBenchmarkMeasure("GodotFragment::onCreate");
+		BenchmarkUtils.endBenchmarkMeasure("Startup", "GodotFragment::onCreate");
 	}
 
 	private void performEngineInitialization() {
