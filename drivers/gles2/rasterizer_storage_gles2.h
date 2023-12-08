@@ -1214,10 +1214,10 @@ public:
 
 		struct MipMaps {
 			struct Size {
-				GLuint fbo;
-				GLuint color;
-				int width;
-				int height;
+				GLuint fbo = 0;
+				GLuint color = 0;
+				int width = 0;
+				int height = 0;
 			};
 
 			Vector<Size> sizes;
