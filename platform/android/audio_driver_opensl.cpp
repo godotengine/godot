@@ -313,6 +313,15 @@ void AudioDriverOpenSL::unlock() {
 }
 
 void AudioDriverOpenSL::finish() {
+	(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
+	(*bufferQueueItf)->RegisterCallback(bufferQueueItf, nullptr, nullptr);
+
+	for (int i = 0; i < BUFFER_COUNT; i++) {
+		memdelete_arr(buffers[i]);
+	}
+
+	(*player)->Destroy(player);
+	(*OutputMix)->Destroy(OutputMix);
 	(*sl)->Destroy(sl);
 }
 
