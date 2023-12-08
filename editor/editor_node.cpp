@@ -6146,8 +6146,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 	if (edited_scene_map.size() > 0) {
 		// Reload the new instance.
 		Error err;
-		Ref<PackedScene> instance_scene_packed_scene = ResourceLoader::load(p_instance_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE, &err);
-		instance_scene_packed_scene->set_path(p_instance_path, true);
+		Ref<PackedScene> instance_scene_packed_scene = ResourceLoader::load(p_instance_path, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
 
 		ERR_FAIL_COND(err != OK);
 		ERR_FAIL_COND(instance_scene_packed_scene.is_null());
@@ -6254,8 +6253,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 					// be properly updated.
 					for (String path : required_load_paths) {
 						if (!local_scene_cache.find(path)) {
-							current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_IGNORE, &err);
-							current_packed_scene->set_path(path, true);
+							current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
 							local_scene_cache[path] = current_packed_scene;
 						} else {
 							current_packed_scene = local_scene_cache[path];
