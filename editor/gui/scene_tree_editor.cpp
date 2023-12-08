@@ -498,6 +498,18 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 					EditorNode::get_singleton()->is_object_of_custom_type(p_node, E)) {
 				valid = true;
 				break;
+			} else {
+				Ref<Script> node_script = p_node->get_script();
+				while (node_script.is_valid()) {
+					if (node_script->get_path() == E) {
+						valid = true;
+						break;
+					}
+					node_script = node_script->get_base_script();
+				}
+				if (valid) {
+					break;
+				}
 			}
 		}
 
@@ -656,6 +668,18 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 					EditorNode::get_singleton()->is_object_of_custom_type(n, E)) {
 				selectable = true;
 				break;
+			} else {
+				Ref<Script> node_script = n->get_script();
+				while (node_script.is_valid()) {
+					if (node_script->get_path() == E) {
+						selectable = true;
+						break;
+					}
+					node_script = node_script->get_base_script();
+				}
+				if (selectable) {
+					break;
+				}
 			}
 		}
 	}
@@ -1559,16 +1583,29 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 		HBoxContainer *hb = memnew(HBoxContainer);
 		hflow->add_child(hb);
 
+		// Attempt to get the correct name and icon for script path types.
+		String name = type;
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
+
+		// If we can't find a global class icon, try to find one for the script.
+		if (icon.is_null() && ResourceLoader::exists(type, "Script")) {
+			Ref<Script> node_script = ResourceLoader::load(type);
+			if (node_script.is_valid()) {
+				name = name.get_file();
+				icon = EditorNode::get_singleton()->get_object_icon(node_script.ptr());
+			}
+		}
+
 		TextureRect *trect = memnew(TextureRect);
 		hb->add_child(trect);
 		trect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 		trect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-		trect->set_meta("type", type);
+		trect->set_meta("icon", icon);
 		valid_type_icons.push_back(trect);
 
 		Label *label = memnew(Label);
 		hb->add_child(label);
-		label->set_text(type);
+		label->set_text(name);
 		label->set_auto_translate(false);
 	}
 
@@ -1594,7 +1631,7 @@ void SceneTreeDialog::_notification(int p_what) {
 			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			for (TextureRect *trect : valid_type_icons) {
 				trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
-				trect->set_texture(EditorNode::get_singleton()->get_class_icon(trect->get_meta("type")));
+				trect->set_texture(trect->get_meta("icon"));
 			}
 		} break;
 
