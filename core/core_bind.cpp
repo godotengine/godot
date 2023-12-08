@@ -1573,7 +1573,7 @@ double Engine::get_physics_jitter_fix() const {
 	return ::Engine::get_singleton()->get_physics_jitter_fix();
 }
 
-double Engine::get_physics_interpolation_fraction() const {
+real_t Engine::get_physics_interpolation_fraction() const {
 	return ::Engine::get_singleton()->get_physics_interpolation_fraction();
 }
 

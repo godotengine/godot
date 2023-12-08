@@ -116,7 +116,7 @@ public:
 	bool is_in_physics_frame() const { return _in_physics; }
 	uint64_t get_frame_ticks() const { return _frame_ticks; }
 	double get_process_step() const { return _process_step; }
-	double get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }
+	real_t get_physics_interpolation_fraction() const { return (real_t)_physics_interpolation_fraction; }
 
 	void set_time_scale(double p_scale);
 	double get_time_scale() const;
