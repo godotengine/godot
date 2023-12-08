@@ -253,6 +253,11 @@ if selected_platform in ["linux", "bsd", "linuxbsd"]:
     # Alias for convenience.
     selected_platform = "x11"
 
+if selected_platform == "web":
+    # Alias for forward compatibility.
+    print('Platform "web" is still called "javascript" in Godot 3.x. Building for platform "javascript".')
+    selected_platform = "javascript"
+
 # Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
 # It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
 env_base["platform"] = selected_platform
