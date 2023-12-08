@@ -202,6 +202,11 @@ void Node::_notification(int p_notification) {
 				_clean_up_owner();
 			}
 
+			while (!data.owned.is_empty()) {
+				Node *n = data.owned.back()->get();
+				n->_clean_up_owner(); // This will change data.owned. So it's impossible to loop over the list in the usual manner.
+			}
+
 			if (data.parent) {
 				data.parent->remove_child(this);
 			}
@@ -1415,6 +1420,14 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_child()` failed. Consider using `add_child.call_deferred(child)` instead.");
 
 	_validate_child_name(p_child, p_force_readable_name);
+
+#ifdef DEBUG_ENABLED
+	if (p_child->data.owner && !p_child->data.owner->is_ancestor_of(p_child)) {
+		// Owner of p_child should be ancestor of p_child.
+		WARN_PRINT(vformat("Adding '%s' as child to '%s' will make owner '%s' inconsistent. Consider unsetting the owner beforehand.", p_child->get_name(), get_name(), p_child->data.owner->get_name()));
+	}
+#endif // DEBUG_ENABLED
+
 	_add_child_nocheck(p_child, p_child->data.name, p_internal);
 }
 
