@@ -130,9 +130,27 @@ void RasterizerSceneGLES3::GeometryInstanceGLES3::_mark_dirty() {
 }
 
 void RasterizerSceneGLES3::GeometryInstanceGLES3::set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
+	lightmap_instance = p_lightmap_instance;
+	lightmap_uv_scale = p_lightmap_uv_scale;
+	lightmap_slice_index = p_lightmap_slice_index;
+
+	_mark_dirty();
 }
 
 void RasterizerSceneGLES3::GeometryInstanceGLES3::set_lightmap_capture(const Color *p_sh9) {
+	if (p_sh9) {
+		if (lightmap_sh == nullptr) {
+			lightmap_sh = memnew(GeometryInstanceLightmapSH);
+		}
+
+		memcpy(lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
+	} else {
+		if (lightmap_sh != nullptr) {
+			memdelete(lightmap_sh);
+			lightmap_sh = nullptr;
+		}
+	}
+	_mark_dirty();
 }
 
 void RasterizerSceneGLES3::_update_dirty_geometry_instances() {
@@ -1271,12 +1289,15 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					int32_t shadow_id = GLES3::LightStorage::get_singleton()->light_instance_get_shadow_id(light_instance);
 
 					if (GLES3::LightStorage::get_singleton()->light_has_shadow(light) && shadow_id >= 0) {
-						GeometryInstanceGLES3::LightPass pass;
-						pass.light_id = GLES3::LightStorage::get_singleton()->light_instance_get_gl_id(light_instance);
-						pass.shadow_id = shadow_id;
-						pass.light_instance_rid = light_instance;
-						pass.is_omni = true;
-						inst->light_passes.push_back(pass);
+						// Skip static lights when a lightmap is used.
+						if (!inst->lightmap_instance.is_valid() || GLES3::LightStorage::get_singleton()->light_get_bake_mode(light) != RenderingServer::LIGHT_BAKE_STATIC) {
+							GeometryInstanceGLES3::LightPass pass;
+							pass.light_id = GLES3::LightStorage::get_singleton()->light_instance_get_gl_id(light_instance);
+							pass.shadow_id = shadow_id;
+							pass.light_instance_rid = light_instance;
+							pass.is_omni = true;
+							inst->light_passes.push_back(pass);
+						}
 					} else {
 						// Lights without shadow can all go in base pass.
 						inst->omni_light_gl_cache.push_back((uint32_t)GLES3::LightStorage::get_singleton()->light_instance_get_gl_id(light_instance));
@@ -1294,11 +1315,14 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					int32_t shadow_id = GLES3::LightStorage::get_singleton()->light_instance_get_shadow_id(light_instance);
 
 					if (GLES3::LightStorage::get_singleton()->light_has_shadow(light) && shadow_id >= 0) {
-						GeometryInstanceGLES3::LightPass pass;
-						pass.light_id = GLES3::LightStorage::get_singleton()->light_instance_get_gl_id(light_instance);
-						pass.shadow_id = shadow_id;
-						pass.light_instance_rid = light_instance;
-						inst->light_passes.push_back(pass);
+						// Skip static lights when a lightmap is used.
+						if (!inst->lightmap_instance.is_valid() || GLES3::LightStorage::get_singleton()->light_get_bake_mode(light) != RenderingServer::LIGHT_BAKE_STATIC) {
+							GeometryInstanceGLES3::LightPass pass;
+							pass.light_id = GLES3::LightStorage::get_singleton()->light_instance_get_gl_id(light_instance);
+							pass.shadow_id = shadow_id;
+							pass.light_instance_rid = light_instance;
+							inst->light_passes.push_back(pass);
+						}
 					} else {
 						// Lights without shadow can all go in base pass.
 						inst->spot_light_gl_cache.push_back((uint32_t)GLES3::LightStorage::get_singleton()->light_instance_get_gl_id(light_instance));
@@ -1610,6 +1634,8 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 				light_data.direction[1] = direction.y;
 				light_data.direction[2] = direction.z;
 
+				light_data.bake_mode = light_storage->light_get_bake_mode(base);
+
 				float sign = light_storage->light_is_negative(base) ? -1 : 1;
 
 				light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
@@ -1757,6 +1783,8 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		light_data.position[0] = pos.x;
 		light_data.position[1] = pos.y;
 		light_data.position[2] = pos.z;
+
+		light_data.bake_mode = light_storage->light_get_bake_mode(base);
 
 		float radius = MAX(0.001, light_storage->light_get_param(base, RS::LIGHT_PARAM_RANGE));
 		light_data.inv_radius = 1.0 / radius;
@@ -2740,6 +2768,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 		bool uses_additive_lighting = (inst->light_passes.size() + p_render_data->directional_shadow_count) > 0;
 		uses_additive_lighting = uses_additive_lighting && !shader->unshaded;
+
 		// TODOS
 		/*
 		 * Still a bug when atlas space is limited. Somehow need to evict light when it doesn't have a spot on the atlas, current check isn't enough
@@ -2767,6 +2796,12 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					RID light_instance_rid = inst->light_passes[pass].light_instance_rid;
 					if (!GLES3::LightStorage::get_singleton()->light_instance_has_shadow_atlas(light_instance_rid, p_render_data->shadow_atlas)) {
 						// Shadow wasn't able to get a spot on the atlas. So skip it.
+						continue;
+					}
+				} else if (pass > 0) {
+					uint32_t shadow_id = MAX_DIRECTIONAL_LIGHTS - 1 - (pass - int32_t(inst->light_passes.size()));
+					if (inst->lightmap_instance.is_valid() && scene_state.directional_lights[shadow_id].bake_mode == RenderingServer::LIGHT_BAKE_STATIC) {
+						// Skip shadows for static lights on meshes with a lightmap.
 						continue;
 					}
 				}
@@ -2857,12 +2892,16 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 			GLuint vertex_array_gl = 0;
 			GLuint index_array_gl = 0;
+			uint64_t vertex_input_mask = shader->vertex_input_mask;
+			if (inst->lightmap_instance.is_valid()) {
+				vertex_input_mask |= 1 << RS::ARRAY_TEX_UV2;
+			}
 
-			//skeleton and blend shape
+			// Skeleton and blend shapes.
 			if (surf->owner->mesh_instance.is_valid()) {
-				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, shader->vertex_input_mask, vertex_array_gl);
+				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, vertex_input_mask, vertex_array_gl);
 			} else {
-				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, shader->vertex_input_mask, vertex_array_gl);
+				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, vertex_input_mask, vertex_array_gl);
 			}
 
 			index_array_gl = mesh_storage->mesh_surface_get_index_buffer(mesh_surface, surf->lod_index);
@@ -2922,12 +2961,28 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					if (p_render_data->directional_light_count == p_render_data->directional_shadow_count) {
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 					}
+
+					if (inst->lightmap_instance.is_valid()) {
+						spec_constants |= SceneShaderGLES3::USE_LIGHTMAP;
+
+						GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
+						GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
+
+						if (lm->uses_spherical_harmonics) {
+							spec_constants |= SceneShaderGLES3::USE_SH_LIGHTMAP;
+						}
+					} else if (inst->lightmap_sh) {
+						spec_constants |= SceneShaderGLES3::USE_LIGHTMAP_CAPTURE;
+					} else {
+						spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
+					}
 				} else {
 					// Only base pass uses the radiance map.
 					spec_constants &= ~SceneShaderGLES3::USE_RADIANCE_MAP;
 					spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
 					spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
 					spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
+					spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
 				}
 
 				if (uses_additive_lighting) {
@@ -2950,6 +3005,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						// Render directional lights.
 
 						uint32_t shadow_id = MAX_DIRECTIONAL_LIGHTS - 1 - (pass - int32_t(inst->light_passes.size()));
+						if (pass == 0 && inst->lightmap_instance.is_valid() && scene_state.directional_lights[shadow_id].bake_mode == RenderingServer::LIGHT_BAKE_STATIC) {
+							// Disable additive lighting with a static light and a lightmap.
+							spec_constants &= ~SceneShaderGLES3::USE_ADDITIVE_LIGHTING;
+						}
 						if (scene_state.directional_shadows[shadow_id].shadow_split_offsets[0] == scene_state.directional_shadows[shadow_id].shadow_split_offsets[1]) {
 							// Orthogonal, do nothing.
 						} else if (scene_state.directional_shadows[shadow_id].shadow_split_offsets[1] == scene_state.directional_shadows[shadow_id].shadow_split_offsets[2]) {
@@ -3037,6 +3096,46 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 					if (inst->spot_light_gl_cache.size()) {
 						glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::SPOT_LIGHT_INDICES, shader->version, instance_variant, spec_constants), inst->spot_light_gl_cache.size(), inst->spot_light_gl_cache.ptr());
+					}
+
+					if (inst->lightmap_instance.is_valid()) {
+						GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
+						GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
+
+						GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lm->light_texture);
+						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
+						glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+
+						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_SLICE, inst->lightmap_slice_index, shader->version, instance_variant, spec_constants);
+
+						Vector4 uv_scale(inst->lightmap_uv_scale.position.x, inst->lightmap_uv_scale.position.y, inst->lightmap_uv_scale.size.x, inst->lightmap_uv_scale.size.y);
+						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_UV_SCALE, uv_scale, shader->version, instance_variant, spec_constants);
+
+						float exposure_normalization = 1.0;
+						if (p_render_data->camera_attributes.is_valid()) {
+							float enf = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+							exposure_normalization = enf / lm->baked_exposure;
+						}
+						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_EXPOSURE_NORMALIZATION, exposure_normalization, shader->version, instance_variant, spec_constants);
+
+						if (lm->uses_spherical_harmonics) {
+							Basis to_lm = li->transform.basis.inverse() * p_render_data->cam_transform.basis;
+							to_lm = to_lm.inverse().transposed();
+							GLfloat matrix[9] = {
+								(GLfloat)to_lm.rows[0][0],
+								(GLfloat)to_lm.rows[1][0],
+								(GLfloat)to_lm.rows[2][0],
+								(GLfloat)to_lm.rows[0][1],
+								(GLfloat)to_lm.rows[1][1],
+								(GLfloat)to_lm.rows[2][1],
+								(GLfloat)to_lm.rows[0][2],
+								(GLfloat)to_lm.rows[1][2],
+								(GLfloat)to_lm.rows[2][2],
+							};
+							glUniformMatrix3fv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::LIGHTMAP_NORMAL_XFORM, shader->version, instance_variant, spec_constants), 1, GL_FALSE, matrix);
+						}
+					} else if (inst->lightmap_sh) {
+						glUniform4fv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::LIGHTMAP_CAPTURES, shader->version, instance_variant, spec_constants), 9, reinterpret_cast<const GLfloat *>(inst->lightmap_sh->sh));
 					}
 
 					prev_inst = inst;

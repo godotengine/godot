@@ -170,6 +170,9 @@ private:
 		float cos_spot_angle;
 		float specular_amount;
 		float shadow_opacity;
+
+		float pad[3];
+		uint32_t bake_mode;
 	};
 	static_assert(sizeof(LightData) % 16 == 0, "LightData size must be a multiple of 16 bytes");
 
@@ -181,7 +184,7 @@ private:
 		float size;
 
 		uint32_t enabled; // For use by SkyShaders
-		float pad;
+		uint32_t bake_mode;
 		float shadow_opacity;
 		float specular;
 	};
@@ -269,6 +272,10 @@ private:
 		GeometryInstanceGLES3 *owner = nullptr;
 	};
 
+	struct GeometryInstanceLightmapSH {
+		Color sh[9];
+	};
+
 	class GeometryInstanceGLES3 : public RenderGeometryInstanceBase {
 	public:
 		//used during rendering
@@ -295,6 +302,11 @@ private:
 		LocalVector<RID> paired_spot_lights;
 		LocalVector<uint32_t> omni_light_gl_cache;
 		LocalVector<uint32_t> spot_light_gl_cache;
+
+		RID lightmap_instance;
+		Rect2 lightmap_uv_scale;
+		uint32_t lightmap_slice_index;
+		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
 
 		// Used during setup.
 		GeometryInstanceSurface *surface_caches = nullptr;
