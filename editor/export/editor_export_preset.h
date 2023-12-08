@@ -160,6 +160,7 @@ public:
 	// be compatible with Windows executable metadata (which requires a
 	// 4-component format).
 	String get_version(const StringName &p_name, bool p_windows_version = false) const;
+	String get_build_nr(const StringName &p_name) const;
 
 	const HashMap<StringName, PropertyInfo> &get_properties() const { return properties; }
 	const HashMap<StringName, Variant> &get_values() const { return values; }

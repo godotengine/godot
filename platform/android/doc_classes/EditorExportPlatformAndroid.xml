@@ -583,7 +583,7 @@
 		<member name="user_data_backup/allow" type="bool" setter="" getter="">
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.
 		</member>
-		<member name="version/code" type="int" setter="" getter="">
+		<member name="version/code" type="String" setter="" getter="">
 			Machine-readable application version. This must be incremented for every new release pushed to the Play Store.
 		</member>
 		<member name="version/name" type="String" setter="" getter="">

@@ -1028,7 +1028,7 @@ Error VulkanContext::_create_instance() {
 		/*sType*/ VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		/*pNext*/ nullptr,
 		/*pApplicationName*/ cs.get_data(),
-		/*applicationVersion*/ 0, // It would be really nice if we store a version number in project settings, say "application/config/version"
+		/*applicationVersion*/ GLOBAL_GET("application/config/build").operator uint32_t(),
 		/*pEngineName*/ VERSION_NAME,
 		/*engineVersion*/ VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH),
 		/*apiVersion*/ application_api_version

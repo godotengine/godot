@@ -261,6 +261,9 @@
 		<member name="application/config/auto_accept_quit" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the application automatically accepts quitting requests.
 		</member>
+		<member name="application/config/build" type="int" setter="" getter="" default="1">
+			The project's machine-readable build number. This value is automatically incremented on successful project export.
+		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If a custom directory name is defined, this name will be appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
