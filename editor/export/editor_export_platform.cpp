@@ -93,7 +93,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	}
 	p_log->add_newline();
 
-	if (msg_count) {
+	if (msg_count > 0) {
 		p_log->push_table(2);
 		p_log->set_table_column_expand(0, false);
 		p_log->set_table_column_expand(1, true);
@@ -133,8 +133,37 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		}
 		p_log->pop();
 		p_log->add_newline();
+	} else if (p_err != OK) {
+		// We failed but don't show any user-facing messages. This is bad and should not
+		// be allowed, but just in case this happens, let's give the user something at least.
+		p_log->push_table(2);
+		p_log->set_table_column_expand(0, false);
+		p_log->set_table_column_expand(1, true);
+
+		{
+			Color color = p_log->get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+			Ref<Texture> icon = p_log->get_editor_theme_icon(SNAME("Error"));
+
+			p_log->push_cell();
+			p_log->add_text("\t");
+			if (icon.is_valid()) {
+				p_log->add_image(icon);
+			}
+			p_log->pop();
+
+			p_log->push_cell();
+			p_log->push_color(color);
+			p_log->add_text(vformat("[%s]: %s", TTR("Unknown Error"), vformat(TTR("Export failed with error code %d."), p_err)));
+			p_log->pop();
+			p_log->pop();
+		}
+
+		p_log->pop();
+		p_log->add_newline();
 	}
+
 	p_log->add_newline();
+
 	return has_messages;
 }
 

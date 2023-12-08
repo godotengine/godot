@@ -2782,6 +2782,12 @@ Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> 
 Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
+	const String base_dir = p_path.get_base_dir();
+	if (!DirAccess::exists(base_dir)) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
+		return ERR_FILE_BAD_PATH;
+	}
+
 	String src_apk;
 	Error err;
 
@@ -2856,7 +2862,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 		const String assets_directory = get_assets_directory(p_preset, export_format);
 		String sdk_path = EDITOR_GET("export/android/android_sdk_path");
-		ERR_FAIL_COND_V_MSG(sdk_path.is_empty(), ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'.");
+		if (sdk_path.is_empty()) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'."));
+			return ERR_UNCONFIGURED;
+		}
 		print_verbose("Android sdk path: " + sdk_path);
 
 		// TODO: should we use "package/name" or "application/config/name"?
@@ -3106,10 +3115,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 	}
 
-	if (!DirAccess::exists(p_path.get_base_dir())) {
-		return ERR_FILE_BAD_PATH;
-	}
-
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
@@ -3302,10 +3307,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	zipClose(unaligned_apk, nullptr);
 	unzClose(pkg);
 
-	if (err != OK) {
-		CLEANUP_AND_RETURN(err);
-	}
-
 	// Let's zip-align (must be done before signing)
 
 	static const int ZIP_ALIGNMENT = 4;
@@ -3392,6 +3393,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		// file will invalidate the signature.
 		err = sign_apk(p_preset, p_debug, p_path, ep);
 		if (err != OK) {
+			// Message is supplied by the subroutine method.
 			CLEANUP_AND_RETURN(err);
 		}
 	}
