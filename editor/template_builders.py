@@ -1,10 +1,25 @@
+#!/usr/bin/env python3
+
 """Functions used to generate source files during build time
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 """
 
-import os
+import os, sys
 from io import StringIO
-from platform_methods import subprocess_main
+#from platform_methods import subprocess_main
+
+def replace_if_different(output_path_str, new_content_path_str):
+    import pathlib
+
+    output_path = pathlib.Path(output_path_str)
+    new_content_path = pathlib.Path(new_content_path_str)
+    if not output_path.exists():
+        new_content_path.replace(output_path)
+        return
+    if output_path.read_bytes() == new_content_path.read_bytes():
+        new_content_path.unlink()
+    else:
+        new_content_path.replace(output_path)
 
 
 def parse_template(inherits, source, delimiter):
@@ -85,11 +100,14 @@ def make_templates(target, source, env):
 
     s.write("\n#endif\n")
 
-    with open(dst, "w") as f:
+    tmpfile = dst + '~'
+    with open(tmpfile, "w") as f:
         f.write(s.getvalue())
+    replace_if_different(dst, tmpfile)
 
     s.close()
 
 
 if __name__ == "__main__":
-    subprocess_main(globals())
+    #subprocess_main(globals())
+    make_templates([sys.argv[1]], sys.argv[2:], None)

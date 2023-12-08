@@ -1,3 +1,19 @@
+#!/usr/bin/env python3
+
+import os, sys, pathlib
+
+def replace_if_different(output_path_str, new_content_path_str):
+
+    output_path = pathlib.Path(output_path_str)
+    new_content_path = pathlib.Path(new_content_path_str)
+    if not output_path.exists():
+        new_content_path.replace(output_path)
+        return
+    if output_path.read_bytes() == new_content_path.read_bytes():
+        new_content_path.unlink()
+    else:
+        new_content_path.replace(output_path)
+
 proto_mod = """
 #define MODBIND$VER($RETTYPE m_name$ARG) \\
 virtual $RETVAL _##m_name($FUNCARGS) $CONST; \\
@@ -119,6 +135,9 @@ def generate_ex_version(argcount, const=False, returns=False):
 
 
 def run(target, source, env):
+    ofilename = target[0]
+    tmpfilename = ofilename + '~'
+
     max_versions = 12
 
     txt = """
@@ -142,11 +161,10 @@ def run(target, source, env):
 
     txt += "\n#endif\n"
 
-    with open(target[0], "w") as f:
+    with open(tmpfilename, "w") as f:
         f.write(txt)
 
+    replace_if_different(ofilename, tmpfilename)
 
 if __name__ == "__main__":
-    from platform_methods import subprocess_main
-
-    subprocess_main(globals())
+    run([sys.argv[1]], None, None)

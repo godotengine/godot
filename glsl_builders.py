@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 """Functions used to generate source files during build time
 
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
@@ -42,8 +44,14 @@ class RDHeaderStruct:
         self.compute_offset = 0
 
 
-def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth: int) -> RDHeaderStruct:
-    fs = open(filename, "r")
+def include_file_in_rd_header(filename, header_data, depth):
+    # This code implicitly assumes it is run in the source root,
+    # and that you can just open files like "thirdparty/foo/bar".
+    import os
+    if os.path.exists(filename):
+        fs = open(filename, "r")
+    else:
+        fs = open(os.path.join(os.getenv("MESON_SOURCE_ROOT"), filename), "r")
     line = fs.readline()
 
     while line:
@@ -113,16 +121,13 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
     return header_data
 
 
-def build_rd_header(
-    filename: str, optional_output_filename: str = None, header_data: Optional[RDHeaderStruct] = None
-) -> None:
+def build_rd_header(filename, out_file, header_data = None):
     header_data = header_data or RDHeaderStruct()
     include_file_in_rd_header(filename, header_data, 0)
 
-    if optional_output_filename is None:
-        out_file = filename + ".gen.h"
-    else:
-        out_file = optional_output_filename
+    fd = open(out_file, "w")
+
+    fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
 
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
@@ -169,8 +174,9 @@ public:
 
 
 def build_rd_headers(target, source, env):
-    for x in source:
-        build_rd_header(filename=str(x))
+    assert len(target) == len(source)
+    for i in range(len(source)):
+        build_rd_header(source[i], target[i])
 
 
 class RAWHeaderStruct:
@@ -197,16 +203,13 @@ def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, dept
     fs.close()
 
 
-def build_raw_header(
-    filename: str, optional_output_filename: str = None, header_data: Optional[RAWHeaderStruct] = None
-):
+def build_raw_header(filename, out_file, header_data=None):
     header_data = header_data or RAWHeaderStruct()
     include_file_in_raw_header(filename, header_data, 0)
 
-    if optional_output_filename is None:
-        out_file = filename + ".gen.h"
-    else:
-        out_file = optional_output_filename
+    fd = open(out_file, "w")
+
+    fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
 
     out_file_base = out_file.replace(".glsl.gen.h", "_shader_glsl")
     out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
@@ -228,8 +231,9 @@ static const char {out_file_base}[] = {{
 
 
 def build_raw_headers(target, source, env):
-    for x in source:
-        build_raw_header(filename=str(x))
+    assert len(target) == len(source)
+    for i in range(len(source)):
+        build_raw_header(str(source[i]), str(target[i]))
 
 
 if __name__ == "__main__":

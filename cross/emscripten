@@ -1,0 +1,25 @@
+[binaries]
+c = 'emcc'
+cpp = 'em++'
+objc = 'emcc'
+ar = 'emar'
+
+[built-in options]
+c_args = ['-s', 'USE_PTHREADS=1']
+c_link_args = ['-s', 'USE_PTHREADS=1', '-s', 'PTHREAD_POOL_SIZE=8', '-s', 'WASM_MEM_MAX=2048MB']
+cpp_args = ['-s', 'USE_PTHREADS=1']
+cpp_link_args = ['-s', 'USE_PTHREADS=1', '-s', 'PTHREAD_POOL_SIZE=8', '-s', 'WASM_MEM_MAX=2048MB']
+
+[properties]
+platform = 'javascript'
+object_suffix = 'bc'
+static_lib_suffix = 'a'
+shared_lib_suffix = 'wasm'
+shared_module_suffix = 'js'
+exe_suffix = 'js'
+
+[host_machine]
+system = 'emscripten'
+cpu_family = 'wasm32'
+cpu = 'wasm32'
+endian = 'little'

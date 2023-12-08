@@ -1,0 +1,13 @@
+SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
+
+subdir('audio')
+subdir('debugger')
+subdir('camera')
+subdir('extensions')
+subdir('movie_writer')
+subdir('navigation')
+subdir('physics_2d')
+subdir('physics_3d')
+subdir('rendering')
+subdir('text')
+subdir('xr')
