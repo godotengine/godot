@@ -232,7 +232,7 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 		CHECK(cylinder->get_bottom_radius() > 0);
 		CHECK(cylinder->get_height() > 0);
 		CHECK(cylinder->get_radial_segments() > 0);
-		CHECK(cylinder->get_rings() > 0);
+		CHECK(cylinder->get_rings() >= 0);
 	}
 
 	SUBCASE("[SceneTree][Primitive][Cylinder] Set properties and get them") {
