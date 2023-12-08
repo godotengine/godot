@@ -56,32 +56,32 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		p_take_over = false; // Can't take over an empty path
 	}
 
-	ResourceCache::lock.lock();
+	{
+		MutexLock lock(ResourceCache::resources_mutex);
 
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources.erase(path_cache);
-	}
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources.erase(path_cache);
+		}
 
-	path_cache = "";
+		path_cache = "";
 
-	Ref<Resource> existing = ResourceCache::get_ref(p_path);
+		Ref<Resource> existing = ResourceCache::get_ref(p_path);
 
-	if (existing.is_valid()) {
-		if (p_take_over) {
-			existing->path_cache = String();
-			ResourceCache::resources.erase(p_path);
-		} else {
-			ResourceCache::lock.unlock();
-			ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+		if (existing.is_valid()) {
+			if (p_take_over) {
+				existing->path_cache = String();
+				ResourceCache::resources.erase(p_path);
+			} else {
+				ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+			}
+		}
+
+		path_cache = p_path;
+
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources[path_cache] = this;
 		}
 	}
-
-	path_cache = p_path;
-
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources[path_cache] = this;
-	}
-	ResourceCache::lock.unlock();
 
 	_resource_path_changed();
 }
@@ -399,15 +399,13 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		return;
 	}
 
-	ResourceCache::lock.lock();
+	MutexLock lock(ResourceCache::resources_mutex);
 
 	if (p_remapped) {
 		ResourceLoader::remapped_list.add(&remapped_list);
 	} else {
 		ResourceLoader::remapped_list.remove(&remapped_list);
 	}
-
-	ResourceCache::lock.unlock();
 }
 
 #ifdef TOOLS_ENABLED
@@ -472,9 +470,8 @@ Resource::Resource() :
 
 Resource::~Resource() {
 	if (!path_cache.is_empty()) {
-		ResourceCache::lock.lock();
+		MutexLock lock(ResourceCache::resources_mutex);
 		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock.unlock();
 	}
 }
 
@@ -483,10 +480,13 @@ HashMap<String, Resource *> ResourceCache::resources;
 HashMap<String, HashMap<String, String>> ResourceCache::resource_path_cache;
 #endif
 
-Mutex ResourceCache::lock;
+Mutex ResourceCache::resources_mutex;
 #ifdef TOOLS_ENABLED
 RWLock ResourceCache::path_cache_lock;
 #endif
+
+Mutex ResourceCache::listener_mutex;
+Vector<EvictionListenRecord> ResourceCache::eviction_listeners;
 
 void ResourceCache::clear() {
 	if (resources.size()) {
@@ -502,7 +502,7 @@ void ResourceCache::clear() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-	lock.lock();
+	MutexLock lock(resources_mutex);
 
 	Resource **res = resources.getptr(p_path);
 
@@ -513,8 +513,6 @@ bool ResourceCache::has(const String &p_path) {
 		res = nullptr;
 	}
 
-	lock.unlock();
-
 	if (!res) {
 		return false;
 	}
@@ -522,10 +520,27 @@ bool ResourceCache::has(const String &p_path) {
 	return true;
 }
 
-Ref<Resource> ResourceCache::get_ref(const String &p_path) {
-	Ref<Resource> ref;
-	lock.lock();
+bool ResourceCache::evict(const String &p_path) {
+	bool was_present = false;
+	{
+		MutexLock lock(resources_mutex);
+		was_present = resources.erase(p_path);
+	}
 
+	if (was_present) {
+		MutexLock lock(listener_mutex);
+		for (const EvictionListenRecord &rec : eviction_listeners) {
+			rec.listener(rec.context, p_path);
+		}
+	}
+
+	return was_present;
+}
+
+Ref<Resource> ResourceCache::get_ref(const String &p_path) {
+	MutexLock lock(resources_mutex);
+
+	Ref<Resource> ref;
 	Resource **res = resources.getptr(p_path);
 
 	if (res) {
@@ -539,13 +554,11 @@ Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 		res = nullptr;
 	}
 
-	lock.unlock();
-
 	return ref;
 }
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
-	lock.lock();
+	MutexLock lock(resources_mutex);
 
 	LocalVector<String> to_remove;
 
@@ -565,14 +578,32 @@ void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	for (const String &E : to_remove) {
 		resources.erase(E);
 	}
-
-	lock.unlock();
 }
 
 int ResourceCache::get_cached_resource_count() {
-	lock.lock();
-	int rc = resources.size();
-	lock.unlock();
+	MutexLock lock(resources_mutex);
+	return resources.size();
+}
 
-	return rc;
+void ResourceCache::listen_for_eviction(void *p_context, void (*p_listener)(void *p_context, const String &p_path)) {
+	ResourceCache::unlisten_for_eviction(p_context);
+
+	MutexLock lock(listener_mutex);
+
+	EvictionListenRecord rec;
+	rec.context = p_context;
+	rec.listener = p_listener;
+	eviction_listeners.push_back(rec);
+}
+
+void ResourceCache::unlisten_for_eviction(void *p_context) {
+	MutexLock lock(listener_mutex);
+
+	for (int i = 0; i < eviction_listeners.size();) {
+		if (eviction_listeners[i].context == p_context) {
+			eviction_listeners.remove_at(i);
+			continue;
+		}
+		++i;
+	}
 }

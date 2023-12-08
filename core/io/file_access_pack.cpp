@@ -67,6 +67,10 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 		files[pmd5] = pf;
 	}
 
+	if (exists && p_replace_files) {
+		ResourceCache::evict(p_path);
+	}
+
 	if (!exists) {
 		//search for dir
 		String p = simplified_path.replace_first("res://", "");
