@@ -561,8 +561,15 @@ Vector2 WebXRInterfaceJS::_get_joy_vector_from_axes(int *p_axes) {
 }
 
 Vector2 WebXRInterfaceJS::_get_screen_position_from_joy_vector(const Vector2 &p_joy_vector) {
+	SceneTree *scene_tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+	if (!scene_tree) {
+		return Vector2();
+	}
+
+	Viewport *viewport = scene_tree->get_root();
+
 	Vector2 position_percentage((p_joy_vector.x + 1.0f) / 2.0f, ((p_joy_vector.y) + 1.0f) / 2.0f);
-	Vector2 position = get_render_targetsize() * position_percentage;
+	Vector2 position = viewport->get_size() * position_percentage;
 
 	return position;
 }
