@@ -2070,6 +2070,7 @@ void DisplayServerMacOS::window_set_transient(WindowID p_window, WindowID p_pare
 			[wd_parent.window_object removeChildWindow:wd_window.window_object];
 		}
 		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+		[wd_window.window_object setStyleMask:[wd_window.window_object styleMask] | NSWindowStyleMaskMiniaturizable];
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -2077,6 +2078,9 @@ void DisplayServerMacOS::window_set_transient(WindowID p_window, WindowID p_pare
 
 		wd_window.transient_parent = p_parent;
 		wd_parent.transient_children.insert(p_window);
+		if (wd_window.exclusive) {
+			[wd_window.window_object setStyleMask:[wd_window.window_object styleMask] & ~NSWindowStyleMaskMiniaturizable];
+		}
 		reparent_check(p_window);
 	}
 }
@@ -2462,7 +2466,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 					wd.layered_window = false;
 					set_window_per_pixel_transparency_enabled(false, p_window);
 				}
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | ((wd.exclusive && wd.transient_parent != INVALID_WINDOW_ID) ? 0 : NSWindowStyleMaskMiniaturizable) | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 				// Force update of the window styles.
 				NSRect frameRect = [wd.window_object frame];
 				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
@@ -2497,7 +2501,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			if (p_enabled) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless]; // Force borderless.
 			} else if (!wd.borderless) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | ((wd.exclusive && wd.transient_parent != INVALID_WINDOW_ID) ? 0 : NSWindowStyleMaskMiniaturizable) | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 			}
 			wd.layered_window = p_enabled;
 			set_window_per_pixel_transparency_enabled(p_enabled, p_window);
