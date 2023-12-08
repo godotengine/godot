@@ -460,7 +460,7 @@ String EditorExportPlatformAndroid::get_valid_basename() const {
 		if (is_digit(c) && first) {
 			continue;
 		}
-		if (is_ascii_alphanumeric_char(c)) {
+		if (is_ascii_identifier_char(c)) {
 			name += String::chr(c);
 			first = false;
 		}
@@ -533,13 +533,6 @@ bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package,
 	if (first) {
 		if (r_error) {
 			*r_error = TTR("Package segments must be of non-zero length.");
-		}
-		return false;
-	}
-
-	if (p_package.find("$genname") >= 0 && !is_project_name_valid()) {
-		if (r_error) {
-			*r_error = TTR("The project name does not meet the requirement for the package name format. Please explicitly specify the package name.");
 		}
 		return false;
 	}
@@ -2443,6 +2436,13 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	if (_uses_vulkan() && min_sdk_int < VULKAN_MIN_SDK_VERSION) {
 		// Warning only, so don't override `valid`.
 		err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
+		err += "\n";
+	}
+
+	String package_name = p_preset->get("package/unique_name");
+	if (package_name.find("$genname") >= 0 && !is_project_name_valid()) {
+		// Warning only, so don't override `valid`.
+		err += vformat(TTR("The project name does not meet the requirement for the package name format and will be updated to \"%s\". Please explicitly specify the package name if needed."), get_valid_basename());
 		err += "\n";
 	}
 
