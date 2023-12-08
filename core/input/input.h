@@ -176,6 +176,8 @@ private:
 
 	CursorShape default_shape = CURSOR_ARROW;
 
+	bool force_disable_joypad = false;
+
 	enum JoyType {
 		TYPE_BUTTON,
 		TYPE_AXIS,
@@ -308,6 +310,9 @@ public:
 	Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
 	void parse_input_event(const Ref<InputEvent> &p_event);
+
+	bool get_enable_joypad() const;
+	void set_force_disable_joypad(bool p_force);
 
 	void set_gravity(const Vector3 &p_gravity);
 	void set_accelerometer(const Vector3 &p_accel);

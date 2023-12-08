@@ -119,6 +119,8 @@ private:
 	dinput_gamepad d_joypads[JOYPADS_MAX];
 	xinput_gamepad x_joypads[XUSER_MAX_COUNT];
 
+	bool is_enabled = true;
+
 	static BOOL CALLBACK enumCallback(const DIDEVICEINSTANCE *p_instance, void *p_context);
 	static BOOL CALLBACK objectsCallback(const DIDEVICEOBJECTINSTANCE *instance, void *context);
 

@@ -152,6 +152,7 @@ static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
 static ThemeDB *theme_db = nullptr;
+static bool force_disable_joypad = false;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -1533,7 +1534,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
 				goto error;
 			}
-
+		} else if (I->get() == "--disable-joypad") {
+			force_disable_joypad = true;
 		} else if (I->get() == "--benchmark") {
 			OS::get_singleton()->set_use_benchmark(true);
 		} else if (I->get() == "--benchmark-file") {
@@ -2172,6 +2174,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// GLOBAL_DEF("xr/openxr/in_editor", false);
 #endif
 
+	// Joypad settings.
+	GLOBAL_DEF_BASIC("input_devices/joypad/enabled", true);
+
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
 	message_queue = memnew(MessageQueue);
@@ -2357,6 +2362,7 @@ Error Main::setup2() {
 	/* Initialize Input */
 
 	input = memnew(Input);
+	input->set_force_disable_joypad(force_disable_joypad);
 
 	/* Initialize Display Server */
 
@@ -3502,6 +3508,11 @@ bool Main::start() {
 		}
 	}
 
+#ifdef TOOLS_ENABLED
+	if (editor) {
+		EDITOR_DEF_RST("input_devices/joypad/enabled", true);
+	}
+#endif
 	OS::get_singleton()->benchmark_end_measure("startup_begin");
 	OS::get_singleton()->benchmark_dump();
 
