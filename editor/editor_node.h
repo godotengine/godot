@@ -264,6 +264,7 @@ private:
 		String path;
 		bool debug = false;
 		bool pack_only = false;
+		bool android_build_template = false;
 	} export_defer;
 
 	static EditorNode *singleton;
@@ -880,7 +881,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template);
 	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }
