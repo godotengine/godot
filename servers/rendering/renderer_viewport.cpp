@@ -886,9 +886,7 @@ void RendererViewport::viewport_set_fsr_sharpness(RID p_viewport, float p_sharpn
 	ERR_FAIL_NULL(viewport);
 
 	viewport->fsr_sharpness = p_sharpness;
-	if (viewport->render_buffers.is_valid()) {
-		viewport->render_buffers->set_fsr_sharpness(p_sharpness);
-	}
+	_configure_3d_render_buffers(viewport);
 }
 
 void RendererViewport::viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias) {
@@ -896,9 +894,7 @@ void RendererViewport::viewport_set_texture_mipmap_bias(RID p_viewport, float p_
 	ERR_FAIL_NULL(viewport);
 
 	viewport->texture_mipmap_bias = p_mipmap_bias;
-	if (viewport->render_buffers.is_valid()) {
-		viewport->render_buffers->set_texture_mipmap_bias(p_mipmap_bias);
-	}
+	_configure_3d_render_buffers(viewport);
 }
 
 void RendererViewport::viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale) {
@@ -1268,9 +1264,7 @@ void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_deb
 		return;
 	}
 	viewport->use_debanding = p_use_debanding;
-	if (viewport->render_buffers.is_valid()) {
-		viewport->render_buffers->set_use_debanding(p_use_debanding);
-	}
+	_configure_3d_render_buffers(viewport);
 }
 
 void RendererViewport::viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) {
