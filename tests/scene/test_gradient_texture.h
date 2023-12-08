@@ -37,83 +37,83 @@
 
 namespace TestGradientTexture {
 
-TEST_CASE("[SceneTree][GradientTexture1D] Create gradienttexture1D"){
+TEST_CASE("[SceneTree][GradientTexture1D] Create GradientTexture1D"){
 	Ref<GradientTexture1D> gradient_texture = memnew(GradientTexture1D);
-	gradient_texture.instantiate();
 
 	Ref<Gradient> test_gradient = memnew(Gradient);
 
 	gradient_texture->set_gradient(test_gradient);
 	CHECK_MESSAGE(
 		gradient_texture->get_gradient() == test_gradient,
-		"Not the right gradient"
+		"Error in gradient setter or getter."
 	);
 
 	gradient_texture->set_width(82);
 	CHECK_MESSAGE(
 		gradient_texture->get_width() == 82,
-		"Not the right width"
+		"Error on width setter or getter."
 	);
 
 	gradient_texture->set_use_hdr(true);
 	CHECK_MESSAGE(
 		gradient_texture->is_using_hdr() == true,
-		"Not the right use_hdr"
+		"Error on Use HDR setter or getter."
 	);
 }
 
 
-TEST_CASE("[SceneTree][GradientTexture2D] Create gradienttexture2D"){
+TEST_CASE("[SceneTree][GradientTexture2D] Create GradientTexture2D"){
 	Ref<GradientTexture2D> gradient_texture = memnew(GradientTexture2D);
+
 	Ref<Gradient> test_gradient = memnew(Gradient);
 	Vector2 vector = Vector2();
 
 	gradient_texture->set_gradient(test_gradient);
 	CHECK_MESSAGE(
 		gradient_texture->get_gradient() == test_gradient,
-		"Not the right gradient"
+		"Error in gradient setter or getter."
 	);
 
 	gradient_texture->set_width(82);
 	CHECK_MESSAGE(
 		gradient_texture->get_width() == 82,
-		"Not the right width"
+		"Error in width setter or getter."
 	);
 
 	gradient_texture->set_height(82);
 	CHECK_MESSAGE(
 		gradient_texture->get_height() == 82,
-		"Not the right height"
+		"Error in height setter or getter."
 	);
 
 	gradient_texture->set_use_hdr(true);
 	CHECK_MESSAGE(
 		gradient_texture->is_using_hdr() == true,
-		"Not the right use_hdr"
+		"Error in Use HDR setter or getter."
 	);
 
 	gradient_texture->set_fill(GradientTexture2D::Fill::FILL_SQUARE);
 	CHECK_MESSAGE(
 		gradient_texture->get_fill() == GradientTexture2D::Fill::FILL_SQUARE,
-		"Not the right fill"
+		"Error in fill method."
 	);
 
 	gradient_texture->set_fill_from(vector);
 	CHECK_MESSAGE(
-		gradient_texture->get_fill_from().operator== (vector),
-		"Not the right fill_from"
+		gradient_texture->get_fill_from().operator == (vector),
+		"Error in fill from vector method."
 	);
 
 	gradient_texture->set_fill_to(vector);
 	CHECK_MESSAGE(
-		(gradient_texture->get_fill_to().operator== (vector)),
-		"Not the right fill_to"
+		(gradient_texture->get_fill_to().operator == (vector)),
+		"Error in fill to vector method."
 	);
 
 	gradient_texture->set_repeat(GradientTexture2D::Repeat::REPEAT);
 	CHECK_MESSAGE(
 		gradient_texture->get_repeat() == GradientTexture2D::Repeat::REPEAT,
-		"Not the right repeat"
+		"Error in repeat setter or getter."
 	);
 }
 
