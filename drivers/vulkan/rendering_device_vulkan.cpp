@@ -6844,24 +6844,24 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 	return OK;
 }
 
-Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents, const Vector<RID> &p_storage_textures) {
+Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents, const Vector<RID> &p_storage_textures, bool p_constrained_to_region) {
 	VkRenderPassBeginInfo render_pass_begin;
 	render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	render_pass_begin.pNext = nullptr;
 	render_pass_begin.renderPass = render_pass;
 	render_pass_begin.framebuffer = vkframebuffer;
-	/*
-	 * Given how API works, it makes sense to always fully operate on the whole framebuffer.
-	 * This allows better continue operations for operations like shadowmapping.
-	render_pass_begin.renderArea.extent.width = viewport_size.width;
-	render_pass_begin.renderArea.extent.height = viewport_size.height;
-	render_pass_begin.renderArea.offset.x = viewport_offset.x;
-	render_pass_begin.renderArea.offset.y = viewport_offset.y;
-	*/
-	render_pass_begin.renderArea.extent.width = framebuffer->size.width;
-	render_pass_begin.renderArea.extent.height = framebuffer->size.height;
-	render_pass_begin.renderArea.offset.x = 0;
-	render_pass_begin.renderArea.offset.y = 0;
+
+	if (p_constrained_to_region) {
+		render_pass_begin.renderArea.extent.width = viewport_size.width;
+		render_pass_begin.renderArea.extent.height = viewport_size.height;
+		render_pass_begin.renderArea.offset.x = viewport_offset.x;
+		render_pass_begin.renderArea.offset.y = viewport_offset.y;
+	} else {
+		render_pass_begin.renderArea.extent.width = framebuffer->size.width;
+		render_pass_begin.renderArea.extent.height = framebuffer->size.height;
+		render_pass_begin.renderArea.offset.x = 0;
+		render_pass_begin.renderArea.offset.y = 0;
+	}
 
 	Vector<VkClearValue> clear_values;
 	clear_values.resize(framebuffer->texture_ids.size());
@@ -7011,6 +7011,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
+	bool constrained_to_region = false;
 	bool needs_clear_color = false;
 	bool needs_clear_depth = false;
 
@@ -7025,21 +7026,30 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 		viewport_offset = regioni.position;
 		viewport_size = regioni.size;
-		if (p_initial_color_action == INITIAL_ACTION_CLEAR_REGION_CONTINUE) {
-			needs_clear_color = true;
-			p_initial_color_action = INITIAL_ACTION_CONTINUE;
-		}
-		if (p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION_CONTINUE) {
-			needs_clear_depth = true;
-			p_initial_depth_action = INITIAL_ACTION_CONTINUE;
-		}
-		if (p_initial_color_action == INITIAL_ACTION_CLEAR_REGION) {
-			needs_clear_color = true;
-			p_initial_color_action = INITIAL_ACTION_KEEP;
-		}
-		if (p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION) {
-			needs_clear_depth = true;
-			p_initial_depth_action = INITIAL_ACTION_KEEP;
+
+		// If clearing regions both in color and depth, we can switch to a fast path where we let Vulkan to the clears
+		// and we constrain the render area to the region.
+		if (p_initial_color_action == INITIAL_ACTION_CLEAR_REGION && p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION) {
+			constrained_to_region = true;
+			p_initial_color_action = INITIAL_ACTION_CLEAR;
+			p_initial_depth_action = INITIAL_ACTION_CLEAR;
+		} else {
+			if (p_initial_color_action == INITIAL_ACTION_CLEAR_REGION_CONTINUE) {
+				needs_clear_color = true;
+				p_initial_color_action = INITIAL_ACTION_CONTINUE;
+			}
+			if (p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION_CONTINUE) {
+				needs_clear_depth = true;
+				p_initial_depth_action = INITIAL_ACTION_CONTINUE;
+			}
+			if (p_initial_color_action == INITIAL_ACTION_CLEAR_REGION) {
+				needs_clear_color = true;
+				p_initial_color_action = INITIAL_ACTION_KEEP;
+			}
+			if (p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION) {
+				needs_clear_depth = true;
+				p_initial_depth_action = INITIAL_ACTION_KEEP;
+			}
 		}
 	}
 
@@ -7066,7 +7076,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	ERR_FAIL_COND_V(err != OK, INVALID_ID);
 
 	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
-	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, vkframebuffer, render_pass, command_buffer, VK_SUBPASS_CONTENTS_INLINE, p_storage_textures);
+	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, vkframebuffer, render_pass, command_buffer, VK_SUBPASS_CONTENTS_INLINE, p_storage_textures, constrained_to_region);
 
 	if (err != OK) {
 		return INVALID_ID;
@@ -7082,6 +7092,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	draw_list_current_subpass = 0;
 
 	if (needs_clear_color || needs_clear_depth) {
+		DEV_ASSERT(!constrained_to_region);
 		_draw_list_insert_clear_region(draw_list, framebuffer, viewport_offset, viewport_size, needs_clear_color, p_clear_color_values, needs_clear_depth, p_clear_depth, p_clear_stencil);
 	}
 
@@ -7120,6 +7131,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
 
+	bool constrained_to_region = false;
 	bool needs_clear_color = false;
 	bool needs_clear_depth = false;
 
@@ -7135,13 +7147,29 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		viewport_offset = regioni.position;
 		viewport_size = regioni.size;
 
-		if (p_initial_color_action == INITIAL_ACTION_CLEAR_REGION) {
-			needs_clear_color = true;
-			p_initial_color_action = INITIAL_ACTION_KEEP;
-		}
-		if (p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION) {
-			needs_clear_depth = true;
-			p_initial_depth_action = INITIAL_ACTION_KEEP;
+		// If clearing regions both in color and depth, we can switch to a fast path where we let Vulkan to the clears
+		// and we constrain the render area to the region.
+		if (p_initial_color_action == INITIAL_ACTION_CLEAR_REGION && p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION) {
+			constrained_to_region = true;
+			p_initial_color_action = INITIAL_ACTION_CLEAR;
+			p_initial_depth_action = INITIAL_ACTION_CLEAR;
+		} else {
+			if (p_initial_color_action == INITIAL_ACTION_CLEAR_REGION_CONTINUE) {
+				needs_clear_color = true;
+				p_initial_color_action = INITIAL_ACTION_CONTINUE;
+			}
+			if (p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION_CONTINUE) {
+				needs_clear_depth = true;
+				p_initial_depth_action = INITIAL_ACTION_CONTINUE;
+			}
+			if (p_initial_color_action == INITIAL_ACTION_CLEAR_REGION) {
+				needs_clear_color = true;
+				p_initial_color_action = INITIAL_ACTION_KEEP;
+			}
+			if (p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION) {
+				needs_clear_depth = true;
+				p_initial_depth_action = INITIAL_ACTION_KEEP;
+			}
 		}
 	}
 
@@ -7167,7 +7195,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
 	VkCommandBuffer frame_command_buffer = frames[frame].draw_command_buffer;
-	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, vkframebuffer, render_pass, frame_command_buffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS, p_storage_textures);
+	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, vkframebuffer, render_pass, frame_command_buffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS, p_storage_textures, constrained_to_region);
 
 	if (err != OK) {
 		return ERR_CANT_CREATE;
@@ -7187,6 +7215,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 	}
 
 	if (needs_clear_color || needs_clear_depth) {
+		DEV_ASSERT(!constrained_to_region);
 		_draw_list_insert_clear_region(&draw_list[0], framebuffer, viewport_offset, viewport_size, needs_clear_color, p_clear_color_values, needs_clear_depth, p_clear_depth, p_clear_stencil);
 	}
 
