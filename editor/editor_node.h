@@ -631,8 +631,6 @@ private:
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
-	void _update_dock_containers();
-
 	void _dock_select_input(const Ref<InputEvent> &p_input);
 	void _dock_move_left();
 	void _dock_move_right();
