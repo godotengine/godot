@@ -129,7 +129,7 @@
 #include "editor/register_exporters.h"
 
 void register_editor_types() {
-	OS::get_singleton()->benchmark_begin_measure("register_editor_types");
+	OS::get_singleton()->benchmark_begin_measure("Editor", "Register Types");
 
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
@@ -282,11 +282,11 @@ void register_editor_types() {
 	ei_singleton.editor_only = true;
 	Engine::get_singleton()->add_singleton(ei_singleton);
 
-	OS::get_singleton()->benchmark_end_measure("register_editor_types");
+	OS::get_singleton()->benchmark_end_measure("Editor", "Register Types");
 }
 
 void unregister_editor_types() {
-	OS::get_singleton()->benchmark_begin_measure("unregister_editor_types");
+	OS::get_singleton()->benchmark_begin_measure("Editor", "Unregister Types");
 
 	EditorNode::cleanup();
 	EditorInterface::free();
@@ -296,5 +296,5 @@ void unregister_editor_types() {
 	}
 	EditorStringNames::free();
 
-	OS::get_singleton()->benchmark_end_measure("unregister_editor_types");
+	OS::get_singleton()->benchmark_end_measure("Editor", "Unregister Types");
 }

@@ -187,6 +187,7 @@ class EditorHelp : public VBoxContainer {
 	String _fix_constant(const String &p_constant) const;
 	void _toggle_scripts_pressed();
 
+	static int doc_generation_count;
 	static String doc_version_hash;
 	static Thread worker_thread;
 

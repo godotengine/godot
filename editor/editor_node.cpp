@@ -627,7 +627,7 @@ void EditorNode::_notification(int p_what) {
 			if (requested_first_scan) {
 				requested_first_scan = false;
 
-				OS::get_singleton()->benchmark_begin_measure("editor_scan_and_import");
+				OS::get_singleton()->benchmark_begin_measure("Editor", "First Scan");
 
 				if (run_surface_upgrade_tool) {
 					run_surface_upgrade_tool = false;
@@ -1044,7 +1044,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 	if (waiting_for_first_scan) {
 		waiting_for_first_scan = false;
 
-		OS::get_singleton()->benchmark_end_measure("editor_scan_and_import");
+		OS::get_singleton()->benchmark_end_measure("Editor", "First Scan");
 
 		// Reload the global shader variables, but this time
 		// loading textures, as they are now properly imported.
@@ -1053,11 +1053,12 @@ void EditorNode::_sources_changed(bool p_exist) {
 		_load_editor_layout();
 
 		if (!defer_load_scene.is_empty()) {
-			OS::get_singleton()->benchmark_begin_measure("editor_load_scene");
+			OS::get_singleton()->benchmark_begin_measure("Editor", "Load Scene");
+
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
-			OS::get_singleton()->benchmark_end_measure("editor_load_scene");
 
+			OS::get_singleton()->benchmark_end_measure("Editor", "Load Scene");
 			OS::get_singleton()->benchmark_dump();
 		}
 
@@ -4668,7 +4669,7 @@ void EditorNode::_begin_first_scan() {
 	// In headless mode, scan right away.
 	// This allows users to continue using `godot --headless --editor --quit` to prepare a project.
 	if (!DisplayServer::get_singleton()->window_can_draw()) {
-		OS::get_singleton()->benchmark_begin_measure("editor_scan_and_import");
+		OS::get_singleton()->benchmark_begin_measure("Editor", "First Scan");
 		EditorFileSystem::get_singleton()->scan();
 		return;
 	}
