@@ -789,7 +789,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					for (int j = 0; j < argcount; j++) {
 						Dictionary d3;
 						d3["name"] = Variant::get_builtin_method_argument_name(type, method_name, j);
-						d3["type"] = get_builtin_or_variant_type_name(Variant::get_builtin_method_argument_type(type, method_name, j));
+						d3["type"] = get_property_info_type_name(Variant::get_builtin_method_argument_type_info(type, method_name, j));
 
 						if (j >= (argcount - default_args.size())) {
 							int dargidx = j - (argcount - default_args.size());

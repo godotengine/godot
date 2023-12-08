@@ -68,7 +68,7 @@
 		<method name="from_euler" qualifiers="static">
 			<return type="Basis" />
 			<param index="0" name="euler" type="Vector3" />
-			<param index="1" name="order" type="int" default="2" />
+			<param index="1" name="order" type="int" enum="EulerOrder" default="2" />
 			<description>
 				Constructs a pure rotation Basis matrix from Euler angles in the specified Euler rotation order. By default, use YXZ order (most common). See the [enum EulerOrder] enum for possible values.
 			</description>
@@ -82,7 +82,7 @@
 		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
-			<param index="0" name="order" type="int" default="2" />
+			<param index="0" name="order" type="int" enum="EulerOrder" default="2" />
 			<description>
 				Returns the basis's rotation in the form of Euler angles. The Euler order depends on the [param order] parameter, by default it uses the YXZ convention: when decomposing, first Z, then X, and Y last. The returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 				Consider using the [method get_rotation_quaternion] method instead, which returns a [Quaternion] quaternion instead of Euler angles.

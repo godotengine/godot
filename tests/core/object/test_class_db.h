@@ -822,6 +822,9 @@ void add_global_enums(Context &r_context) {
 	hardcoded_enums.push_back("Vector2i.Axis");
 	hardcoded_enums.push_back("Vector3.Axis");
 	hardcoded_enums.push_back("Vector3i.Axis");
+	hardcoded_enums.push_back("Vector4.Axis");
+	hardcoded_enums.push_back("Vector4i.Axis");
+	hardcoded_enums.push_back("Projection.Planes");
 	for (const StringName &E : hardcoded_enums) {
 		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
 		// Here, we assume core types do not begin with underscore
