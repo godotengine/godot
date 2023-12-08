@@ -661,6 +661,11 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	state.current_tex = RID();
 
 	for (uint32_t i = 0; i <= state.current_batch_index; i++) {
+		// Skipping when there is no instances.
+		if (state.canvas_instance_batches[i].instance_count == 0) {
+			continue;
+		}
+
 		//setup clip
 		if (current_clip != state.canvas_instance_batches[i].clip) {
 			current_clip = state.canvas_instance_batches[i].clip;
