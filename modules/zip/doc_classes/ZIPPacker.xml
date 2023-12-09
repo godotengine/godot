@@ -47,6 +47,7 @@
 		<method name="start_file">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
+			<param index="1" name="password" type="String" default="&quot;&quot;" />
 			<description>
 				Starts writing to a file within the archive. Only one file can be written at the same time.
 				Must be called after [method open].

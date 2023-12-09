@@ -41,9 +41,18 @@ class ZIPPacker : public RefCounted {
 
 	Ref<FileAccess> fa;
 	zipFile zf = nullptr;
+	Vector<uint8_t> write_buffer;
+	String current_password;
+	String current_path;
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	Error _start_file_bind_compat_85973(const String &p_path);
+
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 
 public:
 	enum ZipAppend {
@@ -55,7 +64,7 @@ public:
 	Error open(const String &p_path, ZipAppend p_append);
 	Error close();
 
-	Error start_file(const String &p_path);
+	Error start_file(const String &p_path, const String &p_password);
 	Error write_file(const Vector<uint8_t> &p_data);
 	Error close_file();
 

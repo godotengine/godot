@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  zip_reader.h                                                          */
+/*  zip_reader.compat.inc                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ZIP_READER_H
-#define ZIP_READER_H
-
-#include "core/io/file_access.h"
-#include "core/object/ref_counted.h"
-
-#include "thirdparty/minizip/unzip.h"
-
-class ZIPReader : public RefCounted {
-	GDCLASS(ZIPReader, RefCounted)
-
-	Ref<FileAccess> fa;
-	unzFile uzf = nullptr;
-
-protected:
-	static void _bind_methods();
-
 #ifndef DISABLE_DEPRECATED
-	PackedByteArray _read_file_bind_compat_85973(const String &p_path, bool p_case_sensitive);
 
-	static void _bind_compatibility_methods();
+PackedByteArray ZIPReader::_read_file_bind_compat_85973(const String &p_path, bool p_case_sensitive) {
+	return read_file(p_path, p_case_sensitive, "");
+}
+
+void ZIPReader::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("read_file", "path", "case_sensitive"), &ZIPReader::_read_file_bind_compat_85973, DEFVAL(Variant(true)));
+}
+
 #endif // DISABLE_DEPRECATED
-
-public:
-	Error open(const String &p_path);
-	Error close();
-
-	PackedStringArray get_files();
-	PackedByteArray read_file(const String &p_path, bool p_case_sensitive, const String &p_password);
-	bool file_exists(const String &p_path, bool p_case_sensitive);
-
-	ZIPReader();
-	~ZIPReader();
-};
-
-#endif // ZIP_READER_H
