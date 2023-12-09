@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-EnsureSConsVersion(3, 0, 0)
+EnsureSConsVersion(4, 0)
 EnsurePythonVersion(3, 6)
 
 # System
@@ -950,15 +950,6 @@ if selected_platform in platform_list:
         env.vs_srcs = []
 
     if env["compiledb"]:
-        # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-        from SCons import __version__ as scons_raw_version
-
-        scons_ver = env._get_major_minor_revision(scons_raw_version)
-
-        if scons_ver < (4, 0, 0):
-            print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
-            Exit(255)
-
         env.Tool("compilation_db")
         env.Alias("compiledb", env.CompilationDatabase())
 
@@ -1019,9 +1010,9 @@ elif selected_platform != "":
 if "env" in locals():
     # FIXME: This method mixes both cosmetic progress stuff and cache handling...
     methods.show_progress(env)
-    # TODO: replace this with `env.Dump(format="json")`
-    # once we start requiring SCons 4.0 as min version.
-    methods.dump(env)
+
+    with open(".scons_env.json", "w") as f:
+        f.write(env.Dump(format="json"))
 
 
 def print_elapsed_time():
