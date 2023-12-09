@@ -350,7 +350,6 @@ public:
 		NOTIFICATION_POST_ENTER_TREE = 27,
 		NOTIFICATION_DISABLED = 28,
 		NOTIFICATION_ENABLED = 29,
-		NOTIFICATION_NODE_RECACHE_REQUESTED = 30,
 		//keep these linked to node
 
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
@@ -411,7 +410,7 @@ public:
 	Window *get_last_exclusive_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
-		ERR_FAIL_COND_V(!data.tree, nullptr);
+		ERR_FAIL_NULL_V(data.tree, nullptr);
 		return data.tree;
 	}
 

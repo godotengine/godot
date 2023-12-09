@@ -256,6 +256,7 @@ class TextServerFallback : public TextServerExtension {
 		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 		bool mipmaps = false;
 		bool msdf = false;
+		FixedSizeScaleMode fixed_size_scale_mode = FIXED_SIZE_SCALE_DISABLE;
 		int msdf_range = 14;
 		int msdf_source_size = 48;
 		int fixed_size = 0;
@@ -626,6 +627,9 @@ public:
 
 	MODBIND2(font_set_fixed_size, const RID &, int64_t);
 	MODBIND1RC(int64_t, font_get_fixed_size, const RID &);
+
+	MODBIND2(font_set_fixed_size_scale_mode, const RID &, FixedSizeScaleMode);
+	MODBIND1RC(FixedSizeScaleMode, font_get_fixed_size_scale_mode, const RID &);
 
 	MODBIND2(font_set_allow_system_fallback, const RID &, bool);
 	MODBIND1RC(bool, font_is_allow_system_fallback, const RID &);

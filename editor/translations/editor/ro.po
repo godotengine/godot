@@ -728,12 +728,6 @@ msgstr "Închide"
 msgid "Connect"
 msgstr "Conectați"
 
-msgid "Class:"
-msgstr "Clasă:"
-
-msgid "Signal:"
-msgstr "Semnal:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Conectați '%s' la '%s'"
 
@@ -982,21 +976,6 @@ msgstr "Sponsori Aur"
 
 msgid "Silver Sponsors"
 msgstr "Sponsori de argint"
-
-msgid "Bronze Sponsors"
-msgstr "Sponsori de bronz"
-
-msgid "Mini Sponsors"
-msgstr "Mini Sponsori"
-
-msgid "Gold Donors"
-msgstr "Donatori de Aur"
-
-msgid "Silver Donors"
-msgstr "Donatori de Argint"
-
-msgid "Bronze Donors"
-msgstr "Donatori de Bronz"
 
 msgid "Donors"
 msgstr "Donatori"
@@ -1393,6 +1372,9 @@ msgstr "Experimental"
 msgid "Top"
 msgstr "Sus"
 
+msgid "Class:"
+msgstr "Clasă:"
+
 msgid "Inherits:"
 msgstr "Mosteneste:"
 
@@ -1452,6 +1434,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "Descrierile Metodei"
 
+msgid "Property:"
+msgstr "Proprietate:"
+
+msgid "Signal:"
+msgstr "Semnal:"
+
 msgid "%d match."
 msgstr "%d potriviri."
 
@@ -1508,9 +1496,6 @@ msgstr "Proprietate"
 
 msgid "Theme Property"
 msgstr "Proprietate Temă"
-
-msgid "Property:"
-msgstr "Proprietate:"
 
 msgid "Resize Array"
 msgstr "Redimensionați Array-ul"
@@ -1701,17 +1686,6 @@ msgstr ""
 "Imposibil de încărcat scriptul addon din cale: '%s' Se pare că există o "
 "eroare în cod, verificați sintaxa.\n"
 "Dezactivez addon-ul de la '%s' pentru a preveni erori ulterioare."
-
-msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Nu a putut fi încărcat scriptul add-on din calea: '%s' tipul de Bază nu este "
-"EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Nu a putut fi încărcat scriptul add-on din calea: '%s' Scriptul nu este în "
-"modul unealtă."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -2006,6 +1980,9 @@ msgstr "Cheie Nouă:"
 msgid "New Value:"
 msgstr "Valoare Nouă:"
 
+msgid "Save As..."
+msgstr "Salvează Ca..."
+
 msgid "Show in FileSystem"
 msgstr "Afișare în FileSystem"
 
@@ -2169,9 +2146,6 @@ msgstr "Duplicând directorul:"
 msgid "New Inherited Scene"
 msgstr "Nouă scenă moștenită"
 
-msgid "Set As Main Scene"
-msgstr "Setează ca scenă principală"
-
 msgid "Open Scenes"
 msgstr "Deschide Scene"
 
@@ -2216,9 +2190,6 @@ msgstr "Redenumește..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Rescanează Sistemul de Fișiere"
-
-msgid "Toggle Split Mode"
-msgstr "Comută Modul Split"
 
 msgid ""
 "Scanning Files,\n"
@@ -2473,9 +2444,6 @@ msgstr "Încarcă o resursă existentă de pe disc si editeaz-o."
 msgid "Save the currently edited resource."
 msgstr "Salvează resursa editată curentă."
 
-msgid "Save As..."
-msgstr "Salvează Ca..."
-
 msgid "Copy Resource"
 msgstr "Copiați Resursa"
 
@@ -2677,14 +2645,14 @@ msgstr "Include Gizmo-uri (3D)"
 msgid "Error!"
 msgstr "Eroare!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Timpi de Amestecare Cross-Animație"
+
 msgid "Blend Times:"
 msgstr "Timpi de Amestecare:"
 
 msgid "Next (Auto Queue):"
 msgstr "Următorul (Rând Automat):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Timpi de Amestecare Cross-Animație"
 
 msgid "Transition exists!"
 msgstr "Tranziţia există!"

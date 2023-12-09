@@ -708,15 +708,15 @@ String OS_Android::get_config_path() const {
 	return get_user_data_dir().path_join("config");
 }
 
-void OS_Android::benchmark_begin_measure(const String &p_what) {
+void OS_Android::benchmark_begin_measure(const String &p_context, const String &p_what) {
 #ifdef TOOLS_ENABLED
-	godot_java->begin_benchmark_measure(p_what);
+	godot_java->begin_benchmark_measure(p_context, p_what);
 #endif
 }
 
-void OS_Android::benchmark_end_measure(const String &p_what) {
+void OS_Android::benchmark_end_measure(const String &p_context, const String &p_what) {
 #ifdef TOOLS_ENABLED
-	godot_java->end_benchmark_measure(p_what);
+	godot_java->end_benchmark_measure(p_context, p_what);
 #endif
 }
 

@@ -399,34 +399,20 @@ _collect_layout_variation_indices (hb_subset_plan_t* plan)
     return;
   }
 
-  const OT::VariationStore *var_store = nullptr;
   hb_set_t varidx_set;
-  float *store_cache = nullptr;
-  bool collect_delta = plan->pinned_at_default ? false : true;
-  if (collect_delta)
-  {
-    if (gdef->has_var_store ())
-    {
-      var_store = &(gdef->get_var_store ());
-      store_cache = var_store->create_cache ();
-    }
-  }
-
   OT::hb_collect_variation_indices_context_t c (&varidx_set,
-                                                &plan->layout_variation_idx_delta_map,
-                                                plan->normalized_coords ? &(plan->normalized_coords) : nullptr,
-                                                var_store,
                                                 &plan->_glyphset_gsub,
-                                                &plan->gpos_lookups,
-                                                store_cache);
+                                                &plan->gpos_lookups);
   gdef->collect_variation_indices (&c);
 
   if (hb_ot_layout_has_positioning (plan->source))
     gpos->collect_variation_indices (&c);
 
-  var_store->destroy_cache (store_cache);
-
-  gdef->remap_layout_variation_indices (&varidx_set, &plan->layout_variation_idx_delta_map);
+  gdef->remap_layout_variation_indices (&varidx_set,
+                                        plan->normalized_coords,
+                                        !plan->pinned_at_default,
+                                        plan->all_axes_pinned,
+                                        &plan->layout_variation_idx_delta_map);
 
   unsigned subtable_count = gdef->has_var_store () ? gdef->get_var_store ().get_sub_table_count () : 0;
   _generate_varstore_inner_maps (varidx_set, subtable_count, plan->gdef_varstore_inner_maps);
@@ -927,6 +913,7 @@ _normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
     {
       axis_not_pinned = true;
       plan->axes_index_map.set (old_axis_idx, new_axis_idx);
+      plan->axis_tags.push (axis_tag);
       new_axis_idx++;
     }
 
@@ -1045,6 +1032,36 @@ _update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
   if (vvar_store_cache)
     _vmtx.var_table->get_var_store ().destroy_cache (vvar_store_cache);
 }
+
+static bool
+_get_instance_glyphs_contour_points (hb_subset_plan_t *plan)
+{
+  /* contour_points vector only needed for updating gvar table (infer delta)
+   * during partial instancing */
+  if (plan->user_axes_location.is_empty () || plan->all_axes_pinned)
+    return true;
+
+  OT::glyf_accelerator_t glyf (plan->source);
+
+  for (auto &_ : plan->new_to_old_gid_list)
+  {
+    hb_codepoint_t new_gid = _.first;
+    contour_point_vector_t all_points;
+    if (new_gid == 0 && !(plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
+    {
+      if (unlikely (!plan->new_gid_contour_points_map.set (new_gid, all_points)))
+        return false;
+      continue;
+    }
+
+    hb_codepoint_t old_gid = _.second;
+    if (unlikely (!glyf.glyph_for_gid (old_gid).get_all_points_without_var (plan->source, all_points)))
+      return false;
+    if (unlikely (!plan->new_gid_contour_points_map.set (new_gid, all_points)))
+      return false;
+  }
+  return true;
+}
 #endif
 
 hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
@@ -1148,6 +1165,8 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
 
 #ifndef HB_NO_VAR
   _update_instance_metrics_map_from_cff2 (this);
+  if (!check_success (_get_instance_glyphs_contour_points (this)))
+      return;
 #endif
 
   if (attach_accelerator_data)

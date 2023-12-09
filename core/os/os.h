@@ -79,8 +79,8 @@ class OS {
 	// For tracking benchmark data
 	bool use_benchmark = false;
 	String benchmark_file;
-	HashMap<String, uint64_t> start_benchmark_from;
-	Dictionary startup_benchmark_json;
+	HashMap<Pair<String, String>, uint64_t, PairHash<String, String>> benchmark_marks_from;
+	HashMap<Pair<String, String>, double, PairHash<String, String>> benchmark_marks_final;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -313,8 +313,8 @@ public:
 	bool is_use_benchmark_set();
 	void set_benchmark_file(const String &p_benchmark_file);
 	String get_benchmark_file();
-	virtual void benchmark_begin_measure(const String &p_what);
-	virtual void benchmark_end_measure(const String &p_what);
+	virtual void benchmark_begin_measure(const String &p_context, const String &p_what);
+	virtual void benchmark_end_measure(const String &p_context, const String &p_what);
 	virtual void benchmark_dump();
 
 	virtual void process_and_drop_events() {}

@@ -119,6 +119,7 @@ public:
 		bool uses_discard = false;
 		bool uses_roughness = false;
 		bool uses_normal = false;
+		bool uses_tangent = false;
 		bool uses_particle_trails = false;
 
 		bool unshaded = false;

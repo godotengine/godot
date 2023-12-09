@@ -852,8 +852,8 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 	}
 
 	if (!p_custom_features.is_empty()) {
+		// Store how many properties are saved, add one for custom features, which must always go first.
 		file->store_32(count + 1);
-		//store how many properties are saved, add one for custom featuers, which must always go first
 		String key = CoreStringNames::get_singleton()->_custom_features;
 		file->store_pascal_string(key);
 
@@ -870,7 +870,8 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 		file->store_buffer(buff.ptr(), buff.size());
 
 	} else {
-		file->store_32(count); //store how many properties are saved
+		// Store how many properties are saved.
+		file->store_32(count);
 	}
 
 	for (const KeyValue<String, List<String>> &E : p_props) {
@@ -1342,6 +1343,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
+
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/ios/session_category", PROPERTY_HINT_ENUM, "Ambient,Multi Route,Play and Record,Playback,Record,Solo Ambient"), 0);
+	GLOBAL_DEF("audio/general/ios/mix_with_others", false);
 
 	PackedStringArray extensions;
 	extensions.push_back("gd");

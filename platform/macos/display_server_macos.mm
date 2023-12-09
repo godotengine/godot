@@ -118,7 +118,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		WindowData wd;
 
 		wd.window_delegate = [[GodotWindowDelegate alloc] init];
-		ERR_FAIL_COND_V_MSG(wd.window_delegate == nil, INVALID_WINDOW_ID, "Can't create a window delegate");
+		ERR_FAIL_NULL_V_MSG(wd.window_delegate, INVALID_WINDOW_ID, "Can't create a window delegate");
 		[wd.window_delegate setWindowID:window_id_counter];
 
 		int rq_screen = get_screen_from_rect(p_rect);
@@ -144,11 +144,11 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 						  styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
 							backing:NSBackingStoreBuffered
 							  defer:NO];
-		ERR_FAIL_COND_V_MSG(wd.window_object == nil, INVALID_WINDOW_ID, "Can't create a window");
+		ERR_FAIL_NULL_V_MSG(wd.window_object, INVALID_WINDOW_ID, "Can't create a window");
 		[wd.window_object setWindowID:window_id_counter];
 
 		wd.window_view = [[GodotContentView alloc] init];
-		ERR_FAIL_COND_V_MSG(wd.window_view == nil, INVALID_WINDOW_ID, "Can't create a window view");
+		ERR_FAIL_NULL_V_MSG(wd.window_view, INVALID_WINDOW_ID, "Can't create a window view");
 		[wd.window_view setWindowID:window_id_counter];
 		[wd.window_view setWantsLayer:TRUE];
 
@@ -270,53 +270,46 @@ void DisplayServerMacOS::_update_window_style(WindowData p_wd) {
 	}
 }
 
-void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window) {
+void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	if (!OS::get_singleton()->is_layered_allowed()) {
 		return;
 	}
-	if (wd.layered_window != p_enabled) {
-		if (p_enabled) {
-			[wd.window_object setBackgroundColor:[NSColor clearColor]];
-			[wd.window_object setOpaque:NO];
-			[wd.window_object setHasShadow:NO];
-			CALayer *layer = [(NSView *)wd.window_view layer];
-			if (layer) {
-				[layer setBackgroundColor:[NSColor clearColor].CGColor];
-				[layer setOpaque:NO];
-			}
-#if defined(GLES3_ENABLED)
-			if (gl_manager_legacy) {
-				gl_manager_legacy->window_set_per_pixel_transparency_enabled(p_window, true);
-			}
-#endif
-			wd.layered_window = true;
-		} else {
-			NSColor *bg_color = [NSColor windowBackgroundColor];
-			Color _bg_color;
-			if (_get_window_early_clear_override(_bg_color)) {
-				bg_color = [NSColor colorWithCalibratedRed:_bg_color.r green:_bg_color.g blue:_bg_color.b alpha:1.f];
-			}
-			[wd.window_object setBackgroundColor:bg_color];
-			[wd.window_object setOpaque:YES];
-			[wd.window_object setHasShadow:YES];
-			CALayer *layer = [(NSView *)wd.window_view layer];
-			if (layer) {
-				[layer setBackgroundColor:bg_color.CGColor];
-				[layer setOpaque:YES];
-			}
-#if defined(GLES3_ENABLED)
-			if (gl_manager_legacy) {
-				gl_manager_legacy->window_set_per_pixel_transparency_enabled(p_window, false);
-			}
-#endif
-			wd.layered_window = false;
+	if (p_enabled) {
+		[wd.window_object setBackgroundColor:[NSColor clearColor]];
+		[wd.window_object setOpaque:NO];
+		[wd.window_object setHasShadow:NO];
+		CALayer *layer = [(NSView *)wd.window_view layer];
+		if (layer) {
+			[layer setBackgroundColor:[NSColor clearColor].CGColor];
+			[layer setOpaque:NO];
 		}
-		NSRect frameRect = [wd.window_object frame];
-		[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:YES];
-		[wd.window_object setFrame:frameRect display:YES];
+#if defined(GLES3_ENABLED)
+		if (gl_manager_legacy) {
+			gl_manager_legacy->window_set_per_pixel_transparency_enabled(p_window, true);
+		}
+#endif
+	} else {
+		NSColor *bg_color = [NSColor windowBackgroundColor];
+		Color _bg_color;
+		if (_get_window_early_clear_override(_bg_color)) {
+			bg_color = [NSColor colorWithCalibratedRed:_bg_color.r green:_bg_color.g blue:_bg_color.b alpha:1.f];
+		}
+		[wd.window_object setBackgroundColor:bg_color];
+		[wd.window_object setOpaque:YES];
+		[wd.window_object setHasShadow:YES];
+		CALayer *layer = [(NSView *)wd.window_view layer];
+		if (layer) {
+			[layer setBackgroundColor:bg_color.CGColor];
+			[layer setOpaque:YES];
+		}
+#if defined(GLES3_ENABLED)
+		if (gl_manager_legacy) {
+			gl_manager_legacy->window_set_per_pixel_transparency_enabled(p_window, false);
+		}
+#endif
 	}
 }
 
@@ -567,7 +560,7 @@ NSImage *DisplayServerMacOS::_convert_to_nsimg(Ref<Image> &p_image) const {
 					  colorSpaceName:NSDeviceRGBColorSpace
 						 bytesPerRow:int(p_image->get_width()) * 4
 						bitsPerPixel:32];
-	ERR_FAIL_COND_V(imgrep == nil, nil);
+	ERR_FAIL_NULL_V(imgrep, nil);
 	uint8_t *pixels = [imgrep bitmapData];
 
 	int len = p_image->get_width() * p_image->get_height();
@@ -583,7 +576,7 @@ NSImage *DisplayServerMacOS::_convert_to_nsimg(Ref<Image> &p_image) const {
 	}
 
 	NSImage *nsimg = [[NSImage alloc] initWithSize:NSMakeSize(p_image->get_width(), p_image->get_height())];
-	ERR_FAIL_COND_V(nsimg == nil, nil);
+	ERR_FAIL_NULL_V(nsimg, nil);
 	[nsimg addRepresentation:imgrep];
 	return nsimg;
 }
@@ -611,7 +604,13 @@ void DisplayServerMacOS::menu_open(NSMenu *p_menu) {
 		MenuData &md = submenu[submenu_inv[p_menu]];
 		md.is_open = true;
 		if (md.open.is_valid()) {
-			md.open.call();
+			Variant ret;
+			Callable::CallError ce;
+
+			md.open.callp(nullptr, 0, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Failed to execute menu open callback: %s.", Variant::get_callable_error_text(md.open, nullptr, 0, ce)));
+			}
 		}
 	}
 }
@@ -621,7 +620,13 @@ void DisplayServerMacOS::menu_close(NSMenu *p_menu) {
 		MenuData &md = submenu[submenu_inv[p_menu]];
 		md.is_open = false;
 		if (md.close.is_valid()) {
-			md.close.call();
+			Variant ret;
+			Callable::CallError ce;
+
+			md.close.callp(nullptr, 0, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Failed to execute menu close callback: %s.", Variant::get_callable_error_text(md.close, nullptr, 0, ce)));
+			}
 		}
 	}
 }
@@ -649,7 +654,7 @@ void DisplayServerMacOS::menu_callback(id p_sender) {
 			}
 		}
 
-		if (value->callback != Callable()) {
+		if (value->callback.is_valid()) {
 			MenuCall mc;
 			mc.tag = value->meta;
 			mc.callback = value->callback;
@@ -720,7 +725,8 @@ void DisplayServerMacOS::update_mouse_pos(DisplayServerMacOS::WindowData &p_wd, 
 }
 
 void DisplayServerMacOS::pop_last_key_event() {
-	if (key_event_pos > 0) {
+	// Does not pop last key event when it is an IME key event.
+	if (key_event_pos > 0 && key_event_buffer[key_event_pos - 1].raw) {
 		key_event_pos--;
 	}
 }
@@ -1574,7 +1580,7 @@ void DisplayServerMacOS::global_menu_set_item_hover_callbacks(const String &p_me
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->hover_callback = p_callback;
 		}
 	}
@@ -1978,20 +1984,27 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	[window setInformativeText:ns_description];
 	[window setAlertStyle:NSAlertStyleInformational];
 
-	int button_pressed;
+	Variant button_pressed;
 	NSInteger ret = [window runModal];
 	if (ret == NSAlertFirstButtonReturn) {
-		button_pressed = 0;
+		button_pressed = int64_t(0);
 	} else if (ret == NSAlertSecondButtonReturn) {
-		button_pressed = 1;
+		button_pressed = int64_t(1);
 	} else if (ret == NSAlertThirdButtonReturn) {
-		button_pressed = 2;
+		button_pressed = int64_t(2);
 	} else {
-		button_pressed = 2 + (ret - NSAlertThirdButtonReturn);
+		button_pressed = int64_t(2 + (ret - NSAlertThirdButtonReturn));
 	}
 
 	if (!p_callback.is_null()) {
-		p_callback.call(button_pressed);
+		Variant ret;
+		Callable::CallError ce;
+		const Variant *args[1] = { &button_pressed };
+
+		p_callback.callp(args, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute dialog callback: %s.", Variant::get_callable_error_text(p_callback, args, 1, ce)));
+		}
 	}
 
 	return OK;
@@ -2166,11 +2179,31 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 							  url.parse_utf8([[[panel URL] path] UTF8String]);
 							  files.push_back(url);
 							  if (!callback.is_null()) {
-								  callback.call(true, files, [handler getIndex]);
+								  Variant v_result = true;
+								  Variant v_files = files;
+								  Variant v_index = [handler getIndex];
+								  Variant ret;
+								  Callable::CallError ce;
+								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+								  callback.callp(args, 3, ret, ce);
+								  if (ce.error != Callable::CallError::CALL_OK) {
+									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+								  }
 							  }
 						  } else {
 							  if (!callback.is_null()) {
-								  callback.call(false, Vector<String>(), [handler getIndex]);
+								  Variant v_result = false;
+								  Variant v_files = Vector<String>();
+								  Variant v_index = [handler getIndex];
+								  Variant ret;
+								  Callable::CallError ce;
+								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+								  callback.callp(args, 3, ret, ce);
+								  if (ce.error != Callable::CallError::CALL_OK) {
+									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+								  }
 							  }
 						  }
 						  if (prev_focus != INVALID_WINDOW_ID) {
@@ -2231,11 +2264,31 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 								  files.push_back(url);
 							  }
 							  if (!callback.is_null()) {
-								  callback.call(true, files, [handler getIndex]);
+								  Variant v_result = true;
+								  Variant v_files = files;
+								  Variant v_index = [handler getIndex];
+								  Variant ret;
+								  Callable::CallError ce;
+								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+								  callback.callp(args, 3, ret, ce);
+								  if (ce.error != Callable::CallError::CALL_OK) {
+									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+								  }
 							  }
 						  } else {
 							  if (!callback.is_null()) {
-								  callback.call(false, Vector<String>(), [handler getIndex]);
+								  Variant v_result = false;
+								  Variant v_files = Vector<String>();
+								  Variant v_index = [handler getIndex];
+								  Variant ret;
+								  Callable::CallError ce;
+								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+								  callback.callp(args, 3, ret, ce);
+								  if (ce.error != Callable::CallError::CALL_OK) {
+									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+								  }
 							  }
 						  }
 						  if (prev_focus != INVALID_WINDOW_ID) {
@@ -2269,7 +2322,15 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	ret.parse_utf8([[input stringValue] UTF8String]);
 
 	if (!p_callback.is_null()) {
-		p_callback.call(ret);
+		Variant v_result = ret;
+		Variant ret;
+		Callable::CallError ce;
+		const Variant *args[1] = { &v_result };
+
+		p_callback.callp(args, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute input dialog callback: %s.", Variant::get_callable_error_text(p_callback, args, 1, ce)));
+		}
 	}
 
 	return OK;
@@ -2421,7 +2482,7 @@ void DisplayServerMacOS::warp_mouse(const Point2i &p_position) {
 		NSRect pointInWindowRect = NSMakeRect(p_position.x / scale, contentRect.size.height - (p_position.y / scale), scale, scale);
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 
-		// Point in scren coords.
+		// Point in screen coords.
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 
 		// Do the warping.
@@ -3215,8 +3276,19 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
+			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN || p_mode == WINDOW_MODE_FULLSCREEN) {
+				if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+					const NSUInteger presentationOptions = NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar;
+					[NSApp setPresentationOptions:presentationOptions];
+					wd.exclusive_fullscreen = true;
+				} else {
+					wd.exclusive_fullscreen = false;
+					update_presentation_mode();
+				}
+				return;
+			}
+
 			[(NSWindow *)wd.window_object setLevel:NSNormalWindowLevel];
-			_set_window_per_pixel_transparency_enabled(true, p_window);
 			if (wd.resize_disabled) { // Restore resize disabled.
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
 			}
@@ -3253,7 +3325,6 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
-			_set_window_per_pixel_transparency_enabled(false, p_window);
 			if (wd.resize_disabled) { // Fullscreen window should be resizable to work.
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
 			}
@@ -3268,6 +3339,7 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 				wd.exclusive_fullscreen = true;
 			} else {
 				wd.exclusive_fullscreen = false;
+				update_presentation_mode();
 			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
@@ -3409,6 +3481,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 		} break;
 		case WINDOW_FLAG_EXTEND_TO_TITLE: {
 			NSRect rect = [wd.window_object frame];
+			wd.extend_to_title = p_enabled;
 			if (p_enabled) {
 				[wd.window_object setTitlebarAppearsTransparent:YES];
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskFullSizeContentView];
@@ -3428,6 +3501,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
+			if (wd.fullscreen) {
+				return;
+			}
 			// OrderOut prevents a lose focus bug with the window.
 			bool was_visible = false;
 			if ([wd.window_object isVisible]) {
@@ -3438,8 +3514,11 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			if (p_enabled) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
 			} else {
-				_set_window_per_pixel_transparency_enabled(false, p_window);
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				if (wd.layered_window) {
+					wd.layered_window = false;
+					set_window_per_pixel_transparency_enabled(false, p_window);
+				}
+				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 				// Force update of the window styles.
 				NSRect frameRect = [wd.window_object frame];
 				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
@@ -3468,12 +3547,20 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			}
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
+			if (wd.fullscreen) {
+				return;
+			}
 			if (p_enabled) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless]; // Force borderless.
 			} else if (!wd.borderless) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 			}
-			_set_window_per_pixel_transparency_enabled(p_enabled, p_window);
+			wd.layered_window = p_enabled;
+			set_window_per_pixel_transparency_enabled(p_enabled, p_window);
+			// Force update of the window styles.
+			NSRect frameRect = [wd.window_object frame];
+			[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
+			[wd.window_object setFrame:frameRect display:NO];
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
@@ -3562,14 +3649,14 @@ bool DisplayServerMacOS::window_is_focused(WindowID p_window) const {
 }
 
 bool DisplayServerMacOS::window_can_draw(WindowID p_window) const {
-	return (window_get_mode(p_window) != WINDOW_MODE_MINIMIZED) && [windows[p_window].window_object isOnActiveSpace];
+	return windows[p_window].is_visible;
 }
 
 bool DisplayServerMacOS::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
 	for (const KeyValue<WindowID, WindowData> &E : windows) {
-		if ((window_get_mode(E.key) != WINDOW_MODE_MINIMIZED) && [E.value.window_object isOnActiveSpace]) {
+		if (E.value.is_visible) {
 			return true;
 		}
 	}
@@ -3858,7 +3945,7 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 							 bytesPerRow:int(texture_size.width) * 4
 							bitsPerPixel:32];
 
-		ERR_FAIL_COND(imgrep == nil);
+		ERR_FAIL_NULL(imgrep);
 		uint8_t *pixels = [imgrep bitmapData];
 
 		int len = int(texture_size.width * texture_size.height);
@@ -4020,7 +4107,15 @@ void DisplayServerMacOS::process_events() {
 	while (List<MenuCall>::Element *call_p = deferred_menu_calls.front()) {
 		MenuCall call = call_p->get();
 		deferred_menu_calls.pop_front(); // Remove before call to avoid infinite loop in case callback is using `process_events` (e.g. EditorProgress).
-		call.callback.call(call.tag);
+
+		Variant ret;
+		Callable::CallError ce;
+		const Variant *args[1] = { &call.tag };
+
+		call.callback.callp(args, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute menu callback: %s.", Variant::get_callable_error_text(call.callback, args, 1, ce)));
+		}
 	}
 
 	if (!drop_events) {
@@ -4124,7 +4219,7 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 						  colorSpaceName:NSDeviceRGBColorSpace
 							 bytesPerRow:img->get_width() * 4
 							bitsPerPixel:32];
-		ERR_FAIL_COND(imgrep == nil);
+		ERR_FAIL_NULL(imgrep);
 		uint8_t *pixels = [imgrep bitmapData];
 
 		int len = img->get_width() * img->get_height();
@@ -4140,7 +4235,7 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 		}
 
 		NSImage *nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
-		ERR_FAIL_COND(nsimg == nil);
+		ERR_FAIL_NULL(nsimg);
 
 		[nsimg addRepresentation:imgrep];
 		[NSApp setApplicationIconImage:nsimg];
@@ -4424,23 +4519,29 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	rendering_driver = p_rendering_driver;
 
 #if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3_angle") {
+		gl_manager_angle = memnew(GLManagerANGLE_MacOS);
+		if (gl_manager_angle->initialize() != OK || gl_manager_angle->open_display(nullptr) != OK) {
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
+			if (fallback) {
+				WARN_PRINT("Your video card drivers seem not to support the required Metal version, switching to native OpenGL.");
+				rendering_driver = "opengl3";
+			} else {
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
+			}
+		}
+	}
+
 	if (rendering_driver == "opengl3") {
 		gl_manager_legacy = memnew(GLManagerLegacy_MacOS);
 		if (gl_manager_legacy->initialize() != OK) {
 			memdelete(gl_manager_legacy);
 			gl_manager_legacy = nullptr;
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Could not initialize OpenGL.");
-			return;
-		}
-	}
-	if (rendering_driver == "opengl3_angle") {
-		gl_manager_angle = memnew(GLManagerANGLE_MacOS);
-		if (gl_manager_angle->initialize() != OK) {
-			memdelete(gl_manager_angle);
-			gl_manager_angle = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Could not initialize OpenGL.");
+			ERR_FAIL_MSG("Could not initialize native OpenGL.");
 		}
 	}
 #endif

@@ -265,8 +265,9 @@ static inline void _hb_warn_no_return (bool returned)
   }
 }
 template <>
-/*static*/ inline void _hb_warn_no_return<hb_empty_t> (bool returned HB_UNUSED)
-{}
+/*static*/ inline void _hb_warn_no_return<hb_empty_t> (bool returned HB_UNUSED) {}
+template <>
+/*static*/ inline void _hb_warn_no_return<void> (bool returned HB_UNUSED) {}
 
 template <int max_level, typename ret_t>
 struct hb_auto_trace_t
@@ -450,12 +451,26 @@ struct hb_no_trace_t {
 #define HB_DEBUG_SUBSET_REPACK (HB_DEBUG+0)
 #endif
 
+#ifndef HB_DEBUG_PAINT
+#define HB_DEBUG_PAINT (HB_DEBUG+0)
+#endif
+#if HB_DEBUG_PAINT
+#define TRACE_PAINT(this) \
+  HB_UNUSED hb_auto_trace_t<HB_DEBUG_PAINT, void> trace \
+  (&c->debug_depth, c->get_name (), this, HB_FUNC, \
+   " ")
+#else
+#define TRACE_PAINT(this) HB_UNUSED hb_no_trace_t<void> trace
+#endif
+
+
 #ifndef HB_DEBUG_DISPATCH
 #define HB_DEBUG_DISPATCH ( \
 	HB_DEBUG_APPLY + \
 	HB_DEBUG_SANITIZE + \
 	HB_DEBUG_SERIALIZE + \
 	HB_DEBUG_SUBSET + \
+	HB_DEBUG_PAINT + \
 	0)
 #endif
 #if HB_DEBUG_DISPATCH

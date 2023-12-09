@@ -12,13 +12,14 @@
 # D āvis <dlektauers@gmail.com>, 2022.
 # Agnis Aldiņš <agnis16@gmail.com>, 2023.
 # Andrejs <ledaviskylv@gmail.com>, 2023.
+# Peter Lauris <peterlauris@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-23 21:22+0000\n"
-"Last-Translator: Andrejs <ledaviskylv@gmail.com>\n"
+"PO-Revision-Date: 2023-11-16 07:52+0000\n"
+"Last-Translator: Peter Lauris <peterlauris@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -27,7 +28,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2\n"
+
+msgid "Main Thread"
+msgstr "Galvenais Pavediens"
 
 msgid "Unset"
 msgstr "Neiestatīts"
@@ -924,15 +928,6 @@ msgstr "Aizvērt"
 msgid "Connect"
 msgstr "Savienot"
 
-msgid "Class:"
-msgstr "Klase:"
-
-msgid "Signal:"
-msgstr "Signāls:"
-
-msgid "No description."
-msgstr "Nav apraksta."
-
 msgid "Connect '%s' to '%s'"
 msgstr "Savienot '%s' pie '%s'"
 
@@ -1231,21 +1226,6 @@ msgstr "Zelta Sponsori"
 
 msgid "Silver Sponsors"
 msgstr "Sudraba Sponsors"
-
-msgid "Bronze Sponsors"
-msgstr "Bronzas Sponsors"
-
-msgid "Mini Sponsors"
-msgstr "Mini Sponsori"
-
-msgid "Gold Donors"
-msgstr "Zelta Donors"
-
-msgid "Silver Donors"
-msgstr "Sudraba Donors"
-
-msgid "Bronze Donors"
-msgstr "Bronzas Donors"
 
 msgid "Donors"
 msgstr "Ziedotāji"
@@ -1667,6 +1647,9 @@ msgstr "(Re)Importē vienumus"
 msgid "Top"
 msgstr "Virsotne"
 
+msgid "Class:"
+msgstr "Klase:"
+
 msgid "Inherits:"
 msgstr "Manto:"
 
@@ -1728,6 +1711,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "Metožu Apraksts"
 
+msgid "Property:"
+msgstr "Parametrs:"
+
+msgid "Signal:"
+msgstr "Signāls:"
+
 msgid "%d match."
 msgstr "%d sakritība."
 
@@ -1784,9 +1773,6 @@ msgstr "Mainīgais"
 
 msgid "Theme Property"
 msgstr "Motīva Mainīgais"
-
-msgid "Property:"
-msgstr "Parametrs:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -2050,15 +2036,6 @@ msgstr ""
 "Nevar ielādēt spraudņa skriptu no: '%s'. Tā iemesls var būt kļūda šajā "
 "slripta kodā.\n"
 "Spraudnis '%s' atspējots, lai novērstu tupmākās kļūdas."
-
-msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Nevar ielādēt papildinājuma skriptu no ceļa: '%s' Bāzes tips nav EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Nevarēja ielādēt spraudņa skriptu no mapes: '%s' Skripts nav rīka režīmā."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -2396,6 +2373,9 @@ msgstr "Jauna atslēga:"
 msgid "New Value:"
 msgstr "Jauna vērtība:"
 
+msgid "Save As..."
+msgstr "Saglabāt kā..."
+
 msgid "Show in FileSystem"
 msgstr "Parādīt failu sistēmā"
 
@@ -2564,9 +2544,6 @@ msgstr "Skatīt lietas kā sarakstu."
 
 msgid "Error moving:"
 msgstr "Kļūda parvietojot:"
-
-msgid "Set As Main Scene"
-msgstr "Iestatīt Kā Galveno Ainu"
 
 msgid "Open Scenes"
 msgstr "Atvērt Ainas"
@@ -2804,9 +2781,6 @@ msgstr "Kopēt iestatījumus"
 
 msgid "Paste Properties"
 msgstr "Ielīmēt iestatījumus"
-
-msgid "Save As..."
-msgstr "Saglabāt kā..."
 
 msgid "Open documentation for this object."
 msgstr "Atvērt dokumentāciju šim objektam."

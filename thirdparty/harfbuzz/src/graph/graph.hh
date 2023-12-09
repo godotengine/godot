@@ -290,7 +290,7 @@ struct graph_t
 	new_parents.set (id_map[_.first], _.second);
       }
 
-      if (new_parents.in_error ())
+      if (parents.in_error() || new_parents.in_error ())
         return false;
 
       parents = std::move (new_parents);
@@ -310,8 +310,15 @@ struct graph_t
       if (parents.has (old_index, &pv))
       {
         unsigned v = *pv;
-	parents.set (new_index, v);
+	if (!parents.set (new_index, v))
+          incoming_edges_ -= v;
 	parents.del (old_index);
+
+        if (incoming_edges_ == 1)
+	{
+	  single_parent = *parents.keys ();
+	  parents.reset ();
+	}
       }
     }
 
@@ -467,6 +474,18 @@ struct graph_t
     return root ().equals (other.root (), *this, other, 0);
   }
 
+  void print () const {
+    for (int i = vertices_.length - 1; i >= 0; i--)
+    {
+      const auto& v = vertices_[i];
+      printf("%d: %u [", i, (unsigned int)v.table_size());
+      for (const auto &l : v.obj.real_links) {
+        printf("%u, ", l.objidx);
+      }
+      printf("]\n");
+    }
+  }
+
   // Sorts links of all objects in a consistent manner and zeroes all offsets.
   void normalize ()
   {
@@ -547,7 +566,7 @@ struct graph_t
 
     update_distances ();
 
-    hb_priority_queue_t queue;
+    hb_priority_queue_t<int64_t> queue;
     hb_vector_t<vertex_t> &sorted_graph = vertices_scratch_;
     if (unlikely (!check_success (sorted_graph.resize (vertices_.length)))) return;
     hb_vector_t<unsigned> id_map;
@@ -1350,7 +1369,7 @@ struct graph_t
       vertices_.arrayZ[i].distance = hb_int_max (int64_t);
     vertices_.tail ().distance = 0;
 
-    hb_priority_queue_t queue;
+    hb_priority_queue_t<int64_t> queue;
     queue.insert (0, vertices_.length - 1);
 
     hb_vector_t<bool> visited;

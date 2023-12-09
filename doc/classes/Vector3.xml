@@ -442,7 +442,9 @@
 			<return type="Vector3" />
 			<param index="0" name="right" type="Basis" />
 			<description>
-				Inversely transforms (multiplies) the [Vector3] by the given [Basis] matrix.
+				Inversely transforms (multiplies) the [Vector3] by the given [Basis] matrix, under the assumption that the basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				[code]vector * basis[/code] is equivalent to [code]basis.transposed() * vector[/code]. See [method Basis.transposed].
+				For transforming by inverse of a non-orthonormal basis (e.g. with scaling) [code]basis.inverse() * vector[/code] can be used instead. See [method Basis.inverse].
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -450,13 +452,16 @@
 			<param index="0" name="right" type="Quaternion" />
 			<description>
 				Inversely transforms (multiplies) the [Vector3] by the given [Quaternion].
+				[code]vector * quaternion[/code] is equivalent to [code]quaternion.inverse() * vector[/code]. See [method Quaternion.inverse].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector3" />
 			<param index="0" name="right" type="Transform3D" />
 			<description>
-				Inversely transforms (multiplies) the [Vector3] by the given [Transform3D] transformation matrix.
+				Inversely transforms (multiplies) the [Vector3] by the given [Transform3D] transformation matrix, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				[code]vector * transform[/code] is equivalent to [code]transform.inverse() * vector[/code]. See [method Transform3D.inverse].
+				For transforming by inverse of an affine transformation (e.g. with scaling) [code]transform.affine_inverse() * vector[/code] can be used instead. See [method Transform3D.affine_inverse].
 			</description>
 		</operator>
 		<operator name="operator *">

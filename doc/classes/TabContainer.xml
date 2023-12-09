@@ -243,7 +243,7 @@
 		<signal name="tab_selected">
 			<param index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab is selected, even if it is the current tab.
+				Emitted when a tab is selected via click, directional input, or script, even if it is the current tab.
 			</description>
 		</signal>
 	</signals>

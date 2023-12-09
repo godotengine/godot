@@ -485,7 +485,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 			continue;
 		}
 
-		push_constant.flags = base_flags | (push_constant.flags & (FLAGS_DEFAULT_NORMAL_MAP_USED | FLAGS_DEFAULT_SPECULAR_MAP_USED)); //reset on each command for sanity, keep canvastexture binding config
+		push_constant.flags = base_flags | (push_constant.flags & (FLAGS_DEFAULT_NORMAL_MAP_USED | FLAGS_DEFAULT_SPECULAR_MAP_USED)); // Reset on each command for safety, keep canvastexture binding config.
 
 		switch (c->type) {
 			case Item::Command::TYPE_RECT: {
@@ -957,7 +957,48 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 		c = c->next;
 	}
+#ifdef DEBUG_ENABLED
+	if (debug_redraw && p_item->debug_redraw_time > 0.0) {
+		Color dc = debug_redraw_color;
+		dc.a *= p_item->debug_redraw_time / debug_redraw_time;
 
+		RID pipeline = pipeline_variants->variants[PIPELINE_LIGHT_MODE_DISABLED][PIPELINE_VARIANT_QUAD].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
+		RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
+
+		//bind textures
+
+		_bind_canvas_texture(p_draw_list, RID(), current_filter, current_repeat, last_texture, push_constant, texpixel_size);
+
+		Rect2 src_rect;
+		Rect2 dst_rect;
+
+		dst_rect = Rect2(Vector2(), p_item->rect.size);
+		src_rect = Rect2(0, 0, 1, 1);
+
+		push_constant.modulation[0] = dc.r;
+		push_constant.modulation[1] = dc.g;
+		push_constant.modulation[2] = dc.b;
+		push_constant.modulation[3] = dc.a;
+
+		push_constant.src_rect[0] = src_rect.position.x;
+		push_constant.src_rect[1] = src_rect.position.y;
+		push_constant.src_rect[2] = src_rect.size.width;
+		push_constant.src_rect[3] = src_rect.size.height;
+
+		push_constant.dst_rect[0] = dst_rect.position.x;
+		push_constant.dst_rect[1] = dst_rect.position.y;
+		push_constant.dst_rect[2] = dst_rect.size.width;
+		push_constant.dst_rect[3] = dst_rect.size.height;
+
+		RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
+		RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);
+		RD::get_singleton()->draw_list_draw(p_draw_list, true);
+
+		p_item->debug_redraw_time -= RSG::rasterizer->get_frame_delta_time();
+
+		RenderingServerDefault::redraw_request();
+	}
+#endif
 	if (current_clip && reclip) {
 		//will make it re-enable clipping if needed afterwards
 		current_clip = nullptr;
@@ -1075,6 +1116,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 		fb_uniform_set = texture_storage->render_target_get_backbuffer_uniform_set(p_to_render_target);
 	} else {
 		framebuffer = texture_storage->render_target_get_rd_framebuffer(p_to_render_target);
+		texture_storage->render_target_set_msaa_needs_resolve(p_to_render_target, false); // If MSAA is enabled, our framebuffer will be resolved!
 
 		if (texture_storage->render_target_is_clear_requested(p_to_render_target)) {
 			clear = true;
@@ -1939,8 +1981,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		if (oc->vertex_array.is_null()) {
 			//create from scratch
 			//vertices
-			// TODO: geometry is always of length lc * 6 * sizeof(float), so in doubles builds this will receive half the data it needs
-			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(real_t), geometry);
+			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(float), geometry);
 
 			Vector<RID> buffer;
 			buffer.push_back(oc->vertex_buffer);
@@ -2001,7 +2042,18 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		if (oc->sdf_vertex_array.is_null()) {
 			//create from scratch
 			//vertices
-			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(real_t), p_points.to_byte_array());
+#ifdef REAL_T_IS_DOUBLE
+			PackedFloat32Array float_points;
+			float_points.resize(p_points.size() * 2);
+			float *float_points_ptr = (float *)float_points.ptrw();
+			for (int i = 0; i < p_points.size(); i++) {
+				float_points_ptr[i * 2] = p_points[i].x;
+				float_points_ptr[i * 2 + 1] = p_points[i].y;
+			}
+			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), float_points.to_byte_array());
+#else
+			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), p_points.to_byte_array());
+#endif
 			oc->sdf_index_buffer = RD::get_singleton()->index_buffer_create(sdf_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, sdf_indices.to_byte_array());
 			oc->sdf_index_array = RD::get_singleton()->index_array_create(oc->sdf_index_buffer, 0, sdf_indices.size());
 
@@ -2012,7 +2064,18 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 
 		} else {
 			//update existing
-			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(real_t) * 2 * p_points.size(), p_points.ptr());
+#ifdef REAL_T_IS_DOUBLE
+			PackedFloat32Array float_points;
+			float_points.resize(p_points.size() * 2);
+			float *float_points_ptr = (float *)float_points.ptrw();
+			for (int i = 0; i < p_points.size(); i++) {
+				float_points_ptr[i * 2] = p_points[i].x;
+				float_points_ptr[i * 2 + 1] = p_points[i].y;
+			}
+			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(float) * 2 * p_points.size(), float_points.ptr());
+#else
+			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(float) * 2 * p_points.size(), p_points.ptr());
+#endif
 			RD::get_singleton()->buffer_update(oc->sdf_index_buffer, 0, sdf_indices.size() * sizeof(int32_t), sdf_indices.ptr());
 		}
 	}
@@ -2536,15 +2599,15 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		//pipelines
 		Vector<RD::VertexAttribute> vf;
 		RD::VertexAttribute vd;
-		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32B32_SFLOAT : RD::DATA_FORMAT_R64G64B64_SFLOAT;
+		vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+		vd.stride = sizeof(float) * 3;
 		vd.location = 0;
 		vd.offset = 0;
-		vd.stride = sizeof(real_t) * 3;
 		vf.push_back(vd);
 		shadow_render.vertex_format = RD::get_singleton()->vertex_format_create(vf);
 
-		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32_SFLOAT : RD::DATA_FORMAT_R64G64_SFLOAT;
-		vd.stride = sizeof(real_t) * 2;
+		vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+		vd.stride = sizeof(float) * 2;
 
 		vf.write[0] = vd;
 		shadow_render.sdf_vertex_format = RD::get_singleton()->vertex_format_create(vf);
@@ -2718,7 +2781,7 @@ bool RendererCanvasRenderRD::free(RID p_rid) {
 }
 
 void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
-	p_size = nearest_power_of_2_templated(p_size);
+	p_size = MAX(1, nearest_power_of_2_templated(p_size));
 	if (p_size == state.shadow_texture_size) {
 		return;
 	}
@@ -2740,6 +2803,12 @@ void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
 			state.shadow_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
 	}
+}
+
+void RendererCanvasRenderRD::set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) {
+	debug_redraw = p_enabled;
+	debug_redraw_time = p_time;
+	debug_redraw_color = p_color;
 }
 
 RendererCanvasRenderRD::~RendererCanvasRenderRD() {

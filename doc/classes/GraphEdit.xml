@@ -214,7 +214,7 @@
 			<param index="3" name="to_port" type="int" />
 			<param index="4" name="amount" type="float" />
 			<description>
-				Sets the coloration of the connection between [param from_node]'s [param from_port] and [param to_node]'s [param to_port] with the color provided in the [theme_item activity] theme property.
+				Sets the coloration of the connection between [param from_node]'s [param from_port] and [param to_node]'s [param to_port] with the color provided in the [theme_item activity] theme property. The color is linearly interpolated between the connection color and the activity color using [param amount] as weight.
 			</description>
 		</method>
 		<method name="set_selected">
@@ -408,6 +408,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Color of the connection's activity (see [method set_connection_activity]).
 		</theme_item>
 		<theme_item name="grid_major" data_type="color" type="Color" default="Color(1, 1, 1, 0.2)">
 			Color of major grid lines.

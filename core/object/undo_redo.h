@@ -85,7 +85,7 @@ private:
 	uint64_t version = 1;
 
 	void _pop_history_tail();
-	void _process_operation_list(List<Operation>::Element *E);
+	void _process_operation_list(List<Operation>::Element *E, bool p_execute);
 	void _discard_redo();
 	bool _redo(bool p_execute);
 
@@ -130,6 +130,8 @@ public:
 
 	bool has_undo() const;
 	bool has_redo() const;
+
+	bool is_merging() const;
 
 	uint64_t get_version() const;
 

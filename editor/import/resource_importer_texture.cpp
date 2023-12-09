@@ -367,14 +367,6 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	f->store_32(0);
 	f->store_32(0);
 
-	/*
-	print_line("streamable " + itos(p_streamable));
-	print_line("mipmaps " + itos(p_mipmaps));
-	print_line("detect_3d " + itos(p_detect_3d));
-	print_line("roughness " + itos(p_detect_roughness));
-	print_line("normal " + itos(p_detect_normal));
-*/
-
 	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() > Image::FORMAT_RGBA8) {
 		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED; //these can't go as lossy
 	}

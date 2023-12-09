@@ -303,9 +303,19 @@ void Path3DGizmo::redraw() {
 		}
 
 		const Transform3D *r = frames.ptr();
+
 		Vector<Vector3> _collision_segments;
+		_collision_segments.resize((sample_count - 1) * 2);
+		Vector3 *_collisions_ptr = _collision_segments.ptrw();
+
 		Vector<Vector3> bones;
+		bones.resize(sample_count * 4);
+		Vector3 *bones_ptr = bones.ptrw();
+
 		Vector<Vector3> ribbon;
+		ribbon.resize(sample_count);
+		Vector3 *ribbon_ptr = ribbon.ptrw();
+
 		for (int i = 0; i < sample_count; i++) {
 			const Vector3 p1 = r[i].origin;
 			const Vector3 side = r[i].basis.get_column(0);
@@ -313,23 +323,25 @@ void Path3DGizmo::redraw() {
 			const Vector3 forward = r[i].basis.get_column(2);
 
 			// Collision segments.
-			if (i != sample_count) {
+			if (i != sample_count - 1) {
 				const Vector3 p2 = r[i + 1].origin;
-				_collision_segments.push_back(p1);
-				_collision_segments.push_back(p2);
+				_collisions_ptr[(i * 2)] = p1;
+				_collisions_ptr[(i * 2) + 1] = p2;
 			}
 
 			// Path3D as a ribbon.
-			ribbon.push_back(p1);
+			ribbon_ptr[i] = p1;
 
 			// Fish Bone.
 			const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
 			const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
-			bones.push_back(p1);
-			bones.push_back(p_left);
 
-			bones.push_back(p1);
-			bones.push_back(p_right);
+			const int bone_idx = i * 4;
+
+			bones_ptr[bone_idx] = p1;
+			bones_ptr[bone_idx + 1] = p_left;
+			bones_ptr[bone_idx + 2] = p1;
+			bones_ptr[bone_idx + 3] = p_right;
 		}
 
 		add_collision_segments(_collision_segments);
@@ -713,6 +725,9 @@ void Path3DEditorPlugin::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			// FIXME: This can trigger theme updates when the nodes that we want to update are not yet available.
+			// The toolbar should be extracted to a dedicated control and theme updates should be handled through
+			// the notification.
 			Node3DEditor::get_singleton()->connect("theme_changed", callable_mp(this, &Path3DEditorPlugin::_update_theme));
 		} break;
 	}

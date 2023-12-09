@@ -1653,6 +1653,7 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 
 	data.custom_minimum_size = p_custom;
 	update_minimum_size();
+	update_configuration_warnings();
 }
 
 Size2 Control::get_custom_minimum_size() const {
@@ -1831,9 +1832,18 @@ bool Control::has_point(const Point2 &p_point) const {
 void Control::set_mouse_filter(MouseFilter p_filter) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_filter, 3);
+
+	if (data.mouse_filter == p_filter) {
+		return;
+	}
+
 	data.mouse_filter = p_filter;
 	notify_property_list_changed();
 	update_configuration_warnings();
+
+	if (get_viewport()) {
+		get_viewport()->_gui_update_mouse_over();
+	}
 }
 
 Control::MouseFilter Control::get_mouse_filter() const {
@@ -3568,6 +3578,8 @@ void Control::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_RESIZED);
 	BIND_CONSTANT(NOTIFICATION_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_MOUSE_EXIT);
+	BIND_CONSTANT(NOTIFICATION_MOUSE_ENTER_SELF);
+	BIND_CONSTANT(NOTIFICATION_MOUSE_EXIT_SELF);
 	BIND_CONSTANT(NOTIFICATION_FOCUS_ENTER);
 	BIND_CONSTANT(NOTIFICATION_FOCUS_EXIT);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);

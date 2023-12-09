@@ -1075,7 +1075,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			static HashMap<StringName, Variant::Type> builtin_types;
+			static HashMap<String, Variant::Type> builtin_types;
 			if (builtin_types.is_empty()) {
 				for (int i = 1; i < Variant::VARIANT_MAX; i++) {
 					builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;

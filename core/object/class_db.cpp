@@ -98,8 +98,23 @@ void ClassDB::get_class_list(List<StringName> *p_classes) {
 		p_classes->push_back(E.key);
 	}
 
-	p_classes->sort();
+	p_classes->sort_custom<StringName::AlphCompare>();
 }
+
+#ifdef TOOLS_ENABLED
+void ClassDB::get_extensions_class_list(List<StringName> *p_classes) {
+	OBJTYPE_RLOCK;
+
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		if (E.value.api != API_EXTENSION && E.value.api != API_EDITOR_EXTENSION) {
+			continue;
+		}
+		p_classes->push_back(E.key);
+	}
+
+	p_classes->sort_custom<StringName::AlphCompare>();
+}
+#endif
 
 void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;
@@ -165,8 +180,8 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 }
 
 uint32_t ClassDB::get_api_hash(APIType p_api) {
-	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
+	OBJTYPE_WLOCK;
 
 	if (api_hashes_cache.has(p_api)) {
 		return api_hashes_cache[p_api];
@@ -175,7 +190,9 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 	uint64_t hash = hash_murmur3_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
 
 	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		class_list.push_back(E.key);
+	}
 	// Must be alphabetically sorted for hash to compute.
 	class_list.sort_custom<StringName::AlphCompare>();
 
@@ -859,8 +876,8 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 }
 
 void ClassDB::set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values) {
-	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
+	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 
 	ERR_FAIL_NULL(type);
@@ -871,6 +888,7 @@ void ClassDB::set_method_error_return_values(const StringName &p_class, const St
 
 Vector<Error> ClassDB::get_method_error_return_values(const StringName &p_class, const StringName &p_method) {
 #ifdef DEBUG_METHODS_ENABLED
+	OBJTYPE_RLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 
 	ERR_FAIL_NULL_V(type, Vector<Error>());
@@ -1415,6 +1433,8 @@ void ClassDB::_bind_compatibility(ClassInfo *type, MethodBind *p_method) {
 }
 
 void ClassDB::_bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility) {
+	OBJTYPE_WLOCK;
+
 	ClassInfo *type = classes.getptr(p_class);
 	if (!type) {
 		ERR_FAIL_MSG("Couldn't bind custom method '" + p_method->get_name() + "' for instance '" + p_class + "'.");

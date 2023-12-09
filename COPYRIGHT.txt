@@ -328,6 +328,11 @@ Comment: meshoptimizer
 Copyright: 2016-2022, Arseny Kapoulkine
 License: Expat
 
+Files: ./thirdparty/mingw-std-threads/
+Comment: mingw-std-threads
+Copyright: 2016, Mega Limited
+License: BSD-2-clause
+
 Files: ./thirdparty/minimp3/
 Comment: MiniMP3
 Copyright: lieff
@@ -383,7 +388,7 @@ License: Expat
 Files: ./thirdparty/noise/FastNoiseLite.h
 Comment: FastNoise Lite
 Copyright: 2020, Jordan Peck and contributors
-License: MIT
+License: Expat
 
 Files: ./thirdparty/misc/pcg.cpp
  ./thirdparty/misc/pcg.h
@@ -428,7 +433,7 @@ License: BSD-2-clause
 Files: ./thirdparty/msdfgen/
 Comment: Multi-channel signed distance field generator
 Copyright: 2016-2022, Viktor Chlumsky
-License: MIT
+License: Expat
 
 Files: ./thirdparty/nvapi/nvapi_minimal.h
 Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK

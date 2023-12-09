@@ -335,7 +335,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 	}
 
 	AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
-	_animation_key_editor_seek(timeline_position, false);
+	_animation_key_editor_seek(timeline_position);
 
 	emit_signal("animation_selected", current);
 }
@@ -653,26 +653,23 @@ void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 	undo_redo->commit_action();
 }
 
-void AnimationPlayerEditor::_animation_blend() {
-	if (updating_blends) {
+void AnimationPlayerEditor::_edit_animation_blend() {
+	if (updating_blends || !animation->has_selectable_items()) {
+		return;
+	}
+
+	blend_editor.dialog->popup_centered(Size2(400, 400) * EDSCALE);
+	_update_animation_blend();
+}
+
+void AnimationPlayerEditor::_update_animation_blend() {
+	if (updating_blends || !animation->has_selectable_items()) {
 		return;
 	}
 
 	blend_editor.tree->clear();
 
-	if (!animation->has_selectable_items()) {
-		return;
-	}
-
 	String current = animation->get_item_text(animation->get_selected());
-
-	blend_editor.dialog->popup_centered(Size2(400, 400) * EDSCALE);
-
-	blend_editor.tree->set_hide_root(true);
-	blend_editor.tree->set_column_expand_ratio(0, 10);
-	blend_editor.tree->set_column_clip_content(0, true);
-	blend_editor.tree->set_column_expand_ratio(1, 3);
-	blend_editor.tree->set_column_clip_content(1, true);
 
 	List<StringName> anims;
 	player->get_animation_list(&anims);
@@ -711,20 +708,16 @@ void AnimationPlayerEditor::_animation_blend() {
 }
 
 void AnimationPlayerEditor::_blend_edited() {
-	if (updating_blends) {
+	if (updating_blends || !animation->has_selectable_items()) {
 		return;
 	}
-
-	if (!animation->has_selectable_items()) {
-		return;
-	}
-
-	String current = animation->get_item_text(animation->get_selected());
 
 	TreeItem *selected = blend_editor.tree->get_edited();
 	if (!selected) {
 		return;
 	}
+
+	String current = animation->get_item_text(animation->get_selected());
 
 	updating_blends = true;
 	String to = selected->get_text(0);
@@ -1051,7 +1044,6 @@ void AnimationPlayerEditor::_ensure_dummy_player() {
 	}
 
 	// Make some options disabled.
-	tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(TOOL_EDIT_TRANSITIONS), dummy_exists);
 	onion_toggle->set_disabled(dummy_exists);
 	onion_skinning->set_disabled(dummy_exists);
 	int selected = animation->get_selected();
@@ -1239,7 +1231,7 @@ Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
 	return new_anim;
 }
 
-void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool p_timeline_only) {
+void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_only) {
 	if (updating || !player || player->is_playing()) {
 		return;
 	};
@@ -1255,20 +1247,14 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 	Ref<Animation> anim;
 	anim = player->get_animation(current);
 
-	float pos = CLAMP((double)anim->get_length() * (p_value / frame->get_max()), 0, (double)anim->get_length());
+	double pos = CLAMP((double)anim->get_length() * (p_value / frame->get_max()), 0, (double)anim->get_length());
 	if (track_editor->is_snap_enabled()) {
 		pos = Math::snapped(pos, _get_editor_step());
 	}
+	pos = CLAMP(pos, 0, (double)anim->get_length() - CMP_EPSILON2); // Hack: Avoid fposmod with LOOP_LINEAR.
 
-	if (!p_timeline_only) {
-		if (player->is_valid() && !p_set) {
-			double delta = player->get_current_animation_position();
-			player->seek(pos, true, true);
-			player->seek(pos + delta, true, true);
-		} else {
-			player->stop();
-			player->seek(pos, true, true);
-		}
+	if (!p_timeline_only && anim.is_valid()) {
+		player->seek(pos, true, true);
 	}
 
 	track_editor->set_anim_pos(pos);
@@ -1276,9 +1262,11 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 	_update_player();
+
 	if (blend_editor.dialog->is_visible()) {
-		_animation_blend(); // Update.
+		_update_animation_blend(); // Update.
 	}
+
 	if (library_editor->is_visible()) {
 		library_editor->update_tree();
 	}
@@ -1317,7 +1305,7 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 	frame->set_max(p_len);
 }
 
-void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only) {
+void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timeline_only) {
 	timeline_position = p_pos;
 
 	if (!is_visible_in_tree()) {
@@ -1339,7 +1327,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag,
 	updating = true;
 	frame->set_value(Math::snapped(p_pos, _get_editor_step()));
 	updating = false;
-	_seek_value_changed(p_pos, !p_drag, p_timeline_only);
+	_seek_value_changed(p_pos, p_timeline_only);
 }
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
@@ -1365,10 +1353,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			_animation_rename();
 		} break;
 		case TOOL_EDIT_TRANSITIONS: {
-			if (is_dummy) {
-				break;
-			}
-			_animation_blend();
+			_edit_animation_blend();
 		} break;
 		case TOOL_REMOVE_ANIM: {
 			_animation_remove();
@@ -1639,7 +1624,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_step_prepare(int p_step_offs
 		bool valid = anim->get_loop_mode() != Animation::LOOP_NONE || (pos >= 0 && pos <= anim->get_length());
 		onion.captures_valid[p_capture_idx] = valid;
 		if (valid) {
-			player->seek(pos, true);
+			player->seek(pos, true, true);
 			OS::get_singleton()->get_main_loop()->process(0);
 			// This is the key: process the frame and let all callbacks/updates/notifications happen
 			// so everything (transforms, skeletons, etc.) is up-to-date visually.
@@ -1804,17 +1789,8 @@ bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
 }
 
 void AnimationPlayerEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_animation_new"), &AnimationPlayerEditor::_animation_new);
-	ClassDB::bind_method(D_METHOD("_animation_rename"), &AnimationPlayerEditor::_animation_rename);
-	ClassDB::bind_method(D_METHOD("_animation_remove"), &AnimationPlayerEditor::_animation_remove);
-	ClassDB::bind_method(D_METHOD("_animation_blend"), &AnimationPlayerEditor::_animation_blend);
-	ClassDB::bind_method(D_METHOD("_animation_edit"), &AnimationPlayerEditor::_animation_edit);
-	ClassDB::bind_method(D_METHOD("_animation_resource_edit"), &AnimationPlayerEditor::_animation_resource_edit);
+	// Needed for UndoRedo.
 	ClassDB::bind_method(D_METHOD("_animation_player_changed"), &AnimationPlayerEditor::_animation_player_changed);
-	ClassDB::bind_method(D_METHOD("_animation_libraries_updated"), &AnimationPlayerEditor::_animation_libraries_updated);
-	ClassDB::bind_method(D_METHOD("_list_changed"), &AnimationPlayerEditor::_list_changed);
-	ClassDB::bind_method(D_METHOD("_animation_duplicate"), &AnimationPlayerEditor::_animation_duplicate);
-
 	ClassDB::bind_method(D_METHOD("_start_onion_skinning"), &AnimationPlayerEditor::_start_onion_skinning);
 	ClassDB::bind_method(D_METHOD("_stop_onion_skinning"), &AnimationPlayerEditor::_stop_onion_skinning);
 
@@ -1835,11 +1811,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	plugin = p_plugin;
 	singleton = this;
 
-	updating = false;
-
 	set_focus_mode(FOCUS_ALL);
-
-	player = nullptr;
+	set_process_shortcut_input(true);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -1923,7 +1896,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(memnew(VSeparator));
 
 	track_editor = memnew(AnimationTrackEditor);
-
 	hb->add_child(track_editor->get_edit_menu());
 
 	hb->add_child(memnew(VSeparator));
@@ -1994,21 +1966,27 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	name_dialog->connect(SNAME("confirmed"), callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
 
 	blend_editor.dialog = memnew(AcceptDialog);
-	add_child(blend_editor.dialog);
+	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
 	blend_editor.dialog->set_ok_button_text(TTR("Close"));
 	blend_editor.dialog->set_hide_on_ok(true);
+	add_child(blend_editor.dialog);
+
 	VBoxContainer *blend_vb = memnew(VBoxContainer);
 	blend_editor.dialog->add_child(blend_vb);
+
 	blend_editor.tree = memnew(Tree);
+	blend_editor.tree->set_hide_root(true);
 	blend_editor.tree->set_columns(2);
+	blend_editor.tree->set_column_expand_ratio(0, 10);
+	blend_editor.tree->set_column_clip_content(0, true);
+	blend_editor.tree->set_column_expand_ratio(1, 3);
+	blend_editor.tree->set_column_clip_content(1, true);
 	blend_vb->add_margin_child(TTR("Blend Times:"), blend_editor.tree, true);
+	blend_editor.tree->connect(SNAME("item_edited"), callable_mp(this, &AnimationPlayerEditor::_blend_edited));
+
 	blend_editor.next = memnew(OptionButton);
 	blend_editor.next->set_auto_translate(false);
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
-	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
-	updating_blends = false;
-
-	blend_editor.tree->connect(SNAME("item_edited"), callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
 	autoplay->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
 	autoplay->set_toggle_mode(true);
@@ -2020,13 +1998,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	animation->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
-	frame->connect(SNAME("value_changed"), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(true, false));
+	frame->connect(SNAME("value_changed"), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(false));
 	scale->connect(SNAME("text_submitted"), callable_mp(this, &AnimationPlayerEditor::_scale_changed));
-
-	last_active = false;
-	timeline_position = 0;
-
-	set_process_shortcut_input(true);
 
 	add_child(track_editor);
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);

@@ -158,6 +158,7 @@ class TextServerAdvanced : public TextServerExtension {
 	// ICU support data.
 
 	static bool icu_data_loaded;
+	static PackedByteArray icu_data;
 	mutable USet *allowed = nullptr;
 	mutable USpoofChecker *sc_spoof = nullptr;
 	mutable USpoofChecker *sc_conf = nullptr;
@@ -305,6 +306,7 @@ class TextServerAdvanced : public TextServerExtension {
 		bool mipmaps = false;
 		bool msdf = false;
 		int msdf_range = 14;
+		FixedSizeScaleMode fixed_size_scale_mode = FIXED_SIZE_SCALE_DISABLE;
 		int msdf_source_size = 48;
 		int fixed_size = 0;
 		bool allow_system_fallback = true;
@@ -679,11 +681,7 @@ class TextServerAdvanced : public TextServerExtension {
 		_FORCE_INLINE_ bool operator()(const Glyph &l, const Glyph &r) const {
 			if (l.start == r.start) {
 				if (l.count == r.count) {
-					if ((l.flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL) {
-						return false;
-					} else {
-						return true;
-					}
+					return (l.flags & TextServer::GRAPHEME_IS_VIRTUAL) < (r.flags & TextServer::GRAPHEME_IS_VIRTUAL);
 				}
 				return l.count > r.count; // Sort first glyph with count & flags, order of the rest are irrelevant.
 			} else {
@@ -762,6 +760,9 @@ public:
 
 	MODBIND2(font_set_fixed_size, const RID &, int64_t);
 	MODBIND1RC(int64_t, font_get_fixed_size, const RID &);
+
+	MODBIND2(font_set_fixed_size_scale_mode, const RID &, FixedSizeScaleMode);
+	MODBIND1RC(FixedSizeScaleMode, font_get_fixed_size_scale_mode, const RID &);
 
 	MODBIND2(font_set_allow_system_fallback, const RID &, bool);
 	MODBIND1RC(bool, font_is_allow_system_fallback, const RID &);

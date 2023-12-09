@@ -234,12 +234,25 @@ void ScriptTextEditor::_set_theme_for_script() {
 		}
 	}
 
+	text_edit->clear_comment_delimiters();
+
 	List<String> comments;
 	script->get_language()->get_comment_delimiters(&comments);
-	text_edit->clear_comment_delimiters();
 	for (const String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
+		text_edit->add_comment_delimiter(beg, end, end.is_empty());
+
+		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
+			text_edit->add_auto_brace_completion_pair(beg, end);
+		}
+	}
+
+	List<String> doc_comments;
+	script->get_language()->get_doc_comment_delimiters(&doc_comments);
+	for (const String &doc_comment : doc_comments) {
+		String beg = doc_comment.get_slice(" ", 0);
+		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
 
 		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
@@ -779,7 +792,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 		return;
 	}
 
-	ERR_FAIL_COND(!get_tree());
+	ERR_FAIL_NULL(get_tree());
 
 	HashSet<Ref<Script>> scripts;
 
@@ -809,7 +822,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 			scr->set_last_modified_time(rel_scr->get_last_modified_time());
 			scr->update_exports();
 
-			_trigger_live_script_reload();
+			trigger_live_script_reload();
 		}
 	}
 }
@@ -1637,7 +1650,7 @@ void ScriptTextEditor::reload(bool p_soft) {
 		return;
 	}
 	scr->set_source_code(te->get_text());
-	bool soft = p_soft || scr->get_instance_base_type() == "EditorPlugin"; // Always soft-reload editor plugins.
+	bool soft = p_soft || ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorPlugin"); // Always soft-reload editor plugins.
 
 	scr->get_language()->reload_tool_script(scr, soft);
 }
@@ -2225,7 +2238,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
-		sub_menu->set_name("line_menu");
+		sub_menu->set_name("LineMenu");
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_up"), EDIT_MOVE_LINE_UP);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_down"), EDIT_MOVE_LINE_DOWN);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
@@ -2234,46 +2247,46 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_child(sub_menu);
-		edit_menu->get_popup()->add_submenu_item(TTR("Line"), "line_menu");
+		edit_menu->get_popup()->add_submenu_item(TTR("Line"), "LineMenu");
 	}
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
-		sub_menu->set_name("folding_menu");
+		sub_menu->set_name("FoldingMenu");
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/create_code_region"), EDIT_CREATE_CODE_REGION);
 		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_child(sub_menu);
-		edit_menu->get_popup()->add_submenu_item(TTR("Folding"), "folding_menu");
+		edit_menu->get_popup()->add_submenu_item(TTR("Folding"), "FoldingMenu");
 	}
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
-		sub_menu->set_name("indent_menu");
+		sub_menu->set_name("IndentMenu");
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_child(sub_menu);
-		edit_menu->get_popup()->add_submenu_item(TTR("Indentation"), "indent_menu");
+		edit_menu->get_popup()->add_submenu_item(TTR("Indentation"), "IndentMenu");
 	}
 	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
-		sub_menu->set_name("convert_case");
+		sub_menu->set_name("ConvertCase");
 		sub_menu->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase"), KeyModifierMask::SHIFT | Key::F4), EDIT_TO_UPPERCASE);
 		sub_menu->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase"), KeyModifierMask::SHIFT | Key::F5), EDIT_TO_LOWERCASE);
 		sub_menu->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KeyModifierMask::SHIFT | Key::F6), EDIT_CAPITALIZE);
 		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_child(sub_menu);
-		edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
+		edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "ConvertCase");
 	}
 	edit_menu->get_popup()->add_child(highlighter_menu);
-	edit_menu->get_popup()->add_submenu_item(TTR("Syntax Highlighter"), "highlighter_menu");
+	edit_menu->get_popup()->add_submenu_item(TTR("Syntax Highlighter"), "HighlighterMenu");
 	highlighter_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
 
 	edit_hb->add_child(search_menu);
@@ -2296,13 +2309,13 @@ void ScriptTextEditor::_enable_code_editor() {
 	goto_menu->get_popup()->add_separator();
 
 	goto_menu->get_popup()->add_child(bookmarks_menu);
-	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
+	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "BookmarksMenu");
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_bookmark_item_pressed));
 
 	goto_menu->get_popup()->add_child(breakpoints_menu);
-	goto_menu->get_popup()->add_submenu_item(TTR("Breakpoints"), "Breakpoints");
+	goto_menu->get_popup()->add_submenu_item(TTR("Breakpoints"), "BreakpointsMenu");
 	_update_breakpoint_list();
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_breakpoint_item_pressed));
@@ -2365,7 +2378,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->set_shortcut_context(this);
 
 	highlighter_menu = memnew(PopupMenu);
-	highlighter_menu->set_name("highlighter_menu");
+	highlighter_menu->set_name("HighlighterMenu");
 
 	Ref<EditorPlainTextSyntaxHighlighter> plain_highlighter;
 	plain_highlighter.instantiate();
@@ -2387,10 +2400,10 @@ ScriptTextEditor::ScriptTextEditor() {
 	goto_menu->set_shortcut_context(this);
 
 	bookmarks_menu = memnew(PopupMenu);
-	bookmarks_menu->set_name("Bookmarks");
+	bookmarks_menu->set_name("BookmarksMenu");
 
 	breakpoints_menu = memnew(PopupMenu);
-	breakpoints_menu->set_name("Breakpoints");
+	breakpoints_menu->set_name("BreakpointsMenu");
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 

@@ -38,6 +38,7 @@ extern "C" {
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 
 // Config
 extern void godot_js_config_locale_get(char *p_ptr, int p_ptr_max);
@@ -69,7 +70,7 @@ extern int godot_js_input_gamepad_sample();
 extern int godot_js_input_gamepad_sample_count();
 extern int godot_js_input_gamepad_sample_get(int p_idx, float r_btns[16], int32_t *r_btns_num, float r_axes[10], int32_t *r_axes_num, int32_t *r_standard);
 extern void godot_js_input_paste_cb(void (*p_callback)(const char *p_text));
-extern void godot_js_input_drop_files_cb(void (*p_callback)(char **p_filev, int p_filec));
+extern void godot_js_input_drop_files_cb(void (*p_callback)(const char **p_filev, int p_filec));
 
 // TTS
 extern int godot_js_tts_is_speaking();

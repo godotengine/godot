@@ -361,8 +361,8 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			}
 			undo_redo->add_do_method(base_control, "queue_redraw");
 			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
-			for (const PackedVector2Array &polygon : polygons) {
-				undo_redo->add_undo_method(this, "set_polygon", polygon);
+			for (unsigned int i = 0; i < polygons.size(); i++) {
+				undo_redo->add_undo_method(this, "set_polygon", i, polygons[i]);
 			}
 			undo_redo->add_undo_method(base_control, "queue_redraw");
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
@@ -931,6 +931,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	snap_subdivision->connect("value_changed", callable_mp(this, &GenericTilePolygonEditor::_store_snap_options).unbind(1));
 
 	editor_zoom_widget = memnew(EditorZoomWidget);
+	editor_zoom_widget->setup_zoom_limits(0.125, 128.0);
 	editor_zoom_widget->set_position(Vector2(5, 5));
 	editor_zoom_widget->connect("zoom_changed", callable_mp(this, &GenericTilePolygonEditor::_zoom_changed).unbind(1));
 	editor_zoom_widget->set_shortcut_context(this);

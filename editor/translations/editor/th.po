@@ -9,7 +9,7 @@
 # Lon3r <mptube.p@gmail.com>, 2020.
 # Kongfa Warorot <gongpha@hotmail.com>, 2020, 2021.
 # Kongfa Waroros <gongpha@hotmail.com>, 2021.
-# Atirut Wattanamongkol <artjang301@gmail.com>, 2021.
+# Atirut Wattanamongkol <artjang301@gmail.com>, 2021, 2023.
 # PT 07 <porton555@gmail.com>, 2021.
 # SysError_ <ictsanook@hotmail.com>, 2021, 2023.
 # Kanda Ninthfish <akkhaporn@gmail.com>, 2022.
@@ -22,8 +22,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-14 11:52+0000\n"
-"Last-Translator: Satakun Utama <galaxytomostore@gmail.com>\n"
+"PO-Revision-Date: 2023-10-24 17:38+0000\n"
+"Last-Translator: Atirut Wattanamongkol <artjang301@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -31,7 +31,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.1.1-dev\n"
+
+msgid "Main Thread"
+msgstr "เธรดหลัก"
 
 msgid "Unset"
 msgstr "ยกเลิกการตั้งค่า"
@@ -1020,12 +1023,6 @@ msgstr "ปิด"
 msgid "Connect"
 msgstr "เชื่อม"
 
-msgid "Class:"
-msgstr "คลาส:"
-
-msgid "Signal:"
-msgstr "สัญญาณ:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "เชื่อม '%s' กับ '%s'"
 
@@ -1363,21 +1360,6 @@ msgstr "ผู้สนับสนุนระดับทอง"
 
 msgid "Silver Sponsors"
 msgstr "ผู้บริจาคระดับเงิน"
-
-msgid "Bronze Sponsors"
-msgstr "ผู้บริจาคระดับทองแดง"
-
-msgid "Mini Sponsors"
-msgstr "ผู้สนับสนุน"
-
-msgid "Gold Donors"
-msgstr "ผู้บริจาคระดับทอง"
-
-msgid "Silver Donors"
-msgstr "ผู้บริจาคระดับเงิน"
-
-msgid "Bronze Donors"
-msgstr "ผู้บริจาคระดับทองแดง"
 
 msgid "Donors"
 msgstr "ผู้บริจาค"
@@ -1742,6 +1724,9 @@ msgstr "กำลังนำเข้าทรัพยากร(อีกค�
 msgid "Top"
 msgstr "บนสุด"
 
+msgid "Class:"
+msgstr "คลาส:"
+
 msgid "Inherits:"
 msgstr "สืบทอด:"
 
@@ -1797,6 +1782,12 @@ msgstr "รายละเอียดเมท็อด"
 
 msgid "Operator Descriptions"
 msgstr "รายละเอียดของตัวนำเนินการ"
+
+msgid "Property:"
+msgstr "คุณสมบัติ:"
+
+msgid "Signal:"
+msgstr "สัญญาณ:"
 
 msgid "%d match."
 msgstr "จับคู่ %d"
@@ -1854,9 +1845,6 @@ msgstr "คุณสมบัติ"
 
 msgid "Theme Property"
 msgstr "คุณสมบัติธีม"
-
-msgid "Property:"
-msgstr "คุณสมบัติ:"
 
 msgid "Move Up"
 msgstr "เลื่อนขึ้น"
@@ -2076,13 +2064,6 @@ msgstr "ไม่พบไฟล์สคริปต์สำหรับปล
 
 msgid "Unable to load addon script from path: '%s'."
 msgstr "ไม่สามารถโหลดสคริปต์จาก: '%s'"
-
-msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr "ไม่สามารถโหลดสคริปต์จาก: '%s' ไม่ได้สืบทอดจาก EditorPlugin"
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr "ไม่สามารถโหลดสคริปต์จาก: '%s' ไม่ใช่สคริปต์ tool"
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -2447,6 +2428,9 @@ msgstr "ทรัพยากรที่เลือก (%s) มีประเ
 msgid "Make Unique"
 msgstr "ไม่ใช้ร่วมกับวัตถุอื่น"
 
+msgid "Save As..."
+msgstr "บันทึกเป็น..."
+
 msgid "Show in FileSystem"
 msgstr "แสดงในรูปแบบไฟล์"
 
@@ -2602,11 +2586,11 @@ msgstr "เทมเพลตการส่งออก Godot"
 msgid "Runnable"
 msgstr "สามารถรันได้"
 
-msgid "Resources to export:"
-msgstr "รีซอร์สที่จะส่งออก:"
-
 msgid "Delete preset '%s'?"
 msgstr "ลบพรีเซ็ต '%s'?"
+
+msgid "Resources to export:"
+msgstr "รีซอร์สที่จะส่งออก:"
 
 msgid "Release"
 msgstr "เผยแพร่"
@@ -2735,9 +2719,6 @@ msgstr "ทำซ้ำโฟลเดอร์:"
 msgid "New Inherited Scene"
 msgstr "ฉากสืบทอดใหม่"
 
-msgid "Set As Main Scene"
-msgstr "ตั้งเป็นฉากหลัก"
-
 msgid "Open Scenes"
 msgstr "เปิดฉาก"
 
@@ -2782,9 +2763,6 @@ msgstr "เปลี่ยนชื่อ..."
 
 msgid "Re-Scan Filesystem"
 msgstr "สแกนไฟล์ใหม่"
-
-msgid "Toggle Split Mode"
-msgstr "สลับโหมดแยก"
 
 msgid ""
 "Scanning Files,\n"
@@ -3110,9 +3088,6 @@ msgstr "โหลดรีซอร์สที่มีอยู่แล้ว
 
 msgid "Save the currently edited resource."
 msgstr "บันทึกรีซอร์สที่กำลังปรับแต่ง"
-
-msgid "Save As..."
-msgstr "บันทึกเป็น..."
 
 msgid "Copy Resource"
 msgstr "คัดลอกรีซอร์ส"
@@ -3477,14 +3452,14 @@ msgstr "ปักหมุด AnimationPlayer"
 msgid "Error!"
 msgstr "ผิดพลาด!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "ระยะเวลาการผสาน Cross-Animation"
+
 msgid "Blend Times:"
 msgstr "ระยะเวลาผสาน:"
 
 msgid "Next (Auto Queue):"
 msgstr "ถัดไป (คิวอัตโนมัติ):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "ระยะเวลาการผสาน Cross-Animation"
 
 msgid "Move Node"
 msgstr "เคลื่อนย้ายโหนด"
@@ -6380,13 +6355,6 @@ msgid ""
 msgstr ""
 "การปิดทำงาน \"editable_instance\" จะทำให้คุณสมบัติทั้งหมดของโหนดเปลี่ยนกลับเป็นค่าเริ่มต้น"
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"การเปิดการทำงาน \"Load As Placeholder\" จะปิดการทำงาน \"Editable Children\" "
-"และจะทำให้คุณสมบัติทั้งหมดของโหนดเปลี่ยนกลับเป็นค่าเริ่มต้น"
-
 msgid "Make Local"
 msgstr "ทำให้เป็นภายใน"
 
@@ -6439,9 +6407,6 @@ msgstr "ลบการสืบทอด"
 
 msgid "Editable Children"
 msgstr "แก้ไขโหนดลูกได้"
-
-msgid "Load As Placeholder"
-msgstr "โหลดเป็นตัวแทน"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
@@ -6799,12 +6764,6 @@ msgstr "กำลังสร้างโปรเจคแอนดรอยด
 
 msgid "Moving output"
 msgstr "กำลังย้ายเอาต์พุต"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"ไม่สามารถคัดลอกและเปลี่ยนชื่อไฟล์ส่งออก ตรวจสอบไดเร็กทอรีโปรเจ็กต์ gradle สำหรับเอาต์พุต"
 
 msgid "Aligning APK..."
 msgstr "จัดเรียง APK..."

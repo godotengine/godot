@@ -623,8 +623,8 @@ void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, V
 void GDScriptByteCodeGenerator::write_type_test(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) {
 	switch (p_type.kind) {
 		case GDScriptDataType::BUILTIN: {
-			if (p_type.builtin_type == Variant::ARRAY && p_type.has_container_element_type()) {
-				const GDScriptDataType &element_type = p_type.get_container_element_type();
+			if (p_type.builtin_type == Variant::ARRAY && p_type.has_container_element_type(0)) {
+				const GDScriptDataType &element_type = p_type.get_container_element_type(0);
 				append_opcode(GDScriptFunction::OPCODE_TYPE_TEST_ARRAY);
 				append(p_target);
 				append(p_source);
@@ -878,8 +878,8 @@ void GDScriptByteCodeGenerator::write_get_static_variable(const Address &p_targe
 void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_target, const Address &p_source) {
 	switch (p_target.type.kind) {
 		case GDScriptDataType::BUILTIN: {
-			if (p_target.type.builtin_type == Variant::ARRAY && p_target.type.has_container_element_type()) {
-				const GDScriptDataType &element_type = p_target.type.get_container_element_type();
+			if (p_target.type.builtin_type == Variant::ARRAY && p_target.type.has_container_element_type(0)) {
+				const GDScriptDataType &element_type = p_target.type.get_container_element_type(0);
 				append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_ARRAY);
 				append(p_target);
 				append(p_source);
@@ -924,8 +924,8 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 }
 
 void GDScriptByteCodeGenerator::write_assign(const Address &p_target, const Address &p_source) {
-	if (p_target.type.kind == GDScriptDataType::BUILTIN && p_target.type.builtin_type == Variant::ARRAY && p_target.type.has_container_element_type()) {
-		const GDScriptDataType &element_type = p_target.type.get_container_element_type();
+	if (p_target.type.kind == GDScriptDataType::BUILTIN && p_target.type.builtin_type == Variant::ARRAY && p_target.type.has_container_element_type(0)) {
+		const GDScriptDataType &element_type = p_target.type.get_container_element_type(0);
 		append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_ARRAY);
 		append(p_target);
 		append(p_source);
@@ -1666,9 +1666,9 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 
 		// If this is a typed function, then we need to check for potential conversions.
 		if (function->return_type.has_type) {
-			if (function->return_type.kind == GDScriptDataType::BUILTIN && function->return_type.builtin_type == Variant::ARRAY && function->return_type.has_container_element_type()) {
+			if (function->return_type.kind == GDScriptDataType::BUILTIN && function->return_type.builtin_type == Variant::ARRAY && function->return_type.has_container_element_type(0)) {
 				// Typed array.
-				const GDScriptDataType &element_type = function->return_type.get_container_element_type();
+				const GDScriptDataType &element_type = function->return_type.get_container_element_type(0);
 				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_ARRAY);
 				append(p_return_value);
 				append(get_constant_pos(element_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
@@ -1691,8 +1691,8 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 	} else {
 		switch (function->return_type.kind) {
 			case GDScriptDataType::BUILTIN: {
-				if (function->return_type.builtin_type == Variant::ARRAY && function->return_type.has_container_element_type()) {
-					const GDScriptDataType &element_type = function->return_type.get_container_element_type();
+				if (function->return_type.builtin_type == Variant::ARRAY && function->return_type.has_container_element_type(0)) {
+					const GDScriptDataType &element_type = function->return_type.get_container_element_type(0);
 					append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_ARRAY);
 					append(p_return_value);
 					append(get_constant_pos(element_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));

@@ -166,7 +166,7 @@ void ImmediateMesh::surface_end() {
 		normal_tangent_stride += sizeof(uint32_t);
 	}
 	uint32_t tangent_offset = 0;
-	if (uses_tangents) {
+	if (uses_tangents || uses_normals) {
 		format |= ARRAY_FORMAT_TANGENT;
 		tangent_offset = vertex_stride * vertices.size() + normal_tangent_stride;
 		normal_tangent_stride += sizeof(uint32_t);
@@ -175,7 +175,7 @@ void ImmediateMesh::surface_end() {
 	AABB aabb;
 
 	{
-		surface_vertex_create_cache.resize(vertex_stride * vertices.size());
+		surface_vertex_create_cache.resize((vertex_stride + normal_tangent_stride) * vertices.size());
 		uint8_t *surface_vertex_ptr = surface_vertex_create_cache.ptrw();
 		for (uint32_t i = 0; i < vertices.size(); i++) {
 			{
@@ -202,12 +202,24 @@ void ImmediateMesh::surface_end() {
 
 				*normal = value;
 			}
-			if (uses_tangents) {
+			if (uses_tangents || uses_normals) {
 				uint32_t *tangent = (uint32_t *)&surface_vertex_ptr[i * normal_tangent_stride + tangent_offset];
-				Vector2 t = tangents[i].normal.octahedron_tangent_encode(tangents[i].d);
+				Vector2 t;
+				if (uses_tangents) {
+					t = tangents[i].normal.octahedron_tangent_encode(tangents[i].d);
+				} else {
+					Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[i].normalized());
+					t = tan.octahedron_tangent_encode(1.0);
+				}
+
 				uint32_t value = 0;
 				value |= (uint16_t)CLAMP(t.x * 65535, 0, 65535);
 				value |= (uint16_t)CLAMP(t.y * 65535, 0, 65535) << 16;
+				if (value == 4294901760) {
+					// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+					// So we sanitize here.
+					value = 4294967295;
+				}
 
 				*tangent = value;
 			}

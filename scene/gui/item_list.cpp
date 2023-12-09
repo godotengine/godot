@@ -1431,11 +1431,11 @@ void ItemList::force_update_list_size() {
 			}
 		}
 
-		for (int j = items.size() - 1; j >= 0 && col > 0; j--, col--) {
-			items.write[j].rect_cache.size.y = max_h;
-		}
-
 		if (all_fit) {
+			for (int j = items.size() - 1; j >= 0 && col > 0; j--, col--) {
+				items.write[j].rect_cache.size.y = max_h;
+			}
+
 			float page = MAX(0, size.height - theme_cache.panel_style->get_minimum_size().height);
 			float max = MAX(page, ofs.y + max_h);
 			if (auto_height) {

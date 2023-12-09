@@ -2115,7 +2115,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 		return;
 	}
 
-	ERR_FAIL_COND(shader->data == nullptr);
+	ERR_FAIL_NULL(shader->data);
 
 	material->data = material_data_request_func[shader->type](shader->data);
 	material->data->self = p_material;

@@ -125,6 +125,17 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
+		if (pan_gesture->is_ctrl_pressed()) {
+			// Zoom gesture.
+			float pan_zoom_factor = 1.02f;
+			float zoom_direction = pan_gesture->get_delta().x - pan_gesture->get_delta().y;
+			if (zoom_direction == 0.f) {
+				return true;
+			}
+			float zoom = zoom_direction < 0 ? 1.0 / pan_zoom_factor : pan_zoom_factor;
+			zoom_callback.call(zoom, pan_gesture->get_position(), p_event);
+			return true;
+		}
 		pan_callback.call(-pan_gesture->get_delta() * scroll_speed, p_event);
 	}
 

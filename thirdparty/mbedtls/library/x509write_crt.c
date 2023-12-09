@@ -342,6 +342,7 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx,
     size_t sub_len = 0, pub_len = 0, sig_and_oid_len = 0, sig_len;
     size_t len = 0;
     mbedtls_pk_type_t pk_alg;
+    int write_sig_null_par;
 
     /*
      * Prepare data to be signed at the end of the target buffer
@@ -433,9 +434,20 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx,
     /*
      *  Signature   ::=  AlgorithmIdentifier
      */
+    if (pk_alg == MBEDTLS_PK_ECDSA) {
+        /*
+         * The AlgorithmIdentifier's parameters field must be absent for DSA/ECDSA signature
+         * algorithms, see https://www.rfc-editor.org/rfc/rfc5480#page-17 and
+         * https://www.rfc-editor.org/rfc/rfc5758#section-3.
+         */
+        write_sig_null_par = 0;
+    } else {
+        write_sig_null_par = 1;
+    }
     MBEDTLS_ASN1_CHK_ADD(len,
-                         mbedtls_asn1_write_algorithm_identifier(&c, buf,
-                                                                 sig_oid, strlen(sig_oid), 0));
+                         mbedtls_asn1_write_algorithm_identifier_ext(&c, buf,
+                                                                     sig_oid, strlen(sig_oid),
+                                                                     0, write_sig_null_par));
 
     /*
      *  Serial   ::=  INTEGER
@@ -492,8 +504,8 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx,
      * into the CRT buffer. */
     c2 = buf + size;
     MBEDTLS_ASN1_CHK_ADD(sig_and_oid_len, mbedtls_x509_write_sig(&c2, c,
-                                                                 sig_oid, sig_oid_len, sig,
-                                                                 sig_len));
+                                                                 sig_oid, sig_oid_len,
+                                                                 sig, sig_len, pk_alg));
 
     /*
      * Memory layout after this step:

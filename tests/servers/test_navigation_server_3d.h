@@ -429,6 +429,105 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->free(map);
 	}
 
+	TEST_CASE("[NavigationServer3D] Server should make agents avoid dynamic obstacles when avoidance enabled") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		RID map = navigation_server->map_create();
+		RID agent_1 = navigation_server->agent_create();
+		RID obstacle_1 = navigation_server->obstacle_create();
+
+		navigation_server->map_set_active(map, true);
+
+		navigation_server->agent_set_map(agent_1, map);
+		navigation_server->agent_set_avoidance_enabled(agent_1, true);
+		navigation_server->agent_set_position(agent_1, Vector3(0, 0, 0));
+		navigation_server->agent_set_radius(agent_1, 1);
+		navigation_server->agent_set_velocity(agent_1, Vector3(1, 0, 0));
+		CallableMock agent_1_avoidance_callback_mock;
+		navigation_server->agent_set_avoidance_callback(agent_1, callable_mp(&agent_1_avoidance_callback_mock, &CallableMock::function1));
+
+		navigation_server->obstacle_set_map(obstacle_1, map);
+		navigation_server->obstacle_set_avoidance_enabled(obstacle_1, true);
+		navigation_server->obstacle_set_position(obstacle_1, Vector3(2.5, 0, 0.5));
+		navigation_server->obstacle_set_radius(obstacle_1, 1);
+
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 0);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
+		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
+		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "Agent 1 should move a bit along desired velocity (+X).");
+		CHECK_MESSAGE(agent_1_safe_velocity.z < 0, "Agent 1 should move a bit to the side so that it avoids obstacle.");
+
+		navigation_server->free(obstacle_1);
+		navigation_server->free(agent_1);
+		navigation_server->free(map);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+	}
+
+	TEST_CASE("[NavigationServer3D] Server should make agents avoid static obstacles when avoidance enabled") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		RID map = navigation_server->map_create();
+		RID agent_1 = navigation_server->agent_create();
+		RID agent_2 = navigation_server->agent_create();
+		RID obstacle_1 = navigation_server->obstacle_create();
+
+		navigation_server->map_set_active(map, true);
+
+		navigation_server->agent_set_map(agent_1, map);
+		navigation_server->agent_set_avoidance_enabled(agent_1, true);
+		navigation_server->agent_set_radius(agent_1, 1.6); // Have hit the obstacle already.
+		navigation_server->agent_set_velocity(agent_1, Vector3(1, 0, 0));
+		CallableMock agent_1_avoidance_callback_mock;
+		navigation_server->agent_set_avoidance_callback(agent_1, callable_mp(&agent_1_avoidance_callback_mock, &CallableMock::function1));
+
+		navigation_server->agent_set_map(agent_2, map);
+		navigation_server->agent_set_avoidance_enabled(agent_2, true);
+		navigation_server->agent_set_radius(agent_2, 1.4); // Haven't hit the obstacle yet.
+		navigation_server->agent_set_velocity(agent_2, Vector3(1, 0, 0));
+		CallableMock agent_2_avoidance_callback_mock;
+		navigation_server->agent_set_avoidance_callback(agent_2, callable_mp(&agent_2_avoidance_callback_mock, &CallableMock::function1));
+
+		navigation_server->obstacle_set_map(obstacle_1, map);
+		navigation_server->obstacle_set_avoidance_enabled(obstacle_1, true);
+		PackedVector3Array obstacle_1_vertices;
+
+		SUBCASE("Static obstacles should work on ground level") {
+			navigation_server->agent_set_position(agent_1, Vector3(0, 0, 0));
+			navigation_server->agent_set_position(agent_2, Vector3(0, 0, 5));
+			obstacle_1_vertices.push_back(Vector3(1.5, 0, 0.5));
+			obstacle_1_vertices.push_back(Vector3(1.5, 0, 4.5));
+		}
+
+		SUBCASE("Static obstacles should work when elevated") {
+			navigation_server->agent_set_position(agent_1, Vector3(0, 5, 0));
+			navigation_server->agent_set_position(agent_2, Vector3(0, 5, 5));
+			obstacle_1_vertices.push_back(Vector3(1.5, 0, 0.5));
+			obstacle_1_vertices.push_back(Vector3(1.5, 0, 4.5));
+			navigation_server->obstacle_set_position(obstacle_1, Vector3(0, 5, 0));
+		}
+
+		navigation_server->obstacle_set_vertices(obstacle_1, obstacle_1_vertices);
+
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 0);
+		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 0);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
+		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 1);
+		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
+		Vector3 agent_2_safe_velocity = agent_2_avoidance_callback_mock.function1_latest_arg0;
+		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "Agent 1 should move a bit along desired velocity (+X).");
+		CHECK_MESSAGE(agent_1_safe_velocity.z < 0, "Agent 1 should move a bit to the side so that it avoids obstacle.");
+		CHECK_MESSAGE(agent_2_safe_velocity.x > 0, "Agent 2 should move a bit along desired velocity (+X).");
+		CHECK_MESSAGE(agent_2_safe_velocity.z == 0, "Agent 2 should not move to the side.");
+
+		navigation_server->free(obstacle_1);
+		navigation_server->free(agent_2);
+		navigation_server->free(agent_1);
+		navigation_server->free(map);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+	}
+
 #ifndef DISABLE_DEPRECATED
 	// This test case uses only public APIs on purpose - other test cases use simplified baking.
 	// FIXME: Remove once deprecated `region_bake_navigation_mesh()` is removed.

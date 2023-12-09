@@ -164,6 +164,10 @@ const Engine = (function () {
 
 					// Preload GDExtension libraries.
 					const libs = [];
+					if (me.config.gdextensionLibs.length > 0 && !me.rtenv['loadDynamicLibrary']) {
+						return Promise.reject(new Error('GDExtension libraries are not supported by this engine version. '
+							+ 'Enable "Extensions Support" for your export preset and/or build your custom template with "dlink_enabled=yes".'));
+					}
 					me.config.gdextensionLibs.forEach(function (lib) {
 						libs.push(me.rtenv['loadDynamicLibrary'](lib, { 'loadAsync': true }));
 					});

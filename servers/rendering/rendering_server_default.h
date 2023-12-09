@@ -476,6 +476,8 @@ public:
 	FUNC2(voxel_gi_set_interior, RID, bool)
 	FUNC2(voxel_gi_set_use_two_bounces, RID, bool)
 
+	FUNC0(sdfgi_reset)
+
 	/* PARTICLES */
 
 #undef ServerName
@@ -490,6 +492,7 @@ public:
 	FUNC2(particles_set_emitting, RID, bool)
 	FUNC1R(bool, particles_get_emitting, RID)
 	FUNC2(particles_set_amount, RID, int)
+	FUNC2(particles_set_amount_ratio, RID, float)
 	FUNC2(particles_set_lifetime, RID, double)
 	FUNC2(particles_set_one_shot, RID, bool)
 	FUNC2(particles_set_pre_process_time, RID, double)
@@ -521,6 +524,8 @@ public:
 
 	FUNC1R(AABB, particles_get_current_aabb, RID)
 	FUNC2(particles_set_emission_transform, RID, const Transform3D &)
+	FUNC2(particles_set_emitter_velocity, RID, const Vector3 &)
+	FUNC2(particles_set_interp_to_end, RID, float)
 
 	/* PARTICLES COLLISION */
 
@@ -890,6 +895,9 @@ public:
 	FUNC5(canvas_item_set_visibility_notifier, RID, bool, const Rect2 &, const Callable &, const Callable &)
 
 	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
+
+	FUNC1(canvas_item_set_debug_redraw, bool)
+	FUNC0RC(bool, canvas_item_get_debug_redraw)
 
 	FUNCRIDSPLIT(canvas_light)
 

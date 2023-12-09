@@ -148,9 +148,6 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	update_samplers();
 
-	// Notify the renderer the base uniform needs to be recreated.
-	RendererSceneRenderRD::get_singleton()->base_uniforms_changed();
-
 	// cleanout any old buffers we had.
 	cleanup();
 

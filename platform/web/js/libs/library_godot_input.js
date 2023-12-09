@@ -135,9 +135,9 @@ const GodotInputGamepads = {
 			}
 
 			const id = pad.id;
-			// Chrom* style: NAME (Vendor: xxxx Product: xxxx)
+			// Chrom* style: NAME (Vendor: xxxx Product: xxxx).
 			const exp1 = /vendor: ([0-9a-f]{4}) product: ([0-9a-f]{4})/i;
-			// Firefox/Safari style (safari may remove leading zeores)
+			// Firefox/Safari style (Safari may remove leading zeroes).
 			const exp2 = /^([0-9a-f]+)-([0-9a-f]+)-/i;
 			let vendor = '';
 			let product = '';
@@ -356,6 +356,7 @@ const GodotInput = {
 	/*
 	 * Mouse API
 	 */
+	godot_js_input_mouse_move_cb__proxy: 'sync',
 	godot_js_input_mouse_move_cb__sig: 'vi',
 	godot_js_input_mouse_move_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
@@ -374,6 +375,7 @@ const GodotInput = {
 		GodotEventListeners.add(window, 'mousemove', move_cb, false);
 	},
 
+	godot_js_input_mouse_wheel_cb__proxy: 'sync',
 	godot_js_input_mouse_wheel_cb__sig: 'vi',
 	godot_js_input_mouse_wheel_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
@@ -385,6 +387,7 @@ const GodotInput = {
 		GodotEventListeners.add(GodotConfig.canvas, 'wheel', wheel_cb, false);
 	},
 
+	godot_js_input_mouse_button_cb__proxy: 'sync',
 	godot_js_input_mouse_button_cb__sig: 'vi',
 	godot_js_input_mouse_button_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
@@ -409,6 +412,7 @@ const GodotInput = {
 	/*
 	 * Touch API
 	 */
+	godot_js_input_touch_cb__proxy: 'sync',
 	godot_js_input_touch_cb__sig: 'viii',
 	godot_js_input_touch_cb: function (callback, ids, coords) {
 		const func = GodotRuntime.get_func(callback);
@@ -442,6 +446,7 @@ const GodotInput = {
 	/*
 	 * Key API
 	 */
+	godot_js_input_key_cb__proxy: 'sync',
 	godot_js_input_key_cb__sig: 'viii',
 	godot_js_input_key_cb: function (callback, code, key) {
 		const func = GodotRuntime.get_func(callback);
@@ -459,23 +464,27 @@ const GodotInput = {
 	/*
 	 * Gamepad API
 	 */
+	godot_js_input_gamepad_cb__proxy: 'sync',
 	godot_js_input_gamepad_cb__sig: 'vi',
 	godot_js_input_gamepad_cb: function (change_cb) {
 		const onchange = GodotRuntime.get_func(change_cb);
 		GodotInputGamepads.init(onchange);
 	},
 
+	godot_js_input_gamepad_sample_count__proxy: 'sync',
 	godot_js_input_gamepad_sample_count__sig: 'i',
 	godot_js_input_gamepad_sample_count: function () {
 		return GodotInputGamepads.get_samples().length;
 	},
 
+	godot_js_input_gamepad_sample__proxy: 'sync',
 	godot_js_input_gamepad_sample__sig: 'i',
 	godot_js_input_gamepad_sample: function () {
 		GodotInputGamepads.sample();
 		return 0;
 	},
 
+	godot_js_input_gamepad_sample_get__proxy: 'sync',
 	godot_js_input_gamepad_sample_get__sig: 'iiiiiii',
 	godot_js_input_gamepad_sample_get: function (p_index, r_btns, r_btns_num, r_axes, r_axes_num, r_standard) {
 		const sample = GodotInputGamepads.get_sample(p_index);
@@ -502,6 +511,7 @@ const GodotInput = {
 	/*
 	 * Drag/Drop API
 	 */
+	godot_js_input_drop_files_cb__proxy: 'sync',
 	godot_js_input_drop_files_cb__sig: 'vi',
 	godot_js_input_drop_files_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
@@ -524,6 +534,7 @@ const GodotInput = {
 	},
 
 	/* Paste API */
+	godot_js_input_paste_cb__proxy: 'sync',
 	godot_js_input_paste_cb__sig: 'vi',
 	godot_js_input_paste_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
@@ -535,6 +546,7 @@ const GodotInput = {
 		}, false);
 	},
 
+	godot_js_input_vibrate_handheld__proxy: 'sync',
 	godot_js_input_vibrate_handheld__sig: 'vi',
 	godot_js_input_vibrate_handheld: function (p_duration_ms) {
 		if (typeof navigator.vibrate !== 'function') {

@@ -34,7 +34,14 @@
 #include "core/error/error_macros.h"
 #include "core/typedefs.h"
 
+#ifdef MINGW_ENABLED
+#define MINGW_STDTHREAD_REDUNDANCY_WARNING
+#include "thirdparty/mingw-std-threads/mingw.mutex.h"
+#define THREADING_NAMESPACE mingw_stdthread
+#else
 #include <mutex>
+#define THREADING_NAMESPACE std
+#endif
 
 template <class MutexT>
 class MutexLock;
@@ -73,9 +80,9 @@ template <int Tag>
 class SafeBinaryMutex {
 	friend class MutexLock<SafeBinaryMutex>;
 
-	using StdMutexType = std::mutex;
+	using StdMutexType = THREADING_NAMESPACE::mutex;
 
-	mutable std::mutex mutex;
+	mutable THREADING_NAMESPACE::mutex mutex;
 	static thread_local uint32_t count;
 
 public:
@@ -115,7 +122,7 @@ template <class MutexT>
 class MutexLock {
 	friend class ConditionVariable;
 
-	std::unique_lock<typename MutexT::StdMutexType> lock;
+	THREADING_NAMESPACE::unique_lock<typename MutexT::StdMutexType> lock;
 
 public:
 	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex) :
@@ -128,7 +135,7 @@ template <int Tag>
 class MutexLock<SafeBinaryMutex<Tag>> {
 	friend class ConditionVariable;
 
-	std::unique_lock<std::mutex> lock;
+	THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> lock;
 
 public:
 	_ALWAYS_INLINE_ explicit MutexLock(const SafeBinaryMutex<Tag> &p_mutex) :
@@ -140,12 +147,12 @@ public:
 	};
 };
 
-using Mutex = MutexImpl<std::recursive_mutex>; // Recursive, for general use
-using BinaryMutex = MutexImpl<std::mutex>; // Non-recursive, handle with care
+using Mutex = MutexImpl<THREADING_NAMESPACE::recursive_mutex>; // Recursive, for general use
+using BinaryMutex = MutexImpl<THREADING_NAMESPACE::mutex>; // Non-recursive, handle with care
 
-extern template class MutexImpl<std::recursive_mutex>;
-extern template class MutexImpl<std::mutex>;
-extern template class MutexLock<MutexImpl<std::recursive_mutex>>;
-extern template class MutexLock<MutexImpl<std::mutex>>;
+extern template class MutexImpl<THREADING_NAMESPACE::recursive_mutex>;
+extern template class MutexImpl<THREADING_NAMESPACE::mutex>;
+extern template class MutexLock<MutexImpl<THREADING_NAMESPACE::recursive_mutex>>;
+extern template class MutexLock<MutexImpl<THREADING_NAMESPACE::mutex>>;
 
 #endif // MUTEX_H

@@ -629,12 +629,6 @@ msgstr "Fermi"
 msgid "Connect"
 msgstr "Konekti"
 
-msgid "Class:"
-msgstr "Klaso:"
-
-msgid "Signal:"
-msgstr "Signalo:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Konekti '%s' al '%s'"
 
@@ -985,21 +979,6 @@ msgstr "Oraj Sponsoroj"
 
 msgid "Silver Sponsors"
 msgstr "Arĝentaj Sponsoroj"
-
-msgid "Bronze Sponsors"
-msgstr "Bronzaj Sponsoroj"
-
-msgid "Mini Sponsors"
-msgstr "Minisponsoroj"
-
-msgid "Gold Donors"
-msgstr "Oraj Donacantoj"
-
-msgid "Silver Donors"
-msgstr "Arĝentaj Donacantoj"
-
-msgid "Bronze Donors"
-msgstr "Bronzaj Donacantoj"
 
 msgid "Donors"
 msgstr "Donacantoj"
@@ -1418,6 +1397,9 @@ msgstr "(Re)enportas havaĵoj"
 msgid "Top"
 msgstr "Supro"
 
+msgid "Class:"
+msgstr "Klaso:"
+
 msgid "Inherits:"
 msgstr "Heredato:"
 
@@ -1460,6 +1442,12 @@ msgstr ""
 
 msgid "Method Descriptions"
 msgstr "Metodaj priskriboj"
+
+msgid "Property:"
+msgstr "Atributo:"
+
+msgid "Signal:"
+msgstr "Signalo:"
 
 msgid "%d match."
 msgstr "%d rekono."
@@ -1517,9 +1505,6 @@ msgstr "Atributo"
 
 msgid "Theme Property"
 msgstr "Etosa atributo"
-
-msgid "Property:"
-msgstr "Atributo:"
 
 msgid "Resize Array"
 msgstr "Regrandigi Vicon"
@@ -1763,17 +1748,6 @@ msgstr ""
 "Ne eblas ŝargi kromprograman skripton el dosierindinko: '%s'. Povas esti pro "
 "koda eraro en tiu skripto.\n"
 "Malŝaltas la kromprogramon ĉe '%s' por malebligi pli erarojn."
-
-msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Ne eblas ŝargi kromprograman skripton ĉe dosierindiko: '%s'. Baza tipo ne "
-"estas EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Ne eblas ŝargi kromprograman skripton ĉe dosierindiko: '%s'. Skripto ne estas "
-"en ila reĝimo."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -2133,6 +2107,9 @@ msgstr ""
 msgid "Make Unique"
 msgstr "Farigi unikan"
 
+msgid "Save As..."
+msgstr "Konservi kiel..."
+
 msgid "Show in FileSystem"
 msgstr "Montri en dosiersistemo"
 
@@ -2349,9 +2326,6 @@ msgstr "Duplikatas dosierujon:"
 msgid "New Inherited Scene"
 msgstr "Nova heredita sceno"
 
-msgid "Set As Main Scene"
-msgstr "Defini kiel ĉefan scenon"
-
 msgid "Open Scenes"
 msgstr "Malfermi scenojn"
 
@@ -2396,9 +2370,6 @@ msgstr "Renomi..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Reesplori dosiersistemon"
-
-msgid "Toggle Split Mode"
-msgstr "Baskuli dividan reĝimon"
 
 msgid ""
 "Scanning Files,\n"
@@ -2712,9 +2683,6 @@ msgstr "Ŝargi ekzistantan risurcon el disko kaj redakti ĝin."
 
 msgid "Save the currently edited resource."
 msgstr "Konservi la aktuale redaktantan risurcon."
-
-msgid "Save As..."
-msgstr "Konservi kiel..."
 
 msgid "Copy Resource"
 msgstr "Kopii risurcon"
@@ -3055,14 +3023,14 @@ msgstr "Fiksi AnimationPlayer"
 msgid "Error!"
 msgstr "Eraro!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Tempoj de trans-animacia mikso"
+
 msgid "Blend Times:"
 msgstr "Tempoj de mikso:"
 
 msgid "Next (Auto Queue):"
 msgstr "Sekvo (aŭtomata atendovico):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Tempoj de trans-animacia mikso"
 
 msgid "Move Node"
 msgstr "Movi nodon"
@@ -4192,9 +4160,6 @@ msgstr "Subrisurcoj"
 
 msgid "Clear Inheritance"
 msgstr "Vakigi heredadon"
-
-msgid "Load As Placeholder"
-msgstr "Ŝargi kiel lokokupilo"
 
 msgid "Make Scene Root"
 msgstr "Farigi scena radiko"

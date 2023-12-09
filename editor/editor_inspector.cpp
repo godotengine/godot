@@ -906,12 +906,24 @@ void EditorProperty::_update_pin_flags() {
 }
 
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
-	EditorHelpTooltip *tooltip = memnew(EditorHelpTooltip(p_text));
+	EditorHelpBit *tooltip = nullptr;
+
+	if (has_doc_tooltip) {
+		tooltip = memnew(EditorHelpTooltip(p_text));
+	}
 
 	if (object->has_method("_get_property_warning")) {
 		String warn = object->call("_get_property_warning", property);
 		if (!warn.is_empty()) {
-			tooltip->set_text(tooltip->get_rich_text()->get_text() + "\n[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + warn + "[/color][/b]");
+			String prev_text;
+			if (tooltip == nullptr) {
+				tooltip = memnew(EditorHelpBit());
+				tooltip->set_text(p_text);
+				tooltip->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 0));
+			} else {
+				prev_text = tooltip->get_rich_text()->get_text() + "\n";
+			}
+			tooltip->set_text(prev_text + "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + warn + "[/color][/b]");
 		}
 	}
 
@@ -1148,8 +1160,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 }
 
 Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
-	// Far from perfect solution, as there's nothing that prevents a category from having a name that starts with that.
-	return p_text.begins_with("class|") ? memnew(EditorHelpTooltip(p_text)) : nullptr;
+	return doc_class_name.is_empty() ? nullptr : memnew(EditorHelpTooltip(p_text));
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
@@ -2093,10 +2104,12 @@ void EditorInspectorArray::_setup() {
 		ae.margin->set_mouse_filter(MOUSE_FILTER_PASS);
 		if (is_inside_tree()) {
 			Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
+			ae.margin->begin_bulk_theme_override();
 			ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 			ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 			ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
 			ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+			ae.margin->end_bulk_theme_override();
 		}
 		ae.panel->add_child(ae.margin);
 
@@ -2241,10 +2254,12 @@ void EditorInspectorArray::_notification(int p_what) {
 					ae.move_down->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
 				}
 				Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
+				ae.margin->begin_bulk_theme_override();
 				ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 				ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 				ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
 				ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+				ae.margin->end_bulk_theme_override();
 
 				if (ae.erase) {
 					ae.erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
@@ -3316,6 +3331,7 @@ void EditorInspector::update_tree() {
 					} else {
 						ep->set_tooltip_text("theme_item|" + classname + "|" + theme_item_name + "|");
 					}
+					ep->has_doc_tooltip = true;
 				}
 
 				ep->set_doc_path(doc_path);

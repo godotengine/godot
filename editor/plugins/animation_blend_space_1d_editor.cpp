@@ -80,7 +80,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 			ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
 			classes.sort_custom<StringName::AlphCompare>();
 
-			menu->add_submenu_item(TTR("Add Animation"), "animations");
+			menu->add_submenu_item(TTR("Add Animation"), "AddAnimations");
 
 			List<StringName> names;
 			tree->get_animation_list(&names);
@@ -796,7 +796,6 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
-	error_label->set_text("hmmm");
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
@@ -804,7 +803,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	animations_menu = memnew(PopupMenu);
 	menu->add_child(animations_menu);
-	animations_menu->set_name("animations");
+	animations_menu->set_name("AddAnimations");
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_add_animation_type));
 
 	open_file = memnew(EditorFileDialog);

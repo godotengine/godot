@@ -491,14 +491,15 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsRequirements2KHR(
 #define XR_MNDX_egl_enable 1
 #define XR_MNDX_egl_enable_SPEC_VERSION   1
 #define XR_MNDX_EGL_ENABLE_EXTENSION_NAME "XR_MNDX_egl_enable"
+typedef PFN_xrVoidFunction (*PFN_xrEglGetProcAddressMNDX)(const char *name);
 // XrGraphicsBindingEGLMNDX extends XrSessionCreateInfo
 typedef struct XrGraphicsBindingEGLMNDX {
-    XrStructureType             type;
-    const void* XR_MAY_ALIAS    next;
-    PFNEGLGETPROCADDRESSPROC    getProcAddress;
-    EGLDisplay                  display;
-    EGLConfig                   config;
-    EGLContext                  context;
+    XrStructureType                type;
+    const void* XR_MAY_ALIAS       next;
+    PFN_xrEglGetProcAddressMNDX    getProcAddress;
+    EGLDisplay                     display;
+    EGLConfig                      config;
+    EGLContext                     context;
 } XrGraphicsBindingEGLMNDX;
 
 #endif /* XR_USE_PLATFORM_EGL */

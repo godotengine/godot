@@ -299,24 +299,35 @@ struct Lookup : public OT::Lookup
                                 unsigned subtable_index)
   {
     unsigned type = lookupType;
+    unsigned ext_index = -1;
+    unsigned* existing_ext_index = nullptr;
+    if (c.subtable_to_extension.has(subtable_index, &existing_ext_index)) {
+      ext_index = *existing_ext_index;
+    } else {    
+      ext_index = create_extension_subtable(c, subtable_index, type);
+      c.subtable_to_extension.set(subtable_index, ext_index);
+    }
 
-    unsigned ext_index = create_extension_subtable(c, subtable_index, type);
     if (ext_index == (unsigned) -1)
       return false;
 
+    auto& subtable_vertex = c.graph.vertices_[subtable_index];
     auto& lookup_vertex = c.graph.vertices_[lookup_index];
     for (auto& l : lookup_vertex.obj.real_links.writer ())
     {
-      if (l.objidx == subtable_index)
+      if (l.objidx == subtable_index) {
         // Change lookup to point at the extension.
         l.objidx = ext_index;
+        if (existing_ext_index)
+          subtable_vertex.remove_parent(lookup_index);
+      }
     }
 
     // Make extension point at the subtable.
     auto& ext_vertex = c.graph.vertices_[ext_index];
-    auto& subtable_vertex = c.graph.vertices_[subtable_index];
     ext_vertex.add_parent (lookup_index);
-    subtable_vertex.remap_parent (lookup_index, ext_index);
+    if (!existing_ext_index)
+      subtable_vertex.remap_parent (lookup_index, ext_index);
 
     return true;
   }

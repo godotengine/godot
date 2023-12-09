@@ -419,6 +419,7 @@ def configure_msvc(env, vcvars_msvc_config):
         "dwmapi",
         "dwrite",
         "wbemuuid",
+        "ntdll",
     ]
 
     if env.debug_features:
@@ -480,7 +481,7 @@ def configure_msvc(env, vcvars_msvc_config):
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
     env["BUILDERS"]["Program"] = methods.precious_program
 
-    env.Append(LINKFLAGS=["/NATVIS:platform\windows\godot.natvis"])
+    env.Append(LINKFLAGS=["/NATVIS:platform\\windows\\godot.natvis"])
     env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
 
 
@@ -610,6 +611,7 @@ def configure_mingw(env):
             "dwmapi",
             "dwrite",
             "wbemuuid",
+            "ntdll",
         ]
     )
 

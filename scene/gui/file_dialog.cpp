@@ -144,30 +144,40 @@ void FileDialog::_notification(int p_what) {
 			refresh->set_icon(theme_cache.reload);
 			show_hidden->set_icon(theme_cache.toggle_hidden);
 
+			dir_up->begin_bulk_theme_override();
 			dir_up->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
 			dir_up->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			dir_up->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			dir_up->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+			dir_up->end_bulk_theme_override();
 
+			dir_prev->begin_bulk_theme_override();
 			dir_prev->add_theme_color_override("icon_color_normal", theme_cache.icon_normal_color);
 			dir_prev->add_theme_color_override("icon_color_hover", theme_cache.icon_hover_color);
 			dir_prev->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			dir_prev->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
+			dir_prev->end_bulk_theme_override();
 
+			dir_next->begin_bulk_theme_override();
 			dir_next->add_theme_color_override("icon_color_normal", theme_cache.icon_normal_color);
 			dir_next->add_theme_color_override("icon_color_hover", theme_cache.icon_hover_color);
 			dir_next->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			dir_next->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
+			dir_next->end_bulk_theme_override();
 
+			refresh->begin_bulk_theme_override();
 			refresh->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
 			refresh->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			refresh->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			refresh->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+			refresh->end_bulk_theme_override();
 
+			show_hidden->begin_bulk_theme_override();
 			show_hidden->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
 			show_hidden->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			show_hidden->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			show_hidden->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+			show_hidden->end_bulk_theme_override();
 
 			invalidate();
 		} break;
@@ -676,7 +686,7 @@ void FileDialog::update_file_list() {
 		files.pop_front();
 	}
 
-	if (mode != FILE_MODE_SAVE_FILE) {
+	if (mode != FILE_MODE_SAVE_FILE && mode != FILE_MODE_OPEN_DIR) {
 		// Select the first file from list if nothing is selected.
 		if (tree->get_root() && tree->get_root()->get_first_child() && tree->get_selected() == nullptr) {
 			tree->get_root()->get_first_child()->select(0);

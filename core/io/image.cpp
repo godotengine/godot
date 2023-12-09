@@ -3773,7 +3773,7 @@ void Image::fix_alpha_edges() {
 			}
 
 			int closest_dist = max_dist;
-			uint8_t closest_color[3];
+			uint8_t closest_color[3] = { 0 };
 
 			int from_x = MAX(0, j - max_radius);
 			int to_x = MIN(width - 1, j + max_radius);

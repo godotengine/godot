@@ -206,6 +206,11 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		uint32_t value = 0;
 		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
+		if (value == 4294901760) {
+			// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+			// So we sanitize here.
+			value = 4294967295;
+		}
 
 		v_tangent = value;
 	}
@@ -884,7 +889,7 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hframes", "hframes"), &Sprite3D::set_hframes);
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite3D::get_hframes);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");

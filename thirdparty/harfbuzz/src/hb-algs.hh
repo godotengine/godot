@@ -367,6 +367,10 @@ struct
 	    hb_enable_if (std::is_integral<T>::value && sizeof (T) > sizeof (uint32_t))> constexpr auto
   impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, (uint32_t) (v ^ (v >> 32)) * 2654435761u /* Knuth's multiplicative hash */)
 
+  template <typename T,
+	    hb_enable_if (std::is_floating_point<T>::value)> constexpr auto
+  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, fasthash32 (std::addressof (v), sizeof (T), 0xf437ffe6))
+
   template <typename T> constexpr auto
   impl (const T& v, hb_priority<0>) const HB_RETURN (uint32_t, std::hash<hb_decay<decltype (hb_deref (v))>>{} (hb_deref (v)))
 

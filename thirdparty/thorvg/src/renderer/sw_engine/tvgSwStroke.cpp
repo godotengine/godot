@@ -689,7 +689,6 @@ static void _endSubPath(SwStroke& stroke)
 
         //No specific corner processing is required if the turn is 0
         if (turn != 0) {
-
             //when we turn to the right, the inside is 0
             int32_t inside = 0;
 

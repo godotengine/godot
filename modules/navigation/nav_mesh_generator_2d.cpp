@@ -587,6 +587,9 @@ void NavMeshGenerator2D::generator_parse_tilemap_node(const Ref<NavigationPolygo
 		const Vector2i &cell = used_cells[used_cell_index];
 
 		const TileData *tile_data = tilemap->get_cell_tile_data(tilemap_layer, cell, false);
+		if (tile_data == nullptr) {
+			continue;
+		}
 
 		Transform2D tile_transform;
 		tile_transform.set_origin(tilemap->map_to_local(cell));
@@ -597,10 +600,19 @@ void NavMeshGenerator2D::generator_parse_tilemap_node(const Ref<NavigationPolygo
 			Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(tilemap_layer);
 			if (navigation_polygon.is_valid()) {
 				for (int outline_index = 0; outline_index < navigation_polygon->get_outline_count(); outline_index++) {
-					Vector<Vector2> traversable_outline = navigation_polygon->get_outline(outline_index);
+					const Vector<Vector2> &navigation_polygon_outline = navigation_polygon->get_outline(outline_index);
+					if (navigation_polygon_outline.size() == 0) {
+						continue;
+					}
+
+					Vector<Vector2> traversable_outline;
+					traversable_outline.resize(navigation_polygon_outline.size());
+
+					const Vector2 *navigation_polygon_outline_ptr = navigation_polygon_outline.ptr();
+					Vector2 *traversable_outline_ptrw = traversable_outline.ptrw();
 
 					for (int traversable_outline_index = 0; traversable_outline_index < traversable_outline.size(); traversable_outline_index++) {
-						traversable_outline.write[traversable_outline_index] = tile_transform_offset.xform(traversable_outline[traversable_outline_index]);
+						traversable_outline_ptrw[traversable_outline_index] = tile_transform_offset.xform(navigation_polygon_outline_ptr[traversable_outline_index]);
 					}
 
 					p_source_geometry_data->_add_traversable_outline(traversable_outline);
@@ -610,10 +622,19 @@ void NavMeshGenerator2D::generator_parse_tilemap_node(const Ref<NavigationPolygo
 
 		if (physics_layers_count > 0 && (parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_BOTH) && (tile_set->get_physics_layer_collision_layer(tilemap_layer) & parsed_collision_mask)) {
 			for (int collision_polygon_index = 0; collision_polygon_index < tile_data->get_collision_polygons_count(tilemap_layer); collision_polygon_index++) {
-				Vector<Vector2> obstruction_outline = tile_data->get_collision_polygon_points(tilemap_layer, collision_polygon_index);
+				const Vector<Vector2> &collision_polygon_points = tile_data->get_collision_polygon_points(tilemap_layer, collision_polygon_index);
+				if (collision_polygon_points.size() == 0) {
+					continue;
+				}
+
+				Vector<Vector2> obstruction_outline;
+				obstruction_outline.resize(collision_polygon_points.size());
+
+				const Vector2 *collision_polygon_points_ptr = collision_polygon_points.ptr();
+				Vector2 *obstruction_outline_ptrw = obstruction_outline.ptrw();
 
 				for (int obstruction_outline_index = 0; obstruction_outline_index < obstruction_outline.size(); obstruction_outline_index++) {
-					obstruction_outline.write[obstruction_outline_index] = tile_transform_offset.xform(obstruction_outline[obstruction_outline_index]);
+					obstruction_outline_ptrw[obstruction_outline_index] = tile_transform_offset.xform(collision_polygon_points_ptr[obstruction_outline_index]);
 				}
 
 				p_source_geometry_data->_add_obstruction_outline(obstruction_outline);

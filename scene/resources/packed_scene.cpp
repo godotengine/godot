@@ -138,7 +138,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	}
 
 	int nc = nodes.size();
-	ERR_FAIL_COND_V(nc == 0, nullptr);
+	ERR_FAIL_COND_V_MSG(nc == 0, nullptr, vformat("Failed to instantiate scene state of \"%s\", node count is 0. Make sure the PackedScene resource is valid.", path));
 
 	const StringName *snames = nullptr;
 	int sname_count = names.size();
@@ -219,7 +219,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				Ref<PackedScene> sdata = props[n.instance & FLAG_MASK];
 				ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
 				node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
-				ERR_FAIL_NULL_V(node, nullptr);
+				ERR_FAIL_NULL_V_MSG(node, nullptr, vformat("Failed to load scene dependency: \"%s\". Make sure the required scene is valid.", sdata->get_path()));
 			}
 
 		} else if (n.type == TYPE_INSTANTIATED) {
@@ -450,7 +450,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			}
 
 			if (!old_parent_path.is_empty()) {
-				node->_set_name_nocheck(old_parent_path + "@" + node->get_name());
+				node->set_name(old_parent_path + "#" + node->get_name());
 			}
 
 			if (n.owner >= 0) {
@@ -1028,7 +1028,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 			cd.to = target_id;
 			cd.method = _nm_get_string(base_callable.get_method(), name_map);
 			cd.signal = _nm_get_string(c.signal.get_name(), name_map);
-			cd.flags = c.flags;
+			cd.flags = c.flags & ~CONNECT_INHERITED; // Do not store inherited.
 			cd.unbinds = unbinds;
 
 			for (int i = 0; i < binds.size(); i++) {
