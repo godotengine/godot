@@ -1138,6 +1138,8 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 		height = ws->rect.size.height;
 	}
 
+	ERR_FAIL_COND_MSG(width == 0 || height == 0, "Window has invalid size.");
+
 	libdecor_window_state window_state = LIBDECOR_WINDOW_STATE_NONE;
 
 	// Expect the window to be in windowed mode. The mode will get overridden if
@@ -1154,9 +1156,7 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 		}
 	}
 
-	if (width != 0 && height != 0) {
-		window_state_update_size(ws, width, height);
-	}
+	window_state_update_size(ws, width, height);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("libdecor frame on configure rect %s", ws->rect));
 }
@@ -2646,11 +2646,7 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	int preferred_buffer_scale = window_state_get_preferred_buffer_scale(p_ws);
 	bool using_fractional = p_ws->preferred_fractional_scale > 0;
 
-	if (p_ws->buffer_scale != preferred_buffer_scale) {
-		p_ws->buffer_scale = preferred_buffer_scale;
-		p_ws->buffer_scale_changed = true;
-	}
-
+	// If neither is true we no-op.
 	bool scale_changed = false;
 	bool size_changed = false;
 
@@ -2661,13 +2657,20 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		size_changed = true;
 	}
 
-	if (using_fractional) {
-		if (p_ws->fractional_scale != p_ws->preferred_fractional_scale) {
-			p_ws->fractional_scale = p_ws->preferred_fractional_scale;
+	if (using_fractional && p_ws->fractional_scale != p_ws->preferred_fractional_scale) {
+		p_ws->fractional_scale = p_ws->preferred_fractional_scale;
+		scale_changed = true;
+	}
+
+	if (p_ws->buffer_scale != preferred_buffer_scale) {
+		// The buffer scale is always important, even if we use frac scaling.
+		p_ws->buffer_scale = preferred_buffer_scale;
+		p_ws->buffer_scale_changed = true;
+
+		if (!using_fractional) {
+			// We don't bother updating everything else if it's turned on though.
 			scale_changed = true;
 		}
-	} else if (p_ws->buffer_scale != preferred_buffer_scale) {
-		scale_changed = true;
 	}
 
 	if (p_ws->wl_surface && (size_changed || scale_changed)) {
