@@ -636,14 +636,15 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 	scene_state.ubo.volumetric_fog_enabled = false;
 
 	if (rd.is_valid()) {
-		Ref<RendererRD::GI::RenderBuffersGI> rbgi = rd->get_custom_data(RB_SCOPE_GI);
-
-		if (rd->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED || rbgi->using_half_size_gi) {
-			scene_state.ubo.gi_upscale = true;
-			if (rbgi->using_half_size_gi) {
-				scene_state.ubo.gi_upscale_shift = 1;
-			} else {
-				scene_state.ubo.gi_upscale_shift = 0;
+		if (rd->has_custom_data(RB_SCOPE_GI)) {
+			Ref<RendererRD::GI::RenderBuffersGI> rbgi = rd->get_custom_data(RB_SCOPE_GI);
+			if (rd->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED || rbgi->using_half_size_gi) {
+				scene_state.ubo.gi_upscale = true;
+				if (rbgi->using_half_size_gi) {
+					scene_state.ubo.gi_upscale_shift = 1;
+				} else {
+					scene_state.ubo.gi_upscale_shift = 0;
+				}
 			}
 		}
 
@@ -2974,7 +2975,7 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.binding = 15;
+			u.binding = 13;
 			u.append_id(hddagi_get_ubo());
 			uniforms.push_back(u);
 		}
@@ -3310,7 +3311,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 
 	{
 		RD::Uniform u;
-		u.binding = 20;
+		u.binding = 34;
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 		RID voxel_gi;
 		if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_GI)) {
@@ -3542,7 +3543,7 @@ RID RenderForwardClustered::_setup_hddagi_render_pass_uniform_set(RID p_albedo_t
 	{
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-		u.binding = 14;
+		u.binding = 27;
 		u.append_id(p_normal_bits_texture);
 
 		uniforms.push_back(u);

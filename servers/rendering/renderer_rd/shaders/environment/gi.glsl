@@ -667,7 +667,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 				diffuse = mix(diffuse, diffuse2, blend);
 				specular = mix(specular, specular2, blend);
 
-				if (bayer_dither(blend)) {
+				if (false && bayer_dither(blend)) {
 					// Apply dither for roughness here.
 					cascade++;
 					cascade_pos = (cam_pos - hddagi.cascades[cascade].position) * hddagi.cascades[cascade].to_cell;

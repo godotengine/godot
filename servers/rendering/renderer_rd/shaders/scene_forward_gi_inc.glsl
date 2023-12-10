@@ -180,8 +180,9 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 		float d = length(probe_to_pos);
 
 		float weight = 1.0;
-		weight *= pow(max(0.0001, (dot(-n, cam_normal) + 1.0) * 0.5), 2.0) + 0.2;
-		//weight *= max(0.005, (dot(-n, cam_normal)));
+		// Dynamic objects don't need this visibility optimization, and this makes them wobbly when they move.
+		// weight *= pow(max(0.0001, (dot(-n, cam_normal) + 1.0) * 0.5), 2.0) + 0.2;
+		// weight *= max(0.005, (dot(-n, cam_normal)));
 
 		ivec3 probe_occ = (hddagi.cascades[cascade].region_world_offset + probe) & ivec3(1);
 

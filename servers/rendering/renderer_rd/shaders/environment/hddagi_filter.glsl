@@ -8,7 +8,6 @@
 
 layout(local_size_x = WG_SIZE, local_size_y = WG_SIZE, local_size_z = 1) in;
 
-
 layout(set = 0, binding = 0) uniform texture2D depth_buffer;
 layout(set = 0, binding = 1) uniform texture2D normal_roughness_buffer;
 layout(set = 0, binding = 2) uniform texture2D specular_buffer;
@@ -39,7 +38,6 @@ layout(set = 0, binding = 7, std140) uniform SceneData {
 }
 scene_data;
 
-
 layout(push_constant, std430) uniform Params {
 	bool orthogonal;
 	float z_near;
@@ -50,7 +48,6 @@ layout(push_constant, std430) uniform Params {
 
 	ivec2 filter_dir;
 	uvec2 pad;
-
 }
 params;
 
@@ -94,29 +91,26 @@ vec4 fetch_normal_and_roughness(ivec2 pos) {
 }
 
 uint rgbe_encode(vec3 rgb) {
+	const float rgbe_max = uintBitsToFloat(0x477F8000);
+	const float rgbe_min = uintBitsToFloat(0x37800000);
 
-    const float rgbe_max = uintBitsToFloat(0x477F8000);
-    const float rgbe_min = uintBitsToFloat(0x37800000);
+	rgb = clamp(rgb, 0, rgbe_max);
 
-    rgb = clamp(rgb, 0, rgbe_max);
+	float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
 
-    float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
+	float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
 
-    float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
-
-    uvec3 urgb = floatBitsToUint(rgb + bias);
-    uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
-    return e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
+	uvec3 urgb = floatBitsToUint(rgb + bias);
+	uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
+	return e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
 }
 
 void main() {
-
-
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
 	ivec2 depth_pos = pos;
 	if (sc_half_res) {
-		depth_pos<<=1;
+		depth_pos <<= 1;
 	}
 
 	vec4 normal_roughness = fetch_normal_and_roughness(depth_pos);
@@ -129,23 +123,23 @@ void main() {
 
 	vec4 specular_accum = vec4(0);
 	float total_weight = 0;
-	float diffuse_blend = texelFetch(sampler2D(blend_buffer,linear_sampler),pos,0).r;
+	float diffuse_blend = texelFetch(sampler2D(blend_buffer, linear_sampler), pos, 0).r;
 
-
-
-	for(int i=-RADIUS;i<=RADIUS;i++) {
+	for (int i = -RADIUS; i <= RADIUS; i++) {
 		ivec2 read_pos = pos + params.filter_dir * i;
 		vec4 specular;
-		specular.rgb = texelFetch(sampler2D(specular_buffer,linear_sampler),read_pos,0).rgb;
-		specular.a = texelFetch(sampler2D(blend_buffer,linear_sampler),read_pos,0).g;
+		specular.rgb = texelFetch(sampler2D(specular_buffer, linear_sampler), read_pos, 0).rgb;
+		specular.a = texelFetch(sampler2D(blend_buffer, linear_sampler), read_pos, 0).g;
 		if (sc_half_res) {
-			read_pos<<=1;
+			read_pos <<= 1;
 		}
 		float d = reconstruct_position(read_pos).z;
 		vec4 nr = fetch_normal_and_roughness(read_pos);
 
 		float weight = exp(-abs(depth - d));
-		weight *= max(0.0,dot(nr.rgb,normal_roughness.rgb));
+		float dp = max(0.0, dot(nr.rgb, normal_roughness.rgb));
+		dp = pow(dp, 4.0); // The more curvature, the less filter.
+		weight *= dp;
 		weight *= max(0.0, 1.0 - abs(nr.a - normal_roughness.a) * 4.0);
 
 		if (weight > 0.0) {
@@ -154,16 +148,12 @@ void main() {
 		}
 	}
 
-
-
 	if (total_weight > 0.0) {
 		specular_accum /= total_weight;
 	}
 
 	//imageStore(dst_specular_buffer,pos,uvec4(rgbe_encode(specular_accum.rgb)));
-	imageStore(dst_specular_buffer,pos,uvec4(rgbe_encode(specular_accum.rgb)));
-	uint blend = uint(clamp(specular_accum.a * 0xF,0,0xF))| (uint(clamp(diffuse_blend * 0xF,0,0xF))<<4);
-	imageStore(dst_blend_buffer,pos,vec4(diffuse_blend,specular_accum.a,0,0));
-
-
+	imageStore(dst_specular_buffer, pos, uvec4(rgbe_encode(specular_accum.rgb)));
+	uint blend = uint(clamp(specular_accum.a * 0xF, 0, 0xF)) | (uint(clamp(diffuse_blend * 0xF, 0, 0xF)) << 4);
+	imageStore(dst_blend_buffer, pos, vec4(diffuse_blend, specular_accum.a, 0, 0));
 }
