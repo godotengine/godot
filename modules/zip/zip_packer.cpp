@@ -105,7 +105,7 @@ Error ZIPPacker::start_file(const String &p_path, const String &p_password) {
 Error ZIPPacker::write_file(const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
-	// If we have a password, write to the buffer instead
+	// If we have a password, write to the buffer instead.
 	if (!current_password.is_empty()) {
 		write_buffer.append_array(p_data);
 		return OK;
@@ -117,7 +117,7 @@ Error ZIPPacker::write_file(const Vector<uint8_t> &p_data) {
 Error ZIPPacker::close_file() {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
-	// If we have a password, open and write the file now
+	// If we have a password, open and write the file now.
 	if (!current_password.is_empty()) {
 		zip_fileinfo zipfi;
 
