@@ -259,6 +259,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	_replace_strings(replaces, sw);
 	Error err = _write_or_error(sw.ptr(), sw.size(), dir.path_join(name + ".service.worker.js"));
 	if (err != OK) {
+		// Message is supplied by the subroutine method.
 		return err;
 	}
 
@@ -291,16 +292,19 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	const String icon144_path = p_preset->get("progressive_web_app/icon_144x144");
 	err = _add_manifest_icon(p_path, icon144_path, 144, icons_arr);
 	if (err != OK) {
+		// Message is supplied by the subroutine method.
 		return err;
 	}
 	const String icon180_path = p_preset->get("progressive_web_app/icon_180x180");
 	err = _add_manifest_icon(p_path, icon180_path, 180, icons_arr);
 	if (err != OK) {
+		// Message is supplied by the subroutine method.
 		return err;
 	}
 	const String icon512_path = p_preset->get("progressive_web_app/icon_512x512");
 	err = _add_manifest_icon(p_path, icon512_path, 512, icons_arr);
 	if (err != OK) {
+		// Message is supplied by the subroutine method.
 		return err;
 	}
 	manifest["icons"] = icons_arr;
@@ -308,6 +312,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	CharString cs = Variant(manifest).to_json_string().utf8();
 	err = _write_or_error((const uint8_t *)cs.get_data(), cs.length(), dir.path_join(name + ".manifest.json"));
 	if (err != OK) {
+		// Message is supplied by the subroutine method.
 		return err;
 	}
 
@@ -439,16 +444,17 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	const String base_path = p_path.get_basename();
 	const String base_name = p_path.get_file().get_basename();
 
+	if (!DirAccess::exists(base_dir)) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
+		return ERR_FILE_BAD_PATH;
+	}
+
 	// Find the correct template
 	String template_path = p_debug ? custom_debug : custom_release;
 	template_path = template_path.strip_edges();
 	if (template_path.is_empty()) {
 		bool extensions = (bool)p_preset->get("variant/extensions_support");
 		template_path = find_export_template(_get_template_name(extensions, p_debug));
-	}
-
-	if (!DirAccess::exists(base_dir)) {
-		return ERR_FILE_BAD_PATH;
 	}
 
 	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
@@ -480,6 +486,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	// Extract templates.
 	error = _extract_template(template_path, base_dir, base_name, pwa);
 	if (error) {
+		// Message is supplied by the subroutine method.
 		return error;
 	}
 
@@ -510,6 +517,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
 	Error err = _write_or_error(html.ptr(), html.size(), p_path);
 	if (err != OK) {
+		// Message is supplied by the subroutine method.
 		return err;
 	}
 	html.resize(0);
@@ -543,6 +551,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	if (pwa) {
 		err = _build_pwa(p_preset, p_path, shared_objects);
 		if (err != OK) {
+			// Message is supplied by the subroutine method.
 			return err;
 		}
 	}

@@ -678,12 +678,11 @@ GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(StringName p
 }
 
 Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol) {
-	library_path = p_path;
-
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	// If running on the editor on Windows, we copy the library and open the copy.
 	// This is so the original file isn't locked and can be updated by a compiler.
+	bool library_copied = false;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (!FileAccess::exists(abs_path)) {
 			ERR_PRINT("GDExtension library not found: " + library_path);
@@ -705,6 +704,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 			return ERR_CANT_CREATE;
 		}
 		FileAccess::set_hidden_attribute(copy_path, true);
+		library_copied = true;
 
 		// Save the copied path so it can be deleted later.
 		temp_lib_path = copy_path;
@@ -714,11 +714,19 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 	}
 #endif
 
-	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true);
+	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &library_path);
 	if (err != OK) {
 		ERR_PRINT("GDExtension dynamic library not found: " + abs_path);
 		return err;
 	}
+
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
+	// If we copied the file, let's change the library path to point at the original,
+	// because that's what we want to check to see if it's changed.
+	if (library_copied) {
+		library_path = library_path.get_base_dir() + "\\" + p_path.get_file();
+	}
+#endif
 
 	void *entry_funcptr = nullptr;
 
@@ -904,6 +912,8 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	bool is_static_library = library_path.ends_with(".a") || library_path.ends_with(".xcframework");
+
 	if (!library_path.is_resource_file() && !library_path.is_absolute_path()) {
 		library_path = p_path.get_base_dir().path_join(library_path);
 	}
@@ -920,7 +930,7 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 			FileAccess::get_modified_time(library_path));
 #endif
 
-	err = p_extension->open_library(library_path, entry_symbol);
+	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol);
 	if (err != OK) {
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 		// If the DLL fails to load, make sure that temporary DLL copies are cleaned up.

@@ -226,6 +226,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_dir_path);
 	if (export_as_zip) {
 		if (tmp_app_dir.is_null()) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), tmp_dir_path));
 			return ERR_CANT_CREATE;
 		}
 		if (DirAccess::exists(tmp_dir_path)) {
@@ -242,8 +243,14 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	if (embedded) {
 		pck_path = pck_path.get_basename() + ".tmp";
 	}
+
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags);
-	if (p_preset->get("codesign/enable") && err == OK) {
+	if (err != OK) {
+		// Message is supplied by the subroutine method.
+		return err;
+	}
+
+	if (p_preset->get("codesign/enable")) {
 		_code_sign(p_preset, pck_path);
 		String wrapper_path = p_path.get_basename() + ".console.exe";
 		if (FileAccess::exists(wrapper_path)) {
@@ -251,7 +258,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		}
 	}
 
-	if (embedded && err == OK) {
+	if (embedded) {
 		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
 		err = tmp_dir->rename(pck_path, p_path);
 		if (err != OK) {

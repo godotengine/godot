@@ -91,8 +91,8 @@ Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataT
 		if (p_data_type.builtin_type == Variant::ARRAY) {
 			Array array;
 			// Typed array.
-			if (p_data_type.has_container_element_type()) {
-				const GDScriptDataType &element_type = p_data_type.get_container_element_type();
+			if (p_data_type.has_container_element_type(0)) {
+				const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
 				array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
 			}
 

@@ -35,6 +35,7 @@
 			<param index="4" name="flags" type="int" />
 			<description>
 				Emits a single particle. Whether [param xform], [param velocity], [param color] and [param custom] are applied depends on the value of [param flags]. See [enum EmitFlags].
+				The default ParticleProcessMaterial will overwrite [param color] and use the contents of [param custom] as [code](rotation, age, animation, lifetime)[/code].
 			</description>
 		</method>
 		<method name="get_draw_pass_mesh" qualifiers="const">
@@ -166,9 +167,10 @@
 			Particles are drawn in the order emitted.
 		</constant>
 		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
-			Particles are drawn in order of remaining lifetime.
+			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
 		</constant>
 		<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="DrawOrder">
+			Particles are drawn in reverse order of remaining lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
 		</constant>
 		<constant name="DRAW_ORDER_VIEW_DEPTH" value="3" enum="DrawOrder">
 			Particles are drawn in order of depth.

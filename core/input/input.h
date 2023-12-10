@@ -44,6 +44,8 @@ class Input : public Object {
 
 	static Input *singleton;
 
+	static constexpr uint64_t MAX_EVENT = 32;
+
 public:
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
@@ -98,19 +100,31 @@ private:
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
 
-	struct Action {
+	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
 		uint64_t pressed_process_frame = UINT64_MAX;
 		uint64_t released_physics_frame = UINT64_MAX;
 		uint64_t released_process_frame = UINT64_MAX;
-		int pressed = 0;
-		bool axis_pressed = false;
 		bool exact = true;
-		float strength = 0.0f;
-		float raw_strength = 0.0f;
+
+		struct DeviceState {
+			bool pressed[MAX_EVENT] = { false };
+			float strength[MAX_EVENT] = { 0.0 };
+			float raw_strength[MAX_EVENT] = { 0.0 };
+		};
+		bool api_pressed = false;
+		float api_strength = 0.0;
+		HashMap<int, DeviceState> device_states;
+
+		// Cache.
+		struct ActionStateCache {
+			bool pressed = false;
+			float strength = false;
+			float raw_strength = false;
+		} cache;
 	};
 
-	HashMap<StringName, Action> action_state;
+	HashMap<StringName, ActionState> action_states;
 
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
@@ -227,6 +241,7 @@ private:
 	JoyAxis _get_output_axis(String output);
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
+	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 

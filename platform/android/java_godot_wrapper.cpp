@@ -78,8 +78,8 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
 	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
 	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
-	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;)V");
-	_end_benchmark_measure = p_env->GetMethodID(godot_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;)V");
+	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
+	_end_benchmark_measure = p_env->GetMethodID(godot_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_dump_benchmark = p_env->GetMethodID(godot_class, "nativeDumpBenchmark", "(Ljava/lang/String;)V");
 	_get_gdextension_list_config_file = p_env->GetMethodID(godot_class, "getGDExtensionConfigFiles", "()[Ljava/lang/String;");
 	_has_feature = p_env->GetMethodID(godot_class, "hasFeature", "(Ljava/lang/String;)Z");
@@ -348,21 +348,23 @@ int GodotJavaWrapper::create_new_godot_instance(List<String> args) {
 	}
 }
 
-void GodotJavaWrapper::begin_benchmark_measure(const String &p_label) {
+void GodotJavaWrapper::begin_benchmark_measure(const String &p_context, const String &p_label) {
 	if (_begin_benchmark_measure) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
+		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
 		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
-		env->CallVoidMethod(godot_instance, _begin_benchmark_measure, j_label);
+		env->CallVoidMethod(godot_instance, _begin_benchmark_measure, j_context, j_label);
 	}
 }
 
-void GodotJavaWrapper::end_benchmark_measure(const String &p_label) {
+void GodotJavaWrapper::end_benchmark_measure(const String &p_context, const String &p_label) {
 	if (_end_benchmark_measure) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
+		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
 		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
-		env->CallVoidMethod(godot_instance, _end_benchmark_measure, j_label);
+		env->CallVoidMethod(godot_instance, _end_benchmark_measure, j_context, j_label);
 	}
 }
 

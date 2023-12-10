@@ -131,6 +131,8 @@ public:
 	bool has_undo() const;
 	bool has_redo() const;
 
+	bool is_merging() const;
+
 	uint64_t get_version() const;
 
 	void set_commit_notify_callback(CommitNotifyCallback p_callback, void *p_ud);

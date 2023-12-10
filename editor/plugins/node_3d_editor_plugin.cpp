@@ -4152,6 +4152,7 @@ Node *Node3DEditorViewport::_sanitize_preview_node(Node *p_node) const {
 }
 
 void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) const {
+	bool add_preview = false;
 	for (int i = 0; i < files.size(); i++) {
 		String path = files[i];
 		Ref<Resource> res = ResourceLoader::load(path);
@@ -4172,9 +4173,13 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 					}
 				}
 			}
-			EditorNode::get_singleton()->get_scene_root()->add_child(preview_node);
+			add_preview = true;
 		}
 	}
+	if (add_preview) {
+		EditorNode::get_singleton()->get_scene_root()->add_child(preview_node);
+	}
+
 	*preview_bounds = _calculate_spatial_bounds(preview_node);
 }
 
@@ -5120,8 +5125,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	display_submenu->add_radio_check_item(TTR("Motion Vectors"), VIEW_DISPLAY_MOTION_VECTORS);
 	display_submenu->add_radio_check_item(TTR("Internal Buffer"), VIEW_DISPLAY_INTERNAL_BUFFER);
 
-	display_submenu->set_name("display_advanced");
-	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced", VIEW_DISPLAY_ADVANCED);
+	display_submenu->set_name("DisplayAdvanced");
+	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "DisplayAdvanced", VIEW_DISPLAY_ADVANCED);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("View Environment")), VIEW_ENVIRONMENT);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos")), VIEW_GIZMOS);

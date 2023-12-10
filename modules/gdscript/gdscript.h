@@ -121,18 +121,25 @@ class GDScript : public Script {
 	struct UpdatableFuncPtr {
 		List<GDScriptFunction **> ptrs;
 		Mutex mutex;
-		bool initialized = false;
+		bool initialized : 1;
+		bool transferred : 1;
+		uint32_t rc = 1;
+		UpdatableFuncPtr() :
+				initialized(false), transferred(false) {}
 	};
 	struct UpdatableFuncPtrElement {
 		List<GDScriptFunction **>::Element *element = nullptr;
-		Mutex *mutex = nullptr;
+		UpdatableFuncPtr *func_ptr = nullptr;
 	};
-	static thread_local UpdatableFuncPtr func_ptrs_to_update_thread_local;
+	static UpdatableFuncPtr func_ptrs_to_update_main_thread;
+	static thread_local UpdatableFuncPtr *func_ptrs_to_update_thread_local;
 	List<UpdatableFuncPtr *> func_ptrs_to_update;
 	Mutex func_ptrs_to_update_mutex;
 
 	UpdatableFuncPtrElement _add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
-	static void _remove_func_ptr_to_update(const UpdatableFuncPtrElement p_func_ptr_element);
+	static void _remove_func_ptr_to_update(const UpdatableFuncPtrElement &p_func_ptr_element);
+
+	static void _fixup_thread_function_bookkeeping();
 
 #ifdef TOOLS_ENABLED
 	// For static data storage during hot-reloading.
@@ -171,6 +178,7 @@ class GDScript : public Script {
 	//exported members
 	String source;
 	String path;
+	bool path_valid = false; // False if using default path.
 	StringName local_name; // Inner class identifier or `class_name`.
 	StringName global_name; // `class_name`.
 	String fully_qualified_name;
@@ -552,6 +560,11 @@ public:
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) override;
 	virtual void remove_named_global_constant(const StringName &p_name) override;
+
+	/* MULTITHREAD FUNCTIONS */
+
+	virtual void thread_enter() override;
+	virtual void thread_exit() override;
 
 	/* DEBUGGER FUNCTIONS */
 

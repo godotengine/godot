@@ -122,7 +122,7 @@ void StringName::unref() {
 	if (_data && _data->refcount.unref()) {
 		MutexLock lock(mutex);
 
-		if (_data->static_count.get() > 0) {
+		if (CoreGlobals::leak_reporting_enabled && _data->static_count.get() > 0) {
 			if (_data->cname) {
 				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->cname));
 			} else {

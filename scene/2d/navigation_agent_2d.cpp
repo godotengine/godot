@@ -294,6 +294,13 @@ NavigationAgent2D::NavigationAgent2D() {
 	NavigationServer2D::get_singleton()->agent_set_time_horizon_obstacles(agent, time_horizon_obstacles);
 	NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
 	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, max_speed);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_layers(agent, avoidance_layers);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_mask(agent, avoidance_mask);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_priority(agent, avoidance_priority);
+	NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(agent, avoidance_enabled);
+	if (avoidance_enabled) {
+		NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
+	}
 
 	// Preallocate query and result objects to improve performance.
 	navigation_query = Ref<NavigationPathQueryParameters2D>();
@@ -301,11 +308,6 @@ NavigationAgent2D::NavigationAgent2D() {
 
 	navigation_result = Ref<NavigationPathQueryResult2D>();
 	navigation_result.instantiate();
-
-	set_avoidance_layers(avoidance_layers);
-	set_avoidance_mask(avoidance_mask);
-	set_avoidance_priority(avoidance_priority);
-	set_avoidance_enabled(avoidance_enabled);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationAgent2D::_navigation_debug_changed));

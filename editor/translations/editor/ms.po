@@ -876,12 +876,6 @@ msgstr "Tutup"
 msgid "Connect"
 msgstr "Sambung"
 
-msgid "Class:"
-msgstr "Kelas:"
-
-msgid "Signal:"
-msgstr "Isyarat:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Sambungkan '% s' ke '% s'"
 
@@ -1164,21 +1158,6 @@ msgstr "Penaja Emas"
 
 msgid "Silver Sponsors"
 msgstr "Penderma Perak"
-
-msgid "Bronze Sponsors"
-msgstr "Penderma Gangsa"
-
-msgid "Mini Sponsors"
-msgstr "Penaja Mini"
-
-msgid "Gold Donors"
-msgstr "Penderma Emas"
-
-msgid "Silver Donors"
-msgstr "Penderma Perak"
-
-msgid "Bronze Donors"
-msgstr "Penderma Gangsa"
 
 msgid "Donors"
 msgstr "Penderma"
@@ -1602,6 +1581,9 @@ msgstr "Mengimport (Semula) Aset"
 msgid "Top"
 msgstr "Atas"
 
+msgid "Class:"
+msgstr "Kelas:"
+
 msgid "Inherits:"
 msgstr "Mewarisi:"
 
@@ -1660,6 +1642,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "Penerangan Kaedah"
 
+msgid "Property:"
+msgstr "Sifat:"
+
+msgid "Signal:"
+msgstr "Isyarat:"
+
 msgid "%d match."
 msgstr "%d padan."
 
@@ -1716,9 +1704,6 @@ msgstr "Sifat"
 
 msgid "Theme Property"
 msgstr "Sifat Tema"
-
-msgid "Property:"
-msgstr "Sifat:"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -1983,17 +1968,6 @@ msgstr ""
 "Tidak dapat memuat skrip addon dari laluan: '%s'. Ini mungkin disebabkan oleh "
 "kod ralat dalam skrip tersebut.\n"
 "Menyahdayakan addon pada '%s' untuk mengelakkan ralat selanjutnya."
-
-msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Tidak dapat memuatkan skrip addon dari laluan: '%s' Jenis Asas bukan "
-"EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Tidak dapat memuat skrip addon dari laluan: Skrip '%s' tidak berada dalam mod "
-"alat."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -2407,6 +2381,9 @@ msgstr "Muatan Cepat"
 msgid "Make Unique"
 msgstr "Buat Unik"
 
+msgid "Save As..."
+msgstr "Simpan Sebagai..."
+
 msgid "Show in FileSystem"
 msgstr "Tunjukkan dalam FileSystem"
 
@@ -2705,9 +2682,6 @@ msgstr "Menduakan folder:"
 msgid "New Inherited Scene"
 msgstr "Adegan Baru Yang Diwarisi"
 
-msgid "Set As Main Scene"
-msgstr "Tetapkan Sebagai Adegan Utama"
-
 msgid "Open Scenes"
 msgstr "Buka Adegan-adegan"
 
@@ -2770,9 +2744,6 @@ msgstr "Namakan semula..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Imbas Semula Sistem Fail"
-
-msgid "Toggle Split Mode"
-msgstr "Togol Mod Berpisah"
 
 msgid ""
 "Scanning Files,\n"
@@ -3075,9 +3046,6 @@ msgstr "Muatkan sumber sedia ada dari cakera dan suntingnya."
 
 msgid "Save the currently edited resource."
 msgstr "Simpan sumber yang sedang disunting."
-
-msgid "Save As..."
-msgstr "Simpan Sebagai..."
 
 msgid "Extra resource options."
 msgstr "Pilihan sumber tambahan."
@@ -3433,14 +3401,14 @@ msgstr "Pin AnimationPlayer"
 msgid "Error!"
 msgstr "Ralat!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Masa Adunan Animasi Silang"
+
 msgid "Blend Times:"
 msgstr "Masa Adunan:"
 
 msgid "Next (Auto Queue):"
 msgstr "Seterusnya (Baris Gilir Automatik):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Masa Adunan Animasi Silang"
 
 msgid "Move Node"
 msgstr "Pindahkan Nod"

@@ -1171,12 +1171,6 @@ msgstr "Tancar"
 msgid "Connect"
 msgstr "Connectar"
 
-msgid "Class:"
-msgstr "Classe:"
-
-msgid "Signal:"
-msgstr "Senyal:"
-
 msgid "Connect '%s' to '%s'"
 msgstr "Connectar '%s' amb '%s'"
 
@@ -1526,21 +1520,6 @@ msgstr "Patrocinadors Gold"
 
 msgid "Silver Sponsors"
 msgstr "Donants Plata"
-
-msgid "Bronze Sponsors"
-msgstr "Donants Bronze"
-
-msgid "Mini Sponsors"
-msgstr "Mini Patrocinadors"
-
-msgid "Gold Donors"
-msgstr "Donants Gold"
-
-msgid "Silver Donors"
-msgstr "Donants Silver"
-
-msgid "Bronze Donors"
-msgstr "Donants Bronze"
 
 msgid "Donors"
 msgstr "Donants"
@@ -1952,6 +1931,9 @@ msgstr "(Re)Important Recursos"
 msgid "Top"
 msgstr "Dalt"
 
+msgid "Class:"
+msgstr "Classe:"
+
 msgid "Inherits:"
 msgstr "Hereta:"
 
@@ -1997,6 +1979,12 @@ msgstr ""
 
 msgid "Method Descriptions"
 msgstr "Descripcions dels Mètodes"
+
+msgid "Property:"
+msgstr "Propietat:"
+
+msgid "Signal:"
+msgstr "Senyal:"
 
 msgid "%d match."
 msgstr "%d coincidència."
@@ -2054,9 +2042,6 @@ msgstr "Propietat"
 
 msgid "Theme Property"
 msgstr "Propietats del tema"
-
-msgid "Property:"
-msgstr "Propietat:"
 
 msgid "Move Up"
 msgstr "Mou Amunt"
@@ -2321,17 +2306,6 @@ msgstr ""
 "No es pot carregar l'script de complement (addon) del camí: '%s'. Això pot "
 "ser degut a un error de codi en aquest script.\n"
 "Es desactivarà el complement (addon) a '% s' per a evitar més errors."
-
-msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"No es pot carregar l'Script del complement: El tipus base de '%s' no és pas "
-"EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"No s'ha carregat l'Script d'addon des del camí: L'Script '%s' no és en el "
-"mode d'Eina."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -2737,6 +2711,9 @@ msgstr "Carrega Rapida"
 msgid "Make Unique"
 msgstr "Fes-lo Únic"
 
+msgid "Save As..."
+msgstr "Anomena i Desa..."
+
 msgid "Show in FileSystem"
 msgstr "Mostrar en el Sistema de Fitxers"
 
@@ -2962,11 +2939,11 @@ msgstr ""
 msgid "Runnable"
 msgstr "Executable"
 
-msgid "Resources to export:"
-msgstr "Recursos per exportar:"
-
 msgid "Delete preset '%s'?"
 msgstr "Esborrar la configuració '%s' ?"
+
+msgid "Resources to export:"
+msgstr "Recursos per exportar:"
 
 msgid "Presets"
 msgstr "Configuracions prestablertes"
@@ -3143,9 +3120,6 @@ msgstr "Reanomena..."
 
 msgid "Re-Scan Filesystem"
 msgstr "ReAnalitza Sistema de Fitxers"
-
-msgid "Toggle Split Mode"
-msgstr "Commutar Mode Dividit"
 
 msgid ""
 "Scanning Files,\n"
@@ -3443,9 +3417,6 @@ msgstr "Carrega un recurs des del disc i edita'l."
 
 msgid "Save the currently edited resource."
 msgstr "Desa el recurs editat ara."
-
-msgid "Save As..."
-msgstr "Anomena i Desa..."
 
 msgid "Copy Resource"
 msgstr "Copia el Recurs"
@@ -3814,14 +3785,14 @@ msgstr "Fixar AnimationPlayer"
 msgid "Error!"
 msgstr "Error !"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Temps de mescla entre Animacions"
+
 msgid "Blend Times:"
 msgstr "Temps de mescla:"
 
 msgid "Next (Auto Queue):"
 msgstr "Següent (Enviar a la Cua):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Temps de mescla entre Animacions"
 
 msgid "Move Node"
 msgstr "Moure Node"
@@ -6248,9 +6219,6 @@ msgstr "Elimina l'Herència"
 
 msgid "Editable Children"
 msgstr "Fills Editables"
-
-msgid "Load As Placeholder"
-msgstr "Carrega com a Contenidor Temporal"
 
 msgid "Can't paste root node into the same scene."
 msgstr "No es pot enganxar el node arrel a la mateixa escena."

@@ -90,17 +90,17 @@ ProjectExportTextureFormatError::ProjectExportTextureFormatError() {
 	fix_texture_format_button->connect("pressed", callable_mp(this, &ProjectExportTextureFormatError::_on_fix_texture_format_pressed));
 }
 
-void ProjectExportDialog::_theme_changed() {
-	duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
-	delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
-}
-
 void ProjectExportDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", Rect2(get_position(), get_size()));
 			}
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
+			delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1076,10 +1076,12 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	EditorSettings::get_singleton()->set_project_metadata("export_options", "default_filename", default_filename);
 
 	Ref<EditorExportPreset> current = get_current_preset();
-	ERR_FAIL_COND(current.is_null());
+	ERR_FAIL_COND_MSG(current.is_null(), "Failed to start the export: current preset is invalid.");
 	Ref<EditorExportPlatform> platform = current->get_platform();
-	ERR_FAIL_COND(platform.is_null());
+	ERR_FAIL_COND_MSG(platform.is_null(), "Failed to start the export: current preset has no valid platform.");
 	current->set_export_path(p_path);
+
+	exporting = true;
 
 	platform->clear_messages();
 	Error err = platform->export_project(current, export_debug->is_pressed(), current->get_export_path(), 0);
@@ -1089,6 +1091,8 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 			result_dialog->popup_centered_ratio(0.5);
 		}
 	}
+
+	exporting = false;
 }
 
 void ProjectExportDialog::_export_all_dialog() {
@@ -1105,34 +1109,48 @@ void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
 }
 
 void ProjectExportDialog::_export_all(bool p_debug) {
-	String export_target = p_debug ? TTR("Debug") : TTR("Release");
-	EditorProgress ep("exportall", TTR("Exporting All") + " " + export_target, EditorExport::get_singleton()->get_export_preset_count(), true);
-
+	exporting = true;
 	bool show_dialog = false;
-	result_dialog_log->clear();
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
-		ERR_FAIL_COND(preset.is_null());
-		Ref<EditorExportPlatform> platform = preset->get_platform();
-		ERR_FAIL_COND(platform.is_null());
 
-		ep.step(preset->get_name(), i);
+	{ // Scope for the editor progress, we must free it before showing the dialog at the end.
+		String export_target = p_debug ? TTR("Debug") : TTR("Release");
+		EditorProgress ep("exportall", TTR("Exporting All") + " " + export_target, EditorExport::get_singleton()->get_export_preset_count(), true);
 
-		platform->clear_messages();
-		Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
-		if (err == ERR_SKIP) {
-			return;
+		result_dialog_log->clear();
+		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+			Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
+			if (preset.is_null()) {
+				exporting = false;
+				ERR_FAIL_MSG("Failed to start the export: one of the presets is invalid.");
+			}
+
+			Ref<EditorExportPlatform> platform = preset->get_platform();
+			if (platform.is_null()) {
+				exporting = false;
+				ERR_FAIL_MSG("Failed to start the export: one of the presets has no valid platform.");
+			}
+
+			ep.step(preset->get_name(), i);
+
+			platform->clear_messages();
+			Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
+			if (err == ERR_SKIP) {
+				exporting = false;
+				return;
+			}
+			bool has_messages = platform->fill_log_messages(result_dialog_log, err);
+			show_dialog = show_dialog || has_messages;
 		}
-		bool has_messages = platform->fill_log_messages(result_dialog_log, err);
-		show_dialog = show_dialog || has_messages;
 	}
+
 	if (show_dialog) {
 		result_dialog->popup_centered_ratio(0.5);
 	}
+
+	exporting = false;
 }
 
 void ProjectExportDialog::_bind_methods() {
-	ClassDB::bind_method("_export_all", &ProjectExportDialog::_export_all);
 	ClassDB::bind_method("set_export_path", &ProjectExportDialog::set_export_path);
 	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);
 	ClassDB::bind_method("get_current_preset", &ProjectExportDialog::get_current_preset);
@@ -1145,8 +1163,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	set_clamp_to_embedder(true);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
-	main_vb->connect("theme_changed", callable_mp(this, &ProjectExportDialog::_theme_changed));
 	add_child(main_vb);
+
 	HSplitContainer *hbox = memnew(HSplitContainer);
 	main_vb->add_child(hbox);
 	hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);

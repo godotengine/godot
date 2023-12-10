@@ -42,6 +42,10 @@ class TextShaderEditor;
 class VisualShaderEditor;
 class WindowWrapper;
 
+#ifdef MINGW_ENABLED
+#undef FILE_OPEN
+#endif
+
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
@@ -50,6 +54,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 		Ref<ShaderInclude> shader_inc;
 		TextShaderEditor *shader_editor = nullptr;
 		VisualShaderEditor *visual_shader_editor = nullptr;
+		String path;
 	};
 
 	LocalVector<EditedShader> edited_shaders;

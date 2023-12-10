@@ -151,6 +151,7 @@ void AnimationPlayer::_notification(int p_what) {
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				set_active(true);
 				play(autoplay);
+				_check_immediately_after_start();
 			}
 		} break;
 	}
@@ -232,7 +233,7 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 		pi.delta = delta;
 		pi.seeked = p_seeked;
 	}
-	pi.is_external_seeking = false;
+	pi.is_external_seeking = true; // AnimationPlayer doesn't have internal seeking.
 	pi.looped_flag = looped_flag;
 	pi.weight = p_blend;
 	make_animation_instance(cd.from->name, pi);
@@ -521,8 +522,9 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 		return;
 	}
 
-	playback.current.pos = p_time;
+	_check_immediately_after_start();
 
+	playback.current.pos = p_time;
 	if (!playback.current.from) {
 		if (playback.assigned) {
 			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
@@ -536,6 +538,18 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 	playback.seeked = true;
 	if (p_update) {
 		_process_animation(0, p_update_only);
+		playback.seeked = false; // If animation was proceeded here, no more seek in internal process.
+	}
+}
+
+void AnimationPlayer::advance(double p_time) {
+	_check_immediately_after_start();
+	AnimationMixer::advance(p_time);
+}
+
+void AnimationPlayer::_check_immediately_after_start() {
+	if (playback.started) {
+		_process_animation(0); // Force process current key for Discrete/Method/Audio/AnimationPlayback. Then, started flag is cleared.
 	}
 }
 

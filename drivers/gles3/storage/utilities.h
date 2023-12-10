@@ -50,9 +50,11 @@ private:
 		uint32_t size = 0;
 	};
 	HashMap<GLuint, ResourceAllocation> buffer_allocs_cache;
+	HashMap<GLuint, ResourceAllocation> render_buffer_allocs_cache;
 	HashMap<GLuint, ResourceAllocation> texture_allocs_cache;
 
 	uint64_t buffer_mem_cache = 0;
+	uint64_t render_buffer_mem_cache = 0;
 	uint64_t texture_mem_cache = 0;
 
 public:
@@ -86,6 +88,26 @@ public:
 		glDeleteBuffers(1, &p_id);
 		buffer_mem_cache -= buffer_allocs_cache[p_id].size;
 		buffer_allocs_cache.erase(p_id);
+	}
+
+	_FORCE_INLINE_ void render_buffer_allocated_data(GLuint p_id, uint32_t p_size, String p_name = "") {
+		render_buffer_mem_cache += p_size;
+#ifdef DEV_ENABLED
+		ERR_FAIL_COND_MSG(render_buffer_allocs_cache.has(p_id), "trying to allocate render buffer with name " + p_name + " but ID already used by " + render_buffer_allocs_cache[p_id].name);
+#endif
+		ResourceAllocation resource_allocation;
+		resource_allocation.size = p_size;
+#ifdef DEV_ENABLED
+		resource_allocation.name = p_name + ": " + itos((uint64_t)p_id);
+#endif
+		render_buffer_allocs_cache[p_id] = resource_allocation;
+	}
+
+	_FORCE_INLINE_ void render_buffer_free_data(GLuint p_id) {
+		ERR_FAIL_COND(!render_buffer_allocs_cache.has(p_id));
+		glDeleteRenderbuffers(1, &p_id);
+		render_buffer_mem_cache -= render_buffer_allocs_cache[p_id].size;
+		render_buffer_allocs_cache.erase(p_id);
 	}
 
 	// Records that data was allocated for state tracking purposes.

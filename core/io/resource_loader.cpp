@@ -340,7 +340,9 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	if (load_task.resource.is_valid()) {
 		if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-			load_task.resource->set_path(load_task.local_path);
+			load_task.resource->set_path(load_task.local_path, load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+		} else if (!load_task.local_path.is_resource_file()) {
+			load_task.resource->set_path_cache(load_task.local_path);
 		}
 
 		if (load_task.xl_remapped) {
@@ -358,6 +360,17 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 		if (_loaded_callback) {
 			_loaded_callback(load_task.resource, load_task.local_path);
+		}
+	} else if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+		Ref<Resource> existing = ResourceCache::get_ref(load_task.local_path);
+		if (existing.is_valid()) {
+			load_task.resource = existing;
+			load_task.status = THREAD_LOAD_LOADED;
+			load_task.progress = 1.0;
+
+			if (_loaded_callback) {
+				_loaded_callback(load_task.resource, load_task.local_path);
+			}
 		}
 	}
 
@@ -461,7 +474,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 			load_task.type_hint = p_type_hint;
 			load_task.cache_mode = p_cache_mode;
 			load_task.use_sub_threads = p_thread_mode == LOAD_THREAD_DISTRIBUTE;
-			if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
 				Ref<Resource> existing = ResourceCache::get_ref(local_path);
 				if (existing.is_valid()) {
 					//referencing is fine
@@ -918,7 +931,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		}
 
 		// Fallback to p_path if new_path does not exist.
-		if (!FileAccess::exists(new_path)) {
+		if (!FileAccess::exists(new_path + ".import") && !FileAccess::exists(new_path)) {
 			WARN_PRINT(vformat("Translation remap '%s' does not exist. Falling back to '%s'.", new_path, p_path));
 			new_path = p_path;
 		}
@@ -1111,11 +1124,10 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 	Ref<Script> s = res;
 	StringName ibt = s->get_instance_base_type();
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatLoader");
-	ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceLoader: " + script_path + ".");
+	ERR_FAIL_COND_V_MSG(!valid_type, false, vformat("Failed to add a custom resource loader, script '%s' does not inherit 'ResourceFormatLoader'.", script_path));
 
 	Object *obj = ClassDB::instantiate(ibt);
-
-	ERR_FAIL_NULL_V_MSG(obj, false, "Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt) + ".");
+	ERR_FAIL_NULL_V_MSG(obj, false, vformat("Failed to add a custom resource loader, cannot instantiate '%s'.", ibt));
 
 	Ref<ResourceFormatLoader> crl = Object::cast_to<ResourceFormatLoader>(obj);
 	crl->set_script(s);

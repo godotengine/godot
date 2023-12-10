@@ -992,6 +992,7 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 
 	String old_path = path;
 	path = p_path;
+	path_valid = true;
 	GDScriptCache::move_script(old_path, p_path);
 
 	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
@@ -1000,6 +1001,9 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 }
 
 String GDScript::get_script_path() const {
+	if (!path_valid && !get_path().is_empty()) {
+		return get_path();
+	}
 	return path;
 }
 
@@ -1035,6 +1039,7 @@ Error GDScript::load_source_code(const String &p_path) {
 
 	source = s;
 	path = p_path;
+	path_valid = true;
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
 	set_edited(false);
@@ -1386,34 +1391,52 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 }
 #endif
 
-thread_local GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_thread_local;
+GDScript::UpdatableFuncPtr GDScript::func_ptrs_to_update_main_thread;
+thread_local GDScript::UpdatableFuncPtr *GDScript::func_ptrs_to_update_thread_local = nullptr;
 
 GDScript::UpdatableFuncPtrElement GDScript::_add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr) {
 	UpdatableFuncPtrElement result = {};
 
 	{
-		MutexLock lock(func_ptrs_to_update_thread_local.mutex);
-		result.element = func_ptrs_to_update_thread_local.ptrs.push_back(p_func_ptr_ptr);
-		result.mutex = &func_ptrs_to_update_thread_local.mutex;
+		MutexLock lock(func_ptrs_to_update_thread_local->mutex);
+		result.element = func_ptrs_to_update_thread_local->ptrs.push_back(p_func_ptr_ptr);
+		result.func_ptr = func_ptrs_to_update_thread_local;
 
-		if (likely(func_ptrs_to_update_thread_local.initialized)) {
+		if (likely(func_ptrs_to_update_thread_local->initialized)) {
 			return result;
 		}
 
-		func_ptrs_to_update_thread_local.initialized = true;
+		func_ptrs_to_update_thread_local->initialized = true;
 	}
 
 	MutexLock lock(func_ptrs_to_update_mutex);
-	func_ptrs_to_update.push_back(&func_ptrs_to_update_thread_local);
+	func_ptrs_to_update.push_back(func_ptrs_to_update_thread_local);
+	func_ptrs_to_update_thread_local->rc++;
 
 	return result;
 }
 
-void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement p_func_ptr_element) {
+void GDScript::_remove_func_ptr_to_update(const UpdatableFuncPtrElement &p_func_ptr_element) {
 	ERR_FAIL_NULL(p_func_ptr_element.element);
-	ERR_FAIL_NULL(p_func_ptr_element.mutex);
-	MutexLock lock(*p_func_ptr_element.mutex);
+	ERR_FAIL_NULL(p_func_ptr_element.func_ptr);
+	MutexLock lock(p_func_ptr_element.func_ptr->mutex);
 	p_func_ptr_element.element->erase();
+}
+
+void GDScript::_fixup_thread_function_bookkeeping() {
+	// Transfer the ownership of these update items to the main thread,
+	// because the current one is dying, leaving theirs orphan, dangling.
+
+	DEV_ASSERT(!Thread::is_main_thread());
+
+	MutexLock lock(func_ptrs_to_update_main_thread.mutex);
+	MutexLock lock2(func_ptrs_to_update_thread_local->mutex);
+
+	while (!func_ptrs_to_update_thread_local->ptrs.is_empty()) {
+		List<GDScriptFunction **>::Element *E = func_ptrs_to_update_thread_local->ptrs.front();
+		E->transfer_to_back(&func_ptrs_to_update_main_thread.ptrs);
+		func_ptrs_to_update_thread_local->transferred = true;
+	}
 }
 
 void GDScript::clear(ClearData *p_clear_data) {
@@ -1436,9 +1459,27 @@ void GDScript::clear(ClearData *p_clear_data) {
 	{
 		MutexLock outer_lock(func_ptrs_to_update_mutex);
 		for (UpdatableFuncPtr *updatable : func_ptrs_to_update) {
-			MutexLock inner_lock(updatable->mutex);
-			for (GDScriptFunction **func_ptr_ptr : updatable->ptrs) {
-				*func_ptr_ptr = nullptr;
+			bool destroy = false;
+			{
+				MutexLock inner_lock(updatable->mutex);
+				if (updatable->transferred) {
+					func_ptrs_to_update_main_thread.mutex.lock();
+				}
+				for (GDScriptFunction **func_ptr_ptr : updatable->ptrs) {
+					*func_ptr_ptr = nullptr;
+				}
+				DEV_ASSERT(updatable->rc != 0);
+				updatable->rc--;
+				if (updatable->rc == 0) {
+					destroy = true;
+				}
+				if (updatable->transferred) {
+					func_ptrs_to_update_main_thread.mutex.unlock();
+				}
+			}
+			if (destroy) {
+				DEV_ASSERT(updatable != &func_ptrs_to_update_main_thread);
+				memdelete(updatable);
 			}
 		}
 	}
@@ -2060,6 +2101,33 @@ void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	named_globals.erase(p_name);
 }
 
+void GDScriptLanguage::thread_enter() {
+	GDScript::func_ptrs_to_update_thread_local = memnew(GDScript::UpdatableFuncPtr);
+}
+
+void GDScriptLanguage::thread_exit() {
+	// This thread may have been created before GDScript was up
+	// (which also means it can't have run any GDScript code at all).
+	if (!GDScript::func_ptrs_to_update_thread_local) {
+		return;
+	}
+
+	GDScript::_fixup_thread_function_bookkeeping();
+
+	bool destroy = false;
+	{
+		MutexLock lock(GDScript::func_ptrs_to_update_thread_local->mutex);
+		DEV_ASSERT(GDScript::func_ptrs_to_update_thread_local->rc != 0);
+		GDScript::func_ptrs_to_update_thread_local->rc--;
+		if (GDScript::func_ptrs_to_update_thread_local->rc == 0) {
+			destroy = true;
+		}
+	}
+	if (destroy) {
+		memdelete(GDScript::func_ptrs_to_update_thread_local);
+	}
+}
+
 void GDScriptLanguage::init() {
 	//populate global constants
 	int gcc = CoreConstants::get_global_constant_count();
@@ -2091,6 +2159,8 @@ void GDScriptLanguage::init() {
 	for (const Engine::Singleton &E : singletons) {
 		_add_global(E.name, E.ptr);
 	}
+
+	GDScript::func_ptrs_to_update_thread_local = &GDScript::func_ptrs_to_update_main_thread;
 
 #ifdef TESTS_ENABLED
 	GDScriptTests::GDScriptTestRunner::handle_cmdline();
@@ -2141,6 +2211,8 @@ void GDScriptLanguage::finish() {
 	}
 	script_list.clear();
 	function_list.clear();
+
+	DEV_ASSERT(GDScript::func_ptrs_to_update_main_thread.rc == 1);
 }
 
 void GDScriptLanguage::profiling_start() {
@@ -2257,6 +2329,19 @@ void GDScriptLanguage::reload_all_scripts() {
 			}
 			elem = elem->next();
 		}
+
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			// Reload all pointers to existing singletons so that tool scripts can work with the reloaded extensions.
+			List<Engine::Singleton> singletons;
+			Engine::get_singleton()->get_singletons(&singletons);
+			for (const Engine::Singleton &E : singletons) {
+				if (globals.has(E.name)) {
+					_add_global(E.name, E.ptr);
+				}
+			}
+		}
+#endif
 	}
 
 	//as scripts are going to be reloaded, must proceed without locking here

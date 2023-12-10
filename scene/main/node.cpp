@@ -202,6 +202,11 @@ void Node::_notification(int p_notification) {
 				_clean_up_owner();
 			}
 
+			while (!data.owned.is_empty()) {
+				Node *n = data.owned.back()->get();
+				n->_clean_up_owner(); // This will change data.owned. So it's impossible to loop over the list in the usual manner.
+			}
+
 			if (data.parent) {
 				data.parent->remove_child(this);
 			}
@@ -1415,6 +1420,14 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_child()` failed. Consider using `add_child.call_deferred(child)` instead.");
 
 	_validate_child_name(p_child, p_force_readable_name);
+
+#ifdef DEBUG_ENABLED
+	if (p_child->data.owner && !p_child->data.owner->is_ancestor_of(p_child)) {
+		// Owner of p_child should be ancestor of p_child.
+		WARN_PRINT(vformat("Adding '%s' as child to '%s' will make owner '%s' inconsistent. Consider unsetting the owner beforehand.", p_child->get_name(), get_name(), p_child->data.owner->get_name()));
+	}
+#endif // DEBUG_ENABLED
+
 	_add_child_nocheck(p_child, p_child->data.name, p_internal);
 }
 
@@ -1870,7 +1883,7 @@ void Node::_acquire_unique_name_in_owner() {
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
 		String which_path = is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which);
-		WARN_PRINT(vformat(RTR("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as having a unique name."),
+		WARN_PRINT(vformat("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as having a unique name.",
 				get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), which_path, which_path));
 		data.unique_name_in_owner = false;
 		return;
@@ -2515,44 +2528,6 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 	}
 
-	for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
-		Node *current_node = node->get_node(get_path_to(N->get()));
-		ERR_CONTINUE(!current_node);
-
-		if (p_flags & DUPLICATE_SCRIPTS) {
-			bool is_valid = false;
-			Variant scr = N->get()->get(script_property_name, &is_valid);
-			if (is_valid) {
-				current_node->set(script_property_name, scr);
-			}
-		}
-
-		List<PropertyInfo> plist;
-		N->get()->get_property_list(&plist);
-
-		for (const PropertyInfo &E : plist) {
-			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
-				continue;
-			}
-			String name = E.name;
-			if (name == script_property_name) {
-				continue;
-			}
-
-			Variant value = N->get()->get(name).duplicate(true);
-
-			if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
-				Resource *res = Object::cast_to<Resource>(value);
-				if (res) { // Duplicate only if it's a resource
-					current_node->set(name, res->duplicate());
-				}
-
-			} else {
-				current_node->set(name, value);
-			}
-		}
-	}
-
 	if (get_name() != String()) {
 		node->set_name(get_name());
 	}
@@ -2615,6 +2590,62 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 		if (pos < parent->get_child_count() - 1) {
 			parent->move_child(dup, pos);
+		}
+	}
+
+	for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
+		Node *current_node = node->get_node(get_path_to(N->get()));
+		ERR_CONTINUE(!current_node);
+
+		if (p_flags & DUPLICATE_SCRIPTS) {
+			bool is_valid = false;
+			Variant scr = N->get()->get(script_property_name, &is_valid);
+			if (is_valid) {
+				current_node->set(script_property_name, scr);
+			}
+		}
+
+		List<PropertyInfo> plist;
+		N->get()->get_property_list(&plist);
+
+		for (const PropertyInfo &E : plist) {
+			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+				continue;
+			}
+			String name = E.name;
+			if (name == script_property_name) {
+				continue;
+			}
+
+			Variant value = N->get()->get(name).duplicate(true);
+
+			if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
+				Resource *res = Object::cast_to<Resource>(value);
+				if (res) { // Duplicate only if it's a resource
+					current_node->set(name, res->duplicate());
+				}
+
+			} else {
+				// If property points to a node which is owned by a node we are duplicating, update its path.
+				if (value.get_type() == Variant::OBJECT) {
+					Node *property_node = Object::cast_to<Node>(value);
+					if (property_node && is_ancestor_of(property_node)) {
+						value = current_node->get_node_or_null(get_path_to(property_node));
+					}
+				} else if (value.get_type() == Variant::ARRAY) {
+					Array arr = value;
+					if (arr.get_typed_builtin() == Variant::OBJECT) {
+						for (int i = 0; i < arr.size(); i++) {
+							Node *property_node = Object::cast_to<Node>(arr[i]);
+							if (property_node && is_ancestor_of(property_node)) {
+								arr[i] = current_node->get_node_or_null(get_path_to(property_node));
+							}
+						}
+						value = arr;
+					}
+				}
+				current_node->set(name, value);
+			}
 		}
 	}
 

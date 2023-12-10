@@ -13,7 +13,7 @@ vec4 voxel_cone_trace(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction,
 		if (any(greaterThan(abs(uvw_pos - 0.5), vec3(0.5f + half_diameter * cell_size)))) {
 			break;
 		}
-		vec4 scolor = textureLod(sampler3D(probe, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), uvw_pos, log2(diameter));
+		vec4 scolor = textureLod(sampler3D(probe, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), uvw_pos, log2(diameter));
 		float a = (1.0 - color.a);
 		color += a * scolor;
 		dist += half_diameter;
@@ -35,7 +35,7 @@ vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3
 		if (any(greaterThan(abs(uvw_pos - 0.5), vec3(0.5f + radius * cell_size)))) {
 			break;
 		}
-		vec4 scolor = textureLod(sampler3D(probe, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), uvw_pos, lod_level);
+		vec4 scolor = textureLod(sampler3D(probe, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), uvw_pos, lod_level);
 		lod_level += 1.0;
 
 		float a = (1.0 - color.a);
@@ -207,8 +207,7 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 		vec2 tex_uv = base_tex_uv + light_uv;
 		tex_uv *= light_probe_tex_to_uv;
 
-		vec3 probe_light = texture(sampler2DArray(hddagi_lightprobe_diffuse, SAMPLER_LINEAR_CLAMP), vec3(tex_uv, float(cascade))).rgb;
-
+		vec3 probe_light = texture(sampler2DArray(hddagi_lightprobe_diffuse, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(tex_uv, float(cascade))).rgb;
 		diffuse_accum += probe_light * weight;
 
 		tex_uv = base_tex_uv + light_uv_spec;
@@ -216,14 +215,14 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 
 		vec3 probe_ref_light;
 		if (roughness < 0.99) {
-			probe_ref_light = texture(sampler2DArray(hddagi_lightprobe_specular, SAMPLER_LINEAR_CLAMP), vec3(tex_uv, float(cascade))).rgb;
+			probe_ref_light = texture(sampler2DArray(hddagi_lightprobe_specular, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(tex_uv, float(cascade))).rgb;
 		} else {
 			probe_ref_light = vec3(0.0);
 		}
 
 		vec3 probe_ref_full_light;
 		if (roughness > ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
-			probe_ref_full_light = texture(sampler2DArray(hddagi_lightprobe_diffuse, SAMPLER_LINEAR_CLAMP), vec3(tex_uv, float(cascade))).rgb;
+			probe_ref_full_light = texture(sampler2DArray(hddagi_lightprobe_diffuse, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(tex_uv, float(cascade))).rgb;
 		} else {
 			probe_ref_full_light = vec3(0.0);
 		}

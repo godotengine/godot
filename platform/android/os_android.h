@@ -165,8 +165,8 @@ public:
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) override;
 
-	virtual void benchmark_begin_measure(const String &p_what) override;
-	virtual void benchmark_end_measure(const String &p_what) override;
+	virtual void benchmark_begin_measure(const String &p_context, const String &p_what) override;
+	virtual void benchmark_end_measure(const String &p_context, const String &p_what) override;
 	virtual void benchmark_dump() override;
 
 	virtual void load_platform_gdextensions() const override;

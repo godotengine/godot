@@ -47,6 +47,11 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	taa_jitter = p_taa_jitter;
 }
 
+#ifdef MINGW_ENABLED
+#undef near
+#undef far
+#endif
+
 void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
