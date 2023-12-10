@@ -729,7 +729,14 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
-		command += " " + _quote_command_line_argument(E);
+		String argument = E;
+		DWORD bufferSize = ExpandEnvironmentStringsW((LPWSTR)argument.utf16().ptrw(), NULL, 0);
+		if (bufferSize > 0) {
+			std::wstring expanded(bufferSize, L'\0');
+			ExpandEnvironmentStringsW((LPWSTR)argument.utf16().ptrw(), &expanded[0], bufferSize);
+			argument = String(expanded.c_str());
+		}
+		command += " " + _quote_command_line_argument(argument);
 	}
 
 	ProcessInfo pi;
