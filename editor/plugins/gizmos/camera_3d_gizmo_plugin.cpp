@@ -51,7 +51,8 @@ Size2i Camera3DGizmoPlugin::_get_viewport_size(Camera3D *p_camera) {
 
 	Window *window = Object::cast_to<Window>(viewport);
 	if (window) {
-		return window->get_size();
+		Rect2i wrect = window->get_final_transform().affine_inverse().xform(Rect2i(window->get_position(), window->get_size()));
+		return wrect.size;
 	}
 
 	SubViewport *sub_viewport = Object::cast_to<SubViewport>(viewport);

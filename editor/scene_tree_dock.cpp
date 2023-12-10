@@ -813,8 +813,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			for (Node *E : nodes) {
 				nodeset.insert(E);
 			}
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(350 * EDSCALE, 700 * EDSCALE));
 			reparent_dialog->set_current(nodeset);
-			reparent_dialog->popup_centered_clamped(Size2(350, 700) * EDSCALE);
+			reparent_dialog->popup_centered_clamped(popup_size);
 		} break;
 		case TOOL_MAKE_ROOT: {
 			if (!profile_allow_editing) {
@@ -3146,7 +3147,7 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 			}
 
 			menu_properties->reset_size();
-			menu_properties->set_position(get_screen_position() + get_local_mouse_position());
+			menu_properties->set_position(get_final_transform().xform(get_local_mouse_position()));
 			menu_properties->popup();
 		} else if (!valid_properties.is_empty()) {
 			_perform_property_drop(node, valid_properties[0], ResourceLoader::load(res_path));
@@ -3280,7 +3281,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 
 		menu->reset_size();
-		menu->set_position(get_screen_position() + p_menu_pos);
+		menu->set_position(scene_tree->get_final_transform().xform(p_menu_pos));
 		menu->popup();
 		return;
 	}
@@ -3483,7 +3484,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), Key::KEY_DELETE), TOOL_ERASE);
 	}
 	menu->reset_size();
-	menu->set_position(p_menu_pos);
+	menu->set_position(scene_tree->get_final_transform().xform(p_menu_pos));
 	menu->popup();
 }
 
@@ -3532,7 +3533,7 @@ void SceneTreeDock::_filter_gui_input(const Ref<InputEvent> &p_event) {
 		filter_quick_menu->clear();
 
 		_append_filter_options_to(filter_quick_menu, false);
-		filter_quick_menu->set_position(get_screen_position() + get_local_mouse_position());
+		filter_quick_menu->set_position(get_final_transform().xform(get_local_mouse_position()));
 		filter_quick_menu->reset_size();
 		filter_quick_menu->popup();
 		filter_quick_menu->grab_focus();

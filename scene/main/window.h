@@ -125,7 +125,6 @@ private:
 	bool focused = false;
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 
-	bool use_font_oversampling = false;
 	bool transient = false;
 	bool transient_to_focused = false;
 	bool exclusive = false;
@@ -234,9 +233,12 @@ private:
 	void _update_mouse_over(Vector2 p_pos) override;
 	void _mouse_leave_viewport() override;
 
+	float _get_scale_to_px() const;
+
 	Ref<Shortcut> debugger_stop_shortcut;
 
 	static int root_layout_direction;
+	static bool use_dpi_scaling;
 
 protected:
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
@@ -266,6 +268,7 @@ public:
 	};
 
 	static void set_root_layout_direction(int p_root_dir);
+	static void set_use_dpi_scaling(bool p_enabled);
 
 	void set_title(const String &p_title);
 	String get_title() const;
@@ -284,8 +287,12 @@ public:
 	Size2i get_size() const;
 	void reset_size();
 
+	Size2i get_size_in_pixels() const;
+
 	Point2i get_position_with_decorations() const;
 	Size2i get_size_with_decorations() const;
+
+	float get_dpi_scale() const;
 
 	void set_max_size(const Size2i &p_max_size);
 	Size2i get_max_size() const;
@@ -356,8 +363,10 @@ public:
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;
 
-	void set_use_font_oversampling(bool p_oversampling);
-	bool is_using_font_oversampling() const;
+#ifndef DISABLE_DEPRECATED
+	void set_use_font_oversampling(bool p_oversampling){};
+	bool is_using_font_oversampling() const { return true; };
+#endif
 
 	void set_mouse_passthrough_polygon(const Vector<Vector2> &p_region);
 	Vector<Vector2> get_mouse_passthrough_polygon() const;

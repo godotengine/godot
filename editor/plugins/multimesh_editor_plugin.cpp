@@ -243,7 +243,8 @@ void MultiMeshEditor::_menu_option(int p_option) {
 
 				_last_pp_node = node;
 			}
-			populate_dialog->popup_centered(Size2(250, 380));
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(250, 380));
+			populate_dialog->popup_centered(popup_size);
 
 		} break;
 	}

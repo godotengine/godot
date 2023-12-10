@@ -1428,6 +1428,9 @@ public:
 	virtual void canvas_item_set_debug_redraw(bool p_enabled) = 0;
 	virtual bool canvas_item_get_debug_redraw() const = 0;
 
+	virtual void canvas_item_set_oversampling_factor(RID p_item, float p_oversampling) = 0;
+	virtual float canvas_item_get_oversampling_factor(RID p_item) const = 0;
+
 	/* CANVAS LIGHT */
 	virtual RID canvas_light_create() = 0;
 

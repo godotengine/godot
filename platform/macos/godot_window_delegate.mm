@@ -173,13 +173,12 @@
 	wd.fs_transition = false;
 
 	// Set window size limits.
-	const float scale = ds->screen_get_max_scale();
 	if (wd.min_size != Size2i()) {
-		Size2i size = wd.min_size / scale;
+		Size2i size = wd.min_size;
 		[wd.window_object setContentMinSize:NSMakeSize(size.x, size.y)];
 	}
 	if (wd.max_size != Size2i()) {
-		Size2i size = wd.max_size / scale;
+		Size2i size = wd.max_size;
 		[wd.window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 	}
 
@@ -208,6 +207,10 @@
 		return;
 	}
 
+	if (!OS::get_singleton()->is_hidpi_allowed()) {
+		return;
+	}
+
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 
 	CGFloat new_scale_factor = [wd.window_object backingScaleFactor];
@@ -215,17 +218,11 @@
 
 	if (new_scale_factor != old_scale_factor) {
 		// Set new display scale and window size.
-		const float scale = ds->screen_get_max_scale();
-		const NSRect content_rect = [wd.window_view frame];
-
-		wd.size.width = content_rect.size.width * scale;
-		wd.size.height = content_rect.size.height * scale;
-
 		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_DPI_CHANGE);
 
 		CALayer *layer = [wd.window_view layer];
 		if (layer) {
-			layer.contentsScale = scale;
+			layer.contentsScale = new_scale_factor;
 		}
 
 		//Force window resize event
@@ -257,9 +254,9 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	const NSRect content_rect = [wd.window_view frame];
-	const float scale = ds->screen_get_max_scale();
-	wd.size.width = content_rect.size.width * scale;
-	wd.size.height = content_rect.size.height * scale;
+	const float scale = (OS::get_singleton()->is_hidpi_allowed() ? [[wd.window_object screen] backingScaleFactor] : 1.0);
+	wd.size.width = content_rect.size.width;
+	wd.size.height = content_rect.size.height;
 
 	CALayer *layer = [wd.window_view layer];
 	if (layer) {

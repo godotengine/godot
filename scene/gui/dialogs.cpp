@@ -204,7 +204,8 @@ void AcceptDialog::register_text_enter(Control *p_line_edit) {
 }
 
 void AcceptDialog::_update_child_rects() {
-	Size2 dlg_size = get_size();
+	Size2 dlg_size = get_final_transform().affine_inverse().basis_xform(get_size());
+
 	float h_margins = theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT);
 	float v_margins = theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM);
 

@@ -855,7 +855,7 @@ void Input::warp_mouse(const Vector2 &p_position) {
 	warp_mouse_func(p_position);
 }
 
-Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
+Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect, const Transform2D &p_screen_xfrom) {
 	// The relative distance reported for the next event after a warp is in the boundaries of the
 	// size of the rect on that axis, but it may be greater, in which case there's no problem as fmod()
 	// will warp it, but if the pointer has moved in the opposite direction between the pointer relocation
@@ -874,7 +874,7 @@ Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, con
 	const Point2i pos_local = p_motion->get_global_position() - p_rect.position;
 	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
 	if (pos_warped != pos_local) {
-		warp_mouse(pos_warped + p_rect.position);
+		warp_mouse(p_screen_xfrom.basis_xform(pos_warped + p_rect.position));
 	}
 
 	return rel_warped;

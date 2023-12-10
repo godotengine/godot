@@ -317,6 +317,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_font_get_oversampling_cache_capacity" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_get_scale" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -744,6 +749,12 @@
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="oversampling" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_oversampling_cache_capacity" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="oversampling_capacity" type="int" />
 			<description>
 			</description>
 		</method>
