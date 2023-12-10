@@ -2585,6 +2585,11 @@ Variant::Variant(const Dictionary &p_dictionary) :
 	memnew_placement(_data._mem, Dictionary(p_dictionary));
 }
 
+Variant::Variant(std::initializer_list<Variant> p_init) :
+		type(ARRAY) {
+	memnew_placement(_data._mem, Array(p_init));
+}
+
 Variant::Variant(const Array &p_array) :
 		type(ARRAY) {
 	memnew_placement(_data._mem, Array(p_array));
