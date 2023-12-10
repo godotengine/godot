@@ -976,10 +976,10 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		glDisable(GL_BLEND);
 		glDepthMask(GL_FALSE);
 		glDisable(GL_DEPTH_TEST);
+		scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_DISABLED;
 		glDisable(GL_SCISSOR_TEST);
-		glCullFace(GL_BACK);
-		glEnable(GL_CULL_FACE);
-		scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
+		glDisable(GL_CULL_FACE);
+		scene_state.cull_mode = GLES3::SceneShaderData::CULL_DISABLED;
 
 		for (int i = 0; i < 6; i++) {
 			Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
@@ -1000,6 +1000,14 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		sky->reflection_dirty = false;
 	} else {
 		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer < max_processing_layer) {
+			glDisable(GL_BLEND);
+			glDepthMask(GL_FALSE);
+			glDisable(GL_DEPTH_TEST);
+			scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_DISABLED;
+			glDisable(GL_SCISSOR_TEST);
+			glDisable(GL_CULL_FACE);
+			scene_state.cull_mode = GLES3::SceneShaderData::CULL_DISABLED;
+
 			_filter_sky_radiance(sky, sky->processing_layer);
 			sky->processing_layer++;
 		}
