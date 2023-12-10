@@ -113,6 +113,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	bool animation_pingpong = false;
 	bool previous_import_as_skeleton = false;
 	bool previous_rest_as_reset = false;
+	MeshInstance3D *bones_mesh_preview = nullptr;
 
 	Ref<StandardMaterial3D> collider_mat;
 
@@ -190,6 +191,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _material_tree_selected();
 	void _mesh_tree_selected();
 	void _scene_tree_selected();
+	void _skeleton_tree_entered(Skeleton3D *skeleton);
 	void _cleanup();
 	void _on_light_1_switch_pressed();
 	void _on_light_2_switch_pressed();
