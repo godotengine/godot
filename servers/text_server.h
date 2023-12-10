@@ -329,8 +329,10 @@ public:
 	virtual void font_set_variation_coordinates(const RID &p_font_rid, const Dictionary &p_variation_coordinates) = 0;
 	virtual Dictionary font_get_variation_coordinates(const RID &p_font_rid) const = 0;
 
-	virtual void font_set_oversampling(const RID &p_font_rid, double p_oversampling) = 0;
-	virtual double font_get_oversampling(const RID &p_font_rid) const = 0;
+#ifndef DISABLE_DEPRECATED
+	virtual void font_set_oversampling(const RID &p_font_rid, double p_oversampling){};
+	virtual double font_get_oversampling(const RID &p_font_rid) const { return 1.f; };
+#endif
 
 	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const = 0;
 	virtual void font_clear_size_cache(const RID &p_font_rid) = 0;
@@ -418,11 +420,16 @@ public:
 	virtual void font_set_opentype_feature_overrides(const RID &p_font_rid, const Dictionary &p_overrides) = 0;
 	virtual Dictionary font_get_opentype_feature_overrides(const RID &p_font_rid) const = 0;
 
+	virtual int font_get_oversampling_cache_capacity() const = 0;
+	virtual void font_set_oversampling_cache_capacity(int p_oversampling_capacity) = 0;
+
 	virtual Dictionary font_supported_feature_list(const RID &p_font_rid) const = 0;
 	virtual Dictionary font_supported_variation_list(const RID &p_font_rid) const = 0;
 
-	virtual double font_get_global_oversampling() const = 0;
-	virtual void font_set_global_oversampling(double p_oversampling) = 0;
+#ifndef DISABLE_DEPRECATED
+	virtual double font_get_global_oversampling() const { return 1.f; };
+	virtual void font_set_global_oversampling(double p_oversampling){};
+#endif
 
 	virtual Vector2 get_hex_code_box_size(int64_t p_size, int64_t p_index) const;
 	virtual void draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const;

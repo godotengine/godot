@@ -35,6 +35,7 @@
 
 class InputEvent;
 class Shortcut;
+class Control;
 
 class ViewPanner : public RefCounted {
 	GDCLASS(ViewPanner, RefCounted);
@@ -69,6 +70,7 @@ private:
 	Callable zoom_callback;
 
 	ControlScheme control_scheme = SCROLL_ZOOMS;
+	Control *control = nullptr;
 
 public:
 	void set_callbacks(Callable p_pan_callback, Callable p_zoom_callback);
@@ -80,7 +82,7 @@ public:
 	void set_scroll_zoom_factor(float p_scroll_zoom_factor);
 	void set_pan_axis(PanAxis p_pan_axis);
 
-	void setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning);
+	void setup(ControlScheme p_scheme, Control *p_control, Ref<Shortcut> p_shortcut, bool p_simple_panning);
 
 	bool is_panning() const;
 	void set_force_drag(bool p_force);

@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
+#include "scene/gui/control.h"
 
 bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) {
 	Ref<InputEventMouseButton> mb = p_event;
@@ -110,7 +111,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 	if (mm.is_valid()) {
 		if (is_dragging) {
 			if (p_canvas_rect != Rect2()) {
-				pan_callback.call(Input::get_singleton()->warp_mouse_motion(mm, p_canvas_rect), p_event);
+				pan_callback.call(Input::get_singleton()->warp_mouse_motion(mm, p_canvas_rect, control->get_screen_transform()), p_event);
 			} else {
 				pan_callback.call(mm->get_relative(), p_event);
 			}
@@ -206,10 +207,11 @@ void ViewPanner::set_pan_axis(PanAxis p_pan_axis) {
 	pan_axis = p_pan_axis;
 }
 
-void ViewPanner::setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning) {
+void ViewPanner::setup(ControlScheme p_scheme, Control *p_control, Ref<Shortcut> p_shortcut, bool p_simple_panning) {
 	set_control_scheme(p_scheme);
 	set_pan_shortcut(p_shortcut);
 	set_simple_panning_enabled(p_simple_panning);
+	control = p_control;
 }
 
 bool ViewPanner::is_panning() const {

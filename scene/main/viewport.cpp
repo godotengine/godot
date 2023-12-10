@@ -3474,6 +3474,16 @@ Viewport::ScreenSpaceAA Viewport::get_screen_space_aa() const {
 	return screen_space_aa;
 }
 
+void Viewport::set_oversampling_factor(float p_oversampling) {
+	ERR_MAIN_THREAD_GUARD;
+	oversampling_factor = p_oversampling;
+}
+
+float Viewport::get_oversampling_factor() const {
+	ERR_READ_THREAD_GUARD_V(1.f);
+	return oversampling_factor;
+}
+
 void Viewport::set_use_taa(bool p_use_taa) {
 	ERR_MAIN_THREAD_GUARD;
 	if (use_taa == p_use_taa) {
@@ -4662,6 +4672,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_screen_space_aa", "screen_space_aa"), &Viewport::set_screen_space_aa);
 	ClassDB::bind_method(D_METHOD("get_screen_space_aa"), &Viewport::get_screen_space_aa);
 
+	ClassDB::bind_method(D_METHOD("set_oversampling_factor", "oversampling"), &Viewport::set_oversampling_factor);
+	ClassDB::bind_method(D_METHOD("get_oversampling_factor"), &Viewport::get_oversampling_factor);
+
 	ClassDB::bind_method(D_METHOD("set_use_taa", "enable"), &Viewport::set_use_taa);
 	ClassDB::bind_method(D_METHOD("is_using_taa"), &Viewport::is_using_taa);
 
@@ -4823,6 +4836,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Lighting,Overdraw,Wireframe,Normal Buffer,VoxelGI Albedo,VoxelGI Lighting,VoxelGI Emission,Shadow Atlas,Directional Shadow Map,Scene Luminance,SSAO,SSIL,Directional Shadow Splits,Decal Atlas,SDFGI Cascades,SDFGI Probes,VoxelGI/SDFGI Buffer,Disable Mesh LOD,OmniLight3D Cluster,SpotLight3D Cluster,Decal Cluster,ReflectionProbe Cluster,Occlusion Culling Buffer,Motion Vectors,Internal Buffer"), "set_debug_draw", "get_debug_draw");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr_2d"), "set_use_hdr_2d", "is_using_hdr_2d");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling_factor"), "set_oversampling_factor", "get_oversampling_factor");
 
 #ifndef _3D_DISABLED
 	ADD_GROUP("Scaling 3D", "");

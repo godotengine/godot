@@ -313,7 +313,7 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 		}
 	}
 
-	file_options->set_position(owners->get_screen_position() + p_pos);
+	file_options->set_position(owners->get_final_transform().xform(p_pos));
 	file_options->reset_size();
 	file_options->popup();
 }
@@ -731,7 +731,8 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
 	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	set_min_size(Size2(500, 220) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(500 * EDSCALE, 220 * EDSCALE));
+	set_min_size(popup_size);
 	set_ok_button_text(TTR("Open Anyway"));
 	set_cancel_button_text(TTR("Close"));
 

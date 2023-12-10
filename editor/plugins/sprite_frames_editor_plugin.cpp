@@ -271,7 +271,7 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 
 	const Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::MIDDLE)) {
-		const Vector2 dragged = Input::get_singleton()->warp_mouse_motion(mm, split_sheet_scroll->get_global_rect());
+		const Vector2 dragged = Input::get_singleton()->warp_mouse_motion(mm, split_sheet_scroll->get_global_rect(), get_screen_transform());
 		split_sheet_scroll->set_h_scroll(split_sheet_scroll->get_h_scroll() - dragged.x);
 		split_sheet_scroll->set_v_scroll(split_sheet_scroll->get_v_scroll() - dragged.y);
 	}

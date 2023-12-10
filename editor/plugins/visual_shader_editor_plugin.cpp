@@ -3023,7 +3023,7 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 
 	Button *button = Object::cast_to<Button>(p_button);
 	if (button) {
-		property_editor_popup->set_position(button->get_screen_position() + Vector2(0, button->get_size().height) * graph->get_zoom());
+		property_editor_popup->set_position(button->get_final_transform().xform(Vector2(0, button->get_size().height) * graph->get_zoom()));
 	}
 	property_editor_popup->reset_size();
 	if (button) {
@@ -4523,7 +4523,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		menu_point = graph->get_local_mouse_position();
-		Point2 gpos = get_screen_position() + get_local_mouse_position();
+		Point2 gpos = get_final_transform().xform(get_local_mouse_position());
 
 		Ref<GraphEdit::Connection> closest_connection = graph->get_closest_connection_at_point(menu_point);
 		if (closest_connection.is_valid()) {
@@ -4656,11 +4656,11 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 		saved_node_pos_dirty = true;
 		saved_node_pos = graph->get_local_mouse_position();
 
-		Point2 gpos = get_screen_position() + get_local_mouse_position();
+		Point2 gpos = get_final_transform().xform(get_local_mouse_position());
 		members_dialog->set_position(gpos);
 	} else {
 		saved_node_pos_dirty = false;
-		members_dialog->set_position(graph->get_screen_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
+		members_dialog->set_position(graph->get_final_transform().xform(Point2(5 * EDSCALE, 65 * EDSCALE)));
 	}
 
 	if (members_dialog->is_visible()) {
@@ -4696,7 +4696,8 @@ void VisualShaderEditor::_varying_menu_id_pressed(int p_idx) {
 void VisualShaderEditor::_show_add_varying_dialog() {
 	_varying_name_changed(varying_name->get_text());
 
-	add_varying_dialog->set_position(graph->get_screen_position() + varying_button->get_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
+	float dpi_scale = get_window()->get_dpi_scale();
+	add_varying_dialog->set_position(graph->get_screen_position() + (varying_button->get_position() + Point2(5 * EDSCALE, 65 * EDSCALE)) * dpi_scale);
 	add_varying_dialog->popup();
 
 	// Keep dialog within window bounds.
@@ -4707,7 +4708,8 @@ void VisualShaderEditor::_show_add_varying_dialog() {
 }
 
 void VisualShaderEditor::_show_remove_varying_dialog() {
-	remove_varying_dialog->set_position(graph->get_screen_position() + varying_button->get_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
+	float dpi_scale = get_window()->get_dpi_scale();
+	remove_varying_dialog->set_position(graph->get_screen_position() + (varying_button->get_position() + Point2(5 * EDSCALE, 65 * EDSCALE)) * dpi_scale);
 	remove_varying_dialog->popup();
 
 	// Keep dialog within window bounds.
@@ -4733,7 +4735,7 @@ void VisualShaderEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
-				graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+				graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), this, ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 				graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
 			}
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors")) {
@@ -4761,7 +4763,7 @@ void VisualShaderEditor::_notification(int p_what) {
 				category = category->get_next();
 			}
 
-			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), this, ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
 		} break;
 
@@ -5585,13 +5587,13 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 			_detach_nodes_from_frame_request();
 			break;
 		case NodeMenuOptions::SET_FRAME_TITLE:
-			_frame_title_popup_show(get_screen_position() + get_local_mouse_position(), selected_frame);
+			_frame_title_popup_show(get_final_transform().xform(get_local_mouse_position()), selected_frame);
 			break;
 		case NodeMenuOptions::ENABLE_FRAME_COLOR:
 			_frame_color_enabled_changed(selected_frame);
 			break;
 		case NodeMenuOptions::SET_FRAME_COLOR:
-			_frame_color_popup_show(get_screen_position() + get_local_mouse_position(), selected_frame);
+			_frame_color_popup_show(get_final_transform().xform(get_local_mouse_position()), selected_frame);
 			break;
 		case NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK:
 			_frame_autoshrink_enabled_changed(selected_frame);
@@ -5744,7 +5746,8 @@ void VisualShaderEditor::_show_preview_text() {
 	preview_showed = !preview_showed;
 	if (preview_showed) {
 		if (preview_first) {
-			preview_window->set_size(Size2(400 * EDSCALE, 600 * EDSCALE));
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(400 * EDSCALE, 600 * EDSCALE));
+			preview_window->set_size(popup_size);
 			preview_window->popup_centered();
 			preview_first = false;
 		} else {
@@ -6975,7 +6978,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph_plugin->set_editor(this);
 
 	property_editor_popup = memnew(PopupPanel);
-	property_editor_popup->set_min_size(Size2(360, 0) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(180 * EDSCALE, 0));
+	property_editor_popup->set_min_size(popup_size);
 	add_child(property_editor_popup);
 
 	edited_property_holder.instantiate();

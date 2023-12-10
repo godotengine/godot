@@ -240,7 +240,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		} break;
 
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
-			outline_dialog->popup_centered(Vector2(200, 90));
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(200 * EDSCALE, 90 * EDSCALE));
+			outline_dialog->popup_centered(popup_size);
 		} break;
 		case MENU_OPTION_CREATE_DEBUG_TANGENTS: {
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();

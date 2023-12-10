@@ -212,7 +212,8 @@ void EditorCommandPalette::open_popup() {
 	if (was_showed) {
 		popup(prev_rect);
 	} else {
-		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
+		Size2i popup_size = get_final_transform().basis_xform(Vector2i(600 * EDSCALE, 440 * EDSCALE));
+		popup_centered_clamped(popup_size, 0.8f);
 	}
 
 	command_search_box->clear();

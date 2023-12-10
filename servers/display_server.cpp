@@ -861,12 +861,15 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_display_cutouts"), &DisplayServer::get_display_cutouts);
 	ClassDB::bind_method(D_METHOD("get_display_safe_area"), &DisplayServer::get_display_safe_area);
 
+	ClassDB::bind_method(D_METHOD("get_screen_coordiantes_unit"), &DisplayServer::get_screen_coordiantes_unit);
+
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &DisplayServer::get_screen_count);
 	ClassDB::bind_method(D_METHOD("get_primary_screen"), &DisplayServer::get_primary_screen);
 	ClassDB::bind_method(D_METHOD("get_keyboard_focus_screen"), &DisplayServer::get_keyboard_focus_screen);
 	ClassDB::bind_method(D_METHOD("get_screen_from_rect", "rect"), &DisplayServer::get_screen_from_rect);
 	ClassDB::bind_method(D_METHOD("screen_get_position", "screen"), &DisplayServer::screen_get_position, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_size", "screen"), &DisplayServer::screen_get_size, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("screen_get_size_in_pixels", "screen"), &DisplayServer::screen_get_size_in_pixels, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_usable_rect", "screen"), &DisplayServer::screen_get_usable_rect, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_dpi", "screen"), &DisplayServer::screen_get_dpi, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_scale", "screen"), &DisplayServer::screen_get_scale, DEFVAL(SCREEN_OF_MAIN_WINDOW));
@@ -902,6 +905,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_set_position", "position", "window_id"), &DisplayServer::window_set_position, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_get_size", "window_id"), &DisplayServer::window_get_size, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_scale", "window_id"), &DisplayServer::window_get_scale, DEFVAL(MAIN_WINDOW_ID));
+
 	ClassDB::bind_method(D_METHOD("window_set_size", "size", "window_id"), &DisplayServer::window_set_size, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_rect_changed_callback", "callback", "window_id"), &DisplayServer::window_set_rect_changed_callback, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_window_event_callback", "callback", "window_id"), &DisplayServer::window_set_window_event_callback, DEFVAL(MAIN_WINDOW_ID));
@@ -917,6 +922,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_get_min_size", "window_id"), &DisplayServer::window_get_min_size, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_min_size", "min_size", "window_id"), &DisplayServer::window_set_min_size, DEFVAL(MAIN_WINDOW_ID));
 
+	ClassDB::bind_method(D_METHOD("window_get_size_in_pixels", "window_id"), &DisplayServer::window_get_size_in_pixels, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_size_with_decorations", "window_id"), &DisplayServer::window_get_size_with_decorations, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_get_mode", "window_id"), &DisplayServer::window_get_mode, DEFVAL(MAIN_WINDOW_ID));
@@ -1023,6 +1029,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_HELP);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_INPUT);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE);
+	BIND_ENUM_CONSTANT(FEATURE_DPI_SCALING);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -1046,6 +1053,9 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCREEN_SENSOR_LANDSCAPE);
 	BIND_ENUM_CONSTANT(SCREEN_SENSOR_PORTRAIT);
 	BIND_ENUM_CONSTANT(SCREEN_SENSOR);
+
+	BIND_ENUM_CONSTANT(SCREEN_COORDS_UNIT_DEVICE_PIXEL);
+	BIND_ENUM_CONSTANT(SCREEN_COORDS_UNIT_DPI_ADJUSTED_PIXEL);
 
 	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_DEFAULT);
 	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_MULTILINE);

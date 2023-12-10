@@ -97,7 +97,9 @@ void VersionControlEditorPlugin::popup_vcs_set_up_dialog(const Control *p_gui_ba
 
 		_populate_available_vcs_names();
 
-		set_up_dialog->popup_centered_clamped(popup_size * EDSCALE);
+		popup_size = get_window()->get_final_transform().xform(Rect2i(Vector2i(), popup_size * EDSCALE)).size;
+
+		set_up_dialog->popup_centered_clamped(popup_size);
 	} else {
 		// TODO: Give info to user on how to fix this error.
 		EditorNode::get_singleton()->show_warning(TTR("No VCS plugins are available in the project. Install a VCS plugin to use VCS integration features."), TTR("Error"));
@@ -944,7 +946,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	metadata_dialog = memnew(ConfirmationDialog);
 	metadata_dialog->set_title(TTR("Create Version Control Metadata"));
-	metadata_dialog->set_min_size(Size2(200, 40));
+	Size2i popup_size = Vector2i(200, 40);
+	metadata_dialog->set_min_size(popup_size);
 	metadata_dialog->get_ok_button()->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_create_vcs_metadata_files));
 	EditorInterface::get_singleton()->get_base_control()->add_child(metadata_dialog);
 
@@ -972,7 +975,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_dialog = memnew(AcceptDialog);
 	set_up_dialog->set_title(TTR("Local Settings"));
-	set_up_dialog->set_min_size(Size2(600, 100));
+	popup_size = Vector2i(600 * EDSCALE, 100 * EDSCALE);
+	set_up_dialog->set_min_size(popup_size);
 	set_up_dialog->add_cancel_button("Cancel");
 	set_up_dialog->set_hide_on_ok(true);
 	EditorInterface::get_singleton()->get_base_control()->add_child(set_up_dialog);
@@ -1172,7 +1176,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	discard_all_confirm = memnew(AcceptDialog);
 	discard_all_confirm->set_title(TTR("Discard all changes"));
-	discard_all_confirm->set_min_size(Size2i(400, 50));
+	popup_size = Vector2i(400, 50);
+	discard_all_confirm->set_min_size(popup_size);
 	discard_all_confirm->set_text(TTR("This operation is IRREVERSIBLE. Your changes will be deleted FOREVER."));
 	discard_all_confirm->set_hide_on_ok(true);
 	discard_all_confirm->set_ok_button_text(TTR("Permanentally delete my changes"));
@@ -1317,7 +1322,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	branch_create_confirm = memnew(AcceptDialog);
 	branch_create_confirm->set_title(TTR("Create New Branch"));
-	branch_create_confirm->set_min_size(Size2(400, 100));
+	popup_size = Vector2i(400, 100);
+	branch_create_confirm->set_min_size(popup_size);
 	branch_create_confirm->set_hide_on_ok(true);
 	version_commit_dock->add_child(branch_create_confirm);
 
@@ -1362,7 +1368,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	remote_create_confirm = memnew(AcceptDialog);
 	remote_create_confirm->set_title(TTR("Create New Remote"));
-	remote_create_confirm->set_min_size(Size2(400, 100));
+	remote_create_confirm->set_min_size(popup_size);
 	remote_create_confirm->set_hide_on_ok(true);
 	version_commit_dock->add_child(remote_create_confirm);
 

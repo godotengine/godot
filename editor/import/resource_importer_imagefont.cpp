@@ -113,7 +113,6 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	font->set_force_autohinter(false);
 	font->set_allow_system_fallback(false);
 	font->set_hinting(TextServer::HINTING_NONE);
-	font->set_oversampling(1.0f);
 	font->set_fallbacks(fallbacks);
 	font->set_texture_image(0, Vector2i(chr_height, 0), 0, img);
 	font->set_fixed_size_scale_mode(smode);

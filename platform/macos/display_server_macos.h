@@ -180,7 +180,6 @@ private:
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
-	float display_max_scale = 1.f;
 	Point2i origin;
 	bool displays_arrangement_dirty = true;
 	bool is_resizing = false;
@@ -311,11 +310,14 @@ public:
 	virtual bool clipboard_has() const override;
 	virtual bool clipboard_has_image() const override;
 
+	virtual ScreenCoordinatesUnit get_screen_coordiantes_unit() const override { return SCREEN_COORDS_UNIT_DPI_ADJUSTED_PIXEL; }
+
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
 	virtual int get_keyboard_focus_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Size2i screen_get_size_in_pixels(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_max_scale() const override;
@@ -364,7 +366,9 @@ public:
 
 	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Size2i window_get_size_in_pixels(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual float window_get_scale(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;

@@ -135,9 +135,12 @@ void CanvasItem::_redraw_callback() {
 		return;
 	}
 
-	RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
+	RID ci = get_canvas_item();
+	RenderingServer::get_singleton()->canvas_item_clear(ci);
 	//todo updating = true - only allow drawing here
 	if (is_visible_in_tree()) {
+		RenderingServer::get_singleton()->canvas_item_set_oversampling_factor(ci, get_viewport()->get_oversampling_factor());
+
 		drawing = true;
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
@@ -165,6 +168,12 @@ Transform2D CanvasItem::get_screen_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
 	return get_viewport()->get_popup_base_transform() * get_global_transform_with_canvas();
+}
+
+Transform2D CanvasItem::get_final_transform() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
+	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
+	return get_viewport()->get_final_transform() * get_global_transform_with_canvas();
 }
 
 Transform2D CanvasItem::get_global_transform() const {

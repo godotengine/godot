@@ -1023,6 +1023,9 @@
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 			Maximum undo/redo history size for [TextEdit] fields.
 		</member>
+		<member name="gui/common/use_dpi_scaling" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], GUI is automatically scaled to match screen DPI.
+		</member>
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">

@@ -208,10 +208,12 @@ public:
 	GDVIRTUAL2(_font_set_variation_coordinates, RID, Dictionary);
 	GDVIRTUAL1RC(Dictionary, _font_get_variation_coordinates, RID);
 
+#ifndef DISABLE_DEPRECATED
 	virtual void font_set_oversampling(const RID &p_font_rid, double p_oversampling) override;
 	virtual double font_get_oversampling(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_oversampling, RID, double);
 	GDVIRTUAL1RC(double, _font_get_oversampling, RID);
+#endif
 
 	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const override;
 	virtual void font_clear_size_cache(const RID &p_font_rid) override;
@@ -363,15 +365,22 @@ public:
 	GDVIRTUAL2(_font_set_opentype_feature_overrides, RID, const Dictionary &);
 	GDVIRTUAL1RC(Dictionary, _font_get_opentype_feature_overrides, RID);
 
+	virtual int font_get_oversampling_cache_capacity() const override;
+	virtual void font_set_oversampling_cache_capacity(int p_oversampling_capacity) override;
+	GDVIRTUAL0RC(int, _font_get_oversampling_cache_capacity);
+	GDVIRTUAL1(_font_set_oversampling_cache_capacity, int);
+
 	virtual Dictionary font_supported_feature_list(const RID &p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(const RID &p_font_rid) const override;
 	GDVIRTUAL1RC(Dictionary, _font_supported_feature_list, RID);
 	GDVIRTUAL1RC(Dictionary, _font_supported_variation_list, RID);
 
+#ifndef DISABLE_DEPRECATED
 	virtual double font_get_global_oversampling() const override;
 	virtual void font_set_global_oversampling(double p_oversampling) override;
 	GDVIRTUAL0RC(double, _font_get_global_oversampling);
 	GDVIRTUAL1(_font_set_global_oversampling, double);
+#endif
 
 	virtual Vector2 get_hex_code_box_size(int64_t p_size, int64_t p_index) const override;
 	virtual void draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const override;

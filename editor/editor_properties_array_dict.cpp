@@ -240,9 +240,9 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
 	Button *button = Object::cast_to<Button>(p_button);
 	changing_type_index = p_slot_index;
-	Rect2 rect = button->get_screen_rect();
+	Point2 position = button->get_final_transform().xform(button->get_size() - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->reset_size();
-	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
+	change_type->set_position(position);
 	change_type->popup();
 }
 
@@ -866,13 +866,12 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 
 void EditorPropertyDictionary::_change_type(Object *p_button, int p_slot_index) {
 	Button *button = Object::cast_to<Button>(p_button);
-	int index = slots[p_slot_index].index;
-	Rect2 rect = button->get_screen_rect();
-	change_type->set_item_disabled(change_type->get_item_index(Variant::VARIANT_MAX), index < 0);
+	Point2 position = button->get_final_transform().xform(button->get_size() - Vector2(change_type->get_contents_minimum_size().x, 0));
+	change_type->set_item_disabled(change_type->get_item_index(Variant::VARIANT_MAX), p_slot_index < 0);
 	change_type->reset_size();
-	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
+	change_type->set_position(position);
 	change_type->popup();
-	changing_type_index = index;
+	changing_type_index = p_slot_index;
 }
 
 void EditorPropertyDictionary::_add_key_value() {

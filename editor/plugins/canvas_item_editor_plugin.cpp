@@ -2351,7 +2351,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 				selection_results_menu = selection_results;
 				selection_menu_additive_selection = b->is_shift_pressed();
-				selection_menu->set_position(viewport->get_screen_transform().xform(b->get_position()));
+				selection_menu->set_position(viewport->get_final_transform().xform(b->get_position()));
 				selection_menu->reset_size();
 				selection_menu->popup();
 				return true;
@@ -2376,7 +2376,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			}
 
 			add_node_menu->reset_size();
-			add_node_menu->set_position(viewport->get_screen_transform().xform(b->get_position()));
+			add_node_menu->set_position(viewport->get_final_transform().xform(b->get_position()));
 			add_node_menu->popup();
 			node_create_position = transform.affine_inverse().xform(b->get_position());
 			return true;
@@ -3953,7 +3953,7 @@ void CanvasItemEditor::_update_editor_settings() {
 
 	context_toolbar_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 
-	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), this, ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 	panner->set_scroll_speed(EDITOR_GET("editors/panning/2d_editor_pan_speed"));
 	warped_panning = bool(EDITOR_GET("editors/panning/warped_mouse_panning"));
 }
@@ -4442,8 +4442,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_pixel);
 		} break;
 		case SNAP_CONFIGURE: {
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(320 * EDSCALE, 160 * EDSCALE));
 			static_cast<SnapDialog *>(snap_dialog)->set_fields(grid_offset, grid_step, primary_grid_step, snap_rotation_offset, snap_rotation_step, snap_scale_step);
-			snap_dialog->popup_centered(Size2(320, 160) * EDSCALE);
+			snap_dialog->popup_centered(popup_size);
 		} break;
 		case SKELETON_SHOW_BONES: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -5608,7 +5609,8 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);
-	selection_menu->set_min_size(Vector2(100, 0));
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(100, 0));
+	selection_menu->set_min_size(popup_size);
 	selection_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	selection_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_selection_result_pressed));
 	selection_menu->connect("popup_hide", callable_mp(this, &CanvasItemEditor::_selection_menu_hide), CONNECT_DEFERRED);

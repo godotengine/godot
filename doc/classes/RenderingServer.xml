@@ -424,6 +424,13 @@
 				[b]Note:[/b] The equivalent node is [CanvasItem].
 			</description>
 		</method>
+		<method name="canvas_item_get_oversampling_factor" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="item" type="RID" />
+			<description>
+				Returns font oversampling factor for the canvas item.
+			</description>
+		</method>
 		<method name="canvas_item_reset_physics_interpolation">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -542,6 +549,15 @@
 			<param index="1" name="color" type="Color" />
 			<description>
 				Multiplies the color of the canvas item specified by the [param item] RID, while affecting its children. See also [method canvas_item_set_self_modulate]. Equivalent to [member CanvasItem.modulate].
+			</description>
+		</method>
+		<method name="canvas_item_set_oversampling_factor">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="oversampling" type="float" />
+			<description>
+				Sets font oversampling factor for the canvas item.
+				[b]Note:[/b] This value is automatically set by viewport.
 			</description>
 		</method>
 		<method name="canvas_item_set_parent">

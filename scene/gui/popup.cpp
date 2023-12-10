@@ -229,9 +229,10 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 }
 
 void PopupPanel::_update_child_rects() {
+	Size2 dlg_size = get_final_transform().affine_inverse().basis_xform(get_size());
+
 	Vector2 cpos(theme_cache.panel_style->get_offset());
-	Vector2 panel_size = Vector2(get_size()) / get_content_scale_factor();
-	Vector2 csize = panel_size - theme_cache.panel_style->get_minimum_size();
+	Vector2 csize(dlg_size - theme_cache.panel_style->get_minimum_size());
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -245,7 +246,7 @@ void PopupPanel::_update_child_rects() {
 
 		if (c == panel) {
 			c->set_position(Vector2());
-			c->set_size(panel_size);
+			c->set_size(dlg_size);
 		} else {
 			c->set_position(cpos);
 			c->set_size(csize);

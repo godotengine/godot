@@ -142,6 +142,7 @@ public:
 		FEATURE_NATIVE_HELP,
 		FEATURE_NATIVE_DIALOG_INPUT,
 		FEATURE_NATIVE_DIALOG_FILE,
+		FEATURE_DPI_SCALING,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -314,12 +315,19 @@ public:
 		}
 	}
 
+	enum ScreenCoordinatesUnit {
+		SCREEN_COORDS_UNIT_DEVICE_PIXEL,
+		SCREEN_COORDS_UNIT_DPI_ADJUSTED_PIXEL,
+	};
+	virtual ScreenCoordinatesUnit get_screen_coordiantes_unit() const { return SCREEN_COORDS_UNIT_DEVICE_PIXEL; }
+
 	virtual int get_screen_count() const = 0;
 	virtual int get_primary_screen() const = 0;
 	virtual int get_keyboard_focus_screen() const { return get_primary_screen(); }
 	virtual int get_screen_from_rect(const Rect2 &p_rect) const;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
+	virtual Size2i screen_get_size_in_pixels(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return screen_get_size(p_screen); };
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
@@ -444,7 +452,9 @@ public:
 
 	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const = 0;
+	virtual Size2i window_get_size_in_pixels(WindowID p_window = MAIN_WINDOW_ID) const { return window_get_size(p_window); };
 	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const = 0;
+	virtual float window_get_scale(WindowID p_window = MAIN_WINDOW_ID) const { return screen_get_scale(window_get_current_screen(p_window)); };
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const = 0;
@@ -594,6 +604,7 @@ VARIANT_ENUM_CAST(DisplayServer::WindowEvent)
 VARIANT_ENUM_CAST(DisplayServer::Feature)
 VARIANT_ENUM_CAST(DisplayServer::MouseMode)
 VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)
+VARIANT_ENUM_CAST(DisplayServer::ScreenCoordinatesUnit)
 VARIANT_ENUM_CAST(DisplayServer::WindowMode)
 VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
 VARIANT_ENUM_CAST(DisplayServer::HandleType)

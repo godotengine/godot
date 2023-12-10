@@ -781,7 +781,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
 		_update_popup();
-		menu->set_position(get_screen_position() + get_local_mouse_position());
+		menu->set_position(get_final_transform().xform(get_local_mouse_position()));
 		menu->reset_size();
 		menu->popup();
 		select();
@@ -1269,7 +1269,7 @@ void EditorInspectorCategory::gui_input(const Ref<InputEvent> &p_event) {
 
 	menu->set_item_disabled(menu->get_item_index(MENU_OPEN_DOCS), !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
 
-	menu->set_position(get_screen_position() + mb_event->get_position());
+	menu->set_position(get_final_transform().xform(mb_event->get_position()));
 	menu->reset_size();
 	menu->popup();
 }
@@ -1711,13 +1711,14 @@ void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
 		case OPTION_CLEAR_ARRAY:
 			_clear_array();
 			break;
-		case OPTION_RESIZE_ARRAY:
+		case OPTION_RESIZE_ARRAY: {
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(250 * EDSCALE, 0));
 			new_size_spin_box->set_value(count);
 			resize_dialog->get_ok_button()->set_disabled(true);
-			resize_dialog->popup_centered(Size2(250, 0) * EDSCALE);
+			resize_dialog->popup_centered(popup_size);
 			new_size_spin_box->get_line_edit()->grab_focus();
 			new_size_spin_box->get_line_edit()->select_all();
-			break;
+		} break;
 		default:
 			break;
 	}
@@ -1784,7 +1785,7 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 			popup_array_index_pressed = begin_array_index + p_index;
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
-			rmb_popup->set_position(get_screen_position() + mb->get_position());
+			rmb_popup->set_position(get_final_transform().xform(mb->get_position()));
 			rmb_popup->reset_size();
 			rmb_popup->popup();
 		}

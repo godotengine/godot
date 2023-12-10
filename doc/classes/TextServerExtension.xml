@@ -413,6 +413,11 @@
 				Returns font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
 			</description>
 		</method>
+		<method name="_font_get_oversampling_cache_capacity" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_get_scale" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -969,6 +974,12 @@
 			<description>
 				[b]Optional.[/b]
 				Sets font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="_font_set_oversampling_cache_capacity" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="oversampling_capacity" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="_font_set_scale" qualifiers="virtual">

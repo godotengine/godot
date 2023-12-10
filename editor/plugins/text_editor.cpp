@@ -529,7 +529,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			}
 
 			if (!mb->is_pressed()) {
-				_make_context_menu(tx->has_selection(), can_fold, is_folded, get_local_mouse_position());
+				_make_context_menu(tx->has_selection(), can_fold, is_folded, tx->get_local_mouse_position());
 			}
 		}
 	}
@@ -581,7 +581,7 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_UNDO), !tx->has_undo());
 	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_REDO), !tx->has_redo());
 
-	context_menu->set_position(get_screen_position() + p_position);
+	context_menu->set_position(tx->get_final_transform().xform(p_position));
 	context_menu->reset_size();
 	context_menu->popup();
 }

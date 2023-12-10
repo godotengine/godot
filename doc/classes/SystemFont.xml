@@ -52,8 +52,8 @@
 		<member name="multichannel_signed_distance_field" type="bool" setter="set_multichannel_signed_distance_field" getter="is_multichannel_signed_distance_field" default="false">
 			If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
 		</member>
-		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
-			Font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead.
+		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="1.0" deprecated="">
+			[i]Deprecated.[/i] This member does nothing. Use [member Viewport.oversampling_factor] instead.
 		</member>
 		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
 			Font glyph subpixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.

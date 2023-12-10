@@ -101,6 +101,12 @@
 				The value returned by this method can be overridden with [method _get_contents_minimum_size].
 			</description>
 		</method>
+		<method name="get_dpi_scale" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns window DPI scaling factor.
+			</description>
+		</method>
 		<method name="get_flag" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="flag" type="int" enum="Window.Flags" />
@@ -120,10 +126,16 @@
 				Returns the window's position including its border.
 			</description>
 		</method>
+		<method name="get_size_in_pixels" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Return the window's size in pixels.
+			</description>
+		</method>
 		<method name="get_size_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
-				Returns the window's size including its border.
+				Returns the window's size including its border (in screen coordinates).
 			</description>
 		</method>
 		<method name="get_theme_color" qualifiers="const">
@@ -345,10 +357,10 @@
 				Returns [code]true[/code] if the window can be maximized (the maximize button is enabled).
 			</description>
 		</method>
-		<method name="is_using_font_oversampling" qualifiers="const">
+		<method name="is_using_font_oversampling" qualifiers="const" deprecated="">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if font oversampling is enabled. See [method set_use_font_oversampling].
+				[i]Deprecated.[/i] This function does nothing.
 			</description>
 		</method>
 		<method name="move_to_center">
@@ -367,14 +379,14 @@
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
-				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size. Fails if called on the main window.
+				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size and position (in screen coordinates). Fails if called on the main window.
 			</description>
 		</method>
 		<method name="popup_centered">
 			<return type="void" />
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<description>
-				Popups the [Window] at the center of the current screen, with optionally given minimum size. If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
+				Popups the [Window] at the center of the current screen, with optionally given minimum size (in screen coordinates). If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
@@ -445,7 +457,7 @@
 			<return type="void" />
 			<param index="0" name="parent_rect" type="Rect2i" />
 			<description>
-				Popups the [Window] with a position shifted by parent [Window]'s position. If the [Window] is embedded, has the same effect as [method popup].
+				Popups the [Window] with a position shifted by parent [Window]'s position (in screen coordinates). If the [Window] is embedded, has the same effect as [method popup].
 			</description>
 		</method>
 		<method name="remove_theme_color_override">
@@ -521,7 +533,7 @@
 			<return type="void" />
 			<param index="0" name="position" type="Vector2i" />
 			<description>
-				Moves IME to the given position.
+				Sets the position (in screen coordinates) of the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] popup for the window. Only effective if [method set_ime_active] was set to [code]true[/code] for the window.
 			</description>
 		</method>
 		<method name="set_layout_direction">
@@ -543,7 +555,7 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				Enables font oversampling. This makes fonts look better when they are scaled up.
+				[i]Deprecated.[/i] This function does nothing.
 			</description>
 		</method>
 		<method name="show">
@@ -600,11 +612,11 @@
 			If [code]true[/code], the [Window] width is expanded to keep the title bar text fully visible.
 		</member>
 		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
-			If non-zero, the [Window] can't be resized to be bigger than this size.
+			If non-zero, the [Window] can't be resized to be bigger than this size (in screen coordinates).
 			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].
 		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
-			If non-zero, the [Window] can't be resized to be smaller than this size.
+			If non-zero, the [Window] can't be resized to be smaller than this size (in screen coordinates).
 			[b]Note:[/b] This property will be ignored in favor of [method get_contents_minimum_size] if [member wrap_controls] is enabled and if its size is bigger.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
@@ -618,7 +630,7 @@
 			[b]Note:[/b] This property only works with native windows.
 		</member>
 		<member name="mouse_passthrough_polygon" type="PackedVector2Array" setter="set_mouse_passthrough_polygon" getter="get_mouse_passthrough_polygon" default="PackedVector2Array()">
-			Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+			Sets a polygonal region (in screen coordinates) of the window which accepts mouse events. Mouse events outside the region will be passed through.
 			Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
 			[codeblocks]
 			[gdscript]
@@ -650,12 +662,12 @@
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
-			The window's position in pixels.
+			The window's position (in screen or embedder viewport coordinates).
 			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]true[/code], the window's position is in the coordinates of its parent [Viewport].
 			[b]Note:[/b] This property only works if [member initial_position] is set to [constant WINDOW_INITIAL_POSITION_ABSOLUTE].
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
-			The window's size in pixels.
+			The window's size (in screen or embedder viewport coordinates).
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.

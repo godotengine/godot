@@ -177,10 +177,9 @@ void EditorResourcePicker::_file_quick_selected() {
 void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
-	Rect2 gt = edit_button->get_screen_rect();
-	edit_menu->reset_size();
 	int ms = edit_menu->get_contents_minimum_size().width;
-	Vector2 popup_pos = gt.get_end() - Vector2(ms, 0);
+	Vector2i popup_pos = edit_button->get_final_transform().xform(edit_button->get_size() - Vector2(ms, 0));
+	edit_menu->reset_size();
 	edit_menu->set_position(popup_pos);
 	edit_menu->popup();
 }
@@ -393,7 +392,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			_gather_resources_to_duplicate(edited_resource, root);
 
 			duplicate_resources_dialog->reset_size();
-			duplicate_resources_dialog->popup_centered(Vector2(500, 400) * EDSCALE);
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(500 * EDSCALE, 400 * EDSCALE));
+			duplicate_resources_dialog->popup_centered(popup_size);
 		} break;
 
 		case OBJ_MENU_SAVE: {
@@ -536,7 +536,7 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 		if (edited_resource.is_valid() || is_editable()) {
 			_update_menu_items();
 
-			Vector2 pos = get_screen_position() + mb->get_position();
+			Vector2 pos = get_final_transform().xform(mb->get_position());
 			edit_menu->reset_size();
 			edit_menu->set_position(pos);
 			edit_menu->popup();

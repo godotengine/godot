@@ -194,7 +194,8 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 		}
 	}
 
-	emission_dialog->popup_centered(Size2(300, 130));
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(300 * EDSCALE, 130 * EDSCALE));
+	emission_dialog->popup_centered(popup_size);
 }
 
 void GPUParticles3DEditorBase::_bind_methods() {

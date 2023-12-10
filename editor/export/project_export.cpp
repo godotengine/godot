@@ -1004,6 +1004,7 @@ void ProjectExportDialog::_tree_popup_edited(bool p_arrow_clicked) {
 	Rect2 bounds = include_files->get_custom_popup_rect();
 	bounds.position += get_global_canvas_transform().get_origin();
 	bounds.size *= get_global_canvas_transform().get_scale();
+	bounds = get_final_transform().xform(bounds);
 	if (!is_embedding_subwindows()) {
 		bounds.position += get_position();
 	}
@@ -1148,8 +1149,9 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 
 void ProjectExportDialog::_export_all_dialog() {
 #ifndef ANDROID_ENABLED
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(300 * EDSCALE, 0));
 	export_all_dialog->show();
-	export_all_dialog->popup_centered(Size2(300, 80));
+	export_all_dialog->popup_centered(popup_size);
 #endif
 }
 

@@ -128,7 +128,7 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			// Context menu.
 			_update_context_menu();
 
-			scene_tabs_context_menu->set_position(scene_tabs->get_screen_position() + mb->get_position());
+			scene_tabs_context_menu->set_position(scene_tabs->get_final_transform().xform(mb->get_position()));
 			scene_tabs_context_menu->reset_size();
 			scene_tabs_context_menu->popup();
 		}

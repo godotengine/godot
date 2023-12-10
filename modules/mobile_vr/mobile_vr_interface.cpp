@@ -436,7 +436,7 @@ Size2 MobileVRInterface::get_render_target_size() {
 	_THREAD_SAFE_METHOD_
 
 	// we use half our window size
-	Size2 target_size = DisplayServer::get_singleton()->window_get_size();
+	Size2 target_size = DisplayServer::get_singleton()->window_get_size_in_pixels();
 
 	target_size.x *= 0.5 * oversample;
 	target_size.y *= oversample;

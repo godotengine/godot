@@ -48,7 +48,8 @@ void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
 	// Add 1 because text_editor->get_caret_line() starts from 0, but the editor user interface starts from 1.
 	line->set_text(itos(text_editor->get_caret_line() + 1));
 	line->select_all();
-	popup_centered(Size2(180, 80) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(180 * EDSCALE, 80 * EDSCALE));
+	popup_centered(popup_size);
 	line->grab_focus();
 }
 

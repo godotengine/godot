@@ -708,6 +708,9 @@
 			If [code]true[/code], embed modal windows such as docks inside the main editor window. When single-window mode is enabled, tooltips will also be embedded inside the main editor window, which means they can't be displayed outside of the editor window.
 			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
 		</member>
+		<member name="interface/editor/ui_dpi_scaling" type="bool" setter="" getter="">
+			If [code]true[/code], editor GUI is automatically scaled to match screen DPI.
+		</member>
 		<member name="interface/editor/ui_layout_direction" type="int" setter="" getter="">
 			Editor UI default layout direction.
 		</member>

@@ -215,12 +215,12 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
-				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), this, ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), this, ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1023,7 +1023,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		menu_insert_key = mb->get_position();
 		if (menu_insert_key.x >= limit && menu_insert_key.x <= get_size().width) {
 			if (!read_only) {
-				Vector2 popup_pos = get_screen_position() + mb->get_position();
+				Vector2 popup_pos = get_final_transform().xform(mb->get_position());
 
 				bool selected = _try_select_at_ui_pos(mb->get_position(), mb->is_shift_pressed(), false);
 

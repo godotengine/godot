@@ -947,9 +947,9 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
 }
 
 void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_pressed() {
-	Size2 size = tile_data_editor_dropdown_button->get_size();
-	tile_data_editors_popup->set_position(tile_data_editor_dropdown_button->get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
-	tile_data_editors_popup->set_size(Size2(size.width, 0));
+	Rect2i popup_rect = tile_data_editor_dropdown_button->get_final_transform().xform(Rect2i(Vector2i(0, get_size().height * get_global_transform().get_scale().y), tile_data_editor_dropdown_button->get_size()));
+	tile_data_editors_popup->set_position(popup_rect.position);
+	tile_data_editors_popup->set_size(Size2(popup_rect.size.width, 0));
 	tile_data_editors_popup->popup();
 }
 
@@ -1539,12 +1539,12 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				// We have a tile.
 				menu_option_coords = selected.tile;
 				menu_option_alternative = 0;
-				base_tile_popup_menu->popup(Rect2i(get_screen_transform().xform(get_local_mouse_position()), Size2i()));
+				base_tile_popup_menu->popup(Rect2i(get_final_transform().xform(get_local_mouse_position()), Size2i()));
 			} else if (hovered_base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
 				// We don't have a tile, but can create one.
 				menu_option_coords = hovered_base_tile_coords;
 				menu_option_alternative = TileSetSource::INVALID_TILE_ALTERNATIVE;
-				empty_base_tile_popup_menu->popup(Rect2i(get_screen_transform().xform(get_local_mouse_position()), Size2i()));
+				empty_base_tile_popup_menu->popup(Rect2i(get_final_transform().xform(get_local_mouse_position()), Size2i()));
 			}
 		} break;
 		case DRAG_TYPE_RESIZE_TOP_LEFT:
@@ -1986,7 +1986,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 						selected = selection.front()->get();
 						menu_option_coords = selected.tile;
 						menu_option_alternative = selected.alternative;
-						alternative_tile_popup_menu->popup(Rect2i(get_screen_transform().xform(get_local_mouse_position()), Size2i()));
+						alternative_tile_popup_menu->popup(Rect2i(get_final_transform().xform(get_local_mouse_position()), Size2i()));
 					}
 				}
 

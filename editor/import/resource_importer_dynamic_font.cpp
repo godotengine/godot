@@ -79,9 +79,6 @@ bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, co
 	if (p_option == "antialiasing" && bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
 	}
-	if (p_option == "oversampling" && bool(p_options["multichannel_signed_distance_field"])) {
-		return false;
-	}
 	if (p_option == "subpixel_positioning" && bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
 	}
@@ -119,7 +116,6 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::NIL, "Fallbacks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
@@ -156,7 +152,6 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	bool allow_system_fallback = p_options["allow_system_fallback"];
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
-	real_t oversampling = p_options["oversampling"];
 	Array fallbacks = p_options["fallbacks"];
 
 	// Load base font data.
@@ -178,7 +173,6 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	font->set_allow_system_fallback(allow_system_fallback);
 	font->set_subpixel_positioning((TextServer::SubpixelPositioning)subpixel_positioning);
 	font->set_hinting((TextServer::Hinting)hinting);
-	font->set_oversampling(oversampling);
 	font->set_fallbacks(fallbacks);
 
 	Dictionary langs = p_options["language_support"];

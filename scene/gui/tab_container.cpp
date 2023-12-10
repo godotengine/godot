@@ -65,18 +65,20 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 		if (popup) {
 			if (is_layout_rtl() ? pos.x < theme_cache.menu_icon->get_width() : pos.x > size.width - theme_cache.menu_icon->get_width()) {
 				emit_signal(SNAME("pre_popup_pressed"));
+				Size2i scr_size = get_final_transform().basis_xform(Size2i(size.x, content_height));
+				Size2i theme_size = get_final_transform().basis_xform(Size2(0, theme_cache.menu_icon->get_height() / 2.0));
 
 				Vector2 popup_pos = get_screen_position();
 				if (!is_layout_rtl()) {
-					popup_pos.x += size.width - popup->get_size().width;
+					popup_pos.x += scr_size.width - popup->get_size().width;
 				}
 				popup_pos.y += _get_tab_height() / 2.0;
 				if (tabs_position == POSITION_BOTTOM) {
-					popup_pos.y += content_height;
+					popup_pos.y += scr_size.height;
 					popup_pos.y -= popup->get_size().height;
-					popup_pos.y -= theme_cache.menu_icon->get_height() / 2.0;
+					popup_pos.y -= theme_size.y;
 				} else {
-					popup_pos.y += theme_cache.menu_icon->get_height() / 2.0;
+					popup_pos.y += theme_size.y;
 				}
 
 				popup->set_position(popup_pos);
