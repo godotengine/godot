@@ -6288,6 +6288,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 					animation->add_track(Animation::TYPE_POSITION_3D);
 					animation->track_set_path(position_idx, transform_node_path);
 					animation->track_set_imported(position_idx, true); //helps merging later
+					if (track.position_track.interpolation == GLTFAnimation::INTERP_STEP) {
+						animation->track_set_interpolation_type(position_idx, Animation::InterpolationType::INTERPOLATION_NEAREST);
+					}
 					base_idx++;
 				}
 			}
@@ -6310,6 +6313,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 					animation->add_track(Animation::TYPE_ROTATION_3D);
 					animation->track_set_path(rotation_idx, transform_node_path);
 					animation->track_set_imported(rotation_idx, true); //helps merging later
+					if (track.rotation_track.interpolation == GLTFAnimation::INTERP_STEP) {
+						animation->track_set_interpolation_type(rotation_idx, Animation::InterpolationType::INTERPOLATION_NEAREST);
+					}
 					base_idx++;
 				}
 			}
@@ -6332,6 +6338,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 					animation->add_track(Animation::TYPE_SCALE_3D);
 					animation->track_set_path(scale_idx, transform_node_path);
 					animation->track_set_imported(scale_idx, true); //helps merging later
+					if (track.scale_track.interpolation == GLTFAnimation::INTERP_STEP) {
+						animation->track_set_interpolation_type(scale_idx, Animation::InterpolationType::INTERPOLATION_NEAREST);
+					}
 					base_idx++;
 				}
 			}
