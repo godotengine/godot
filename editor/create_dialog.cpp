@@ -33,6 +33,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_feature_profile.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
@@ -243,7 +244,13 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 	} else {
 		if (ScriptServer::is_global_class(p_type)) {
 			Ref<Script> scr = EditorNode::get_editor_data().script_class_load_script(p_type);
-			ERR_FAIL_COND(scr.is_null());
+			if (scr.is_null()) {
+				// Remove non-existing global class from class cache.
+				ScriptServer::remove_global_class(p_type);
+				ScriptServer::save_global_classes();
+				print_verbose("Removed class " + p_type + " from global classes.");
+				return;
+			}
 
 			Ref<Script> base = scr->get_base_script();
 			if (base.is_null()) {

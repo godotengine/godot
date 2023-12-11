@@ -574,52 +574,47 @@ void DependencyRemoveDialog::ok_pressed() {
 			emit_signal(SNAME("resource_removed"), res);
 			res->set_path("");
 		}
-	}
 
-	for (int i = 0; i < files_to_delete.size(); ++i) {
 		// If the file we are deleting for e.g. the main scene, default environment,
 		// or audio bus layout, we must clear its definition in Project Settings.
-		if (files_to_delete[i] == String(GLOBAL_GET("application/config/icon"))) {
+		if (file == String(GLOBAL_GET("application/config/icon"))) {
 			ProjectSettings::get_singleton()->set("application/config/icon", "");
 		}
-		if (files_to_delete[i] == String(GLOBAL_GET("application/run/main_scene"))) {
+		if (file == String(GLOBAL_GET("application/run/main_scene"))) {
 			ProjectSettings::get_singleton()->set("application/run/main_scene", "");
 		}
-		if (files_to_delete[i] == String(GLOBAL_GET("application/boot_splash/image"))) {
+		if (file == String(GLOBAL_GET("application/boot_splash/image"))) {
 			ProjectSettings::get_singleton()->set("application/boot_splash/image", "");
 		}
-		if (files_to_delete[i] == String(GLOBAL_GET("rendering/environment/defaults/default_environment"))) {
+		if (file == String(GLOBAL_GET("rendering/environment/defaults/default_environment"))) {
 			ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 		}
-		if (files_to_delete[i] == String(GLOBAL_GET("display/mouse_cursor/custom_image"))) {
+		if (file == String(GLOBAL_GET("display/mouse_cursor/custom_image"))) {
 			ProjectSettings::get_singleton()->set("display/mouse_cursor/custom_image", "");
 		}
-		if (files_to_delete[i] == String(GLOBAL_GET("gui/theme/custom"))) {
+		if (file == String(GLOBAL_GET("gui/theme/custom"))) {
 			ProjectSettings::get_singleton()->set("gui/theme/custom", "");
 		}
-		if (files_to_delete[i] == String(GLOBAL_GET("gui/theme/custom_font"))) {
+		if (file == String(GLOBAL_GET("gui/theme/custom_font"))) {
 			ProjectSettings::get_singleton()->set("gui/theme/custom_font", "");
 		}
-		if (files_to_delete[i] == String(GLOBAL_GET("audio/buses/default_bus_layout"))) {
+		if (file == String(GLOBAL_GET("audio/buses/default_bus_layout"))) {
 			ProjectSettings::get_singleton()->set("audio/buses/default_bus_layout", "");
 		}
 
-		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
+		String path = OS::get_singleton()->get_resource_dir() + file.replace_first("res://", "/");
 		print_verbose("Moving to trash: " + path);
 		Error err = OS::get_singleton()->move_to_trash(path);
 		if (err != OK) {
-			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + files_to_delete[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + file + "\n");
 		} else {
-			emit_signal(SNAME("file_removed"), files_to_delete[i]);
+			emit_signal(SNAME("file_removed"), file);
 		}
+
+		EditorFileSystem::get_singleton()->update_file(file);
 	}
 
-	if (dirs_to_delete.size() == 0) {
-		// If we only deleted files we should only need to tell the file system about the files we touched.
-		for (int i = 0; i < files_to_delete.size(); ++i) {
-			EditorFileSystem::get_singleton()->update_file(files_to_delete[i]);
-		}
-	} else {
+	if (dirs_to_delete.size() > 0) {
 		for (int i = 0; i < dirs_to_delete.size(); ++i) {
 			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
 			print_verbose("Moving to trash: " + path);
