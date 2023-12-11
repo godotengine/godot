@@ -40,6 +40,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/separator.h"
 #include "scene/resources/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -1137,6 +1138,11 @@ void SceneImportSettings::_re_import() {
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
 }
 
+void SceneImportSettings::_open_scene(bool p_set_inherited) {
+	hide();
+	EditorNode::get_singleton()->load_scene(base_path, false, p_set_inherited);
+}
+
 void SceneImportSettings::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -1149,6 +1155,9 @@ void SceneImportSettings::_notification(int p_what) {
 			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
 			action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
 			action_menu->end_bulk_theme_override();
+
+			open_scene_button->set_icon(get_editor_theme_icon(SNAME("Load")));
+			open_scene_inherited_button->set_icon(get_editor_theme_icon(SNAME("CreateNewSceneFrom")));
 
 			if (animation_player != nullptr && animation_player->is_playing()) {
 				animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
@@ -1462,6 +1471,20 @@ SceneImportSettings::SceneImportSettings() {
 	action_menu->get_popup()->add_item(TTR("Set Mesh Save Paths"), ACTION_CHOOSE_MESH_SAVE_PATHS);
 
 	action_menu->get_popup()->connect("id_pressed", callable_mp(this, &SceneImportSettings::_menu_callback));
+
+	menu_hb->add_child(memnew(VSeparator));
+
+	open_scene_button = memnew(Button);
+	menu_hb->add_child(open_scene_button);
+	open_scene_button->set_text(TTR("Open Scene"));
+	open_scene_button->set_tooltip_text(TTR("Open the imported scene"));
+	open_scene_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettings::_open_scene).bind(false));
+
+	open_scene_inherited_button = memnew(Button);
+	menu_hb->add_child(open_scene_inherited_button);
+	open_scene_inherited_button->set_text(TTR("New Inherited Scene"));
+	open_scene_inherited_button->set_tooltip_text(TTR("Create a new inherited scene"));
+	open_scene_inherited_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettings::_open_scene).bind(true));
 
 	tree_split = memnew(HSplitContainer);
 	main_vb->add_child(tree_split);
