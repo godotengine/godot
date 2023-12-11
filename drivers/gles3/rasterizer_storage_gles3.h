@@ -1349,9 +1349,9 @@ public:
 		struct Effects {
 			struct MipMaps {
 				struct Size {
-					GLuint fbo;
-					int width;
-					int height;
+					GLuint fbo = 0;
+					int width = 0;
+					int height = 0;
 				};
 
 				Vector<Size> sizes;
