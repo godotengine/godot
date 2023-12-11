@@ -3711,6 +3711,12 @@ void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBu
 			}
 			rbgi->uniform_set[v] = RID();
 		}
+
+		if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
+			// VoxelGI instances have changed, so we need to update volumetric fog.
+			Ref<RendererRD::Fog::VolumetricFog> fog = p_render_buffers->get_custom_data(RB_SCOPE_FOG);
+			fog->sync_gi_dependent_sets_validity(true);
+		}
 	}
 
 	if (p_voxel_gi_instances.size() > 0) {
