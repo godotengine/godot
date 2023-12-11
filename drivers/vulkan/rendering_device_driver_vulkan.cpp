@@ -594,6 +594,27 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VmaAllocationCreateInfo alloc_create_info = {};
 	alloc_create_info.flags = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT : 0;
 	alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+
+
+	//<TF>
+	//@ShadyTF : lazily allocated buffers
+	if (p_format.usage_bits & TEXTURE_USAGE_LAZILY_ALLOCATED_BIT) {
+		uint32_t memoryTypeIndex = 0;
+		VmaAllocationCreateInfo lazy_memory_requirements = alloc_create_info;
+		lazy_memory_requirements.usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
+		VkResult result = vmaFindMemoryTypeIndex(allocator, UINT32_MAX, &lazy_memory_requirements, &memoryTypeIndex);
+		if (VK_SUCCESS == result) {
+			alloc_create_info = lazy_memory_requirements;
+			create_info.usage |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+			// VUID-VkImageCreateInfo-usage-00963 :
+			// If usage includes VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+			// then bits other than VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			// and VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT must not be set
+			create_info.usage &= (VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
+		}
+	}
+	//</TF>
+
 	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
 		uint32_t mem_type_index = 0;
 		vmaFindMemoryTypeIndexForImageInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
