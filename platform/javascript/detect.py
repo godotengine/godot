@@ -168,8 +168,16 @@ def configure(env):
     env["LIBPREFIXES"] = ["$LIBPREFIX"]
     env["LIBSUFFIXES"] = ["$LIBSUFFIX"]
 
+    # Get version info for checks below.
+    cc_semver = tuple(get_compiler_version(env))
+
     env.Prepend(CPPPATH=["#platform/javascript"])
     env.Append(CPPDEFINES=["JAVASCRIPT_ENABLED", "UNIX_ENABLED"])
+
+    if cc_semver >= (3, 1, 25):
+        env.Append(LINKFLAGS=["-s", "STACK_SIZE=5MB"])
+    else:
+        env.Append(LINKFLAGS=["-s", "TOTAL_STACK=5MB"])
 
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
@@ -179,14 +187,12 @@ def configure(env):
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
         env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
+        env.Append(LINKFLAGS=["-s", "DEFAULT_PTHREAD_STACK_SIZE=2MB"])
         env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
         env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
         env.extra_suffix = ".threads" + env.extra_suffix
     else:
         env.Append(CPPDEFINES=["NO_THREADS"])
-
-    # Get version info for checks below.
-    cc_semver = tuple(get_compiler_version(env))
 
     if env["use_thinlto"] or env["use_lto"]:
         # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
