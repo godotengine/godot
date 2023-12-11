@@ -470,8 +470,8 @@ public:
 	}
 };
 
-template <class T>
-class VariantConstructorToArray {
+template <class T, Variant::Type ValueType>
+class VariantConstructorToTypedArray {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
 		if (p_args[0]->get_type() != GetTypeInfo<T>::VARIANT_TYPE) {
@@ -483,9 +483,10 @@ public:
 
 		r_ret = Array();
 		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(&r_ret);
+		dst_arr.set_typed(ValueType, StringName(), Variant());
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
-		int size = src_arr.size();
+		const int size = src_arr.size();
 		dst_arr.resize(size);
 		for (int i = 0; i < size; i++) {
 			dst_arr[i] = src_arr[i];
@@ -495,9 +496,10 @@ public:
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
 		*r_ret = Array();
 		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(r_ret);
+		dst_arr.set_typed(ValueType, StringName(), Variant());
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
-		int size = src_arr.size();
+		const int size = src_arr.size();
 		dst_arr.resize(size);
 		for (int i = 0; i < size; i++) {
 			dst_arr[i] = src_arr[i];
@@ -505,9 +507,10 @@ public:
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		Array dst_arr;
-		T src_arr = PtrToArg<T>::convert(p_args[0]);
+		dst_arr.set_typed(ValueType, StringName(), Variant());
+		const T src_arr = PtrToArg<T>::convert(p_args[0]);
 
-		int size = src_arr.size();
+		const int size = src_arr.size();
 		dst_arr.resize(size);
 		for (int i = 0; i < size; i++) {
 			dst_arr[i] = src_arr[i];

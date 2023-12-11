@@ -202,15 +202,15 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructNoArgs<Array>>(sarray());
 	add_constructor<VariantConstructor<Array, Array>>(sarray("from"));
 	add_constructor<VariantConstructorTypedArray>(sarray("base", "type", "class_name", "script"));
-	add_constructor<VariantConstructorToArray<PackedByteArray>>(sarray("from"));
-	add_constructor<VariantConstructorToArray<PackedInt32Array>>(sarray("from"));
-	add_constructor<VariantConstructorToArray<PackedInt64Array>>(sarray("from"));
-	add_constructor<VariantConstructorToArray<PackedFloat32Array>>(sarray("from"));
-	add_constructor<VariantConstructorToArray<PackedFloat64Array>>(sarray("from"));
-	add_constructor<VariantConstructorToArray<PackedStringArray>>(sarray("from"));
-	add_constructor<VariantConstructorToArray<PackedVector2Array>>(sarray("from"));
-	add_constructor<VariantConstructorToArray<PackedVector3Array>>(sarray("from"));
-	add_constructor<VariantConstructorToArray<PackedColorArray>>(sarray("from"));
+	add_constructor<VariantConstructorToTypedArray<PackedByteArray, Variant::INT>>(sarray("from"));
+	add_constructor<VariantConstructorToTypedArray<PackedInt32Array, Variant::INT>>(sarray("from"));
+	add_constructor<VariantConstructorToTypedArray<PackedInt64Array, Variant::INT>>(sarray("from"));
+	add_constructor<VariantConstructorToTypedArray<PackedFloat32Array, Variant::FLOAT>>(sarray("from"));
+	add_constructor<VariantConstructorToTypedArray<PackedFloat64Array, Variant::FLOAT>>(sarray("from"));
+	add_constructor<VariantConstructorToTypedArray<PackedStringArray, Variant::STRING>>(sarray("from"));
+	add_constructor<VariantConstructorToTypedArray<PackedVector2Array, Variant::VECTOR2>>(sarray("from"));
+	add_constructor<VariantConstructorToTypedArray<PackedVector3Array, Variant::VECTOR3>>(sarray("from"));
+	add_constructor<VariantConstructorToTypedArray<PackedColorArray, Variant::COLOR>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<PackedByteArray>>(sarray());
 	add_constructor<VariantConstructor<PackedByteArray, PackedByteArray>>(sarray("from"));
