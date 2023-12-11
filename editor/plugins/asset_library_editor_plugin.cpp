@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer_tls.h"
+#include "core/math/vector2.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
@@ -56,6 +57,7 @@ static inline void setup_http_request(HTTPRequest *request) {
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 	title->set_text(p_title);
+	title->set_tooltip_text(p_title);
 	asset_id = p_asset_id;
 	category->set_text(p_category);
 	category_id = p_category_id;
@@ -66,16 +68,18 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 
 // TODO: Refactor this method to use the TextServer.
 void EditorAssetLibraryItem::clamp_width(int p_max_width) {
-	int text_pixel_width = title->get_button_font().ptr()->get_string_size(title->get_text()).x * EDSCALE;
+	String full_text = title->get_tooltip(Point2());
 
-	String full_text = title->get_text();
-	title->set_tooltip_text(full_text);
+	int text_pixel_width = title->get_button_font().ptr()->get_string_size(full_text).x * EDSCALE;
 
 	if (text_pixel_width > p_max_width) {
 		// Truncate title text to within the current column width.
 		int max_length = p_max_width / (text_pixel_width / full_text.length());
 		String truncated_text = full_text.left(max_length - 3) + "...";
 		title->set_text(truncated_text);
+	} else {
+		// Set title text to full text if we have enough room.
+		title->set_text(full_text);
 	}
 }
 
@@ -639,6 +643,9 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED: {
 			_update_asset_items_columns();
+			for (int i = 0; i < asset_items->get_child_count(); i++) {
+				static_cast<EditorAssetLibraryItem *>(asset_items->get_child(i))->clamp_width(asset_items_column_width);
+			}
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
