@@ -682,7 +682,7 @@ public:
 
 			// this should always succeed after growing
 			batch = bdata.batches.request();
-			RAST_DEBUG_ASSERT(batch);
+			CRASH_COND_MSG(!batch, "Out of memory");
 		}
 
 		if (p_blank) {
