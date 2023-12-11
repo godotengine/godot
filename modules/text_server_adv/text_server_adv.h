@@ -502,6 +502,7 @@ class TextServerAdvanced : public TextServerExtension {
 		double upos = 0.0;
 		double uthk = 0.0;
 
+		char32_t el_char = 0x2026;
 		TrimData overrun_trim_data;
 		bool fit_width_minimum_reached = false;
 
@@ -647,6 +648,7 @@ class TextServerAdvanced : public TextServerExtension {
 	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_length) const;
 	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
+	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
 	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
@@ -898,6 +900,9 @@ public:
 
 	MODBIND2(shaped_text_set_custom_punctuation, const RID &, const String &);
 	MODBIND1RC(String, shaped_text_get_custom_punctuation, const RID &);
+
+	MODBIND2(shaped_text_set_custom_ellipsis, const RID &, int64_t);
+	MODBIND1RC(int64_t, shaped_text_get_custom_ellipsis, const RID &);
 
 	MODBIND2(shaped_text_set_orientation, const RID &, Orientation);
 	MODBIND1RC(Orientation, shaped_text_get_orientation, const RID &);

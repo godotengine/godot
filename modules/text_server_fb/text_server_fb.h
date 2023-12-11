@@ -447,6 +447,7 @@ class TextServerFallback : public TextServerExtension {
 		double upos = 0.0;
 		double uthk = 0.0;
 
+		char32_t el_char = 0x2026;
 		TrimData overrun_trim_data;
 		bool fit_width_minimum_reached = false;
 
@@ -555,6 +556,7 @@ class TextServerFallback : public TextServerExtension {
 	mutable HashMap<String, PackedByteArray> system_font_data;
 
 	void _realign(ShapedTextDataFallback *p_sd) const;
+	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
 	Mutex ft_mutex;
 
@@ -765,6 +767,9 @@ public:
 
 	MODBIND2(shaped_text_set_custom_punctuation, const RID &, const String &);
 	MODBIND1RC(String, shaped_text_get_custom_punctuation, const RID &);
+
+	MODBIND2(shaped_text_set_custom_ellipsis, const RID &, int64_t);
+	MODBIND1RC(int64_t, shaped_text_get_custom_ellipsis, const RID &);
 
 	MODBIND2(shaped_text_set_orientation, const RID &, Orientation);
 	MODBIND1RC(Orientation, shaped_text_get_orientation, const RID &);
