@@ -382,6 +382,7 @@ class ThemeTypeEditor : public MarginContainer {
 	void _add_type_button_cbk();
 	void _add_default_type_items();
 
+	void _update_add_button(const String &p_text, LineEdit *p_for_edit);
 	void _item_add_cbk(int p_data_type, Control *p_control);
 	void _item_add_lineedit_cbk(String p_value, int p_data_type, Control *p_control);
 	void _item_override_cbk(int p_data_type, String p_item_name);
