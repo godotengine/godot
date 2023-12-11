@@ -228,7 +228,9 @@ elif env["platform"] != "windows":  # Disable for Windows, yasm SIMD optimizatio
     import platform
 
     is_x11_or_server_arm = (env["platform"] == "x11" or env["platform"] == "server") and (
-        platform.machine().startswith("arm") or platform.machine().startswith("aarch")
+        platform.machine().startswith("arm")
+        or platform.machine().startswith("aarch")
+        or ("arch" in env and env["arch"].startswith("arm"))
     )
     is_macos_x86 = env["platform"] == "osx" and ("arch" in env and (env["arch"] != "arm64"))
     is_ios_x86 = env["platform"] == "iphone" and ("arch" in env and env["arch"].startswith("x86"))

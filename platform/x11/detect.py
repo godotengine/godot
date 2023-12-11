@@ -312,7 +312,7 @@ def configure(env):
         env.ParseConfig("pkg-config theora theoradec --cflags --libs")
     else:
         list_of_x86 = ["x86_64", "x86", "i386", "i586"]
-        if any(platform.machine() in s for s in list_of_x86):
+        if (env["arch"].startswith("x86") or env["arch"] == "") and any(platform.machine() in s for s in list_of_x86):
             env["x86_libtheora_opt_gcc"] = True
 
     if not env["builtin_libvpx"]:
