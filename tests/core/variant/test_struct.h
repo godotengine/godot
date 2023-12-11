@@ -230,7 +230,7 @@ TEST_CASE("[Struct] PropertyInfo") {
 
 TEST_CASE("[Struct] Validation") {
 	struct NamedInt {
-		STRUCT_MEMBER_PRIMITIVE(NamedInt, MemberName, StringName, Variant::STRING_NAME, name, StringName());
+		STRUCT_MEMBER_PRIMITIVE(NamedInt, MemberName, String, Variant::STRING, name, String());
 		STRUCT_MEMBER_PRIMITIVE(NamedInt, MemberValue, int, Variant::INT, value, 0);
 		STRUCT_LAYOUT(NamedInt, MemberName, MemberValue);
 	};
@@ -281,6 +281,8 @@ TEST_CASE("[Struct] Validation") {
 		ERR_PRINT_ON;
 
 		named_int.assign(also_a_match);
+		bool matches = named_int == also_a_match;
+		print_line(matches);
 		CHECK_MESSAGE(named_int == also_a_match, "failed to assign an array with correct types using 'assign' function");
 	}
 }
@@ -371,7 +373,7 @@ TEST_CASE("[Struct] ClassDB") {
 	StructInfo *struct_info = ::ClassDB::get_struct_info(SNAME("Object"), SNAME("PropertyInfo"));
 	REQUIRE(struct_info);
 	CHECK_EQ(struct_info->count, 6);
-	CHECK_EQ(struct_info->name, "PropertyInfo");
+	CHECK_EQ(struct_info->name, "Object.PropertyInfo");
 	CHECK_EQ(struct_info->names[3], "hint");
 	CHECK_EQ(struct_info->types[3], Variant::INT);
 	CHECK_EQ(struct_info->class_names[3], "");

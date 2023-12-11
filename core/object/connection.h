@@ -31,10 +31,10 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include "core/object/method_info.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/struct_generator.h"
 #include "core/variant/variant.h"
-#include "core/object/method_info.h"
 
 enum ConnectFlags {
 	CONNECT_DEFERRED = 1,
@@ -48,7 +48,7 @@ struct Connection {
 	STRUCT_MEMBER_PRIMITIVE(Connection, MemberSignal, ::Signal, Variant::SIGNAL, signal, ::Signal());
 	STRUCT_MEMBER_PRIMITIVE(Connection, MemberCallable, Callable, Variant::CALLABLE, callable, Callable());
 	STRUCT_MEMBER_PRIMITIVE(Connection, MemberFlags, uint32_t, Variant::INT, flags, 0);
-	STRUCT_LAYOUT(Connection, MemberSignal, MemberCallable, MemberFlags);
+	STRUCT_LAYOUT_OWNER(Object, Connection, MemberSignal, MemberCallable, MemberFlags);
 
 	bool operator<(const Connection &p_conn) const;
 

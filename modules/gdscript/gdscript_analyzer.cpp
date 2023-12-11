@@ -52,6 +52,7 @@
 
 #define UNNAMED_ENUM "<anonymous enum>"
 #define ENUM_SEPARATOR "."
+#define STRUCT_SEPARATOR "."
 
 static MethodInfo info_from_utility_func(const StringName &p_function) {
 	ERR_FAIL_COND_V(!Variant::has_utility_function(p_function), MethodInfo());
@@ -4948,6 +4949,10 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 				elem_type.kind = GDScriptParser::DataType::NATIVE;
 				elem_type.builtin_type = Variant::OBJECT;
 				elem_type.native_type = elem_type_name;
+			} else if (struct_exists(elem_type_name)) {
+				elem_type.kind = GDScriptParser::DataType::NATIVE;
+				elem_type.builtin_type = Variant::ARRAY;
+				elem_type.native_type = elem_type_name;
 			} else if (ScriptServer::is_global_class(elem_type_name)) {
 				// Just load this as it shouldn't be a GDScript.
 				Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(elem_type_name));
@@ -5603,6 +5608,14 @@ void GDScriptAnalyzer::resolve_pending_lambda_bodies() {
 
 bool GDScriptAnalyzer::class_exists(const StringName &p_class) const {
 	return ClassDB::class_exists(p_class) && ClassDB::is_class_exposed(p_class);
+}
+
+bool GDScriptAnalyzer::struct_exists(const StringName &p_struct) const {
+	Vector<String> names = String(p_struct).split(STRUCT_SEPARATOR);
+	if (names.size() == 2) {
+		return ClassDB::has_struct(names[0], names[1], true); // TODO: allow inheritance here?
+	}
+	return false;
 }
 
 Ref<GDScriptParserRef> GDScriptAnalyzer::get_parser_for(const String &p_path) {

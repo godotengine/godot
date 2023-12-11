@@ -191,14 +191,14 @@ struct ContainerTypeValidate {
 		if (variant_type == Variant::ARRAY) {
 			const Array array = p_variant;
 			if (struct_info) {
-				return ValidatedVariant(p_variant, StructInfo::is_compatible(struct_info->struct_member_infos[p_struct_index], array.get_struct_info()));
+				ret.valid = StructInfo::is_compatible(struct_info->struct_member_infos[p_struct_index], array.get_struct_info());
+			} else { // TypedArray of structs.
+				ret.valid = class_name == array.get_typed_class_name();
 			}
-			return ValidatedVariant(p_variant, class_name == array.get_typed_class_name()); // TypedArray of structs
 		} else if (variant_type == Variant::OBJECT) {
-			const bool valid = struct_info ? validate_object(struct_info->class_names[p_struct_index], Ref<Script>(), p_variant, where, p_operation) : validate_object(p_variant, p_operation);
-			return ValidatedVariant(p_variant, valid);
+			ret.valid = struct_info ? validate_object(struct_info->class_names[p_struct_index], Ref<Script>(), p_variant, where, p_operation) : validate_object(p_variant, p_operation);
 		}
-		return ValidatedVariant(p_variant, true);
+		return ret;
 	}
 };
 

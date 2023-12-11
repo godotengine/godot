@@ -955,7 +955,12 @@ void ClassDB::bind_struct(const StringName &p_class_name, const StructInfo &p_st
 		ERR_FAIL();
 	}
 
-	type->struct_map.insert(p_struct_info.name, p_struct_info);
+	String struct_name = p_struct_info.name;
+	if (struct_name.contains(".")) {
+		struct_name = struct_name.get_slicec('.', 1);
+	}
+
+	type->struct_map.insert(struct_name, p_struct_info);
 }
 
 void ClassDB::get_struct_list(const StringName &p_class, List<StructInfo> *r_structs, bool p_no_inheritance) {

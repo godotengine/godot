@@ -31,8 +31,8 @@
 #ifndef METHOD_INFO_H
 #define METHOD_INFO_H
 
-#include "core/variant/variant.h"
 #include "core/object/property_info.h"
+#include "core/variant/variant.h"
 
 enum MethodFlags {
 	METHOD_FLAG_NORMAL = 1,
@@ -54,7 +54,7 @@ struct MethodInfo {
 	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberDefaultArguments, Vector<Variant>, Variant::ARRAY, default_arguments, Vector<Variant>());
 	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberReturnValMetadata, int, Variant::INT, return_val_metadata, 0);
 	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberArgumentsMetadata, Vector<int>, Variant::PACKED_FLOAT32_ARRAY, arguments_metadata, Vector<int>());
-	STRUCT_LAYOUT(MethodInfo, MemberName, MemberReturnVal, MemberFlags, MemberId, MemberArguments, MemberDefaultArguments, MemberReturnValMetadata, MemberArgumentsMetadata);
+	STRUCT_LAYOUT_OWNER(Object, MethodInfo, MemberName, MemberReturnVal, MemberFlags, MemberId, MemberArguments, MemberDefaultArguments, MemberReturnValMetadata, MemberArgumentsMetadata);
 
 	int get_argument_meta(int p_arg) const {
 		ERR_FAIL_COND_V(p_arg < -1 || p_arg > arguments.size(), 0);

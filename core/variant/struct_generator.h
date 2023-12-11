@@ -138,17 +138,21 @@ class Struct;
 		}                                                                                                        \
 	}
 
-#define STRUCT_LAYOUT(m_struct, ...)                    \
-	static const StringName get_struct_name() {         \
-		return SNAME(#m_struct);                        \
-	}                                                   \
-	using Layout = StructLayout<m_struct, __VA_ARGS__>; \
-	m_struct(const Dictionary &p_dict) {                \
-		Layout::fill_struct(p_dict, *this);             \
-	}                                                   \
-	m_struct(const Array &p_array) {                    \
-		Layout::fill_struct(p_array, *this);            \
+#define STRUCT_LAYOUT_WITH_NAME(m_struct_name, m_struct, ...) \
+	static const StringName get_struct_name() {               \
+		return SNAME(m_struct_name);                          \
+	}                                                         \
+	using Layout = StructLayout<m_struct, __VA_ARGS__>;       \
+	m_struct(const Dictionary &p_dict) {                      \
+		Layout::fill_struct(p_dict, *this);                   \
+	}                                                         \
+	m_struct(const Array &p_array) {                          \
+		Layout::fill_struct(p_array, *this);                  \
 	}
+
+#define STRUCT_LAYOUT_OWNER(m_owner, m_struct, ...) STRUCT_LAYOUT_WITH_NAME(#m_owner "." #m_struct, m_struct, __VA_ARGS__)
+
+#define STRUCT_LAYOUT(m_struct, ...) STRUCT_LAYOUT_WITH_NAME(#m_struct, m_struct, __VA_ARGS__)
 
 struct StructInfo {
 	StringName name = StringName();
@@ -191,9 +195,6 @@ struct StructInfo {
 template <typename StructType, typename... StructMembers>
 struct StructLayout {
 	static constexpr uint32_t struct_member_count = sizeof...(StructMembers);
-	_FORCE_INLINE_ static constexpr uint32_t get_struct_member_count() {
-		return struct_member_count;
-	}
 	_FORCE_INLINE_ static const StringName get_struct_name() {
 		return StructType::get_struct_name();
 	}
