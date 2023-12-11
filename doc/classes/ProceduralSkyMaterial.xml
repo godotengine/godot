@@ -11,6 +11,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="energy_multiplier" type="float" setter="set_energy_multiplier" getter="get_energy_multiplier" default="1.0">
+			The sky's overall brightness multiplier. Higher values result in a brighter sky.
+		</member>
 		<member name="ground_bottom_color" type="Color" setter="set_ground_bottom_color" getter="get_ground_bottom_color" default="Color(0.2, 0.169, 0.133, 1)">
 			Color of the ground at the bottom. Blends with [member ground_horizon_color].
 		</member>
