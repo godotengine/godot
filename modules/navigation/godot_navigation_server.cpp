@@ -331,6 +331,13 @@ RID GodotNavigationServer::agent_get_map(RID p_agent) const {
 	return RID();
 }
 
+Vector3 GodotNavigationServer::map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const {
+	const NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL_V(map, Vector3());
+
+	return map->get_random_point(p_navigation_layers, p_uniformly);
+}
+
 RID GodotNavigationServer::region_create() {
 	MutexLock lock(operations_mutex);
 
@@ -496,6 +503,13 @@ Vector3 GodotNavigationServer::region_get_connection_pathway_end(RID p_region, i
 	ERR_FAIL_NULL_V(region, Vector3());
 
 	return region->get_connection_pathway_end(p_connection_id);
+}
+
+Vector3 GodotNavigationServer::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Vector3());
+
+	return region->get_random_point(p_navigation_layers, p_uniformly);
 }
 
 RID GodotNavigationServer::link_create() {
