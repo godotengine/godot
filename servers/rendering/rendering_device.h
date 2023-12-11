@@ -1246,6 +1246,9 @@ private:
 		// Primarily intended to be used by the main thread to do most stuff.
 		RDD::CommandBufferID draw_command_buffer;
 
+		// Used at the end of every frame to blit on the swapchain
+		RDD::CommandBufferID blit_command_buffer; 
+
 		// Signaled by the setup submission. Draw must wait on this semaphore.
 		RDD::SemaphoreID setup_semaphore;
 

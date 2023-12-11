@@ -4896,7 +4896,7 @@ void RenderingDevice::_begin_frame() {
 	driver->begin_segment(frame, frames_drawn++);
 	driver->command_buffer_begin(frames[frame].setup_command_buffer);
 	driver->command_buffer_begin(frames[frame].draw_command_buffer);
-
+	driver->command_buffer_begin(frames[frame].blit_command_buffer);
 	// Reset the graph.
 	draw_graph.begin();
 
@@ -5081,6 +5081,8 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		frames[i].setup_command_buffer = driver->command_buffer_create(frames[i].command_pool);
 		ERR_FAIL_COND_V(!frames[i].setup_command_buffer, FAILED);
 		frames[i].draw_command_buffer = driver->command_buffer_create(frames[i].command_pool);
+		ERR_FAIL_COND_V(!frames[i].setup_command_buffer, FAILED);
+		frames[i].blit_command_buffer = driver->command_buffer_create(frames[i].command_pool);
 		ERR_FAIL_COND_V(!frames[i].draw_command_buffer, FAILED);
 		frames[i].setup_semaphore = driver->semaphore_create();
 		ERR_FAIL_COND_V(!frames[i].setup_semaphore, FAILED);
@@ -5108,6 +5110,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	driver->begin_segment(frame, frames_drawn++);
 	driver->command_buffer_begin(frames[0].setup_command_buffer);
 	driver->command_buffer_begin(frames[0].draw_command_buffer);
+	driver->command_buffer_begin(frames[0].blit_command_buffer);
 
 	// Create draw graph and start it initialized as well.
 	draw_graph.initialize(driver, frames.size(), main_queue_family, SECONDARY_COMMAND_BUFFERS_PER_FRAME);
