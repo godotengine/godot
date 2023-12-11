@@ -730,11 +730,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
 		String argument = E;
-		DWORD bufferSize = ExpandEnvironmentStringsW((LPWSTR)argument.utf16().ptrw(), NULL, 0);
-		if (bufferSize > 0) {
-			std::wstring expanded(bufferSize, L'\0');
-			ExpandEnvironmentStringsW((LPWSTR)argument.utf16().ptrw(), &expanded[0], bufferSize);
-			argument = String(expanded.c_str());
+		DWORD buffer_size = ExpandEnvironmentStringsW((LPCWSTR)argument.utf16().ptr(), NULL, 0);
+		if (buffer_size > 0) {
+			Char16String expanded;
+			expanded.resize(buffer_size + 1);
+			ExpandEnvironmentStringsW((LPCWSTR)argument.utf16().ptr(), (LPWSTR)expanded.ptrw(), buffer_size);
+			argument = String::utf16(expanded.get_data());
 		}
 		command += " " + _quote_command_line_argument(argument);
 	}
