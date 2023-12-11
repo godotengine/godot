@@ -1456,6 +1456,13 @@
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking (see [enum GraphemeFlag]).
 			</description>
 		</method>
+		<method name="shaped_text_has_invalid_chars" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns [code]true[/code] if text buffer contains any invalid characters.
+			</description>
+		</method>
 		<method name="shaped_text_has_visible_chars" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="shaped" type="RID" />
@@ -1484,6 +1491,13 @@
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Returns [code]true[/code] if buffer is successfully shaped.
+			</description>
+		</method>
+		<method name="shaped_text_is_using_system_font_fallback" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns [code]true[/code] if text buffer is using system font fallbacks.
 			</description>
 		</method>
 		<method name="shaped_text_next_character_pos" qualifiers="const">

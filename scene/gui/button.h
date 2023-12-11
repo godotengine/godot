@@ -43,6 +43,10 @@ private:
 	String xl_text;
 	Ref<TextParagraph> text_buf;
 
+	mutable bool cw_dirty = true;
+	mutable bool cw_sysfont = false;
+	mutable bool cw_invchar = false;
+
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
@@ -107,6 +111,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	Size2 get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const;
 

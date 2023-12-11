@@ -267,6 +267,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_update_justification_ops, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_text_is_ready, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_is_using_system_font_fallback, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_text_get_glyphs, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_sort_logical, "shaped");
@@ -1167,6 +1168,12 @@ bool TextServerExtension::shaped_text_update_justification_ops(const RID &p_shap
 bool TextServerExtension::shaped_text_is_ready(const RID &p_shaped) const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_shaped_text_is_ready, p_shaped, ret);
+	return ret;
+}
+
+bool TextServerExtension::shaped_text_is_using_system_font_fallback(const RID &p_shaped) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_shaped_text_is_using_system_font_fallback, p_shaped, ret);
 	return ret;
 }
 

@@ -3923,6 +3923,7 @@ void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *
 	p_shaped->line_breaks_valid = false;
 	p_shaped->justification_ops_valid = false;
 	p_shaped->text_trimmed = false;
+	p_shaped->use_sysfb = false;
 	p_shaped->ascent = 0.0;
 	p_shaped->descent = 0.0;
 	p_shaped->width = 0.0;
@@ -5640,6 +5641,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 					}
 					if (best_match != -1) {
 						f = sysf_cache.var[best_match].rid;
+						p_sd->use_sysfb = true;
 					}
 				}
 				if (!f.is_valid()) {
@@ -5737,6 +5739,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 						sysf_cache.var.push_back(sysf);
 					}
 					f = sysf.rid;
+					p_sd->use_sysfb = true;
 				}
 				break;
 			}
@@ -6198,6 +6201,14 @@ bool TextServerAdvanced::_shaped_text_is_ready(const RID &p_shaped) const {
 
 	MutexLock lock(sd->mutex);
 	return sd->valid;
+}
+
+bool TextServerAdvanced::_shaped_text_is_using_system_font_fallback(const RID &p_shaped) const {
+	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, false);
+
+	MutexLock lock(sd->mutex);
+	return sd->use_sysfb;
 }
 
 const Glyph *TextServerAdvanced::_shaped_text_get_glyphs(const RID &p_shaped) const {

@@ -3810,6 +3810,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 	sd->descent = 0.0;
 	sd->width = 0.0;
 	sd->glyphs.clear();
+	sd->use_sysfb = false;
 
 	if (sd->text.length() == 0) {
 		sd->valid = true;
@@ -3928,6 +3929,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 								}
 								if (best_match != -1) {
 									gl.font_rid = sysf_cache.var[best_match].rid;
+									sd->use_sysfb = true;
 								}
 							}
 							if (!gl.font_rid.is_valid()) {
@@ -4025,6 +4027,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 									sysf_cache.var.push_back(sysf);
 								}
 								gl.font_rid = sysf.rid;
+								sd->use_sysfb = true;
 							}
 							break;
 						}
@@ -4105,6 +4108,14 @@ bool TextServerFallback::_shaped_text_is_ready(const RID &p_shaped) const {
 
 	MutexLock lock(sd->mutex);
 	return sd->valid;
+}
+
+bool TextServerFallback::_shaped_text_is_using_system_font_fallback(const RID &p_shaped) const {
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, false);
+
+	MutexLock lock(sd->mutex);
+	return sd->use_sysfb;
 }
 
 const Glyph *TextServerFallback::_shaped_text_get_glyphs(const RID &p_shaped) const {

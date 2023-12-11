@@ -1919,7 +1919,6 @@ void LineEdit::set_secret_character(const String &p_string) {
 	}
 
 	secret_character = p_string;
-	update_configuration_warnings();
 	_shape();
 	queue_redraw();
 }
@@ -2263,11 +2262,25 @@ void LineEdit::_emit_text_change() {
 	emit_signal(SNAME("text_changed"), text);
 	text_changed_dirty = false;
 }
+
 PackedStringArray LineEdit::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
+#ifdef TOOLS_ENABLED
+	if (cw_dirty) {
+		cw_dirty = false;
+		cw_sysfont = TS->shaped_text_is_using_system_font_fallback(text_rid);
+		cw_invchar = TS->shaped_text_has_invalid_chars(text_rid);
+	}
+	if (EDITOR_GET("docks/scene_tree/system_font_fallback_warnings").operator bool() && cw_sysfont) {
+		warnings.push_back(RTR("One or more characters used in this LineEdit's text are using system font fallback. Used font might be missing or look differently on other platforms."));
+	}
+	if (EDITOR_GET("docks/scene_tree/missing_glyphs_warnings").operator bool() && cw_invchar) {
+		warnings.push_back(RTR("The current font does not support rendering one or more characters used in this LineEdit's text."));
+	}
 	if (secret_character.length() > 1) {
 		warnings.push_back("Secret Character property supports only one character. Extra characters will be ignored.");
 	}
+#endif
 	return warnings;
 }
 
@@ -2318,6 +2331,8 @@ void LineEdit::_shape() {
 	if ((expand_to_text_length && old_size.x != size.x) || (old_size.y != size.y)) {
 		update_minimum_size();
 	}
+	cw_dirty = true;
+	update_configuration_warnings();
 }
 
 void LineEdit::_fit_to_width() {

@@ -1276,6 +1276,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shaped_text_is_using_system_font_fallback" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_shaped_text_next_character_pos" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />

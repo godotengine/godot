@@ -443,6 +443,10 @@ private:
 	bool underline_hint = true;
 	bool use_selected_font_color = false;
 
+	mutable bool cw_dirty = true;
+	mutable bool cw_sysfont = false;
+	mutable bool cw_invchar = false;
+
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	BitField<TextServer::JustificationFlag> default_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 
@@ -797,6 +801,7 @@ public:
 	void install_effect(const Variant effect);
 
 	virtual Size2 get_minimum_size() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	RichTextLabel(const String &p_text = String());
 	~RichTextLabel();
