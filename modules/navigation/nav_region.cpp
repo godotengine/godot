@@ -149,14 +149,13 @@ void NavRegion::update_polygons() {
 
 	// Build
 	for (size_t i(0); i < polygons.size(); i++) {
-		gd::Polygon &p = polygons[i];
-		p.owner = this;
+		gd::Polygon &polygon = polygons[i];
+		polygon.owner = this;
 
 		Vector<int> mesh_poly = mesh->get_polygon(i);
 		const int *indices = mesh_poly.ptr();
 		bool valid(true);
-		p.points.resize(mesh_poly.size());
-		p.edges.resize(mesh_poly.size());
+		polygon.vertices.resize(mesh_poly.size());
 
 		Vector3 center;
 		real_t sum(0);
@@ -168,17 +167,16 @@ void NavRegion::update_polygons() {
 				break;
 			}
 
-			Vector3 point_position = transform.xform(vertices_r[idx]);
-			p.points[j].pos = point_position;
-			p.points[j].key = map->get_point_key(point_position);
+			Vector3 vertex = transform.xform(vertices_r[idx]);
+			polygon.vertices[j] = vertex;
 
-			center += point_position; // Composing the center of the polygon
+			center += vertex; // Composing the center of the polygon
 
 			if (j >= 2) {
 				Vector3 epa = transform.xform(vertices_r[indices[j - 2]]);
 				Vector3 epb = transform.xform(vertices_r[indices[j - 1]]);
 
-				sum += map->get_up().dot((epb - epa).cross(point_position - epa));
+				sum += map->get_up().dot((epb - epa).cross(vertex - epa));
 			}
 		}
 
@@ -186,9 +184,9 @@ void NavRegion::update_polygons() {
 			ERR_BREAK_MSG(!valid, "The navigation mesh set in this region is not valid!");
 		}
 
-		p.clockwise = sum > 0;
+		polygon.clockwise = sum > 0;
 		if (mesh_poly.size() != 0) {
-			p.center = center / real_t(mesh_poly.size());
+			polygon.center = center / real_t(mesh_poly.size());
 		}
 	}
 }
