@@ -123,6 +123,7 @@ branches, and linked at the [end of this file](#Past-releases).
 #### Porting
 
 - Do not consume mouse messages in windows with `no_focus` on Windows OS ([GH-85484](https://github.com/godotengine/godot/pull/85484)).
+- Set what were default values for Web platform linker flags `-sSTACK_SIZE` and `-sDEFAULT_PTHREAD_STACK_SIZE` ([GH-86036](https://github.com/godotengine/godot/pull/86036)).
 
 #### Rendering
 
