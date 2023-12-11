@@ -3170,6 +3170,16 @@ Error RenderingDevice::screen_create(DisplayServer::WindowID p_screen) {
 Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
+	// Submit offscreen rendering and swap the command buffers
+	_end_frame();
+	_execute_frame(false, true);
+
+	SWAP(frames[frame].draw_command_buffer, frames[frame].blit_draw_command_buffer);
+	SWAP(frames[frame].setup_command_buffer, frames[frame].blit_setup_command_buffer);
+
+	used_setup_buffer = false;
+
+	// After submitting work, acquire the swapchain image(s)
 	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), ERR_CANT_CREATE, "A swap chain was not created for the screen.");
 
@@ -3190,9 +3200,7 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 	bool resize_required = false;
 	RDD::FramebufferID framebuffer = driver->swap_chain_acquire_framebuffer(main_queue, it->value, resize_required);
 	if (resize_required) {
-		// Flush everything so nothing can be using the swap chain before resizing it.
-		_flush_and_stall_for_all_frames();
-
+		// Flushing is not needed as the swapchain isn't in use yet
 		Error err = driver->swap_chain_resize(main_queue, it->value, _get_swap_chain_desired_count());
 		if (err != OK) {
 			// Resize is allowed to fail silently because the window can be minimized.
@@ -4759,7 +4767,7 @@ void RenderingDevice::swap_buffers() {
 	_THREAD_SAFE_METHOD_
 
 	_end_frame();
-	_execute_frame(true);
+	_execute_frame(true, true);
 
 	// Advance to the next frame and begin recording again.
 	frame = (frame + 1) % frames.size();
@@ -4769,7 +4777,7 @@ void RenderingDevice::swap_buffers() {
 void RenderingDevice::submit() {
 	_THREAD_SAFE_METHOD_
 	_end_frame();
-	_execute_frame(false);
+	_execute_frame(false, false);
 }
 
 void RenderingDevice::sync() {
@@ -4896,7 +4904,8 @@ void RenderingDevice::_begin_frame() {
 	driver->begin_segment(frame, frames_drawn++);
 	driver->command_buffer_begin(frames[frame].setup_command_buffer);
 	driver->command_buffer_begin(frames[frame].draw_command_buffer);
-	driver->command_buffer_begin(frames[frame].blit_command_buffer);
+	driver->command_buffer_begin(frames[frame].blit_setup_command_buffer);
+	driver->command_buffer_begin(frames[frame].blit_draw_command_buffer);
 	// Reset the graph.
 	draw_graph.begin();
 
@@ -4936,24 +4945,40 @@ void RenderingDevice::_end_frame() {
 	driver->end_segment();
 }
 
-void RenderingDevice::_execute_frame(bool p_present) {
-	const bool frame_can_present = p_present && !frames[frame].swap_chains_to_present.is_empty();
-	const bool separate_present_queue = main_queue != present_queue;
-	const VectorView<RDD::SemaphoreID> execute_draw_semaphore = frame_can_present && separate_present_queue ? frames[frame].draw_semaphore : VectorView<RDD::SemaphoreID>();
-	const VectorView<RDD::SwapChainID> execute_draw_swap_chains = frame_can_present && !separate_present_queue ? frames[frame].swap_chains_to_present : VectorView<RDD::SwapChainID>();
-	if (used_setup_buffer) {
-		driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
-	}
-	driver->command_queue_execute_and_present(main_queue, frames[frame].setup_semaphore, frames[frame].draw_command_buffer, execute_draw_semaphore, frames[frame].draw_fence, execute_draw_swap_chains);
-	frames[frame].draw_fence_signaled = true;
-
-	if (frame_can_present) {
-		if (separate_present_queue) {
-			// Issue the presentation separately if the presentation queue is different from the main queue.
-			driver->command_queue_execute_and_present(present_queue, frames[frame].draw_semaphore, {}, {}, {}, frames[frame].swap_chains_to_present);
+void RenderingDevice::_execute_frame(bool p_present, bool p_swap) {
+	// Command flushing, previous behavior
+	if (!p_swap) {
+		if (used_setup_buffer) {
+			driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
 		}
+		driver->command_queue_execute_and_present(main_queue, frames[frame].setup_semaphore, frames[frame].draw_command_buffer, VectorView<RDD::SemaphoreID>(), frames[frame].draw_fence, VectorView<RDD::SwapChainID>());
+		frames[frame].draw_fence_signaled = true;
+	}
+	// Submit offscreen rendering
+	else {
+		const bool frame_can_present = p_present && !frames[frame].swap_chains_to_present.is_empty();
+		const bool separate_present_queue = main_queue != present_queue;
+		const VectorView<RDD::SemaphoreID> signal_draw_semaphore = frame_can_present && separate_present_queue ? frames[frame].blit_semaphore : frames[frame].draw_semaphore;
+		const VectorView<RDD::SwapChainID> draw_swap_chains = frame_can_present && !separate_present_queue ? frames[frame].swap_chains_to_present : VectorView<RDD::SwapChainID>();
+		const RDD::FenceID fence = frame_can_present ? frames[frame].draw_fence : RDD::FenceID{};
 
-		frames[frame].swap_chains_to_present.clear();
+		RDD::SemaphoreID semaphores[] = { frames[frame].setup_semaphore, frames[frame].draw_semaphore };
+		const VectorView<RDD::SemaphoreID> semaphores_to_wait = VectorView(&semaphores[!used_setup_buffer ? 1 : 0], frame_can_present && used_setup_buffer ? 2 : 1);
+
+		if (used_setup_buffer) {
+			driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
+		}
+		driver->command_queue_execute_and_present(main_queue, semaphores_to_wait, frames[frame].draw_command_buffer, signal_draw_semaphore, fence, draw_swap_chains);
+		frames[frame].draw_fence_signaled = true;
+
+		if (frame_can_present) {
+			if (separate_present_queue) {
+				// Issue the presentation separately if the presentation queue is different from the main queue.
+				driver->command_queue_execute_and_present(present_queue, frames[frame].draw_semaphore, {}, {}, {}, frames[frame].swap_chains_to_present);
+			}
+
+			frames[frame].swap_chains_to_present.clear();
+		}
 	}
 }
 
@@ -4969,7 +4994,7 @@ void RenderingDevice::_stall_for_previous_frames() {
 void RenderingDevice::_flush_and_stall_for_all_frames() {
 	_stall_for_previous_frames();
 	_end_frame();
-	_execute_frame(false);
+	_execute_frame(false, false);
 	_begin_frame();
 }
 
@@ -5082,8 +5107,10 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		ERR_FAIL_COND_V(!frames[i].setup_command_buffer, FAILED);
 		frames[i].draw_command_buffer = driver->command_buffer_create(frames[i].command_pool);
 		ERR_FAIL_COND_V(!frames[i].setup_command_buffer, FAILED);
-		frames[i].blit_command_buffer = driver->command_buffer_create(frames[i].command_pool);
-		ERR_FAIL_COND_V(!frames[i].draw_command_buffer, FAILED);
+		frames[i].blit_setup_command_buffer = driver->command_buffer_create(frames[i].command_pool);
+		ERR_FAIL_COND_V(!frames[i].blit_setup_command_buffer, FAILED);
+		frames[i].blit_draw_command_buffer = driver->command_buffer_create(frames[i].command_pool);
+		ERR_FAIL_COND_V(!frames[i].blit_draw_command_buffer, FAILED);
 		frames[i].setup_semaphore = driver->semaphore_create();
 		ERR_FAIL_COND_V(!frames[i].setup_semaphore, FAILED);
 		frames[i].draw_semaphore = driver->semaphore_create();
@@ -5110,7 +5137,8 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	driver->begin_segment(frame, frames_drawn++);
 	driver->command_buffer_begin(frames[0].setup_command_buffer);
 	driver->command_buffer_begin(frames[0].draw_command_buffer);
-	driver->command_buffer_begin(frames[0].blit_command_buffer);
+	driver->command_buffer_begin(frames[0].blit_setup_command_buffer);
+	driver->command_buffer_begin(frames[0].blit_draw_command_buffer);
 
 	// Create draw graph and start it initialized as well.
 	draw_graph.initialize(driver, frames.size(), main_queue_family, SECONDARY_COMMAND_BUFFERS_PER_FRAME);

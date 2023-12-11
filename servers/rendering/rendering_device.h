@@ -1236,7 +1236,6 @@ private:
 
 		RDD::CommandPoolID command_pool;
 
-		// Used at the beginning of every frame for set-up.
 		// Used for filling up newly created buffers with data provided on creation.
 		// Primarily intended to be accessed by worker threads.
 		// Ideally this command buffer should use an async transfer queue.
@@ -1246,14 +1245,20 @@ private:
 		// Primarily intended to be used by the main thread to do most stuff.
 		RDD::CommandBufferID draw_command_buffer;
 
+		// Used at the end of every frame for set-up of on screen rendering
+		RDD::CommandBufferID blit_setup_command_buffer;
+
 		// Used at the end of every frame to blit on the swapchain
-		RDD::CommandBufferID blit_command_buffer; 
+		RDD::CommandBufferID blit_draw_command_buffer; 
 
 		// Signaled by the setup submission. Draw must wait on this semaphore.
 		RDD::SemaphoreID setup_semaphore;
 
-		// Signaled by the draw submission. Present must wait on this semaphore.
+		// Signaled by the draw submission. Blit must wait on this semaphore.
 		RDD::SemaphoreID draw_semaphore;
+
+		// Signaled by the blit submission. Present must wait on this semaphore.
+		RDD::SemaphoreID blit_semaphore;
 
 		// Signaled by the draw submission. Must wait on this fence before beginning
 		// command recording for the frame.
@@ -1296,7 +1301,7 @@ private:
 	void _free_internal(RID p_id);
 	void _begin_frame();
 	void _end_frame();
-	void _execute_frame(bool p_present);
+	void _execute_frame(bool p_present, bool p_swap);
 	void _stall_for_previous_frames();
 	void _flush_and_stall_for_all_frames();
 
