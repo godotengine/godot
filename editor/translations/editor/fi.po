@@ -24,7 +24,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-29 09:42+0000\n"
+"PO-Revision-Date: 2023-12-08 07:17+0000\n"
 "Last-Translator: Mitja <mitja.leino@hotmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -11342,6 +11342,9 @@ msgstr "Mitään ei ole yhdistetty syötteeseen '%s' solmussa '%s'."
 msgid "No root AnimationNode for the graph is set."
 msgstr "Graafille ei ole asetettu AnimationNode juurisolmua."
 
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "Syötä hex koodi (\"#ff0000\") tai nimetty väri (\"red\")."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -11360,6 +11363,9 @@ msgstr ""
 
 msgid "Switch between hexadecimal and code values."
 msgstr "Vaihda heksadesimaali- ja koodiarvojen välillä."
+
+msgid "Hex code or named color"
+msgstr "Hex koodi tai nimetty väri"
 
 msgid "Add current color as a preset."
 msgstr "Lisää nykyinen väri esiasetukseksi."
@@ -11387,6 +11393,12 @@ msgstr "Huomio!"
 
 msgid "Please Confirm..."
 msgstr "Ole hyvä ja vahvista..."
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "Sinulla ei ole oikeuksia tämän kansio sisältöön."
+
+msgid "Right-to-Left"
+msgstr "Oikealta-Vasemmalle"
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Jos \"Exp Edit\" on päällä, \"Min Value\" täytyy olla suurempi kuin 0."
@@ -11460,6 +11472,9 @@ msgstr "2D Tila"
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "Virheelliset argumentit sisäänrakennetulle funktiolle \"%s(%s)\"."
 
+msgid "Recursion is not allowed."
+msgstr "Rekursio ei ole sallittu."
+
 msgid "Varying may not be assigned in the '%s' function."
 msgstr "Varying tyyppiä ei voi sijoittaa '%s' funktiossa."
 
@@ -11483,6 +11498,9 @@ msgstr "Vastaavaa rakentaa ei löytynyt: '%s':lle."
 
 msgid "No matching function found for: '%s'."
 msgstr "Vastaavaa funktiota ei löytynyt: '%s':lle."
+
+msgid "Unknown identifier in expression: '%s'."
+msgstr "Tuntematon tunniste lausekkeessa: '%s'."
 
 msgid "Unexpected end of expression."
 msgstr "Lausekkeen odottamaton loppu."
