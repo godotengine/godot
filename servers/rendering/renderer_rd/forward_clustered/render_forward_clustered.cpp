@@ -912,6 +912,10 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					inst->gi_offset_cache = 0xFFFFFFFF;
 				}
 
+				if (p_using_opaque_gi) {
+					// Only for inheriting dynamic GI reflections.
+					flags |= INSTANCE_DATA_FLAG_USE_GI_BUFFERS;
+				}
 			} else if (inst->lightmap_sh) {
 				if (lightmap_captures_used < scene_state.max_lightmap_captures) {
 					const Color *src_capture = inst->lightmap_sh->sh;

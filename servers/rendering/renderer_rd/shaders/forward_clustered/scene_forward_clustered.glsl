@@ -1402,6 +1402,46 @@ void fragment_shader(in SceneData scene_data) {
 			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
 		}
 	}
+
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { // Inherit gi reflections on lightmapped objects
+		vec2 coord;
+
+		if (implementation_data.gi_upscale_for_msaa) {
+			vec2 base_coord = screen_uv;
+			vec2 closest_coord = base_coord;
+#ifdef USE_MULTIVIEW
+			float closest_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(base_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+#else // USE_MULTIVIEW
+			float closest_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), base_coord, 0.0).xyz * 2.0 - 1.0);
+#endif // USE_MULTIVIEW
+
+			for (int i = 0; i < 4; i++) {
+				const vec2 neighbors[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
+				vec2 neighbour_coord = base_coord + neighbors[i] * scene_data.screen_pixel_size;
+#ifdef USE_MULTIVIEW
+				float neighbour_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+#else // USE_MULTIVIEW
+				float neighbour_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), neighbour_coord, 0.0).xyz * 2.0 - 1.0);
+#endif // USE_MULTIVIEW
+				if (neighbour_ang > closest_ang) {
+					closest_ang = neighbour_ang;
+					closest_coord = neighbour_coord;
+				}
+			}
+
+			coord = closest_coord;
+
+		} else {
+			coord = screen_uv;
+		}
+
+#ifdef USE_MULTIVIEW
+		vec4 buffer_reflection = textureLod(sampler2DArray(reflection_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
+#else // USE_MULTIVIEW
+		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), coord, 0.0);
+#endif // USE_MULTIVIEW
+		specular_light = mix(specular_light, buffer_reflection.rgb, buffer_reflection.a);
+	}
 #else
 
 	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
