@@ -113,7 +113,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-01 04:24+0000\n"
+"PO-Revision-Date: 2023-12-11 21:00+0000\n"
 "Last-Translator: Cerno_b <cerno.b@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
@@ -1136,7 +1136,7 @@ msgid "Duplicate Selection"
 msgstr "Auswahl duplizieren"
 
 msgid "Duplicate Transposed"
-msgstr "Umgesetztes duplizieren"
+msgstr "Transponiert duplizieren"
 
 msgid "Delete Selection"
 msgstr "Auswahl löschen"
@@ -3545,6 +3545,17 @@ msgstr ""
 "Die Erweiterung ‚%s‘ wird deaktiviert, um weitere Fehler zu verhindern."
 
 msgid ""
+"Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."
+msgstr ""
+"Erweiterungsskript konnte nicht geladen werden: ‚%s‘. Basistyp ist nicht "
+"‚EditorPlugin‘."
+
+msgid "Unable to load addon script from path: '%s'. Script is not in tool mode."
+msgstr ""
+"Erweiterungsskript konnte nicht geladen werden: ‚%s‘. Skript ist nicht im "
+"Tool-Modus."
+
+msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
@@ -3754,7 +3765,7 @@ msgid "Orphan Resource Explorer..."
 msgstr "Verwaltung nicht verwendeter Ressourcen …"
 
 msgid "Upgrade Mesh Surfaces..."
-msgstr "Aktualisiere Mesh-Oberflächen..."
+msgstr "Mesh-Oberflächen aktualisieren..."
 
 msgid "Reload Current Project"
 msgstr "Aktuelles Projekt neu laden"
@@ -5144,7 +5155,7 @@ msgstr ""
 "Projekteinstellungen änderbar."
 
 msgid "Find..."
-msgstr "Finde …"
+msgstr "Suche…"
 
 msgid "Replace..."
 msgstr "Ersetzen …"
@@ -7517,7 +7528,7 @@ msgid "Copy Pose"
 msgstr "Pose kopieren"
 
 msgid "Clear Pose"
-msgstr "Pose/Stellung löschen"
+msgstr "Pose zurücksetzen"
 
 msgid "Multiply grid step by 2"
 msgstr "Rasterstufe verdoppeln"
@@ -8691,7 +8702,7 @@ msgid "Align Transform with View"
 msgstr "Transform an Ansicht ausrichten"
 
 msgid "Align Rotation with View"
-msgstr "Rotation auf Sicht ausrichten"
+msgstr "Rotation auf Ansicht ausrichten"
 
 msgid "Set Surface %d Override Material"
 msgstr "Override–Material der Oberfläche %d festlegen"
@@ -9043,7 +9054,7 @@ msgid "Focus Origin"
 msgstr "Auf Ursprung zentrieren"
 
 msgid "Focus Selection"
-msgstr "Auswahl fokussieren"
+msgstr "Auf Auswahl zentrieren"
 
 msgid "Toggle Freelook"
 msgstr "Freie Kamera ein-/ausschalten"
@@ -9612,10 +9623,10 @@ msgid "%s Class Reference"
 msgstr "%s Klassenreferenz"
 
 msgid "Find Next"
-msgstr "Finde Nächstes"
+msgstr "Suche Nächstes"
 
 msgid "Find Previous"
-msgstr "Finde Vorheriges"
+msgstr "Suche Vorheriges"
 
 msgid "Filter Scripts"
 msgstr "Skripte filtern"
@@ -9645,7 +9656,7 @@ msgid "Save All"
 msgstr "Alle speichern"
 
 msgid "Soft Reload Tool Script"
-msgstr "Tool-Skript für Soft-Nachladen"
+msgstr "Soft-Neuladen von Tool-Skript"
 
 msgid "Copy Script Path"
 msgstr "Skriptpfad kopieren"
@@ -9839,7 +9850,7 @@ msgid "Toggle Word Wrap"
 msgstr "Zeilenumbruch ein-/ausschalten"
 
 msgid "Trim Trailing Whitespace"
-msgstr "Kürze Whitespace am Zeilenende"
+msgstr "Whitespace am Zeilenende entfernen"
 
 msgid "Convert Indent to Spaces"
 msgstr "Konvertiere Einrückung zu Leerzeichen"
@@ -9881,7 +9892,7 @@ msgid "Toggle Breakpoint"
 msgstr "Haltepunkt ein-/ausschalten"
 
 msgid "Remove All Breakpoints"
-msgstr "Lösche alle Haltepunkte"
+msgstr "Alle Haltepunkte löschen"
 
 msgid "Go to Next Breakpoint"
 msgstr "Zum nächsten Haltepunkt springen"
@@ -16684,7 +16695,7 @@ msgid "Pick a color from the application window."
 msgstr "Eine Farbe innerhalb des Anwendungsfensters auswählen."
 
 msgid "Select a picker shape."
-msgstr "Auswahl-Shape wählen."
+msgstr "Auswahl-Geometrie wählen."
 
 msgid "Select a picker mode."
 msgstr "Auswahlmodus wählen."

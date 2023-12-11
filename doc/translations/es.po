@@ -66,12 +66,13 @@
 # Jorge Julio Torres <jjulio.tlg.89@gmail.com>, 2023.
 # simomi 073 <arcemoyanomanuel@gmail.com>, 2023.
 # Alejandro Ruiz Esclapez <ruizesa24@gmail.com>, 2023.
+# Carlos Cortes Garcia <carlos.cortes.games@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-12-06 21:45+0000\n"
-"Last-Translator: Alejandro Ruiz Esclapez <ruizesa24@gmail.com>\n"
+"PO-Revision-Date: 2023-12-11 21:00+0000\n"
+"Last-Translator: Carlos Cortes Garcia <carlos.cortes.games@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/es/>\n"
 "Language: es\n"
@@ -92,6 +93,9 @@ msgstr "Nodos"
 
 msgid "Resources"
 msgstr "Recursos"
+
+msgid "Editor-only"
+msgstr "Exclusivo-Editor"
 
 msgid "Other objects"
 msgstr "Otros objetos"
@@ -1416,6 +1420,16 @@ msgstr ""
 
 msgid "Random number generation"
 msgstr "Generación de números aleatorios"
+
+msgid ""
+"Returns the difference between the two angles, in the range of [code][-PI, "
+"+PI][/code]. When [param from] and [param to] are opposite, returns [code]-"
+"PI[/code] if [param from] is smaller than [param to], or [code]PI[/code] "
+"otherwise."
+msgstr ""
+"Devuelve la diferencia entre dos ángulos, entre [code][-PI,+PI][/code]. "
+"Cuando [param from] y [param to] son contrarios, devuelve [code]-PI[/code] si "
+"[param from] es menor que [param to], o [code]PI[/code] si no lo es."
 
 msgid "Converts from decibels to linear energy (audio)."
 msgstr "Convierte de decibeles a energía lineal (audio)."
