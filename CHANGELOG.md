@@ -7,7 +7,7 @@ previous feature release. It is equivalent to the listings on our
 Changelogs for earlier feature releases are available in their respective Git
 branches, and linked at the [end of this file](#Past-releases).
 
-## 4.2.1 - TBA
+## 4.2.1 - 2023-12-12
 
 - [Release announcement](https://godotengine.org/article/maintenance-release-godot-4-2-1)
 - [Interactive changelog](https://godotengine.github.io/godot-interactive-changelog/#4.2.1)
