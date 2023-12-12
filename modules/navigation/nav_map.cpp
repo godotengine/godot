@@ -816,7 +816,7 @@ Vector3 NavMap::get_random_point(uint32_t p_navigation_layers, bool p_uniformly)
 		RBMap<real_t, uint32_t>::Iterator E = accessible_regions_area_map.find_closest(random_accessible_regions_area_map);
 		ERR_FAIL_COND_V(!E, Vector3());
 		uint32_t random_region_index = E->value;
-		ERR_FAIL_INDEX_V(random_region_index, accessible_regions.size(), Vector3());
+		ERR_FAIL_UNSIGNED_INDEX_V(random_region_index, accessible_regions.size(), Vector3());
 
 		const NavRegion *random_region = accessible_regions[random_region_index];
 		ERR_FAIL_NULL_V(random_region, Vector3());
