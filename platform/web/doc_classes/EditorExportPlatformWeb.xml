@@ -35,6 +35,10 @@
 		</member>
 		<member name="progressive_web_app/enabled" type="bool" setter="" getter="">
 		</member>
+		<member name="progressive_web_app/ensure_cross_origin_isolation_headers" type="bool" setter="" getter="">
+			When enabled, the progressive web app will make sure that each request has cross-origin isolation headers (COEP/COOP).
+			This can simplify the setup to serve the exported game.
+		</member>
 		<member name="progressive_web_app/icon_144x144" type="String" setter="" getter="">
 		</member>
 		<member name="progressive_web_app/icon_180x180" type="String" setter="" getter="">
