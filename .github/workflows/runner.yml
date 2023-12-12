@@ -41,7 +41,7 @@ jobs:
 
   windows-build:
     if: ${{ vars.DISABLE_GODOT_CI == '' }}
-    name: 🏁 Windows
+    name: 🪟 Windows
     needs: static-checks
     uses: ./.github/workflows/windows_builds.yml
 
