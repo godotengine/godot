@@ -742,14 +742,19 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 							Dictionary d2;
 							String operator_name = Variant::get_operator_name(Variant::Operator(k));
 							d2["name"] = operator_name;
-							if (k != Variant::OP_NEGATE && k != Variant::OP_POSITIVE && k != Variant::OP_NOT && k != Variant::OP_BIT_NEGATE) {
-								d2["right_type"] = get_builtin_or_variant_type_name(Variant::Type(j));
+
+							String right_type_name = get_builtin_or_variant_type_name(Variant::Type(j));
+							bool is_unary = k == Variant::OP_NEGATE || k == Variant::OP_POSITIVE || k == Variant::OP_NOT || k == Variant::OP_BIT_NEGATE;
+							if (!is_unary) {
+								d2["right_type"] = right_type_name;
 							}
+
 							d2["return_type"] = get_builtin_or_variant_type_name(Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j)));
 
 							if (p_include_docs && builtin_doc != nullptr) {
 								for (const DocData::MethodDoc &operator_doc : builtin_doc->operators) {
-									if (operator_doc.name == "operator " + operator_name) {
+									if (operator_doc.name == "operator " + operator_name &&
+											(is_unary || operator_doc.arguments[0].type == right_type_name)) {
 										d2["description"] = fix_doc_description(operator_doc.description);
 										break;
 									}
