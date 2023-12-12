@@ -752,6 +752,20 @@ void BaseMaterial3D::_update_shader() {
 		case SPECULAR_MAX:
 			break; // Internal value, skip.
 	}
+
+	switch (specular_occlusion_mode) {
+		case SPECULAR_OCCLUSION:
+			code += ",specular_occlusion";
+			break;
+		case SPECULAR_OCCLUSION_CORRECT:
+			code += ",specular_occlusion_correct";
+			break;
+		case SPECULAR_OCCLUSION_DISABLED:
+			break;
+		case SPECULAR_OCCLUSION_MAX:
+			break; // Internal value, skip.
+	}
+
 	if (features[FEATURE_SUBSURFACE_SCATTERING] && flags[FLAG_SUBSURFACE_MODE_SKIN]) {
 		code += ",sss_mode_skin";
 	}
@@ -1879,6 +1893,19 @@ BaseMaterial3D::SpecularMode BaseMaterial3D::get_specular_mode() const {
 	return specular_mode;
 }
 
+void BaseMaterial3D::set_specular_occlusion_mode(SpecularOcclusionMode p_mode) {
+	if (specular_occlusion_mode == p_mode) {
+		return;
+	}
+
+	specular_occlusion_mode = p_mode;
+	_queue_shader_change();
+}
+
+BaseMaterial3D::SpecularOcclusionMode BaseMaterial3D::get_specular_occlusion_mode() const {
+	return specular_occlusion_mode;
+}
+
 void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 
@@ -2614,6 +2641,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_specular_mode", "specular_mode"), &BaseMaterial3D::set_specular_mode);
 	ClassDB::bind_method(D_METHOD("get_specular_mode"), &BaseMaterial3D::get_specular_mode);
 
+	ClassDB::bind_method(D_METHOD("set_specular_occlusion_mode", "specular_occlusion_mode"), &BaseMaterial3D::set_specular_occlusion_mode);
+	ClassDB::bind_method(D_METHOD("get_specular_occlusion_mode"), &BaseMaterial3D::get_specular_occlusion_mode);
+
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enable"), &BaseMaterial3D::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &BaseMaterial3D::get_flag);
 
@@ -2740,6 +2770,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shading_mode", PROPERTY_HINT_ENUM, "Unshaded,Per-Pixel,Per-Vertex"), "set_shading_mode", "get_shading_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Toon"), "set_diffuse_mode", "get_diffuse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_occlusion_mode", PROPERTY_HINT_ENUM, "Default,Correct,Disabled"), "set_specular_occlusion_mode", "get_specular_occlusion_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_fog"), "set_flag", "get_flag", FLAG_DISABLE_FOG);
 
@@ -3005,6 +3036,10 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPECULAR_SCHLICK_GGX);
 	BIND_ENUM_CONSTANT(SPECULAR_TOON);
 	BIND_ENUM_CONSTANT(SPECULAR_DISABLED);
+
+	BIND_ENUM_CONSTANT(SPECULAR_OCCLUSION);
+	BIND_ENUM_CONSTANT(SPECULAR_OCCLUSION_CORRECT);
+	BIND_ENUM_CONSTANT(SPECULAR_OCCLUSION_DISABLED);
 
 	BIND_ENUM_CONSTANT(BILLBOARD_DISABLED);
 	BIND_ENUM_CONSTANT(BILLBOARD_ENABLED);

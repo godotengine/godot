@@ -228,6 +228,8 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("alpha_to_coverage_and_one") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("debug_shadow_splits") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("fog_disabled") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("specular_occlusion") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("specular_occlusion_correct") });
 	}
 
 	/************ CANVAS ITEM **************************/

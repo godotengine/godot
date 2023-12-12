@@ -275,6 +275,13 @@ public:
 		SPECULAR_MAX
 	};
 
+	enum SpecularOcclusionMode {
+		SPECULAR_OCCLUSION,
+		SPECULAR_OCCLUSION_CORRECT,
+		SPECULAR_OCCLUSION_DISABLED,
+		SPECULAR_OCCLUSION_MAX
+	};
+
 	enum BillboardMode {
 		BILLBOARD_DISABLED,
 		BILLBOARD_ENABLED,
@@ -319,6 +326,7 @@ private:
 		uint64_t cull_mode : get_num_bits(CULL_MAX - 1);
 		uint64_t diffuse_mode : get_num_bits(DIFFUSE_MAX - 1);
 		uint64_t specular_mode : get_num_bits(SPECULAR_MAX - 1);
+		uint64_t specular_occlusion_mode : get_num_bits(SPECULAR_OCCLUSION_MAX - 1);
 		uint64_t billboard_mode : get_num_bits(BILLBOARD_MAX - 1);
 		uint64_t detail_blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
 		uint64_t roughness_channel : get_num_bits(TEXTURE_CHANNEL_MAX - 1);
@@ -374,6 +382,7 @@ private:
 		mk.detail_blend_mode = detail_blend_mode;
 		mk.diffuse_mode = diffuse_mode;
 		mk.specular_mode = specular_mode;
+		mk.specular_occlusion_mode = specular_occlusion_mode;
 		mk.billboard_mode = billboard_mode;
 		mk.deep_parallax = deep_parallax;
 		mk.grow = grow_enabled;
@@ -536,6 +545,7 @@ private:
 	CullMode cull_mode = CULL_BACK;
 	bool flags[FLAG_MAX] = {};
 	SpecularMode specular_mode = SPECULAR_SCHLICK_GGX;
+	SpecularOcclusionMode specular_occlusion_mode = SPECULAR_OCCLUSION;
 	DiffuseMode diffuse_mode = DIFFUSE_BURLEY;
 	BillboardMode billboard_mode;
 	EmissionOperator emission_op = EMISSION_OP_ADD;
@@ -676,6 +686,9 @@ public:
 	void set_specular_mode(SpecularMode p_mode);
 	SpecularMode get_specular_mode() const;
 
+	void set_specular_occlusion_mode(SpecularOcclusionMode p_mode);
+	SpecularOcclusionMode get_specular_occlusion_mode() const;
+
 	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;
 
@@ -793,6 +806,7 @@ VARIANT_ENUM_CAST(BaseMaterial3D::CullMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::Flags)
 VARIANT_ENUM_CAST(BaseMaterial3D::DiffuseMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::SpecularMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::SpecularOcclusionMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::BillboardMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::TextureChannel)
 VARIANT_ENUM_CAST(BaseMaterial3D::EmissionOperator)

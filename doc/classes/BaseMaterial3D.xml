@@ -358,6 +358,10 @@
 			The method for rendering the specular blob. See [enum SpecularMode].
 			[b]Note:[/b] [member specular_mode] only applies to the specular blob. It does not affect specular reflections from the sky, screen-space reflections, [VoxelGI], SDFGI or [ReflectionProbe]s. To disable reflections from these sources as well, set [member metallic_specular] to [code]0.0[/code] instead.
 		</member>
+		<member name="specular_occlusion_mode" type="int" setter="set_specular_occlusion_mode" getter="get_specular_occlusion_mode" enum="BaseMaterial3D.SpecularOcclusionMode" default="0">
+			The method for occluding specular light from [LightmapGI] data. See [enum SpecularOcclusionMode].
+			[b]Note:[/b] This only apply to materials under the influence of a [LightmapGI] node and reflective/metallic materials.
+		</member>
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges. Subsurface scattering quality is controlled by [member ProjectSettings.rendering/environment/subsurface_scattering/subsurface_scattering_quality].
 		</member>
@@ -726,6 +730,15 @@
 		</constant>
 		<constant name="SPECULAR_DISABLED" value="2" enum="SpecularMode">
 			No specular blob. This is slightly faster to render than other specular modes.
+		</constant>
+		<constant name="SPECULAR_OCCLUSION" value="0" enum="SpecularOcclusionMode">
+			Default specular occlusion, reduce the specular intensity by current [LightmapGI] pixel brightness. 
+		</constant>
+		<constant name="SPECULAR_OCCLUSION_CORRECT" value="1" enum="SpecularOcclusionMode">
+			Specular occlusion that gives a more realistic appearence by keeping more energy from mixing metallic and roughness values.
+		</constant>
+		<constant name="SPECULAR_OCCLUSION_DISABLED" value="2" enum="SpecularOcclusionMode">
+			No specular occlusion.
 		</constant>
 		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
 			Billboard mode is disabled.
