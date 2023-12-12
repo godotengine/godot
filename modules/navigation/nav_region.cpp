@@ -135,7 +135,7 @@ Vector3 NavRegion::get_random_point(uint32_t p_navigation_layers, bool p_uniform
 		RBMap<real_t, uint32_t>::Iterator region_E = region_area_map.find_closest(region_area_map_pos);
 		ERR_FAIL_COND_V(!region_E, Vector3());
 		uint32_t rrp_polygon_index = region_E->value;
-		ERR_FAIL_INDEX_V(rrp_polygon_index, region_polygons.size(), Vector3());
+		ERR_FAIL_UNSIGNED_INDEX_V(rrp_polygon_index, region_polygons.size(), Vector3());
 
 		const gd::Polygon &rr_polygon = region_polygons[rrp_polygon_index];
 
@@ -161,7 +161,7 @@ Vector3 NavRegion::get_random_point(uint32_t p_navigation_layers, bool p_uniform
 		RBMap<real_t, uint32_t>::Iterator polygon_E = polygon_area_map.find_closest(polygon_area_map_pos);
 		ERR_FAIL_COND_V(!polygon_E, Vector3());
 		uint32_t rrp_face_index = polygon_E->value;
-		ERR_FAIL_INDEX_V(rrp_face_index, rr_polygon.points.size(), Vector3());
+		ERR_FAIL_UNSIGNED_INDEX_V(rrp_face_index, rr_polygon.points.size(), Vector3());
 
 		const Face3 face(rr_polygon.points[0].pos, rr_polygon.points[rrp_face_index - 1].pos, rr_polygon.points[rrp_face_index].pos);
 
