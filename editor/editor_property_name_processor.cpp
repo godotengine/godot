@@ -153,6 +153,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["cd"] = "CD";
 	capitalize_string_remaps["cpu"] = "CPU";
 	capitalize_string_remaps["csg"] = "CSG";
+	capitalize_string_remaps["d3d12"] = "D3D12";
 	capitalize_string_remaps["db"] = "dB";
 	capitalize_string_remaps["dof"] = "DoF";
 	capitalize_string_remaps["dpi"] = "DPI";

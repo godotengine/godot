@@ -179,32 +179,65 @@ Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset>
 }
 
 Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	String custom_debug = p_preset->get("custom_template/debug");
+	String custom_release = p_preset->get("custom_template/release");
+	String arch = p_preset->get("binary_format/architecture");
+
+	String template_path = p_debug ? custom_debug : custom_release;
+	template_path = template_path.strip_edges();
+	if (template_path.is_empty()) {
+		template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", arch));
+	}
+
 	int export_angle = p_preset->get("application/export_angle");
 	bool include_angle_libs = false;
 	if (export_angle == 0) {
-		include_angle_libs = String(GLOBAL_GET("rendering/gl_compatibility/driver.windows")) == "opengl3_angle";
+		include_angle_libs = (String(GLOBAL_GET("rendering/gl_compatibility/driver.windows")) == "opengl3_angle") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) == "gl_compatibility");
 	} else if (export_angle == 1) {
 		include_angle_libs = true;
 	}
-
 	if (include_angle_libs) {
-		String custom_debug = p_preset->get("custom_template/debug");
-		String custom_release = p_preset->get("custom_template/release");
-		String arch = p_preset->get("binary_format/architecture");
-
-		String template_path = p_debug ? custom_debug : custom_release;
-
-		template_path = template_path.strip_edges();
-
-		if (template_path.is_empty()) {
-			template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", arch));
-		}
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (da->file_exists(template_path.get_base_dir().path_join("libEGL." + arch + ".dll"))) {
 			da->copy(template_path.get_base_dir().path_join("libEGL." + arch + ".dll"), p_path.get_base_dir().path_join("libEGL.dll"), get_chmod_flags());
 		}
 		if (da->file_exists(template_path.get_base_dir().path_join("libGLESv2." + arch + ".dll"))) {
 			da->copy(template_path.get_base_dir().path_join("libGLESv2." + arch + ".dll"), p_path.get_base_dir().path_join("libGLESv2.dll"), get_chmod_flags());
+		}
+	}
+
+	int export_d3d12 = p_preset->get("application/export_d3d12");
+	bool agility_sdk_multiarch = p_preset->get("application/d3d12_agility_sdk_multiarch");
+	bool include_dxil_libs = false;
+	if (export_d3d12 == 0) {
+		include_dxil_libs = (String(GLOBAL_GET("rendering/rendering_device/driver.windows")) == "d3d12") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) != "gl_compatibility");
+	} else if (export_d3d12 == 1) {
+		include_dxil_libs = true;
+	}
+	if (include_dxil_libs) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (da->file_exists(template_path.get_base_dir().path_join("dxil." + arch + ".dll"))) {
+			da->make_dir_recursive(p_path.get_base_dir().path_join(arch));
+			da->copy(template_path.get_base_dir().path_join("dxil." + arch + ".dll"), p_path.get_base_dir().path_join(arch).path_join("dxil.dll"), get_chmod_flags());
+		}
+		if (da->file_exists(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"))) {
+			if (agility_sdk_multiarch) {
+				da->make_dir_recursive(p_path.get_base_dir().path_join(arch));
+				da->copy(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"), p_path.get_base_dir().path_join(arch).path_join("D3D12Core.dll"), get_chmod_flags());
+			} else {
+				da->copy(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"), p_path.get_base_dir().path_join("D3D12Core.dll"), get_chmod_flags());
+			}
+		}
+		if (da->file_exists(template_path.get_base_dir().path_join("d3d12SDKLayers." + arch + ".dll"))) {
+			if (agility_sdk_multiarch) {
+				da->make_dir_recursive(p_path.get_base_dir().path_join(arch));
+				da->copy(template_path.get_base_dir().path_join("d3d12SDKLayers." + arch + ".dll"), p_path.get_base_dir().path_join(arch).path_join("d3d12SDKLayers.dll"), get_chmod_flags());
+			} else {
+				da->copy(template_path.get_base_dir().path_join("d3d12SDKLayers." + arch + ".dll"), p_path.get_base_dir().path_join("d3d12SDKLayers.dll"), get_chmod_flags());
+			}
+		}
+		if (da->file_exists(template_path.get_base_dir().path_join("WinPixEventRuntime." + arch + ".dll"))) {
+			da->copy(template_path.get_base_dir().path_join("WinPixEventRuntime." + arch + ".dll"), p_path.get_base_dir().path_join("WinPixEventRuntime.dll"), get_chmod_flags());
 		}
 	}
 
@@ -347,7 +380,7 @@ bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExpor
 
 	// Hide resources.
 	bool mod_res = p_preset->get("application/modify_resources");
-	if (!mod_res && p_option != "application/modify_resources" && p_option != "application/export_angle" && p_option.begins_with("application/")) {
+	if (!mod_res && p_option != "application/modify_resources" && p_option != "application/export_angle" && p_option != "application/export_d3d12" && p_option != "application/d3d12_agility_sdk_multiarch" && p_option.begins_with("application/")) {
 		return false;
 	}
 
@@ -387,6 +420,8 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/trademarks"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_d3d12", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/d3d12_agility_sdk_multiarch"), true, true));
 
 	String run_script = "Expand-Archive -LiteralPath '{temp_dir}\\{archive_name}' -DestinationPath '{temp_dir}'\n"
 						"$action = New-ScheduledTaskAction -Execute '{temp_dir}\\{exe_name}' -Argument '{cmd_args}'\n"
