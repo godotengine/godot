@@ -156,6 +156,9 @@ gmon.out
 # Mypy
 .mypy_cache
 
+# Pytest
+.pytest_cache
+
 # Qt Creator
 *.config
 *.creator
