@@ -1999,7 +1999,12 @@ void fragment_shader(in SceneData scene_data) {
 			tint = mix(tint, vec3(1.0), shadow);
 			shadow = 1.0;
 #endif
-
+			float light_attenuation = 1.0;
+#ifdef SHADOW_ATTENUATION_USED
+			float shadow_attenuation = shadow;
+#else
+			light_attenuation = shadow;
+#endif
 			float size_A = sc_use_light_soft_shadows ? directional_lights.data[i].size : 0.0;
 
 			light_compute(normal, directional_lights.data[i].direction, normalize(view), size_A,
@@ -2008,7 +2013,7 @@ void fragment_shader(in SceneData scene_data) {
 #else
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
 #endif
-					true, shadow, f0, orms, 1.0, albedo, alpha,
+					true, light_attenuation, f0, orms, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -2027,6 +2032,9 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_ANISOTROPY_USED
 					binormal,
 					tangent, anisotropy,
+#endif
+#ifdef SHADOW_ATTENUATION_USED
+					shadow_attenuation,
 #endif
 					diffuse_light,
 					specular_light);
