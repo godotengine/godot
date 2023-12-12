@@ -50,7 +50,7 @@ class DisplayServer : public Object {
 
 	static DisplayServer *singleton;
 	static bool hidpi_allowed;
-	static HashMap<StringName, Callable> clipboard_map;
+	static HashMap<StringName, Callable> clipboard_handler_map;
 
 #ifndef DISABLE_DEPRECATED
 	mutable HashMap<String, RID> menu_names;
@@ -302,6 +302,7 @@ public:
 
 	Error clipboard_add_type_handler(const String &p_type, const Callable &p_handler) const;
 	Error clipboard_remove_type_handler(const String &p_type) const;
+	bool clipboard_has_type_handler(const String &p_type) const;
 	virtual bool clipboard_has_type(const String &p_type) const;
 	Variant clipboard_get_type(const String &p_type) const;
 

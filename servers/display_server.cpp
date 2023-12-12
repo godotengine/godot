@@ -49,7 +49,7 @@
 DisplayServer *DisplayServer::singleton = nullptr;
 
 bool DisplayServer::hidpi_allowed = false;
-HashMap<StringName, Callable> DisplayServer::clipboard_map;
+HashMap<StringName, Callable> DisplayServer::clipboard_handler_map;
 
 bool DisplayServer::window_early_clear_override_enabled = false;
 Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
@@ -552,24 +552,28 @@ Vector<uint8_t> DisplayServer::clipboard_get_raw_type(const String &p_type) cons
 
 Variant DisplayServer::clipboard_get_type(const String &p_type) const {
 	StringName type = StringName(p_type);
-	ERR_FAIL_COND_V(!clipboard_map.has(type), Variant::NIL);
+	ERR_FAIL_COND_V(!clipboard_handler_map.has(type), Variant::NIL);
 	Vector<uint8_t> raw = clipboard_get_raw_type(p_type);
 	ERR_FAIL_COND_V(raw.is_empty(), Variant::NIL);
-	return clipboard_map.get(type).call(raw);
+	return clipboard_handler_map.get(type).call(raw);
 }
 
 Error DisplayServer::clipboard_add_type_handler(const String &p_type, const Callable &p_handler) const {
 	StringName type = StringName(p_type);
-	ERR_FAIL_COND_V_MSG(clipboard_map.has(type), ERR_ALREADY_EXISTS, "Clipboard already has handler for type");
-	clipboard_map.insert(type, p_handler);
+	ERR_FAIL_COND_V_MSG(clipboard_handler_map.has(type), ERR_ALREADY_EXISTS, "Clipboard already has handler for type");
+	clipboard_handler_map.insert(type, p_handler);
 	return OK;
 }
 
 Error DisplayServer::clipboard_remove_type_handler(const String &p_type) const {
 	StringName type = StringName(p_type);
-	ERR_FAIL_COND_V_MSG(!clipboard_map.has(type), ERR_INVALID_PARAMETER, "Clipboard doesn't have handler for type");
-	clipboard_map.erase(type);
+	ERR_FAIL_COND_V_MSG(!clipboard_handler_map.has(type), ERR_INVALID_PARAMETER, "Clipboard doesn't have handler for type");
+	clipboard_handler_map.erase(type);
 	return OK;
+}
+
+bool DisplayServer::clipboard_has_type_handler(const String &p_type) const {
+	return clipboard_handler_map.has(StringName(p_type));
 }
 
 void DisplayServer::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
@@ -921,6 +925,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clipboard_has_type", "type"), &DisplayServer::clipboard_has_type);
 	ClassDB::bind_method(D_METHOD("clipboard_get_type", "type"), &DisplayServer::clipboard_get_type);
 	ClassDB::bind_method(D_METHOD("clipboard_add_type_handler", "type", "handler"), &DisplayServer::clipboard_add_type_handler);
+	ClassDB::bind_method(D_METHOD("clipboard_has_type_handler", "type"), &DisplayServer::clipboard_has_type_handler);
 	ClassDB::bind_method(D_METHOD("clipboard_remove_type_handler", "type"), &DisplayServer::clipboard_remove_type_handler);
 
 	ClassDB::bind_method(D_METHOD("get_display_cutouts"), &DisplayServer::get_display_cutouts);
@@ -1342,6 +1347,13 @@ bool DisplayServer::can_create_rendering_device() {
 	return false;
 }
 
+Ref<Image> _get_png_from_buffer(Vector<uint8_t> p_buffer) {
+	Ref<Image> image;
+	image.instantiate();
+	image->load_png_from_buffer(p_buffer);
+	return image;
+}
+
 DisplayServer::DisplayServer() {
 	singleton = this;
 	Input::set_mouse_mode_func = _input_set_mouse_mode;
@@ -1349,6 +1361,8 @@ DisplayServer::DisplayServer() {
 	Input::warp_mouse_func = _input_warp;
 	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
 	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;
+
+	clipboard_handler_map.insert(StringName("image/png"), callable_mp_static(_get_png_from_buffer));
 }
 
 DisplayServer::~DisplayServer() {

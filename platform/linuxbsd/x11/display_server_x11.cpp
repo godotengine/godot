@@ -979,6 +979,7 @@ bool DisplayServerX11::clipboard_has_image() const {
 }
 
 bool DisplayServerX11::clipboard_has_type(const String &p_type) const {
+	ERR_FAIL_COND_V_MSG(!clipboard_has_type_handler(p_type), false, "No handler registered for '" + p_type + "'");
 	Atom target = _clipboard_get_type_target(
 			XInternAtom(x11_display, "CLIPBOARD", 0),
 			windows[MAIN_WINDOW_ID].x11_window,
