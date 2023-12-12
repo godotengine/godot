@@ -535,6 +535,11 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 	task_mutex.unlock();
 }
 
+int WorkerThreadPool::get_thread_index() {
+	Thread::ID tid = Thread::get_caller_id();
+	return singleton->thread_ids.has(tid) ? singleton->thread_ids[tid] : -1;
+}
+
 void WorkerThreadPool::init(int p_thread_count, bool p_use_native_threads_low_priority, float p_low_priority_task_ratio) {
 	ERR_FAIL_COND(threads.size() > 0);
 	if (p_thread_count < 0) {
