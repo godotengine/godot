@@ -408,6 +408,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="emulate_mouse_from_touch" type="bool" setter="set_emulate_mouse_from_touch" getter="is_emulating_mouse_from_touch">
+			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen. See also [member ProjectSettings.input_devices/pointing/emulate_mouse_from_touch].
+		</member>
+		<member name="emulate_touch_from_mouse" type="bool" setter="set_emulate_touch_from_mouse" getter="is_emulating_touch_from_mouse">
+			If [code]true[/code], sends touch input events when clicking or dragging the mouse. See also [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
+		</member>
 		<member name="mouse_mode" type="int" setter="set_mouse_mode" getter="get_mouse_mode" enum="Input.MouseMode">
 			Controls the mouse mode. See [enum MouseMode] for more information.
 		</member>
