@@ -973,8 +973,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 			}
 
 			if (p_map.has(path)) {
-				String np = p_map[path];
-				path = np;
+				path = p_map[path];
 			}
 
 			if (relative) {

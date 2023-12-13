@@ -4826,16 +4826,14 @@ void VisualShaderEditor::_varying_create() {
 	add_varying_dialog->hide();
 }
 
-void VisualShaderEditor::_varying_name_changed(const String &p_text) {
-	String name = p_text;
-
-	if (!name.is_valid_identifier()) {
+void VisualShaderEditor::_varying_name_changed(const String &p_name) {
+	if (!p_name.is_valid_identifier()) {
 		varying_error_label->show();
 		varying_error_label->set_text(TTR("Invalid name for varying."));
 		add_varying_dialog->get_ok_button()->set_disabled(true);
 		return;
 	}
-	if (visual_shader->has_varying(name)) {
+	if (visual_shader->has_varying(p_name)) {
 		varying_error_label->show();
 		varying_error_label->set_text(TTR("Varying with that name is already exist."));
 		add_varying_dialog->get_ok_button()->set_disabled(true);

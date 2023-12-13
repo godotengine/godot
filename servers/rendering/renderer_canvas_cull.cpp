@@ -1396,14 +1396,12 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 	ERR_FAIL_COND(!p_bones.is_empty() && p_bones.size() != vertex_count * 4);
 	ERR_FAIL_COND(!p_weights.is_empty() && p_weights.size() != vertex_count * 4);
 
-	Vector<int> indices = p_indices;
-
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_NULL(polygon);
 
 	polygon->texture = p_texture;
 
-	polygon->polygon.create(indices, p_points, p_colors, p_uvs, p_bones, p_weights);
+	polygon->polygon.create(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights);
 
 	polygon->primitive = RS::PRIMITIVE_TRIANGLES;
 }

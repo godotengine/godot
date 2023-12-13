@@ -5314,8 +5314,7 @@ int TextEdit::get_line_wrap_index_at_column(int p_line, int p_column) const {
 	Vector<String> lines = get_line_wrapped_text(p_line);
 	for (int i = 0; i < lines.size(); i++) {
 		wrap_index = i;
-		String s = lines[wrap_index];
-		col += s.length();
+		col += lines[wrap_index].length();
 		if (col > p_column) {
 			break;
 		}
