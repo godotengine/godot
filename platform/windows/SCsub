@@ -61,9 +61,24 @@ if env["vsproj"]:
             env.vs_srcs += ["platform/windows/" + str(x)]
 
 if env["d3d12"]:
-    arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
+    dxc_target_aliases = {
+        "x86_32": "x86",
+        "x86_64": "x64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+    dxc_arch_subdir = dxc_target_aliases[env["arch"]]
+
+    agility_target_aliases = {
+        "x86_32": "win32",
+        "x86_64": "x64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+    agility_arch_subdir = agility_target_aliases[env["arch"]]
+
     # Used in cases where we can have multiple archs side-by-side.
-    arch_bin_dir = "#bin/arm64" if env["arch"] == "arm64" else "#bin/x86_64"
+    arch_bin_dir = "#bin/" + env["arch"]
 
     # DXC
     if env["dxc_path"] != "":
@@ -72,7 +87,9 @@ if env["d3d12"]:
         # Let's copy to both and let the user decide the distribution model.
         for v in ["#bin", arch_bin_dir]:
             env.Command(
-                v + "/" + dxc_dll, env["dxc_path"] + "/bin/" + arch_subdir + "/" + dxc_dll, Copy("$TARGET", "$SOURCE")
+                v + "/" + dxc_dll,
+                env["dxc_path"] + "/bin/" + dxc_arch_subdir + "/" + dxc_dll,
+                Copy("$TARGET", "$SOURCE"),
             )
 
     # Agility SDK
@@ -83,7 +100,7 @@ if env["d3d12"]:
         for dll in agility_dlls:
             env.Command(
                 target_dir + "/" + dll,
-                env["agility_sdk_path"] + "/build/native/bin/" + arch_subdir + "/" + dll,
+                env["agility_sdk_path"] + "/build/native/bin/" + agility_arch_subdir + "/" + dll,
                 Copy("$TARGET", "$SOURCE"),
             )
 
@@ -91,7 +108,9 @@ if env["d3d12"]:
     if env["pix_path"] != "":
         pix_dll = "WinPixEventRuntime.dll"
         env.Command(
-            "#bin/" + pix_dll, env["pix_path"] + "/bin/" + arch_subdir + "/" + pix_dll, Copy("$TARGET", "$SOURCE")
+            "#bin/" + pix_dll,
+            env["pix_path"] + "/bin/" + dxc_arch_subdir + "/" + pix_dll,
+            Copy("$TARGET", "$SOURCE"),
         )
 
 if not os.getenv("VCINSTALLDIR"):
