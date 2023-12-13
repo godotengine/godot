@@ -276,8 +276,8 @@ public:
 	};
 
 	enum SpecularOcclusionMode {
-		SPECULAR_OCCLUSION,
-		SPECULAR_OCCLUSION_CORRECT,
+		SPECULAR_OCCLUSION_DEFAULT,
+		SPECULAR_OCCLUSION_CONSERVATIVE,
 		SPECULAR_OCCLUSION_DISABLED,
 		SPECULAR_OCCLUSION_MAX
 	};
@@ -545,7 +545,7 @@ private:
 	CullMode cull_mode = CULL_BACK;
 	bool flags[FLAG_MAX] = {};
 	SpecularMode specular_mode = SPECULAR_SCHLICK_GGX;
-	SpecularOcclusionMode specular_occlusion_mode = SPECULAR_OCCLUSION;
+	SpecularOcclusionMode specular_occlusion_mode = SPECULAR_OCCLUSION_DEFAULT;
 	DiffuseMode diffuse_mode = DIFFUSE_BURLEY;
 	BillboardMode billboard_mode;
 	EmissionOperator emission_op = EMISSION_OP_ADD;

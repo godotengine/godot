@@ -1359,30 +1359,30 @@ void fragment_shader(in SceneData scene_data) {
 		const float c5 = 0.247708;
 
 		vec3 c = (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-								 c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
-								 c4 * lightmap_captures.data[index].sh[0].rgb -
-								 c5 * lightmap_captures.data[index].sh[6].rgb +
-								 2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
-								 2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
-								 2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
-								 2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
-								 2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
-								 2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z) *
+						 c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
+						 c4 * lightmap_captures.data[index].sh[0].rgb -
+						 c5 * lightmap_captures.data[index].sh[6].rgb +
+						 2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+						 2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+						 2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+						 2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+						 2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+						 2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z) *
 				scene_data.emissive_exposure_normalization;
 
-#if defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CORRECT)
+#if defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 		float specular_occlusion = (c.r * 0.3 + c.g * 0.59 + c.b * 0.11) * 2.0; // brightness from lightmap color
 		specular_occlusion = min(1.0, specular_occlusion * scene_data.emissive_exposure_normalization);
 
-#if defined(SPECULAR_OCCLUSION_CORRECT)
+#if defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 		float reflective_f = (1.0 - roughness) * metallic;
 		// 10.0 is a number picked by hand, it gives the intended effect in most scenarios
 		//     (low enough for occlusion, high enough for reaction to lights and shadows)
-		specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion); 
-#endif // defined(SPECULAR_OCCLUSION_CORRECT)
+		specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+#endif // defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 
 		specular_light *= specular_occlusion;
-#endif // defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CORRECT)
+#endif // defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 		ambient_light += c;
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
@@ -1415,24 +1415,24 @@ void fragment_shader(in SceneData scene_data) {
 			}
 
 		} else {
-#if defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CORRECT)
+#if defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 			vec3 c = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
 
 			float specular_occlusion = (c.r * 0.3 + c.g * 0.59 + c.b * 0.11) * 2.0; // brightness from lightmap color
 			specular_occlusion = min(1.0, specular_occlusion * lightmaps.data[ofs].exposure_normalization);
 
-#if defined(SPECULAR_OCCLUSION_CORRECT)
+#if defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 			float reflective_f = (1.0 - roughness) * metallic;
 			// 10.0 is a number picked by hand, it gives the intended effect in most scenarios
 			//     (low enough for occlusion, high enough for reaction to lights and shadows)
-			specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion); 
-#endif // defined(SPECULAR_OCCLUSION_CORRECT)
+			specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+#endif // defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 
 			specular_light *= specular_occlusion;
 			ambient_light += c;
-#else // defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CORRECT)
+#else // defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
-#endif // defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CORRECT)
+#endif // defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 		}
 	}
 

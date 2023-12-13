@@ -731,11 +731,11 @@
 		<constant name="SPECULAR_DISABLED" value="2" enum="SpecularMode">
 			No specular blob. This is slightly faster to render than other specular modes.
 		</constant>
-		<constant name="SPECULAR_OCCLUSION" value="0" enum="SpecularOcclusionMode">
+		<constant name="SPECULAR_OCCLUSION_DEFAULT" value="0" enum="SpecularOcclusionMode">
 			Default specular occlusion, reduce the specular intensity by current [LightmapGI] pixel brightness. 
 		</constant>
-		<constant name="SPECULAR_OCCLUSION_CORRECT" value="1" enum="SpecularOcclusionMode">
-			Specular occlusion that gives a more realistic appearence by keeping more energy from mixing metallic and roughness values.
+		<constant name="SPECULAR_OCCLUSION_CONSERVATIVE" value="1" enum="SpecularOcclusionMode">
+			Specular occlusion that conserve most of its energy from mixing metallic and roughness values, resulting in more realistic surfaces.
 		</constant>
 		<constant name="SPECULAR_OCCLUSION_DISABLED" value="2" enum="SpecularOcclusionMode">
 			No specular occlusion.
