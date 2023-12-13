@@ -7690,7 +7690,11 @@ void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r
 	op.version = ++version;
 	op.chain_forward = false;
 	op.chain_backward = false;
-	op.start_carets = carets;
+	if (next_operation_is_complex) {
+		op.start_carets = current_op.start_carets;
+	} else {
+		op.start_carets = carets;
+	}
 	op.end_carets = carets;
 
 	// See if it should just be set as current op.
@@ -7745,7 +7749,11 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 	op.version = ++version;
 	op.chain_forward = false;
 	op.chain_backward = false;
-	op.start_carets = carets;
+	if (next_operation_is_complex) {
+		op.start_carets = current_op.start_carets;
+	} else {
+		op.start_carets = carets;
+	}
 	op.end_carets = carets;
 
 	// See if it should just be set as current op.
