@@ -916,6 +916,11 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					// Only for inheriting dynamic GI reflections.
 					flags |= INSTANCE_DATA_FLAG_USE_GI_BUFFERS;
 				}
+
+				if (inst->voxel_gi_instances[0].is_valid()) {
+					// Only for inheriting VoxelGI reflections.
+					flags |= INSTANCE_DATA_FLAG_USE_VOXEL_GI;
+				}
 			} else if (inst->lightmap_sh) {
 				if (lightmap_captures_used < scene_state.max_lightmap_captures) {
 					const Color *src_capture = inst->lightmap_sh->sh;
