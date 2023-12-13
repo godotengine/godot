@@ -3059,7 +3059,17 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				array[Mesh::ARRAY_TANGENT] = tangents;
 			}
 
-			if (p_state->force_disable_compression || !a.has("POSITION") || !a.has("NORMAL") || p.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
+			// Disable compression if all z equals 0 (the mesh is 2D).
+			const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
+			bool is_mesh_2d = true;
+			for (int k = 0; k < vertices.size(); k++) {
+				if (!Math::is_zero_approx(vertices[k].z)) {
+					is_mesh_2d = false;
+					break;
+				}
+			}
+
+			if (p_state->force_disable_compression || is_mesh_2d || !a.has("POSITION") || !a.has("NORMAL") || p.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
 				flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
