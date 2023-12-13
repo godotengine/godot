@@ -1346,6 +1346,7 @@ void fragment_shader(in SceneData scene_data) {
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 #ifdef USE_LIGHTMAP
+	float specular_occlusion;
 
 	//lightmap
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
@@ -1371,7 +1372,7 @@ void fragment_shader(in SceneData scene_data) {
 				scene_data.emissive_exposure_normalization;
 
 #if defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
-		float specular_occlusion = (c.r * 0.3 + c.g * 0.59 + c.b * 0.11) * 2.0; // brightness from lightmap color
+		specular_occlusion = (c.r * 0.3 + c.g * 0.59 + c.b * 0.11) * 2.0; // brightness from lightmap color
 		specular_occlusion = min(1.0, specular_occlusion * scene_data.emissive_exposure_normalization);
 
 #if defined(SPECULAR_OCCLUSION_CONSERVATIVE)
@@ -1418,7 +1419,7 @@ void fragment_shader(in SceneData scene_data) {
 #if defined(SPECULAR_OCCLUSION) || defined(SPECULAR_OCCLUSION_CONSERVATIVE)
 			vec3 c = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
 
-			float specular_occlusion = (c.r * 0.3 + c.g * 0.59 + c.b * 0.11) * 2.0; // brightness from lightmap color
+			specular_occlusion = (c.r * 0.3 + c.g * 0.59 + c.b * 0.11) * 2.0; // brightness from lightmap color
 			specular_occlusion = min(1.0, specular_occlusion * lightmaps.data[ofs].exposure_normalization);
 
 #if defined(SPECULAR_OCCLUSION_CONSERVATIVE)
@@ -1473,7 +1474,8 @@ void fragment_shader(in SceneData scene_data) {
 #else // USE_MULTIVIEW
 		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), coord, 0.0);
 #endif // USE_MULTIVIEW
-		specular_light = mix(specular_light, buffer_reflection.rgb, buffer_reflection.a);
+		// 'min(specular_occlusion * 10, 1.0)' is for allowing SDF reflections to be more impactful as they should already be more correct
+		specular_light = mix(specular_light, buffer_reflection.rgb * min(specular_occlusion * 10, 1.0), buffer_reflection.a);
 	}
 #else
 
