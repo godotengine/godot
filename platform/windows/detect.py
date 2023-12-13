@@ -188,11 +188,11 @@ def get_opts():
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         # Direct3D 12 support.
-        ("mesa_libs", "Path to the MESA/NIR static libraries (required for D3D12)", ""),
-        ("dxc_path", "Path to the DirectX Shader Compiler distribution (required for D3D12)", ""),
-        ("agility_sdk_path", "Path to the Agility SDK distribution (optional for D3D12)", ""),
+        ("mesa_libs", "Path to the MESA/NIR static libraries (required for D3D12)", f"{os.getenv("LOCALAPPDATA")}/mesa"),
+        ("dxc_path", "Path to the DirectX Shader Compiler distribution (required for D3D12)", f"{os.getenv("LOCALAPPDATA")}/dxc"),
+        ("agility_sdk_path", "Path to the Agility SDK distribution (optional for D3D12)", f"{os.getenv("LOCALAPPDATA")}/agility_sdk"),
         ("agility_sdk_multiarch", "Whether the Agility SDK DLLs will be stored in arch-specific subdirectories", False),
-        ("pix_path", "Path to the PIX runtime distribution (optional for D3D12)", ""),
+        ("pix_path", "Path to the PIX runtime distribution (optional for D3D12)", f"{os.getenv("LOCALAPPDATA")}/pix"),
     ]
 
 
