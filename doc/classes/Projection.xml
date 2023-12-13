@@ -210,7 +210,7 @@
 		</method>
 		<method name="get_projection_plane" qualifiers="const">
 			<return type="Plane" />
-			<param index="0" name="plane" type="int" />
+			<param index="0" name="plane" type="int" enum="Projection.Planes" />
 			<description>
 				Returns the clipping plane of this [Projection] whose index is given by [param plane].
 				[param plane] should be equal to one of [constant PLANE_NEAR], [constant PLANE_FAR], [constant PLANE_LEFT], [constant PLANE_TOP], [constant PLANE_RIGHT], or [constant PLANE_BOTTOM].

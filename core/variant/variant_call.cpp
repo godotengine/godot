@@ -274,6 +274,47 @@ static _FORCE_INLINE_ Variant::Type vc_get_argument_type_static(R (*method)(P...
 }
 
 template <class R, class T, class... P>
+static _FORCE_INLINE_ PropertyInfo vc_get_argument_type_info(R (T::*method)(P...), int p_arg) {
+	PropertyInfo pi;
+	call_get_argument_type_info<P...>(p_arg, pi);
+	return pi;
+}
+template <class R, class T, class... P>
+static _FORCE_INLINE_ PropertyInfo vc_get_argument_type_info(R (T::*method)(P...) const, int p_arg) {
+	PropertyInfo pi;
+	call_get_argument_type_info<P...>(p_arg, pi);
+	return pi;
+}
+
+template <class T, class... P>
+static _FORCE_INLINE_ PropertyInfo vc_get_argument_type_info(void (T::*method)(P...), int p_arg) {
+	PropertyInfo pi;
+	call_get_argument_type_info<P...>(p_arg, pi);
+	return pi;
+}
+
+template <class T, class... P>
+static _FORCE_INLINE_ PropertyInfo vc_get_argument_type_info(void (T::*method)(P...) const, int p_arg) {
+	PropertyInfo pi;
+	call_get_argument_type_info<P...>(p_arg, pi);
+	return pi;
+}
+
+template <class R, class T, class... P>
+static _FORCE_INLINE_ PropertyInfo vc_get_argument_type_info(R (*method)(T *, P...), int p_arg) {
+	PropertyInfo pi;
+	call_get_argument_type_info<P...>(p_arg, pi);
+	return pi;
+}
+
+template <class R, class... P>
+static _FORCE_INLINE_ PropertyInfo vc_get_argument_type_info_static(R (*method)(P...), int p_arg) {
+	PropertyInfo pi;
+	call_get_argument_type_info<P...>(p_arg, pi);
+	return pi;
+}
+
+template <class R, class T, class... P>
 static _FORCE_INLINE_ Variant::Type vc_get_return_type(R (T::*method)(P...)) {
 	return GetTypeInfo<R>::VARIANT_TYPE;
 }
@@ -387,6 +428,9 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
 			return vc_get_argument_type(m_method_ptr, p_arg);                                                                                                     \
 		}                                                                                                                                                         \
+		static PropertyInfo get_argument_type_info(int p_arg) {                                                                                                   \
+			return vc_get_argument_type_info(m_method_ptr, p_arg);                                                                                                \
+		}                                                                                                                                                         \
 		static Variant::Type get_return_type() {                                                                                                                  \
 			return vc_get_return_type(m_method_ptr);                                                                                                              \
 		}                                                                                                                                                         \
@@ -426,6 +470,9 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 		}                                                                                                                                                         \
 		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
 			return vc_get_argument_type(m_method_ptr, p_arg);                                                                                                     \
+		}                                                                                                                                                         \
+		static PropertyInfo get_argument_type_info(int p_arg) {                                                                                                   \
+			return vc_get_argument_type_info(m_method_ptr, p_arg);                                                                                                \
 		}                                                                                                                                                         \
 		static Variant::Type get_return_type() {                                                                                                                  \
 			return vc_get_return_type(m_method_ptr);                                                                                                              \
@@ -477,6 +524,9 @@ static _FORCE_INLINE_ void vc_static_ptrcall(void (*method)(P...), const void **
 		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
 			return vc_get_argument_type_static(m_method_ptr, p_arg);                                                                                              \
 		}                                                                                                                                                         \
+		static PropertyInfo get_argument_type_info(int p_arg) {                                                                                                   \
+			return vc_get_argument_type_info_static(m_method_ptr, p_arg);                                                                                         \
+		}                                                                                                                                                         \
 		static Variant::Type get_return_type() {                                                                                                                  \
 			return vc_get_return_type(m_method_ptr);                                                                                                              \
 		}                                                                                                                                                         \
@@ -526,6 +576,9 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		}                                                                                                                                                         \
 		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
 			return vc_get_argument_type(m_method_ptr, p_arg);                                                                                                     \
+		}                                                                                                                                                         \
+		static PropertyInfo get_argument_type_info(int p_arg) {                                                                                                   \
+			return vc_get_argument_type_info(m_method_ptr, p_arg);                                                                                                \
 		}                                                                                                                                                         \
 		static Variant::Type get_return_type() {                                                                                                                  \
 			return vc_get_return_type(m_method_ptr);                                                                                                              \
@@ -583,6 +636,9 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
 			return Variant::NIL;                                                                                                                                  \
 		}                                                                                                                                                         \
+		static PropertyInfo get_argument_type_info(int p_arg) {                                                                                                   \
+			return PropertyInfo();                                                                                                                                \
+		}                                                                                                                                                         \
 		static Variant::Type get_return_type() {                                                                                                                  \
 			return GetTypeInfo<m_return_type>::VARIANT_TYPE;                                                                                                      \
 		}                                                                                                                                                         \
@@ -634,6 +690,11 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		}                                                                                                                                                         \
 		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
 			return m_arg_type;                                                                                                                                    \
+		}                                                                                                                                                         \
+		static PropertyInfo get_argument_type_info(int p_arg) {                                                                                                   \
+			PropertyInfo pi;                                                                                                                                      \
+			pi.type = m_arg_type;                                                                                                                                 \
+			return pi; /* TODO: Update define to accept PropertyInfo instead of a generic type if more explicit info is needed. */                                \
 		}                                                                                                                                                         \
 		static Variant::Type get_return_type() {                                                                                                                  \
 			return Variant::NIL;                                                                                                                                  \
@@ -1114,6 +1175,7 @@ struct VariantBuiltInMethodInfo {
 	Variant::Type return_type;
 	int argument_count = 0;
 	Variant::Type (*get_argument_type)(int p_arg) = nullptr;
+	PropertyInfo (*get_argument_type_info)(int p_arg) = nullptr;
 };
 
 typedef OAHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
@@ -1142,6 +1204,7 @@ static void register_builtin_method(const Vector<String> &p_argnames, const Vect
 	imi.return_type = T::get_return_type();
 	imi.argument_count = T::get_argument_count();
 	imi.get_argument_type = T::get_argument_type;
+	imi.get_argument_type_info = T::get_argument_type_info;
 #ifdef DEBUG_METHODS_ENABLED
 	ERR_FAIL_COND(!imi.is_vararg && imi.argument_count != imi.argument_names.size());
 #endif
@@ -1283,6 +1346,14 @@ Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, co
 	return method->get_argument_type(p_argument);
 }
 
+PropertyInfo Variant::get_builtin_method_argument_type_info(Variant::Type p_type, const StringName &p_method, int p_argument) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, PropertyInfo());
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	ERR_FAIL_NULL_V(method, PropertyInfo());
+	ERR_FAIL_INDEX_V(p_argument, method->argument_count, PropertyInfo());
+	return method->get_argument_type_info(p_argument);
+}
+
 String Variant::get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
@@ -1400,16 +1471,12 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 				mi.flags |= METHOD_FLAG_STATIC;
 			}
 			for (int i = 0; i < method->argument_count; i++) {
-				PropertyInfo pi;
+				PropertyInfo pi = method->get_argument_type_info(i);
 #ifdef DEBUG_METHODS_ENABLED
 				pi.name = method->argument_names[i];
 #else
 				pi.name = "arg" + itos(i + 1);
 #endif
-				pi.type = method->get_argument_type(i);
-				if (pi.type == Variant::NIL) {
-					pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-				}
 				mi.arguments.push_back(pi);
 			}
 

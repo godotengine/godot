@@ -4082,6 +4082,9 @@ void BindingsGenerator::_populate_global_constants() {
 	hardcoded_enums.push_back("Vector2I.Axis");
 	hardcoded_enums.push_back("Vector3.Axis");
 	hardcoded_enums.push_back("Vector3I.Axis");
+	hardcoded_enums.push_back("Vector4.Axis");
+	hardcoded_enums.push_back("Vector4I.Axis");
+	hardcoded_enums.push_back("Projection.Planes");
 	for (const StringName &enum_cname : hardcoded_enums) {
 		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
 		// Here, we assume core types do not begin with underscore

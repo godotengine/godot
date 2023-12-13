@@ -1365,8 +1365,17 @@ def make_enum(t: str, is_bitfield: bool, state: State) -> str:
         else:
             return f":ref:`{e}<enum_{c}_{e}>`"
 
-    # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
-    if f"{c}.{e}" != "Vector3.Axis":
+    # Don't fail for these hardcoded enums, as they are special cases which are expected not to be resolved.
+    hardcoded_enums = [
+        "Vector2.Axis",
+        "Vector2i.Axis",
+        "Vector3.Axis",
+        "Vector3i.Axis",
+        "Vector4.Axis",
+        "Vector4i.Axis",
+        "Projection.Planes",
+    ]
+    if f"{c}.{e}" not in hardcoded_enums:
         print_error(f'{state.current_class}.xml: Unresolved enum "{t}".', state)
 
     return t

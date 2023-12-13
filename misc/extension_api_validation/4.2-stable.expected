@@ -7,3 +7,13 @@ should instead be used to justify these changes and describe how users should wo
 Add new entries at the end of the file.
 
 ## Changes between 4.2-stable and 4.3-stable
+
+
+GH-85942
+--------
+Validate extension JSON: Error: Field 'builtin_classes/Quaternion/methods/get_euler/arguments/0': type changed value in new API, from "int" to "enum::EulerOrder".
+Validate extension JSON: Error: Field 'builtin_classes/Basis/methods/get_euler/arguments/0': type changed value in new API, from "int" to "enum::EulerOrder".
+Validate extension JSON: Error: Field 'builtin_classes/Basis/methods/from_euler/arguments/1': type changed value in new API, from "int" to "enum::EulerOrder".
+Validate extension JSON: Error: Field 'builtin_classes/Projection/methods/get_projection_plane/arguments/0': type changed value in new API, from "int" to "enum::Projection.Planes".
+
+Specifying arguments as enums implemented for builtin methods.
