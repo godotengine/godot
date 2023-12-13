@@ -1360,6 +1360,8 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
+		actions.render_mode_defines["specular_occlusion_conservative"] = "#define SPECULAR_OCCLUSION_CONSERVATIVE\n";
+		actions.render_mode_defines["specular_occlusion"] = "#define SPECULAR_OCCLUSION\n";
 
 		int specular_occlusion_mode = GLOBAL_GET("rendering/lightmapping/specular_occlusion/mode");
 
