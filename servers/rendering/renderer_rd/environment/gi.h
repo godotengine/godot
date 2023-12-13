@@ -280,6 +280,7 @@ private:
 			PRE_PROCESS_OCCLUSION,
 			PRE_PROCESS_OCCLUSION_STORE,
 			PRE_PROCESS_LIGHTPROBE_SCROLL,
+			PRE_PROCESS_LIGHTPROBE_NEIGHBOURS,
 			PRE_PROCESS_MAX
 		};
 
@@ -575,7 +576,7 @@ public:
 			REGION_CELLS = 8,
 			MAX_DYNAMIC_LIGHTS = 128,
 			MAX_STATIC_LIGHTS = 1024,
-			LIGHTPROBE_OCT_SIZE = 4,
+			LIGHTPROBE_OCT_SIZE = 6,
 			LIGHTPROBE_HISTORY_FRAMES = 2,
 			OCCLUSION_OCT_SIZE = 14,
 			OCCLUSION_SUBPIXELS = 4,
@@ -633,8 +634,9 @@ public:
 		RID voxel_bits_tex;
 		RID voxel_region_tex;
 		RID voxel_disocclusion_tex;
-		RID light_tex;
-		RID light_tex_data;
+		RID voxel_light_tex;
+		RID voxel_light_tex_data;
+		RID voxel_light_neighbour_data;
 		RID region_version_data;
 
 		RID light_process_buffer_render;

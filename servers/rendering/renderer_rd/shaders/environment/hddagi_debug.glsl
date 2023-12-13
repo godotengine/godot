@@ -22,6 +22,8 @@ layout(set = 0, binding = 5) uniform sampler nearest_sampler;
 layout(set = 0, binding = 6) uniform texture2DArray light_probes;
 layout(set = 0, binding = 7) uniform texture3D occlusion[2];
 
+layout(r32ui, set = 0, binding = 10) uniform restrict readonly uimage3D voxel_neighbours;
+
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
 	float to_cell; // 1/bounds * grid_size
@@ -296,6 +298,23 @@ vec2 octahedron_encode(vec3 n) {
 	return n.xy;
 }
 
+float point_to_ray_distance(vec3 point, vec3 ray_origin, vec3 ray_direction) {
+	// Normalize the ray direction
+	vec3 dir_normalized = normalize(ray_direction);
+
+	// Compute the vector from the ray origin to the point
+	vec3 vec_to_point = point - ray_origin;
+
+	// Project the vector to point onto the ray direction
+	float t = dot(vec_to_point, dir_normalized);
+
+	// Calculate the projection point on the ray
+	vec3 projection = ray_origin + t * dir_normalized;
+
+	// Return the distance between the point and its projection on the ray
+	return length(point - projection);
+}
+
 #define OCC_DISTANCE_MAX 16.0
 
 void main() {
@@ -341,16 +360,45 @@ void main() {
 	ivec3 hit_face;
 
 	if (trace_ray_hdda(ray_pos, ray_dir, 0, hit_cell, hit_face, hit_cascade)) {
-		ivec3 read_cell = (hit_cell + hit_face + (cascades.data[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(params.grid_size) - 1);
+		hit_cell += hit_face;
+		ivec3 read_cell = (hit_cell + (cascades.data[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(params.grid_size) - 1);
 		light = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0, (params.grid_size.y * hit_cascade), 0), 0).rgb;
 		//light = vec3(abs(hit_face));
+
+		if (true) {
+			// Check the neighbours!
+			uint neighbour_bits = imageLoad(voxel_neighbours, read_cell + ivec3(0, (params.grid_size.y * hit_cascade), 0)).r;
+			vec3 cascade_ofs = cascades.data[hit_cascade].offset;
+			float to_cell = cascades.data[hit_cascade].to_cell;
+			float cascade_cell_size = 1.0 / to_cell;
+
+			const ivec3 facing_directions[26] = ivec3[](ivec3(-1, 0, 0), ivec3(1, 0, 0), ivec3(0, -1, 0), ivec3(0, 1, 0), ivec3(0, 0, -1), ivec3(0, 0, 1), ivec3(-1, -1, -1), ivec3(-1, -1, 0), ivec3(-1, -1, 1), ivec3(-1, 0, -1), ivec3(-1, 0, 1), ivec3(-1, 1, -1), ivec3(-1, 1, 0), ivec3(-1, 1, 1), ivec3(0, -1, -1), ivec3(0, -1, 1), ivec3(0, 1, -1), ivec3(0, 1, 1), ivec3(1, -1, -1), ivec3(1, -1, 0), ivec3(1, -1, 1), ivec3(1, 0, -1), ivec3(1, 0, 1), ivec3(1, 1, -1), ivec3(1, 1, 0), ivec3(1, 1, 1));
+			vec3 light_cell_pos = (vec3(hit_cell) + 0.5) * cascade_cell_size + cascade_ofs;
+			vec4 light_accum = vec4(light, 1.0) * max(0.0, 1.0 - point_to_ray_distance(light_cell_pos, ray_pos, ray_dir) * to_cell);
+			while (neighbour_bits != 0) {
+				uint msb = findLSB(neighbour_bits);
+				vec3 rel = vec3(facing_directions[msb]);
+				vec3 neighbour_pos = light_cell_pos + rel * cascade_cell_size;
+				float w = max(0.0, 1.0 - point_to_ray_distance(neighbour_pos, ray_pos, ray_dir) * to_cell);
+				if (w > 0.0) {
+					ivec3 neighbour_cell = hit_cell + facing_directions[msb];
+					read_cell = (neighbour_cell + (cascades.data[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(params.grid_size) - 1);
+					vec3 neighbour_light = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0, (params.grid_size.y * hit_cascade), 0), 0).rgb;
+					light_accum += vec4(neighbour_light, 1.0) * w;
+				}
+
+				neighbour_bits &= ~(1 << msb);
+			}
+
+			light = light_accum.rgb / light_accum.a;
+		}
 
 		if (false) {
 			// compute occlusion
 
 			int cascade = hit_cascade;
 			hit_cell.y %= int(params.grid_size.y);
-			ivec3 pos = hit_cell + hit_face;
+			ivec3 pos = hit_cell;
 			ivec3 base_probe = pos / PROBE_CELLS;
 
 			ivec3 occ_pos = read_cell + ivec3(1);

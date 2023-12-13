@@ -137,7 +137,6 @@ struct HDDAGIProbeCascadeData {
 	uvec4 pad2;
 };
 
-
 layout(set = 0, binding = 13, std140) uniform HDDAGI {
 	ivec3 grid_size;
 	int max_cascades;
@@ -325,12 +324,10 @@ struct VoxelGIData {
 	float exposure_normalization; // 4 - 112
 };
 
-
 layout(set = 1, binding = 34, std140) uniform VoxelGIs {
 	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
 }
 voxel_gi_instances;
-
 
 layout(set = 1, binding = 35) uniform texture3D volumetric_fog_texture;
 

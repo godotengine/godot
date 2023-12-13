@@ -30,12 +30,25 @@ layout(r16ui, set = 0, binding = 1) uniform restrict readonly uimage3D src_albed
 layout(r32ui, set = 0, binding = 2) uniform restrict readonly uimage3D src_emission;
 layout(r32ui, set = 0, binding = 3) uniform restrict readonly uimage3D src_emission_aniso;
 layout(r32ui, set = 0, binding = 4) uniform restrict readonly uimage3D src_normal_bits;
-layout(r32ui, set = 0, binding = 7) uniform restrict writeonly uimage2DArray neighbour_probe_visibility;
 
 layout(set = 0, binding = 8) uniform texture3D occlusion[2];
 layout(set = 0, binding = 9) uniform sampler linear_sampler;
 
 layout(r8ui, set = 0, binding = 10) uniform restrict writeonly uimage3D dst_disocclusion;
+
+layout(r32ui, set = 0, binding = 11) uniform restrict writeonly uimage3D voxel_neighbours;
+
+shared uint normal_facings[6 * 6 * 6];
+
+uint get_normal_facing(ivec3 p_pos) {
+	p_pos += ivec3(1);
+	return normal_facings[p_pos.z * 6 * 6 + p_pos.y * 6 + p_pos.x];
+}
+
+void set_normal_facing(ivec3 p_pos, uint p_facing) {
+	p_pos += ivec3(1);
+	normal_facings[p_pos.z * 6 * 6 + p_pos.y * 6 + p_pos.x] = p_facing;
+}
 
 #endif
 
@@ -154,6 +167,16 @@ const uint group_pos[256] = uint[](0,
 		459008, 393728, 328448, 263168, 197888, 132608, 67328, 458753, 393473, 328193, 262913, 197633, 132353, 67073, 1793, 393218, 327938, 262658, 197378, 132098, 66818, 1538, 327683, 262403, 197123, 131843, 66563, 1283, 262148, 196868, 131588, 66308, 1028, 196613, 131333, 66053, 773, 131078, 65798, 518, 65543, 263,
 		459264, 393984, 328704, 263424, 198144, 132864, 459009, 393729, 328449, 263169, 197889, 132609, 67329, 458754, 393474, 328194, 262914, 197634, 132354, 67074, 1794, 393219, 327939, 262659, 197379, 132099, 66819, 1539, 327684, 262404, 197124, 131844, 66564, 1284, 262149, 196869, 131589, 66309, 1029, 196614, 131334, 66054, 774, 131079, 65799, 519,
 		459520, 394240, 328960, 263680, 198400, 459265, 393985, 328705, 263425, 198145, 132865, 459010, 393730, 328450, 263170, 197890, 132610, 67330, 458755, 393475, 328195, 262915, 197635, 132355, 67075, 1795, 393220, 327940, 262660, 197380, 132100, 66820, 1540, 327685, 262405, 197125, 131845, 66565, 1285, 262150, 196870, 131590, 66310, 1030, 196615, 131335, 66055, 775);
+#endif
+
+#ifdef MODE_LIGHTPROBE_NEIGHBOURS
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(set = 0, binding = 1) uniform texture3D occlusion[2];
+layout(set = 0, binding = 2) uniform sampler linear_sampler;
+layout(r32ui, set = 0, binding = 3) uniform restrict writeonly uimage2DArray neighbour_probe_visibility;
+
 #endif
 
 #ifdef MODE_LIGHTPROBE_SCROLL
@@ -423,12 +446,35 @@ void main() {
 	ivec3 local = ivec3(gl_LocalInvocationID.xyz);
 	ivec3 pos = ivec3(gl_GlobalInvocationID.xyz) + params.offset;
 
+	{ // Fill the local normal facing pool.
+		ivec3 load_from = local * 6 / 4;
+		ivec3 load_to = (local + ivec3(1)) * 6 / 4;
+		ivec3 base_pos = params.offset + ivec3(gl_WorkGroupID.xyz) * 4;
+
+		for (int i = load_from.x; i < load_to.x; i++) {
+			for (int j = load_from.y; j < load_to.y; j++) {
+				for (int k = load_from.z; k < load_to.z; k++) {
+					ivec3 i_ofs = ivec3(i, j, k) - ivec3(1);
+					ivec3 load_pos = base_pos + i_ofs;
+					uint solid = 0;
+					if (all(greaterThanEqual(load_pos, ivec3(0))) && all(lessThan(load_pos, params.grid_size))) {
+						solid = imageLoad(src_normal_bits, load_pos).r;
+					}
+					set_normal_facing(i_ofs, solid);
+				}
+			}
+		}
+	}
+
 	if (any(greaterThanEqual(pos, params.limit))) {
 		// Storing is not a multiple of the workgroup, so invalid threads can happen.
 		return;
 	}
 
-	uint solid = imageLoad(src_normal_bits, pos).r;
+	groupMemoryBarrier();
+	barrier();
+
+	uint solid = get_normal_facing(local);
 
 	if (local == ivec3(0)) {
 		store_position_count = 0; // Base one stores as zero, the others wait
@@ -481,16 +527,17 @@ void main() {
 	bool voxels_found = false;
 	uint disocclusion = 0;
 
-	for (int i = 0; i < 6; i++) {
-		ivec3 ofs = pos + offsets[i];
-		if (any(lessThan(ofs, params.offset)) || any(greaterThanEqual(ofs, params.limit))) {
-			// Outside range, continue.
-			continue;
-		}
+	const int facing_direction_count = 26;
+	const vec3 facing_directions[26] = vec3[](vec3(-1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 0.0, 1.0), vec3(-0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, -0.7071067811865475, 0.0), vec3(-0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(-0.7071067811865475, 0.0, -0.7071067811865475), vec3(-0.7071067811865475, 0.0, 0.7071067811865475), vec3(-0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, 0.7071067811865475, 0.0), vec3(-0.5773502691896258, 0.5773502691896258, 0.5773502691896258), vec3(0.0, -0.7071067811865475, -0.7071067811865475), vec3(0.0, -0.7071067811865475, 0.7071067811865475), vec3(0.0, 0.7071067811865475, -0.7071067811865475), vec3(0.0, 0.7071067811865475, 0.7071067811865475), vec3(0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, -0.7071067811865475, 0.0), vec3(0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(0.7071067811865475, 0.0, -0.7071067811865475), vec3(0.7071067811865475, 0.0, 0.7071067811865475), vec3(0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, 0.7071067811865475, 0.0), vec3(0.5773502691896258, 0.5773502691896258, 0.5773502691896258));
 
-		uint n = imageLoad(src_normal_bits, ofs).r;
+	bool use_for_filter = false;
+
+	for (int i = 0; i < 6; i++) {
+		uint n = get_normal_facing(local + offsets[i]);
 		if (n == 0) {
 			disocclusion |= aniso_offset_mask[i];
+		} else if (solid == 0) {
+			use_for_filter = true;
 		}
 
 		if (solid != 0 || !bool(n & aniso_mask[i])) {
@@ -500,14 +547,13 @@ void main() {
 
 		voxels_found = true;
 
-		const int facing_direction_count = 26;
-		const vec3 facing_directions[26] = vec3[](vec3(-1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 0.0, 1.0), vec3(-0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, -0.7071067811865475, 0.0), vec3(-0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(-0.7071067811865475, 0.0, -0.7071067811865475), vec3(-0.7071067811865475, 0.0, 0.7071067811865475), vec3(-0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, 0.7071067811865475, 0.0), vec3(-0.5773502691896258, 0.5773502691896258, 0.5773502691896258), vec3(0.0, -0.7071067811865475, -0.7071067811865475), vec3(0.0, -0.7071067811865475, 0.7071067811865475), vec3(0.0, 0.7071067811865475, -0.7071067811865475), vec3(0.0, 0.7071067811865475, 0.7071067811865475), vec3(0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, -0.7071067811865475, 0.0), vec3(0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(0.7071067811865475, 0.0, -0.7071067811865475), vec3(0.7071067811865475, 0.0, 0.7071067811865475), vec3(0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, 0.7071067811865475, 0.0), vec3(0.5773502691896258, 0.5773502691896258, 0.5773502691896258));
 		for (int j = 0; j < facing_direction_count; j++) {
 			if (bool(n & uint((1 << (j + 6))))) {
 				normal_accum += facing_directions[j];
 			}
 		}
 
+		ivec3 ofs = pos + offsets[i];
 		//normal_accum += aniso_dir[i];
 
 		ivec3 albedo_ofs = ofs >> 1;
@@ -533,6 +579,73 @@ void main() {
 	if (solid != 0) {
 		return; // No further use for this.
 	}
+
+	if (use_for_filter) {
+		uint neighbour_voxels = 0;
+
+		for (int i = 0; i < facing_direction_count; i++) {
+			ivec3 neighbour = ivec3(sign(facing_directions[i]));
+			ivec3 neighbour_pos = local + neighbour;
+			uint n = get_normal_facing(neighbour_pos);
+			if (n == 0) {
+				continue; // Nothing here
+			}
+
+			for (int j = 0; j < 6; j++) {
+				//if (!bool(n&(1<<j))) {
+				//	continue; // Nothing here either.
+				//}
+				ivec3 neighbour_neighbour = neighbour_pos + ivec3(aniso_dir[j]);
+				ivec3 nn_rel = neighbour_neighbour - local;
+
+				if (any(lessThan(nn_rel, -ivec3(1))) || any(greaterThan(nn_rel, +ivec3(1)))) {
+					continue; // Too far away, ignore.
+				}
+
+				if (nn_rel == ivec3(0)) {
+					continue; // Point to itself, ignore.
+				}
+
+				uint q = get_normal_facing(local + nn_rel);
+				if (q != 0) {
+					continue; // Points to a solid block (can happen), Ignore.
+				}
+
+				ivec3 nn_rel_abs = abs(nn_rel);
+
+				int nn_steps = nn_rel_abs.x + nn_rel_abs.y + nn_rel_abs.z;
+				if (nn_steps > 1) {
+					// must make sure we are not occluded towards this
+					ivec3 test_dirs[3] = ivec3[](ivec3(nn_rel.x, 0, 0), ivec3(0, nn_rel.y, 0), ivec3(0, 0, nn_rel.z));
+					int occlusions = 0;
+					for (int k = 0; k < 3; k++) {
+						if (test_dirs[k] == ivec3(0)) {
+							continue; // Direction not used
+						}
+
+						q = get_normal_facing(local + test_dirs[k]);
+						if (q != 0) {
+							occlusions++;
+						}
+					}
+
+					if (occlusions >= 2) {
+						continue; // Occluded from here, ignore. May be unoccluded from another neighbour.
+					}
+				}
+
+				const uint reverse_map[27] = uint[](6, 14, 18, 9, 4, 21, 11, 16, 23, 7, 2, 19, 0, 0, 1, 12, 3, 24, 8, 15, 20, 10, 5, 22, 13, 17, 25);
+				ivec3 abs_pos = nn_rel + ivec3(1);
+				// All good, this is a valid neighbour!
+				neighbour_voxels |= 1 << reverse_map[abs_pos.z * 3 * 3 + abs_pos.y * 3 + abs_pos.x];
+			}
+		}
+
+		ivec3 store_pos = (pos + params.region_world_pos * REGION_SIZE) & (params.grid_size - ivec3(1));
+		store_pos.y += params.grid_size.y * params.cascade;
+		imageStore(voxel_neighbours, store_pos, uvec4(neighbour_voxels));
+	}
+
 	groupMemoryBarrier();
 	barrier();
 
@@ -631,50 +744,67 @@ void main() {
 
 	// Compute probe neighbours
 
-	//Fix up param.offset by removing the margin
-	ivec3 params_offset = params.offset;
-	params_offset += mix(ivec3(REGION_SIZE) - params.offset, ivec3(0), equal(params.offset % REGION_SIZE, ivec3(0)));
-	ivec3 global_pos = ivec3(gl_GlobalInvocationID.xyz) + params_offset;
-	if ((global_pos % ivec3(REGION_SIZE)) == ivec3(0)) {
-		ivec3 probe_pos = global_pos / REGION_SIZE;
-		uint neighbour_visibility = 0;
-		ivec3 occ_bits = (params.region_world_pos + probe_pos) & ivec3(1);
-		uint occlusion_layer = 0;
-		if (occ_bits.x != 0) {
-			occlusion_layer |= 1;
-		}
-		if (occ_bits.y != 0) {
-			occlusion_layer |= 2;
-		}
-		if (occ_bits.z != 0) {
-			occlusion_layer |= 4;
-		}
+#endif
 
-		for (int i = 0; i < 6; i++) {
-			ivec3 dir = ivec3(aniso_dir[i]);
-			ivec3 probe_next = probe_pos + dir;
-			if (any(lessThan(probe_next, ivec3(0))) || any(greaterThanEqual(probe_next, params.probe_axis_size))) {
-				continue; // Outside range
-			}
-			vec3 test_pos = vec3(probe_pos * REGION_SIZE) + aniso_dir[i] * (REGION_SIZE - 1);
+#ifdef MODE_LIGHTPROBE_NEIGHBOURS
 
-			ivec3 occ_pos = ivec3(test_pos);
-			occ_pos = (occ_pos + params.region_world_pos * REGION_SIZE) & (params.grid_size - ivec3(1));
-			occ_pos += ivec3(1);
-			occ_pos.y += (int(params.grid_size.y) + 2) * params.cascade;
-			vec3 occ_posf = vec3(occ_pos) + fract(test_pos);
-			vec4 occ_0 = texture(sampler3D(occlusion[0], linear_sampler), occ_posf);
-			vec4 occ_1 = texture(sampler3D(occlusion[1], linear_sampler), occ_posf);
-			float occ_weights[8] = float[](occ_0.x, occ_0.y, occ_0.z, occ_0.w, occ_1.x, occ_1.y, occ_1.z, occ_1.w);
+	ivec3 probe_from = params.offset / REGION_SIZE;
+	ivec3 probe_to = params.limit / REGION_SIZE;
 
-			float visibility = occ_weights[occlusion_layer];
+	ivec3 probe = ivec3(gl_GlobalInvocationID.xyz) + probe_from;
 
-			neighbour_visibility |= uint(clamp(visibility * 0xF, 0, 0xF)) << (i * 4);
-		}
-
-		ivec2 probe_tex_pos = probe_to_tex(probe_pos);
-		imageStore(neighbour_probe_visibility, ivec3(probe_tex_pos, params.cascade), uvec4(neighbour_visibility));
+	if (any(greaterThan(probe, probe_to))) {
+		return;
 	}
+
+	uint neighbour_visibility = 0;
+	ivec3 occ_bits = (params.region_world_pos + probe) & ivec3(1);
+	uint occlusion_layer = 0;
+	if (occ_bits.x != 0) {
+		occlusion_layer |= 1;
+	}
+	if (occ_bits.y != 0) {
+		occlusion_layer |= 2;
+	}
+	if (occ_bits.z != 0) {
+		occlusion_layer |= 4;
+	}
+
+	ivec3 occ_tex_size = params.grid_size + ivec3(2);
+	occ_tex_size.y *= params.cascade_count;
+	for (int i = 0; i < 6; i++) {
+		const vec3 aniso_dir[6] = vec3[](
+				vec3(-1, 0, 0),
+				vec3(1, 0, 0),
+				vec3(0, -1, 0),
+				vec3(0, 1, 0),
+				vec3(0, 0, -1),
+				vec3(0, 0, 1));
+
+		ivec3 dir = ivec3(aniso_dir[i]);
+		ivec3 probe_next = probe + dir;
+		if (any(lessThan(probe_next, ivec3(0))) || any(greaterThanEqual(probe_next, params.probe_axis_size))) {
+			continue; // Outside range
+		}
+		vec3 test_pos = vec3(probe * REGION_SIZE) + aniso_dir[i] * (REGION_SIZE - 1);
+
+		ivec3 occ_pos = ivec3(test_pos);
+		occ_pos = (occ_pos + params.region_world_pos * REGION_SIZE) & (params.grid_size - ivec3(1));
+		occ_pos += ivec3(1);
+		occ_pos.y += (int(params.grid_size.y) + 2) * params.cascade;
+		vec3 occ_posf = vec3(occ_pos) + fract(test_pos);
+		occ_posf /= vec3(occ_tex_size);
+		vec4 occ_0 = texture(sampler3D(occlusion[0], linear_sampler), occ_posf);
+		vec4 occ_1 = texture(sampler3D(occlusion[1], linear_sampler), occ_posf);
+		float occ_weights[8] = float[](occ_0.x, occ_0.y, occ_0.z, occ_0.w, occ_1.x, occ_1.y, occ_1.z, occ_1.w);
+
+		float visibility = occ_weights[occlusion_layer];
+
+		neighbour_visibility |= uint(clamp(visibility * 0xF, 0, 0xF)) << (i * 4);
+	}
+
+	ivec2 probe_tex_pos = probe_to_tex(probe);
+	imageStore(neighbour_probe_visibility, ivec3(probe_tex_pos, params.cascade), uvec4(neighbour_visibility));
 
 #endif
 

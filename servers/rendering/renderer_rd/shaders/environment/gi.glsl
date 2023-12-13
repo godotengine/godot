@@ -10,7 +10,10 @@
 
 #define square(m) ((m) * (m))
 
-layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+#define GROUP_SIZE 8
+#define DITHER_SIZE 2
+
+layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) in;
 
 #define M_PI 3.141592
 
@@ -36,6 +39,7 @@ layout(set = 0, binding = 7) uniform sampler linear_sampler;
 layout(set = 0, binding = 8) uniform sampler linear_sampler_with_mipmaps;
 
 layout(r8ui, set = 0, binding = 9) uniform restrict readonly uimage3D voxel_disocclusion;
+layout(r32ui, set = 0, binding = 10) uniform restrict readonly uimage3D voxel_neighbours;
 
 struct ProbeCascadeData {
 	vec3 position;
@@ -50,9 +54,9 @@ struct ProbeCascadeData {
 	uvec4 pad2;
 };
 
-layout(set = 0, binding = 10) uniform texture2D depth_buffer;
-layout(set = 0, binding = 11) uniform texture2D normal_roughness_buffer;
-layout(set = 0, binding = 12) uniform utexture2D voxel_gi_buffer;
+layout(set = 0, binding = 12) uniform texture2D depth_buffer;
+layout(set = 0, binding = 13) uniform texture2D normal_roughness_buffer;
+layout(set = 0, binding = 14) uniform utexture2D voxel_gi_buffer;
 
 layout(set = 0, binding = 15, std140) uniform HDDAGI {
 	ivec3 grid_size;
@@ -128,6 +132,10 @@ layout(push_constant, std430) uniform Params {
 	float pad3;
 }
 params;
+
+shared vec3 group_positions[GROUP_SIZE * GROUP_SIZE];
+shared vec4 group_reflections[GROUP_SIZE * GROUP_SIZE];
+shared vec3 group_normals[GROUP_SIZE * GROUP_SIZE];
 
 vec2 octahedron_wrap(vec2 v) {
 	vec2 signVal;
@@ -218,15 +226,38 @@ ivec2 probe_to_tex(ivec3 local_probe, int p_cascade) {
 	return cell.xy + ivec2(0, cell.z * int(hddagi.probe_axis_size.y));
 }
 
-#define ROUGHNESS_TO_REFLECTION_TRESHOOLD 0.3
+#define ROUGHNESS_TO_REFLECTION_TRESHOOLD 0.25
 
 bool bayer_dither(float value) {
+#if DITHER_SIZE == 3
+
+	uvec2 dt = gl_GlobalInvocationID.xy % 3;
+	uint index = dt.x + dt.y * 3;
+
+	float table[9] = float[9](0.0 / 9.0, 7.0 / 9.0, 3.0 / 9.0,
+			6.0 / 9.0, 5.0 / 9.0, 2.0 / 9.0,
+			4.0 / 9.0, 1.0 / 9.0, 8.0 / 9.0);
+
+	return value > table[index];
+#else
+
+	uvec2 dt = gl_GlobalInvocationID.xy & 0x1;
+	uint index = dt.x + dt.y * 2;
+
+	const float table[4] = float[](0.0, 0.5, 0.75, 0.25);
+
+	return value > table[index];
+
+#endif
+
+#if 0	
 	uvec2 dt = gl_GlobalInvocationID.xy & 0x3;
 	uint index = dt.x + dt.y * 4;
 
 	const float table[16] = float[](0.0625, 0.5625, 0.1875, 0.6875, 0.8125, 0.3125, 0.9375, 0.4375, 0.25, 0.75, 0.125, 0.625, 1.0, 0.5, 0.875, 0.375);
 
 	return value > table[index];
+#endif
 }
 
 uint hash(uint x) {
@@ -241,7 +272,45 @@ float dist_to_box(vec3 min_bound, vec3 max_bound, bvec3 step, vec3 pos, vec3 inv
 	return min(box.x, min(box.y, box.z));
 }
 
-bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir, int p_cascade, float roughness_cells, out ivec3 r_cell, out ivec3 r_side, out int r_cascade) {
+float point_to_ray_distance(vec3 point, vec3 ray_origin, vec3 ray_direction) {
+	// Normalize the ray direction
+	vec3 dir_normalized = normalize(ray_direction);
+
+	// Compute the vector from the ray origin to the point
+	vec3 vec_to_point = point - ray_origin;
+
+	// Project the vector to point onto the ray direction
+	float t = dot(vec_to_point, dir_normalized);
+
+	// Calculate the projection point on the ray
+	vec3 projection = ray_origin + t * dir_normalized;
+
+	// Return the distance between the point and its projection on the ray
+	return length(point - projection);
+}
+
+//find arbitrary tangent and bitangent, then build a matrix
+mat3 create_basis_from_normal(vec3 normal) {
+	vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+	vec3 tangent = normalize(cross(v0, normal));
+	vec3 bitangent = normalize(cross(tangent, normal));
+	return mat3(tangent, bitangent, normal);
+}
+
+vec3 vogel_hemisphere(int i, int n, float f) {
+	float goldenAngle = 137.5077640500378546463487 * float(i);
+	float theta = radians(goldenAngle);
+
+	float phi = acos(1.0 - 2.0 * (float(i) + f) / float(n));
+
+	float x = sin(phi) * cos(theta);
+	float y = sin(phi) * sin(theta);
+	float z = cos(phi);
+
+	return vec3(x, y, z);
+}
+
+bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir, int p_cascade, out ivec3 r_cell, out ivec3 r_side, out int r_cascade) {
 	const int LEVEL_CASCADE = -1;
 	const int LEVEL_REGION = 0;
 	const int LEVEL_BLOCK = 1;
@@ -391,17 +460,6 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir, int p_cascade, float roughness_c
 				if (bayer_dither(blend)) {
 					scroll_limit += (ivec3(axis * sign(inner_dir)) * REGION_SIZE) << fp_bits;
 				}
-			}
-
-			// Put a further limit based on roughness.
-
-			if (roughness_cells < 1000.0) {
-				vec3 abs_ray_dir = abs(ray_dir);
-				float cell_limit = max(abs_ray_dir.x, max(abs_ray_dir.y, abs_ray_dir.z)) * roughness_cells;
-
-				ivec3 limit = pos + ray_sign * ivec3(cell_limit * (1 << fp_bits));
-
-				scroll_limit = mix(max(limit, scroll_limit), min(limit, scroll_limit), limit_dir);
 			}
 
 			continue;
@@ -667,7 +725,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 				diffuse = mix(diffuse, diffuse2, blend);
 				specular = mix(specular, specular2, blend);
 
-				if (false && bayer_dither(blend)) {
+				if (bayer_dither(blend)) {
 					// Apply dither for roughness here.
 					cascade++;
 					cascade_pos = (cam_pos - hddagi.cascades[cascade].position) * hddagi.cascades[cascade].to_cell;
@@ -702,12 +760,15 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 				ray_pos = start_cell / hddagi.cascades[cascade].to_cell + hddagi.cascades[cascade].position;
 			}
 
-			float r = sqrt(roughness); // perceptual roughness to roughness.
-			r *= float(hash((gl_GlobalInvocationID.x & 0x3) + (gl_GlobalInvocationID.y & 0x3) * 4) & 0xF) / float(0xF);
-			float t = min(1000, 1.0 / tan(asin(r))); // How many cells to advance before size duplicates.
+			mat3 normal_mat = create_basis_from_normal(ray_dir);
+			vec3 n = vogel_hemisphere(int((gl_GlobalInvocationID.x % DITHER_SIZE) + (gl_GlobalInvocationID.y % DITHER_SIZE) * DITHER_SIZE), DITHER_SIZE * DITHER_SIZE, 0.0);
+			n = normalize(mix(vec3(0, 0, -1), n, roughness * roughness));
+			n.z = -n.z;
+			n = normal_mat * n;
 
-			if (trace_ray_hdda(ray_pos, ray_dir, cascade, t, hit_cell, hit_face, hit_cascade)) {
+			if (trace_ray_hdda(ray_pos, n, cascade, hit_cell, hit_face, hit_cascade)) {
 				bool valid = true;
+				bool disoccluded = false;
 				if (hit_cascade == cascade) {
 					if (ivec3(start_cell) == hit_cell) {
 						// self hit the start cell, ouch, load the disocclusion
@@ -785,18 +846,51 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 						light.rgb = aniso_dir[best_axis] * 0.5 + 0.5;
 						light.a = 1;
 						valid=false;*/
+						disoccluded = true;
 					}
 				}
 				if (valid) {
-					ivec3 read_cell = (hit_cell + hit_face + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
+					hit_cell += hit_face;
+					ivec3 read_cell = (hit_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
 					light.rgb = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0), 0).rgb;
 					light.a = 1;
+
+					if (!disoccluded) {
+						// filter using the neighbours!
+						uint neighbour_bits = imageLoad(voxel_neighbours, read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)).r;
+						vec3 cascade_ofs = hddagi.cascades[hit_cascade].position;
+						float to_cell = hddagi.cascades[hit_cascade].to_cell;
+						float cascade_cell_size = 1.0 / to_cell;
+
+						const ivec3 facing_directions[26] = ivec3[](ivec3(-1, 0, 0), ivec3(1, 0, 0), ivec3(0, -1, 0), ivec3(0, 1, 0), ivec3(0, 0, -1), ivec3(0, 0, 1), ivec3(-1, -1, -1), ivec3(-1, -1, 0), ivec3(-1, -1, 1), ivec3(-1, 0, -1), ivec3(-1, 0, 1), ivec3(-1, 1, -1), ivec3(-1, 1, 0), ivec3(-1, 1, 1), ivec3(0, -1, -1), ivec3(0, -1, 1), ivec3(0, 1, -1), ivec3(0, 1, 1), ivec3(1, -1, -1), ivec3(1, -1, 0), ivec3(1, -1, 1), ivec3(1, 0, -1), ivec3(1, 0, 1), ivec3(1, 1, -1), ivec3(1, 1, 0), ivec3(1, 1, 1));
+						vec3 light_cell_pos = (vec3(hit_cell) + 0.5) * cascade_cell_size + cascade_ofs;
+						vec4 light_accum = vec4(light.rgb, 1.0) * max(0.0, 1.0 - point_to_ray_distance(light_cell_pos, ray_pos, ray_dir) * to_cell);
+						while (neighbour_bits != 0) {
+							uint msb = findLSB(neighbour_bits);
+							vec3 rel = vec3(facing_directions[msb]);
+							vec3 neighbour_pos = light_cell_pos + rel * cascade_cell_size;
+							float w = max(0.0, 1.0 - point_to_ray_distance(neighbour_pos, ray_pos, ray_dir) * to_cell);
+							if (w > 0.0) {
+								ivec3 neighbour_cell = hit_cell + facing_directions[msb];
+								read_cell = (neighbour_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
+								vec3 neighbour_light = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0), 0).rgb;
+								light_accum += vec4(neighbour_light, 1.0) * w;
+							}
+
+							neighbour_bits &= ~(1 << msb);
+						}
+
+						if (light_accum.a > 0.0) {
+							light.rgb = light_accum.rgb / light_accum.a;
+						}
+					}
+
 				} else {
 					//light = vec4(0,0,0,1);
 				}
 			}
 
-			reflection_light = mix(light, vec4(specular, 1.0 - blend), smoothstep(0, 0.2, roughness));
+			reflection_light = mix(light, vec4(specular, 1.0 - blend), smoothstep(0, ROUGHNESS_TO_REFLECTION_TRESHOOLD, roughness));
 		} else {
 			reflection_light.rgb = specular;
 			reflection_light.a = 1.0 - blend;
@@ -939,61 +1033,50 @@ vec4 fetch_normal_and_roughness(ivec2 pos) {
 	return normal_roughness;
 }
 
-void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 reflection_light) {
-	vec4 normal_roughness = fetch_normal_and_roughness(pos);
-
-	vec3 normal = normal_roughness.xyz;
-
-	if (normal.length() > 0.5) {
-		//valid normal, can do GI
-		float roughness = normal_roughness.w;
-		vec3 view = -normalize(mat3(scene_data.cam_transform) * (vertex - scene_data.eye_offset[gl_GlobalInvocationID.z].xyz));
-		vertex = mat3(scene_data.cam_transform) * vertex;
-		normal = normalize(mat3(scene_data.cam_transform) * normal);
-		vec3 reflection = normalize(reflect(-view, normal));
+void process_gi(ivec2 pos, vec3 vertex, vec3 normal, float roughness, inout vec4 ambient_light, inout vec4 reflection_light) {
+	//valid normal, can do GI
+	vec3 view = -normalize(mat3(scene_data.cam_transform) * (vertex - scene_data.eye_offset[gl_GlobalInvocationID.z].xyz));
+	vertex = mat3(scene_data.cam_transform) * vertex;
+	normal = normalize(mat3(scene_data.cam_transform) * normal);
+	vec3 reflection = normalize(reflect(-view, normal));
 
 #ifdef USE_HDDAGI
-		hddagi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
+	hddagi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
 #endif
 
 #ifdef USE_VOXEL_GI_INSTANCES
-		{
+	{
 #ifdef SAMPLE_VOXEL_GI_NEAREST
-			uvec2 voxel_gi_tex = texelFetch(voxel_gi_buffer, pos, 0).rg;
+		uvec2 voxel_gi_tex = texelFetch(voxel_gi_buffer, pos, 0).rg;
 #else
-			uvec2 voxel_gi_tex = texelFetch(usampler2D(voxel_gi_buffer, linear_sampler), pos, 0).rg;
+		uvec2 voxel_gi_tex = texelFetch(usampler2D(voxel_gi_buffer, linear_sampler), pos, 0).rg;
 #endif
-			roughness *= roughness;
-			//find arbitrary tangent and bitangent, then build a matrix
-			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
-			vec3 tangent = normalize(cross(v0, normal));
-			vec3 bitangent = normalize(cross(tangent, normal));
-			mat3 normal_mat = mat3(tangent, bitangent, normal);
+		roughness *= roughness;
+		mat3 normal_mat = create_basis_from_normal(normal);
 
-			vec4 amb_accum = vec4(0.0);
-			vec4 spec_accum = vec4(0.0);
-			float blend_accum = 0.0;
+		vec4 amb_accum = vec4(0.0);
+		vec4 spec_accum = vec4(0.0);
+		float blend_accum = 0.0;
 
-			for (uint i = 0; i < params.max_voxel_gi_instances; i++) {
-				if (any(equal(uvec2(i), voxel_gi_tex))) {
-					voxel_gi_compute(i, vertex, normal, reflection, normal_mat, roughness, spec_accum, amb_accum, blend_accum);
-				}
+		for (uint i = 0; i < params.max_voxel_gi_instances; i++) {
+			if (any(equal(uvec2(i), voxel_gi_tex))) {
+				voxel_gi_compute(i, vertex, normal, reflection, normal_mat, roughness, spec_accum, amb_accum, blend_accum);
 			}
-			if (blend_accum > 0.0) {
-				amb_accum /= blend_accum;
-				spec_accum /= blend_accum;
-			}
+		}
+		if (blend_accum > 0.0) {
+			amb_accum /= blend_accum;
+			spec_accum /= blend_accum;
+		}
 
 #ifdef USE_HDDAGI
-			reflection_light = blend_color(spec_accum, reflection_light);
-			ambient_light = blend_color(amb_accum, ambient_light);
+		reflection_light = blend_color(spec_accum, reflection_light);
+		ambient_light = blend_color(amb_accum, ambient_light);
 #else
-			reflection_light = spec_accum;
-			ambient_light = amb_accum;
-#endif
-		}
+		reflection_light = spec_accum;
+		ambient_light = amb_accum;
 #endif
 	}
+#endif
 }
 
 void main() {
@@ -1037,10 +1120,82 @@ void main() {
 	vec4 ambient_light = vec4(0.0);
 	vec4 reflection_light = vec4(0.0);
 
-	vec3 vertex = reconstruct_position(pos);
+	vec3 vertex;
+	vec3 normal;
+	float roughness;
+
+	bool found_vertex = false;
+
+	vertex = reconstruct_position(pos);
+	vec4 normal_roughness = fetch_normal_and_roughness(pos);
+	found_vertex = length(normal_roughness.xyz) > 0.5;
+	normal = normal_roughness.xyz;
+	roughness = normal_roughness.w;
+
 	vertex.y = -vertex.y;
 
-	process_gi(pos, vertex, ambient_light, reflection_light);
+	if (found_vertex) {
+		process_gi(pos, vertex, normal, roughness, ambient_light, reflection_light);
+	}
+
+#ifdef USE_HDDAGI
+
+	// If using reflections, blend the 4 adjacent pixels to get rid of dither
+	uint group_pos = gl_LocalInvocationID.y * GROUP_SIZE + gl_LocalInvocationID.x;
+	group_positions[group_pos] = vertex;
+	group_normals[group_pos] = normal;
+	group_reflections[group_pos] = reflection_light;
+
+	memoryBarrierShared();
+	barrier();
+
+	if (roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
+		uvec2 local_group_pos_base = gl_LocalInvocationID.xy - (gl_LocalInvocationID.xy % DITHER_SIZE);
+		uint local_group_pos = local_group_pos_base.y * GROUP_SIZE + local_group_pos_base.x;
+
+		vec3 positions[DITHER_SIZE * DITHER_SIZE];
+		vec3 normals[DITHER_SIZE * DITHER_SIZE];
+
+		vec4 average = vec4(0.0);
+		for (int i = 0; i < DITHER_SIZE; i++) {
+			for (int j = 0; j < DITHER_SIZE; j++) {
+				uint src_pos = local_group_pos + i * GROUP_SIZE + j;
+				normals[i * DITHER_SIZE + j] = group_normals[src_pos];
+				positions[i * DITHER_SIZE + j] = group_positions[src_pos];
+				average += group_reflections[src_pos];
+			}
+		}
+
+		average /= 4.0;
+
+		const int subgroup_count = (DITHER_SIZE - 1) * (DITHER_SIZE - 1);
+		uvec4 subgroups[subgroup_count] = uvec4[](
+#if DITHER_SIZE == 2
+				uvec4(0, 1, 2, 3)
+#elif DITHER_SIZE == 3
+				uvec4(0, 1, 3, 4), uvec4(1, 2, 4, 5), uvec4(3, 4, 6, 7), uvec4(4, 5, 7, 8)
+#endif
+		);
+
+		const float same_plane_threshold = 0.9659258262890683; // 15 degrees tolerance
+
+		float weight = 1.0;
+		for (int i = 0; i < subgroup_count; i++) {
+			uvec4 sg = subgroups[i];
+			// Weight positions in plane.
+			vec3 p[4] = vec3[](positions[sg.x], positions[sg.y], positions[sg.z], positions[sg.w]);
+			vec3 n1 = normalize(cross(p[0] - p[2], p[0] - p[1]));
+			vec3 n2 = normalize(cross(p[2] - p[3], p[2] - p[1]));
+			weight *= max(0.0, smoothstep(same_plane_threshold, 1, dot(n1, n2)));
+
+			// Weight normal difference.
+			vec3 n[4] = vec3[](normals[sg.x], normals[sg.y], normals[sg.z], normals[sg.w]);
+			weight *= max(0.0, smoothstep(same_plane_threshold, 1, length((n[0] + n[1] + n[2] + n[3]) / 4.0)));
+		}
+
+		reflection_light = mix(reflection_light, average, weight);
+	}
+#endif
 
 	if (sc_half_res) {
 		pos >>= 1;

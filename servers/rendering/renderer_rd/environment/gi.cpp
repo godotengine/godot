@@ -436,11 +436,19 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 			tf_light.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
 			tf_light.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
 
-			light_tex_data = create_clear_texture(tf_light, "HDDAGI Cascade Light Data");
+			voxel_light_tex_data = create_clear_texture(tf_light, "HDDAGI Cascade Light Data");
 
 			RD::TextureView tv;
 			tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
-			light_tex = RD::get_singleton()->texture_create_shared(tv, light_tex_data);
+			voxel_light_tex = RD::get_singleton()->texture_create_shared(tv, voxel_light_tex_data);
+		}
+
+		{
+			RD::TextureFormat tf_neighbour = tf_base;
+			tf_neighbour.format = RD::DATA_FORMAT_R32_UINT;
+			tf_neighbour.height *= cascades.size();
+
+			voxel_light_neighbour_data = create_clear_texture(tf_neighbour, "HDDAGI Cascade Light Neighbours");
 		}
 
 		{ // Albedo texture, this is anisotropic (x6).
@@ -739,7 +747,7 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 			RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
 					gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_LIGHT_SCROLL],
 					0,
-					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, light_tex_data),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_light_tex_data),
 					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, light_process_dispatch_buffer_render),
 					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 6, light_process_buffer_render),
 					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 7, cascades[cascade].light_process_dispatch_buffer_copy),
@@ -854,7 +862,8 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 7, lightprobe_neighbour_visibility_map),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 8, get_lightprobe_occlusion_textures()),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 9, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, voxel_disocclusion_tex));
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, voxel_disocclusion_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 11, voxel_light_neighbour_data));
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 
@@ -885,8 +894,26 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 
 		cascades[cascade].static_lights_dirty = true;
 		cascades[cascade].dynamic_lights_dirty = true;
+	}
 
-		RD::get_singleton()->compute_list_add_barrier(compute_list);
+	{ // Probe Neighbours (no barrier needed)
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_NEIGHBOURS]);
+
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_NEIGHBOURS],
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, get_lightprobe_occlusion_textures()),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 2, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, lightprobe_neighbour_visibility_map)
+
+		);
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+		Vector3i dispatch_cells = dispatch_size / REGION_CELLS + Vector3i(1, 1, 1);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::PreprocessPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_cells.x, dispatch_cells.y, dispatch_cells.z);
 	}
 
 	RD::get_singleton()->compute_list_end(compute_list);
@@ -917,7 +944,7 @@ GI::HDDAGI::~HDDAGI() {
 
 	RD::get_singleton()->free(voxel_bits_tex);
 	RD::get_singleton()->free(voxel_region_tex);
-	RD::get_singleton()->free(light_tex_data);
+	RD::get_singleton()->free(voxel_light_tex_data);
 	RD::get_singleton()->free(region_version_data);
 
 	RD::get_singleton()->free(light_process_buffer_render);
@@ -1085,7 +1112,7 @@ void GI::HDDAGI::update_light() {
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 4, cascade.light_process_dispatch_buffer_copy),
 				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, cascade.light_process_buffer),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, light_tex_data),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, voxel_light_tex_data),
 				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, cascades_ubo),
 				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 8, cascade.light_position_bufer),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 9, lightprobe_diffuse_tex));
@@ -1163,7 +1190,7 @@ void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 			0,
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex),
-			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, light_tex),
+			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, voxel_light_tex),
 			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, lightprobe_specular_data),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, lightprobe_diffuse_data),
@@ -1344,13 +1371,14 @@ void GI::HDDAGI::debug_draw(uint32_t p_view_count, const Projection *p_projectio
 				0,
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, light_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, voxel_light_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 5, material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, lightprobe_diffuse_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 7, get_lightprobe_occlusion_textures()),
 				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 8, cascades_ubo),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, p_texture_views[v]));
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, p_texture_views[v]),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, voxel_light_neighbour_data));
 
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.debug_pipeline);
@@ -1868,7 +1896,7 @@ void GI::HDDAGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderSce
 					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 4, cc.light_process_dispatch_buffer_copy),
 					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, cc.light_process_buffer),
-					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, light_tex_data),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, voxel_light_tex_data),
 					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, cascades_ubo),
 					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 8, cc.light_position_bufer));
 
@@ -2797,6 +2825,7 @@ void GI::init(SkyRD *p_sky) {
 		preprocess_modes.push_back("\n#define MODE_OCCLUSION\n");
 		preprocess_modes.push_back("\n#define MODE_OCCLUSION_STORE\n");
 		preprocess_modes.push_back("\n#define MODE_LIGHTPROBE_SCROLL\n");
+		preprocess_modes.push_back("\n#define MODE_LIGHTPROBE_NEIGHBOURS\n");
 
 		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(HDDAGI::OCCLUSION_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE_HALF " + itos(HDDAGI::OCCLUSION_OCT_SIZE / 2) + "\n#define OCCLUSION_SUBPIXELS " + itos(HDDAGI::OCCLUSION_SUBPIXELS) + "\n";
 
@@ -3295,17 +3324,18 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				0,
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, hddagi->voxel_bits_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, hddagi->voxel_region_tex),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, hddagi->light_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, hddagi->voxel_light_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 4, hddagi->lightprobe_specular_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, hddagi->using_probe_filter ? hddagi->lightprobe_diffuse_filter_tex : hddagi->lightprobe_diffuse_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, hddagi->get_lightprobe_occlusion_textures()),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 7, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 8, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, hddagi->voxel_disocclusion_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, hddagi->voxel_light_neighbour_data),
 
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 10, p_render_buffers->get_depth_texture(v)),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 11, p_normal_roughness_slices[v]),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 12, p_voxel_gi_buffer.is_valid() ? p_voxel_gi_buffer : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK)),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 12, p_render_buffers->get_depth_texture(v)),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 13, p_normal_roughness_slices[v]),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 14, p_voxel_gi_buffer.is_valid() ? p_voxel_gi_buffer : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK)),
 
 				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 15, hddagi_ubo),
 				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 16, rbgi->get_voxel_gi_buffer()),
