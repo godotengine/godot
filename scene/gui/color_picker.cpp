@@ -693,6 +693,12 @@ void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 
 	current_shape = p_shape;
 
+#ifdef TOOLS_ENABLED
+	if (editor_settings) {
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "picker_shape", current_shape);
+	}
+#endif
+
 	_copy_color_to_hsv();
 
 	_update_controls();
@@ -926,6 +932,12 @@ void ColorPicker::set_color_mode(ColorModeType p_mode) {
 	}
 
 	current_mode = p_mode;
+
+#ifdef TOOLS_ENABLED
+	if (editor_settings) {
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "color_mode", current_mode);
+	}
+#endif
 
 	if (!is_inside_tree()) {
 		return;
