@@ -1,0 +1,15 @@
+diff --git a/thirdparty/minizip/unzip.c b/thirdparty/minizip/unzip.c
+index 41a203b164..5dd00365f0 100644
+--- a/thirdparty/minizip/unzip.c
++++ b/thirdparty/minizip/unzip.c
+@@ -68,10 +68,6 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-#ifndef NOUNCRYPT
+-        #define NOUNCRYPT
+-#endif
+-
+ #include "zlib.h"
+ #include "unzip.h"
+ 

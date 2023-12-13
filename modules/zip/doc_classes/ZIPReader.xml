@@ -52,6 +52,7 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="case_sensitive" type="bool" default="true" />
+			<param index="2" name="password" type="String" default="&quot;&quot;" />
 			<description>
 				Loads the whole content of a file in the loaded zip archive into memory and returns it.
 				Must be called after [method open].

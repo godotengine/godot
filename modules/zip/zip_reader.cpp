@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "zip_reader.h"
+#include "zip_reader.compat.inc"
 
 #include "core/error/error_macros.h"
 #include "core/io/zip_io.h"
@@ -81,7 +82,7 @@ PackedStringArray ZIPReader::get_files() {
 	return arr;
 }
 
-PackedByteArray ZIPReader::read_file(const String &p_path, bool p_case_sensitive) {
+PackedByteArray ZIPReader::read_file(const String &p_path, bool p_case_sensitive, const String &p_password) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), "ZIPReader must be opened before use.");
 
 	int err = UNZ_OK;
@@ -89,8 +90,8 @@ PackedByteArray ZIPReader::read_file(const String &p_path, bool p_case_sensitive
 	// Locate and open the file.
 	err = godot_unzip_locate_file(uzf, p_path, p_case_sensitive);
 	ERR_FAIL_COND_V_MSG(err != UNZ_OK, PackedByteArray(), "File does not exist in zip archive: " + p_path);
-	err = unzOpenCurrentFile(uzf);
-	ERR_FAIL_COND_V_MSG(err != UNZ_OK, PackedByteArray(), "Could not open file within zip archive.");
+	err = unzOpenCurrentFilePassword(uzf, p_password.is_empty() ? nullptr : p_password.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(err != UNZ_OK, PackedByteArray(), "Could not open file within zip archive." + stringify_variants(err));
 
 	// Read the file info.
 	unz_file_info info;
@@ -145,6 +146,6 @@ void ZIPReader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open", "path"), &ZIPReader::open);
 	ClassDB::bind_method(D_METHOD("close"), &ZIPReader::close);
 	ClassDB::bind_method(D_METHOD("get_files"), &ZIPReader::get_files);
-	ClassDB::bind_method(D_METHOD("read_file", "path", "case_sensitive"), &ZIPReader::read_file, DEFVAL(Variant(true)));
+	ClassDB::bind_method(D_METHOD("read_file", "path", "case_sensitive", "password"), &ZIPReader::read_file, DEFVAL(Variant(true)), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("file_exists", "path", "case_sensitive"), &ZIPReader::file_exists, DEFVAL(Variant(true)));
 }

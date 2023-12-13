@@ -7,3 +7,10 @@ should instead be used to justify these changes and describe how users should wo
 Add new entries at the end of the file.
 
 ## Changes between 4.2-stable and 4.3-stable
+
+GH-85973
+--------
+Validate extension JSON: Error: Field 'classes/ZIPPacker/methods/start_file/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/ZIPReader/methods/read_file/arguments': size changed value in new API, from 2 to 3.
+
+Added support for passwords, compatibility methods registered.
