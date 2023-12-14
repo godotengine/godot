@@ -67,6 +67,94 @@ Vector<VkAttachmentReference> VulkanContext::_convert_VkAttachmentReference2(uin
 	return att_refs;
 }
 
+// <TF>
+// @ShadyTF debug marker extensions
+VkDebugReportObjectTypeEXT VulkanContext::_convert_to_debug_report_objectType(VkObjectType p_object_type){
+	switch (p_object_type) {
+		case VK_OBJECT_TYPE_UNKNOWN:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT;
+		case VK_OBJECT_TYPE_INSTANCE:
+	        return VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT;
+		case VK_OBJECT_TYPE_PHYSICAL_DEVICE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT;
+		case VK_OBJECT_TYPE_DEVICE:
+	        return VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT;
+	    case VK_OBJECT_TYPE_QUEUE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT;
+	    case VK_OBJECT_TYPE_SEMAPHORE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT;
+	    case VK_OBJECT_TYPE_COMMAND_BUFFER:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT;
+	    case VK_OBJECT_TYPE_FENCE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT;
+	    case VK_OBJECT_TYPE_DEVICE_MEMORY:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT;
+	    case VK_OBJECT_TYPE_BUFFER:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT;
+	    case VK_OBJECT_TYPE_IMAGE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT;
+	    case VK_OBJECT_TYPE_EVENT:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT;
+	    case VK_OBJECT_TYPE_QUERY_POOL:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT;
+	    case VK_OBJECT_TYPE_BUFFER_VIEW:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT;
+	    case VK_OBJECT_TYPE_IMAGE_VIEW:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT;
+	    case VK_OBJECT_TYPE_SHADER_MODULE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT;
+	    case VK_OBJECT_TYPE_PIPELINE_CACHE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT;
+	    case VK_OBJECT_TYPE_PIPELINE_LAYOUT:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT;
+	    case VK_OBJECT_TYPE_RENDER_PASS:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT;
+	    case VK_OBJECT_TYPE_PIPELINE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT;
+	    case VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT;
+	    case VK_OBJECT_TYPE_SAMPLER:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT;
+	    case VK_OBJECT_TYPE_DESCRIPTOR_POOL:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT;
+	    case VK_OBJECT_TYPE_DESCRIPTOR_SET:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT;
+	    case VK_OBJECT_TYPE_FRAMEBUFFER:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT;
+	    case VK_OBJECT_TYPE_COMMAND_POOL:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT;
+	    case VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT;
+	    case VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT;
+		case VK_OBJECT_TYPE_SURFACE_KHR:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT;
+	    case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT;
+	    case VK_OBJECT_TYPE_DISPLAY_KHR:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT;
+	    case VK_OBJECT_TYPE_DISPLAY_MODE_KHR:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT;
+	    case VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT;
+	    case VK_OBJECT_TYPE_CU_MODULE_NVX:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_CU_MODULE_NVX_EXT;
+	    case VK_OBJECT_TYPE_CU_FUNCTION_NVX:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_CU_FUNCTION_NVX_EXT;
+	    case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR_EXT;
+		case VK_OBJECT_TYPE_VALIDATION_CACHE_EXT:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT;
+	    case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV_EXT;
+		default:
+			break;
+	}
+    
+    return VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT;
+}
+// </TF>
+
 VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice p_device, const VkRenderPassCreateInfo2 *p_create_info, const VkAllocationCallbacks *p_allocator, VkRenderPass *p_render_pass) {
 	if (is_device_extension_enabled(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
 		if (fpCreateRenderPass2KHR == nullptr) {
@@ -418,10 +506,6 @@ Error VulkanContext::_initialize_instance_extensions() {
 
 	if (_use_validation_layers()) {
 		register_requested_instance_extension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, false);
-		// <TF>
-		// @ShadyTF debug marker extensions
-		register_requested_instance_extension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
-		// </TF>
 	}
 
 	// This extension allows us to use the properties2 features to query additional device capabilities
@@ -439,6 +523,13 @@ Error VulkanContext::_initialize_instance_extensions() {
 	if (want_debug_utils) {
 		register_requested_instance_extension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false);
 	}
+	// <TF>
+	// @ShadyTF debug marker extensions
+	// Should be last element in the array
+	if (_use_validation_layers()) {
+		register_requested_instance_extension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
+	}
+	// </TF>
 
 	// Load instance extensions that are available...
 	uint32_t instance_extension_count = 0;
@@ -2837,6 +2928,19 @@ void VulkanContext::local_device_free(RID p_local_device) {
 
 void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) {
 	if (!is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
+		// <TF>
+		// @ShadyTF debug marker extensions
+		if (is_instance_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+			CharString obj_data = p_object_name.utf8();
+			VkDebugMarkerObjectNameInfoEXT name_info;
+			name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+			name_info.pNext = nullptr;
+			name_info.objectType = _convert_to_debug_report_objectType( p_object_type );
+			name_info.object = p_object_handle;
+			name_info.pObjectName = obj_data.get_data();
+			vkDebugMarkerSetObjectNameEXT(device, &name_info);
+		}
+		// </TF>
 		return;
 	}
 	CharString obj_data = p_object_name.utf8();

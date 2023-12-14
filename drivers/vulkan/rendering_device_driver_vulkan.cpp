@@ -3099,6 +3099,23 @@ void RenderingDeviceDriverVulkan::command_timestamp_write(CommandBufferID p_cmd_
 /****************/
 
 void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
+	// <TF>
+	// @ShadyTF debug marker extensions
+	if (!context->is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
+		if (context->is_instance_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+			VkDebugMarkerMarkerInfoEXT marker;
+			marker.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+			marker.pNext = nullptr;
+			marker.pMarkerName = p_label_name;
+			marker.color[0] = p_color[0];
+			marker.color[1] = p_color[1];
+			marker.color[2] = p_color[2];
+			marker.color[3] = p_color[3];
+			vkCmdDebugMarkerBeginEXT((VkCommandBuffer)p_cmd_buffer.id, &marker);
+		}
+		return;
+	}
+	// </TF>
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
@@ -3111,6 +3128,15 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 }
 
 void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer) {
+	// <TF>
+	// @ShadyTF debug marker extensions
+	if (!context->is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
+		if (context->is_instance_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+			vkCmdDebugMarkerEndEXT((VkCommandBuffer)p_cmd_buffer.id);
+		}
+		return;
+	}
+	// </TF>
 	vkCmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
 }
 

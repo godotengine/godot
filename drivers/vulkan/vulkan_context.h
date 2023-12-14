@@ -266,6 +266,11 @@ private:
 
 	Vector<VkAttachmentReference> _convert_VkAttachmentReference2(uint32_t p_count, const VkAttachmentReference2 *p_refs);
 
+	// <TF>
+	// @ShadyTF debug marker extensions
+	VkDebugReportObjectTypeEXT _convert_to_debug_report_objectType(VkObjectType p_object_type);
+	// </TF>
+
 protected:
 	virtual const char *_get_platform_surface_extension() const { return nullptr; }
 
