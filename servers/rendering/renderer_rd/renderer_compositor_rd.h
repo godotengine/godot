@@ -70,6 +70,7 @@ protected:
 	};
 
 	struct BlitPushConstant {
+		float swapchain_transform[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 		float src_rect[4];
 		float dst_rect[4];
 

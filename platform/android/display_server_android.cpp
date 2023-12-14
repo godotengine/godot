@@ -210,6 +210,23 @@ DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(in
 	return (ScreenOrientation)orientation;
 }
 
+DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_native_orientation(int p_screen) const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, SCREEN_LANDSCAPE);
+
+	const int orientation = godot_io_java->get_native_screen_orientation();
+	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
+	return (ScreenOrientation)orientation;
+}
+
+int DisplayServerAndroid::screen_get_current_rotation(int p_screen) const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, SCREEN_LANDSCAPE);
+
+	const int rotation = godot_io_java->get_current_screen_rotation();
+	return rotation;
+}
+
 int DisplayServerAndroid::get_screen_count() const {
 	return 1;
 }

@@ -333,6 +333,8 @@ public:
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW);
 	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual ScreenOrientation screen_get_native_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return native_orientation; }
+	virtual int screen_get_current_rotation(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return 0; }
 
 	virtual void screen_set_keep_on(bool p_enable); //disable screensaver
 	virtual bool screen_is_kept_on() const;
@@ -341,6 +343,11 @@ public:
 		INVALID_WINDOW_ID = -1,
 		INVALID_INDICATOR_ID = -1
 	};
+
+private:
+	ScreenOrientation native_orientation = ScreenOrientation::SCREEN_LANDSCAPE;
+
+public:
 
 	typedef int WindowID;
 	typedef int IndicatorID;

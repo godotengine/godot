@@ -34,8 +34,10 @@ import org.godotengine.godot.input.GodotEditText;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -47,9 +49,14 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.DisplayCutout;
+import android.view.Surface;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+
+import com.google.android.vending.expansion.downloader.Constants;
 
 import java.io.File;
 import java.util.List;
@@ -286,6 +293,33 @@ public class GodotIO {
 			default:
 				return -1;
 		}
+	}
+
+	public int getNativeScreenOrientation() {
+		WindowManager windowManager = (WindowManager) ContextCompat.getSystemService(activity.getBaseContext(), WindowManager.class);
+		Configuration config = activity.getResources().getConfiguration();
+
+		int rotation = windowManager.getDefaultDisplay().getRotation();
+
+		if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			switch (rotation) {
+				case Surface.ROTATION_0: Log.v(activity.getClass().getSimpleName(), "Landscape"); return SCREEN_LANDSCAPE;
+				case Surface.ROTATION_90: Log.v(activity.getClass().getSimpleName(), "Portrait");return SCREEN_PORTRAIT;
+				case Surface.ROTATION_180: Log.v(activity.getClass().getSimpleName(), "Reverse landscape");return SCREEN_REVERSE_LANDSCAPE;
+				case Surface.ROTATION_270: Log.v(activity.getClass().getSimpleName(), "Reverse portrait");return SCREEN_REVERSE_PORTRAIT;
+			}
+		}
+		else {
+			switch (rotation) {
+				case Surface.ROTATION_0: Log.v(activity.getClass().getSimpleName(), "Portrait");return SCREEN_PORTRAIT;
+				case Surface.ROTATION_90: Log.v(activity.getClass().getSimpleName(), "Reverse landscape");return SCREEN_REVERSE_LANDSCAPE;
+				case Surface.ROTATION_180: Log.v(activity.getClass().getSimpleName(), "Reverse portrait");return SCREEN_REVERSE_PORTRAIT;
+				case Surface.ROTATION_270: Log.v(activity.getClass().getSimpleName(), "Landscape");return SCREEN_LANDSCAPE;
+			}
+		}
+
+		Log.v(Constants.TAG, "RIP");
+		return SCREEN_REVERSE_LANDSCAPE;
 	}
 
 	public void setEdit(GodotEditText _edit) {

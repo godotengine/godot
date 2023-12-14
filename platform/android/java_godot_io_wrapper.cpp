@@ -65,6 +65,8 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_hide_keyboard = p_env->GetMethodID(cls, "hideKeyboard", "()V");
 		_set_screen_orientation = p_env->GetMethodID(cls, "setScreenOrientation", "(I)V");
 		_get_screen_orientation = p_env->GetMethodID(cls, "getScreenOrientation", "()I");
+		_get_native_screen_orientation = p_env->GetMethodID(cls, "getNativeScreenOrientation", "()I");
+		_get_current_screen_rotation = p_env->GetMethodID(cls, "getCurrentScreenRotation", "()I");
 		_get_system_dir = p_env->GetMethodID(cls, "getSystemDir", "(IZ)Ljava/lang/String;");
 	}
 }
@@ -244,6 +246,16 @@ int GodotIOJavaWrapper::get_screen_orientation() {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, 0);
 		return env->CallIntMethod(godot_io_instance, _get_screen_orientation);
+	} else {
+		return 0;
+	}
+}
+
+int GodotIOJavaWrapper::get_native_screen_orientation() {
+	if (_get_native_screen_orientation) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, 0);
+		return env->CallIntMethod(godot_io_instance, _get_native_screen_orientation);
 	} else {
 		return 0;
 	}
