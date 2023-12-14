@@ -154,7 +154,7 @@
 		<method name="get_connection_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>
-				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
+				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from_node: "GraphNode name 0", to_port: 1, to_node: "GraphNode name 1" }[/code].
 			</description>
 		</method>
 		<method name="get_menu_hbox">
