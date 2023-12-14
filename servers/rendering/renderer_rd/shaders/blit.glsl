@@ -5,9 +5,12 @@
 #VERSION_DEFINES
 
 layout(push_constant, std140) uniform Pos {
-	mat4 swapchain_transform;
 	vec4 src_rect;
 	vec4 dst_rect;
+	
+	float rotation_sin;
+	float rotation_cos;
+	vec2 pad;
 
 	vec2 eye_center;
 	float k1;
@@ -16,17 +19,24 @@ layout(push_constant, std140) uniform Pos {
 	float upscale;
 	float aspect_ratio;
 	uint layer;
-	uint pad1;
+	bool convert_to_srgb;
 }
 data;
 
 layout(location = 0) out vec2 uv;
 
 void main() {
+	mat4 swapchain_transform = mat4(1.0);
+	swapchain_transform[0][0] = data.rotation_cos;
+	swapchain_transform[0][1] = -data.rotation_sin;
+	swapchain_transform[1][0] = data.rotation_sin;
+	swapchain_transform[1][1] = data.rotation_cos;
+	
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv = data.src_rect.xy + base_arr[gl_VertexIndex] * data.src_rect.zw;
 	vec2 vtx = data.dst_rect.xy + base_arr[gl_VertexIndex] * data.dst_rect.zw;
-	gl_Position = data.swapchain_transform * vec4(vtx * 2.0 - 1.0, 0.0, 1.0);
+	gl_Position = swapchain_transform * vec4(vtx, 0.0, 1.0);
+	gl_Position.xy = gl_Position.xy * 2.0 - 1.0;
 }
 
 #[fragment]
@@ -36,9 +46,12 @@ void main() {
 #VERSION_DEFINES
 
 layout(push_constant, std140) uniform Pos {
-	mat4 swapchain_transform;
 	vec4 src_rect;
 	vec4 dst_rect;
+	
+	float rotation_sin;
+	float rotation_cos;
+	vec2 pad;
 
 	vec2 eye_center;
 	float k1;

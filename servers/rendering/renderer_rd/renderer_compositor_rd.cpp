@@ -69,11 +69,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 
 		int screen_rotation_degrees = DisplayServer::get_singleton()->screen_get_current_rotation();
 		float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
-
-		blit.push_constant.swapchain_transform[0] = cos(screen_rotation);
-		blit.push_constant.swapchain_transform[1] = -sin(screen_rotation);
-		blit.push_constant.swapchain_transform[4] = sin(screen_rotation);
-		blit.push_constant.swapchain_transform[5] = cos(screen_rotation);
+		blit.push_constant.rotation_cos = cos(screen_rotation);
+		blit.push_constant.rotation_sin = sin(screen_rotation);
 		blit.push_constant.src_rect[0] = p_render_targets[i].src_rect.position.x;
 		blit.push_constant.src_rect[1] = p_render_targets[i].src_rect.position.y;
 		blit.push_constant.src_rect[2] = p_render_targets[i].src_rect.size.width;
@@ -234,10 +231,8 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	int screen_rotation_degrees = DisplayServer::get_singleton()->screen_get_current_rotation();
 	float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
-	blit.push_constant.swapchain_transform[0] = cos(screen_rotation);
-	blit.push_constant.swapchain_transform[1] = -sin(screen_rotation);
-	blit.push_constant.swapchain_transform[4] = sin(screen_rotation);
-	blit.push_constant.swapchain_transform[5] = cos(screen_rotation);
+	blit.push_constant.rotation_cos = cos(screen_rotation);
+	blit.push_constant.rotation_sin = sin(screen_rotation);
 	blit.push_constant.dst_rect[0] = screenrect.position.x;
 	blit.push_constant.dst_rect[1] = screenrect.position.y;
 	blit.push_constant.dst_rect[2] = screenrect.size.width;
