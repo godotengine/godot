@@ -88,7 +88,6 @@ void KeyMappingX11::initialize() {
 	xkeysym_map[XK_KP_Equal] = Key::EQUAL;
 	xkeysym_map[XK_KP_Separator] = Key::COMMA;
 	xkeysym_map[XK_KP_Decimal] = Key::KP_PERIOD;
-	xkeysym_map[XK_KP_Delete] = Key::KP_PERIOD;
 	xkeysym_map[XK_KP_Multiply] = Key::KP_MULTIPLY;
 	xkeysym_map[XK_KP_Divide] = Key::KP_DIVIDE;
 	xkeysym_map[XK_KP_Subtract] = Key::KP_SUBTRACT;
@@ -105,6 +104,7 @@ void KeyMappingX11::initialize() {
 	xkeysym_map[XK_KP_9] = Key::KP_9;
 	// Same keys but with numlock off.
 	xkeysym_map[XK_KP_Insert] = Key::INSERT;
+	xkeysym_map[XK_KP_Delete] = Key::KEY_DELETE;
 	xkeysym_map[XK_KP_End] = Key::END;
 	xkeysym_map[XK_KP_Down] = Key::DOWN;
 	xkeysym_map[XK_KP_Page_Down] = Key::PAGEDOWN;
