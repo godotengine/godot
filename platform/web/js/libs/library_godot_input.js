@@ -465,6 +465,15 @@ const GodotInput = {
 			const y = (evt.clientY - rect.y) * rh;
 			return [x, y];
 		},
+		/**
+		 * Tests if the keyboard event passed in parameters is used to call
+		 * the browsers' DevTools.
+		 * @param {KeyboardEvent} evt
+		 */
+		isDevtoolsInput: function (evt) {
+			// Test for the "F12" shortcut.
+			return evt.key === 'F12';
+		},
 	},
 
 	/*
@@ -565,6 +574,9 @@ const GodotInput = {
 	godot_js_input_key_cb: function (callback, code, key) {
 		const func = GodotRuntime.get_func(callback);
 		function key_cb(pressed, evt) {
+			if (GodotConfig.ignore_devtools_input && GodotInput.isDevtoolsInput(evt)) {
+				return;
+			}
 			const modifiers = GodotInput.getModifiers(evt);
 			GodotRuntime.stringToHeap(evt.code, code, 32);
 			GodotRuntime.stringToHeap(evt.key, key, 32);

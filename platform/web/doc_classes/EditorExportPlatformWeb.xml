@@ -41,6 +41,10 @@
 			Additional HTML tags to include inside the [code]&lt;head&gt;[/code], such as [code]&lt;meta&gt;[/code] tags.
 			[b]Note:[/b] You do not need to add a [code]&lt;title&gt;[/code] tag, as it is automatically included based on the project's name.
 		</member>
+		<member name="input/ignore_devtools" type="bool" setter="" getter="">
+			Determines if common keyboard shortcuts for browsers' web developer tools should be ignored by Godot.
+			If [code]true[/code], Godot will ignore [code]F12[/code].
+		</member>
 		<member name="progressive_web_app/background_color" type="Color" setter="" getter="">
 			The background color used behind the web application.
 		</member>
