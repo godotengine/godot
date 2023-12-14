@@ -713,6 +713,9 @@ void Path3DEditorPlugin::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			// FIXME: This can trigger theme updates when the nodes that we want to update are not yet available.
+			// The toolbar should be extracted to a dedicated control and theme updates should be handled through
+			// the notification.
 			Node3DEditor::get_singleton()->connect("theme_changed", callable_mp(this, &Path3DEditorPlugin::_update_theme));
 		} break;
 	}

@@ -160,8 +160,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-18 06:21+0000\n"
-"Last-Translator: Roskai <angel.du.2558@gmail.com>\n"
+"PO-Revision-Date: 2023-12-06 04:32+0000\n"
+"Last-Translator: Rertsyd <rertsyd@outlook.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -169,7 +169,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread principal"
@@ -3597,12 +3597,12 @@ msgstr ""
 "L'extension '%s' a été désactivée pour prévenir de nouvelles erreurs."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
+"Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."
 msgstr ""
 "Impossible de charger le script de l'addon depuis le chemin : '%s'. Le type "
-"de base n'est pas EditorPlugin."
+"de base n'est pas 'EditorPlugin'."
 
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
+msgid "Unable to load addon script from path: '%s'. Script is not in tool mode."
 msgstr ""
 "Impossible de charger le script de l’extension depuis le chemin : '%s'. Le "
 "script n'est pas en mode outil."
@@ -5014,6 +5014,9 @@ msgstr "Duplication du dossier :"
 msgid "New Inherited Scene"
 msgstr "Nouvelle scène héritée"
 
+msgid "Set as Main Scene"
+msgstr "Définir comme scène principale"
+
 msgid "Open Scenes"
 msgstr "Ouvrir des scènes"
 
@@ -5124,6 +5127,9 @@ msgstr "Renommer..."
 
 msgid "Open in External Program"
 msgstr "Ouvrir dans l'éditeur externe"
+
+msgid "Red"
+msgstr "Rouge"
 
 msgid "Orange"
 msgstr "Orange"
@@ -8327,6 +8333,9 @@ msgstr "Créer un maillage de navigation"
 
 msgid "Create Debug Tangents"
 msgstr "Générer les tangentes debug"
+
+msgid "No mesh to unwrap."
+msgstr "Aucun mesh à déplier."
 
 msgid ""
 "Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
@@ -13815,6 +13824,12 @@ msgstr "Le paramètre global de shaders '%s' existe déjà"
 
 msgid "Name '%s' is a reserved shader language keyword."
 msgstr "Le nom '%s' est un mot-clé réservé du langage de shader."
+
+msgid ""
+"This project uses meshes with an outdated mesh format. Check the output log."
+msgstr ""
+"Ce projet utilise des meshes avec un format obsolète. Vérifiez le journal de "
+"sortie."
 
 msgid "Attempting to re-save "
 msgstr "Tentative de ré-enregistrer "

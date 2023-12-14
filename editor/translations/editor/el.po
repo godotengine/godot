@@ -2015,17 +2015,6 @@ msgstr ""
 "Έγινε απενεργοποίηση το προσθέτου '%s' για αποτροπή περαιτέρω προβλημάτων."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Αδύνατη η φόρτωση δέσμης ενεργειών προσθέτου από τη διαδρομή: '%s'. Ο βασικός "
-"τύπος δεν είναι το EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Αδύνατη η φόρτωση δέσμης ενεργειών προσθέτου από τη διαδρομή: '%s'. Δεν είναι "
-"σε λειτουργία tool."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""

@@ -53,13 +53,14 @@
 # matsu7089 <32781959+matsu7089@users.noreply.github.com>, 2023.
 # Koji Horaguchi <koji.horaguchi@gmail.com>, 2023.
 # ueshita <nalto32@gmail.com>, 2023.
+# Komaru Bomaru <ohmanhowwillithink@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-12 18:58+0000\n"
-"Last-Translator: ueshita <nalto32@gmail.com>\n"
+"PO-Revision-Date: 2023-12-06 04:32+0000\n"
+"Last-Translator: Komaru Bomaru <ohmanhowwillithink@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -67,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Application"
 msgstr "アプリケーション"
@@ -1653,6 +1654,9 @@ msgstr "圧縮"
 msgid "Language"
 msgstr "言語:"
 
+msgid "Embolden"
+msgstr "太字"
+
 msgid "Transform"
 msgstr "トランスフォーム"
 
@@ -1661,6 +1665,9 @@ msgstr "リターゲット"
 
 msgid "Make Unique"
 msgstr "ユニーク化"
+
+msgid "Fix Silhouette"
+msgstr "シルエットを直す"
 
 msgid "Filter"
 msgstr "フィルター"
@@ -1676,6 +1683,9 @@ msgstr "作成元"
 
 msgid "Delimiter"
 msgstr "区切り文字"
+
+msgid "Rows"
+msgstr "列"
 
 msgid "High Quality"
 msgstr "高品質"
@@ -1778,6 +1788,12 @@ msgstr "高度な設定"
 
 msgid "Precision"
 msgstr "精度"
+
+msgid "Plane Downsampling"
+msgstr "平面ダウンサンプリング"
+
+msgid "Convexhull Downsampling"
+msgstr "凸包ダウンサンプリング"
 
 msgid "Height"
 msgstr "高さ"
@@ -1929,6 +1945,9 @@ msgstr "圧縮モードの変更"
 msgid "SVG"
 msgstr "SVG"
 
+msgid "Convert Colors With Editor Theme"
+msgstr "エディタのテーマで色を変える"
+
 msgid "Atlas File"
 msgstr "アトラスファイル"
 
@@ -2055,6 +2074,9 @@ msgstr "テクスチャ"
 msgid "Separation"
 msgstr "分離"
 
+msgid "Alternative ID"
+msgstr "代替ID"
+
 msgid "Speed"
 msgstr "速さ"
 
@@ -2073,6 +2095,9 @@ msgstr "SSH 秘密鍵パス"
 msgid "Main Run Args"
 msgstr "メイン実行引数"
 
+msgid "Naming"
+msgstr "名付ける"
+
 msgid "Reimport Missing Imported Files"
 msgstr "見つからないインポート済みファイルを再インポートする"
 
@@ -2081,6 +2106,12 @@ msgstr "シーンツリーのルート選択対象を表示"
 
 msgid "Use Favorites Root Selection"
 msgstr "お気に入りのルート選択対象を使用"
+
+msgid "Max Chars per Second"
+msgstr "秒当たり字"
+
+msgid "Max Warnings per Second"
+msgstr "秒当たり警報"
 
 msgid "File Logging"
 msgstr "ファイルロギング"
@@ -2328,6 +2359,12 @@ msgstr "ポリゴン"
 msgid "Depth"
 msgstr "Depth(深度/奥行)"
 
+msgid "Path Interval"
+msgstr "パス合間"
+
+msgid "Path Simplify Angle"
+msgstr "パスの角度を容易にする"
+
 msgid "CSG"
 msgstr "CSG"
 
@@ -2355,6 +2392,9 @@ msgstr "Smart Resolveを有効化"
 msgid "Use Thread"
 msgstr "スレッドを使用"
 
+msgid "glTF"
+msgstr "glTF"
+
 msgid "Color"
 msgstr "色"
 
@@ -2369,6 +2409,9 @@ msgstr "鏡面反射係数"
 
 msgid "Mass"
 msgstr "質量"
+
+msgid "Angular Velocity"
+msgstr "角速度"
 
 msgid "Json"
 msgstr "JSON"

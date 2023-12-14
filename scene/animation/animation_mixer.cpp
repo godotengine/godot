@@ -1985,6 +1985,7 @@ void AnimationMixer::reset() {
 }
 
 void AnimationMixer::restore(const Ref<AnimatedValuesBackup> &p_backup) {
+	ERR_FAIL_COND(p_backup.is_null());
 	track_cache = p_backup->get_data();
 	_blend_apply();
 	track_cache = HashMap<NodePath, AnimationMixer::TrackCache *>();

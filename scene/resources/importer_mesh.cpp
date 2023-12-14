@@ -969,7 +969,7 @@ Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Ref<MeshConvexDecompos
 				if (found_vertex) {
 					index = found_vertex->value;
 				} else {
-					index = ++vertex_count;
+					index = vertex_count++;
 					vertex_map[vertex] = index;
 					vertex_w[index] = vertex;
 				}

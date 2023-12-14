@@ -3324,13 +3324,6 @@ msgstr ""
 "將停用擴充套件'%s'以避免進一步的錯誤。"
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr "無法自路徑「%s」載入擴充腳本，基礎型別非 EditorPlugin。"
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr "無法自路徑載入擴充腳本「%s」，腳本不在工具模式下。"
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
