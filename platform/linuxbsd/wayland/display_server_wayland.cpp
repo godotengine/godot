@@ -1027,7 +1027,7 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 }
 
 void DisplayServerWayland::process_events() {
-	MutexLock mutex_lock(wayland_thread.mutex);
+	wayland_thread.mutex.lock();
 
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
@@ -1069,9 +1069,11 @@ void DisplayServerWayland::process_events() {
 
 	wayland_thread.keyboard_echo_keys();
 
-	Input::get_singleton()->flush_buffered_events();
-
 	frame = wayland_thread.get_reset_frame();
+
+	wayland_thread.mutex.unlock();
+
+	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerWayland::release_rendering_thread() {
