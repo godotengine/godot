@@ -418,6 +418,10 @@ Error VulkanContext::_initialize_instance_extensions() {
 
 	if (_use_validation_layers()) {
 		register_requested_instance_extension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, false);
+		// <TF>
+		// @ShadyTF debug marker extensions
+		register_requested_instance_extension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
+		// </TF>
 	}
 
 	// This extension allows us to use the properties2 features to query additional device capabilities
@@ -1172,6 +1176,15 @@ Error VulkanContext::_create_instance() {
 				ERR_FAIL_V(ERR_CANT_CREATE);
 				break;
 		}
+		// <TF>
+		// @ShadyTF debug marker extensions
+		if (is_instance_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+			vkCmdDebugMarkerBeginEXT = (PFN_vkCmdDebugMarkerBeginEXT)vkGetInstanceProcAddr(inst, "vkCmdDebugMarkerBeginEXT");
+			vkCmdDebugMarkerEndEXT = (PFN_vkCmdDebugMarkerEndEXT)vkGetInstanceProcAddr(inst, "vkCmdDebugMarkerEndEXT");
+			vkCmdDebugMarkerInsertEXT = (PFN_vkCmdDebugMarkerInsertEXT)vkGetInstanceProcAddr(inst, "vkCmdDebugMarkerInsertEXT");
+			vkDebugMarkerSetObjectNameEXT = (PFN_vkDebugMarkerSetObjectNameEXT)vkGetInstanceProcAddr(inst, "vkDebugMarkerSetObjectNameEXT");
+		}
+		// </TF>
 	}
 
 	return OK;
