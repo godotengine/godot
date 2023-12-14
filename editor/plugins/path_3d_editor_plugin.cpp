@@ -263,7 +263,15 @@ void Path3DGizmo::redraw() {
 	Ref<StandardMaterial3D> path_thin_material = gizmo_plugin->get_material("path_thin_material", this);
 	Ref<StandardMaterial3D> path_tilt_material = gizmo_plugin->get_material("path_tilt_material", this);
 	Ref<StandardMaterial3D> path_tilt_muted_material = gizmo_plugin->get_material("path_tilt_muted_material", this);
+	Ref<StandardMaterial3D> handles_material = gizmo_plugin->get_material("handles");
+	Ref<StandardMaterial3D> first_pt_handle_material = gizmo_plugin->get_material("first_pt_handle");
+	Ref<StandardMaterial3D> last_pt_handle_material = gizmo_plugin->get_material("last_pt_handle");
+	Ref<StandardMaterial3D> closed_pt_handle_material = gizmo_plugin->get_material("closed_pt_handle");
 	Ref<StandardMaterial3D> sec_handles_material = gizmo_plugin->get_material("sec_handles");
+
+	first_pt_handle_material->set_albedo(Color(0.0, 1.0, 0.0));
+	last_pt_handle_material->set_albedo(Color(1.0, 0.0, 0.0));
+	closed_pt_handle_material->set_albedo(Color(1.0, 1.0, 0.0));
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
@@ -340,13 +348,16 @@ void Path3DGizmo::redraw() {
 	if (Path3DEditorPlugin::singleton->get_edited_path() == path) {
 		PackedVector3Array handle_lines;
 		PackedVector3Array tilt_handle_lines;
+		PackedVector3Array primary_handle_points;
 		PackedVector3Array secondary_handle_points;
 		PackedInt32Array collected_secondary_handle_ids; // Avoid shadowing member on Node3DEditorGizmo.
 
 		_secondary_handles_info.resize(c->get_point_count() * 3);
 
 		for (int idx = 0; idx < c->get_point_count(); idx++) {
+			// Collect primary-handles.
 			const Vector3 pos = c->get_point_position(idx);
+			primary_handle_points.append(pos);
 			bool is_current_point_selected = is_subgizmo_selected(idx);
 			bool is_previous_point_selected = is_subgizmo_selected(idx - 1);
 			bool is_following_point_selected = is_subgizmo_selected(idx + 1);
@@ -355,7 +366,7 @@ void Path3DGizmo::redraw() {
 			info.point_idx = idx;
 
 			// Collect in-handles except for the first point.
-			if (idx > 0 && (is_current_point_selected || is_previous_point_selected)) {
+			if (idx > (c->is_closed() ? -1 : 0) && (is_current_point_selected || is_previous_point_selected)) {
 				const Vector3 in = c->get_point_in(idx);
 
 				// Display in-handles only when they are "initialized".
@@ -372,7 +383,7 @@ void Path3DGizmo::redraw() {
 			}
 
 			// Collect out-handles except for the last point.
-			if (idx < c->get_point_count() - 1 && (is_current_point_selected || is_following_point_selected)) {
+			if (idx < (c->is_closed() ? c->get_point_count() : c->get_point_count() - 1) && (is_current_point_selected || is_following_point_selected)) {
 				const Vector3 out = c->get_point_out(idx);
 
 				// Display out-handles only when they are "initialized".
@@ -432,6 +443,44 @@ void Path3DGizmo::redraw() {
 			add_lines(tilt_handle_lines, path_tilt_material);
 		}
 
+		// Primary handles: manage different colors for first, intermediate and last points.
+		const int pc = primary_handle_points.size();
+		if (pc) {
+			// Need to define indices separately.
+			Vector<int> idx;
+			idx.resize(pc);
+			int *idx_ptr = idx.ptrw();
+			for (int j = 0; j < pc; j++) {
+				idx_ptr[j] = j;
+			}
+
+			// Initialize arrays for first point.
+			PackedVector3Array first_pt_handle_point;
+			Vector<int> first_pt_id;
+			first_pt_handle_point.append(primary_handle_points[0]);
+			first_pt_id.append(idx[0]);
+
+			// Initialize arrays and add handle for last point if needed.
+			if (pc > 1) {
+				PackedVector3Array last_pt_handle_point;
+				Vector<int> last_pt_id;
+				last_pt_handle_point.append(primary_handle_points[pc - 1]);
+				last_pt_id.append(idx[pc - 1]);
+				primary_handle_points.remove_at(pc - 1);
+				idx.remove_at(pc - 1);
+				add_handles(last_pt_handle_point, c->is_closed() ? handles_material : last_pt_handle_material, last_pt_id);
+			}
+
+			// Add handle for first point.
+			primary_handle_points.remove_at(0);
+			idx.remove_at(0);
+			add_handles(first_pt_handle_point, c->is_closed() ? closed_pt_handle_material : first_pt_handle_material, first_pt_id);
+
+			// Add handles for remaining intermediate points.
+			if (!primary_handle_points.is_empty()) {
+				add_handles(primary_handle_points, handles_material, idx);
+			}
+		}
 		if (secondary_handle_points.size()) {
 			add_handles(secondary_handle_points, sec_handles_material, collected_secondary_handle_ids, false, true);
 		}
@@ -667,7 +716,7 @@ void Path3DEditorPlugin::_mode_changed(int p_mode) {
 	curve_del->set_pressed(p_mode == MODE_DELETE);
 }
 
-void Path3DEditorPlugin::_close_curve() {
+void Path3DEditorPlugin::_toggle_closed_curve() {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
@@ -675,13 +724,10 @@ void Path3DEditorPlugin::_close_curve() {
 	if (c->get_point_count() < 2) {
 		return;
 	}
-	if (c->get_point_position(0) == c->get_point_position(c->get_point_count() - 1)) {
-		return;
-	}
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Close Curve"));
-	ur->add_do_method(c.ptr(), "add_point", c->get_point_position(0), c->get_point_in(0), c->get_point_out(0), -1);
-	ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
+	ur->create_action(TTR("Toggle Open/Closed Curve"));
+	ur->add_do_method(c.ptr(), "toggle_closed");
+	ur->add_undo_method(c.ptr(), "toggle_closed");
 	ur->commit_action();
 }
 
@@ -711,7 +757,7 @@ void Path3DEditorPlugin::_update_theme() {
 	curve_edit_curve->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveCurve"), EditorStringName(EditorIcons)));
 	curve_create->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveCreate"), EditorStringName(EditorIcons)));
 	curve_del->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveDelete"), EditorStringName(EditorIcons)));
-	curve_close->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveClose"), EditorStringName(EditorIcons)));
+	curve_closed->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveClose"), EditorStringName(EditorIcons)));
 }
 
 void Path3DEditorPlugin::_notification(int p_what) {
@@ -721,7 +767,7 @@ void Path3DEditorPlugin::_notification(int p_what) {
 			curve_edit_curve->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_CURVE));
 			curve_edit->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT));
 			curve_del->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_DELETE));
-			curve_close->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_close_curve));
+			curve_closed->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_toggle_closed_curve));
 
 			_update_theme();
 		} break;
@@ -783,11 +829,11 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_del->set_tooltip_text(TTR("Delete Point"));
 	topmenu_bar->add_child(curve_del);
 
-	curve_close = memnew(Button);
-	curve_close->set_theme_type_variation("FlatButton");
-	curve_close->set_focus_mode(Control::FOCUS_NONE);
-	curve_close->set_tooltip_text(TTR("Close Curve"));
-	topmenu_bar->add_child(curve_close);
+	curve_closed = memnew(Button);
+	curve_closed->set_theme_type_variation("FlatButton");
+	curve_closed->set_focus_mode(Control::FOCUS_NONE);
+	curve_closed->set_tooltip_text(TTR("Toggle Open/Closed Curve"));
+	topmenu_bar->add_child(curve_closed);
 
 	PopupMenu *menu;
 
@@ -959,5 +1005,8 @@ Path3DGizmoPlugin::Path3DGizmoPlugin(float p_disk_size) {
 	create_material("path_tilt_material", path_tilt_color);
 	create_material("path_tilt_muted_material", path_tilt_color * 0.7);
 	create_handle_material("handles", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
+	create_handle_material("first_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
+	create_handle_material("last_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
+	create_handle_material("closed_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
 	create_handle_material("sec_handles", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorCurveHandle"), EditorStringName(EditorIcons)));
 }
