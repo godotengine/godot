@@ -756,6 +756,14 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 void FileSystemDock::navigate_to_path(const String &p_path) {
 	file_list_search_box->clear();
 	_navigate_to_path(p_path);
+
+	// Ensure that the FileSystem dock is visible.
+	if (get_window() == get_tree()->get_root()) {
+		TabContainer *tab_container = (TabContainer *)get_parent_control();
+		tab_container->set_current_tab(tab_container->get_tab_idx_from_control((Control *)this));
+	} else {
+		get_window()->grab_focus();
+	}
 }
 
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {

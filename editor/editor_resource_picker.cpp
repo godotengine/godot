@@ -238,7 +238,7 @@ void EditorResourcePicker::_update_menu_items() {
 
 		if (edited_resource->get_path().is_resource_file()) {
 			edit_menu->add_separator();
-			edit_menu->add_item(TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 		}
 	}
 
@@ -426,16 +426,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-			FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
-			file_system_dock->navigate_to_path(edited_resource->get_path());
-
-			// Ensure that the FileSystem dock is visible.
-			if (file_system_dock->get_window() == get_tree()->get_root()) {
-				TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-				tab_container->set_current_tab(tab_container->get_tab_idx_from_control(file_system_dock));
-			} else {
-				file_system_dock->get_window()->grab_focus();
-			}
+			FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
 		} break;
 
 		default: {

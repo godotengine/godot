@@ -1192,7 +1192,7 @@ void EditorAudioBuses::_server_save() {
 }
 
 void EditorAudioBuses::_select_layout() {
-	FileSystemDock::get_singleton()->select_file(edited_path);
+	FileSystemDock::get_singleton()->navigate_to_path(edited_path);
 }
 
 void EditorAudioBuses::_save_as_layout() {
