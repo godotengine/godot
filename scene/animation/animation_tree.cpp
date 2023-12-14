@@ -29,11 +29,13 @@
 /**************************************************************************/
 
 #include "animation_tree.h"
-#include "animation_tree.compat.inc"
 
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
+#include "scene/resources/animation_track_filter.h"
 #include "scene/scene_string_names.h"
+
+#include "animation_tree.compat.inc"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	Array parameters;
@@ -74,7 +76,15 @@ void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_val
 Variant AnimationNode::get_parameter(const StringName &p_name) const {
 	ERR_FAIL_NULL_V(process_state, Variant());
 	ERR_FAIL_COND_V(!process_state->tree->property_parent_map.has(node_state.base_path), Variant());
-	ERR_FAIL_COND_V(!process_state->tree->property_parent_map[node_state.base_path].has(p_name), Variant());
+
+	bool parameter_valid = process_state->tree->property_parent_map[node_state.base_path].has(p_name);
+	if (p_name == filter) {
+		if (!parameter_valid) {
+			return Variant();
+		}
+	} else {
+		ERR_FAIL_COND_V(!parameter_valid, Variant());
+	}
 
 	StringName path = process_state->tree->property_parent_map[node_state.base_path][p_name];
 	return process_state->tree->property_map[path].first;
@@ -171,17 +181,18 @@ double AnimationNode::_blend_node(Ref<AnimationNode> p_node, const StringName &p
 
 	bool any_valid = false;
 
-	if (has_filter() && is_filter_enabled() && p_filter != FILTER_IGNORE) {
+	Ref<AnimationTrackFilter> tracks_filter = get_parameter(filter);
+	if (tracks_filter.is_valid() && p_filter != FILTER_IGNORE) {
 		for (int i = 0; i < blend_count; i++) {
 			blendw[i] = 0.0; // All to zero by default.
 		}
 
-		for (const KeyValue<NodePath, bool> &E : filter) {
-			if (!process_state->track_map.has(E.key)) {
+		for (const AnimationTrackFilter::TrackFilterInfo &E : tracks_filter->get_tracks()) {
+			if (!process_state->track_map.has(E.track)) {
 				continue;
 			}
-			int idx = process_state->track_map[E.key];
-			blendw[idx] = 1.0; // Filtered goes to one.
+			int idx = process_state->track_map[E.track];
+			blendw[idx] = E.amount; // Apply a amount instead of goes to one.
 		}
 
 		switch (p_filter) {
@@ -336,22 +347,6 @@ double AnimationNode::_process(const AnimationMixer::PlaybackInfo p_playback_inf
 	return ret;
 }
 
-void AnimationNode::set_filter_path(const NodePath &p_path, bool p_enable) {
-	if (p_enable) {
-		filter[p_path] = true;
-	} else {
-		filter.erase(p_path);
-	}
-}
-
-void AnimationNode::set_filter_enabled(bool p_enable) {
-	filter_enabled = p_enable;
-}
-
-bool AnimationNode::is_filter_enabled() const {
-	return filter_enabled;
-}
-
 void AnimationNode::set_closable(bool p_closable) {
 	closable = p_closable;
 }
@@ -360,32 +355,10 @@ bool AnimationNode::is_closable() const {
 	return closable;
 }
 
-bool AnimationNode::is_path_filtered(const NodePath &p_path) const {
-	return filter.has(p_path);
-}
-
 bool AnimationNode::has_filter() const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_has_filter, ret);
 	return ret;
-}
-
-Array AnimationNode::_get_filters() const {
-	Array paths;
-
-	for (const KeyValue<NodePath, bool> &E : filter) {
-		paths.push_back(String(E.key)); // Use strings, so sorting is possible.
-	}
-	paths.sort(); // Done so every time the scene is saved, it does not change.
-
-	return paths;
-}
-
-void AnimationNode::_set_filters(const Array &p_filters) {
-	filter.clear();
-	for (int i = 0; i < p_filters.size(); i++) {
-		set_filter_path(p_filters[i], true);
-	}
 }
 
 void AnimationNode::_validate_property(PropertyInfo &p_property) const {
@@ -449,24 +422,12 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_count"), &AnimationNode::get_input_count);
 	ClassDB::bind_method(D_METHOD("find_input", "name"), &AnimationNode::find_input);
 
-	ClassDB::bind_method(D_METHOD("set_filter_path", "path", "enable"), &AnimationNode::set_filter_path);
-	ClassDB::bind_method(D_METHOD("is_path_filtered", "path"), &AnimationNode::is_path_filtered);
-
-	ClassDB::bind_method(D_METHOD("set_filter_enabled", "enable"), &AnimationNode::set_filter_enabled);
-	ClassDB::bind_method(D_METHOD("is_filter_enabled"), &AnimationNode::is_filter_enabled);
-
-	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
-	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
-
 	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "is_external_seeking", "blend", "looped_flag"), &AnimationNode::blend_animation_ex, DEFVAL(Animation::LOOPED_FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_node_ex, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_input_ex, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_filter_enabled", "is_filter_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
 
 	GDVIRTUAL_BIND(_get_child_nodes);
 	GDVIRTUAL_BIND(_get_parameter_list);
@@ -677,6 +638,10 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 
 	List<PropertyInfo> plist;
 	p_node->get_parameter_list(&plist);
+	if (p_node->has_filter()) {
+		// Add filter if needed.
+		plist.push_back(PropertyInfo(Variant::OBJECT, "filter", PROPERTY_HINT_RESOURCE_TYPE, AnimationTrackFilter::get_class_static()));
+	}
 	for (PropertyInfo &pinfo : plist) {
 		StringName key = pinfo.name;
 

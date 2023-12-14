@@ -256,6 +256,8 @@ Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_pa
 		return false;
 	} else if (p_parameter == time_to_restart) {
 		return -1;
+	} else if (p_parameter == filter) {
+		return Variant();
 	} else {
 		return 0.0;
 	}
@@ -554,6 +556,9 @@ void AnimationNodeAdd2::get_parameter_list(List<PropertyInfo> *r_list) const {
 }
 
 Variant AnimationNodeAdd2::get_parameter_default_value(const StringName &p_parameter) const {
+	if (p_parameter == filter) {
+		return Variant();
+	}
 	return 0;
 }
 
@@ -592,6 +597,9 @@ void AnimationNodeAdd3::get_parameter_list(List<PropertyInfo> *r_list) const {
 }
 
 Variant AnimationNodeAdd3::get_parameter_default_value(const StringName &p_parameter) const {
+	if (p_parameter == filter) {
+		return Variant();
+	}
 	return 0;
 }
 
@@ -633,6 +641,9 @@ void AnimationNodeBlend2::get_parameter_list(List<PropertyInfo> *r_list) const {
 }
 
 Variant AnimationNodeBlend2::get_parameter_default_value(const StringName &p_parameter) const {
+	if (p_parameter == filter) {
+		return Variant();
+	}
 	return 0; // For blend amount.
 }
 
@@ -678,16 +689,20 @@ String AnimationNodeBlend3::get_caption() const {
 	return "Blend3";
 }
 
+bool AnimationNodeBlend3::has_filter() const {
+	return true;
+}
+
 double AnimationNodeBlend3::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	double amount = get_parameter(blend_amount);
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	pi.weight = MAX(0, -amount);
-	double rem0 = blend_input(0, pi, FILTER_IGNORE, sync, p_test_only);
+	double rem0 = blend_input(0, pi, FILTER_PASS, sync, p_test_only);
 	pi.weight = 1.0 - ABS(amount);
-	double rem1 = blend_input(1, pi, FILTER_IGNORE, sync, p_test_only);
+	double rem1 = blend_input(1, pi, FILTER_BLEND, sync, p_test_only);
 	pi.weight = MAX(0, amount);
-	double rem2 = blend_input(2, pi, FILTER_IGNORE, sync, p_test_only);
+	double rem2 = blend_input(2, pi, FILTER_PASS, sync, p_test_only);
 
 	return amount > 0.5 ? rem2 : (amount < -0.5 ? rem0 : rem1); // Hacky but good enough.
 }

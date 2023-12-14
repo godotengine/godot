@@ -410,7 +410,6 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "has_color_override", "has_theme_color_override" }, // Control -- Breaks Theme
 	{ "has_constant", "has_theme_constant" }, // Control
 	{ "has_constant_override", "has_theme_constant_override" }, // Control
-	{ "has_filter", "_has_filter" }, // AnimationNode
 	{ "has_font", "has_theme_font" }, // Control -- Breaks Theme
 	{ "has_font_override", "has_theme_font_override" }, // Control
 	{ "has_icon", "has_theme_icon" }, // Control -- Breaks Theme

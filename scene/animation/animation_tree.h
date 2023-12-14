@@ -60,8 +60,6 @@ public:
 
 	bool closable = false;
 	Vector<Input> inputs;
-	HashMap<NodePath, bool> filter;
-	bool filter_enabled = false;
 
 	// Temporary state for blending process which needs to be stored in each AnimationNodes.
 	struct NodeState {
@@ -81,8 +79,6 @@ public:
 		uint64_t last_pass = 0;
 	} *process_state = nullptr;
 
-	Array _get_filters() const;
-	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
 	double _blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
 	double _pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);
@@ -116,7 +112,13 @@ protected:
 	GDVIRTUAL0RC(String, _get_caption)
 	GDVIRTUAL0RC(bool, _has_filter)
 
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
+	StringName filter = PNAME("filter");
+
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const;
@@ -140,16 +142,21 @@ public:
 	int get_input_count() const;
 	int find_input(const String &p_name) const;
 
+	void set_closable(bool p_closable);
+	bool is_closable() const;
+
+	virtual bool has_filter() const;
+
+#ifndef DISABLE_DEPRECATED
 	void set_filter_path(const NodePath &p_path, bool p_enable);
 	bool is_path_filtered(const NodePath &p_path) const;
 
 	void set_filter_enabled(bool p_enable);
 	bool is_filter_enabled() const;
 
-	void set_closable(bool p_closable);
-	bool is_closable() const;
-
-	virtual bool has_filter() const;
+	Array _get_filters() const;
+	void _set_filters(const Array &p_filters);
+#endif // DISABLE_DEPRECATED
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const;
 	Ref<AnimationNode> find_node_by_path(const String &p_name) const;

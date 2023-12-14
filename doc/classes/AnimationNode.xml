@@ -142,10 +142,10 @@
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Gets the value of a parameter. Parameters are custom local memory used for your animation nodes, given a resource can be reused in multiple trees.
+				Gets the value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
-		<method name="is_path_filtered" qualifiers="const">
+		<method name="is_path_filtered" qualifiers="const" is_deprecated="true">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
@@ -159,7 +159,7 @@
 				Removes an input, call this only when inactive.
 			</description>
 		</method>
-		<method name="set_filter_path">
+		<method name="set_filter_path" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="path" type="NodePath" />
 			<param index="1" name="enable" type="bool" />
@@ -185,8 +185,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="filter_enabled" type="bool" setter="set_filter_enabled" getter="is_filter_enabled">
-			If [code]true[/code], filtering is enabled.
+		<member name="filter_enabled" type="bool" setter="set_filter_enabled" getter="is_filter_enabled" is_deprecated="true">
+			Deprecated, sets this property will do noting, gets will return [code]false[/code].
 		</member>
 	</members>
 	<signals>

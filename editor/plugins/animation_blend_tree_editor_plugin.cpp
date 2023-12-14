@@ -49,7 +49,10 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
+#include "scene/resources/animation_track_filter.h"
 #include "scene/resources/style_box_flat.h"
+
+#define GET_ANIM_NODE_FILTER_BASE_PATH(m_node_name) AnimationTreeEditor::get_singleton()->get_base_path() + String(m_node_name) + "/filter"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
 	for (int i = 0; i < add_options.size(); i++) {
@@ -227,9 +230,12 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			} else {
 				inspect_filters->set_text(TTR("Edit Filters"));
 			}
+			inspect_filters->set_name("InspectFiltersButton");
+			Ref<AnimationTrackFilter> filter = tree->get(GET_ANIM_NODE_FILTER_BASE_PATH(E));
+			inspect_filters->set_tooltip_text(filter.is_valid() ? filter->get_path().get_file() : "");
 			inspect_filters->set_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 			node->add_child(inspect_filters);
-			inspect_filters->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_inspect_filters).bind(E), CONNECT_DEFERRED);
+			inspect_filters->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_inspect_filters).bind(E, tree), CONNECT_DEFERRED);
 			inspect_filters->set_h_size_flags(SIZE_SHRINK_CENTER);
 		}
 
@@ -593,36 +599,6 @@ void AnimationNodeBlendTreeEditor::_open_in_editor(const String &p_which) {
 	AnimationTreeEditor::get_singleton()->enter_editor(p_which);
 }
 
-void AnimationNodeBlendTreeEditor::_filter_toggled() {
-	updating = true;
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Toggle Filter On/Off"));
-	undo_redo->add_do_method(_filter_edit.ptr(), "set_filter_enabled", filter_enabled->is_pressed());
-	undo_redo->add_undo_method(_filter_edit.ptr(), "set_filter_enabled", _filter_edit->is_filter_enabled());
-	undo_redo->add_do_method(this, "_update_filters", _filter_edit);
-	undo_redo->add_undo_method(this, "_update_filters", _filter_edit);
-	undo_redo->commit_action();
-	updating = false;
-}
-
-void AnimationNodeBlendTreeEditor::_filter_edited() {
-	TreeItem *edited = filters->get_edited();
-	ERR_FAIL_NULL(edited);
-
-	NodePath edited_path = edited->get_metadata(0);
-	bool filtered = edited->is_checked(0);
-
-	updating = true;
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Change Filter"));
-	undo_redo->add_do_method(_filter_edit.ptr(), "set_filter_path", edited_path, filtered);
-	undo_redo->add_undo_method(_filter_edit.ptr(), "set_filter_path", edited_path, _filter_edit->is_path_filtered(edited_path));
-	undo_redo->add_do_method(this, "_update_filters", _filter_edit);
-	undo_redo->add_undo_method(this, "_update_filters", _filter_edit);
-	undo_redo->commit_action();
-	updating = false;
-}
-
 bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &anode) {
 	if (updating || _filter_edit != anode) {
 		return false;
@@ -633,182 +609,32 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 		return false;
 	}
 
-	Node *base = tree->get_node(tree->get_root_node());
-	if (!base) {
-		EditorNode::get_singleton()->show_warning(TTR("Animation player has no valid root node path, so unable to retrieve track names."));
-		return false;
-	}
-
 	updating = true;
 
-	HashSet<String> paths;
-	HashMap<String, RBSet<String>> types;
-	{
-		List<StringName> animation_list;
-		tree->get_animation_list(&animation_list);
+	String node_name = blend_tree->get_node_name(anode);
+	ERR_FAIL_COND_V(node_name.is_empty(), false);
 
-		for (const StringName &E : animation_list) {
-			Ref<Animation> anim = tree->get_animation(E);
-			for (int i = 0; i < anim->get_track_count(); i++) {
-				String track_path = anim->track_get_path(i);
-				paths.insert(track_path);
+	Ref<AnimationTrackFilter> filter = tree->get(GET_ANIM_NODE_FILTER_BASE_PATH(node_name));
+	filter_picker->set_edited_resource(filter);
 
-				String track_type_name;
-				Animation::TrackType track_type = anim->track_get_type(i);
-				switch (track_type) {
-					case Animation::TrackType::TYPE_ANIMATION: {
-						track_type_name = TTR("Anim Clips");
-					} break;
-					case Animation::TrackType::TYPE_AUDIO: {
-						track_type_name = TTR("Audio Clips");
-					} break;
-					case Animation::TrackType::TYPE_METHOD: {
-						track_type_name = TTR("Functions");
-					} break;
-					default: {
-					} break;
-				}
-				if (!track_type_name.is_empty()) {
-					types[track_path].insert(track_type_name);
-				}
-			}
-		}
-	}
+	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(node_name));
+	ERR_FAIL_COND_V(!gn, false);
 
-	filter_enabled->set_pressed(anode->is_filter_enabled());
-	filters->clear();
-	TreeItem *root = filters->create_item();
+	Button *inspect_filters = Object::cast_to<Button>(gn->get_node_or_null(NodePath("InspectFiltersButton")));
+	ERR_FAIL_COND_V(!inspect_filters, false);
 
-	HashMap<String, TreeItem *> parenthood;
+	inspect_filters->set_tooltip_text(filter.is_valid() ? filter->get_path().get_file() : "");
 
-	for (const String &E : paths) {
-		NodePath path = E;
-		TreeItem *ti = nullptr;
-		String accum;
-		for (int i = 0; i < path.get_name_count(); i++) {
-			String name = path.get_name(i);
-			if (!accum.is_empty()) {
-				accum += "/";
-			}
-			accum += name;
-			if (!parenthood.has(accum)) {
-				if (ti) {
-					ti = filters->create_item(ti);
-				} else {
-					ti = filters->create_item(root);
-				}
-				parenthood[accum] = ti;
-				ti->set_text(0, name);
-				ti->set_selectable(0, false);
-				ti->set_editable(0, false);
-
-				if (base->has_node(accum)) {
-					Node *node = base->get_node(accum);
-					ti->set_icon(0, EditorNode::get_singleton()->get_object_icon(node, "Node"));
-				}
-
-			} else {
-				ti = parenthood[accum];
-			}
-		}
-
-		Node *node = nullptr;
-		if (base->has_node(accum)) {
-			node = base->get_node(accum);
-		}
-		if (!node) {
-			continue; //no node, can't edit
-		}
-
-		if (path.get_subname_count()) {
-			String concat = path.get_concatenated_subnames();
-
-			Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
-			if (skeleton && skeleton->find_bone(concat) != -1) {
-				//path in skeleton
-				const String &bone = concat;
-				int idx = skeleton->find_bone(bone);
-				List<String> bone_path;
-				while (idx != -1) {
-					bone_path.push_front(skeleton->get_bone_name(idx));
-					idx = skeleton->get_bone_parent(idx);
-				}
-
-				accum += ":";
-				for (List<String>::Element *F = bone_path.front(); F; F = F->next()) {
-					if (F != bone_path.front()) {
-						accum += "/";
-					}
-
-					accum += F->get();
-					if (!parenthood.has(accum)) {
-						ti = filters->create_item(ti);
-						parenthood[accum] = ti;
-						ti->set_text(0, F->get());
-						ti->set_selectable(0, false);
-						ti->set_editable(0, false);
-						ti->set_icon(0, get_editor_theme_icon(SNAME("BoneAttachment3D")));
-					} else {
-						ti = parenthood[accum];
-					}
-				}
-
-				ti->set_editable(0, !read_only);
-				ti->set_selectable(0, true);
-				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				ti->set_text(0, concat);
-				ti->set_checked(0, anode->is_path_filtered(path));
-				ti->set_icon(0, get_editor_theme_icon(SNAME("BoneAttachment3D")));
-				ti->set_metadata(0, path);
-
-			} else {
-				//just a property
-				ti = filters->create_item(ti);
-				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				ti->set_text(0, concat);
-				ti->set_editable(0, !read_only);
-				ti->set_selectable(0, true);
-				ti->set_checked(0, anode->is_path_filtered(path));
-				ti->set_metadata(0, path);
-			}
-		} else {
-			if (ti) {
-				//just a node, not a property track
-				String types_text = "[";
-				if (types.has(path)) {
-					RBSet<String>::Iterator F = types[path].begin();
-					types_text += *F;
-					while (F) {
-						types_text += " / " + *F;
-						;
-						++F;
-					}
-				}
-				types_text += "]";
-				ti = filters->create_item(ti);
-				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				ti->set_text(0, types_text);
-				ti->set_editable(0, !read_only);
-				ti->set_selectable(0, true);
-				ti->set_checked(0, anode->is_path_filtered(path));
-				ti->set_metadata(0, path);
-			}
-		}
-	}
+	filter_edit_dialog->set_read_only(read_only || filter.is_null());
+	bool update_result = filter_edit_dialog->update_filters(tree, filter);
 
 	updating = false;
 
-	return true;
+	return update_result;
 }
 
-void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which) {
-	if (read_only) {
-		filter_dialog->set_title(TTR("Inspect Filtered Tracks:"));
-	} else {
-		filter_dialog->set_title(TTR("Edit Filtered Tracks:"));
-	}
-
-	filter_enabled->set_disabled(read_only);
+void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which, AnimationTree *p_tree) {
+	filter_picker->set_editable(!read_only);
 
 	Ref<AnimationNode> anode = blend_tree->get_node(p_which);
 	ERR_FAIL_COND(!anode.is_valid());
@@ -818,12 +644,30 @@ void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which) {
 		return;
 	}
 
-	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
+	filter_edit_dialog->popup_centered(Size2(500, 500) * EDSCALE);
 }
 
 void AnimationNodeBlendTreeEditor::_update_editor_settings() {
 	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 	graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
+}
+
+void AnimationNodeBlendTreeEditor::_filter_picker_resource_changed(Ref<AnimationTrackFilter> p_filter) {
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (_filter_edit.is_valid() && tree) {
+		String node_name = blend_tree->get_node_name(_filter_edit);
+		ERR_FAIL_COND(node_name.is_empty());
+		String filter_base_path = GET_ANIM_NODE_FILTER_BASE_PATH(node_name);
+		Ref<AnimationTrackFilter> old_filter = tree->get(filter_base_path);
+
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Change Filter"));
+		undo_redo->add_do_property(tree, filter_base_path, p_filter);
+		undo_redo->add_undo_property(tree, filter_base_path, old_filter);
+		undo_redo->add_do_method(this, "_update_filters", _filter_edit);
+		undo_redo->add_undo_method(this, "_update_filters", _filter_edit);
+		undo_redo->commit_action();
+	}
 }
 
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
@@ -1114,23 +958,20 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	error_panel->add_child(error_label);
 	error_label->set_text("eh");
 
-	filter_dialog = memnew(AcceptDialog);
-	add_child(filter_dialog);
-	filter_dialog->set_title(TTR("Edit Filtered Tracks:"));
+	filter_edit_dialog = memnew(AnimationTrackFilterEditDialog);
+	add_child(filter_edit_dialog);
 
-	VBoxContainer *filter_vbox = memnew(VBoxContainer);
-	filter_dialog->add_child(filter_vbox);
+	HBoxContainer *filter_tool_bar = filter_edit_dialog->get_tool_bar();
 
-	filter_enabled = memnew(CheckBox);
-	filter_enabled->set_text(TTR("Enable Filtering"));
-	filter_enabled->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_toggled));
-	filter_vbox->add_child(filter_enabled);
+	Label *filter_label = memnew(Label);
+	filter_label->set_text(TTR("filter:"));
+	filter_tool_bar->add_child(filter_label);
 
-	filters = memnew(Tree);
-	filter_vbox->add_child(filters);
-	filters->set_v_size_flags(SIZE_EXPAND_FILL);
-	filters->set_hide_root(true);
-	filters->connect("item_edited", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_edited));
+	filter_picker = memnew(EditorResourcePicker);
+	filter_picker->set_base_type(AnimationTrackFilter::get_class_static());
+	filter_picker->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	filter_picker->connect("resource_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_picker_resource_changed));
+	filter_tool_bar->add_child(filter_picker);
 
 	open_file = memnew(EditorFileDialog);
 	add_child(open_file);

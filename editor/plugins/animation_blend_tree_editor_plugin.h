@@ -32,6 +32,8 @@
 #define ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 
 #include "core/object/script_language.h"
+#include "editor/editor_resource_picker.h"
+#include "editor/plugins/animation_track_filter_editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
@@ -47,6 +49,7 @@ class EditorFileDialog;
 class EditorProperty;
 class MenuButton;
 class PanelContainer;
+class AnimationTrackFilter;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
@@ -63,9 +66,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
-	AcceptDialog *filter_dialog = nullptr;
-	Tree *filters = nullptr;
-	CheckBox *filter_enabled = nullptr;
+	AnimationTrackFilterEditDialog *filter_edit_dialog = nullptr;
+	EditorResourcePicker *filter_picker = nullptr;
 
 	HashMap<StringName, ProgressBar *> animations;
 	Vector<EditorProperty *> visible_properties;
@@ -113,9 +115,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
 
 	bool _update_filters(const Ref<AnimationNode> &anode);
-	void _inspect_filters(const String &p_which);
-	void _filter_edited();
-	void _filter_toggled();
+	void _inspect_filters(const String &p_which, AnimationTree *p_tree);
 	Ref<AnimationNode> _filter_edit;
 
 	void _popup(bool p_has_input_ports, const Vector2 &p_node_position);
@@ -127,6 +127,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 
 	void _update_editor_settings();
+
+	void _filter_picker_resource_changed(Ref<AnimationTrackFilter> p_filter);
 
 	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;
