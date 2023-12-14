@@ -621,7 +621,13 @@ Error VulkanContext::_initialize_device_extensions() {
 	// <TF>
 	// @ShadyTF debug marker extensions
 	// Should be last element in the array
-	if (_use_validation_layers()) {
+
+#ifdef DEV_ENABLED
+	bool want_debug_markers = true;
+#else
+	bool want_debug_markers = OS::get_singleton()->is_stdout_verbose();
+#endif
+	if (want_debug_markers) {
 		register_requested_device_extension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
 	}
 	// </TF>
@@ -1268,15 +1274,6 @@ Error VulkanContext::_create_instance() {
 				ERR_FAIL_V(ERR_CANT_CREATE);
 				break;
 		}
-		// <TF>
-		// @ShadyTF debug marker extensions
-		if (is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
-			vkCmdDebugMarkerBeginEXT = (PFN_vkCmdDebugMarkerBeginEXT)vkGetInstanceProcAddr(inst, "vkCmdDebugMarkerBeginEXT");
-			vkCmdDebugMarkerEndEXT = (PFN_vkCmdDebugMarkerEndEXT)vkGetInstanceProcAddr(inst, "vkCmdDebugMarkerEndEXT");
-			vkCmdDebugMarkerInsertEXT = (PFN_vkCmdDebugMarkerInsertEXT)vkGetInstanceProcAddr(inst, "vkCmdDebugMarkerInsertEXT");
-			vkDebugMarkerSetObjectNameEXT = (PFN_vkDebugMarkerSetObjectNameEXT)vkGetInstanceProcAddr(inst, "vkDebugMarkerSetObjectNameEXT");
-		}
-		// </TF>
 	}
 
 	return OK;
@@ -1821,6 +1818,15 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 		GET_DEVICE_PROC_ADDR(device, GetPastPresentationTimingGOOGLE);
 	}
 
+	// <TF>
+	// @ShadyTF debug marker extensions
+	if (is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+		vkCmdDebugMarkerBeginEXT = (PFN_vkCmdDebugMarkerBeginEXT)vkGetDeviceProcAddr(device, "vkCmdDebugMarkerBeginEXT");
+		vkCmdDebugMarkerEndEXT = (PFN_vkCmdDebugMarkerEndEXT)vkGetDeviceProcAddr(device, "vkCmdDebugMarkerEndEXT");
+		vkCmdDebugMarkerInsertEXT = (PFN_vkCmdDebugMarkerInsertEXT)vkGetDeviceProcAddr(device, "vkCmdDebugMarkerInsertEXT");
+		vkDebugMarkerSetObjectNameEXT = (PFN_vkDebugMarkerSetObjectNameEXT)vkGetDeviceProcAddr(device, "vkDebugMarkerSetObjectNameEXT");
+	}
+	// </TF>
 	vkGetDeviceQueue(device, graphics_queue_family_index, 0, &graphics_queue);
 
 	if (p_surface) {

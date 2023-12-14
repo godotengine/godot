@@ -5018,7 +5018,6 @@ void RenderingDevice::initialize(ApiContextRD *p_context, bool p_local_device) {
 
 	// <TF>
 	// @ShadyTF persistently mapped buffers
-	persistent_buffer_enabled = true;
 	// </TF>
 	context = p_context;
 
