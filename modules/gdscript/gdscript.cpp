@@ -1117,8 +1117,7 @@ GDScript *GDScript::find_class(const String &p_qualified_name) {
 
 	// Starts at index 1 because index 0 was handled above.
 	for (int i = 1; result != nullptr && i < class_names.size(); i++) {
-		String current_name = class_names[i];
-		if (HashMap<StringName, Ref<GDScript>>::Iterator E = result->subclasses.find(current_name)) {
+		if (HashMap<StringName, Ref<GDScript>>::Iterator E = result->subclasses.find(class_names[i])) {
 			result = E->value.ptr();
 		} else {
 			// Couldn't find inner class.

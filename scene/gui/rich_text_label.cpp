@@ -6331,11 +6331,9 @@ Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_id
 Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressions) {
 	Dictionary d;
 	for (int i = 0; i < p_expressions.size(); i++) {
-		String expression = p_expressions[i];
-
 		Array a;
-		Vector<String> parts = expression.split("=", true);
-		String key = parts[0];
+		Vector<String> parts = p_expressions[i].split("=", true);
+		const String &key = parts[0];
 		if (parts.size() != 2) {
 			return d;
 		}

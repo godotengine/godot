@@ -652,8 +652,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
 		if (files.size() == 1) {
-			String file = files[0];
-			res = ResourceLoader::load(file);
+			res = ResourceLoader::load(files[0]);
 		}
 	}
 
@@ -718,8 +717,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 		Vector<String> files = drag_data["files"];
 
 		if (files.size() == 1) {
-			String file = files[0];
-			dropped_resource = ResourceLoader::load(file);
+			dropped_resource = ResourceLoader::load(files[0]);
 		}
 	}
 

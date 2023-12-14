@@ -315,9 +315,8 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
 
 		if (param_symbols.size() >= 2) {
-			String class_ = param_symbols[0];
-			StringName class_name = class_;
-			String member_name = param_symbols[param_symbols.size() - 1];
+			StringName class_name = param_symbols[0];
+			const String &member_name = param_symbols[param_symbols.size() - 1];
 			String inner_class_name;
 			if (param_symbols.size() >= 3) {
 				inner_class_name = param_symbols[1];
