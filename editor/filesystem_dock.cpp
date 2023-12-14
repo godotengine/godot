@@ -3464,6 +3464,14 @@ void FileSystemDock::_file_sort_popup(int p_id) {
 	set_file_sort((FileSortOption)p_id);
 }
 
+const HashMap<String, Color> &FileSystemDock::get_folder_colors() const {
+	return folder_colors;
+}
+
+Dictionary FileSystemDock::get_assigned_folder_colors() const {
+	return assigned_folder_colors;
+}
+
 MenuButton *FileSystemDock::_create_file_menu_button() {
 	MenuButton *button = memnew(MenuButton);
 	button->set_flat(true);

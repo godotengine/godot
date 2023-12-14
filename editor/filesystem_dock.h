@@ -369,6 +369,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	const HashMap<String, Color> &get_folder_colors() const;
+	Dictionary get_assigned_folder_colors() const;
+
 	Vector<String> get_selected_paths() const;
 	Vector<String> get_uncollapsed_paths() const;
 
