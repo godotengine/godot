@@ -261,6 +261,16 @@ int GodotIOJavaWrapper::get_native_screen_orientation() {
 	}
 }
 
+int GodotIOJavaWrapper::get_current_screen_rotation() {
+	if (_get_current_screen_rotation) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, 0);
+		return env->CallIntMethod(godot_io_instance, _get_current_screen_rotation);
+	} else {
+		return 0;
+	}
+}
+
 String GodotIOJavaWrapper::get_system_dir(int p_dir, bool p_shared_storage) {
 	if (_get_system_dir) {
 		JNIEnv *env = get_jni_env();

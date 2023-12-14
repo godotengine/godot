@@ -88,6 +88,7 @@ public:
 	void set_vk_height(int p_height);
 	void set_screen_orientation(int p_orient);
 	int get_screen_orientation();
+	int get_current_screen_rotation();
 	int get_native_screen_orientation();
 	String get_system_dir(int p_dir, bool p_shared_storage);
 };
