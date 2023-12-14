@@ -322,6 +322,10 @@ public class GodotIO {
 		return SCREEN_REVERSE_LANDSCAPE;
 	}
 
+	public int getCurrentScreenRotation() {
+		return ((WindowManager)ContextCompat.getSystemService(activity.getBaseContext(), WindowManager.class)).getDefaultDisplay().getRotation();
+	}
+
 	public void setEdit(GodotEditText _edit) {
 		edit = _edit;
 	}
