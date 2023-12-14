@@ -82,15 +82,13 @@
 # ThomsikDev <szczopek7@outlook.com>, 2023.
 # johnny1029 <jkste07@gmail.com>, 2023.
 # Marcin Zieliński <czolgista83@gmail.com>, 2023.
-# Aleksander Łagowiec <mineolek10@users.noreply.hosted.weblate.org>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-06 04:32+0000\n"
-"Last-Translator: Aleksander Łagowiec <mineolek10@users.noreply.hosted.weblate."
-"org>\n"
+"PO-Revision-Date: 2023-11-21 15:04+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
 "Language: pl\n"
@@ -99,7 +97,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -236,9 +234,6 @@ msgstr "iOS"
 msgid "Session Category"
 msgstr "Kategoria sesji"
 
-msgid "Mix With Others"
-msgstr "Mieszaj z Innymi"
-
 msgid "Editor"
 msgstr "Edytor"
 
@@ -299,9 +294,6 @@ msgstr "Formaty"
 msgid "Zstd"
 msgstr "Zstd"
 
-msgid "Long Distance Matching"
-msgstr "Dopasowanie Na Odległość"
-
 msgid "Compression Level"
 msgstr "Poziom kompresji"
 
@@ -341,9 +333,6 @@ msgstr "Internacjonalizacja"
 msgid "Force Right to Left Layout Direction"
 msgstr "Wymuś kierunek układu od prawej do lewej"
 
-msgid "Root Node Layout Direction"
-msgstr "Kierunek układu węzła głównego"
-
 msgid "GUI"
 msgstr "GUI"
 
@@ -371,26 +360,14 @@ msgstr "Zastosuj nadpróbkowanie"
 msgid "Rendering Device"
 msgstr "Urządzenie renderujące"
 
-msgid "Staging Buffer"
-msgstr "Bufor przejściowy"
-
 msgid "Block Size (KB)"
 msgstr "Rozmiar bloku (KB)"
 
 msgid "Max Size (MB)"
 msgstr "Maks. rozmiar (MB)"
 
-msgid "Texture Upload Region Size Px"
-msgstr "Rozmiar regionu przesyłania tekstur (w piks.)"
-
-msgid "Pipeline Cache"
-msgstr "Pamięć podręczna Pipeline-u"
-
-msgid "Save Chunk Size (MB)"
-msgstr "Zapisz rozmiar fragmentu (MB)"
-
 msgid "Vulkan"
-msgstr "Vulkan (API)"
+msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "Maks. liczba deskryptorów na pulę"
@@ -422,11 +399,8 @@ msgstr "Wygładzanie delty"
 msgid "Print Error Messages"
 msgstr "Wyświetlaj komunikaty o błędach"
 
-msgid "Physics Ticks per Second"
-msgstr "Ticki Fizyki na Sekundę"
-
 msgid "Max Physics Steps per Frame"
-msgstr "Maksymalna Liczba Kroków Fizyki na Klatkę"
+msgstr "Maksymalna liczba kroków fizyki na klatkę"
 
 msgid "Max FPS"
 msgstr "Maks. FPS"

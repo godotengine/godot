@@ -188,6 +188,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _tab_changed(int);
 
 protected:
+	void _theme_changed();
 	void _notification(int p_what);
 	static void _bind_methods();
 

@@ -167,11 +167,13 @@ NavigationObstacle3D::NavigationObstacle3D() {
 	obstacle = NavigationServer3D::get_singleton()->obstacle_create();
 
 	NavigationServer3D::get_singleton()->obstacle_set_height(obstacle, height);
-	NavigationServer3D::get_singleton()->obstacle_set_radius(obstacle, radius);
-	NavigationServer3D::get_singleton()->obstacle_set_vertices(obstacle, vertices);
-	NavigationServer3D::get_singleton()->obstacle_set_avoidance_layers(obstacle, avoidance_layers);
-	NavigationServer3D::get_singleton()->obstacle_set_use_3d_avoidance(obstacle, use_3d_avoidance);
-	NavigationServer3D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
+
+	set_radius(radius);
+	set_height(height);
+	set_vertices(vertices);
+	set_avoidance_layers(avoidance_layers);
+	set_avoidance_enabled(avoidance_enabled);
+	set_use_3d_avoidance(use_3d_avoidance);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->connect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_fake_agent_radius_debug));

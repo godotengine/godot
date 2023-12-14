@@ -104,7 +104,7 @@ struct CellData {
 	// Rendering.
 	Ref<RenderingQuadrant> rendering_quadrant;
 	SelfList<CellData> rendering_quadrant_list_element;
-	LocalVector<RID> occluders;
+	List<RID> occluders;
 
 	// Physics.
 	LocalVector<RID> bodies;

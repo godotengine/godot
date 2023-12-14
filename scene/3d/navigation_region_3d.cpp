@@ -33,10 +33,6 @@
 #include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_server_3d.h"
 
-RID NavigationRegion3D::get_rid() const {
-	return region;
-}
-
 void NavigationRegion3D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		return;
@@ -158,7 +154,7 @@ real_t NavigationRegion3D::get_travel_cost() const {
 }
 
 RID NavigationRegion3D::get_region_rid() const {
-	return get_rid();
+	return region;
 }
 
 void NavigationRegion3D::_notification(int p_what) {
@@ -279,8 +275,6 @@ PackedStringArray NavigationRegion3D::get_configuration_warnings() const {
 }
 
 void NavigationRegion3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationRegion3D::get_rid);
-
 	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navigation_mesh"), &NavigationRegion3D::set_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationRegion3D::get_navigation_mesh);
 
@@ -416,9 +410,6 @@ NavigationRegion3D::NavigationRegion3D() {
 	NavigationServer3D::get_singleton()->region_set_owner_id(region, get_instance_id());
 	NavigationServer3D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
 	NavigationServer3D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
-	NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
-	NavigationServer3D::get_singleton()->region_set_use_edge_connections(region, use_edge_connections);
-	NavigationServer3D::get_singleton()->region_set_enabled(region, enabled);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->connect(SNAME("map_changed"), callable_mp(this, &NavigationRegion3D::_navigation_map_changed));

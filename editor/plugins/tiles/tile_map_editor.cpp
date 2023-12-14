@@ -2373,9 +2373,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	// --- Bottom panel tiles ---
 	tiles_bottom_panel = memnew(VBoxContainer);
-	// FIXME: This can trigger theme updates when the nodes that we want to update are not yet available.
-	// The toolbar should be extracted to a dedicated control and theme updates should be handled through
-	// the notification.
+	tiles_bottom_panel->connect("tree_entered", callable_mp(this, &TileMapEditorTilesPlugin::_update_theme));
 	tiles_bottom_panel->connect("theme_changed", callable_mp(this, &TileMapEditorTilesPlugin::_update_theme));
 	tiles_bottom_panel->connect("visibility_changed", callable_mp(this, &TileMapEditorTilesPlugin::_stop_dragging));
 	tiles_bottom_panel->connect("visibility_changed", callable_mp(this, &TileMapEditorTilesPlugin::_tab_changed));
@@ -3538,9 +3536,7 @@ void TileMapEditorTerrainsPlugin::edit(ObjectID p_tile_map_id, int p_tile_map_la
 
 TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	main_vbox_container = memnew(VBoxContainer);
-	// FIXME: This can trigger theme updates when the nodes that we want to update are not yet available.
-	// The toolbar should be extracted to a dedicated control and theme updates should be handled through
-	// the notification.
+	main_vbox_container->connect("tree_entered", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
 	main_vbox_container->connect("theme_changed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
 	main_vbox_container->set_name(TTR("Terrains"));
 

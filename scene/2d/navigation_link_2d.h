@@ -61,7 +61,6 @@ public:
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
-	RID get_rid() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const { return enabled; }
