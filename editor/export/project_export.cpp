@@ -1277,6 +1277,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	server_strip_message = memnew(Label);
 	server_strip_message->set_visible(false);
 	server_strip_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	server_strip_message->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	resources_vb->add_child(server_strip_message);
 
 	{
