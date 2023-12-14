@@ -3701,8 +3701,9 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 
 void EditorNode::setup_color_picker(ColorPicker *p_picker) {
 	p_picker->set_editor_settings(EditorSettings::get_singleton());
-	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+	int default_color_mode = EditorSettings::get_singleton()->get_project_metadata("color_picker", "color_mode", EDITOR_GET("interface/inspector/default_color_picker_mode"));
+	int picker_shape = EditorSettings::get_singleton()->get_project_metadata("color_picker", "picker_shape", EDITOR_GET("interface/inspector/default_color_picker_shape"));
+
 	p_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 	p_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 }
