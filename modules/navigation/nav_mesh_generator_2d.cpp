@@ -591,13 +591,19 @@ void NavMeshGenerator2D::generator_parse_tilemap_node(const Ref<NavigationPolygo
 			continue;
 		}
 
+		// Transform flags.
+		const int alternative_id = tilemap->get_cell_alternative_tile(tilemap_layer, cell, false);
+		bool flip_h = (alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_H);
+		bool flip_v = (alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_V);
+		bool transpose = (alternative_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
+
 		Transform2D tile_transform;
 		tile_transform.set_origin(tilemap->map_to_local(cell));
 
 		const Transform2D tile_transform_offset = tilemap_xform * tile_transform;
 
 		if (navigation_layers_count > 0) {
-			Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(tilemap_layer);
+			Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(tilemap_layer, flip_h, flip_v, transpose);
 			if (navigation_polygon.is_valid()) {
 				for (int outline_index = 0; outline_index < navigation_polygon->get_outline_count(); outline_index++) {
 					const Vector<Vector2> &navigation_polygon_outline = navigation_polygon->get_outline(outline_index);
@@ -622,9 +628,13 @@ void NavMeshGenerator2D::generator_parse_tilemap_node(const Ref<NavigationPolygo
 
 		if (physics_layers_count > 0 && (parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_BOTH) && (tile_set->get_physics_layer_collision_layer(tilemap_layer) & parsed_collision_mask)) {
 			for (int collision_polygon_index = 0; collision_polygon_index < tile_data->get_collision_polygons_count(tilemap_layer); collision_polygon_index++) {
-				const Vector<Vector2> &collision_polygon_points = tile_data->get_collision_polygon_points(tilemap_layer, collision_polygon_index);
+				PackedVector2Array collision_polygon_points = tile_data->get_collision_polygon_points(tilemap_layer, collision_polygon_index);
 				if (collision_polygon_points.size() == 0) {
 					continue;
+				}
+
+				if (flip_h || flip_v || transpose) {
+					collision_polygon_points = TileData::get_transformed_vertices(collision_polygon_points, flip_h, flip_v, transpose);
 				}
 
 				Vector<Vector2> obstruction_outline;
