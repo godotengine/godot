@@ -2610,6 +2610,64 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					r_arghint = _make_arguments_hint(info, p_argidx);
 				}
 
+				if (p_argidx == 1 && p_context.node && p_context.node->type == GDScriptParser::Node::CALL && ClassDB::is_parent_class(class_name, SNAME("Tween")) && p_method == SNAME("tween_property")) {
+					// Get tweened objects properties.
+					GDScriptParser::ExpressionNode *tweened_object = static_cast<GDScriptParser::CallNode *>(p_context.node)->arguments[0];
+					StringName native_type = tweened_object->datatype.native_type;
+					switch (tweened_object->datatype.kind) {
+						case GDScriptParser::DataType::SCRIPT: {
+							Ref<Script> script = tweened_object->datatype.script_type;
+							native_type = script->get_instance_base_type();
+							int n = 0;
+							while (script.is_valid()) {
+								List<PropertyInfo> properties;
+								script->get_script_property_list(&properties);
+								for (const PropertyInfo &E : properties) {
+									if (E.usage & (PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_INTERNAL)) {
+										continue;
+									}
+									ScriptLanguage::CodeCompletionOption option(E.name.quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n);
+									r_result.insert(option.display, option);
+								}
+								script = script->get_base_script();
+								n++;
+							}
+						} break;
+						case GDScriptParser::DataType::CLASS: {
+							GDScriptParser::ClassNode *clss = tweened_object->datatype.class_type;
+							native_type = clss->base_type.native_type;
+							int n = 0;
+							while (clss) {
+								for (GDScriptParser::ClassNode::Member member : clss->members) {
+									if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+										ScriptLanguage::CodeCompletionOption option(member.get_name().quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n);
+										r_result.insert(option.display, option);
+									}
+								}
+								if (clss->base_type.kind == GDScriptParser::DataType::Kind::CLASS) {
+									clss = clss->base_type.class_type;
+									n++;
+								} else {
+									native_type = clss->base_type.native_type;
+									clss = nullptr;
+								}
+							}
+						} break;
+						default:
+							break;
+					}
+
+					List<PropertyInfo> properties;
+					ClassDB::get_property_list(native_type, &properties);
+					for (const PropertyInfo &E : properties) {
+						if (E.usage & (PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_INTERNAL)) {
+							continue;
+						}
+						ScriptLanguage::CodeCompletionOption option(E.name.quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+						r_result.insert(option.display, option);
+					}
+				}
+
 				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, SNAME("Node")) && (p_method == SNAME("get_node") || p_method == SNAME("has_node"))) {
 					// Get autoloads
 					List<PropertyInfo> props;
