@@ -2439,6 +2439,9 @@ void TextServerFallback::_font_render_glyph(const RID &p_font_rid, const Vector2
 }
 
 void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
+	if (p_index == 0) {
+		return; // Non visual character, skip.
+	}
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
 
@@ -2476,6 +2479,9 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[index];
 	if (gl.found) {
+		if (gl.uv_rect.size.x <= 2 || gl.uv_rect.size.y <= 2) {
+			return; // Nothing to draw.
+		}
 		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
 
 		if (gl.texture_idx != -1) {
@@ -2543,6 +2549,9 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 }
 
 void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
+	if (p_index == 0) {
+		return; // Non visual character, skip.
+	}
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
 
@@ -2580,6 +2589,9 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[index];
 	if (gl.found) {
+		if (gl.uv_rect.size.x <= 2 || gl.uv_rect.size.y <= 2) {
+			return; // Nothing to draw.
+		}
 		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
 
 		if (gl.texture_idx != -1) {
