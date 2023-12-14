@@ -523,13 +523,6 @@ Error VulkanContext::_initialize_instance_extensions() {
 	if (want_debug_utils) {
 		register_requested_instance_extension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false);
 	}
-	// <TF>
-	// @ShadyTF debug marker extensions
-	// Should be last element in the array
-	if (_use_validation_layers()) {
-		register_requested_instance_extension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
-	}
-	// </TF>
 
 	// Load instance extensions that are available...
 	uint32_t instance_extension_count = 0;
@@ -624,6 +617,14 @@ Error VulkanContext::_initialize_device_extensions() {
 	if (VK_GOOGLE_display_timing_enabled) {
 		register_requested_device_extension(VK_GOOGLE_DISPLAY_TIMING_EXTENSION_NAME, false);
 	}
+
+	// <TF>
+	// @ShadyTF debug marker extensions
+	// Should be last element in the array
+	if (_use_validation_layers()) {
+		register_requested_device_extension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
+	}
+	// </TF>
 
 	// obtain available device extensions
 	uint32_t device_extension_count = 0;
@@ -1269,7 +1270,7 @@ Error VulkanContext::_create_instance() {
 		}
 		// <TF>
 		// @ShadyTF debug marker extensions
-		if (is_instance_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+		if (is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
 			vkCmdDebugMarkerBeginEXT = (PFN_vkCmdDebugMarkerBeginEXT)vkGetInstanceProcAddr(inst, "vkCmdDebugMarkerBeginEXT");
 			vkCmdDebugMarkerEndEXT = (PFN_vkCmdDebugMarkerEndEXT)vkGetInstanceProcAddr(inst, "vkCmdDebugMarkerEndEXT");
 			vkCmdDebugMarkerInsertEXT = (PFN_vkCmdDebugMarkerInsertEXT)vkGetInstanceProcAddr(inst, "vkCmdDebugMarkerInsertEXT");
@@ -2930,7 +2931,7 @@ void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_objec
 	if (!is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
 		// <TF>
 		// @ShadyTF debug marker extensions
-		if (is_instance_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+		if (is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
 			CharString obj_data = p_object_name.utf8();
 			VkDebugMarkerObjectNameInfoEXT name_info;
 			name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;

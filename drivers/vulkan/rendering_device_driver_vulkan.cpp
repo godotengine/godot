@@ -3102,7 +3102,7 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 	// <TF>
 	// @ShadyTF debug marker extensions
 	if (!context->is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
-		if (context->is_instance_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+		if (context->is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
 			VkDebugMarkerMarkerInfoEXT marker;
 			marker.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 			marker.pNext = nullptr;
@@ -3131,7 +3131,7 @@ void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer
 	// <TF>
 	// @ShadyTF debug marker extensions
 	if (!context->is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
-		if (context->is_instance_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+		if (context->is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
 			vkCmdDebugMarkerEndEXT((VkCommandBuffer)p_cmd_buffer.id);
 		}
 		return;
