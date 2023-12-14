@@ -1393,6 +1393,10 @@ void EditorNode::_menu_confirm_current() {
 	_menu_option_confirm(current_menu_option, true);
 }
 
+void EditorNode::_cancel_save_dialog() {
+	tab_closing_menu_option = -1;
+}
+
 void EditorNode::trigger_menu_option(int p_option, bool p_confirmed) {
 	_menu_option_confirm(p_option, p_confirmed);
 }
@@ -7718,6 +7722,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(save_confirmation);
 	save_confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
 	save_confirmation->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
+	save_confirmation->connect("canceled", callable_mp(this, &EditorNode::_cancel_save_dialog));
 	save_confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
 
 	gradle_build_manage_templates = memnew(ConfirmationDialog);
