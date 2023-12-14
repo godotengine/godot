@@ -62,13 +62,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_member_variable = false;
 	bool in_lambda = false;
 
-	bool in_function_name = false;
-	bool in_variable_declaration = false;
+	bool in_function_name = false; // Any call.
+	bool in_function_declaration = false; // Only declaration.
+	bool in_var_const_declaration = false;
 	bool in_signal_declaration = false;
 	bool expect_type = false;
 
-	int in_function_args = 0;
-	int in_function_arg_dicts = 0;
+	int in_declaration_params = 0; // The number of opened `(` after func/signal name.
+	int in_declaration_param_dicts = 0; // The number of opened `{` inside func params.
+	int in_type_params = 0; // The number of opened `[` after type name.
 
 	Color keyword_color;
 	Color color;
@@ -444,12 +446,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 				if (str[k] == '(') {
 					in_function_name = true;
-				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FOR)) {
-					in_variable_declaration = true;
+					if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
+						in_function_declaration = true;
+					}
+				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FOR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::CONST)) {
+					in_var_const_declaration = true;
 				}
 
 				// Check for lambda.
-				if (in_function_name && prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
+				if (in_function_declaration) {
 					k = j - 1;
 					while (k > 0 && is_whitespace(str[k])) {
 						k--;
@@ -474,48 +479,60 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		}
 
 		if (is_a_symbol) {
-			if (in_function_args > 0) {
+			if (in_declaration_params > 0) {
 				switch (str[j]) {
 					case '(':
-						in_function_args += 1;
+						in_declaration_params += 1;
 						break;
 					case ')':
-						in_function_args -= 1;
+						in_declaration_params -= 1;
 						break;
 					case '{':
-						in_function_arg_dicts += 1;
+						in_declaration_param_dicts += 1;
 						break;
 					case '}':
-						in_function_arg_dicts -= 1;
+						in_declaration_param_dicts -= 1;
 						break;
 				}
-			} else if (in_function_name && str[j] == '(') {
-				in_function_args = 1;
-				in_function_arg_dicts = 0;
+			} else if ((in_function_declaration || in_signal_declaration || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) && str[j] == '(') {
+				in_declaration_params = 1;
+				in_declaration_param_dicts = 0;
 			}
 
-			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[' && str[j] != ',' && str[j] != '.') {
-				expect_type = false;
-			}
-
-			if (j > 0 && str[j - 1] == '-' && str[j] == '>') {
-				expect_type = true;
-			}
-
-			if (in_variable_declaration || in_function_args > 0) {
-				int k = j;
-				// Skip space.
-				while (k < line_length && is_whitespace(str[k])) {
-					k++;
+			if (expect_type) {
+				switch (str[j]) {
+					case '[':
+						in_type_params += 1;
+						break;
+					case ']':
+						in_type_params -= 1;
+						break;
+					case ',':
+						if (in_type_params <= 0) {
+							expect_type = false;
+						}
+						break;
+					case ' ':
+					case '\t':
+					case '.':
+						break;
+					default:
+						expect_type = false;
+						break;
 				}
-
-				if (str[k] == ':' && in_function_arg_dicts == 0) {
-					// Has type hint.
+			} else {
+				if (j > 0 && str[j - 1] == '-' && str[j] == '>') {
 					expect_type = true;
+					in_type_params = 0;
+				}
+				if ((in_var_const_declaration || (in_declaration_params == 1 && in_declaration_param_dicts == 0)) && str[j] == ':') {
+					expect_type = true;
+					in_type_params = 0;
 				}
 			}
 
-			in_variable_declaration = false;
+			in_function_declaration = false;
+			in_var_const_declaration = false;
 			in_signal_declaration = false;
 			in_function_name = false;
 			in_lambda = false;
@@ -581,7 +598,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			color = member_color;
 		} else if (in_function_name) {
 			next_type = FUNCTION;
-			if (!in_lambda && prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
+			if (!in_lambda && in_function_declaration) {
 				color = function_definition_color;
 			} else {
 				color = function_color;
