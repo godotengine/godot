@@ -67,6 +67,7 @@ private:
 		TONEMAP_FLAG_USE_FXAA = (1 << 4),
 		TONEMAP_FLAG_USE_DEBANDING = (1 << 5),
 		TONEMAP_FLAG_CONVERT_TO_SRGB = (1 << 6),
+		TONEMAP_FLAG_TRANSPARENT_BG = (1 << 7),
 	};
 
 	struct TonemapPushConstant {
@@ -146,6 +147,8 @@ public:
 		bool use_debanding = false;
 		Vector2i texture_size;
 		uint32_t view_count = 1;
+
+		bool transparent_bg = false;
 
 		bool convert_to_srgb = false;
 	};

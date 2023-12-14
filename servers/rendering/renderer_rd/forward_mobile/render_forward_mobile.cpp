@@ -991,7 +991,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			Vector<Color> c;
 			{
 				Color cc = clear_color.srgb_to_linear() * inverse_luminance_multiplier;
-				if (rb_data.is_valid()) {
+				if (RendererRD::TextureStorage::get_singleton()->render_target_get_transparent(rb->get_render_target())) {
 					cc.a = 0; // For transparent viewport backgrounds.
 				}
 				c.push_back(cc); // Our render buffer.
