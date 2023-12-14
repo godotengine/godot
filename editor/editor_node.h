@@ -613,6 +613,7 @@ private:
 
 	void _renderer_selected(int);
 	void _update_renderer_color();
+	void _add_renderer_entry(const String &p_renderer_name, bool p_mark_overridden);
 
 	void _exit_editor(int p_exit_code);
 

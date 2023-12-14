@@ -6572,6 +6572,23 @@ void EditorNode::_renderer_selected(int p_which) {
 	_update_renderer_color();
 }
 
+void EditorNode::_add_renderer_entry(const String &p_renderer_name, bool p_mark_overridden) {
+	String item_text;
+	if (p_renderer_name == "forward_plus") {
+		item_text = TTR("Forward+");
+	}
+	if (p_renderer_name == "mobile") {
+		item_text = TTR("Mobile");
+	}
+	if (p_renderer_name == "gl_compatibility") {
+		item_text = TTR("Compatibility");
+	}
+	if (p_mark_overridden) {
+		item_text += " " + TTR("(Overridden)");
+	}
+	renderer->add_item(item_text);
+}
+
 void EditorNode::_resource_saved(Ref<Resource> p_resource, const String &p_path) {
 	if (singleton->saving_resources_in_path.has(p_resource)) {
 		// This is going to be handled by save_resource_in_path when the time is right.
@@ -7496,7 +7513,6 @@ EditorNode::EditorNode() {
 	renderer->set_flat(true);
 	renderer->set_fit_to_longest_item(false);
 	renderer->set_focus_mode(Control::FOCUS_NONE);
-	renderer->connect("item_selected", callable_mp(this, &EditorNode::_renderer_selected));
 	renderer->add_theme_font_override("font", theme->get_font(SNAME("bold"), EditorStringName(EditorFonts)));
 	renderer->add_theme_font_size_override("font_size", theme->get_font_size(SNAME("bold_size"), EditorStringName(EditorFonts)));
 	renderer->set_tooltip_text(TTR("Choose a renderer."));
@@ -7510,36 +7526,33 @@ EditorNode::EditorNode() {
 		title_bar->add_child(right_menu_spacer);
 	}
 
-	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
+	String current_renderer_ps = GLOBAL_GET("rendering/renderer/rendering_method");
+	current_renderer_ps = current_renderer_ps.to_lower();
+	String current_renderer_os = OS::get_singleton()->get_current_rendering_method().to_lower();
 
-	PackedStringArray renderers = ProjectSettings::get_singleton()->get_custom_property_info().get(StringName("rendering/renderer/rendering_method")).hint_string.split(",", false);
-
-	// As we are doing string comparisons, keep in standard case to prevent problems with capitals
-	// "vulkan" in particular uses lowercase "v" in the code, and uppercase in the UI.
-	current_renderer = current_renderer.to_lower();
-
-	for (int i = 0; i < renderers.size(); i++) {
-		String rendering_method = renderers[i];
-
-		// Add the renderers name to the UI.
-		if (rendering_method == "forward_plus") {
-			renderer->add_item(TTR("Forward+"));
+	// Add the renderers name to the UI.
+	if (current_renderer_ps == current_renderer_os) {
+		renderer->connect("item_selected", callable_mp(this, &EditorNode::_renderer_selected));
+		// As we are doing string comparisons, keep in standard case to prevent problems with capitals
+		// "vulkan" in particular uses lowercase "v" in the code, and uppercase in the UI.
+		PackedStringArray renderers = ProjectSettings::get_singleton()->get_custom_property_info().get(StringName("rendering/renderer/rendering_method")).hint_string.split(",", false);
+		for (int i = 0; i < renderers.size(); i++) {
+			String rendering_method = renderers[i];
+			_add_renderer_entry(rendering_method, false);
+			renderer->set_item_metadata(i, rendering_method);
+			// Lowercase for standard comparison.
+			rendering_method = rendering_method.to_lower();
+			if (current_renderer_ps == rendering_method) {
+				renderer->select(i);
+				renderer_current = i;
+			}
 		}
-		if (rendering_method == "mobile") {
-			renderer->add_item(TTR("Mobile"));
-		}
-		if (rendering_method == "gl_compatibility") {
-			renderer->add_item(TTR("Compatibility"));
-		}
-		renderer->set_item_metadata(i, rendering_method);
-
-		// Lowercase for standard comparison.
-		rendering_method = rendering_method.to_lower();
-
-		if (current_renderer == rendering_method) {
-			renderer->select(i);
-			renderer_current = i;
-		}
+	} else {
+		// It's an CLI-overridden rendering method.
+		_add_renderer_entry(current_renderer_os, true);
+		renderer->set_item_metadata(0, current_renderer_os);
+		renderer->select(0);
+		renderer_current = 0;
 	}
 	_update_renderer_color();
 
