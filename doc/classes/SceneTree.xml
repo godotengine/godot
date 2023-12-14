@@ -122,6 +122,13 @@
 				Returns the number of nodes in this [SceneTree].
 			</description>
 		</method>
+		<method name="get_node_count_in_group" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="group" type="StringName" />
+			<description>
+				Returns the number of nodes assigned to the given group.
+			</description>
+		</method>
 		<method name="get_nodes_in_group">
 			<return type="Node[]" />
 			<param index="0" name="group" type="StringName" />
