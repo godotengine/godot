@@ -46,9 +46,20 @@
 #endif
 
 // No point in fighting warnings in Mesa.
+#if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4200) // "nonstandard extension used: zero-sized array in struct/union".
 #pragma warning(disable : 4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wswitch"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 #include "dxil_validator.h"
 #include "nir_spirv.h"
 #include "nir_to_dxil.h"
@@ -56,7 +67,20 @@
 extern "C" {
 #include "dxil_spirv_nir.h"
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
+
+#if !defined(_MSC_VER)
+#include <guiddef.h>
+
+#include <dxguids.h>
+#endif
 
 #define ALIGN(m_number, m_alignment) ((((m_number) + ((m_alignment)-1)) / (m_alignment)) * (m_alignment))
 
@@ -1691,7 +1715,7 @@ Error RenderingDeviceD3D12::_buffer_allocate(Buffer *p_buffer, uint32_t p_size, 
 			nullptr,
 			&p_buffer->allocation,
 			IID_PPV_ARGS(&p_buffer->resource));
-	ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "Can't create buffer of size: " + itos(p_size) + ", error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "Can't create buffer of size: " + itos(p_size) + ", error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	p_buffer->size = p_size;
 	p_buffer->usage = p_usage;
@@ -1742,7 +1766,7 @@ Error RenderingDeviceD3D12::_insert_staging_block() {
 			NULL,
 			&block.allocation,
 			IID_PPV_ARGS(&block.resource));
-	ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CreateResource failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CreateResource failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	staging_buffer_blocks.insert(staging_buffer_current, block);
 	return OK;
@@ -1900,7 +1924,7 @@ Error RenderingDeviceD3D12::_buffer_update(Buffer *p_buffer, size_t p_offset, co
 		void *data_ptr = nullptr;
 		{
 			HRESULT res = staging_buffer_blocks[staging_buffer_current].resource->Map(0, &VOID_RANGE, &data_ptr);
-			ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "Map failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "Map failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		}
 
 		// Copy to staging buffer.
@@ -2066,14 +2090,14 @@ RID RenderingDeviceD3D12::texture_create(const TextureFormat &p_format, const Te
 		D3D12_FEATURE_DATA_FORMAT_SUPPORT srv_rtv_support = {};
 		srv_rtv_support.Format = d3d12_formats[curr_format].general_format;
 		HRESULT res = device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &srv_rtv_support, sizeof(srv_rtv_support));
-		ERR_FAIL_COND_V_MSG(res, RID(), "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_V_MSG(res, RID(), "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 		D3D12_FEATURE_DATA_FORMAT_SUPPORT uav_support = srv_rtv_support; // Fine for now.
 
 		D3D12_FEATURE_DATA_FORMAT_SUPPORT dsv_support = {};
 		dsv_support.Format = d3d12_formats[curr_format].dsv_format;
 		res = device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &dsv_support, sizeof(dsv_support));
-		ERR_FAIL_COND_V_MSG(res, RID(), "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_V_MSG(res, RID(), "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 		if (checking_main_format) {
 			if ((p_format.usage_bits & (TEXTURE_USAGE_SAMPLING_BIT | TEXTURE_USAGE_COLOR_ATTACHMENT_BIT))) {
@@ -2239,7 +2263,7 @@ RID RenderingDeviceD3D12::texture_create(const TextureFormat &p_format, const Te
 				&texture.allocation,
 				IID_PPV_ARGS(&texture.owner_resource));
 	}
-	ERR_FAIL_COND_V_MSG(res, RID(), "CreateResource failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, RID(), "CreateResource failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	texture.resource = texture.owner_resource;
 	image_memory += texture.allocation->GetSize();
 	texture.type = p_format.texture_type;
@@ -2357,6 +2381,8 @@ RID RenderingDeviceD3D12::texture_create(const TextureFormat &p_format, const Te
 		case D3D12_SRV_DIMENSION_TEXTURECUBE: {
 			texture.srv_desc.TextureCube.MipLevels = p_format.mipmaps;
 		} break;
+		default: {
+		}
 	}
 
 	switch (texture.owner_uav_desc.ViewDimension) {
@@ -2380,8 +2406,8 @@ RID RenderingDeviceD3D12::texture_create(const TextureFormat &p_format, const Te
 	}
 
 	if (cross_family_sharing && !relaxed_casting_available) {
-		D3D12_RESOURCE_DESC resource_desc_backup = *(D3D12_RESOURCE_DESC *)&resource_desc;
-		D3D12MA::ALLOCATION_DESC allocation_desc_backup = allocation_desc;
+		//D3D12_RESOURCE_DESC resource_desc_backup = *(D3D12_RESOURCE_DESC *)&resource_desc;
+		//D3D12MA::ALLOCATION_DESC allocation_desc_backup = allocation_desc;
 
 		texture.aliases.resize(texture.allowed_shared_formats.size());
 		for (int i = 0; i < texture.allowed_shared_formats.size(); i++) {
@@ -2406,7 +2432,7 @@ RID RenderingDeviceD3D12::texture_create(const TextureFormat &p_format, const Te
 					initial_state,
 					(alias_resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ? clear_value_ptr : nullptr,
 					IID_PPV_ARGS(&texture.aliases[i]));
-			ERR_FAIL_COND_V_MSG(res, RID(), "CreateAliasingResource failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_FAIL_COND_V_MSG(res, RID(), "CreateAliasingResource failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 			if (curr_format == p_view.format_override) {
 				texture.resource = texture.aliases[i];
@@ -2805,7 +2831,7 @@ Error RenderingDeviceD3D12::_texture_update(Texture *p_texture, uint32_t p_layer
 					{ // Map.
 						void *data_ptr = nullptr;
 						HRESULT res = staging_buffer_blocks[staging_buffer_current].resource->Map(0, &VOID_RANGE, &data_ptr);
-						ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "Map failed with error " + vformat("0x%08ux", res) + ".");
+						ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "Map failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 						write_ptr = (uint8_t *)data_ptr;
 						write_ptr += alloc_offset;
 					}
@@ -2870,7 +2896,12 @@ Vector<uint8_t> RenderingDeviceD3D12::_texture_get_data_from_image(Texture *tex,
 	Vector<uint8_t> image_data;
 	image_data.resize(image_size);
 
+#if defined(_MSC_VER) || !defined(_WIN32)
 	D3D12_RESOURCE_DESC res_desc = tex->resource->GetDesc();
+#else
+	D3D12_RESOURCE_DESC res_desc;
+	tex->resource->GetDesc(&res_desc);
+#endif
 
 	uint32_t blockw, blockh;
 	get_compressed_image_format_block_dimensions(tex->format, blockw, blockh);
@@ -2903,7 +2934,7 @@ Vector<uint8_t> RenderingDeviceD3D12::_texture_get_data_from_image(Texture *tex,
 
 			void *img_mem;
 			HRESULT res = tex->resource->Map(subresource, nullptr, &img_mem);
-			ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 			for (uint32_t z = 0; z < depth; z++) {
 				uint8_t *write_ptr = write_ptr_mipmap + z * image_size / depth;
@@ -3039,7 +3070,7 @@ Vector<uint8_t> RenderingDeviceD3D12::texture_get_data(RID p_texture, uint32_t p
 				uint32_t adjusted_size = adjusted_row_pitch / block_h * dst_footprint.Footprint.Height * computed_d;
 				CD3DX12_RANGE range(offset, copy_dst.PlacedFootprint.Offset + adjusted_size);
 				HRESULT res = tmp_buffer.resource->Map(0, &range, &buffer_mem);
-				ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", res) + ".");
+				ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 				for (uint32_t j = 0; j < dst_footprint.Footprint.Height / block_h * computed_d; j++) {
 					memmove((uint8_t *)buffer_mem + offset + j * inferred_row_pitch, (uint8_t *)buffer_mem + copy_dst.PlacedFootprint.Offset + j * adjusted_row_pitch, inferred_row_pitch);
@@ -3056,7 +3087,7 @@ Vector<uint8_t> RenderingDeviceD3D12::texture_get_data(RID p_texture, uint32_t p
 				void *buffer_mem;
 				CD3DX12_RANGE range(copy_dst.PlacedFootprint.Offset, size);
 				HRESULT res = tmp_buffer.resource->Map(0, &range, &buffer_mem);
-				ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", res) + ".");
+				ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 				memmove((uint8_t *)buffer_mem + offset, (uint8_t *)buffer_mem + copy_dst.PlacedFootprint.Offset, size);
 
@@ -3076,7 +3107,7 @@ Vector<uint8_t> RenderingDeviceD3D12::texture_get_data(RID p_texture, uint32_t p
 		void *buffer_mem;
 		CD3DX12_RANGE range(0, final_buffer_size);
 		HRESULT res = tmp_buffer.resource->Map(0, &range, &buffer_mem);
-		ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 		Vector<uint8_t> buffer_data;
 		buffer_data.resize(final_buffer_size);
@@ -3398,14 +3429,14 @@ bool RenderingDeviceD3D12::texture_is_format_supported_for_usage(DataFormat p_fo
 	D3D12_FEATURE_DATA_FORMAT_SUPPORT srv_rtv_support = {};
 	srv_rtv_support.Format = d3d12_formats[p_format].general_format;
 	HRESULT res = device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &srv_rtv_support, sizeof(srv_rtv_support));
-	ERR_FAIL_COND_V_MSG(res, false, "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, false, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	D3D12_FEATURE_DATA_FORMAT_SUPPORT &uav_support = srv_rtv_support; // Fine for now.
 
 	D3D12_FEATURE_DATA_FORMAT_SUPPORT dsv_support = {};
 	dsv_support.Format = d3d12_formats[p_format].dsv_format;
 	res = device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &dsv_support, sizeof(dsv_support));
-	ERR_FAIL_COND_V_MSG(res, false, "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, false, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	if ((p_usage & TEXTURE_USAGE_SAMPLING_BIT) && !(srv_rtv_support.Support1 & (D3D12_FORMAT_SUPPORT1_SHADER_LOAD | D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE)) && d3d12_formats[p_format].general_format != DXGI_FORMAT_UNKNOWN) {
 		return false;
@@ -3469,7 +3500,7 @@ bool RenderingDeviceD3D12::_framebuffer_format_preprocess(FramebufferFormat *p_f
 		ERR_FAIL_INDEX_V(attachments[i].format, DATA_FORMAT_MAX, false);
 		ERR_FAIL_INDEX_V(attachments[i].samples, TEXTURE_SAMPLES_MAX, false);
 		ERR_FAIL_COND_V_MSG(!(attachments[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT | TEXTURE_USAGE_VRS_ATTACHMENT_BIT)),
-				ERR_INVALID_PARAMETER, "Texture format for index (" + itos(i) + ") requires an attachment (color, depth-stencil, input or VRS) bit set.");
+				false, "Texture format for index (" + itos(i) + ") requires an attachment (color, depth-stencil, input or VRS) bit set.");
 
 		attachment_last_pass[i] = -1;
 		attachment_count++;
@@ -3583,10 +3614,10 @@ bool RenderingDeviceD3D12::_framebuffer_format_preprocess(FramebufferFormat *p_f
 		const D3D12Context::MultiviewCapabilities capabilities = context->get_multiview_capabilities();
 
 		// For now this only works with multiview!
-		ERR_FAIL_COND_V_MSG(!capabilities.is_supported, ERR_UNAVAILABLE, "Multiview not supported");
+		ERR_FAIL_COND_V_MSG(!capabilities.is_supported, false, "Multiview not supported");
 
 		// Make sure we limit this to the number of views we support.
-		ERR_FAIL_COND_V_MSG(p_fb_format->view_count > capabilities.max_view_count, ERR_UNAVAILABLE, "Hardware does not support requested number of views for Multiview render pass");
+		ERR_FAIL_COND_V_MSG(p_fb_format->view_count > capabilities.max_view_count, false, "Hardware does not support requested number of views for Multiview render pass");
 	}
 
 	if (!ms_attachment_formats.is_empty()) {
@@ -4016,7 +4047,7 @@ bool RenderingDeviceD3D12::sampler_is_format_supported_for_filter(DataFormat p_f
 	D3D12_FEATURE_DATA_FORMAT_SUPPORT srv_rtv_support = {};
 	srv_rtv_support.Format = d3d12_formats[p_format].general_format;
 	HRESULT res = device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &srv_rtv_support, sizeof(srv_rtv_support));
-	ERR_FAIL_COND_V_MSG(res, false, "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, false, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	return (srv_rtv_support.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE);
 }
@@ -4313,7 +4344,7 @@ uint32_t RenderingDeviceD3D12::_shader_patch_dxil_specialization_constant(
 	patch_val |= (1 << 30);
 	patch_val <<= 1; // What signed VBR does.
 
-	auto tamper_bits = [](uint8_t *p_start, uint64_t p_bit_offset, uint64_t p_value) -> uint64_t {
+	auto tamper_bits = [](uint8_t *p_start, uint64_t p_bit_offset, uint64_t p_tb_value) -> uint64_t {
 		uint64_t original = 0;
 		uint32_t curr_input_byte = p_bit_offset / 8;
 		uint8_t curr_input_bit = p_bit_offset % 8;
@@ -4339,13 +4370,13 @@ uint32_t RenderingDeviceD3D12::_shader_patch_dxil_specialization_constant(
 			for (uint32_t j = 0; j < 7; j++) {
 				bool input_bit = get_curr_input_bit();
 				original |= (uint64_t)(input_bit ? 1 : 0) << value_bit_idx;
-				tamper_input_bit((p_value >> value_bit_idx) & 1);
+				tamper_input_bit((p_tb_value >> value_bit_idx) & 1);
 				move_to_next_input_bit();
 				value_bit_idx++;
 			}
 #ifdef DEV_ENABLED
 			bool input_bit = get_curr_input_bit();
-			DEV_ASSERT(i < 4 && input_bit || i == 4 && !input_bit);
+			DEV_ASSERT((i < 4 && input_bit) || (i == 4 && !input_bit));
 #endif
 			move_to_next_input_bit();
 		}
@@ -4561,7 +4592,7 @@ Vector<uint8_t> RenderingDeviceD3D12::shader_compile_binary_from_spirv(const Vec
 			stages_processed.set_flag(stage_flag);
 
 			{
-				char *entry_point = "main";
+				const char *entry_point = "main";
 
 				static const gl_shader_stage SPIRV_TO_MESA_STAGES[SHADER_STAGE_MAX] = {
 					/* SHADER_STAGE_VERTEX */ MESA_SHADER_VERTEX,
@@ -4571,7 +4602,7 @@ Vector<uint8_t> RenderingDeviceD3D12::shader_compile_binary_from_spirv(const Vec
 					/* SHADER_STAGE_COMPUTE */ MESA_SHADER_COMPUTE,
 				};
 
-				nir_shader *nir_shader = spirv_to_nir(
+				nir_shader *shader = spirv_to_nir(
 						(const uint32_t *)p_spirv[i].spir_v.ptr(),
 						p_spirv[i].spir_v.size() / sizeof(uint32_t),
 						nullptr,
@@ -4579,13 +4610,13 @@ Vector<uint8_t> RenderingDeviceD3D12::shader_compile_binary_from_spirv(const Vec
 						SPIRV_TO_MESA_STAGES[stage],
 						entry_point,
 						dxil_spirv_nir_get_spirv_options(), &nir_options);
-				if (!nir_shader) {
+				if (!shader) {
 					free_nir_shaders();
 					ERR_FAIL_V_MSG(Vector<uint8_t>(), "Shader translation (step 1) at stage " + String(shader_stage_names[stage]) + " failed.");
 				}
 
 #ifdef DEV_ENABLED
-				nir_validate_shader(nir_shader, "Validate before feeding NIR to the DXIL compiler");
+				nir_validate_shader(shader, "Validate before feeding NIR to the DXIL compiler");
 #endif
 
 				if (stage == SHADER_STAGE_VERTEX) {
@@ -4597,11 +4628,11 @@ Vector<uint8_t> RenderingDeviceD3D12::shader_compile_binary_from_spirv(const Vec
 				}
 
 				// This is based on spirv2dxil.c. May need updates when it changes.
-				dxil_spirv_nir_prep(nir_shader);
+				dxil_spirv_nir_prep(shader);
 				bool requires_runtime_data = {};
-				dxil_spirv_nir_passes(nir_shader, &dxil_runtime_conf, &requires_runtime_data);
+				dxil_spirv_nir_passes(shader, &dxil_runtime_conf, &requires_runtime_data);
 
-				stages_nir_shaders[stage] = nir_shader;
+				stages_nir_shaders[stage] = shader;
 			}
 		}
 
@@ -4639,7 +4670,7 @@ Vector<uint8_t> RenderingDeviceD3D12::shader_compile_binary_from_spirv(const Vec
 			godot_nir_callbacks.data = &shader_data;
 
 			godot_nir_callbacks.report_resource = [](uint32_t p_register, uint32_t p_space, uint32_t p_dxil_type, void *p_data) {
-				ShaderData &shader_data = *(ShaderData *)p_data;
+				ShaderData &shader_data_in = *(ShaderData *)p_data;
 
 				// Types based on Mesa's dxil_container.h.
 				static const uint32_t DXIL_RES_SAMPLER = 1;
@@ -4660,26 +4691,26 @@ Vector<uint8_t> RenderingDeviceD3D12::shader_compile_binary_from_spirv(const Vec
 
 				if (p_register == ROOT_CONSTANT_REGISTER && p_space == ROOT_CONSTANT_SPACE) {
 					DEV_ASSERT(res_class == RES_CLASS_CBV);
-					shader_data.binary_data.dxil_push_constant_stages |= (1 << shader_data.stage);
+					shader_data_in.binary_data.dxil_push_constant_stages |= (1 << shader_data_in.stage);
 				} else if (p_register == RUNTIME_DATA_REGISTER && p_space == RUNTIME_DATA_SPACE) {
 					DEV_ASSERT(res_class == RES_CLASS_CBV);
-					shader_data.binary_data.nir_runtime_data_root_param_idx = 1; // Temporary, to be determined later.
+					shader_data_in.binary_data.nir_runtime_data_root_param_idx = 1; // Temporary, to be determined later.
 				} else {
 					DEV_ASSERT(p_space == 0);
 
 					uint32_t set = p_register / GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER;
 					uint32_t binding = (p_register % GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER) / GODOT_NIR_BINDING_MULTIPLIER;
 
-					DEV_ASSERT(set < (uint32_t)shader_data.uniform_info.size());
+					DEV_ASSERT(set < (uint32_t)shader_data_in.uniform_info.size());
 					bool found = false;
-					for (int i = 0; i < shader_data.uniform_info[set].size(); i++) {
-						if (shader_data.uniform_info[set][i].binding != binding) {
+					for (int j = 0; j < shader_data_in.uniform_info[set].size(); j++) {
+						if (shader_data_in.uniform_info[set][j].binding != binding) {
 							continue;
 						}
 
-						RenderingDeviceD3D12ShaderBinaryDataBinding &binding_info = shader_data.uniform_info.write[set].write[i];
+						RenderingDeviceD3D12ShaderBinaryDataBinding &binding_info = shader_data_in.uniform_info.write[set].write[j];
 
-						binding_info.dxil_stages |= (1 << shader_data.stage);
+						binding_info.dxil_stages |= (1 << shader_data_in.stage);
 
 						if (res_class != RES_CLASS_INVALID) {
 							DEV_ASSERT(binding_info.res_class == (uint32_t)RES_CLASS_INVALID || binding_info.res_class == (uint32_t)res_class);
@@ -4698,17 +4729,17 @@ Vector<uint8_t> RenderingDeviceD3D12::shader_compile_binary_from_spirv(const Vec
 			};
 
 			godot_nir_callbacks.report_sc_bit_offset_fn = [](uint32_t p_sc_id, uint64_t p_bit_offset, void *p_data) {
-				ShaderData &shader_data = *(ShaderData *)p_data;
+				ShaderData &shader_data_in = *(ShaderData *)p_data;
 
 				bool found = false;
-				for (int i = 0; i < shader_data.specialization_constants.size(); i++) {
-					if (shader_data.specialization_constants[i].constant_id != p_sc_id) {
+				for (int j = 0; j < shader_data_in.specialization_constants.size(); j++) {
+					if (shader_data_in.specialization_constants[j].constant_id != p_sc_id) {
 						continue;
 					}
 
-					uint32_t offset_idx = shader_stage_bit_offset_indices[shader_data.stage];
-					DEV_ASSERT(shader_data.specialization_constants.write[i].stages_bit_offsets[offset_idx] == 0);
-					shader_data.specialization_constants.write[i].stages_bit_offsets[offset_idx] = p_bit_offset;
+					uint32_t offset_idx = shader_stage_bit_offset_indices[shader_data_in.stage];
+					DEV_ASSERT(shader_data_in.specialization_constants.write[j].stages_bit_offsets[offset_idx] == 0);
+					shader_data_in.specialization_constants.write[j].stages_bit_offsets[offset_idx] = p_bit_offset;
 
 					found = true;
 					break;
@@ -4718,14 +4749,14 @@ Vector<uint8_t> RenderingDeviceD3D12::shader_compile_binary_from_spirv(const Vec
 
 			godot_nir_callbacks.report_bitcode_bit_offset_fn = [](uint64_t p_bit_offset, void *p_data) {
 				DEV_ASSERT(p_bit_offset % 8 == 0);
-				ShaderData &shader_data = *(ShaderData *)p_data;
-				uint32_t offset_idx = shader_stage_bit_offset_indices[shader_data.stage];
-				for (int i = 0; i < shader_data.specialization_constants.size(); i++) {
-					if (shader_data.specialization_constants.write[i].stages_bit_offsets[offset_idx] == 0) {
+				ShaderData &shader_data_in = *(ShaderData *)p_data;
+				uint32_t offset_idx = shader_stage_bit_offset_indices[shader_data_in.stage];
+				for (int j = 0; j < shader_data_in.specialization_constants.size(); j++) {
+					if (shader_data_in.specialization_constants.write[j].stages_bit_offsets[offset_idx] == 0) {
 						// This SC has been optimized out from this stage.
 						continue;
 					}
-					shader_data.specialization_constants.write[i].stages_bit_offsets[offset_idx] += p_bit_offset;
+					shader_data_in.specialization_constants.write[j].stages_bit_offsets[offset_idx] += p_bit_offset;
 				}
 			};
 
@@ -4982,7 +5013,7 @@ Vector<uint8_t> RenderingDeviceD3D12::shader_compile_binary_from_spirv(const Vec
 		ComPtr<ID3DBlob> error_blob;
 		HRESULT res = D3DX12SerializeVersionedRootSignature(&root_sig_desc, D3D_ROOT_SIGNATURE_VERSION_1_1, root_sig_blob.GetAddressOf(), error_blob.GetAddressOf());
 		ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(),
-				"Serialization of root signature failed with error " + vformat("0x%08ux", res) + " and the following message:\n" + String((char *)error_blob->GetBufferPointer(), error_blob->GetBufferSize()));
+				"Serialization of root signature failed with error " + vformat("0x%08ux", (uint64_t)res) + " and the following message:\n" + String((char *)error_blob->GetBufferPointer(), error_blob->GetBufferSize()));
 
 		binary_data.root_signature_crc = crc32(0, nullptr, 0);
 		binary_data.root_signature_crc = crc32(binary_data.root_signature_crc, (const Bytef *)root_sig_blob->GetBufferPointer(), root_sig_blob->GetBufferSize());
@@ -5161,7 +5192,7 @@ RID RenderingDeviceD3D12::shader_create_from_bytecode(const Vector<uint8_t> &p_s
 			sui.binding.stages = set_ptr[j].dxil_stages;
 			sui.binding.res_class = (ResourceClass)set_ptr[j].res_class;
 			static_assert(sizeof(UniformBindingInfo::root_sig_locations) == sizeof(RenderingDeviceD3D12ShaderBinaryDataBinding::root_sig_locations));
-			memcpy(&sui.binding.root_sig_locations, &set_ptr[j].root_sig_locations, sizeof(UniformBindingInfo::root_sig_locations));
+			memcpy((void *)&sui.binding.root_sig_locations, (void *)&set_ptr[j].root_sig_locations, sizeof(UniformBindingInfo::root_sig_locations));
 
 			set_info.write[i].uniforms.push_back(sui);
 
@@ -5223,7 +5254,7 @@ RID RenderingDeviceD3D12::shader_create_from_bytecode(const Vector<uint8_t> &p_s
 
 	ComPtr<ID3D12RootSignatureDeserializer> root_sig_deserializer;
 	HRESULT res = D3D12CreateRootSignatureDeserializer(root_sig_data_ptr, binary_data.root_signature_len, IID_PPV_ARGS(root_sig_deserializer.GetAddressOf()));
-	ERR_FAIL_COND_V_MSG(res, RID(), "D3D12CreateRootSignatureDeserializer failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, RID(), "D3D12CreateRootSignatureDeserializer failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	read_offset += binary_data.root_signature_len;
 
 	ERR_FAIL_COND_V(read_offset != binsize, RID());
@@ -5233,7 +5264,7 @@ RID RenderingDeviceD3D12::shader_create_from_bytecode(const Vector<uint8_t> &p_s
 
 	ComPtr<ID3D12RootSignature> root_signature;
 	res = device->CreateRootSignature(0, root_sig_data_ptr, binary_data.root_signature_len, IID_PPV_ARGS(root_signature.GetAddressOf()));
-	ERR_FAIL_COND_V_MSG(res, RID(), "CreateRootSignature failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, RID(), "CreateRootSignature failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	RID id;
 	if (p_placeholder.is_null()) {
@@ -5392,7 +5423,7 @@ Error RenderingDeviceD3D12::DescriptorsHeap::allocate(ID3D12Device *p_device, D3
 	desc.NumDescriptors = p_descriptor_count;
 	desc.Flags = p_for_gpu ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	HRESULT res = p_device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(heap.GetAddressOf()));
-	ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CreateDescriptorHeap failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CreateDescriptorHeap failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	return OK;
 }
@@ -5402,10 +5433,17 @@ RenderingDeviceD3D12::DescriptorsHeap::Walker RenderingDeviceD3D12::DescriptorsH
 	walker.handle_size = handle_size;
 	walker.handle_count = desc.NumDescriptors;
 	if (heap) {
+#if defined(_MSC_VER) || !defined(_WIN32)
 		walker.first_cpu_handle = heap->GetCPUDescriptorHandleForHeapStart();
 		if ((desc.Flags & D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)) {
 			walker.first_gpu_handle = heap->GetGPUDescriptorHandleForHeapStart();
 		}
+#else
+		heap->GetCPUDescriptorHandleForHeapStart(&walker.first_cpu_handle);
+		if ((desc.Flags & D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)) {
+			heap->GetGPUDescriptorHandleForHeapStart(&walker.first_gpu_handle);
+		}
+#endif
 	}
 	return walker;
 }
@@ -6105,7 +6143,7 @@ Vector<uint8_t> RenderingDeviceD3D12::buffer_get_data(RID p_buffer, uint32_t p_o
 
 	void *buffer_mem;
 	HRESULT res = tmp_buffer.resource->Map(0, &VOID_RANGE, &buffer_mem);
-	ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, Vector<uint8_t>(), "Map failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	Vector<uint8_t> buffer_data;
 	{
@@ -6584,7 +6622,7 @@ RID RenderingDeviceD3D12::render_pipeline_create(RID p_shader, FramebufferFormat
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = pipeline_desc.GraphicsDescV0();
 			res = device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(pipeline.pso.GetAddressOf()));
 		}
-		ERR_FAIL_COND_V_MSG(res, RID(), "CreateGraphicsPipelineState failed with error " + vformat("0x%08ux", res) + " for shader '" + shader->name + "'.");
+		ERR_FAIL_COND_V_MSG(res, RID(), "CreateGraphicsPipelineState failed with error " + vformat("0x%08ux", (uint64_t)res) + " for shader '" + shader->name + "'.");
 
 #ifdef DEBUG_SAVE_PSO_BLOBS
 		_save_pso_blob(pipeline.pso.Get(), shader, p_specialization_constants);
@@ -6709,7 +6747,7 @@ RID RenderingDeviceD3D12::compute_pipeline_create(RID p_shader, const Vector<Pip
 			D3D12_COMPUTE_PIPELINE_STATE_DESC desc = pipeline_desc.ComputeDescV0();
 			res = device->CreateComputePipelineState(&desc, IID_PPV_ARGS(pipeline.pso.GetAddressOf()));
 		}
-		ERR_FAIL_COND_V_MSG(res, RID(), "CreateComputePipelineState failed with error " + vformat("0x%08ux", res) + " for shader '" + shader->name + "'.");
+		ERR_FAIL_COND_V_MSG(res, RID(), "CreateComputePipelineState failed with error " + vformat("0x%08ux", (uint64_t)res) + " for shader '" + shader->name + "'.");
 
 #ifdef DEBUG_SAVE_PSO_BLOBS
 		_save_pso_blob(pipeline.pso.Get(), shader, p_specialization_constants);
@@ -6912,6 +6950,8 @@ Error RenderingDeviceD3D12::_draw_list_render_pass_begin(Framebuffer *framebuffe
 				} break;
 				case INITIAL_ACTION_CONTINUE: {
 				} break;
+				default: {
+				} break;
 			}
 		}
 	};
@@ -7031,8 +7071,14 @@ Error RenderingDeviceD3D12::_draw_list_render_pass_begin(Framebuffer *framebuffe
 	}
 
 	if (dsv_clear) {
+#if defined(_MSC_VER) || !defined(_WIN32)
+		D3D12_CPU_DESCRIPTOR_HANDLE cpu_hnd = framebuffer->dsv_heap.get_heap()->GetCPUDescriptorHandleForHeapStart();
+#else
+		D3D12_CPU_DESCRIPTOR_HANDLE cpu_hnd;
+		framebuffer->dsv_heap.get_heap()->GetCPUDescriptorHandleForHeapStart(&cpu_hnd);
+#endif
 		command_list->ClearDepthStencilView(
-				framebuffer->dsv_heap.get_heap()->GetCPUDescriptorHandleForHeapStart(),
+				cpu_hnd,
 				D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
 				p_clear_depth,
 				p_clear_stencil,
@@ -7209,7 +7255,7 @@ void RenderingDeviceD3D12::draw_list_bind_render_pipeline(DrawListID p_list, RID
 			if (pipeline->nir_runtime_data_root_param_idx != UINT32_MAX) {
 				// Set the viewport size part of the DXIL-NIR runtime data, which is the only we know to need currently.
 				constexpr dxil_spirv_vertex_runtime_data dummy_data = {};
-				uint32_t offset = constexpr((char *)&dummy_data.viewport_width - (char *)&dummy_data) / 4;
+				uint32_t offset = int((char *)&dummy_data.viewport_width - (char *)&dummy_data) / 4;
 				dl->command_list->SetGraphicsRoot32BitConstants(pipeline->nir_runtime_data_root_param_idx, 2, &draw_list_viewport_size, offset);
 			}
 		}
@@ -7363,7 +7409,7 @@ void RenderingDeviceD3D12::_bind_uniform_set(UniformSet *p_uniform_set, const Sh
 	// If this set's descriptors have already been set for the current execution and a compatible root signature, reuse!
 	uint32_t root_sig_crc = p_for_compute ? compute_list->state.root_signature_crc : draw_list->state.root_signature_crc;
 	UniformSet::RecentBind *last_bind = nullptr;
-	for (int i = 0; i < ARRAY_SIZE(p_uniform_set->recent_binds); i++) {
+	for (int i = 0; i < (int)ARRAY_SIZE(p_uniform_set->recent_binds); i++) {
 		if (p_uniform_set->recent_binds[i].execution_index == frames[frame].execution_index) {
 			if (p_uniform_set->recent_binds[i].root_signature_crc == root_sig_crc) {
 				for (const RootDescriptorTable &table : p_uniform_set->recent_binds[i].root_tables.resources) {
@@ -7916,7 +7962,7 @@ void RenderingDeviceD3D12::_draw_list_subpass_begin() { // [[MANUAL_SUBPASSES]]
 		DescriptorsHeap::Walker rtv_heap_walker = draw_list_framebuffer->rtv_heap.make_walker();
 		for (int i = 0; i < pass.color_attachments.size(); i++) {
 			uint32_t attachment = pass.color_attachments[i];
-			if (attachment == FramebufferPass::ATTACHMENT_UNUSED) {
+			if (attachment == (uint32_t)FramebufferPass::ATTACHMENT_UNUSED) {
 				if (!frames[frame].null_rtv_handle.ptr) {
 					// No null descriptor-handle created for this frame yet.
 
@@ -8103,13 +8149,13 @@ Error RenderingDeviceD3D12::_draw_list_allocate(const Rect2i &p_viewport, uint32
 			split_draw_list_allocators.resize(p_splits);
 			for (uint32_t i = from; i < p_splits; i++) {
 				HRESULT res = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_BUNDLE, IID_PPV_ARGS(&split_draw_list_allocators.write[i].command_allocator));
-				ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CreateCommandAllocator failed with error " + vformat("0x%08ux", res) + ".");
+				ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CreateCommandAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 				for (int j = 0; j < frame_count; j++) {
 					ID3D12GraphicsCommandList *command_list = nullptr;
 
 					res = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_BUNDLE, split_draw_list_allocators[i].command_allocator, nullptr, IID_PPV_ARGS(&command_list));
-					ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CreateCommandList failed with error " + vformat("0x%08ux", res) + ".");
+					ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CreateCommandList failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 					split_draw_list_allocators.write[i].command_lists.push_back(command_list);
 				}
@@ -8123,12 +8169,12 @@ Error RenderingDeviceD3D12::_draw_list_allocate(const Rect2i &p_viewport, uint32
 			ID3D12GraphicsCommandList *command_list = split_draw_list_allocators[i].command_lists[frame];
 
 			HRESULT res = frames[frame].setup_command_allocator->Reset();
-			ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, ERR_CANT_CREATE, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, ERR_CANT_CREATE, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 			res = command_list->Reset(split_draw_list_allocators[i].command_allocator, nullptr);
 			if (res) {
 				memdelete_arr(draw_list);
 				draw_list = nullptr;
-				ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 			}
 
 			draw_list[i].command_list = command_list;
@@ -8196,6 +8242,8 @@ void RenderingDeviceD3D12::draw_list_end(BitField<BarrierMask> p_post_barrier) {
 				case FINAL_ACTION_CONTINUE: {
 					ERR_FAIL_COND(draw_list_unbind_color_textures); // Bug!
 				} break;
+				default: {
+				} break;
 			}
 		} else if ((fb_format.attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
 			ERR_FAIL_COND(is_screen); // Bug!
@@ -8209,6 +8257,8 @@ void RenderingDeviceD3D12::draw_list_end(BitField<BarrierMask> p_post_barrier) {
 				} break;
 				case FINAL_ACTION_CONTINUE: {
 					ERR_FAIL_COND(draw_list_unbind_depth_textures); // Bug!
+				} break;
+				default: {
 				} break;
 			}
 		}
@@ -8759,13 +8809,13 @@ void RenderingDeviceD3D12::_begin_frame() {
 	_free_pending_resources(frame);
 
 	HRESULT res = frames[frame].setup_command_allocator->Reset();
-	ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	res = frames[frame].setup_command_list->Reset(frames[frame].setup_command_allocator.Get(), nullptr);
-	ERR_FAIL_COND_MSG(res, "Command list Reset failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_MSG(res, "Command list Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	res = frames[frame].draw_command_allocator->Reset();
-	ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	res = frames[frame].draw_command_list->Reset(frames[frame].draw_command_allocator.Get(), nullptr);
-	ERR_FAIL_COND_MSG(res, "Command list Reset failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_MSG(res, "Command list Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	ID3D12DescriptorHeap *heaps[] = {
 		frames[frame].desc_heaps.resources.get_heap(),
@@ -8778,7 +8828,7 @@ void RenderingDeviceD3D12::_begin_frame() {
 	frames[frame].desc_heap_walkers.aux.rewind();
 	frames[frame].desc_heap_walkers.rtv.rewind();
 	frames[frame].desc_heaps_exhausted_reported = {};
-	frames[frame].null_rtv_handle = {};
+	frames[frame].null_rtv_handle = { 0 };
 
 #ifdef DEBUG_COUNT_BARRIERS
 	print_verbose(vformat("Last frame: %d barriers (%d batches); %.1f ms", frame_barriers_count, frame_barriers_batches_count, frame_barriers_cpu_time * 0.001f));
@@ -8891,7 +8941,7 @@ D3D12MA::Pool *RenderingDeviceD3D12::_find_or_create_small_allocs_pool(D3D12_HEA
 	ComPtr<D3D12MA::Pool> pool;
 	HRESULT res = context->get_allocator()->CreatePool(&poolDesc, pool.GetAddressOf());
 	small_allocs_pools[pool_key.key] = pool; // Don't try to create it again if failed the first time.
-	ERR_FAIL_COND_V_MSG(res, nullptr, "CreatePool failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, nullptr, "CreatePool failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	return pool.Get();
 }
@@ -8987,13 +9037,13 @@ void RenderingDeviceD3D12::_flush(bool p_flush_current_frame) {
 		context->local_device_sync(local_device);
 
 		HRESULT res = frames[frame].setup_command_allocator->Reset();
-		ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		res = frames[frame].setup_command_list->Reset(frames[frame].setup_command_allocator.Get(), nullptr);
-		ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		res = frames[frame].draw_command_allocator->Reset();
-		ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		res = frames[frame].draw_command_list->Reset(frames[frame].draw_command_allocator.Get(), nullptr);
-		ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 		ID3D12DescriptorHeap *heaps[] = {
 			frames[frame].desc_heaps.resources.get_heap(),
@@ -9005,7 +9055,7 @@ void RenderingDeviceD3D12::_flush(bool p_flush_current_frame) {
 		frames[frame].desc_heap_walkers.aux.rewind();
 		frames[frame].desc_heap_walkers.rtv.rewind();
 		frames[frame].desc_heaps_exhausted_reported = {};
-		frames[frame].null_rtv_handle = {};
+		frames[frame].null_rtv_handle = { 0 };
 		frames[frame].execution_index = execution_index;
 	} else {
 		context->flush(p_flush_current_frame, p_flush_current_frame);
@@ -9014,13 +9064,13 @@ void RenderingDeviceD3D12::_flush(bool p_flush_current_frame) {
 			execution_index++;
 
 			HRESULT res = frames[frame].setup_command_allocator->Reset();
-			ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 			res = frames[frame].draw_command_allocator->Reset();
-			ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_FAIL_COND_MSG(res, "Command allocator Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 			res = frames[frame].setup_command_list->Reset(frames[frame].setup_command_allocator.Get(), nullptr);
-			ERR_FAIL_COND_MSG(res, "Command list Reset failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_FAIL_COND_MSG(res, "Command list Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 			res = frames[frame].draw_command_list->Reset(frames[frame].draw_command_allocator.Get(), nullptr);
-			ERR_FAIL_COND_MSG(res, "Command list Reset failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_FAIL_COND_MSG(res, "Command list Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 			ID3D12DescriptorHeap *heaps[] = {
 				frames[frame].desc_heaps.resources.get_heap(),
@@ -9033,7 +9083,7 @@ void RenderingDeviceD3D12::_flush(bool p_flush_current_frame) {
 			frames[frame].desc_heap_walkers.aux.rewind();
 			frames[frame].desc_heap_walkers.rtv.rewind();
 			frames[frame].desc_heaps_exhausted_reported = {};
-			frames[frame].null_rtv_handle = {};
+			frames[frame].null_rtv_handle = { 0 };
 			frames[frame].execution_index = execution_index;
 
 			context->set_setup_list(frames[frame].setup_command_list.Get()); // Append now so it's added before everything else.
@@ -9070,7 +9120,7 @@ void RenderingDeviceD3D12::initialize(D3D12Context *p_context, bool p_local_devi
 		cs_desc.pArgumentDescs = &iarg_desc;
 		cs_desc.NodeMask = 0;
 		HRESULT res = device->CreateCommandSignature(&cs_desc, nullptr, IID_PPV_ARGS(indirect_dispatch_cmd_sig.GetAddressOf()));
-		ERR_FAIL_COND_MSG(res, "CreateCommandSignature failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_MSG(res, "CreateCommandSignature failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	}
 
 	uint32_t resource_descriptors_per_frame = GLOBAL_DEF("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", 16384);
@@ -9104,18 +9154,18 @@ void RenderingDeviceD3D12::initialize(D3D12Context *p_context, bool p_local_devi
 
 		{ // Create command allocators.
 			HRESULT res = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(frames[i].setup_command_allocator.GetAddressOf()));
-			ERR_CONTINUE_MSG(res, "CreateCommandAllocator failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_CONTINUE_MSG(res, "CreateCommandAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 			res = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(frames[i].draw_command_allocator.GetAddressOf()));
-			ERR_CONTINUE_MSG(res, "CreateCommandAllocator failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_CONTINUE_MSG(res, "CreateCommandAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		}
 
 		{ // Create command lists.
 			HRESULT res = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, frames[i].setup_command_allocator.Get(), nullptr, IID_PPV_ARGS(frames[i].setup_command_list.GetAddressOf()));
-			ERR_CONTINUE_MSG(res, "CreateCommandList failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_CONTINUE_MSG(res, "CreateCommandList failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 			res = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, frames[i].draw_command_allocator.Get(), nullptr, IID_PPV_ARGS(frames[i].draw_command_list.GetAddressOf()));
-			ERR_CONTINUE_MSG(res, "CreateCommandList failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_CONTINUE_MSG(res, "CreateCommandList failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 			if (i > 0) {
 				frames[i].setup_command_list->Close();
@@ -9138,7 +9188,7 @@ void RenderingDeviceD3D12::initialize(D3D12Context *p_context, bool p_local_devi
 			qh_desc.Count = max_timestamp_query_elements;
 			qh_desc.NodeMask = 0;
 			HRESULT res = device->CreateQueryHeap(&qh_desc, IID_PPV_ARGS(frames[i].timestamp_heap.GetAddressOf()));
-			ERR_CONTINUE_MSG(res, "CreateQueryHeap failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_CONTINUE_MSG(res, "CreateQueryHeap failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 			frames[i].timestamp_names.resize(max_timestamp_query_elements);
 			frames[i].timestamp_cpu_values.resize(max_timestamp_query_elements);

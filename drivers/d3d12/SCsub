@@ -12,9 +12,9 @@ thirdparty_obj = []
 
 # DirectX Headers (must take precedence over Windows SDK's).
 
-env.Prepend(CPPPATH=["#thirdparty/directx_headers"])
-env_d3d12_rd.Prepend(CPPPATH=["#thirdparty/directx_headers"])
-
+env.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
+env_d3d12_rd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
+env_d3d12_rd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/dxguids"])
 
 # Direct3D 12 Memory Allocator.
 
@@ -105,12 +105,16 @@ extra_defines = [
     "WINDOWS_NO_FUTEX",
 ]
 
+mesa_ver = Path(mesa_absdir + "/VERSION.info")
+if not mesa_ver.is_file():
+    mesa_ver = Path(mesa_absdir + "/VERSION")
+
 # These defines are inspired by the Meson build scripts in the original repo.
 extra_defines += [
     "__STDC_CONSTANT_MACROS",
     "__STDC_FORMAT_MACROS",
     "__STDC_LIMIT_MACROS",
-    ("PACKAGE_VERSION", '\\"' + Path(mesa_absdir + "/VERSION").read_text().strip() + '\\"'),
+    ("PACKAGE_VERSION", '\\"' + mesa_ver.read_text().strip() + '\\"'),
     ("PACKAGE_BUGREPORT", '\\"https://gitlab.freedesktop.org/mesa/mesa/-/issues\\"'),
     "PIPE_SUBSYSTEM_WINDOWS_USER",
     ("_Static_assert", "static_assert"),
@@ -127,6 +131,11 @@ if env.msvc:
         "_ALLOW_KEYWORD_MACROS",
         ("_HAS_EXCEPTIONS", 0),
         "NOMINMAX",
+        "HAVE_STRUCT_TIMESPEC",
+    ]
+else:
+    extra_defines += [
+        ("__REQUIRED_RPCNDR_H_VERSION__", 475),
         "HAVE_STRUCT_TIMESPEC",
     ]
 

@@ -37,7 +37,25 @@
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wswitch"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 #include "dxcapi.h"
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+#if !defined(_MSC_VER)
+#include <guiddef.h>
+
+#include <dxguids.h>
+#endif
 
 extern "C" {
 char godot_nir_arch_name[32];
@@ -47,8 +65,12 @@ __declspec(dllexport) extern const UINT D3D12SDKVersion = 610;
 #ifdef AGILITY_SDK_MULTIARCH_ENABLED
 #if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 __declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\arm64";
-#else
+#elif defined(__arm__) || defined(_M_ARM)
+__declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\arm32";
+#elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 __declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\x86_64";
+#elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
+__declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\x86_32";
 #endif
 #else
 __declspec(dllexport) extern const char *D3D12SDKPath = "\\.";
@@ -57,8 +79,14 @@ __declspec(dllexport) extern const char *D3D12SDKPath = "\\.";
 }
 
 #ifdef PIX_ENABLED
+#if defined(__GNUC__)
+#define _MSC_VER 1800
+#endif
 #define USE_PIX
 #include "WinPixEventRuntime/pix3.h"
+#if defined(__GNUC__)
+#undef _MSC_VER
+#endif
 #endif
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
@@ -178,7 +206,7 @@ Error D3D12Context::_check_capabilities() {
 		D3D12_FEATURE_DATA_SHADER_MODEL shader_model = {};
 		shader_model.HighestShaderModel = MIN(D3D_HIGHEST_SHADER_MODEL, D3D_SHADER_MODEL_6_6);
 		HRESULT res = md.device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shader_model, sizeof(shader_model));
-		ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		shader_capabilities.shader_model = shader_model.HighestShaderModel;
 	}
 	print_verbose("- Shader:");
@@ -399,7 +427,7 @@ Error D3D12Context::_select_adapter(int &r_index) {
 		if (SUCCEEDED(res)) {
 			tearing_supported = result;
 		} else {
-			ERR_PRINT("CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_PRINT("CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		}
 	}
 
@@ -423,7 +451,7 @@ void D3D12Context::_dump_adapter_info(int p_index) {
 		feat_levels.pFeatureLevelsRequested = FEATURE_LEVELS;
 
 		HRESULT res = md.device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &feat_levels, sizeof(feat_levels));
-		ERR_FAIL_COND_MSG(res, "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_MSG(res, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 		// Example: D3D_FEATURE_LEVEL_12_1 = 0xc100.
 		uint32_t feat_level_major = feat_levels.MaxSupportedFeatureLevel >> 12;
@@ -476,7 +504,7 @@ void D3D12Context::_dump_adapter_info(int p_index) {
 
 Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 	HRESULT res = D3D12CreateDevice(gpu.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(r_basics.device.GetAddressOf()));
-	ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "D3D12CreateDevice failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "D3D12CreateDevice failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	// Create direct command queue.
 	D3D12_COMMAND_QUEUE_DESC queue_desc = {};
@@ -544,7 +572,7 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 Error D3D12Context::_get_device_limits() {
 	D3D12_FEATURE_DATA_D3D12_OPTIONS options = {};
 	HRESULT res = md.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
-	ERR_FAIL_COND_V_MSG(res, ERR_UNAVAILABLE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(res, ERR_UNAVAILABLE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	// https://docs.microsoft.com/en-us/windows/win32/direct3d12/hardware-support
 	gpu_limits.max_srvs_per_shader_stage = options.ResourceBindingTier == D3D12_RESOURCE_BINDING_TIER_1 ? 128 : UINT64_MAX;
@@ -609,8 +637,16 @@ CD3DX12_CPU_DESCRIPTOR_HANDLE D3D12Context::window_get_framebuffer_rtv_handle(Di
 	ERR_FAIL_COND_V(!windows.has(p_window), CD3DX12_CPU_DESCRIPTOR_HANDLE(CD3DX12_DEFAULT()));
 	ERR_FAIL_COND_V(!buffers_prepared, CD3DX12_CPU_DESCRIPTOR_HANDLE(CD3DX12_DEFAULT()));
 	Window *w = &windows[p_window];
+
+#if defined(_MSC_VER) || !defined(_WIN32)
+	D3D12_CPU_DESCRIPTOR_HANDLE cpu_hnd = w->rtv_heap->GetCPUDescriptorHandleForHeapStart();
+#else
+	D3D12_CPU_DESCRIPTOR_HANDLE cpu_hnd;
+	w->rtv_heap->GetCPUDescriptorHandleForHeapStart(&cpu_hnd);
+#endif
+
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(
-			w->rtv_heap->GetCPUDescriptorHandleForHeapStart(),
+			cpu_hnd,
 			w->current_buffer,
 			md.device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 	return rtv_handle;
@@ -753,7 +789,14 @@ Error D3D12Context::_update_swap_chain(Window *window) {
 	HRESULT res = md.device->CreateDescriptorHeap(&rtv_heap_desc, IID_PPV_ARGS(window->rtv_heap.GetAddressOf()));
 	ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(window->rtv_heap->GetCPUDescriptorHandleForHeapStart());
+#if defined(_MSC_VER) || !defined(_WIN32)
+	D3D12_CPU_DESCRIPTOR_HANDLE cpu_hnd = window->rtv_heap->GetCPUDescriptorHandleForHeapStart();
+#else
+	D3D12_CPU_DESCRIPTOR_HANDLE cpu_hnd;
+	window->rtv_heap->GetCPUDescriptorHandleForHeapStart(&cpu_hnd);
+#endif
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(cpu_hnd);
 
 	for (uint32_t i = 0; i < IMAGE_COUNT; i++) {
 		res = window->swapchain->GetBuffer(i, IID_PPV_ARGS(&window->render_targets[i]));
@@ -801,7 +844,7 @@ Error D3D12Context::initialize() {
 		allocator_desc.pAdapter = gpu.Get();
 
 		HRESULT res = D3D12MA::CreateAllocator(&allocator_desc, &allocator);
-		ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	}
 
 	return OK;
@@ -913,7 +956,7 @@ Error D3D12Context::swap_buffers() {
 		}
 		HRESULT res = w->swapchain->Present(w->sync_interval, w->present_flags);
 		if (res) {
-			print_verbose("D3D12: Presenting swapchain of window " + itos(E.key) + " failed with error " + vformat("0x%08ux", res) + ".");
+			print_verbose("D3D12: Presenting swapchain of window " + itos(E.key) + " failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		}
 	}
 
@@ -1054,7 +1097,8 @@ D3D12Context::D3D12Context() {
 	command_list_queue.resize(1); // First one is always the setup command.
 	command_list_queue.write[0] = nullptr;
 
-	strcpy(godot_nir_arch_name, Engine::get_singleton()->get_architecture_name().ascii().get_data());
+	CharString cs = Engine::get_singleton()->get_architecture_name().ascii();
+	memcpy(godot_nir_arch_name, (const char *)cs.get_data(), cs.size());
 }
 
 D3D12Context::~D3D12Context() {
