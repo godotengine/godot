@@ -769,19 +769,26 @@ void EditorFileDialog::update_file_name() {
 
 // TODO: Could use a unit test.
 Color EditorFileDialog::get_dir_icon_color(const String &p_dir_path) {
+	if (!FileSystemDock::get_singleton()) { // This dialog can be called from the project manager.
+		return theme_cache.folder_icon_color;
+	}
+
 	const HashMap<String, Color> &folder_colors = FileSystemDock::get_singleton()->get_folder_colors();
 	Dictionary assigned_folder_colors = FileSystemDock::get_singleton()->get_assigned_folder_colors();
 
 	Color folder_icon_color = theme_cache.folder_icon_color;
 
 	// Check for a folder color to inherit (if one is assigned).
-	String parent_dir = p_dir_path;
-	while (parent_dir != "res://" && folder_icon_color == theme_cache.folder_icon_color) {
+	String parent_dir = ProjectSettings::get_singleton()->localize_path(p_dir_path);
+	while (!parent_dir.is_empty() && parent_dir != "res://") {
 		if (!parent_dir.ends_with("/")) {
 			parent_dir += "/";
 		}
 		if (assigned_folder_colors.has(parent_dir)) {
 			folder_icon_color = folder_colors[assigned_folder_colors[parent_dir]];
+			if (folder_icon_color != theme_cache.folder_icon_color) {
+				break;
+			}
 		}
 		parent_dir = parent_dir.trim_suffix("/").get_base_dir();
 	}
