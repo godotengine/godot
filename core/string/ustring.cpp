@@ -5391,9 +5391,7 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 
 /**
  * "Run-time TRanslate". Performs string replacement for internationalization
- * within a running project. The translation string must be supplied by the
- * project, as Godot does not provide built-in translations for `RTR()` strings
- * to keep binary size low. A translation context can optionally be specified to
+ * without the editor. A translation context can optionally be specified to
  * disambiguate between identical source strings in translations. When
  * placeholders are desired, use `vformat(RTR("Example: %s"), some_string)`.
  * If a string mentions a quantity (and may therefore need a dynamic plural form),
@@ -5407,9 +5405,8 @@ String RTR(const String &p_text, const String &p_context) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
 		if (rtr.is_empty() || rtr == p_text) {
 			return TranslationServer::get_singleton()->translate(p_text, p_context);
-		} else {
-			return rtr;
 		}
+		return rtr;
 	}
 
 	return p_text;
@@ -5417,13 +5414,10 @@ String RTR(const String &p_text, const String &p_context) {
 
 /**
  * "Run-time TRanslate for N items". Performs string replacement for
- * internationalization within a running project. The translation string must be
- * supplied by the project, as Godot does not provide built-in translations for
- * `RTRN()` strings to keep binary size low. A translation context can
- * optionally be specified to disambiguate between identical source strings in
- * translations. Use `RTR()` if the string doesn't need dynamic plural form.
- * When placeholders are desired, use
- * `vformat(RTRN("%d item", "%d items", some_integer), some_integer)`.
+ * internationalization without the editor. A translation context can optionally
+ * be specified to disambiguate between identical source strings in translations.
+ * Use `RTR()` if the string doesn't need dynamic plural form. When placeholders
+ * are desired, use `vformat(RTRN("%d item", "%d items", some_integer), some_integer)`.
  * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
  *
  * NOTE: Do not use `RTRN()` in editor-only code (typically within the `editor/`
@@ -5434,9 +5428,8 @@ String RTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
 		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
 			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
-		} else {
-			return rtr;
 		}
+		return rtr;
 	}
 
 	// Return message based on English plural rule if translation is not possible.

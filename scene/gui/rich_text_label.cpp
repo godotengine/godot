@@ -6270,8 +6270,8 @@ void RichTextLabel::_generate_context_menu() {
 	add_child(menu, false, INTERNAL_MODE_FRONT);
 	menu->connect("id_pressed", callable_mp(this, &RichTextLabel::menu_option));
 
-	menu->add_item(RTR("Copy"), MENU_COPY);
-	menu->add_item(RTR("Select All"), MENU_SELECT_ALL);
+	menu->add_item(ETR("Copy"), MENU_COPY);
+	menu->add_item(ETR("Select All"), MENU_SELECT_ALL);
 }
 
 void RichTextLabel::_update_context_menu() {
