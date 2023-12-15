@@ -19,4 +19,4 @@ if env["disable_exceptions"]:
 env_tests.add_source_files(env.tests_sources, "*.cpp")
 
 lib = env_tests.add_library("tests", env.tests_sources)
-env.Prepend(LIBS=[lib])
+env.Prepend(LIBS=lib)
