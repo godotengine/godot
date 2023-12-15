@@ -79,6 +79,7 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_dir_path);
 	if (export_as_zip) {
 		if (tmp_app_dir.is_null()) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), tmp_dir_path));
 			return ERR_CANT_CREATE;
 		}
 		if (DirAccess::exists(tmp_dir_path)) {
@@ -93,19 +94,18 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	// Export project.
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, path, p_flags);
 	if (err != OK) {
+		// Message is supplied by the subroutine method.
 		return err;
 	}
 
 	// Save console wrapper.
-	if (err == OK) {
-		int con_scr = p_preset->get("debug/export_console_wrapper");
-		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
-			String scr_path = path.get_basename() + ".sh";
-			err = _export_debug_script(p_preset, pkg_name, path.get_file(), scr_path);
-			FileAccess::set_unix_permissions(scr_path, 0755);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Console Export"), TTR("Could not create console wrapper."));
-			}
+	int con_scr = p_preset->get("debug/export_console_wrapper");
+	if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
+		String scr_path = path.get_basename() + ".sh";
+		err = _export_debug_script(p_preset, pkg_name, path.get_file(), scr_path);
+		FileAccess::set_unix_permissions(scr_path, 0755);
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Console Export"), TTR("Could not create console wrapper."));
 		}
 	}
 

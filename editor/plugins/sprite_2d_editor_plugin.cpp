@@ -127,59 +127,54 @@ void Sprite2DEditor::_menu_option(int p_option) {
 			debug_uv_dialog->set_ok_button_text(TTR("Create MeshInstance2D"));
 			debug_uv_dialog->set_title(TTR("MeshInstance2D Preview"));
 
-			_update_mesh_data();
-			debug_uv_dialog->popup_centered();
-			debug_uv->queue_redraw();
-
+			_popup_debug_uv_dialog();
 		} break;
 		case MENU_OPTION_CONVERT_TO_POLYGON_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create Polygon2D"));
 			debug_uv_dialog->set_title(TTR("Polygon2D Preview"));
 
-			_update_mesh_data();
-			debug_uv_dialog->popup_centered();
-			debug_uv->queue_redraw();
+			_popup_debug_uv_dialog();
 		} break;
 		case MENU_OPTION_CREATE_COLLISION_POLY_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create CollisionPolygon2D"));
 			debug_uv_dialog->set_title(TTR("CollisionPolygon2D Preview"));
 
-			_update_mesh_data();
-			debug_uv_dialog->popup_centered();
-			debug_uv->queue_redraw();
-
+			_popup_debug_uv_dialog();
 		} break;
 		case MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create LightOccluder2D"));
 			debug_uv_dialog->set_title(TTR("LightOccluder2D Preview"));
 
-			_update_mesh_data();
-			debug_uv_dialog->popup_centered();
-			debug_uv->queue_redraw();
-
+			_popup_debug_uv_dialog();
 		} break;
 	}
 }
 
-void Sprite2DEditor::_update_mesh_data() {
+void Sprite2DEditor::_popup_debug_uv_dialog() {
+	String error_message;
 	if (node->get_owner() != get_tree()->get_edited_scene_root()) {
-		err_dialog->set_text(TTR("Can't convert a Sprite2D from a foreign scene."));
-		err_dialog->popup_centered();
+		error_message = TTR("Can't convert a sprite from a foreign scene.");
 	}
-
 	Ref<Texture2D> texture = node->get_texture();
 	if (texture.is_null()) {
-		err_dialog->set_text(TTR("Sprite2D is empty!"));
+		error_message = TTR("Can't convert an empty sprite to mesh.");
+	}
+
+	if (!error_message.is_empty()) {
+		err_dialog->set_text(error_message);
 		err_dialog->popup_centered();
 		return;
 	}
 
-	if (node->get_hframes() > 1 || node->get_vframes() > 1) {
-		err_dialog->set_text(TTR("Can't convert a sprite using animation frames to mesh."));
-		err_dialog->popup_centered();
-		return;
-	}
+	_update_mesh_data();
+	debug_uv_dialog->popup_centered();
+	debug_uv->queue_redraw();
+}
 
+void Sprite2DEditor::_update_mesh_data() {
+	ERR_FAIL_NULL(node);
+	Ref<Texture2D> texture = node->get_texture();
+	ERR_FAIL_COND(texture.is_null());
 	Ref<Image> image = texture->get_image();
 	ERR_FAIL_COND(image.is_null());
 
@@ -187,12 +182,9 @@ void Sprite2DEditor::_update_mesh_data() {
 		image->decompress();
 	}
 
-	Rect2 rect;
-	if (node->is_region_enabled()) {
-		rect = node->get_region_rect();
-	} else {
-		rect.size = image->get_size();
-	}
+	Rect2 rect = node->is_region_enabled() ? node->get_region_rect() : Rect2(Point2(), image->get_size());
+	rect.size /= Vector2(node->get_hframes(), node->get_vframes());
+	rect.position += node->get_frame_coords() * rect.size;
 
 	Ref<BitMap> bm;
 	bm.instantiate();
@@ -229,18 +221,15 @@ void Sprite2DEditor::_update_mesh_data() {
 
 			for (int i = 0; i < lines[j].size(); i++) {
 				Vector2 vtx = lines[j][i];
-				computed_uv.push_back(vtx / img_size);
+				computed_uv.push_back((vtx + rect.position) / img_size);
 
-				vtx -= rect.position; //offset by rect position
-
-				//flip if flipped
 				if (node->is_flipped_h()) {
-					vtx.x = rect.size.x - vtx.x - 1.0;
+					vtx.x = rect.size.x - vtx.x;
 				}
 				if (node->is_flipped_v()) {
-					vtx.y = rect.size.y - vtx.y - 1.0;
+					vtx.y = rect.size.y - vtx.y;
 				}
-
+				vtx += node->get_offset();
 				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
 				}
@@ -254,8 +243,8 @@ void Sprite2DEditor::_update_mesh_data() {
 				for (int k = 0; k < 3; k++) {
 					int idx = i + k;
 					int idxn = i + (k + 1) % 3;
-					uv_lines.push_back(lines[j][poly[idx]]);
-					uv_lines.push_back(lines[j][poly[idxn]]);
+					uv_lines.push_back(lines[j][poly[idx]] + rect.position);
+					uv_lines.push_back(lines[j][poly[idxn]] + rect.position);
 
 					computed_indices.push_back(poly[idx] + index_ofs);
 				}
@@ -278,19 +267,18 @@ void Sprite2DEditor::_update_mesh_data() {
 
 			for (int i = 0; i < lines[pi].size(); i++) {
 				Vector2 vtx = lines[pi][i];
+				ol.write[i] = vtx + rect.position;
 
-				ol.write[i] = vtx;
-
-				vtx -= rect.position; //offset by rect position
-
-				//flip if flipped
 				if (node->is_flipped_h()) {
-					vtx.x = rect.size.x - vtx.x - 1.0;
+					vtx.x = rect.size.x - vtx.x;
 				}
 				if (node->is_flipped_v()) {
-					vtx.y = rect.size.y - vtx.y - 1.0;
+					vtx.y = rect.size.y - vtx.y;
 				}
-
+				// Don't bake offset to Polygon2D which has offset property.
+				if (selected_menu_item != MENU_OPTION_CONVERT_TO_POLYGON_2D) {
+					vtx += node->get_offset();
+				}
 				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
 				}

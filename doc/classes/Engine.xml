@@ -307,6 +307,8 @@
 		</member>
 		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale" default="1.0">
 			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed. This also affects [Timer] and [SceneTreeTimer] (see [method SceneTree.create_timer] for how to control this).
+			[b]Note:[/b] This does not affect audio playback speed. Use [member AudioServer.playback_speed_scale] to adjust audio playback speed independently of [member Engine.time_scale].
+			[b]Note:[/b] This does not automatically adjust [member physics_ticks_per_second], which means that with time scales above 1.0, physics simulation may become less precise (as each physics tick will stretch over a larger period of engine time). If you're using [member Engine.time_scale] to speed up simulation by a large factor, consider increasing [member physics_ticks_per_second] as well to improve physics reliability.
 		</member>
 	</members>
 </class>

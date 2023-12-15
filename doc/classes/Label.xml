@@ -45,6 +45,9 @@
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" default="false">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle and will clip text horizontally.
 		</member>
+		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
+			Ellipsis character used for text clipping.
+		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
 		</member>
@@ -58,7 +61,7 @@
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
 		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped" default="0">
-			The node ignores the first [code]lines_skipped[/code] lines before it starts to display text.
+			The number of the lines ignored and not displayed from the start of the [member text] value.
 		</member>
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
 			Limits the lines of text the node shows on screen.

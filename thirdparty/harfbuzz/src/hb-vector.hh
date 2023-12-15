@@ -102,7 +102,7 @@ struct hb_vector_t
 
   void fini ()
   {
-    /* We allow a hack to make the vector point to a foriegn array
+    /* We allow a hack to make the vector point to a foreign array
      * by the user. In that case length/arrayZ are non-zero but
      * allocated is zero. Don't free anything. */
     if (allocated)
@@ -208,25 +208,7 @@ struct hb_vector_t
       return std::addressof (Crap (Type));
     return std::addressof (arrayZ[length - 1]);
   }
-  template <typename T,
-	    typename T2 = Type,
-	    hb_enable_if (!std::is_copy_constructible<T2>::value &&
-			  std::is_copy_assignable<T>::value)>
-  Type *push (T&& v)
-  {
-    Type *p = push ();
-    if (p == std::addressof (Crap (Type)))
-      // If push failed to allocate then don't copy v, since this may cause
-      // the created copy to leak memory since we won't have stored a
-      // reference to it.
-      return p;
-    *p = std::forward<T> (v);
-    return p;
-  }
-  template <typename T,
-	    typename T2 = Type,
-	    hb_enable_if (std::is_copy_constructible<T2>::value)>
-  Type *push (T&& v)
+  template <typename... Args> Type *push (Args&&... args)
   {
     if (unlikely ((int) length >= allocated && !alloc (length + 1)))
       // If push failed to allocate then don't copy v, since this may cause
@@ -236,7 +218,7 @@ struct hb_vector_t
 
     /* Emplace. */
     Type *p = std::addressof (arrayZ[length++]);
-    return new (p) Type (std::forward<T> (v));
+    return new (p) Type (std::forward<Args> (args)...);
   }
 
   bool in_error () const { return allocated < 0; }
@@ -478,7 +460,7 @@ struct hb_vector_t
   Type pop ()
   {
     if (!length) return Null (Type);
-    Type v {std::move (arrayZ[length - 1])};
+    Type v (std::move (arrayZ[length - 1]));
     arrayZ[length - 1].~Type ();
     length--;
     return v;

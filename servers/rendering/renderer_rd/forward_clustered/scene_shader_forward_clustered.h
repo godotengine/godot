@@ -142,7 +142,7 @@ public:
 
 		bool valid = false;
 		RID version;
-		uint32_t vertex_input_mask = 0;
+		uint64_t vertex_input_mask = 0;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][PIPELINE_VERSION_MAX];
 		PipelineCacheRD color_pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][PIPELINE_COLOR_PASS_FLAG_COUNT];
 
@@ -165,6 +165,7 @@ public:
 		bool uses_discard = false;
 		bool uses_roughness = false;
 		bool uses_normal = false;
+		bool uses_tangent = false;
 		bool uses_particle_trails = false;
 
 		bool unshaded = false;

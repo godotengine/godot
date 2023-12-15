@@ -68,15 +68,18 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				double grab_width = (double)grabber->get_width();
 				double grab_height = (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
+				set_block_signals(true);
 				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
 				} else {
 					set_as_ratio(((double)grab.pos - (grab_width / 2.0)) / max);
 				}
+				set_block_signals(false);
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
 
 				emit_signal(SNAME("drag_started"));
+				_notify_shared_value_changed();
 			} else {
 				grab.active = false;
 

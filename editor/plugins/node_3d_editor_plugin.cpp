@@ -71,7 +71,7 @@
 #include "editor/plugins/gizmos/shape_cast_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/soft_body_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/spring_arm_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/sprite_3d_gizmo_plugin.h"
+#include "editor/plugins/gizmos/sprite_base_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/vehicle_body_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/visible_on_screen_notifier_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/voxel_gi_gizmo_plugin.h"
@@ -2985,17 +2985,21 @@ void Node3DEditorViewport::_notification(int p_what) {
 			preview_camera->set_icon(get_editor_theme_icon(SNAME("Camera3D")));
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
+			view_menu->begin_bulk_theme_override();
 			view_menu->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			view_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			view_menu->add_theme_style_override("pressed", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			view_menu->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			view_menu->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			view_menu->end_bulk_theme_override();
 
+			preview_camera->begin_bulk_theme_override();
 			preview_camera->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			preview_camera->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			preview_camera->add_theme_style_override("pressed", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			preview_camera->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			preview_camera->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			preview_camera->end_bulk_theme_override();
 
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -4148,9 +4152,9 @@ Node *Node3DEditorViewport::_sanitize_preview_node(Node *p_node) const {
 }
 
 void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) const {
+	bool add_preview = false;
 	for (int i = 0; i < files.size(); i++) {
-		String path = files[i];
-		Ref<Resource> res = ResourceLoader::load(path);
+		Ref<Resource> res = ResourceLoader::load(files[i]);
 		ERR_CONTINUE(res.is_null());
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
@@ -4168,9 +4172,13 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 					}
 				}
 			}
-			EditorNode::get_singleton()->get_scene_root()->add_child(preview_node);
+			add_preview = true;
 		}
 	}
+	if (add_preview) {
+		EditorNode::get_singleton()->get_scene_root()->add_child(preview_node);
+	}
+
 	*preview_bounds = _calculate_spatial_bounds(preview_node);
 }
 
@@ -4878,8 +4886,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
 				snap = spatial_editor->get_rotate_snap();
 			}
-			angle = Math::rad_to_deg(angle) + snap * 0.5; //else it won't reach +180
-			angle -= Math::fmod(angle, snap);
+			angle = Math::snapped(Math::rad_to_deg(angle), snap);
 			set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
 			angle = Math::deg_to_rad(angle);
 
@@ -5117,8 +5124,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	display_submenu->add_radio_check_item(TTR("Motion Vectors"), VIEW_DISPLAY_MOTION_VECTORS);
 	display_submenu->add_radio_check_item(TTR("Internal Buffer"), VIEW_DISPLAY_INTERNAL_BUFFER);
 
-	display_submenu->set_name("display_advanced");
-	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced", VIEW_DISPLAY_ADVANCED);
+	display_submenu->set_name("DisplayAdvanced");
+	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "DisplayAdvanced", VIEW_DISPLAY_ADVANCED);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("View Environment")), VIEW_ENVIRONMENT);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos")), VIEW_GIZMOS);
@@ -5853,9 +5860,9 @@ Dictionary Node3DEditor::get_state() const {
 	Dictionary d;
 
 	d["snap_enabled"] = snap_enabled;
-	d["translate_snap"] = get_translate_snap();
-	d["rotate_snap"] = get_rotate_snap();
-	d["scale_snap"] = get_scale_snap();
+	d["translate_snap"] = snap_translate_value;
+	d["rotate_snap"] = snap_rotate_value;
+	d["scale_snap"] = snap_scale_value;
 
 	d["local_coords"] = tool_option_button[TOOL_OPT_LOCAL_COORDS]->is_pressed();
 
@@ -7071,7 +7078,7 @@ void Node3DEditor::_init_grid() {
 	if (primary_grid_steps != 10) { // Log10 of 10 is 1.
 		// Change of base rule, divide by ln(10).
 		real_t div = Math::log((real_t)primary_grid_steps) / (real_t)2.302585092994045901094;
-		// Trucation (towards zero) is intentional.
+		// Truncation (towards zero) is intentional.
 		division_level_max = (int)(division_level_max / div);
 		division_level_min = (int)(division_level_min / div);
 	}
@@ -7972,7 +7979,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<MeshInstance3DGizmoPlugin>(memnew(MeshInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<OccluderInstance3DGizmoPlugin>(memnew(OccluderInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<Sprite3DGizmoPlugin>(memnew(Sprite3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SpriteBase3DGizmoPlugin>(memnew(SpriteBase3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Label3DGizmoPlugin>(memnew(Label3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Marker3DGizmoPlugin>(memnew(Marker3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
@@ -8868,9 +8875,8 @@ void Node3DEditorPlugin::set_state(const Dictionary &p_state) {
 
 Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 	if (is_snap_enabled()) {
-		p_target.x = Math::snap_scalar(0.0, get_translate_snap(), p_target.x);
-		p_target.y = Math::snap_scalar(0.0, get_translate_snap(), p_target.y);
-		p_target.z = Math::snap_scalar(0.0, get_translate_snap(), p_target.z);
+		real_t snap = get_translate_snap();
+		p_target.snap(Vector3(snap, snap, snap));
 	}
 	return p_target;
 }
@@ -8882,36 +8888,27 @@ bool Node3DEditor::is_gizmo_visible() const {
 	return gizmo.visible;
 }
 
-double Node3DEditor::get_translate_snap() const {
-	double snap_value;
+real_t Node3DEditor::get_translate_snap() const {
+	real_t snap_value = snap_translate_value;
 	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
-		snap_value = snap_translate->get_text().to_float() / 10.0;
-	} else {
-		snap_value = snap_translate->get_text().to_float();
+		snap_value /= 10.0f;
 	}
-
 	return snap_value;
 }
 
-double Node3DEditor::get_rotate_snap() const {
-	double snap_value;
+real_t Node3DEditor::get_rotate_snap() const {
+	real_t snap_value = snap_rotate_value;
 	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
-		snap_value = snap_rotate->get_text().to_float() / 3.0;
-	} else {
-		snap_value = snap_rotate->get_text().to_float();
+		snap_value /= 3.0f;
 	}
-
 	return snap_value;
 }
 
-double Node3DEditor::get_scale_snap() const {
-	double snap_value;
+real_t Node3DEditor::get_scale_snap() const {
+	real_t snap_value = snap_scale_value;
 	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
-		snap_value = snap_scale->get_text().to_float() / 2.0;
-	} else {
-		snap_value = snap_scale->get_text().to_float();
+		snap_value /= 2.0f;
 	}
-
 	return snap_value;
 }
 

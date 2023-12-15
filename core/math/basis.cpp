@@ -89,13 +89,26 @@ Basis Basis::orthogonalized() const {
 	return c;
 }
 
+// Returns true if the basis vectors are orthogonal (perpendicular), so it has no skew or shear, and can be decomposed into rotation and scale.
+// See https://en.wikipedia.org/wiki/Orthogonal_basis
 bool Basis::is_orthogonal() const {
-	Basis identity;
-	Basis m = (*this) * transposed();
-
-	return m.is_equal_approx(identity);
+	const Vector3 x = get_column(0);
+	const Vector3 y = get_column(1);
+	const Vector3 z = get_column(2);
+	return Math::is_zero_approx(x.dot(y)) && Math::is_zero_approx(x.dot(z)) && Math::is_zero_approx(y.dot(z));
 }
 
+// Returns true if the basis vectors are orthonormal (orthogonal and normalized), so it has no scale, skew, or shear.
+// See https://en.wikipedia.org/wiki/Orthonormal_basis
+bool Basis::is_orthonormal() const {
+	const Vector3 x = get_column(0);
+	const Vector3 y = get_column(1);
+	const Vector3 z = get_column(2);
+	return Math::is_equal_approx(x.length_squared(), 1) && Math::is_equal_approx(y.length_squared(), 1) && Math::is_equal_approx(z.length_squared(), 1) && Math::is_zero_approx(x.dot(y)) && Math::is_zero_approx(x.dot(z)) && Math::is_zero_approx(y.dot(z));
+}
+
+// Returns true if the basis is conformal (orthogonal, uniform scale, preserves angles and distance ratios).
+// See https://en.wikipedia.org/wiki/Conformal_linear_transformation
 bool Basis::is_conformal() const {
 	const Vector3 x = get_column(0);
 	const Vector3 y = get_column(1);
@@ -104,6 +117,7 @@ bool Basis::is_conformal() const {
 	return Math::is_equal_approx(x_len_sq, y.length_squared()) && Math::is_equal_approx(x_len_sq, z.length_squared()) && Math::is_zero_approx(x.dot(y)) && Math::is_zero_approx(x.dot(z)) && Math::is_zero_approx(y.dot(z));
 }
 
+// Returns true if the basis only has diagonal elements, so it may only have scale or flip, but no rotation, skew, or shear.
 bool Basis::is_diagonal() const {
 	return (
 			Math::is_zero_approx(rows[0][1]) && Math::is_zero_approx(rows[0][2]) &&
@@ -111,8 +125,9 @@ bool Basis::is_diagonal() const {
 			Math::is_zero_approx(rows[2][0]) && Math::is_zero_approx(rows[2][1]));
 }
 
+// Returns true if the basis is a pure rotation matrix, so it has no scale, skew, shear, or flip.
 bool Basis::is_rotation() const {
-	return Math::is_equal_approx(determinant(), 1, (real_t)UNIT_EPSILON) && is_orthogonal();
+	return is_conformal() && Math::is_equal_approx(determinant(), 1, (real_t)UNIT_EPSILON);
 }
 
 #ifdef MATH_CHECKS

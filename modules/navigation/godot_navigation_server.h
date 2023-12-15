@@ -140,6 +140,8 @@ public:
 
 	virtual void map_force_update(RID p_map) override;
 
+	virtual Vector3 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
+
 	virtual RID region_create() override;
 
 	COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled);
@@ -170,6 +172,7 @@ public:
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
+	virtual Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override;
 
 	virtual RID link_create() override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);

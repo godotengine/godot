@@ -41,6 +41,11 @@ def get_opts():
             "dlink_enabled", "Enable WebAssembly dynamic linking (GDExtension support). Produces bigger binaries", False
         ),
         BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
+        BoolVariable(
+            "proxy_to_pthread",
+            "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
+            False,
+        ),
     ]
 
 
@@ -157,7 +162,7 @@ def configure(env: "Environment"):
     env.AddMethod(create_template_zip, "CreateTemplateZip")
 
     # Closure compiler extern and support for ecmascript specs (const, let, etc).
-    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT6"
+    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT_2020"
 
     env["CC"] = "emcc"
     env["CXX"] = "em++"
@@ -181,8 +186,17 @@ def configure(env: "Environment"):
     env["LIBPREFIXES"] = ["$LIBPREFIX"]
     env["LIBSUFFIXES"] = ["$LIBSUFFIX"]
 
+    # Get version info for checks below.
+    cc_version = get_compiler_version(env)
+    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
+
     env.Prepend(CPPPATH=["#platform/web"])
     env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED"])
+
+    if cc_semver >= (3, 1, 25):
+        env.Append(LINKFLAGS=["-s", "STACK_SIZE=5MB"])
+    else:
+        env.Append(LINKFLAGS=["-s", "TOTAL_STACK=5MB"])
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
@@ -198,12 +212,9 @@ def configure(env: "Environment"):
     env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
     env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
     env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
+    env.Append(LINKFLAGS=["-s", "DEFAULT_PTHREAD_STACK_SIZE=2MB"])
     env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
     env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
-
-    # Get version info for checks below.
-    cc_version = get_compiler_version(env)
-    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
 
     if env["lto"] != "none":
         # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
@@ -211,6 +222,10 @@ def configure(env: "Environment"):
             env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
 
     if env["dlink_enabled"]:
+        if env["proxy_to_pthread"]:
+            print("GDExtension support requires proxy_to_pthread=no, disabling")
+            env["proxy_to_pthread"] = False
+
         if cc_semver < (3, 1, 14):
             print("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
             sys.exit(255)
@@ -220,6 +235,16 @@ def configure(env: "Environment"):
         env.Append(CCFLAGS=["-fvisibility=hidden"])
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
         env.extra_suffix = ".dlink" + env.extra_suffix
+
+    # Run the main application in a web worker
+    if env["proxy_to_pthread"]:
+        env.Append(LINKFLAGS=["-s", "PROXY_TO_PTHREAD=1"])
+        env.Append(CPPDEFINES=["PROXY_TO_PTHREAD_ENABLED"])
+        env.Append(LINKFLAGS=["-s", "EXPORTED_RUNTIME_METHODS=['_emscripten_proxy_main']"])
+        # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
+        env.Append(LINKFLAGS=["-s", "TEXTDECODER=0"])
+        # BigInt support to pass object pointers between contexts
+        env.Append(LINKFLAGS=["-s", "WASM_BIGINT"])
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web,worker"])

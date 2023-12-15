@@ -198,6 +198,10 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		return;
 	}
 
+	if (p_value.get_type() == Variant::OBJECT && p_value.is_null()) {
+		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
+	}
+
 	int index;
 	if (p_property.begins_with("metadata/")) {
 		index = p_property.get_slice("/", 2).to_int();
@@ -255,7 +259,7 @@ void EditorPropertyArray::update_property() {
 		array_type_name = vformat("%s[%s]", array_type_name, type_name);
 	}
 
-	if (array.get_type() == Variant::NIL) {
+	if (!array.is_array()) {
 		edit->set_text(vformat(TTR("(Nil) %s"), array_type_name));
 		edit->set_pressed(false);
 		if (container) {
@@ -287,6 +291,7 @@ void EditorPropertyArray::update_property() {
 		if (!container) {
 			container = memnew(MarginContainer);
 			container->set_theme_type_variation("MarginContainer4px");
+			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
 
@@ -725,6 +730,10 @@ EditorPropertyArray::EditorPropertyArray() {
 ///////////////////// DICTIONARY ///////////////////////////
 
 void EditorPropertyDictionary::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+	if (p_value.get_type() == Variant::OBJECT && p_value.is_null()) {
+		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
+	}
+
 	if (p_property == "new_item_key") {
 		object->set_new_item_key(p_value);
 	} else if (p_property == "new_item_value") {

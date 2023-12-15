@@ -793,7 +793,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		real_t distance = (i < omni_light_count) ? omni_light_sort[index].depth : spot_light_sort[index].depth;
 
 		if (using_forward_ids) {
-			forward_id_storage->map_forward_id(type == RS::LIGHT_OMNI ? RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT : RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id, index);
+			forward_id_storage->map_forward_id(type == RS::LIGHT_OMNI ? RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT : RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id, index, light_instance->last_pass);
 		}
 
 		Transform3D light_transform = light_instance->transform;
@@ -1669,8 +1669,10 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 	for (uint32_t i = 0; i < reflection_count; i++) {
 		ReflectionProbeInstance *rpi = reflection_sort[i].probe_instance;
 
+		rpi->last_pass = RSG::rasterizer->get_frame_number();
+
 		if (using_forward_ids) {
-			forward_id_storage->map_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE, rpi->forward_id, i);
+			forward_id_storage->map_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE, rpi->forward_id, i, rpi->last_pass);
 		}
 
 		ReflectionProbe *probe = reflection_probe_owner.get_or_null(rpi->probe);
@@ -1717,8 +1719,6 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 
 		// hook for subclass to do further processing.
 		RendererSceneRenderRD::get_singleton()->setup_added_reflection_probe(transform, extents);
-
-		rpi->last_pass = RSG::rasterizer->get_frame_number();
 	}
 
 	if (reflection_count) {

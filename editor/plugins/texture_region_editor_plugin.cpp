@@ -54,7 +54,7 @@ Transform2D TextureRegionEditor::_get_offset_transform() const {
 }
 
 void TextureRegionEditor::_texture_preview_draw() {
-	Ref<Texture2D> object_texture = _get_edited_object_texture();
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
 	if (object_texture.is_null()) {
 		return;
 	}
@@ -68,7 +68,7 @@ void TextureRegionEditor::_texture_preview_draw() {
 }
 
 void TextureRegionEditor::_texture_overlay_draw() {
-	Ref<Texture2D> object_texture = _get_edited_object_texture();
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
 	if (object_texture.is_null()) {
 		return;
 	}
@@ -746,7 +746,7 @@ void TextureRegionEditor::_update_autoslice() {
 	autoslice_is_dirty = false;
 	autoslice_cache.clear();
 
-	Ref<Texture2D> object_texture = _get_edited_object_texture();
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
 	if (object_texture.is_null()) {
 		return;
 	}
@@ -860,14 +860,6 @@ void TextureRegionEditor::_node_removed(Node *p_node) {
 }
 
 void TextureRegionEditor::_clear_edited_object() {
-	node_sprite_2d = nullptr;
-	node_sprite_3d = nullptr;
-	node_ninepatch = nullptr;
-	res_stylebox = Ref<StyleBoxTexture>();
-	res_atlas_texture = Ref<AtlasTexture>();
-}
-
-void TextureRegionEditor::edit(Object *p_obj) {
 	if (node_sprite_2d) {
 		node_sprite_2d->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
@@ -884,6 +876,14 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		res_atlas_texture->disconnect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 
+	node_sprite_2d = nullptr;
+	node_sprite_3d = nullptr;
+	node_ninepatch = nullptr;
+	res_stylebox = Ref<StyleBoxTexture>();
+	res_atlas_texture = Ref<AtlasTexture>();
+}
+
+void TextureRegionEditor::edit(Object *p_obj) {
 	_clear_edited_object();
 
 	if (p_obj) {
@@ -950,8 +950,9 @@ Rect2 TextureRegionEditor::_get_edited_object_region() const {
 		region = res_atlas_texture->get_region();
 	}
 
-	if (region == Rect2()) {
-		region = Rect2(Vector2(), _get_edited_object_texture()->get_size());
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
+	if (region == Rect2() && object_texture.is_valid()) {
+		region = Rect2(Vector2(), object_texture->get_size());
 	}
 
 	return region;
@@ -965,7 +966,7 @@ void TextureRegionEditor::_texture_changed() {
 }
 
 void TextureRegionEditor::_edit_region() {
-	Ref<Texture2D> object_texture = _get_edited_object_texture();
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
 	if (object_texture.is_null()) {
 		_zoom_reset();
 		hscroll->hide();
@@ -1094,7 +1095,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	snap_mode_button->add_item(TTR("Pixel Snap"), 1);
 	snap_mode_button->add_item(TTR("Grid Snap"), 2);
 	snap_mode_button->add_item(TTR("Auto Slice"), 3);
-	snap_mode_button->select(0);
+	snap_mode_button->select(snap_mode);
 	snap_mode_button->connect("item_selected", callable_mp(this, &TextureRegionEditor::_set_snap_mode));
 
 	hb_grid = memnew(HBoxContainer);

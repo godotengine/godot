@@ -88,7 +88,8 @@ public:
 
 	enum DisplayMode {
 		DISPLAY_MODE_TREE_ONLY,
-		DISPLAY_MODE_SPLIT,
+		DISPLAY_MODE_VSPLIT,
+		DISPLAY_MODE_HSPLIT,
 	};
 
 	enum FileSortOption {
@@ -144,8 +145,11 @@ private:
 
 	VBoxContainer *scanning_vb = nullptr;
 	ProgressBar *scanning_progress = nullptr;
-	VSplitContainer *split_box = nullptr;
+	SplitContainer *split_box = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
+
+	int split_box_offset_h = 0;
+	int split_box_offset_v = 0;
 
 	HashSet<String> favorites;
 
@@ -221,6 +225,7 @@ private:
 	int history_max_size;
 
 	String current_path;
+	String select_after_scan;
 
 	bool initialized = false;
 
@@ -262,11 +267,11 @@ private:
 	void _update_import_dock();
 
 	void _get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Vector<String> &r_files, Vector<String> &r_folders) const;
-	void _find_file_owners(EditorFileSystemDirectory *p_efsd, const Vector<String> &p_renames, Vector<String> &r_file_owners) const;
+	void _find_file_owners(EditorFileSystemDirectory *p_efsd, const HashSet<String> &p_renames, HashSet<String> &r_file_owners) const;
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames);
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
-	void _before_move(HashMap<String, ResourceUID::ID> &r_uids, Vector<String> &r_file_owners) const;
-	void _update_dependencies_after_move(const HashMap<String, String> &p_renames, const Vector<String> &p_file_owners) const;
+	void _before_move(HashMap<String, ResourceUID::ID> &r_uids, HashSet<String> &r_file_owners) const;
+	void _update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const;
 	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const;
 	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames);
@@ -299,7 +304,7 @@ private:
 	void _set_scanning_mode();
 	void _rescan();
 
-	void _toggle_split_mode(bool p_active);
+	void _change_split_mode();
 
 	void _search_changed(const String &p_text, const Control *p_from);
 
@@ -347,7 +352,7 @@ private:
 
 	void _update_display_mode(bool p_force = false);
 
-	Vector<String> _tree_get_selected(bool remove_self_inclusion = true) const;
+	Vector<String> _tree_get_selected(bool remove_self_inclusion = true, bool p_include_unselected_cursor = false) const;
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
@@ -365,6 +370,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	const HashMap<String, Color> &get_folder_colors() const;
+	Dictionary get_assigned_folder_colors() const;
+
 	Vector<String> get_selected_paths() const;
 	Vector<String> get_uncollapsed_paths() const;
 

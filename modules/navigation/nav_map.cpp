@@ -769,6 +769,70 @@ void NavMap::remove_agent_as_controlled(NavAgent *agent) {
 	}
 }
 
+Vector3 NavMap::get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const {
+	const LocalVector<NavRegion *> map_regions = get_regions();
+
+	if (map_regions.is_empty()) {
+		return Vector3();
+	}
+
+	LocalVector<const NavRegion *> accessible_regions;
+
+	for (const NavRegion *region : map_regions) {
+		if (!region->get_enabled() || (p_navigation_layers & region->get_navigation_layers()) == 0) {
+			continue;
+		}
+		accessible_regions.push_back(region);
+	}
+
+	if (accessible_regions.is_empty()) {
+		// All existing region polygons are disabled.
+		return Vector3();
+	}
+
+	if (p_uniformly) {
+		real_t accumulated_region_surface_area = 0;
+		RBMap<real_t, uint32_t> accessible_regions_area_map;
+
+		for (uint32_t accessible_region_index = 0; accessible_region_index < accessible_regions.size(); accessible_region_index++) {
+			const NavRegion *region = accessible_regions[accessible_region_index];
+
+			real_t region_surface_area = region->get_surface_area();
+
+			if (region_surface_area == 0.0f) {
+				continue;
+			}
+
+			accessible_regions_area_map[accumulated_region_surface_area] = accessible_region_index;
+			accumulated_region_surface_area += region_surface_area;
+		}
+		if (accessible_regions_area_map.is_empty() || accumulated_region_surface_area == 0) {
+			// All faces have no real surface / no area.
+			return Vector3();
+		}
+
+		real_t random_accessible_regions_area_map = Math::random(real_t(0), accumulated_region_surface_area);
+
+		RBMap<real_t, uint32_t>::Iterator E = accessible_regions_area_map.find_closest(random_accessible_regions_area_map);
+		ERR_FAIL_COND_V(!E, Vector3());
+		uint32_t random_region_index = E->value;
+		ERR_FAIL_UNSIGNED_INDEX_V(random_region_index, accessible_regions.size(), Vector3());
+
+		const NavRegion *random_region = accessible_regions[random_region_index];
+		ERR_FAIL_NULL_V(random_region, Vector3());
+
+		return random_region->get_random_point(p_navigation_layers, p_uniformly);
+
+	} else {
+		uint32_t random_region_index = Math::random(int(0), accessible_regions.size() - 1);
+
+		const NavRegion *random_region = accessible_regions[random_region_index];
+		ERR_FAIL_NULL_V(random_region, Vector3());
+
+		return random_region->get_random_point(p_navigation_layers, p_uniformly);
+	}
+}
+
 void NavMap::sync() {
 	// Performance Monitor
 	int _new_pm_region_count = regions.size();
@@ -953,6 +1017,9 @@ void NavMap::sync() {
 
 		// Search for polygons within range of a nav link.
 		for (const NavLink *link : links) {
+			if (!link->get_enabled()) {
+				continue;
+			}
 			const Vector3 start = link->get_start_position();
 			const Vector3 end = link->get_end_position();
 
@@ -1104,8 +1171,14 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 		obstacle_vertex_count += obstacle->get_vertices().size();
 	}
 
+	// Cleaning old obstacles.
+	for (size_t i = 0; i < rvo_simulation_2d.obstacles_.size(); ++i) {
+		delete rvo_simulation_2d.obstacles_[i];
+	}
+	rvo_simulation_2d.obstacles_.clear();
+
 	// Cannot use LocalVector here as RVO library expects std::vector to build KdTree
-	std::vector<RVO2D::Obstacle2D *> raw_obstacles;
+	std::vector<RVO2D::Obstacle2D *> &raw_obstacles = rvo_simulation_2d.obstacles_;
 	raw_obstacles.reserve(obstacle_vertex_count);
 
 	// The following block is modified copy from RVO2D::AddObstacle()
@@ -1122,8 +1195,14 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 		rvo_2d_vertices.reserve(_obstacle_vertices.size());
 
 		uint32_t _obstacle_avoidance_layers = obstacle->get_avoidance_layers();
+		real_t _obstacle_height = obstacle->get_height();
 
 		for (const Vector3 &_obstacle_vertex : _obstacle_vertices) {
+#ifdef TOOLS_ENABLED
+			if (_obstacle_vertex.y != 0) {
+				WARN_PRINT_ONCE("Y coordinates of static obstacle vertices are ignored. Please use obstacle position Y to change elevation of obstacle.");
+			}
+#endif
 			rvo_2d_vertices.push_back(RVO2D::Vector2(_obstacle_vertex.x + _obstacle_position.x, _obstacle_vertex.z + _obstacle_position.z));
 		}
 
@@ -1132,6 +1211,9 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 		for (size_t i = 0; i < rvo_2d_vertices.size(); i++) {
 			RVO2D::Obstacle2D *rvo_2d_obstacle = new RVO2D::Obstacle2D();
 			rvo_2d_obstacle->point_ = rvo_2d_vertices[i];
+			rvo_2d_obstacle->height_ = _obstacle_height;
+			rvo_2d_obstacle->elevation_ = _obstacle_position.y;
+
 			rvo_2d_obstacle->avoidance_layers_ = _obstacle_avoidance_layers;
 
 			if (i != 0) {

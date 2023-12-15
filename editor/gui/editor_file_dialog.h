@@ -239,6 +239,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	Color get_dir_icon_color(const String &p_dir_path);
+
 	// Public for use with callable_mp.
 	void _file_submitted(const String &p_file);
 

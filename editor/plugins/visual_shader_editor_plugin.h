@@ -260,6 +260,10 @@ class VisualShaderEditor : public VBoxContainer {
 		COLLAPSE_ALL
 	};
 
+#ifdef MINGW_ENABLED
+#undef DELETE
+#endif
+
 	enum NodeMenuOptions {
 		ADD,
 		SEPARATOR, // ignore
@@ -380,8 +384,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _node_selected(Object *p_node);
 
 	void _delete_nodes(int p_type, const List<int> &p_nodes);
-	void _close_node_request(int p_type, int p_node);
-	void _close_nodes_request(const TypedArray<StringName> &p_nodes);
+	void _delete_node_request(int p_type, int p_node);
+	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
 
 	void _node_changed(int p_id);
 
@@ -487,7 +491,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _member_cancel();
 
 	void _varying_create();
-	void _varying_name_changed(const String &p_text);
+	void _varying_name_changed(const String &p_name);
 	void _varying_deleted();
 	void _varying_selected();
 	void _varying_unselected();

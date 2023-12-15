@@ -1059,20 +1059,33 @@ void BaseMaterial3D::_update_shader() {
 	}
 	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
 		//generate tangent and binormal in world space
-		code += "	TANGENT = vec3(0.0,0.0,-1.0) * abs(NORMAL.x);\n";
-		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.y);\n";
-		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);\n";
-		code += "	TANGENT = normalize(TANGENT);\n";
+		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
+			code += "	vec3 normal = MODEL_NORMAL_MATRIX * NORMAL;\n";
+		} else {
+			code += "	vec3 normal = NORMAL;\n";
+		}
+		code += "	TANGENT = vec3(0.0,0.0,-1.0) * abs(normal.x);\n";
+		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(normal.y);\n";
+		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(normal.z);\n";
+		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
+			code += "	TANGENT = inverse(MODEL_NORMAL_MATRIX) * normalize(TANGENT);\n";
+		} else {
+			code += "	TANGENT = normalize(TANGENT);\n";
+		}
 
-		code += "	BINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);\n";
-		code += "	BINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);\n";
-		code += "	BINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);\n";
-		code += "	BINORMAL = normalize(BINORMAL);\n";
+		code += "	BINORMAL = vec3(0.0,1.0,0.0) * abs(normal.x);\n";
+		code += "	BINORMAL+= vec3(0.0,0.0,-1.0) * abs(normal.y);\n";
+		code += "	BINORMAL+= vec3(0.0,1.0,0.0) * abs(normal.z);\n";
+		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
+			code += "	BINORMAL = inverse(MODEL_NORMAL_MATRIX) * normalize(BINORMAL);\n";
+		} else {
+			code += "	BINORMAL = normalize(BINORMAL);\n";
+		}
 	}
 
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
-			code += "	uv1_power_normal=pow(abs(mat3(MODEL_MATRIX) * NORMAL),vec3(uv1_blend_sharpness));\n";
+			code += "	uv1_power_normal=pow(abs(normal),vec3(uv1_blend_sharpness));\n";
 			code += "	uv1_triplanar_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0f)).xyz * uv1_scale + uv1_offset;\n";
 		} else {
 			code += "	uv1_power_normal=pow(abs(NORMAL),vec3(uv1_blend_sharpness));\n";
@@ -1917,7 +1930,7 @@ void BaseMaterial3D::set_texture(TextureParam p_param, const Ref<Texture2D> &p_t
 	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
 
 	textures[p_param] = p_texture;
-	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	Variant rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
 
 	if (p_texture.is_valid() && p_param == TEXTURE_ALBEDO) {
@@ -3079,6 +3092,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	flags[FLAG_ALBEDO_TEXTURE_MSDF] = false;
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
 
+	current_key.invalid_key = 1;
+
 	_mark_initialized(callable_mp(this, &BaseMaterial3D::_queue_shader_change));
 }
 
@@ -3152,7 +3167,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "flags_use_shadow_to_opacity", "shadow_to_opacity" },
 			{ "flags_no_depth_test", "no_depth_test" },
 			{ "flags_use_point_size", "use_point_size" },
-			{ "flags_fixed_size", "fixed_Size" },
+			{ "flags_fixed_size", "fixed_size" },
 			{ "flags_albedo_tex_force_srgb", "albedo_texture_force_srgb" },
 			{ "flags_do_not_receive_shadows", "disable_receive_shadows" },
 			{ "flags_disable_ambient_light", "disable_ambient_light" },

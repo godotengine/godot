@@ -292,7 +292,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				loop_end = file->get_32();
 			}
 		}
-		file->seek(file_pos + chunksize);
+		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
+		// chunk sizes.
+		file->seek(file_pos + chunksize + (chunksize & 1));
 	}
 
 	// STEP 2, APPLY CONVERSIONS

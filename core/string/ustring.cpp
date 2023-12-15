@@ -305,7 +305,11 @@ void String::copy_from(const char *p_cstr) {
 	char32_t *dst = this->ptrw();
 
 	for (size_t i = 0; i <= len; i++) {
+#if CHAR_MIN == 0
+		uint8_t c = p_cstr[i];
+#else
 		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
+#endif
 		if (c == 0 && i < len) {
 			print_unicode_error("NUL character", true);
 			dst[i] = _replacement_char;
@@ -338,7 +342,11 @@ void String::copy_from(const char *p_cstr, const int p_clip_to) {
 	char32_t *dst = this->ptrw();
 
 	for (int i = 0; i < len; i++) {
+#if CHAR_MIN == 0
+		uint8_t c = p_cstr[i];
+#else
 		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
+#endif
 		if (c == 0) {
 			print_unicode_error("NUL character", true);
 			dst[i] = _replacement_char;
@@ -544,7 +552,11 @@ String &String::operator+=(const char *p_str) {
 	char32_t *dst = ptrw() + lhs_len;
 
 	for (size_t i = 0; i <= rhs_len; i++) {
+#if CHAR_MIN == 0
+		uint8_t c = p_str[i];
+#else
 		uint8_t c = p_str[i] >= 0 ? p_str[i] : uint8_t(256 + p_str[i]);
+#endif
 		if (c == 0 && i < rhs_len) {
 			print_unicode_error("NUL character", true);
 			dst[i] = _replacement_char;
@@ -1814,7 +1826,11 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 		int skip = 0;
 		uint8_t c_start = 0;
 		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+#if CHAR_MIN == 0
+			uint8_t c = *ptrtmp;
+#else
 			uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
+#endif
 
 			if (skip == 0) {
 				if (p_skip_cr && c == '\r') {
@@ -1882,7 +1898,11 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	int skip = 0;
 	uint32_t unichar = 0;
 	while (cstr_size) {
+#if CHAR_MIN == 0
+		uint8_t c = *p_utf8;
+#else
 		uint8_t c = *p_utf8 >= 0 ? *p_utf8 : uint8_t(256 + *p_utf8);
+#endif
 
 		if (skip == 0) {
 			if (p_skip_cr && c == '\r') {
@@ -3974,24 +3994,22 @@ bool String::is_absolute_path() const {
 	}
 }
 
-static _FORCE_INLINE_ bool _is_valid_identifier_bit(int p_index, char32_t p_char) {
-	if (p_index == 0 && is_digit(p_char)) {
-		return false; // No start with number plz.
-	}
-	return is_ascii_identifier_char(p_char);
-}
-
 String String::validate_identifier() const {
 	if (is_empty()) {
 		return "_"; // Empty string is not a valid identifier;
 	}
 
-	String result = *this;
+	String result;
+	if (is_digit(operator[](0))) {
+		result = "_" + *this;
+	} else {
+		result = *this;
+	}
+
 	int len = result.length();
 	char32_t *buffer = result.ptrw();
-
 	for (int i = 0; i < len; i++) {
-		if (!_is_valid_identifier_bit(i, buffer[i])) {
+		if (!is_ascii_identifier_char(buffer[i])) {
 			buffer[i] = '_';
 		}
 	}
@@ -4006,10 +4024,14 @@ bool String::is_valid_identifier() const {
 		return false;
 	}
 
+	if (is_digit(operator[](0))) {
+		return false;
+	}
+
 	const char32_t *str = &operator[](0);
 
 	for (int i = 0; i < len; i++) {
-		if (!_is_valid_identifier_bit(i, str[i])) {
+		if (!is_ascii_identifier_char(str[i])) {
 			return false;
 		}
 	}
@@ -4697,11 +4719,16 @@ String String::property_name_encode() const {
 
 static const char32_t invalid_node_name_characters[] = { '.', ':', '@', '/', '\"', UNIQUE_NODE_PREFIX[0], 0 };
 
-String String::get_invalid_node_name_characters() {
+String String::get_invalid_node_name_characters(bool p_allow_internal) {
 	// Do not use this function for critical validation.
 	String r;
 	const char32_t *c = invalid_node_name_characters;
 	while (*c) {
+		if (p_allow_internal && *c == '@') {
+			c++;
+			continue;
+		}
+
 		if (c != invalid_node_name_characters) {
 			r += " ";
 		}
@@ -4815,6 +4842,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	bool pad_with_zeros = false;
 	bool left_justified = false;
 	bool show_sign = false;
+	bool as_unsigned = false;
 
 	if (error) {
 		*error = true;
@@ -4855,16 +4883,27 @@ String String::sprintf(const Array &values, bool *error) const {
 						case 'x':
 							break;
 						case 'X':
-							base = 16;
 							capitalize = true;
 							break;
 					}
 					// Get basic number.
-					String str = String::num_int64(ABS(value), base, capitalize);
+					String str;
+					if (!as_unsigned) {
+						str = String::num_int64(ABS(value), base, capitalize);
+					} else {
+						uint64_t uvalue = *((uint64_t *)&value);
+						// In unsigned hex, if the value fits in 32 bits, trim it down to that.
+						if (base == 16 && value < 0 && value >= INT32_MIN) {
+							uvalue &= 0xffffffff;
+						}
+						str = String::num_uint64(uvalue, base, capitalize);
+					}
 					int number_len = str.length();
 
+					bool negative = value < 0 && !as_unsigned;
+
 					// Padding.
-					int pad_chars_count = (value < 0 || show_sign) ? min_chars - 1 : min_chars;
+					int pad_chars_count = (negative || show_sign) ? min_chars - 1 : min_chars;
 					String pad_char = pad_with_zeros ? String("0") : String(" ");
 					if (left_justified) {
 						str = str.rpad(pad_chars_count, pad_char);
@@ -4873,8 +4912,8 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					// Sign.
-					if (show_sign || value < 0) {
-						String sign_char = value < 0 ? "-" : "+";
+					if (show_sign || negative) {
+						String sign_char = negative ? "-" : "+";
 						if (left_justified) {
 							str = str.insert(0, sign_char);
 						} else {
@@ -5065,6 +5104,10 @@ String String::sprintf(const Array &values, bool *error) const {
 				}
 				case '+': { // Show + if positive.
 					show_sign = true;
+					break;
+				}
+				case 'u': { // Treat as unsigned (for int/hex).
+					as_unsigned = true;
 					break;
 				}
 				case '0':

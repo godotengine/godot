@@ -36,20 +36,20 @@
 	</methods>
 	<members>
 		<member name="adjustment_brightness" type="float" setter="set_adjustment_brightness" getter="get_adjustment_brightness" default="1.0">
-			The global brightness value of the rendered scene. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
+			The global brightness value of the rendered scene. Effective only if [member adjustment_enabled] is [code]true[/code].
 		</member>
 		<member name="adjustment_color_correction" type="Texture" setter="set_adjustment_color_correction" getter="get_adjustment_color_correction">
-			The [Texture2D] or [Texture3D] lookup table (LUT) to use for the built-in post-process color grading. Can use a [GradientTexture1D] for a 1-dimensional LUT, or a [Texture3D] for a more complex LUT. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
+			The [Texture2D] or [Texture3D] lookup table (LUT) to use for the built-in post-process color grading. Can use a [GradientTexture1D] for a 1-dimensional LUT, or a [Texture3D] for a more complex LUT. Effective only if [member adjustment_enabled] is [code]true[/code].
 		</member>
 		<member name="adjustment_contrast" type="float" setter="set_adjustment_contrast" getter="get_adjustment_contrast" default="1.0">
-			The global contrast value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
+			The global contrast value of the rendered scene (default value is 1). Effective only if [member adjustment_enabled] is [code]true[/code].
 		</member>
 		<member name="adjustment_enabled" type="bool" setter="set_adjustment_enabled" getter="is_adjustment_enabled" default="false">
 			If [code]true[/code], enables the [code]adjustment_*[/code] properties provided by this resource. If [code]false[/code], modifications to the [code]adjustment_*[/code] properties will have no effect on the rendered scene.
 			[b]Note:[/b] Adjustments are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation" default="1.0">
-			The global color saturation value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
+			The global color saturation value of the rendered scene (default value is 1). Effective only if [member adjustment_enabled] is [code]true[/code].
 		</member>
 		<member name="ambient_light_color" type="Color" setter="set_ambient_light_color" getter="get_ambient_light_color" default="Color(0, 0, 0, 1)">
 			The ambient light's [Color]. Only effective if [member ambient_light_sky_contribution] is lower than [code]1.0[/code] (exclusive).

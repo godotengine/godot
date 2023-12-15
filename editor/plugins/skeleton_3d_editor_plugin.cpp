@@ -363,7 +363,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 
 void Skeleton3DEditor::create_physical_skeleton() {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ERR_FAIL_COND(!get_tree());
+	ERR_FAIL_NULL(get_tree());
 	Node *owner = get_tree()->get_edited_scene_root();
 
 	const int bone_count = skeleton->get_bone_count();
@@ -871,7 +871,9 @@ void Skeleton3DEditor::_notification(int p_what) {
 				skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_update_properties));
 				skeleton->set_transform_gizmo_visible(true);
 #endif
-				handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
+				if (handles_mesh_instance->get_parent()) {
+					handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
+				}
 			}
 			edit_mode_toggled(false);
 		} break;

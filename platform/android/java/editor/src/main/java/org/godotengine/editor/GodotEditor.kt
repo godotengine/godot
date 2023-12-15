@@ -91,10 +91,6 @@ open class GodotEditor : GodotActivity() {
 	private val commandLineParams = ArrayList<String>()
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		// We exclude certain permissions from the set we request at startup, as they'll be
-		// requested on demand based on use-cases.
-		PermissionsUtil.requestManifestPermissions(this, setOf(Manifest.permission.RECORD_AUDIO))
-
 		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 		Log.d(TAG, "Received parameters ${params.contentToString()}")
 		updateCommandLineParams(params)
@@ -225,16 +221,9 @@ open class GodotEditor : GodotActivity() {
 		val runningProcesses = activityManager.runningAppProcesses
 		for (runningProcess in runningProcesses) {
 			if (runningProcess.processName.endsWith(processNameSuffix)) {
-				if (targetClass == null) {
-					// Killing process directly
-					Log.v(TAG, "Killing Godot process ${runningProcess.processName}")
-					Process.killProcess(runningProcess.pid)
-				} else {
-					// Activity is running; sending a request for self termination.
-					Log.v(TAG, "Sending force quit request to $targetClass running on process ${runningProcess.processName}")
-					val forceQuitIntent = Intent(this, targetClass).putExtra(EXTRA_FORCE_QUIT, true)
-					startActivity(forceQuitIntent)
-				}
+				// Killing process directly
+				Log.v(TAG, "Killing Godot process ${runningProcess.processName}")
+				Process.killProcess(runningProcess.pid)
 				return true
 			}
 		}

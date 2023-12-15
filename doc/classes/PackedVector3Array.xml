@@ -203,7 +203,9 @@
 			<return type="PackedVector3Array" />
 			<param index="0" name="right" type="Transform3D" />
 			<description>
-				Transforms (multiplies) all vectors in the array by the [Transform3D] matrix.
+				Returns a new [PackedVector3Array] with all vectors in this array inversely transformed (multiplied) by the given [Transform3D] transformation matrix, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				[code]array * transform[/code] is equivalent to [code]transform.inverse() * array[/code]. See [method Transform3D.inverse].
+				For transforming by inverse of an affine transformation (e.g. with scaling) [code]transform.affine_inverse() * array[/code] can be used instead. See [method Transform3D.affine_inverse].
 			</description>
 		</operator>
 		<operator name="operator +">

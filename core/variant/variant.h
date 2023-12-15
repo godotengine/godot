@@ -338,6 +338,9 @@ public:
 	_FORCE_INLINE_ bool is_num() const {
 		return type == INT || type == FLOAT;
 	}
+	_FORCE_INLINE_ bool is_string() const {
+		return type == STRING || type == STRING_NAME;
+	}
 	_FORCE_INLINE_ bool is_array() const {
 		return type >= ARRAY;
 	}
@@ -831,6 +834,20 @@ String vformat(const String &p_text, const VarArgs... p_args) {
 	ERR_FAIL_COND_V_MSG(error, String(), fmt);
 
 	return fmt;
+}
+
+template <typename... VarArgs>
+Variant Callable::call(VarArgs... p_args) const {
+	Variant args[sizeof...(p_args) + 1] = { p_args..., 0 }; // +1 makes sure zero sized arrays are also supported.
+	const Variant *argptrs[sizeof...(p_args) + 1];
+	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+		argptrs[i] = &args[i];
+	}
+
+	Variant ret;
+	CallError ce;
+	callp(sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), ret, ce);
+	return ret;
 }
 
 template <typename... VarArgs>

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
+#include "scene/gui/container.h"
 #include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
 
@@ -44,6 +45,7 @@ void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	autowrap_mode = p_mode;
 	lines_dirty = true;
 	queue_redraw();
+	update_configuration_warnings();
 
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
@@ -238,10 +240,12 @@ void Label::_shape() {
 					if (i < jst_to_line) {
 						TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
 					} else if (i == (visible_lines - 1)) {
+						TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
 						TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 					}
 				}
 			} else if (lines_hidden) {
+				TS->shaped_text_set_custom_ellipsis(lines_rid[visible_lines - 1], (el_char.length() > 0) ? el_char[0] : 0x2026);
 				TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
 			}
 		} else {
@@ -266,9 +270,11 @@ void Label::_shape() {
 				if (i < jst_to_line && horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 					TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
+					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 					TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
+					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 				}
 			}
@@ -326,6 +332,19 @@ inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Col
 
 PackedStringArray Label::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
+
+	// FIXME: This is not ideal and the sizing model should be fixed,
+	// but for now we have to warn about this impossible to resolve combination.
+	// See GH-83546.
+	if (is_inside_tree() && get_tree()->get_edited_scene_root() != this) {
+		// If the Label happens to be the root node of the edited scene, we don't need
+		// to check what its parent is. It's going to be some node from the editor tree
+		// and it can be a container, but that makes no difference to the user.
+		Container *parent_container = Object::cast_to<Container>(get_parent_control());
+		if (parent_container && autowrap_mode != TextServer::AUTOWRAP_OFF && get_custom_minimum_size() == Size2()) {
+			warnings.push_back(RTR("Labels with autowrapping enabled must have a custom minimum size configured to work correctly inside a container."));
+		}
+	}
 
 	// Ensure that the font can render all of the required glyphs.
 	Ref<Font> font;
@@ -872,6 +891,27 @@ TextServer::OverrunBehavior Label::get_text_overrun_behavior() const {
 	return overrun_behavior;
 }
 
+void Label::set_ellipsis_char(const String &p_char) {
+	String c = p_char;
+	if (c.length() > 1) {
+		WARN_PRINT("Ellipsis must be exactly one character long (" + itos(c.length()) + " characters given).");
+		c = c.left(1);
+	}
+	if (el_char == c) {
+		return;
+	}
+	el_char = c;
+	lines_dirty = true;
+	queue_redraw();
+	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+		update_minimum_size();
+	}
+}
+
+String Label::get_ellipsis_char() const {
+	return el_char;
+}
+
 String Label::get_text() const {
 	return text;
 }
@@ -992,6 +1032,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_stops"), &Label::get_tab_stops);
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Label::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Label::get_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("set_ellipsis_char", "char"), &Label::set_ellipsis_char);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_char"), &Label::get_ellipsis_char);
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &Label::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &Label::is_uppercase);
 	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &Label::get_line_height, DEFVAL(-1));
@@ -1022,6 +1064,7 @@ void Label::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");
 

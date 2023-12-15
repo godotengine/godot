@@ -48,13 +48,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
-
 #include <cstring>
 #include <fstream>
 #include <float.h>
-#include <math.h>
 #include "tvgLoader.h"
 #include "tvgXmlParser.h"
 #include "tvgSvgLoader.h"
@@ -3508,8 +3504,29 @@ static bool _svgLoaderParserForValidCheck(void* data, SimpleXMLType type, const 
 }
 
 
-void SvgLoader::clear()
+void SvgLoader::clear(bool all)
 {
+    //flush out the intermediate data
+    free(loaderData.svgParse);
+    loaderData.svgParse = nullptr;
+
+    for (auto gradient = loaderData.gradients.data; gradient < loaderData.gradients.end(); ++gradient) {
+        (*gradient)->clear();
+        free(*gradient);
+    }
+    loaderData.gradients.reset();
+
+    _freeNode(loaderData.doc);
+    loaderData.doc = nullptr;
+    loaderData.stack.reset();
+
+    if (!all) return;
+
+    for (auto p = loaderData.images.data; p < loaderData.images.end(); ++p) {
+        free(*p);
+    }
+    loaderData.images.reset();
+
     if (copy) free((char*)content);
     size = 0;
     content = nullptr;
@@ -3561,6 +3578,20 @@ void SvgLoader::run(unsigned tid)
         if (defs) _updateGradient(&loaderData, loaderData.doc, &defs->node.defs.gradients);
     }
     root = svgSceneBuild(loaderData, {vx, vy, vw, vh}, w, h, align, meetOrSlice, svgPath, viewFlag);
+
+    //In case no viewbox and width/height data is provided the completion of loading
+    //has to be forced, in order to establish this data based on the whole picture.
+    if (!(viewFlag & SvgViewFlag::Viewbox)) {
+        //Override viewbox & size again after svg loading.
+        vx = loaderData.doc->node.doc.vx;
+        vy = loaderData.doc->node.doc.vy;
+        vw = loaderData.doc->node.doc.vw;
+        vh = loaderData.doc->node.doc.vh;
+        w = loaderData.doc->node.doc.w;
+        h = loaderData.doc->node.doc.h;
+    }
+
+    clear(false);
 }
 
 
@@ -3630,14 +3661,6 @@ bool SvgLoader::header()
             }
 
             run(0);
-
-            //Override viewbox & size again after svg loading.
-            vx = loaderData.doc->node.doc.vx;
-            vy = loaderData.doc->node.doc.vy;
-            vw = loaderData.doc->node.doc.vw;
-            vh = loaderData.doc->node.doc.vh;
-            w = loaderData.doc->node.doc.w;
-            h = loaderData.doc->node.doc.h;
         }
 
         return true;
@@ -3716,22 +3739,6 @@ bool SvgLoader::read()
 bool SvgLoader::close()
 {
     this->done();
-
-    if (loaderData.svgParse) {
-        free(loaderData.svgParse);
-        loaderData.svgParse = nullptr;
-    }
-    auto gradients = loaderData.gradients.data;
-    for (size_t i = 0; i < loaderData.gradients.count; ++i) {
-        (*gradients)->clear();
-        free(*gradients);
-        ++gradients;
-    }
-    loaderData.gradients.reset();
-
-    _freeNode(loaderData.doc);
-    loaderData.doc = nullptr;
-    loaderData.stack.reset();
 
     clear();
 

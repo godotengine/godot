@@ -118,6 +118,16 @@ namespace GodotTools.Internals
             }
         }
 
+        public static string ProjectBaseOutputPath
+        {
+            get
+            {
+                if (_projectCsProjPath == null)
+                    DetermineProjectLocation();
+                return Path.Combine(Path.GetDirectoryName(_projectCsProjPath)!, ".godot", "mono", "temp", "bin");
+            }
+        }
+
         public static string LogsDirPathFor(string solution, string configuration)
             => Path.Combine(BuildLogsDirs, $"{solution.Md5Text()}_{configuration}");
 

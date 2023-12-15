@@ -104,7 +104,7 @@ struct CellData {
 	// Rendering.
 	Ref<RenderingQuadrant> rendering_quadrant;
 	SelfList<CellData> rendering_quadrant_list_element;
-	List<RID> occluders;
+	LocalVector<RID> occluders;
 
 	// Physics.
 	LocalVector<RID> bodies;
@@ -248,6 +248,7 @@ public:
 		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
+		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
 		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE,
 		DIRTY_FLAGS_TILE_MAP_IN_TREE,
 		DIRTY_FLAGS_TILE_MAP_IN_CANVAS,
@@ -278,6 +279,7 @@ private:
 	bool y_sort_enabled = false;
 	int y_sort_origin = 0;
 	int z_index = 0;
+	bool navigation_enabled = true;
 	RID navigation_map;
 	bool uses_world_navigation_map = false;
 
@@ -417,6 +419,8 @@ public:
 	int get_y_sort_origin() const;
 	void set_z_index(int p_z_index);
 	int get_z_index() const;
+	void set_navigation_enabled(bool p_enabled);
+	bool is_navigation_enabled() const;
 	void set_navigation_map(RID p_map);
 	RID get_navigation_map() const;
 
@@ -457,6 +461,7 @@ private:
 
 	// Layers.
 	LocalVector<Ref<TileMapLayer>> layers;
+	Ref<TileMapLayer> default_layer; // Dummy layer to fetch default values.
 	int selected_layer = -1;
 	bool pending_update = false;
 
@@ -467,14 +472,12 @@ private:
 
 	void _update_notify_local_transform();
 
-	// Polygons.
-	HashMap<Pair<Ref<Resource>, int>, Ref<Resource>, PairHash<Ref<Resource>, int>> polygon_cache;
-	PackedVector2Array _get_transformed_vertices(const PackedVector2Array &p_vertices, int p_alternative_id);
-
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -528,7 +531,8 @@ public:
 	int get_layer_y_sort_origin(int p_layer) const;
 	void set_layer_z_index(int p_layer, int p_z_index);
 	int get_layer_z_index(int p_layer) const;
-
+	void set_layer_navigation_enabled(int p_layer, bool p_enabled);
+	bool is_layer_navigation_enabled(int p_layer) const;
 	void set_layer_navigation_map(int p_layer, RID p_map);
 	RID get_layer_navigation_map(int p_layer) const;
 
@@ -611,7 +615,6 @@ public:
 	// Helpers?
 	TypedArray<Vector2i> get_surrounding_cells(const Vector2i &coords);
 	void draw_cells_outline(Control *p_control, const RBSet<Vector2i> &p_cells, Color p_color, Transform2D p_transform = Transform2D());
-	Ref<Resource> get_transformed_polygon(Ref<Resource> p_polygon, int p_alternative_id);
 
 	// Virtual function to modify the TileData at runtime.
 	GDVIRTUAL2R(bool, _use_tile_data_runtime_update, int, Vector2i);

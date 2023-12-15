@@ -558,24 +558,29 @@ _FORCE_INLINE_ void FontFile::_clear_cache() {
 	}
 }
 
-_FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index) const {
+_FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_from) const {
 	if (unlikely(p_cache_index >= cache.size())) {
 		cache.resize(p_cache_index + 1);
 	}
 	if (unlikely(!cache[p_cache_index].is_valid())) {
-		cache.write[p_cache_index] = TS->create_font();
-		TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
-		TS->font_set_antialiasing(cache[p_cache_index], antialiasing);
-		TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
-		TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
-		TS->font_set_msdf_pixel_range(cache[p_cache_index], msdf_pixel_range);
-		TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
-		TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
-		TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
-		TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
-		TS->font_set_hinting(cache[p_cache_index], hinting);
-		TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
-		TS->font_set_oversampling(cache[p_cache_index], oversampling);
+		if (p_make_linked_from >= 0 && p_make_linked_from != p_cache_index && p_make_linked_from < cache.size()) {
+			cache.write[p_cache_index] = TS->create_font_linked_variation(cache[p_make_linked_from]);
+		} else {
+			cache.write[p_cache_index] = TS->create_font();
+			TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
+			TS->font_set_antialiasing(cache[p_cache_index], antialiasing);
+			TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
+			TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
+			TS->font_set_msdf_pixel_range(cache[p_cache_index], msdf_pixel_range);
+			TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
+			TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
+			TS->font_set_fixed_size_scale_mode(cache[p_cache_index], fixed_size_scale_mode);
+			TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
+			TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
+			TS->font_set_hinting(cache[p_cache_index], hinting);
+			TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
+			TS->font_set_oversampling(cache[p_cache_index], oversampling);
+		}
 	}
 }
 
@@ -885,6 +890,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fixed_size", "fixed_size"), &FontFile::set_fixed_size);
 	ClassDB::bind_method(D_METHOD("get_fixed_size"), &FontFile::get_fixed_size);
 
+	ClassDB::bind_method(D_METHOD("set_fixed_size_scale_mode", "fixed_size_scale_mode"), &FontFile::set_fixed_size_scale_mode);
+	ClassDB::bind_method(D_METHOD("get_fixed_size_scale_mode"), &FontFile::get_fixed_size_scale_mode);
+
 	ClassDB::bind_method(D_METHOD("set_allow_system_fallback", "allow_system_fallback"), &FontFile::set_allow_system_fallback);
 	ClassDB::bind_method(D_METHOD("is_allow_system_fallback"), &FontFile::is_allow_system_fallback);
 
@@ -1011,6 +1019,7 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_STORAGE), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size", "get_fixed_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size_scale_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size_scale_mode", "get_fixed_size_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_opentype_feature_overrides", "get_opentype_feature_overrides");
 }
 
@@ -1364,6 +1373,7 @@ void FontFile::reset_state() {
 	msdf_pixel_range = 14;
 	msdf_size = 128;
 	fixed_size = 0;
+	fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
 	oversampling = 0.f;
 
 	Font::reset_state();
@@ -1396,7 +1406,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 	oversampling = 1.0f;
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, vformat(RTR("Cannot open font from file: %s."), p_path));
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, vformat("Cannot open font from file: %s.", p_path));
 
 	int base_size = 16;
 	int height = 0;
@@ -1415,7 +1425,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 	f->get_buffer((unsigned char *)&magic, 4);
 	if (magic[0] == 'B' && magic[1] == 'M' && magic[2] == 'F') {
 		// Binary BMFont file.
-		ERR_FAIL_COND_V_MSG(magic[3] != 3, ERR_CANT_CREATE, vformat(RTR("Version %d of BMFont is not supported (should be 3)."), (int)magic[3]));
+		ERR_FAIL_COND_V_MSG(magic[3] != 3, ERR_CANT_CREATE, vformat("Version %d of BMFont is not supported (should be 3).", (int)magic[3]));
 
 		uint8_t block_type = f->get_8();
 		uint32_t block_size = f->get_32();
@@ -1425,7 +1435,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 			uint64_t off = f->get_position();
 			switch (block_type) {
 				case 1: /* info */ {
-					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, RTR("Invalid BMFont info block size."));
+					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, "Invalid BMFont info block size.");
 					base_size = f->get_16();
 					if (base_size <= 0) {
 						base_size = 16;
@@ -1486,7 +1496,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 					set_fixed_size(base_size);
 				} break;
 				case 2: /* common */ {
-					ERR_FAIL_COND_V_MSG(block_size != 15, ERR_CANT_CREATE, RTR("Invalid BMFont common block size."));
+					ERR_FAIL_COND_V_MSG(block_size != 15, ERR_CANT_CREATE, "Invalid BMFont common block size.");
 					height = f->get_16();
 					ascent = f->get_16();
 					f->get_32(); // scale, skip
@@ -1524,40 +1534,40 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 								Ref<Image> img;
 								img.instantiate();
 								Error err = ImageLoader::load_image(file, img);
-								ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat(RTR("Can't load font texture: %s."), file));
+								ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: %s.", file));
 
 								if (packed) {
 									if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
 										outline = 0;
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 										_convert_packed_8bit(img, page, base_size);
 									} else if ((ch[3] == 2) && (outline > 0)) { // 4 x 4 bit monochrome, gl + outline
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 										_convert_packed_4bit(img, page, base_size);
 									} else {
-										ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
+										ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Unsupported BMFont texture format.");
 									}
 								} else {
 									if ((ch[0] == 0) && (ch[1] == 0) && (ch[2] == 0) && (ch[3] == 0)) { // RGBA8 color, no outline
 										outline = 0;
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 										set_texture_image(0, Vector2i(base_size, 0), page, img);
 									} else if ((ch[0] == 2) && (ch[1] == 2) && (ch[2] == 2) && (ch[3] == 2) && (outline > 0)) { // RGBA4 color, gl + outline
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 										_convert_rgba_4bit(img, page, base_size);
 									} else if ((first_gl_ch >= 0) && (first_ol_ch >= 0) && (outline > 0)) { // 1 x 8 bit monochrome, gl + outline
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 										_convert_mono_8bit(img, page, first_gl_ch, base_size, 0);
 										_convert_mono_8bit(img, page, first_ol_ch, base_size, 1);
 									} else if ((first_cm_ch >= 0) && (outline > 0)) { // 1 x 4 bit monochrome, gl + outline
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 										_convert_mono_4bit(img, page, first_cm_ch, base_size, 1);
 									} else if (first_gl_ch >= 0) { // 1 x 8 bit monochrome, no outline
 										outline = 0;
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 										_convert_mono_8bit(img, page, first_gl_ch, base_size, 0);
 									} else {
-										ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
+										ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Unsupported BMFont texture format.");
 									}
 								}
 							}
@@ -1659,7 +1669,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 					}
 				} break;
 				default: {
-					ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Invalid BMFont block type."));
+					ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Invalid BMFont block type.");
 				} break;
 			}
 			f->seek(off + block_size);
@@ -1815,17 +1825,17 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						Ref<Image> img;
 						img.instantiate();
 						Error err = ImageLoader::load_image(file, img);
-						ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat(RTR("Can't load font texture: %s."), file));
+						ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: %s.", file));
 						if (packed) {
 							if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
 								outline = 0;
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 								_convert_packed_8bit(img, page, base_size);
 							} else if ((ch[3] == 2) && (outline > 0)) { // 4 x 4 bit monochrome, gl + outline
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 								_convert_packed_4bit(img, page, base_size);
 							} else {
-								ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
+								ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Unsupported BMFont texture format.");
 							}
 						} else {
 							if ((ch[3] == 0) && (ch[0] == 4) && (ch[1] == 4) && (ch[2] == 4) && img->get_format() == Image::FORMAT_RGBA8) { // might be RGBA8 color, no outline (color part of the image should be sold white, but some apps designed for Godot 3 generate color fonts with this config)
@@ -1833,24 +1843,24 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 								set_texture_image(0, Vector2i(base_size, 0), page, img);
 							} else if ((ch[0] == 0) && (ch[1] == 0) && (ch[2] == 0) && (ch[3] == 0)) { // RGBA8 color, no outline
 								outline = 0;
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 								set_texture_image(0, Vector2i(base_size, 0), page, img);
 							} else if ((ch[0] == 2) && (ch[1] == 2) && (ch[2] == 2) && (ch[3] == 2) && (outline > 0)) { // RGBA4 color, gl + outline
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 								_convert_rgba_4bit(img, page, base_size);
 							} else if ((first_gl_ch >= 0) && (first_ol_ch >= 0) && (outline > 0)) { // 1 x 8 bit monochrome, gl + outline
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 								_convert_mono_8bit(img, page, first_gl_ch, base_size, 0);
 								_convert_mono_8bit(img, page, first_ol_ch, base_size, 1);
 							} else if ((first_cm_ch >= 0) && (outline > 0)) { // 1 x 4 bit monochrome, gl + outline
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 								_convert_mono_4bit(img, page, first_cm_ch, base_size, 1);
 							} else if (first_gl_ch >= 0) { // 1 x 8 bit monochrome, no outline
 								outline = 0;
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, "Unsupported BMFont texture format.");
 								_convert_mono_8bit(img, page, first_gl_ch, base_size, 0);
 							} else {
-								ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
+								ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Unsupported BMFont texture format.");
 							}
 						}
 					}
@@ -2140,6 +2150,21 @@ int FontFile::get_fixed_size() const {
 	return fixed_size;
 }
 
+void FontFile::set_fixed_size_scale_mode(TextServer::FixedSizeScaleMode p_fixed_size_scale_mode) {
+	if (fixed_size_scale_mode != p_fixed_size_scale_mode) {
+		fixed_size_scale_mode = p_fixed_size_scale_mode;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_fixed_size_scale_mode(cache[i], fixed_size_scale_mode);
+		}
+		emit_changed();
+	}
+}
+
+TextServer::FixedSizeScaleMode FontFile::get_fixed_size_scale_mode() const {
+	return fixed_size_scale_mode;
+}
+
 void FontFile::set_allow_system_fallback(bool p_allow_system_fallback) {
 	if (allow_system_fallback != p_allow_system_fallback) {
 		allow_system_fallback = p_allow_system_fallback;
@@ -2218,17 +2243,19 @@ real_t FontFile::get_oversampling() const {
 RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
+	int make_linked_from = -1;
 	for (int i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
 			const Dictionary &cache_var = TS->font_get_variation_coordinates(cache[i]);
 			bool match = true;
+			bool match_linked = true;
 			match = match && (TS->font_get_face_index(cache[i]) == p_face_index);
 			match = match && (TS->font_get_embolden(cache[i]) == p_strength);
 			match = match && (TS->font_get_transform(cache[i]) == p_transform);
-			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_TOP) == p_spacing_top);
-			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_BOTTOM) == p_spacing_bottom);
-			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing_space);
-			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_GLYPH) == p_spacing_glyph);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_TOP) == p_spacing_top);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_BOTTOM) == p_spacing_bottom);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing_space);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_GLYPH) == p_spacing_glyph);
 			for (const Variant *V = supported_coords.next(nullptr); V && match; V = supported_coords.next(V)) {
 				const Vector3 &def = supported_coords[*V];
 
@@ -2255,22 +2282,34 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 				match = match && (c_v == s_v);
 			}
 			if (match) {
-				return cache[i];
+				if (match_linked) {
+					return cache[i];
+				} else {
+					make_linked_from = i;
+				}
 			}
 		}
 	}
 
 	// Create new variation cache.
 	int idx = cache.size();
-	_ensure_rid(idx);
-	TS->font_set_variation_coordinates(cache[idx], p_variation_coordinates);
-	TS->font_set_face_index(cache[idx], p_face_index);
-	TS->font_set_embolden(cache[idx], p_strength);
-	TS->font_set_transform(cache[idx], p_transform);
-	TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
-	TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
-	TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
-	TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+	if (make_linked_from >= 0) {
+		_ensure_rid(idx, make_linked_from);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+	} else {
+		_ensure_rid(idx);
+		TS->font_set_variation_coordinates(cache[idx], p_variation_coordinates);
+		TS->font_set_face_index(cache[idx], p_face_index);
+		TS->font_set_embolden(cache[idx], p_strength);
+		TS->font_set_transform(cache[idx], p_transform);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+	}
 	return cache[idx];
 }
 
@@ -3016,14 +3055,19 @@ void SystemFont::_update_base_font() {
 			continue;
 		}
 
-		// If it's a font collection check all faces to match requested style.
+		// If it's a font collection check all faces to match requested style and name.
 		int best_score = 0;
 		for (int i = 0; i < file->get_face_count(); i++) {
+			int score = 0;
 			file->set_face_index(0, i);
+			const String n = file->get_font_name();
+			if (n.to_upper() == E.to_upper()) {
+				score += 80;
+			}
 			BitField<TextServer::FontStyle> style = file->get_font_style();
 			int font_weight = file->get_font_weight();
 			int font_stretch = file->get_font_stretch();
-			int score = (20 - Math::abs(font_weight - weight) / 50);
+			score += (20 - Math::abs(font_weight - weight) / 50);
 			score += (20 - Math::abs(font_stretch - stretch) / 10);
 			if (bool(style & TextServer::FONT_ITALIC) == italic) {
 				score += 30;
@@ -3042,7 +3086,7 @@ void SystemFont::_update_base_font() {
 		file->set_face_index(0, face_indeces[0]);
 
 		// If it's a variable font, apply weight, stretch and italic coordinates to match requested style.
-		if (best_score != 50) {
+		if (best_score != 150) {
 			Dictionary ftr = file->get_supported_variation_list();
 			if (ftr.has(TS->name_to_tag("width"))) {
 				ftr_stretch = stretch;

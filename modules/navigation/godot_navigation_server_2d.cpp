@@ -259,8 +259,12 @@ Vector<Vector2> FORWARD_5_R_C(vector_v3_to_v2, map_get_path, RID, p_map, Vector2
 Vector2 FORWARD_2_R_C(v3_to_v2, map_get_closest_point, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 RID FORWARD_2_C(map_get_closest_point_owner, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 
-RID FORWARD_0(region_create);
+Vector2 GodotNavigationServer2D::map_get_random_point(RID p_map, uint32_t p_naviation_layers, bool p_uniformly) const {
+	Vector3 result = NavigationServer3D::get_singleton()->map_get_random_point(p_map, p_naviation_layers, p_uniformly);
+	return v3_to_v2(result);
+}
 
+RID FORWARD_0(region_create);
 void FORWARD_2(region_set_enabled, RID, p_region, bool, p_enabled, rid_to_rid, bool_to_bool);
 bool FORWARD_1_C(region_get_enabled, RID, p_region, rid_to_rid);
 void FORWARD_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled, rid_to_rid, bool_to_bool);
@@ -286,6 +290,11 @@ void GodotNavigationServer2D::region_set_navigation_polygon(RID p_region, Ref<Na
 int FORWARD_1_C(region_get_connections_count, RID, p_region, rid_to_rid);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_start, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_end, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
+
+Vector2 GodotNavigationServer2D::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
+	Vector3 result = NavigationServer3D::get_singleton()->region_get_random_point(p_region, p_navigation_layers, p_uniformly);
+	return v3_to_v2(result);
+}
 
 RID FORWARD_0(link_create);
 

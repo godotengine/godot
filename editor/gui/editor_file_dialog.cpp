@@ -40,6 +40,7 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/filesystem_dock.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
@@ -766,6 +767,35 @@ void EditorFileDialog::update_file_name() {
 	}
 }
 
+// TODO: Could use a unit test.
+Color EditorFileDialog::get_dir_icon_color(const String &p_dir_path) {
+	if (!FileSystemDock::get_singleton()) { // This dialog can be called from the project manager.
+		return theme_cache.folder_icon_color;
+	}
+
+	const HashMap<String, Color> &folder_colors = FileSystemDock::get_singleton()->get_folder_colors();
+	Dictionary assigned_folder_colors = FileSystemDock::get_singleton()->get_assigned_folder_colors();
+
+	Color folder_icon_color = theme_cache.folder_icon_color;
+
+	// Check for a folder color to inherit (if one is assigned).
+	String parent_dir = ProjectSettings::get_singleton()->localize_path(p_dir_path);
+	while (!parent_dir.is_empty() && parent_dir != "res://") {
+		if (!parent_dir.ends_with("/")) {
+			parent_dir += "/";
+		}
+		if (assigned_folder_colors.has(parent_dir)) {
+			folder_icon_color = folder_colors[assigned_folder_colors[parent_dir]];
+			if (folder_icon_color != theme_cache.folder_icon_color) {
+				break;
+			}
+		}
+		parent_dir = parent_dir.trim_suffix("/").get_base_dir();
+	}
+
+	return folder_icon_color;
+}
+
 // DO NOT USE THIS FUNCTION UNLESS NEEDED, CALL INVALIDATE() INSTEAD.
 void EditorFileDialog::update_file_list() {
 	int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
@@ -859,7 +889,7 @@ void EditorFileDialog::update_file_list() {
 		d["dir"] = true;
 
 		item_list->set_item_metadata(-1, d);
-		item_list->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
+		item_list->set_item_icon_modulate(-1, get_dir_icon_color(String(d["path"])));
 
 		dirs.pop_front();
 	}
@@ -1393,12 +1423,14 @@ void EditorFileDialog::_update_favorites() {
 	bool fav_changed = false;
 	int current_favorite = -1;
 	for (int i = 0; i < favorited.size(); i++) {
-		bool cres = favorited[i].begins_with("res://");
-		if (cres != res) {
+		String name = favorited[i];
+
+		bool cres = name.begins_with("res://");
+		if (cres != res || !name.ends_with("/")) {
 			continue;
 		}
 
-		if (!dir_access->dir_exists(favorited[i])) {
+		if (!dir_access->dir_exists(name)) {
 			// Remove invalid directory from the list of Favorited directories.
 			favorited.remove_at(i--);
 			fav_changed = true;
@@ -1406,7 +1438,6 @@ void EditorFileDialog::_update_favorites() {
 		}
 
 		// Compute favorite display text.
-		String name = favorited[i];
 		if (res && name == "res://") {
 			if (name == current) {
 				current_favorite = favorited_paths.size();
@@ -1414,7 +1445,7 @@ void EditorFileDialog::_update_favorites() {
 			name = "/";
 			favorited_paths.append(favorited[i]);
 			favorited_names.append(name);
-		} else if (name.ends_with("/")) {
+		} else {
 			if (name == current || name == current + "/") {
 				current_favorite = favorited_paths.size();
 			}
@@ -1422,8 +1453,6 @@ void EditorFileDialog::_update_favorites() {
 			name = name.get_file();
 			favorited_paths.append(favorited[i]);
 			favorited_names.append(name);
-		} else {
-			// Ignore favorited files.
 		}
 	}
 
@@ -1436,7 +1465,7 @@ void EditorFileDialog::_update_favorites() {
 	for (int i = 0; i < favorited_paths.size(); i++) {
 		favorites->add_item(favorited_names[i], theme_cache.folder);
 		favorites->set_item_metadata(-1, favorited_paths[i]);
-		favorites->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
+		favorites->set_item_icon_modulate(-1, get_dir_icon_color(favorited_paths[i]));
 
 		if (i == current_favorite) {
 			favorite->set_pressed(true);
@@ -1519,7 +1548,7 @@ void EditorFileDialog::_update_recent() {
 	for (int i = 0; i < recentd_paths.size(); i++) {
 		recent->add_item(recentd_names[i], theme_cache.folder);
 		recent->set_item_metadata(-1, recentd_paths[i]);
-		recent->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
+		recent->set_item_icon_modulate(-1, get_dir_icon_color(recentd_paths[i]));
 	}
 	EditorSettings::get_singleton()->set_recent_dirs(recentd);
 }

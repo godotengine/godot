@@ -156,7 +156,7 @@ Mesh::BlendShapeMode ImporterMesh::get_blend_shape_mode() const {
 	return blend_shape_mode;
 }
 
-void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint32_t p_flags) {
+void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint64_t p_flags) {
 	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != Mesh::ARRAY_MAX);
 	Surface s;
@@ -240,7 +240,7 @@ float ImporterMesh::get_surface_lod_size(int p_surface, int p_lod) const {
 	return surfaces[p_surface].lods[p_lod].distance;
 }
 
-uint32_t ImporterMesh::get_surface_format(int p_surface) const {
+uint64_t ImporterMesh::get_surface_format(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), 0);
 	return surfaces[p_surface].flags;
 }
@@ -418,11 +418,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 		}
 
-		LocalVector<float> normal_weights;
-		normal_weights.resize(merged_vertex_count);
-		for (unsigned int j = 0; j < merged_vertex_count; j++) {
-			normal_weights[j] = 2.0; // Give some weight to normal preservation, may be worth exposing as an import setting
-		}
+		const float normal_weights[3] = {
+			// Give some weight to normal preservation, may be worth exposing as an import setting
+			2.0f, 2.0f, 2.0f
+		};
 
 		Vector<float> merged_vertices_f32 = vector3_to_float32_array(merged_vertices_ptr, merged_vertex_count);
 		float scale = SurfaceTool::simplify_scale_func(merged_vertices_f32.ptr(), merged_vertex_count, sizeof(float) * 3);
@@ -460,12 +459,13 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					(const uint32_t *)merged_indices_ptr, index_count,
 					merged_vertices_f32.ptr(), merged_vertex_count,
 					sizeof(float) * 3, // Vertex stride
+					merged_normals_f32.ptr(),
+					sizeof(float) * 3, // Attribute stride
+					normal_weights, 3,
 					index_target,
 					max_mesh_error,
 					simplify_options,
-					&mesh_error,
-					merged_normals_f32.ptr(),
-					normal_weights.ptr(), 3);
+					&mesh_error);
 
 			if (new_index_count < last_index_count * 1.5f) {
 				index_target = index_target * 1.5f;
@@ -868,7 +868,7 @@ void ImporterMesh::_set_data(const Dictionary &p_data) {
 			if (s.has("material")) {
 				material = s["material"];
 			}
-			uint32_t flags = 0;
+			uint64_t flags = 0;
 			if (s.has("flags")) {
 				flags = s["flags"];
 			}
@@ -909,9 +909,7 @@ Dictionary ImporterMesh::_get_data() const {
 			d["name"] = surfaces[i].name;
 		}
 
-		if (surfaces[i].flags != 0) {
-			d["flags"] = surfaces[i].flags;
-		}
+		d["flags"] = surfaces[i].flags;
 
 		surface_arr.push_back(d);
 	}
@@ -971,7 +969,7 @@ Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Ref<MeshConvexDecompos
 				if (found_vertex) {
 					index = found_vertex->value;
 				} else {
-					index = ++vertex_count;
+					index = vertex_count++;
 					vertex_map[vertex] = index;
 					vertex_w[index] = vertex;
 				}
@@ -1105,7 +1103,7 @@ struct EditorSceneFormatImporterMeshLightmapSurface {
 	Ref<Material> material;
 	LocalVector<SurfaceTool::Vertex> vertices;
 	Mesh::PrimitiveType primitive = Mesh::PrimitiveType::PRIMITIVE_MAX;
-	uint32_t format = 0;
+	uint64_t format = 0;
 	String name;
 };
 

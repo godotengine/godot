@@ -96,9 +96,15 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 
 	Vector<String> locales;
 	Vector<Ref<Translation>> translations;
+	HashSet<int> skipped_locales;
 
 	for (int i = 1; i < line.size(); i++) {
 		String locale = TranslationServer::get_singleton()->standardize_locale(line[i]);
+
+		if (locale.is_empty()) {
+			skipped_locales.insert(i);
+			ERR_CONTINUE_MSG(true, vformat("Error importing CSV translation: Invalid locale format '%s', should be 'language_Script_COUNTRY_VARIANT@extra'.", line[i]));
+		}
 
 		locales.push_back(locale);
 		Ref<Translation> translation;
@@ -111,9 +117,12 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		line = f->get_csv_line(delimiter);
 		String key = line[0];
 		if (!key.is_empty()) {
-			ERR_FAIL_COND_V_MSG(line.size() != locales.size() + 1, ERR_PARSE_ERROR, vformat("Error importing CSV translation: expected %d locale(s), but the '%s' key has %d locale(s).", locales.size(), key, line.size() - 1));
+			ERR_CONTINUE_MSG(line.size() != locales.size() + 1, vformat("Error importing CSV translation: expected %d locale(s), but the '%s' key has %d locale(s).", locales.size(), key, line.size() - 1));
 
 			for (int i = 1; i < line.size(); i++) {
+				if (skipped_locales.has(i)) {
+					continue;
+				}
 				translations.write[i - 1]->add_message(key, line[i].c_unescape());
 			}
 		}

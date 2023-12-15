@@ -61,7 +61,7 @@ private:
 	HashMap<String, List<Ref<InputEvent>>> default_builtin_cache;
 	HashMap<String, List<Ref<InputEvent>>> default_builtin_with_overrides_cache;
 
-	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false, bool *r_pressed = nullptr, float *r_strength = nullptr, float *r_raw_strength = nullptr) const;
+	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false, bool *r_pressed = nullptr, float *r_strength = nullptr, float *r_raw_strength = nullptr, int *r_event_index = nullptr) const;
 
 	TypedArray<InputEvent> _action_get_events(const StringName &p_action);
 	TypedArray<StringName> _get_actions();
@@ -86,7 +86,8 @@ public:
 
 	const List<Ref<InputEvent>> *action_get_events(const StringName &p_action);
 	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false) const;
-	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false, bool *r_pressed = nullptr, float *r_strength = nullptr, float *r_raw_strength = nullptr) const;
+	int event_get_index(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false) const;
+	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false, bool *r_pressed = nullptr, float *r_strength = nullptr, float *r_raw_strength = nullptr, int *r_event_index = nullptr) const;
 
 	const HashMap<StringName, Action> &get_action_map() const;
 	void load_from_project_settings();

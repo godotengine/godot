@@ -973,8 +973,7 @@ bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Var
 			Vector<String> files = drag_data["files"];
 
 			if (files.size() == 1) {
-				String file = files[0];
-				Ref<AudioStream> res = ResourceLoader::load(file);
+				Ref<AudioStream> res = ResourceLoader::load(files[0]);
 				if (res.is_valid()) {
 					return true;
 				}
@@ -995,8 +994,7 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 			Vector<String> files = drag_data["files"];
 
 			if (files.size() == 1) {
-				String file = files[0];
-				stream = ResourceLoader::load(file);
+				stream = ResourceLoader::load(files[0]);
 			}
 		}
 

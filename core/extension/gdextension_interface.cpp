@@ -159,9 +159,7 @@ public:
 		userdata = p_info->callable_userdata;
 		token = p_info->token;
 
-		if (p_info->object != nullptr) {
-			object = ((Object *)p_info->object)->get_instance_id();
-		}
+		object = p_info->object_id;
 
 		call_func = p_info->call_func;
 		is_valid_func = p_info->is_valid_func;
@@ -400,7 +398,7 @@ static void gdextension_variant_iter_get(GDExtensionConstVariantPtr p_self, GDEx
 	Variant *iter = (Variant *)r_iter;
 
 	bool valid;
-	memnew_placement(r_ret, Variant(self->iter_next(*iter, valid)));
+	memnew_placement(r_ret, Variant(self->iter_get(*iter, valid)));
 	*r_valid = valid;
 }
 
@@ -1152,6 +1150,11 @@ static void gdextension_object_set_instance_binding(GDExtensionObjectPtr p_objec
 	o->set_instance_binding(p_token, p_binding, p_callbacks);
 }
 
+static void gdextension_object_free_instance_binding(GDExtensionObjectPtr p_object, void *p_token) {
+	Object *o = (Object *)p_object;
+	o->free_instance_binding(p_token);
+}
+
 static void gdextension_object_set_instance(GDExtensionObjectPtr p_object, GDExtensionConstStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	Object *o = (Object *)p_object;
@@ -1491,6 +1494,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(global_get_singleton);
 	REGISTER_INTERFACE_FUNC(object_get_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance_binding);
+	REGISTER_INTERFACE_FUNC(object_free_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance);
 	REGISTER_INTERFACE_FUNC(object_get_class_name);
 	REGISTER_INTERFACE_FUNC(object_cast_to);

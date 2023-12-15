@@ -209,8 +209,6 @@ Transform2D Camera2D::get_camera_transform() {
 		screen_rect.position += offset;
 	}
 
-	camera_screen_center = screen_rect.get_center();
-
 	Transform2D xform;
 	xform.scale_basis(zoom_scale);
 	if (!ignore_rotation) {
@@ -218,7 +216,9 @@ Transform2D Camera2D::get_camera_transform() {
 	}
 	xform.set_origin(screen_rect.position);
 
-	return (xform).affine_inverse();
+	camera_screen_center = xform.xform(0.5 * screen_size);
+
+	return xform.affine_inverse();
 }
 
 void Camera2D::_notification(int p_what) {

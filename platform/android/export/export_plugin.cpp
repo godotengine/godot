@@ -460,7 +460,7 @@ String EditorExportPlatformAndroid::get_valid_basename() const {
 		if (is_digit(c) && first) {
 			continue;
 		}
-		if (is_ascii_alphanumeric_char(c)) {
+		if (is_ascii_identifier_char(c)) {
 			name += String::chr(c);
 			first = false;
 		}
@@ -533,13 +533,6 @@ bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package,
 	if (first) {
 		if (r_error) {
 			*r_error = TTR("Package segments must be of non-zero length.");
-		}
-		return false;
-	}
-
-	if (p_package.find("$genname") >= 0 && !is_project_name_valid()) {
-		if (r_error) {
-			*r_error = TTR("The project name does not meet the requirement for the package name format. Please explicitly specify the package name.");
 		}
 		return false;
 	}
@@ -1542,18 +1535,32 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image) {
 	bool scale_splash = GLOBAL_GET("application/boot_splash/fullsize");
 	bool apply_filter = GLOBAL_GET("application/boot_splash/use_filter");
+	bool show_splash_image = GLOBAL_GET("application/boot_splash/show_image");
 	String project_splash_path = GLOBAL_GET("application/boot_splash/image");
 
-	if (!project_splash_path.is_empty()) {
-		splash_image.instantiate();
-		print_verbose("Loading splash image: " + project_splash_path);
-		const Error err = ImageLoader::load_image(project_splash_path, splash_image);
-		if (err) {
-			if (OS::get_singleton()->is_stdout_verbose()) {
-				print_error("- unable to load splash image from " + project_splash_path + " (" + itos(err) + ")");
+	// Setup the splash bg color.
+	bool bg_color_valid = false;
+	Color bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color", &bg_color_valid);
+	if (!bg_color_valid) {
+		bg_color = boot_splash_bg_color;
+	}
+
+	if (show_splash_image) {
+		if (!project_splash_path.is_empty()) {
+			splash_image.instantiate();
+			print_verbose("Loading splash image: " + project_splash_path);
+			const Error err = ImageLoader::load_image(project_splash_path, splash_image);
+			if (err) {
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					print_error("- unable to load splash image from " + project_splash_path + " (" + itos(err) + ")");
+				}
+				splash_image.unref();
 			}
-			splash_image.unref();
 		}
+	} else {
+		splash_image.instantiate();
+		splash_image->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
+		splash_image->set_pixel(0, 0, bg_color);
 	}
 
 	if (splash_image.is_null()) {
@@ -1575,13 +1582,6 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 			height = splash_image->get_height() * screen_size.width / splash_image->get_width();
 		}
 		splash_image->resize(width, height);
-	}
-
-	// Setup the splash bg color
-	bool bg_color_valid;
-	Color bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color", &bg_color_valid);
-	if (!bg_color_valid) {
-		bg_color = boot_splash_bg_color;
 	}
 
 	print_verbose("Creating splash background color image.");
@@ -1710,7 +1710,6 @@ void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPres
 	Vector<ABI> abis = get_enabled_abis(p_preset);
 	for (int i = 0; i < abis.size(); ++i) {
 		r_features->push_back(abis[i].arch);
-		r_features->push_back(abis[i].abi);
 	}
 }
 
@@ -2238,6 +2237,19 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 #ifdef MODULE_MONO_ENABLED
 	// Android export is still a work in progress, keep a message as a warning.
 	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
+
+	bool unsupported_arch = false;
+	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
+	for (ABI abi : enabled_abis) {
+		if (abi.arch != "arm64" && abi.arch != "x86_64") {
+			err += vformat(TTR("Android architecture %s not supported in C# projects."), abi.arch) + "\n";
+			unsupported_arch = true;
+		}
+	}
+	if (unsupported_arch) {
+		r_error = err;
+		return false;
+	}
 #endif
 
 	// Look for export templates (first official, and if defined custom templates).
@@ -2424,6 +2436,13 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	if (_uses_vulkan() && min_sdk_int < VULKAN_MIN_SDK_VERSION) {
 		// Warning only, so don't override `valid`.
 		err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
+		err += "\n";
+	}
+
+	String package_name = p_preset->get("package/unique_name");
+	if (package_name.find("$genname") >= 0 && !is_project_name_valid()) {
+		// Warning only, so don't override `valid`.
+		err += vformat(TTR("The project name does not meet the requirement for the package name format and will be updated to \"%s\". Please explicitly specify the package name if needed."), get_valid_basename());
 		err += "\n";
 	}
 
@@ -2763,6 +2782,12 @@ Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> 
 Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
+	const String base_dir = p_path.get_base_dir();
+	if (!DirAccess::exists(base_dir)) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
+		return ERR_FILE_BAD_PATH;
+	}
+
 	String src_apk;
 	Error err;
 
@@ -2837,7 +2862,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 		const String assets_directory = get_assets_directory(p_preset, export_format);
 		String sdk_path = EDITOR_GET("export/android/android_sdk_path");
-		ERR_FAIL_COND_V_MSG(sdk_path.is_empty(), ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'.");
+		if (sdk_path.is_empty()) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'."));
+			return ERR_UNCONFIGURED;
+		}
 		print_verbose("Android sdk path: " + sdk_path);
 
 		// TODO: should we use "package/name" or "application/config/name"?
@@ -3022,10 +3050,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 		}
 
-		int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Building Android Project (gradle)"), build_command, cmdline);
+		String build_project_output;
+		int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Building Android Project (gradle)"), build_command, cmdline, true, false, &build_project_output);
 		if (result != 0) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Building of Android project failed, check output for the error. Alternatively visit docs.godotengine.org for Android build documentation."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Building of Android project failed, check output for the error:") + "\n\n" + build_project_output);
 			return ERR_CANT_CREATE;
+		} else {
+			print_verbose(build_project_output);
 		}
 
 		List<String> copy_args;
@@ -3052,10 +3083,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		copy_args.push_back("-Pexport_filename=" + export_filename);
 
 		print_verbose("Copying Android binary using gradle command: " + String("\n") + build_command + " " + join_list(copy_args, String(" ")));
-		int copy_result = EditorNode::get_singleton()->execute_and_show_output(TTR("Moving output"), build_command, copy_args);
+		String copy_binary_output;
+		int copy_result = EditorNode::get_singleton()->execute_and_show_output(TTR("Moving output"), build_command, copy_args, true, false, &copy_binary_output);
 		if (copy_result != 0) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unable to copy and rename export file, check gradle project directory for outputs."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unable to copy and rename export file:") + "\n\n" + copy_binary_output);
 			return ERR_CANT_CREATE;
+		} else {
+			print_verbose(copy_binary_output);
 		}
 
 		print_verbose("Successfully completed Android gradle build.");
@@ -3079,10 +3113,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Package not found: \"%s\"."), src_apk));
 			return ERR_FILE_NOT_FOUND;
 		}
-	}
-
-	if (!DirAccess::exists(p_path.get_base_dir())) {
-		return ERR_FILE_BAD_PATH;
 	}
 
 	Ref<FileAccess> io_fa;
@@ -3277,10 +3307,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	zipClose(unaligned_apk, nullptr);
 	unzClose(pkg);
 
-	if (err != OK) {
-		CLEANUP_AND_RETURN(err);
-	}
-
 	// Let's zip-align (must be done before signing)
 
 	static const int ZIP_ALIGNMENT = 4;
@@ -3367,6 +3393,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		// file will invalidate the signature.
 		err = sign_apk(p_preset, p_debug, p_path, ep);
 		if (err != OK) {
+			// Message is supplied by the subroutine method.
 			CLEANUP_AND_RETURN(err);
 		}
 	}

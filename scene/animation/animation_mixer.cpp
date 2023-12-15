@@ -445,7 +445,7 @@ bool AnimationMixer::is_active() const {
 
 void AnimationMixer::set_root_node(const NodePath &p_path) {
 	root_node = p_path;
-	clear_caches();
+	_clear_caches();
 }
 
 NodePath AnimationMixer::get_root_node() const {
@@ -454,7 +454,7 @@ NodePath AnimationMixer::get_root_node() const {
 
 void AnimationMixer::set_deterministic(bool p_deterministic) {
 	deterministic = p_deterministic;
-	clear_caches();
+	_clear_caches();
 }
 
 bool AnimationMixer::is_deterministic() const {
@@ -563,7 +563,7 @@ void AnimationMixer::_clear_audio_streams() {
 void AnimationMixer::_clear_playing_caches() {
 	for (const TrackCache *E : playing_caches) {
 		if (ObjectDB::get_instance(E->object_id)) {
-			E->object->call(SNAME("stop"));
+			E->object->call(SNAME("stop"), true);
 		}
 	}
 	playing_caches.clear();
@@ -638,6 +638,10 @@ bool AnimationMixer::_update_caches() {
 
 				switch (track_type) {
 					case Animation::TYPE_VALUE: {
+						// If a value track without a key is cached first, the initial value cannot be determined.
+						// It is a corner case, but which may cause problems with blending.
+						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, "AnimationMixer: '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
+
 						TrackCacheValue *track_value = memnew(TrackCacheValue);
 
 						if (resource.is_valid()) {
@@ -654,9 +658,6 @@ bool AnimationMixer::_update_caches() {
 
 						track = track_value;
 
-						// If a value track without a key is cached first, the initial value cannot be determined.
-						// It is a corner case, but which may cause problems with blending.
-						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, "AnimationMixer: '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
 						track_value->init_value = anim->track_get_key_value(i, 0);
 						track_value->init_value.zero();
 
@@ -667,6 +668,7 @@ bool AnimationMixer::_update_caches() {
 								track_value->init_value = reset_anim->track_get_key_value(rt, 0);
 							}
 						}
+
 					} break;
 					case Animation::TYPE_POSITION_3D:
 					case Animation::TYPE_ROTATION_3D:
@@ -812,6 +814,7 @@ bool AnimationMixer::_update_caches() {
 								track_bezier->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
 							}
 						}
+
 					} break;
 					case Animation::TYPE_AUDIO: {
 						TrackCacheAudio *track_audio = memnew(TrackCacheAudio);
@@ -868,11 +871,26 @@ bool AnimationMixer::_update_caches() {
 				track_value->is_continuous |= anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE;
 				track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 
-				if (was_continuous != track_value->is_continuous) {
-					WARN_PRINT_ONCE_ED("Value Track: " + String(path) + " has different update modes between some animations may be blended. Blending prioritizes UpdateMode.UPDATE_CONTINUOUS, so the process treat UpdateMode.UPDATE_DISCRETE as UpdateMode.UPDATE_CONTINUOUS with InterpolationType.INTERPOLATION_NEAREST.");
+				// TODO: Currently, misc type cannot be blended.
+				// In the future, it should have a separate blend weight, just as bool is converted to 0 and 1.
+				// Then, it should provide the correct precedence value.
+				bool skip_update_mode_warning = false;
+				if (track_value->is_continuous) {
+					if (!Animation::is_variant_interpolatable(track_value->init_value)) {
+						WARN_PRINT_ONCE_ED("AnimationMixer: '" + String(E) + "', Value Track: '" + String(path) + "' uses a non-numeric type as key value with UpdateMode.UPDATE_CONTINUOUS. This will not be blended correctly, so it is forced to UpdateMode.UPDATE_DISCRETE.");
+						track_value->is_continuous = false;
+						skip_update_mode_warning = true;
+					}
+					if (track_value->init_value.is_string()) {
+						WARN_PRINT_ONCE_ED("AnimationMixer: '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
+					}
+				}
+
+				if (!skip_update_mode_warning && was_continuous != track_value->is_continuous) {
+					WARN_PRINT_ONCE_ED("AnimationMixer: '" + String(E) + "', Value Track: '" + String(path) + "' has different update modes between some animations which may be blended together. Blending prioritizes UpdateMode.UPDATE_CONTINUOUS, so the process treats UpdateMode.UPDATE_DISCRETE as UpdateMode.UPDATE_CONTINUOUS with InterpolationType.INTERPOLATION_NEAREST.");
 				}
 				if (was_using_angle != track_value->is_using_angle) {
-					WARN_PRINT_ONCE_ED("Value Track: " + String(path) + " has different interpolation types for rotation between some animations may be blended. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
+					WARN_PRINT_ONCE_ED("AnimationMixer: '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
 				}
 			}
 
@@ -918,9 +936,7 @@ bool AnimationMixer::_update_caches() {
 void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 	_blend_init();
 	if (_blend_pre_process(p_delta, track_count, track_map)) {
-		if (!deterministic) {
-			_blend_calc_total_weight();
-		}
+		_blend_calc_total_weight();
 		_blend_process(p_delta, p_update_only);
 		_blend_apply();
 		_blend_post_process();
@@ -992,7 +1008,8 @@ void AnimationMixer::_blend_init() {
 			} break;
 			case Animation::TYPE_VALUE: {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
-				t->value = t->init_value;
+				t->value = Animation::cast_to_blendwise(t->init_value);
+				t->element_size = t->init_value.is_string() ? (real_t)(t->init_value.operator String()).length() : 0;
 			} break;
 			case Animation::TYPE_BEZIER: {
 				TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
@@ -1079,7 +1096,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 			ERR_CONTINUE(blend_idx < 0 || blend_idx >= track_count);
 			real_t blend = blend_idx < track_weights.size() ? track_weights[blend_idx] * weight : weight;
 			if (!deterministic) {
-				// If undeterministic, do nomalization.
+				// If non-deterministic, do normalization.
 				// It would be better to make this if statement outside the for loop, but come here since too much code...
 				if (Math::is_zero_approx(track->total_weight)) {
 					continue;
@@ -1402,13 +1419,15 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							}
 							t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math_TAU);
 						} else {
-							if (t->init_value.get_type() == Variant::BOOL) {
-								value = Animation::subtract_variant(value.operator real_t(), t->init_value.operator real_t());
-								t->value = Animation::blend_variant(t->value.operator real_t(), value.operator real_t(), blend);
-							} else {
-								value = Animation::subtract_variant(value, t->init_value);
-								t->value = Animation::blend_variant(t->value, value, blend);
+							value = Animation::cast_to_blendwise(value);
+							if (t->init_value.is_array()) {
+								t->element_size = MAX(t->element_size.operator int(), (value.operator Array()).size());
+							} else if (t->init_value.is_string()) {
+								real_t length = Animation::subtract_variant((real_t)(value.operator Array()).size(), (real_t)(t->init_value.operator String()).length());
+								t->element_size = Animation::blend_variant(t->element_size, length, blend);
 							}
+							value = Animation::subtract_variant(value, Animation::cast_to_blendwise(t->init_value));
+							t->value = Animation::blend_variant(t->value, value, blend);
 						}
 					} else {
 						if (seeked) {
@@ -1678,10 +1697,23 @@ void AnimationMixer::_blend_apply() {
 					break; // Don't overwrite the value set by UPDATE_DISCRETE.
 				}
 
-				if (t->init_value.get_type() == Variant::BOOL) {
-					t->object->set_indexed(t->subpath, t->value.operator real_t() >= 0.5);
-				} else {
-					t->object->set_indexed(t->subpath, t->value);
+				// Trim unused elements if init array/string is not blended.
+				if (t->value.is_array()) {
+					int actual_blended_size = (int)Math::round(Math::abs(t->element_size.operator real_t()));
+					if (actual_blended_size < (t->value.operator Array()).size()) {
+						real_t abs_weight = Math::abs(track->total_weight);
+						if (abs_weight >= 1.0) {
+							(t->value.operator Array()).resize(actual_blended_size);
+						} else if (t->init_value.is_string()) {
+							(t->value.operator Array()).resize(Animation::interpolate_variant((t->init_value.operator String()).length(), actual_blended_size, abs_weight));
+						}
+					}
+				}
+
+				// t->object isn't safe here, get instance from id (GH-85365).
+				Object *obj = ObjectDB::get_instance(t->object_id);
+				if (obj) {
+					obj->set_indexed(t->subpath, Animation::cast_from_blendwise(t->value, t->init_value.get_type()));
 				}
 
 			} break;
@@ -1757,7 +1789,7 @@ void AnimationMixer::_blend_apply() {
 
 void AnimationMixer::_call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
 	// Separate function to use alloca() more efficiently
-	const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * p_params.size());
+	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * p_params.size());
 	const Variant *args = p_params.ptr();
 	uint32_t argcount = p_params.size();
 	for (uint32_t i = 0; i < argcount; i++) {
@@ -1834,7 +1866,6 @@ Vector3 AnimationMixer::get_root_motion_scale_accumulator() const {
 	return root_motion_scale_accumulator;
 }
 
-#ifdef TOOLS_ENABLED
 void AnimationMixer::set_reset_on_save_enabled(bool p_enabled) {
 	reset_on_save = p_enabled;
 }
@@ -1903,7 +1934,6 @@ void AnimationMixer::_build_backup_track_cache() {
 				if (asp) {
 					t->object->call(SNAME("set_stream"), Ref<AudioStream>());
 				}
-				track = memnew(TrackCache); // Make disable this track cache.
 			} break;
 			default: {
 			} // The rest don't matter.
@@ -1933,6 +1963,37 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 	return backup;
 }
 
+void AnimationMixer::reset() {
+	ERR_FAIL_COND(!can_apply_reset());
+
+	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
+	ERR_FAIL_COND(reset_anim.is_null());
+
+	Node *root_node_object = get_node_or_null(root_node);
+	ERR_FAIL_NULL(root_node_object);
+
+	AnimationPlayer *aux_player = memnew(AnimationPlayer);
+	root_node_object->add_child(aux_player);
+	Ref<AnimationLibrary> al;
+	al.instantiate();
+	al->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
+	aux_player->set_reset_on_save_enabled(false);
+	aux_player->set_root_node(aux_player->get_path_to(root_node_object));
+	aux_player->add_animation_library("", al);
+	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
+	aux_player->seek(0.0f, true);
+	aux_player->queue_free();
+}
+
+void AnimationMixer::restore(const Ref<AnimatedValuesBackup> &p_backup) {
+	ERR_FAIL_COND(p_backup.is_null());
+	track_cache = p_backup->get_data();
+	_blend_apply();
+	track_cache = HashMap<NodePath, AnimationMixer::TrackCache *>();
+	cache_valid = false;
+}
+
+#ifdef TOOLS_ENABLED
 Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
 	if (!p_user_initiated && dummy) {
 		return Ref<AnimatedValuesBackup>();
@@ -1954,34 +2015,6 @@ Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
 	}
 
 	return backup_current;
-}
-
-void AnimationMixer::reset() {
-	ERR_FAIL_COND(!can_apply_reset());
-
-	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
-	ERR_FAIL_COND(reset_anim.is_null());
-
-	Node *root_node_object = get_node_or_null(root_node);
-	ERR_FAIL_NULL(root_node_object);
-
-	AnimationPlayer *aux_player = memnew(AnimationPlayer);
-	EditorNode::get_singleton()->add_child(aux_player);
-	Ref<AnimationLibrary> al;
-	al.instantiate();
-	al->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
-	aux_player->set_root_node(aux_player->get_path_to(root_node_object));
-	aux_player->add_animation_library("", al);
-	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
-	aux_player->seek(0.0f, true);
-	aux_player->queue_free();
-}
-
-void AnimationMixer::restore(const Ref<AnimatedValuesBackup> &p_backup) {
-	track_cache = p_backup->get_data();
-	_blend_apply();
-	track_cache = HashMap<NodePath, AnimationMixer::TrackCache *>();
-	cache_valid = false;
 }
 #endif // TOOLS_ENABLED
 
@@ -2072,14 +2105,10 @@ void AnimationMixer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
 
-#ifdef TOOLS_ENABLED
-	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
-	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
 	ClassDB::bind_method(D_METHOD("set_reset_on_save_enabled", "enabled"), &AnimationMixer::set_reset_on_save_enabled);
 	ClassDB::bind_method(D_METHOD("is_reset_on_save_enabled"), &AnimationMixer::is_reset_on_save_enabled);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");
 	ADD_SIGNAL(MethodInfo("mixer_updated")); // For updating dummy player.
-#endif // TOOLS_ENABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root_node", "get_root_node");
 
@@ -2105,6 +2134,9 @@ void AnimationMixer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SNAME("animation_finished"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("animation_started"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("caches_cleared")));
+
+	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
+	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
 }
 
 AnimationMixer::AnimationMixer() {
@@ -2112,4 +2144,77 @@ AnimationMixer::AnimationMixer() {
 }
 
 AnimationMixer::~AnimationMixer() {
+}
+
+void AnimatedValuesBackup::set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> p_data) {
+	clear_data();
+
+	for (const KeyValue<NodePath, AnimationMixer::TrackCache *> &E : p_data) {
+		AnimationMixer::TrackCache *track = get_cache_copy(E.value);
+		if (!track) {
+			continue; // Some types of tracks do not get a copy and must be ignored.
+		}
+
+		data.insert(E.key, track);
+	}
+}
+
+HashMap<NodePath, AnimationMixer::TrackCache *> AnimatedValuesBackup::get_data() const {
+	HashMap<NodePath, AnimationMixer::TrackCache *> ret;
+	for (const KeyValue<NodePath, AnimationMixer::TrackCache *> &E : data) {
+		AnimationMixer::TrackCache *track = get_cache_copy(E.value);
+		ERR_CONTINUE(!track); // Backup shouldn't contain tracks that cannot be copied, this is a mistake.
+
+		ret.insert(E.key, track);
+	}
+	return ret;
+}
+
+void AnimatedValuesBackup::clear_data() {
+	for (KeyValue<NodePath, AnimationMixer::TrackCache *> &K : data) {
+		memdelete(K.value);
+	}
+	data.clear();
+}
+
+AnimationMixer::TrackCache *AnimatedValuesBackup::get_cache_copy(AnimationMixer::TrackCache *p_cache) const {
+	switch (p_cache->type) {
+		case Animation::TYPE_VALUE: {
+			AnimationMixer::TrackCacheValue *src = static_cast<AnimationMixer::TrackCacheValue *>(p_cache);
+			AnimationMixer::TrackCacheValue *tc = memnew(AnimationMixer::TrackCacheValue(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_POSITION_3D:
+		case Animation::TYPE_ROTATION_3D:
+		case Animation::TYPE_SCALE_3D: {
+			AnimationMixer::TrackCacheTransform *src = static_cast<AnimationMixer::TrackCacheTransform *>(p_cache);
+			AnimationMixer::TrackCacheTransform *tc = memnew(AnimationMixer::TrackCacheTransform(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_BLEND_SHAPE: {
+			AnimationMixer::TrackCacheBlendShape *src = static_cast<AnimationMixer::TrackCacheBlendShape *>(p_cache);
+			AnimationMixer::TrackCacheBlendShape *tc = memnew(AnimationMixer::TrackCacheBlendShape(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_BEZIER: {
+			AnimationMixer::TrackCacheBezier *src = static_cast<AnimationMixer::TrackCacheBezier *>(p_cache);
+			AnimationMixer::TrackCacheBezier *tc = memnew(AnimationMixer::TrackCacheBezier(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_AUDIO: {
+			AnimationMixer::TrackCacheAudio *src = static_cast<AnimationMixer::TrackCacheAudio *>(p_cache);
+			AnimationMixer::TrackCacheAudio *tc = memnew(AnimationMixer::TrackCacheAudio(*src));
+			return tc;
+		}
+
+		case Animation::TYPE_METHOD:
+		case Animation::TYPE_ANIMATION: {
+			// Nothing to do here.
+		} break;
+	}
+	return nullptr;
 }

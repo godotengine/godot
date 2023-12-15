@@ -82,7 +82,9 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Button *uv_button[UV_MODE_MAX];
 	Button *b_snap_enable = nullptr;
 	Button *b_snap_grid = nullptr;
-	Panel *uv_edit_draw = nullptr;
+	Panel *uv_edit_background = nullptr;
+	Polygon2D *preview_polygon = nullptr;
+	Control *uv_edit_draw = nullptr;
 	HSlider *uv_zoom = nullptr;
 	SpinBox *uv_zoom_value = nullptr;
 	HScrollBar *uv_hscroll = nullptr;

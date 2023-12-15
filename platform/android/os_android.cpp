@@ -60,10 +60,10 @@ String _remove_symlink(const String &dir) {
 	// Change directory to the external data directory.
 	chdir(dir.utf8().get_data());
 	// Get the actual directory without the potential symlink.
-	char dir_name_wihout_symlink[2048];
-	getcwd(dir_name_wihout_symlink, 2048);
+	char dir_name_without_symlink[2048];
+	getcwd(dir_name_without_symlink, 2048);
 	// Convert back to a String.
-	String dir_without_symlink(dir_name_wihout_symlink);
+	String dir_without_symlink(dir_name_without_symlink);
 	// Restore original current directory.
 	chdir(current_dir_name);
 	return dir_without_symlink;
@@ -708,15 +708,15 @@ String OS_Android::get_config_path() const {
 	return get_user_data_dir().path_join("config");
 }
 
-void OS_Android::benchmark_begin_measure(const String &p_what) {
+void OS_Android::benchmark_begin_measure(const String &p_context, const String &p_what) {
 #ifdef TOOLS_ENABLED
-	godot_java->begin_benchmark_measure(p_what);
+	godot_java->begin_benchmark_measure(p_context, p_what);
 #endif
 }
 
-void OS_Android::benchmark_end_measure(const String &p_what) {
+void OS_Android::benchmark_end_measure(const String &p_context, const String &p_what) {
 #ifdef TOOLS_ENABLED
-	godot_java->end_benchmark_measure(p_what);
+	godot_java->end_benchmark_measure(p_context, p_what);
 #endif
 }
 
@@ -749,6 +749,11 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 		return true;
 	}
 #endif
+
+	if (godot_java->has_feature(p_feature)) {
+		return true;
+	}
+
 	return false;
 }
 

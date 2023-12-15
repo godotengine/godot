@@ -159,7 +159,7 @@ private:
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files);
+	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter);
 
 	bool _is_open_should_be_disabled();
 
@@ -171,6 +171,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void set_visible(bool p_visible) override;
 	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 
 	void popup_file_dialog();

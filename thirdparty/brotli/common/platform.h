@@ -14,10 +14,11 @@
     * BROTLI_BUILD_LITTLE_ENDIAN forces to use little-endian optimizations
     * BROTLI_BUILD_NO_RBIT disables "rbit" optimization for ARM CPUs
     * BROTLI_BUILD_NO_UNALIGNED_READ_FAST forces off the fast-unaligned-read
-      optimizations (mainly for testing purposes).
+      optimizations (mainly for testing purposes)
     * BROTLI_DEBUG dumps file name and line number when decoder detects stream
       or memory error
     * BROTLI_ENABLE_LOG enables asserts and dumps various state information
+    * BROTLI_ENABLE_DUMP overrides default "dump" behaviour
 */
 
 #ifndef BROTLI_COMMON_PLATFORM_H_
@@ -208,8 +209,13 @@ OR:
 #define BROTLI_TARGET_RISCV64
 #endif
 
+#if defined(__loongarch_lp64)
+#define BROTLI_TARGET_LOONGARCH64
+#endif
+
 #if defined(BROTLI_TARGET_X64) || defined(BROTLI_TARGET_ARMV8_64) || \
-    defined(BROTLI_TARGET_POWERPC64) || defined(BROTLI_TARGET_RISCV64)
+    defined(BROTLI_TARGET_POWERPC64) || defined(BROTLI_TARGET_RISCV64) || \
+    defined(BROTLI_TARGET_LOONGARCH64)
 #define BROTLI_TARGET_64_BITS 1
 #else
 #define BROTLI_TARGET_64_BITS 0
@@ -268,7 +274,7 @@ OR:
 #define BROTLI_UNALIGNED_READ_FAST (!!0)
 #elif defined(BROTLI_TARGET_X86) || defined(BROTLI_TARGET_X64) ||       \
     defined(BROTLI_TARGET_ARMV7) || defined(BROTLI_TARGET_ARMV8_ANY) || \
-    defined(BROTLI_TARGET_RISCV64)
+    defined(BROTLI_TARGET_RISCV64) || defined(BROTLI_TARGET_LOONGARCH64)
 /* These targets are known to generate efficient code for unaligned reads
  * (e.g. a single instruction, not multiple 1-byte loads, shifted and or'd
  * together). */
@@ -402,14 +408,24 @@ static BROTLI_INLINE void BROTLI_UNALIGNED_STORE_PTR(void* p, const void* v) {
 #endif
 
 #if defined(BROTLI_DEBUG) || defined(BROTLI_ENABLE_LOG)
+#define BROTLI_ENABLE_DUMP_DEFAULT 1
 #define BROTLI_DCHECK(x) assert(x)
+#else
+#define BROTLI_ENABLE_DUMP_DEFAULT 0
+#define BROTLI_DCHECK(x)
+#endif
+
+#if !defined(BROTLI_ENABLE_DUMP)
+#define BROTLI_ENABLE_DUMP BROTLI_ENABLE_DUMP_DEFAULT
+#endif
+
+#if BROTLI_ENABLE_DUMP
 static BROTLI_INLINE void BrotliDump(const char* f, int l, const char* fn) {
   fprintf(stderr, "%s:%d (%s)\n", f, l, fn);
   fflush(stderr);
 }
 #define BROTLI_DUMP() BrotliDump(__FILE__, __LINE__, __FUNCTION__)
 #else
-#define BROTLI_DCHECK(x)
 #define BROTLI_DUMP() (void)(0)
 #endif
 
@@ -517,7 +533,7 @@ BROTLI_UNUSED_FUNCTION void BrotliSuppressUnusedFunctions(void) {
   BROTLI_UNUSED(&brotli_max_uint8_t);
   BROTLI_UNUSED(&BrotliDefaultAllocFunc);
   BROTLI_UNUSED(&BrotliDefaultFreeFunc);
-#if defined(BROTLI_DEBUG) || defined(BROTLI_ENABLE_LOG)
+#if BROTLI_ENABLE_DUMP
   BROTLI_UNUSED(&BrotliDump);
 #endif
 }

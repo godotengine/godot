@@ -233,11 +233,12 @@ void EditorResourcePicker::_update_menu_items() {
 			}
 
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
 		}
 
 		if (edited_resource->get_path().is_resource_file()) {
 			edit_menu->add_separator();
-			edit_menu->add_item(TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 		}
 	}
 
@@ -400,6 +401,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			EditorNode::get_singleton()->save_resource(edited_resource);
 		} break;
 
+		case OBJ_MENU_SAVE_AS: {
+			if (edited_resource.is_null()) {
+				return;
+			}
+			EditorNode::get_singleton()->save_resource_as(edited_resource);
+		} break;
+
 		case OBJ_MENU_COPY: {
 			EditorSettings::get_singleton()->set_resource_clipboard(edited_resource);
 		} break;
@@ -418,16 +426,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-			FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
-			file_system_dock->navigate_to_path(edited_resource->get_path());
-
-			// Ensure that the FileSystem dock is visible.
-			if (file_system_dock->get_window() == get_tree()->get_root()) {
-				TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-				tab_container->set_current_tab(tab_container->get_tab_idx_from_control(file_system_dock));
-			} else {
-				file_system_dock->get_window()->grab_focus();
-			}
+			FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
 		} break;
 
 		default: {
@@ -653,8 +652,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
 		if (files.size() == 1) {
-			String file = files[0];
-			res = ResourceLoader::load(file);
+			res = ResourceLoader::load(files[0]);
 		}
 	}
 
@@ -719,8 +717,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 		Vector<String> files = drag_data["files"];
 
 		if (files.size() == 1) {
-			String file = files[0];
-			dropped_resource = ResourceLoader::load(file);
+			dropped_resource = ResourceLoader::load(files[0]);
 		}
 	}
 

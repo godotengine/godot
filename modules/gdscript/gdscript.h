@@ -86,6 +86,8 @@ class GDScript : public Script {
 	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
 	friend class GDScriptDocGen;
+	friend class GDScriptLambdaCallable;
+	friend class GDScriptLambdaSelfCallable;
 	friend class GDScriptLanguage;
 	friend struct GDScriptUtilityFunctionsDefinitions;
 
@@ -107,6 +109,37 @@ class GDScript : public Script {
 	HashMap<StringName, Ref<GDScript>> subclasses;
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
+
+	struct LambdaInfo {
+		int capture_count;
+		bool use_self;
+	};
+
+	HashMap<GDScriptFunction *, LambdaInfo> lambda_info;
+
+	// List is used here because a ptr to elements are stored, so the memory locations need to be stable
+	struct UpdatableFuncPtr {
+		List<GDScriptFunction **> ptrs;
+		Mutex mutex;
+		bool initialized : 1;
+		bool transferred : 1;
+		uint32_t rc = 1;
+		UpdatableFuncPtr() :
+				initialized(false), transferred(false) {}
+	};
+	struct UpdatableFuncPtrElement {
+		List<GDScriptFunction **>::Element *element = nullptr;
+		UpdatableFuncPtr *func_ptr = nullptr;
+	};
+	static UpdatableFuncPtr func_ptrs_to_update_main_thread;
+	static thread_local UpdatableFuncPtr *func_ptrs_to_update_thread_local;
+	List<UpdatableFuncPtr *> func_ptrs_to_update;
+	Mutex func_ptrs_to_update_mutex;
+
+	UpdatableFuncPtrElement _add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
+	static void _remove_func_ptr_to_update(const UpdatableFuncPtrElement &p_func_ptr_element);
+
+	static void _fixup_thread_function_bookkeeping();
 
 #ifdef TOOLS_ENABLED
 	// For static data storage during hot-reloading.
@@ -145,6 +178,7 @@ class GDScript : public Script {
 	//exported members
 	String source;
 	String path;
+	bool path_valid = false; // False if using default path.
 	StringName local_name; // Inner class identifier or `class_name`.
 	StringName global_name; // `class_name`.
 	String fully_qualified_name;
@@ -163,13 +197,14 @@ class GDScript : public Script {
 	HashSet<PlaceHolderScriptInstance *> placeholders;
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
+	void _update_exports_down(bool p_base_exports_changed);
 #endif
 
 #ifdef DEBUG_ENABLED
 	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
 #endif
 
-	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr, bool p_base_exports_changed = false);
 
 	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
 
@@ -266,6 +301,7 @@ public:
 
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
+	virtual bool has_static_method(const StringName &p_method) const override;
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
@@ -500,6 +536,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const override;
 	virtual bool is_control_flow_keyword(String p_keywords) const override;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const override;
+	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
@@ -523,6 +560,11 @@ public:
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) override;
 	virtual void remove_named_global_constant(const StringName &p_name) override;
+
+	/* MULTITHREAD FUNCTIONS */
+
+	virtual void thread_enter() override;
+	virtual void thread_exit() override;
 
 	/* DEBUGGER FUNCTIONS */
 

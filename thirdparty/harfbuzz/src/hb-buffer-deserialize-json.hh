@@ -32,7 +32,7 @@
 #include "hb.hh"
 
 
-#line 33 "hb-buffer-deserialize-json.hh"
+#line 36 "hb-buffer-deserialize-json.hh"
 static const unsigned char _deserialize_json_trans_keys[] = {
 	0u, 0u, 9u, 123u, 9u, 34u, 97u, 117u, 120u, 121u, 34u, 34u, 9u, 58u, 9u, 57u, 
 	48u, 57u, 9u, 125u, 9u, 125u, 9u, 93u, 9u, 125u, 34u, 34u, 9u, 58u, 9u, 57u, 
@@ -555,12 +555,12 @@ _hb_buffer_deserialize_json (hb_buffer_t *buffer,
   hb_glyph_info_t info = {0};
   hb_glyph_position_t pos = {0};
   
-#line 552 "hb-buffer-deserialize-json.hh"
+#line 559 "hb-buffer-deserialize-json.hh"
 	{
 	cs = deserialize_json_start;
 	}
 
-#line 555 "hb-buffer-deserialize-json.hh"
+#line 564 "hb-buffer-deserialize-json.hh"
 	{
 	int _slen;
 	int _trans;
@@ -772,7 +772,7 @@ _resume:
 	*end_ptr = p;
 }
 	break;
-#line 733 "hb-buffer-deserialize-json.hh"
+#line 776 "hb-buffer-deserialize-json.hh"
 	}
 
 _again:

@@ -151,6 +151,9 @@
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
 		</member>
+		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
+			Ellipsis character used for text clipping.
+		</member>
 		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="3">
 			Line alignment rules. For more info see [TextServer].
 		</member>

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[GraphEdit] provides tools for creation, manipulation, and display of various graphs. Its main purpose in the engine is to power the visual programming systems, such as visual shaders, but it is also available for use in user projects.
-		[GraphEdit] by itself is only an empty container, representing an infinite grid where [GraphNode]s can be placed. Each [GraphNode] represents a node in the graph, a single unit of data in the connected scheme. [GraphEdit], in turn, helps to control various interactions with nodes and between nodes. When the user attempts to connect, disconnect, or close a [GraphNode], a signal is emitted in the [GraphEdit], but no action is taken by default. It is the responsibility of the programmer utilizing this control to implement the necessary logic to determine how each request should be handled.
+		[GraphEdit] by itself is only an empty container, representing an infinite grid where [GraphNode]s can be placed. Each [GraphNode] represents a node in the graph, a single unit of data in the connected scheme. [GraphEdit], in turn, helps to control various interactions with nodes and between nodes. When the user attempts to connect, disconnect, or delete a [GraphNode], a signal is emitted in the [GraphEdit], but no action is taken by default. It is the responsibility of the programmer utilizing this control to implement the necessary logic to determine how each request should be handled.
 		[b]Performance:[/b] It is greatly advised to enable low-processor usage mode (see [member OS.low_processor_usage_mode]) when using GraphEdits.
 	</description>
 	<tutorials>
@@ -214,7 +214,7 @@
 			<param index="3" name="to_port" type="int" />
 			<param index="4" name="amount" type="float" />
 			<description>
-				Sets the coloration of the connection between [param from_node]'s [param from_port] and [param to_node]'s [param to_port] with the color provided in the [theme_item activity] theme property.
+				Sets the coloration of the connection between [param from_node]'s [param from_port] and [param to_node]'s [param to_port] with the color provided in the [theme_item activity] theme property. The color is linearly interpolated between the connection color and the activity color using [param amount] as weight.
 			</description>
 		</method>
 		<method name="set_selected">
@@ -226,9 +226,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="arrange_nodes_button_hidden" type="bool" setter="set_arrange_nodes_button_hidden" getter="is_arrange_nodes_button_hidden" default="false">
-			If [code]true[/code], the Arrange Nodes button is hidden.
-		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="connection_lines_antialiased" type="bool" setter="set_connection_lines_antialiased" getter="is_connection_lines_antialiased" default="true">
 			If [code]true[/code], the lines between nodes will use antialiasing.
@@ -258,11 +255,26 @@
 		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset" default="Vector2(0, 0)">
 			The scroll offset.
 		</member>
+		<member name="show_arrange_button" type="bool" setter="set_show_arrange_button" getter="is_showing_arrange_button" default="true">
+			If [code]true[/code], the button to automatically arrange graph nodes is visible.
+		</member>
 		<member name="show_grid" type="bool" setter="set_show_grid" getter="is_showing_grid" default="true">
 			If [code]true[/code], the grid is visible.
 		</member>
+		<member name="show_grid_buttons" type="bool" setter="set_show_grid_buttons" getter="is_showing_grid_buttons" default="true">
+			If [code]true[/code], buttons that allow to configure grid and snapping options are visible.
+		</member>
+		<member name="show_menu" type="bool" setter="set_show_menu" getter="is_showing_menu" default="true">
+			If [code]true[/code], the menu toolbar is visible.
+		</member>
+		<member name="show_minimap_button" type="bool" setter="set_show_minimap_button" getter="is_showing_minimap_button" default="true">
+			If [code]true[/code], the button to toggle the minimap is visible.
+		</member>
+		<member name="show_zoom_buttons" type="bool" setter="set_show_zoom_buttons" getter="is_showing_zoom_buttons" default="true">
+			If [code]true[/code], buttons that allow to change and reset the zoom level are visible.
+		</member>
 		<member name="show_zoom_label" type="bool" setter="set_show_zoom_label" getter="is_showing_zoom_label" default="false">
-			If [code]true[/code], makes a label with the current zoom level visible. The zoom value is displayed in percents.
+			If [code]true[/code], the label with the current zoom level is visible. The zoom level is displayed in percents.
 		</member>
 		<member name="snapping_distance" type="int" setter="set_snapping_distance" getter="get_snapping_distance" default="20">
 			The snapping distance in pixels, also determines the grid line distance.
@@ -287,12 +299,6 @@
 		<signal name="begin_node_move">
 			<description>
 				Emitted at the beginning of a GraphNode movement.
-			</description>
-		</signal>
-		<signal name="close_nodes_request">
-			<param index="0" name="nodes" type="StringName[]" />
-			<description>
-				Emitted when attempting to remove a GraphNode from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
 			</description>
 		</signal>
 		<signal name="connection_drag_ended">
@@ -336,6 +342,12 @@
 		<signal name="copy_nodes_request">
 			<description>
 				Emitted when the user presses [kbd]Ctrl + C[/kbd].
+			</description>
+		</signal>
+		<signal name="delete_nodes_request">
+			<param index="0" name="nodes" type="StringName[]" />
+			<description>
+				Emitted when attempting to remove a GraphNode from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
 			</description>
 		</signal>
 		<signal name="disconnection_request">
@@ -396,6 +408,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Color of the connection's activity (see [method set_connection_activity]).
 		</theme_item>
 		<theme_item name="grid_major" data_type="color" type="Color" default="Color(1, 1, 1, 0.2)">
 			Color of major grid lines.
@@ -435,6 +448,8 @@
 		</theme_item>
 		<theme_item name="zoom_reset" data_type="icon" type="Texture2D">
 			The icon for the zoom reset button.
+		</theme_item>
+		<theme_item name="menu_panel" data_type="style" type="StyleBox">
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The background drawn under the grid.

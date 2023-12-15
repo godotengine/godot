@@ -106,6 +106,7 @@ private:
 		uint32_t index;
 		Thread thread;
 		Task *current_low_prio_task = nullptr;
+		bool ready_for_scripting = false;
 	};
 
 	TightLocalVector<ThreadData> threads;
@@ -196,6 +197,8 @@ public:
 	_FORCE_INLINE_ int get_thread_count() const { return threads.size(); }
 
 	static WorkerThreadPool *get_singleton() { return singleton; }
+	static int get_thread_index();
+
 	void init(int p_thread_count = -1, bool p_use_native_threads_low_priority = true, float p_low_priority_task_ratio = 0.3);
 	void finish();
 	WorkerThreadPool();

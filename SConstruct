@@ -182,6 +182,7 @@ opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
+opts.Add(BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
@@ -191,6 +192,7 @@ opts.Add(BoolVariable("brotli", "Enable Brotli for decompresson and WOFF2 fonts 
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
+opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver (Windows only)", False))
 opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
@@ -207,6 +209,7 @@ opts.Add(BoolVariable("progress", "Show a progress indicator during compilation"
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
+opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
@@ -375,6 +378,8 @@ for name, path in modules_detected.items():
     else:
         enabled = False
 
+    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
+
     # Add module-specific options.
     try:
         for opt in config.get_opts(selected_platform):
@@ -384,7 +389,6 @@ for name, path in modules_detected.items():
 
     sys.path.remove(path)
     sys.modules.pop("config")
-    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
 
 methods.write_modules(modules_detected)
 
@@ -563,7 +567,7 @@ if selected_platform in platform_list:
         if read_scu_limit != 0:
             max_includes_per_scu = read_scu_limit
 
-        methods.set_scu_folders(scu_builders.generate_scu_files(env["verbose"], max_includes_per_scu))
+        methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
 
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.
@@ -720,9 +724,9 @@ if selected_platform in platform_list:
         if env.msvc:
             env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
         else:
-            env.Append(CCFLAGS=["-fno-exceptions"])
+            env.Append(CXXFLAGS=["-fno-exceptions"])
     elif env.msvc:
-        env.Append(CCFLAGS=["/EHsc"])
+        env.Append(CXXFLAGS=["/EHsc"])
 
     # Configure compiler warnings
     if env.msvc:  # MSVC
@@ -893,6 +897,9 @@ if selected_platform in platform_list:
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
+    env["OBJPREFIX"] = env["object_prefix"]
+    env["SHOBJPREFIX"] = env["object_prefix"]
+
     if env["disable_3d"]:
         if env.editor_build:
             print("Build option 'disable_3d=yes' cannot be used for editor builds, only for export template builds.")
@@ -987,9 +994,10 @@ if selected_platform in platform_list:
     # Check for the existence of headers
     conf = Configure(env)
     if "check_c_headers" in env:
-        for header in env["check_c_headers"]:
-            if conf.CheckCHeader(header[0]):
-                env.AppendUnique(CPPDEFINES=[header[1]])
+        headers = env["check_c_headers"]
+        for header in headers:
+            if conf.CheckCHeader(header):
+                env.AppendUnique(CPPDEFINES=[headers[header]])
 
 elif selected_platform != "":
     if selected_platform == "list":

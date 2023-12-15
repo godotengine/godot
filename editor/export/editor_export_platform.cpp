@@ -93,7 +93,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	}
 	p_log->add_newline();
 
-	if (msg_count) {
+	if (msg_count > 0) {
 		p_log->push_table(2);
 		p_log->set_table_column_expand(0, false);
 		p_log->set_table_column_expand(1, true);
@@ -133,8 +133,37 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		}
 		p_log->pop();
 		p_log->add_newline();
+	} else if (p_err != OK) {
+		// We failed but don't show any user-facing messages. This is bad and should not
+		// be allowed, but just in case this happens, let's give the user something at least.
+		p_log->push_table(2);
+		p_log->set_table_column_expand(0, false);
+		p_log->set_table_column_expand(1, true);
+
+		{
+			Color color = p_log->get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+			Ref<Texture> icon = p_log->get_editor_theme_icon(SNAME("Error"));
+
+			p_log->push_cell();
+			p_log->add_text("\t");
+			if (icon.is_valid()) {
+				p_log->add_image(icon);
+			}
+			p_log->pop();
+
+			p_log->push_cell();
+			p_log->push_color(color);
+			p_log->add_text(vformat("[%s]: %s", TTR("Unknown Error"), vformat(TTR("Export failed with error code %d."), p_err)));
+			p_log->pop();
+			p_log->pop();
+		}
+
+		p_log->pop();
+		p_log->add_newline();
 	}
+
 	p_log->add_newline();
+
 	return has_messages;
 }
 
@@ -859,16 +888,20 @@ Vector<String> EditorExportPlatform::get_forced_export_files() {
 		bool use_data = GLOBAL_GET("internationalization/locale/include_text_server_data");
 		if (use_data) {
 			// Try using user provided data file.
-			String ts_data = "res://" + TS->get_support_data_filename();
-			if (FileAccess::exists(ts_data)) {
-				files.push_back(ts_data);
-			} else {
-				// Use default text server data.
-				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_icu_data");
-				ERR_FAIL_COND_V(!TS->save_support_data(icu_data_file), files);
-				files.push_back(icu_data_file);
-				// Remove the file later.
-				MessageQueue::get_singleton()->push_callable(callable_mp_static(DirAccess::remove_absolute), icu_data_file);
+			if (!TS->get_support_data_filename().is_empty()) {
+				String ts_data = "res://" + TS->get_support_data_filename();
+				if (FileAccess::exists(ts_data)) {
+					files.push_back(ts_data);
+				} else {
+					// Use default text server data.
+					String abs_path = ProjectSettings::get_singleton()->globalize_path(ts_data);
+					ERR_FAIL_COND_V(!TS->save_support_data(abs_path), files);
+					if (FileAccess::exists(abs_path)) {
+						files.push_back(ts_data);
+						// Remove the file later.
+						MessageQueue::get_singleton()->push_callable(callable_mp_static(DirAccess::remove_absolute), abs_path);
+					}
+				}
 			}
 		}
 	}
@@ -1427,7 +1460,7 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 					nullptr,
 					0,
 					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-					0);
+					1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
 
 			String target = da->read_link(f);
 			zipWriteInFileInZip(p_zip, target.utf8().get_data(), target.utf8().size());
@@ -1471,7 +1504,7 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 					nullptr,
 					0,
 					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-					0);
+					1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
 
 			Ref<FileAccess> fa = FileAccess::open(dir.path_join(f), FileAccess::READ);
 			if (fa.is_null()) {
