@@ -295,33 +295,6 @@ public class GodotIO {
 		}
 	}
 
-	public int getNativeScreenOrientation() {
-		WindowManager windowManager = (WindowManager) ContextCompat.getSystemService(activity.getBaseContext(), WindowManager.class);
-		Configuration config = activity.getResources().getConfiguration();
-
-		int rotation = windowManager.getDefaultDisplay().getRotation();
-
-		if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-			switch (rotation) {
-				case Surface.ROTATION_0: Log.v(activity.getClass().getSimpleName(), "Landscape"); return SCREEN_LANDSCAPE;
-				case Surface.ROTATION_90: Log.v(activity.getClass().getSimpleName(), "Portrait");return SCREEN_PORTRAIT;
-				case Surface.ROTATION_180: Log.v(activity.getClass().getSimpleName(), "Reverse landscape");return SCREEN_REVERSE_LANDSCAPE;
-				case Surface.ROTATION_270: Log.v(activity.getClass().getSimpleName(), "Reverse portrait");return SCREEN_REVERSE_PORTRAIT;
-			}
-		}
-		else {
-			switch (rotation) {
-				case Surface.ROTATION_0: Log.v(activity.getClass().getSimpleName(), "Portrait");return SCREEN_PORTRAIT;
-				case Surface.ROTATION_90: Log.v(activity.getClass().getSimpleName(), "Reverse landscape");return SCREEN_REVERSE_LANDSCAPE;
-				case Surface.ROTATION_180: Log.v(activity.getClass().getSimpleName(), "Reverse portrait");return SCREEN_REVERSE_PORTRAIT;
-				case Surface.ROTATION_270: Log.v(activity.getClass().getSimpleName(), "Landscape");return SCREEN_LANDSCAPE;
-			}
-		}
-
-		Log.v(Constants.TAG, "RIP");
-		return SCREEN_REVERSE_LANDSCAPE;
-	}
-
 	public int getCurrentScreenRotation() {
 		return ((WindowManager)ContextCompat.getSystemService(activity.getBaseContext(), WindowManager.class)).getDefaultDisplay().getRotation();
 	}

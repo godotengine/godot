@@ -60,7 +60,6 @@ private:
 	jmethodID _hide_keyboard = 0;
 	jmethodID _set_screen_orientation = 0;
 	jmethodID _get_screen_orientation = 0;
-	jmethodID _get_native_screen_orientation = 0;
 	jmethodID _get_current_screen_rotation = 0;
 	jmethodID _get_system_dir = 0;
 
