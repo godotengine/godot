@@ -678,7 +678,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 	}
 }
 
-void ImporterMesh::_generate_lods_script(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array) {
+void ImporterMesh::_generate_lods_bind(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array) {
 	generate_lods(p_normal_merge_angle, p_normal_split_angle, /* normal_weight= */ 2.0f, p_skin_pose_transform_array);
 }
 
@@ -1367,7 +1367,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
-	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::_generate_lods_script);
+	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::_generate_lods_bind);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 
