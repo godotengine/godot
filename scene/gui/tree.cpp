@@ -3244,8 +3244,8 @@ void Tree::_go_up() {
 		if (!prev) {
 			return;
 		}
-		selected_item = prev;
-		emit_signal(SNAME("cell_selected"));
+
+		select_single_item(prev, get_root(), selected_col);
 		queue_redraw();
 	} else {
 		int col = selected_col < 0 ? 0 : selected_col;
@@ -3277,8 +3277,7 @@ void Tree::_go_down() {
 			return;
 		}
 
-		selected_item = next;
-		emit_signal(SNAME("cell_selected"));
+		select_single_item(next, get_root(), selected_col);
 		queue_redraw();
 	} else {
 		int col = selected_col < 0 ? 0 : selected_col;
