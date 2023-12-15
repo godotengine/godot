@@ -710,7 +710,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			selection.sort_custom<Node::Comparator>();
 
-			Node *add_below_node = selection.back()->get();
+			HashMap<const Node *, Node *> add_below_map;
+
+			for (List<Node *>::Element *E = selection.back(); E; E = E->prev()) {
+				Node *node = E->get();
+				if (!add_below_map.has(node->get_parent())) {
+					add_below_map.insert(node->get_parent(), node);
+				}
+			}
 
 			for (Node *node : selection) {
 				Node *parent = node->get_parent();
@@ -737,7 +744,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				dup->set_name(parent->validate_child_name(dup));
 
-				undo_redo->add_do_method(add_below_node, "add_sibling", dup, true);
+				undo_redo->add_do_method(add_below_map[parent], "add_sibling", dup, true);
 
 				for (Node *F : owned) {
 					if (!duplimap.has(F)) {
@@ -756,7 +763,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				undo_redo->add_do_method(ed, "live_debug_duplicate_node", edited_scene->get_path_to(node), dup->get_name());
 				undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).path_join(dup->get_name())));
 
-				add_below_node = dup;
+				add_below_map[parent] = dup;
 			}
 
 			undo_redo->commit_action();
