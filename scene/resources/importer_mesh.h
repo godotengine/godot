@@ -112,7 +112,9 @@ public:
 
 	void set_surface_material(int p_surface, const Ref<Material> &p_material);
 
-	void generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array, float p_normal_weight);
+	void generate_lods(float p_normal_merge_angle, float p_normal_split_angle, float p_normal_weight, Array p_skin_pose_transform_array);
+
+	void _generate_lods_script(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array);
 
 	void create_shadow_mesh();
 	Ref<ImporterMesh> get_shadow_mesh() const;
