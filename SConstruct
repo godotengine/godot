@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from scons_hints import *
+
 EnsureSConsVersion(3, 0, 0)
 EnsurePythonVersion(3, 6)
 
