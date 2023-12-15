@@ -24,6 +24,9 @@ elif env["platform"] == "linuxbsd":
     if env["x11"]:
         env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])
 
+    if env["wayland"]:
+        env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_WAYLAND"])
+
     # FIXME: Review what needs to be set for Android and macOS.
     env_openxr.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
 elif env["platform"] == "windows":

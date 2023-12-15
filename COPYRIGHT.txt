@@ -515,6 +515,26 @@ Comment: Vulkan Memory Allocator
 Copyright: 2017-2021, Advanced Micro Devices, Inc.
 License: Expat
 
+Files: ./thirdparty/wayland/
+Comment: Wayland core protocol
+Copyright: 2008-2012, Kristian Høgsberg
+  2010-2012, Intel Corporation
+  2011, Benjamin Franzke
+  2012, Collabora, Ltd.
+License: Expat
+
+Files: ./thirdparty/wayland-protocols/
+Comment: Wayland protocols that add functionality not available in the core protocol
+Copyright: 2008-2013, Kristian Høgsberg
+  2010-2013, Intel Corporation
+  2013,      Rafael Antognolli
+  2013,      Jasper St. Pierre
+  2014,      Jonas Ådahl
+  2014,      Jason Ekstrand
+  2014-2015, Collabora, Ltd.
+  2015,      Red Hat Inc.
+License: Expat
+
 Files: ./thirdparty/wslay/
 Comment: Wslay
 Copyright: 2011, 2012, 2015, Tatsuhiro Tsujikawa

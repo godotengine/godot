@@ -931,6 +931,49 @@ https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/issues/318
 Patches in the `patches` directory should be re-applied after updates.
 
 
+## wayland
+
+- Upstream: https://gitlab.freedesktop.org/wayland/wayland
+- Version: 1.21.0 (8135e856ebd79872f886466e9cee39affb7d9ee8, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `protocol/wayland.xml`
+- `COPYING`
+
+
+# wayland-protocols
+
+- Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
+- Version: 1.32 (681c33c8547d6aefe24455ba2bffe1c5ae11fee5, 2023)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `stable/viewporter/README`
+- `stable/viewporter/viewporter.xml`
+- `stable/xdg-shell/README`
+- `stable/xdg-shell/xdg-shell.xml`
+- `staging/fractional-scale/README`
+- `staging/fractional-scale/fractional-scale-v1.xml`
+- `staging/xdg-activation/README`
+- `staging/xdg-activation/xdg-activation-v1.xml`
+- `unstable/pointer-constraints/README`
+- `unstable/pointer-constraints/pointer-constraints-unstable-v1.xml`
+- `unstable/pointer-gestures/README`
+- `unstable/pointer-gestures/pointer-gestures-unstable-v1.xml`
+- `unstable/primary-selection/README`
+- `unstable/primary-selection/primary-selection-unstable-v1.xml`
+- `unstable/relative-pointer/README`
+- `unstable/relative-pointer/relative-pointer-unstable-v1.xml`
+- `unstable/tablet/README`
+- `unstable/tablet/tablet-unstable-v2.xml`
+- `unstable/xdg-decoration/README`
+- `unstable/xdg-decoration/xdg-decoration-unstable-v1.xml`
+- `COPYING`
+
+
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay

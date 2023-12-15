@@ -127,6 +127,8 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
+	virtual int get_low_processor_usage_mode_sleep_usec() const override;
+
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
 	void run();
