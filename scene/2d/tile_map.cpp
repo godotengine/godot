@@ -3180,7 +3180,7 @@ int TileMap::get_rendering_quadrant_size() const {
 	return rendering_quadrant_size;
 }
 
-void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override, real_t p_animation_offset) {
+void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override, real_t p_normalized_animation_offset) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
 	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
 	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
@@ -3245,6 +3245,7 @@ void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<
 		} else {
 			real_t speed = atlas_source->get_tile_animation_speed(p_atlas_coords);
 			real_t animation_duration = atlas_source->get_tile_animation_total_duration(p_atlas_coords) / speed;
+			real_t animation_offset = p_normalized_animation_offset * animation_duration;
 			// Accumulate durations unaffected by the speed to avoid accumulating floating point division errors.
 			// Aka do `sum(duration[i]) / speed` instead of `sum(duration[i] / speed)`.
 			real_t time_unscaled = 0.0;
@@ -3252,7 +3253,7 @@ void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<
 				real_t frame_duration_unscaled = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, frame);
 				real_t slice_start = time_unscaled / speed;
 				real_t slice_end = (time_unscaled + frame_duration_unscaled) / speed;
-				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, slice_start, slice_end, p_animation_offset);
+				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, slice_start, slice_end, animation_offset);
 
 				Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, frame);
 				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
