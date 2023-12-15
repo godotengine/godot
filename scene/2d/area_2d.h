@@ -133,9 +133,10 @@ private:
 	StringName audio_bus;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
+
+	virtual void _space_changed(const RID &p_new_space) override;
 
 public:
 	void set_gravity_space_override_mode(SpaceOverride p_mode);
