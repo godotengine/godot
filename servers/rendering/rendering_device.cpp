@@ -522,6 +522,8 @@ void RenderingDevice::update_perf_report() {
 	perf_report_text += " direct:" + String::num_int64(direct_copy_count);
 	perf_report_text += " bytes:" + String::num_int64(copy_bytes_count);
 
+	perf_report_text += " lazily alloc:" +  String::num_int64(driver->get_lazily_memory_used());
+
 	gpu_copy_count = 0;
 	direct_copy_count = 0;
 	copy_bytes_count = 0;
