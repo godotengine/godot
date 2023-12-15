@@ -119,6 +119,8 @@ def generate_ex_version(argcount, const=False, returns=False):
 
 
 def run(target, source, env):
+    from methods import format_defines
+
     max_versions = 12
 
     txt = """/* THIS FILE IS GENERATED DO NOT EDIT */
@@ -144,7 +146,7 @@ def run(target, source, env):
     txt += "#endif // GDEXTENSION_WRAPPERS_GEN_H\n"
 
     with open(target[0], "w") as f:
-        f.write(txt)
+        f.write(format_defines(txt))
 
 
 if __name__ == "__main__":
