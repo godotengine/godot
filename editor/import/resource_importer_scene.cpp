@@ -2125,7 +2125,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 
 				if (generate_lods) {
 					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, normal_weight, skin_pose_transform_array);
+					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array, normal_weight);
 				}
 
 				if (create_shadow_meshes) {
