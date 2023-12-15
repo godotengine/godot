@@ -896,6 +896,18 @@ https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/issues/318
 Patches in the `patches` directory should be re-applied after updates.
 
 
+## wayland
+
+- Upstream: https://gitlab.freedesktop.org/wayland/wayland
+- Version: 1.21.0 (8135e856ebd79872f886466e9cee39affb7d9ee8, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `protocol/wayland.xml`
+- `COPYING`
+
+
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
