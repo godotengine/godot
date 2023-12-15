@@ -35,8 +35,7 @@ void main() {
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv = data.src_rect.xy + base_arr[gl_VertexIndex] * data.src_rect.zw;
 	vec2 vtx = data.dst_rect.xy + base_arr[gl_VertexIndex] * data.dst_rect.zw;
-	gl_Position = swapchain_transform * vec4(vtx, 0.0, 1.0);
-	gl_Position.xy = gl_Position.xy * 2.0 - 1.0;
+	gl_Position = swapchain_transform * vec4(vtx * 2.0 - 1.0, 0.0, 1.0);
 }
 
 #[fragment]
