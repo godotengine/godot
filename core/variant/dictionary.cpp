@@ -150,6 +150,15 @@ Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 	return *result;
 }
 
+Variant Dictionary::get_or_add(const Variant &p_key, const Variant &p_default) {
+	const Variant *result = getptr(p_key);
+	if (!result) {
+		operator[](p_key) = p_default;
+		return p_default;
+	}
+	return *result;
+}
+
 int Dictionary::size() const {
 	return _p->variant_map.size();
 }
