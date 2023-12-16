@@ -59,6 +59,7 @@ void CollisionObject2D::_notification(int p_what) {
 				} else {
 					PhysicsServer2D::get_singleton()->body_set_space(rid, space);
 				}
+				_space_changed(space);
 			}
 
 			_update_pickable();
@@ -102,6 +103,7 @@ void CollisionObject2D::_notification(int p_what) {
 					} else {
 						PhysicsServer2D::get_singleton()->body_set_space(rid, RID());
 					}
+					_space_changed(RID());
 				}
 			}
 
@@ -125,6 +127,7 @@ void CollisionObject2D::_notification(int p_what) {
 			} else {
 				PhysicsServer2D::get_singleton()->body_set_space(rid, space);
 			}
+			_space_changed(space);
 		} break;
 
 		case NOTIFICATION_DISABLED: {
@@ -246,6 +249,7 @@ void CollisionObject2D::_apply_disabled() {
 					} else {
 						PhysicsServer2D::get_singleton()->body_set_space(rid, RID());
 					}
+					_space_changed(RID());
 				}
 			}
 		} break;
@@ -272,6 +276,7 @@ void CollisionObject2D::_apply_enabled() {
 				} else {
 					PhysicsServer2D::get_singleton()->body_set_space(rid, space);
 				}
+				_space_changed(space);
 			}
 		} break;
 
@@ -567,6 +572,9 @@ void CollisionObject2D::set_body_mode(PhysicsServer2D::BodyMode p_mode) {
 	}
 
 	PhysicsServer2D::get_singleton()->body_set_mode(rid, p_mode);
+}
+
+void CollisionObject2D::_space_changed(const RID &p_new_space) {
 }
 
 void CollisionObject2D::_update_pickable() {
