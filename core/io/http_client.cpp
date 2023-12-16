@@ -94,7 +94,7 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 			}
 		}
 	}
-	return query.substr(1);
+	return query.right(-1);
 }
 
 Error HTTPClient::verify_headers(const Vector<String> &p_headers) {
@@ -117,8 +117,8 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 		if (sp == -1) {
 			continue;
 		}
-		String key = s.substr(0, sp).strip_edges();
-		String value = s.substr(sp + 1, s.length()).strip_edges();
+		String key = s.left(sp).strip_edges();
+		String value = s.substr(sp + 1).strip_edges();
 		ret[key] = value;
 	}
 

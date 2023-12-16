@@ -393,7 +393,7 @@ NodePath::NodePath(const String &p_path) {
 			}
 		}
 
-		path = path.substr(0, subpath_pos);
+		path = path.left(subpath_pos);
 	}
 
 	for (int i = (int)absolute; i < path.length(); i++) {

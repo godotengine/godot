@@ -213,7 +213,7 @@ String relative_to_impl(const String &p_path, const String &p_relative_to) {
 String get_drive_letter(const String &p_norm_path) {
 	int idx = p_norm_path.find(":/");
 	if (idx != -1 && idx < p_norm_path.find("/")) {
-		return p_norm_path.substr(0, idx + 1);
+		return p_norm_path.left(idx + 1);
 	}
 	return String();
 }

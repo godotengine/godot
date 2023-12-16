@@ -141,7 +141,7 @@ void LineEdit::_backspace(bool p_word, bool p_all_to_left) {
 
 	if (p_all_to_left) {
 		deselect();
-		text = text.substr(0, caret_column);
+		text = text.left(caret_column);
 		_text_changed();
 		return;
 	}
@@ -177,7 +177,7 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 
 	if (p_all_to_right) {
 		deselect();
-		text = text.substr(caret_column, text.length() - caret_column);
+		text = text.substr(caret_column);
 		_shape();
 		set_caret_column(0);
 		_text_changed();
@@ -1739,11 +1739,11 @@ void LineEdit::insert_text_at_caret(String p_text) {
 		int available_chars = max_length - text.length();
 		if (p_text.length() > available_chars) {
 			emit_signal(SNAME("text_change_rejected"), p_text.substr(available_chars));
-			p_text = p_text.substr(0, available_chars);
+			p_text = p_text.left(available_chars);
 		}
 	}
-	String pre = text.substr(0, caret_column);
-	String post = text.substr(caret_column, text.length() - caret_column);
+	String pre = text.left(caret_column);
+	String post = text.substr(caret_column);
 	text = pre + p_text + post;
 	_shape();
 	TextServer::Direction dir = TS->shaped_text_get_dominant_direction_in_range(text_rid, caret_column, caret_column + p_text.length());
@@ -2295,7 +2295,7 @@ void LineEdit::_shape() {
 		t = secret.repeat(text.length() + ime_text.length());
 	} else {
 		if (ime_text.length() > 0) {
-			t = text.substr(0, caret_column) + ime_text + text.substr(caret_column, text.length());
+			t = text.left(caret_column) + ime_text + text.substr(caret_column);
 		} else {
 			t = text;
 		}

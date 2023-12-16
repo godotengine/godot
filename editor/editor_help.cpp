@@ -2130,7 +2130,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
 			const int tag_end = tag.find(" ");
-			const String link_tag = tag.substr(0, tag_end);
+			const String link_tag = tag.left(tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
 			// Use monospace font to make clickable references
@@ -2299,7 +2299,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 					const String &expr = subtags[i];
 					int value_pos = expr.find("=");
 					if (value_pos > -1) {
-						bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1).unquote();
+						bbcode_options[expr.left(value_pos)] = expr.substr(value_pos + 1).unquote();
 					}
 				}
 				HashMap<String, String>::Iterator width_option = bbcode_options.find("width");

@@ -574,7 +574,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				String lang = _find_language(it);
 				String tx = t->text;
 				if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters >= 0) {
-					tx = tx.substr(0, remaining_characters);
+					tx = tx.left(remaining_characters);
 				}
 				remaining_characters -= tx.length();
 
@@ -4041,7 +4041,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		if (brk_end == -1) {
 			//no close, add the rest
-			txt += p_bbcode.substr(brk_pos, p_bbcode.length() - brk_pos);
+			txt += p_bbcode.substr(brk_pos);
 			add_text(txt);
 			break;
 		}
@@ -4059,7 +4059,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				const String &expr = split_tag_block[i];
 				int value_pos = expr.find("=");
 				if (value_pos > -1) {
-					bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1).unquote();
+					bbcode_options[expr.left(value_pos)] = expr.substr(value_pos + 1).unquote();
 				}
 			}
 		} else {
@@ -4071,11 +4071,11 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		int main_value_pos = bbcode_name.find("=");
 		if (main_value_pos > -1) {
 			bbcode_value = bbcode_name.substr(main_value_pos + 1);
-			bbcode_name = bbcode_name.substr(0, main_value_pos);
+			bbcode_name = bbcode_name.left(main_value_pos);
 		}
 
 		if (tag.begins_with("/") && tag_stack.size()) {
-			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
+			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.right(-1);
 
 			if (tag_stack.front()->get() == "b") {
 				in_bold = false;
@@ -4403,7 +4403,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("lang=")) {
-			String lang = tag.substr(5, tag.length()).unquote();
+			String lang = tag.right(-5).unquote();
 			push_language(lang);
 			pos = brk_end + 1;
 			tag_stack.push_front("lang");
@@ -4412,7 +4412,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("p");
 		} else if (tag.begins_with("p ")) {
-			Vector<String> subtag = tag.substr(2, tag.length()).split(" ");
+			Vector<String> subtag = tag.right(-2).split(" ");
 			_normalize_subtags(subtag);
 
 			HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
@@ -4504,17 +4504,17 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front(tag);
 
 		} else if (tag.begins_with("url=")) {
-			String url = tag.substr(4, tag.length()).unquote();
+			String url = tag.right(-4).unquote();
 			push_meta(url);
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
 		} else if (tag.begins_with("hint=")) {
-			String description = tag.substr(5, tag.length()).unquote();
+			String description = tag.right(-5).unquote();
 			push_hint(description);
 			pos = brk_end + 1;
 			tag_stack.push_front("hint");
 		} else if (tag.begins_with("dropcap")) {
-			Vector<String> subtag = tag.substr(5, tag.length()).split(" ");
+			Vector<String> subtag = tag.substr(-5).split(" ");
 			_normalize_subtags(subtag);
 
 			int fs = theme_cache.normal_font_size * 3;
@@ -4570,7 +4570,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		} else if (tag.begins_with("img")) {
 			int alignment = INLINE_ALIGNMENT_CENTER;
 			if (tag.begins_with("img=")) {
-				Vector<String> subtag = tag.substr(4, tag.length()).split(",");
+				Vector<String> subtag = tag.right(-4).split(",");
 				_normalize_subtags(subtag);
 
 				if (subtag.size() > 1) {
@@ -4638,7 +4638,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					if (sep == -1) {
 						width = bbcode_value.to_int();
 					} else {
-						width = bbcode_value.substr(0, sep).to_int();
+						width = bbcode_value.left(sep).to_int();
 						height = bbcode_value.substr(sep + 1).to_int();
 					}
 				} else {
@@ -4675,21 +4675,21 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = end;
 			tag_stack.push_front(bbcode_name);
 		} else if (tag.begins_with("color=")) {
-			String color_str = tag.substr(6, tag.length()).unquote();
+			String color_str = tag.right(-6).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 			push_color(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("color");
 
 		} else if (tag.begins_with("outline_color=")) {
-			String color_str = tag.substr(14, tag.length()).unquote();
+			String color_str = tag.right(-14).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 			push_outline_color(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("outline_color");
 
 		} else if (tag.begins_with("font_size=")) {
-			int fnt_size = tag.substr(10, tag.length()).to_int();
+			int fnt_size = tag.right(-10).to_int();
 			push_font_size(fnt_size);
 			pos = brk_end + 1;
 			tag_stack.push_front("font_size");
@@ -4736,10 +4736,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				}
 			}
 			pos = brk_end + 1;
-			tag_stack.push_front(tag.substr(0, value_pos));
+			tag_stack.push_front(tag.left(value_pos));
 
 		} else if (tag.begins_with("font=")) {
-			String fnt = tag.substr(5, tag.length()).unquote();
+			String fnt = tag.right(-5).unquote();
 
 			Ref<Font> fc = ResourceLoader::load(fnt, "Font");
 			if (fc.is_valid()) {
@@ -4750,7 +4750,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("font");
 
 		} else if (tag.begins_with("font ")) {
-			Vector<String> subtag = tag.substr(2, tag.length()).split(" ");
+			Vector<String> subtag = tag.right(-2).split(" ");
 			_normalize_subtags(subtag);
 
 			Ref<Font> font = theme_cache.normal_font;
@@ -4848,7 +4848,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("font");
 
 		} else if (tag.begins_with("outline_size=")) {
-			int fnt_size = tag.substr(13, tag.length()).to_int();
+			int fnt_size = tag.right(-13).to_int();
 			if (fnt_size > 0) {
 				push_outline_size(fnt_size);
 			}
@@ -4987,7 +4987,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("pulse");
 			set_process_internal(true);
 		} else if (tag.begins_with("bgcolor=")) {
-			String color_str = tag.substr(8, tag.length()).unquote();
+			String color_str = tag.right(-8).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 
 			push_bgcolor(color);
@@ -4995,7 +4995,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("bgcolor");
 
 		} else if (tag.begins_with("fgcolor=")) {
-			String color_str = tag.substr(8, tag.length()).unquote();
+			String color_str = tag.right(-8).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 
 			push_fgcolor(color);
@@ -5424,10 +5424,10 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 		}
 	}
 	if ((l.from != nullptr) && (p_frame == p_selection.to_frame) && (p_selection.to_item != nullptr) && (p_selection.to_item->index >= l.from->index) && (p_selection.to_item->index < end_idx)) {
-		txt = txt.substr(0, p_selection.to_char);
+		txt = txt.left(p_selection.to_char);
 	}
 	if ((l.from != nullptr) && (p_frame == p_selection.from_frame) && (p_selection.from_item != nullptr) && (p_selection.from_item->index >= l.from->index) && (p_selection.from_item->index < end_idx)) {
-		txt = txt.substr(p_selection.from_char, -1);
+		txt = txt.substr(p_selection.from_char);
 	}
 	return txt;
 }
@@ -6357,7 +6357,7 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 				a.append(Color::html(values[j]));
 			} else if (!nodepath.search(values[j]).is_null()) {
 				if (values[j].begins_with("$")) {
-					String v = values[j].substr(1, values[j].length());
+					String v = values[j].right(-1);
 					a.append(NodePath(v));
 				}
 			} else if (!boolean.search(values[j]).is_null()) {
