@@ -212,6 +212,7 @@ opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all 
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
+opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
@@ -269,6 +270,12 @@ opts.Add("LINKFLAGS", "Custom flags for the linker")
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
 opts.Update(env_base)
+
+# Copy custom environment variables if set.
+if env_base["import_env_vars"]:
+    for env_var in str(env_base["import_env_vars"]).split(","):
+        if env_var in os.environ:
+            env_base["ENV"][env_var] = os.environ[env_var]
 
 # Platform selection: validate input, and add options.
 
