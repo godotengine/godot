@@ -456,8 +456,11 @@ bool SpriteBase3D::get_draw_flag(DrawFlags p_flag) const {
 
 void SpriteBase3D::set_alpha_cut_mode(AlphaCutMode p_mode) {
 	ERR_FAIL_INDEX(p_mode, ALPHA_CUT_MAX);
-	alpha_cut = p_mode;
-	_queue_redraw();
+	if (alpha_cut != p_mode) {
+		alpha_cut = p_mode;
+		_queue_redraw();
+		notify_property_list_changed();
+	}
 }
 
 SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const {
@@ -527,6 +530,18 @@ void SpriteBase3D::set_texture_filter(StandardMaterial3D::TextureFilter p_filter
 
 StandardMaterial3D::TextureFilter SpriteBase3D::get_texture_filter() const {
 	return texture_filter;
+}
+
+void SpriteBase3D::_validate_property(PropertyInfo &property) const {
+	if (property.name == "lod_bias" || property.name == "gi_lightmap_scale") {
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	GeometryInstance3D::_validate_property(property);
 }
 
 void SpriteBase3D::_bind_methods() {
@@ -882,6 +897,8 @@ void Sprite3D::_validate_property(PropertyInfo &p_property) const {
 	if (!region && (p_property.name == "region_rect")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
+
+	SpriteBase3D::_validate_property(p_property);
 }
 
 void Sprite3D::_bind_methods() {
@@ -1008,6 +1025,8 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 		}
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	SpriteBase3D::_validate_property(p_property);
 }
 
 void AnimatedSprite3D::_notification(int p_what) {
