@@ -161,18 +161,7 @@ layout(set = 0, binding = 13, std140) uniform SDFGI {
 }
 sdfgi;
 
-layout(set = 0, binding = 14 + 0) uniform sampler DEFAULT_SAMPLER_NEAREST_CLAMP;
-layout(set = 0, binding = 14 + 1) uniform sampler DEFAULT_SAMPLER_LINEAR_CLAMP;
-layout(set = 0, binding = 14 + 2) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP;
-layout(set = 0, binding = 14 + 3) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
-layout(set = 0, binding = 14 + 4) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 0, binding = 14 + 5) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 0, binding = 14 + 6) uniform sampler DEFAULT_SAMPLER_NEAREST_REPEAT;
-layout(set = 0, binding = 14 + 7) uniform sampler DEFAULT_SAMPLER_LINEAR_REPEAT;
-layout(set = 0, binding = 14 + 8) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT;
-layout(set = 0, binding = 14 + 9) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT;
-layout(set = 0, binding = 14 + 10) uniform sampler DEFAULT_SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
-layout(set = 0, binding = 14 + 11) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
+layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
 
 /* Set 1: Render Pass (changes per render pass) */
 
