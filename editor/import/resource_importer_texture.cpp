@@ -745,6 +745,10 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 
 	if (meta.has("has_editor_variant")) {
 		String imported_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_path);
+		if (!FileAccess::exists(imported_path)) {
+			return false;
+		}
+
 		String editor_meta_path = imported_path.replace(".editor.ctex", ".editor.meta");
 		Dictionary editor_meta = _load_editor_meta(editor_meta_path);
 
