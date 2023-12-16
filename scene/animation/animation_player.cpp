@@ -233,7 +233,9 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 		pi.delta = delta;
 		pi.seeked = p_seeked;
 	}
-	pi.is_external_seeking = true; // AnimationPlayer doesn't have internal seeking.
+	// AnimationPlayer doesn't have internal seeking.
+	// However, immediately after playback, discrete keys should be retrieved with EXACT mode since behind keys must be ignored at that time.
+	pi.is_external_seeking = !p_started;
 	pi.looped_flag = looped_flag;
 	pi.weight = p_blend;
 	make_animation_instance(cd.from->name, pi);
