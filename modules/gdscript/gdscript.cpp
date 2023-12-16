@@ -1155,8 +1155,8 @@ RBSet<GDScript *> GDScript::get_dependencies() {
 	return dependencies;
 }
 
-RBSet<GDScript *> GDScript::get_inverted_dependencies() {
-	RBSet<GDScript *> inverted_dependencies;
+HashMap<GDScript *, RBSet<GDScript *>> GDScript::get_all_dependencies() {
+	HashMap<GDScript *, RBSet<GDScript *>> all_dependencies;
 
 	List<GDScript *> scripts;
 	{
@@ -1170,51 +1170,42 @@ RBSet<GDScript *> GDScript::get_inverted_dependencies() {
 	}
 
 	for (GDScript *scr : scripts) {
-		if (scr == nullptr || scr == this || scr->destructing) {
+		if (scr == nullptr || scr->destructing) {
 			continue;
 		}
-
-		RBSet<GDScript *> scr_dependencies = scr->get_dependencies();
-		if (scr_dependencies.has(this)) {
-			inverted_dependencies.insert(scr);
-		}
+		all_dependencies.insert(scr, scr->get_dependencies());
 	}
 
-	return inverted_dependencies;
+	return all_dependencies;
 }
 
 RBSet<GDScript *> GDScript::get_must_clear_dependencies() {
 	RBSet<GDScript *> dependencies = get_dependencies();
 	RBSet<GDScript *> must_clear_dependencies;
-	HashMap<GDScript *, RBSet<GDScript *>> inverted_dependencies;
-
-	for (GDScript *E : dependencies) {
-		inverted_dependencies.insert(E, E->get_inverted_dependencies());
-	}
+	HashMap<GDScript *, RBSet<GDScript *>> all_dependencies = get_all_dependencies();
 
 	RBSet<GDScript *> cant_clear;
-	for (KeyValue<GDScript *, RBSet<GDScript *>> &E : inverted_dependencies) {
+	for (KeyValue<GDScript *, RBSet<GDScript *>> &E : all_dependencies) {
+		if (dependencies.has(E.key)) {
+			continue;
+		}
 		for (GDScript *F : E.value) {
-			if (!dependencies.has(F)) {
-				cant_clear.insert(E.key);
-				for (GDScript *G : E.key->get_dependencies()) {
-					cant_clear.insert(G);
-				}
-				break;
+			if (dependencies.has(F)) {
+				cant_clear.insert(F);
 			}
 		}
 	}
 
-	for (KeyValue<GDScript *, RBSet<GDScript *>> &E : inverted_dependencies) {
-		if (cant_clear.has(E.key) || ScriptServer::is_global_class(E.key->get_fully_qualified_name())) {
+	for (GDScript *E : dependencies) {
+		if (cant_clear.has(E) || ScriptServer::is_global_class(E->get_fully_qualified_name())) {
 			continue;
 		}
-		must_clear_dependencies.insert(E.key);
+		must_clear_dependencies.insert(E);
 	}
 
 	cant_clear.clear();
 	dependencies.clear();
-	inverted_dependencies.clear();
+	all_dependencies.clear();
 	return must_clear_dependencies;
 }
 
