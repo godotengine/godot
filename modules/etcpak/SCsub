@@ -13,6 +13,7 @@ thirdparty_dir = "#thirdparty/etcpak/"
 thirdparty_sources = [
     "Dither.cpp",
     "ProcessDxtc.cpp",
+    "ProcessRgtc.cpp",
     "ProcessRGB.cpp",
     "Tables.cpp",
 ]
