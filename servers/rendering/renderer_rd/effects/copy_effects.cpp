@@ -593,6 +593,40 @@ void CopyEffects::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffe
 	RD::get_singleton()->draw_list_end();
 }
 
+void CopyEffects::copy_to_drawlist(RD::DrawListID p_draw_list, RD::FramebufferFormatID p_fb_format, RID p_source_rd_texture, bool p_linear) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
+	copy_to_fb.push_constant.luminance_multiplier = 1.0;
+
+	if (p_linear) {
+		// Used for copying to a linear buffer. In the mobile renderer we divide the contents of the linear buffer
+		// to allow for a wider effective range.
+		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_LINEAR;
+		copy_to_fb.push_constant.luminance_multiplier = prefer_raster_effects ? 2.0 : 1.0;
+	}
+
+	// setup our uniforms
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
+
+	// Multiview not supported here!
+	CopyToFBMode mode = COPY_TO_FB_COPY;
+
+	RID shader = copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, mode);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, copy_to_fb.pipelines[mode].get_render_pipeline(RD::INVALID_ID, p_fb_format));
+	RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(p_draw_list, material_storage->get_quad_index_array());
+	RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
+	RD::get_singleton()->draw_list_draw(p_draw_list, true);
+}
+
 void CopyEffects::copy_raster(RID p_source_texture, RID p_dest_framebuffer) {
 	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the raster version of the copy with the clustered renderer.");
 
