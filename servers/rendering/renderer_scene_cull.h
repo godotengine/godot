@@ -1256,12 +1256,14 @@ public:
 	PASS1RC(float, environment_get_hddagi_normal_bias, RID)
 	PASS1RC(float, environment_get_hddagi_reflection_bias, RID)
 	PASS1RC(float, environment_get_hddagi_probe_bias, RID)
-	PASS1RC(float, environment_get_hddagi_occlusion_sharpness, RID)
+	PASS1RC(float, environment_get_hddagi_occlusion_bias, RID)
 	PASS1RC(float, environment_get_hddagi_filter_ambient, RID)
 	PASS1RC(float, environment_get_hddagi_filter_reflection, RID)
 
 	PASS1(environment_set_hddagi_frames_to_converge, RS::EnvironmentHDDAGIFramesToConverge)
 	PASS1(environment_set_hddagi_frames_to_update_light, RS::EnvironmentHDDAGIFramesToUpdateLight)
+
+	PASS1(environment_set_hddagi_inactive_probe_frames, RS::EnvironmentHDDAGIInactiveProbeFrames)
 
 	// Adjustment
 	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)

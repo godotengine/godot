@@ -1162,6 +1162,9 @@ void RasterizerSceneGLES3::environment_set_volumetric_fog_volume_size(int p_size
 void RasterizerSceneGLES3::environment_set_volumetric_fog_filter_active(bool p_enable) {
 }
 
+void RasterizerSceneGLES3::environment_set_hddagi_inactive_probe_frames(RS::EnvironmentHDDAGIInactiveProbeFrames p_frames) {
+}
+
 Ref<Image> RasterizerSceneGLES3::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
 	return Ref<Image>();
 }

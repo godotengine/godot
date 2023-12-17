@@ -128,8 +128,8 @@ layout(push_constant, std430) uniform Params {
 
 	float z_near;
 	float z_far;
-	uint frame_index;
-	float pad3;
+	uint pad;
+	float occlusion_bias;
 }
 params;
 
@@ -208,6 +208,12 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 
 		return pos;
 	}
+}
+
+vec4 fetch_normal_and_roughness(ivec2 pos) {
+	vec4 normal_roughness = texelFetch(sampler2D(normal_roughness_buffer, linear_sampler), pos, 0);
+	normal_roughness.xyz = normalize(normal_roughness.xyz * 2.0 - 1.0);
+	return normal_roughness;
 }
 
 #define PROBE_CELLS 8
@@ -365,7 +371,7 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir, int p_cascade, out ivec3 r_cell,
 	ivec3 pos;
 
 	while (true) {
-		// This loop is written so there is only one single main interation.
+		// This loop is written so there is only one single main iteration.
 		// This ensures that different compute threads working on different
 		// levels can still run together without blocking each other.
 
@@ -603,7 +609,7 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 			weight_index |= 4;
 		}
 
-		weight *= max(0.01, occ_weights[weight_index]);
+		weight *= max(params.occlusion_bias, occ_weights[weight_index]);
 
 		vec3 trilinear = vec3(1.0) - abs(probe_to_pos / float(PROBE_CELLS));
 
@@ -672,6 +678,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 	int cascade = 0x7FFFFFFF;
 	vec3 cascade_pos;
 	vec3 cascade_normal;
+	float cell_size;
 
 	for (int i = 0; i < hddagi.max_cascades; i++) {
 		cascade_pos = (cam_pos - hddagi.cascades[i].position) * hddagi.cascades[i].to_cell;
@@ -681,6 +688,8 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 		}
 
 		cascade = i;
+		cell_size = 1.0 / hddagi.cascades[i].to_cell;
+
 		break;
 	}
 
@@ -701,6 +710,10 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 			float min_d = min(inner_dist.x, min(inner_dist.y, inner_dist.z));
 
 			blend = clamp(1.0 - smoothstep(0.5, 2.5, min_d), 0, 1);
+
+			if (cascade < hddagi.max_cascades - 1) {
+				cell_size = mix(cell_size, 1.0 / hddagi.cascades[cascade + 1].to_cell, blend);
+			}
 
 #ifndef USE_AMBIENT_BLEND
 			if (cascade < hddagi.max_cascades - 1) {
@@ -896,6 +909,9 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 			reflection_light.a = 1.0 - blend;
 		}
 
+		//ambient_light.rgb = cam_bias * 0.5 + 0.5;
+		//reflection_light.rgb = vec3(0.0);
+
 		ambient_light.rgb *= hddagi.energy;
 		reflection_light.rgb *= hddagi.energy;
 	} else {
@@ -1027,17 +1043,11 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	out_blend += blend;
 }
 
-vec4 fetch_normal_and_roughness(ivec2 pos) {
-	vec4 normal_roughness = texelFetch(sampler2D(normal_roughness_buffer, linear_sampler), pos, 0);
-	normal_roughness.xyz = normalize(normal_roughness.xyz * 2.0 - 1.0);
-	return normal_roughness;
-}
-
-void process_gi(ivec2 pos, vec3 vertex, vec3 normal, float roughness, inout vec4 ambient_light, inout vec4 reflection_light) {
+void process_gi(ivec2 pos, vec3 view_vertex, vec3 view_normal, float roughness, inout vec4 ambient_light, inout vec4 reflection_light) {
 	//valid normal, can do GI
-	vec3 view = -normalize(mat3(scene_data.cam_transform) * (vertex - scene_data.eye_offset[gl_GlobalInvocationID.z].xyz));
-	vertex = mat3(scene_data.cam_transform) * vertex;
-	normal = normalize(mat3(scene_data.cam_transform) * normal);
+	vec3 view = -normalize(mat3(scene_data.cam_transform) * (view_vertex - scene_data.eye_offset[gl_GlobalInvocationID.z].xyz));
+	vec3 vertex = mat3(scene_data.cam_transform) * view_vertex;
+	vec3 normal = normalize(mat3(scene_data.cam_transform) * view_normal);
 	vec3 reflection = normalize(reflect(-view, normal));
 
 #ifdef USE_HDDAGI
@@ -1081,6 +1091,8 @@ void process_gi(ivec2 pos, vec3 vertex, vec3 normal, float roughness, inout vec4
 
 void main() {
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+#if defined(USE_HDDAGI) || defined(USE_VOXEL_GI_INSTANCES)
 
 	uint vrs_x, vrs_y;
 #ifdef USE_VRS
@@ -1287,5 +1299,7 @@ void main() {
 			imageStore(blend_buffer, pos + ivec2(3, 3), uvec4(blend));
 		}
 	}
+#endif
+
 #endif
 }

@@ -644,7 +644,7 @@ float RendererEnvironmentStorage::environment_get_ssil_normal_rejection(RID p_en
 
 // HDDAGI
 
-void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RS::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_sharpness, bool p_filter_reflection, bool p_filter_ambient) {
+void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RS::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
@@ -663,7 +663,7 @@ void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable
 	env->hddagi_normal_bias = p_normal_bias;
 	env->hddagi_reflection_bias = p_reflection_bias;
 	env->hddagi_probe_bias = p_probe_bias;
-	env->hddagi_occlusion_sharpness = p_occlusion_sharpness;
+	env->hddagi_occlusion_bias = p_occlusion_bias;
 	env->hddagi_filter_ambient = p_filter_ambient;
 	env->hddagi_filter_reflection = p_filter_reflection;
 }
@@ -740,10 +740,10 @@ float RendererEnvironmentStorage::environment_get_hddagi_probe_bias(RID p_env) c
 	return env->hddagi_probe_bias;
 }
 
-float RendererEnvironmentStorage::environment_get_hddagi_occlusion_sharpness(RID p_env) const {
+float RendererEnvironmentStorage::environment_get_hddagi_occlusion_bias(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.1);
-	return env->hddagi_occlusion_sharpness;
+	return env->hddagi_occlusion_bias;
 }
 
 RS::EnvironmentHDDAGICascadeFormat RendererEnvironmentStorage::environment_get_hddagi_cascade_format(RID p_env) const {

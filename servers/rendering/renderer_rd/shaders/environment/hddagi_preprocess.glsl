@@ -37,6 +37,7 @@ layout(set = 0, binding = 9) uniform sampler linear_sampler;
 layout(r8ui, set = 0, binding = 10) uniform restrict writeonly uimage3D dst_disocclusion;
 
 layout(r32ui, set = 0, binding = 11) uniform restrict writeonly uimage3D voxel_neighbours;
+layout(r32ui, set = 0, binding = 12) uniform restrict uimage3D light_tex;
 
 shared uint normal_facings[6 * 6 * 6];
 
@@ -179,6 +180,23 @@ layout(r32ui, set = 0, binding = 3) uniform restrict writeonly uimage2DArray nei
 
 #endif
 
+#ifdef MODE_LIGHTPROBE_UPDATE_FRAMES
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(r32ui, set = 0, binding = 1) uniform restrict uimage2DArray lightprobe_frames;
+
+#endif
+
+#ifdef MODE_LIGHTPROBE_GEOMETRY_PROXIMITY
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(r8ui, set = 0, binding = 1) uniform restrict readonly uimage3D src_region_bits;
+layout(r8, set = 0, binding = 2) uniform restrict writeonly image2DArray dst_probe_geometry_proximity;
+
+#endif
+
 #ifdef MODE_LIGHTPROBE_SCROLL
 
 layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, local_size_z = 1) in;
@@ -205,7 +223,7 @@ layout(push_constant, std430) uniform Params {
 	int cascade_count;
 
 	ivec3 offset;
-	int step;
+	int probe_update_frames;
 
 	ivec3 limit;
 	int cascade;
@@ -220,22 +238,6 @@ layout(push_constant, std430) uniform Params {
 	int occlusion_offset;
 }
 params;
-
-uint encode_position(ivec3 p_position) {
-	p_position += ivec3(512);
-	p_position = clamp(p_position, ivec3(0), ivec3(1023));
-	return uint(p_position.x | (p_position.y << 10) | (p_position.z << 20));
-}
-
-ivec3 decode_position(uint p_encoded_position) {
-	return ((ivec3(p_encoded_position) >> ivec3(0, 10, 20)) & ivec3(0x3FF)) - ivec3(512);
-}
-
-int sq_distance(ivec3 p_from, ivec3 p_to) {
-	ivec3 m = p_from - p_to;
-	m *= m;
-	return m.x + m.y + m.z;
-}
 
 vec2 octahedron_wrap(vec2 v) {
 	vec2 signVal;
@@ -393,11 +395,11 @@ void main() {
 	groupMemoryBarrier();
 	barrier();
 
-	ivec3 src_pos = (ivec3(src_process_voxels.data[src_index].position) >> ivec3(0, 10, 20)) & ivec3(0x3FF);
+	ivec3 src_pos = (ivec3(src_process_voxels.data[src_index].position) >> ivec3(0, 7, 14)) & ivec3(0x7F);
 	bool inside_area = all(greaterThanEqual(src_pos, params.offset)) && all(lessThan(src_pos, params.limit));
 
 	if (!inside_area) {
-		ivec3 light_pos = src_pos;
+		ivec3 light_pos = src_pos + params.scroll;
 		light_pos = (light_pos + (params.region_world_pos * REGION_SIZE)) & (params.grid_size - 1);
 		light_pos.y += params.grid_size.y * params.cascade;
 
@@ -432,9 +434,9 @@ void main() {
 
 	ivec3 dst_pos = src_pos + params.scroll;
 
-	uint src_pending_bits = src_process_voxels.data[src_index].position & (PROCESS_STATIC_PENDING_BIT | PROCESS_DYNAMIC_PENDING_BIT);
+	uint src_pending_bits = src_process_voxels.data[src_index].position & ~uint((1 << 21) - 1);
 
-	dst_process_voxels.data[index].position = uint(dst_pos.x | (dst_pos.y << 10) | (dst_pos.z << 20)) | src_pending_bits;
+	dst_process_voxels.data[index].position = uint(dst_pos.x | (dst_pos.y << 7) | (dst_pos.z << 14)) | src_pending_bits;
 	dst_process_voxels.data[index].albedo_normal = src_process_voxels.data[src_index].albedo_normal;
 	dst_process_voxels.data[index].emission = src_process_voxels.data[src_index].emission;
 	dst_process_voxels.data[index].occlusion = src_process_voxels.data[src_index].occlusion;
@@ -614,6 +616,9 @@ void main() {
 				ivec3 nn_rel_abs = abs(nn_rel);
 
 				int nn_steps = nn_rel_abs.x + nn_rel_abs.y + nn_rel_abs.z;
+				if (nn_steps == 3) {
+					continue;
+				}
 				if (nn_steps > 1) {
 					// must make sure we are not occluded towards this
 					ivec3 test_dirs[3] = ivec3[](ivec3(nn_rel.x, 0, 0), ivec3(0, nn_rel.y, 0), ivec3(0, 0, nn_rel.z));
@@ -644,6 +649,10 @@ void main() {
 		ivec3 store_pos = (pos + params.region_world_pos * REGION_SIZE) & (params.grid_size - ivec3(1));
 		store_pos.y += params.grid_size.y * params.cascade;
 		imageStore(voxel_neighbours, store_pos, uvec4(neighbour_voxels));
+		if (!voxels_found) {
+			// Light voxels won't be stored here, but still ensure this is black to avoid light leaking from outside.
+			imageStore(light_tex, store_pos, uvec4(0));
+		}
 	}
 
 	groupMemoryBarrier();
@@ -726,7 +735,7 @@ void main() {
 	albedo_accum.rgb /= albedo_accum.a;
 	emission_accum.rgb /= emission_accum.a;
 
-	dst_process_voxels.data[index].position = uint(pos.x | (pos.y << 10) | (pos.z << 20)) | PROCESS_STATIC_PENDING_BIT | PROCESS_DYNAMIC_PENDING_BIT;
+	dst_process_voxels.data[index].position = uint(pos.x | (pos.y << 7) | (pos.z << 14)) | PROCESS_STATIC_PENDING_BIT | PROCESS_DYNAMIC_PENDING_BIT;
 
 	uint albedo_norm = 0;
 	albedo_norm |= clamp(uint(albedo_accum.r * 31.0), 0, 31) << 0;
@@ -808,6 +817,63 @@ void main() {
 
 #endif
 
+#ifdef MODE_LIGHTPROBE_GEOMETRY_PROXIMITY
+
+	ivec3 probe = ivec3(gl_GlobalInvocationID.xyz);
+
+	if (any(greaterThanEqual(probe, params.probe_axis_size))) {
+		return;
+	}
+
+	ivec3 region_mask = (params.grid_size / REGION_SIZE) - 1;
+
+	bool found_geometry = false;
+	for (int i = 0; i < 8; i++) {
+		// Check all 8 regions around
+		ivec3 offset = ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1)) * ivec3(2) - ivec3(1);
+		ivec3 region = probe + offset;
+		if (any(lessThan(region, ivec3(0)))) {
+			continue;
+		}
+		if (any(greaterThanEqual(region, params.probe_axis_size - ivec3(1)))) {
+			continue;
+		}
+
+		region = (region + params.region_world_pos) & region_mask;
+
+		region.y += params.cascade * (params.grid_size.y / REGION_SIZE);
+		if (imageLoad(src_region_bits, region).r > 0) {
+			found_geometry = true;
+			break;
+		}
+	}
+
+	ivec2 tex_pos = probe_to_tex(probe);
+	imageStore(dst_probe_geometry_proximity, ivec3(tex_pos, params.cascade), vec4(found_geometry ? 1.0 : 0.0));
+
+#endif
+
+#ifdef MODE_LIGHTPROBE_UPDATE_FRAMES
+
+	ivec3 probe_from = params.offset / REGION_SIZE;
+	ivec3 probe_to = params.limit / REGION_SIZE;
+
+	ivec3 probe = ivec3(gl_GlobalInvocationID.xyz) + probe_from;
+
+	if (any(greaterThan(probe, probe_to))) {
+		return;
+	}
+
+	ivec3 tex_pos = ivec3(probe_to_tex(probe), params.cascade);
+
+	uint frame = imageLoad(lightprobe_frames, tex_pos).r;
+	frame &= 0x0FFFFFFF; // Clear update frames counter
+	frame |= uint(params.probe_update_frames) << 28; // Reset frames counter.
+
+	imageStore(lightprobe_frames, tex_pos, uvec4(frame));
+
+#endif
+
 #ifdef MODE_OCCLUSION
 
 	// when x+y+z = step you do what you have to do.
@@ -845,7 +911,7 @@ void main() {
 
 			if (n != 0) {
 				uint index = atomicAdd(solid_cell_count, 1);
-				solid_cell_list[index] = uint(load_pos.x | (load_pos.y << 10) | (load_pos.z << 20));
+				solid_cell_list[index] = uint(load_pos.x | (load_pos.y << 7) | (load_pos.z << 14));
 			}
 		}
 	}
@@ -949,7 +1015,7 @@ void main() {
 	int cell_to = (invocation_idx + 1) * int(solid_cell_count) / group_total;
 
 	for (int cell_i = cell_from; cell_i < cell_to; cell_i++) {
-		ivec3 offset = (ivec3(solid_cell_list[cell_i]) >> ivec3(0, 10, 20)) & (0x3FF);
+		ivec3 offset = (ivec3(solid_cell_list[cell_i]) >> ivec3(0, 7, 14)) & (0x7F);
 
 		uint facing = get_bit_normal(offset);
 

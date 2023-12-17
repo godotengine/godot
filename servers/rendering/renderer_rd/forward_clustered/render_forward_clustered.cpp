@@ -3614,7 +3614,7 @@ void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_rend
 	static const uint32_t history_frames_to_converge[RS::ENV_HDDAGI_CONVERGE_MAX] = { 6, 12, 18, 24, 32 };
 	uint32_t requested_history_size = history_frames_to_converge[gi.hddagi_frames_to_converge];
 
-	if (hddagi.is_valid() && (hddagi->num_cascades != environment_get_hddagi_cascades(p_environment) || hddagi->min_cell_size != environment_get_hddagi_min_cell_size(p_environment) || hddagi->cascade_format != environment_get_hddagi_cascade_format(p_environment) || hddagi->frames_to_converge != requested_history_size || hddagi->occlusion_sharpness != environment_get_hddagi_occlusion_sharpness(p_environment))) {
+	if (hddagi.is_valid() && (hddagi->num_cascades != environment_get_hddagi_cascades(p_environment) || hddagi->min_cell_size != environment_get_hddagi_min_cell_size(p_environment) || hddagi->cascade_format != environment_get_hddagi_cascade_format(p_environment) || hddagi->frames_to_converge != requested_history_size)) {
 		//configuration changed, erase
 		hddagi.unref();
 		rb->set_custom_data(RB_SCOPE_HDDAGI, hddagi);

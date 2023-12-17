@@ -238,6 +238,8 @@ public:
 	virtual void environment_set_hddagi_frames_to_converge(RS::EnvironmentHDDAGIFramesToConverge p_frames) override;
 	virtual void environment_set_hddagi_frames_to_update_light(RS::EnvironmentHDDAGIFramesToUpdateLight p_update) override;
 
+	virtual void environment_set_hddagi_inactive_probe_frames(RS::EnvironmentHDDAGIInactiveProbeFrames p_frames) override;
+
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) override;
 
 	_FORCE_INLINE_ bool is_using_physical_light_units() {

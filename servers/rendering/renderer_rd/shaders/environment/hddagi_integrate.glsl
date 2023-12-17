@@ -1,4 +1,4 @@
-#[compute]
+´´#[compute]
 
 #version 450
 
@@ -19,11 +19,11 @@
 #define CACHE_IS_VALID 0x80000000
 #define CACHE_IS_HIT 0x40000000
 
-layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, local_size_z = 1) in;
-
 #define MAX_CASCADES 8
 
 #ifdef MODE_PROCESS
+
+		layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, local_size_z = 1) in;
 
 #define TRACE_SUBPIXEL
 
@@ -40,6 +40,9 @@ layout(r16ui, set = 0, binding = 9) uniform restrict uimage2DArray ray_hit_cache
 layout(r16ui, set = 0, binding = 10) uniform restrict uimage3D region_versions;
 layout(r32ui, set = 0, binding = 11) uniform restrict uimage2DArray lightprobe_moving_average_history;
 layout(r32ui, set = 0, binding = 12) uniform restrict uimage2DArray lightprobe_moving_average;
+layout(r32ui, set = 0, binding = 14) uniform restrict uimage2DArray lightprobe_update_frames;
+layout(r8, set = 0, binding = 15) uniform restrict readonly image2DArray lightprobe_geometry_proximity;
+layout(r8, set = 0, binding = 16) uniform restrict readonly image2DArray lightprobe_camera_visibility;
 
 #ifdef USE_CUBEMAP_ARRAY
 layout(set = 1, binding = 0) uniform textureCubeArray sky_irradiance;
@@ -70,9 +73,30 @@ cascades;
 
 #ifdef MODE_FILTER
 
+layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, local_size_z = 1) in;
+
 layout(r32ui, set = 0, binding = 1) uniform restrict readonly uimage2DArray lightprobe_src_diffuse_data;
 layout(r32ui, set = 0, binding = 2) uniform restrict writeonly uimage2DArray lightprobe_dst_diffuse_data;
 layout(r8ui, set = 0, binding = 3) uniform restrict readonly uimage2DArray lightprobe_neighbours;
+layout(r8, set = 0, binding = 4) uniform restrict readonly image2DArray lightprobe_geometry_proximity;
+layout(r8, set = 0, binding = 5) uniform restrict readonly image2DArray lightprobe_camera_visibility;
+
+#endif
+
+#ifdef MODE_CAMERA_VISIBILITY
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(r8, set = 0, binding = 1) uniform restrict writeonly image2DArray lightprobe_camera_visibility;
+
+#define MAX_CAMERA_PLANES 6
+#define MAX_CAMERA_POINTS 8
+
+layout(set = 0, binding = 2, std140) uniform CameraPlanes {
+	vec4 planes[MAX_CAMERA_PLANES];
+	vec4 points[MAX_CAMERA_POINTS];
+}
+camera;
 
 #endif
 
@@ -82,7 +106,7 @@ layout(push_constant, std430) uniform Params {
 
 	float ray_bias;
 	int cascade;
-	int history_index;
+	int inactive_update_frames;
 	int history_size;
 
 	ivec3 world_offset;
@@ -97,7 +121,8 @@ layout(push_constant, std430) uniform Params {
 	ivec3 probe_axis_size;
 	bool store_ambient_texture;
 
-	uvec3 pad;
+	uvec2 pad;
+	int global_frame;
 	uint motion_accum; // Motion that happened since last update (bit 0 in X, bit 1 in Y, bit 2 in Z).
 }
 params;
@@ -361,6 +386,7 @@ const uint wrap_neighbours[(LIGHTPROBE_OCT_SIZE + 2) * (LIGHTPROBE_OCT_SIZE + 2)
 shared uvec3 neighbours_accum[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
 shared vec3 neighbours[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
 shared uvec3 ambient_accum;
+shared int probe_history_index;
 
 // MODE_PROCESS
 #endif
@@ -383,6 +409,10 @@ ivec3 modi(ivec3 value, ivec3 p_y) {
 	return mix(value % p_y, p_y - ((abs(value) - ivec3(1)) % p_y) - 1, lessThan(sign(value), ivec3(0)));
 }
 
+#define FRAME_MASK 0x0FFFFFFF
+#define FORCE_UPDATE_MASK 0xF0000000
+#define FORCE_UPDATE_SHIFT 28
+
 void main() {
 #ifdef MODE_PROCESS
 
@@ -392,23 +422,82 @@ void main() {
 
 	// clear
 	neighbours_accum[probe_index] = uvec3(0);
-	if (probe_index == 0) {
-		ambient_accum = uvec3(0);
-	}
-
-	float probe_cell_size = float(params.grid_size.x) / float(params.probe_axis_size.x - 1) / cascades.data[params.cascade].to_cell;
 
 	ivec3 probe_cell;
 	probe_cell.x = pos.x;
 	probe_cell.y = pos.y % params.probe_axis_size.y;
 	probe_cell.z = pos.y / params.probe_axis_size.y;
 
-	vec3 ray_pos = cascades.data[params.cascade].offset + vec3(probe_cell) * probe_cell_size;
-
 	ivec3 probe_world_pos = params.world_offset + probe_cell;
 
+	ivec3 probe_scroll_pos = modi(probe_world_pos, params.probe_axis_size);
+	ivec3 probe_texture_pos = ivec3((probe_scroll_pos.xy + ivec2(0, probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
+
+	if (probe_index == 0) {
+		// Determine whether it should process the probe.
+
+		bool process = false;
+
+		// Fetch frame.
+		uint frame = imageLoad(lightprobe_update_frames, probe_texture_pos).r;
+		uint forced_update = frame >> FORCE_UPDATE_SHIFT;
+		if (forced_update > 0) {
+			// Check whether it must force the update
+			process = true;
+			forced_update--;
+			frame = (frame & FRAME_MASK) | (forced_update << FORCE_UPDATE_SHIFT);
+		}
+
+		bool geom_proximity = imageLoad(lightprobe_geometry_proximity, probe_texture_pos).r > 0.5;
+		if (geom_proximity) {
+			bool camera_visible = imageLoad(lightprobe_camera_visibility, probe_texture_pos).r > 0.5;
+			process = camera_visible;
+		}
+
+		if (!process) {
+			int frame_offset = 0;
+			if ((probe_world_pos.x & 1) != 0) {
+				frame_offset |= 1;
+			}
+			if ((probe_world_pos.y & 1) != 0) {
+				frame_offset |= 2;
+			}
+			if ((probe_world_pos.z & 1) != 0) {
+				frame_offset |= 4;
+			}
+
+			if (((params.global_frame + frame_offset) % params.inactive_update_frames) == 0) {
+				// Process every params.inactive_update_frames.
+				process = true;
+			}
+		}
+
+		if (process) {
+			uint local_frame = frame & FRAME_MASK;
+			probe_history_index = int(local_frame) % params.history_size;
+			frame = ((local_frame + 1) & FRAME_MASK) | (frame & FORCE_UPDATE_MASK);
+			// Store it back.
+			imageStore(lightprobe_update_frames, probe_texture_pos, uvec4(frame));
+
+			ambient_accum = uvec3(0);
+		} else {
+			probe_history_index = -1; // No processing.
+		}
+	}
+
+	memoryBarrierShared();
+	barrier();
+
+	if (probe_history_index < 0) {
+		return;
+	}
+
+	float probe_cell_size = float(params.grid_size.x) / float(params.probe_axis_size.x - 1) / cascades.data[params.cascade].to_cell;
+
+	vec3 ray_pos = cascades.data[params.cascade].offset + vec3(probe_cell) * probe_cell_size;
+
 	// Ensure a unique hash that includes the probe world position, the local octahedron pixel, and the history frame index
-	uvec3 h3 = hash3(uvec3((uvec3(probe_world_pos) * LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE + uvec3(probe_index)) * uvec3(params.history_size) + uvec3(params.history_index)));
+	uvec3 h3 = hash3(uvec3((uvec3(probe_world_pos) * LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE + uvec3(probe_index)) * uvec3(params.history_size) + uvec3(probe_history_index)));
 	uint h = (h3.x ^ h3.y) ^ h3.z;
 	vec2 sample_ofs = vec2(ivec2(h >> 16, h & 0xFFFF)) / vec2(0xFFFF);
 	vec3 ray_dir = octahedron_decode((vec2(local_pos) + sample_ofs) / vec2(LIGHTPROBE_OCT_SIZE));
@@ -421,9 +510,7 @@ void main() {
 	vec3 abs_ray_dir = abs(ray_dir);
 	ray_pos += ray_dir * 1.0 / max(abs_ray_dir.x, max(abs_ray_dir.y, abs_ray_dir.z)) * bias / cascades.data[params.cascade].to_cell;
 
-	ivec3 probe_scroll_pos = modi(probe_world_pos, params.probe_axis_size);
-	ivec3 probe_texture_pos = ivec3((probe_scroll_pos.xy + ivec2(0, probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
-	ivec3 cache_texture_pos = ivec3(probe_texture_pos.xy * LIGHTPROBE_OCT_SIZE + local_pos, probe_texture_pos.z * params.history_size + params.history_index);
+	ivec3 cache_texture_pos = ivec3(probe_texture_pos.xy * LIGHTPROBE_OCT_SIZE + local_pos, probe_texture_pos.z * params.history_size + probe_history_index);
 	uint cache_entry = imageLoad(ray_hit_cache, cache_texture_pos).r;
 
 	bool hit;
@@ -575,7 +662,7 @@ void main() {
 				imageLoad(lightprobe_moving_average, ma_pos + ivec3(1, 0, 0)).r,
 				imageLoad(lightprobe_moving_average, ma_pos + ivec3(2, 0, 0)).r);
 
-		ivec3 history_pos = ivec3(probe_texture_pos.xy * 4 + ivec2(probe_index % 4, probe_index / 4), probe_texture_pos.z * params.history_size + params.history_index);
+		ivec3 history_pos = ivec3(probe_texture_pos.xy * 4 + ivec2(probe_index % 4, probe_index / 4), probe_texture_pos.z * params.history_size + probe_history_index);
 
 		uvec3 prev_val = rgbe_decode_fp(imageLoad(lightprobe_moving_average_history, cache_texture_pos).r, FP_BITS);
 
@@ -688,6 +775,9 @@ void main() {
 	ivec3 probe_scroll_pos = modi(probe_world_pos, params.probe_axis_size);
 	ivec3 probe_base_pos = ivec3((probe_scroll_pos.xy + ivec2(0, probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
 
+	bool geom_proximity = imageLoad(lightprobe_geometry_proximity, probe_base_pos).r > 0.5;
+	bool cam_visibility = imageLoad(lightprobe_camera_visibility, probe_base_pos).r > 0.5;
+
 	ivec3 probe_texture_pos = ivec3(probe_base_pos.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1), probe_base_pos.z);
 	ivec3 probe_read_pos = probe_texture_pos + ivec3(local_pos, 0);
 
@@ -695,42 +785,45 @@ void main() {
 	light.rgb = rgbe_decode(imageLoad(lightprobe_src_diffuse_data, probe_read_pos).r);
 	light.a = 1.0;
 
-	const vec3 aniso_dir[6] = vec3[](
-			vec3(-1, 0, 0),
-			vec3(1, 0, 0),
-			vec3(0, -1, 0),
-			vec3(0, 1, 0),
-			vec3(0, 0, -1),
-			vec3(0, 0, 1));
+	if (geom_proximity && cam_visibility) {
+		// Only filter if there is geom proximity and probe is visible by camera.
 
-	uint neighbour_visibility = imageLoad(lightprobe_neighbours, probe_base_pos).r;
+		const vec3 aniso_dir[6] = vec3[](
+				vec3(-1, 0, 0),
+				vec3(1, 0, 0),
+				vec3(0, -1, 0),
+				vec3(0, 1, 0),
+				vec3(0, 0, -1),
+				vec3(0, 0, 1));
 
-	for (int i = 0; i < 6; i++) {
-		float visibility = ((neighbour_visibility >> (i * 4)) & 0xF) / float(0xF);
-		if (visibility == 0.0) {
-			continue; // un-neighboured
+		uint neighbour_visibility = imageLoad(lightprobe_neighbours, probe_base_pos).r;
+
+		for (int i = 0; i < 6; i++) {
+			float visibility = ((neighbour_visibility >> (i * 4)) & 0xF) / float(0xF);
+			if (visibility == 0.0) {
+				continue; // un-neighboured
+			}
+
+			ivec3 neighbour_probe = probe_cell + ivec3(aniso_dir[i]);
+			if (any(lessThan(neighbour_probe, ivec3(0))) || any(greaterThanEqual(neighbour_probe, params.probe_axis_size))) {
+				continue; // Outside range.
+			}
+
+			ivec3 probe_world_pos2 = params.world_offset + neighbour_probe;
+			ivec3 probe_scroll_pos2 = modi(probe_world_pos2, params.probe_axis_size);
+			ivec3 probe_base_pos2 = ivec3((probe_scroll_pos2.xy + ivec2(0, probe_scroll_pos2.z * params.probe_axis_size.y)), params.cascade);
+
+			ivec3 probe_texture_pos2 = ivec3(probe_base_pos2.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1), probe_base_pos2.z);
+			ivec3 probe_read_pos2 = probe_texture_pos2 + ivec3(local_pos, 0);
+
+			vec4 light2;
+			light2.rgb = rgbe_decode(imageLoad(lightprobe_src_diffuse_data, probe_read_pos2).r);
+			light2.a = 1.0;
+
+			light += light2 * 0.7 * visibility;
 		}
-
-		ivec3 neighbour_probe = probe_cell + ivec3(aniso_dir[i]);
-		if (any(lessThan(neighbour_probe, ivec3(0))) || any(greaterThanEqual(neighbour_probe, params.probe_axis_size))) {
-			continue; // Outside range.
-		}
-
-		ivec3 probe_world_pos2 = params.world_offset + neighbour_probe;
-		ivec3 probe_scroll_pos2 = modi(probe_world_pos2, params.probe_axis_size);
-		ivec3 probe_base_pos2 = ivec3((probe_scroll_pos2.xy + ivec2(0, probe_scroll_pos2.z * params.probe_axis_size.y)), params.cascade);
-
-		ivec3 probe_texture_pos2 = ivec3(probe_base_pos2.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1), probe_base_pos2.z);
-		ivec3 probe_read_pos2 = probe_texture_pos2 + ivec3(local_pos, 0);
-
-		vec4 light2;
-		light2.rgb = rgbe_decode(imageLoad(lightprobe_src_diffuse_data, probe_read_pos2).r);
-		light2.a = 1.0;
-
-		light += light2 * 0.7 * visibility;
+		light.rgb /= light.a;
 	}
-
-	light.rgb /= light.a;
 
 	ivec3 copy_to[4] = ivec3[](ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2));
 	copy_to[0] = probe_read_pos;
@@ -768,6 +861,56 @@ void main() {
 			continue;
 		}
 		imageStore(lightprobe_dst_diffuse_data, copy_to[i], uvec4(light_rgbe));
+	}
+
+#endif
+
+#ifdef MODE_CAMERA_VISIBILITY
+
+	ivec3 region = ivec3(gl_GlobalInvocationID.xyz);
+
+	if (any(greaterThanEqual(region, params.grid_size / REGION_SIZE))) {
+		return;
+	}
+
+	vec3 half_extents = vec3(REGION_SIZE * 0.5);
+	vec3 ofs = vec3(region * REGION_SIZE) + half_extents;
+
+	bool intersects = true;
+
+	// Test planes
+	for (int i = 0; i < MAX_CAMERA_PLANES; i++) {
+		vec4 plane = camera.planes[i];
+		vec3 point = ofs + mix(+half_extents, -half_extents, greaterThan(plane.xyz, vec3(0.0)));
+		if (dot(plane.xyz, point) > plane.w) {
+			return; // Does not intersect.
+		}
+	}
+
+	// Test points. Most cases the above test is fast and discards entirely, but this one is needed if passes.
+
+	ivec3 bad_points_pos = ivec3(0);
+	ivec3 bad_points_neg = ivec3(0);
+	vec3 test_min = ofs - half_extents;
+	vec3 test_max = ofs + half_extents;
+	for (int i = 0; i < MAX_CAMERA_POINTS; i++) {
+		vec3 point = camera.points[i].xyz;
+		bad_points_neg += mix(ivec3(0), ivec3(1), lessThan(point, test_min));
+		bad_points_pos += mix(ivec3(0), ivec3(1), greaterThan(point, test_max));
+	}
+
+	if (any(equal(bad_points_pos, ivec3(MAX_CAMERA_POINTS))) || any(equal(bad_points_neg, ivec3(MAX_CAMERA_POINTS)))) {
+		return; // Does not intersect.
+	}
+
+	// Mark it
+
+	for (int i = 0; i < 8; i++) {
+		ivec3 probe = params.world_offset + region + ((ivec3(i) >> ivec3(1, 2, 4)) & ivec3(1));
+		ivec3 probe_scroll_pos = modi(probe, params.probe_axis_size);
+		ivec3 probe_pos = ivec3((probe_scroll_pos.xy + ivec2(0, probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
+
+		imageStore(lightprobe_camera_visibility, probe_pos, vec4(1.0));
 	}
 
 #endif

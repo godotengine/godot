@@ -198,7 +198,7 @@ public:
 	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
 	// HDDAGI
-	void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RS::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_sharpness, bool p_filter_reflection, bool p_filter_ambient);
+	void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RS::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient);
 	bool environment_get_hddagi_enabled(RID p_env) const;
 	int environment_get_hddagi_cascades(RID p_env) const;
 	float environment_get_hddagi_min_cell_size(RID p_env) const;
@@ -209,13 +209,15 @@ public:
 	float environment_get_hddagi_normal_bias(RID p_env) const;
 	float environment_get_hddagi_reflection_bias(RID p_env) const;
 	float environment_get_hddagi_probe_bias(RID p_env) const;
-	float environment_get_hddagi_occlusion_sharpness(RID p_env) const;
+	float environment_get_hddagi_occlusion_bias(RID p_env) const;
 	RS::EnvironmentHDDAGICascadeFormat environment_get_hddagi_cascade_format(RID p_env) const;
 	bool environment_get_hddagi_filter_ambient(RID p_env) const;
 	bool environment_get_hddagi_filter_reflection(RID p_env) const;
 
 	virtual void environment_set_hddagi_frames_to_converge(RS::EnvironmentHDDAGIFramesToConverge p_frames) = 0;
 	virtual void environment_set_hddagi_frames_to_update_light(RS::EnvironmentHDDAGIFramesToUpdateLight p_update) = 0;
+
+	virtual void environment_set_hddagi_inactive_probe_frames(RS::EnvironmentHDDAGIInactiveProbeFrames p_frames) = 0;
 
 	// Adjustment
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction);

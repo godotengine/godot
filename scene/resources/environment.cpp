@@ -599,13 +599,13 @@ float Environment::get_dynamic_gi_probe_bias() const {
 	return dynamic_gi_probe_bias;
 }
 
-void Environment::set_dynamic_gi_occlusion_sharpness(float p_bias) {
-	dynamic_gi_occlusion_sharpness = p_bias;
+void Environment::set_dynamic_gi_occlusion_bias(float p_bias) {
+	dynamic_gi_occlusion_bias = p_bias;
 	_update_dynamic_gi();
 }
 
-float Environment::get_dynamic_gi_occlusion_sharpness() const {
-	return dynamic_gi_occlusion_sharpness;
+float Environment::get_dynamic_gi_occlusion_bias() const {
+	return dynamic_gi_occlusion_bias;
 }
 
 void Environment::_update_dynamic_gi() {
@@ -622,7 +622,7 @@ void Environment::_update_dynamic_gi() {
 			dynamic_gi_normal_bias,
 			dynamic_gi_reflection_bias,
 			dynamic_gi_probe_bias,
-			dynamic_gi_occlusion_sharpness,
+			dynamic_gi_occlusion_bias,
 			dynamic_gi_filter_reflections,
 			dynamic_gi_filter_ambient);
 }
@@ -1352,8 +1352,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_reflection_bias"), &Environment::get_dynamic_gi_reflection_bias);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_probe_bias", "bias"), &Environment::set_dynamic_gi_probe_bias);
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_probe_bias"), &Environment::get_dynamic_gi_probe_bias);
-	ClassDB::bind_method(D_METHOD("set_dynamic_gi_occlusion_sharpness", "bias"), &Environment::set_dynamic_gi_occlusion_sharpness);
-	ClassDB::bind_method(D_METHOD("get_dynamic_gi_occlusion_sharpness"), &Environment::get_dynamic_gi_occlusion_sharpness);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_occlusion_bias", "bias"), &Environment::set_dynamic_gi_occlusion_bias);
+	ClassDB::bind_method(D_METHOD("get_dynamic_gi_occlusion_bias"), &Environment::get_dynamic_gi_occlusion_bias);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_ambient", "enable"), &Environment::set_dynamic_gi_filter_ambient);
 	ClassDB::bind_method(D_METHOD("is_dynamic_gi_filtering_ambient"), &Environment::is_dynamic_gi_filtering_ambient);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_reflections", "enable"), &Environment::set_dynamic_gi_filter_reflections);
@@ -1362,7 +1362,7 @@ void Environment::_bind_methods() {
 	ADD_GROUP("DynamicGI", "dynamic_gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_enabled"), "set_dynamic_gi_enabled", "is_dynamic_gi_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_cascades", PROPERTY_HINT_RANGE, "1,8,1"), "set_dynamic_gi_cascades", "get_dynamic_gi_cascades");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_cascade_format", PROPERTY_HINT_ENUM, "16x4x16 (Faster),16x8x16,16x16x16,32x8x32,32x16x32 (Slowest)"), "set_dynamic_gi_cascade_format", "get_dynamic_gi_cascade_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_cascade_format", PROPERTY_HINT_ENUM, "16x16x16,16x8x16,16x4x16"), "set_dynamic_gi_cascade_format", "get_dynamic_gi_cascade_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_dynamic_gi_min_cell_size", "get_dynamic_gi_min_cell_size");
 	// Don't store the values of `dynamic_gi_cascade0_distance` and `dynamic_gi_max_distance`
 	// as they're derived from `dynamic_gi_min_cell_size`.
@@ -1380,10 +1380,10 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_filter_reflection"), "set_dynamic_gi_filter_reflections", "is_dynamic_gi_filtering_reflections");
 
 	ADD_SUBGROUP("Bias", "dynamic_gi_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_normal_bias"), "set_dynamic_gi_normal_bias", "get_dynamic_gi_normal_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_reflection_bias"), "set_dynamic_gi_reflection_bias", "get_dynamic_gi_reflection_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_probe_bias"), "set_dynamic_gi_probe_bias", "get_dynamic_gi_probe_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_occlusion_sharpness"), "set_dynamic_gi_occlusion_sharpness", "get_dynamic_gi_occlusion_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_normal_bias", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_dynamic_gi_normal_bias", "get_dynamic_gi_normal_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_reflection_bias", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_dynamic_gi_reflection_bias", "get_dynamic_gi_reflection_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_probe_bias", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_dynamic_gi_probe_bias", "get_dynamic_gi_probe_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_occlusion_bias", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_dynamic_gi_occlusion_bias", "get_dynamic_gi_occlusion_bias");
 
 	// Glow
 
@@ -1569,8 +1569,6 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x4x16);
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x8x16);
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16);
-	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_32x8x32);
-	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_32x16x32);
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_MAX);
 }
 

@@ -281,6 +281,8 @@ private:
 			PRE_PROCESS_OCCLUSION_STORE,
 			PRE_PROCESS_LIGHTPROBE_SCROLL,
 			PRE_PROCESS_LIGHTPROBE_NEIGHBOURS,
+			PRE_PROCESS_LIGHTPROBE_GEOMETRY_PROXIMITY,
+			PRE_PROCESS_LIGHTPROBE_UPDATE_FRAMES,
 			PRE_PROCESS_MAX
 		};
 
@@ -292,7 +294,7 @@ private:
 			uint32_t cascade_count;
 
 			int32_t offset[3];
-			int32_t step_size;
+			uint32_t probe_update_frames;
 
 			int32_t limit[3];
 			uint32_t cascade;
@@ -413,8 +415,10 @@ private:
 		enum {
 			INTEGRATE_MODE_PROCESS,
 			INTEGRATE_MODE_FILTER,
+			INTEGRATE_MODE_CAMERA_VISIBILITY,
 			INTEGRATE_MODE_MAX
 		};
+
 		struct IntegratePushConstant {
 			enum {
 				SKY_MODE_DISABLED,
@@ -427,7 +431,7 @@ private:
 
 			float ray_bias;
 			uint32_t cascade;
-			uint32_t history_index;
+			int32_t inactive_update_frames;
 			uint32_t history_size;
 
 			int32_t world_offset[3];
@@ -442,8 +446,14 @@ private:
 			uint32_t probe_axis_size[3];
 			uint32_t store_ambient_texture;
 
-			uint32_t pad[3];
+			uint32_t pad[2];
+			int32_t global_frame;
 			uint32_t motion_accum; // Motion that happened since last update (bit 0 in X, bit 1 in Y, bit 2 in Z).
+		};
+
+		struct IntegrateCameraUBO {
+			float planes[6 * 4];
+			float points[8 * 4];
 		};
 
 		HddagiIntegrateShaderRD integrate;
@@ -571,19 +581,16 @@ public:
 	public:
 		enum {
 			MAX_CASCADES = 8,
-			CASCADE_H_SIZE = 128,
-			CASCADE_V_SIZE = 64,
+			CASCADE_SIZE = 128,
 			REGION_CELLS = 8,
 			MAX_DYNAMIC_LIGHTS = 128,
 			MAX_STATIC_LIGHTS = 1024,
-			LIGHTPROBE_OCT_SIZE = 6,
+			LIGHTPROBE_OCT_SIZE = 5,
 			LIGHTPROBE_HISTORY_FRAMES = 2,
 			OCCLUSION_OCT_SIZE = 14,
 			OCCLUSION_SUBPIXELS = 4,
 			SH_SIZE = 16
 		};
-
-		static const Vector3i CASCADE_SIZE;
 
 		struct Cascade {
 			struct UBO {
@@ -623,6 +630,8 @@ public:
 			float baked_exposure_normalization = 1.0;
 		};
 
+		Vector3i cascade_size;
+
 		// access to our containers
 		GI *gi = nullptr;
 
@@ -655,6 +664,11 @@ public:
 		RID lightprobe_moving_average;
 		RID lightprobe_moving_average_history;
 		RID lightprobe_neighbour_visibility_map;
+		RID lightprobe_geometry_proximity_map;
+		RID lightprobe_camera_visibility_map;
+		RID lightprobe_process_frame; // 28 bits is frame, upper 4 bits is frames remaining to do full updates (for having updated light when scrolling).
+
+		Vector<RID> lightprobe_camera_buffers;
 
 		RID occlusion_data[2];
 		RID occlusion_tex[2];
@@ -684,7 +698,7 @@ public:
 		float normal_bias = 1.1;
 		float reflection_bias = 2.0;
 		float probe_bias = 1.1;
-		float occlusion_sharpness = 1.0;
+		float occlusion_bias = 0.1;
 		RS::EnvironmentHDDAGICascadeFormat cascade_format = RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16;
 
 		float y_mult = 1.0;
@@ -703,7 +717,7 @@ public:
 		void create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi);
 		void update(RID p_env, const Vector3 &p_world_position);
 		void update_light();
-		void update_probes(RID p_env, RendererRD::SkyRD::Sky *p_sky);
+		void update_probes(RID p_env, RendererRD::SkyRD::Sky *p_sky, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform);
 		void store_probes();
 		int get_pending_region_count() const;
 		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds, Vector3i &r_scroll, Vector3i &r_region_world) const;
@@ -736,6 +750,7 @@ public:
 
 	RS::EnvironmentHDDAGIFramesToConverge hddagi_frames_to_converge = RS::ENV_HDDAGI_CONVERGE_IN_12_FRAMES;
 	RS::EnvironmentHDDAGIFramesToUpdateLight hddagi_frames_to_update_light = RS::ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES;
+	RS::EnvironmentHDDAGIInactiveProbeFrames inactive_probe_frames = RS::ENV_HDDAGI_INACTIVE_PROBE_4_FRAMES;
 
 	float hddagi_solid_cell_ratio = 0.5;
 	Vector3 hddagi_debug_probe_pos;
@@ -816,8 +831,8 @@ public:
 
 		float z_near;
 		float z_far;
-		uint32_t frame_index;
-		float pad3;
+		uint32_t pad;
+		float occlusion_bias;
 	};
 
 	RID hddagi_ubo;

@@ -1123,15 +1123,13 @@ public:
 	virtual void environment_set_ssil_quality(EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
 	enum EnvironmentHDDAGICascadeFormat {
-		ENV_HDDAGI_CASCADE_FORMAT_16x4x16,
-		ENV_HDDAGI_CASCADE_FORMAT_16x8x16,
 		ENV_HDDAGI_CASCADE_FORMAT_16x16x16,
-		ENV_HDDAGI_CASCADE_FORMAT_32x8x32,
-		ENV_HDDAGI_CASCADE_FORMAT_32x16x32,
+		ENV_HDDAGI_CASCADE_FORMAT_16x8x16,
+		ENV_HDDAGI_CASCADE_FORMAT_16x4x16,
 		ENV_HDDAGI_CASCADE_FORMAT_MAX,
 	};
 
-	virtual void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_sharpness, bool p_filter_reflection, bool p_filter_ambient) = 0;
+	virtual void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient) = 0;
 
 	enum EnvironmentHDDAGIFramesToConverge {
 		ENV_HDDAGI_CONVERGE_IN_6_FRAMES,
@@ -1154,6 +1152,16 @@ public:
 	};
 
 	virtual void environment_set_hddagi_frames_to_update_light(EnvironmentHDDAGIFramesToUpdateLight p_update) = 0;
+
+	enum EnvironmentHDDAGIInactiveProbeFrames {
+		ENV_HDDAGI_INACTIVE_PROBE_1_FRAMES,
+		ENV_HDDAGI_INACTIVE_PROBE_2_FRAMES,
+		ENV_HDDAGI_INACTIVE_PROBE_4_FRAMES,
+		ENV_HDDAGI_INACTIVE_PROBE_8_FRAMES,
+		ENV_HDDAGI_INACTIVE_PROBE_MAX
+	};
+
+	virtual void environment_set_hddagi_inactive_probe_frames(EnvironmentHDDAGIInactiveProbeFrames p_frames) = 0;
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) = 0;
 
@@ -1706,6 +1714,7 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSILQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentHDDAGIFramesToConverge);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentHDDAGICascadeFormat);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentHDDAGIFramesToUpdateLight);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentHDDAGIInactiveProbeFrames);
 VARIANT_ENUM_CAST(RenderingServer::SubSurfaceScatteringQuality);
 VARIANT_ENUM_CAST(RenderingServer::DOFBlurQuality);
 VARIANT_ENUM_CAST(RenderingServer::DOFBokehShape);

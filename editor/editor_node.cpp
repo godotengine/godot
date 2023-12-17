@@ -387,6 +387,11 @@ void EditorNode::_update_from_settings() {
 	RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
 	RS::EnvironmentHDDAGIFramesToConverge frames_to_converge = RS::EnvironmentHDDAGIFramesToConverge(int(GLOBAL_GET("rendering/global_illumination/hddagi/frames_to_converge")));
 	RS::get_singleton()->environment_set_hddagi_frames_to_converge(frames_to_converge);
+	RS::EnvironmentHDDAGIFramesToUpdateLight frames_to_update_light = RS::EnvironmentHDDAGIFramesToUpdateLight(int(GLOBAL_GET("rendering/global_illumination/hddagi/frames_to_update_lights")));
+	RS::get_singleton()->environment_set_hddagi_frames_to_update_light(frames_to_update_light);
+	RS::EnvironmentHDDAGIInactiveProbeFrames inactive_probe_frames = RS::EnvironmentHDDAGIInactiveProbeFrames(int(GLOBAL_GET("rendering/global_illumination/hddagi/frames_to_update_inactive_probes")));
+	RS::get_singleton()->environment_set_hddagi_inactive_probe_frames(inactive_probe_frames);
+
 	RS::VoxelGIQuality voxel_gi_quality = RS::VoxelGIQuality(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")));
 	RS::get_singleton()->voxel_gi_set_quality(voxel_gi_quality);
 	RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));

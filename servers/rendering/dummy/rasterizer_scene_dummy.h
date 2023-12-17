@@ -123,6 +123,8 @@ public:
 	void environment_set_hddagi_frames_to_converge(RS::EnvironmentHDDAGIFramesToConverge p_frames) override {}
 	void environment_set_hddagi_frames_to_update_light(RS::EnvironmentHDDAGIFramesToUpdateLight p_update) override {}
 
+	void environment_set_hddagi_inactive_probe_frames(RS::EnvironmentHDDAGIInactiveProbeFrames p_frames) override {}
+
 	void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override {}
 	void environment_set_volumetric_fog_filter_active(bool p_enable) override {}
 

@@ -70,11 +70,9 @@ public:
 	};
 
 	enum DynamicGICascadeFormat {
-		DYNAMIC_GI_CASCADE_FORMAT_16x4x16,
-		DYNAMIC_GI_CASCADE_FORMAT_16x8x16,
 		DYNAMIC_GI_CASCADE_FORMAT_16x16x16,
-		DYNAMIC_GI_CASCADE_FORMAT_32x8x32,
-		DYNAMIC_GI_CASCADE_FORMAT_32x16x32,
+		DYNAMIC_GI_CASCADE_FORMAT_16x8x16,
+		DYNAMIC_GI_CASCADE_FORMAT_16x4x16,
 		DYNAMIC_GI_CASCADE_FORMAT_MAX,
 	};
 
@@ -149,16 +147,16 @@ private:
 	int dynamic_gi_cascades = 4;
 	float dynamic_gi_min_cell_size = 0.2;
 	DynamicGICascadeFormat dynamic_gi_cascade_format = DYNAMIC_GI_CASCADE_FORMAT_16x8x16;
-	bool dynamic_gi_filter_probes = false;
+	bool dynamic_gi_filter_probes = true;
 	float dynamic_gi_bounce_feedback = 0.5;
 	bool dynamic_gi_read_sky_light = true;
 	float dynamic_gi_energy = 1.0;
 	float dynamic_gi_normal_bias = 1.1;
 	float dynamic_gi_reflection_bias = 2.0;
 	float dynamic_gi_probe_bias = 1.1;
-	float dynamic_gi_occlusion_sharpness = 1.0;
+	float dynamic_gi_occlusion_bias = 0.1;
 	bool dynamic_gi_filter_ambient = true;
-	bool dynamic_gi_filter_reflections = true;
+	bool dynamic_gi_filter_reflections = false;
 	void _update_dynamic_gi();
 
 	// Glow
@@ -337,8 +335,8 @@ public:
 	float get_dynamic_gi_reflection_bias() const;
 	void set_dynamic_gi_probe_bias(float p_bias);
 	float get_dynamic_gi_probe_bias() const;
-	void set_dynamic_gi_occlusion_sharpness(float p_bias);
-	float get_dynamic_gi_occlusion_sharpness() const;
+	void set_dynamic_gi_occlusion_bias(float p_bias);
+	float get_dynamic_gi_occlusion_bias() const;
 	void set_dynamic_gi_filter_ambient(bool p_enabled);
 	bool is_dynamic_gi_filtering_ambient() const;
 	void set_dynamic_gi_filter_reflections(bool p_enabled);

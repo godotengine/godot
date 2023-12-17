@@ -94,6 +94,10 @@ void RendererSceneRenderRD::environment_set_hddagi_frames_to_update_light(RS::En
 	gi.hddagi_frames_to_update_light = p_update;
 }
 
+void RendererSceneRenderRD::environment_set_hddagi_inactive_probe_frames(RS::EnvironmentHDDAGIInactiveProbeFrames p_frames) {
+	gi.inactive_probe_frames = p_frames;
+}
+
 Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
 	ERR_FAIL_COND_V(p_env.is_null(), Ref<Image>());
 
@@ -979,7 +983,7 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
 		}
 
 		Ref<RendererRD::GI::HDDAGI> hddagi = p_render_data->render_buffers->get_custom_data(RB_SCOPE_HDDAGI);
-		hddagi->update_probes(p_render_data->environment, sky.sky_owner.get_or_null(environment_get_sky(p_render_data->environment)));
+		hddagi->update_probes(p_render_data->environment, sky.sky_owner.get_or_null(environment_get_sky(p_render_data->environment)), p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform);
 	}
 }
 

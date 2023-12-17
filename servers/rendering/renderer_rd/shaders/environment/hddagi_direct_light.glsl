@@ -183,7 +183,7 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir, float p_distance, int p_cascade)
 	bool distance_limit_valid;
 
 	while (true) {
-		// This loop is written so there is only one single main interation.
+		// This loop is written so there is only one single main iteration.
 		// This ensures that different compute threads working on different
 		// levels can still run together without blocking each other.
 
@@ -377,7 +377,7 @@ void main() {
 
 	// Decode ProcessVoxel
 
-	ivec3 positioni = ivec3((uvec3(process_voxels.data[voxel_index].position) >> uvec3(0, 10, 20)) & uvec3(0x3FF));
+	ivec3 positioni = ivec3((uvec3(process_voxels.data[voxel_index].position) >> uvec3(0, 7, 14)) & uvec3(0x7F));
 
 	vec3 position = vec3(positioni) + vec3(0.5);
 	position /= cascades.data[params.cascade].to_cell;

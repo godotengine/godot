@@ -125,7 +125,7 @@ bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir, int p_cascade, out ivec3 r_cell,
 	ivec3 pos;
 
 	while (true) {
-		// This loop is written so there is only one single main interation.
+		// This loop is written so there is only one single main iteration.
 		// This ensures that different compute threads working on different
 		// levels can still run together without blocking each other.
 

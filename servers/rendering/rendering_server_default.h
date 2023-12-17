@@ -728,6 +728,8 @@ public:
 	FUNC1(environment_set_hddagi_frames_to_converge, EnvironmentHDDAGIFramesToConverge)
 	FUNC1(environment_set_hddagi_frames_to_update_light, EnvironmentHDDAGIFramesToUpdateLight)
 
+	FUNC1(environment_set_hddagi_inactive_probe_frames, EnvironmentHDDAGIInactiveProbeFrames)
+
 	FUNC3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
 	FUNC3(screen_space_roughness_limiter_set_active, bool, float, float)
