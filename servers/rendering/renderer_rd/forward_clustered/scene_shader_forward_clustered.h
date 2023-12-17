@@ -359,7 +359,7 @@ public:
 	RID debug_shadow_splits_material;
 	RID default_shader_rd;
 	RID default_multiview_shader_rd; // This is lazily initialized, use "get_default_shader_rd" instead.
-	RID default_shader_sdfgi_rd;
+	RID default_shader_hddagi_rd;
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
