@@ -349,11 +349,11 @@ void LightStorage::light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mo
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
-void LightStorage::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) {
+void LightStorage::light_set_max_hddagi_cascade(RID p_light, uint32_t p_cascade) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
 
-	light->max_sdfgi_cascade = p_cascade;
+	light->max_hddagi_cascade = p_cascade;
 
 	light->version++;
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
@@ -477,11 +477,11 @@ RID LightStorage::light_area_get_texture(RID p_light) const {
 	return light->area_texture;
 }
 
-uint32_t LightStorage::light_get_max_sdfgi_cascade(RID p_light) {
+uint32_t LightStorage::light_get_max_hddagi_cascade(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL_V(light, 0);
 
-	return light->max_sdfgi_cascade;
+	return light->max_hddagi_cascade;
 }
 
 RSE::LightBakeMode LightStorage::light_get_bake_mode(RID p_light) {

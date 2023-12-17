@@ -1686,7 +1686,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 #ifndef MODE_UNSHADED
-	// Used in regular draw pass and when drawing SDFs for SDFGI and materials for VoxelGI.
+	// Used in regular draw pass and when drawing SDFs for HDDAGI and materials for VoxelGI.
 	emission *= scene_data.emissive_exposure_normalization;
 #endif
 
@@ -1940,76 +1940,17 @@ void fragment_shader(in SceneData scene_data) {
 	}
 #else
 
-	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
-
-		//make vertex orientation the world one, but still align to camera
-		vec3 cam_pos = mat3(inv_view_matrix) * vertex;
+	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI)) { //has lightmap capture
+		vec3 cam_vertex = mat3(inv_view_matrix) * vertex;
 		vec3 cam_normal = mat3(inv_view_matrix) * indirect_normal;
 		vec3 cam_reflection = mat3(inv_view_matrix) * reflect(-view, indirect_normal);
 
-		//apply y-mult
-		cam_pos.y *= sdfgi.y_mult;
-		cam_normal.y *= sdfgi.y_mult;
-		cam_normal = normalize(cam_normal);
-		cam_reflection.y *= sdfgi.y_mult;
-		cam_normal = normalize(cam_normal);
-		cam_reflection = normalize(cam_reflection);
+		vec4 ret_ambient;
+		vec4 ret_reflection;
+		hddagi_process(cam_vertex, cam_normal, cam_reflection, roughness, ret_ambient, ret_reflection);
 
-		vec4 light_accum = vec4(0.0);
-		float weight_accum = 0.0;
-
-		vec4 light_blend_accum = vec4(0.0);
-		float weight_blend_accum = 0.0;
-
-		float blend = -1.0;
-
-		// helper constants, compute once
-
-		uint cascade = 0xFFFFFFFF;
-		vec3 cascade_pos;
-		vec3 cascade_normal;
-
-		for (uint i = 0; i < sdfgi.max_cascades; i++) {
-			cascade_pos = (cam_pos - sdfgi.cascades[i].position) * sdfgi.cascades[i].to_probe;
-
-			if (any(lessThan(cascade_pos, vec3(0.0))) || any(greaterThanEqual(cascade_pos, sdfgi.cascade_probe_size))) {
-				continue; //skip cascade
-			}
-
-			cascade = i;
-			break;
-		}
-
-		if (cascade < SDFGI_MAX_CASCADES) {
-			bool use_specular = true;
-			float blend;
-			vec3 diffuse, specular;
-			sdfgi_process(cascade, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, diffuse, specular, blend);
-
-			if (blend > 0.0) {
-				//blend
-				if (cascade == sdfgi.max_cascades - 1) {
-					diffuse = mix(diffuse, ambient_light, blend);
-					if (use_specular) {
-						indirect_specular_light = mix(specular, indirect_specular_light, blend);
-					}
-				} else {
-					vec3 diffuse2, specular2;
-					float blend2;
-					cascade_pos = (cam_pos - sdfgi.cascades[cascade + 1].position) * sdfgi.cascades[cascade + 1].to_probe;
-					sdfgi_process(cascade + 1, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, diffuse2, specular2, blend2);
-					diffuse = mix(diffuse, diffuse2, blend);
-					if (use_specular) {
-						specular = mix(specular, specular2, blend);
-					}
-				}
-			}
-
-			ambient_light = diffuse;
-			if (use_specular) {
-				indirect_specular_light = specular;
-			}
-		}
+		ambient_light = mix(ambient_light, ret_ambient.rgb, ret_ambient.a);
+		indirect_specular_light = mix(indirect_specular_light, ret_reflection.rgb, ret_reflection.a);
 	}
 
 	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
@@ -2987,42 +2928,66 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef MODE_RENDER_SDF
 
 	{
+		// Compute geometric normal.
+		vec3 ddx_vertex = dFdx(vertex);
+		vec3 ddy_vertex = dFdy(vertex);
+		vec3 geometric_normal = normalize(cross(ddx_vertex, ddy_vertex));
+
 		vec3 local_pos = (implementation_data.sdf_to_bounds * vec4(vertex, 1.0)).xyz;
-		ivec3 grid_pos = implementation_data.sdf_offset + ivec3(local_pos * vec3(implementation_data.sdf_size));
+		vec3 grid_pos = vec3(implementation_data.sdf_offset) + local_pos * vec3(implementation_data.sdf_size);
+		ivec3 igrid_pos = ivec3(grid_pos);
 
-		uint albedo16 = 0x1; //solid flag
-		albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 11;
-		albedo16 |= clamp(uint(albedo.g * 31.0), 0, 31) << 6;
-		albedo16 |= clamp(uint(albedo.b * 31.0), 0, 31) << 1;
-
-		imageStore(albedo_volume_grid, grid_pos, uvec4(albedo16));
-
-		uint facing_bits = 0;
-		const vec3 aniso_dir[6] = vec3[](
-				vec3(1, 0, 0),
-				vec3(0, 1, 0),
-				vec3(0, 0, 1),
-				vec3(-1, 0, 0),
-				vec3(0, -1, 0),
-				vec3(0, 0, -1));
+		// Compute normal bits. Lower 6 are inclusive axis facings, upper 26 are exclusive normal directions.
+		const int facing_direction_count = 26;
+		const vec3 facing_directions[26] = vec3[](vec3(-1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 0.0, 1.0), vec3(-0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, -0.7071067811865475, 0.0), vec3(-0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(-0.7071067811865475, 0.0, -0.7071067811865475), vec3(-0.7071067811865475, 0.0, 0.7071067811865475), vec3(-0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, 0.7071067811865475, 0.0), vec3(-0.5773502691896258, 0.5773502691896258, 0.5773502691896258), vec3(0.0, -0.7071067811865475, -0.7071067811865475), vec3(0.0, -0.7071067811865475, 0.7071067811865475), vec3(0.0, 0.7071067811865475, -0.7071067811865475), vec3(0.0, 0.7071067811865475, 0.7071067811865475), vec3(0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, -0.7071067811865475, 0.0), vec3(0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(0.7071067811865475, 0.0, -0.7071067811865475), vec3(0.7071067811865475, 0.0, 0.7071067811865475), vec3(0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, 0.7071067811865475, 0.0), vec3(0.5773502691896258, 0.5773502691896258, 0.5773502691896258));
 
 		vec3 cam_normal = mat3(inv_view_matrix) * normalize(normal_interp);
+		vec3 cam_geom_normal = mat3(inv_view_matrix) * normalize(geometric_normal);
+		if (gl_FrontFacing) {
+			cam_geom_normal = -cam_geom_normal;
+		}
 
-		float closest_dist = -1e20;
+		uint bit_normal = 0;
+		const float exclusive_threshold = 0.7;
+		const float inclusive_threshold = 0.001;
+		for (int i = 0; i < facing_direction_count; i++) {
+			float dp = dot(cam_geom_normal, facing_directions[i]);
 
-		for (uint i = 0; i < 6; i++) {
-			float d = dot(cam_normal, aniso_dir[i]);
-			if (d > closest_dist) {
-				closest_dist = d;
-				facing_bits = (1 << i);
+			if (i < 6 && dp > inclusive_threshold) {
+				bit_normal |= uint(1 << i);
+			}
+
+			if (dp > exclusive_threshold) {
+				bit_normal |= uint(1 << (i + 6));
 			}
 		}
 
 #ifdef NO_IMAGE_ATOMICS
-		imageStore(geom_facing_grid, grid_pos, uvec4(imageLoad(geom_facing_grid, grid_pos).r | facing_bits)); //store facing bits
+		imageStore(geom_normal_bits, igrid_pos, uvec4(imageLoad(geom_normal_bits, igrid_pos).r | bit_normal));
 #else
-		imageAtomicOr(geom_facing_grid, grid_pos, facing_bits); //store facing bits
+		imageAtomicOr(geom_normal_bits, igrid_pos, bit_normal);
 #endif
+
+		const vec3 aniso_dir[6] = vec3[](
+				vec3(-1, 0, 0),
+				vec3(1, 0, 0),
+				vec3(0, -1, 0),
+				vec3(0, 1, 0),
+				vec3(0, 0, -1),
+				vec3(0, 0, 1));
+
+		for (int i = 0; i < 6; i++) {
+			float d = dot(cam_normal, aniso_dir[i]);
+			if (d > 0.0) {
+				uint albedo16 = 0;
+				albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 0;
+				albedo16 |= clamp(uint(albedo.g * 63.0), 0, 63) << 5;
+				albedo16 |= clamp(uint(albedo.b * 31.0), 0, 31) << 11;
+				ivec3 store_pos = igrid_pos >> 1;
+				store_pos.z = store_pos.z * 6 + i;
+				imageStore(albedo_volume_grid, store_pos, uvec4(albedo16));
+			}
+		}
 
 		if (length(emission) > 0.001) {
 			float lumas[6];
@@ -3043,37 +3008,23 @@ void fragment_shader(in SceneData scene_data) {
 				light_aniso |= min(31, uint((lumas[i] / luma_total) * 31.0)) << (i * 5);
 			}
 
-			//compress to RGBE9995 to save space
+			uint light_rgbe;
+			{
+				vec3 rgb = light_total.rgb;
 
-			const float pow2to9 = 512.0f;
-			const float B = 15.0f;
-			const float N = 9.0f;
-			const float LN2 = 0.6931471805599453094172321215;
+				const float rgbe_max = uintBitsToFloat(0x477F8000);
+				const float rgbe_min = uintBitsToFloat(0x37800000);
 
-			float cRed = clamp(light_total.r, 0.0, 65408.0);
-			float cGreen = clamp(light_total.g, 0.0, 65408.0);
-			float cBlue = clamp(light_total.b, 0.0, 65408.0);
-
-			float cMax = max(cRed, max(cGreen, cBlue));
-
-			float expp = max(-B - 1.0f, floor(log(cMax) / LN2)) + 1.0f + B;
-
-			float sMax = floor((cMax / pow(2.0f, expp - B - N)) + 0.5f);
-
-			float exps = expp + 1.0f;
-
-			if (0.0 <= sMax && sMax < pow2to9) {
-				exps = expp;
+				rgb = clamp(rgb, 0, rgbe_max);
+				float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
+				float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
+				uvec3 urgb = floatBitsToUint(rgb + bias);
+				uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
+				light_rgbe = e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
 			}
 
-			float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
-			float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
-			float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-			//store as 8985 to have 2 extra neighbor bits
-			uint light_rgbe = ((uint(sRed) & 0x1FFu) >> 1) | ((uint(sGreen) & 0x1FFu) << 8) | (((uint(sBlue) & 0x1FFu) >> 1) << 17) | ((uint(exps) & 0x1Fu) << 25);
-
-			imageStore(emission_grid, grid_pos, uvec4(light_rgbe));
-			imageStore(emission_aniso_grid, grid_pos, uvec4(light_aniso));
+			imageStore(emission_grid, igrid_pos >> 1, uvec4(light_rgbe));
+			imageStore(emission_aniso_grid, igrid_pos >> 1, uvec4(light_aniso));
 		}
 	}
 

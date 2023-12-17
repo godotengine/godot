@@ -44,6 +44,8 @@ void Viewport::_bind_compatibility_methods() {
 #ifndef XR_DISABLED
 	ClassDB::bind_compatibility_method(D_METHOD("is_using_xr"), &Viewport::_is_using_xr_115799);
 #endif
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SDFGI);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SDFGI_PROBES);
 }
 
 #endif // DISABLE_DEPRECATED
