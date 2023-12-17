@@ -815,13 +815,18 @@ private:
 	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 	int z_index = 0;
 	int y_sort_origin = 0;
-	Vector<Ref<OccluderPolygon2D>> occluders;
+	struct OcclusionLayerTileData {
+		Ref<OccluderPolygon2D> occluder;
+		mutable HashMap<int, Ref<OccluderPolygon2D>> transformed_occluders;
+	};
+	Vector<OcclusionLayerTileData> occluders;
 
 	// Physics
 	struct PhysicsLayerTileData {
 		struct PolygonShapeTileData {
 			LocalVector<Vector2> polygon;
 			LocalVector<Ref<ConvexPolygonShape2D>> shapes;
+			mutable HashMap<int, LocalVector<Ref<ConvexPolygonShape2D>>> transformed_shapes;
 			bool one_way = false;
 			float one_way_margin = 1.0;
 		};
@@ -839,7 +844,11 @@ private:
 	int terrain_peering_bits[16] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
 	// Navigation
-	Vector<Ref<NavigationPolygon>> navigation;
+	struct NavigationLayerTileData {
+		Ref<NavigationPolygon> navigation_polygon;
+		mutable HashMap<int, Ref<NavigationPolygon>> transformed_navigation_polygon;
+	};
+	Vector<NavigationLayerTileData> navigation;
 
 	// Misc
 	double probability = 1.0;
@@ -852,6 +861,13 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	Ref<NavigationPolygon> _get_navigation_polygon_bind_compat_84660(int p_layer_id) const;
+	Ref<OccluderPolygon2D> _get_occluder_bind_compat_84660(int p_layer_id) const;
+
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	// Not exposed.
@@ -901,7 +917,7 @@ public:
 	int get_y_sort_origin() const;
 
 	void set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon);
-	Ref<OccluderPolygon2D> get_occluder(int p_layer_id) const;
+	Ref<OccluderPolygon2D> get_occluder(int p_layer_id, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false) const;
 
 	// Physics
 	void set_constant_linear_velocity(int p_layer_id, const Vector2 &p_velocity);
@@ -919,7 +935,7 @@ public:
 	void set_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index, float p_one_way_margin);
 	float get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const;
 	int get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_index) const;
-	Ref<ConvexPolygonShape2D> get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index) const;
+	Ref<ConvexPolygonShape2D> get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false) const;
 
 	// Terrain
 	void set_terrain_set(int p_terrain_id);
@@ -934,7 +950,7 @@ public:
 
 	// Navigation
 	void set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_navigation_polygon);
-	Ref<NavigationPolygon> get_navigation_polygon(int p_layer_id) const;
+	Ref<NavigationPolygon> get_navigation_polygon(int p_layer_id, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false) const;
 
 	// Misc
 	void set_probability(float p_probability);
@@ -945,6 +961,9 @@ public:
 	Variant get_custom_data(String p_layer_name) const;
 	void set_custom_data_by_layer_id(int p_layer_id, Variant p_value);
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
+
+	// Polygons.
+	static PackedVector2Array get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose);
 };
 
 VARIANT_ENUM_CAST(TileSet::CellNeighbor);

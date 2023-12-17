@@ -99,8 +99,14 @@ Config::Config() {
 	msaa_supported = extensions.has("GL_EXT_framebuffer_multisample");
 #endif
 #ifndef IOS_ENABLED
+#ifdef WEB_ENABLED
+	msaa_multiview_supported = extensions.has("OCULUS_multiview");
+	rt_msaa_multiview_supported = msaa_multiview_supported;
+#else
 	msaa_multiview_supported = extensions.has("GL_EXT_multiview_texture_multisample");
-	multiview_supported = extensions.has("GL_OVR_multiview2") || extensions.has("GL_OVR_multiview");
+#endif
+
+	multiview_supported = extensions.has("OCULUS_multiview") || extensions.has("GL_OVR_multiview2") || extensions.has("GL_OVR_multiview");
 #endif
 
 #ifdef ANDROID_ENABLED

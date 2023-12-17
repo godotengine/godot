@@ -199,6 +199,7 @@ private:
 	EXT_PROTO_XRRESULT_FUNC3(xrGetActionStateVector2f, (XrSession), session, (const XrActionStateGetInfo *), getInfo, (XrActionStateVector2f *), state)
 	EXT_PROTO_XRRESULT_FUNC3(xrGetCurrentInteractionProfile, (XrSession), session, (XrPath), topLevelUserPath, (XrInteractionProfileState *), interactionProfile)
 	EXT_PROTO_XRRESULT_FUNC2(xrGetInstanceProperties, (XrInstance), instance, (XrInstanceProperties *), instanceProperties)
+	EXT_PROTO_XRRESULT_FUNC3(xrGetReferenceSpaceBoundsRect, (XrSession), session, (XrReferenceSpaceType), referenceSpaceType, (XrExtent2Df *), bounds)
 	EXT_PROTO_XRRESULT_FUNC3(xrGetSystem, (XrInstance), instance, (const XrSystemGetInfo *), getInfo, (XrSystemId *), systemId)
 	EXT_PROTO_XRRESULT_FUNC3(xrGetSystemProperties, (XrInstance), instance, (XrSystemId), systemId, (XrSystemProperties *), properties)
 	EXT_PROTO_XRRESULT_FUNC4(xrLocateSpace, (XrSpace), space, (XrSpace), baseSpace, (XrTime), time, (XrSpaceLocation *), location)
@@ -317,7 +318,7 @@ public:
 
 	XrResult try_get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
-	String get_error_string(XrResult result);
+	String get_error_string(XrResult result) const;
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
 
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
@@ -379,6 +380,9 @@ public:
 
 	bool get_foveation_dynamic() const;
 	void set_foveation_dynamic(bool p_foveation_dynamic);
+
+	// Play space.
+	Size2 get_play_space_bounds() const;
 
 	// action map
 	String get_default_action_map_resource_name();

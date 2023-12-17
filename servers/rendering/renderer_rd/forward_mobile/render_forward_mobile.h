@@ -106,15 +106,9 @@ private:
 		GDCLASS(RenderBufferDataForwardMobile, RenderBufferCustomDataRD);
 
 	public:
-		// We can have:
-		// - 4 subpasses combining the full render cycle
-		// - 3 subpasses + 1 normal pass for tonemapping/glow/dof/etc (using fb for 2D buffer)
-		// - 2 subpasses + 1 normal pass for transparent + 1 normal pass for tonemapping/glow/dof/etc (using fb for 2D buffer)
 		enum FramebufferConfigType {
-			FB_CONFIG_ONE_PASS, // Single pass frame buffer for alpha pass
-			FB_CONFIG_TWO_SUBPASSES, // Opaque + Sky sub pass
-			FB_CONFIG_THREE_SUBPASSES, // Opaque + Sky + Alpha sub pass
-			FB_CONFIG_FOUR_SUBPASSES, // Opaque + Sky + Alpha sub pass + Tonemap pass
+			FB_CONFIG_RENDER_PASS, // Single pass framebuffer for normal rendering.
+			FB_CONFIG_RENDER_AND_POST_PASS, // Two subpasses, one for normal rendering, one for post processing.
 			FB_CONFIG_MAX
 		};
 

@@ -1664,7 +1664,7 @@ bool TabBar::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (property == "icon") {
 			set_tab_icon(tab_index, p_value);
 			return true;
-		} else if (components[1] == "disabled") {
+		} else if (property == "disabled") {
 			set_tab_disabled(tab_index, p_value);
 			return true;
 		}
@@ -1683,7 +1683,7 @@ bool TabBar::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (property == "icon") {
 			r_ret = get_tab_icon(tab_index);
 			return true;
-		} else if (components[1] == "disabled") {
+		} else if (property == "disabled") {
 			r_ret = is_tab_disabled(tab_index);
 			return true;
 		}

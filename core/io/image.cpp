@@ -509,6 +509,7 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 }
 
 void Image::convert(Format p_new_format) {
+	ERR_FAIL_INDEX_MSG(p_new_format, FORMAT_MAX, "The Image format specified (" + itos(p_new_format) + ") is out of range. See Image's Format enum.");
 	if (data.size() == 0) {
 		return;
 	}

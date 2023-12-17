@@ -384,11 +384,9 @@ void Area2D::_clear_monitoring() {
 	}
 }
 
-void Area2D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_EXIT_TREE: {
-			_clear_monitoring();
-		} break;
+void Area2D::_space_changed(const RID &p_new_space) {
+	if (p_new_space.is_null()) {
+		_clear_monitoring();
 	}
 }
 

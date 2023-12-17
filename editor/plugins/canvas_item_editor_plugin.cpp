@@ -5613,8 +5613,7 @@ void CanvasItemEditorViewport::_on_change_type_closed() {
 void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) const {
 	bool add_preview = false;
 	for (int i = 0; i < files.size(); i++) {
-		String path = files[i];
-		Ref<Resource> res = ResourceLoader::load(path);
+		Ref<Resource> res = ResourceLoader::load(files[i]);
 		ERR_FAIL_COND(res.is_null());
 		Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));

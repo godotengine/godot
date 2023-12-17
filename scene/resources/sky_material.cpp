@@ -161,6 +161,15 @@ bool ProceduralSkyMaterial::get_use_debanding() const {
 	return use_debanding;
 }
 
+void ProceduralSkyMaterial::set_energy_multiplier(float p_multiplier) {
+	global_energy_multiplier = p_multiplier;
+	RS::get_singleton()->material_set_param(_get_material(), "exposure", global_energy_multiplier);
+}
+
+float ProceduralSkyMaterial::get_energy_multiplier() const {
+	return global_energy_multiplier;
+}
+
 Shader::Mode ProceduralSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
@@ -226,6 +235,9 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_debanding", "use_debanding"), &ProceduralSkyMaterial::set_use_debanding);
 	ClassDB::bind_method(D_METHOD("get_use_debanding"), &ProceduralSkyMaterial::get_use_debanding);
 
+	ClassDB::bind_method(D_METHOD("set_energy_multiplier", "multiplier"), &ProceduralSkyMaterial::set_energy_multiplier);
+	ClassDB::bind_method(D_METHOD("get_energy_multiplier"), &ProceduralSkyMaterial::get_energy_multiplier);
+
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_top_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_sky_top_color", "get_sky_top_color");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_horizon_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_sky_horizon_color", "get_sky_horizon_color");
@@ -246,6 +258,7 @@ void ProceduralSkyMaterial::_bind_methods() {
 
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "get_use_debanding");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy_multiplier", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_energy_multiplier", "get_energy_multiplier");
 }
 
 void ProceduralSkyMaterial::cleanup_shader() {
@@ -280,6 +293,7 @@ uniform float ground_curve : hint_range(0, 1) = 0.02;
 uniform float ground_energy = 1.0;
 uniform float sun_angle_max = 30.0;
 uniform float sun_curve : hint_range(0, 1) = 0.15;
+uniform float exposure : hint_range(0, 128) = 1.0;
 
 void sky() {
 	float v_angle = acos(clamp(EYEDIR.y, -1.0, 1.0));
@@ -334,7 +348,7 @@ void sky() {
 	vec3 ground = mix(ground_horizon_color.rgb, ground_bottom_color.rgb, clamp(1.0 - pow(1.0 - c, 1.0 / ground_curve), 0.0, 1.0));
 	ground *= ground_energy;
 
-	COLOR = mix(ground, sky, step(0.0, EYEDIR.y));
+	COLOR = mix(ground, sky, step(0.0, EYEDIR.y)) * exposure;
 }
 )",
 																		  i ? "render_mode use_debanding;" : ""));
@@ -358,6 +372,7 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	set_sun_angle_max(30.0);
 	set_sun_curve(0.15);
 	set_use_debanding(true);
+	set_energy_multiplier(1.0);
 }
 
 ProceduralSkyMaterial::~ProceduralSkyMaterial() {
@@ -393,6 +408,15 @@ bool PanoramaSkyMaterial::is_filtering_enabled() const {
 	return filter;
 }
 
+void PanoramaSkyMaterial::set_energy_multiplier(float p_multiplier) {
+	energy_multiplier = p_multiplier;
+	RS::get_singleton()->material_set_param(_get_material(), "exposure", energy_multiplier);
+}
+
+float PanoramaSkyMaterial::get_energy_multiplier() const {
+	return energy_multiplier;
+}
+
 Shader::Mode PanoramaSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
@@ -420,8 +444,12 @@ void PanoramaSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_filtering_enabled", "enabled"), &PanoramaSkyMaterial::set_filtering_enabled);
 	ClassDB::bind_method(D_METHOD("is_filtering_enabled"), &PanoramaSkyMaterial::is_filtering_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_energy_multiplier", "multiplier"), &PanoramaSkyMaterial::set_energy_multiplier);
+	ClassDB::bind_method(D_METHOD("get_energy_multiplier"), &PanoramaSkyMaterial::get_energy_multiplier);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_panorama", "get_panorama");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter"), "set_filtering_enabled", "is_filtering_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy_multiplier", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_energy_multiplier", "get_energy_multiplier");
 }
 
 Mutex PanoramaSkyMaterial::shader_mutex;
@@ -447,9 +475,10 @@ void PanoramaSkyMaterial::_update_shader() {
 shader_type sky;
 
 uniform sampler2D source_panorama : %s, source_color, hint_default_black;
+uniform float exposure : hint_range(0, 128) = 1.0;
 
 void sky() {
-	COLOR = texture(source_panorama, SKY_COORDS).rgb;
+	COLOR = texture(source_panorama, SKY_COORDS).rgb * exposure;
 }
 )",
 																		  i ? "filter_linear" : "filter_nearest"));
@@ -460,6 +489,7 @@ void sky() {
 }
 
 PanoramaSkyMaterial::PanoramaSkyMaterial() {
+	set_energy_multiplier(1.0);
 }
 
 PanoramaSkyMaterial::~PanoramaSkyMaterial() {

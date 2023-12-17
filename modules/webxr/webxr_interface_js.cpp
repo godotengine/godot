@@ -309,7 +309,7 @@ void WebXRInterfaceJS::uninitialize() {
 
 		godot_webxr_uninitialize();
 
-		GLES3::TextureStorage *texture_storage = dynamic_cast<GLES3::TextureStorage *>(RSG::texture_storage);
+		GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 		if (texture_storage != nullptr) {
 			for (KeyValue<unsigned int, RID> &E : texture_cache) {
 				// Forcibly mark as not part of a render target so we can free it.
@@ -438,13 +438,8 @@ Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_a
 }
 
 bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
-	GLES3::TextureStorage *texture_storage = dynamic_cast<GLES3::TextureStorage *>(RSG::texture_storage);
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	if (texture_storage == nullptr) {
-		return false;
-	}
-
-	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
-	if (rt == nullptr) {
 		return false;
 	}
 
@@ -460,23 +455,9 @@ bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
 	//
 	// See: https://immersive-web.github.io/layers/#xropaquetextures
 	//
-	// This is why we're doing this sort of silly check: if the color and depth
-	// textures are the same this frame as last frame, we need to attach them
-	// again, despite the fact that the GLuint for them hasn't changed.
-	if (rt->overridden.is_overridden && rt->overridden.color == color_texture && rt->overridden.depth == depth_texture) {
-		GLES3::Config *config = GLES3::Config::get_singleton();
-		bool use_multiview = rt->view_count > 1 && config->multiview_supported;
-
-		glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
-		if (use_multiview) {
-			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, 0, rt->view_count);
-			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->depth, 0, 0, rt->view_count);
-		} else {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
-		}
-		glBindFramebuffer(GL_FRAMEBUFFER, texture_storage->system_fbo);
-	}
+	// So, even if the color and depth textures have the same GLuint as the last
+	// frame, we need to re-attach them again.
+	texture_storage->render_target_set_reattach_textures(p_render_target, true);
 
 	return true;
 }
@@ -484,7 +465,12 @@ bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
 Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	Vector<BlitToScreen> blit_to_screen;
 
-	// We don't need to do anything here.
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	if (texture_storage == nullptr) {
+		return blit_to_screen;
+	}
+
+	texture_storage->render_target_set_reattach_textures(p_render_target, false);
 
 	return blit_to_screen;
 };
@@ -513,7 +499,7 @@ RID WebXRInterfaceJS::_get_texture(unsigned int p_texture_id) {
 		return cache->get();
 	}
 
-	GLES3::TextureStorage *texture_storage = dynamic_cast<GLES3::TextureStorage *>(RSG::texture_storage);
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	if (texture_storage == nullptr) {
 		return RID();
 	}

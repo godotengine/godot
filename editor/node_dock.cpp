@@ -67,14 +67,23 @@ void NodeDock::update_lists() {
 	connections->update_tree();
 }
 
+void NodeDock::_on_node_tree_exited() {
+	set_node(nullptr);
+}
+
 void NodeDock::set_node(Node *p_node) {
-	connections->set_node(p_node);
-	groups->set_current(p_node);
-	if (p_node) {
-		last_valid_node = p_node;
+	if (last_valid_node) {
+		last_valid_node->disconnect("tree_exited", callable_mp(this, &NodeDock::_on_node_tree_exited));
+		last_valid_node = nullptr;
 	}
 
+	connections->set_node(p_node);
+	groups->set_current(p_node);
+
 	if (p_node) {
+		last_valid_node = p_node;
+		last_valid_node->connect("tree_exited", callable_mp(this, &NodeDock::_on_node_tree_exited));
+
 		if (connections_button->is_pressed()) {
 			connections->show();
 		} else {

@@ -912,6 +912,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	vb->add_child(effects);
 	effects->connect("item_edited", callable_mp(this, &EditorAudioBus::_effect_edited));
 	effects->connect("cell_selected", callable_mp(this, &EditorAudioBus::_effect_selected));
+	effects->connect("focus_exited", callable_mp(effects, &Tree::deselect_all));
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	SET_DRAG_FORWARDING_GCD(effects, EditorAudioBus);
 	effects->connect("item_mouse_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
@@ -1192,7 +1193,7 @@ void EditorAudioBuses::_server_save() {
 }
 
 void EditorAudioBuses::_select_layout() {
-	FileSystemDock::get_singleton()->select_file(edited_path);
+	FileSystemDock::get_singleton()->navigate_to_path(edited_path);
 }
 
 void EditorAudioBuses::_save_as_layout() {

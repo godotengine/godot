@@ -70,19 +70,27 @@ void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Si
 }
 
 void TreeItem::_changed_notify(int p_cell) {
-	tree->item_changed(p_cell, this);
+	if (tree) {
+		tree->item_changed(p_cell, this);
+	}
 }
 
 void TreeItem::_changed_notify() {
-	tree->item_changed(-1, this);
+	if (tree) {
+		tree->item_changed(-1, this);
+	}
 }
 
 void TreeItem::_cell_selected(int p_cell) {
-	tree->item_selected(p_cell, this);
+	if (tree) {
+		tree->item_selected(p_cell, this);
+	}
 }
 
 void TreeItem::_cell_deselected(int p_cell) {
-	tree->item_deselected(p_cell, this);
+	if (tree) {
+		tree->item_deselected(p_cell, this);
+	}
 }
 
 void TreeItem::_change_tree(Tree *p_tree) {

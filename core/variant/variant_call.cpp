@@ -2195,6 +2195,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, values, sarray(), varray());
 	bind_method(Dictionary, duplicate, sarray("deep"), varray(false));
 	bind_method(Dictionary, get, sarray("key", "default"), varray(Variant()));
+	bind_method(Dictionary, get_or_add, sarray("key", "default"), varray(Variant()));
 	bind_method(Dictionary, make_read_only, sarray(), varray());
 	bind_method(Dictionary, is_read_only, sarray(), varray());
 

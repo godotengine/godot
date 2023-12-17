@@ -182,6 +182,7 @@ opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
+opts.Add(BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
@@ -191,6 +192,7 @@ opts.Add(BoolVariable("brotli", "Enable Brotli for decompresson and WOFF2 fonts 
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
+opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver (Windows only)", False))
 opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
@@ -210,6 +212,7 @@ opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all 
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
+opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
@@ -267,6 +270,12 @@ opts.Add("LINKFLAGS", "Custom flags for the linker")
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
 opts.Update(env_base)
+
+# Copy custom environment variables if set.
+if env_base["import_env_vars"]:
+    for env_var in str(env_base["import_env_vars"]).split(","):
+        if env_var in os.environ:
+            env_base["ENV"][env_var] = os.environ[env_var]
 
 # Platform selection: validate input, and add options.
 

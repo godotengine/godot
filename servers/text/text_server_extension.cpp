@@ -236,6 +236,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_set_custom_punctuation, "shaped", "punct");
 	GDVIRTUAL_BIND(_shaped_text_get_custom_punctuation, "shaped");
 
+	GDVIRTUAL_BIND(_shaped_text_set_custom_ellipsis, "shaped", "char");
+	GDVIRTUAL_BIND(_shaped_text_get_custom_ellipsis, "shaped");
+
 	GDVIRTUAL_BIND(_shaped_text_set_orientation, "shaped", "orientation");
 	GDVIRTUAL_BIND(_shaped_text_get_orientation, "shaped");
 
@@ -1055,6 +1058,16 @@ void TextServerExtension::shaped_text_set_custom_punctuation(const RID &p_shaped
 String TextServerExtension::shaped_text_get_custom_punctuation(const RID &p_shaped) const {
 	String ret;
 	GDVIRTUAL_CALL(_shaped_text_get_custom_punctuation, p_shaped, ret);
+	return ret;
+}
+
+void TextServerExtension::shaped_text_set_custom_ellipsis(const RID &p_shaped, int64_t p_char) {
+	GDVIRTUAL_CALL(_shaped_text_set_custom_ellipsis, p_shaped, p_char);
+}
+
+int64_t TextServerExtension::shaped_text_get_custom_ellipsis(const RID &p_shaped) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_shaped_text_get_custom_ellipsis, p_shaped, ret);
 	return ret;
 }
 

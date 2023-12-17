@@ -1160,10 +1160,10 @@ void main() {
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
-			vec3 lm_light_l0 = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 0.0), 0.0).rgb;
-			vec3 lm_light_l1n1 = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb;
-			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
-			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
+			vec3 lm_light_l0 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 0.0), 0.0).rgb;
+			vec3 lm_light_l1n1 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb;
+			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
+			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
 
 			vec3 n = normalize(lightmaps.data[ofs].normal_xform * normal);
 			float exposure_normalization = lightmaps.data[ofs].exposure_normalization;
@@ -1180,7 +1180,7 @@ void main() {
 			}
 
 		} else {
-			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
+			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
 		}
 	}
 

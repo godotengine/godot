@@ -37,7 +37,7 @@
 #include "rendering_server_globals.h"
 #include "servers/rendering/storage/texture_storage.h"
 
-void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask) {
+void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info) {
 	RENDER_TIMESTAMP("Cull CanvasItem Tree");
 
 	memset(z_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
@@ -69,7 +69,7 @@ void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas
 	RENDER_TIMESTAMP("Render CanvasItems");
 
 	bool sdf_flag;
-	RSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_directional_lights, p_transform, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, sdf_flag);
+	RSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_directional_lights, p_transform, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, sdf_flag, r_render_info);
 	if (sdf_flag) {
 		sdf_used = true;
 	}
@@ -354,7 +354,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 }
 
-void RendererCanvasCull::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask) {
+void RendererCanvasCull::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info) {
 	RENDER_TIMESTAMP("> Render Canvas");
 
 	sdf_used = false;
@@ -377,26 +377,26 @@ void RendererCanvasCull::render_canvas(RID p_render_target, Canvas *p_canvas, co
 	}
 
 	if (!has_mirror) {
-		_render_canvas_item_tree(p_render_target, ci, l, nullptr, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask);
+		_render_canvas_item_tree(p_render_target, ci, l, nullptr, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
 
 	} else {
 		//used for parallaxlayer mirroring
 		for (int i = 0; i < l; i++) {
 			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
-			_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask);
+			_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
 
 			//mirroring (useful for scrolling backgrounds)
 			if (ci2.mirror.x != 0) {
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
 			}
 			if (ci2.mirror.y != 0) {
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci2.mirror.y));
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
 			}
 			if (ci2.mirror.y != 0 && ci2.mirror.x != 0) {
 				Transform2D xform2 = p_transform * Transform2D(0, ci2.mirror);
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
 			}
 		}
 	}
@@ -1396,14 +1396,12 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 	ERR_FAIL_COND(!p_bones.is_empty() && p_bones.size() != vertex_count * 4);
 	ERR_FAIL_COND(!p_weights.is_empty() && p_weights.size() != vertex_count * 4);
 
-	Vector<int> indices = p_indices;
-
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_NULL(polygon);
 
 	polygon->texture = p_texture;
 
-	polygon->polygon.create(indices, p_points, p_colors, p_uvs, p_bones, p_weights);
+	polygon->polygon.create(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights);
 
 	polygon->primitive = RS::PRIMITIVE_TRIANGLES;
 }
@@ -2039,6 +2037,12 @@ void RendererCanvasCull::update_visibility_notifiers() {
 
 		E = N;
 	}
+}
+
+Rect2 RendererCanvasCull::_debug_canvas_item_get_rect(RID p_item) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL_V(canvas_item, Rect2());
+	return canvas_item->get_rect();
 }
 
 bool RendererCanvasCull::free(RID p_rid) {

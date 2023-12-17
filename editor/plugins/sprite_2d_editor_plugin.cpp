@@ -159,9 +159,6 @@ void Sprite2DEditor::_popup_debug_uv_dialog() {
 	if (texture.is_null()) {
 		error_message = TTR("Can't convert an empty sprite to mesh.");
 	}
-	if (node->get_hframes() > 1 || node->get_vframes() > 1) {
-		error_message = TTR("Can't convert a sprite using animation frames to mesh.");
-	}
 
 	if (!error_message.is_empty()) {
 		err_dialog->set_text(error_message);
@@ -185,9 +182,9 @@ void Sprite2DEditor::_update_mesh_data() {
 		image->decompress();
 	}
 
-	// TODO: Add support for Sprite2D's region.
-	Rect2 rect;
-	rect.size = image->get_size();
+	Rect2 rect = node->is_region_enabled() ? node->get_region_rect() : Rect2(Point2(), image->get_size());
+	rect.size /= Vector2(node->get_hframes(), node->get_vframes());
+	rect.position += node->get_frame_coords() * rect.size;
 
 	Ref<BitMap> bm;
 	bm.instantiate();
@@ -224,18 +221,15 @@ void Sprite2DEditor::_update_mesh_data() {
 
 			for (int i = 0; i < lines[j].size(); i++) {
 				Vector2 vtx = lines[j][i];
-				computed_uv.push_back(vtx / img_size);
+				computed_uv.push_back((vtx + rect.position) / img_size);
 
-				vtx -= rect.position; //offset by rect position
-
-				//flip if flipped
 				if (node->is_flipped_h()) {
-					vtx.x = rect.size.x - vtx.x - 1.0;
+					vtx.x = rect.size.x - vtx.x;
 				}
 				if (node->is_flipped_v()) {
-					vtx.y = rect.size.y - vtx.y - 1.0;
+					vtx.y = rect.size.y - vtx.y;
 				}
-
+				vtx += node->get_offset();
 				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
 				}
@@ -249,8 +243,8 @@ void Sprite2DEditor::_update_mesh_data() {
 				for (int k = 0; k < 3; k++) {
 					int idx = i + k;
 					int idxn = i + (k + 1) % 3;
-					uv_lines.push_back(lines[j][poly[idx]]);
-					uv_lines.push_back(lines[j][poly[idxn]]);
+					uv_lines.push_back(lines[j][poly[idx]] + rect.position);
+					uv_lines.push_back(lines[j][poly[idxn]] + rect.position);
 
 					computed_indices.push_back(poly[idx] + index_ofs);
 				}
@@ -273,19 +267,18 @@ void Sprite2DEditor::_update_mesh_data() {
 
 			for (int i = 0; i < lines[pi].size(); i++) {
 				Vector2 vtx = lines[pi][i];
+				ol.write[i] = vtx + rect.position;
 
-				ol.write[i] = vtx;
-
-				vtx -= rect.position; //offset by rect position
-
-				//flip if flipped
 				if (node->is_flipped_h()) {
-					vtx.x = rect.size.x - vtx.x - 1.0;
+					vtx.x = rect.size.x - vtx.x;
 				}
 				if (node->is_flipped_v()) {
-					vtx.y = rect.size.y - vtx.y - 1.0;
+					vtx.y = rect.size.y - vtx.y;
 				}
-
+				// Don't bake offset to Polygon2D which has offset property.
+				if (selected_menu_item != MENU_OPTION_CONVERT_TO_POLYGON_2D) {
+					vtx += node->get_offset();
+				}
 				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
 				}

@@ -47,7 +47,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_dir_dialog.h"
 #include "editor/gui/editor_scene_tabs.h"
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/scene_import_settings.h"
 #include "editor/import_dock.h"
 #include "editor/plugins/editor_resource_tooltip_plugins.h"
 #include "editor/scene_create_dialog.h"
@@ -756,6 +756,14 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 void FileSystemDock::navigate_to_path(const String &p_path) {
 	file_list_search_box->clear();
 	_navigate_to_path(p_path);
+
+	// Ensure that the FileSystem dock is visible.
+	if (get_window() == get_tree()->get_root()) {
+		TabContainer *tab_container = (TabContainer *)get_parent_control();
+		tab_container->set_current_tab(tab_container->get_tab_idx_from_control((Control *)this));
+	} else {
+		get_window()->grab_focus();
+	}
 }
 
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
@@ -1192,12 +1200,12 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 
 		String resource_type = ResourceLoader::get_resource_type(fpath);
 
-		if (resource_type == "PackedScene") {
+		if (resource_type == "PackedScene" || resource_type == "AnimationLibrary") {
 			bool is_imported = false;
 
 			{
 				List<String> importer_exts;
-				ResourceImporterScene::get_scene_singleton()->get_recognized_extensions(&importer_exts);
+				ResourceImporterScene::get_scene_importer_extensions(&importer_exts);
 				String extension = fpath.get_extension();
 				for (const String &E : importer_exts) {
 					if (extension.nocasecmp_to(E) == 0) {
@@ -1208,27 +1216,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			}
 
 			if (is_imported) {
-				ResourceImporterScene::get_scene_singleton()->show_advanced_options(fpath);
-			} else {
-				EditorNode::get_singleton()->open_request(fpath);
-			}
-		} else if (resource_type == "AnimationLibrary") {
-			bool is_imported = false;
-
-			{
-				List<String> importer_exts;
-				ResourceImporterScene::get_animation_singleton()->get_recognized_extensions(&importer_exts);
-				String extension = fpath.get_extension();
-				for (const String &E : importer_exts) {
-					if (extension.nocasecmp_to(E) == 0) {
-						is_imported = true;
-						break;
-					}
-				}
-			}
-
-			if (is_imported) {
-				ResourceImporterScene::get_animation_singleton()->show_advanced_options(fpath);
+				SceneImportSettingsDialog::get_singleton()->open_settings(p_path, resource_type == "AnimationLibrary");
 			} else {
 				EditorNode::get_singleton()->open_request(fpath);
 			}
@@ -1306,6 +1294,13 @@ void FileSystemDock::_fs_changed() {
 
 	if (file_list_vb->is_visible()) {
 		_update_file_list(true);
+	}
+
+	if (!select_after_scan.is_empty()) {
+		_navigate_to_path(select_after_scan);
+		select_after_scan.clear();
+		import_dock_needs_update = true;
+		_update_import_dock();
 	}
 
 	set_process(false);
@@ -1487,8 +1482,6 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.") + "\n" + old_path + "\n");
 		return;
 	}
-	const_cast<FileSystemDock *>(this)->current_path = new_path;
-
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
 	if (p_item.is_file) {
@@ -1928,6 +1921,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		for (int i = 0; i < to_move.size(); i++) {
 			if (to_move[i].path != new_paths[i]) {
 				_try_duplicate_item(to_move[i], new_paths[i]);
+				select_after_scan = new_paths[i];
 				is_copied = true;
 			}
 		}
@@ -3482,6 +3476,14 @@ void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
 
 void FileSystemDock::_file_sort_popup(int p_id) {
 	set_file_sort((FileSortOption)p_id);
+}
+
+const HashMap<String, Color> &FileSystemDock::get_folder_colors() const {
+	return folder_colors;
+}
+
+Dictionary FileSystemDock::get_assigned_folder_colors() const {
+	return assigned_folder_colors;
 }
 
 MenuButton *FileSystemDock::_create_file_menu_button() {

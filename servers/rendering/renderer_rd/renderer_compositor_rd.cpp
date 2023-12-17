@@ -306,7 +306,7 @@ RendererCompositorRD::RendererCompositorRD() {
 	fog = memnew(RendererRD::Fog);
 	canvas = memnew(RendererCanvasRenderRD());
 
-	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+	String rendering_method = OS::get_singleton()->get_current_rendering_method();
 	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 	if (rendering_method == "mobile" || textures_per_stage < 48) {

@@ -1302,6 +1302,16 @@ bool SceneTree::has_group(const StringName &p_identifier) const {
 	return group_map.has(p_identifier);
 }
 
+int SceneTree::get_node_count_in_group(const StringName &p_group) const {
+	_THREAD_SAFE_METHOD_
+	HashMap<StringName, Group>::ConstIterator E = group_map.find(p_group);
+	if (!E) {
+		return 0;
+	}
+
+	return E->value.nodes.size();
+}
+
 Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
@@ -1617,6 +1627,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_nodes_in_group", "group"), &SceneTree::_get_nodes_in_group);
 	ClassDB::bind_method(D_METHOD("get_first_node_in_group", "group"), &SceneTree::get_first_node_in_group);
+	ClassDB::bind_method(D_METHOD("get_node_count_in_group", "group"), &SceneTree::get_node_count_in_group);
 
 	ClassDB::bind_method(D_METHOD("set_current_scene", "child_node"), &SceneTree::set_current_scene);
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);

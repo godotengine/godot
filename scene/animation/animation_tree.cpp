@@ -33,6 +33,7 @@
 
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
+#include "scene/animation/animation_player.h"
 #include "scene/scene_string_names.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -100,9 +101,9 @@ void AnimationNode::blend_animation(const StringName &p_animation, AnimationMixe
 	process_state->tree->make_animation_instance(p_animation, p_playback_info);
 }
 
-double AnimationNode::_pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info) {
+double AnimationNode::_pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	process_state = p_process_state;
-	double t = process(p_playback_info);
+	double t = process(p_playback_info, p_test_only);
 	process_state = nullptr;
 	return t;
 }
@@ -152,7 +153,7 @@ double AnimationNode::blend_input(int p_input, AnimationMixer::PlaybackInfo p_pl
 }
 
 double AnimationNode::blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter, bool p_sync, bool p_test_only) {
-	node_state.connections.clear();
+	p_node->node_state.connections.clear();
 	return _blend_node(p_node, p_subpath, this, p_playback_info, p_filter, p_sync, p_test_only, nullptr);
 }
 
@@ -269,9 +270,9 @@ double AnimationNode::_blend_node(Ref<AnimationNode> p_node, const StringName &p
 	p_node->node_state.parent = new_parent;
 	if (!p_playback_info.seeked && !p_sync && !any_valid) {
 		p_playback_info.time = 0.0;
-		return p_node->_pre_process(process_state, p_playback_info);
+		return p_node->_pre_process(process_state, p_playback_info, p_test_only);
 	}
-	return p_node->_pre_process(process_state, p_playback_info);
+	return p_node->_pre_process(process_state, p_playback_info, p_test_only);
 }
 
 String AnimationNode::get_caption() const {
@@ -565,12 +566,12 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		if (started) {
 			// If started, seek.
 			pi.seeked = true;
-			root_animation_node->_pre_process(&process_state, pi);
+			root_animation_node->_pre_process(&process_state, pi, false);
 			started = false;
-		} else {
-			pi.time = p_delta;
-			root_animation_node->_pre_process(&process_state, pi);
 		}
+		pi.seeked = false;
+		pi.time = p_delta;
+		root_animation_node->_pre_process(&process_state, pi, false);
 	}
 
 	if (!process_state.valid) {
@@ -764,15 +765,16 @@ void AnimationTree::_setup_animation_player() {
 		return;
 	}
 
-	AnimationMixer *mixer = Object::cast_to<AnimationMixer>(get_node_or_null(animation_player));
-	if (mixer) {
-		if (!mixer->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			mixer->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+	// Using AnimationPlayer here is for compatibility. Changing to AnimationMixer needs extra work like error handling.
+	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node_or_null(animation_player));
+	if (player) {
+		if (!player->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
 		}
-		if (!mixer->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			mixer->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+		if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
 		}
-		Node *root = mixer->get_node_or_null(mixer->get_root_node());
+		Node *root = player->get_node_or_null(player->get_root_node());
 		if (root) {
 			set_root_node(get_path_to(root, true));
 		}
@@ -780,9 +782,9 @@ void AnimationTree::_setup_animation_player() {
 			remove_animation_library(animation_libraries[0].name);
 		}
 		List<StringName> list;
-		mixer->get_animation_library_list(&list);
+		player->get_animation_library_list(&list);
 		for (int i = 0; i < list.size(); i++) {
-			Ref<AnimationLibrary> lib = mixer->get_animation_library(list[i]);
+			Ref<AnimationLibrary> lib = player->get_animation_library(list[i]);
 			if (lib.is_valid()) {
 				add_animation_library(list[i], lib);
 			}
@@ -798,6 +800,9 @@ void AnimationTree::_validate_property(PropertyInfo &p_property) const {
 	if (!animation_player.is_empty()) {
 		if (p_property.name == "root_node" || p_property.name.begins_with("libraries")) {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+		if (p_property.name.begins_with("libraries")) {
+			p_property.usage &= ~PROPERTY_USAGE_STORAGE;
 		}
 	}
 }

@@ -893,8 +893,7 @@ Error EditorExportPlatformIOS::_walk_dir_recursive(Ref<DirAccess> &p_da, FileHan
 	p_da->list_dir_end();
 
 	for (int i = 0; i < dirs.size(); ++i) {
-		String dir = dirs[i];
-		p_da->change_dir(dir);
+		p_da->change_dir(dirs[i]);
 		Error err = _walk_dir_recursive(p_da, p_handler, p_userdata);
 		p_da->change_dir("..");
 		if (err) {

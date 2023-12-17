@@ -973,8 +973,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 			}
 
 			if (p_map.has(path)) {
-				String np = p_map[path];
-				path = np;
+				path = p_map[path];
 			}
 
 			if (relative) {
@@ -1791,8 +1790,8 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 		err = loader.rename_dependencies(f, p_path, p_map);
 	}
 
-	if (err == OK) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (err == OK && da->file_exists(p_path + ".depren")) {
 		da->remove(p_path);
 		da->rename(p_path + ".depren", p_path);
 	}

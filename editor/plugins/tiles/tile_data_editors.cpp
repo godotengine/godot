@@ -1421,8 +1421,8 @@ void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 
 Variant TileDataOcclusionShapeEditor::_get_painted_value() {
 	Ref<OccluderPolygon2D> occluder_polygon;
-	occluder_polygon.instantiate();
 	if (polygon_editor->get_polygon_count() >= 1) {
+		occluder_polygon.instantiate();
 		occluder_polygon->set_polygon(polygon_editor->get_polygon(0));
 	}
 	return occluder_polygon;

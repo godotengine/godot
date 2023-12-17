@@ -52,10 +52,10 @@ class EditorFileDialog;
 class EditorInspector;
 class SceneImportSettingsData;
 
-class SceneImportSettings : public ConfirmationDialog {
-	GDCLASS(SceneImportSettings, ConfirmationDialog)
+class SceneImportSettingsDialog : public ConfirmationDialog {
+	GDCLASS(SceneImportSettingsDialog, ConfirmationDialog)
 
-	static SceneImportSettings *singleton;
+	static SceneImportSettingsDialog *singleton;
 
 	enum Actions {
 		ACTION_EXTRACT_MATERIALS,
@@ -223,10 +223,10 @@ public:
 	void request_generate_collider();
 	void update_view();
 	void open_settings(const String &p_path, bool p_for_animation = false);
-	static SceneImportSettings *get_singleton();
+	static SceneImportSettingsDialog *get_singleton();
 	Node *get_selected_node();
-	SceneImportSettings();
-	~SceneImportSettings();
+	SceneImportSettingsDialog();
+	~SceneImportSettingsDialog();
 };
 
 #endif // SCENE_IMPORT_SETTINGS_H

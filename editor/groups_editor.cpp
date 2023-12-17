@@ -117,7 +117,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 
 		if (!can_edit(p_current, selected_group)) {
 			node->set_selectable(0, false);
-			node->set_custom_color(0, groups->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+			node->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 		}
 	}
 
@@ -211,8 +211,8 @@ void GroupDialog::_add_group(String p_name) {
 
 	TreeItem *new_group = groups->create_item(groups_root);
 	new_group->set_text(0, name);
-	new_group->add_button(0, groups->get_editor_theme_icon(SNAME("Remove")), DELETE_GROUP);
-	new_group->add_button(0, groups->get_editor_theme_icon(SNAME("ActionCopy")), COPY_GROUP);
+	new_group->add_button(0, get_editor_theme_icon(SNAME("Remove")), DELETE_GROUP);
+	new_group->add_button(0, get_editor_theme_icon(SNAME("ActionCopy")), COPY_GROUP);
 	new_group->set_editable(0, true);
 	new_group->select(0);
 	groups->ensure_cursor_is_visible();
@@ -391,20 +391,17 @@ void GroupDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_layout_rtl()) {
-				add_button->set_icon(groups->get_editor_theme_icon(SNAME("Back")));
-				remove_button->set_icon(groups->get_editor_theme_icon(SNAME("Forward")));
+				add_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+				remove_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
 			} else {
-				add_button->set_icon(groups->get_editor_theme_icon(SNAME("Forward")));
-				remove_button->set_icon(groups->get_editor_theme_icon(SNAME("Back")));
+				add_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				remove_button->set_icon(get_editor_theme_icon(SNAME("Back")));
 			}
 
-			add_filter->set_right_icon(groups->get_editor_theme_icon(SNAME("Search")));
-			add_filter->set_clear_button_enabled(true);
-			remove_filter->set_right_icon(groups->get_editor_theme_icon(SNAME("Search")));
-			remove_filter->set_clear_button_enabled(true);
+			add_filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			remove_filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 		} break;
 	}
 }
@@ -512,6 +509,7 @@ GroupDialog::GroupDialog() {
 	add_filter = memnew(LineEdit);
 	add_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_filter->set_placeholder(TTR("Filter Nodes"));
+	add_filter->set_clear_button_enabled(true);
 	add_filter_hbc->add_child(add_filter);
 	add_filter->connect("text_changed", callable_mp(this, &GroupDialog::_add_filter_changed));
 
@@ -562,6 +560,7 @@ GroupDialog::GroupDialog() {
 	remove_filter = memnew(LineEdit);
 	remove_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remove_filter->set_placeholder(TTR("Filter Nodes"));
+	remove_filter->set_clear_button_enabled(true);
 	remove_filter_hbc->add_child(remove_filter);
 	remove_filter->connect("text_changed", callable_mp(this, &GroupDialog::_remove_filter_changed));
 

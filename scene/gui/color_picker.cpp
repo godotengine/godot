@@ -74,7 +74,7 @@ void ColorPicker::_notification(int p_what) {
 				sliders[i]->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 			}
 			alpha_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
-			alpha_label->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
+			alpha_slider->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 
 			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
 				mode_btns[i]->begin_bulk_theme_override();
@@ -693,6 +693,12 @@ void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 
 	current_shape = p_shape;
 
+#ifdef TOOLS_ENABLED
+	if (editor_settings) {
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "picker_shape", current_shape);
+	}
+#endif
+
 	_copy_color_to_hsv();
 
 	_update_controls();
@@ -926,6 +932,12 @@ void ColorPicker::set_color_mode(ColorModeType p_mode) {
 	}
 
 	current_mode = p_mode;
+
+#ifdef TOOLS_ENABLED
+	if (editor_settings) {
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "color_mode", current_mode);
+	}
+#endif
 
 	if (!is_inside_tree()) {
 		return;
