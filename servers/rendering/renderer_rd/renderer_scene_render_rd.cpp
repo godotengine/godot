@@ -92,15 +92,16 @@ void RendererSceneRenderRD::environment_set_volumetric_fog_filter_active(bool p_
 	volumetric_fog_filter_active = p_enable;
 }
 
-void RendererSceneRenderRD::environment_set_sdfgi_ray_count(RSE::EnvironmentSDFGIRayCount p_ray_count) {
-	gi.sdfgi_ray_count = p_ray_count;
+void RendererSceneRenderRD::environment_set_hddagi_frames_to_converge(RSE::EnvironmentHDDAGIFramesToConverge p_frames) {
+	gi.hddagi_frames_to_converge = p_frames;
 }
 
-void RendererSceneRenderRD::environment_set_sdfgi_frames_to_converge(RSE::EnvironmentSDFGIFramesToConverge p_frames) {
-	gi.sdfgi_frames_to_converge = p_frames;
+void RendererSceneRenderRD::environment_set_hddagi_frames_to_update_light(RSE::EnvironmentHDDAGIFramesToUpdateLight p_update) {
+	gi.hddagi_frames_to_update_light = p_update;
 }
-void RendererSceneRenderRD::environment_set_sdfgi_frames_to_update_light(RSE::EnvironmentSDFGIFramesToUpdateLight p_update) {
-	gi.sdfgi_frames_to_update_light = p_update;
+
+void RendererSceneRenderRD::environment_set_hddagi_inactive_probe_frames(RSE::EnvironmentHDDAGIInactiveProbeFrames p_frames) {
+	gi.inactive_probe_frames = p_frames;
 }
 
 Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
@@ -225,16 +226,16 @@ void RendererSceneRenderRD::voxel_gi_update(RID p_probe, bool p_update_light_ins
 	gi.voxel_gi_update(p_probe, p_update_light_instances, p_light_instances, p_dynamic_objects);
 }
 
-void RendererSceneRenderRD::_debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms) {
+void RendererSceneRenderRD::_debug_hddagi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms) {
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
-	if (!p_render_buffers->has_custom_data(RB_SCOPE_SDFGI)) {
+	if (!p_render_buffers->has_custom_data(RB_SCOPE_HDDAGI)) {
 		return; //nothing to debug
 	}
 
-	Ref<RendererRD::GI::SDFGI> sdfgi = p_render_buffers->get_custom_data(RB_SCOPE_SDFGI);
+	Ref<RendererRD::GI::HDDAGI> hddagi = p_render_buffers->get_custom_data(RB_SCOPE_HDDAGI);
 
-	sdfgi->debug_probes(p_framebuffer, p_view_count, p_camera_with_transforms);
+	hddagi->debug_probes(p_framebuffer, p_view_count, p_camera_with_transforms);
 }
 
 ////////////////////////////////
@@ -1025,7 +1026,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p
 		case RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
 		case RSE::VIEWPORT_DEBUG_DRAW_SSAO:
 		case RSE::VIEWPORT_DEBUG_DRAW_SSIL:
-		case RSE::VIEWPORT_DEBUG_DRAW_SDFGI:
+		case RSE::VIEWPORT_DEBUG_DRAW_HDDAGI:
 		case RSE::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
 		case RSE::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
 			can_use_effects = true;
@@ -1036,7 +1037,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p
 		case RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION:
 		case RSE::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE:
 		case RSE::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS:
-		case RSE::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES:
+		case RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES:
 		case RSE::VIEWPORT_DEBUG_DRAW_DISABLE_LOD:
 			can_use_effects = true;
 			break;
@@ -1338,7 +1339,7 @@ void RendererSceneRenderRD::_update_vrs(Ref<RenderSceneBuffersRD> p_render_buffe
 
 bool RendererSceneRenderRD::_needs_post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi) {
 	if (p_render_data->render_buffers.is_valid()) {
-		if (p_render_data->render_buffers->has_custom_data(RB_SCOPE_SDFGI)) {
+		if (p_render_data->render_buffers->has_custom_data(RB_SCOPE_HDDAGI)) {
 			return true;
 		}
 	}
@@ -1347,16 +1348,16 @@ bool RendererSceneRenderRD::_needs_post_prepass_render(RenderDataRD *p_render_da
 
 void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi) {
 	if (p_render_data->render_buffers.is_valid() && p_use_gi) {
-		if (!p_render_data->render_buffers->has_custom_data(RB_SCOPE_SDFGI)) {
+		if (!p_render_data->render_buffers->has_custom_data(RB_SCOPE_HDDAGI)) {
 			return;
 		}
 
-		Ref<RendererRD::GI::SDFGI> sdfgi = p_render_data->render_buffers->get_custom_data(RB_SCOPE_SDFGI);
-		sdfgi->update_probes(p_render_data->environment, sky.sky_owner.get_or_null(environment_get_sky(p_render_data->environment)));
+		Ref<RendererRD::GI::HDDAGI> hddagi = p_render_data->render_buffers->get_custom_data(RB_SCOPE_HDDAGI);
+		hddagi->update_probes(p_render_data->environment, sky.sky_owner.get_or_null(environment_get_sky(p_render_data->environment)), p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform);
 	}
 }
 
-void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, float p_window_output_max_value, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingServerTypes::RenderInfo *r_render_info) {
+void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderHDDAGIData *p_render_hddagi_regions, int p_render_hddagi_region_count, float p_window_output_max_value, const RenderHDDAGIUpdateData *p_hddagi_update_data, RenderingServerTypes::RenderInfo *r_render_info) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -1464,9 +1465,9 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 		render_data.render_shadows = p_render_shadows;
 		render_data.render_shadow_count = p_render_shadow_count;
-		render_data.render_sdfgi_regions = p_render_sdfgi_regions;
-		render_data.render_sdfgi_region_count = p_render_sdfgi_region_count;
-		render_data.sdfgi_update_data = p_sdfgi_update_data;
+		render_data.render_hddagi_regions = p_render_hddagi_regions;
+		render_data.render_hddagi_region_count = p_render_hddagi_region_count;
+		render_data.hddagi_update_data = p_hddagi_update_data;
 		render_data.window_output_max_value = p_window_output_max_value;
 
 		render_data.render_info = r_render_info;
@@ -1755,9 +1756,9 @@ PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedA
 	return data;
 }
 
-void RendererSceneRenderRD::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
-	gi.sdfgi_debug_probe_pos = p_position;
-	gi.sdfgi_debug_probe_dir = p_dir;
+void RendererSceneRenderRD::hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
+	gi.hddagi_debug_probe_pos = p_position;
+	gi.hddagi_debug_probe_dir = p_dir;
 }
 
 RendererSceneRenderRD *RendererSceneRenderRD::singleton = nullptr;

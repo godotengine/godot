@@ -229,6 +229,12 @@
 				[/codeblock]
 			</description>
 		</operator>
+		<operator name="operator &amp;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator *">
 			<return type="Vector2i" />
 			<param index="0" name="right" type="Vector2i" />
@@ -310,6 +316,18 @@
 				Compares two [Vector2i] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
+		<operator name="operator &lt;&lt;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;&lt;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="Vector2i" />
@@ -338,11 +356,29 @@
 				Compares two [Vector2i] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
+		<operator name="operator &gt;&gt;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;&gt;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator []">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Access vector components using their [param index]. [code]v[0][/code] is equivalent to [code]v.x[/code], and [code]v[1][/code] is equivalent to [code]v.y[/code].
+			</description>
+		</operator>
+		<operator name="operator ^">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
 			</description>
 		</operator>
 		<operator name="operator unary+">
@@ -355,6 +391,12 @@
 			<return type="Vector2i" />
 			<description>
 				Returns the negative value of the [Vector2i]. This is the same as writing [code]Vector2i(-v.x, -v.y)[/code]. This operation flips the direction of the vector while keeping the same magnitude.
+			</description>
+		</operator>
+		<operator name="operator |">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
 			</description>
 		</operator>
 	</operators>

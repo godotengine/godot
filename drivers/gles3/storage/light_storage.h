@@ -55,7 +55,7 @@ struct Light {
 	bool negative = false;
 	bool reverse_cull = false;
 	RSE::LightBakeMode bake_mode = RSE::LIGHT_BAKE_DYNAMIC;
-	uint32_t max_sdfgi_cascade = 2;
+	uint32_t max_hddagi_cascade = 2;
 	uint32_t cull_mask = 0xFFFFFFFF;
 	uint32_t shadow_caster_mask = 0xFFFFFFFF;
 	bool distance_fade = false;
@@ -334,7 +334,7 @@ public:
 	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) override;
 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override;
 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) override;
-	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override {}
+	virtual void light_set_max_hddagi_cascade(RID p_light, uint32_t p_cascade) override {}
 
 	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) override;
 
@@ -439,7 +439,7 @@ public:
 	}
 
 	virtual RSE::LightBakeMode light_get_bake_mode(RID p_light) override;
-	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override { return 0; }
+	virtual uint32_t light_get_max_hddagi_cascade(RID p_light) override { return 0; }
 	virtual uint64_t light_get_version(RID p_light) const override;
 	virtual uint32_t light_get_cull_mask(RID p_light) const override;
 

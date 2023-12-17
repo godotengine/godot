@@ -364,10 +364,26 @@ public:
 		const B &b = VariantInternalAccessor<B>::get(&p_right);
 
 #if defined(DEBUG_ENABLED)
-		if (b < 0 || a < 0) {
+		if (b < 0) {
 			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
 			r_valid = false;
 			return;
+		}
+
+		if constexpr (std::is_scalar_v<A>) {
+			if (a < 0) {
+				*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+				r_valid = false;
+				return;
+			}
+		} else {
+			for (uint32_t i = 0; i < A::AXIS_COUNT; ++i) {
+				if (a[i] < 0) {
+					*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+					r_valid = false;
+					return;
+				}
+			}
 		}
 #endif
 		*r_ret = a << b;
@@ -390,10 +406,26 @@ public:
 		const B &b = VariantInternalAccessor<B>::get(&p_right);
 
 #if defined(DEBUG_ENABLED)
-		if (b < 0 || a < 0) {
+		if (b < 0) {
 			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
 			r_valid = false;
 			return;
+		}
+
+		if constexpr (std::is_scalar_v<A>) {
+			if (a < 0) {
+				*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+				r_valid = false;
+				return;
+			}
+		} else {
+			for (uint32_t i = 0; i < A::AXIS_COUNT; ++i) {
+				if (a[i] < 0) {
+					*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+					r_valid = false;
+					return;
+				}
+			}
 		}
 #endif
 		*r_ret = a >> b;
@@ -404,6 +436,78 @@ public:
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) >> PtrToArg<B>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <typename R, typename A, typename B>
+class OperatorEvaluatorShiftRightVector {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = VariantInternalAccessor<A>::get(&p_left);
+		const B &b = VariantInternalAccessor<B>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (A::AXIS_COUNT != B::AXIS_COUNT) {
+			*r_ret = "Axis counts must match.";
+			r_valid = false;
+			return;
+		}
+
+		for (uint32_t i = 0; i < A::AXIS_COUNT; ++i) {
+			if (b[i] < 0 || a[i] < 0) {
+				*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+				r_valid = false;
+				return;
+			}
+		}
+#endif
+
+		*r_ret = a >> b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<R>::get(r_ret) = VariantInternalAccessor<A>::get(left) >> VariantInternalAccessor<B>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) >> PtrToArg<B>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <typename R, typename A, typename B>
+class OperatorEvaluatorShiftLeftVector {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = VariantInternalAccessor<A>::get(&p_left);
+		const B &b = VariantInternalAccessor<B>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (A::AXIS_COUNT != B::AXIS_COUNT)
+		{
+			*r_ret = "Axis counts must match.";
+			r_valid = false;
+			return;
+		}
+
+		for (uint32_t i = 0; i < A::AXIS_COUNT; ++i)
+		{
+			if (b[i] < 0 || a[i] < 0) {
+				*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+				r_valid = false;
+				return;
+			}
+		}
+#endif
+
+		*r_ret = a << b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<R>::get(r_ret) = VariantInternalAccessor<A>::get(left) << VariantInternalAccessor<B>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) << PtrToArg<B>::convert(right), r_ret);
 	}
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };

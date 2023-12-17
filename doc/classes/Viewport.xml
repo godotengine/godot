@@ -713,15 +713,15 @@
 			Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
-		<constant name="DEBUG_DRAW_SDFGI" value="16" enum="DebugDraw">
-			Draws the cascades used to render signed distance field global illumination (SDFGI).
-			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
+		<constant name="DEBUG_DRAW_HDDAGI" value="16" enum="DebugDraw">
+			Draws the cascades used to render voxel volumes for global illumination (DynamicGI).
+			Does nothing if the current environment's [member Environment.dynamic_gi_enabled] is [code]false[/code] or Dynamic GI is not supported on the platform.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="17" enum="DebugDraw">
-			Draws the probes used for signed distance field global illumination (SDFGI).
+		<constant name="DEBUG_DRAW_HDDAGI_PROBES" value="17" enum="DebugDraw">
+			Draws the probes used for Dynamic GI (HDDAGI).
 			When in the editor, left-clicking a probe will display additional bright dots that show its occlusion information. A white dot means the light is not occluded at all at the dot's position, while a red dot means the light is fully occluded. Intermediate values are possible.
-			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
+			Does nothing if the current environment's [member Environment.dynamic_gi_enabled] is [code]false[/code].
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="18" enum="DebugDraw">
