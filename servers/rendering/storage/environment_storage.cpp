@@ -686,86 +686,114 @@ float RendererEnvironmentStorage::environment_get_ssil_normal_rejection(RID p_en
 	return env->ssil_normal_rejection;
 }
 
-// SDFGI
+// HDDAGI
 
-void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RS::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("SDFGI can only be enabled when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("HDDAGI can only be enabled when using the Forward+ rendering backend.");
 	}
 #endif
-	env->sdfgi_enabled = p_enable;
-	env->sdfgi_cascades = p_cascades;
-	env->sdfgi_min_cell_size = p_min_cell_size;
-	env->sdfgi_use_occlusion = p_use_occlusion;
-	env->sdfgi_bounce_feedback = p_bounce_feedback;
-	env->sdfgi_read_sky_light = p_read_sky;
-	env->sdfgi_energy = p_energy;
-	env->sdfgi_normal_bias = p_normal_bias;
-	env->sdfgi_probe_bias = p_probe_bias;
-	env->sdfgi_y_scale = p_y_scale;
+	env->hddagi_enabled = p_enable;
+	env->hddagi_cascades = p_cascades;
+	env->hddagi_cascade_format = p_cascade_format;
+	env->hddagi_min_cell_size = p_min_cell_size;
+	env->hddagi_filter_probes = p_filter_probes;
+	env->hddagi_bounce_feedback = p_bounce_feedback;
+	env->hddagi_read_sky_light = p_read_sky;
+	env->hddagi_energy = p_energy;
+	env->hddagi_normal_bias = p_normal_bias;
+	env->hddagi_reflection_bias = p_reflection_bias;
+	env->hddagi_probe_bias = p_probe_bias;
+	env->hddagi_occlusion_bias = p_occlusion_bias;
+	env->hddagi_filter_ambient = p_filter_ambient;
+	env->hddagi_filter_reflection = p_filter_reflection;
 }
 
-bool RendererEnvironmentStorage::environment_get_sdfgi_enabled(RID p_env) const {
+bool RendererEnvironmentStorage::environment_get_hddagi_enabled(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, false);
-	return env->sdfgi_enabled;
+	return env->hddagi_enabled;
 }
 
-int RendererEnvironmentStorage::environment_get_sdfgi_cascades(RID p_env) const {
+int RendererEnvironmentStorage::environment_get_hddagi_cascades(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 4);
-	return env->sdfgi_cascades;
+	return env->hddagi_cascades;
 }
 
-float RendererEnvironmentStorage::environment_get_sdfgi_min_cell_size(RID p_env) const {
+float RendererEnvironmentStorage::environment_get_hddagi_min_cell_size(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 0.2);
-	return env->sdfgi_min_cell_size;
+	return env->hddagi_min_cell_size;
 }
 
-bool RendererEnvironmentStorage::environment_get_sdfgi_use_occlusion(RID p_env) const {
+bool RendererEnvironmentStorage::environment_get_hddagi_filter_probes(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, false);
-	return env->sdfgi_use_occlusion;
+	return env->hddagi_filter_probes;
 }
 
-float RendererEnvironmentStorage::environment_get_sdfgi_bounce_feedback(RID p_env) const {
+bool RendererEnvironmentStorage::environment_get_hddagi_filter_reflection(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+	return env->hddagi_filter_reflection;
+}
+
+bool RendererEnvironmentStorage::environment_get_hddagi_filter_ambient(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+	return env->hddagi_filter_ambient;
+}
+
+float RendererEnvironmentStorage::environment_get_hddagi_bounce_feedback(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 0.5);
-	return env->sdfgi_bounce_feedback;
+	return env->hddagi_bounce_feedback;
 }
 
-bool RendererEnvironmentStorage::environment_get_sdfgi_read_sky_light(RID p_env) const {
+bool RendererEnvironmentStorage::environment_get_hddagi_read_sky_light(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, true);
-	return env->sdfgi_read_sky_light;
+	return env->hddagi_read_sky_light;
 }
 
-float RendererEnvironmentStorage::environment_get_sdfgi_energy(RID p_env) const {
+float RendererEnvironmentStorage::environment_get_hddagi_energy(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.0);
-	return env->sdfgi_energy;
+	return env->hddagi_energy;
 }
 
-float RendererEnvironmentStorage::environment_get_sdfgi_normal_bias(RID p_env) const {
+float RendererEnvironmentStorage::environment_get_hddagi_normal_bias(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.1);
-	return env->sdfgi_normal_bias;
+	return env->hddagi_normal_bias;
 }
 
-float RendererEnvironmentStorage::environment_get_sdfgi_probe_bias(RID p_env) const {
+float RendererEnvironmentStorage::environment_get_hddagi_reflection_bias(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.1);
-	return env->sdfgi_probe_bias;
+	return env->hddagi_reflection_bias;
 }
 
-RS::EnvironmentSDFGIYScale RendererEnvironmentStorage::environment_get_sdfgi_y_scale(RID p_env) const {
+float RendererEnvironmentStorage::environment_get_hddagi_probe_bias(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_SDFGI_Y_SCALE_75_PERCENT);
-	return env->sdfgi_y_scale;
+	ERR_FAIL_NULL_V(env, 1.1);
+	return env->hddagi_probe_bias;
+}
+
+float RendererEnvironmentStorage::environment_get_hddagi_occlusion_bias(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.1);
+	return env->hddagi_occlusion_bias;
+}
+
+RS::EnvironmentHDDAGICascadeFormat RendererEnvironmentStorage::environment_get_hddagi_cascade_format(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16);
+	return env->hddagi_cascade_format;
 }
 
 // Adjustments

@@ -69,10 +69,10 @@ public:
 		TONE_MAPPER_ACES,
 	};
 
-	enum SDFGIYScale {
-		SDFGI_Y_SCALE_50_PERCENT,
-		SDFGI_Y_SCALE_75_PERCENT,
-		SDFGI_Y_SCALE_100_PERCENT,
+	enum DynamicGICascadeFormat {
+		DYNAMIC_GI_CASCADE_FORMAT_16x8x16,
+		DYNAMIC_GI_CASCADE_FORMAT_16x16x16,
+		DYNAMIC_GI_CASCADE_FORMAT_MAX,
 	};
 
 	enum FogMode {
@@ -146,18 +146,22 @@ private:
 
 	void _update_ssil();
 
-	// SDFGI
-	bool sdfgi_enabled = false;
-	int sdfgi_cascades = 4;
-	float sdfgi_min_cell_size = 0.2;
-	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_75_PERCENT;
-	bool sdfgi_use_occlusion = false;
-	float sdfgi_bounce_feedback = 0.5;
-	bool sdfgi_read_sky_light = true;
-	float sdfgi_energy = 1.0;
-	float sdfgi_normal_bias = 1.1;
-	float sdfgi_probe_bias = 1.1;
-	void _update_sdfgi();
+	// DynamicGI
+	bool dynamic_gi_enabled = false;
+	int dynamic_gi_cascades = 4;
+	float dynamic_gi_min_cell_size = 0.2;
+	DynamicGICascadeFormat dynamic_gi_cascade_format = DYNAMIC_GI_CASCADE_FORMAT_16x8x16;
+	bool dynamic_gi_filter_probes = true;
+	float dynamic_gi_bounce_feedback = 1.0;
+	bool dynamic_gi_read_sky_light = true;
+	float dynamic_gi_energy = 1.0;
+	float dynamic_gi_normal_bias = 1.1;
+	float dynamic_gi_reflection_bias = 2.0;
+	float dynamic_gi_probe_bias = 1.1;
+	float dynamic_gi_occlusion_bias = 0.1;
+	bool dynamic_gi_filter_ambient = true;
+	bool dynamic_gi_filter_reflections = false;
+	void _update_dynamic_gi();
 
 	// Glow
 	bool glow_enabled = false;
@@ -316,31 +320,39 @@ public:
 	void set_ssil_normal_rejection(float p_normal_rejection);
 	float get_ssil_normal_rejection() const;
 
-	// SDFGI
-	void set_sdfgi_enabled(bool p_enabled);
-	bool is_sdfgi_enabled() const;
-	void set_sdfgi_cascades(int p_cascades);
-	int get_sdfgi_cascades() const;
-	void set_sdfgi_min_cell_size(float p_size);
-	float get_sdfgi_min_cell_size() const;
-	void set_sdfgi_max_distance(float p_distance);
-	float get_sdfgi_max_distance() const;
-	void set_sdfgi_cascade0_distance(float p_distance);
-	float get_sdfgi_cascade0_distance() const;
-	void set_sdfgi_y_scale(SDFGIYScale p_y_scale);
-	SDFGIYScale get_sdfgi_y_scale() const;
-	void set_sdfgi_use_occlusion(bool p_enabled);
-	bool is_sdfgi_using_occlusion() const;
-	void set_sdfgi_bounce_feedback(float p_amount);
-	float get_sdfgi_bounce_feedback() const;
-	void set_sdfgi_read_sky_light(bool p_enabled);
-	bool is_sdfgi_reading_sky_light() const;
-	void set_sdfgi_energy(float p_energy);
-	float get_sdfgi_energy() const;
-	void set_sdfgi_normal_bias(float p_bias);
-	float get_sdfgi_normal_bias() const;
-	void set_sdfgi_probe_bias(float p_bias);
-	float get_sdfgi_probe_bias() const;
+	// DynamicGI
+	void set_dynamic_gi_enabled(bool p_enabled);
+	bool is_dynamic_gi_enabled() const;
+	void set_dynamic_gi_cascades(int p_cascades);
+	int get_dynamic_gi_cascades() const;
+	void set_dynamic_gi_min_cell_size(float p_size);
+	float get_dynamic_gi_min_cell_size() const;
+	void set_dynamic_gi_max_distance(float p_distance);
+	float get_dynamic_gi_max_distance() const;
+	void set_dynamic_gi_cascade0_distance(float p_distance);
+	float get_dynamic_gi_cascade0_distance() const;
+	void set_dynamic_gi_cascade_format(DynamicGICascadeFormat p_cascade_format);
+	DynamicGICascadeFormat get_dynamic_gi_cascade_format() const;
+	void set_dynamic_gi_filter_probes(bool p_enabled);
+	bool is_dynamic_gi_filtering_probes() const;
+	void set_dynamic_gi_bounce_feedback(float p_amount);
+	float get_dynamic_gi_bounce_feedback() const;
+	void set_dynamic_gi_read_sky_light(bool p_enabled);
+	bool is_dynamic_gi_reading_sky_light() const;
+	void set_dynamic_gi_energy(float p_energy);
+	float get_dynamic_gi_energy() const;
+	void set_dynamic_gi_normal_bias(float p_bias);
+	float get_dynamic_gi_normal_bias() const;
+	void set_dynamic_gi_reflection_bias(float p_bias);
+	float get_dynamic_gi_reflection_bias() const;
+	void set_dynamic_gi_probe_bias(float p_bias);
+	float get_dynamic_gi_probe_bias() const;
+	void set_dynamic_gi_occlusion_bias(float p_bias);
+	float get_dynamic_gi_occlusion_bias() const;
+	void set_dynamic_gi_filter_ambient(bool p_enabled);
+	bool is_dynamic_gi_filtering_ambient() const;
+	void set_dynamic_gi_filter_reflections(bool p_enabled);
+	bool is_dynamic_gi_filtering_reflections() const;
 
 	// Glow
 	void set_glow_enabled(bool p_enabled);
@@ -450,7 +462,7 @@ VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
-VARIANT_ENUM_CAST(Environment::SDFGIYScale)
+VARIANT_ENUM_CAST(Environment::DynamicGICascadeFormat)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::FogMode)
 

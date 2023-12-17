@@ -98,53 +98,46 @@ layout(set = 0, binding = 12) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_I
 
 layout(set = 0, binding = 13) uniform sampler linear_sampler_with_mipmaps;
 
-#ifdef ENABLE_SDFGI
+#ifdef ENABLE_HDDAGI
 
-// SDFGI Integration on set 1
-#define SDFGI_MAX_CASCADES 8
+// HDDAGI Integration on set 1
+#define HDDAGI_MAX_CASCADES 8
 
-struct SDFVoxelGICascadeData {
+struct ProbeCascadeData {
 	vec3 position;
 	float to_probe;
-	ivec3 probe_world_offset;
+
+	ivec3 region_world_offset;
 	float to_cell; // 1/bounds * grid_size
+
 	vec3 pad;
 	float exposure_normalization;
+
+	uvec4 pad2;
 };
 
-layout(set = 1, binding = 0, std140) uniform SDFGI {
-	vec3 grid_size;
-	uint max_cascades;
+layout(set = 1, binding = 0, std140) uniform HDDAGI {
+	ivec3 grid_size;
+	int max_cascades;
 
-	bool use_occlusion;
-	int probe_axis_size;
-	float probe_to_uvw;
 	float normal_bias;
-
-	vec3 lightprobe_tex_pixel_size;
 	float energy;
-
-	vec3 lightprobe_uv_offset;
 	float y_mult;
+	float reflection_bias;
 
-	vec3 occlusion_clamp;
-	uint pad3;
+	ivec3 probe_axis_size;
+	float esm_strength;
 
-	vec3 occlusion_renormalize;
-	uint pad4;
+	uvec4 pad3;
 
-	vec3 cascade_probe_size;
-	uint pad5;
-
-	SDFVoxelGICascadeData cascades[SDFGI_MAX_CASCADES];
+	ProbeCascadeData cascades[HDDAGI_MAX_CASCADES];
 }
-sdfgi;
+hddagi;
 
-layout(set = 1, binding = 1) uniform texture2DArray sdfgi_ambient_texture;
+layout(set = 1, binding = 1) uniform texture2DArray hddagi_ambient_texture;
+layout(set = 1, binding = 2) uniform texture3D hddagi_occlusion[2];
 
-layout(set = 1, binding = 2) uniform texture3D sdfgi_occlusion_texture;
-
-#endif //SDFGI
+#endif //HDDAGI
 
 layout(set = 0, binding = 14, std140) uniform Params {
 	vec2 fog_frustum_size_begin;
@@ -277,6 +270,24 @@ const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
 
 // Higher values will make light in volumetric fog fade out sooner when it's occluded by shadow.
 const float INV_FOG_FADE = 10.0;
+
+#ifdef ENABLE_HDDAGI
+
+#define PROBE_CELLS 8
+
+ivec3 modi(ivec3 value, ivec3 p_y) {
+	// GLSL Specification says:
+	// "Results are undefined if one or both operands are negative."
+	// So..
+	return mix(value % p_y, p_y - ((abs(value) - ivec3(1)) % p_y) - 1, lessThan(sign(value), ivec3(0)));
+}
+
+ivec2 probe_to_tex(ivec3 local_probe, int p_cascade) {
+	ivec3 cell = modi(hddagi.cascades[p_cascade].region_world_offset + local_probe, hddagi.probe_axis_size);
+	return cell.xy + ivec2(0, cell.z * int(hddagi.probe_axis_size.y));
+}
+
+#endif
 
 void main() {
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
@@ -627,68 +638,75 @@ void main() {
 			}
 		}
 
-		//sdfgi
-#ifdef ENABLE_SDFGI
+		//hddagi
+#ifdef ENABLE_HDDAGI
 
 		{
-			float blend = -1.0;
 			vec3 ambient_total = vec3(0.0);
 
-			for (uint i = 0; i < sdfgi.max_cascades; i++) {
-				vec3 cascade_pos = (world_pos - sdfgi.cascades[i].position) * sdfgi.cascades[i].to_probe;
+			int cascade = HDDAGI_MAX_CASCADES;
+			vec3 cascade_pos;
+			for (int i = 0; i < hddagi.max_cascades; i++) {
+				cascade_pos = (world_pos - hddagi.cascades[i].position) * hddagi.cascades[i].to_cell;
 
-				if (any(lessThan(cascade_pos, vec3(0.0))) || any(greaterThanEqual(cascade_pos, sdfgi.cascade_probe_size))) {
+				if (any(lessThan(cascade_pos, vec3(0.0))) || any(greaterThanEqual(cascade_pos, vec3(hddagi.grid_size)))) {
 					continue; //skip cascade
 				}
 
-				vec3 base_pos = floor(cascade_pos);
-				ivec3 probe_base_pos = ivec3(base_pos);
+				cascade = i;
+				break;
+			}
+
+			if (cascade < HDDAGI_MAX_CASCADES) {
+				ivec3 occ_pos = ivec3(cascade_pos); // faster and numerically safer to do this computation as ints
+				vec3 pos_fract = cascade_pos - vec3(occ_pos);
+				occ_pos = (occ_pos + hddagi.cascades[cascade].region_world_offset * PROBE_CELLS) & (hddagi.grid_size - ivec3(1));
+				occ_pos.y += (hddagi.grid_size.y + 2) * cascade;
+				occ_pos += ivec3(1);
+				ivec3 occ_total_size = hddagi.grid_size + ivec3(2);
+				occ_total_size.y *= hddagi.max_cascades;
+				vec3 occ_posf = (vec3(occ_pos) + pos_fract) / vec3(occ_total_size);
+
+				vec4 occ_0 = texture(sampler3D(hddagi_occlusion[0], linear_sampler), occ_posf);
+				vec4 occ_1 = texture(sampler3D(hddagi_occlusion[1], linear_sampler), occ_posf);
+
+				float occ_weights[8] = float[](occ_0.x, occ_0.y, occ_0.z, occ_0.w, occ_1.x, occ_1.y, occ_1.z, occ_1.w);
+
+				ivec3 base_probe = ivec3(cascade_pos) / PROBE_CELLS;
 
 				vec4 ambient_accum = vec4(0.0);
 
-				ivec3 tex_pos = ivec3(probe_base_pos.xy, int(i));
-				tex_pos.x += probe_base_pos.z * sdfgi.probe_axis_size;
+				for (int i = 0; i < 8; i++) {
+					ivec3 probe = base_probe + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1));
 
-				for (uint j = 0; j < 8; j++) {
-					ivec3 offset = (ivec3(j) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1);
-					ivec3 probe_posi = probe_base_pos;
-					probe_posi += offset;
-
-					// Compute weight
-
-					vec3 probe_pos = vec3(probe_posi);
+					vec3 probe_pos = vec3(probe * PROBE_CELLS);
 					vec3 probe_to_pos = cascade_pos - probe_pos;
 
-					vec3 trilinear = vec3(1.0) - abs(probe_to_pos);
-					float weight = trilinear.x * trilinear.y * trilinear.z;
+					float weight = 1.0;
 
-					// Compute lightprobe occlusion
+					ivec3 probe_occ = (hddagi.cascades[cascade].region_world_offset + probe) & ivec3(1);
 
-					if (sdfgi.use_occlusion) {
-						ivec3 occ_indexv = abs((sdfgi.cascades[i].probe_world_offset + probe_posi) & ivec3(1, 1, 1)) * ivec3(1, 2, 4);
-						vec4 occ_mask = mix(vec4(0.0), vec4(1.0), equal(ivec4(occ_indexv.x | occ_indexv.y), ivec4(0, 1, 2, 3)));
-
-						vec3 occ_pos = clamp(cascade_pos, probe_pos - sdfgi.occlusion_clamp, probe_pos + sdfgi.occlusion_clamp) * sdfgi.probe_to_uvw;
-						occ_pos.z += float(i);
-						if (occ_indexv.z != 0) { //z bit is on, means index is >=4, so make it switch to the other half of textures
-							occ_pos.x += 1.0;
-						}
-
-						occ_pos *= sdfgi.occlusion_renormalize;
-						float occlusion = dot(textureLod(sampler3D(sdfgi_occlusion_texture, linear_sampler), occ_pos, 0.0), occ_mask);
-
-						weight *= max(occlusion, 0.01);
+					uint weight_index = 0;
+					if (probe_occ.x != 0) {
+						weight_index |= 1;
+					}
+					if (probe_occ.y != 0) {
+						weight_index |= 2;
+					}
+					if (probe_occ.z != 0) {
+						weight_index |= 4;
 					}
 
-					// Compute ambient texture position
+					weight *= max(0.01, occ_weights[weight_index]);
 
-					ivec3 uvw = tex_pos;
-					uvw.xy += offset.xy;
-					uvw.x += offset.z * sdfgi.probe_axis_size;
+					vec3 trilinear = vec3(1.0) - abs(probe_to_pos / float(PROBE_CELLS));
 
-					vec3 ambient = texelFetch(sampler2DArray(sdfgi_ambient_texture, linear_sampler), uvw, 0).rgb;
+					weight *= trilinear.x * trilinear.y * trilinear.z;
 
-					ambient_accum.rgb += ambient * weight * sdfgi.cascades[i].exposure_normalization;
+					ivec2 tex_pos = probe_to_tex(probe, cascade);
+
+					vec3 probe_light = texelFetch(sampler2DArray(hddagi_ambient_texture, linear_sampler), ivec3(tex_pos, cascade), 0).rgb;
+					ambient_accum.rgb += probe_light * weight * hddagi.cascades[i].exposure_normalization;
 					ambient_accum.a += weight;
 				}
 
@@ -696,7 +714,6 @@ void main() {
 					ambient_accum.rgb /= ambient_accum.a;
 				}
 				ambient_total = ambient_accum.rgb;
-				break;
 			}
 
 			total_light += ambient_total * params.gi_inject;
