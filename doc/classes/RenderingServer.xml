@@ -1312,42 +1312,46 @@
 				Configures glow for the specified environment RID. See [code]glow_*[/code] properties in [Environment] for more information.
 			</description>
 		</method>
-		<method name="environment_set_sdfgi">
+		<method name="environment_set_hddagi">
 			<return type="void" />
 			<param index="0" name="env" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<param index="2" name="cascades" type="int" />
-			<param index="3" name="min_cell_size" type="float" />
-			<param index="4" name="y_scale" type="int" enum="RenderingServer.EnvironmentSDFGIYScale" />
-			<param index="5" name="use_occlusion" type="bool" />
+			<param index="3" name="cascade_format" type="int" enum="RenderingServer.EnvironmentHDDAGICascadeFormat" />
+			<param index="4" name="min_cell_size" type="float" />
+			<param index="5" name="filter_probes" type="bool" />
 			<param index="6" name="bounce_feedback" type="float" />
 			<param index="7" name="read_sky" type="bool" />
 			<param index="8" name="energy" type="float" />
 			<param index="9" name="normal_bias" type="float" />
-			<param index="10" name="probe_bias" type="float" />
+			<param index="10" name="reflection_bias" type="float" />
+			<param index="11" name="probe_bias" type="float" />
+			<param index="12" name="occlusion_bias" type="float" />
+			<param index="13" name="filter_reflection" type="bool" />
+			<param index="14" name="filter_ambient" type="bool" />
 			<description>
-				Configures signed distance field global illumination for the specified environment RID. See [code]sdfgi_*[/code] properties in [Environment] for more information.
+				Configure DynamicGI (HDDAGI). See the [Environment] class for more detail on what each argument is.
 			</description>
 		</method>
-		<method name="environment_set_sdfgi_frames_to_converge">
+		<method name="environment_set_hddagi_frames_to_converge">
 			<return type="void" />
-			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentSDFGIFramesToConverge" />
+			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentHDDAGIFramesToConverge" />
 			<description>
-				Sets the number of frames to use for converging signed distance field global illumination. Equivalent to [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_converge].
+				Set the frames to converge for DynamicGI (HDDAGI). A higher value results in higher quality, but takes longer to converge.
 			</description>
 		</method>
-		<method name="environment_set_sdfgi_frames_to_update_light">
+		<method name="environment_set_hddagi_frames_to_update_light">
 			<return type="void" />
-			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentSDFGIFramesToUpdateLight" />
+			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentHDDAGIFramesToUpdateLight" />
 			<description>
-				Sets the update speed for dynamic lights' indirect lighting when computing signed distance field global illumination. Equivalent to [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
+				Set the frames to update for DynamicGI (HDDAGI). Higher values take longer, but use significantly less GPU resources.
 			</description>
 		</method>
-		<method name="environment_set_sdfgi_ray_count">
+		<method name="environment_set_hddagi_inactive_probe_frames">
 			<return type="void" />
-			<param index="0" name="ray_count" type="int" enum="RenderingServer.EnvironmentSDFGIRayCount" />
+			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentHDDAGIInactiveProbeFrames" />
 			<description>
-				Sets the number of rays to throw per frame when computing signed distance field global illumination. Equivalent to [member ProjectSettings.rendering/global_illumination/sdfgi/probe_ray_count].
+				Set the amount of frames it takes to process inactive probes (inactive probes are those not connected to any geometry and not visible by the camera). They process (raytrace) at a lower framerate in order to save GPU resouces.
 			</description>
 		</method>
 		<method name="environment_set_sky">
@@ -1635,7 +1639,7 @@
 			<return type="void" />
 			<param index="0" name="half_resolution" type="bool" />
 			<description>
-				If [param half_resolution] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution on each axis (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. Equivalent to [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
+				If [param half_resolution] is [code]true[/code], renders [VoxelGI] and DynamicGI ([member Environment.dynamic_gi_enabled]) buffers at halved resolution on each axis (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or DynamicGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. Equivalent to [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
 			</description>
 		</method>
 		<method name="global_shader_parameter_add">
@@ -2062,12 +2066,12 @@
 				Sets the distance fade for this 3D light. This acts as a form of level of detail (LOD) and can be used to improve performance. Equivalent to [member Light3D.distance_fade_enabled], [member Light3D.distance_fade_begin], [member Light3D.distance_fade_shadow], and [member Light3D.distance_fade_length].
 			</description>
 		</method>
-		<method name="light_set_max_sdfgi_cascade">
+		<method name="light_set_max_hddagi_cascade">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="cascade" type="int" />
 			<description>
-				Sets the maximum SDFGI cascade in which the 3D light's indirect lighting is rendered. Higher values allow the light to be rendered in SDFGI further away from the camera.
+				Set the maximum amount of cascades used by DynamicGI (HDDAGI).
 			</description>
 		</method>
 		<method name="light_set_negative">
@@ -3929,7 +3933,7 @@
 			<param index="1" name="oversize" type="int" enum="RenderingServer.ViewportSDFOversize" />
 			<param index="2" name="scale" type="int" enum="RenderingServer.ViewportSDFScale" />
 			<description>
-				Sets the viewport's 2D signed distance field [member ProjectSettings.rendering/2d/sdf/oversize] and [member ProjectSettings.rendering/2d/sdf/scale]. This is used when sampling the signed distance field in [CanvasItem] shaders as well as [GPUParticles2D] collision. This is [i]not[/i] used by SDFGI in 3D rendering.
+				Sets the viewport's 2D signed distance field [member ProjectSettings.rendering/2d/sdf/oversize] and [member ProjectSettings.rendering/2d/sdf/scale]. This is used when sampling the signed distance field in [CanvasItem] shaders as well as [GPUParticles2D] collision. This is [i]not[/i] used by DynamicGI in 3D rendering.
 			</description>
 		</method>
 		<method name="viewport_set_size">
@@ -4580,10 +4584,10 @@
 			Light is ignored when baking. This is the fastest mode, but the light will be taken into account when baking global illumination. This mode should generally be used for dynamic lights that change quickly, as the effect of global illumination is less noticeable on those lights.
 		</constant>
 		<constant name="LIGHT_BAKE_STATIC" value="1" enum="LightBakeMode">
-			Light is taken into account in static baking ([VoxelGI], [LightmapGI], SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time. This is suitable for subtle changes (such as flickering torches), but generally not large changes such as toggling a light on and off.
+			Light is taken into account in static baking ([VoxelGI], [LightmapGI], DynamicGI ([member Environment.dynamic_gi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time. This is suitable for subtle changes (such as flickering torches), but generally not large changes such as toggling a light on and off.
 		</constant>
 		<constant name="LIGHT_BAKE_DYNAMIC" value="2" enum="LightBakeMode">
-			Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) only). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant LIGHT_BAKE_STATIC]. This has a greater performance cost compared to [constant LIGHT_BAKE_STATIC]. When using SDFGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
+			Light is taken into account in dynamic baking ([VoxelGI] and DynamicGI ([member Environment.dynamic_gi_enabled]) only). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant LIGHT_BAKE_STATIC]. This has a greater performance cost compared to [constant LIGHT_BAKE_STATIC]. When using DynamicGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/hddagi/frames_to_update_lights].
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
 			Use a dual paraboloid shadow map for omni lights.
@@ -4951,14 +4955,14 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="15" enum="ViewportDebugDraw">
 			Draws the decal atlas that stores decal textures from [Decal]s.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="16" enum="ViewportDebugDraw">
-			Draws SDFGI cascade data. This is the data structure that is used to bounce lighting against and create reflections.
+		<constant name="VIEWPORT_DEBUG_DRAW_HDDAGI" value="16" enum="ViewportDebugDraw">
+			Draw the voxel world as seen by DynamicGI (HDDAGI).
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="17" enum="ViewportDebugDraw">
-			Draws SDFGI probe data. This is the data structure that is used to give indirect lighting dynamic objects moving within the scene.
+		<constant name="VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES" value="17" enum="ViewportDebugDraw">
+			Draw the probes of the first DynamicGI cascade (HDDAGI).
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="18" enum="ViewportDebugDraw">
-			Draws the global illumination buffer ([VoxelGI] or SDFGI).
+			Draws the global illumination buffer ([VoxelGI] or DynamicGI).
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLE_LOD" value="19" enum="ViewportDebugDraw">
 			Disable mesh LOD. All meshes are drawn with full detail, which can be used to compare performance.
@@ -5171,77 +5175,58 @@
 		<constant name="ENV_SSIL_QUALITY_ULTRA" value="4" enum="EnvironmentSSILQuality">
 			Highest quality screen-space indirect lighting. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
 		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_50_PERCENT" value="0" enum="EnvironmentSDFGIYScale">
-			Use 50% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be twice as short as they are wide. This allows providing increased GI detail and reduced light leaking with thin floors and ceilings. This is usually the best choice for scenes that don't feature much verticality.
+		<constant name="ENV_HDDAGI_CASCADE_FORMAT_16x8x16" value="0" enum="EnvironmentHDDAGICascadeFormat">
+			Half resolution cascade format for DynamicGI (HDDAGI).
 		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_75_PERCENT" value="1" enum="EnvironmentSDFGIYScale">
-			Use 75% scale for SDFGI on the Y (vertical) axis. This is a balance between the 50% and 100% SDFGI Y scales.
+		<constant name="ENV_HDDAGI_CASCADE_FORMAT_16x16x16" value="1" enum="EnvironmentHDDAGICascadeFormat">
+			Full resolution cascade format for DynamicGI (HDDAGI).
 		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_100_PERCENT" value="2" enum="EnvironmentSDFGIYScale">
-			Use 100% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be as tall as they are wide. This is usually the best choice for highly vertical scenes. The downside is that light leaking may become more noticeable with thin floors and ceilings.
+		<constant name="ENV_HDDAGI_CASCADE_FORMAT_MAX" value="2" enum="EnvironmentHDDAGICascadeFormat">
 		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_4" value="0" enum="EnvironmentSDFGIRayCount">
-			Throw 4 rays per frame when converging SDFGI. This has the lowest GPU requirements, but creates the most noisy result.
+		<constant name="ENV_HDDAGI_CONVERGE_IN_6_FRAMES" value="0" enum="EnvironmentHDDAGIFramesToConverge">
+			Converge the DynamicGI (HDDAGI) in 6 frames. This means it will take 6 frames for light changes to update, but the lighting quality will be lower.
+			This is the default, as well as enabling filter probes.
 		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_8" value="1" enum="EnvironmentSDFGIRayCount">
-			Throw 8 rays per frame when converging SDFGI.
+		<constant name="ENV_HDDAGI_CONVERGE_IN_12_FRAMES" value="1" enum="EnvironmentHDDAGIFramesToConverge">
+			Converge the DynamicGI (HDDAGI) in 12 frames.
 		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_16" value="2" enum="EnvironmentSDFGIRayCount">
-			Throw 16 rays per frame when converging SDFGI.
+		<constant name="ENV_HDDAGI_CONVERGE_IN_18_FRAMES" value="2" enum="EnvironmentHDDAGIFramesToConverge">
+			Converge the DynamicGI (HDDAGI) in 18 frames.
 		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_32" value="3" enum="EnvironmentSDFGIRayCount">
-			Throw 32 rays per frame when converging SDFGI.
+		<constant name="ENV_HDDAGI_CONVERGE_IN_24_FRAMES" value="3" enum="EnvironmentHDDAGIFramesToConverge">
+			Converge the DynamicGI (HDDAGI) in 24 frames.
 		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_64" value="4" enum="EnvironmentSDFGIRayCount">
-			Throw 64 rays per frame when converging SDFGI.
+		<constant name="ENV_HDDAGI_CONVERGE_IN_32_FRAMES" value="4" enum="EnvironmentHDDAGIFramesToConverge">
+			Converge the DynamicGI (HDDAGI) in 32 frames. This means it will take 32 frames to update the light changes, but quality will be much higher.
 		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_96" value="5" enum="EnvironmentSDFGIRayCount">
-			Throw 96 rays per frame when converging SDFGI. This has high GPU requirements.
+		<constant name="ENV_HDDAGI_CONVERGE_MAX" value="5" enum="EnvironmentHDDAGIFramesToConverge">
 		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_128" value="6" enum="EnvironmentSDFGIRayCount">
-			Throw 128 rays per frame when converging SDFGI. This has very high GPU requirements, but creates the least noisy result.
+		<constant name="ENV_HDDAGI_UPDATE_LIGHT_IN_1_FRAME" value="0" enum="EnvironmentHDDAGIFramesToUpdateLight">
+			Update lights (directional, spot, omni) in 1 frame. Changes are instant.
 		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_MAX" value="7" enum="EnvironmentSDFGIRayCount">
-			Represents the size of the [enum EnvironmentSDFGIRayCount] enum.
+		<constant name="ENV_HDDAGI_UPDATE_LIGHT_IN_2_FRAMES" value="1" enum="EnvironmentHDDAGIFramesToUpdateLight">
+			Update lights (directional, spot, omni) in 2 frames.
 		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_5_FRAMES" value="0" enum="EnvironmentSDFGIFramesToConverge">
-			Converge SDFGI over 5 frames. This is the most responsive, but creates the most noisy result with a given ray count.
+		<constant name="ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES" value="2" enum="EnvironmentHDDAGIFramesToUpdateLight">
+			Update lights (directional, spot, omni) in 4 frames. This is the default.
 		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_10_FRAMES" value="1" enum="EnvironmentSDFGIFramesToConverge">
-			Configure SDFGI to fully converge over 10 frames.
+		<constant name="ENV_HDDAGI_UPDATE_LIGHT_IN_8_FRAMES" value="3" enum="EnvironmentHDDAGIFramesToUpdateLight">
+			Update lights (directional, spot, omni) in 8 frames.
 		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_15_FRAMES" value="2" enum="EnvironmentSDFGIFramesToConverge">
-			Configure SDFGI to fully converge over 15 frames.
+		<constant name="ENV_HDDAGI_UPDATE_LIGHT_IN_16_FRAMES" value="4" enum="EnvironmentHDDAGIFramesToUpdateLight">
+			Update lights (directional, spot, omni) in 16 frames.
 		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_20_FRAMES" value="3" enum="EnvironmentSDFGIFramesToConverge">
-			Configure SDFGI to fully converge over 20 frames.
+		<constant name="ENV_HDDAGI_UPDATE_LIGHT_MAX" value="5" enum="EnvironmentHDDAGIFramesToUpdateLight">
 		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_25_FRAMES" value="4" enum="EnvironmentSDFGIFramesToConverge">
-			Configure SDFGI to fully converge over 25 frames.
+		<constant name="ENV_HDDAGI_INACTIVE_PROBE_1_FRAMES" value="0" enum="EnvironmentHDDAGIInactiveProbeFrames">
 		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_30_FRAMES" value="5" enum="EnvironmentSDFGIFramesToConverge">
-			Configure SDFGI to fully converge over 30 frames. This is the least responsive, but creates the least noisy result with a given ray count.
+		<constant name="ENV_HDDAGI_INACTIVE_PROBE_2_FRAMES" value="1" enum="EnvironmentHDDAGIInactiveProbeFrames">
 		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_MAX" value="6" enum="EnvironmentSDFGIFramesToConverge">
-			Represents the size of the [enum EnvironmentSDFGIFramesToConverge] enum.
+		<constant name="ENV_HDDAGI_INACTIVE_PROBE_4_FRAMES" value="2" enum="EnvironmentHDDAGIInactiveProbeFrames">
 		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME" value="0" enum="EnvironmentSDFGIFramesToUpdateLight">
-			Update indirect light from dynamic lights in SDFGI over 1 frame. This is the most responsive, but has the highest GPU requirements.
+		<constant name="ENV_HDDAGI_INACTIVE_PROBE_8_FRAMES" value="3" enum="EnvironmentHDDAGIInactiveProbeFrames">
 		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_2_FRAMES" value="1" enum="EnvironmentSDFGIFramesToUpdateLight">
-			Update indirect light from dynamic lights in SDFGI over 2 frames.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES" value="2" enum="EnvironmentSDFGIFramesToUpdateLight">
-			Update indirect light from dynamic lights in SDFGI over 4 frames.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_8_FRAMES" value="3" enum="EnvironmentSDFGIFramesToUpdateLight">
-			Update indirect light from dynamic lights in SDFGI over 8 frames.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_16_FRAMES" value="4" enum="EnvironmentSDFGIFramesToUpdateLight">
-			Update indirect light from dynamic lights in SDFGI over 16 frames. This is the least responsive, but has the lowest GPU requirements.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_MAX" value="5" enum="EnvironmentSDFGIFramesToUpdateLight">
-			Represents the size of the [enum EnvironmentSDFGIFramesToUpdateLight] enum.
+		<constant name="ENV_HDDAGI_INACTIVE_PROBE_MAX" value="4" enum="EnvironmentHDDAGIInactiveProbeFrames">
 		</constant>
 		<constant name="SUB_SURFACE_SCATTERING_QUALITY_DISABLED" value="0" enum="SubSurfaceScatteringQuality">
 			Disables subsurface scattering entirely, even on materials that have [member BaseMaterial3D.subsurf_scatter_enabled] set to [code]true[/code]. This has the lowest GPU requirements.

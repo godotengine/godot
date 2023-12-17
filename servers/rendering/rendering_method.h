@@ -282,23 +282,28 @@ public:
 
 	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
-	// SDFGI
-	virtual void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+	// HDDAGI
+	virtual void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RS::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient) = 0;
 
-	virtual bool environment_get_sdfgi_enabled(RID p_env) const = 0;
-	virtual int environment_get_sdfgi_cascades(RID p_env) const = 0;
-	virtual float environment_get_sdfgi_min_cell_size(RID p_env) const = 0;
-	virtual bool environment_get_sdfgi_use_occlusion(RID p_env) const = 0;
-	virtual float environment_get_sdfgi_bounce_feedback(RID p_env) const = 0;
-	virtual bool environment_get_sdfgi_read_sky_light(RID p_env) const = 0;
-	virtual float environment_get_sdfgi_energy(RID p_env) const = 0;
-	virtual float environment_get_sdfgi_normal_bias(RID p_env) const = 0;
-	virtual float environment_get_sdfgi_probe_bias(RID p_env) const = 0;
-	virtual RS::EnvironmentSDFGIYScale environment_get_sdfgi_y_scale(RID p_env) const = 0;
+	virtual bool environment_get_hddagi_enabled(RID p_env) const = 0;
+	virtual int environment_get_hddagi_cascades(RID p_env) const = 0;
+	virtual float environment_get_hddagi_min_cell_size(RID p_env) const = 0;
+	virtual bool environment_get_hddagi_filter_probes(RID p_env) const = 0;
+	virtual float environment_get_hddagi_bounce_feedback(RID p_env) const = 0;
+	virtual bool environment_get_hddagi_read_sky_light(RID p_env) const = 0;
+	virtual float environment_get_hddagi_energy(RID p_env) const = 0;
+	virtual float environment_get_hddagi_normal_bias(RID p_env) const = 0;
+	virtual float environment_get_hddagi_reflection_bias(RID p_env) const = 0;
+	virtual float environment_get_hddagi_probe_bias(RID p_env) const = 0;
+	virtual float environment_get_hddagi_occlusion_bias(RID p_env) const = 0;
+	virtual float environment_get_hddagi_filter_ambient(RID p_env) const = 0;
+	virtual float environment_get_hddagi_filter_reflection(RID p_env) const = 0;
+	virtual RS::EnvironmentHDDAGICascadeFormat environment_get_hddagi_cascade_format(RID p_env) const = 0;
 
-	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) = 0;
-	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) = 0;
-	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
+	virtual void environment_set_hddagi_frames_to_converge(RS::EnvironmentHDDAGIFramesToConverge p_frames) = 0;
+	virtual void environment_set_hddagi_frames_to_update_light(RS::EnvironmentHDDAGIFramesToUpdateLight p_update) = 0;
+
+	virtual void environment_set_hddagi_inactive_probe_frames(RS::EnvironmentHDDAGIInactiveProbeFrames p_frames) = 0;
 
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) = 0;
 
@@ -331,7 +336,7 @@ public:
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
 	virtual void voxel_gi_set_quality(RS::VoxelGIQuality) = 0;
 
-	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
+	virtual void hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
 	virtual void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas) = 0;
 

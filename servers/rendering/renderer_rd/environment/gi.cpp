@@ -36,11 +36,15 @@
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_server_default.h"
+
+// Debug recreating everything every frame.
+//#define DIRTY_ALL_FRAMES
 
 using namespace RendererRD;
 
-const Vector3i GI::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
+const Vector3i GI::HDDAGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
 
 GI *GI::singleton = nullptr;
 
@@ -112,75 +116,6 @@ void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xfo
 			voxel_gi->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView(), s);
 			RD::get_singleton()->set_resource_name(voxel_gi->sdf_texture, "VoxelGI SDF Texture");
 		}
-#if 0
-			{
-				RD::TextureFormat tf;
-				tf.format = RD::DATA_FORMAT_R8_UNORM;
-				tf.width = voxel_gi->octree_size.x;
-				tf.height = voxel_gi->octree_size.y;
-				tf.depth = voxel_gi->octree_size.z;
-				tf.type = RD::TEXTURE_TYPE_3D;
-				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UNORM);
-				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UINT);
-				voxel_gi->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
-				RD::get_singleton()->set_resource_name(voxel_gi->sdf_texture, "VoxelGI SDF Texture");
-			}
-			RID shared_tex;
-			{
-				RD::TextureView tv;
-				tv.format_override = RD::DATA_FORMAT_R8_UINT;
-				shared_tex = RD::get_singleton()->texture_create_shared(tv, voxel_gi->sdf_texture);
-			}
-			//update SDF texture
-			Vector<RD::Uniform> uniforms;
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 1;
-				u.append_id(voxel_gi->octree_buffer);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 2;
-				u.append_id(voxel_gi->data_buffer);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 3;
-				u.append_id(shared_tex);
-				uniforms.push_back(u);
-			}
-
-			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, voxel_gi_sdf_shader_version_shader, 0);
-
-			{
-				uint32_t push_constant[4] = { 0, 0, 0, 0 };
-
-				for (int i = 0; i < voxel_gi->level_counts.size() - 1; i++) {
-					push_constant[0] += voxel_gi->level_counts[i];
-				}
-				push_constant[1] = push_constant[0] + voxel_gi->level_counts[voxel_gi->level_counts.size() - 1];
-
-				print_line("offset: " + itos(push_constant[0]));
-				print_line("size: " + itos(push_constant[1]));
-				//create SDF
-				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, voxel_gi_sdf_shader_pipeline);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, push_constant, sizeof(uint32_t) * 4);
-				RD::get_singleton()->compute_list_dispatch(compute_list, voxel_gi->octree_size.x / 4, voxel_gi->octree_size.y / 4, voxel_gi->octree_size.z / 4);
-				RD::get_singleton()->compute_list_end();
-			}
-
-			RD::get_singleton()->free(uniform_set);
-			RD::get_singleton()->free(shared_tex);
-		}
-#endif
 	}
 
 	voxel_gi->version++;
@@ -392,12 +327,12 @@ Dependency *GI::voxel_gi_get_dependency(RID p_voxel_gi) const {
 	return &voxel_gi->dependency;
 }
 
-void GI::sdfgi_reset() {
-	sdfgi_current_version++;
+void GI::hddagi_reset() {
+	hddagi_current_version++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SDFGI
+// HDDAGI
 
 static RID create_clear_texture(const RD::TextureFormat &p_format, const String &p_name) {
 	RID texture = RD::get_singleton()->texture_create(p_format, RD::TextureView());
@@ -409,770 +344,722 @@ static RID create_clear_texture(const RD::TextureFormat &p_format, const String 
 	return texture;
 }
 
-void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi) {
-	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi) {
+	//RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	//RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	cascade_size.x = cascade_size.z = CASCADE_SIZE;
+
+	cascade_format = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_cascade_format(p_env);
+	switch (cascade_format) {
+		case RS::ENV_HDDAGI_CASCADE_FORMAT_16x16x16: {
+			cascade_size.y = CASCADE_SIZE;
+		} break;
+		case RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16: {
+			cascade_size.y = CASCADE_SIZE / 2;
+		} break;
+		default: {
+			cascade_size.y = CASCADE_SIZE;
+		} break;
+	}
 
 	gi = p_gi;
-	num_cascades = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_cascades(p_env);
-	min_cell_size = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_min_cell_size(p_env);
-	uses_occlusion = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_use_occlusion(p_env);
-	y_scale_mode = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_y_scale(p_env);
-	static const float y_scale[3] = { 2.0, 1.5, 1.0 };
-	y_mult = y_scale[y_scale_mode];
-	version = gi->sdfgi_current_version;
+	num_cascades = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_cascades(p_env);
+	min_cell_size = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_min_cell_size(p_env);
+	using_probe_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_probes(p_env);
+	using_reflection_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_reflection(p_env);
+	using_ambient_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_ambient(p_env);
+	reflection_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_reflection_bias(p_env);
+	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_probe_bias(p_env);
+	occlusion_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_occlusion_bias(p_env);
+	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_normal_bias(p_env);
+	frames_to_converge = p_requested_history_size;
+	//y_scale_mode = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_y_scale(p_env);
+	//static const float y_scale[3] = { 2.0, 1.5, 1.0 };
+	//y_mult = y_scale[y_scale_mode];
+	version = gi->hddagi_current_version;
 	cascades.resize(num_cascades);
-	probe_axis_count = SDFGI::PROBE_DIVISOR + 1;
-	solid_cell_ratio = gi->sdfgi_solid_cell_ratio;
-	solid_cell_count = uint32_t(float(cascade_size * cascade_size * cascade_size) * solid_cell_ratio);
+
+	solid_cell_ratio = gi->hddagi_solid_cell_ratio;
+	solid_cell_count = uint32_t(float(cascade_size.x * cascade_size.y * cascade_size.z) * solid_cell_ratio);
 
 	float base_cell_size = min_cell_size;
 
-	RD::TextureFormat tf_sdf;
-	tf_sdf.format = RD::DATA_FORMAT_R8_UNORM;
-	tf_sdf.width = cascade_size; // Always 64x64
-	tf_sdf.height = cascade_size;
-	tf_sdf.depth = cascade_size;
-	tf_sdf.texture_type = RD::TEXTURE_TYPE_3D;
-	tf_sdf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	RD::TextureFormat tf_base;
+	tf_base.format = RD::DATA_FORMAT_R8_UNORM;
+	tf_base.width = cascade_size.x;
+	tf_base.height = cascade_size.y;
+	tf_base.depth = cascade_size.z;
+	tf_base.texture_type = RD::TEXTURE_TYPE_3D;
+	tf_base.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
 	{
-		RD::TextureFormat tf_render = tf_sdf;
-		tf_render.format = RD::DATA_FORMAT_R16_UINT;
-		render_albedo = create_clear_texture(tf_render, "SDFGI Render Albedo");
+		RD::TextureFormat tf_voxel = tf_base;
+		tf_voxel.format = RD::DATA_FORMAT_R32G32_UINT; // 4x4 region in a cache friendly format
+		tf_voxel.width /= 4;
+		tf_voxel.height /= 4;
+		tf_voxel.depth /= 4;
+		tf_voxel.texture_type = RD::TEXTURE_TYPE_3D;
+		tf_voxel.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
-		tf_render.format = RD::DATA_FORMAT_R32_UINT;
-		render_emission = create_clear_texture(tf_render, "SDFGI Render Emission");
-		render_emission_aniso = create_clear_texture(tf_render, "SDFGI Render Emission Aniso");
-
-		tf_render.format = RD::DATA_FORMAT_R8_UNORM; //at least its easy to visualize
-
-		for (int i = 0; i < 8; i++) {
-			render_occlusion[i] = create_clear_texture(tf_render, String("SDFGI Render Occlusion ") + itos(i));
-		}
-
-		tf_render.format = RD::DATA_FORMAT_R32_UINT;
-		render_geom_facing = create_clear_texture(tf_render, "SDFGI Render Geometry Facing");
-
-		tf_render.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
-		render_sdf[0] = create_clear_texture(tf_render, "SDFGI Render SDF 0");
-		render_sdf[1] = create_clear_texture(tf_render, "SDFGI Render SDF 1");
-
-		tf_render.width /= 2;
-		tf_render.height /= 2;
-		tf_render.depth /= 2;
-
-		render_sdf_half[0] = create_clear_texture(tf_render, "SDFGI Render SDF Half 0");
-		render_sdf_half[1] = create_clear_texture(tf_render, "SDFGI Render SDF Half 1");
+		tf_voxel.height *= cascades.size();
+		voxel_bits_tex = create_clear_texture(tf_voxel, "HDDAGI Voxel Field");
 	}
-
-	RD::TextureFormat tf_occlusion = tf_sdf;
-	tf_occlusion.format = RD::DATA_FORMAT_R16_UINT;
-	tf_occlusion.shareable_formats.push_back(RD::DATA_FORMAT_R16_UINT);
-	tf_occlusion.shareable_formats.push_back(RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16);
-	tf_occlusion.depth *= cascades.size(); //use depth for occlusion slices
-	tf_occlusion.width *= 2; //use width for the other half
-
-	RD::TextureFormat tf_light = tf_sdf;
-	tf_light.format = RD::DATA_FORMAT_R32_UINT;
-	tf_light.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
-	tf_light.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
-
-	RD::TextureFormat tf_aniso0 = tf_sdf;
-	tf_aniso0.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-	RD::TextureFormat tf_aniso1 = tf_sdf;
-	tf_aniso1.format = RD::DATA_FORMAT_R8G8_UNORM;
-
-	int passes = nearest_shift(cascade_size) - 1;
-
-	//store lightprobe SH
-	RD::TextureFormat tf_probes;
-	tf_probes.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-	tf_probes.width = probe_axis_count * probe_axis_count;
-	tf_probes.height = probe_axis_count * SDFGI::SH_SIZE;
-	tf_probes.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-	tf_probes.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-
-	history_size = p_requested_history_size;
-
-	RD::TextureFormat tf_probe_history = tf_probes;
-	tf_probe_history.format = RD::DATA_FORMAT_R16G16B16A16_SINT; //signed integer because SH are signed
-	tf_probe_history.array_layers = history_size;
-
-	RD::TextureFormat tf_probe_average = tf_probes;
-	tf_probe_average.format = RD::DATA_FORMAT_R32G32B32A32_SINT; //signed integer because SH are signed
-	tf_probe_average.texture_type = RD::TEXTURE_TYPE_2D;
-
-	lightprobe_history_scroll = create_clear_texture(tf_probe_history, "SDFGI LightProbe History Scroll");
-	lightprobe_average_scroll = create_clear_texture(tf_probe_average, "SDFGI LightProbe Average Scroll");
 
 	{
-		//octahedral lightprobes
-		RD::TextureFormat tf_octprobes = tf_probes;
-		tf_octprobes.array_layers = cascades.size() * 2;
-		tf_octprobes.format = RD::DATA_FORMAT_R32_UINT; //pack well with RGBE
-		tf_octprobes.width = probe_axis_count * probe_axis_count * (SDFGI::LIGHTPROBE_OCT_SIZE + 2);
-		tf_octprobes.height = probe_axis_count * (SDFGI::LIGHTPROBE_OCT_SIZE + 2);
-		tf_octprobes.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
-		tf_octprobes.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
-		//lightprobe texture is an octahedral texture
-
-		lightprobe_data = create_clear_texture(tf_octprobes, "SDFGI LightProbe Data");
-		RD::TextureView tv;
-		tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
-		lightprobe_texture = RD::get_singleton()->texture_create_shared(tv, lightprobe_data);
-
-		//texture handling ambient data, to integrate with volumetric foc
-		RD::TextureFormat tf_ambient = tf_probes;
-		tf_ambient.array_layers = cascades.size();
-		tf_ambient.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT; //pack well with RGBE
-		tf_ambient.width = probe_axis_count * probe_axis_count;
-		tf_ambient.height = probe_axis_count;
-		tf_ambient.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-		//lightprobe texture is an octahedral texture
-		ambient_texture = create_clear_texture(tf_ambient, "SDFGI Ambient Texture");
+		RD::TextureFormat tf_voxel = tf_base;
+		tf_voxel.format = RD::DATA_FORMAT_R16_UINT; // 4x4 region in a cache friendly format
+		tf_voxel.width /= REGION_CELLS;
+		tf_voxel.height /= REGION_CELLS;
+		tf_voxel.depth /= REGION_CELLS;
+		tf_voxel.height *= cascades.size();
+		tf_voxel.texture_type = RD::TEXTURE_TYPE_3D;
+		tf_voxel.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		region_version_data = create_clear_texture(tf_voxel, "HDDAGI Region Version");
 	}
 
-	cascades_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES);
-
-	occlusion_data = create_clear_texture(tf_occlusion, "SDFGI Occlusion Data");
 	{
-		RD::TextureView tv;
-		tv.format_override = RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16;
-		occlusion_texture = RD::get_singleton()->texture_create_shared(tv, occlusion_data);
+		RD::TextureFormat tf_disocc = tf_base;
+		tf_disocc.format = RD::DATA_FORMAT_R8_UINT; // 4x4 region in a cache friendly format
+		tf_disocc.texture_type = RD::TEXTURE_TYPE_3D;
+		tf_disocc.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		tf_disocc.height *= cascades.size();
+		voxel_disocclusion_tex = create_clear_texture(tf_disocc, "HDDAGI Voxel Disocclusion");
 	}
 
-	for (SDFGI::Cascade &cascade : cascades) {
-		/* 3D Textures */
+	{
+		RD::TextureFormat tf_voxel_region = tf_base;
+		tf_voxel_region.format = RD::DATA_FORMAT_R8_UINT;
+		tf_voxel_region.width /= REGION_CELLS;
+		tf_voxel_region.height /= REGION_CELLS;
+		tf_voxel_region.depth /= REGION_CELLS;
+		tf_voxel_region.texture_type = RD::TEXTURE_TYPE_3D;
+		tf_voxel_region.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		RD::TextureFormat tf_sdf = tf_base;
 
-		cascade.sdf_tex = create_clear_texture(tf_sdf, "SDFGI Cascade SDF Texture");
+		tf_voxel_region.height *= cascades.size();
+		voxel_region_tex = create_clear_texture(tf_voxel_region, "HDDAGI Voxel Regions");
+	}
 
-		cascade.light_data = create_clear_texture(tf_light, "SDFGI Cascade Light Data");
-
-		cascade.light_aniso_0_tex = create_clear_texture(tf_aniso0, "SDFGI Cascade Light Aniso 0 Texture");
-		cascade.light_aniso_1_tex = create_clear_texture(tf_aniso1, "SDFGI Cascade Light Aniso 1 Texture");
-
+	{
 		{
+			RD::TextureFormat tf_light = tf_base;
+			tf_light.format = RD::DATA_FORMAT_R32_UINT;
+			tf_light.height *= cascades.size();
+			tf_light.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
+			tf_light.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
+
+			voxel_light_tex_data = create_clear_texture(tf_light, "HDDAGI Cascade Light Data");
+
 			RD::TextureView tv;
 			tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
-			cascade.light_tex = RD::get_singleton()->texture_create_shared(tv, cascade.light_data);
+			voxel_light_tex = RD::get_singleton()->texture_create_shared(tv, voxel_light_tex_data);
 		}
+
+		{
+			RD::TextureFormat tf_neighbour = tf_base;
+			tf_neighbour.format = RD::DATA_FORMAT_R32_UINT;
+			tf_neighbour.height *= cascades.size();
+
+			voxel_light_neighbour_data = create_clear_texture(tf_neighbour, "HDDAGI Cascade Light Neighbours");
+		}
+
+		{ // Albedo texture, this is anisotropic (x6).
+			RD::TextureFormat tf_render_albedo = tf_base;
+			tf_render_albedo.width /= 2; // Albedo is half size..
+			tf_render_albedo.height /= 2;
+			tf_render_albedo.depth /= 2;
+			tf_render_albedo.depth *= 6; // ..but anisotropic.
+			tf_render_albedo.format = RD::DATA_FORMAT_R16_UINT;
+			render_albedo = create_clear_texture(tf_render_albedo, "HDDAGI Render Albedo");
+		}
+
+		{ // Emission texture, this is anisotropic but in a different way (main light, then x6 aniso weight) to save space.
+			RD::TextureFormat tf_render_emission = tf_base;
+			tf_render_emission.width /= 2; // Emission is half size..
+			tf_render_emission.height /= 2;
+			tf_render_emission.depth /= 2;
+			tf_render_emission.format = RD::DATA_FORMAT_R32_UINT;
+			render_emission = create_clear_texture(tf_render_emission, "HDDAGI Render Emission");
+			render_emission_aniso = create_clear_texture(tf_render_emission, "HDDAGI Render Emission Aniso");
+		}
+
+		{ // Aniso normals
+			RD::TextureFormat tf_render_aniso_normals = tf_base;
+			tf_render_aniso_normals.format = RD::DATA_FORMAT_R32_UINT;
+			render_aniso_normals = create_clear_texture(tf_render_aniso_normals, String("HDDAGI Render Solid Bits "));
+		}
+	}
+
+	light_process_buffer_render = RD::get_singleton()->storage_buffer_create(sizeof(HDDAGI::Cascade::LightProcessCell) * solid_cell_count);
+	light_process_dispatch_buffer_render = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>(), RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+
+	cascades_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(HDDAGI::Cascade::UBO) * HDDAGI::MAX_CASCADES);
+
+	// lightprobes
+	Vector3i PROBE_DIVISOR = cascade_size / REGION_CELLS;
+
+	{
+		RD::TextureFormat tf_lightprobes;
+		tf_lightprobes.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tf_lightprobes.format = RD::DATA_FORMAT_R32_UINT;
+		tf_lightprobes.width = (PROBE_DIVISOR.x + 1) * (LIGHTPROBE_OCT_SIZE + 2); // Divisor +1 because need an extra one on the outside of the box for proper interpolation. This contains also the Z probes towards x+
+		tf_lightprobes.height = (PROBE_DIVISOR.y + 1) * (PROBE_DIVISOR.z + 1) * (LIGHTPROBE_OCT_SIZE + 2); // OctSize +2 because it needs a border to interpolate properly
+		tf_lightprobes.depth = 1;
+		tf_lightprobes.array_layers = cascades.size();
+		tf_lightprobes.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		tf_lightprobes.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
+		tf_lightprobes.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
+
+		lightprobe_specular_data = create_clear_texture(tf_lightprobes, String("HDDAGI Lighprobe Specular"));
+		lightprobe_diffuse_data = create_clear_texture(tf_lightprobes, String("HDDAGI Lighprobe Diffuse"));
+		lightprobe_diffuse_filter_data = create_clear_texture(tf_lightprobes, String("HDDAGI Lighprobe Diffuse Filtered"));
+
+		RD::TextureView tv;
+		tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+		lightprobe_diffuse_tex = RD::get_singleton()->texture_create_shared(tv, lightprobe_diffuse_data);
+		lightprobe_diffuse_filter_tex = RD::get_singleton()->texture_create_shared(tv, lightprobe_diffuse_filter_data);
+		lightprobe_specular_tex = RD::get_singleton()->texture_create_shared(tv, lightprobe_specular_data);
+
+		RD::TextureFormat tf_cache_data = tf_lightprobes;
+		tf_cache_data.format = RD::DATA_FORMAT_R32_UINT;
+		tf_cache_data.width = (PROBE_DIVISOR.x + 1) * LIGHTPROBE_OCT_SIZE;
+		tf_cache_data.height = (PROBE_DIVISOR.y + 1) * (PROBE_DIVISOR.z + 1) * LIGHTPROBE_OCT_SIZE;
+		tf_cache_data.array_layers *= frames_to_converge;
+		tf_cache_data.shareable_formats.clear();
+		lightprobe_hit_cache_data = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Hit Cache"));
+
+		tf_cache_data.format = RD::DATA_FORMAT_R16_UINT;
+		lightprobe_hit_cache_version_data = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Hit Cache Version"));
+
+		{
+			tf_cache_data.format = RD::DATA_FORMAT_R32_UINT;
+
+			lightprobe_moving_average_history = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Moving Average History"));
+
+			RD::TextureFormat tf_moving_average = tf_cache_data;
+			tf_moving_average.width *= 3; // no RGB32 UI so..
+			tf_moving_average.array_layers = cascades.size(); // Return to just cascades, no history.
+			lightprobe_moving_average = create_clear_texture(tf_moving_average, String("HDDAGI Lighprobe Moving Average"));
+		}
+
+		RD::TextureFormat tf_ambient = tf_lightprobes;
+		tf_ambient.width = (PROBE_DIVISOR.x + 1);
+		tf_ambient.height = (PROBE_DIVISOR.y + 1) * (PROBE_DIVISOR.z + 1);
+
+		lightprobe_ambient_data = create_clear_texture(tf_ambient, String("HDDAGI Lighprobe Ambient"));
+		lightprobe_ambient_tex = RD::get_singleton()->texture_create_shared(tv, lightprobe_ambient_data);
+
+		RD::TextureFormat tf_neighbours;
+		tf_neighbours.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tf_neighbours.format = RD::DATA_FORMAT_R32_UINT;
+		tf_neighbours.width = (PROBE_DIVISOR.x + 1);
+		tf_neighbours.height = (PROBE_DIVISOR.y + 1) * (PROBE_DIVISOR.z + 1);
+		tf_neighbours.depth = 1;
+		tf_neighbours.array_layers = cascades.size();
+		tf_neighbours.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		lightprobe_neighbour_visibility_map = create_clear_texture(tf_neighbours, String("HDDAGI Neighbour Visibility Map"));
+
+		RD::TextureFormat tf_geometry_proximity = tf_neighbours;
+
+		tf_geometry_proximity.format = RD::DATA_FORMAT_R8_UNORM;
+		lightprobe_geometry_proximity_map = create_clear_texture(tf_geometry_proximity, String("HDDAGI Geometry Proximity Map"));
+		lightprobe_camera_visibility_map = create_clear_texture(tf_geometry_proximity, String("HDDAGI Camera Visibility Map"));
+
+		for (uint32_t i = 0; i < cascades.size(); i++) {
+			for (int j = 0; j < 4; j++) {
+				lightprobe_camera_buffers.push_back(RD::get_singleton()->uniform_buffer_create(sizeof(HDDAGIShader::IntegrateCameraUBO)));
+			}
+		}
+
+		RD::TextureFormat tf_process_frame = tf_neighbours;
+		tf_process_frame.format = RD::DATA_FORMAT_R32_UINT;
+		lightprobe_process_frame = create_clear_texture(tf_process_frame, String("HDDAGI Lightprobe Frame"));
+	}
+
+	// Occlusion
+
+	{
+		RD::TextureFormat tf_occlusion = tf_base;
+		tf_occlusion.format = RD::DATA_FORMAT_R16_UINT;
+		tf_occlusion.width += 2; // Extra border for proper blending.
+		tf_occlusion.height += 2; // Extra border for proper blending.
+		tf_occlusion.depth += 2; // Extra border for proper blending.
+		tf_occlusion.height *= cascades.size();
+		tf_occlusion.shareable_formats.push_back(RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16);
+		tf_occlusion.shareable_formats.push_back(RD::DATA_FORMAT_R16_UINT);
+		tf_occlusion.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+
+		for (int i = 0; i < 2; i++) {
+			occlusion_data[i] = create_clear_texture(tf_occlusion, String("HDDAGI Occlusion ") + itos(i));
+			RD::TextureView tv;
+			tv.format_override = RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16;
+			occlusion_tex[i] = RD::get_singleton()->texture_create_shared(tv, occlusion_data[i]);
+		}
+	}
+
+	for (HDDAGI::Cascade &cascade : cascades) {
+		/* 3D Textures */
+
+		cascade.light_process_buffer = RD::get_singleton()->storage_buffer_create(sizeof(HDDAGI::Cascade::LightProcessCell) * solid_cell_count);
+		cascade.light_process_dispatch_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>(), RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+		cascade.light_process_dispatch_buffer_copy = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>(), RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+
+		cascade.light_position_bufer = RD::get_singleton()->storage_buffer_create(sizeof(HDDAGIShader::Light) * MAX(HDDAGI::MAX_STATIC_LIGHTS, HDDAGI::MAX_DYNAMIC_LIGHTS));
 
 		cascade.cell_size = base_cell_size;
 		Vector3 world_position = p_world_position;
 		world_position.y *= y_mult;
-		int32_t probe_cells = cascade_size / SDFGI::PROBE_DIVISOR;
-		Vector3 probe_size = Vector3(1, 1, 1) * cascade.cell_size * probe_cells;
+		Vector3i probe_cells = cascade_size / REGION_CELLS;
+		Vector3 probe_size = Vector3(1, 1, 1) * cascade.cell_size * Vector3(probe_cells);
 		Vector3i probe_pos = Vector3i((world_position / probe_size + Vector3(0.5, 0.5, 0.5)).floor());
 		cascade.position = probe_pos * probe_cells;
 
-		cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
+		cascade.dirty_regions = HDDAGI::Cascade::DIRTY_ALL;
+
+		// lightprobes
 
 		base_cell_size *= 2.0;
-
-		/* Probe History */
-
-		cascade.lightprobe_history_tex = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.lightprobe_history_tex, "SDFGI Cascade LightProbe History Texture");
-		RD::get_singleton()->texture_clear(cascade.lightprobe_history_tex, Color(0, 0, 0, 0), 0, 1, 0, tf_probe_history.array_layers); //needs to be cleared for average to work
-
-		cascade.lightprobe_average_tex = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.lightprobe_average_tex, "SDFGI Cascade LightProbe Average Texture");
-		RD::get_singleton()->texture_clear(cascade.lightprobe_average_tex, Color(0, 0, 0, 0), 0, 1, 0, 1); //needs to be cleared for average to work
-
-		/* Buffers */
-
-		cascade.solid_cell_buffer = RD::get_singleton()->storage_buffer_create(sizeof(SDFGI::Cascade::SolidCell) * solid_cell_count);
-		cascade.solid_cell_dispatch_buffer_storage = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>());
-		cascade.solid_cell_dispatch_buffer_call = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>(), RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
-		cascade.lights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(SDFGIShader::Light) * MAX(SDFGI::MAX_STATIC_LIGHTS, SDFGI::MAX_DYNAMIC_LIGHTS));
-		{
-			Vector<RD::Uniform> uniforms;
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 1;
-				u.append_id(render_sdf[(passes & 1) ? 1 : 0]); //if passes are even, we read from buffer 0, else we read from buffer 1
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 2;
-				u.append_id(render_albedo);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 3;
-				for (int j = 0; j < 8; j++) {
-					u.append_id(render_occlusion[j]);
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 4;
-				u.append_id(render_emission);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 5;
-				u.append_id(render_emission_aniso);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 6;
-				u.append_id(render_geom_facing);
-				uniforms.push_back(u);
-			}
-
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 7;
-				u.append_id(cascade.sdf_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 8;
-				u.append_id(occlusion_data);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 10;
-				u.append_id(cascade.solid_cell_dispatch_buffer_storage);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 11;
-				u.append_id(cascade.solid_cell_buffer);
-				uniforms.push_back(u);
-			}
-
-			cascade.sdf_store_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_STORE), 0);
-		}
-
-		{
-			Vector<RD::Uniform> uniforms;
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 1;
-				u.append_id(render_albedo);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 2;
-				u.append_id(render_geom_facing);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 3;
-				u.append_id(render_emission);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 4;
-				u.append_id(render_emission_aniso);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 5;
-				u.append_id(cascade.solid_cell_dispatch_buffer_storage);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 6;
-				u.append_id(cascade.solid_cell_buffer);
-				uniforms.push_back(u);
-			}
-
-			cascade.scroll_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_SCROLL), 0);
-		}
-		{
-			Vector<RD::Uniform> uniforms;
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 1;
-				for (int j = 0; j < 8; j++) {
-					u.append_id(render_occlusion[j]);
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 2;
-				u.append_id(occlusion_data);
-				uniforms.push_back(u);
-			}
-
-			cascade.scroll_occlusion_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_SCROLL_OCCLUSION), 0);
-		}
 	}
 
-	//direct light
-	for (SDFGI::Cascade &cascade : cascades) {
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.binding = 1;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-				if (j < cascades.size()) {
-					u.append_id(cascades[j].sdf_tex);
-				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-				}
-			}
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 2;
-			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 3;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(cascade.solid_cell_dispatch_buffer_storage);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 4;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(cascade.solid_cell_buffer);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 5;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.append_id(cascade.light_data);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 6;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.append_id(cascade.light_aniso_0_tex);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 7;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.append_id(cascade.light_aniso_1_tex);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 8;
-			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.append_id(cascades_ubo);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 9;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(cascade.lights_buffer);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 10;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.append_id(lightprobe_texture);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 11;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.append_id(occlusion_texture);
-			uniforms.push_back(u);
-		}
+	bounce_feedback = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_bounce_feedback(p_env);
+	energy = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_energy(p_env);
+	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_normal_bias(p_env);
+	reflection_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_reflection_bias(p_env);
+	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_probe_bias(p_env);
+	occlusion_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_occlusion_bias(p_env);
+	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_read_sky_light(p_env);
+}
 
-		cascade.sdf_direct_light_static_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_STATIC), 0);
-		cascade.sdf_direct_light_dynamic_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_DYNAMIC), 0);
+void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization) {
+	//print_line("rendering region " + itos(p_region));
+	ERR_FAIL_COND(p_render_buffers.is_null()); // we wouldn't be here if this failed but...
+	AABB bounds;
+	Vector3i from;
+	Vector3i size;
+	Vector3i scroll;
+	Vector3i region_ofs;
+
+	int cascade = get_pending_region_data(p_region, from, size, bounds, scroll, region_ofs);
+	ERR_FAIL_COND(cascade < 0);
+
+	//initialize render
+	//@TODO: Add a clear region to RenderingDevice to optimize this part
+	RD::get_singleton()->texture_clear(render_albedo, Color(0, 0, 0, 0), 0, 1, 0, 1);
+	RD::get_singleton()->texture_clear(render_emission, Color(0, 0, 0, 0), 0, 1, 0, 1);
+	RD::get_singleton()->texture_clear(render_emission_aniso, Color(0, 0, 0, 0), 0, 1, 0, 1);
+	RD::get_singleton()->texture_clear(render_aniso_normals, Color(0, 0, 0, 0), 0, 1, 0, 1);
+	RD::get_singleton()->buffer_clear(light_process_dispatch_buffer_render, 0, sizeof(uint32_t) * 4);
+
+	if (scroll == HDDAGI::Cascade::DIRTY_ALL) {
+		RD::get_singleton()->buffer_clear(light_process_buffer_render, 0, sizeof(HDDAGI::Cascade::LightProcessCell) * solid_cell_count);
+
+		RD::get_singleton()->texture_clear(lightprobe_hit_cache_data, Color(0, 0, 0, 0), 0, 1, cascade * frames_to_converge, frames_to_converge);
+		RD::get_singleton()->texture_clear(lightprobe_hit_cache_version_data, Color(0, 0, 0, 0), 0, 1, cascade * frames_to_converge, frames_to_converge);
+		RD::get_singleton()->texture_clear(lightprobe_moving_average_history, Color(0, 0, 0, 0), 0, 1, cascade * frames_to_converge, frames_to_converge);
+		RD::get_singleton()->texture_clear(lightprobe_moving_average, Color(0, 0, 0, 0), 0, 1, cascade, 1);
+		RD::get_singleton()->texture_clear(lightprobe_specular_data, Color(0, 0, 0, 0), 0, 1, cascade, 1);
+		RD::get_singleton()->texture_clear(lightprobe_diffuse_data, Color(0, 0, 0, 0), 0, 1, cascade, 1);
+		RD::get_singleton()->texture_clear(lightprobe_process_frame, Color(0, 0, 0, 0), 0, 1, cascade, 1);
 	}
 
-	//preprocess initialize uniform set
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 1;
-			u.append_id(render_albedo);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 2;
-			u.append_id(render_sdf[0]);
-			uniforms.push_back(u);
-		}
+	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(cascades[cascade].cell_size));
 
-		sdf_initialize_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE), 0);
-	}
+	RendererSceneRenderRD::get_singleton()->_render_hddagi(p_render_buffers, from, size, bounds, p_instances, render_albedo, render_emission, render_emission_aniso, render_aniso_normals, p_exposure_normalization);
 
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 1;
-			u.append_id(render_albedo);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 2;
-			u.append_id(render_sdf_half[0]);
-			uniforms.push_back(u);
-		}
+	RD::get_singleton()->draw_command_begin_label("HDDAGI Create Cascade SDF");
 
-		sdf_initialize_half_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE_HALF), 0);
-	}
+	RENDER_TIMESTAMP("> HDDAGI Update SDF");
+	//done rendering! must update SDF
+	//clear dispatch indirect data
 
-	//jump flood uniform set
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 1;
-			u.append_id(render_sdf[0]);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 2;
-			u.append_id(render_sdf[1]);
-			uniforms.push_back(u);
-		}
+	HDDAGIShader::PreprocessPushConstant push_constant;
+	memset(&push_constant, 0, sizeof(HDDAGIShader::PreprocessPushConstant));
 
-		jump_flood_uniform_set[0] = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
-		RID aux0 = uniforms.write[0].get_id(0);
-		RID aux1 = uniforms.write[1].get_id(0);
-		uniforms.write[0].set_id(0, aux1);
-		uniforms.write[1].set_id(0, aux0);
-		jump_flood_uniform_set[1] = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
-	}
-	//jump flood half uniform set
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 1;
-			u.append_id(render_sdf_half[0]);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 2;
-			u.append_id(render_sdf_half[1]);
-			uniforms.push_back(u);
-		}
+	Vector3i dispatch_size;
+	//scroll
+	if (scroll != HDDAGI::Cascade::DIRTY_ALL) {
+		//for scroll
+		push_constant.scroll[0] = scroll.x;
+		push_constant.scroll[1] = scroll.y;
+		push_constant.scroll[2] = scroll.z;
 
-		jump_flood_half_uniform_set[0] = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
-		RID aux0 = uniforms.write[0].get_id(0);
-		RID aux1 = uniforms.write[1].get_id(0);
-		uniforms.write[0].set_id(0, aux1);
-		uniforms.write[1].set_id(0, aux0);
-		jump_flood_half_uniform_set[1] = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
-	}
-
-	//upscale half size sdf
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 1;
-			u.append_id(render_albedo);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 2;
-			u.append_id(render_sdf_half[(passes & 1) ? 0 : 1]); //reverse pass order because half size
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 3;
-			u.append_id(render_sdf[(passes & 1) ? 0 : 1]); //reverse pass order because it needs an extra JFA pass
-			uniforms.push_back(u);
-		}
-
-		upscale_jfa_uniform_set_index = (passes & 1) ? 0 : 1;
-		sdf_upscale_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD_UPSCALE), 0);
-	}
-
-	//occlusion uniform set
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 1;
-			u.append_id(render_albedo);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 2;
-			for (int i = 0; i < 8; i++) {
-				u.append_id(render_occlusion[i]);
-			}
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 3;
-			u.append_id(render_geom_facing);
-			uniforms.push_back(u);
-		}
-
-		occlusion_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_OCCLUSION), 0);
-	}
-
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		//integrate uniform
-
-		Vector<RD::Uniform> uniforms;
-
-		{
-			RD::Uniform u;
-			u.binding = 1;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-				if (j < cascades.size()) {
-					u.append_id(cascades[j].sdf_tex);
-				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-				}
-			}
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 2;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-				if (j < cascades.size()) {
-					u.append_id(cascades[j].light_tex);
-				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-				}
-			}
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 3;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-				if (j < cascades.size()) {
-					u.append_id(cascades[j].light_aniso_0_tex);
-				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-				}
-			}
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 4;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-				if (j < cascades.size()) {
-					u.append_id(cascades[j].light_aniso_1_tex);
-				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-				}
-			}
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 6;
-			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-			uniforms.push_back(u);
-		}
-
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.binding = 7;
-			u.append_id(cascades_ubo);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 8;
-			u.append_id(lightprobe_data);
-			uniforms.push_back(u);
-		}
-
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 9;
-			u.append_id(cascades[i].lightprobe_history_tex);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 10;
-			u.append_id(cascades[i].lightprobe_average_tex);
-			uniforms.push_back(u);
-		}
-
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 11;
-			u.append_id(lightprobe_history_scroll);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 12;
-			u.append_id(lightprobe_average_scroll);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 13;
-			RID parent_average;
-			if (cascades.size() == 1) {
-				// If there is only one SDFGI cascade, we can't use the previous cascade for blending.
-				parent_average = cascades[i].lightprobe_average_tex;
-			} else if (i < cascades.size() - 1) {
-				parent_average = cascades[i + 1].lightprobe_average_tex;
+		for (int i = 0; i < 3; i++) {
+			if (scroll[i] > 0) {
+				push_constant.offset[i] = 0;
+				push_constant.limit[i] = scroll[i];
+				dispatch_size[i] = scroll[i];
+			} else if (scroll[i] < 0) {
+				push_constant.offset[i] = cascade_size[i] + scroll[i];
+				push_constant.limit[i] = cascade_size[i];
+				dispatch_size[i] = -scroll[i];
 			} else {
-				parent_average = cascades[i - 1].lightprobe_average_tex; //to use something, but it won't be used
+				push_constant.offset[i] = 0;
+				push_constant.limit[i] = cascade_size[i];
+				dispatch_size[i] = cascade_size[i];
 			}
-			u.append_id(parent_average);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 14;
-			u.append_id(ambient_texture);
-			uniforms.push_back(u);
 		}
 
-		cascades[i].integrate_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.integrate.version_get_shader(gi->sdfgi_shader.integrate_shader, 0), 0);
+	} else {
+		//for no scroll
+		push_constant.scroll[0] = 0;
+		push_constant.scroll[1] = 0;
+		push_constant.scroll[2] = 0;
+
+		push_constant.offset[0] = 0;
+		push_constant.offset[1] = 0;
+		push_constant.offset[2] = 0;
+
+		push_constant.limit[0] = cascade_size[0];
+		push_constant.limit[1] = cascade_size[1];
+		push_constant.limit[2] = cascade_size[2];
+
+		dispatch_size.x = cascade_size[0];
+		dispatch_size.y = cascade_size[1];
+		dispatch_size.z = cascade_size[2];
+	}
+	push_constant.grid_size[0] = cascade_size[0];
+	push_constant.grid_size[1] = cascade_size[1];
+	push_constant.grid_size[2] = cascade_size[2];
+
+	Vector3i probe_axis_count = cascade_size / REGION_CELLS + Vector3i(1, 1, 1);
+
+	push_constant.probe_axis_size[0] = probe_axis_count[0];
+	push_constant.probe_axis_size[1] = probe_axis_count[1];
+	push_constant.probe_axis_size[2] = probe_axis_count[2];
+
+	push_constant.region_world_pos[0] = region_ofs[0];
+	push_constant.region_world_pos[1] = region_ofs[1];
+	push_constant.region_world_pos[2] = region_ofs[2];
+
+	if (cascade < int(cascades.size() - 1) && scroll != HDDAGI::Cascade::DIRTY_ALL) {
+		Vector3 upper_position = cascades[cascade + 1].position;
+
+		// Get proper upper cascade position (before scroll)
+		for (int k = 0; k < 3; k++) {
+			if (cascades[cascade + 1].dirty_regions[k] != 0) {
+				upper_position[k] -= cascades[cascade + 1].dirty_regions[k];
+			}
+		}
+
+		push_constant.upper_region_world_pos[0] = upper_position[0] / REGION_CELLS;
+		push_constant.upper_region_world_pos[1] = upper_position[1] / REGION_CELLS;
+		push_constant.upper_region_world_pos[2] = upper_position[2] / REGION_CELLS;
+
+	} else {
+		push_constant.upper_region_world_pos[0] = 0;
+		push_constant.upper_region_world_pos[1] = 0;
+		push_constant.upper_region_world_pos[2] = 0;
 	}
 
-	bounce_feedback = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_bounce_feedback(p_env);
-	energy = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_energy(p_env);
-	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_normal_bias(p_env);
-	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_probe_bias(p_env);
-	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_read_sky_light(p_env);
+	push_constant.maximum_light_cells = solid_cell_count;
+	push_constant.cascade_count = cascades.size();
+
+	push_constant.ray_hit_cache_frames = frames_to_converge;
+
+	static const uint32_t frames_to_update_table[RS::ENV_HDDAGI_INACTIVE_PROBE_MAX] = {
+		1, 2, 4, 8
+	};
+
+	push_constant.probe_update_frames = frames_to_update_table[gi->inactive_probe_frames];
+
+	push_constant.cascade = cascade;
+	push_constant.occlusion_offset = 0;
+
+	cascades[cascade].latest_version++;
+
+	push_constant.region_version = cascades[cascade].latest_version;
+
+	//full size jumpflood
+	RENDER_TIMESTAMP("HDDAGI Scroll");
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	if (scroll != HDDAGI::Cascade::DIRTY_ALL) {
+		// Scroll happened
+
+		{ // Light Scroll
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_LIGHT_SCROLL]);
+			RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+					gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_LIGHT_SCROLL],
+					0,
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_light_tex_data),
+					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, light_process_dispatch_buffer_render),
+					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 6, light_process_buffer_render),
+					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 7, cascades[cascade].light_process_dispatch_buffer_copy),
+					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 8, cascades[cascade].light_process_buffer)
+
+			);
+
+			HDDAGIShader::PreprocessPushConstant push_constant_scroll = push_constant;
+
+			for (int i = 0; i < 3; i++) {
+				if (scroll[i] > 0) {
+					push_constant_scroll.limit[i] = cascade_size[i] - scroll[i];
+					push_constant_scroll.offset[i] = 1; //+1 because one extra is rendered below for consistency with neighbouring voxels.
+				} else if (scroll[i] < 0) {
+					push_constant_scroll.limit[i] = cascade_size[i] - 1; // -1 because one extra is rendered below for consistency with neighbouring voxels.
+					push_constant_scroll.offset[i] = -scroll[i];
+				} else {
+					push_constant_scroll.limit[i] = cascade_size[i];
+					push_constant_scroll.offset[i] = 0;
+				}
+			}
+
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant_scroll, sizeof(HDDAGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascades[cascade].light_process_dispatch_buffer, 0);
+		}
+
+		{ // Probe Scroll
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_SCROLL]);
+
+			RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+					gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_SCROLL],
+					0,
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, lightprobe_specular_data),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, lightprobe_diffuse_data),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, lightprobe_ambient_data),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, lightprobe_hit_cache_data),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, lightprobe_moving_average_history),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, lightprobe_moving_average),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 7, get_lightprobe_occlusion_textures()),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 8, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+			Vector3i dispatch_cells = dispatch_size / REGION_CELLS + Vector3i(1, 1, 1);
+
+			HDDAGIShader::PreprocessPushConstant push_constant_scroll = push_constant;
+
+			for (int i = 0; i < 3; i++) {
+				if (scroll[i] < 0) {
+					push_constant_scroll.offset[i] += REGION_CELLS;
+					dispatch_cells[i]--;
+				} else if (scroll[i] > 0) {
+					dispatch_cells[i]--;
+				}
+			}
+
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant_scroll, sizeof(HDDAGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch(compute_list, dispatch_cells.x, dispatch_cells.y, dispatch_cells.z);
+		}
+
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+	}
+
+	{ // Occlusion
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_OCCLUSION]);
+
+		for (int i = 0; i < 2; i++) {
+			RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+					gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_OCCLUSION],
+					0,
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, render_aniso_normals),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, occlusion_data[i]));
+
+			push_constant.occlusion_offset = (i - 1) * 4; // Turns out Z needs to be swapped. I have no idea why. If you figure it out, let me know.
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch(compute_list, dispatch_size.x / REGION_CELLS, dispatch_size.y / REGION_CELLS, dispatch_size.z / REGION_CELLS);
+		}
+	}
+
+	{ // Region Store
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_REGION_STORE]);
+
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_REGION_STORE],
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, render_aniso_normals),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_bits_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, voxel_region_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, region_version_data));
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::PreprocessPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_size.x, dispatch_size.y, dispatch_size.z);
+	}
+
+	RD::get_singleton()->compute_list_add_barrier(compute_list); // store needs another barrier
+
+	RENDER_TIMESTAMP("HDDAGI Store SDF");
+
+	{
+		// Storing light happens last (after barrier) because it needs occlusion information.
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_LIGHT_STORE]);
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_LIGHT_STORE],
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, render_albedo),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, render_emission),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, render_emission_aniso),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, render_aniso_normals),
+				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, light_process_dispatch_buffer_render),
+				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 6, light_process_buffer_render),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 7, lightprobe_neighbour_visibility_map),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 8, get_lightprobe_occlusion_textures()),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 9, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, voxel_disocclusion_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 11, voxel_light_neighbour_data),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 12, voxel_light_tex_data));
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+		Vector3i store_size = dispatch_size;
+
+		if (scroll != HDDAGI::Cascade::DIRTY_ALL) {
+			for (int i = 0; i < 3; i++) {
+				if (scroll[i] > 0) {
+					push_constant.offset[i] = 0;
+					push_constant.limit[i] = scroll[i] + 1; //extra voxel to properly store light
+					store_size[i] += 1;
+				} else if (scroll[i] < 0) {
+					push_constant.offset[i] = cascade_size[i] + scroll[i] - 1;
+					push_constant.limit[i] = cascade_size[i];
+					store_size[i] += 1;
+				} else {
+					push_constant.offset[i] = 0;
+					push_constant.limit[i] = cascade_size[i];
+				}
+			}
+		}
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::PreprocessPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, store_size.x, store_size.y, store_size.z);
+		// Store processed ones into cascade
+		SWAP(light_process_dispatch_buffer_render, cascades[cascade].light_process_dispatch_buffer);
+		SWAP(light_process_buffer_render, cascades[cascade].light_process_buffer);
+
+		cascades[cascade].static_lights_dirty = true;
+		cascades[cascade].dynamic_lights_dirty = true;
+	}
+
+	{ // Probe Neighbours (no barrier needed)
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_NEIGHBOURS]);
+
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_NEIGHBOURS],
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, get_lightprobe_occlusion_textures()),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 2, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, lightprobe_neighbour_visibility_map)
+
+		);
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+		Vector3i dispatch_cells = dispatch_size / REGION_CELLS + Vector3i(1, 1, 1);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::PreprocessPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_cells.x, dispatch_cells.y, dispatch_cells.z);
+	}
+
+	{ // Probe geometry proximity (no barrier needed)
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_GEOMETRY_PROXIMITY]);
+
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_GEOMETRY_PROXIMITY],
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_region_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, lightprobe_geometry_proximity_map));
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+		Vector3i dispatch_cells = cascade_size / REGION_CELLS + Vector3i(1, 1, 1);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::PreprocessPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_cells.x, dispatch_cells.y, dispatch_cells.z);
+	}
+
+	{ // Probe frames
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_UPDATE_FRAMES]);
+
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.preprocess_shader_version[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_UPDATE_FRAMES],
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, lightprobe_process_frame));
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+		Vector3i dispatch_cells = cascade_size / REGION_CELLS + Vector3i(1, 1, 1);
+
+		HDDAGIShader::PreprocessPushConstant push_constant_scroll = push_constant;
+
+		if (scroll != HDDAGI::Cascade::DIRTY_ALL) {
+			// Only edge if not all dirty
+			for (int i = 0; i < 3; i++) {
+				if (scroll[i] < 0) {
+					push_constant_scroll.offset[i] += REGION_CELLS;
+					dispatch_cells[i]--;
+				} else if (scroll[i] > 0) {
+					dispatch_cells[i]--;
+				}
+			}
+		}
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant_scroll, sizeof(HDDAGIShader::PreprocessPushConstant));
+		RD::get_singleton()->compute_list_dispatch(compute_list, dispatch_cells.x, dispatch_cells.y, dispatch_cells.z);
+	}
+
+	RD::get_singleton()->compute_list_end();
+
+	RD::get_singleton()->buffer_copy(cascades[cascade].light_process_dispatch_buffer, cascades[cascade].light_process_dispatch_buffer_copy, 0, 0, sizeof(uint32_t) * 4);
+
+	cascades[cascade].baked_exposure_normalization = p_exposure_normalization;
+
+	RD::get_singleton()->draw_command_end_label();
+	RENDER_TIMESTAMP("< HDDAGI Update SDF");
 }
 
-void GI::SDFGI::free_data() {
-	// we don't free things here, we handle SDFGI differently at the moment destructing the object when it needs to change.
+void GI::HDDAGI::free_data() {
+	// we don't free things here, we handle HDDAGI differently at the moment destructing the object when it needs to change.
 }
 
-GI::SDFGI::~SDFGI() {
-	for (const SDFGI::Cascade &c : cascades) {
-		RD::get_singleton()->free(c.light_data);
-		RD::get_singleton()->free(c.light_aniso_0_tex);
-		RD::get_singleton()->free(c.light_aniso_1_tex);
-		RD::get_singleton()->free(c.sdf_tex);
-		RD::get_singleton()->free(c.solid_cell_dispatch_buffer_storage);
-		RD::get_singleton()->free(c.solid_cell_dispatch_buffer_call);
-		RD::get_singleton()->free(c.solid_cell_buffer);
-		RD::get_singleton()->free(c.lightprobe_history_tex);
-		RD::get_singleton()->free(c.lightprobe_average_tex);
-		RD::get_singleton()->free(c.lights_buffer);
+GI::HDDAGI::~HDDAGI() {
+	for (const HDDAGI::Cascade &c : cascades) {
+		RD::get_singleton()->free(c.light_process_buffer);
+		RD::get_singleton()->free(c.light_process_dispatch_buffer);
+		RD::get_singleton()->free(c.light_process_dispatch_buffer_copy);
 	}
 
 	RD::get_singleton()->free(render_albedo);
+	RD::get_singleton()->free(render_aniso_normals);
 	RD::get_singleton()->free(render_emission);
 	RD::get_singleton()->free(render_emission_aniso);
 
-	RD::get_singleton()->free(render_sdf[0]);
-	RD::get_singleton()->free(render_sdf[1]);
+	RD::get_singleton()->free(voxel_bits_tex);
+	RD::get_singleton()->free(voxel_region_tex);
+	RD::get_singleton()->free(voxel_light_tex_data);
+	RD::get_singleton()->free(voxel_light_neighbour_data);
+	RD::get_singleton()->free(region_version_data);
 
-	RD::get_singleton()->free(render_sdf_half[0]);
-	RD::get_singleton()->free(render_sdf_half[1]);
-
-	for (int i = 0; i < 8; i++) {
-		RD::get_singleton()->free(render_occlusion[i]);
-	}
-
-	RD::get_singleton()->free(render_geom_facing);
-
-	RD::get_singleton()->free(lightprobe_data);
-	RD::get_singleton()->free(lightprobe_history_scroll);
-	RD::get_singleton()->free(lightprobe_average_scroll);
-	RD::get_singleton()->free(occlusion_data);
-	RD::get_singleton()->free(ambient_texture);
+	RD::get_singleton()->free(light_process_buffer_render);
+	RD::get_singleton()->free(light_process_dispatch_buffer_render);
 
 	RD::get_singleton()->free(cascades_ubo);
 
-	for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
-		if (RD::get_singleton()->uniform_set_is_valid(debug_uniform_set[v])) {
-			RD::get_singleton()->free(debug_uniform_set[v]);
-		}
-		debug_uniform_set[v] = RID();
-	}
+	RD::get_singleton()->free(lightprobe_specular_data);
+	RD::get_singleton()->free(lightprobe_diffuse_data);
+	RD::get_singleton()->free(lightprobe_ambient_data);
+	RD::get_singleton()->free(lightprobe_diffuse_filter_data);
+	RD::get_singleton()->free(lightprobe_hit_cache_data);
+	RD::get_singleton()->free(lightprobe_hit_cache_version_data);
 
-	if (RD::get_singleton()->uniform_set_is_valid(debug_probes_uniform_set)) {
-		RD::get_singleton()->free(debug_probes_uniform_set);
+	RD::get_singleton()->free(lightprobe_moving_average);
+	RD::get_singleton()->free(lightprobe_moving_average_history);
+
+	RD::get_singleton()->free(lightprobe_neighbour_visibility_map);
+	RD::get_singleton()->free(lightprobe_geometry_proximity_map);
+	RD::get_singleton()->free(lightprobe_camera_visibility_map);
+	for (int i = 0; i < lightprobe_camera_buffers.size(); i++) {
+		RD::get_singleton()->free(lightprobe_camera_buffers[i]);
 	}
-	debug_probes_uniform_set = RID();
+	lightprobe_camera_buffers.clear();
+	RD::get_singleton()->free(lightprobe_process_frame);
+
+	RD::get_singleton()->free(occlusion_data[0]);
+	RD::get_singleton()->free(occlusion_data[1]);
 
 	if (debug_probes_scene_data_ubo.is_valid()) {
 		RD::get_singleton()->free(debug_probes_scene_data_ubo);
@@ -1180,19 +1067,25 @@ GI::SDFGI::~SDFGI() {
 	}
 }
 
-void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
-	bounce_feedback = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_bounce_feedback(p_env);
-	energy = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_energy(p_env);
-	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_normal_bias(p_env);
-	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_probe_bias(p_env);
-	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_read_sky_light(p_env);
+void GI::HDDAGI::update(RID p_env, const Vector3 &p_world_position) {
+	bounce_feedback = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_bounce_feedback(p_env);
+	energy = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_energy(p_env);
+	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_read_sky_light(p_env);
+	using_probe_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_probes(p_env);
+	using_reflection_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_reflection(p_env);
+	using_ambient_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_ambient(p_env);
+	reflection_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_reflection_bias(p_env);
+	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_normal_bias(p_env);
+	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_probe_bias(p_env);
+	occlusion_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_occlusion_bias(p_env);
 
-	int32_t drag_margin = (cascade_size / SDFGI::PROBE_DIVISOR) / 2;
+	int32_t drag_margin = REGION_CELLS / 2;
 
-	for (SDFGI::Cascade &cascade : cascades) {
+	int idx = 0;
+	for (HDDAGI::Cascade &cascade : cascades) {
 		cascade.dirty_regions = Vector3i();
 
-		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(cascade_size / SDFGI::PROBE_DIVISOR) * 0.5;
+		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(REGION_CELLS) * 0.5;
 		probe_half_size = Vector3(0, 0, 0);
 
 		Vector3 world_position = p_world_position;
@@ -1214,113 +1107,157 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 
 			if (cascade.dirty_regions[j] == 0) {
 				continue; // not dirty
-			} else if (uint32_t(ABS(cascade.dirty_regions[j])) >= cascade_size) {
+			} else if (uint32_t(ABS(cascade.dirty_regions[j])) >= uint32_t(cascade_size[j])) {
 				//moved too much, just redraw everything (make all dirty)
-				cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
+				cascade.dirty_regions = HDDAGI::Cascade::DIRTY_ALL;
 				break;
 			}
 		}
-
-		if (cascade.dirty_regions != Vector3i() && cascade.dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
+#ifdef DIRTY_ALL_FRAMES
+		// DEBUG
+		cascade.dirty_regions = HDDAGI::Cascade::DIRTY_ALL;
+		break;
+#endif
+		if (cascade.dirty_regions != Vector3i() && cascade.dirty_regions != HDDAGI::Cascade::DIRTY_ALL) {
 			//see how much the total dirty volume represents from the total volume
-			uint32_t total_volume = cascade_size * cascade_size * cascade_size;
+			uint32_t total_volume = cascade_size.x * cascade_size.y * cascade_size.z;
 			uint32_t safe_volume = 1;
 			for (int j = 0; j < 3; j++) {
-				safe_volume *= cascade_size - ABS(cascade.dirty_regions[j]);
+				safe_volume *= cascade_size[j] - ABS(cascade.dirty_regions[j]);
 			}
 			uint32_t dirty_volume = total_volume - safe_volume;
 			if (dirty_volume > (safe_volume / 2)) {
 				//more than half the volume is dirty, make all dirty so its only rendered once
-				cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
+				cascade.dirty_regions = HDDAGI::Cascade::DIRTY_ALL;
 			}
 		}
+
+		if (cascade.dirty_regions != Vector3i()) {
+			uint32_t dirty_mask = 0;
+			for (int j = 0; j < 3; j++) {
+				if (cascade.dirty_regions[j] != 0) {
+					dirty_mask |= (1 << j);
+				}
+			}
+			// Notify all cascades equal or smaller than this that some motion happened.
+			// In an axis, which is used for light ray cache invalidation.
+
+			for (int j = idx; j >= 0; j--) {
+				cascades[j].motion_accum |= dirty_mask;
+			}
+		}
+
+		idx++;
 	}
+
+	update_frame++;
 }
 
-void GI::SDFGI::update_light() {
-	RD::get_singleton()->draw_command_begin_label("SDFGI Update dynamic Light");
-
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		RD::get_singleton()->buffer_copy(cascades[i].solid_cell_dispatch_buffer_storage, cascades[i].solid_cell_dispatch_buffer_call, 0, 0, sizeof(uint32_t) * 4);
-	}
+void GI::HDDAGI::update_light() {
+	RD::get_singleton()->draw_command_begin_label("HDDAGI Update dynamic Light");
 
 	/* Update dynamic light */
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.direct_light_pipeline[SDFGIShader::DIRECT_LIGHT_MODE_DYNAMIC]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.direct_light_pipeline[HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC]);
 
-	SDFGIShader::DirectLightPushConstant push_constant;
+	HDDAGIShader::DirectLightPushConstant push_constant;
 
-	push_constant.grid_size[0] = cascade_size;
-	push_constant.grid_size[1] = cascade_size;
-	push_constant.grid_size[2] = cascade_size;
+	push_constant.grid_size[0] = cascade_size[0];
+	push_constant.grid_size[1] = cascade_size[1];
+	push_constant.grid_size[2] = cascade_size[2];
 	push_constant.max_cascades = cascades.size();
-	push_constant.probe_axis_size = probe_axis_count;
+	push_constant.probe_axis_size[0] = cascade_size[0] / REGION_CELLS + 1;
+	push_constant.probe_axis_size[1] = cascade_size[1] / REGION_CELLS + 1;
+	push_constant.probe_axis_size[2] = cascade_size[2] / REGION_CELLS + 1;
+
 	push_constant.bounce_feedback = bounce_feedback;
 	push_constant.y_mult = y_mult;
 	push_constant.use_occlusion = uses_occlusion;
+	push_constant.probe_cell_size = REGION_CELLS;
 
 	for (uint32_t i = 0; i < cascades.size(); i++) {
-		SDFGI::Cascade &cascade = cascades[i];
+		HDDAGI::Cascade &cascade = cascades[i];
 		push_constant.light_count = cascade_dynamic_light_count[i];
 		push_constant.cascade = i;
+		push_constant.dirty_dynamic_update = cascades[i].dynamic_lights_dirty;
 
-		if (cascades[i].all_dynamic_lights_dirty || gi->sdfgi_frames_to_update_light == RS::ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME) {
+		cascades[i].dynamic_lights_dirty = false;
+
+		if (gi->hddagi_frames_to_update_light == RS::ENV_HDDAGI_UPDATE_LIGHT_IN_1_FRAME) {
 			push_constant.process_offset = 0;
 			push_constant.process_increment = 1;
 		} else {
-			static const uint32_t frames_to_update_table[RS::ENV_SDFGI_UPDATE_LIGHT_MAX] = {
+			static const uint32_t frames_to_update_table[RS::ENV_HDDAGI_UPDATE_LIGHT_MAX] = {
 				1, 2, 4, 8, 16
 			};
 
-			uint32_t frames_to_update = frames_to_update_table[gi->sdfgi_frames_to_update_light];
+			uint32_t frames_to_update = frames_to_update_table[gi->hddagi_frames_to_update_light];
 
 			push_constant.process_offset = RSG::rasterizer->get_frame_number() % frames_to_update;
 			push_constant.process_increment = frames_to_update;
 		}
-		cascades[i].all_dynamic_lights_dirty = false;
 
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascade.sdf_direct_light_dynamic_uniform_set, 0);
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::DirectLightPushConstant));
-		RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascade.solid_cell_dispatch_buffer_call, 0);
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.direct_light_shader_version[HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC],
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 4, cascade.light_process_dispatch_buffer_copy),
+				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, cascade.light_process_buffer),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, voxel_light_tex_data),
+				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, cascades_ubo),
+				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 8, cascade.light_position_bufer),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 9, lightprobe_diffuse_tex));
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::DirectLightPushConstant));
+		RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascade.light_process_dispatch_buffer, 0);
 	}
+
 	RD::get_singleton()->compute_list_end();
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
-	RD::get_singleton()->draw_command_begin_label("SDFGI Update Probes");
+void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform) {
+	RD::get_singleton()->draw_command_begin_label("HDDAGI Update Probes");
 
-	SDFGIShader::IntegratePushConstant push_constant;
-	push_constant.grid_size[1] = cascade_size;
-	push_constant.grid_size[2] = cascade_size;
-	push_constant.grid_size[0] = cascade_size;
+	HDDAGIShader::IntegratePushConstant push_constant;
+	push_constant.grid_size[0] = cascade_size[0];
+	push_constant.grid_size[1] = cascade_size[1];
+	push_constant.grid_size[2] = cascade_size[2];
 	push_constant.max_cascades = cascades.size();
-	push_constant.probe_axis_size = probe_axis_count;
-	push_constant.history_index = render_pass % history_size;
-	push_constant.history_size = history_size;
-	static const uint32_t ray_count[RS::ENV_SDFGI_RAY_COUNT_MAX] = { 4, 8, 16, 32, 64, 96, 128 };
-	push_constant.ray_count = ray_count[gi->sdfgi_ray_count];
-	push_constant.ray_bias = probe_bias;
-	push_constant.image_size[0] = probe_axis_count * probe_axis_count;
-	push_constant.image_size[1] = probe_axis_count;
-	push_constant.store_ambient_texture = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_enabled(p_env);
+	push_constant.probe_axis_size[0] = cascade_size[0] / REGION_CELLS + 1;
+	push_constant.probe_axis_size[1] = cascade_size[1] / REGION_CELLS + 1;
+	push_constant.probe_axis_size[2] = cascade_size[2] / REGION_CELLS + 1;
 
-	RID sky_uniform_set = gi->sdfgi_shader.integrate_default_sky_uniform_set;
-	push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_DISABLED;
+	static const uint32_t frames_to_update_table[RS::ENV_HDDAGI_INACTIVE_PROBE_MAX] = {
+		1, 2, 4, 8
+	};
+	push_constant.inactive_update_frames = frames_to_update_table[gi->inactive_probe_frames];
+	push_constant.global_frame = RSG::rasterizer->get_frame_number();
+	push_constant.history_size = frames_to_converge;
+	push_constant.ray_bias = probe_bias;
+	push_constant.store_ambient_texture = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_enabled(p_env);
+	push_constant.sky_mode = HDDAGIShader::IntegratePushConstant::SKY_MODE_DISABLED;
 	push_constant.y_mult = y_mult;
+
+	RID integrate_sky_uniform_set;
+	int32_t probe_divisor = REGION_CELLS;
 
 	if (reads_sky && p_env.is_valid()) {
 		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy_multiplier(p_env);
 
 		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_CLEAR_COLOR) {
-			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_mode = HDDAGIShader::IntegratePushConstant::SKY_MODE_COLOR;
 			Color c = RSG::texture_storage->get_default_clear_color().srgb_to_linear();
 			push_constant.sky_color[0] = c.r;
 			push_constant.sky_color[1] = c.g;
 			push_constant.sky_color[2] = c.b;
 		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_COLOR) {
-			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_mode = HDDAGIShader::IntegratePushConstant::SKY_MODE_COLOR;
 			Color c = RendererSceneRenderRD::get_singleton()->environment_get_bg_color(p_env);
 			push_constant.sky_color[0] = c.r;
 			push_constant.sky_color[1] = c.g;
@@ -1328,93 +1265,160 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 
 		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_SKY) {
 			if (p_sky && p_sky->radiance.is_valid()) {
-				if (integrate_sky_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(integrate_sky_uniform_set)) {
-					Vector<RD::Uniform> uniforms;
+				integrate_sky_uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+						gi->hddagi_shader.integrate.version_get_shader(gi->hddagi_shader.integrate_shader, 0),
+						1,
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_sky->radiance),
+						RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
 
-					{
-						RD::Uniform u;
-						u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-						u.binding = 0;
-						u.append_id(p_sky->radiance);
-						uniforms.push_back(u);
-					}
-
-					{
-						RD::Uniform u;
-						u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-						u.binding = 1;
-						u.append_id(RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-						uniforms.push_back(u);
-					}
-
-					integrate_sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.integrate.version_get_shader(gi->sdfgi_shader.integrate_shader, 0), 1);
-				}
-				sky_uniform_set = integrate_sky_uniform_set;
-				push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_SKY;
+				push_constant.sky_mode = HDDAGIShader::IntegratePushConstant::SKY_MODE_SKY;
 			}
 		}
 	}
 
+	{
+		RD::get_singleton()->texture_clear(lightprobe_camera_visibility_map, Color(0, 0, 0, 0), 0, 1, 0, cascades.size());
+
+		// Setup buffers first (must be done outside compute list).
+		for (uint32_t i = 0; i < cascades.size(); i++) {
+			Vector3 cascade_pos = Vector3((Vector3i(1, 1, 1) * -(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
+			float cascade_to_cell = 1.0 / cascades[i].cell_size;
+			Transform3D local_xform = p_cam_transform;
+			local_xform.origin -= cascade_pos;
+			local_xform.scale(Vector3(1, y_mult, 1) * cascade_to_cell);
+
+			for (uint32_t j = 0; j < p_view_count; j++) {
+				Vector<Plane> planes = p_projections[j].get_projection_planes(local_xform);
+				HDDAGIShader::IntegrateCameraUBO camera_ubo;
+				for (int k = 0; k < planes.size(); k++) {
+					Plane plane = planes[k];
+					camera_ubo.planes[k * 4 + 0] = plane.normal.x;
+					camera_ubo.planes[k * 4 + 1] = plane.normal.y;
+					camera_ubo.planes[k * 4 + 2] = plane.normal.z;
+					camera_ubo.planes[k * 4 + 3] = plane.d;
+				}
+				Vector3 endpoints[8];
+				p_projections[j].get_endpoints(local_xform, endpoints);
+				for (int k = 0; k < 8; k++) {
+					Vector3 p = endpoints[k];
+					camera_ubo.points[k * 4 + 0] = p.x;
+					camera_ubo.points[k * 4 + 1] = p.y;
+					camera_ubo.points[k * 4 + 2] = p.z;
+					camera_ubo.points[k * 4 + 3] = 1;
+				}
+				int buffer_index = j * cascades.size() + i;
+				RD::get_singleton()->buffer_update(lightprobe_camera_buffers[buffer_index], 0, sizeof(HDDAGIShader::IntegrateCameraUBO), &camera_ubo);
+			}
+		}
+
+		// Do visibility testing (all cascades and views in parallel).
+
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.integrate_pipeline[HDDAGIShader::INTEGRATE_MODE_CAMERA_VISIBILITY]);
+
+		for (uint32_t i = 0; i < cascades.size(); i++) {
+			push_constant.cascade = i;
+			push_constant.world_offset[0] = cascades[i].position.x / probe_divisor;
+			push_constant.world_offset[1] = cascades[i].position.y / probe_divisor;
+			push_constant.world_offset[2] = cascades[i].position.z / probe_divisor;
+
+			for (uint32_t j = 0; j < p_view_count; j++) {
+				int buffer_index = j * cascades.size() + i;
+
+				RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+						gi->hddagi_shader.integrate_shader_version[HDDAGIShader::INTEGRATE_MODE_CAMERA_VISIBILITY],
+						0,
+						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, lightprobe_camera_visibility_map),
+						RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 2, lightprobe_camera_buffers[buffer_index]));
+
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::IntegratePushConstant));
+				Vector3i dispatch_threads = cascade_size / REGION_CELLS;
+				RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_threads.x, dispatch_threads.y, dispatch_threads.z);
+			}
+		}
+		RD::get_singleton()->compute_list_end();
+	}
+
+	if (integrate_sky_uniform_set.is_null()) {
+		integrate_sky_uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.integrate.version_get_shader(gi->hddagi_shader.integrate_shader, 0),
+				1,
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, RendererRD::TextureStorage::get_singleton()->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE)),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+	}
+
 	render_pass++;
 
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_PROCESS]);
+	RID integrate_unifom_set = UniformSetCacheRD::get_singleton()->get_cache(
+			gi->hddagi_shader.integrate.version_get_shader(gi->hddagi_shader.integrate_shader, 0),
+			0,
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex),
+			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, voxel_light_tex),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, lightprobe_specular_data),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, lightprobe_diffuse_data),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 7, lightprobe_ambient_data),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 8, lightprobe_hit_cache_data),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, lightprobe_hit_cache_version_data),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, region_version_data),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 11, lightprobe_moving_average_history),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 12, lightprobe_moving_average),
+			RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 13, cascades_ubo),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 14, lightprobe_process_frame),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 15, lightprobe_geometry_proximity_map),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 16, lightprobe_camera_visibility_map));
 
-	int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.integrate_pipeline[HDDAGIShader::INTEGRATE_MODE_PROCESS]);
+
+	Vector3i probe_axis_count = cascade_size / REGION_CELLS + Vector3i(1, 1, 1);
+
 	for (uint32_t i = 0; i < cascades.size(); i++) {
 		push_constant.cascade = i;
+		push_constant.motion_accum = cascades[i].motion_accum;
+		cascades[i].motion_accum = 0; //clear after use.
+
 		push_constant.world_offset[0] = cascades[i].position.x / probe_divisor;
 		push_constant.world_offset[1] = cascades[i].position.y / probe_divisor;
 		push_constant.world_offset[2] = cascades[i].position.z / probe_divisor;
 
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[i].integrate_uniform_set, 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sky_uniform_set, 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, integrate_unifom_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, integrate_sky_uniform_set, 1);
 
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::IntegratePushConstant));
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count, probe_axis_count, 1);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::IntegratePushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count.x * LIGHTPROBE_OCT_SIZE, probe_axis_count.y * probe_axis_count.z * LIGHTPROBE_OCT_SIZE, 1);
 	}
 
-	RD::get_singleton()->compute_list_end();
-	RD::get_singleton()->draw_command_end_label();
-}
+	if (using_probe_filter) {
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-void GI::SDFGI::store_probes() {
-	RD::get_singleton()->draw_command_begin_label("SDFGI Store Probes");
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.integrate_pipeline[HDDAGIShader::INTEGRATE_MODE_FILTER]);
 
-	SDFGIShader::IntegratePushConstant push_constant;
-	push_constant.grid_size[1] = cascade_size;
-	push_constant.grid_size[2] = cascade_size;
-	push_constant.grid_size[0] = cascade_size;
-	push_constant.max_cascades = cascades.size();
-	push_constant.probe_axis_size = probe_axis_count;
-	push_constant.history_index = render_pass % history_size;
-	push_constant.history_size = history_size;
-	static const uint32_t ray_count[RS::ENV_SDFGI_RAY_COUNT_MAX] = { 4, 8, 16, 32, 64, 96, 128 };
-	push_constant.ray_count = ray_count[gi->sdfgi_ray_count];
-	push_constant.ray_bias = probe_bias;
-	push_constant.image_size[0] = probe_axis_count * probe_axis_count;
-	push_constant.image_size[1] = probe_axis_count;
-	push_constant.store_ambient_texture = false;
+		integrate_unifom_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.integrate_shader_version[HDDAGIShader::INTEGRATE_MODE_FILTER],
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, lightprobe_diffuse_data),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, lightprobe_diffuse_filter_data),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, lightprobe_neighbour_visibility_map),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, lightprobe_geometry_proximity_map),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, lightprobe_camera_visibility_map));
 
-	push_constant.sky_mode = 0;
-	push_constant.y_mult = y_mult;
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, integrate_unifom_set, 0);
 
-	// Then store values into the lightprobe texture. Separating these steps has a small performance hit, but it allows for multiple bounces
-	RENDER_TIMESTAMP("Average SDFGI Probes");
+		for (uint32_t i = 0; i < cascades.size(); i++) {
+			push_constant.cascade = i;
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::IntegratePushConstant));
 
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_STORE]);
+			push_constant.world_offset[0] = cascades[i].position.x / probe_divisor;
+			push_constant.world_offset[1] = cascades[i].position.y / probe_divisor;
+			push_constant.world_offset[2] = cascades[i].position.z / probe_divisor;
 
-	//convert to octahedral to store
-	push_constant.image_size[0] *= SDFGI::LIGHTPROBE_OCT_SIZE;
-	push_constant.image_size[1] *= SDFGI::LIGHTPROBE_OCT_SIZE;
-
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		push_constant.cascade = i;
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[i].integrate_uniform_set, 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::IntegratePushConstant));
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, 1);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::IntegratePushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count.x * LIGHTPROBE_OCT_SIZE, probe_axis_count.y * probe_axis_count.z * LIGHTPROBE_OCT_SIZE, 1);
+		}
 	}
 
 	RD::get_singleton()->compute_list_end();
@@ -1422,17 +1426,40 @@ void GI::SDFGI::store_probes() {
 	RD::get_singleton()->draw_command_end_label();
 }
 
-int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds) const {
+void GI::HDDAGI::store_probes() {
+}
+
+int GI::HDDAGI::get_pending_region_count() const {
+	int dirty_count = 0;
+	for (const RendererRD::GI::HDDAGI::Cascade &c : cascades) {
+		if (c.dirty_regions == RendererRD::GI::HDDAGI::Cascade::DIRTY_ALL) {
+			dirty_count++;
+		} else {
+			for (int j = 0; j < 3; j++) {
+				if (c.dirty_regions[j] != 0) {
+					dirty_count++;
+				}
+			}
+		}
+	}
+
+	return dirty_count;
+}
+
+int GI::HDDAGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds, Vector3i &r_scroll, Vector3i &r_region_world) const {
+	// higher cascades need to be processed first
 	int dirty_count = 0;
 	for (uint32_t i = 0; i < cascades.size(); i++) {
-		const SDFGI::Cascade &c = cascades[i];
+		const HDDAGI::Cascade &c = cascades[i];
 
-		if (c.dirty_regions == SDFGI::Cascade::DIRTY_ALL) {
+		if (c.dirty_regions == HDDAGI::Cascade::DIRTY_ALL) {
 			if (dirty_count == p_region) {
 				r_local_offset = Vector3i();
-				r_local_size = Vector3i(1, 1, 1) * cascade_size;
+				r_local_size = cascade_size;
+				r_scroll = HDDAGI::Cascade::DIRTY_ALL;
+				r_region_world = c.position / REGION_CELLS;
 
-				r_bounds.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + c.position)) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
+				r_bounds.position = Vector3((Vector3i(1, 1, 1) * -(cascade_size >> 1) + c.position)) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 				r_bounds.size = Vector3(r_local_size) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 				return i;
 			}
@@ -1442,29 +1469,34 @@ int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, V
 				if (c.dirty_regions[j] != 0) {
 					if (dirty_count == p_region) {
 						Vector3i from = Vector3i(0, 0, 0);
-						Vector3i to = Vector3i(1, 1, 1) * cascade_size;
+						Vector3i to = cascade_size;
+
+						r_scroll = Vector3i();
+						r_scroll[j] = c.dirty_regions[j];
 
 						if (c.dirty_regions[j] > 0) {
 							//fill from the beginning
-							to[j] = c.dirty_regions[j];
+							to[j] = c.dirty_regions[j] + 2; // 2 extra voxels needed to rebuild light properly
 						} else {
 							//fill from the end
-							from[j] = to[j] + c.dirty_regions[j];
-						}
-
-						for (int k = 0; k < j; k++) {
-							// "chip" away previous regions to avoid re-voxelizing the same thing
-							if (c.dirty_regions[k] > 0) {
-								from[k] += c.dirty_regions[k];
-							} else if (c.dirty_regions[k] < 0) {
-								to[k] += c.dirty_regions[k];
-							}
+							from[j] = to[j] + c.dirty_regions[j] - 2; // 2 extra voxels needed to rebuild light properly
 						}
 
 						r_local_offset = from;
 						r_local_size = to - from;
 
-						r_bounds.position = Vector3(from + Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + c.position) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
+						Vector3i cascade_position = c.position;
+
+						// Remove next axes positions so we don't voxelize the wrong region
+						for (int k = j + 1; k < 3; k++) {
+							if (c.dirty_regions[k] != 0) {
+								cascade_position[k] += c.dirty_regions[k];
+							}
+						}
+
+						r_region_world = cascade_position / REGION_CELLS;
+
+						r_bounds.position = Vector3(from + Vector3i(1, 1, 1) * -Vector3(cascade_size >> 1) + cascade_position) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 						r_bounds.size = Vector3(r_local_size) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 
 						return i;
@@ -1478,136 +1510,58 @@ int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, V
 	return -1;
 }
 
-void GI::SDFGI::update_cascades() {
+void GI::HDDAGI::update_cascades() {
 	//update cascades
-	SDFGI::Cascade::UBO cascade_data[SDFGI::MAX_CASCADES];
-	int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
+	HDDAGI::Cascade::UBO cascade_data[HDDAGI::MAX_CASCADES];
 
 	for (uint32_t i = 0; i < cascades.size(); i++) {
-		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
+		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
 
 		cascade_data[i].offset[0] = pos.x;
 		cascade_data[i].offset[1] = pos.y;
 		cascade_data[i].offset[2] = pos.z;
 		cascade_data[i].to_cell = 1.0 / cascades[i].cell_size;
-		cascade_data[i].probe_offset[0] = cascades[i].position.x / probe_divisor;
-		cascade_data[i].probe_offset[1] = cascades[i].position.y / probe_divisor;
-		cascade_data[i].probe_offset[2] = cascades[i].position.z / probe_divisor;
+		cascade_data[i].region_world_offset[0] = cascades[i].position.x / REGION_CELLS;
+		cascade_data[i].region_world_offset[1] = cascades[i].position.y / REGION_CELLS;
+		cascade_data[i].region_world_offset[2] = cascades[i].position.z / REGION_CELLS;
 		cascade_data[i].pad = 0;
 	}
 
-	RD::get_singleton()->buffer_update(cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data);
+	RD::get_singleton()->buffer_update(cascades_ubo, 0, sizeof(HDDAGI::Cascade::UBO) * HDDAGI::MAX_CASCADES, cascade_data);
 }
 
-void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views) {
+void GI::HDDAGI::debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
 
 	for (uint32_t v = 0; v < p_view_count; v++) {
-		if (!debug_uniform_set[v].is_valid() || !RD::get_singleton()->uniform_set_is_valid(debug_uniform_set[v])) {
-			Vector<RD::Uniform> uniforms;
-			{
-				RD::Uniform u;
-				u.binding = 1;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
-					if (i < cascades.size()) {
-						u.append_id(cascades[i].sdf_tex);
-					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-					}
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 2;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
-					if (i < cascades.size()) {
-						u.append_id(cascades[i].light_tex);
-					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-					}
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 3;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
-					if (i < cascades.size()) {
-						u.append_id(cascades[i].light_aniso_0_tex);
-					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-					}
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 4;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
-					if (i < cascades.size()) {
-						u.append_id(cascades[i].light_aniso_1_tex);
-					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-					}
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 5;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.append_id(occlusion_texture);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 8;
-				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 9;
-				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-				u.append_id(cascades_ubo);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 10;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.append_id(p_texture_views[v]);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 11;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.append_id(lightprobe_texture);
-				uniforms.push_back(u);
-			}
-			debug_uniform_set[v] = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.debug_shader_version, 0);
-		}
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				gi->hddagi_shader.debug_shader_version,
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, voxel_light_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 5, material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, lightprobe_diffuse_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 7, get_lightprobe_occlusion_textures()),
+				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 8, cascades_ubo),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, p_texture_views[v]),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, voxel_light_neighbour_data));
 
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.debug_pipeline);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, debug_uniform_set[v], 0);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.debug_pipeline);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 
-		SDFGIShader::DebugPushConstant push_constant;
-		push_constant.grid_size[0] = cascade_size;
-		push_constant.grid_size[1] = cascade_size;
-		push_constant.grid_size[2] = cascade_size;
+		HDDAGIShader::DebugPushConstant push_constant;
+		push_constant.grid_size[0] = cascade_size[0];
+		push_constant.grid_size[1] = cascade_size[1];
+		push_constant.grid_size[2] = cascade_size[2];
 		push_constant.max_cascades = cascades.size();
-		push_constant.screen_size[0] = p_width;
-		push_constant.screen_size[1] = p_height;
+		push_constant.screen_size = p_width;
+		push_constant.screen_size |= p_height << 16;
+		push_constant.esm_strength = 1.0;
 		push_constant.y_mult = y_mult;
 
 		push_constant.z_near = -p_projections[v].get_z_near();
@@ -1617,6 +1571,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 				push_constant.cam_basis[i][j] = p_transform.basis.rows[j][i];
 			}
 		}
+
 		push_constant.cam_origin[0] = p_transform.origin[0];
 		push_constant.cam_origin[1] = p_transform.origin[1];
 		push_constant.cam_origin[2] = p_transform.origin[2];
@@ -1629,7 +1584,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 			}
 		}
 
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::DebugPushConstant));
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::DebugPushConstant));
 
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_width, p_height, 1);
 		RD::get_singleton()->compute_list_end();
@@ -1639,26 +1594,24 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 	copy_effects->copy_to_fb_rect(p_texture, texture_storage->render_target_get_rd_framebuffer(p_render_target), Rect2i(Point2i(), rtsize), true, false, false, false, RID(), p_view_count > 1);
 }
 
-void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms) {
-	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-
+void GI::HDDAGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms) {
 	// setup scene data
 	{
-		SDFGIShader::DebugProbesSceneData scene_data;
+		HDDAGIShader::DebugProbesSceneData scene_data;
 
 		if (debug_probes_scene_data_ubo.is_null()) {
-			debug_probes_scene_data_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGIShader::DebugProbesSceneData));
+			debug_probes_scene_data_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(HDDAGIShader::DebugProbesSceneData));
 		}
 
 		for (uint32_t v = 0; v < p_view_count; v++) {
 			RendererRD::MaterialStorage::store_camera(p_camera_with_transforms[v], scene_data.projection[v]);
 		}
 
-		RD::get_singleton()->buffer_update(debug_probes_scene_data_ubo, 0, sizeof(SDFGIShader::DebugProbesSceneData), &scene_data);
+		RD::get_singleton()->buffer_update(debug_probes_scene_data_ubo, 0, sizeof(HDDAGIShader::DebugProbesSceneData), &scene_data);
 	}
 
 	// setup push constant
-	SDFGIShader::DebugProbesPushConstant push_constant;
+	HDDAGIShader::DebugProbesPushConstant push_constant;
 
 	//gen spheres from strips
 	uint32_t band_points = 16;
@@ -1667,194 +1620,170 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 	push_constant.band_mask = band_points - 2;
 	push_constant.section_arc = Math_TAU / float(push_constant.sections_in_band);
 	push_constant.y_mult = y_mult;
+	push_constant.oct_size = LIGHTPROBE_OCT_SIZE;
 
+	Vector3i probe_axis_count = cascade_size / REGION_CELLS + Vector3i(1, 1, 1);
 	uint32_t total_points = push_constant.sections_in_band * band_points;
-	uint32_t total_probes = probe_axis_count * probe_axis_count * probe_axis_count;
+	uint32_t total_probes = probe_axis_count.x * probe_axis_count.y * probe_axis_count.z;
 
-	push_constant.grid_size[0] = cascade_size;
-	push_constant.grid_size[1] = cascade_size;
-	push_constant.grid_size[2] = cascade_size;
+	push_constant.grid_size[0] = cascade_size[0];
+	push_constant.grid_size[1] = cascade_size[1];
+	push_constant.grid_size[2] = cascade_size[2];
 	push_constant.cascade = 0;
 
-	push_constant.probe_axis_size = probe_axis_count;
+	push_constant.probe_axis_size[0] = probe_axis_count[0];
+	push_constant.probe_axis_size[1] = probe_axis_count[1];
+	push_constant.probe_axis_size[2] = probe_axis_count[2];
 
-	if (!debug_probes_uniform_set.is_valid() || !RD::get_singleton()->uniform_set_is_valid(debug_probes_uniform_set)) {
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.binding = 1;
-			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.append_id(cascades_ubo);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 2;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.append_id(lightprobe_texture);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 3;
-			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 4;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.append_id(occlusion_texture);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 5;
-			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.append_id(debug_probes_scene_data_ubo);
-			uniforms.push_back(u);
-		}
+	HDDAGIShader::ProbeDebugMode mode = p_view_count > 1 ? HDDAGIShader::PROBE_DEBUG_PROBES_MULTIVIEW : HDDAGIShader::PROBE_DEBUG_PROBES;
 
-		debug_probes_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.debug_probes.version_get_shader(gi->sdfgi_shader.debug_probes_shader, 0), 0);
-	}
+	RID debug_probes_uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+			gi->hddagi_shader.debug_probes_shader_version[mode],
+			0,
+			RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 1, cascades_ubo),
+			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, get_lightprobe_occlusion_textures()),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+			RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 4, debug_probes_scene_data_ubo),
+			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, lightprobe_diffuse_tex)
 
-	SDFGIShader::ProbeDebugMode mode = p_view_count > 1 ? SDFGIShader::PROBE_DEBUG_PROBES_MULTIVIEW : SDFGIShader::PROBE_DEBUG_PROBES;
+	);
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE);
-	RD::get_singleton()->draw_command_begin_label("Debug SDFGI");
+	RD::get_singleton()->draw_command_begin_label("Debug HDDAGI");
 
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, gi->sdfgi_shader.debug_probes_pipeline[mode].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, gi->hddagi_shader.debug_probes_pipeline[mode].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, debug_probes_uniform_set, 0);
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(SDFGIShader::DebugProbesPushConstant));
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(HDDAGIShader::DebugProbesPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, false, total_probes, total_points);
 
-	if (gi->sdfgi_debug_probe_dir != Vector3()) {
+	if (gi->hddagi_debug_probe_dir != Vector3()) {
 		uint32_t cascade = 0;
-		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
-		Vector3 probe_size = cascades[cascade].cell_size * (cascade_size / SDFGI::PROBE_DIVISOR) * Vector3(1.0, 1.0 / y_mult, 1.0);
-		Vector3 ray_from = gi->sdfgi_debug_probe_pos;
-		Vector3 ray_to = gi->sdfgi_debug_probe_pos + gi->sdfgi_debug_probe_dir * cascades[cascade].cell_size * Math::sqrt(3.0) * cascade_size;
+		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -(cascade_size >> 1) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
+		Vector3 probe_size = cascades[cascade].cell_size * REGION_CELLS * Vector3(1.0, 1.0 / y_mult, 1.0);
+		Vector3 ray_from = gi->hddagi_debug_probe_pos;
+		Vector3 ray_to = gi->hddagi_debug_probe_pos + gi->hddagi_debug_probe_dir * cascades[cascade].cell_size * Math::sqrt(3.0) * cascade_size[0];
 		float sphere_radius = 0.2;
 		float closest_dist = 1e20;
-		gi->sdfgi_debug_probe_enabled = false;
+		gi->hddagi_debug_probe_enabled = false;
 
-		Vector3i probe_from = cascades[cascade].position / (cascade_size / SDFGI::PROBE_DIVISOR);
-		for (int i = 0; i < (SDFGI::PROBE_DIVISOR + 1); i++) {
-			for (int j = 0; j < (SDFGI::PROBE_DIVISOR + 1); j++) {
-				for (int k = 0; k < (SDFGI::PROBE_DIVISOR + 1); k++) {
+		Vector3i probe_from = cascades[cascade].position / REGION_CELLS;
+		for (int i = 0; i < (cascade_size[0] / REGION_CELLS + 1); i++) {
+			for (int j = 0; j < (cascade_size[1] / REGION_CELLS + 1); j++) {
+				for (int k = 0; k < (cascade_size[2] / REGION_CELLS + 1); k++) {
 					Vector3 pos = offset + probe_size * Vector3(i, j, k);
 					Vector3 res;
 					if (Geometry3D::segment_intersects_sphere(ray_from, ray_to, pos, sphere_radius, &res)) {
 						float d = ray_from.distance_to(res);
 						if (d < closest_dist) {
 							closest_dist = d;
-							gi->sdfgi_debug_probe_enabled = true;
-							gi->sdfgi_debug_probe_index = probe_from + Vector3i(i, j, k);
+							gi->hddagi_debug_probe_enabled = true;
+							gi->hddagi_debug_probe_index = probe_from + Vector3i(i, j, k);
 						}
 					}
 				}
 			}
 		}
 
-		gi->sdfgi_debug_probe_dir = Vector3();
+		print_line("Pos: ", gi->hddagi_debug_probe_pos);
+		print_line("Dir: ", gi->hddagi_debug_probe_dir);
+		print_line("Select: ", gi->hddagi_debug_probe_index);
+
+#if 0
+
+		Vector3i offset3 = (gi->hddagi_debug_probe_index & probe_axis_count);
+		Vector2i offset2(offset3.x, offset3.y + probe_axis_count.y * offset3.z);
+		offset2 *= (OCCLUSION_OCT_SIZE + 2);
+
+		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(occlusion_process, 0);
+		Ref<Image> image = Image::create_from_data((OCCLUSION_OCT_SIZE + 2) * probe_axis_count.x, ((OCCLUSION_OCT_SIZE + 2) * probe_axis_count.y * probe_axis_count.z), false, Image::FORMAT_R8, data);
+		image->crop_from_point(offset2.x, offset2.y, OCCLUSION_OCT_SIZE + 2, OCCLUSION_OCT_SIZE + 2);
+		image->save_png("occlusion_probe.png");
+
+#endif
+
+		gi->hddagi_debug_probe_dir = Vector3();
 	}
 
-	if (gi->sdfgi_debug_probe_enabled) {
+	if (gi->hddagi_debug_probe_enabled) {
 		uint32_t cascade = 0;
-		uint32_t probe_cells = (cascade_size / SDFGI::PROBE_DIVISOR);
-		Vector3i probe_from = cascades[cascade].position / probe_cells;
-		Vector3i ofs = gi->sdfgi_debug_probe_index - probe_from;
+		Vector3i probe_cells = (cascade_size / HDDAGI::REGION_CELLS);
+		Vector3i probe_from = cascades[cascade].position / REGION_CELLS;
+		Vector3i ofs = gi->hddagi_debug_probe_index - probe_from;
+
+		bool probe_valid = true;
 		if (ofs.x < 0 || ofs.y < 0 || ofs.z < 0) {
-			return;
+			probe_valid = false;
 		}
-		if (ofs.x > SDFGI::PROBE_DIVISOR || ofs.y > SDFGI::PROBE_DIVISOR || ofs.z > SDFGI::PROBE_DIVISOR) {
-			return;
+		if (ofs.x > probe_cells.x || ofs.y > probe_cells.y || ofs.z > probe_cells.z) {
+			probe_valid = false;
 		}
 
-		uint32_t mult = (SDFGI::PROBE_DIVISOR + 1);
-		uint32_t index = ofs.z * mult * mult + ofs.y * mult + ofs.x;
+		if (probe_valid) {
+			Vector3i mult = probe_cells + Vector3i(1, 1, 1);
+			uint32_t index = ofs.z * mult.x * mult.y + ofs.y * mult.x + ofs.x;
 
-		push_constant.probe_debug_index = index;
+			push_constant.probe_debug_index = index;
 
-		uint32_t cell_count = probe_cells * 2 * probe_cells * 2 * probe_cells * 2;
+			uint32_t cell_count = HDDAGI::REGION_CELLS * 2 * HDDAGI::REGION_CELLS * 2 * HDDAGI::REGION_CELLS * 2;
 
-		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, gi->sdfgi_shader.debug_probes_pipeline[p_view_count > 1 ? SDFGIShader::PROBE_DEBUG_VISIBILITY_MULTIVIEW : SDFGIShader::PROBE_DEBUG_VISIBILITY].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, debug_probes_uniform_set, 0);
-		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(SDFGIShader::DebugProbesPushConstant));
-		RD::get_singleton()->draw_list_draw(draw_list, false, cell_count, total_points);
+			debug_probes_uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+					gi->hddagi_shader.debug_probes_shader_version[p_view_count > 1 ? HDDAGIShader::PROBE_DEBUG_OCCLUSION_MULTIVIEW : HDDAGIShader::PROBE_DEBUG_OCCLUSION],
+					0,
+					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 1, cascades_ubo),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, get_lightprobe_occlusion_textures()),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 4, debug_probes_scene_data_ubo),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, lightprobe_diffuse_tex)
+
+			);
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, gi->hddagi_shader.debug_probes_pipeline[p_view_count > 1 ? HDDAGIShader::PROBE_DEBUG_OCCLUSION_MULTIVIEW : HDDAGIShader::PROBE_DEBUG_OCCLUSION].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, debug_probes_uniform_set, 0);
+			RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(HDDAGIShader::DebugProbesPushConstant));
+			RD::get_singleton()->draw_list_draw(draw_list, false, cell_count, total_points);
+		}
 	}
 
-	RD::get_singleton()->draw_command_end_label();
 	RD::get_singleton()->draw_list_end();
+	RD::get_singleton()->draw_command_end_label();
 }
 
-void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data) {
+void GI::HDDAGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
-	/* Update general SDFGI Buffer */
+	/* Update general HDDAGI Buffer */
 
-	SDFGIData sdfgi_data;
+	HDDAGIData hddagi_data;
 
-	sdfgi_data.grid_size[0] = cascade_size;
-	sdfgi_data.grid_size[1] = cascade_size;
-	sdfgi_data.grid_size[2] = cascade_size;
+	hddagi_data.grid_size[0] = cascade_size[0];
+	hddagi_data.grid_size[1] = cascade_size[1];
+	hddagi_data.grid_size[2] = cascade_size[2];
 
-	sdfgi_data.max_cascades = cascades.size();
-	sdfgi_data.probe_axis_size = probe_axis_count;
-	sdfgi_data.cascade_probe_size[0] = sdfgi_data.probe_axis_size - 1; //float version for performance
-	sdfgi_data.cascade_probe_size[1] = sdfgi_data.probe_axis_size - 1;
-	sdfgi_data.cascade_probe_size[2] = sdfgi_data.probe_axis_size - 1;
+	hddagi_data.max_cascades = cascades.size();
 
-	float csize = cascade_size;
-	sdfgi_data.probe_to_uvw = 1.0 / float(sdfgi_data.cascade_probe_size[0]);
-	sdfgi_data.use_occlusion = uses_occlusion;
-	//sdfgi_data.energy = energy;
+	hddagi_data.probe_axis_size[0] = cascade_size[0] / REGION_CELLS + 1;
+	hddagi_data.probe_axis_size[1] = cascade_size[1] / REGION_CELLS + 1;
+	hddagi_data.probe_axis_size[2] = cascade_size[2] / REGION_CELLS + 1;
 
-	sdfgi_data.y_mult = y_mult;
+	hddagi_data.y_mult = y_mult;
+	hddagi_data.normal_bias = normal_bias;
+	hddagi_data.reflection_bias = reflection_bias;
+	hddagi_data.esm_strength = 1.0;
 
-	float cascade_voxel_size = (csize / sdfgi_data.cascade_probe_size[0]);
-	float occlusion_clamp = (cascade_voxel_size - 0.5) / cascade_voxel_size;
-	sdfgi_data.occlusion_clamp[0] = occlusion_clamp;
-	sdfgi_data.occlusion_clamp[1] = occlusion_clamp;
-	sdfgi_data.occlusion_clamp[2] = occlusion_clamp;
-	sdfgi_data.normal_bias = (normal_bias / csize) * sdfgi_data.cascade_probe_size[0];
+	hddagi_data.energy = energy;
 
-	//vec2 tex_pixel_size = 1.0 / vec2(ivec2( (OCT_SIZE+2) * params.probe_axis_size * params.probe_axis_size, (OCT_SIZE+2) * params.probe_axis_size ) );
-	//vec3 probe_uv_offset = (ivec3(OCT_SIZE+2,OCT_SIZE+2,(OCT_SIZE+2) * params.probe_axis_size)) * tex_pixel_size.xyx;
-
-	uint32_t oct_size = SDFGI::LIGHTPROBE_OCT_SIZE;
-
-	sdfgi_data.lightprobe_tex_pixel_size[0] = 1.0 / ((oct_size + 2) * sdfgi_data.probe_axis_size * sdfgi_data.probe_axis_size);
-	sdfgi_data.lightprobe_tex_pixel_size[1] = 1.0 / ((oct_size + 2) * sdfgi_data.probe_axis_size);
-	sdfgi_data.lightprobe_tex_pixel_size[2] = 1.0;
-
-	sdfgi_data.energy = energy;
-
-	sdfgi_data.lightprobe_uv_offset[0] = float(oct_size + 2) * sdfgi_data.lightprobe_tex_pixel_size[0];
-	sdfgi_data.lightprobe_uv_offset[1] = float(oct_size + 2) * sdfgi_data.lightprobe_tex_pixel_size[1];
-	sdfgi_data.lightprobe_uv_offset[2] = float((oct_size + 2) * sdfgi_data.probe_axis_size) * sdfgi_data.lightprobe_tex_pixel_size[0];
-
-	sdfgi_data.occlusion_renormalize[0] = 0.5;
-	sdfgi_data.occlusion_renormalize[1] = 1.0;
-	sdfgi_data.occlusion_renormalize[2] = 1.0 / float(sdfgi_data.max_cascades);
-
-	int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
-
-	for (uint32_t i = 0; i < sdfgi_data.max_cascades; i++) {
-		SDFGIData::ProbeCascadeData &c = sdfgi_data.cascades[i];
-		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
+	for (int32_t i = 0; i < hddagi_data.max_cascades; i++) {
+		HDDAGIData::ProbeCascadeData &c = hddagi_data.cascades[i];
+		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
 		Vector3 cam_origin = p_transform.origin;
 		cam_origin.y *= y_mult;
 		pos -= cam_origin; //make pos local to camera, to reduce numerical error
 		c.position[0] = pos.x;
 		c.position[1] = pos.y;
 		c.position[2] = pos.z;
-		c.to_probe = 1.0 / (float(cascade_size) * cascades[i].cell_size / float(probe_axis_count - 1));
+		c.to_probe = 1.0 / (float(cascade_size[0]) * cascades[i].cell_size / float(hddagi_data.probe_axis_size[0] - 1));
 
-		Vector3i probe_ofs = cascades[i].position / probe_divisor;
-		c.probe_world_offset[0] = probe_ofs.x;
-		c.probe_world_offset[1] = probe_ofs.y;
-		c.probe_world_offset[2] = probe_ofs.z;
+		c.region_world_offset[0] = cascades[i].position.x / REGION_CELLS;
+		c.region_world_offset[1] = cascades[i].position.y / REGION_CELLS;
+		c.region_world_offset[2] = cascades[i].position.z / REGION_CELLS;
 
 		c.to_cell = 1.0 / cascades[i].cell_size;
 		c.exposure_normalization = 1.0;
@@ -1864,21 +1793,21 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 	}
 
-	RD::get_singleton()->buffer_update(gi->sdfgi_ubo, 0, sizeof(SDFGIData), &sdfgi_data);
+	RD::get_singleton()->buffer_update(gi->hddagi_ubo, 0, sizeof(HDDAGIData), &hddagi_data);
 
-	/* Update dynamic lights in SDFGI cascades */
+	/* Update dynamic lights in HDDAGI cascades */
 
 	for (uint32_t i = 0; i < cascades.size(); i++) {
-		SDFGI::Cascade &cascade = cascades[i];
+		HDDAGI::Cascade &cascade = cascades[i];
 
-		SDFGIShader::Light lights[SDFGI::MAX_DYNAMIC_LIGHTS];
+		HDDAGIShader::Light lights[HDDAGI::MAX_DYNAMIC_LIGHTS];
 		uint32_t idx = 0;
-		for (uint32_t j = 0; j < (uint32_t)p_render_data->sdfgi_update_data->directional_lights->size(); j++) {
-			if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
+		for (uint32_t j = 0; j < (uint32_t)p_render_data->hddagi_update_data->directional_lights->size(); j++) {
+			if (idx == HDDAGI::MAX_DYNAMIC_LIGHTS) {
 				break;
 			}
 
-			RID light_instance = p_render_data->sdfgi_update_data->directional_lights->get(j);
+			RID light_instance = p_render_data->hddagi_update_data->directional_lights->get(j);
 			ERR_CONTINUE(!light_storage->owns_light_instance(light_instance));
 
 			RID light = light_storage->light_instance_get_base_light(light_instance);
@@ -1915,23 +1844,23 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 
 		AABB cascade_aabb;
-		cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascade.position)) * cascade.cell_size;
+		cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -(cascade_size >> 1) + cascade.position)) * cascade.cell_size;
 		cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cascade.cell_size;
 
-		for (uint32_t j = 0; j < p_render_data->sdfgi_update_data->positional_light_count; j++) {
-			if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
+		for (uint32_t j = 0; j < p_render_data->hddagi_update_data->positional_light_count; j++) {
+			if (idx == HDDAGI::MAX_DYNAMIC_LIGHTS) {
 				break;
 			}
 
-			RID light_instance = p_render_data->sdfgi_update_data->positional_light_instances[j];
+			RID light_instance = p_render_data->hddagi_update_data->positional_light_instances[j];
 			ERR_CONTINUE(!light_storage->owns_light_instance(light_instance));
 
 			RID light = light_storage->light_instance_get_base_light(light_instance);
 			AABB light_aabb = light_storage->light_instance_get_base_aabb(light_instance);
 			Transform3D light_transform = light_storage->light_instance_get_base_transform(light_instance);
 
-			uint32_t max_sdfgi_cascade = RSG::light_storage->light_get_max_sdfgi_cascade(light);
-			if (i > max_sdfgi_cascade) {
+			uint32_t max_hddagi_cascade = RSG::light_storage->light_get_max_hddagi_cascade(light);
+			if (i > max_hddagi_cascade) {
 				continue;
 			}
 
@@ -1986,401 +1915,40 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 
 		if (idx > 0) {
-			RD::get_singleton()->buffer_update(cascade.lights_buffer, 0, idx * sizeof(SDFGIShader::Light), lights);
+			RD::get_singleton()->buffer_update(cascade.light_position_bufer, 0, idx * sizeof(HDDAGIShader::Light), lights);
 		}
 
 		cascade_dynamic_light_count[i] = idx;
 	}
 }
 
-void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization) {
-	//print_line("rendering region " + itos(p_region));
-	ERR_FAIL_COND(p_render_buffers.is_null()); // we wouldn't be here if this failed but...
-	AABB bounds;
-	Vector3i from;
-	Vector3i size;
-
-	int cascade_prev = get_pending_region_data(p_region - 1, from, size, bounds);
-	int cascade_next = get_pending_region_data(p_region + 1, from, size, bounds);
-	int cascade = get_pending_region_data(p_region, from, size, bounds);
-	ERR_FAIL_COND(cascade < 0);
-
-	if (cascade_prev != cascade) {
-		//initialize render
-		RD::get_singleton()->texture_clear(render_albedo, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_emission, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_emission_aniso, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_geom_facing, Color(0, 0, 0, 0), 0, 1, 0, 1);
-	}
-
-	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(cascades[cascade].cell_size));
-	RendererSceneRenderRD::get_singleton()->_render_sdfgi(p_render_buffers, from, size, bounds, p_instances, render_albedo, render_emission, render_emission_aniso, render_geom_facing, p_exposure_normalization);
-
-	if (cascade_next != cascade) {
-		RD::get_singleton()->draw_command_begin_label("SDFGI Pre-Process Cascade");
-
-		RENDER_TIMESTAMP("> SDFGI Update SDF");
-		//done rendering! must update SDF
-		//clear dispatch indirect data
-
-		SDFGIShader::PreprocessPushConstant push_constant;
-		memset(&push_constant, 0, sizeof(SDFGIShader::PreprocessPushConstant));
-
-		RENDER_TIMESTAMP("SDFGI Scroll SDF");
-
-		//scroll
-		if (cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
-			//for scroll
-			Vector3i dirty = cascades[cascade].dirty_regions;
-			push_constant.scroll[0] = dirty.x;
-			push_constant.scroll[1] = dirty.y;
-			push_constant.scroll[2] = dirty.z;
-		} else {
-			//for no scroll
-			push_constant.scroll[0] = 0;
-			push_constant.scroll[1] = 0;
-			push_constant.scroll[2] = 0;
-		}
-
-		cascades[cascade].all_dynamic_lights_dirty = true;
-		cascades[cascade].baked_exposure_normalization = p_exposure_normalization;
-
-		push_constant.grid_size = cascade_size;
-		push_constant.cascade = cascade;
-
-		if (cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
-			RD::get_singleton()->buffer_copy(cascades[cascade].solid_cell_dispatch_buffer_storage, cascades[cascade].solid_cell_dispatch_buffer_call, 0, 0, sizeof(uint32_t) * 4);
-
-			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-
-			//must pre scroll existing data because not all is dirty
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_SCROLL]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].scroll_uniform_set, 0);
-
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascades[cascade].solid_cell_dispatch_buffer_call, 0);
-			// no barrier do all together
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_SCROLL_OCCLUSION]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].scroll_occlusion_uniform_set, 0);
-
-			Vector3i dirty = cascades[cascade].dirty_regions;
-			Vector3i groups;
-			groups.x = cascade_size - ABS(dirty.x);
-			groups.y = cascade_size - ABS(dirty.y);
-			groups.z = cascade_size - ABS(dirty.z);
-
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, groups.x, groups.y, groups.z);
-
-			//no barrier, continue together
-
-			{
-				//scroll probes and their history also
-
-				SDFGIShader::IntegratePushConstant ipush_constant;
-				ipush_constant.grid_size[1] = cascade_size;
-				ipush_constant.grid_size[2] = cascade_size;
-				ipush_constant.grid_size[0] = cascade_size;
-				ipush_constant.max_cascades = cascades.size();
-				ipush_constant.probe_axis_size = probe_axis_count;
-				ipush_constant.history_index = 0;
-				ipush_constant.history_size = history_size;
-				ipush_constant.ray_count = 0;
-				ipush_constant.ray_bias = 0;
-				ipush_constant.sky_mode = 0;
-				ipush_constant.sky_energy = 0;
-				ipush_constant.sky_color[0] = 0;
-				ipush_constant.sky_color[1] = 0;
-				ipush_constant.sky_color[2] = 0;
-				ipush_constant.y_mult = y_mult;
-				ipush_constant.store_ambient_texture = false;
-
-				ipush_constant.image_size[0] = probe_axis_count * probe_axis_count;
-				ipush_constant.image_size[1] = probe_axis_count;
-
-				int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
-				ipush_constant.cascade = cascade;
-				ipush_constant.world_offset[0] = cascades[cascade].position.x / probe_divisor;
-				ipush_constant.world_offset[1] = cascades[cascade].position.y / probe_divisor;
-				ipush_constant.world_offset[2] = cascades[cascade].position.z / probe_divisor;
-
-				ipush_constant.scroll[0] = dirty.x / probe_divisor;
-				ipush_constant.scroll[1] = dirty.y / probe_divisor;
-				ipush_constant.scroll[2] = dirty.z / probe_divisor;
-
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_SCROLL]);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].integrate_uniform_set, 0);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDFGIShader::IntegratePushConstant));
-				RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count, probe_axis_count, 1);
-
-				RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_SCROLL_STORE]);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].integrate_uniform_set, 0);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDFGIShader::IntegratePushConstant));
-				RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count, probe_axis_count, 1);
-
-				RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-				if (bounce_feedback > 0.0) {
-					//multibounce requires this to be stored so direct light can read from it
-
-					RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_STORE]);
-
-					//convert to octahedral to store
-					ipush_constant.image_size[0] *= SDFGI::LIGHTPROBE_OCT_SIZE;
-					ipush_constant.image_size[1] *= SDFGI::LIGHTPROBE_OCT_SIZE;
-
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].integrate_uniform_set, 0);
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDFGIShader::IntegratePushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, 1);
-				}
-			}
-
-			//ok finally barrier
-			RD::get_singleton()->compute_list_end();
-		}
-
-		//clear dispatch indirect data
-		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
-		RD::get_singleton()->buffer_update(cascades[cascade].solid_cell_dispatch_buffer_storage, 0, sizeof(uint32_t) * 4, dispatch_indirct_data);
-
-		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-
-		bool half_size = true; //much faster, very little difference
-		static const int optimized_jf_group_size = 8;
-
-		if (half_size) {
-			push_constant.grid_size >>= 1;
-
-			uint32_t cascade_half_size = cascade_size >> 1;
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE_HALF]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_initialize_half_uniform_set, 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-			//must start with regular jumpflood
-
-			push_constant.half_size = true;
-			{
-				RENDER_TIMESTAMP("SDFGI Jump Flood (Half-Size)");
-
-				uint32_t s = cascade_half_size;
-
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD]);
-
-				int jf_us = 0;
-				//start with regular jump flood for very coarse reads, as this is impossible to optimize
-				while (s > 1) {
-					s /= 2;
-					push_constant.step_size = s;
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_half_uniform_set[jf_us], 0);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size);
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-					jf_us = jf_us == 0 ? 1 : 0;
-
-					if (cascade_half_size / (s / 2) >= optimized_jf_group_size) {
-						break;
-					}
-				}
-
-				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Half-Size)");
-
-				//continue with optimized jump flood for smaller reads
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
-				while (s > 1) {
-					s /= 2;
-					push_constant.step_size = s;
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_half_uniform_set[jf_us], 0);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size);
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-					jf_us = jf_us == 0 ? 1 : 0;
-				}
-			}
-
-			// restore grid size for last passes
-			push_constant.grid_size = cascade_size;
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_UPSCALE]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_upscale_uniform_set, 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-			//run one pass of fullsize jumpflood to fix up half size artifacts
-
-			push_constant.half_size = false;
-			push_constant.step_size = 1;
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_uniform_set[upscale_jfa_uniform_set_index], 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-		} else {
-			//full size jumpflood
-			RENDER_TIMESTAMP("SDFGI Jump Flood (Full-Size)");
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_initialize_uniform_set, 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-			push_constant.half_size = false;
-			{
-				uint32_t s = cascade_size;
-
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD]);
-
-				int jf_us = 0;
-				//start with regular jump flood for very coarse reads, as this is impossible to optimize
-				while (s > 1) {
-					s /= 2;
-					push_constant.step_size = s;
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_uniform_set[jf_us], 0);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-					jf_us = jf_us == 0 ? 1 : 0;
-
-					if (cascade_size / (s / 2) >= optimized_jf_group_size) {
-						break;
-					}
-				}
-
-				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Full-Size)");
-
-				//continue with optimized jump flood for smaller reads
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
-				while (s > 1) {
-					s /= 2;
-					push_constant.step_size = s;
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, jump_flood_uniform_set[jf_us], 0);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-					RD::get_singleton()->compute_list_add_barrier(compute_list);
-					jf_us = jf_us == 0 ? 1 : 0;
-				}
-			}
-		}
-
-		RENDER_TIMESTAMP("SDFGI Occlusion");
-
-		// occlusion
-		{
-			uint32_t probe_size = cascade_size / SDFGI::PROBE_DIVISOR;
-			Vector3i probe_global_pos = cascades[cascade].position / probe_size;
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_OCCLUSION]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, occlusion_uniform_set, 0);
-			for (int i = 0; i < 8; i++) {
-				//dispatch all at once for performance
-				Vector3i offset(i & 1, (i >> 1) & 1, (i >> 2) & 1);
-
-				if ((probe_global_pos.x & 1) != 0) {
-					offset.x = (offset.x + 1) & 1;
-				}
-				if ((probe_global_pos.y & 1) != 0) {
-					offset.y = (offset.y + 1) & 1;
-				}
-				if ((probe_global_pos.z & 1) != 0) {
-					offset.z = (offset.z + 1) & 1;
-				}
-				push_constant.probe_offset[0] = offset.x;
-				push_constant.probe_offset[1] = offset.y;
-				push_constant.probe_offset[2] = offset.z;
-				push_constant.occlusion_index = i;
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-
-				Vector3i groups = Vector3i(probe_size + 1, probe_size + 1, probe_size + 1) - offset; //if offset, it's one less probe per axis to compute
-				RD::get_singleton()->compute_list_dispatch(compute_list, groups.x, groups.y, groups.z);
-			}
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-		}
-
-		RENDER_TIMESTAMP("SDFGI Store");
-
-		// store
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_STORE]);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[cascade].sdf_store_uniform_set, 0);
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_size, cascade_size, cascade_size);
-
-		RD::get_singleton()->compute_list_end();
-
-		//clear these textures, as they will have previous garbage on next draw
-		RD::get_singleton()->texture_clear(cascades[cascade].light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-
-#if 0
-		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cascades[cascade].sdf, 0);
-		Ref<Image> img;
-		img.instantiate();
-		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.slice(128 * 128 * i, 128 * 128 * (i + 1));
-			img->set_data(cascade_size, cascade_size, false, Image::FORMAT_L8, subarr);
-			img->save_png("res://cascade_sdf_" + itos(cascade) + "_" + itos(i) + ".png");
-		}
-
-		//finalize render and update sdf
-#endif
-
-#if 0
-		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(render_albedo, 0);
-		Ref<Image> img;
-		img.instantiate();
-		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.slice(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2);
-			img->createcascade_size, cascade_size, false, Image::FORMAT_RGB565, subarr);
-			img->convert(Image::FORMAT_RGBA8);
-			img->save_png("res://cascade_" + itos(cascade) + "_" + itos(i) + ".png");
-		}
-
-		//finalize render and update sdf
-#endif
-
-		RENDER_TIMESTAMP("< SDFGI Update SDF");
-		RD::get_singleton()->draw_command_end_label();
-	}
-}
-
-void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result) {
+void GI::HDDAGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result) {
 	ERR_FAIL_COND(p_render_buffers.is_null()); // we wouldn't be here if this failed but...
 
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
-	RD::get_singleton()->draw_command_begin_label("SDFGI Render Static Lights");
+	RD::get_singleton()->draw_command_begin_label("HDDAGI Render Static Lights");
 
 	update_cascades();
 
-	SDFGIShader::Light lights[SDFGI::MAX_STATIC_LIGHTS];
-	uint32_t light_count[SDFGI::MAX_STATIC_LIGHTS];
+	HDDAGIShader::Light lights[HDDAGI::MAX_STATIC_LIGHTS];
+	uint32_t light_count[HDDAGI::MAX_STATIC_LIGHTS];
 
 	for (uint32_t i = 0; i < p_cascade_count; i++) {
 		ERR_CONTINUE(p_cascade_indices[i] >= cascades.size());
 
-		SDFGI::Cascade &cc = cascades[p_cascade_indices[i]];
+		HDDAGI::Cascade &cc = cascades[p_cascade_indices[i]];
 
 		{ //fill light buffer
 
 			AABB cascade_aabb;
-			cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cc.position)) * cc.cell_size;
+			cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -(cascade_size >> 1) + cc.position)) * cc.cell_size;
 			cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cc.cell_size;
 
 			int idx = 0;
 
 			for (uint32_t j = 0; j < (uint32_t)p_positional_light_cull_result[i].size(); j++) {
-				if (idx == SDFGI::MAX_STATIC_LIGHTS) {
+				if (idx == HDDAGI::MAX_STATIC_LIGHTS) {
 					break;
 				}
 
@@ -2391,8 +1959,8 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 				AABB light_aabb = light_storage->light_instance_get_base_aabb(light_instance);
 				Transform3D light_transform = light_storage->light_instance_get_base_transform(light_instance);
 
-				uint32_t max_sdfgi_cascade = RSG::light_storage->light_get_max_sdfgi_cascade(light);
-				if (p_cascade_indices[i] > max_sdfgi_cascade) {
+				uint32_t max_hddagi_cascade = RSG::light_storage->light_get_max_hddagi_cascade(light);
+				if (p_cascade_indices[i] > max_hddagi_cascade) {
 					continue;
 				}
 
@@ -2449,37 +2017,33 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 			}
 
 			if (idx > 0) {
-				RD::get_singleton()->buffer_update(cc.lights_buffer, 0, idx * sizeof(SDFGIShader::Light), lights);
+				RD::get_singleton()->buffer_update(cc.light_position_bufer, 0, idx * sizeof(HDDAGIShader::Light), lights);
 			}
 
 			light_count[i] = idx;
 		}
 	}
 
-	for (uint32_t i = 0; i < p_cascade_count; i++) {
-		ERR_CONTINUE(p_cascade_indices[i] >= cascades.size());
-
-		SDFGI::Cascade &cc = cascades[p_cascade_indices[i]];
-		if (light_count[i] > 0) {
-			RD::get_singleton()->buffer_copy(cc.solid_cell_dispatch_buffer_storage, cc.solid_cell_dispatch_buffer_call, 0, 0, sizeof(uint32_t) * 4);
-		}
-	}
-
 	/* Static Lights */
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.direct_light_pipeline[SDFGIShader::DIRECT_LIGHT_MODE_STATIC]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.direct_light_pipeline[HDDAGIShader::DIRECT_LIGHT_MODE_STATIC]);
 
-	SDFGIShader::DirectLightPushConstant dl_push_constant;
+	HDDAGIShader::DirectLightPushConstant dl_push_constant;
 
-	dl_push_constant.grid_size[0] = cascade_size;
-	dl_push_constant.grid_size[1] = cascade_size;
-	dl_push_constant.grid_size[2] = cascade_size;
+	Vector3i probe_axis_count = cascade_size / REGION_CELLS + Vector3i(1, 1, 1);
+
+	dl_push_constant.grid_size[0] = cascade_size[0];
+	dl_push_constant.grid_size[1] = cascade_size[1];
+	dl_push_constant.grid_size[2] = cascade_size[2];
 	dl_push_constant.max_cascades = cascades.size();
-	dl_push_constant.probe_axis_size = probe_axis_count;
+	dl_push_constant.probe_axis_size[0] = probe_axis_count[0];
+	dl_push_constant.probe_axis_size[1] = probe_axis_count[1];
+	dl_push_constant.probe_axis_size[2] = probe_axis_count[2];
 	dl_push_constant.bounce_feedback = 0.0; // this is static light, do not multibounce yet
 	dl_push_constant.y_mult = y_mult;
 	dl_push_constant.use_occlusion = uses_occlusion;
+	dl_push_constant.probe_cell_size = REGION_CELLS;
 
 	//all must be processed
 	dl_push_constant.process_offset = 0;
@@ -2488,15 +2052,27 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 	for (uint32_t i = 0; i < p_cascade_count; i++) {
 		ERR_CONTINUE(p_cascade_indices[i] >= cascades.size());
 
-		SDFGI::Cascade &cc = cascades[p_cascade_indices[i]];
+		HDDAGI::Cascade &cc = cascades[p_cascade_indices[i]];
 
 		dl_push_constant.light_count = light_count[i];
 		dl_push_constant.cascade = p_cascade_indices[i];
 
 		if (dl_push_constant.light_count > 0) {
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cc.sdf_direct_light_static_uniform_set, 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &dl_push_constant, sizeof(SDFGIShader::DirectLightPushConstant));
-			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cc.solid_cell_dispatch_buffer_call, 0);
+			RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+					gi->hddagi_shader.direct_light_shader_version[HDDAGIShader::DIRECT_LIGHT_MODE_STATIC],
+					0,
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 4, cc.light_process_dispatch_buffer_copy),
+					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, cc.light_process_buffer),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, voxel_light_tex_data),
+					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, cascades_ubo),
+					RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 8, cc.light_position_bufer));
+
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &dl_push_constant, sizeof(HDDAGIShader::DirectLightPushConstant));
+			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cc.light_process_dispatch_buffer, 0);
 		}
 	}
 
@@ -3347,9 +2923,8 @@ void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, c
 GI::GI() {
 	singleton = this;
 
-	sdfgi_ray_count = RS::EnvironmentSDFGIRayCount(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")), 0, int32_t(RS::ENV_SDFGI_RAY_COUNT_MAX - 1)));
-	sdfgi_frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")), 0, int32_t(RS::ENV_SDFGI_CONVERGE_MAX - 1)));
-	sdfgi_frames_to_update_light = RS::EnvironmentSDFGIFramesToUpdateLight(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_update_lights")), 0, int32_t(RS::ENV_SDFGI_UPDATE_LIGHT_MAX - 1)));
+	hddagi_frames_to_converge = RS::EnvironmentHDDAGIFramesToConverge(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/hddagi/frames_to_converge")), 0, int32_t(RS::ENV_HDDAGI_CONVERGE_MAX - 1)));
+	hddagi_frames_to_update_light = RS::EnvironmentHDDAGIFramesToUpdateLight(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/hddagi/frames_to_update_lights")), 0, int32_t(RS::ENV_HDDAGI_UPDATE_LIGHT_MAX - 1)));
 }
 
 GI::~GI() {
@@ -3357,9 +2932,6 @@ GI::~GI() {
 }
 
 void GI::init(SkyRD *p_sky) {
-	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-
 	/* GI */
 
 	{
@@ -3417,87 +2989,67 @@ void GI::init(SkyRD *p_sky) {
 
 	{
 		Vector<String> preprocess_modes;
-		preprocess_modes.push_back("\n#define MODE_SCROLL\n");
-		preprocess_modes.push_back("\n#define MODE_SCROLL_OCCLUSION\n");
-		preprocess_modes.push_back("\n#define MODE_INITIALIZE_JUMP_FLOOD\n");
-		preprocess_modes.push_back("\n#define MODE_INITIALIZE_JUMP_FLOOD_HALF\n");
-		preprocess_modes.push_back("\n#define MODE_JUMPFLOOD\n");
-		preprocess_modes.push_back("\n#define MODE_JUMPFLOOD_OPTIMIZED\n");
-		preprocess_modes.push_back("\n#define MODE_UPSCALE_JUMP_FLOOD\n");
+		preprocess_modes.push_back("\n#define MODE_REGION_STORE\n");
+		preprocess_modes.push_back("\n#define MODE_LIGHT_STORE\n");
+		preprocess_modes.push_back("\n#define MODE_LIGHT_SCROLL\n");
 		preprocess_modes.push_back("\n#define MODE_OCCLUSION\n");
-		preprocess_modes.push_back("\n#define MODE_STORE\n");
-		String defines = "\n#define OCCLUSION_SIZE " + itos(SDFGI::CASCADE_SIZE / SDFGI::PROBE_DIVISOR) + "\n";
-		sdfgi_shader.preprocess.initialize(preprocess_modes, defines);
-		sdfgi_shader.preprocess_shader = sdfgi_shader.preprocess.version_create();
-		for (int i = 0; i < SDFGIShader::PRE_PROCESS_MAX; i++) {
-			sdfgi_shader.preprocess_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, i));
+		preprocess_modes.push_back("\n#define MODE_OCCLUSION_STORE\n");
+		preprocess_modes.push_back("\n#define MODE_LIGHTPROBE_SCROLL\n");
+		preprocess_modes.push_back("\n#define MODE_LIGHTPROBE_NEIGHBOURS\n");
+		preprocess_modes.push_back("\n#define MODE_LIGHTPROBE_GEOMETRY_PROXIMITY\n");
+		preprocess_modes.push_back("\n#define MODE_LIGHTPROBE_UPDATE_FRAMES\n");
+
+		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(HDDAGI::OCCLUSION_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE_HALF " + itos(HDDAGI::OCCLUSION_OCT_SIZE / 2) + "\n#define OCCLUSION_SUBPIXELS " + itos(HDDAGI::OCCLUSION_SUBPIXELS) + "\n";
+
+		hddagi_shader.preprocess.initialize(preprocess_modes, defines);
+		hddagi_shader.preprocess_shader = hddagi_shader.preprocess.version_create();
+		for (int i = 0; i < HDDAGIShader::PRE_PROCESS_MAX; i++) {
+			hddagi_shader.preprocess_shader_version[i] = hddagi_shader.preprocess.version_get_shader(hddagi_shader.preprocess_shader, i);
+			hddagi_shader.preprocess_pipeline[i] = RD::get_singleton()->compute_pipeline_create(hddagi_shader.preprocess_shader_version[i]);
 		}
 	}
 
 	{
 		//calculate tables
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(HDDAGI::OCCLUSION_OCT_SIZE) + "\n";
 
 		Vector<String> direct_light_modes;
 		direct_light_modes.push_back("\n#define MODE_PROCESS_STATIC\n");
 		direct_light_modes.push_back("\n#define MODE_PROCESS_DYNAMIC\n");
-		sdfgi_shader.direct_light.initialize(direct_light_modes, defines);
-		sdfgi_shader.direct_light_shader = sdfgi_shader.direct_light.version_create();
-		for (int i = 0; i < SDFGIShader::DIRECT_LIGHT_MODE_MAX; i++) {
-			sdfgi_shader.direct_light_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.direct_light.version_get_shader(sdfgi_shader.direct_light_shader, i));
+		hddagi_shader.direct_light.initialize(direct_light_modes, defines);
+		hddagi_shader.direct_light_shader = hddagi_shader.direct_light.version_create();
+		for (int i = 0; i < HDDAGIShader::DIRECT_LIGHT_MODE_MAX; i++) {
+			hddagi_shader.direct_light_shader_version[i] = hddagi_shader.direct_light.version_get_shader(hddagi_shader.direct_light_shader, i);
+			hddagi_shader.direct_light_pipeline[i] = RD::get_singleton()->compute_pipeline_create(hddagi_shader.direct_light_shader_version[i]);
 		}
 	}
 
 	{
 		//calculate tables
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
-		defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
+		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(HDDAGI::OCCLUSION_OCT_SIZE) + "\n";
+
+		defines += "\n#define SH_SIZE " + itos(HDDAGI::SH_SIZE) + "\n";
 		if (p_sky->sky_use_cubemap_array) {
 			defines += "\n#define USE_CUBEMAP_ARRAY\n";
 		}
 
 		Vector<String> integrate_modes;
 		integrate_modes.push_back("\n#define MODE_PROCESS\n");
-		integrate_modes.push_back("\n#define MODE_STORE\n");
-		integrate_modes.push_back("\n#define MODE_SCROLL\n");
-		integrate_modes.push_back("\n#define MODE_SCROLL_STORE\n");
-		sdfgi_shader.integrate.initialize(integrate_modes, defines);
-		sdfgi_shader.integrate_shader = sdfgi_shader.integrate.version_create();
+		integrate_modes.push_back("\n#define MODE_FILTER\n");
+		integrate_modes.push_back("\n#define MODE_CAMERA_VISIBILITY\n");
+		hddagi_shader.integrate.initialize(integrate_modes, defines);
+		hddagi_shader.integrate_shader = hddagi_shader.integrate.version_create();
 
-		for (int i = 0; i < SDFGIShader::INTEGRATE_MODE_MAX; i++) {
-			sdfgi_shader.integrate_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, i));
-		}
-
-		{
-			Vector<RD::Uniform> uniforms;
-
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 0;
-				if (p_sky->sky_use_cubemap_array) {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE));
-				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-				u.binding = 1;
-				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-				uniforms.push_back(u);
-			}
-
-			sdfgi_shader.integrate_default_sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, 0), 1);
+		for (int i = 0; i < HDDAGIShader::INTEGRATE_MODE_MAX; i++) {
+			hddagi_shader.integrate_shader_version[i] = hddagi_shader.integrate.version_get_shader(hddagi_shader.integrate_shader, i);
+			hddagi_shader.integrate_pipeline[i] = RD::get_singleton()->compute_pipeline_create(hddagi_shader.integrate_shader_version[i]);
 		}
 	}
 
 	//GK
 	{
 		//calculate tables
-		String defines = "\n#define SDFGI_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(HDDAGI::OCCLUSION_OCT_SIZE) + "\n";
 		if (RendererSceneRenderRD::get_singleton()->is_vrs_supported()) {
 			defines += "\n#define USE_VRS\n";
 		}
@@ -3508,8 +3060,10 @@ void GI::init(SkyRD *p_sky) {
 		Vector<String> gi_modes;
 
 		gi_modes.push_back("\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_VOXEL_GI
-		gi_modes.push_back("\n#define USE_SDFGI\n"); // MODE_SDFGI
-		gi_modes.push_back("\n#define USE_SDFGI\n\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_COMBINED
+		gi_modes.push_back("\n#define USE_HDDAGI\n"); // MODE_HDDAGI
+		gi_modes.push_back("\n#define USE_HDDAGI\n\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_COMBINED
+		gi_modes.push_back("\n#define USE_HDDAGI\n\n#define USE_AMBIENT_BLEND\n"); // MODE_HDDAGI
+		gi_modes.push_back("\n#define USE_HDDAGI\n\n#define USE_VOXEL_GI_INSTANCES\n\n#define USE_AMBIENT_BLEND\n"); // MODE_COMBINED
 
 		shader.initialize(gi_modes, defines);
 		shader_version = shader.version_create();
@@ -3543,31 +3097,67 @@ void GI::init(SkyRD *p_sky) {
 			}
 		}
 
-		sdfgi_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGIData));
+		hddagi_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(HDDAGIData));
 	}
 	{
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		String defines;
+		//calculate tables
+		if (RendererSceneRenderRD::get_singleton()->is_vrs_supported()) {
+			defines += "\n#define USE_VRS\n";
+		}
+		Vector<String> filter_modes;
+		filter_modes.push_back("\n#define MODE_BILATERAL_FILTER\n");
+		filter_modes.push_back("\n#define MODE_BILATERAL_FILTER\n#define HALF_SIZE\n");
+		filter_shader.initialize(filter_modes, defines);
+		filter_shader_version = filter_shader.version_create();
+
+		Vector<RD::PipelineSpecializationConstant> specialization_constants;
+
+		{
+			RD::PipelineSpecializationConstant sc;
+			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			sc.constant_id = 0; // FILTER_SHADER_SPECIALIZATION_HALF_RES
+			sc.bool_value = false;
+			specialization_constants.push_back(sc);
+
+			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			sc.constant_id = 1; // FILTER_SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX
+			sc.bool_value = false;
+			specialization_constants.push_back(sc);
+		}
+
+		for (int v = 0; v < FILTER_SHADER_SPECIALIZATION_VARIATIONS; v++) {
+			specialization_constants.ptrw()[0].bool_value = (v & FILTER_SHADER_SPECIALIZATION_HALF_RES) ? true : false;
+			specialization_constants.ptrw()[1].bool_value = (v & FILTER_SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX) ? true : false;
+			for (int i = 0; i < FILTER_MODE_MAX; i++) {
+				filter_pipelines[v][i] = RD::get_singleton()->compute_pipeline_create(filter_shader.version_get_shader(filter_shader_version, i), specialization_constants);
+			}
+		}
+	}
+
+	{
+		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(HDDAGI::OCCLUSION_OCT_SIZE) + "\n";
 		Vector<String> debug_modes;
 		debug_modes.push_back("");
-		sdfgi_shader.debug.initialize(debug_modes, defines);
-		sdfgi_shader.debug_shader = sdfgi_shader.debug.version_create();
-		sdfgi_shader.debug_shader_version = sdfgi_shader.debug.version_get_shader(sdfgi_shader.debug_shader, 0);
-		sdfgi_shader.debug_pipeline = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.debug_shader_version);
+		hddagi_shader.debug.initialize(debug_modes, defines);
+		hddagi_shader.debug_shader = hddagi_shader.debug.version_create();
+		hddagi_shader.debug_shader_version = hddagi_shader.debug.version_get_shader(hddagi_shader.debug_shader, 0);
+		hddagi_shader.debug_pipeline = RD::get_singleton()->compute_pipeline_create(hddagi_shader.debug_shader_version);
 	}
 	{
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		String defines = "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n#define OCCLUSION_OCT_SIZE " + itos(HDDAGI::OCCLUSION_OCT_SIZE) + "\n#define OCCLUSION_SUBPIXELS " + itos(HDDAGI::OCCLUSION_SUBPIXELS) + "\n";
 
 		Vector<String> versions;
 		versions.push_back("\n#define MODE_PROBES\n");
 		versions.push_back("\n#define MODE_PROBES\n#define USE_MULTIVIEW\n");
-		versions.push_back("\n#define MODE_VISIBILITY\n");
-		versions.push_back("\n#define MODE_VISIBILITY\n#define USE_MULTIVIEW\n");
+		versions.push_back("\n#define MODE_OCCLUSION\n");
+		versions.push_back("\n#define MODE_OCCLUSION\n#define USE_MULTIVIEW\n");
 
-		sdfgi_shader.debug_probes.initialize(versions, defines);
+		hddagi_shader.debug_probes.initialize(versions, defines);
 
 		// TODO disable multiview versions if turned off
 
-		sdfgi_shader.debug_probes_shader = sdfgi_shader.debug_probes.version_create();
+		hddagi_shader.debug_probes_shader = hddagi_shader.debug_probes.version_create();
 
 		{
 			RD::PipelineRasterizationState rs;
@@ -3576,11 +3166,14 @@ void GI::init(SkyRD *p_sky) {
 			ds.enable_depth_test = true;
 			ds.enable_depth_write = true;
 			ds.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
-			for (int i = 0; i < SDFGIShader::PROBE_DEBUG_MAX; i++) {
+			RD::PipelineColorBlendState cb = RD::PipelineColorBlendState::create_disabled();
+			RD::RenderPrimitive rp = RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS;
+
+			for (int i = 0; i < HDDAGIShader::PROBE_DEBUG_MAX; i++) {
 				// TODO check if version is enabled
 
-				RID debug_probes_shader_version = sdfgi_shader.debug_probes.version_get_shader(sdfgi_shader.debug_probes_shader, i);
-				sdfgi_shader.debug_probes_pipeline[i].setup(debug_probes_shader_version, RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
+				hddagi_shader.debug_probes_shader_version[i] = hddagi_shader.debug_probes.version_get_shader(hddagi_shader.debug_probes_shader, i);
+				hddagi_shader.debug_probes_pipeline[i].setup(hddagi_shader.debug_probes_shader_version[i], rp, rs, RD::PipelineMultisampleState(), ds, cb, 0);
 			}
 		}
 	}
@@ -3595,8 +3188,8 @@ void GI::free() {
 	if (voxel_gi_lights_uniform.is_valid()) {
 		RD::get_singleton()->free(voxel_gi_lights_uniform);
 	}
-	if (sdfgi_ubo.is_valid()) {
-		RD::get_singleton()->free(sdfgi_ubo);
+	if (hddagi_ubo.is_valid()) {
+		RD::get_singleton()->free(hddagi_ubo);
 	}
 
 	if (voxel_gi_debug_shader_version.is_valid()) {
@@ -3608,20 +3201,20 @@ void GI::free() {
 	if (shader_version.is_valid()) {
 		shader.version_free(shader_version);
 	}
-	if (sdfgi_shader.debug_probes_shader.is_valid()) {
-		sdfgi_shader.debug_probes.version_free(sdfgi_shader.debug_probes_shader);
+	if (hddagi_shader.debug_probes_shader.is_valid()) {
+		hddagi_shader.debug_probes.version_free(hddagi_shader.debug_probes_shader);
 	}
-	if (sdfgi_shader.debug_shader.is_valid()) {
-		sdfgi_shader.debug.version_free(sdfgi_shader.debug_shader);
+	if (hddagi_shader.debug_shader.is_valid()) {
+		hddagi_shader.debug.version_free(hddagi_shader.debug_shader);
 	}
-	if (sdfgi_shader.direct_light_shader.is_valid()) {
-		sdfgi_shader.direct_light.version_free(sdfgi_shader.direct_light_shader);
+	if (hddagi_shader.direct_light_shader.is_valid()) {
+		hddagi_shader.direct_light.version_free(hddagi_shader.direct_light_shader);
 	}
-	if (sdfgi_shader.integrate_shader.is_valid()) {
-		sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
+	if (hddagi_shader.integrate_shader.is_valid()) {
+		hddagi_shader.integrate.version_free(hddagi_shader.integrate_shader);
 	}
-	if (sdfgi_shader.preprocess_shader.is_valid()) {
-		sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
+	if (hddagi_shader.preprocess_shader.is_valid()) {
+		hddagi_shader.preprocess.version_free(hddagi_shader.preprocess_shader);
 	}
 
 	if (voxel_gi_lights) {
@@ -3629,13 +3222,13 @@ void GI::free() {
 	}
 }
 
-Ref<GI::SDFGI> GI::create_sdfgi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size) {
-	Ref<SDFGI> sdfgi;
-	sdfgi.instantiate();
+Ref<GI::HDDAGI> GI::create_hddagi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size) {
+	Ref<HDDAGI> hddagi;
+	hddagi.instantiate();
 
-	sdfgi->create(p_env, p_world_position, p_requested_history_size, this);
+	hddagi->create(p_env, p_world_position, p_requested_history_size, this);
 
-	return sdfgi;
+	return hddagi;
 }
 
 void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used) {
@@ -3651,8 +3244,6 @@ void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBu
 
 	RID voxel_gi_buffer = rbgi->get_voxel_gi_buffer();
 	VoxelGIData voxel_gi_data[MAX_VOXEL_GI_INSTANCES];
-
-	bool voxel_gi_instances_changed = false;
 
 	Transform3D to_camera;
 	to_camera.origin = p_transform.origin; //only translation, make local
@@ -3713,23 +3304,7 @@ void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBu
 		}
 
 		if (texture != rbgi->voxel_gi_textures[i]) {
-			voxel_gi_instances_changed = true;
 			rbgi->voxel_gi_textures[i] = texture;
-		}
-	}
-
-	if (voxel_gi_instances_changed) {
-		for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
-			if (RD::get_singleton()->uniform_set_is_valid(rbgi->uniform_set[v])) {
-				RD::get_singleton()->free(rbgi->uniform_set[v]);
-			}
-			rbgi->uniform_set[v] = RID();
-		}
-
-		if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
-			// VoxelGI instances have changed, so we need to update volumetric fog.
-			Ref<RendererRD::Fog::VolumetricFog> fog = p_render_buffers->get_custom_data(RB_SCOPE_FOG);
-			fog->sync_gi_dependent_sets_validity(true);
 		}
 	}
 
@@ -3750,13 +3325,6 @@ RID GI::RenderBuffersGI::get_voxel_gi_buffer() {
 }
 
 void GI::RenderBuffersGI::free_data() {
-	for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
-		if (RD::get_singleton()->uniform_set_is_valid(uniform_set[v])) {
-			RD::get_singleton()->free(uniform_set[v]);
-		}
-		uniform_set[v] = RID();
-	}
-
 	if (scene_data_ubo.is_valid()) {
 		RD::get_singleton()->free(scene_data_ubo);
 		scene_data_ubo = RID();
@@ -3770,7 +3338,6 @@ void GI::RenderBuffersGI::free_data() {
 
 void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	ERR_FAIL_COND_MSG(p_view_count > 2, "Maximum of 2 views supported for Processing GI.");
 
@@ -3789,15 +3356,43 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 
 	if (!p_render_buffers->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT)) {
 		Size2i size = internal_size;
-		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		if (half_resolution) {
 			size.x >>= 1;
 			size.y >>= 1;
 		}
 
-		p_render_buffers->create_texture(RB_SCOPE_GI, RB_TEX_AMBIENT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1, size);
-		p_render_buffers->create_texture(RB_SCOPE_GI, RB_TEX_REFLECTION, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1, size);
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R32_UINT;
+		tf.width = size.x;
+		tf.height = size.y;
+		tf.depth = 1;
+		tf.array_layers = 1;
+		tf.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
+		tf.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+
+		RD::TextureFormat tf_blend;
+		tf_blend.format = RD::DATA_FORMAT_R8G8_UNORM;
+
+		tf_blend.width = size.x;
+		tf_blend.height = size.y;
+		tf_blend.depth = 1;
+		tf_blend.array_layers = 1;
+		tf_blend.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_AMBIENT_U32, tf);
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_REFLECTION_U32, tf);
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND, tf_blend);
+
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_REFLECTION_U32_FILTERED, tf);
+		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND_FILTERED, tf_blend);
+
+		RD::TextureView tv;
+		tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+		p_render_buffers->create_texture_view(RB_SCOPE_GI, RB_TEX_AMBIENT_U32, RB_TEX_AMBIENT, tv);
+		p_render_buffers->create_texture_view(RB_SCOPE_GI, RB_TEX_REFLECTION_U32, RB_TEX_REFLECTION, tv);
+		p_render_buffers->create_texture_view(RB_SCOPE_GI, RB_TEX_REFLECTION_U32_FILTERED, RB_TEX_REFLECTION_FILTERED, tv);
 
 		rbgi->using_half_size_gi = half_resolution;
 	}
@@ -3856,12 +3451,12 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 	push_constant.proj_info[2] = (1.0f - p_projections[0].columns[0][2]) / p_projections[0].columns[0][0];
 	push_constant.proj_info[3] = (1.0f + p_projections[0].columns[1][2]) / p_projections[0].columns[1][1];
 
-	bool use_sdfgi = p_render_buffers->has_custom_data(RB_SCOPE_SDFGI);
+	bool use_hddagi = p_render_buffers->has_custom_data(RB_SCOPE_HDDAGI);
 	bool use_voxel_gi_instances = push_constant.max_voxel_gi_instances > 0;
 
-	Ref<SDFGI> sdfgi;
-	if (use_sdfgi) {
-		sdfgi = p_render_buffers->get_custom_data(RB_SCOPE_SDFGI);
+	Ref<HDDAGI> hddagi;
+	if (use_hddagi) {
+		hddagi = p_render_buffers->get_custom_data(RB_SCOPE_HDDAGI);
 	}
 
 	uint32_t pipeline_specialization = 0;
@@ -3876,184 +3471,63 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 		pipeline_specialization |= SHADER_SPECIALIZATION_USE_VRS;
 	}
 
-	Mode mode = (use_sdfgi && use_voxel_gi_instances) ? MODE_COMBINED : (use_sdfgi ? MODE_SDFGI : MODE_VOXEL_GI);
+	Mode mode;
+
+	if (use_hddagi) {
+		if (use_voxel_gi_instances) {
+			mode = hddagi->using_ambient_filter ? MODE_COMBINED_BLEND_AMBIENT : MODE_COMBINED;
+		} else {
+			mode = hddagi->using_ambient_filter ? MODE_HDDAGI_BLEND_AMBIENT : MODE_HDDAGI;
+		}
+		push_constant.occlusion_bias = hddagi->occlusion_bias;
+	} else {
+		mode = MODE_VOXEL_GI;
+		push_constant.occlusion_bias = 0;
+	}
 
 	for (uint32_t v = 0; v < p_view_count; v++) {
 		push_constant.view_index = v;
 
 		// setup our uniform set
-		if (rbgi->uniform_set[v].is_null() || !RD::get_singleton()->uniform_set_is_valid(rbgi->uniform_set[v])) {
-			Vector<RD::Uniform> uniforms;
-			{
-				RD::Uniform u;
-				u.binding = 1;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-					if (use_sdfgi && j < sdfgi->cascades.size()) {
-						u.append_id(sdfgi->cascades[j].sdf_tex);
-					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-					}
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 2;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-					if (use_sdfgi && j < sdfgi->cascades.size()) {
-						u.append_id(sdfgi->cascades[j].light_tex);
-					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-					}
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 3;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-					if (use_sdfgi && j < sdfgi->cascades.size()) {
-						u.append_id(sdfgi->cascades[j].light_aniso_0_tex);
-					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-					}
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.binding = 4;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
-					if (use_sdfgi && j < sdfgi->cascades.size()) {
-						u.append_id(sdfgi->cascades[j].light_aniso_1_tex);
-					} else {
-						u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-					}
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 5;
-				if (use_sdfgi) {
-					u.append_id(sdfgi->occlusion_texture);
-				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE));
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-				u.binding = 6;
-				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-				u.binding = 7;
-				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 9;
-				u.append_id(p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_AMBIENT, v, 0));
-				uniforms.push_back(u);
-			}
-
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 10;
-				u.append_id(p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_REFLECTION, v, 0));
-				uniforms.push_back(u);
-			}
-
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 11;
-				if (use_sdfgi) {
-					u.append_id(sdfgi->lightprobe_texture);
-				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE));
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 12;
-				u.append_id(p_render_buffers->get_depth_texture(v));
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 13;
-				u.append_id(p_normal_roughness_slices[v]);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 14;
-				RID buffer = p_voxel_gi_buffer.is_valid() ? p_voxel_gi_buffer : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
-				u.append_id(buffer);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-				u.binding = 15;
-				u.append_id(sdfgi_ubo);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-				u.binding = 16;
-				u.append_id(rbgi->get_voxel_gi_buffer());
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 17;
-				for (int i = 0; i < MAX_VOXEL_GI_INSTANCES; i++) {
-					u.append_id(rbgi->voxel_gi_textures[i]);
-				}
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-				u.binding = 18;
-				u.append_id(rbgi->scene_data_ubo);
-				uniforms.push_back(u);
-			}
-			if (RendererSceneRenderRD::get_singleton()->is_vrs_supported()) {
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 19;
-				RID buffer = has_vrs_texture ? p_render_buffers->get_texture_slice(RB_SCOPE_VRS, RB_TEXTURE, v, 0) : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_VRS);
-				u.append_id(buffer);
-				uniforms.push_back(u);
-			}
-
-			rbgi->uniform_set[v] = RD::get_singleton()->uniform_set_create(uniforms, shader.version_get_shader(shader_version, 0), 0);
+		RD::Uniform vgiu;
+		vgiu.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		vgiu.binding = 17;
+		for (int i = 0; i < MAX_VOXEL_GI_INSTANCES; i++) {
+			vgiu.append_id(rbgi->voxel_gi_textures[i]);
 		}
 
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+				shader.version_get_shader(shader_version, 0),
+				0,
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, hddagi->voxel_bits_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, hddagi->voxel_region_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, hddagi->voxel_light_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 4, hddagi->lightprobe_specular_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, hddagi->using_probe_filter ? hddagi->lightprobe_diffuse_filter_tex : hddagi->lightprobe_diffuse_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, hddagi->get_lightprobe_occlusion_textures()),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 7, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 8, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, hddagi->voxel_disocclusion_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, hddagi->voxel_light_neighbour_data),
+
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 12, p_render_buffers->get_depth_texture(v)),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 13, p_normal_roughness_slices[v]),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 14, p_voxel_gi_buffer.is_valid() ? p_voxel_gi_buffer : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK)),
+
+				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 15, hddagi_ubo),
+				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 16, rbgi->get_voxel_gi_buffer()),
+				vgiu, // 17
+				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 18, rbgi->scene_data_ubo),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 19, has_vrs_texture ? p_render_buffers->get_texture_slice(RB_SCOPE_VRS, RB_TEXTURE, v, 0) : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_VRS)),
+
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 20, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_AMBIENT_U32, v, 0)),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 21, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_REFLECTION_U32, v, 0)),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 22, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND, v, 0))
+
+		);
+
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipelines[pipeline_specialization][mode]);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rbgi->uniform_set[v], 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
 
 		if (rbgi->using_half_size_gi) {
@@ -4063,6 +3537,57 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 		}
 	}
 
+	if (hddagi->using_reflection_filter) {
+		uint32_t filter_pipeline_specialization = 0;
+		if (rbgi->using_half_size_gi) {
+			filter_pipeline_specialization |= FILTER_SHADER_SPECIALIZATION_HALF_RES;
+		}
+		if (p_view_count > 1) {
+			filter_pipeline_specialization |= FILTER_SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX;
+		}
+
+		FilterPushConstant filter_push_constant;
+		filter_push_constant.orthogonal = push_constant.orthogonal;
+		filter_push_constant.z_near = push_constant.z_near;
+		filter_push_constant.z_far = push_constant.z_far;
+		filter_push_constant.proj_info[0] = push_constant.proj_info[0];
+		filter_push_constant.proj_info[1] = push_constant.proj_info[1];
+		filter_push_constant.proj_info[2] = push_constant.proj_info[2];
+		filter_push_constant.proj_info[3] = push_constant.proj_info[3];
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, filter_pipelines[filter_pipeline_specialization][rbgi->using_half_size_gi ? FILTER_MODE_BILATERAL_HALF_SIZE : FILTER_MODE_BILATERAL]);
+
+		for (int i = 0; i < 2; i++) {
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+			filter_push_constant.filter_dir[1] = i & 1;
+			filter_push_constant.filter_dir[0] = (i + 1) & 1;
+
+			for (uint32_t v = 0; v < p_view_count; v++) {
+				RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
+						filter_shader.version_get_shader(filter_shader_version, 0),
+						0,
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_render_buffers->get_depth_texture(v)),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_normal_roughness_slices[v]),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, p_render_buffers->get_texture_slice(RB_SCOPE_GI, i == 0 ? RB_TEX_REFLECTION : RB_TEX_REFLECTION_FILTERED, v, 0)),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_render_buffers->get_texture_slice(RB_SCOPE_GI, i == 0 ? RB_TEX_AMBIENT_REFLECTION_BLEND : RB_TEX_AMBIENT_REFLECTION_BLEND_FILTERED, v, 0)),
+						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, p_render_buffers->get_texture_slice(RB_SCOPE_GI, i == 0 ? RB_TEX_REFLECTION_U32_FILTERED : RB_TEX_REFLECTION_U32, v, 0)),
+						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, p_render_buffers->get_texture_slice(RB_SCOPE_GI, i == 0 ? RB_TEX_AMBIENT_REFLECTION_BLEND_FILTERED : RB_TEX_AMBIENT_REFLECTION_BLEND, v, 0)),
+						RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 6, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
+						RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, rbgi->scene_data_ubo));
+
+				filter_push_constant.view_index = v;
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &filter_push_constant, sizeof(FilterPushConstant));
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+				if (rbgi->using_half_size_gi) {
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, internal_size.x >> 1, internal_size.y >> 1, 1);
+				} else {
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, internal_size.x, internal_size.y, 1);
+				}
+			}
+		}
+	}
 	RD::get_singleton()->compute_list_end();
 	RD::get_singleton()->draw_command_end_label();
 }

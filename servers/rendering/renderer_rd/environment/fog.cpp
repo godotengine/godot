@@ -277,7 +277,7 @@ ALBEDO = vec3(1.0);
 		}
 		Vector<String> volumetric_fog_modes;
 		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n");
-		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n#define ENABLE_SDFGI\n");
+		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n#define ENABLE_HDDAGI\n");
 		volumetric_fog_modes.push_back("\n#define MODE_FILTER\n");
 		volumetric_fog_modes.push_back("\n#define MODE_FOG\n");
 		volumetric_fog_modes.push_back("\n#define MODE_COPY\n");
@@ -489,8 +489,8 @@ Fog::VolumetricFog::~VolumetricFog() {
 
 	sync_gi_dependent_sets_validity(true);
 
-	if (sdfgi_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sdfgi_uniform_set)) {
-		RD::get_singleton()->free(sdfgi_uniform_set);
+	if (hddagi_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(hddagi_uniform_set)) {
+		RD::get_singleton()->free(hddagi_uniform_set);
 	}
 	if (sky_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_uniform_set)) {
 		RD::get_singleton()->free(sky_uniform_set);
@@ -951,17 +951,17 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		}
 	}
 
-	bool using_sdfgi = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_gi_inject(p_settings.env) > 0.0001 && RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_enabled(p_settings.env) && (p_settings.sdfgi.is_valid());
+	bool using_hddagi = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_gi_inject(p_settings.env) > 0.0001 && RendererSceneRenderRD::get_singleton()->environment_get_hddagi_enabled(p_settings.env) && (p_settings.hddagi.is_valid());
 
-	if (using_sdfgi) {
-		if (fog->sdfgi_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(fog->sdfgi_uniform_set)) {
+	if (using_hddagi) {
+		if (fog->hddagi_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(fog->hddagi_uniform_set)) {
 			Vector<RD::Uniform> uniforms;
 
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 				u.binding = 0;
-				u.append_id(p_settings.gi->sdfgi_ubo);
+				u.append_id(p_settings.gi->hddagi_ubo);
 				uniforms.push_back(u);
 			}
 
@@ -969,7 +969,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 1;
-				u.append_id(p_settings.sdfgi->ambient_texture);
+				u.append_id(p_settings.hddagi->lightprobe_ambient_tex);
 				uniforms.push_back(u);
 			}
 
@@ -977,11 +977,13 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 2;
-				u.append_id(p_settings.sdfgi->occlusion_texture);
+				Vector<RID> occ = p_settings.hddagi->get_lightprobe_occlusion_textures();
+				u.append_id(occ[0]);
+				u.append_id(occ[1]);
 				uniforms.push_back(u);
 			}
 
-			fog->sdfgi_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_SDFGI), 1);
+			fog->hddagi_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_HDDAGI), 1);
 		}
 	}
 
@@ -1089,12 +1091,12 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[using_sdfgi ? VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_SDFGI : VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[using_hddagi ? VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_HDDAGI : VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY]);
 
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set_density, 0);
 
-	if (using_sdfgi) {
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->sdfgi_uniform_set, 1);
+	if (using_hddagi) {
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->hddagi_uniform_set, 1);
 	}
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, fog->depth);
 	RD::get_singleton()->compute_list_add_barrier(compute_list);
