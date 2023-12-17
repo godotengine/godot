@@ -572,7 +572,7 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 	}
 }
 
-void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event) {
+void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event, const String &p_current_action_name) {
 	if (p_event.is_valid()) {
 		_set_event(p_event->duplicate(), p_event);
 	} else {
@@ -596,6 +596,12 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 		device_id_option->select(0);
 	}
 
+	if (!p_current_action_name.is_empty()) {
+		set_title(vformat(TTR("Event Configuration for \"%s\""), p_current_action_name));
+	} else {
+		set_title(TTR("Event Configuration"));
+	}
+
 	popup_centered(Size2(0, 400) * EDSCALE);
 }
 
@@ -611,7 +617,6 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 
-	set_title(TTR("Event Configuration"));
 	set_min_size(Size2i(550, 0) * EDSCALE);
 
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
