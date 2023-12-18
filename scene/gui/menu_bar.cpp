@@ -181,24 +181,7 @@ void MenuBar::_popup_visibility_changed(bool p_visible) {
 	}
 
 	if (switch_on_hover) {
-		Window *wnd = Object::cast_to<Window>(get_viewport());
-		if (wnd) {
-			mouse_pos_adjusted = wnd->get_position();
-
-			if (wnd->is_embedded()) {
-				Window *wnd_parent = Object::cast_to<Window>(wnd->get_parent()->get_viewport());
-				while (wnd_parent) {
-					if (!wnd_parent->is_embedded()) {
-						mouse_pos_adjusted += wnd_parent->get_position();
-						break;
-					}
-
-					wnd_parent = Object::cast_to<Window>(wnd_parent->get_parent()->get_viewport());
-				}
-			}
-
-			set_process_internal(true);
-		}
+		set_process_internal(true);
 	}
 }
 
@@ -334,8 +317,7 @@ void MenuBar::_notification(int p_what) {
 				// Handled by OS.
 				return;
 			}
-
-			Vector2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted - get_global_position();
+			Vector2 pos = get_local_mouse_position();
 			if (pos == old_mouse_pos) {
 				return;
 			}
