@@ -610,6 +610,7 @@ public:
 
 	void gui_release_focus();
 	Control *gui_get_focus_owner() const;
+	Control *gui_get_hovered_control() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
