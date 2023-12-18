@@ -346,6 +346,7 @@ private:
 	EditorRunBar *project_run_bar = nullptr;
 	VBoxContainer *main_screen_vbox = nullptr;
 	MenuBar *main_menu = nullptr;
+	PopupMenu *apple_menu = nullptr;
 	PopupMenu *file_menu = nullptr;
 	PopupMenu *project_menu = nullptr;
 	PopupMenu *debug_menu = nullptr;

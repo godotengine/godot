@@ -185,6 +185,8 @@ public:
 	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx);
 	virtual void global_menu_clear(const String &p_menu_root);
 
+	virtual Dictionary global_menu_get_system_menu_roots() const;
+
 	struct TTSUtterance {
 		String text;
 		String voice;

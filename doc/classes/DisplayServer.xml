@@ -235,6 +235,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -258,6 +261,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -281,6 +287,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -305,6 +314,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -327,6 +339,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -353,6 +368,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -376,6 +394,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -391,6 +412,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -408,6 +432,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -421,6 +448,9 @@
 				[codeblock]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
+				"_apple" - Apple menu (macOS, custom items added before "Services").
+				"_window" - Window menu (macOS, custom items added after "Bring All to Front").
+				"_help" - Help menu (macOS).
 				[/codeblock]
 			</description>
 		</method>
@@ -546,6 +576,13 @@
 			<param index="1" name="idx" type="int" />
 			<description>
 				Returns the tooltip associated with the specified index [param idx].
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_system_menu_roots" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns Dictionary of supported system menu IDs and names.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
