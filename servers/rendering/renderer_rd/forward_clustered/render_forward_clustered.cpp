@@ -961,13 +961,17 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					inst->gi_offset_cache = 0xFFFFFFFF;
 				}
 			}
-
-			if (p_pass_mode == PASS_MODE_COLOR && p_using_motion_pass) {
+			if (p_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || p_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI || p_pass_mode == PASS_MODE_COLOR) {
 				bool transform_changed = inst->prev_transform_change_frame == frame;
 				bool has_mesh_instance = inst->mesh_instance.is_valid();
 				bool uses_particles = inst->base_flags & INSTANCE_DATA_FLAG_PARTICLES;
 				bool is_multimesh_with_motion = !uses_particles && (inst->base_flags & INSTANCE_DATA_FLAG_MULTIMESH) && mesh_storage->_multimesh_uses_motion_vectors_offsets(inst->data->base);
-				uses_motion = transform_changed || has_mesh_instance || uses_particles || is_multimesh_with_motion;
+				bool is_dynamic = transform_changed || has_mesh_instance || uses_particles || is_multimesh_with_motion;
+				if (p_pass_mode == PASS_MODE_COLOR && p_using_motion_pass) {
+					uses_motion = is_dynamic;
+				} else if (is_dynamic) {
+					flags |= INSTANCE_DATA_FLAGS_DYNAMIC;
+				}
 			}
 		}
 		inst->flags_cache = flags;
@@ -1779,11 +1783,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			} break;
 			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
 				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS);
-				depth_pass_clear.push_back(Color(0.5, 0.5, 0.5, 0));
+				depth_pass_clear.push_back(Color(0, 0, 0, 0));
 			} break;
 			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI: {
 				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS_VOXELGI);
-				depth_pass_clear.push_back(Color(0.5, 0.5, 0.5, 0));
+				depth_pass_clear.push_back(Color(0, 0, 0, 0));
 				depth_pass_clear.push_back(Color(0, 0, 0, 0));
 			} break;
 			default: {
@@ -2977,6 +2981,14 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 			u.binding = 14;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.append_id(RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.binding = 15;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.append_id(best_fit_normal.texture);
 			uniforms.push_back(u);
 		}
 
@@ -4230,6 +4242,44 @@ RenderForwardClustered::RenderForwardClustered() {
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 
+	{
+		Vector<String> modes;
+		modes.push_back("\n");
+		best_fit_normal.shader.initialize(modes);
+		best_fit_normal.shader_version = best_fit_normal.shader.version_create();
+		best_fit_normal.pipeline = RD::get_singleton()->compute_pipeline_create(best_fit_normal.shader.version_get_shader(best_fit_normal.shader_version, 0));
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8_UNORM;
+		tformat.width = 1024;
+		tformat.height = 1024;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+		best_fit_normal.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+
+		RID shader = best_fit_normal.shader.version_get_shader(best_fit_normal.shader_version, 0);
+		ERR_FAIL_COND(shader.is_null());
+
+		Vector<RD::Uniform> uniforms;
+
+		{
+			RD::Uniform u;
+			u.binding = 0;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.append_id(best_fit_normal.texture);
+			uniforms.push_back(u);
+		}
+		RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader, 0);
+
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, best_fit_normal.pipeline);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, tformat.width, tformat.height, 1);
+		RD::get_singleton()->compute_list_end();
+
+		best_fit_normal.shader.version_free(best_fit_normal.shader_version);
+	}
+
 	render_list_thread_threshold = GLOBAL_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");
 
 	_update_shader_quality_settings();
@@ -4263,6 +4313,7 @@ RenderForwardClustered::~RenderForwardClustered() {
 
 	RD::get_singleton()->free(shadow_sampler);
 	RSG::light_storage->directional_shadow_atlas_set_size(0);
+	RD::get_singleton()->free(best_fit_normal.texture);
 
 	{
 		for (const RID &rid : scene_state.uniform_buffers) {
