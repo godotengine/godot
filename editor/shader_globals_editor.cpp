@@ -105,7 +105,6 @@ class ShaderGlobalsEditorInterface : public Object {
 
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method("_set_var", &ShaderGlobalsEditorInterface::_set_var);
 		ClassDB::bind_method("_var_changed", &ShaderGlobalsEditorInterface::_var_changed);
 		ADD_SIGNAL(MethodInfo("var_changed"));
 	}
@@ -117,7 +116,7 @@ protected:
 			return false;
 		}
 
-		call_deferred("_set_var", p_name, p_value, existing);
+		callable_mp(this, &ShaderGlobalsEditorInterface::_set_var).call_deferred(p_name, p_value, existing);
 
 		return true;
 	}

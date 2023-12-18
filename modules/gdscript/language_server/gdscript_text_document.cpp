@@ -456,7 +456,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 					id = "class_global:" + symbol->native_class + ":" + symbol->name;
 					break;
 			}
-			call_deferred(SNAME("show_native_symbol_in_editor"), id);
+			callable_mp(this, &GDScriptTextDocument::show_native_symbol_in_editor).call_deferred(id);
 		} else {
 			notify_client_show_symbol(symbol);
 		}

@@ -407,8 +407,8 @@ void EditorPropertyArray::update_property() {
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				new_prop->set_read_only(is_read_only());
-				slot.prop->call_deferred("add_sibling", new_prop);
-				slot.prop->call_deferred("queue_free");
+				callable_mp((Node *)slot.prop, &Node::add_sibling).call_deferred(new_prop, false);
+				callable_mp((Node *)slot.prop, &Node::queue_free).call_deferred();
 				slot.prop = new_prop;
 				slot.set_index(idx);
 			}

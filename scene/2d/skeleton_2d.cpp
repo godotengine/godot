@@ -555,7 +555,7 @@ void Skeleton2D::_make_bone_setup_dirty() {
 	}
 	bone_setup_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred(SNAME("_update_bone_setup"));
+		callable_mp(this, &Skeleton2D::_update_bone_setup).call_deferred();
 	}
 }
 
@@ -593,7 +593,7 @@ void Skeleton2D::_make_transform_dirty() {
 	}
 	transform_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred(SNAME("_update_transform"));
+		callable_mp(this, &Skeleton2D::_update_transform).call_deferred();
 	}
 }
 
@@ -764,9 +764,6 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 }
 
 void Skeleton2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_bone_setup"), &Skeleton2D::_update_bone_setup);
-	ClassDB::bind_method(D_METHOD("_update_transform"), &Skeleton2D::_update_transform);
-
 	ClassDB::bind_method(D_METHOD("get_bone_count"), &Skeleton2D::get_bone_count);
 	ClassDB::bind_method(D_METHOD("get_bone", "idx"), &Skeleton2D::get_bone);
 

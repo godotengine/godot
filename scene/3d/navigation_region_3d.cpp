@@ -258,7 +258,7 @@ void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
 
 void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_navigation_mesh) {
 	if (!Thread::is_main_thread()) {
-		call_deferred(SNAME("_bake_finished"), p_navigation_mesh);
+		callable_mp(this, &NavigationRegion3D::_bake_finished).call_deferred(p_navigation_mesh);
 		return;
 	}
 
@@ -308,7 +308,6 @@ void NavigationRegion3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationRegion3D::get_travel_cost);
 
 	ClassDB::bind_method(D_METHOD("bake_navigation_mesh", "on_thread"), &NavigationRegion3D::bake_navigation_mesh, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("_bake_finished", "navigation_mesh"), &NavigationRegion3D::_bake_finished);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_mesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");

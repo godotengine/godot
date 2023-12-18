@@ -31,7 +31,6 @@
 #include "scene_tree_editor.h"
 
 #include "core/config/project_settings.h"
-#include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -593,7 +592,7 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_update_tree");
+	callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 	tree_dirty = true;
 }
 
@@ -626,7 +625,7 @@ void SceneTreeEditor::_node_renamed(Node *p_node) {
 	emit_signal(SNAME("node_renamed"));
 
 	if (!tree_dirty) {
-		MessageQueue::get_singleton()->push_call(this, "_update_tree");
+		callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 		tree_dirty = true;
 	}
 }
@@ -843,12 +842,12 @@ void SceneTreeEditor::_test_update_tree() {
 		return; // did not change
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_update_tree");
+	callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 	tree_dirty = true;
 }
 
 void SceneTreeEditor::_tree_process_mode_changed() {
-	MessageQueue::get_singleton()->push_call(this, "_update_tree");
+	callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 	tree_dirty = true;
 }
 
@@ -863,7 +862,7 @@ void SceneTreeEditor::_tree_changed() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_test_update_tree");
+	callable_mp(this, &SceneTreeEditor::_test_update_tree).call_deferred();
 	pending_test_update = true;
 }
 
@@ -1484,7 +1483,6 @@ void SceneTreeEditor::set_connecting_signal(bool p_enable) {
 void SceneTreeEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_tree"), &SceneTreeEditor::_update_tree, DEFVAL(false)); // Still used by UndoRedo.
 	ClassDB::bind_method("_rename_node", &SceneTreeEditor::_rename_node);
-	ClassDB::bind_method("_test_update_tree", &SceneTreeEditor::_test_update_tree);
 
 	ClassDB::bind_method(D_METHOD("update_tree"), &SceneTreeEditor::update_tree);
 
@@ -1642,7 +1640,7 @@ void SceneTreeDialog::_notification(int p_what) {
 				tree->update_tree();
 
 				// Select the search bar by default.
-				filter->call_deferred(SNAME("grab_focus"));
+				callable_mp((Control *)filter, &Control::grab_focus).call_deferred();
 			}
 		} break;
 

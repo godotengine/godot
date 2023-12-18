@@ -53,7 +53,7 @@
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;
-	call_deferred(SNAME("_tile_set_changed_deferred_update"));
+	callable_mp(this, &TileDataEditor::_tile_set_changed_deferred_update).call_deferred();
 }
 
 void TileDataEditor::_tile_set_changed_deferred_update() {
@@ -80,8 +80,6 @@ TileData *TileDataEditor::_get_tile_data(TileMapCell p_cell) {
 }
 
 void TileDataEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_tile_set_changed_deferred_update"), &TileDataEditor::_tile_set_changed_deferred_update);
-
 	ADD_SIGNAL(MethodInfo("needs_redraw"));
 }
 
