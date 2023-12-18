@@ -216,6 +216,8 @@ Files extracted from upstream source:
   ```
 - `AUTHORS.txt` and `LICENSE.txt`
 
+Two files (`ProcessRgtc.{cpp,hpp}`) have been added to provide RGTC compression implementation,
+based on library's `ProcessDxtc.{cpp,hpp}`.
 
 ## fonts
 
