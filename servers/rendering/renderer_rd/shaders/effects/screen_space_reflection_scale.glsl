@@ -59,8 +59,13 @@ void main() {
 			color += texelFetch(source_ssr, ofs, 0);
 			float d = texelFetch(source_depth, ofs, 0).r;
 			vec4 nr = texelFetch(source_normal, ofs, 0);
-			normal.xyz += nr.xyz * 2.0 - 1.0;
-			normal.w += nr.w;
+			normal.xyz += normalize(nr.xyz * 2.0 - 1.0);
+			float roughness = normal.w;
+			if (roughness > 0.5) {
+				roughness = 1.0 - roughness;
+			}
+			roughness /= (127.0 / 255.0);
+			normal.w += roughness;
 
 			if (sc_multiview) {
 				// we're doing a full unproject so we need the value as is.
@@ -81,6 +86,7 @@ void main() {
 		depth /= 4.0;
 		normal.xyz = normalize(normal.xyz / 4.0) * 0.5 + 0.5;
 		normal.w /= 4.0;
+		normal.w = normal.w * (127.0 / 255.0);
 	} else {
 		ivec2 ofs = ssC << 1;
 
