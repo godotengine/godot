@@ -105,29 +105,6 @@ static const IconInfo icon_infos[] = {
 	{ PNAME("icons/notification_60x60"), "iphone", "Icon-60.png", "60", "3x", "20x20", false }
 };
 
-struct LoadingScreenInfo {
-	const char *preset_key;
-	const char *export_name;
-	int width = 0;
-	int height = 0;
-	bool rotate = false;
-};
-
-static const LoadingScreenInfo loading_screen_infos[] = {
-	{ PNAME("landscape_launch_screens/iphone_2436x1125"), "Default-Landscape-X.png", 2436, 1125, false },
-	{ PNAME("landscape_launch_screens/iphone_2208x1242"), "Default-Landscape-736h@3x.png", 2208, 1242, false },
-	{ PNAME("landscape_launch_screens/ipad_1024x768"), "Default-Landscape.png", 1024, 768, false },
-	{ PNAME("landscape_launch_screens/ipad_2048x1536"), "Default-Landscape@2x.png", 2048, 1536, false },
-
-	{ PNAME("portrait_launch_screens/iphone_640x960"), "Default-480h@2x.png", 640, 960, false },
-	{ PNAME("portrait_launch_screens/iphone_640x1136"), "Default-568h@2x.png", 640, 1136, false },
-	{ PNAME("portrait_launch_screens/iphone_750x1334"), "Default-667h@2x.png", 750, 1334, false },
-	{ PNAME("portrait_launch_screens/iphone_1125x2436"), "Default-Portrait-X.png", 1125, 2436, false },
-	{ PNAME("portrait_launch_screens/ipad_768x1024"), "Default-Portrait.png", 768, 1024, false },
-	{ PNAME("portrait_launch_screens/ipad_1536x2048"), "Default-Portrait@2x.png", 1536, 2048, false },
-	{ PNAME("portrait_launch_screens/iphone_1242x2208"), "Default-Portrait-736h@3x.png", 1242, 2208, false }
-};
-
 String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		if (p_name == "application/app_store_team_id") {
@@ -147,12 +124,6 @@ String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPres
 }
 
 bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
-	if (p_preset) {
-		bool sb = p_preset->get("storyboard/use_launch_screen_storyboard");
-		if (!sb && p_option != "storyboard/use_launch_screen_storyboard" && p_option.begins_with("storyboard/")) {
-			return false;
-		}
-	}
 	return true;
 }
 
@@ -182,7 +153,6 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/launch_screens_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
 
@@ -235,16 +205,11 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, icon_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
 		}
 	}
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_launch_screen_storyboard"), false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_custom_bg_color"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
-
-	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
-	}
 }
 
 void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug) {
@@ -413,29 +378,20 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String description = p_preset->get("privacy/photolibrary_usage_description");
 			strnew += lines[i].replace("$photolibrary_usage_description", description) + "\n";
 		} else if (lines[i].find("$plist_launch_screen_name") != -1) {
-			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
-			String value = is_on ? "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>" : "";
+			String value = "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>";
 			strnew += lines[i].replace("$plist_launch_screen_name", value) + "\n";
 		} else if (lines[i].find("$pbx_launch_screen_file_reference") != -1) {
-			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
-			String value = is_on ? "90DD2D9D24B36E8000717FE1 = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = \"Launch Screen.storyboard\"; sourceTree = \"<group>\"; };" : "";
+			String value = "90DD2D9D24B36E8000717FE1 = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = \"Launch Screen.storyboard\"; sourceTree = \"<group>\"; };";
 			strnew += lines[i].replace("$pbx_launch_screen_file_reference", value) + "\n";
 		} else if (lines[i].find("$pbx_launch_screen_copy_files") != -1) {
-			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
-			String value = is_on ? "90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */," : "";
+			String value = "90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */,";
 			strnew += lines[i].replace("$pbx_launch_screen_copy_files", value) + "\n";
 		} else if (lines[i].find("$pbx_launch_screen_build_phase") != -1) {
-			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
-			String value = is_on ? "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */," : "";
+			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */,";
 			strnew += lines[i].replace("$pbx_launch_screen_build_phase", value) + "\n";
 		} else if (lines[i].find("$pbx_launch_screen_build_reference") != -1) {
-			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
-			String value = is_on ? "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };" : "";
+			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };";
 			strnew += lines[i].replace("$pbx_launch_screen_build_reference", value) + "\n";
-		} else if (lines[i].find("$pbx_launch_image_usage_setting") != -1) {
-			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
-			String value = is_on ? "" : "ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;";
-			strnew += lines[i].replace("$pbx_launch_image_usage_setting", value) + "\n";
 		} else if (lines[i].find("$launch_screen_image_mode") != -1) {
 			int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
 			String value;
@@ -777,94 +733,6 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 
 		if (splash->save_png(splash_png_path_3x) != OK) {
 			return ERR_FILE_CANT_WRITE;
-		}
-	}
-
-	return OK;
-}
-
-Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
-	Ref<DirAccess> da = DirAccess::open(p_dest_dir);
-	ERR_FAIL_COND_V_MSG(da.is_null(), ERR_CANT_OPEN, "Cannot open directory '" + p_dest_dir + "'.");
-
-	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
-		LoadingScreenInfo info = loading_screen_infos[i];
-		String loading_screen_file = p_preset->get(info.preset_key);
-
-		Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
-		String boot_logo_path = GLOBAL_GET("application/boot_splash/image");
-		bool boot_logo_scale = GLOBAL_GET("application/boot_splash/fullsize");
-
-		if (loading_screen_file.size() > 0) {
-			// Load custom loading screens, and resize if required.
-			Ref<Image> img = memnew(Image);
-			Error err = ImageLoader::load_image(loading_screen_file, img);
-			if (err != OK) {
-				ERR_PRINT("Invalid loading screen (" + String(info.preset_key) + "): '" + loading_screen_file + "'.");
-				return ERR_UNCONFIGURED;
-			}
-			if (img->get_width() != info.width || img->get_height() != info.height) {
-				WARN_PRINT("Loading screen (" + String(info.preset_key) + "): '" + loading_screen_file + "' has incorrect size (" + String::num_int64(img->get_width()) + "x" + String::num_int64(img->get_height()) + ") and was automatically resized to " + String::num_int64(info.width) + "x" + String::num_int64(info.height) + ".");
-				float aspect_ratio = (float)img->get_width() / (float)img->get_height();
-				if (boot_logo_scale) {
-					if (info.height * aspect_ratio <= info.width) {
-						img->resize(info.height * aspect_ratio, info.height, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
-					} else {
-						img->resize(info.width, info.width / aspect_ratio, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
-					}
-				}
-				Ref<Image> new_img = Image::create_empty(info.width, info.height, false, Image::FORMAT_RGBA8);
-				new_img->fill(boot_bg_color);
-				_blend_and_rotate(new_img, img, false);
-				err = new_img->save_png(p_dest_dir + info.export_name);
-			} else {
-				err = da->copy(loading_screen_file, p_dest_dir + info.export_name);
-			}
-			if (err) {
-				String err_str = String("Failed to export loading screen (") + info.preset_key + ") from path '" + loading_screen_file + "'.";
-				ERR_PRINT(err_str.utf8().get_data());
-				return err;
-			}
-		} else {
-			// Generate loading screen from the splash screen
-			Ref<Image> img = Image::create_empty(info.width, info.height, false, Image::FORMAT_RGBA8);
-			img->fill(boot_bg_color);
-
-			Ref<Image> img_bs;
-
-			if (boot_logo_path.length() > 0) {
-				img_bs = Ref<Image>(memnew(Image));
-				ImageLoader::load_image(boot_logo_path, img_bs);
-			}
-			if (!img_bs.is_valid()) {
-				img_bs = Ref<Image>(memnew(Image(boot_splash_png)));
-			}
-			if (img_bs.is_valid()) {
-				float aspect_ratio = (float)img_bs->get_width() / (float)img_bs->get_height();
-				if (info.rotate) {
-					if (boot_logo_scale) {
-						if (info.width * aspect_ratio <= info.height) {
-							img_bs->resize(info.width * aspect_ratio, info.width, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
-						} else {
-							img_bs->resize(info.height, info.height / aspect_ratio, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
-						}
-					}
-				} else {
-					if (boot_logo_scale) {
-						if (info.height * aspect_ratio <= info.width) {
-							img_bs->resize(info.height * aspect_ratio, info.height, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
-						} else {
-							img_bs->resize(info.width, info.width / aspect_ratio, (Image::Interpolation)(p_preset->get("application/launch_screens_interpolation").operator int()));
-						}
-					}
-				}
-				_blend_and_rotate(img, img_bs, info.rotate);
-			}
-			Error err = img->save_png(p_dest_dir + info.export_name);
-			if (err) {
-				String err_str = String("Failed to export loading screen (") + info.preset_key + ") from splash screen.";
-				WARN_PRINT(err_str.utf8().get_data());
-			}
 		}
 	}
 
@@ -1824,9 +1692,6 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	}
 
 	{
-		bool use_storyboard = p_preset->get("storyboard/use_launch_screen_storyboard");
-
-		String launch_image_path = binary_dir + "/Images.xcassets/LaunchImage.launchimage/";
 		String splash_image_path = binary_dir + "/Images.xcassets/SplashImage.imageset/";
 
 		Ref<DirAccess> launch_screen_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1835,30 +1700,11 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 			return ERR_CANT_CREATE;
 		}
 
-		if (use_storyboard) {
-			print_line("Using Launch Storyboard");
+		print_line("Exporting launch screen storyboard");
 
-			if (launch_screen_da->change_dir(launch_image_path) == OK) {
-				launch_screen_da->erase_contents_recursive();
-				launch_screen_da->remove(launch_image_path);
-			}
-
-			err = _export_loading_screen_file(p_preset, splash_image_path);
+		err = _export_loading_screen_file(p_preset, splash_image_path);
+		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Failed to create a file at path \"%s\" with code %d."), splash_image_path, err));
-		} else {
-			print_line("Using Launch Images");
-
-			const String launch_screen_path = binary_dir + "/Launch Screen.storyboard";
-
-			launch_screen_da->remove(launch_screen_path);
-
-			if (launch_screen_da->change_dir(splash_image_path) == OK) {
-				launch_screen_da->erase_contents_recursive();
-				launch_screen_da->remove(splash_image_path);
-			}
-
-			err = _export_loading_screen_images(p_preset, launch_image_path);
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Failed to create a file at path \"%s\" with code %d."), launch_image_path, err));
 		}
 	}
 
