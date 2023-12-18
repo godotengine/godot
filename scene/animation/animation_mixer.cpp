@@ -1569,7 +1569,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 				} break;
 				case Animation::TYPE_ANIMATION: {
-					if (p_update_only || Math::is_zero_approx(blend)) {
+					if (Math::is_zero_approx(blend)) {
 						continue;
 					}
 					TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
@@ -1603,7 +1603,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							default:
 								break;
 						}
-						if (player2->is_playing() || seeked) {
+						if (!p_update_only && (player2->is_playing() || seeked)) {
 							player2->seek(at_anim_pos);
 							player2->play(anim_name);
 							t->playing = true;
