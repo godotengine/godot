@@ -128,6 +128,13 @@
 				Returns the [Control] having the focus within this viewport. If no [Control] has the focus, returns null.
 			</description>
 		</method>
+		<method name="gui_get_hovered_control" qualifiers="const">
+			<return type="Control" />
+			<description>
+				Returns the [Control] that the mouse is currently hovering over in this viewport. If no [Control] has the cursor, returns null.
+				Typically the leaf [Control] node or deepest level of the subtree which claims hover. This is very useful when used together with [method Node.is_ancestor_of] to find if the mouse is within a control tree.
+			</description>
+		</method>
 		<method name="gui_is_drag_successful" qualifiers="const">
 			<return type="bool" />
 			<description>
