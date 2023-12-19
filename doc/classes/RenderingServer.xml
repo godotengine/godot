@@ -3337,7 +3337,7 @@
 			<return type="int" enum="Image.Format" />
 			<param index="0" name="texture" type="RID" />
 			<description>
-				Returns the [enum Image.Format] for the texture.
+				Returns the format for the texture.
 			</description>
 		</method>
 		<method name="texture_get_native_handle" qualifiers="const">

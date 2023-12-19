@@ -75,7 +75,7 @@
 			<return type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<param index="0" name="quadrant" type="int" />
 			<description>
-				Returns the [enum PositionalShadowAtlasQuadrantSubdiv] of the specified quadrant.
+				Returns the positional shadow atlas quadrant subdivision of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_render_info">

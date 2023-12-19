@@ -1393,7 +1393,7 @@
 			<description>
 				Converts the given [param variant] to the given [param type], using the [enum Variant.Type] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
 				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [constant Vector2.ZERO]. This method will never show error messages as long as [param type] is a valid Variant type.
-				The returned value is a [Variant], but the data inside and the [enum Variant.Type] will be the same as the requested type.
+				The returned value is a [Variant], but the data inside and its type will be the same as the requested type.
 				[codeblock]
 				type_convert("Hi!", TYPE_INT) # Returns 0
 				type_convert("123", TYPE_INT) # Returns 123
