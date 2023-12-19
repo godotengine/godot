@@ -79,6 +79,41 @@ namespace Godot
             CompilerGenerated
         }
 
+        internal static bool TrySerializeGodotWeakEvent<TEventHandler>(GodotWeakEvent<TEventHandler> weakEvent, Collections.Array serializedData) where TEventHandler : Delegate
+        {
+            if (weakEvent == null || weakEvent.Subscriptions.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var subscription in weakEvent.Subscriptions)
+            {
+                if (!TrySerializeGodotWeakEventSubscription<TEventHandler>(subscription, out byte[]? buffer))
+                {
+                    return false;
+                }
+
+                serializedData.Add(buffer);
+            }
+
+            return true;
+        }
+
+        private static bool TrySerializeGodotWeakEventSubscription<TEventHandler>(GodotWeakEventSubscription subscription, [NotNullWhen(true)] out byte[]? buffer)
+        {
+            buffer = null;
+
+            // If the handler's target has been collected, we can't serialize it.
+            if (subscription.Target != null && subscription.Target is { IsAlive: false })
+                return false;
+
+            Type type = typeof(TEventHandler);
+            object? target = subscription.Target?.Target;
+            MethodInfo method = subscription.Handler;
+
+            return TrySerializeSingleDelegateCore(type, target, method, out buffer);
+        }
+
         internal static bool TrySerializeDelegate(Delegate @delegate, Collections.Array serializedData)
         {
             if (@delegate is null)
@@ -118,98 +153,101 @@ namespace Godot
 
         private static bool TrySerializeSingleDelegate(Delegate @delegate, [MaybeNullWhen(false)] out byte[] buffer)
         {
+            Type type = @delegate.GetType();
+            object? target = @delegate.Target;
+            MethodInfo method = @delegate.Method;
+
+            return TrySerializeSingleDelegateCore(type, target, method, out buffer);
+        }
+
+        private static bool TrySerializeSingleDelegateCore(Type delegateType, object? delegateTarget, MethodInfo delegateMethod, [NotNullWhen(true)] out byte[]? buffer)
+        {
             buffer = null;
 
-            object? target = @delegate.Target;
-
-            switch (target)
+            switch (delegateTarget)
             {
                 case null:
                 {
-                    using (var stream = new MemoryStream())
-                    using (var writer = new BinaryWriter(stream))
-                    {
-                        writer.Write((ulong)TargetKind.Static);
+                    using var stream = new MemoryStream();
+                    using var writer = new BinaryWriter(stream);
 
-                        SerializeType(writer, @delegate.GetType());
+                    writer.Write((ulong)TargetKind.Static);
 
-                        if (!TrySerializeMethodInfo(writer, @delegate.Method))
-                            return false;
+                    SerializeType(writer, delegateType);
 
-                        buffer = stream.ToArray();
-                        return true;
-                    }
+                    if (!TrySerializeMethodInfo(writer, delegateMethod))
+                        return false;
+
+                    buffer = stream.ToArray();
+                    return true;
                 }
-                // ReSharper disable once RedundantNameQualifier
                 case GodotObject godotObject:
                 {
-                    using (var stream = new MemoryStream())
-                    using (var writer = new BinaryWriter(stream))
-                    {
-                        writer.Write((ulong)TargetKind.GodotObject);
-                        // ReSharper disable once RedundantCast
-                        writer.Write((ulong)godotObject.GetInstanceId());
+                    using var stream = new MemoryStream();
+                    using var writer = new BinaryWriter(stream);
 
-                        SerializeType(writer, @delegate.GetType());
+                    writer.Write((ulong)TargetKind.GodotObject);
+                    // ReSharper disable once RedundantCast
+                    writer.Write((ulong)godotObject.GetInstanceId());
 
-                        if (!TrySerializeMethodInfo(writer, @delegate.Method))
-                            return false;
+                    SerializeType(writer, delegateType);
 
-                        buffer = stream.ToArray();
-                        return true;
-                    }
+                    if (!TrySerializeMethodInfo(writer, delegateMethod))
+                        return false;
+
+                    buffer = stream.ToArray();
+                    return true;
                 }
                 default:
                 {
-                    Type targetType = target.GetType();
+                    Type targetType = delegateTarget.GetType();
 
                     if (targetType.IsDefined(typeof(CompilerGeneratedAttribute), true))
                     {
                         // Compiler generated. Probably a closure. Try to serialize it.
 
-                        using (var stream = new MemoryStream())
-                        using (var writer = new BinaryWriter(stream))
+                        using var stream = new MemoryStream();
+                        using var writer = new BinaryWriter(stream);
+
+                        writer.Write((ulong)TargetKind.CompilerGenerated);
+                        SerializeType(writer, targetType);
+
+                        SerializeType(writer, delegateType);
+
+                        if (!TrySerializeMethodInfo(writer, delegateMethod))
+                            return false;
+
+                        FieldInfo[] fields = targetType.GetFields(BindingFlags.Instance | BindingFlags.Public);
+
+                        writer.Write(fields.Length);
+
+                        foreach (FieldInfo field in fields)
                         {
-                            writer.Write((ulong)TargetKind.CompilerGenerated);
-                            SerializeType(writer, targetType);
+                            Type fieldType = field.GetType();
 
-                            SerializeType(writer, @delegate.GetType());
+                            Variant.Type variantType = GD.TypeToVariantType(fieldType);
 
-                            if (!TrySerializeMethodInfo(writer, @delegate.Method))
+                            if (variantType == Variant.Type.Nil)
                                 return false;
 
-                            FieldInfo[] fields = targetType.GetFields(BindingFlags.Instance | BindingFlags.Public);
-
-                            writer.Write(fields.Length);
-
-                            foreach (FieldInfo field in fields)
+                            static byte[] VarToBytes(in godot_variant var)
                             {
-                                Type fieldType = field.GetType();
-
-                                Variant.Type variantType = GD.TypeToVariantType(fieldType);
-
-                                if (variantType == Variant.Type.Nil)
-                                    return false;
-
-                                static byte[] VarToBytes(in godot_variant var)
-                                {
-                                    NativeFuncs.godotsharp_var_to_bytes(var, false.ToGodotBool(), out var varBytes);
-                                    using (varBytes)
-                                        return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
-                                }
-
-                                writer.Write(field.Name);
-
-                                var fieldValue = field.GetValue(target);
-                                using var fieldValueVariant = RuntimeTypeConversionHelper.ConvertToVariant(fieldValue);
-                                byte[] valueBuffer = VarToBytes(fieldValueVariant);
-                                writer.Write(valueBuffer.Length);
-                                writer.Write(valueBuffer);
+                                NativeFuncs.godotsharp_var_to_bytes(var, false.ToGodotBool(), out var varBytes);
+                                using (varBytes)
+                                    return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
                             }
 
-                            buffer = stream.ToArray();
-                            return true;
+                            writer.Write(field.Name);
+
+                            var fieldValue = field.GetValue(delegateTarget);
+                            using var fieldValueVariant = RuntimeTypeConversionHelper.ConvertToVariant(fieldValue);
+                            byte[] valueBuffer = VarToBytes(fieldValueVariant);
+                            writer.Write(valueBuffer.Length);
+                            writer.Write(valueBuffer);
                         }
+
+                        buffer = stream.ToArray();
+                        return true;
                     }
 
                     return false;
@@ -337,6 +375,45 @@ namespace Godot
             }
         }
 
+        internal static bool TryDeserializeGodotWeakEvent<TEventHandler>(Collections.Array serializedData, [NotNullWhen(true)] out GodotWeakEvent<TEventHandler>? weakEvent) where TEventHandler : Delegate
+        {
+            weakEvent = null;
+
+            if (serializedData.Count == 0)
+                return false;
+
+            weakEvent = new GodotWeakEvent<TEventHandler>();
+
+            foreach (Variant variantElem in serializedData)
+            {
+                var elem = variantElem.Obj;
+
+                if (elem == null)
+                    continue;
+
+                if (TryDeserializeGodotWeakEventSubscription<TEventHandler>((byte[])elem, out GodotWeakEventSubscription subscription))
+                    weakEvent.Subscriptions.Add(subscription);
+            }
+
+            if (weakEvent.Subscriptions.Count <= 0)
+                return false;
+
+            return true;
+        }
+
+        private static bool TryDeserializeGodotWeakEventSubscription<TEventHandler>(byte[] buffer, [MaybeNullWhen(false)] out GodotWeakEventSubscription subscription)
+        {
+            subscription = default;
+
+            if (!TryDeserializeSingleDelegateCore(buffer, out _, out object? target, out MethodInfo? method))
+                return false;
+
+            WeakReference? weakReference = target != null ? new WeakReference(target) : null;
+            subscription = new GodotWeakEventSubscription(weakReference, method);
+
+            return true;
+        }
+
         internal static bool TryDeserializeDelegate(Collections.Array serializedData,
             [MaybeNullWhen(false)] out Delegate @delegate)
         {
@@ -387,97 +464,99 @@ namespace Godot
         {
             @delegate = null;
 
-            using (var stream = new MemoryStream(buffer, writable: false))
-            using (var reader = new BinaryReader(stream))
+            if (!TryDeserializeSingleDelegateCore(buffer, out Type? delegateType, out object? delegateTarget, out MethodInfo? methodInfo))
+                return false;
+
+            @delegate = Delegate.CreateDelegate(delegateType, delegateTarget, methodInfo, throwOnBindFailure: false);
+
+            if (@delegate == null)
+                return false;
+
+            return true;
+        }
+
+        private static bool TryDeserializeSingleDelegateCore(byte[] buffer, [NotNullWhen(true)] out Type? delegateType, out object? delegateTarget, [NotNullWhen(true)] out MethodInfo? delegateMethod)
+        {
+            delegateType = null;
+            delegateTarget = null;
+            delegateMethod = null;
+
+            using var stream = new MemoryStream(buffer, writable: false);
+            using var reader = new BinaryReader(stream);
+
+            var targetKind = (TargetKind)reader.ReadUInt64();
+
+            switch (targetKind)
             {
-                var targetKind = (TargetKind)reader.ReadUInt64();
-
-                switch (targetKind)
+                case TargetKind.Static:
                 {
-                    case TargetKind.Static:
-                    {
-                        Type? delegateType = DeserializeType(reader);
-                        if (delegateType == null)
-                            return false;
-
-                        if (!TryDeserializeMethodInfo(reader, out MethodInfo? methodInfo))
-                            return false;
-
-                        @delegate = Delegate.CreateDelegate(delegateType, null, methodInfo, throwOnBindFailure: false);
-
-                        if (@delegate == null)
-                            return false;
-
-                        return true;
-                    }
-                    case TargetKind.GodotObject:
-                    {
-                        ulong objectId = reader.ReadUInt64();
-                        // ReSharper disable once RedundantNameQualifier
-                        GodotObject godotObject = GodotObject.InstanceFromId(objectId);
-                        if (godotObject == null)
-                            return false;
-
-                        Type? delegateType = DeserializeType(reader);
-                        if (delegateType == null)
-                            return false;
-
-                        if (!TryDeserializeMethodInfo(reader, out MethodInfo? methodInfo))
-                            return false;
-
-                        @delegate = Delegate.CreateDelegate(delegateType, godotObject, methodInfo,
-                            throwOnBindFailure: false);
-
-                        if (@delegate == null)
-                            return false;
-
-                        return true;
-                    }
-                    case TargetKind.CompilerGenerated:
-                    {
-                        Type? targetType = DeserializeType(reader);
-                        if (targetType == null)
-                            return false;
-
-                        Type? delegateType = DeserializeType(reader);
-                        if (delegateType == null)
-                            return false;
-
-                        if (!TryDeserializeMethodInfo(reader, out MethodInfo? methodInfo))
-                            return false;
-
-                        int fieldCount = reader.ReadInt32();
-
-                        object recreatedTarget = Activator.CreateInstance(targetType)!;
-
-                        for (int i = 0; i < fieldCount; i++)
-                        {
-                            string name = reader.ReadString();
-                            int valueBufferLength = reader.ReadInt32();
-                            byte[] valueBuffer = reader.ReadBytes(valueBufferLength);
-
-                            FieldInfo? fieldInfo = targetType.GetField(name,
-                                BindingFlags.Instance | BindingFlags.Public);
-
-                            if (fieldInfo != null)
-                            {
-                                var variantValue = GD.BytesToVar(valueBuffer);
-                                object? managedValue = RuntimeTypeConversionHelper.ConvertToObjectOfType(
-                                    (godot_variant)variantValue.NativeVar, fieldInfo.FieldType);
-                                fieldInfo.SetValue(recreatedTarget, managedValue);
-                            }
-                        }
-
-                        @delegate = Delegate.CreateDelegate(delegateType, recreatedTarget, methodInfo,
-                            throwOnBindFailure: false);
-
-                        if (@delegate == null)
-                            return false;
-
-                        return true;
-                    }
-                    default:
+                    delegateType = DeserializeType(reader);
+                    if (delegateType == null)
                         return false;
+
+                    if (!TryDeserializeMethodInfo(reader, out delegateMethod))
+                        return false;
+
+                    return true;
+                }
+                case TargetKind.GodotObject:
+                {
+                    ulong objectId = reader.ReadUInt64();
+                    delegateTarget = GodotObject.InstanceFromId(objectId);
+                    if (delegateTarget == null)
+                        return false;
+
+                    delegateType = DeserializeType(reader);
+                    if (delegateType == null)
+                        return false;
+
+                    if (!TryDeserializeMethodInfo(reader, out delegateMethod))
+                        return false;
+
+                    return true;
+                }
+                case TargetKind.CompilerGenerated:
+                {
+                    Type? targetType = DeserializeType(reader);
+                    if (targetType == null)
+                        return false;
+
+                    delegateType = DeserializeType(reader);
+                    if (delegateType == null)
+                        return false;
+
+                    if (!TryDeserializeMethodInfo(reader, out delegateMethod))
+                        return false;
+
+                    int fieldCount = reader.ReadInt32();
+
+                    object recreatedTarget = Activator.CreateInstance(targetType)!;
+
+                    for (int i = 0; i < fieldCount; i++)
+                    {
+                        string name = reader.ReadString();
+                        int valueBufferLength = reader.ReadInt32();
+                        byte[] valueBuffer = reader.ReadBytes(valueBufferLength);
+
+                        FieldInfo? fieldInfo = targetType.GetField(name,
+                            BindingFlags.Instance | BindingFlags.Public);
+
+                        if (fieldInfo != null)
+                        {
+                            var variantValue = GD.BytesToVar(valueBuffer);
+                            object? managedValue = RuntimeTypeConversionHelper.ConvertToObjectOfType(
+                                (godot_variant)variantValue.NativeVar, fieldInfo.FieldType);
+                            fieldInfo.SetValue(recreatedTarget, managedValue);
+                        }
+                    }
+
+                    delegateTarget = recreatedTarget;
+
+                    return true;
+                }
+                default:
+                {
+                    return false;
                 }
             }
         }

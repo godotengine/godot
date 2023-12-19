@@ -40,6 +40,20 @@ public sealed class GodotSerializationInfo : IDisposable
         return _properties.TryGetValue(name, out value);
     }
 
+    public void AddSignalGodotWeakEvent<TEventHandler>(StringName name, GodotWeakEvent<TEventHandler> weakEvent) where TEventHandler : Delegate
+    {
+        var serializedData = new Collections.Array();
+
+        if (DelegateUtils.TrySerializeGodotWeakEvent(weakEvent, serializedData))
+        {
+            _signalEvents[name] = serializedData;
+        }
+        else if (OS.IsStdOutVerbose())
+        {
+            Console.WriteLine($"Failed to serialize signal weak event: {name}");
+        }
+    }
+
     public void AddSignalEventDelegate(StringName name, Delegate eventDelegate)
     {
         var serializedData = new Collections.Array();
@@ -52,6 +66,25 @@ public sealed class GodotSerializationInfo : IDisposable
         {
             Console.WriteLine($"Failed to serialize event signal delegate: {name}");
         }
+    }
+
+    public bool TryGetSignalGodotWeakEvent<TEventHandler>(StringName name, out GodotWeakEvent<TEventHandler> value) where TEventHandler : Delegate
+    {
+        if (_signalEvents.TryGetValue(name, out Variant serializedData))
+        {
+            if (DelegateUtils.TryDeserializeGodotWeakEvent(serializedData.AsGodotArray(), out GodotWeakEvent<TEventHandler> weakEvent))
+            {
+                value = weakEvent;
+                return true;
+            }
+            else if (OS.IsStdOutVerbose())
+            {
+                Console.WriteLine($"Failed to deserialize event signal delegate: {name}");
+            }
+        }
+
+        value = null;
+        return false;
     }
 
     public bool TryGetSignalEventDelegate<T>(StringName name, [MaybeNullWhen(false)] out T value)
@@ -76,9 +109,6 @@ public sealed class GodotSerializationInfo : IDisposable
             {
                 Console.WriteLine($"Failed to deserialize event signal delegate: {name}");
             }
-
-            value = null;
-            return false;
         }
 
         value = null;

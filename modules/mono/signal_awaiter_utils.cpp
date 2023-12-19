@@ -180,10 +180,22 @@ void EventSignalCallable::call(const Variant **p_arguments, int p_argcount, Vari
 	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // Can't find anything better
 	r_return_value = Variant();
 
-	CSharpInstance *csharp_instance = CAST_CSHARP_INSTANCE(owner->get_script_instance());
-	ERR_FAIL_NULL(csharp_instance);
+	GCHandleIntPtr owner_gchandle_intptr{};
 
-	GCHandleIntPtr owner_gchandle_intptr = csharp_instance->get_gchandle_intptr();
+	CSharpInstance *csharp_instance = CAST_CSHARP_INSTANCE(owner->get_script_instance());
+	if (csharp_instance) {
+		owner_gchandle_intptr = csharp_instance->get_gchandle_intptr();
+	} else if (CSharpLanguage::has_instance_binding(owner)) {
+		void *data = CSharpLanguage::get_existing_instance_binding(owner);
+		CRASH_COND(data == nullptr);
+
+		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
+		if (script_binding.inited && !script_binding.gchandle.is_released()) {
+			owner_gchandle_intptr = script_binding.gchandle.get_intptr();
+		}
+	}
+
+	ERR_FAIL_NULL(owner_gchandle_intptr.value);
 
 	bool awaiter_is_null = false;
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_RaiseEventSignal(

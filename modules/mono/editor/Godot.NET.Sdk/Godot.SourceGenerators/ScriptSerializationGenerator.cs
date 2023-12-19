@@ -199,7 +199,7 @@ namespace Godot.SourceGenerators
             {
                 string signalName = signalDelegate.Name;
 
-                source.Append("        info.AddSignalEventDelegate(SignalName.")
+                source.Append("        info.AddSignalGodotWeakEvent(SignalName.")
                     .Append(signalName)
                     .Append(", this.backing_")
                     .Append(signalName)
@@ -259,7 +259,7 @@ namespace Godot.SourceGenerators
                 string signalName = signalDelegate.Name;
                 string signalDelegateQualifiedName = signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal();
 
-                source.Append("        if (info.TryGetSignalEventDelegate<")
+                source.Append("        if (info.TryGetSignalGodotWeakEvent<")
                     .Append(signalDelegateQualifiedName)
                     .Append(">(SignalName.")
                     .Append(signalName)
