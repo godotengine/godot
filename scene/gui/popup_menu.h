@@ -115,7 +115,6 @@ class PopupMenu : public Popup {
 
 	void _shape_item(int p_idx);
 
-	virtual void gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
 
@@ -194,10 +193,12 @@ class PopupMenu : public Popup {
 	void _minimum_lifetime_timeout();
 	void _close_pressed();
 	void _menu_changed();
+	void _input_from_window_internal(const Ref<InputEvent> &p_event);
 
 protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);

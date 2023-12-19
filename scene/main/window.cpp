@@ -1559,7 +1559,12 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	if (p_ev->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+	// If the event needs to be handled in a Window-derived class, then it should overwrite
+	// `_input_from_window` instead of subscribing to the `window_input` signal, because the signal
+	// filters out internal events.
+	_input_from_window(p_ev);
+
+	if (p_ev->get_device() != InputEvent::DEVICE_ID_INTERNAL && is_inside_tree()) {
 		emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
 	}
 

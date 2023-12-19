@@ -414,9 +414,16 @@ void PopupMenu::_submenu_timeout() {
 	submenu_over = -1;
 }
 
-void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
+void PopupMenu::_input_from_window(const Ref<InputEvent> &p_event) {
+	if (p_event.is_valid()) {
+		_input_from_window_internal(p_event);
+	} else {
+		WARN_PRINT_ONCE("PopupMenu has received an invalid InputEvent. Consider filtering invalid events out.");
+	}
+	Popup::_input_from_window(p_event);
+}
 
+void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	if (!items.is_empty()) {
 		Input *input = Input::get_singleton();
 		Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
@@ -2848,8 +2855,6 @@ PopupMenu::PopupMenu() {
 	control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	scroll_container->add_child(control, false, INTERNAL_MODE_FRONT);
 	control->connect("draw", callable_mp(this, &PopupMenu::_draw_items));
-
-	connect("window_input", callable_mp(this, &PopupMenu::gui_input));
 
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);
