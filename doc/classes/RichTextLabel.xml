@@ -225,7 +225,28 @@
 			<return type="void" />
 			<param index="0" name="effect" type="Variant" />
 			<description>
-				Installs a custom effect. [param effect] should be a valid [RichTextEffect].
+				Installs a custom effect. This can also be done in the RichTextLabel inspector using the [member custom_effects] property. [param effect] should be a valid [RichTextEffect].
+				Example RichTextEffect:
+				[codeblock]
+				# effect.gd
+				class_name MyCustomEffect
+				extends RichTextEffect
+
+				var bbcode = "my_custom_effect"
+
+				# ...
+				[/codeblock]
+				Registering the above effect in RichTextLabel from script:
+				[codeblock]
+				# rich_text_label.gd
+				extends RichTextLabel
+
+				func _ready():
+				    install_effect(MyCustomEffect.new())
+
+				    # Alternatively, if not using `class_name` in the script that extends RichTextEffect:
+				    install_effect(preload("res://effect.gd").new())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_menu_visible" qualifiers="const">
