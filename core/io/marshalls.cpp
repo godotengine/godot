@@ -638,6 +638,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				if (str.is_empty()) {
 					r_variant = (Object *)nullptr;
 				} else {
+					ERR_FAIL_COND_V(!ClassDB::can_instantiate(str), ERR_INVALID_DATA);
+
 					Object *obj = ClassDB::instantiate(str);
 
 					ERR_FAIL_NULL_V(obj, ERR_UNAVAILABLE);
@@ -1492,6 +1494,8 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					r_len += 4;
 
 				} else {
+					ERR_FAIL_COND_V(!ClassDB::can_instantiate(obj->get_class()), ERR_INVALID_PARAMETER);
+
 					_encode_string(obj->get_class(), buf, r_len);
 
 					List<PropertyInfo> props;
