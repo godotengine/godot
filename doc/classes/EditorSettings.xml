@@ -599,6 +599,9 @@
 		<member name="interface/editor/single_window_mode" type="bool" setter="" getter="">
 			If [code]true[/code], embed modal windows such as docks inside the main editor window. When single-window mode is enabled, tooltips will also be embedded inside the main editor window, which means they can't be displayed outside of the editor window.
 		</member>
+		<member name="interface/editor/ui_layout_direction" type="int" setter="" getter="">
+			Editor UI default layout direction.
+		</member>
 		<member name="interface/editor/unfocused_low_processor_mode_sleep_usec" type="float" setter="" getter="">
 			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 20 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
 		</member>

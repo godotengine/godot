@@ -234,6 +234,8 @@ private:
 
 	Ref<Shortcut> debugger_stop_shortcut;
 
+	static int root_layout_direction;
+
 protected:
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
@@ -260,6 +262,8 @@ public:
 		NOTIFICATION_POST_POPUP = 31,
 		NOTIFICATION_THEME_CHANGED = 32
 	};
+
+	static void set_root_layout_direction(int p_root_dir);
 
 	void set_title(const String &p_title);
 	String get_title() const;

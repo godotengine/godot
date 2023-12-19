@@ -6864,6 +6864,10 @@ EditorNode::EditorNode() {
 		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
 	}
 
+	int ed_root_dir = EDITOR_GET("interface/editor/ui_layout_direction");
+	Control::set_root_layout_direction(ed_root_dir);
+	Window::set_root_layout_direction(ed_root_dir);
+
 	ResourceLoader::set_abort_on_missing_resources(false);
 	ResourceLoader::set_error_notify_func(&EditorNode::add_io_error);
 	ResourceLoader::set_dependency_error_notify_func(&EditorNode::_dependency_error_report);

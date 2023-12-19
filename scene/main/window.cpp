@@ -40,6 +40,14 @@
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 
+// Editor integration.
+
+int Window::root_layout_direction = 0;
+
+void Window::set_root_layout_direction(int p_root_dir) {
+	root_layout_direction = p_root_dir;
+}
+
 // Dynamic properties.
 
 bool Window::_set(const StringName &p_name, const Variant &p_value) {
@@ -2538,9 +2546,32 @@ Window::LayoutDirection Window::get_layout_direction() const {
 bool Window::is_layout_rtl() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (layout_dir == LAYOUT_DIRECTION_INHERITED) {
+#ifdef TOOLS_ENABLED
+		if (is_part_of_edited_scene() && GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+			return true;
+		}
+		if (is_inside_tree()) {
+			Node *edited_scene_root = get_tree()->get_edited_scene_root();
+			if (edited_scene_root == this) {
+				int proj_root_layout_direction = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
+				if (proj_root_layout_direction == 1) {
+					return false;
+				} else if (proj_root_layout_direction == 2) {
+					return true;
+				} else if (proj_root_layout_direction == 3) {
+					String locale = OS::get_singleton()->get_locale();
+					return TS->is_locale_right_to_left(locale);
+				} else {
+					String locale = TranslationServer::get_singleton()->get_tool_locale();
+					return TS->is_locale_right_to_left(locale);
+				}
+			}
+		}
+#else
 		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 			return true;
 		}
+#endif
 		Node *parent_node = get_parent();
 		while (parent_node) {
 			Control *parent_control = Object::cast_to<Control>(parent_node);
@@ -2555,11 +2586,13 @@ bool Window::is_layout_rtl() const {
 			parent_node = parent_node->get_parent();
 		}
 
-		int root_dir = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
-		if (root_dir == 1) {
+		if (root_layout_direction == 1) {
 			return false;
-		} else if (root_dir == 2) {
+		} else if (root_layout_direction == 2) {
 			return true;
+		} else if (root_layout_direction == 3) {
+			String locale = OS::get_singleton()->get_locale();
+			return TS->is_locale_right_to_left(locale);
 		} else {
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);

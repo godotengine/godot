@@ -2845,6 +2845,10 @@ ProjectManager::ProjectManager() {
 		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
 	}
 
+	int pm_root_dir = EDITOR_GET("interface/editor/ui_layout_direction");
+	Control::set_root_layout_direction(pm_root_dir);
+	Window::set_root_layout_direction(pm_root_dir);
+
 	EditorColorMap::create();
 	EditorTheme::initialize();
 	Ref<Theme> theme = create_custom_theme();
