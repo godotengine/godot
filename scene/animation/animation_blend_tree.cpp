@@ -1403,6 +1403,7 @@ String AnimationNodeBlendTree::get_caption() const {
 double AnimationNodeBlendTree::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	Ref<AnimationNodeOutput> output = nodes[SceneStringNames::get_singleton()->output].node;
 	node_state.connections = nodes[SceneStringNames::get_singleton()->output].connections;
+	ERR_FAIL_COND_V(output.is_null(), 0);
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	pi.weight = 1.0;
