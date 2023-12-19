@@ -240,6 +240,19 @@
 				Returns a [Projection] that performs the inverse of this [Projection]'s projective transformation.
 			</description>
 		</method>
+		<method name="is_equal_approx" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="to" type="Projection" />
+			<description>
+				Returns [code]true[/code] if this [Projection] and [param to] are approximately equal, by calling [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if all values of this [Projection] are finite.
+			</description>
+		</method>
 		<method name="is_orthogonal" qualifiers="const">
 			<return type="bool" />
 			<description>
