@@ -59,7 +59,6 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	void _traverse_function(const GDScriptParser::FunctionNode *p_func);
 	void _traverse_block(const GDScriptParser::SuiteNode *p_suite);
 
-	void _read_variable(const GDScriptParser::VariableNode *p_var);
 	void _assess_expression(const GDScriptParser::ExpressionNode *p_expression);
 	void _assess_assignment(const GDScriptParser::AssignmentNode *p_assignment);
 	void _extract_from_call(const GDScriptParser::CallNode *p_call);
