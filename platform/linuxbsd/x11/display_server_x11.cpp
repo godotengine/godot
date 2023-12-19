@@ -6108,7 +6108,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 			p_screen = SCREEN_PRIMARY;
 		}
-		window_position = screen_get_position(p_screen) + (screen_get_size(p_screen) - p_resolution) / 2;
+		Rect2i scr_rect = screen_get_usable_rect(p_screen);
+		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
 	}
 
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
