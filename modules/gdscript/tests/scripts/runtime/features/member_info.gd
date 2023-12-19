@@ -60,7 +60,7 @@ func test():
 	var script: Script = get_script()
 	for property in script.get_property_list():
 		if str(property.name).begins_with("test_"):
-			print(Utils.get_property_signature(property, true))
+			print(Utils.get_property_signature(property, null, true))
 	for property in get_property_list():
 		if str(property.name).begins_with("test_"):
 			print(Utils.get_property_signature(property))
