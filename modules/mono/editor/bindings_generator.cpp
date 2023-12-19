@@ -69,6 +69,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 #define OPEN_BLOCK_L1 INDENT1 OPEN_BLOCK
 #define OPEN_BLOCK_L2 INDENT2 OPEN_BLOCK
+#define OPEN_BLOCK_L3 INDENT3 OPEN_BLOCK
 #define CLOSE_BLOCK_L1 INDENT1 CLOSE_BLOCK
 #define CLOSE_BLOCK_L2 INDENT2 CLOSE_BLOCK
 #define CLOSE_BLOCK_L3 INDENT3 CLOSE_BLOCK
@@ -2591,7 +2592,11 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 	// Generate icall function
 
 	r_output << MEMBER_BEGIN "internal static unsafe " << (ret_void ? "void" : return_type->c_type_out) << " "
-			 << icall_method << "(" << c_func_sig.as_string() << ") " OPEN_BLOCK;
+			 << icall_method << "(" << c_func_sig.as_string() << ")\n" OPEN_BLOCK_L1;
+
+	if (!p_icall.is_static) {
+		r_output << INDENT2 "ExceptionUtils.ThrowIfNullPtr(" CS_PARAM_INSTANCE ");\n";
+	}
 
 	if (!ret_void && (!p_icall.is_vararg || return_type->cname != name_cache.type_Variant)) {
 		String ptrcall_return_type;
@@ -2617,11 +2622,6 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 		}
 
 		r_output << ptrcall_return_type << " " C_LOCAL_RET << initialization << ";\n";
-	}
-
-	if (!p_icall.is_static) {
-		r_output << INDENT2 "if (" CS_PARAM_INSTANCE " == IntPtr.Zero)\n"
-				 << INDENT3 "throw new ArgumentNullException(nameof(" CS_PARAM_INSTANCE "));\n";
 	}
 
 	String argc_str = itos(p_icall.get_arguments_count());
@@ -2714,7 +2714,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 
 			r_output << c_in_statements.as_string();
 
-			r_output << INDENT3 "for (int i = 0; i < vararg_length; i++) " OPEN_BLOCK
+			r_output << INDENT3 "for (int i = 0; i < vararg_length; i++)\n" OPEN_BLOCK_L3
 					 << INDENT4 "varargs[i] = " << vararg_arg << "[i].NativeVar;\n"
 					 << INDENT4 C_LOCAL_PTRCALL_ARGS "[" << real_argc_str << " + i] = new IntPtr(&varargs[i]);\n"
 					 << CLOSE_BLOCK_L3;
