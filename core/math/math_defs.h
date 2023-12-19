@@ -137,4 +137,63 @@ typedef double real_t;
 typedef float real_t;
 #endif
 
+/**
+ * SIMD
+ *
+ */
+#if (defined(__AVX2__) || defined(AVX512_ENABLED)) && !defined(AVX2_ENABLED)
+#define AVX2_ENABLED
+#endif
+#if (defined(__AVX__) || defined(AVX2_ENABLED)) && !defined(AVX_ENABLED)
+#define AVX_ENABLED
+#endif
+#if (defined(__SSE4_2__) || defined(AVX_ENABLED)) && !defined(SSE4_2_ENABLED)
+#define SSE4_2_ENABLED
+#endif
+#if (defined(__SSE4_1__) || defined(SSE4_2_ENABLED)) && !defined(SSE4_1_ENABLED)
+#define SSE4_1_ENABLED
+#endif
+#if defined(SSE4_1_ENABLED) && !defined(SSE_ENABLED)
+#define SSE_ENABLED
+#endif
+
+#if defined(SSE_ENABLED) || defined(SSE4_1_ENABLED) ||      \
+		defined(SSE4_2_ENABLED) || defined(AVX_ENABLED) ||  \
+		defined(AVX2_ENABLED) || defined(AVX512_ENABLED) || \
+		defined(NEON_ENABLED)
+#define SIMD_ENABLED
+#endif
+
+#ifdef SIMD_ENABLED
+
+#ifdef SSE_ENABLED
+#ifdef REAL_T_IS_DOUBLE
+#define SSE_WITH_DOUBLE_PRECISION
+#else // REAL_T_IS_DOUBLE
+#define SSE_WITH_SINGLE_PRECISION
+#endif // REAL_T_IS_DOUBLE
+#endif // SSE_ENABLED
+
+#ifdef NEON_ENABLED
+#ifdef REAL_T_IS_DOUBLE
+#define NEON_WITH_DOUBLE_PRECISION
+#else // REAL_T_IS_DOUBLE
+#define NEON_WITH_SINGLE_PRECISION
+#endif // REAL_T_IS_DOUBLE
+#endif // NEON_ENABLED
+
+// Include required headers.
+#if defined(SSE_ENABLED)
+#include <immintrin.h>
+#elif defined(NEON_ENABLED)
+#ifdef _MSC_VER
+#include <arm64_neon.h>
+#include <intrin.h>
+#else // _MSC_VER
+#include <arm_neon.h>
+#endif // _MSC_VER
+#endif
+
+#endif // SIMD_ENABLED
+
 #endif // MATH_DEFS_H
