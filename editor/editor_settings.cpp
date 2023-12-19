@@ -634,9 +634,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Use a similar color to the 2D editor selection.
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/selection_box_color", Color(1.0, 0.5, 0), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	_initial_set("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
-	_initial_set("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1));
-	_initial_set("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// If a line is a multiple of this, it uses the primary grid color.
 	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
@@ -1133,8 +1133,8 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 		ret = EDITOR_GET(p_setting);
 	} else {
 		EditorSettings::get_singleton()->set_manually(p_setting, p_default);
-		EditorSettings::get_singleton()->set_restart_if_changed(p_setting, p_restart_if_changed);
 	}
+	EditorSettings::get_singleton()->set_restart_if_changed(p_setting, p_restart_if_changed);
 
 	if (!EditorSettings::get_singleton()->has_default_value(p_setting)) {
 		EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
