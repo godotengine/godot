@@ -272,7 +272,7 @@ void Camera3D::clear_current(bool p_enable_next) {
 	if (get_viewport()->get_camera_3d() == this) {
 		get_viewport()->_camera_3d_set(nullptr);
 
-		if (p_enable_next) {
+		if (p_enable_next && !Engine::get_singleton()->is_editor_hint()) {
 			get_viewport()->_camera_3d_make_next_current(this);
 		}
 	}
