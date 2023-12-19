@@ -31,11 +31,60 @@
 				Returns [code]true[/code] if the provided [param agent] has avoidance enabled.
 			</description>
 		</method>
+		<method name="agent_get_avoidance_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the [code]avoidance_layers[/code] bitmask of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_get_avoidance_mask" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the [code]avoidance_mask[/code] bitmask of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_get_avoidance_priority" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the [code]avoidance_priority[/code] of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_get_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the [code]height[/code] of the specified [param agent].
+			</description>
+		</method>
 		<method name="agent_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="agent" type="RID" />
 			<description>
 				Returns the navigation map [RID] the requested [param agent] is currently assigned to.
+			</description>
+		</method>
+		<method name="agent_get_max_neighbors" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the maximum number of other agents the specified [param agent] takes into account in the navigation.
+			</description>
+		</method>
+		<method name="agent_get_max_speed" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the maximum speed of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_get_neighbor_distance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the maximum distance to other agents the specified [param agent] takes into account in the navigation.
 			</description>
 		</method>
 		<method name="agent_get_paused" qualifiers="const">
@@ -45,11 +94,53 @@
 				Returns [code]true[/code] if the specified [param agent] is paused.
 			</description>
 		</method>
+		<method name="agent_get_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the position of the specified [param agent] in world space.
+			</description>
+		</method>
+		<method name="agent_get_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the radius of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_get_time_horizon_agents" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the minimal amount of time for which the specified [param agent]'s velocities that are computed by the simulation are safe with respect to other agents.
+			</description>
+		</method>
+		<method name="agent_get_time_horizon_obstacles" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the minimal amount of time for which the specified [param agent]'s velocities that are computed by the simulation are safe with respect to static avoidance obstacles.
+			</description>
+		</method>
 		<method name="agent_get_use_3d_avoidance" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="agent" type="RID" />
 			<description>
 				Returns [code]true[/code] if the provided [param agent] uses avoidance in 3D space Vector3(x,y,z) instead of horizontal 2D Vector2(x,y) / Vector3(x,0.0,z).
+			</description>
+		</method>
+		<method name="agent_get_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the velocity of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_has_avoidance_callback" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Return [code]true[/code] if the specified [param agent] has an avoidance callback.
 			</description>
 		</method>
 		<method name="agent_is_map_changed" qualifiers="const">
@@ -610,6 +701,20 @@
 				Returns [code]true[/code] if the provided [param obstacle] has avoidance enabled.
 			</description>
 		</method>
+		<method name="obstacle_get_avoidance_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the [code]avoidance_layers[/code] bitmask of the specified [param obstacle].
+			</description>
+		</method>
+		<method name="obstacle_get_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the [code]height[/code] of the specified [param obstacle].
+			</description>
+		</method>
 		<method name="obstacle_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="obstacle" type="RID" />
@@ -624,11 +729,39 @@
 				Returns [code]true[/code] if the specified [param obstacle] is paused.
 			</description>
 		</method>
+		<method name="obstacle_get_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the position of the specified [param obstacle] in world space.
+			</description>
+		</method>
+		<method name="obstacle_get_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the radius of the specified dynamic [param obstacle].
+			</description>
+		</method>
 		<method name="obstacle_get_use_3d_avoidance" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="obstacle" type="RID" />
 			<description>
 				Returns [code]true[/code] if the provided [param obstacle] uses avoidance in 3D space Vector3(x,y,z) instead of horizontal 2D Vector2(x,y) / Vector3(x,0.0,z).
+			</description>
+		</method>
+		<method name="obstacle_get_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the velocity of the specified dynamic [param obstacle].
+			</description>
+		</method>
+		<method name="obstacle_get_vertices" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the outline vertices for the specified [param obstacle].
 			</description>
 		</method>
 		<method name="obstacle_set_avoidance_enabled">
@@ -813,6 +946,13 @@
 				Returns a random position picked from all region polygons with matching [param navigation_layers].
 				If [param uniformly] is [code]true[/code], all region polygons and faces are weighted by their surface area (slower).
 				If [param uniformly] is [code]false[/code], just a random polygon and face is picked (faster).
+			</description>
+		</method>
+		<method name="region_get_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the global transformation of this [param region].
 			</description>
 		</method>
 		<method name="region_get_travel_cost" qualifiers="const">

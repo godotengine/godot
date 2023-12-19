@@ -567,7 +567,7 @@ void NavigationAgent3D::set_max_neighbors(int p_count) {
 }
 
 void NavigationAgent3D::set_time_horizon_agents(real_t p_time_horizon) {
-	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizion must be positive.");
+	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizon must be positive.");
 	if (Math::is_equal_approx(time_horizon_agents, p_time_horizon)) {
 		return;
 	}
@@ -576,7 +576,7 @@ void NavigationAgent3D::set_time_horizon_agents(real_t p_time_horizon) {
 }
 
 void NavigationAgent3D::set_time_horizon_obstacles(real_t p_time_horizon) {
-	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizion must be positive.");
+	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizon must be positive.");
 	if (Math::is_equal_approx(time_horizon_obstacles, p_time_horizon)) {
 		return;
 	}
