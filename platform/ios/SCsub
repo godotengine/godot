@@ -9,7 +9,7 @@ ios_lib = [
     "app_delegate.mm",
     "view_controller.mm",
     "ios.mm",
-    "vulkan_context_ios.mm",
+    "rendering_context_driver_vulkan_ios.mm",
     "display_server_ios.mm",
     "joypad_ios.mm",
     "godot_view.mm",

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_macos.h                                                */
+/*  rendering_context_driver_vulkan_android.h                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,28 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VULKAN_CONTEXT_MACOS_H
-#define VULKAN_CONTEXT_MACOS_H
+#ifndef RENDERING_CONTEXT_DRIVER_VULKAN_ANDROID_H
+#define RENDERING_CONTEXT_DRIVER_VULKAN_ANDROID_H
 
 #ifdef VULKAN_ENABLED
 
-#include "drivers/vulkan/vulkan_context.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 
-#import <AppKit/AppKit.h>
+struct ANativeWindow;
 
-class VulkanContextMacOS : public VulkanContext {
+class RenderingContextDriverVulkanAndroid : public RenderingContextDriverVulkan {
+private:
 	virtual const char *_get_platform_surface_extension() const override final;
+
+protected:
+	SurfaceID surface_create(const void *p_platform_data) override final;
+	bool _use_validation_layers() const override final;
 
 public:
 	struct WindowPlatformData {
-		const id *view_ptr;
+		ANativeWindow *window;
 	};
-	virtual Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) override final;
 
-	VulkanContextMacOS();
-	~VulkanContextMacOS();
+	RenderingContextDriverVulkanAndroid() = default;
+	~RenderingContextDriverVulkanAndroid() override = default;
 };
 
 #endif // VULKAN_ENABLED
 
-#endif // VULKAN_CONTEXT_MACOS_H
+#endif // RENDERING_CONTEXT_DRIVER_VULKAN_ANDROID_H

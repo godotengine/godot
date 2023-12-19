@@ -590,8 +590,9 @@
 		</method>
 		<method name="screen_get_framebuffer_format" qualifiers="const">
 			<return type="int" />
+			<param index="0" name="screen" type="int" default="0" />
 			<description>
-				Returns the screen's framebuffer format.
+				Returns the framebuffer format of the given screen.
 				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a format. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
 			</description>
 		</method>

@@ -61,7 +61,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#include "x11/vulkan_context_x11.h"
+#include "x11/rendering_context_driver_vulkan_x11.h"
 #endif
 #endif
 
@@ -144,7 +144,7 @@ class DisplayServerX11 : public DisplayServer {
 	GLManagerEGL_X11 *gl_manager_egl = nullptr;
 #endif
 #if defined(RD_ENABLED)
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 

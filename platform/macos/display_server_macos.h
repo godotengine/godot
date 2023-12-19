@@ -43,7 +43,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#include "vulkan_context_macos.h"
+#include "rendering_context_driver_vulkan_macos.h"
 #endif // VULKAN_ENABLED
 #endif // RD_ENABLED
 
@@ -137,7 +137,7 @@ private:
 	GLManagerANGLE_MacOS *gl_manager_angle = nullptr;
 #endif
 #if defined(RD_ENABLED)
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 	String rendering_driver;

@@ -64,34 +64,9 @@ class RenderingDevice : public RenderingDeviceCommons {
 
 	_THREAD_SAFE_CLASS_
 public:
-	enum DeviceFamily {
-		DEVICE_UNKNOWN,
-		DEVICE_OPENGL,
-		DEVICE_VULKAN,
-		DEVICE_DIRECTX,
-	};
-
 	enum ShaderLanguage {
 		SHADER_LANGUAGE_GLSL,
 		SHADER_LANGUAGE_HLSL
-	};
-
-	enum SubgroupOperations {
-		SUBGROUP_BASIC_BIT = 1,
-		SUBGROUP_VOTE_BIT = 2,
-		SUBGROUP_ARITHMETIC_BIT = 4,
-		SUBGROUP_BALLOT_BIT = 8,
-		SUBGROUP_SHUFFLE_BIT = 16,
-		SUBGROUP_SHUFFLE_RELATIVE_BIT = 32,
-		SUBGROUP_CLUSTERED_BIT = 64,
-		SUBGROUP_QUAD_BIT = 128,
-	};
-
-	struct Capabilities {
-		// main device info
-		DeviceFamily device_family = DEVICE_UNKNOWN;
-		uint32_t version_major = 1;
-		uint32_t version_minor = 0;
 	};
 
 	typedef int64_t DrawListID;
@@ -110,9 +85,9 @@ private:
 
 	static RenderingDevice *singleton;
 
-	Capabilities device_capabilities;
-
-	RenderingDeviceDriver *driver = nullptr; // Owned by the context.
+	RenderingContextDriver *context = nullptr;
+	RenderingDeviceDriver *driver = nullptr;
+	RenderingContextDriver::Device device;
 
 protected:
 	static void _bind_methods();
@@ -188,8 +163,8 @@ private:
 
 	enum StagingRequiredAction {
 		STAGING_REQUIRED_ACTION_NONE,
-		STAGING_REQUIRED_ACTION_FLUSH_CURRENT,
-		STAGING_REQUIRED_ACTION_FLUSH_OLDER
+		STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL,
+		STAGING_REQUIRED_ACTION_STALL_PREVIOUS
 	};
 
 	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, StagingRequiredAction &r_required_action, bool p_can_segment = true);
@@ -819,12 +794,11 @@ private:
 	Error _texture_copy_bind_compat_84976(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier);
 	Error _texture_clear_bind_compat_84976(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier);
 	Error _texture_resolve_multisample_bind_compat_84976(RID p_from_texture, RID p_to_texture, BitField<BarrierMask> p_post_barrier);
+	FramebufferFormatID _screen_get_framebuffer_format_bind_compat_87340() const;
 #endif
 
 public:
-	ApiContextRD *get_context() const { return context; }
-
-	const Capabilities *get_device_capabilities() const { return &device_capabilities; };
+	const RDD::Capabilities &get_device_capabilities() const { return driver->get_capabilities(); }
 
 	bool has_feature(const Features p_feature) const;
 
@@ -996,10 +970,10 @@ private:
 
 	RID_Owner<RenderPipeline> render_pipeline_owner;
 
-	bool pipelines_cache_enabled = false;
-	size_t pipelines_cache_size = 0;
-	String pipelines_cache_file_path;
-	WorkerThreadPool::TaskID pipelines_cache_save_task = WorkerThreadPool::INVALID_TASK_ID;
+	bool pipeline_cache_enabled = false;
+	size_t pipeline_cache_size = 0;
+	String pipeline_cache_file_path;
+	WorkerThreadPool::TaskID pipeline_cache_save_task = WorkerThreadPool::INVALID_TASK_ID;
 
 	Vector<uint8_t> _load_pipeline_cache();
 	void _update_pipeline_cache(bool p_closing = false);
@@ -1024,13 +998,22 @@ public:
 	RID compute_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>());
 	bool compute_pipeline_is_valid(RID p_pipeline);
 
+private:
 	/****************/
 	/**** SCREEN ****/
 	/****************/
+	HashMap<DisplayServer::WindowID, RDD::SwapChainID> screen_swap_chains;
+	HashMap<DisplayServer::WindowID, RDD::FramebufferID> screen_framebuffers;
 
-	int screen_get_width(DisplayServer::WindowID p_screen = 0) const;
-	int screen_get_height(DisplayServer::WindowID p_screen = 0) const;
-	FramebufferFormatID screen_get_framebuffer_format() const;
+	uint32_t _get_swap_chain_desired_count() const;
+
+public:
+	Error screen_create(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
+	Error screen_prepare_for_drawing(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
+	int screen_get_width(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
+	int screen_get_height(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
+	FramebufferFormatID screen_get_framebuffer_format(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
+	Error screen_free(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
 
 	/*************************/
 	/**** DRAW LISTS (II) ****/
@@ -1101,7 +1084,6 @@ private:
 
 	DrawList *draw_list = nullptr;
 	uint32_t draw_list_subpass_count = 0;
-	uint32_t draw_list_count = 0;
 	RDD::RenderPassID draw_list_render_pass;
 	RDD::FramebufferID draw_list_vkframebuffer;
 #ifdef DEBUG_ENABLED
@@ -1215,6 +1197,15 @@ private:
 	RenderingDeviceGraph draw_graph;
 
 	/**************************/
+	/**** QUEUE MANAGEMENT ****/
+	/**************************/
+
+	RDD::CommandQueueFamilyID main_queue_family;
+	RDD::CommandQueueFamilyID present_queue_family;
+	RDD::CommandQueueID main_queue;
+	RDD::CommandQueueID present_queue;
+
+	/**************************/
 	/**** FRAME MANAGEMENT ****/
 	/**************************/
 
@@ -1232,7 +1223,6 @@ private:
 	// nature of the GPU. They will get deleted
 	// when the frame is cycled.
 
-private:
 	struct Frame {
 		// List in usage order, from last to free to first to free.
 		List<Buffer> buffers_to_dispose_of;
@@ -1245,13 +1235,30 @@ private:
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
 		RDD::CommandPoolID command_pool;
+
+		// Used at the beginning of every frame for set-up.
 		// Used for filling up newly created buffers with data provided on creation.
 		// Primarily intended to be accessed by worker threads.
-		// Ideally this cmd buffer should use an async transfer queue.
-		RDD::CommandBufferID setup_command_buffer; // Used at the beginning of every frame for set-up.
-		// The main cmd buffer for drawing and compute.
+		// Ideally this command buffer should use an async transfer queue.
+		RDD::CommandBufferID setup_command_buffer;
+
+		// The main command buffer for drawing and compute.
 		// Primarily intended to be used by the main thread to do most stuff.
-		RDD::CommandBufferID draw_command_buffer; // Used at the beginning of every frame for set-up.
+		RDD::CommandBufferID draw_command_buffer;
+
+		// Signaled by the setup submission. Draw must wait on this semaphore.
+		RDD::SemaphoreID setup_semaphore;
+
+		// Signaled by the draw submission. Present must wait on this semaphore.
+		RDD::SemaphoreID draw_semaphore;
+
+		// Signaled by the draw submission. Must wait on this fence before beginning
+		// command recording for the frame.
+		RDD::FenceID draw_fence;
+		bool draw_fence_signaled = false;
+
+		// Swap chains prepared for drawing during the frame that must be presented.
+		LocalVector<RDD::SwapChainID> swap_chains_to_present;
 
 		struct Timestamp {
 			String description;
@@ -1272,37 +1279,32 @@ private:
 
 	uint32_t max_timestamp_query_elements = 0;
 
-	TightLocalVector<Frame> frames; // Frames available, for main device they are cycled (usually 3), for local devices only 1.
-	int frame = 0; // Current frame.
-	int frame_count = 0; // Total amount of frames.
+	int frame = 0;
+	TightLocalVector<Frame> frames;
 	uint64_t frames_drawn = 0;
-	RID local_device;
-	bool local_device_processing = false;
 
 	void _free_pending_resources(int p_frame);
-
-	ApiContextRD *context = nullptr;
 
 	uint64_t texture_memory = 0;
 	uint64_t buffer_memory = 0;
 
 	void _free_internal(RID p_id);
-	void _flush(bool p_current_frame);
-
-	bool screen_prepared = false;
+	void _begin_frame();
+	void _end_frame();
+	void _execute_frame(bool p_signal_for_present);
+	void _present_frame();
+	void _stall_for_previous_frames();
+	void _flush_and_stall_for_all_frames();
 
 	template <class T>
 	void _free_rids(T &p_owner, const char *p_type);
-
-	void _finalize_command_buffers(bool p_postpare);
-	void _begin_frame();
 
 #ifdef DEV_ENABLED
 	HashMap<RID, String> resource_names;
 #endif
 
 public:
-	void initialize(ApiContextRD *p_context, bool p_local_device = false);
+	Error initialize(RenderingContextDriver *p_context, DisplayServer::WindowID p_main_window = DisplayServer::INVALID_WINDOW_ID);
 	void finalize();
 
 	void free(RID p_id);
@@ -1323,9 +1325,6 @@ public:
 	/****************/
 
 	uint64_t limit_get(Limit p_limit) const;
-
-	//methods below not exposed, used by RenderingDeviceRD
-	void prepare_screen_for_drawing();
 
 	void swap_buffers();
 
@@ -1352,6 +1351,7 @@ public:
 	String get_device_vendor_name() const;
 	String get_device_name() const;
 	DeviceType get_device_type() const;
+	String get_device_api_name() const;
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
 

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_win.cpp                                                */
+/*  rendering_context_driver_vulkan_macos.h                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#if defined(WINDOWS_ENABLED) && defined(VULKAN_ENABLED)
+#ifndef RENDERING_CONTEXT_DRIVER_VULKAN_MACOS_H
+#define RENDERING_CONTEXT_DRIVER_VULKAN_MACOS_H
 
-#include "vulkan_context_win.h"
+#ifdef VULKAN_ENABLED
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 
-const char *VulkanContextWindows::_get_platform_surface_extension() const {
-	return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
-}
+#import <AppKit/AppKit.h>
 
-Error VulkanContextWindows::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)p_platform_data;
+class RenderingContextDriverVulkanMacOS : public RenderingContextDriverVulkan {
+private:
+	virtual const char *_get_platform_surface_extension() const override final;
 
-	VkWin32SurfaceCreateInfoKHR createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	createInfo.hinstance = wpd->instance;
-	createInfo.hwnd = wpd->window;
+protected:
+	SurfaceID surface_create(const void *p_platform_data) override final;
 
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateWin32SurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
-}
+public:
+	struct WindowPlatformData {
+		const id *view_ptr;
+	};
 
-VulkanContextWindows::VulkanContextWindows() {
-	// Workaround for Vulkan not working on setups with AMD integrated graphics + NVIDIA dedicated GPU (GH-57708).
-	// This prevents using AMD integrated graphics with Vulkan entirely, but it allows the engine to start
-	// even on outdated/broken driver setups.
-	OS::get_singleton()->set_environment("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
-}
+	RenderingContextDriverVulkanMacOS();
+	~RenderingContextDriverVulkanMacOS();
+};
 
-VulkanContextWindows::~VulkanContextWindows() {
-}
+#endif // VULKAN_ENABLED
 
-#endif // WINDOWS_ENABLED && VULKAN_ENABLED
+#endif // RENDERING_CONTEXT_DRIVER_VULKAN_MACOS_H

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_ios.h                                                  */
+/*  rendering_context_driver_vulkan_macos.mm                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,28 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VULKAN_CONTEXT_IOS_H
-#define VULKAN_CONTEXT_IOS_H
+#include "rendering_context_driver_vulkan_macos.h"
 
 #ifdef VULKAN_ENABLED
 
-#include "drivers/vulkan/vulkan_context.h"
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
-#import <UIKit/UIKit.h>
+const char *RenderingContextDriverVulkanMacOS::_get_platform_surface_extension() const {
+	return VK_MVK_MACOS_SURFACE_EXTENSION_NAME;
+}
 
-class VulkanContextIOS : public VulkanContext {
-	virtual const char *_get_platform_surface_extension() const override final;
+RenderingContextDriver::SurfaceID RenderingContextDriverVulkanMacOS::surface_create(const void *p_platform_data) {
+	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
 
-public:
-	struct WindowPlatformData {
-		CALayer *const *layer_ptr;
-	};
-	virtual Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) override final;
+	VkMacOSSurfaceCreateInfoMVK create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
+	create_info.pView = (__bridge const void *)(*wpd->view_ptr);
 
-	VulkanContextIOS();
-	~VulkanContextIOS();
-};
+	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
+	VkResult err = vkCreateMacOSSurfaceMVK(instance_get(), &create_info, nullptr, &vk_surface);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
+
+	Surface *surface = memnew(Surface);
+	surface->vk_surface = vk_surface;
+	return SurfaceID(surface);
+}
+
+RenderingContextDriverVulkanMacOS::RenderingContextDriverVulkanMacOS() {
+	// Does nothing.
+}
+
+RenderingContextDriverVulkanMacOS::~RenderingContextDriverVulkanMacOS() {
+	// Does nothing.
+}
 
 #endif // VULKAN_ENABLED
-
-#endif // VULKAN_CONTEXT_IOS_H

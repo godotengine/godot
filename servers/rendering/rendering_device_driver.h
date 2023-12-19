@@ -49,11 +49,10 @@
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
 #include "servers/display_server.h"
+#include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
 
 #include <algorithm>
-
-class ApiContextRD;
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
 // (See https://github.com/godotengine/godot-proposals/issues/5144.)
@@ -127,20 +126,22 @@ public:
 				id(p_id) {}
 	};
 
-#define DEFINE_ID(m_name)                                                                           \
-	struct m_name##ID : public ID {                                                                 \
-		_ALWAYS_INLINE_ operator bool() const { return id != 0; }                                   \
-		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {                                 \
-			id = p_other.id;                                                                        \
-			return *this;                                                                           \
-		}                                                                                           \
-		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const { return id < p_other.id; } \
-		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {}                   \
-		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}                          \
-		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((size_t)p_ptr) {}                     \
-		_ALWAYS_INLINE_ m_name##ID() = default;                                                     \
-	};                                                                                              \
-	/* Ensure type-punnable to pointer. Makes some things easier.*/                                 \
+#define DEFINE_ID(m_name)                                                                             \
+	struct m_name##ID : public ID {                                                                   \
+		_ALWAYS_INLINE_ operator bool() const { return id != 0; }                                     \
+		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {                                   \
+			id = p_other.id;                                                                          \
+			return *this;                                                                             \
+		}                                                                                             \
+		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const { return id < p_other.id; }   \
+		_ALWAYS_INLINE_ bool operator==(const m_name##ID &p_other) const { return id == p_other.id; } \
+		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const { return id != p_other.id; } \
+		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {}                     \
+		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}                            \
+		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((size_t)p_ptr) {}                       \
+		_ALWAYS_INLINE_ m_name##ID() = default;                                                       \
+	};                                                                                                \
+	/* Ensure type-punnable to pointer. Makes some things easier.*/                                   \
 	static_assert(sizeof(m_name##ID) == sizeof(void *));
 
 	// Id types declared before anything else to prevent cyclic dependencies between the different concerns.
@@ -148,14 +149,26 @@ public:
 	DEFINE_ID(Texture);
 	DEFINE_ID(Sampler);
 	DEFINE_ID(VertexFormat);
+	DEFINE_ID(CommandQueue);
+	DEFINE_ID(CommandQueueFamily);
 	DEFINE_ID(CommandPool);
 	DEFINE_ID(CommandBuffer);
+	DEFINE_ID(SwapChain);
 	DEFINE_ID(Framebuffer);
 	DEFINE_ID(Shader);
 	DEFINE_ID(UniformSet);
 	DEFINE_ID(Pipeline);
 	DEFINE_ID(RenderPass);
 	DEFINE_ID(QueryPool);
+	DEFINE_ID(Fence);
+	DEFINE_ID(Semaphore);
+
+public:
+	/*****************/
+	/**** GENERIC ****/
+	/*****************/
+
+	virtual Error initialize(uint32_t p_device_index, uint32_t p_frame_count) = 0;
 
 	/****************/
 	/**** MEMORY ****/
@@ -361,9 +374,43 @@ public:
 			VectorView<BufferBarrier> p_buffer_barriers,
 			VectorView<TextureBarrier> p_texture_barriers) = 0;
 
+	/****************/
+	/**** FENCES ****/
+	/****************/
+
+	virtual FenceID fence_create() = 0;
+	virtual Error fence_wait(FenceID p_fence) = 0;
+	virtual void fence_free(FenceID p_fence) = 0;
+
+	/********************/
+	/**** SEMAPHORES ****/
+	/********************/
+
+	virtual SemaphoreID semaphore_create() = 0;
+	virtual void semaphore_free(SemaphoreID p_semaphore) = 0;
+
 	/*************************/
 	/**** COMMAND BUFFERS ****/
 	/*************************/
+
+	// ----- QUEUE FAMILY -----
+
+	enum CommandQueueFamilyBits {
+		COMMAND_QUEUE_FAMILY_GRAPHICS_BIT = 0x1,
+		COMMAND_QUEUE_FAMILY_COMPUTE_BIT = 0x2,
+		COMMAND_QUEUE_FAMILY_TRANSFER_BIT = 0x4
+	};
+
+	// The requested command queue family must support all specified bits or it'll fail to return a valid family otherwise. If a valid surface is specified, the queue must support presenting to it.
+	// It is valid to specify no bits and a valid surface: in this case, the dedicated presentation queue family will be the preferred option.
+	virtual CommandQueueFamilyID command_queue_family_get(BitField<CommandQueueFamilyBits> p_cmd_queue_family_bits, RenderingContextDriver::SurfaceID p_surface = 0) = 0;
+
+	// ----- QUEUE -----
+
+	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) = 0;
+	virtual Error command_queue_execute(CommandQueueID p_cmd_queue, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_wait_semaphores, VectorView<SemaphoreID> p_signal_semaphores, FenceID p_signal_fence) = 0;
+	virtual Error command_queue_present(CommandQueueID p_cmd_queue, VectorView<SwapChainID> p_swap_chains, VectorView<SemaphoreID> p_wait_semaphores) = 0;
+	virtual void command_queue_free(CommandQueueID p_cmd_queue) = 0;
 
 	// ----- POOL -----
 
@@ -372,16 +419,38 @@ public:
 		COMMAND_BUFFER_TYPE_SECONDARY,
 	};
 
-	virtual CommandPoolID command_pool_create(CommandBufferType p_cmd_buffer_type) = 0;
+	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) = 0;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) = 0;
 
 	// ----- BUFFER -----
 
-	virtual CommandBufferID command_buffer_create(CommandBufferType p_cmd_buffer_type, CommandPoolID p_cmd_pool) = 0;
+	virtual CommandBufferID command_buffer_create(CommandPoolID p_cmd_pool) = 0;
 	virtual bool command_buffer_begin(CommandBufferID p_cmd_buffer) = 0;
 	virtual bool command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) = 0;
 	virtual void command_buffer_end(CommandBufferID p_cmd_buffer) = 0;
 	virtual void command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) = 0;
+
+	/********************/
+	/**** SWAP CHAIN ****/
+	/********************/
+
+	// The swap chain won't be valid for use until it is resized at least once.
+	virtual SwapChainID swap_chain_create(RenderingContextDriver::SurfaceID p_surface) = 0;
+
+	// The swap chain must not be in use when a resize is requested. Wait until all rendering associated to the swap chain is finished before resizing it.
+	virtual Error swap_chain_resize(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, uint32_t p_desired_framebuffer_count) = 0;
+
+	// Acquire the framebuffer that can be used for drawing. This must be called only once every time a new frame will be rendered.
+	virtual FramebufferID swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) = 0;
+
+	// Retrieve the render pass that can be used to draw on the swap chain's framebuffers.
+	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) = 0;
+
+	// Retrieve the format used by the swap chain's framebuffers.
+	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) = 0;
+
+	// Wait until all rendering associated to the swap chain is finished before deleting it.
+	virtual void swap_chain_free(SwapChainID p_swap_chain) = 0;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -633,17 +702,11 @@ public:
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) = 0;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) = 0;
 
-	/****************/
-	/**** SCREEN ****/
-	/****************/
-
-	virtual DataFormat screen_get_format() = 0;
-
 	/********************/
 	/**** SUBMISSION ****/
 	/********************/
 
-	virtual void begin_segment(CommandBufferID p_cmd_buffer, uint32_t p_frame_index, uint32_t p_frames_drawn) = 0;
+	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) = 0;
 	virtual void end_segment() = 0;
 
 	/**************/
@@ -682,6 +745,19 @@ public:
 		SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH,
 	};
 
+	enum DeviceFamily {
+		DEVICE_UNKNOWN,
+		DEVICE_OPENGL,
+		DEVICE_VULKAN,
+		DEVICE_DIRECTX,
+	};
+
+	struct Capabilities {
+		DeviceFamily device_family = DEVICE_UNKNOWN;
+		uint32_t version_major = 1;
+		uint32_t version_minor = 0;
+	};
+
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) = 0;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) = 0;
 	virtual uint64_t get_total_memory_used() = 0;
@@ -689,6 +765,10 @@ public:
 	virtual uint64_t api_trait_get(ApiTrait p_trait);
 	virtual bool has_feature(Features p_feature) = 0;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() = 0;
+	virtual String get_api_name() const = 0;
+	virtual String get_api_version() const = 0;
+	virtual String get_pipeline_cache_uuid() const = 0;
+	virtual const Capabilities &get_capabilities() const = 0;
 
 	/******************/
 

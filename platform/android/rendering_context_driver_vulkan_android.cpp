@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_android.cpp                                            */
+/*  rendering_context_driver_vulkan_android.cpp                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "vulkan_context_android.h"
+#include "rendering_context_driver_vulkan_android.h"
 
 #ifdef VULKAN_ENABLED
 
@@ -38,32 +38,32 @@
 #include <vulkan/vulkan.h>
 #endif
 
-const char *VulkanContextAndroid::_get_platform_surface_extension() const {
+const char *RenderingContextDriverVulkanAndroid::_get_platform_surface_extension() const {
 	return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
 }
 
-Error VulkanContextAndroid::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)p_platform_data;
+RenderingContextDriver::SurfaceID RenderingContextDriverVulkanAndroid::surface_create(const void *p_platform_data) {
+	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
 
-	VkAndroidSurfaceCreateInfoKHR createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-	createInfo.window = wpd->window;
+	VkAndroidSurfaceCreateInfoKHR create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+	create_info.window = wpd->window;
 
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateAndroidSurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
-	if (err != VK_SUCCESS) {
-		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "vkCreateAndroidSurfaceKHR failed with error " + itos(err));
-	}
+	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
+	VkResult err = vkCreateAndroidSurfaceKHR(instance_get(), &create_info, nullptr, &vk_surface);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
 
-	return _window_create(DisplayServer::MAIN_WINDOW_ID, p_vsync_mode, surface, p_width, p_height);
+	Surface *surface = memnew(Surface);
+	surface->vk_surface = vk_surface;
+	return SurfaceID(surface);
 }
 
-bool VulkanContextAndroid::_use_validation_layers() {
-	uint32_t count = 0;
-	_get_preferred_validation_layers(&count, nullptr);
+bool RenderingContextDriverVulkanAndroid::_use_validation_layers() const {
+	TightLocalVector<const char *> layer_names;
+	Error err = _find_validation_layers(layer_names);
 
 	// On Android, we use validation layers automatically if they were explicitly linked with the app.
-	return count > 0;
+	return (err == OK) && !layer_names.is_empty();
 }
 
 #endif // VULKAN_ENABLED

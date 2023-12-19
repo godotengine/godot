@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_android.h                                              */
+/*  vulkan_hooks.cpp                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VULKAN_CONTEXT_ANDROID_H
-#define VULKAN_CONTEXT_ANDROID_H
+#include "vulkan_hooks.h"
 
-#ifdef VULKAN_ENABLED
+VulkanHooks *VulkanHooks::singleton = nullptr;
 
-#include "drivers/vulkan/vulkan_context.h"
+VulkanHooks::VulkanHooks() {
+	if (singleton == nullptr) {
+		singleton = this;
+	}
+}
 
-struct ANativeWindow;
-
-class VulkanContextAndroid : public VulkanContext {
-	virtual const char *_get_platform_surface_extension() const override final;
-
-public:
-	struct WindowPlatformData {
-		ANativeWindow *window;
-	};
-	virtual Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) override final;
-
-	VulkanContextAndroid() = default;
-	~VulkanContextAndroid() override = default;
-
-protected:
-	bool _use_validation_layers() override;
-};
-
-#endif // VULKAN_ENABLED
-
-#endif // VULKAN_CONTEXT_ANDROID_H
+VulkanHooks::~VulkanHooks() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}

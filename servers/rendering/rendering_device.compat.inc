@@ -117,6 +117,10 @@ Error RenderingDevice::_texture_resolve_multisample_bind_compat_84976(RID p_from
 	return texture_resolve_multisample(p_from_texture, p_to_texture);
 }
 
+RenderingDevice::FramebufferFormatID RenderingDevice::_screen_get_framebuffer_format_bind_compat_87340() const {
+	return screen_get_framebuffer_format(DisplayServer::MAIN_WINDOW_ID);
+}
+
 void RenderingDevice::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::_shader_create_from_bytecode_bind_compat_79606);
 	ClassDB::bind_compatibility_method(D_METHOD("draw_list_end", "post_barrier"), &RenderingDevice::_draw_list_end_bind_compat_81356, DEFVAL(7));
@@ -132,6 +136,7 @@ void RenderingDevice::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("texture_copy", "from_texture", "to_texture", "from_pos", "to_pos", "size", "src_mipmap", "dst_mipmap", "src_layer", "dst_layer", "post_barrier"), &RenderingDevice::_texture_copy_bind_compat_84976, DEFVAL(0x7FFF));
 	ClassDB::bind_compatibility_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "post_barrier"), &RenderingDevice::_texture_clear_bind_compat_84976, DEFVAL(0x7FFF));
 	ClassDB::bind_compatibility_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "post_barrier"), &RenderingDevice::_texture_resolve_multisample_bind_compat_84976, DEFVAL(0x7FFF));
+	ClassDB::bind_compatibility_method(D_METHOD("screen_get_framebuffer_format"), &RenderingDevice::_screen_get_framebuffer_format_bind_compat_87340);
 }
 
 #endif

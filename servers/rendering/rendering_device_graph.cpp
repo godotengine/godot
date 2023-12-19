@@ -40,15 +40,6 @@ RenderingDeviceGraph::RenderingDeviceGraph() {
 }
 
 RenderingDeviceGraph::~RenderingDeviceGraph() {
-	_wait_for_secondary_command_buffer_tasks();
-
-	for (Frame &f : frames) {
-		for (SecondaryCommandBuffer &secondary : f.secondary_command_buffers) {
-			if (secondary.command_pool.id != 0) {
-				driver->command_pool_free(secondary.command_pool);
-			}
-		}
-	}
 }
 
 bool RenderingDeviceGraph::_is_write_usage(ResourceUsage p_usage) {
@@ -1246,7 +1237,7 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 	}
 }
 
-void RenderingDeviceGraph::initialize(RDD *p_driver, uint32_t p_frame_count, uint32_t p_secondary_command_buffers_per_frame) {
+void RenderingDeviceGraph::initialize(RDD *p_driver, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
 	driver = p_driver;
 	frames.resize(p_frame_count);
 
@@ -1255,13 +1246,27 @@ void RenderingDeviceGraph::initialize(RDD *p_driver, uint32_t p_frame_count, uin
 
 		for (uint32_t j = 0; j < p_secondary_command_buffers_per_frame; j++) {
 			SecondaryCommandBuffer &secondary = frames[i].secondary_command_buffers[j];
-			secondary.command_pool = driver->command_pool_create(RDD::COMMAND_BUFFER_TYPE_SECONDARY);
-			secondary.command_buffer = driver->command_buffer_create(RDD::COMMAND_BUFFER_TYPE_SECONDARY, secondary.command_pool);
+			secondary.command_pool = driver->command_pool_create(p_secondary_command_queue_family, RDD::COMMAND_BUFFER_TYPE_SECONDARY);
+			secondary.command_buffer = driver->command_buffer_create(secondary.command_pool);
 			secondary.task = WorkerThreadPool::INVALID_TASK_ID;
 		}
 	}
 
 	driver_honors_barriers = driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS);
+}
+
+void RenderingDeviceGraph::finalize() {
+	_wait_for_secondary_command_buffer_tasks();
+
+	for (Frame &f : frames) {
+		for (SecondaryCommandBuffer &secondary : f.secondary_command_buffers) {
+			if (secondary.command_pool.id != 0) {
+				driver->command_pool_free(secondary.command_pool);
+			}
+		}
+	}
+
+	frames.clear();
 }
 
 void RenderingDeviceGraph::begin() {

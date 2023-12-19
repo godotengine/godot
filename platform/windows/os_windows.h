@@ -48,13 +48,6 @@
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
-
-#if defined(VULKAN_ENABLED)
-#include "vulkan_context_win.h"
-#endif
-#if defined(D3D12_ENABLED)
-#include "drivers/d3d12/d3d12_context.h"
-#endif
 #endif
 
 #include <io.h>

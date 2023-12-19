@@ -41,6 +41,10 @@
 #include "editor/editor_settings.h"
 #include "servers/rendering/rendering_device_binds.h"
 
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#endif
+
 //uncomment this if you want to see textures from all the process saved
 //#define DEBUG_TEXTURES
 
@@ -1017,7 +1021,35 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-	RenderingDevice *rd = RenderingDevice::get_singleton()->create_local_device();
+	// Attempt to create a local device by requesting it from rendering server first.
+	// If that fails because the current renderer is not implemented on top of RD, we fall back to creating
+	// a local rendering device manually depending on the current platform.
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
+	if (rd == nullptr) {
+#if defined(RD_ENABLED)
+#if defined(VULKAN_ENABLED)
+		rcd = memnew(RenderingContextDriverVulkan);
+		rd = memnew(RenderingDevice);
+#endif
+#endif
+		if (rcd != nullptr && rd != nullptr) {
+			err = rcd->initialize();
+			if (err == OK) {
+				err = rd->initialize(rcd);
+			}
+
+			if (err != OK) {
+				memdelete(rd);
+				memdelete(rcd);
+				rd = nullptr;
+				rcd = nullptr;
+			}
+		}
+	}
+
+	ERR_FAIL_NULL_V(rd, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
 	RID albedo_array_tex;
 	RID emission_array_tex;
@@ -1187,7 +1219,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	//shaders
 	Ref<RDShaderFile> raster_shader;
 	raster_shader.instantiate();
-	Error err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
+	err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
 	if (err != OK) {
 		raster_shader->print_errors("raster_shader");
 
@@ -1195,6 +1227,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_BUFFERS
 
 		memdelete(rd);
+
+		if (rcd != nullptr) {
+			memdelete(rcd);
+		}
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
@@ -1367,6 +1403,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_BUFFERS
 		FREE_RASTER_RESOURCES
 		memdelete(rd);
+
+		if (rcd != nullptr) {
+			memdelete(rcd);
+		}
+
 		compute_shader->print_errors("compute_shader");
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -1789,6 +1830,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_RASTER_RESOURCES
 		FREE_COMPUTE_RESOURCES
 		memdelete(rd);
+
+		if (rcd != nullptr) {
+			memdelete(rcd);
+		}
+
 		blendseams_shader->print_errors("blendseams_shader");
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -1963,6 +2009,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	FREE_BLENDSEAMS_RESOURCES
 
 	memdelete(rd);
+
+	if (rcd != nullptr) {
+		memdelete(rcd);
+	}
 
 	return BAKE_OK;
 }

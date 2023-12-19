@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_platform_inc.h                                                 */
+/*  rendering_context_driver_vulkan_windows.cpp                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,51 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_PLATFORM_INC_H
-#define OPENXR_PLATFORM_INC_H
+#if defined(WINDOWS_ENABLED) && defined(VULKAN_ENABLED)
 
-// In various places we need to include platform definitions but we can't
-// include these in our normal header files as we'll end up with issues.
+#include "core/os/os.h"
 
-#ifdef VULKAN_ENABLED
-#define XR_USE_GRAPHICS_API_VULKAN
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
-#endif // VULKAN_ENABLED
+#include "rendering_context_driver_vulkan_windows.h"
 
-#if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
-#ifdef ANDROID_ENABLED
-#define XR_USE_GRAPHICS_API_OPENGL_ES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <GLES3/gl3.h>
-#include <GLES3/gl3ext.h>
+#ifdef USE_VOLK
+#include <volk.h>
 #else
-#define XR_USE_GRAPHICS_API_OPENGL
-#endif // ANDROID_ENABLED
-#ifdef X11_ENABLED
-#define GL_GLEXT_PROTOTYPES 1
-#define GL3_PROTOTYPES 1
-#include "thirdparty/glad/glad/gl.h"
-#include "thirdparty/glad/glad/glx.h"
-#endif // X11_ENABLED
-#endif // defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
+#include <vulkan/vulkan.h>
+#endif
 
-#ifdef X11_ENABLED
-#include <X11/Xlib.h>
-#endif // X11_ENABLED
+const char *RenderingContextDriverVulkanWindows::_get_platform_surface_extension() const {
+	return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
+}
 
-#ifdef WINDOWS_ENABLED
-// Including windows.h here is absolutely evil, we shouldn't be doing this outside of platform
-// however due to the way the openxr headers are put together, we have no choice.
-#include <windows.h>
-#endif // WINDOWS_ENABLED
+RenderingContextDriverVulkanWindows::RenderingContextDriverVulkanWindows() {
+	// Workaround for Vulkan not working on setups with AMD integrated graphics + NVIDIA dedicated GPU (GH-57708).
+	// This prevents using AMD integrated graphics with Vulkan entirely, but it allows the engine to start
+	// even on outdated/broken driver setups.
+	OS::get_singleton()->set_environment("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
+}
 
-#ifdef ANDROID_ENABLED
-// The jobject type from jni.h is used by openxr_platform.h on Android.
-#include <jni.h>
-#endif // ANDROID_ENABLED
+RenderingContextDriverVulkanWindows::~RenderingContextDriverVulkanWindows() {
+	// Does nothing.
+}
 
-// Include platform dependent structs.
-#include <openxr/openxr_platform.h>
+RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWindows::surface_create(const void *p_platform_data) {
+	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
 
-#endif // OPENXR_PLATFORM_INC_H
+	VkWin32SurfaceCreateInfoKHR create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	create_info.hinstance = wpd->instance;
+	create_info.hwnd = wpd->window;
+
+	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
+	VkResult err = vkCreateWin32SurfaceKHR(instance_get(), &create_info, nullptr, &vk_surface);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
+
+	Surface *surface = memnew(Surface);
+	surface->vk_surface = vk_surface;
+	return SurfaceID(surface);
+}
+
+#endif // WINDOWS_ENABLED && VULKAN_ENABLED

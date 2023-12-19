@@ -63,14 +63,14 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	}
 
 #if defined(RD_ENABLED)
-	context_rd = nullptr;
+	rendering_context = nullptr;
 	rendering_device = nullptr;
 
 	CALayer *layer = nullptr;
 
 	union {
 #ifdef VULKAN_ENABLED
-		VulkanContextIOS::WindowPlatformData vulkan;
+		RenderingContextDriverVulkanIOS::WindowPlatformData vulkan;
 #endif
 	} wpd;
 
@@ -81,29 +81,33 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 			ERR_FAIL_MSG("Failed to create iOS Vulkan rendering layer.");
 		}
 		wpd.vulkan.layer_ptr = &layer;
-		context_rd = memnew(VulkanContextIOS);
+		rendering_context = memnew(RenderingContextDriverVulkanIOS);
 	}
 #endif
 
-	if (context_rd) {
-		if (context_rd->initialize() != OK) {
-			ERR_PRINT(vformat("Failed to initialize %s context", context_rd->get_api_name()));
-			memdelete(context_rd);
-			context_rd = nullptr;
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
 			return;
 		}
 
-		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
-		if (context_rd->window_create(MAIN_WINDOW_ID, p_vsync_mode, size.width, size.height, &wpd) != OK) {
-			ERR_PRINT(vformat("Failed to create %s window.", context_rd->get_api_name()));
-			memdelete(context_rd);
-			context_rd = nullptr;
+		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
+		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
+		rendering_context->window_set_size(MAIN_WINDOW_ID, size.width, size.height);
+		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
+
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(context_rd);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -132,15 +136,15 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 DisplayServerIOS::~DisplayServerIOS() {
 #if defined(RD_ENABLED)
 	if (rendering_device) {
-		rendering_device->finalize();
+		rendering_device->screen_free(MAIN_WINDOW_ID);
 		memdelete(rendering_device);
 		rendering_device = nullptr;
 	}
 
-	if (context_rd) {
-		context_rd->window_destroy(MAIN_WINDOW_ID);
-		memdelete(context_rd);
-		context_rd = nullptr;
+	if (rendering_context) {
+		rendering_context->window_destroy(MAIN_WINDOW_ID);
+		memdelete(rendering_context);
+		rendering_context = nullptr;
 	}
 #endif
 }
@@ -714,8 +718,8 @@ void DisplayServerIOS::resize_window(CGSize viewSize) {
 	Size2i size = Size2i(viewSize.width, viewSize.height) * screen_get_max_scale();
 
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->window_resize(MAIN_WINDOW_ID, size.x, size.y);
+	if (rendering_context) {
+		rendering_context->window_set_size(MAIN_WINDOW_ID, size.x, size.y);
 	}
 #endif
 
@@ -726,8 +730,8 @@ void DisplayServerIOS::resize_window(CGSize viewSize) {
 void DisplayServerIOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->set_vsync_mode(p_window, p_vsync_mode);
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 }
@@ -735,8 +739,8 @@ void DisplayServerIOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 DisplayServer::VSyncMode DisplayServerIOS::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		return context_rd->get_vsync_mode(p_window);
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
