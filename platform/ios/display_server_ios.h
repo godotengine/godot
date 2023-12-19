@@ -34,11 +34,12 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/rendering_device.h"
+
 #if defined(VULKAN_ENABLED)
 #import "vulkan_context_ios.h"
-
-#include "drivers/vulkan/rendering_device_vulkan.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 #ifdef USE_VOLK
 #include <volk.h>
@@ -46,6 +47,7 @@
 #include <vulkan/vulkan.h>
 #endif
 #endif // VULKAN_ENABLED
+#endif // RD_ENABLED
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -59,9 +61,9 @@ class DisplayServerIOS : public DisplayServer {
 
 	_THREAD_SAFE_CLASS_
 
-#if defined(VULKAN_ENABLED)
-	VulkanContextIOS *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	ApiContextRD *context_rd = nullptr;
+	RenderingDevice *rendering_device = nullptr;
 #endif
 
 	id tts = nullptr;

@@ -42,14 +42,15 @@ const char *VulkanContextWindows::_get_platform_surface_extension() const {
 	return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
 }
 
-Error VulkanContextWindows::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, HWND p_window, HINSTANCE p_instance, int p_width, int p_height) {
-	VkWin32SurfaceCreateInfoKHR createInfo;
+Error VulkanContextWindows::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) {
+	const WindowPlatformData *wpd = (const WindowPlatformData *)p_platform_data;
+
+	VkWin32SurfaceCreateInfoKHR createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	createInfo.pNext = nullptr;
-	createInfo.flags = 0;
-	createInfo.hinstance = p_instance;
-	createInfo.hwnd = p_window;
-	VkSurfaceKHR surface;
+	createInfo.hinstance = wpd->instance;
+	createInfo.hwnd = wpd->window;
+
+	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	VkResult err = vkCreateWin32SurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);

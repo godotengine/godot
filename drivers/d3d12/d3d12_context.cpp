@@ -37,7 +37,25 @@
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wswitch"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 #include "dxcapi.h"
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+#if !defined(_MSC_VER)
+#include <guiddef.h>
+
+#include <dxguids.h>
+#endif
 
 extern "C" {
 char godot_nir_arch_name[32];
@@ -47,8 +65,12 @@ __declspec(dllexport) extern const UINT D3D12SDKVersion = 610;
 #ifdef AGILITY_SDK_MULTIARCH_ENABLED
 #if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 __declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\arm64";
-#else
+#elif defined(__arm__) || defined(_M_ARM)
+__declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\arm32";
+#elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 __declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\x86_64";
+#elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
+__declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\x86_32";
 #endif
 #else
 __declspec(dllexport) extern const char *D3D12SDKPath = "\\.";
@@ -57,11 +79,15 @@ __declspec(dllexport) extern const char *D3D12SDKPath = "\\.";
 }
 
 #ifdef PIX_ENABLED
+#if defined(__GNUC__)
+#define _MSC_VER 1800
+#endif
 #define USE_PIX
 #include "WinPixEventRuntime/pix3.h"
+#if defined(__GNUC__)
+#undef _MSC_VER
 #endif
-
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#endif
 
 void D3D12Context::_debug_message_func(
 		D3D12_MESSAGE_CATEGORY p_category,
@@ -178,7 +204,7 @@ Error D3D12Context::_check_capabilities() {
 		D3D12_FEATURE_DATA_SHADER_MODEL shader_model = {};
 		shader_model.HighestShaderModel = MIN(D3D_HIGHEST_SHADER_MODEL, D3D_SHADER_MODEL_6_6);
 		HRESULT res = md.device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shader_model, sizeof(shader_model));
-		ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		shader_capabilities.shader_model = shader_model.HighestShaderModel;
 	}
 	print_verbose("- Shader:");
@@ -270,7 +296,7 @@ Error D3D12Context::_check_capabilities() {
 Error D3D12Context::_initialize_debug_layers() {
 	ComPtr<ID3D12Debug> debug_controller;
 	HRESULT res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
-	ERR_FAIL_COND_V(res, ERR_QUERY_FAILED);
+	ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_QUERY_FAILED);
 	debug_controller->EnableDebugLayer();
 	return OK;
 }
@@ -399,7 +425,7 @@ Error D3D12Context::_select_adapter(int &r_index) {
 		if (SUCCEEDED(res)) {
 			tearing_supported = result;
 		} else {
-			ERR_PRINT("CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+			ERR_PRINT("CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		}
 	}
 
@@ -423,7 +449,7 @@ void D3D12Context::_dump_adapter_info(int p_index) {
 		feat_levels.pFeatureLevelsRequested = FEATURE_LEVELS;
 
 		HRESULT res = md.device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &feat_levels, sizeof(feat_levels));
-		ERR_FAIL_COND_MSG(res, "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+		ERR_FAIL_COND_MSG(!SUCCEEDED(res), "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 		// Example: D3D_FEATURE_LEVEL_12_1 = 0xc100.
 		uint32_t feat_level_major = feat_levels.MaxSupportedFeatureLevel >> 12;
@@ -476,25 +502,25 @@ void D3D12Context::_dump_adapter_info(int p_index) {
 
 Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 	HRESULT res = D3D12CreateDevice(gpu.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(r_basics.device.GetAddressOf()));
-	ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "D3D12CreateDevice failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12CreateDevice failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	// Create direct command queue.
 	D3D12_COMMAND_QUEUE_DESC queue_desc = {};
 	queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	res = r_basics.device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(r_basics.queue.GetAddressOf()));
-	ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 
 	// Create sync objects.
 	res = r_basics.device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(r_basics.fence.GetAddressOf()));
-	ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 	r_basics.fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	ERR_FAIL_NULL_V(r_basics.fence_event, ERR_CANT_CREATE);
 
 	if (_use_validation_layers()) {
 		ComPtr<ID3D12InfoQueue> info_queue;
 		res = r_basics.device.As(&info_queue);
-		ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 
 #if 0 // This causes crashes. Needs investigation.
 		ComPtr<ID3D12InfoQueue1> info_queue_1;
@@ -505,7 +531,7 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 			info_queue_1->SetMuteDebugOutput(TRUE);
 
 			res = info_queue_1->RegisterMessageCallback(&_debug_message_func, D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS, nullptr, 0);
-			ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+			ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 		} else
 #endif
 		{
@@ -513,7 +539,11 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 
 			if (Engine::get_singleton()->is_abort_on_gpu_errors_enabled()) {
 				res = info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
-				ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+				ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+				res = info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+				ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+				res = info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+				ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 			}
 		}
 		D3D12_MESSAGE_SEVERITY severities_to_mute[] = {
@@ -535,7 +565,7 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 		filter.DenyList.pIDList = messages_to_mute;
 
 		res = info_queue->PushStorageFilter(&filter);
-		ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 	}
 
 	return OK;
@@ -544,7 +574,7 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 Error D3D12Context::_get_device_limits() {
 	D3D12_FEATURE_DATA_D3D12_OPTIONS options = {};
 	HRESULT res = md.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
-	ERR_FAIL_COND_V_MSG(res, ERR_UNAVAILABLE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", res) + ".");
+	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_UNAVAILABLE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	// https://docs.microsoft.com/en-us/windows/win32/direct3d12/hardware-support
 	gpu_limits.max_srvs_per_shader_stage = options.ResourceBindingTier == D3D12_RESOURCE_BINDING_TIER_1 ? 128 : UINT64_MAX;
@@ -567,18 +597,44 @@ bool D3D12Context::_use_validation_layers() {
 	return Engine::get_singleton()->is_validation_layers_enabled();
 }
 
-Error D3D12Context::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, HWND p_window, HINSTANCE p_instance, int p_width, int p_height) {
+Error D3D12Context::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) {
 	ERR_FAIL_COND_V(windows.has(p_window_id), ERR_INVALID_PARAMETER);
 
 	Window window;
-	window.hwnd = p_window;
+	window.hwnd = ((const WindowPlatformData *)p_platform_data)->window;
 	window.width = p_width;
 	window.height = p_height;
 	window.vsync_mode = p_vsync_mode;
+
+	{
+		RDD::Attachment attachment;
+		attachment.samples = RD::TEXTURE_SAMPLES_1;
+		attachment.load_op = RDD::ATTACHMENT_LOAD_OP_CLEAR;
+		attachment.store_op = RDD::ATTACHMENT_STORE_OP_STORE;
+		window.render_pass.attachments.push_back(attachment);
+
+		RDD::Subpass subpass;
+		{
+			RDD::AttachmentReference color_ref;
+			color_ref.attachment = 0;
+			color_ref.aspect.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
+			subpass.color_references.push_back(color_ref);
+		}
+		window.render_pass.subpasses.push_back(subpass);
+	}
+
+	for (uint32_t i = 0; i < IMAGE_COUNT; i++) {
+		Error err = window.framebuffers[i].rtv_heap.allocate(md.device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1, false);
+		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+		window.framebuffers[i].is_screen = true;
+		window.framebuffers[i].attachments_handle_inds.push_back(0);
+	}
+
 	Error err = _update_swap_chain(&window);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
 	windows[p_window_id] = window;
+
 	return OK;
 }
 
@@ -605,25 +661,20 @@ bool D3D12Context::window_is_valid_swapchain(DisplayServer::WindowID p_window) {
 	return (bool)w->swapchain;
 }
 
-CD3DX12_CPU_DESCRIPTOR_HANDLE D3D12Context::window_get_framebuffer_rtv_handle(DisplayServer::WindowID p_window) {
-	ERR_FAIL_COND_V(!windows.has(p_window), CD3DX12_CPU_DESCRIPTOR_HANDLE(CD3DX12_DEFAULT()));
-	ERR_FAIL_COND_V(!buffers_prepared, CD3DX12_CPU_DESCRIPTOR_HANDLE(CD3DX12_DEFAULT()));
+RDD::RenderPassID D3D12Context::window_get_render_pass(DisplayServer::WindowID p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), RDD::RenderPassID());
 	Window *w = &windows[p_window];
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(
-			w->rtv_heap->GetCPUDescriptorHandleForHeapStart(),
-			w->current_buffer,
-			md.device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
-	return rtv_handle;
+	return RDD::RenderPassID(&w->render_pass);
 }
 
-ID3D12Resource *D3D12Context::window_get_framebuffer_texture(DisplayServer::WindowID p_window) {
-	ERR_FAIL_COND_V(!windows.has(p_window), nullptr);
-	ERR_FAIL_COND_V(!buffers_prepared, nullptr);
+RDD::FramebufferID D3D12Context::window_get_framebuffer(DisplayServer::WindowID p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), RDD::FramebufferID());
+	ERR_FAIL_COND_V(!buffers_prepared, RDD::FramebufferID());
 	Window *w = &windows[p_window];
 	if (w->swapchain) {
-		return w->render_targets[w->current_buffer].Get();
+		return RDD::FramebufferID(&w->framebuffers[w->current_buffer]);
 	} else {
-		return nullptr;
+		return RDD::FramebufferID();
 	}
 }
 
@@ -699,7 +750,6 @@ Error D3D12Context::_update_swap_chain(Window *window) {
 		for (uint32_t i = 0; i < IMAGE_COUNT; i++) {
 			window->render_targets[i].Reset();
 		}
-		window->rtv_heap.Reset();
 
 		// D3D12 docs: "IDXGISwapChain::ResizeBuffers can't be used to add or remove this flag."
 		bool allow_tearing_flag_changed = (swapchain_flags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING) != (window->swapchain_flags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
@@ -722,45 +772,37 @@ Error D3D12Context::_update_swap_chain(Window *window) {
 
 		ComPtr<IDXGISwapChain1> swapchain;
 		HRESULT res = dxgi_factory->CreateSwapChainForHwnd(md.queue.Get(), window->hwnd, &swapchain_desc, nullptr, nullptr, swapchain.GetAddressOf());
-		ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 		swapchain.As(&window->swapchain);
 		ERR_FAIL_NULL_V(window->swapchain, ERR_CANT_CREATE);
 
 		format = swapchain_desc.Format;
 
 		res = dxgi_factory->MakeWindowAssociation(window->hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
-		ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 
 		res = window->swapchain->GetDesc1(&swapchain_desc);
-		ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 		ERR_FAIL_COND_V(swapchain_desc.BufferCount != IMAGE_COUNT, ERR_BUG);
 		window->width = swapchain_desc.Width;
 		window->height = swapchain_desc.Height;
 
 	} else {
 		HRESULT res = window->swapchain->ResizeBuffers(IMAGE_COUNT, window->width, window->height, DXGI_FORMAT_UNKNOWN, swapchain_flags);
-		ERR_FAIL_COND_V(res, ERR_UNAVAILABLE);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_UNAVAILABLE);
 	}
 
 	window->swapchain_flags = swapchain_flags;
 	window->current_buffer = window->swapchain->GetCurrentBackBufferIndex();
 
-	// Describe and create a render target view (RTV) descriptor heap.
-	D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_desc = {};
-	rtv_heap_desc.NumDescriptors = IMAGE_COUNT;
-	rtv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	rtv_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	HRESULT res = md.device->CreateDescriptorHeap(&rtv_heap_desc, IID_PPV_ARGS(window->rtv_heap.GetAddressOf()));
-	ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
-
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(window->rtv_heap->GetCPUDescriptorHandleForHeapStart());
-
 	for (uint32_t i = 0; i < IMAGE_COUNT; i++) {
-		res = window->swapchain->GetBuffer(i, IID_PPV_ARGS(&window->render_targets[i]));
-		ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+		RenderingDeviceDriverD3D12::FramebufferInfo *fb_info = &window->framebuffers[i];
+		RenderingDeviceDriverD3D12::DescriptorsHeap::Walker walker = fb_info->rtv_heap.make_walker();
 
-		md.device->CreateRenderTargetView(window->render_targets[i].Get(), nullptr, rtv_handle);
-		rtv_handle.Offset(1, md.device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
+		HRESULT res = window->swapchain->GetBuffer(i, IID_PPV_ARGS(&window->render_targets[i]));
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		md.device->CreateRenderTargetView(window->render_targets[i].Get(), nullptr, walker.get_curr_cpu_handle());
 	}
 
 	return OK;
@@ -790,33 +832,28 @@ Error D3D12Context::initialize() {
 
 	{
 		HRESULT res = md.device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frame_fence.GetAddressOf()));
-		ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 		frame_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 		ERR_FAIL_NULL_V(frame_fence_event, ERR_CANT_CREATE);
 	}
 
-	{ // Initialize allocator.
-		D3D12MA::ALLOCATOR_DESC allocator_desc = {};
-		allocator_desc.pDevice = md.device.Get();
-		allocator_desc.pAdapter = gpu.Get();
-
-		HRESULT res = D3D12MA::CreateAllocator(&allocator_desc, &allocator);
-		ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", res) + ".");
-	}
+	md.driver = memnew(RenderingDeviceDriverD3D12(this, md.device.Get(), IMAGE_COUNT + 1));
 
 	return OK;
 }
 
-void D3D12Context::set_setup_list(ID3D12CommandList *p_command_list) {
-	command_list_queue.write[0] = p_command_list;
+void D3D12Context::set_setup_buffer(RDD::CommandBufferID p_command_buffer) {
+	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
+	command_list_queue[0] = cmd_buf_info->cmd_list.Get();
 }
 
-void D3D12Context::append_command_list(ID3D12CommandList *p_command_list) {
+void D3D12Context::append_command_buffer(RDD::CommandBufferID p_command_buffer) {
 	if (command_list_queue.size() <= command_list_count) {
 		command_list_queue.resize(command_list_count + 1);
 	}
 
-	command_list_queue.write[command_list_count] = p_command_list;
+	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
+	command_list_queue[command_list_count] = cmd_buf_info->cmd_list.Get();
 	command_list_count++;
 }
 
@@ -833,7 +870,7 @@ void D3D12Context::_wait_for_idle_queue(ID3D12CommandQueue *p_queue) {
 void D3D12Context::flush(bool p_flush_setup, bool p_flush_pending) {
 	if (p_flush_setup && command_list_queue[0]) {
 		md.queue->ExecuteCommandLists(1, command_list_queue.ptr());
-		command_list_queue.write[0] = nullptr;
+		command_list_queue[0] = nullptr;
 	}
 
 	if (p_flush_pending && command_list_count > 1) {
@@ -846,7 +883,7 @@ void D3D12Context::flush(bool p_flush_setup, bool p_flush_pending) {
 	}
 }
 
-void D3D12Context::prepare_buffers(ID3D12GraphicsCommandList *p_command_list) {
+Error D3D12Context::prepare_buffers(RDD::CommandBufferID p_command_buffer) {
 	// Ensure no more than FRAME_LAG renderings are outstanding.
 	if (frame >= IMAGE_COUNT) {
 		UINT64 min_value = frame - IMAGE_COUNT;
@@ -860,20 +897,21 @@ void D3D12Context::prepare_buffers(ID3D12GraphicsCommandList *p_command_list) {
 	}
 
 	D3D12_RESOURCE_BARRIER *barriers = (D3D12_RESOURCE_BARRIER *)alloca(windows.size() * sizeof(D3D12_RESOURCE_BARRIER));
-
 	uint32_t n = 0;
 	for (KeyValue<int, Window> &E : windows) {
 		Window *w = &E.value;
 		w->current_buffer = w->swapchain->GetCurrentBackBufferIndex();
 		barriers[n++] = CD3DX12_RESOURCE_BARRIER::Transition(w->render_targets[w->current_buffer].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
-
-	p_command_list->ResourceBarrier(n, barriers);
+	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
+	cmd_buf_info->cmd_list->ResourceBarrier(n, barriers);
 
 	buffers_prepared = true;
+
+	return OK;
 }
 
-void D3D12Context::postpare_buffers(ID3D12GraphicsCommandList *p_command_list) {
+void D3D12Context::postpare_buffers(RDD::CommandBufferID p_command_buffer) {
 	D3D12_RESOURCE_BARRIER *barriers = (D3D12_RESOURCE_BARRIER *)alloca(windows.size() * sizeof(D3D12_RESOURCE_BARRIER));
 
 	uint32_t n = 0;
@@ -882,7 +920,8 @@ void D3D12Context::postpare_buffers(ID3D12GraphicsCommandList *p_command_list) {
 		barriers[n++] = CD3DX12_RESOURCE_BARRIER::Transition(w->render_targets[w->current_buffer].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	}
 
-	p_command_list->ResourceBarrier(n, barriers);
+	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
+	cmd_buf_info->cmd_list->ResourceBarrier(n, barriers);
 }
 
 Error D3D12Context::swap_buffers() {
@@ -902,7 +941,7 @@ Error D3D12Context::swap_buffers() {
 
 	md.queue->ExecuteCommandLists(commands_to_submit, commands_ptr);
 
-	command_list_queue.write[0] = nullptr;
+	command_list_queue[0] = nullptr;
 	command_list_count = 1;
 
 	for (KeyValue<int, Window> &E : windows) {
@@ -912,8 +951,8 @@ Error D3D12Context::swap_buffers() {
 			continue;
 		}
 		HRESULT res = w->swapchain->Present(w->sync_interval, w->present_flags);
-		if (res) {
-			print_verbose("D3D12: Presenting swapchain of window " + itos(E.key) + " failed with error " + vformat("0x%08ux", res) + ".");
+		if (!SUCCEEDED(res)) {
+			print_verbose("D3D12: Presenting swapchain of window " + itos(E.key) + " failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		}
 	}
 
@@ -927,16 +966,20 @@ Error D3D12Context::swap_buffers() {
 void D3D12Context::resize_notify() {
 }
 
-ComPtr<ID3D12Device> D3D12Context::get_device() {
-	return md.device;
+RenderingDevice::Capabilities D3D12Context::get_device_capabilities() const {
+	RenderingDevice::Capabilities c;
+	c.device_family = RenderingDevice::DEVICE_DIRECTX;
+	c.version_major = feature_level / 10;
+	c.version_minor = feature_level % 10;
+	return c;
 }
 
-ComPtr<IDXGIAdapter> D3D12Context::get_adapter() {
-	return gpu;
+ID3D12Device *D3D12Context::get_device() {
+	return md.device.Get();
 }
 
-D3D12MA::Allocator *D3D12Context::get_allocator() {
-	return allocator.Get();
+IDXGIAdapter *D3D12Context::get_adapter() {
+	return gpu.Get();
 }
 
 int D3D12Context::get_swapchain_image_count() const {
@@ -947,26 +990,22 @@ DXGI_FORMAT D3D12Context::get_screen_format() const {
 	return format;
 }
 
-D3D12Context::DeviceLimits D3D12Context::get_device_limits() const {
+const D3D12Context::DeviceLimits &D3D12Context::get_device_limits() const {
 	return gpu_limits;
 }
 
 RID D3D12Context::local_device_create() {
 	LocalDevice ld;
 	_create_device(ld);
+	ld.driver = memnew(RenderingDeviceDriverD3D12(this, ld.device.Get(), 1));
 	return local_device_owner.make_rid(ld);
 }
 
-ComPtr<ID3D12Device> D3D12Context::local_device_get_d3d12_device(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
-	return ld->device;
-}
-
-void D3D12Context::local_device_push_command_lists(RID p_local_device, ID3D12CommandList *const *p_lists, int p_count) {
+void D3D12Context::local_device_push_command_buffers(RID p_local_device, const RDD::CommandBufferID *p_buffers, int p_count) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(ld->waiting);
 
-	ld->queue->ExecuteCommandLists(p_count, p_lists);
+	ld->queue->ExecuteCommandLists(p_count, (ID3D12CommandList *const *)p_buffers);
 
 	ld->waiting = true;
 }
@@ -988,27 +1027,29 @@ void D3D12Context::local_device_sync(RID p_local_device) {
 
 void D3D12Context::local_device_free(RID p_local_device) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
-
+	memdelete(ld->driver);
 	CloseHandle(ld->fence_event);
-
 	local_device_owner.free(p_local_device);
 }
 
-void D3D12Context::command_begin_label(ID3D12GraphicsCommandList *p_command_list, String p_label_name, const Color p_color) {
+void D3D12Context::command_begin_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) {
 #ifdef PIX_ENABLED
-	PIXBeginEvent(p_command_list, p_color.to_argb32(), p_label_name.utf8().get_data());
+	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
+	PIXBeginEvent(cmd_buf_info->cmd_list.Get(), p_color.to_argb32(), p_label_name.utf8().get_data());
 #endif
 }
 
-void D3D12Context::command_insert_label(ID3D12GraphicsCommandList *p_command_list, String p_label_name, const Color p_color) {
+void D3D12Context::command_insert_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) {
 #ifdef PIX_ENABLED
-	PIXSetMarker(p_command_list, p_color.to_argb32(), p_label_name.utf8().get_data());
+	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
+	PIXSetMarker(cmd_buf_info->cmd_list.Get(), p_color.to_argb32(), p_label_name.utf8().get_data());
 #endif
 }
 
-void D3D12Context::command_end_label(ID3D12GraphicsCommandList *p_command_list) {
+void D3D12Context::command_end_label(RDD::CommandBufferID p_command_buffer) {
 #ifdef PIX_ENABLED
-	PIXEndEvent(p_command_list);
+	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
+	PIXEndEvent(cmd_buf_info->cmd_list.Get());
 #endif
 }
 
@@ -1050,11 +1091,22 @@ void D3D12Context::set_vsync_mode(DisplayServer::WindowID p_window, DisplayServe
 	_update_swap_chain(&windows[p_window]);
 }
 
+RenderingDeviceDriver *D3D12Context::get_driver(RID p_local_device) {
+	if (p_local_device.is_valid()) {
+		LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
+		ERR_FAIL_NULL_V(ld, nullptr);
+		return ld->driver;
+	} else {
+		return md.driver;
+	}
+}
+
 D3D12Context::D3D12Context() {
 	command_list_queue.resize(1); // First one is always the setup command.
-	command_list_queue.write[0] = nullptr;
+	command_list_queue[0] = nullptr;
 
-	strcpy(godot_nir_arch_name, Engine::get_singleton()->get_architecture_name().ascii().get_data());
+	CharString cs = Engine::get_singleton()->get_architecture_name().ascii();
+	memcpy(godot_nir_arch_name, (const char *)cs.get_data(), cs.size());
 }
 
 D3D12Context::~D3D12Context() {

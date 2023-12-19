@@ -132,17 +132,26 @@ Files extracted from upstream source:
 - `include/D3D12MemAlloc.h`
 - `LICENSE.txt`, `NOTICES.txt`
 
+Important: Some files have Godot-made changes for use with MinGW.
+They are marked with `/* GODOT start */` and `/* GODOT end */`
+comments.
+
 
 ## directx_headers
 
 - Upstream: https://github.com/microsoft/DirectX-Headers
-- Version: 1.606.3 (fd329244e62201bf959331d28514928fc1d45005, 2022)
+- Version: 1.611.1 (48f23952bc08a6dce0727339c07cedbc4797356c, 2023)
 - License: MIT
 
 Files extracted from upstream source:
 
 - `include/directx/*.h`
+- `include/dxguids/*.h`
 - `LICENSE`
+
+Important: Some files have Godot-made changes for use with MinGW.
+They are marked with `/* GODOT start */` and `/* GODOT end */`
+comments.
 
 
 ## doctest

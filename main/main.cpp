@@ -1844,8 +1844,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), device_blocklist);
 	}
 
-	// Start with RenderingDevice-based backends. Should be included if any RD driver present.
-#if defined(VULKAN_ENABLED) || defined(D3D12_ENABLED)
+	// Start with RenderingDevice-based backends.
+#ifdef RD_ENABLED
 	renderer_hints = "forward_plus,mobile";
 	default_renderer_mobile = "mobile";
 #endif

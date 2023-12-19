@@ -39,11 +39,13 @@
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+
 #if defined(VULKAN_ENABLED)
 #include "vulkan_context_macos.h"
-
-#include "drivers/vulkan/rendering_device_vulkan.h"
 #endif // VULKAN_ENABLED
+#endif // RD_ENABLED
 
 #define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
@@ -133,9 +135,9 @@ private:
 	GLManagerLegacy_MacOS *gl_manager_legacy = nullptr;
 	GLManagerANGLE_MacOS *gl_manager_angle = nullptr;
 #endif
-#if defined(VULKAN_ENABLED)
-	VulkanContextMacOS *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	ApiContextRD *context_rd = nullptr;
+	RenderingDevice *rendering_device = nullptr;
 #endif
 	String rendering_driver;
 
