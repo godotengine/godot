@@ -97,6 +97,7 @@ void EditorProfiler::clear() {
 	plot_sigs.clear();
 	plot_sigs.insert("physics_frame_time");
 	plot_sigs.insert("category_frame_time");
+	display_internal_profiles->set_visible(EDITOR_GET("debugger/profile_native_calls"));
 
 	updating_frame = true;
 	cursor_metric_edit->set_min(0);
@@ -352,6 +353,9 @@ void EditorProfiler::_update_frame() {
 		for (int j = m.categories[i].items.size() - 1; j >= 0; j--) {
 			const Metric::Category::Item &it = m.categories[i].items[j];
 
+			if (it.internal == it.total && !display_internal_profiles->is_pressed() && m.categories[i].name == "Script Functions") {
+				continue;
+			}
 			TreeItem *item = variables->create_item(category);
 			item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 			item->set_editable(0, true);
@@ -363,6 +367,9 @@ void EditorProfiler::_update_frame() {
 			item->set_tooltip_text(0, it.name + "\n" + it.script + ":" + itos(it.line));
 
 			float time = dtime == DISPLAY_SELF_TIME ? it.self : it.total;
+			if (dtime == DISPLAY_SELF_TIME && !display_internal_profiles->is_pressed()) {
+				time += it.internal;
+			}
 
 			item->set_text(1, _get_time_as_text(m, time, it.calls));
 
@@ -402,6 +409,10 @@ void EditorProfiler::_clear_pressed() {
 	clear_button->set_disabled(true);
 	clear();
 	_update_plot();
+}
+
+void EditorProfiler::_internal_profiles_pressed() {
+	_combo_changed(0);
 }
 
 void EditorProfiler::_notification(int p_what) {
@@ -634,6 +645,11 @@ EditorProfiler::EditorProfiler() {
 	display_time->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_time);
+
+	display_internal_profiles = memnew(CheckButton(TTR("Display internal functions")));
+	display_internal_profiles->set_pressed(false);
+	display_internal_profiles->connect("pressed", callable_mp(this, &EditorProfiler::_internal_profiles_pressed));
+	hb->add_child(display_internal_profiles);
 
 	hb->add_spacer();
 

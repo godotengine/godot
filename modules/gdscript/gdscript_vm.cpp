@@ -36,6 +36,18 @@
 #include "core/os/os.h"
 
 #ifdef DEBUG_ENABLED
+
+static bool _profile_count_as_native(const Object *p_base_obj, const StringName &p_methodname) {
+	if (!p_base_obj) {
+		return false;
+	}
+	StringName cname = p_base_obj->get_class_name();
+	if ((p_methodname == "new" && cname == "GDScript") || p_methodname == "call") {
+		return false;
+	}
+	return ClassDB::class_exists(cname) && ClassDB::has_method(cname, p_methodname, false);
+}
+
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
 	if (script_type.is_valid() && script_type->is_valid()) {
 		return GDScript::debug_get_script_name(script_type);
@@ -84,6 +96,18 @@ static String _get_var_type(const Variant *p_var) {
 
 	return basestr;
 }
+
+void GDScriptFunction::_profile_native_call(uint64_t p_t_taken, const String &p_func_name, const String &p_instance_class_name) {
+	HashMap<String, Profile::NativeProfile>::Iterator inner_prof = profile.native_calls.find(p_func_name);
+	if (inner_prof) {
+		inner_prof->value.call_count += 1;
+	} else {
+		String sig = vformat("%s::0::%s%s%s", get_script()->get_script_path(), p_instance_class_name, p_instance_class_name.is_empty() ? "" : ".", p_func_name);
+		inner_prof = profile.native_calls.insert(p_func_name, Profile::NativeProfile{ 1, 0, sig });
+	}
+	inner_prof->value.total_time += p_t_taken;
+}
+
 #endif // DEBUG_ENABLED
 
 Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataType &p_data_type) {
@@ -631,9 +655,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	}
 	bool exit_ok = false;
 	bool awaited = false;
-#endif
-
-#ifdef DEBUG_ENABLED
 	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? p_instance->members.size() : 0 };
 #endif
 
@@ -1661,16 +1682,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (GDScriptLanguage::get_singleton()->profiling) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
-
+				Variant::Type base_type = base->get_type();
+				Object *base_obj = base->get_validated_object();
+				StringName base_class = base_obj ? base_obj->get_class_name() : StringName();
 #endif
+
 				Callable::CallError err;
 				if (call_ret) {
 					GET_INSTRUCTION_ARG(ret, argc + 1);
-#ifdef DEBUG_ENABLED
-					Variant::Type base_type = base->get_type();
-					Object *base_obj = base->get_validated_object();
-					StringName base_class = base_obj ? base_obj->get_class_name() : StringName();
-#endif
 					base->callp(*methodname, (const Variant **)argptrs, argc, *ret, err);
 #ifdef DEBUG_ENABLED
 					if (ret->get_type() == Variant::NIL) {
@@ -1704,8 +1723,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					base->callp(*methodname, (const Variant **)argptrs, argc, ret, err);
 				}
 #ifdef DEBUG_ENABLED
+
 				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+					if (GDScriptLanguage::get_singleton()->profile_native_calls && _profile_count_as_native(base_obj, *methodname)) {
+						_profile_native_call(t_taken, *methodname, base_class);
+					}
+					function_call_time += t_taken;
 				}
 
 				if (err.error != Callable::CallError::CALL_OK) {
@@ -1782,8 +1806,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;
-
-				if (GDScriptLanguage::get_singleton()->profiling) {
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
 #endif
@@ -1797,8 +1820,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 
 #ifdef DEBUG_ENABLED
-				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+					function_call_time += t_taken;
 				}
 
 				if (err.error != Callable::CallError::CALL_OK) {
@@ -1851,22 +1877,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				const Variant **argptrs = const_cast<const Variant **>(instruction_args);
 
-#ifdef DEBUG_ENABLED
-				uint64_t call_time = 0;
-
-				if (GDScriptLanguage::get_singleton()->profiling) {
-					call_time = OS::get_singleton()->get_ticks_usec();
-				}
-#endif
-
 				Callable::CallError err;
 				Variant::call_static(builtin_type, *methodname, argptrs, argc, *ret, err);
 
 #ifdef DEBUG_ENABLED
-				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
-				}
-
 				if (err.error != Callable::CallError::CALL_OK) {
 					err_text = _get_call_error(err, "static function '" + methodname->operator String() + "' in type '" + Variant::get_type_name(builtin_type) + "'", argptrs);
 					OPCODE_BREAK;
@@ -1895,8 +1909,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;
-
-				if (GDScriptLanguage::get_singleton()->profiling) {
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
 #endif
@@ -1905,15 +1918,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*ret = method->call(nullptr, argptrs, argc, err);
 
 #ifdef DEBUG_ENABLED
-				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+					function_call_time += t_taken;
 				}
+#endif
 
 				if (err.error != Callable::CallError::CALL_OK) {
 					err_text = _get_call_error(err, "static function '" + method->get_name().operator String() + "' in type '" + method->get_instance_class().operator String() + "'", argptrs);
 					OPCODE_BREAK;
 				}
-#endif
 
 				ip += 3;
 			}
@@ -1951,8 +1966,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;
-
-				if (GDScriptLanguage::get_singleton()->profiling) {
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
 #endif
@@ -1961,10 +1975,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				method->validated_call(base_obj, (const Variant **)argptrs, ret);
 
 #ifdef DEBUG_ENABLED
-				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+					function_call_time += t_taken;
 				}
 #endif
+
 				ip += 3;
 			}
 			DISPATCH_OPCODE;
@@ -1998,8 +2015,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Variant **argptrs = instruction_args;
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;
-
-				if (GDScriptLanguage::get_singleton()->profiling) {
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
 #endif
@@ -2009,10 +2025,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				method->validated_call(base_obj, (const Variant **)argptrs, nullptr);
 
 #ifdef DEBUG_ENABLED
-				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+					function_call_time += t_taken;
 				}
 #endif
+
 				ip += 3;
 			}
 			DISPATCH_OPCODE;
@@ -2033,21 +2052,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Variant::ValidatedBuiltInMethod method = _builtin_methods_ptr[_code_ptr[ip + 2]];
 				Variant **argptrs = instruction_args;
 
-#ifdef DEBUG_ENABLED
-				uint64_t call_time = 0;
-				if (GDScriptLanguage::get_singleton()->profiling) {
-					call_time = OS::get_singleton()->get_ticks_usec();
-				}
-#endif
-
 				GET_INSTRUCTION_ARG(ret, argc + 1);
 				method(base, (const Variant **)argptrs, argc, ret);
-
-#ifdef DEBUG_ENABLED
-				if (GDScriptLanguage::get_singleton()->profiling) {
-					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
-				}
-#endif
 
 				ip += 3;
 			}

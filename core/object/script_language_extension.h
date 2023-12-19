@@ -607,6 +607,7 @@ public:
 
 	EXBIND0(profiling_start)
 	EXBIND0(profiling_stop)
+	EXBIND1(profiling_set_save_native_calls, bool)
 
 	GDVIRTUAL2R(int, _profiling_get_accumulated_data, GDExtensionPtr<ScriptLanguageExtensionProfilingInfo>, int)
 

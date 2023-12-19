@@ -276,6 +276,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_profiling_set_save_native_calls" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_profiling_start" qualifiers="virtual">
 			<return type="void" />
 			<description>
