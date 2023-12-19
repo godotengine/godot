@@ -1423,8 +1423,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("checked_disabled", "Tree", theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
 	theme->set_icon("indeterminate", "Tree", theme->get_icon(SNAME("GuiIndeterminate"), EditorStringName(EditorIcons)));
+	theme->set_icon("indeterminate_disabled", "Tree", theme->get_icon(SNAME("GuiIndeterminateDisabled"), EditorStringName(EditorIcons)));
 	theme->set_icon("unchecked", "Tree", theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked_disabled", "Tree", theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
 	theme->set_icon("arrow", "Tree", theme->get_icon(SNAME("GuiTreeArrowDown"), EditorStringName(EditorIcons)));
 	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon(SNAME("GuiTreeArrowRight"), EditorStringName(EditorIcons)));
 	theme->set_icon("arrow_collapsed_mirrored", "Tree", theme->get_icon(SNAME("GuiTreeArrowLeft"), EditorStringName(EditorIcons)));
@@ -1437,6 +1440,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("custom_button_font_highlight", "Tree", font_hover_color);
 	theme->set_color("font_color", "Tree", font_color);
 	theme->set_color("font_selected_color", "Tree", mono_color);
+	theme->set_color("font_disabled_color", "Tree", font_disabled_color);
 	theme->set_color("font_outline_color", "Tree", font_outline_color);
 	theme->set_color("title_button_color", "Tree", font_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
