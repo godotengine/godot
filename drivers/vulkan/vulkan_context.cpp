@@ -412,7 +412,9 @@ Error VulkanContext::_initialize_instance_extensions() {
 
 	// Make sure our core extensions are here
 	register_requested_instance_extension(VK_KHR_SURFACE_EXTENSION_NAME, true);
-	register_requested_instance_extension(_get_platform_surface_extension(), true);
+	if (_get_platform_surface_extension()) {
+		register_requested_instance_extension(_get_platform_surface_extension(), true);
+	}
 
 	if (_use_validation_layers()) {
 		register_requested_instance_extension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, false);
@@ -1232,21 +1234,24 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 
 			bool present_supported = false;
 
-			uint32_t device_queue_family_count = 0;
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, nullptr);
-			VkQueueFamilyProperties *device_queue_props = (VkQueueFamilyProperties *)malloc(device_queue_family_count * sizeof(VkQueueFamilyProperties));
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, device_queue_props);
-			for (uint32_t j = 0; j < device_queue_family_count; j++) {
-				if ((device_queue_props[j].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
-					VkBool32 supports;
-					err = vkGetPhysicalDeviceSurfaceSupportKHR(
-							physical_devices[i], j, p_surface, &supports);
-					if (err == VK_SUCCESS && supports) {
-						present_supported = true;
-					} else {
-						continue;
+			if (p_surface) {
+				uint32_t device_queue_family_count = 0;
+				vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, nullptr);
+				VkQueueFamilyProperties *device_queue_props = (VkQueueFamilyProperties *)malloc(device_queue_family_count * sizeof(VkQueueFamilyProperties));
+				vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, device_queue_props);
+				for (uint32_t j = 0; j < device_queue_family_count; j++) {
+					if ((device_queue_props[j].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
+						VkBool32 supports;
+						err = vkGetPhysicalDeviceSurfaceSupportKHR(
+								physical_devices[i], j, p_surface, &supports);
+						if (err == VK_SUCCESS && supports) {
+							present_supported = true;
+						} else {
+							continue;
+						}
 					}
 				}
+				free(device_queue_props);
 			}
 			String name = String::utf8(props.deviceName);
 			String vendor = "Unknown";
@@ -1276,10 +1281,9 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 				}
 				vendor_idx++;
 			}
-			free(device_queue_props);
 			print_verbose("  #" + itos(i) + ": " + vendor + " " + name + " - " + (present_supported ? "Supported" : "Unsupported") + ", " + dev_type);
 
-			if (present_supported) { // Select first supported device of preferred type: Discrete > Integrated > Virtual > CPU > Other.
+			if (present_supported || !p_surface) { // Select first supported device of preferred type: Discrete > Integrated > Virtual > CPU > Other.
 				switch (props.deviceType) {
 					case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: {
 						if (type_selected < 4) {
@@ -1509,7 +1513,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	return OK;
 }
 
-Error VulkanContext::_create_device() {
+Error VulkanContext::_create_device(VkDevice &r_vk_device) {
 	VkResult err;
 	float queue_priorities[1] = { 0.0 };
 	VkDeviceQueueCreateInfo queues[2];
@@ -1624,11 +1628,11 @@ Error VulkanContext::_create_device() {
 	}
 
 	if (vulkan_hooks) {
-		if (!vulkan_hooks->create_vulkan_device(&sdevice, &device)) {
+		if (!vulkan_hooks->create_vulkan_device(&sdevice, &r_vk_device)) {
 			return ERR_CANT_CREATE;
 		}
 	} else {
-		err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
+		err = vkCreateDevice(gpu, &sdevice, nullptr, &r_vk_device);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
 
@@ -1637,9 +1641,13 @@ Error VulkanContext::_create_device() {
 
 Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 	// Iterate over each queue to learn whether it supports presenting:
-	VkBool32 *supportsPresent = (VkBool32 *)malloc(queue_family_count * sizeof(VkBool32));
-	for (uint32_t i = 0; i < queue_family_count; i++) {
-		fpGetPhysicalDeviceSurfaceSupportKHR(gpu, i, p_surface, &supportsPresent[i]);
+	VkBool32 *supportsPresent = nullptr;
+
+	if (p_surface) {
+		supportsPresent = (VkBool32 *)malloc(queue_family_count * sizeof(VkBool32));
+		for (uint32_t i = 0; i < queue_family_count; i++) {
+			fpGetPhysicalDeviceSurfaceSupportKHR(gpu, i, p_surface, &supportsPresent[i]);
+		}
 	}
 
 	// Search for a graphics and a present queue in the array of queue
@@ -1652,7 +1660,7 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 				graphicsQueueFamilyIndex = i;
 			}
 
-			if (supportsPresent[i] == VK_TRUE) {
+			if (p_surface && supportsPresent[i] == VK_TRUE) {
 				graphicsQueueFamilyIndex = i;
 				presentQueueFamilyIndex = i;
 				break;
@@ -1660,7 +1668,7 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 		}
 	}
 
-	if (presentQueueFamilyIndex == UINT32_MAX) {
+	if (p_surface && presentQueueFamilyIndex == UINT32_MAX) {
 		// If didn't find a queue that supports both graphics and present, then
 		// find a separate present queue.
 		for (uint32_t i = 0; i < queue_family_count; ++i) {
@@ -1671,17 +1679,22 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 		}
 	}
 
-	free(supportsPresent);
+	if (p_surface) {
+		free(supportsPresent);
 
-	// Generate error if could not find both a graphics and a present queue.
-	ERR_FAIL_COND_V_MSG(graphicsQueueFamilyIndex == UINT32_MAX || presentQueueFamilyIndex == UINT32_MAX, ERR_CANT_CREATE,
-			"Could not find both graphics and present queues\n");
+		// Generate error if could not find both a graphics and a present queue.
+		ERR_FAIL_COND_V_MSG(graphicsQueueFamilyIndex == UINT32_MAX || presentQueueFamilyIndex == UINT32_MAX, ERR_CANT_CREATE,
+				"Could not find both graphics and present queues\n");
 
-	graphics_queue_family_index = graphicsQueueFamilyIndex;
-	present_queue_family_index = presentQueueFamilyIndex;
-	separate_present_queue = (graphics_queue_family_index != present_queue_family_index);
+		graphics_queue_family_index = graphicsQueueFamilyIndex;
+		present_queue_family_index = presentQueueFamilyIndex;
+		separate_present_queue = (graphics_queue_family_index != present_queue_family_index);
+	} else {
+		graphics_queue_family_index = graphicsQueueFamilyIndex;
+	}
 
-	_create_device();
+	_create_device(device);
+	driver = memnew(RenderingDeviceDriverVulkan(this, device));
 
 	static PFN_vkGetDeviceProcAddr g_gdpa = nullptr;
 #define GET_DEVICE_PROC_ADDR(dev, entrypoint)                                                     \
@@ -1705,60 +1718,62 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 
 	vkGetDeviceQueue(device, graphics_queue_family_index, 0, &graphics_queue);
 
-	if (!separate_present_queue) {
-		present_queue = graphics_queue;
-	} else {
-		vkGetDeviceQueue(device, present_queue_family_index, 0, &present_queue);
-	}
-
-	// Get the list of VkFormat's that are supported:
-	uint32_t formatCount;
-	VkResult err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, p_surface, &formatCount, nullptr);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-	VkSurfaceFormatKHR *surfFormats = (VkSurfaceFormatKHR *)malloc(formatCount * sizeof(VkSurfaceFormatKHR));
-	err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, p_surface, &formatCount, surfFormats);
-	if (err) {
-		free(surfFormats);
-		ERR_FAIL_V(ERR_CANT_CREATE);
-	}
-	// If the format list includes just one entry of VK_FORMAT_UNDEFINED,
-	// the surface has no preferred format.  Otherwise, at least one
-	// supported format will be returned.
-	if (formatCount == 1 && surfFormats[0].format == VK_FORMAT_UNDEFINED) {
-		format = VK_FORMAT_B8G8R8A8_UNORM;
-		color_space = surfFormats[0].colorSpace;
-	} else {
-		// These should be ordered with the ones we want to use on top and fallback modes further down
-		// we want a 32bit RGBA unsigned normalized buffer or similar.
-		const VkFormat allowed_formats[] = {
-			VK_FORMAT_B8G8R8A8_UNORM,
-			VK_FORMAT_R8G8B8A8_UNORM
-		};
-		uint32_t allowed_formats_count = sizeof(allowed_formats) / sizeof(VkFormat);
-
-		if (formatCount < 1) {
-			free(surfFormats);
-			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "formatCount less than 1");
+	if (p_surface) {
+		if (!separate_present_queue) {
+			present_queue = graphics_queue;
+		} else {
+			vkGetDeviceQueue(device, present_queue_family_index, 0, &present_queue);
 		}
 
-		// Find the first format that we support.
-		format = VK_FORMAT_UNDEFINED;
-		for (uint32_t af = 0; af < allowed_formats_count && format == VK_FORMAT_UNDEFINED; af++) {
-			for (uint32_t sf = 0; sf < formatCount && format == VK_FORMAT_UNDEFINED; sf++) {
-				if (surfFormats[sf].format == allowed_formats[af]) {
-					format = surfFormats[sf].format;
-					color_space = surfFormats[sf].colorSpace;
+		// Get the list of VkFormat's that are supported:
+		uint32_t formatCount;
+		VkResult err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, p_surface, &formatCount, nullptr);
+		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		VkSurfaceFormatKHR *surfFormats = (VkSurfaceFormatKHR *)malloc(formatCount * sizeof(VkSurfaceFormatKHR));
+		err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, p_surface, &formatCount, surfFormats);
+		if (err) {
+			free(surfFormats);
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
+		// If the format list includes just one entry of VK_FORMAT_UNDEFINED,
+		// the surface has no preferred format.  Otherwise, at least one
+		// supported format will be returned.
+		if (formatCount == 1 && surfFormats[0].format == VK_FORMAT_UNDEFINED) {
+			format = VK_FORMAT_B8G8R8A8_UNORM;
+			color_space = surfFormats[0].colorSpace;
+		} else {
+			// These should be ordered with the ones we want to use on top and fallback modes further down
+			// we want a 32bit RGBA unsigned normalized buffer or similar.
+			const VkFormat allowed_formats[] = {
+				VK_FORMAT_B8G8R8A8_UNORM,
+				VK_FORMAT_R8G8B8A8_UNORM
+			};
+			uint32_t allowed_formats_count = sizeof(allowed_formats) / sizeof(VkFormat);
+
+			if (formatCount < 1) {
+				free(surfFormats);
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE, "formatCount less than 1");
+			}
+
+			// Find the first format that we support.
+			format = VK_FORMAT_UNDEFINED;
+			for (uint32_t af = 0; af < allowed_formats_count && format == VK_FORMAT_UNDEFINED; af++) {
+				for (uint32_t sf = 0; sf < formatCount && format == VK_FORMAT_UNDEFINED; sf++) {
+					if (surfFormats[sf].format == allowed_formats[af]) {
+						format = surfFormats[sf].format;
+						color_space = surfFormats[sf].colorSpace;
+					}
 				}
+			}
+
+			if (format == VK_FORMAT_UNDEFINED) {
+				free(surfFormats);
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE, "No usable surface format found.");
 			}
 		}
 
-		if (format == VK_FORMAT_UNDEFINED) {
-			free(surfFormats);
-			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "No usable surface format found.");
-		}
+		free(surfFormats);
 	}
-
-	free(surfFormats);
 
 	Error serr = _create_semaphores();
 	if (serr) {
@@ -1830,6 +1845,8 @@ VkExtent2D VulkanContext::_compute_swapchain_extent(const VkSurfaceCapabilitiesK
 }
 
 Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, VkSurfaceKHR p_surface, int p_width, int p_height) {
+	ERR_FAIL_NULL_V_MSG(_get_platform_surface_extension(), ERR_UNAVAILABLE, "This Vulkan context is headless.");
+
 	ERR_FAIL_COND_V(windows.has(p_window_id), ERR_INVALID_PARAMETER);
 
 	if (!device_initialized) {
@@ -1880,22 +1897,20 @@ bool VulkanContext::window_is_valid_swapchain(DisplayServer::WindowID p_window) 
 	return w->swapchain_image_resources != VK_NULL_HANDLE;
 }
 
-VkRenderPass VulkanContext::window_get_render_pass(DisplayServer::WindowID p_window) {
-	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
+RDD::RenderPassID VulkanContext::window_get_render_pass(DisplayServer::WindowID p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), RDD::RenderPassID());
 	Window *w = &windows[p_window];
-	// Vulkan use of currentbuffer.
-	return w->render_pass;
+	return (RDD::RenderPassID)w->render_pass;
 }
 
-VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_window) {
-	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
-	ERR_FAIL_COND_V(!buffers_prepared, VK_NULL_HANDLE);
+RDD::FramebufferID VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), RDD::FramebufferID());
+	ERR_FAIL_COND_V(!buffers_prepared, RDD::FramebufferID());
 	Window *w = &windows[p_window];
-	// Vulkan use of currentbuffer.
 	if (w->swapchain_image_resources != VK_NULL_HANDLE) {
-		return w->swapchain_image_resources[w->current_buffer].framebuffer;
+		return (RDD::FramebufferID)w->swapchain_image_resources[w->current_buffer].framebuffer;
 	} else {
-		return VK_NULL_HANDLE;
+		return RDD::FramebufferID();
 	}
 }
 
@@ -2235,7 +2250,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pPreserveAttachments*/ nullptr,
 		};
 
-		const VkRenderPassCreateInfo2KHR rp_info = {
+		const VkRenderPassCreateInfo2KHR pass_info = {
 			/*sType*/ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR,
 			/*pNext*/ nullptr,
 			/*flags*/ 0,
@@ -2249,7 +2264,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pCorrelatedViewMasks*/ nullptr,
 		};
 
-		err = vkCreateRenderPass2KHR(device, &rp_info, nullptr, &window->render_pass);
+		err = vkCreateRenderPass2KHR(device, &pass_info, nullptr, &window->render_pass);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {
@@ -2351,19 +2366,32 @@ Error VulkanContext::initialize() {
 		return err;
 	}
 
+	// Headless? Complete setup now.
+	if (!_get_platform_surface_extension()) {
+		err = _create_physical_device(VK_NULL_HANDLE);
+		if (err != OK) {
+			return err;
+		}
+
+		err = _initialize_queues(VK_NULL_HANDLE);
+		if (err != OK) {
+			return err;
+		}
+	}
+
 	return OK;
 }
 
-void VulkanContext::set_setup_buffer(VkCommandBuffer p_command_buffer) {
-	command_buffer_queue.write[0] = p_command_buffer;
+void VulkanContext::set_setup_buffer(RDD::CommandBufferID p_command_buffer) {
+	command_buffer_queue[0] = (VkCommandBuffer)p_command_buffer.id;
 }
 
-void VulkanContext::append_command_buffer(VkCommandBuffer p_command_buffer) {
+void VulkanContext::append_command_buffer(RDD::CommandBufferID p_command_buffer) {
 	if (command_buffer_queue.size() <= command_buffer_count) {
 		command_buffer_queue.resize(command_buffer_count + 1);
 	}
 
-	command_buffer_queue.write[command_buffer_count] = p_command_buffer;
+	command_buffer_queue[command_buffer_count] = (VkCommandBuffer)p_command_buffer.id;
 	command_buffer_count++;
 }
 
@@ -2389,7 +2417,7 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 		submit_info.signalSemaphoreCount = pending_flushable ? 1 : 0;
 		submit_info.pSignalSemaphores = pending_flushable ? &draw_complete_semaphores[frame_index] : nullptr;
 		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
-		command_buffer_queue.write[0] = nullptr;
+		command_buffer_queue[0] = nullptr;
 		ERR_FAIL_COND(err);
 	}
 
@@ -2415,7 +2443,7 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 	vkDeviceWaitIdle(device);
 }
 
-Error VulkanContext::prepare_buffers() {
+Error VulkanContext::prepare_buffers(RDD::CommandBufferID p_command_buffer) {
 	if (!queues_initialized) {
 		return OK;
 	}
@@ -2466,6 +2494,9 @@ Error VulkanContext::prepare_buffers() {
 	buffers_prepared = true;
 
 	return OK;
+}
+
+void VulkanContext::postpare_buffers(RDD::CommandBufferID p_command_buffer) {
 }
 
 Error VulkanContext::swap_buffers() {
@@ -2535,7 +2566,7 @@ Error VulkanContext::swap_buffers() {
 	err = vkQueueSubmit(graphics_queue, 1, &submit_info, fences[frame_index]);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Vulkan: Cannot submit graphics queue. Error code: " + String(string_VkResult(err)));
 
-	command_buffer_queue.write[0] = nullptr;
+	command_buffer_queue[0] = nullptr;
 	command_buffer_count = 1;
 
 	if (separate_present_queue) {
@@ -2690,6 +2721,14 @@ Error VulkanContext::swap_buffers() {
 void VulkanContext::resize_notify() {
 }
 
+RenderingDevice::Capabilities VulkanContext::get_device_capabilities() const {
+	RenderingDevice::Capabilities c;
+	c.device_family = RenderingDevice::DEVICE_VULKAN;
+	c.version_major = VK_API_VERSION_MAJOR(device_api_version);
+	c.version_minor = VK_API_VERSION_MINOR(device_api_version);
+	return c;
+}
+
 VkDevice VulkanContext::get_device() {
 	return device;
 }
@@ -2714,61 +2753,27 @@ VkFormat VulkanContext::get_screen_format() const {
 	return format;
 }
 
-VkPhysicalDeviceLimits VulkanContext::get_device_limits() const {
+const VkPhysicalDeviceLimits &VulkanContext::get_device_limits() const {
 	return gpu_props.limits;
 }
 
 RID VulkanContext::local_device_create() {
 	LocalDevice ld;
 
-	{ // Create device.
-		VkResult err;
-		float queue_priorities[1] = { 0.0 };
-		VkDeviceQueueCreateInfo queues[2];
-		queues[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queues[0].pNext = nullptr;
-		queues[0].queueFamilyIndex = graphics_queue_family_index;
-		queues[0].queueCount = 1;
-		queues[0].pQueuePriorities = queue_priorities;
-		queues[0].flags = 0;
-
-		uint32_t enabled_extension_count = 0;
-		const char *enabled_extension_names[MAX_EXTENSIONS];
-		ERR_FAIL_COND_V(enabled_device_extension_names.size() > MAX_EXTENSIONS, RID());
-		for (const CharString &extension_name : enabled_device_extension_names) {
-			enabled_extension_names[enabled_extension_count++] = extension_name.ptr();
-		}
-
-		VkDeviceCreateInfo sdevice = {
-			/*sType =*/VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-			/*pNext */ nullptr,
-			/*flags */ 0,
-			/*queueCreateInfoCount */ 1,
-			/*pQueueCreateInfos */ queues,
-			/*enabledLayerCount */ 0,
-			/*ppEnabledLayerNames */ nullptr,
-			/*enabledExtensionCount */ enabled_extension_count,
-			/*ppEnabledExtensionNames */ (const char *const *)enabled_extension_names,
-			/*pEnabledFeatures */ &physical_device_features, // If specific features are required, pass them in here.
-		};
-		err = vkCreateDevice(gpu, &sdevice, nullptr, &ld.device);
-		ERR_FAIL_COND_V(err, RID());
-	}
+	Error err = _create_device(ld.device);
+	ERR_FAIL_COND_V(err, RID());
 
 	{ // Create graphics queue.
 
 		vkGetDeviceQueue(ld.device, graphics_queue_family_index, 0, &ld.queue);
 	}
 
+	ld.driver = memnew(RenderingDeviceDriverVulkan(this, ld.device));
+
 	return local_device_owner.make_rid(ld);
 }
 
-VkDevice VulkanContext::local_device_get_vk_device(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
-	return ld->device;
-}
-
-void VulkanContext::local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count) {
+void VulkanContext::local_device_push_command_buffers(RID p_local_device, const RDD::CommandBufferID *p_buffers, int p_count) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(ld->waiting);
 
@@ -2779,7 +2784,7 @@ void VulkanContext::local_device_push_command_buffers(RID p_local_device, const 
 	submit_info.waitSemaphoreCount = 0;
 	submit_info.pWaitSemaphores = nullptr;
 	submit_info.commandBufferCount = p_count;
-	submit_info.pCommandBuffers = p_buffers;
+	submit_info.pCommandBuffers = (const VkCommandBuffer *)p_buffers;
 	submit_info.signalSemaphoreCount = 0;
 	submit_info.pSignalSemaphores = nullptr;
 
@@ -2808,11 +2813,12 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 
 void VulkanContext::local_device_free(RID p_local_device) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
+	memdelete(ld->driver);
 	vkDestroyDevice(ld->device, nullptr);
 	local_device_owner.free(p_local_device);
 }
 
-void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+void VulkanContext::command_begin_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) {
 	if (!is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
 		return;
 	}
@@ -2826,10 +2832,10 @@ void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String
 	label.color[1] = p_color[1];
 	label.color[2] = p_color[2];
 	label.color[3] = p_color[3];
-	CmdBeginDebugUtilsLabelEXT(p_command_buffer, &label);
+	CmdBeginDebugUtilsLabelEXT((VkCommandBuffer)p_command_buffer.id, &label);
 }
 
-void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+void VulkanContext::command_insert_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) {
 	if (!is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
 		return;
 	}
@@ -2842,14 +2848,14 @@ void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, Strin
 	label.color[1] = p_color[1];
 	label.color[2] = p_color[2];
 	label.color[3] = p_color[3];
-	CmdInsertDebugUtilsLabelEXT(p_command_buffer, &label);
+	CmdInsertDebugUtilsLabelEXT((VkCommandBuffer)p_command_buffer.id, &label);
 }
 
-void VulkanContext::command_end_label(VkCommandBuffer p_command_buffer) {
+void VulkanContext::command_end_label(RDD::CommandBufferID p_command_buffer) {
 	if (!is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
 		return;
 	}
-	CmdEndDebugUtilsLabelEXT(p_command_buffer);
+	CmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_command_buffer.id);
 }
 
 void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) {
@@ -2897,12 +2903,25 @@ void VulkanContext::set_vsync_mode(DisplayServer::WindowID p_window, DisplayServ
 	_update_swap_chain(&windows[p_window]);
 }
 
+RenderingDeviceDriver *VulkanContext::get_driver(RID p_local_device) {
+	if (p_local_device.is_valid()) {
+		LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
+		ERR_FAIL_NULL_V(ld, nullptr);
+		return ld->driver;
+	} else {
+		return driver;
+	}
+}
+
 VulkanContext::VulkanContext() {
 	command_buffer_queue.resize(1); // First one is always the setup command.
-	command_buffer_queue.write[0] = nullptr;
+	command_buffer_queue[0] = nullptr;
 }
 
 VulkanContext::~VulkanContext() {
+	if (driver) {
+		memdelete(driver);
+	}
 	if (queue_props) {
 		free(queue_props);
 	}
