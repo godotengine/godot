@@ -116,6 +116,14 @@
 				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
+		<method name="gui_find_control">
+			<return type="Control" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+				Returns the [Control] that would be under the mouse cursor if the mouse cursor were located at the
+				viewpoint coordinates provided by the point parameter. If no [Control] is at that point, returns null.
+			</description>
+		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
 			<return type="Variant" />
 			<description>
