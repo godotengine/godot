@@ -111,13 +111,12 @@ namespace Godot.SourceGenerators
         {
             ITypeParameterSymbol? typeParamSymbol = parentSymbol switch
             {
-                IMethodSymbol methodSymbol when parentSyntax.Parent is ExpressionSyntax &&
-                                                methodSymbol.TypeParameters.Length > 0
-                    => methodSymbol.TypeParameters[typeArgumentIndex],
-
                 IMethodSymbol methodSymbol when parentSyntax.Parent is AttributeSyntax &&
                                                 methodSymbol.ContainingType.TypeParameters.Length > 0
                     => methodSymbol.ContainingType.TypeParameters[typeArgumentIndex],
+
+                IMethodSymbol { TypeParameters: { Length: > 0 } } methodSymbol
+                    => methodSymbol.TypeParameters[typeArgumentIndex],
 
                 INamedTypeSymbol { TypeParameters: { Length: > 0 } } typeSymbol
                     => typeSymbol.TypeParameters[typeArgumentIndex],
