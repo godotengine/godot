@@ -330,6 +330,8 @@ class ProjectManager : public Control {
 
 	static ProjectManager *singleton;
 
+	void _update_size_limits();
+
 	Panel *background_panel = nullptr;
 	TabContainer *tabs = nullptr;
 	ProjectList *_project_list = nullptr;

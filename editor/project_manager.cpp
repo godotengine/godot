@@ -2062,6 +2062,36 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 	}
 }
 
+void ProjectManager::_update_size_limits() {
+	const Size2 minimum_size = Size2(680, 450) * EDSCALE;
+	const Size2 default_size = Size2(1024, 600) * EDSCALE;
+
+	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
+	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
+	if (w) {
+		// Calling Window methods this early doesn't sync properties with DS.
+		w->set_min_size(minimum_size);
+		DisplayServer::get_singleton()->window_set_min_size(minimum_size);
+		w->set_size(default_size);
+		DisplayServer::get_singleton()->window_set_size(default_size);
+	}
+
+	Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen());
+	if (screen_rect.size != Vector2i()) {
+		// Center the window on the screen.
+		Vector2i window_position;
+		window_position.x = screen_rect.position.x + (screen_rect.size.x - default_size.x) / 2;
+		window_position.y = screen_rect.position.y + (screen_rect.size.y - default_size.y) / 2;
+		DisplayServer::get_singleton()->window_set_position(window_position);
+
+		// Limit popup menus to prevent unusably long lists.
+		// We try to set it to half the screen resolution, but no smaller than the minimum window size.
+		Size2 half_screen_rect = (screen_rect.size * EDSCALE) / 2;
+		Size2 maximum_popup_size = MAX(half_screen_rect, minimum_size);
+		language_btn->get_popup()->set_max_size(maximum_popup_size);
+	}
+}
+
 void ProjectManager::_dim_window() {
 	// This method must be called before calling `get_tree()->quit()`.
 	// Otherwise, its effect won't be visible
@@ -3272,30 +3302,9 @@ ProjectManager::ProjectManager() {
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
-	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
-	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
-	if (w) {
-		w->set_min_size(Size2(520, 350) * EDSCALE);
-	}
-
-	// Resize the bootsplash window based on Editor display scale EDSCALE.
-	float scale_factor = MAX(1, EDSCALE);
-	if (scale_factor > 1.0) {
-		Vector2i window_size = DisplayServer::get_singleton()->window_get_size();
-		Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen());
-
-		window_size *= scale_factor;
-
-		DisplayServer::get_singleton()->window_set_size(window_size);
-		if (screen_rect.size != Vector2i()) {
-			Vector2i window_position;
-			window_position.x = screen_rect.position.x + (screen_rect.size.x - window_size.x) / 2;
-			window_position.y = screen_rect.position.y + (screen_rect.size.y - window_size.y) / 2;
-			DisplayServer::get_singleton()->window_set_position(window_position);
-		}
-	}
-
 	OS::get_singleton()->set_low_processor_usage_mode(true);
+
+	_update_size_limits();
 }
 
 ProjectManager::~ProjectManager() {
