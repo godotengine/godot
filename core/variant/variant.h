@@ -70,6 +70,7 @@ typedef Vector<int32_t> PackedInt32Array;
 typedef Vector<int64_t> PackedInt64Array;
 typedef Vector<float> PackedFloat32Array;
 typedef Vector<double> PackedFloat64Array;
+typedef Vector<real_t> PackedRealArray;
 typedef Vector<String> PackedStringArray;
 typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
