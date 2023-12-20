@@ -170,6 +170,9 @@ public:
 	RID_Owner<Item, true> canvas_item_owner;
 	RID_Owner<RendererCanvasRender::Light, true> canvas_light_owner;
 
+	template <class T>
+	void _free_rids(T &p_owner, const char *p_type);
+
 	bool disable_scale;
 	bool sdf_used = false;
 	bool snapping_2d_transforms_to_pixel = false;
@@ -329,6 +332,9 @@ public:
 	Rect2 _debug_canvas_item_get_rect(RID p_item);
 
 	bool free(RID p_rid);
+
+	void finalize();
+
 	RendererCanvasCull();
 	~RendererCanvasCull();
 };
