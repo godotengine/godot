@@ -1503,6 +1503,19 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->is_in_string(1) == -1);
 			CHECK(code_edit->is_in_string(2) != -1);
 			CHECK(code_edit->is_in_string(3) == -1);
+
+			/* Next check updating the delimiter cache while typing. */
+			code_edit->set_text("\n\n");
+			code_edit->set_caret_line(0);
+			code_edit->set_caret_column(0);
+			CHECK(code_edit->is_in_string(0) == -1);
+			CHECK(code_edit->is_in_string(1) == -1);
+			code_edit->insert_text_at_caret("#");
+			CHECK(code_edit->is_in_string(0) != -1);
+			CHECK(code_edit->is_in_string(1) != -1);
+			code_edit->insert_text_at_caret("#");
+			CHECK(code_edit->is_in_string(0) != -1);
+			CHECK(code_edit->is_in_string(1) == -1);
 		}
 
 		SUBCASE("[CodeEdit] multiline comment delimiters") {
@@ -1692,6 +1705,19 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->is_in_comment(1) == -1);
 			CHECK(code_edit->is_in_comment(2) != -1);
 			CHECK(code_edit->is_in_comment(3) == -1);
+
+			/* Next check updating the delimiter cache while typing. */
+			code_edit->set_text("\n\n");
+			code_edit->set_caret_line(0);
+			code_edit->set_caret_column(0);
+			CHECK(code_edit->is_in_comment(0) == -1);
+			CHECK(code_edit->is_in_comment(1) == -1);
+			code_edit->insert_text_at_caret("#");
+			CHECK(code_edit->is_in_comment(0) != -1);
+			CHECK(code_edit->is_in_comment(1) != -1);
+			code_edit->insert_text_at_caret("#");
+			CHECK(code_edit->is_in_comment(0) != -1);
+			CHECK(code_edit->is_in_comment(1) == -1);
 		}
 
 		SUBCASE("[CodeEdit] multiline mixed delimiters") {
