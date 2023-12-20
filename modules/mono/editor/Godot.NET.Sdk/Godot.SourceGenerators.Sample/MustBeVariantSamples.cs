@@ -12,7 +12,7 @@ public class MustBeVariantMethods
         // Method<NotVariant>();
     }
 
-    public void Method<[MustBeVariant] T>() where T : class
+    public void Method<[MustBeVariant] T>()
     {
     }
 }
@@ -48,7 +48,7 @@ public class ClassNonVariantAnnotated
 */
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-public class GenericTypeAttribute<[MustBeVariant] T> : Attribute where T : class
+public class GenericTypeAttribute<[MustBeVariant] T> : Attribute
 {
 }
 
