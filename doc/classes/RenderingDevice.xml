@@ -796,12 +796,13 @@
 				Returns the data format used to create this texture.
 			</description>
 		</method>
-		<method name="texture_get_native_handle">
+		<method name="texture_get_native_handle" is_deprecated="true">
 			<return type="int" />
 			<param index="0" name="texture" type="RID" />
 			<description>
 				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
 				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
+				[i]Deprecated.[/i] Use [method get_driver_resource] with [constant DRIVER_RESOURCE_TEXTURE] instead.
 			</description>
 		</method>
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
@@ -928,44 +929,91 @@
 		<constant name="DEVICE_TYPE_MAX" value="5" enum="DeviceType">
 			Represents the size of the [enum DeviceType] enum.
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource">
-			Vulkan device driver resource. This is a "global" resource and ignores the RID passed in
+		<constant name="DRIVER_RESOURCE_LOGICAL_DEVICE" value="0" enum="DriverResource">
+			Specific device object based on a physical device.
+			- Vulkan: Vulkan device driver resource ([code]VkDevice[/code]). ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource">
-			Physical device (graphics card) driver resource.
+		<constant name="DRIVER_RESOURCE_PHYSICAL_DEVICE" value="1" enum="DriverResource">
+			Physical device the specific logical device is based on.
+			- Vulkan: [code]VkDevice[/code]. ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_INSTANCE" value="2" enum="DriverResource">
-			Vulkan instance driver resource.
+		<constant name="DRIVER_RESOURCE_TOPMOST_OBJECT" value="2" enum="DriverResource">
+			Top-most graphics API entry object.
+			- Vulkan: [code]VkInstance[/code]. ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE" value="3" enum="DriverResource">
-			Vulkan queue driver resource.
+		<constant name="DRIVER_RESOURCE_COMMAND_QUEUE" value="3" enum="DriverResource">
+			The main graphics-compute command queue.
+			- Vulkan: [code]VkQueue[/code]. ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX" value="4" enum="DriverResource">
-			Vulkan queue family index driver resource.
+		<constant name="DRIVER_RESOURCE_QUEUE_FAMILY" value="4" enum="DriverResource">
+			The specific family the main queue belongs to.
+			- Vulkan: the queue family index, an [code]uint32_t[/code]. ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE" value="5" enum="DriverResource">
-			Vulkan image driver resource.
+		<constant name="DRIVER_RESOURCE_TEXTURE" value="5" enum="DriverResource">
+			- Vulkan: [code]VkImage[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_VIEW" value="6" enum="DriverResource">
-			Vulkan image view driver resource.
+		<constant name="DRIVER_RESOURCE_TEXTURE_VIEW" value="6" enum="DriverResource">
+			The view of an owned or shared texture.
+			- Vulkan: [code]VkImageView[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT" value="7" enum="DriverResource">
-			Vulkan image native texture format driver resource.
+		<constant name="DRIVER_RESOURCE_TEXTURE_DATA_FORMAT" value="7" enum="DriverResource">
+			The native id of the data format of the texture.
+			- Vulkan: [code]VkFormat[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_SAMPLER" value="8" enum="DriverResource">
-			Vulkan sampler driver resource.
+		<constant name="DRIVER_RESOURCE_SAMPLER" value="8" enum="DriverResource">
+			- Vulkan: [code]VkSampler[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET" value="9" enum="DriverResource">
-			Vulkan [url=https://vkguide.dev/docs/chapter-4/descriptors/]descriptor set[/url] driver resource.
+		<constant name="DRIVER_RESOURCE_UNIFORM_SET" value="9" enum="DriverResource">
+			- Vulkan: [code]VkDescriptorSet[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_BUFFER" value="10" enum="DriverResource">
-			Vulkan buffer driver resource.
+		<constant name="DRIVER_RESOURCE_BUFFER" value="10" enum="DriverResource">
+			Buffer of any kind of (storage, vertex, etc.).
+			- Vulkan: [code]VkBuffer[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource">
-			Vulkan compute pipeline driver resource.
+		<constant name="DRIVER_RESOURCE_COMPUTE_PIPELINE" value="11" enum="DriverResource">
+			- Vulkan: [code]VkPipeline[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource">
-			Vulkan render pipeline driver resource.
+		<constant name="DRIVER_RESOURCE_RENDER_PIPELINE" value="12" enum="DriverResource">
+			- Vulkan: [code]VkPipeline[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_LOGICAL_DEVICE].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_PHYSICAL_DEVICE].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_INSTANCE" value="2" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_TOPMOST_OBJECT].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE" value="3" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_COMMAND_QUEUE].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX" value="4" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_QUEUE_FAMILY].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE" value="5" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_TEXTURE].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_VIEW" value="6" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_TEXTURE_VIEW].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT" value="7" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_TEXTURE_DATA_FORMAT].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_SAMPLER" value="8" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_SAMPLER].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET" value="9" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_UNIFORM_SET].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_BUFFER" value="10" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_BUFFER].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_COMPUTE_PIPELINE].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource" is_deprecated="true">
+			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_RENDER_PIPELINE].
 		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
 			4-bit-per-channel red/green channel data format, packed into 8 bits. Values are in the [code][0.0, 1.0][/code] range.

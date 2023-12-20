@@ -53,7 +53,7 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
@@ -192,10 +192,20 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			[layer setBackgroundColor:bg_color.CGColor];
 		}
 
-#if defined(VULKAN_ENABLED)
-		if (context_vulkan) {
-			Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan context");
+#if defined(RD_ENABLED)
+		if (context_rd) {
+			union {
+#ifdef VULKAN_ENABLED
+				VulkanContextMacOS::WindowPlatformData vulkan;
+#endif
+			} wpd;
+#ifdef VULKAN_ENABLED
+			if (rendering_driver == "vulkan") {
+				wpd.vulkan.view_ptr = &wd.window_view;
+			}
+#endif
+			Error err = context_rd->window_create(window_id_counter, p_vsync_mode, p_rect.size.width, p_rect.size.height, &wpd);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s context", context_rd->get_api_name()));
 		}
 #endif
 #if defined(GLES3_ENABLED)
@@ -245,9 +255,9 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		gl_manager_angle->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
-#if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		context_vulkan->window_resize(id, wd.size.width, wd.size.height);
+#if defined(RD_ENABLED)
+	if (context_rd) {
+		context_rd->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
 
@@ -776,9 +786,9 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 		gl_manager_legacy->window_destroy(p_window);
 	}
 #endif
-#ifdef VULKAN_ENABLED
-	if (context_vulkan) {
-		context_vulkan->window_destroy(p_window);
+#ifdef RD_ENABLED
+	if (context_rd) {
+		context_rd->window_destroy(p_window);
 	}
 #endif
 	windows.erase(p_window);
@@ -795,8 +805,8 @@ void DisplayServerMacOS::window_resize(WindowID p_window, int p_width, int p_hei
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		context_vulkan->window_resize(p_window, p_width, p_height);
+	if (context_rd) {
+		context_rd->window_resize(p_window, p_width, p_height);
 	}
 #endif
 }
@@ -3830,8 +3840,8 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	if (context_rd) {
+		context_rd->set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 }
@@ -3847,8 +3857,8 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (context_vulkan) {
-		return context_vulkan->get_vsync_mode(p_window);
+	if (context_rd) {
+		return context_rd->get_vsync_mode(p_window);
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
@@ -4648,12 +4658,17 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		}
 	}
 #endif
+#if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		context_vulkan = memnew(VulkanContextMacOS);
-		if (context_vulkan->initialize() != OK) {
-			memdelete(context_vulkan);
-			context_vulkan = nullptr;
+		context_rd = memnew(VulkanContextMacOS);
+	}
+#endif
+
+	if (context_rd) {
+		if (context_rd->initialize() != OK) {
+			memdelete(context_rd);
+			context_rd = nullptr;
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize Vulkan");
 		}
@@ -4689,10 +4704,10 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		RasterizerGLES3::make_current(false);
 	}
 #endif
-#if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
-		rendering_device_vulkan->initialize(context_vulkan);
+#if defined(RD_ENABLED)
+	if (context_rd) {
+		rendering_device = memnew(RenderingDevice);
+		rendering_device->initialize(context_rd);
 
 		RendererCompositorRD::make_current();
 	}
@@ -4726,16 +4741,16 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		gl_manager_angle = nullptr;
 	}
 #endif
-#if defined(VULKAN_ENABLED)
-	if (rendering_device_vulkan) {
-		rendering_device_vulkan->finalize();
-		memdelete(rendering_device_vulkan);
-		rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	if (rendering_device) {
+		rendering_device->finalize();
+		memdelete(rendering_device);
+		rendering_device = nullptr;
 	}
 
-	if (context_vulkan) {
-		memdelete(context_vulkan);
-		context_vulkan = nullptr;
+	if (context_rd) {
+		memdelete(context_rd);
+		context_rd = nullptr;
 	}
 #endif
 

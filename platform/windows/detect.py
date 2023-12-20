@@ -191,7 +191,11 @@ def get_opts():
         ("mesa_libs", "Path to the MESA/NIR static libraries (required for D3D12)", ""),
         ("dxc_path", "Path to the DirectX Shader Compiler distribution (required for D3D12)", ""),
         ("agility_sdk_path", "Path to the Agility SDK distribution (optional for D3D12)", ""),
-        ("agility_sdk_multiarch", "Whether the Agility SDK DLLs will be stored in arch-specific subdirectories", False),
+        BoolVariable(
+            "agility_sdk_multiarch",
+            "Whether the Agility SDK DLLs will be stored in arch-specific subdirectories",
+            False,
+        ),
         ("pix_path", "Path to the PIX runtime distribution (optional for D3D12)", ""),
     ]
 
@@ -660,14 +664,13 @@ def configure_mingw(env):
     if env["d3d12"]:
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED"])
         env.Append(LIBS=["d3d12", "dxgi", "dxguid"])
-        env.Append(LIBS=["version"])  # Mesa dependency.
 
         arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
 
         # PIX
         if env["pix_path"] != "":
-            print("PIX runtime is not supported with MinGW.")
-            sys.exit(255)
+            env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
+            env.Append(LIBS=["WinPixEventRuntime"])
 
         # Mesa
         if env["mesa_libs"] == "":
@@ -676,6 +679,7 @@ def configure_mingw(env):
 
         env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
         env.Append(LIBS=["libNIR.windows." + env["arch"]])
+        env.Append(LIBS=["version"])  # Mesa dependency.
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
