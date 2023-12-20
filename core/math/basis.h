@@ -136,6 +136,8 @@ struct _NO_DISCARD_ Basis {
 	_FORCE_INLINE_ Basis operator-(const Basis &p_matrix) const;
 	_FORCE_INLINE_ void operator*=(const real_t p_val);
 	_FORCE_INLINE_ Basis operator*(const real_t p_val) const;
+	_FORCE_INLINE_ void operator/=(const real_t p_val);
+	_FORCE_INLINE_ Basis operator/(const real_t p_val) const;
 
 	bool is_orthogonal() const;
 	bool is_orthonormal() const;
@@ -286,6 +288,18 @@ _FORCE_INLINE_ void Basis::operator*=(const real_t p_val) {
 _FORCE_INLINE_ Basis Basis::operator*(const real_t p_val) const {
 	Basis ret(*this);
 	ret *= p_val;
+	return ret;
+}
+
+_FORCE_INLINE_ void Basis::operator/=(const real_t p_val) {
+	rows[0] /= p_val;
+	rows[1] /= p_val;
+	rows[2] /= p_val;
+}
+
+_FORCE_INLINE_ Basis Basis::operator/(const real_t p_val) const {
+	Basis ret(*this);
+	ret /= p_val;
 	return ret;
 }
 
