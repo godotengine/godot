@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  groups_editor.h                                                       */
+/*  group_settings_editor.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,117 +28,80 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GROUPS_EDITOR_H
-#define GROUPS_EDITOR_H
+#ifndef GROUP_SETTINGS_EDITOR_H
+#define GROUP_SETTINGS_EDITOR_H
 
 #include "scene/gui/dialogs.h"
 
-class Button;
 class CheckBox;
-class CheckButton;
+class EditorFileSystemDirectory;
 class EditorValidationPanel;
+class FileSystemDock;
 class Label;
-class LineEdit;
-class PopupMenu;
 class Tree;
-class TreeItem;
 
-class GroupsEditor : public VBoxContainer {
-	GDCLASS(GroupsEditor, VBoxContainer);
+class GroupSettingsEditor : public VBoxContainer {
+	GDCLASS(GroupSettingsEditor, VBoxContainer);
 
 	const String GLOBAL_GROUP_PREFIX = "global_group/";
+	const StringName group_changed = "group_changed";
 
-	bool updating_tree = false;
+	HashMap<StringName, String> groups_cache;
+
 	bool updating_groups = false;
-	bool groups_dirty = false;
-	bool update_groups_and_tree_queued = false;
 
-	Node *node = nullptr;
-	Node *scene_root_node = nullptr;
-	SceneTree *scene_tree = nullptr;
+	AcceptDialog *message = nullptr;
+	Tree *tree = nullptr;
+	LineEdit *group_name = nullptr;
+	LineEdit *group_description = nullptr;
+	Button *add_button = nullptr;
 
-	ConfirmationDialog *add_group_dialog = nullptr;
-	LineEdit *add_group_name = nullptr;
-	LineEdit *add_group_description = nullptr;
-	CheckButton *global_group_button = nullptr;
-	EditorValidationPanel *add_validation_panel = nullptr;
+	ConfirmationDialog *remove_dialog = nullptr;
+	CheckBox *remove_check_box = nullptr;
+	Label *remove_label = nullptr;
 
 	ConfirmationDialog *rename_group_dialog = nullptr;
 	LineEdit *rename_group = nullptr;
 	CheckBox *rename_check_box = nullptr;
 	EditorValidationPanel *rename_validation_panel = nullptr;
 
-	ConfirmationDialog *remove_group_dialog = nullptr;
-	CheckBox *remove_check_box = nullptr;
-	Label *remove_label = nullptr;
+	void _show_remove_dialog();
+	void _show_rename_dialog();
 
-	PopupMenu *menu = nullptr;
-
-	LineEdit *filter = nullptr;
-	Button *add = nullptr;
-	Tree *tree = nullptr;
-
-	HashMap<Node *, HashMap<StringName, bool>> scene_groups_cache;
-	HashMap<StringName, bool> scene_groups_for_caching;
-
-	HashMap<StringName, bool> scene_groups;
-	HashMap<StringName, String> global_groups;
-
-	void _update_scene_groups(Node *p_node);
-	void _cache_scene_groups(Node *p_node);
-
-	void _show_add_group_dialog();
-	void _show_rename_group_dialog();
-	void _show_remove_group_dialog();
-
-	void _check_add();
+	String _check_new_group_name(const String &p_name);
 	void _check_rename();
-	void _validate_name(const String &p_name, EditorValidationPanel *p_validation_panel);
 
-	void _update_tree();
+	void _add_group();
+	void _add_group(const String &p_name, const String &p_description);
 
-	void _update_groups();
-	void _load_scene_groups(Node *p_node);
+	void _modify_references(const StringName &p_name, const StringName &p_new_name, bool p_is_rename);
 
-	void _add_scene_group(const String &p_name);
-	void _rename_scene_group(const String &p_old_name, const String &p_new_name);
-	void _remove_scene_group(const String &p_name);
-
-	bool _has_group(const String &p_name);
-	void _set_group_checked(const String &p_name, bool p_checked);
-
-	void _confirm_add();
 	void _confirm_rename();
 	void _confirm_delete();
 
+	void _text_submitted(const String &p_text);
+	void _group_name_text_changed(const String &p_name);
+
 	void _item_edited();
-	void _item_mouse_selected(const Vector2 &p_pos, MouseButton p_mouse_button);
-	void _modify_group(Object *p_item, int p_column, int p_id, MouseButton p_mouse_button);
-	void _menu_id_pressed(int p_id);
-
-	void _update_groups_and_tree();
-	void _queue_update_groups_and_tree();
-
-	void _groups_gui_input(Ref<InputEvent> p_event);
-
-	void _node_removed(Node *p_node);
+	void _item_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	enum ModifyButton {
-		DELETE_GROUP,
-		COPY_GROUP,
-		RENAME_GROUP,
-		CONVERT_GROUP,
-	};
+	void show_message(const String &p_message);
 
-	void set_current(Node *p_node);
+	void remove_references(const StringName &p_name);
+	void rename_references(const StringName &p_old_name, const StringName &p_new_name);
 
-	GroupsEditor();
-	~GroupsEditor();
+	bool remove_node_references(Node *p_node, const StringName &p_name);
+	bool rename_node_references(Node *p_node, const StringName &p_old_name, const StringName &p_new_name);
+
+	void update_groups();
+	void connect_filesystem_dock_signals(FileSystemDock *p_fs_dock);
+
+	GroupSettingsEditor();
 };
 
-#endif // GROUPS_EDITOR_H
+#endif // GROUP_SETTINGS_EDITOR_H

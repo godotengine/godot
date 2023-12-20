@@ -1714,6 +1714,19 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 				filename = dir_access->get_next();
 			}
 		}
+	} else {
+		bool add_options = false;
+		if (p_idx == 0) {
+			add_options = p_function == "get_nodes_in_group" || p_function == "has_group" || p_function == "get_first_node_in_group" || p_function == "set_group" || p_function == "notify_group" || p_function == "call_group" || p_function == "add_to_group";
+		} else if (p_idx == 1) {
+			add_options = p_function == "set_group_flags" || p_function == "call_group_flags" || p_function == "notify_group_flags";
+		}
+		if (add_options) {
+			HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
+			for (const KeyValue<StringName, String> &E : global_groups) {
+				r_options->push_back(E.key.operator String().quote());
+			}
+		}
 	}
 }
 
