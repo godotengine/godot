@@ -719,6 +719,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create_from_extension", "type", "format", "samples", "usage_flags", "image", "width", "height", "depth", "layers"), &RenderingDevice::texture_create_from_extension);
 
 	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data", "post_barrier"), &RenderingDevice::texture_update, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
+	ClassDB::bind_method(D_METHOD("texture_update_partial", "texture", "data", "data_size", "dst_pos", "dst_mipmap", "layer", "post_barrier"), &RenderingDevice::texture_update_partial, DEFVAL(0), DEFVAL(0), DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);
 
 	ClassDB::bind_method(D_METHOD("texture_is_format_supported_for_usage", "format", "usage_flags"), &RenderingDevice::texture_is_format_supported_for_usage);
