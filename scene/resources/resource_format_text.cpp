@@ -2289,10 +2289,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 
 			String connstr = "[connection";
-			connstr += " signal=\"" + String(state->get_connection_signal(i).c_escape()) + "\"";
-			connstr += " from=\"" + String(state->get_connection_source(i).simplified().c_escape()) + "\"";
-			connstr += " to=\"" + String(state->get_connection_target(i).simplified().c_escape()) + "\"";
-			connstr += " method=\"" + String(state->get_connection_method(i).c_escape()) + "\"";
+			connstr += " signal=\"" + String(state->get_connection_signal(i)).c_escape() + "\"";
+			connstr += " from=\"" + String(state->get_connection_source(i).simplified()).c_escape() + "\"";
+			connstr += " to=\"" + String(state->get_connection_target(i).simplified()).c_escape() + "\"";
+			connstr += " method=\"" + String(state->get_connection_method(i)).c_escape() + "\"";
 			int flags = state->get_connection_flags(i);
 			if (flags != Object::CONNECT_PERSIST) {
 				connstr += " flags=" + itos(flags);
