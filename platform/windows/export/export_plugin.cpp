@@ -424,20 +424,6 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		rcedit_path = "rcedit"; // try to run rcedit from PATH
 	}
 
-#ifndef WINDOWS_ENABLED
-	// On non-Windows we need WINE to run rcedit
-	String wine_path = EDITOR_GET("export/windows/wine");
-
-	if (!wine_path.is_empty() && !FileAccess::exists(wine_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find wine executable at \"%s\"."), wine_path));
-		return ERR_FILE_NOT_FOUND;
-	}
-
-	if (wine_path.is_empty()) {
-		wine_path = "wine"; // try to run wine from PATH
-	}
-#endif
-
 	String icon_path;
 	if (p_preset->get("application/icon") != "") {
 		icon_path = p_preset->get("application/icon");
@@ -515,6 +501,17 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 #ifndef WINDOWS_ENABLED
 	// On non-Windows we need WINE to run rcedit unless its being run via PATH
 	if (rcedit_path != "rcedit") {
+		String wine_path = EDITOR_GET("export/windows/wine");
+
+		if (!wine_path.is_empty() && !FileAccess::exists(wine_path)) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find wine executable at \"%s\"."), wine_path));
+			return ERR_FILE_NOT_FOUND;
+		}
+
+		if (wine_path.is_empty()) {
+			wine_path = "wine"; // try to run wine from PATH
+		}
+
 		args.push_front(rcedit_path);
 		rcedit_path = wine_path;
 		setenv("WINEDEBUG", "-all", true); // Disable wine debug messages
