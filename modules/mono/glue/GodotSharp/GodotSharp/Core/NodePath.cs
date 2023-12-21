@@ -138,7 +138,7 @@ namespace Godot
         /// Converts this <see cref="NodePath"/> to a string.
         /// </summary>
         /// <param name="from">The <see cref="NodePath"/> to convert.</param>
-        [return: NotNullIfNotNull(nameof(from))]
+        [return: NotNullIfNotNull("from")]
         public static implicit operator string?(NodePath? from) => from?.ToString();
 
         /// <summary>
