@@ -9,6 +9,7 @@ internal class ReflectionUtils
 {
     public static Type? FindTypeInLoadedAssemblies(string assemblyName, string typeFullName)
     {
-        return Type.GetType($"{assemblyName}.{typeFullName}");
+        // TODO: Validate the side effects of this workaround
+        return null;
     }
 }
