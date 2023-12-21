@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10</LangVersion>
         <!-- Specify compile items manually to avoid including dangling generated items. -->
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     </PropertyGroup>
