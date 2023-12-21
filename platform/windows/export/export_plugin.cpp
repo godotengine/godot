@@ -415,13 +415,11 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon) {
 	String rcedit_path = EDITOR_GET("export/windows/rcedit");
 
-	if (rcedit_path != String() && !FileAccess::exists(rcedit_path)) {
+	if (rcedit_path.is_empty()) {
+		rcedit_path = "rcedit"; // try to run rcedit from PATH
+	} else if (!FileAccess::exists(rcedit_path)) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find rcedit executable at \"%s\"."), rcedit_path));
 		return ERR_FILE_NOT_FOUND;
-	}
-
-	if (rcedit_path == String()) {
-		rcedit_path = "rcedit"; // try to run rcedit from PATH
 	}
 
 	String icon_path;
