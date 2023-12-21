@@ -115,10 +115,10 @@ namespace Godot.SourceGenerators
                                                 methodSymbol.ContainingType.TypeParameters.Length > 0
                     => methodSymbol.ContainingType.TypeParameters[typeArgumentIndex],
 
-                IMethodSymbol { TypeParameters: { Length: > 0 } } methodSymbol
+                IMethodSymbol { TypeParameters.Length: > 0 } methodSymbol
                     => methodSymbol.TypeParameters[typeArgumentIndex],
 
-                INamedTypeSymbol { TypeParameters: { Length: > 0 } } typeSymbol
+                INamedTypeSymbol { TypeParameters.Length: > 0 } typeSymbol
                     => typeSymbol.TypeParameters[typeArgumentIndex],
                 _
                     => null
