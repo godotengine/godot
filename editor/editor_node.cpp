@@ -511,8 +511,9 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 
 		scene_root_parent->add_theme_style_override("panel", theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
 		bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
-		main_menu->add_theme_style_override("hover", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
+		main_menu->add_theme_style_override("pressed", theme->get_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
 		distraction_free->set_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
+		distraction_free->add_theme_style_override("pressed", theme->get_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
 		bottom_panel_raise->set_icon(theme->get_icon(SNAME("ExpandBottomDock"), EditorStringName(EditorIcons)));
 
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), theme->get_icon(SNAME("HelpSearch"), EditorStringName(EditorIcons)));
@@ -528,6 +529,11 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 
 		if (EditorDebuggerNode::get_singleton()->is_visible()) {
 			bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
+		}
+
+		for (int i = 0; i < bottom_panel_items.size(); i++) {
+			bottom_panel_items.write[i].button->add_theme_style_override("pressed", theme->get_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
+			bottom_panel_items.write[i].button->add_theme_style_override("hover_pressed", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
 		}
 
 		for (int i = 0; i < main_editor_buttons.size(); i++) {
@@ -3293,7 +3299,6 @@ void EditorNode::select_editor_by_name(const String &p_name) {
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 	if (p_editor->has_main_screen()) {
 		Button *tb = memnew(Button);
-		tb->set_flat(true);
 		tb->set_toggle_mode(true);
 		tb->set_theme_type_variation("MainScreenButton");
 		tb->set_name(p_editor->get_name());
@@ -5188,7 +5193,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 
 Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item, bool p_at_front) {
 	Button *tb = memnew(Button);
-	tb->set_flat(true);
+	tb->set_theme_type_variation("FlatMenuButton");
 	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch_by_control).bind(p_item));
 	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorNode::_bottom_panel_drag_hover).bind(tb, p_item), Callable());
 	tb->set_text(p_text);
@@ -6661,7 +6666,7 @@ EditorNode::EditorNode() {
 	scene_tabs->connect("tab_closed", callable_mp(this, &EditorNode::_scene_tab_closed));
 
 	distraction_free = memnew(Button);
-	distraction_free->set_flat(true);
+	distraction_free->set_theme_type_variation("FlatMenuButton");
 	ED_SHORTCUT_AND_COMMAND("editor/distraction_free_mode", TTR("Distraction Free Mode"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F11);
 	ED_SHORTCUT_OVERRIDE("editor/distraction_free_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::D);
 	distraction_free->set_shortcut(ED_GET_SHORTCUT("editor/distraction_free_mode"));
@@ -6701,9 +6706,7 @@ EditorNode::EditorNode() {
 
 	main_menu = memnew(MenuBar);
 	title_bar->add_child(main_menu);
-
-	main_menu->add_theme_style_override("hover", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
-	main_menu->set_flat(true);
+	main_menu->set_theme_type_variation("FlatMenuButton");
 	main_menu->set_start_index(0); // Main menu, add to the start of global menu.
 	main_menu->set_prefer_global_menu(global_menu);
 	main_menu->set_switch_on_hover(true);
@@ -7169,7 +7172,8 @@ EditorNode::EditorNode() {
 	bottom_panel_raise = memnew(Button);
 	bottom_panel_hb->add_child(bottom_panel_raise);
 	bottom_panel_raise->hide();
-	bottom_panel_raise->set_flat(true);
+	bottom_panel_raise->set_flat(false);
+	bottom_panel_raise->set_theme_type_variation("FlatMenuButton");
 	bottom_panel_raise->set_toggle_mode(true);
 	bottom_panel_raise->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
 	bottom_panel_raise->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_raise_toggled));
