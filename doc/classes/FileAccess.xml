@@ -297,10 +297,13 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="mode_flags" type="int" enum="FileAccess.ModeFlags" />
 			<param index="2" name="compression_mode" type="int" enum="FileAccess.CompressionMode" default="0" />
+			<param index="3" name="block_size" type="int" default="4096" />
 			<description>
-				Creates a new [FileAccess] object and opens a compressed file for reading or writing.
-				[b]Note:[/b] [method open_compressed] can only read files that were saved by Godot, not third-party compression formats. See [url=https://github.com/godotengine/godot/issues/28999]GitHub issue #28999[/url] for a workaround.
+				Creates a new [FileAccess] object and opens a compressed file for reading or writing. The compression mode and block size can be adjusted to tune compression efficiency versus performance and memory usage. A higher block size can lead to significantly better compression ratios, at the cost of increased memory usage and lower performance when seeking in the file (since the entire block needs to be decompressed to even read a single byte from the block). The default value of [code]4096[/code] is optimized for fast seeking; consider increasing it to a value like [code]16384[/code] for files that aren't seeked often. To perform solid compression (where the entire file is compressed as a single block up to 2 GB), use a block size of [code]0[/code]. This will result in the best possible compression ratios, but can require a lot of memory to (de)compress for large files and makes seeking in the file very slow.
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
+				To tune compression performance and efficiency, adjust the project settings in the [b]Compression &gt; Formats[/b] section.
+				[b]Note:[/b] When opening an existing file, the chosen compression mode must match the existing file, but the chosen block size can differ as it will be read from the existing file. In this case, the new block size will only be effective once the file is saved.
+				[b]Note:[/b] [method open_compressed] can only read files that were saved by Godot, not third-party compression formats. See [url=https://github.com/godotengine/godot/issues/28999]GitHub issue #28999[/url] for a workaround.
 			</description>
 		</method>
 		<method name="open_encrypted" qualifiers="static">

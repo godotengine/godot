@@ -108,6 +108,11 @@ protected:
 
 	static FileCloseFailNotify close_fail_notify;
 
+#ifndef DISABLE_DEPRECATED
+	static Ref<FileAccess> _open_compressed_bind_compat_86395(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
+	static void _bind_compatibility_methods();
+#endif
+
 private:
 	static bool backup_save;
 	thread_local static Error last_file_open_error;
@@ -199,7 +204,7 @@ public:
 
 	static Ref<FileAccess> open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
 	static Ref<FileAccess> open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass);
-	static Ref<FileAccess> open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
+	static Ref<FileAccess> open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ, int p_block_size = 4096);
 	static Error get_open_error();
 
 	static CreateFunc get_create_func(AccessType p_access);

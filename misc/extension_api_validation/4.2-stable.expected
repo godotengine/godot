@@ -73,3 +73,10 @@ GH-87668
 Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 8 to 9.
 
 Added optional "baseline_offset" argument. Compatibility method registered.
+
+
+GH-86395
+--------
+Validate extension JSON: Error: Field 'classes/FileAccess/methods/open_compressed/arguments': size changed value in new API, from 3 to 4.
+
+Added optional argument to open_compressed to specify a compression block size.
