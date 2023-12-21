@@ -33,7 +33,7 @@
 		</signal>
 		<signal name="drag_started">
 			<description>
-				Emitted when dragging is started.
+				Emitted when dragging is started. This is emitted before the corresponding [signal Range.value_changed] signal.
 			</description>
 		</signal>
 	</signals>
