@@ -512,8 +512,8 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 
 		args.push_front(rcedit_path);
 		rcedit_path = wine_path;
-		setenv("WINEDEBUG", "-all", true); // Disable wine debug messages
-		setenv("WINEDLLOVERRIDES", "mscoree=", true); // Prevent wine-mono install prompt on first run
+		OS::get_singleton()->set_environment("WINEDEBUG", "-all"); // Disable wine debug messages
+		OS::get_singleton()->set_environment("WINEDLLOVERRIDES", "mscoree="); // Prevent wine-mono install prompt on first run
 	}
 #endif
 
