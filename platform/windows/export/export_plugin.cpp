@@ -513,11 +513,13 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	}
 
 #ifndef WINDOWS_ENABLED
-	// On non-Windows we need WINE to run rcedit
-	args.push_front(rcedit_path);
-	rcedit_path = wine_path;
-	setenv("WINEDEBUG", "-all", true); // Disable wine debug messages
-	setenv("WINEDLLOVERRIDES", "mscoree=", true); // Prevent wine-mono install prompt on first run
+	// On non-Windows we need WINE to run rcedit unless its being run via PATH
+	if (rcedit_path != "rcedit") {
+		args.push_front(rcedit_path);
+		rcedit_path = wine_path;
+		setenv("WINEDEBUG", "-all", true); // Disable wine debug messages
+		setenv("WINEDLLOVERRIDES", "mscoree=", true); // Prevent wine-mono install prompt on first run
+	}
 #endif
 
 	String str;
