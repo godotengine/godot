@@ -357,13 +357,27 @@ void PropertySelector::_update_search() {
 	get_ok_button()->set_disabled(root->get_first_child() == nullptr);
 }
 
+Dictionary selected_properties;
 void PropertySelector::_confirmed() {
+	Array keys = selected_properties.keys();
 	TreeItem *ti = search_options->get_selected();
 	if (!ti) {
 		return;
 	}
-	emit_signal(SNAME("selected"), ti->get_metadata(0));
+	for (int i = 0; i < keys.size(); i++){
+		emit_signal(SNAME("selected"), keys[i]);
+	}
+	selected_properties.clear();
 	hide();
+}
+
+void PropertySelector::_multi_item_selected(Object *p_item, int column,bool is_item_selected) {
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
+	if (is_item_selected) {
+		selected_properties[item->get_metadata(0)];
+	}	else {
+		selected_properties.erase(item->get_metadata(0));
+	}
 }
 
 void PropertySelector::_item_selected() {
@@ -562,19 +576,22 @@ PropertySelector::PropertySelector() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 	//set_child_rect(vbc);
+
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &PropertySelector::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	search_options->set_select_mode(search_options->SELECT_MULTI);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	set_ok_button_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));
+	search_options->connect("multi_selected", callable_mp(this, &PropertySelector::_multi_item_selected));
 	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
+	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 

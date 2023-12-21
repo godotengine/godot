@@ -48,6 +48,7 @@ class PropertySelector : public ConfirmationDialog {
 	void _update_search();
 	void _confirmed();
 	void _item_selected();
+	void _multi_item_selected(Object *p_item, int column,bool is_item_selected);
 	void _hide_requested();
 
 	EditorHelpBit *help_bit = nullptr;
