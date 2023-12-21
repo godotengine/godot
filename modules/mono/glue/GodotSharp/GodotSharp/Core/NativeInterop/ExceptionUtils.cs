@@ -241,7 +241,7 @@ namespace Godot.NativeInterop
             return variant->Type.ToString();
         }
 
-        internal static void ThrowIfNullPtr(IntPtr ptr, [CallerArgumentExpression(nameof(ptr))] string? paramName = null)
+        internal static void ThrowIfNullPtr(IntPtr ptr, [CallerArgumentExpression("ptr")] string? paramName = null)
         {
             if (ptr == IntPtr.Zero)
             {
