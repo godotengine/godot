@@ -561,7 +561,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="from">The typed dictionary to convert.</param>
         /// <returns>A new Godot Dictionary, or <see langword="null"/> if <see paramref="from"/> was null.</returns>
-        [return: NotNullIfNotNull(nameof(from))]
+        [return: NotNullIfNotNull("from")]
         public static explicit operator Dictionary?(Dictionary<TKey, TValue>? from)
         {
             return from?._underlyingDict;
