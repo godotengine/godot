@@ -241,3 +241,12 @@ task copyAndRenameReleaseAab(type: Copy) {
     into getExportPath()
     rename "build-release.aab", getExportFilename()
 }
+
+/**
+ * Used to validate the version of the Java SDK used for the Godot gradle builds.
+ */
+task validateJavaVersion {
+    if (JavaVersion.current() != versions.javaVersion) {
+        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the required Java version for Godot gradle builds.")
+    }
+}
