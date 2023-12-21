@@ -91,12 +91,32 @@ void ProgressBar::_notification(int p_what) {
 			}
 
 			if (show_percentage) {
-				String txt = itos(int(get_as_ratio() * 100));
+				double ratio = 0;
+
+				// Avoid division by zero.
+				if (Math::is_equal_approx(get_max(), get_min())) {
+					ratio = 1;
+				} else if (is_ratio_exp() && get_min() >= 0 && get_value() >= 0) {
+					double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
+					double exp_max = Math::log(get_max()) / Math::log((double)2);
+					double exp_value = get_value() == 0 ? 0.0 : Math::log(get_value()) / Math::log((double)2);
+					double percentage = (exp_value - exp_min) / (exp_max - exp_min);
+
+					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+				} else {
+					double percentage = (get_value() - get_min()) / (get_max() - get_min());
+
+					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+				}
+
+				String txt = itos(int(ratio * 100));
+
 				if (is_localizing_numeral_system()) {
 					txt = TS->format_number(txt) + TS->percent_sign();
 				} else {
 					txt += String("%");
 				}
+
 				TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 				Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
 

@@ -9,6 +9,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_param" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="param" type="int" enum="ParticleProcessMaterial.Parameter" />
+			<description>
+				Returns the minimum and maximum values of the given [param param] as a vector.
+				The [code]x[/code] component of the returned vector corresponds to minimum and the [code]y[/code] component corresponds to maximum.
+			</description>
+		</method>
 		<method name="get_param_max" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="ParticleProcessMaterial.Parameter" />
@@ -35,6 +43,15 @@
 			<param index="0" name="particle_flag" type="int" enum="ParticleProcessMaterial.ParticleFlags" />
 			<description>
 				Returns [code]true[/code] if the specified particle flag is enabled. See [enum ParticleFlags] for options.
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="ParticleProcessMaterial.Parameter" />
+			<param index="1" name="value" type="Vector2" />
+			<description>
+				Sets the minimum and maximum values of the given [param param].
+				The [code]x[/code] component of the argument vector corresponds to minimum and the [code]y[/code] component corresponds to maximum.
 			</description>
 		</method>
 		<method name="set_param_max">

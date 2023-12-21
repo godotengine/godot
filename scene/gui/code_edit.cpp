@@ -2925,7 +2925,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 
 	int in_region = -1;
 	for (int i = start_line; i < MIN(end_line + 1, line_count); i++) {
-		int current_end_region = (i <= 0 || delimiter_cache[i].size() < 1) ? -1 : delimiter_cache[i].back()->value();
+		int current_end_region = (i < 0 || delimiter_cache[i].size() < 1) ? -1 : delimiter_cache[i].back()->value();
 		in_region = (i <= 0 || delimiter_cache[i - 1].size() < 1) ? -1 : delimiter_cache[i - 1].back()->value();
 
 		const String &str = get_line(i);

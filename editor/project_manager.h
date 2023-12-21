@@ -267,6 +267,9 @@ private:
 	void _favorite_pressed(Node *p_hb);
 	void _show_project(const String &p_path);
 
+	void _migrate_config();
+	void _scan_folder_recursive(const String &p_path, List<String> *r_projects);
+
 	void _clear_project_selection();
 	void _toggle_project(int p_index);
 	void _select_project_nocheck(int p_index);
@@ -288,12 +291,15 @@ protected:
 	static void _bind_methods();
 
 public:
+	static const char *SIGNAL_LIST_CHANGED;
 	static const char *SIGNAL_SELECTION_CHANGED;
 	static const char *SIGNAL_PROJECT_ASK_OPEN;
 
-	void load_projects();
+	void update_project_list();
 	int get_project_count() const;
 
+	void find_projects(const String &p_path);
+	void find_projects_multiple(const PackedStringArray &p_paths);
 	void sort_projects();
 
 	void add_project(const String &dir_path, bool favorite);
@@ -316,7 +322,6 @@ public:
 	void set_order_option(int p_option);
 
 	void update_dock_menu();
-	void migrate_config();
 	void save_config();
 
 	ProjectList();
@@ -329,6 +334,8 @@ class ProjectManager : public Control {
 	void _build_icon_type_cache(Ref<Theme> p_theme);
 
 	static ProjectManager *singleton;
+
+	void _update_size_limits();
 
 	Panel *background_panel = nullptr;
 	TabContainer *tabs = nullptr;
@@ -367,7 +374,6 @@ class ProjectManager : public Control {
 	ConfirmationDialog *erase_missing_ask = nullptr;
 	ConfirmationDialog *multi_open_ask = nullptr;
 	ConfirmationDialog *multi_run_ask = nullptr;
-	ConfirmationDialog *multi_scan_ask = nullptr;
 	ConfirmationDialog *ask_full_convert_dialog = nullptr;
 	ConfirmationDialog *ask_update_settings = nullptr;
 	ConfirmationDialog *open_templates = nullptr;
@@ -423,12 +429,8 @@ class ProjectManager : public Control {
 	void _set_new_tag_name(const String p_name);
 	void _create_new_tag();
 
-	void _load_recent_projects();
 	void _on_project_created(const String &dir);
 	void _on_projects_updated();
-	void _scan_multiple_folders(PackedStringArray p_files);
-	void _scan_begin(const String &p_base);
-	void _scan_dir(const String &path);
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 
@@ -447,7 +449,6 @@ class ProjectManager : public Control {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	static ProjectManager *get_singleton() { return singleton; }

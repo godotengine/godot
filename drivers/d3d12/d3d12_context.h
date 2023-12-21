@@ -34,20 +34,38 @@
 #include "core/error/error_list.h"
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
+#include "rendering_device_driver_d3d12.h"
 #include "servers/display_server.h"
-#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/renderer_rd/api_context_rd.h"
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wswitch"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
+
+#if defined(AS)
+#undef AS
+#endif
 
 #include "d3dx12.h"
 #include <dxgi1_6.h>
-#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include "D3D12MemAlloc.h"
 
 #include <wrl/client.h>
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 using Microsoft::WRL::ComPtr;
 
-class D3D12Context {
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+
+class D3D12Context : public ApiContextRD {
 public:
 	struct DeviceLimits {
 		uint64_t max_srvs_per_shader_stage;
@@ -62,15 +80,6 @@ public:
 		bool wave_ops_supported;
 		uint32_t supported_stages_flags_rd() const;
 		uint32_t supported_operations_flags_rd() const;
-	};
-
-	// Following VulkanContext definition.
-	struct MultiviewCapabilities {
-		bool is_supported;
-		bool geometry_shader_is_supported;
-		bool tessellation_shader_is_supported;
-		uint32_t max_view_count;
-		uint32_t max_instance_count;
 	};
 
 	struct VRSCapabilities {
@@ -110,12 +119,13 @@ private:
 		ComPtr<ID3D12Fence> fence;
 		HANDLE fence_event = nullptr;
 		UINT64 fence_value = 0;
+		RenderingDeviceDriverD3D12 *driver = nullptr;
 	} md; // 'Main device', as opposed to local device.
 
 	uint32_t feature_level = 0; // Major * 10 + minor.
 	bool tearing_supported = false;
 	SubgroupCapabilities subgroup_capabilities;
-	MultiviewCapabilities multiview_capabilities;
+	RDD::MultiviewCapabilities multiview_capabilities;
 	VRSCapabilities vrs_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
@@ -125,8 +135,6 @@ private:
 	String adapter_name;
 	RenderingDevice::DeviceType adapter_type = {};
 	String pipeline_cache_id;
-
-	ComPtr<D3D12MA::Allocator> allocator;
 
 	bool buffers_prepared = false;
 
@@ -146,7 +154,8 @@ private:
 		int width = 0;
 		int height = 0;
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
-		ComPtr<ID3D12DescriptorHeap> rtv_heap;
+		RenderingDeviceDriverD3D12::RenderPassInfo render_pass;
+		RenderingDeviceDriverD3D12::FramebufferInfo framebuffers[IMAGE_COUNT];
 	};
 
 	struct LocalDevice : public DeviceBasics {
@@ -161,8 +170,8 @@ private:
 
 	// Commands.
 
-	Vector<ID3D12CommandList *> command_list_queue;
-	int command_list_count = 1;
+	LocalVector<ID3D12CommandList *> command_list_queue;
+	uint32_t command_list_count = 1;
 
 	static void _debug_message_func(
 			D3D12_MESSAGE_CATEGORY p_category,
@@ -187,59 +196,63 @@ protected:
 	virtual bool _use_validation_layers();
 
 public:
-	uint32_t get_feat_level_major() const { return feature_level / 10; };
-	uint32_t get_feat_level_minor() const { return feature_level % 10; };
+	virtual const char *get_api_name() const override final { return "D3D12"; };
+	virtual RenderingDevice::Capabilities get_device_capabilities() const override final;
 	const SubgroupCapabilities &get_subgroup_capabilities() const { return subgroup_capabilities; };
-	const MultiviewCapabilities &get_multiview_capabilities() const { return multiview_capabilities; };
+	virtual const RDD::MultiviewCapabilities &get_multiview_capabilities() const override final { return multiview_capabilities; };
 	const VRSCapabilities &get_vrs_capabilities() const { return vrs_capabilities; };
 	const ShaderCapabilities &get_shader_capabilities() const { return shader_capabilities; };
 	const StorageBufferCapabilities &get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
 	const FormatCapabilities &get_format_capabilities() const { return format_capabilities; };
 
-	ComPtr<ID3D12Device> get_device();
-	ComPtr<IDXGIAdapter> get_adapter();
-	D3D12MA::Allocator *get_allocator();
-	int get_swapchain_image_count() const;
-	Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, HWND p_window, HINSTANCE p_instance, int p_width, int p_height);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
-	int window_get_width(DisplayServer::WindowID p_window = 0);
-	int window_get_height(DisplayServer::WindowID p_window = 0);
-	bool window_is_valid_swapchain(DisplayServer::WindowID p_window = 0);
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	CD3DX12_CPU_DESCRIPTOR_HANDLE window_get_framebuffer_rtv_handle(DisplayServer::WindowID p_window = 0);
-	ID3D12Resource *window_get_framebuffer_texture(DisplayServer::WindowID p_window = 0);
+	ID3D12Device *get_device();
+	IDXGIAdapter *get_adapter();
+	virtual int get_swapchain_image_count() const override final;
 
-	RID local_device_create();
-	ComPtr<ID3D12Device> local_device_get_d3d12_device(RID p_local_device);
-	void local_device_push_command_lists(RID p_local_device, ID3D12CommandList *const *p_lists, int p_count);
-	void local_device_sync(RID p_local_device);
-	void local_device_free(RID p_local_device);
+	struct WindowPlatformData {
+		HWND window;
+	};
+	virtual Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) override final;
+	virtual void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) override final;
+	virtual int window_get_width(DisplayServer::WindowID p_window = 0) override final;
+	virtual int window_get_height(DisplayServer::WindowID p_window = 0) override final;
+	virtual bool window_is_valid_swapchain(DisplayServer::WindowID p_window = 0) override final;
+	virtual void window_destroy(DisplayServer::WindowID p_window_id) override final;
+	virtual RDD::RenderPassID window_get_render_pass(DisplayServer::WindowID p_window = 0) override final;
+	virtual RDD::FramebufferID window_get_framebuffer(DisplayServer::WindowID p_window = 0) override final;
+
+	virtual RID local_device_create() override final;
+	virtual void local_device_push_command_buffers(RID p_local_device, const RDD::CommandBufferID *p_buffers, int p_count) override final;
+	virtual void local_device_sync(RID p_local_device) override final;
+	virtual void local_device_free(RID p_local_device) override final;
 
 	DXGI_FORMAT get_screen_format() const;
-	DeviceLimits get_device_limits() const;
+	const DeviceLimits &get_device_limits() const;
 
-	void set_setup_list(ID3D12CommandList *p_command_list);
-	void append_command_list(ID3D12CommandList *p_command_list);
+	virtual void set_setup_buffer(RDD::CommandBufferID p_command_buffer) override final;
+	virtual void append_command_buffer(RDD::CommandBufferID p_command_buffer) override final;
 	void resize_notify();
-	void flush(bool p_flush_setup = false, bool p_flush_pending = false);
-	void prepare_buffers(ID3D12GraphicsCommandList *p_command_list);
-	void postpare_buffers(ID3D12GraphicsCommandList *p_command_list);
-	Error swap_buffers();
-	Error initialize();
+	virtual void flush(bool p_flush_setup = false, bool p_flush_pending = false) override final;
+	virtual Error prepare_buffers(RDD::CommandBufferID p_command_buffer) override final;
+	virtual void postpare_buffers(RDD::CommandBufferID p_command_buffer) override final;
+	virtual Error swap_buffers() override final;
+	virtual Error initialize() override final;
 
-	void command_begin_label(ID3D12GraphicsCommandList *p_command_list, String p_label_name, const Color p_color);
-	void command_insert_label(ID3D12GraphicsCommandList *p_command_list, String p_label_name, const Color p_color);
-	void command_end_label(ID3D12GraphicsCommandList *p_command_list);
+	virtual void command_begin_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) override final;
+	virtual void command_insert_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) override final;
+	virtual void command_end_label(RDD::CommandBufferID p_command_buffer) override final;
 	void set_object_name(ID3D12Object *p_object, String p_object_name);
 
-	String get_device_vendor_name() const;
-	String get_device_name() const;
-	RenderingDevice::DeviceType get_device_type() const;
-	String get_device_api_version() const;
-	String get_device_pipeline_cache_uuid() const;
+	virtual String get_device_vendor_name() const override final;
+	virtual String get_device_name() const override final;
+	virtual RDD::DeviceType get_device_type() const override final;
+	virtual String get_device_api_version() const override final;
+	virtual String get_device_pipeline_cache_uuid() const override final;
 
-	void set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode);
-	DisplayServer::VSyncMode get_vsync_mode(DisplayServer::WindowID p_window = 0) const;
+	virtual void set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode) override final;
+	virtual DisplayServer::VSyncMode get_vsync_mode(DisplayServer::WindowID p_window = 0) const override final;
+
+	virtual RenderingDeviceDriver *get_driver(RID p_local_device = RID()) override final;
 
 	D3D12Context();
 	virtual ~D3D12Context();

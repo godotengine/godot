@@ -44,6 +44,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/packed_scene.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 //the name is the version, to keep compatibility with different versions of Godot
@@ -615,6 +616,9 @@ bool EditorFileSystem::_update_scan_actions() {
 				if (ClassDB::is_parent_class(ia.new_file->type, SNAME("Script"))) {
 					_queue_update_script_class(ia.dir->get_file_path(idx));
 				}
+				if (ia.new_file->type == SNAME("PackedScene")) {
+					_queue_update_scene_groups(ia.dir->get_file_path(idx));
+				}
 
 			} break;
 			case ItemAction::ACTION_FILE_REMOVE: {
@@ -623,6 +627,9 @@ bool EditorFileSystem::_update_scan_actions() {
 
 				if (ClassDB::is_parent_class(ia.dir->files[idx]->type, SNAME("Script"))) {
 					_queue_update_script_class(ia.dir->get_file_path(idx));
+				}
+				if (ia.dir->files[idx]->type == SNAME("PackedScene")) {
+					_queue_update_scene_groups(ia.dir->get_file_path(idx));
 				}
 
 				_delete_internal_files(ia.dir->files[idx]->file);
@@ -661,6 +668,9 @@ bool EditorFileSystem::_update_scan_actions() {
 
 				if (ClassDB::is_parent_class(ia.dir->files[idx]->type, SNAME("Script"))) {
 					_queue_update_script_class(full_path);
+				}
+				if (ia.dir->files[idx]->type == SNAME("PackedScene")) {
+					_queue_update_scene_groups(full_path);
 				}
 
 				reloads.push_back(full_path);
@@ -732,6 +742,7 @@ void EditorFileSystem::scan() {
 		_update_scan_actions();
 		scanning = false;
 		_update_pending_script_classes();
+		_update_pending_scene_groups();
 		emit_signal(SNAME("filesystem_changed"));
 		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 		first_scan = false;
@@ -941,6 +952,9 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 
 				if (ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
 					_queue_update_script_class(path);
+				}
+				if (fi->type == SNAME("PackedScene")) {
+					_queue_update_scene_groups(path);
 				}
 			}
 		}
@@ -1196,6 +1210,7 @@ void EditorFileSystem::scan_changes() {
 			_scan_fs_changes(filesystem, sp);
 			bool changed = _update_scan_actions();
 			_update_pending_script_classes();
+			_update_pending_scene_groups();
 			if (changed) {
 				emit_signal(SNAME("filesystem_changed"));
 			}
@@ -1262,6 +1277,7 @@ void EditorFileSystem::_notification(int p_what) {
 						}
 						bool changed = _update_scan_actions();
 						_update_pending_script_classes();
+						_update_pending_scene_groups();
 						if (changed) {
 							emit_signal(SNAME("filesystem_changed"));
 						}
@@ -1281,6 +1297,7 @@ void EditorFileSystem::_notification(int p_what) {
 					thread.wait_to_finish();
 					_update_scan_actions();
 					_update_pending_script_classes();
+					_update_pending_scene_groups();
 					emit_signal(SNAME("filesystem_changed"));
 					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 					first_scan = false;
@@ -1635,6 +1652,65 @@ void EditorFileSystem::_queue_update_script_class(const String &p_path) {
 	update_script_mutex.unlock();
 }
 
+void EditorFileSystem::_update_scene_groups() {
+	update_scene_mutex.lock();
+
+	for (const String &path : update_scene_paths) {
+		ProjectSettings::get_singleton()->remove_scene_groups_cache(path);
+
+		int index = -1;
+		EditorFileSystemDirectory *efd = find_file(path, &index);
+
+		if (!efd || index < 0) {
+			// The file was removed.
+			continue;
+		}
+
+		const HashSet<StringName> scene_groups = _get_scene_groups(path);
+		if (!scene_groups.is_empty()) {
+			ProjectSettings::get_singleton()->add_scene_groups_cache(path, scene_groups);
+		}
+	}
+
+	update_scene_paths.clear();
+	update_scene_mutex.unlock();
+
+	ProjectSettings::get_singleton()->save_scene_groups_cache();
+}
+
+void EditorFileSystem::_update_pending_scene_groups() {
+	if (!FileAccess::exists(ProjectSettings::get_singleton()->get_scene_groups_cache_path())) {
+		_get_all_scenes(get_filesystem(), update_scene_paths);
+		_update_scene_groups();
+	} else if (!update_scene_paths.is_empty()) {
+		_update_scene_groups();
+	}
+}
+
+void EditorFileSystem::_queue_update_scene_groups(const String &p_path) {
+	update_scene_mutex.lock();
+	update_scene_paths.insert(p_path);
+	update_scene_mutex.unlock();
+}
+
+void EditorFileSystem::_get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet<String> &r_list) {
+	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		if (p_dir->get_file_type(i) == SNAME("PackedScene")) {
+			r_list.insert(p_dir->get_file_path(i));
+		}
+	}
+
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+		_get_all_scenes(p_dir->get_subdir(i), r_list);
+	}
+}
+
+HashSet<StringName> EditorFileSystem::_get_scene_groups(const String &p_path) {
+	Ref<PackedScene> packed_scene = ResourceLoader::load(p_path);
+	ERR_FAIL_COND_V(packed_scene.is_null(), HashSet<StringName>());
+	return packed_scene->get_state()->get_all_groups();
+}
+
 void EditorFileSystem::update_file(const String &p_file) {
 	ERR_FAIL_COND(p_file.is_empty());
 	EditorFileSystemDirectory *fs = nullptr;
@@ -1658,12 +1734,16 @@ void EditorFileSystem::update_file(const String &p_file) {
 			if (ClassDB::is_parent_class(fs->files[cpos]->type, SNAME("Script"))) {
 				_queue_update_script_class(p_file);
 			}
+			if (fs->files[cpos]->type == SNAME("PackedScene")) {
+				_queue_update_scene_groups(p_file);
+			}
 
 			memdelete(fs->files[cpos]);
 			fs->files.remove_at(cpos);
 		}
 
 		_update_pending_script_classes();
+		_update_pending_scene_groups();
 		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 		return;
 	}
@@ -1730,8 +1810,12 @@ void EditorFileSystem::update_file(const String &p_file) {
 	if (ClassDB::is_parent_class(fs->files[cpos]->type, SNAME("Script"))) {
 		_queue_update_script_class(p_file);
 	}
+	if (fs->files[cpos]->type == SNAME("PackedScene")) {
+		_queue_update_scene_groups(p_file);
+	}
 
 	_update_pending_script_classes();
+	_update_pending_scene_groups();
 	call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 }
 
@@ -2341,6 +2425,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	_save_filesystem_cache();
 	_update_pending_script_classes();
+	_update_pending_scene_groups();
 	importing = false;
 	if (!is_scanning()) {
 		emit_signal(SNAME("filesystem_changed"));
