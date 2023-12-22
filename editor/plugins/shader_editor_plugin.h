@@ -41,6 +41,7 @@ class TabContainer;
 class TextShaderEditor;
 class VisualShaderEditor;
 class WindowWrapper;
+class EditorFileDialog;
 
 #ifdef MINGW_ENABLED
 #undef FILE_OPEN

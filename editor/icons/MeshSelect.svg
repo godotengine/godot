@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="16"
+   viewBox="0 0 16 16"
+   width="16"
+   version="1.1"
+   id="svg827"
+   sodipodi:docname="MeshSelect.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs831" />
+  <sodipodi:namedview
+     id="namedview829"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="54.5625"
+     inkscape:cx="7.9908362"
+     inkscape:cy="8"
+     inkscape:window-width="2490"
+     inkscape:window-height="1376"
+     inkscape:window-x="70"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg827" />
+  <path
+     d="M4.73 2A2 2 0 1 0 2 4.73v6.541A2 2 0 1 0 4.73 14h6.541A2 2 0 1 0 14 11.27V4.729A2 2 0 1 0 11.27 2Zm.683 2h5.857a2 2 0 0 0 .729.73v5.856L5.412 4zM3.999 5.414 10.584 12H4.727a2 2 0 0 0-.729-.73V5.414z"
+     fill="#808080"
+     id="path825"
+     style="fill:#e0e0e0;fill-opacity:1" />
+</svg>
