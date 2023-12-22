@@ -7,7 +7,7 @@ public partial class CustomGlobalClass : GodotObject // This works because it in
 }
 
 [GlobalClass]
-public partial class CustomGlobalClass<T> : GodotObject // This raises a GD0402 diagnositc error: global classes can't have any generic type parameter
+public partial class CustomGlobalClass<T> : GodotObject // This raises a GD0402 diagnostic error: global classes can't have any generic type parameter
 {
 
 }

@@ -11,7 +11,7 @@ public class MustBeVariantGD0302
 
     public void MethodFail<T>()
     {
-        // This raises a GD0302 diagnositc error: T is not valid here because it may not a Variant type and method call and class require it 
+        // This raises a GD0302 diagnostic error: T is not valid here because it may not a Variant type and method call and class require it 
         new ExampleClass<T>();
         Method<T>();
     }
