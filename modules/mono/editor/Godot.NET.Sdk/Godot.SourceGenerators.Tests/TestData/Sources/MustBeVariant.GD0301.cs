@@ -71,8 +71,3 @@ public class MustBeVariantGD0301
     {
     }
 }
-
-public class NotVariantClass
-{
-
-}
