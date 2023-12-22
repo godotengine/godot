@@ -33,7 +33,7 @@ where TAnalyzer : DiagnosticAnalyzer, new()
 
     public static Task Verify(string sources, params DiagnosticResult[] expected)
     {
-        return MakeVerifier(new string[] { sources }, expected).RunAsync();;
+        return MakeVerifier(new string[] { sources }, expected).RunAsync();
     }
 
     public static Test MakeVerifier(ICollection<string> sources, params DiagnosticResult[] expected)
