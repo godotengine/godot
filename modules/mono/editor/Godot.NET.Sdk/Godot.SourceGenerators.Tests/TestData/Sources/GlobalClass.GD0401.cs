@@ -13,7 +13,7 @@ public partial class CustomGlobalClass2 : Node // This works because it inherits
 }
 
 [GlobalClass]
-public partial class CustomGlobalClass3 // TThis raises a GD0401 diagnostic error: global classes must inherit from GodotObject
+public partial class CustomGlobalClass3 // This raises a GD0401 diagnostic error: global classes must inherit from GodotObject
 {
 
 }
