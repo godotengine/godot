@@ -139,8 +139,8 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 				}
 
+				unique_resources_list_tree->clear();
 				if (resource_propnames.size()) {
-					unique_resources_list_tree->clear();
 					TreeItem *root = unique_resources_list_tree->create_item();
 
 					for (int i = 0; i < resource_propnames.size(); i++) {
