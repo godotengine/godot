@@ -19,7 +19,6 @@ where TAnalyzer : DiagnosticAnalyzer, new()
         public Test()
         {
             ReferenceAssemblies = ReferenceAssemblies.Net.Net60;
-            // Language = LanguageVersion.CSharp9;
 
             SolutionTransforms.Add((Solution solution, ProjectId projectId) =>
             {
