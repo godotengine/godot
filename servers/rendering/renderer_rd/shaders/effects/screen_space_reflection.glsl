@@ -65,8 +65,12 @@ void main() {
 	vec3 vertex = reconstructCSPosition(uv * vec2(params.screen_size), base_depth);
 
 	vec4 normal_roughness = imageLoad(source_normal_roughness, ssC);
-	vec3 normal = normal_roughness.xyz * 2.0 - 1.0;
+	vec3 normal = normalize(normal_roughness.xyz * 2.0 - 1.0);
 	float roughness = normal_roughness.w;
+	if (roughness > 0.5) {
+		roughness = 1.0 - roughness;
+	}
+	roughness /= (127.0 / 255.0);
 
 	// The roughness cutoff of 0.6 is chosen to match the roughness fadeout from GH-69828.
 	if (roughness > 0.6) {

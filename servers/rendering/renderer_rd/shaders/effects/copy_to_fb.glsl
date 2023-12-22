@@ -20,6 +20,7 @@
 #define FLAG_SRGB (1 << 4)
 #define FLAG_ALPHA_TO_ONE (1 << 5)
 #define FLAG_LINEAR (1 << 6)
+#define FLAG_NORMAL (1 << 7)
 
 #ifdef MULTIVIEW
 layout(location = 0) out vec3 uv_interp;
@@ -77,6 +78,7 @@ void main() {
 #define FLAG_SRGB (1 << 4)
 #define FLAG_ALPHA_TO_ONE (1 << 5)
 #define FLAG_LINEAR (1 << 6)
+#define FLAG_NORMAL (1 << 7)
 
 layout(push_constant, std430) uniform Params {
 	vec4 section;
@@ -191,6 +193,9 @@ void main() {
 	}
 	if (bool(params.flags & FLAG_LINEAR)) {
 		color.rgb = srgb_to_linear(color.rgb);
+	}
+	if (bool(params.flags & FLAG_NORMAL)) {
+		color.rgb = normalize(color.rgb * 2.0 - 1.0) * 0.5 + 0.5;
 	}
 
 	frag_color = color / params.luminance_multiplier;
