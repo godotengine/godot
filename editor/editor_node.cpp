@@ -704,24 +704,6 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			{
-				started_timestamp = Time::get_singleton()->get_unix_time_from_system();
-				_initializing_plugins = true;
-				Vector<String> addons;
-				if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
-					addons = GLOBAL_GET("editor_plugins/enabled");
-				}
-
-				for (int i = 0; i < addons.size(); i++) {
-					set_addon_plugin_enabled(addons[i], true);
-				}
-				_initializing_plugins = false;
-
-				if (!pending_addons.is_empty()) {
-					EditorFileSystem::get_singleton()->connect("script_classes_updated", callable_mp(this, &EditorNode::_enable_pending_addons));
-				}
-			}
-
 			RenderingServer::get_singleton()->viewport_set_disable_2d(get_scene_root()->get_viewport_rid(), true);
 			RenderingServer::get_singleton()->viewport_set_environment_mode(get_viewport()->get_viewport_rid(), RenderingServer::VIEWPORT_ENVIRONMENT_DISABLED);
 
@@ -739,6 +721,8 @@ void EditorNode::_notification(int p_what) {
 			// Set up a theme context for the 2D preview viewport using the stored preview theme.
 			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
 			update_preview_themes(theme_preview_mode);
+
+			started_timestamp = Time::get_singleton()->get_unix_time_from_system();
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -1073,35 +1057,51 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
-	if (waiting_for_first_scan) {
-		waiting_for_first_scan = false;
+	if (!waiting_for_first_scan) {
+		return;
+	}
 
-		OS::get_singleton()->benchmark_end_measure("Editor", "First Scan");
+	waiting_for_first_scan = false;
 
-		// Reload the global shader variables, but this time
-		// loading textures, as they are now properly imported.
-		RenderingServer::get_singleton()->global_shader_parameters_load_settings(true);
+	OS::get_singleton()->benchmark_end_measure("Editor", "First Scan");
 
-		_load_editor_layout();
+	// Reload the global shader variables, but this time
+	// loading textures, as they are now properly imported.
+	RenderingServer::get_singleton()->global_shader_parameters_load_settings(true);
 
-		if (!defer_load_scene.is_empty()) {
-			OS::get_singleton()->benchmark_begin_measure("Editor", "Load Scene");
+	_load_editor_layout();
 
-			load_scene(defer_load_scene);
-			defer_load_scene = "";
+	if (!defer_load_scene.is_empty()) {
+		OS::get_singleton()->benchmark_begin_measure("Editor", "Load Scene");
 
-			OS::get_singleton()->benchmark_end_measure("Editor", "Load Scene");
-			OS::get_singleton()->benchmark_dump();
+		load_scene(defer_load_scene);
+		defer_load_scene = "";
+
+		OS::get_singleton()->benchmark_end_measure("Editor", "Load Scene");
+		OS::get_singleton()->benchmark_dump();
+	}
+
+	if (SurfaceUpgradeTool::get_singleton()->is_show_requested()) {
+		SurfaceUpgradeTool::get_singleton()->show_popup();
+	}
+
+	// Start preview thread now that it's safe.
+	if (!singleton->cmdline_export_mode) {
+		EditorResourcePreview::get_singleton()->start();
+	}
+
+	// Load the addons.
+	{
+		_initializing_plugins = true;
+		Vector<String> addons;
+		if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
+			addons = GLOBAL_GET("editor_plugins/enabled");
 		}
 
-		if (SurfaceUpgradeTool::get_singleton()->is_show_requested()) {
-			SurfaceUpgradeTool::get_singleton()->show_popup();
+		for (int i = 0; i < addons.size(); i++) {
+			set_addon_plugin_enabled(addons[i], true);
 		}
-
-		// Start preview thread now that it's safe.
-		if (!singleton->cmdline_export_mode) {
-			EditorResourcePreview::get_singleton()->start();
-		}
+		_initializing_plugins = false;
 	}
 }
 
