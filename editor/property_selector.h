@@ -48,7 +48,7 @@ class PropertySelector : public ConfirmationDialog {
 	void _update_search();
 	void _confirmed();
 	void _item_selected();
-	void _multi_item_selected(Object *p_item, int column,bool is_item_selected);
+	void _multi_item_selected(Object *p_item, int p_column, bool p_is_item_selected);
 	void _hide_requested();
 
 	EditorHelpBit *help_bit = nullptr;
@@ -61,6 +61,7 @@ class PropertySelector : public ConfirmationDialog {
 	Object *instance = nullptr;
 	bool virtuals_only = false;
 
+	Dictionary selected_properties;
 	Vector<Variant::Type> type_filter;
 
 protected:

@@ -357,7 +357,6 @@ void PropertySelector::_update_search() {
 	get_ok_button()->set_disabled(root->get_first_child() == nullptr);
 }
 
-Dictionary selected_properties;
 void PropertySelector::_confirmed() {
 	Array keys = selected_properties.keys();
 	TreeItem *ti = search_options->get_selected();
@@ -371,9 +370,9 @@ void PropertySelector::_confirmed() {
 	hide();
 }
 
-void PropertySelector::_multi_item_selected(Object *p_item, int column,bool is_item_selected) {
+void PropertySelector::_multi_item_selected(Object *p_item, int p_column, bool p_is_item_selected) {
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	if (is_item_selected) {
+	if (p_is_item_selected) {
 		selected_properties[item->get_metadata(0)];
 	}	else {
 		selected_properties.erase(item->get_metadata(0));
