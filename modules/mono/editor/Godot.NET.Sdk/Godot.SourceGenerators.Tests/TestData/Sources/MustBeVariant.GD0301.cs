@@ -15,7 +15,6 @@ public class MustBeVariantGD0301
     {
         // All these call are valid because they are Variant types
         Method<bool>();
-        Method<bool>();
         Method<char>();
         Method<sbyte>();
         Method<byte>();
