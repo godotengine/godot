@@ -3,6 +3,7 @@ etcpak_srcs = files(
     'Dither.cpp',
     'ProcessDxtc.cpp',
     'ProcessRGB.cpp',
+    'ProcessRgtc.cpp',
     'Tables.cpp',
 )
 

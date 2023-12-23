@@ -37,7 +37,9 @@
 
 #ifdef DEBUG_ENABLED
 #ifndef _MSC_VER
+#ifndef _DEBUG
 #define _DEBUG
+#endif
 #endif
 #endif
 #include "thirdparty/vulkan/vk_mem_alloc.h"
