@@ -61,8 +61,10 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 
 	void _assess_expression(const GDScriptParser::ExpressionNode *p_expression);
 	void _assess_assignment(const GDScriptParser::AssignmentNode *p_assignment);
-	void _extract_from_call(const GDScriptParser::CallNode *p_call);
-	void _extract_fd_constant_strings(const GDScriptParser::ExpressionNode *p_expression);
+	void _assess_call(const GDScriptParser::CallNode *p_call);
+
+	void _extract_fd_filter_string(const GDScriptParser::ExpressionNode *p_expression);
+	void _extract_fd_filter_array(const GDScriptParser::ExpressionNode *p_expression);
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) override;
