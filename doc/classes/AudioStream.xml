@@ -28,6 +28,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_parameter_list" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<description>
+				Return the controllable parameters of this stream. This array contains dictionaries with a property info description format (see [method Object.get_property_list]). Additionally, the default value for this parameter must be added tho each dictionary in "default_value" field.
+			</description>
+		</method>
 		<method name="_get_stream_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
@@ -62,4 +68,11 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="parameter_list_changed">
+			<description>
+				Signal to be emitted to notify when the parameter list changed.
+			</description>
+		</signal>
+	</signals>
 </class>
