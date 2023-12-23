@@ -118,6 +118,10 @@ public:
 
 	AudioStreamPlayback();
 	~AudioStreamPlayback();
+
+	PackedVector2Array mix_audio(float p_rate_scale, int p_frames);
+	void start_playback(double p_from_pos = 0.0);
+	void stop_playback();
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
