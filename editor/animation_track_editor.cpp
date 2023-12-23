@@ -4970,13 +4970,11 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 
 	switch (adding_track_type) {
 		case Animation::TYPE_VALUE: {
-			prop_selector->set_multiselect(true);
 			adding_track_path = path_to;
 			prop_selector->set_type_filter(Vector<Variant::Type>());
 			prop_selector->select_property_from_instance(node);
 		} break;
 		case Animation::TYPE_BLEND_SHAPE: {
-			prop_selector->set_multiselect(true);
 			adding_track_path = path_to;
 			Vector<Variant::Type> filter;
 			filter.push_back(Variant::FLOAT);
@@ -4996,7 +4994,6 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 
 		} break;
 		case Animation::TYPE_BEZIER: {
-			prop_selector->set_multiselect(true);
 			Vector<Variant::Type> filter;
 			filter.push_back(Variant::INT);
 			filter.push_back(Variant::FLOAT);
@@ -5060,6 +5057,12 @@ void AnimationTrackEditor::_add_track(int p_type) {
 	pick_track->popup_scenetree_dialog(nullptr, root_node);
 	pick_track->get_filter_line_edit()->clear();
 	pick_track->get_filter_line_edit()->grab_focus();
+}
+
+void AnimationTrackEditor::_handle_multiple_properties_selected(Array p_multiple_properties) {
+	for (int i = 0; i < p_multiple_properties.size(); i++) {
+		_new_track_property_selected(p_multiple_properties[i]);
+	}
 }
 
 void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, Animation::UpdateMode *r_update_mode, Animation::InterpolationType *r_interpolation_type, bool *r_loop_wrap) {
@@ -7385,6 +7388,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
 	prop_selector->connect("selected", callable_mp(this, &AnimationTrackEditor::_new_track_property_selected));
+	prop_selector->connect("multiple_properties_selected", callable_mp(this, &AnimationTrackEditor::_handle_multiple_properties_selected));
+	prop_selector->set_multiselect(true);
 
 	method_selector = memnew(PropertySelector);
 	add_child(method_selector);

@@ -449,6 +449,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _add_track(int p_type);
 	void _new_track_node_selected(NodePath p_path);
 	void _new_track_property_selected(const String &p_name);
+	void _new_track_property_selected(String p_name);
+	void _handle_multiple_properties_selected(Array p_multiple_properties);
 
 	void _update_step_spinbox();
 

@@ -366,10 +366,8 @@ void PropertySelector::_confirmed() {
 		emit_signal(SNAME("selected"), ti->get_metadata(0));
 	}
 	if (search_options->get_select_mode() == search_options->SELECT_MULTI) {
-		Array keys = selected_properties.keys();
-		for (int i = 0; i < keys.size(); i++) {
-			emit_signal(SNAME("selected"), keys[i]);
-		}
+		Array selected_properties_keys = selected_properties.keys();
+		emit_signal(SNAME("multiple_properties_selected"), selected_properties_keys);
 		selected_properties.clear();
 	}
 	hide();
@@ -578,6 +576,7 @@ void PropertySelector::set_multiselect(bool p_is_multiselect) {
 
 void PropertySelector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("multiple_properties_selected", PropertyInfo(Variant::ARRAY, "name")));
 }
 
 PropertySelector::PropertySelector() {
