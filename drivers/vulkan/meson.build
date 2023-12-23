@@ -2,6 +2,9 @@ DEPENDENCIES += [DEP_VULKAN, DEP_SPIRV_REFLECT]
 
 SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n')) + files('../../thirdparty/volk/volk.c')
 
+CPP_ARGS += '-DRD_ENABLED'
+OBJCPP_ARGS += '-DRD_ENABLED'
+
 if PLATFORM == 'android'
    CPP_ARGS += '-DVK_USE_PLATFORM_ANDROID_KHR'
 elif PLATFORM == 'ios'
