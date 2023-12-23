@@ -137,6 +137,7 @@
 			<param index="2" name="apply_tilt" type="bool" default="false" />
 			<description>
 				Returns a [Transform3D] with [code]origin[/code] as point position, [code]basis.x[/code] as sideway vector, [code]basis.y[/code] as up vector, [code]basis.z[/code] as forward vector. When the curve length is 0, there is no reasonable way to calculate the rotation, all vectors aligned with global space axes. See also [method sample_baked].
+				Note that in the GDScript implementation, offset is expected to be normalized, that is, between zero and one. This diverges slightly from the C++ implementation, which expects an unnormalized offset.
 			</description>
 		</method>
 		<method name="samplef" qualifiers="const">
