@@ -470,8 +470,6 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 			case DISPLAY_MODE_HSPLIT:
 			case DISPLAY_MODE_VSPLIT:
 				const bool is_vertical = display_mode == DISPLAY_MODE_VSPLIT;
-				const int split_offset = split_box->get_split_offset();
-				is_vertical ? split_box_offset_h = split_offset : split_box_offset_v = split_offset;
 				split_box->set_vertical(is_vertical);
 
 				const int actual_offset = is_vertical ? split_box_offset_v : split_box_offset_h;
@@ -2588,6 +2586,14 @@ void FileSystemDock::_change_split_mode() {
 	emit_signal(SNAME("display_mode_changed"));
 }
 
+void FileSystemDock::_split_dragged(int p_offset) {
+	if (split_box->is_vertical()) {
+		split_box_offset_v = p_offset;
+	} else {
+		split_box_offset_h = p_offset;
+	}
+}
+
 void FileSystemDock::fix_dependencies(const String &p_for_file) {
 	deps_editor->edit(p_for_file);
 }
@@ -3767,6 +3773,8 @@ FileSystemDock::FileSystemDock() {
 
 	split_box = memnew(SplitContainer);
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	split_box->connect("dragged", callable_mp(this, &FileSystemDock::_split_dragged));
+	split_box_offset_h = 240 * EDSCALE;
 	add_child(split_box);
 
 	tree = memnew(FileSystemTree);
