@@ -358,15 +358,20 @@ void PropertySelector::_update_search() {
 }
 
 void PropertySelector::_confirmed() {
-	Array keys = selected_properties.keys();
 	TreeItem *ti = search_options->get_selected();
 	if (!ti) {
 		return;
 	}
-	for (int i = 0; i < keys.size(); i++){
-		emit_signal(SNAME("selected"), keys[i]);
+	if (search_options->get_select_mode() == search_options->SELECT_SINGLE) {
+		emit_signal(SNAME("selected"), ti->get_metadata(0));
 	}
-	selected_properties.clear();
+	if (search_options->get_select_mode() == search_options->SELECT_MULTI) {
+		Array keys = selected_properties.keys();
+		for (int i = 0; i < keys.size(); i++) {
+			emit_signal(SNAME("selected"), keys[i]);
+		}
+		selected_properties.clear();
+	}
 	hide();
 }
 
@@ -374,7 +379,7 @@ void PropertySelector::_multi_item_selected(Object *p_item, int p_column, bool p
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (p_is_item_selected) {
 		selected_properties[item->get_metadata(0)];
-	}	else {
+	} else {
 		selected_properties.erase(item->get_metadata(0));
 	}
 }
@@ -567,6 +572,10 @@ void PropertySelector::set_type_filter(const Vector<Variant::Type> &p_type_filte
 	type_filter = p_type_filter;
 }
 
+void PropertySelector::set_multiselect(bool p_is_multiselect) {
+	search_options->set_select_mode(p_is_multiselect ? search_options->SELECT_MULTI : search_options->SELECT_SINGLE);
+}
+
 void PropertySelector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "name")));
 }
@@ -588,8 +597,8 @@ PropertySelector::PropertySelector() {
 	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect("multi_selected", callable_mp(this, &PropertySelector::_multi_item_selected));
 	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
+	search_options->connect("multi_selected", callable_mp(this, &PropertySelector::_multi_item_selected));
 	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);

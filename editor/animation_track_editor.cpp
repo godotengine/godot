@@ -4970,11 +4970,13 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 
 	switch (adding_track_type) {
 		case Animation::TYPE_VALUE: {
+			prop_selector->set_multiselect(true);
 			adding_track_path = path_to;
 			prop_selector->set_type_filter(Vector<Variant::Type>());
 			prop_selector->select_property_from_instance(node);
 		} break;
 		case Animation::TYPE_BLEND_SHAPE: {
+			prop_selector->set_multiselect(true);
 			adding_track_path = path_to;
 			Vector<Variant::Type> filter;
 			filter.push_back(Variant::FLOAT);
@@ -4994,6 +4996,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 
 		} break;
 		case Animation::TYPE_BEZIER: {
+			prop_selector->set_multiselect(true);
 			Vector<Variant::Type> filter;
 			filter.push_back(Variant::INT);
 			filter.push_back(Variant::FLOAT);

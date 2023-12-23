@@ -81,6 +81,7 @@ public:
 
 	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
 
+	void set_multiselect(bool p_is_multiselect);
 	PropertySelector();
 };
 
