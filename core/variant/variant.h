@@ -865,4 +865,56 @@ Callable Callable::bind(VarArgs... p_args) const {
 	return bindp(sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 }
 
+Variant &Array::Iterator::operator*() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return *read_only;
+	}
+	return *element_ptr;
+}
+
+Variant *Array::Iterator::operator->() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return read_only;
+	}
+	return element_ptr;
+}
+
+Array::Iterator &Array::Iterator::operator++() {
+	element_ptr++;
+	return *this;
+}
+
+Array::Iterator &Array::Iterator::operator--() {
+	element_ptr--;
+	return *this;
+}
+
+const Variant &Array::ConstIterator::operator*() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return *read_only;
+	}
+	return *element_ptr;
+}
+
+const Variant *Array::ConstIterator::operator->() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return read_only;
+	}
+	return element_ptr;
+}
+
+Array::ConstIterator &Array::ConstIterator::operator++() {
+	element_ptr++;
+	return *this;
+}
+
+Array::ConstIterator &Array::ConstIterator::operator--() {
+	element_ptr--;
+	return *this;
+}
+
 #endif // VARIANT_H

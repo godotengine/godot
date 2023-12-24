@@ -1729,9 +1729,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 			r_len += 4;
 
-			for (int i = 0; i < array.size(); i++) {
+			for (const Variant &var : array) {
 				int len;
-				Error err = encode_variant(array.get(i), buf, len, p_full_objects, p_depth + 1);
+				Error err = encode_variant(var, buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				if (buf) {

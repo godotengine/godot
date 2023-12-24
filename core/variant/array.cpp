@@ -81,6 +81,22 @@ void Array::_unref() const {
 	_p = nullptr;
 }
 
+Array::Iterator Array::begin() {
+	return Iterator(_p->array.ptrw(), _p->read_only);
+}
+
+Array::Iterator Array::end() {
+	return Iterator(_p->array.ptrw() + _p->array.size(), _p->read_only);
+}
+
+Array::ConstIterator Array::begin() const {
+	return ConstIterator(_p->array.ptr(), _p->read_only);
+}
+
+Array::ConstIterator Array::end() const {
+	return ConstIterator(_p->array.ptr() + _p->array.size(), _p->read_only);
+}
+
 Variant &Array::operator[](int p_idx) {
 	if (unlikely(_p->read_only)) {
 		*_p->read_only = _p->array[p_idx];

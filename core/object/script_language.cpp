@@ -251,8 +251,8 @@ void ScriptServer::init_languages() {
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
 			Array script_classes = GLOBAL_GET("_global_script_classes");
 
-			for (int i = 0; i < script_classes.size(); i++) {
-				Dictionary c = script_classes[i];
+			for (const Variant &script_class : script_classes) {
+				Dictionary c = script_class;
 				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
 					continue;
 				}
@@ -263,8 +263,8 @@ void ScriptServer::init_languages() {
 #endif
 
 		Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
-		for (int i = 0; i < script_classes.size(); i++) {
-			Dictionary c = script_classes[i];
+		for (const Variant &script_class : script_classes) {
+			Dictionary c = script_class;
 			if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
 				continue;
 			}
@@ -463,8 +463,8 @@ void ScriptServer::save_global_classes() {
 	Dictionary class_icons;
 
 	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
-	for (int i = 0; i < script_classes.size(); i++) {
-		Dictionary d = script_classes[i];
+	for (const Variant &script_class : script_classes) {
+		Dictionary d = script_class;
 		if (!d.has("name") || !d.has("icon")) {
 			continue;
 		}

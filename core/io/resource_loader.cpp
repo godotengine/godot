@@ -1035,8 +1035,9 @@ void ResourceLoader::load_translation_remaps() {
 		Array langs = remaps[E];
 		Vector<String> lang_remaps;
 		lang_remaps.resize(langs.size());
-		for (int i = 0; i < langs.size(); i++) {
-			lang_remaps.write[i] = langs[i];
+		String *lang_remaps_ptrw = lang_remaps.ptrw();
+		for (const Variant &lang : langs) {
+			*lang_remaps_ptrw++ = lang;
 		}
 
 		translation_remaps[String(E)] = lang_remaps;
