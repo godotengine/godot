@@ -33,6 +33,8 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
 #include "scene/2d/audio_stream_player_2d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/audio/audio_stream_player.h"
@@ -265,6 +267,16 @@ bool AnimationMixer::has_animation_library(const StringName &p_name) const {
 	}
 
 	return false;
+}
+
+StringName AnimationMixer::get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const {
+	ERR_FAIL_COND_V(p_animation_library.is_null(), StringName());
+	for (const AnimationLibraryData &lib : animation_libraries) {
+		if (lib.library == p_animation_library) {
+			return lib.name;
+		}
+	}
+	return StringName();
 }
 
 StringName AnimationMixer::find_animation_library(const Ref<Animation> &p_animation) const {
