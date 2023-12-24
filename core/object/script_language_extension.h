@@ -306,8 +306,8 @@ public:
 		}
 		if (r_errors != nullptr && ret.has("errors")) {
 			Array errors = ret["errors"];
-			for (int i = 0; i < errors.size(); i++) {
-				Dictionary err = errors[i];
+			for (const Variant &error : errors) {
+				Dictionary err = error;
 				ERR_CONTINUE(!err.has("line"));
 				ERR_CONTINUE(!err.has("column"));
 				ERR_CONTINUE(!err.has("message"));
@@ -326,8 +326,8 @@ public:
 		if (r_warnings != nullptr && ret.has("warnings")) {
 			ERR_FAIL_COND_V(!ret.has("warnings"), false);
 			Array warnings = ret["warnings"];
-			for (int i = 0; i < warnings.size(); i++) {
-				Dictionary warn = warnings[i];
+			for (const Variant &warning : warnings) {
+				Dictionary warn = warning;
 				ERR_CONTINUE(!warn.has("start_line"));
 				ERR_CONTINUE(!warn.has("end_line"));
 				ERR_CONTINUE(!warn.has("leftmost_column"));
@@ -389,8 +389,8 @@ public:
 
 		if (r_options != nullptr && ret.has("options")) {
 			Array options = ret["options"];
-			for (int i = 0; i < options.size(); i++) {
-				Dictionary op = options[i];
+			for (const Variant &var : options) {
+				Dictionary op = var;
 				CodeCompletionOption option;
 				ERR_CONTINUE(!op.has("kind"));
 				option.kind = CodeCompletionKind(int(op["kind"]));
@@ -489,8 +489,8 @@ public:
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
+			for (const Variant &value : values) {
+				p_values->push_back(value);
 			}
 		}
 	}
@@ -509,8 +509,8 @@ public:
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
+			for (const Variant &value : values) {
+				p_values->push_back(value);
 			}
 		}
 	}
@@ -536,8 +536,8 @@ public:
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
+			for (const Variant &value : values) {
+				p_values->push_back(value);
 			}
 		}
 	}
@@ -549,9 +549,9 @@ public:
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_debug_get_current_stack_info, ret);
 		Vector<StackInfo> sret;
-		for (int i = 0; i < ret.size(); i++) {
+		for (const Variant &var : ret) {
 			StackInfo si;
-			Dictionary d = ret[i];
+			Dictionary d = var;
 			ERR_CONTINUE(!d.has("file"));
 			ERR_CONTINUE(!d.has("func"));
 			ERR_CONTINUE(!d.has("line"));
@@ -582,8 +582,8 @@ public:
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_public_functions, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			MethodInfo mi = MethodInfo::from_dict(ret[i]);
+		for (const Variant &var : ret) {
+			MethodInfo mi = MethodInfo::from_dict(var);
 			p_functions->push_back(mi);
 		}
 	}
@@ -602,8 +602,8 @@ public:
 	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_public_annotations, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			MethodInfo mi = MethodInfo::from_dict(ret[i]);
+		for (const Variant &var : ret) {
+			MethodInfo mi = MethodInfo::from_dict(var);
 			p_annotations->push_back(mi);
 		}
 	}

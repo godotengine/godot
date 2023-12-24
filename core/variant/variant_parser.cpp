@@ -2012,12 +2012,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				p_recursion_count++;
 
 				p_store_string_func(p_store_string_ud, "[");
-				int len = array.size();
-				for (int i = 0; i < len; i++) {
-					if (i > 0) {
+				bool first = true;
+				for (const Variant &var : array) {
+					if (first) {
+						first = false;
+					} else {
 						p_store_string_func(p_store_string_ud, ", ");
 					}
-					write(array[i], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(var, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
 				}
 
 				p_store_string_func(p_store_string_ud, "]");
