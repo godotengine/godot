@@ -273,8 +273,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];
-				for (int i = 0; i < groups.size(); i++) {
-					packed_scene->get_state()->add_node_group(node_id, packed_scene->get_state()->add_name(groups[i]));
+				for (const Variant &group : groups) {
+					packed_scene->get_state()->add_node_group(node_id, packed_scene->get_state()->add_name(group));
 				}
 			}
 
@@ -352,8 +352,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			}
 
 			Vector<int> bind_ints;
-			for (int i = 0; i < binds.size(); i++) {
-				bind_ints.push_back(packed_scene->get_state()->add_value(binds[i]));
+			for (const Variant &bind : binds) {
+				bind_ints.push_back(packed_scene->get_state()->add_value(bind));
 			}
 
 			packed_scene->get_state()->add_connection(
@@ -1952,10 +1952,8 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		case Variant::ARRAY: {
 			Array varray = p_variant;
 			_find_resources(varray.get_typed_script());
-			int len = varray.size();
-			for (int i = 0; i < len; i++) {
-				const Variant &v = varray.get(i);
-				_find_resources(v);
+			for (const Variant &var : varray) {
+				_find_resources(var);
 			}
 
 		} break;
