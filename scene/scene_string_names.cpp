@@ -85,6 +85,8 @@ SceneStringNames::SceneStringNames() {
 
 	area_shape_entered = StaticCString::create("area_shape_entered");
 	area_shape_exited = StaticCString::create("area_shape_exited");
+	entered_area_shape = StaticCString::create("entered_area_shape");
+	exited_area_shape = StaticCString::create("exited_area_shape");
 
 	_body_inout = StaticCString::create("_body_inout");
 	_area_inout = StaticCString::create("_area_inout");
@@ -158,6 +160,8 @@ SceneStringNames::SceneStringNames() {
 
 	area_entered = StaticCString::create("area_entered");
 	area_exited = StaticCString::create("area_exited");
+	entered_area = StaticCString::create("entered_area");
+	exited_area = StaticCString::create("exited_area");
 
 	_has_point = StaticCString::create("_has_point");
 

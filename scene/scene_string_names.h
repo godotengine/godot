@@ -110,6 +110,8 @@ public:
 
 	StringName area_shape_entered;
 	StringName area_shape_exited;
+	StringName entered_area_shape;
+	StringName exited_area_shape;
 
 	StringName _body_inout;
 	StringName _area_inout;
@@ -176,6 +178,8 @@ public:
 
 	StringName area_entered;
 	StringName area_exited;
+	StringName entered_area;
+	StringName exited_area;
 
 	StringName _get_minimum_size;
 

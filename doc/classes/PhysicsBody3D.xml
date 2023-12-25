@@ -100,4 +100,38 @@
 			Lock the body's linear movement in the Z axis.
 		</member>
 	</members>
+	<signals>
+		<signal name="entered_area">
+			<param index="0" name="area" type="Area3D" />
+			<description>
+				Emitted when this body enters the received [param area]. Requires [member Area3D.monitoring] to be set to [code]true[/code] on the area in question.
+			</description>
+		</signal>
+		<signal name="entered_area_shape">
+			<param index="0" name="area_rid" type="RID" />
+			<param index="1" name="area" type="Area3D" />
+			<param index="2" name="area_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape3D] of this body enters a shape of received [param area]. Requires [member Area3D.monitoring] to be set to [code]true[/code] on the area in question.
+				[param local_shape_index] and [param area_shape_index] contain indices of the interacting shapes from this body and the intersecting area, respectively. [param area_rid] contains the [RID] of the area. These values can be used with the [PhysicsServer3D].
+				See also [signal Area3D.body_shape_entered]
+			</description>
+		</signal>
+		<signal name="exited_area">
+			<param index="0" name="area" type="Area3D" />
+			<description>
+				Emitted when this body exits the received [param area]. Requires [member Area3D.monitoring] to be set to [code]true[/code] on the area in question.
+			</description>
+		</signal>
+		<signal name="exited_area_shape">
+			<param index="0" name="area_rid" type="RID" />
+			<param index="1" name="area" type="Area3D" />
+			<param index="2" name="area_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape3D] of this body exits a shape of received [param area]. Requires [member Area3D.monitoring] to be set to [code]true[/code] on the area in question.
+			</description>
+		</signal>
+	</signals>
 </class>
