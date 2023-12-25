@@ -3126,7 +3126,7 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const String 
 			bool must_import = true;
 			Vector<uint8_t> img_data = p_image->get_data();
 			Dictionary generator_parameters;
-			String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + p_image->get_name() + ".png";
+			String file_path = p_state->get_base_path().path_join(p_state->filename.get_basename() + "_" + p_image->get_name()) + ".png";
 			if (FileAccess::exists(file_path + ".import")) {
 				Ref<ConfigFile> config;
 				config.instantiate();
@@ -3137,6 +3137,8 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const String 
 				if (!generator_parameters.has("md5")) {
 					must_import = false; // Didn't come from a gltf document; don't overwrite.
 				}
+			}
+			if (must_import) {
 				String existing_md5 = generator_parameters["md5"];
 				unsigned char md5_hash[16];
 				CryptoCore::md5(img_data.ptr(), img_data.size(), md5_hash);
