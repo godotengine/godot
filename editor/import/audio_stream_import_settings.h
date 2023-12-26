@@ -35,6 +35,7 @@
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/texture.h"
 
@@ -50,9 +51,11 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	Label *bar_beats_label = nullptr;
 	SpinBox *bar_beats_edit = nullptr;
 	CheckBox *loop = nullptr;
+	OptionButton *loop_offset_type = nullptr;
 	SpinBox *loop_offset = nullptr;
 	ColorRect *color_rect = nullptr;
 	Ref<AudioStream> stream;
+	Ref<AudioStream> stream_no_loop;
 	AudioStreamPlayer *_player = nullptr;
 	ColorRect *_preview = nullptr;
 	Control *_indicator = nullptr;
@@ -86,6 +89,7 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	void _settings_changed();
 
 	void _reimport();
+	void _update_loop_offset_type();
 
 protected:
 	void _notification(int p_what);
