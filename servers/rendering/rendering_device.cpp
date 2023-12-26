@@ -4125,7 +4125,7 @@ void RenderingDevice::draw_list_bind_render_pipeline(DrawListID p_list, RID p_re
 		}
 
 		for (uint32_t i = 0; i < pcount; i++) {
-			dl->state.sets[i].bound = i < first_invalid_set;
+			dl->state.sets[i].bound = dl->state.sets[i].bound && i < first_invalid_set;
 			dl->state.sets[i].pipeline_expected_format = pformats[i];
 		}
 
@@ -4718,7 +4718,7 @@ void RenderingDevice::compute_list_bind_compute_pipeline(ComputeListID p_list, R
 		}
 
 		for (uint32_t i = 0; i < pcount; i++) {
-			cl->state.sets[i].bound = i >= first_invalid_set;
+			cl->state.sets[i].bound = cl->state.sets[i].bound && i < first_invalid_set;
 			cl->state.sets[i].pipeline_expected_format = pformats[i];
 		}
 
