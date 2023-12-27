@@ -132,6 +132,15 @@
 				Returns whether [param class] (or its ancestry if [param no_inheritance] is [code]false[/code]) has a method called [param method] or not.
 			</description>
 		</method>
+		<method name="class_has_property" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns whether [param class] (or its ancestry if [param no_inheritance] is [code]false[/code]) has a property called [param property] or not.
+			</description>
+		</method>
 		<method name="class_has_signal" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />

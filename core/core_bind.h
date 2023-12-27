@@ -438,6 +438,7 @@ public:
 	Dictionary class_get_signal(StringName p_class, StringName p_signal) const;
 	TypedArray<Dictionary> class_get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
 
+	bool class_has_property(StringName p_class, StringName p_property, bool p_no_inheritance = false) const;
 	TypedArray<Dictionary> class_get_property_list(StringName p_class, bool p_no_inheritance = false) const;
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
