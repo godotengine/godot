@@ -59,7 +59,7 @@ void PhysicsServer2DWrapMT::thread_loop() {
 		command_queue.wait_and_flush();
 	}
 
-	command_queue.flush_all(); // flush all
+	command_queue.flush(); // flush all
 
 	physics_server_2d->finish();
 }
@@ -70,7 +70,7 @@ void PhysicsServer2DWrapMT::step(real_t p_step) {
 	if (create_thread) {
 		command_queue.push(this, &PhysicsServer2DWrapMT::thread_step, p_step);
 	} else {
-		command_queue.flush_all(); //flush all pending from other threads
+		command_queue.flush(); //flush all pending from other threads
 		physics_server_2d->step(p_step);
 	}
 }

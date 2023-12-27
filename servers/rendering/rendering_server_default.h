@@ -272,7 +272,7 @@ public:
 
 		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) {
 			if (Thread::get_caller_id() == server_thread) {
-				command_queue.flush_if_pending();
+				command_queue.flush();
 			}
 			RSG::mesh_storage->mesh_initialize(mesh);
 			RSG::mesh_storage->mesh_set_blend_shape_count(mesh, p_blend_shape_count);
@@ -987,7 +987,7 @@ public:
 
 	virtual void free(RID p_rid) override {
 		if (Thread::get_caller_id() == server_thread) {
-			command_queue.flush_if_pending();
+			command_queue.flush();
 			_free(p_rid);
 		} else {
 			command_queue.push(this, &RenderingServerDefault::_free, p_rid);
@@ -1006,7 +1006,7 @@ public:
 
 	virtual void call_on_render_thread(const Callable &p_callable) override {
 		if (Thread::get_caller_id() == server_thread) {
-			command_queue.flush_if_pending();
+			command_queue.flush();
 			_call_on_render_thread(p_callable);
 		} else {
 			command_queue.push(this, &RenderingServerDefault::_call_on_render_thread, p_callable);

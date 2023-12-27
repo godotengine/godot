@@ -359,11 +359,21 @@ class CommandQueueMT {
 		return ret;
 	}
 
-	void _flush() {
+	void lock();
+	void unlock();
+	void wait_for_flush();
+	SyncSemaphore *_alloc_sync_sem();
+
+public:
+	void flush() {
 		lock();
 
 		uint64_t read_ptr = 0;
 		uint64_t limit = command_mem.size();
+		if (limit == 0) {
+			unlock();
+			return;
+		}
 
 		while (read_ptr < limit) {
 			uint64_t size = *(uint64_t *)&command_mem[read_ptr];
@@ -381,12 +391,6 @@ class CommandQueueMT {
 		unlock();
 	}
 
-	void lock();
-	void unlock();
-	void wait_for_flush();
-	SyncSemaphore *_alloc_sync_sem();
-
-public:
 	/* NORMAL PUSH COMMANDS */
 	DECL_PUSH(0)
 	SPACE_SEP_LIST(DECL_PUSH, 15)
@@ -399,19 +403,10 @@ public:
 	DECL_PUSH_AND_SYNC(0)
 	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 15)
 
-	_FORCE_INLINE_ void flush_if_pending() {
-		if (unlikely(command_mem.size() > 0)) {
-			_flush();
-		}
-	}
-	void flush_all() {
-		_flush();
-	}
-
 	void wait_and_flush() {
 		ERR_FAIL_NULL(sync);
 		sync->wait();
-		_flush();
+		flush();
 	}
 
 	CommandQueueMT(bool p_sync);

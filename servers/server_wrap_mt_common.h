@@ -39,7 +39,7 @@
 			SYNC_DEBUG                                                          \
 			return ret;                                                         \
 		} else {                                                                \
-			command_queue.flush_if_pending();                                   \
+			command_queue.flush();                                              \
 			return server_name->m_type();                                       \
 		}                                                                       \
 	}
@@ -70,7 +70,7 @@
 			SYNC_DEBUG                                                          \
 			return ret;                                                         \
 		} else {                                                                \
-			command_queue.flush_if_pending();                                   \
+			command_queue.flush();                                              \
 			return server_name->m_type();                                       \
 		}                                                                       \
 	}
@@ -81,7 +81,7 @@
 		if (Thread::get_caller_id() != server_thread) {           \
 			command_queue.push(server_name, &ServerName::m_type); \
 		} else {                                                  \
-			command_queue.flush_if_pending();                     \
+			command_queue.flush();                                \
 			server_name->m_type();                                \
 		}                                                         \
 	}
@@ -91,7 +91,7 @@
 		if (Thread::get_caller_id() != server_thread) {           \
 			command_queue.push(server_name, &ServerName::m_type); \
 		} else {                                                  \
-			command_queue.flush_if_pending();                     \
+			command_queue.flush();                                \
 			server_name->m_type();                                \
 		}                                                         \
 	}
@@ -103,7 +103,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type); \
 			SYNC_DEBUG                                                     \
 		} else {                                                           \
-			command_queue.flush_if_pending();                              \
+			command_queue.flush();                                         \
 			server_name->m_type();                                         \
 		}                                                                  \
 	}
@@ -114,7 +114,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type); \
 			SYNC_DEBUG                                                     \
 		} else {                                                           \
-			command_queue.flush_if_pending();                              \
+			command_queue.flush();                                         \
 			server_name->m_type();                                         \
 		}                                                                  \
 	}
@@ -130,7 +130,7 @@
 			SYNC_DEBUG                                                              \
 			return ret;                                                             \
 		} else {                                                                    \
-			command_queue.flush_if_pending();                                       \
+			command_queue.flush();                                                  \
 			return server_name->m_type(p1);                                         \
 		}                                                                           \
 	}
@@ -143,7 +143,7 @@
 			SYNC_DEBUG                                                              \
 			return ret;                                                             \
 		} else {                                                                    \
-			command_queue.flush_if_pending();                                       \
+			command_queue.flush();                                                  \
 			return server_name->m_type(p1);                                         \
 		}                                                                           \
 	}
@@ -155,7 +155,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1); \
 			SYNC_DEBUG                                                         \
 		} else {                                                               \
-			command_queue.flush_if_pending();                                  \
+			command_queue.flush();                                             \
 			server_name->m_type(p1);                                           \
 		}                                                                      \
 	}
@@ -166,7 +166,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1); \
 			SYNC_DEBUG                                                         \
 		} else {                                                               \
-			command_queue.flush_if_pending();                                  \
+			command_queue.flush();                                             \
 			server_name->m_type(p1);                                           \
 		}                                                                      \
 	}
@@ -177,7 +177,7 @@
 		if (Thread::get_caller_id() != server_thread) {               \
 			command_queue.push(server_name, &ServerName::m_type, p1); \
 		} else {                                                      \
-			command_queue.flush_if_pending();                         \
+			command_queue.flush();                                    \
 			server_name->m_type(p1);                                  \
 		}                                                             \
 	}
@@ -187,7 +187,7 @@
 		if (Thread::get_caller_id() != server_thread) {               \
 			command_queue.push(server_name, &ServerName::m_type, p1); \
 		} else {                                                      \
-			command_queue.flush_if_pending();                         \
+			command_queue.flush();                                    \
 			server_name->m_type(p1);                                  \
 		}                                                             \
 	}
@@ -201,7 +201,7 @@
 			SYNC_DEBUG                                                                  \
 			return ret;                                                                 \
 		} else {                                                                        \
-			command_queue.flush_if_pending();                                           \
+			command_queue.flush();                                                      \
 			return server_name->m_type(p1, p2);                                         \
 		}                                                                               \
 	}
@@ -214,7 +214,7 @@
 			SYNC_DEBUG                                                                  \
 			return ret;                                                                 \
 		} else {                                                                        \
-			command_queue.flush_if_pending();                                           \
+			command_queue.flush();                                                      \
 			return server_name->m_type(p1, p2);                                         \
 		}                                                                               \
 	}
@@ -226,7 +226,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2); \
 			SYNC_DEBUG                                                             \
 		} else {                                                                   \
-			command_queue.flush_if_pending();                                      \
+			command_queue.flush();                                                 \
 			server_name->m_type(p1, p2);                                           \
 		}                                                                          \
 	}
@@ -237,7 +237,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2); \
 			SYNC_DEBUG                                                             \
 		} else {                                                                   \
-			command_queue.flush_if_pending();                                      \
+			command_queue.flush();                                                 \
 			server_name->m_type(p1, p2);                                           \
 		}                                                                          \
 	}
@@ -248,7 +248,7 @@
 		if (Thread::get_caller_id() != server_thread) {                   \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2); \
 		} else {                                                          \
-			command_queue.flush_if_pending();                             \
+			command_queue.flush();                                        \
 			server_name->m_type(p1, p2);                                  \
 		}                                                                 \
 	}
@@ -258,7 +258,7 @@
 		if (Thread::get_caller_id() != server_thread) {                   \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2); \
 		} else {                                                          \
-			command_queue.flush_if_pending();                             \
+			command_queue.flush();                                        \
 			server_name->m_type(p1, p2);                                  \
 		}                                                                 \
 	}
@@ -272,7 +272,7 @@
 			SYNC_DEBUG                                                                      \
 			return ret;                                                                     \
 		} else {                                                                            \
-			command_queue.flush_if_pending();                                               \
+			command_queue.flush();                                                          \
 			return server_name->m_type(p1, p2, p3);                                         \
 		}                                                                                   \
 	}
@@ -285,7 +285,7 @@
 			SYNC_DEBUG                                                                      \
 			return ret;                                                                     \
 		} else {                                                                            \
-			command_queue.flush_if_pending();                                               \
+			command_queue.flush();                                                          \
 			return server_name->m_type(p1, p2, p3);                                         \
 		}                                                                                   \
 	}
@@ -297,7 +297,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3); \
 			SYNC_DEBUG                                                                 \
 		} else {                                                                       \
-			command_queue.flush_if_pending();                                          \
+			command_queue.flush();                                                     \
 			server_name->m_type(p1, p2, p3);                                           \
 		}                                                                              \
 	}
@@ -308,7 +308,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3); \
 			SYNC_DEBUG                                                                 \
 		} else {                                                                       \
-			command_queue.flush_if_pending();                                          \
+			command_queue.flush();                                                     \
 			server_name->m_type(p1, p2, p3);                                           \
 		}                                                                              \
 	}
@@ -319,7 +319,7 @@
 		if (Thread::get_caller_id() != server_thread) {                       \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3); \
 		} else {                                                              \
-			command_queue.flush_if_pending();                                 \
+			command_queue.flush();                                            \
 			server_name->m_type(p1, p2, p3);                                  \
 		}                                                                     \
 	}
@@ -329,7 +329,7 @@
 		if (Thread::get_caller_id() != server_thread) {                       \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3); \
 		} else {                                                              \
-			command_queue.flush_if_pending();                                 \
+			command_queue.flush();                                            \
 			server_name->m_type(p1, p2, p3);                                  \
 		}                                                                     \
 	}
@@ -343,7 +343,7 @@
 			SYNC_DEBUG                                                                          \
 			return ret;                                                                         \
 		} else {                                                                                \
-			command_queue.flush_if_pending();                                                   \
+			command_queue.flush();                                                              \
 			return server_name->m_type(p1, p2, p3, p4);                                         \
 		}                                                                                       \
 	}
@@ -356,7 +356,7 @@
 			SYNC_DEBUG                                                                          \
 			return ret;                                                                         \
 		} else {                                                                                \
-			command_queue.flush_if_pending();                                                   \
+			command_queue.flush();                                                              \
 			return server_name->m_type(p1, p2, p3, p4);                                         \
 		}                                                                                       \
 	}
@@ -368,7 +368,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4); \
 			SYNC_DEBUG                                                                     \
 		} else {                                                                           \
-			command_queue.flush_if_pending();                                              \
+			command_queue.flush();                                                         \
 			server_name->m_type(p1, p2, p3, p4);                                           \
 		}                                                                                  \
 	}
@@ -379,7 +379,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4); \
 			SYNC_DEBUG                                                                     \
 		} else {                                                                           \
-			command_queue.flush_if_pending();                                              \
+			command_queue.flush();                                                         \
 			server_name->m_type(p1, p2, p3, p4);                                           \
 		}                                                                                  \
 	}
@@ -390,7 +390,7 @@
 		if (Thread::get_caller_id() != server_thread) {                           \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4); \
 		} else {                                                                  \
-			command_queue.flush_if_pending();                                     \
+			command_queue.flush();                                                \
 			server_name->m_type(p1, p2, p3, p4);                                  \
 		}                                                                         \
 	}
@@ -400,7 +400,7 @@
 		if (Thread::get_caller_id() != server_thread) {                              \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4);    \
 		} else {                                                                     \
-			command_queue.flush_if_pending();                                        \
+			command_queue.flush();                                                   \
 			server_name->m_type(p1, p2, p3, p4);                                     \
 		}                                                                            \
 	}
@@ -414,7 +414,7 @@
 			SYNC_DEBUG                                                                              \
 			return ret;                                                                             \
 		} else {                                                                                    \
-			command_queue.flush_if_pending();                                                       \
+			command_queue.flush();                                                                  \
 			return server_name->m_type(p1, p2, p3, p4, p5);                                         \
 		}                                                                                           \
 	}
@@ -427,7 +427,7 @@
 			SYNC_DEBUG                                                                              \
 			return ret;                                                                             \
 		} else {                                                                                    \
-			command_queue.flush_if_pending();                                                       \
+			command_queue.flush();                                                                  \
 			return server_name->m_type(p1, p2, p3, p4, p5);                                         \
 		}                                                                                           \
 	}
@@ -439,7 +439,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5); \
 			SYNC_DEBUG                                                                         \
 		} else {                                                                               \
-			command_queue.flush_if_pending();                                                  \
+			command_queue.flush();                                                             \
 			server_name->m_type(p1, p2, p3, p4, p5);                                           \
 		}                                                                                      \
 	}
@@ -450,7 +450,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5);  \
 			SYNC_DEBUG                                                                          \
 		} else {                                                                                \
-			command_queue.flush_if_pending();                                                   \
+			command_queue.flush();                                                              \
 			server_name->m_type(p1, p2, p3, p4, p5);                                            \
 		}                                                                                       \
 	}
@@ -461,7 +461,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                   \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5);     \
 		} else {                                                                          \
-			command_queue.flush_if_pending();                                             \
+			command_queue.flush();                                                        \
 			server_name->m_type(p1, p2, p3, p4, p5);                                      \
 		}                                                                                 \
 	}
@@ -471,7 +471,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                         \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5);           \
 		} else {                                                                                \
-			command_queue.flush_if_pending();                                                   \
+			command_queue.flush();                                                              \
 			server_name->m_type(p1, p2, p3, p4, p5);                                            \
 		}                                                                                       \
 	}
@@ -485,7 +485,7 @@
 			SYNC_DEBUG                                                                                  \
 			return ret;                                                                                 \
 		} else {                                                                                        \
-			command_queue.flush_if_pending();                                                           \
+			command_queue.flush();                                                                      \
 			return server_name->m_type(p1, p2, p3, p4, p5, p6);                                         \
 		}                                                                                               \
 	}
@@ -498,7 +498,7 @@
 			SYNC_DEBUG                                                                                    \
 			return ret;                                                                                   \
 		} else {                                                                                          \
-			command_queue.flush_if_pending();                                                             \
+			command_queue.flush();                                                                        \
 			return server_name->m_type(p1, p2, p3, p4, p5, p6);                                           \
 		}                                                                                                 \
 	}
@@ -510,7 +510,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6);   \
 			SYNC_DEBUG                                                                               \
 		} else {                                                                                     \
-			command_queue.flush_if_pending();                                                        \
+			command_queue.flush();                                                                   \
 			server_name->m_type(p1, p2, p3, p4, p5, p6);                                             \
 		}                                                                                            \
 	}
@@ -521,7 +521,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6);         \
 			SYNC_DEBUG                                                                                     \
 		} else {                                                                                           \
-			command_queue.flush_if_pending();                                                              \
+			command_queue.flush();                                                                         \
 			server_name->m_type(p1, p2, p3, p4, p5, p6);                                                   \
 		}                                                                                                  \
 	}
@@ -532,7 +532,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                              \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6);            \
 		} else {                                                                                     \
-			command_queue.flush_if_pending();                                                        \
+			command_queue.flush();                                                                   \
 			server_name->m_type(p1, p2, p3, p4, p5, p6);                                             \
 		}                                                                                            \
 	}
@@ -542,7 +542,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                    \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6);                  \
 		} else {                                                                                           \
-			command_queue.flush_if_pending();                                                              \
+			command_queue.flush();                                                                         \
 			server_name->m_type(p1, p2, p3, p4, p5, p6);                                                   \
 		}                                                                                                  \
 	}
@@ -556,7 +556,7 @@
 			SYNC_DEBUG                                                                                         \
 			return ret;                                                                                        \
 		} else {                                                                                               \
-			command_queue.flush_if_pending();                                                                  \
+			command_queue.flush();                                                                             \
 			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                            \
 		}                                                                                                      \
 	}
@@ -569,7 +569,7 @@
 			SYNC_DEBUG                                                                                               \
 			return ret;                                                                                              \
 		} else {                                                                                                     \
-			command_queue.flush_if_pending();                                                                        \
+			command_queue.flush();                                                                                   \
 			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                  \
 		}                                                                                                            \
 	}
@@ -581,7 +581,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7);          \
 			SYNC_DEBUG                                                                                          \
 		} else {                                                                                                \
-			command_queue.flush_if_pending();                                                                   \
+			command_queue.flush();                                                                              \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                    \
 		}                                                                                                       \
 	}
@@ -592,7 +592,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7);                \
 			SYNC_DEBUG                                                                                                \
 		} else {                                                                                                      \
-			command_queue.flush_if_pending();                                                                         \
+			command_queue.flush();                                                                                    \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                          \
 		}                                                                                                             \
 	}
@@ -603,7 +603,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                         \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7);                   \
 		} else {                                                                                                \
-			command_queue.flush_if_pending();                                                                   \
+			command_queue.flush();                                                                              \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                    \
 		}                                                                                                       \
 	}
@@ -613,7 +613,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                               \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7);                         \
 		} else {                                                                                                      \
-			command_queue.flush_if_pending();                                                                         \
+			command_queue.flush();                                                                                    \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                          \
 		}                                                                                                             \
 	}
@@ -627,7 +627,7 @@
 			SYNC_DEBUG                                                                                                    \
 			return ret;                                                                                                   \
 		} else {                                                                                                          \
-			command_queue.flush_if_pending();                                                                             \
+			command_queue.flush();                                                                                        \
 			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                   \
 		}                                                                                                                 \
 	}
@@ -640,7 +640,7 @@
 			SYNC_DEBUG                                                                                                          \
 			return ret;                                                                                                         \
 		} else {                                                                                                                \
-			command_queue.flush_if_pending();                                                                                   \
+			command_queue.flush();                                                                                              \
 			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                         \
 		}                                                                                                                       \
 	}
@@ -652,7 +652,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);                 \
 			SYNC_DEBUG                                                                                                     \
 		} else {                                                                                                           \
-			command_queue.flush_if_pending();                                                                              \
+			command_queue.flush();                                                                                         \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                           \
 		}                                                                                                                  \
 	}
@@ -663,7 +663,7 @@
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);                       \
 			SYNC_DEBUG                                                                                                           \
 		} else {                                                                                                                 \
-			command_queue.flush_if_pending();                                                                                    \
+			command_queue.flush();                                                                                               \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                                 \
 		}                                                                                                                        \
 	}
@@ -674,7 +674,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                                    \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);                          \
 		} else {                                                                                                           \
-			command_queue.flush_if_pending();                                                                              \
+			command_queue.flush();                                                                                         \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                           \
 		}                                                                                                                  \
 	}
@@ -684,7 +684,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                                          \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);                                \
 		} else {                                                                                                                 \
-			command_queue.flush_if_pending();                                                                                    \
+			command_queue.flush();                                                                                               \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                                 \
 		}                                                                                                                        \
 	}
@@ -695,7 +695,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                                               \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9);                                 \
 		} else {                                                                                                                      \
-			command_queue.flush_if_pending();                                                                                         \
+			command_queue.flush();                                                                                                    \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9);                                                                  \
 		}                                                                                                                             \
 	}
@@ -706,7 +706,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                                                            \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);                                         \
 		} else {                                                                                                                                   \
-			command_queue.flush_if_pending();                                                                                                      \
+			command_queue.flush();                                                                                                                 \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);                                                                          \
 		}                                                                                                                                          \
 	}
@@ -717,7 +717,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                                                                         \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11);                                                 \
 		} else {                                                                                                                                                \
-			command_queue.flush_if_pending();                                                                                                                   \
+			command_queue.flush();                                                                                                                              \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11);                                                                                  \
 		}                                                                                                                                                       \
 	}
@@ -728,7 +728,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                                                                                      \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12);                                                         \
 		} else {                                                                                                                                                             \
-			command_queue.flush_if_pending();                                                                                                                                \
+			command_queue.flush();                                                                                                                                           \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12);                                                                                          \
 		}                                                                                                                                                                    \
 	}
@@ -739,7 +739,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                                                                                                   \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13);                                                                 \
 		} else {                                                                                                                                                                          \
-			command_queue.flush_if_pending();                                                                                                                                             \
+			command_queue.flush();                                                                                                                                                        \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13);                                                                                                  \
 		}                                                                                                                                                                                 \
 	}
@@ -750,7 +750,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                                                                                                                \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14);                                                                         \
 		} else {                                                                                                                                                                                       \
-			command_queue.flush_if_pending();                                                                                                                                                          \
+			command_queue.flush();                                                                                                                                                                     \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14);                                                                                                          \
 		}                                                                                                                                                                                              \
 	}
@@ -761,7 +761,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                                                                                                                             \
 			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15);                                                                                 \
 		} else {                                                                                                                                                                                                    \
-			command_queue.flush_if_pending();                                                                                                                                                                       \
+			command_queue.flush();                                                                                                                                                                                  \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15);                                                                                                                  \
 		}                                                                                                                                                                                                           \
 	}

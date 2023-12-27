@@ -149,7 +149,7 @@ public:
 		reader_threadwork.thread_wait_for_work();
 		while (!exit_threads) {
 			if (message_count_to_read < 0) {
-				command_queue.flush_all();
+				command_queue.flush();
 			}
 			for (int i = 0; i < message_count_to_read; i++) {
 				command_queue.wait_and_flush();
@@ -159,7 +159,7 @@ public:
 			reader_threadwork.thread_done_work();
 			reader_threadwork.thread_wait_for_work();
 		}
-		command_queue.flush_all();
+		command_queue.flush();
 		reader_threadwork.thread_done_work();
 	}
 	static void static_reader_thread_loop(void *stsvoid) {
@@ -252,7 +252,7 @@ TEST_CASE("[CommandQueue] Test Queue Basics") {
 	sts.reader_threadwork.main_start_work();
 	sts.reader_threadwork.main_wait_for_done();
 	CHECK_MESSAGE(sts.func1_count == 1,
-			"Reader should have read no additional messages from flush_all");
+			"Reader should have read no additional messages from flush");
 
 	sts.add_msg_to_write(SharedThreadState::TEST_MSG_FUNC1_TRANSFORM);
 	sts.writer_threadwork.main_start_work();
@@ -262,7 +262,7 @@ TEST_CASE("[CommandQueue] Test Queue Basics") {
 	sts.reader_threadwork.main_start_work();
 	sts.reader_threadwork.main_wait_for_done();
 	CHECK_MESSAGE(sts.func1_count == 2,
-			"Reader should have read one additional message from flush_all");
+			"Reader should have read one additional message from flush");
 
 	sts.destroy_threads();
 

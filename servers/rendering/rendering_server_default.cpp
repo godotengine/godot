@@ -363,7 +363,7 @@ void RenderingServerDefault::_thread_loop() {
 		command_queue.wait_and_flush();
 	}
 
-	command_queue.flush_all(); // flush all
+	command_queue.flush(); // flush all
 
 	_finish();
 }
@@ -374,7 +374,7 @@ void RenderingServerDefault::sync() {
 	if (create_thread) {
 		command_queue.push_and_sync(this, &RenderingServerDefault::_thread_flush);
 	} else {
-		command_queue.flush_all(); //flush all pending from other threads
+		command_queue.flush(); //flush all pending from other threads
 	}
 }
 
