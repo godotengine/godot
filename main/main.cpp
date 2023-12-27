@@ -2463,7 +2463,7 @@ Error Main::setup2() {
 		}
 
 		if (err != OK || display_server == nullptr) {
-			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.");
+			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
 			return err;
 		}
 

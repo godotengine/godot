@@ -373,8 +373,7 @@ void GodotCapsuleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_suppo
 	if (h > 0 && Math::abs(n.x) > segment_is_valid_support_threshold) {
 		// make it flat
 		n.y = 0.0;
-		n.normalize();
-		n *= radius;
+		n.x = SIGN(n.x) * radius;
 
 		r_amount = 2;
 		r_supports[0] = n;

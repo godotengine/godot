@@ -2135,6 +2135,135 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_OPEN_IN_TERMINAL: {
+			String fpath = current_path;
+			if (current_path == "Favorites") {
+				fpath = p_selected[0];
+			}
+
+			Vector<String> terminal_emulators;
+			const String terminal_emulator_setting = EDITOR_GET("filesystem/external_programs/terminal_emulator");
+			if (terminal_emulator_setting.is_empty()) {
+				// Figure out a default terminal emulator to use.
+#if defined(WINDOWS_ENABLED)
+				// Default to PowerShell as done by Windows 10 and later.
+				terminal_emulators.push_back("powershell");
+#elif defined(MACOS_ENABLED)
+				terminal_emulators.push_back("/System/Applications/Utilities/Terminal.app");
+#elif defined(LINUXBSD_ENABLED)
+				// Try terminal emulators that ship with common Linux distributions first.
+				terminal_emulators.push_back("gnome-terminal");
+				terminal_emulators.push_back("konsole");
+				terminal_emulators.push_back("xfce4-terminal");
+				terminal_emulators.push_back("lxterminal");
+				terminal_emulators.push_back("kitty");
+				terminal_emulators.push_back("alacritty");
+				terminal_emulators.push_back("urxvt");
+				terminal_emulators.push_back("xterm");
+#endif
+			} else {
+				// Use the user-specified terminal.
+				terminal_emulators.push_back(terminal_emulator_setting);
+			}
+
+			String arguments = EDITOR_GET("filesystem/external_programs/terminal_emulator_flags");
+			if (arguments.is_empty()) {
+				// NOTE: This default value is ignored further below if the terminal executable is `powershell` or `cmd`,
+				// due to these terminals requiring nonstandard syntax to start in a specified folder.
+				arguments = "{directory}";
+			}
+
+#ifdef LINUXBSD_ENABLED
+			String chosen_terminal_emulator;
+			for (const String &terminal_emulator : terminal_emulators) {
+				List<String> test_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
+				test_args.push_back("-v");
+				test_args.push_back(terminal_emulator);
+				// Silence command name being printed when found. (stderr is already silenced by `OS::execute()` by default.)
+				// FIXME: This doesn't appear to silence stdout.
+				test_args.push_back(">");
+				test_args.push_back("/dev/null");
+				int exit_code = 0;
+				const Error err = OS::get_singleton()->execute("command", test_args, nullptr, &exit_code);
+				if (err == OK && exit_code == EXIT_SUCCESS) {
+					chosen_terminal_emulator = terminal_emulator;
+					break;
+				} else if (err == ERR_CANT_FORK) {
+					ERR_PRINT_ED(vformat(TTR("Couldn't run external program to check for terminal emulator presence: command -v %s"), terminal_emulator));
+				}
+			}
+#else
+			// On Windows and macOS, the first (and only) terminal emulator in the list is always available.
+			String chosen_terminal_emulator = terminal_emulators[0];
+#endif
+
+			List<String> terminal_emulator_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
+#ifdef LINUXBSD_ENABLED
+			// Prepend default arguments based on the terminal emulator name.
+			// Use `String.ends_with()` so that installations in non-default paths
+			// or `/usr/local/bin` are detected correctly.
+			if (chosen_terminal_emulator.ends_with("konsole")) {
+				terminal_emulator_args.push_back("--workdir");
+			}
+#endif
+
+			bool append_default_args = true;
+
+#ifdef WINDOWS_ENABLED
+			// Prepend default arguments based on the terminal emulator name.
+			// Use `String.get_basename().to_lower()` to handle Windows' case-insensitive paths
+			// with optional file extensions for executables in `PATH`.
+			if (chosen_terminal_emulator.get_basename().to_lower() == "powershell") {
+				terminal_emulator_args.push_back("-noexit");
+				terminal_emulator_args.push_back("-command");
+				terminal_emulator_args.push_back("cd '{directory}'");
+				append_default_args = false;
+			} else if (chosen_terminal_emulator.get_basename().to_lower() == "cmd") {
+				terminal_emulator_args.push_back("/K");
+				terminal_emulator_args.push_back("cd /d {directory}");
+				append_default_args = false;
+			}
+#endif
+
+			Vector<String> arguments_array = arguments.split(" ");
+			for (const String &argument : arguments_array) {
+				if (!append_default_args && argument == "{directory}") {
+					// Prevent appending a `{directory}` placeholder twice when using powershell or cmd.
+					// This allows users to enter the path to cmd or PowerShell in the custom terminal emulator path,
+					// and make it work without having to enter custom arguments.
+					continue;
+				}
+				terminal_emulator_args.push_back(argument);
+			}
+
+			const bool is_directory = fpath.ends_with("/");
+			for (int i = 0; i < terminal_emulator_args.size(); i++) {
+				if (is_directory) {
+					terminal_emulator_args[i] = terminal_emulator_args[i].replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath));
+				} else {
+					terminal_emulator_args[i] = terminal_emulator_args[i].replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath).get_base_dir());
+				}
+			}
+
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				// Print full command line to help with troubleshooting.
+				String command_string = chosen_terminal_emulator;
+				for (const String &arg : terminal_emulator_args) {
+					command_string += " " + arg;
+				}
+				print_line("Opening terminal emulator:", command_string);
+			}
+
+			const Error err = OS::get_singleton()->create_process(chosen_terminal_emulator, terminal_emulator_args, nullptr, true);
+			if (err != OK) {
+				String args_string;
+				for (int i = 0; i < terminal_emulator_args.size(); i++) {
+					args_string += terminal_emulator_args[i];
+				}
+				ERR_PRINT_ED(vformat(TTR("Couldn't run external terminal program (error code %d): %s %s\nCheck `filesystem/external_programs/terminal_emulator` and `filesystem/external_programs/terminal_emulator_flags` in the Editor Settings."), err, chosen_terminal_emulator, args_string));
+			}
+		} break;
+
 		case FILE_OPEN: {
 			// Open folders.
 			TreeItem *selected = tree->get_root();
@@ -3055,12 +3184,16 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 		// Opening the system file manager is not supported on the Android and web editors.
 		const bool is_directory = fpath.ends_with("/");
-		const String item_text = is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager");
+
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), item_text);
+		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager"));
+
 		if (!is_directory) {
 			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_OPEN_EXTERNAL);
 		}
+
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
+		p_popup->set_item_text(p_popup->get_item_index(FILE_OPEN_IN_TERMINAL), is_directory ? TTR("Open in Terminal") : TTR("Open Containing Folder in Terminal"));
 #endif
 
 		current_path = fpath;
@@ -3105,6 +3238,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
 	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
 #endif
 
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
@@ -3283,6 +3417,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_SHOW_IN_EXPLORER);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_event)) {
 			_tree_rmb_option(FILE_OPEN_EXTERNAL);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
+			_tree_rmb_option(FILE_OPEN_IN_TERMINAL);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
@@ -3343,6 +3479,8 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			_file_list_rmb_option(FILE_RENAME);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
 			_file_list_rmb_option(FILE_SHOW_IN_EXPLORER);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
+			_file_list_rmb_option(FILE_OPEN_IN_TERMINAL);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
@@ -3547,6 +3685,7 @@ FileSystemDock::FileSystemDock() {
 	// Opening the system file manager or opening in an external program is not supported on the Android and web editors.
 	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"));
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTR("Open in External Program"));
+	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTR("Open in Terminal"));
 #endif
 
 	// Properly translating color names would require a separate HashMap, so for simplicity they are provided as comments.

@@ -29,6 +29,7 @@ draw_call;
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
+#define INSTANCE_FLAGS_DYNAMIC (1 << 3)
 #define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 4)
 #define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 5)
 #define INSTANCE_FLAGS_USE_SDFGI (1 << 6)
