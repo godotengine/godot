@@ -7489,7 +7489,7 @@ msgid "Project theme"
 msgstr "Theme del proyecto"
 
 msgid "Editor theme"
-msgstr "Editor de Theme"
+msgstr "Theme del Editor"
 
 msgid "Default theme"
 msgstr "Theme predeterminado"
