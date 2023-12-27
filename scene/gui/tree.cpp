@@ -3903,7 +3903,9 @@ bool Tree::edit_selected(bool p_force_edit) {
 		return false;
 	}
 
+	float popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
 	Rect2 rect = s->get_meta("__focus_rect");
+	rect.position = rect.position * popup_scale;
 	popup_edited_item = s;
 	popup_edited_item_col = col;
 
@@ -3946,7 +3948,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		popup_rect.size = rect.size;
 
 		// Account for icon.
-		Size2 icon_size = _get_cell_icon_size(c);
+		Size2 icon_size = _get_cell_icon_size(c) * popup_scale;
 		popup_rect.position.x += icon_size.x;
 		popup_rect.size.x -= icon_size.x;
 
@@ -3973,7 +3975,10 @@ bool Tree::edit_selected(bool p_force_edit) {
 		}
 
 		popup_editor->set_position(popup_rect.position);
-		popup_editor->set_size(popup_rect.size);
+		popup_editor->set_size(popup_rect.size * popup_scale);
+		if (!popup_editor->is_embedded()) {
+			popup_editor->set_content_scale_factor(popup_scale);
+		}
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
@@ -3989,7 +3994,10 @@ bool Tree::edit_selected(bool p_force_edit) {
 		text_editor->show();
 
 		popup_editor->set_position(get_screen_position() + rect.position);
-		popup_editor->set_size(rect.size);
+		popup_editor->set_size(rect.size * popup_scale);
+		if (!popup_editor->is_embedded()) {
+			popup_editor->set_content_scale_factor(popup_scale);
+		}
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
