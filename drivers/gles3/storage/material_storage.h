@@ -168,6 +168,10 @@ struct CanvasShaderData : public ShaderData {
 	bool uses_screen_texture_mipmaps;
 	bool uses_sdf;
 	bool uses_time;
+	bool uses_custom0;
+	bool uses_custom1;
+
+	uint64_t vertex_input_mask;
 
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
