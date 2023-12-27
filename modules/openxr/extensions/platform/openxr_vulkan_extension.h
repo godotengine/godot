@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_opengl_extension.h                                             */
+/*  openxr_vulkan_extension.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,29 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_OPENGL_EXTENSION_H
-#define OPENXR_OPENGL_EXTENSION_H
+#ifndef OPENXR_VULKAN_EXTENSION_H
+#define OPENXR_VULKAN_EXTENSION_H
 
-#ifdef GLES3_ENABLED
-
-#include "../openxr_api.h"
-#include "../util.h"
-#include "openxr_extension_wrapper.h"
+#include "../../openxr_api.h"
+#include "../../util.h"
+#include "../openxr_extension_wrapper.h"
 
 #include "core/templates/vector.h"
 
 // Always include this as late as possible.
-#include "../openxr_platform_inc.h"
+#include "../../openxr_platform_inc.h"
 
-class OpenXROpenGLExtension : public OpenXRGraphicsExtensionWrapper {
+class OpenXRVulkanExtension : public OpenXRGraphicsExtensionWrapper, VulkanHooks {
 public:
+	OpenXRVulkanExtension();
+	virtual ~OpenXRVulkanExtension() override;
+
 	virtual HashMap<String, bool *> get_requested_extensions() override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
 
-	virtual void on_pre_draw_viewport(RID p_render_target) override;
-	virtual void on_post_draw_viewport(RID p_render_target) override;
+	virtual bool create_vulkan_instance(const VkInstanceCreateInfo *p_vulkan_create_info, VkInstance *r_instance) override;
+	virtual bool get_physical_device(VkPhysicalDevice *r_device) override;
+	virtual bool create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) override;
 
 	virtual void get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) override;
 	virtual void get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) override;
@@ -61,34 +63,27 @@ public:
 	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) override;
 
 private:
-	static OpenXROpenGLExtension *singleton;
-
-#ifdef WIN32
-	static XrGraphicsBindingOpenGLWin32KHR graphics_binding_gl;
-#elif defined(ANDROID_ENABLED)
-	static XrGraphicsBindingOpenGLESAndroidKHR graphics_binding_gl;
-#else // Linux/X11
-	static XrGraphicsBindingOpenGLXlibKHR graphics_binding_gl;
-#endif
+	static OpenXRVulkanExtension *singleton;
+	static XrGraphicsBindingVulkanKHR graphics_binding_vulkan; // declaring this as static so we don't need to know its size and we only need it once when creating our session
 
 	struct SwapchainGraphicsData {
 		bool is_multiview;
 		Vector<RID> texture_rids;
 	};
 
-	bool srgb_ext_is_available = true;
-	bool hw_linear_to_srgb_is_enabled = false;
-
 	bool check_graphics_api_support(XrVersion p_desired_version);
 
-#ifdef ANDROID_ENABLED
-	EXT_PROTO_XRRESULT_FUNC3(xrGetOpenGLESGraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsOpenGLESKHR *), p_graphics_requirements)
-#else
-	EXT_PROTO_XRRESULT_FUNC3(xrGetOpenGLGraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsOpenGLKHR *), p_graphics_requirements)
-#endif
+	VkInstance vulkan_instance = nullptr;
+	VkPhysicalDevice vulkan_physical_device = nullptr;
+	VkDevice vulkan_device = nullptr;
+	uint32_t vulkan_queue_family_index = 0;
+	uint32_t vulkan_queue_index = 0;
+
+	EXT_PROTO_XRRESULT_FUNC3(xrGetVulkanGraphicsRequirements2KHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsVulkanKHR *), p_graphics_requirements)
+	EXT_PROTO_XRRESULT_FUNC4(xrCreateVulkanInstanceKHR, (XrInstance), p_instance, (const XrVulkanInstanceCreateInfoKHR *), p_create_info, (VkInstance *), r_vulkan_instance, (VkResult *), r_vulkan_result)
+	EXT_PROTO_XRRESULT_FUNC3(xrGetVulkanGraphicsDevice2KHR, (XrInstance), p_instance, (const XrVulkanGraphicsDeviceGetInfoKHR *), p_get_info, (VkPhysicalDevice *), r_vulkan_physical_device)
+	EXT_PROTO_XRRESULT_FUNC4(xrCreateVulkanDeviceKHR, (XrInstance), p_instance, (const XrVulkanDeviceCreateInfoKHR *), p_create_info, (VkDevice *), r_device, (VkResult *), r_result)
 	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateSwapchainImages, (XrSwapchain), p_swapchain, (uint32_t), p_image_capacity_input, (uint32_t *), p_image_count_output, (XrSwapchainImageBaseHeader *), p_images)
 };
 
-#endif // GLES3_ENABLED
-
-#endif // OPENXR_OPENGL_EXTENSION_H
+#endif // OPENXR_VULKAN_EXTENSION_H
