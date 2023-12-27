@@ -357,7 +357,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
 		if (p_step_function) {
-			float p = float(m_i + 1) / mesh_instances.size() * 0.1;
+			float p = float(m_i + 1) / MAX(1, mesh_instances.size()) * 0.1;
 			p_step_function(0.3 + p, vformat(RTR("Plotting mesh into acceleration structure %d/%d"), m_i + 1, mesh_instances.size()), p_bake_userdata, false);
 		}
 
