@@ -109,6 +109,15 @@ void TileMapEditorTilesPlugin::_update_toolbar() {
 	}
 }
 
+void TileMapEditorTilesPlugin::_multi_layer_mode_pressed() {
+	if (multi_layer_selection_mode == false) {
+		multi_layer_selection_mode = true;
+	}
+	else if (multi_layer_selection_mode == true) {
+		multi_layer_selection_mode = false;
+	}
+}
+
 Vector<TileMapSubEditorPlugin::TabData> TileMapEditorTilesPlugin::get_tabs() const {
 	Vector<TileMapSubEditorPlugin::TabData> tabs;
 	tabs.push_back({ toolbar, tiles_bottom_panel });
@@ -264,6 +273,7 @@ void TileMapEditorTilesPlugin::_update_source_display() {
 }
 
 void TileMapEditorTilesPlugin::_update_pattern_sets() {
+	print_line("Update_pattern_sets");
 	// Get the current Tileset so we can access its data. Clear the display tree, create a new root for the tree if needed.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
@@ -277,7 +287,7 @@ void TileMapEditorTilesPlugin::_update_pattern_sets() {
 	// The empty_clicked signal used for adding pattern sets does not work without at least one visible TreeItem. This code ensures there is always at least one.
 	pattern_sets_display->clear();
 
-	TreeItem *root = pattern_sets_display->create_item();
+	root = pattern_sets_display->create_item();
 	root->set_text(0, vformat(TTR("Right click on empty space to add a pattern set.")));
 	pattern_sets_display->set_hide_root(true);
 
@@ -294,11 +304,11 @@ void TileMapEditorTilesPlugin::_update_pattern_sets() {
 	// Recreate the pattern sets display. Index the pattern sets using the pattern_set_index.
 	for (int pattern_set_index = 0; pattern_set_index < tile_set->get_pattern_sets_count(); pattern_set_index++) {
 		TreeItem *pattern_set = pattern_sets_display->create_item();
-		pattern_set->set_text(0, vformat(TTR(tile_set->get_pattern_set_name(pattern_set_index))));
-		pattern_set->set_selectable(0, true);
 		Dictionary metadata_dict;
 		metadata_dict["pattern_set"] = pattern_set_index;
 		pattern_set->set_metadata(0, metadata_dict);
+		pattern_set->set_text(0, vformat(TTR(tile_set->get_pattern_set_name(pattern_set_index))));
+		pattern_set->set_selectable(0, true);
 		/* CHECK ME
 		for (int pattern_index = 0; pattern_index < tile_set->get_patterns_count(pattern_set_index); pattern_index++) {
 			
@@ -310,46 +320,77 @@ void TileMapEditorTilesPlugin::_update_pattern_sets() {
 }
 
 void TileMapEditorTilesPlugin::_update_patterns_list() {
-	// Clear the current patterns whenever a new pattern set is selected.
-	patterns_item_list->clear();
-
+	// Get current Tileset, declare two variables whose value we will assign later depending on whether the function was called by clicking on a pattern set or updating an item in the items list.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
 	}
-
+	
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
 		return;
 	}
 
-	TreeItem *pattern_set = pattern_sets_display->get_selected();
+	TreeItem *pattern_set;
+	int sel_pattern_set_index;
 
-	if (pattern_set && pattern_set->get_metadata(0)) {
+	// If this function was called by a pattern set being clicked on, get the selected pattern set and it's index. Then update to display the patterns inside of that specific pattern set.
+	if (pattern_sets_display->get_selected() != nullptr) {
+		pattern_set = pattern_sets_display->get_selected();
 		Dictionary metadata_dict = pattern_set->get_metadata(0);
-		int sel_pattern_set_index = metadata_dict["pattern_set"];
-		ERR_FAIL_INDEX(sel_pattern_set_index, tile_set->get_pattern_sets_count());
+		sel_pattern_set_index = metadata_dict["pattern_set"];
+		patterns_item_list->clear();
 
-		// Create the item's to display in the item list
-		for (int i = 0; i < tile_set->get_patterns_count(sel_pattern_set_index); i++) {
-			int pattern_id = patterns_item_list->add_item("");
-			patterns_item_list->set_item_metadata(pattern_id, tile_set->get_pattern(sel_pattern_set_index, pattern_id));
-			patterns_item_list->set_item_tooltip(pattern_id, vformat(TTR("Index: %d"), i));
-			patterns_item_list->set_item_text(pattern_id, vformat(TTR("Pattern %d"), pattern_id));
-			TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(sel_pattern_set_index, pattern_id), callable_mp(this, &TileMapEditorTilesPlugin::_pattern_preview_done));
+		if (pattern_set && pattern_set->get_metadata(0)) {
+			ERR_FAIL_INDEX(sel_pattern_set_index, tile_set->get_pattern_sets_count());
+			// Create the item's to display in the item list
+			for (int i = 0; i < tile_set->get_patterns_count(sel_pattern_set_index); i++) {
+				int pattern_id = patterns_item_list->add_item("");
+				patterns_item_list->set_item_metadata(pattern_id, tile_set->get_pattern(sel_pattern_set_index, pattern_id));
+				patterns_item_list->set_item_tooltip(pattern_id, vformat(TTR("Index: %d"), i));
+
+				// Name the pattern. Assign a default name if the user did not input a custom name.
+				Ref<TileMapPattern> current_pattern = patterns_item_list->get_item_metadata(i);
+				patterns_item_list->set_item_text(pattern_id, current_pattern->get_name());
+				if (current_pattern->get_name().is_empty()) {
+					patterns_item_list->set_item_text(pattern_id, vformat(TTR("Pattern %d"), pattern_id));
+				}
+				TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(sel_pattern_set_index, pattern_id), callable_mp(this, &TileMapEditorTilesPlugin::_pattern_preview_done));
+			}
+			// Update the label visibility.
+			patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
+			
 		}
-		// Update the label visibility.
-		patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
-		/*
-		// CHECK ME: Added a new pattern, thus select the last one.
-		if (select_last_pattern) {
-			patterns_item_list->select(tile_set->get_patterns_count(sel_pattern_set_index) - 1);
-			patterns_item_list->grab_focus();
-			_update_selection_pattern_from_tileset_pattern_selection();
-		}*/
 	}
-	//select_last_pattern = false;
-	
+	// If this update function was called when adding, removing, or renaming a pattern, get the first pattern in the pattern set. Get the associated pattern set index. Then update the pattern display.
+	else if (patterns_item_list->is_visible_in_tree() && patterns_item_list->get_item_count() > 0) {
+		Ref<TileMapPattern> sel_pattern = patterns_item_list->get_item_metadata(0);
+		sel_pattern_set_index = sel_pattern->get_pattern_set_index();
+		pattern_set = root->get_child(sel_pattern_set_index);
+		patterns_item_list->clear();
+
+		if (pattern_set && pattern_set->get_metadata(0)) {
+			ERR_FAIL_INDEX(sel_pattern_set_index, tile_set->get_pattern_sets_count());
+			// Create the item(s) to display in the item list
+			for (int i = 0; i < tile_set->get_patterns_count(sel_pattern_set_index); i++) {
+				int pattern_id = patterns_item_list->add_item("");
+				patterns_item_list->set_item_metadata(pattern_id, tile_set->get_pattern(sel_pattern_set_index, pattern_id));
+				patterns_item_list->set_item_tooltip(pattern_id, vformat(TTR("Index: %d"), i));
+
+				// Name the pattern. Assign a default name if the user does not have a custom name assigned to it.
+				Ref<TileMapPattern> current_pattern = patterns_item_list->get_item_metadata(i);
+				patterns_item_list->set_item_text(pattern_id, current_pattern->get_name());
+				if (current_pattern->get_name().is_empty()) {
+					patterns_item_list->set_item_text(pattern_id, vformat(TTR("Pattern %d"), pattern_id));
+				}
+				TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(sel_pattern_set_index, pattern_id), callable_mp(this, &TileMapEditorTilesPlugin::_pattern_preview_done));
+			}
+			// Update the label visibility.
+			patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
+			
+
+		}
+	}
 }
 
 void TileMapEditorTilesPlugin::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture) {
@@ -360,58 +401,6 @@ void TileMapEditorTilesPlugin::_pattern_preview_done(Ref<TileMapPattern> p_patte
 			this->patterns_item_list->set_item_icon(i, p_texture);
 			break;
 		}
-	}
-}
-
-void TileMapEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
-	// Displays the patterns in a given pattern set.
-	//CHECK ME
-	print_line("_patterns_item_list_gui_input called ");
-	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-	if (!tile_map) {
-		return;
-	}
-
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	if (!tile_set.is_valid() || EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
-		return;
-	}
-	// Get the currently focused pattern set tree item. Get the metadata associated with it.
-	TreeItem *pattern_set = pattern_sets_display->get_selected();
-
-	if (pattern_set && pattern_set->get_metadata(0)) {
-		Dictionary metadata_dict = pattern_set->get_metadata(0);
-		int sel_pattern_set = metadata_dict["pattern_set"];
-		ERR_FAIL_INDEX(sel_pattern_set, tile_set->get_pattern_sets_count());
-		
-
-		if (ED_IS_SHORTCUT("tiles_editor/paste", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
-			print_line("TME tiles_editor/paste called");
-			//select_last_pattern = true;
-			int new_pattern_index = tile_set->get_patterns_count(sel_pattern_set);
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Add TileSet pattern"));
-			undo_redo->add_do_method(*tile_set, "add_pattern", tile_map_clipboard, sel_pattern_set, new_pattern_index);
-			undo_redo->add_undo_method(*tile_set, "remove_pattern", sel_pattern_set, new_pattern_index);
-			undo_redo->commit_action();
-			patterns_item_list->accept_event();
-	}
-	
-		if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
-			print_line("TME tiles_editor/delete called");
-			Vector<int> selected = patterns_item_list->get_selected_items();
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Remove TileSet patterns"));
-			for (int i = 0; i < selected.size(); i++) {
-				int pattern_index = selected[i];
-				undo_redo->add_do_method(*tile_set, "remove_pattern", sel_pattern_set, pattern_index);
-				//CHECK ME: how should I find the exact pattern?
-				undo_redo->add_undo_method(*tile_set, "add_pattern", sel_pattern_set, tile_set->get_pattern(sel_pattern_set, pattern_index), pattern_index);
-		
-	}
-		undo_redo->commit_action();
-		patterns_item_list->accept_event();
-	}
 	}
 }
 
@@ -483,6 +472,8 @@ void TileMapEditorTilesPlugin::_delete_pattern_set_menu_id_pressed(int p_id) {
 }
 
 void TileMapEditorTilesPlugin::_rename_pattern_set(){
+	_update_selection_pattern_from_tileset_pattern_selection();
+
 	// Allow the user to edit the pattern_set's text, then wait for the user to submit the new text to call the next function.
 	pattern_sets_display->edit_selected(true);
 
@@ -490,11 +481,12 @@ void TileMapEditorTilesPlugin::_rename_pattern_set(){
 	line_editor->connect("text_submitted", callable_mp(this, &TileMapEditorTilesPlugin::_rename_pattern_set_submitted));
 }
 
-void TileMapEditorTilesPlugin::_rename_pattern_set_submitted(String new_text) {
-	// If we need to rename the pattern set again, we don't want there to be a redundant connection which causes an error. Get the current tileset.
+void TileMapEditorTilesPlugin::_rename_pattern_set_submitted(String p_new_text) {
+	// If we need to rename the pattern set again, we don't want there to be a redundant connection which causes an error. 
 	LineEdit *line_editor = pattern_sets_display->get_line_editor();
 	line_editor->disconnect("text_submitted", callable_mp(this, &TileMapEditorTilesPlugin::_rename_pattern_set_submitted));
 
+	// Get the current tileset.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 			return;
@@ -505,44 +497,221 @@ void TileMapEditorTilesPlugin::_rename_pattern_set_submitted(String new_text) {
 			return;
 	}
 
-	// Save the pattern set's name based on what the user submitted. 
+	// Edit the pattern set's name based on what the user submitted. 
 	TreeItem *pattern_set = pattern_sets_display->get_edited();
 	Dictionary metadata_dict = pattern_set->get_metadata(0);
 	int sel_pattern_set_index = metadata_dict["pattern_set"];
-	tile_set->set_pattern_set_name(sel_pattern_set_index, new_text);
+	tile_set->set_pattern_set_name(sel_pattern_set_index, p_new_text);
+}
+
+
+Variant TileMapEditorTilesPlugin::_get_drag_data_fw(const Point2 &p_point, Control *p_from_control) {
+	TreeItem *from_pattern_set = pattern_sets_display->get_item_at_position(p_point);
+	if (root->get_child_count() == 0) {
+			return Variant();
+	}
+
+	HBoxContainer *drag_preview = memnew(HBoxContainer);
+	String preview_name = from_pattern_set->get_text(0);
+	Label *label = memnew(Label(preview_name));
+	drag_preview->add_child(label);
+	tiles_bottom_panel->set_drag_preview(drag_preview);
+	Dictionary metadata_dict = from_pattern_set->get_metadata(0);
+	int drag_data = metadata_dict["pattern_set"];
+
+	return drag_data;
+}
+
+bool TileMapEditorTilesPlugin::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const {
+	
+	return true;
+}
+
+void TileMapEditorTilesPlugin::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (!tile_map) {
+			return;
+	}
+
+	Ref<TileSet> tile_set = tile_map->get_tileset();
+	if (!tile_set.is_valid() || EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
+			return;
+	}
+
+	TreeItem *to_pattern_set = pattern_sets_display->get_item_at_position(p_point);
+	Dictionary metadata_dict = to_pattern_set->get_metadata(0);
+	int to_index = metadata_dict["pattern_set"];
+
+	if (!can_drop_data_fw(p_point, p_data, p_from_control)) {
+			return;
+	}
+
+	tile_set->move_pattern_set(p_data, to_index);
+	_update_pattern_sets();
+	return;
 }
 
 void TileMapEditorTilesPlugin::_pattern_clicked(int p_item_index, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
 	if (p_mouse_button_index == MouseButton::RIGHT) {
-		Rect2i menu_rect;
-		menu_rect.set_position(Input::get_singleton()->get_mouse_position() * 1.1);
-		delete_pattern_menu->popup(menu_rect);
+			Rect2i menu_rect;
+			menu_rect.set_position(Input::get_singleton()->get_mouse_position() * 1.1);
+			delete_pattern_menu->popup(menu_rect);
 	} else {
-		return;
+			return;
 	}
 }
 
 void TileMapEditorTilesPlugin::_delete_pattern_menu_id_pressed(int p_id) {
 	// Get current TileSet.
 	if (p_id == 0) {
-		TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-		if (!tile_map) {
+			TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+			if (!tile_map) {
 			return;
-		}
+			}
 
-		Ref<TileSet> tile_set = tile_map->get_tileset();
-		if (!tile_set.is_valid()) {
+			Ref<TileSet> tile_set = tile_map->get_tileset();
+			if (!tile_set.is_valid()) {
 			return;
-		}
+			}
 
-		// Use the metadata assigned to every pattern/item in _update_patterns_list to get the selected TileMapPattern, then look up its pattern set index property.
-		int sel_pattern_index = patterns_item_list->get_current();
-		Ref<TileMapPattern> selected_pattern = patterns_item_list->get_item_metadata(sel_pattern_index);
-		int sel_pattern_set_index = selected_pattern->get_pattern_set_index();
+			// Use the metadata assigned to every pattern/item in _update_patterns_list to get the selected TileMapPattern, then look up its pattern set index property.
+			int sel_pattern_index = patterns_item_list->get_current();
+			Ref<TileMapPattern> selected_pattern = patterns_item_list->get_item_metadata(sel_pattern_index);
+			int sel_pattern_set_index = selected_pattern->get_pattern_set_index();
+
+			// Call pattern removal function and show the changes to the end user.
+			tile_set->remove_pattern(sel_pattern_set_index, sel_pattern_index);
+			_update_patterns_list();
+	}
+}
+
+void TileMapEditorTilesPlugin::_rename_pattern(int p_item_index) {
+	Ref<TileMapPattern> selected_pattern = patterns_item_list->get_item_metadata(p_item_index);
+
+	item_line_editor->clear();
+	item_line_editor->set_text(selected_pattern->get_name());
+	item_line_editor->select_all();
+	item_line_editor->show();
+	item_line_editor->grab_focus();
+
+	item_line_editor->connect("text_submitted", callable_mp(this, &TileMapEditorTilesPlugin::_rename_pattern_submitted));
+}
+
+void TileMapEditorTilesPlugin::_rename_pattern_submitted(String p_new_text) {
+	item_line_editor->hide();
+	item_line_editor->disconnect("text_submitted", callable_mp(this, &TileMapEditorTilesPlugin::_rename_pattern_submitted));
+	int selected_pattern_index = patterns_item_list->get_current();
+	Ref<TileMapPattern> selected_pattern = patterns_item_list->get_item_metadata(selected_pattern_index);
+
+	selected_pattern->set_name(p_new_text);
+	_update_patterns_list();
+}
+
+Variant TileMapEditorTilesPlugin::get_drag_data_fw(const Point2& p_point, Control* p_from) {
+	int idx = patterns_item_list->get_item_at_position(p_point);
+	if (patterns_item_list->get_item_count() == 0) {
+		return Variant();
+	}
+	
+	if (idx < 0) {
+		return Variant();
+	}
+
+	HBoxContainer *drag_preview = memnew(HBoxContainer);
+	String preview_name = patterns_item_list->get_item_text(idx);
+	
+	Label *label = memnew(Label(preview_name));
+	drag_preview->add_child(label);
+	tiles_bottom_panel->set_drag_preview(drag_preview);
+
+	Ref<TileMapPattern> drag_data = patterns_item_list->get_item_metadata(idx);
+	drag_data->set_meta("index", idx);
+	return drag_data;
+}
+
+bool TileMapEditorTilesPlugin::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	Ref<TileMapPattern> drag_data = p_data;
+
+	 if (!drag_data.is_valid()) {
+		return true;
 		
-		// Call pattern removal function and show the changes to the end user.
-		tile_set->remove_pattern(sel_pattern_set_index, sel_pattern_index);
-		_update_patterns_list();
+	} else
+		return true;
+}
+
+void TileMapEditorTilesPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	// Used with get_drop_data and can_drop_data to enable swapping the position of patterns by clicking and dragging.
+	if (!can_drop_data_fw(p_point, p_data, p_from)) {
+		return;
+	}
+
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (!tile_map) {
+		return;
+	}
+
+	Ref<TileSet> tile_set = tile_map->get_tileset();
+	if (!tile_set.is_valid() || EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
+		return;
+	}
+
+	Ref<TileMapPattern> drag_data = p_data;
+	int old_idx = drag_data->get_meta("index");
+	int new_idx = patterns_item_list->get_item_at_position(p_point);
+	int pattern_set_index = drag_data->get_pattern_set_index();
+	tile_set->_move_pattern(old_idx, new_idx, pattern_set_index);
+	_update_patterns_list();
+	return;
+
+	
+}
+
+void TileMapEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
+	// Accepts input for deleting and pasting patterns.
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (!tile_map) {
+		return;
+	}
+
+	Ref<TileSet> tile_set = tile_map->get_tileset();
+	if (!tile_set.is_valid() || EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
+		return;
+	}
+	// Get the currently focused pattern set tree item. Get the metadata associated with it.
+	TreeItem *pattern_set = pattern_sets_display->get_selected();
+
+	if (pattern_set && pattern_set->get_metadata(0)) {
+		Dictionary metadata_dict = pattern_set->get_metadata(0);
+		int sel_pattern_set = metadata_dict["pattern_set"];
+		ERR_FAIL_INDEX(sel_pattern_set, tile_set->get_pattern_sets_count());
+
+		if (ED_IS_SHORTCUT("tiles_editor/paste", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
+			print_line("TME tiles_editor/paste called");
+			//select_last_pattern = true;
+			int new_pattern_index = tile_set->get_patterns_count(sel_pattern_set);
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Add TileSet pattern"));
+			undo_redo->add_do_method(*tile_set, "add_pattern", tile_map_clipboard, sel_pattern_set, new_pattern_index);
+			undo_redo->add_undo_method(*tile_set, "remove_pattern", sel_pattern_set, new_pattern_index);
+			undo_redo->commit_action();
+			patterns_item_list->accept_event();
+		}
+
+		if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
+			print_line("TME tiles_editor/delete called");
+			Vector<int> selected = patterns_item_list->get_selected_items();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Remove TileSet patterns"));
+			for (int i = 0; i < selected.size(); i++) {
+			int pattern_index = selected[i];
+			undo_redo->add_do_method(*tile_set, "remove_pattern", sel_pattern_set, pattern_index);
+			//CHECK ME: how should I find the exact pattern?
+			undo_redo->add_undo_method(*tile_set, "add_pattern", sel_pattern_set, tile_set->get_pattern(sel_pattern_set, pattern_index), pattern_index);
+			}
+			undo_redo->commit_action();
+			patterns_item_list->accept_event();
+			_update_patterns_list();
+		}
 	}
 }
 
@@ -690,6 +859,7 @@ void TileMapEditorTilesPlugin::_update_theme() {
 }
 
 bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
+	//print_line("Forward canvas GUI input called");
 	if (!(tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree())) {
 		// If the bottom editor is not visible, we ignore inputs.
 		return false;
@@ -723,7 +893,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 			for (const Vector2i &E : tile_map_selection) {
 				coords_array.push_back(E);
 			}
-			tile_map_clipboard = tile_map->get_pattern(tile_map_layer, coords_array);
+			tile_map_clipboard = tile_map->get_pattern(coords_array, tile_map_layer);
 		}
 
 		if (ED_IS_SHORTCUT("tiles_editor/cut", p_event)) {
@@ -941,6 +1111,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 }
 
 void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
+	
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
@@ -1026,7 +1197,8 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 				TypedArray<Vector2i> selection_used_cells = selection_pattern->get_used_cells();
 				for (int i = 0; i < selection_used_cells.size(); i++) {
 					Vector2i coords = tile_map->map_pattern(offset + top_left, selection_used_cells[i], selection_pattern);
-					preview[coords] = TileMapCell(selection_pattern->get_cell_source_id(selection_used_cells[i]), selection_pattern->get_cell_atlas_coords(selection_used_cells[i]), selection_pattern->get_cell_alternative_tile(selection_used_cells[i]));
+					//CHANGE 4
+					preview[coords] = TileMapCell(selection_pattern->get_cell_source_id(tile_map_layer, selection_used_cells[i]), selection_pattern->get_cell_atlas_coords(tile_map_layer, selection_used_cells[i]), selection_pattern->get_cell_alternative_tile(tile_map_layer, selection_used_cells[i]));
 				}
 			}
 		} else if (drag_type == DRAG_TYPE_CLIPBOARD_PASTE) {
@@ -1035,7 +1207,8 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 			TypedArray<Vector2i> clipboard_used_cells = tile_map_clipboard->get_used_cells();
 			for (int i = 0; i < clipboard_used_cells.size(); i++) {
 				Vector2i coords = tile_map->map_pattern(tile_map->local_to_map(mpos - mouse_offset), clipboard_used_cells[i], tile_map_clipboard);
-				preview[coords] = TileMapCell(tile_map_clipboard->get_cell_source_id(clipboard_used_cells[i]), tile_map_clipboard->get_cell_atlas_coords(clipboard_used_cells[i]), tile_map_clipboard->get_cell_alternative_tile(clipboard_used_cells[i]));
+				//CHANGE 5
+				preview[coords] = TileMapCell(tile_map_clipboard->get_cell_source_id(tile_map_layer, clipboard_used_cells[i]), tile_map_clipboard->get_cell_atlas_coords(tile_map_layer, clipboard_used_cells[i]), tile_map_clipboard->get_cell_alternative_tile(tile_map_layer, clipboard_used_cells[i]));
 			}
 		} else if (!picker_button->is_pressed() && !(drag_type == DRAG_TYPE_NONE && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			bool expand_grid = false;
@@ -1186,6 +1359,7 @@ void TileMapEditorTilesPlugin::_mouse_exited_viewport() {
 }
 
 TileMapCell TileMapEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern> p_pattern) {
+	print_line("Pick random tile called");
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return TileMapCell();
@@ -1199,9 +1373,10 @@ TileMapCell TileMapEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern> p_pa
 	TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
 	double sum = 0.0;
 	for (int i = 0; i < used_cells.size(); i++) {
-		int source_id = p_pattern->get_cell_source_id(used_cells[i]);
-		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(used_cells[i]);
-		int alternative_tile = p_pattern->get_cell_alternative_tile(used_cells[i]);
+		//CHANGE 6
+		int source_id = p_pattern->get_cell_source_id(tile_map_layer, used_cells[i]);
+		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(tile_map_layer, used_cells[i]);
+		int alternative_tile = p_pattern->get_cell_alternative_tile(tile_map_layer, used_cells[i]);
 
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
@@ -1218,9 +1393,10 @@ TileMapCell TileMapEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern> p_pa
 	double current = 0.0;
 	double rand = Math::random(0.0, sum + empty_probability);
 	for (int i = 0; i < used_cells.size(); i++) {
-		int source_id = p_pattern->get_cell_source_id(used_cells[i]);
-		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(used_cells[i]);
-		int alternative_tile = p_pattern->get_cell_alternative_tile(used_cells[i]);
+		//CHANGE 7
+		int source_id = p_pattern->get_cell_source_id(0, used_cells[i]);
+		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(0, used_cells[i]);
+		int alternative_tile = p_pattern->get_cell_alternative_tile(0, used_cells[i]);
 
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
@@ -1251,9 +1427,11 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_st
 	// Get or create the pattern.
 	Ref<TileMapPattern> erase_pattern;
 	erase_pattern.instantiate();
-	erase_pattern->set_cell(Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	// CHANGE 1
+	erase_pattern->set_cell(0, Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
+	// CHANGE 8
 	HashMap<Vector2i, TileMapCell> output;
 	if (!pattern->is_empty()) {
 		// Paint the tiles on the tile map.
@@ -1278,7 +1456,8 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_st
 				Vector2i top_left = line[i] * pattern->get_size() + offset;
 				for (int j = 0; j < used_cells.size(); j++) {
 					Vector2i coords = tile_map->map_pattern(top_left, used_cells[j], pattern);
-					output.insert(coords, TileMapCell(pattern->get_cell_source_id(used_cells[j]), pattern->get_cell_atlas_coords(used_cells[j]), pattern->get_cell_alternative_tile(used_cells[j])));
+					//CHANGE 9
+					output.insert(coords, TileMapCell(pattern->get_cell_source_id(0, used_cells[j]), pattern->get_cell_atlas_coords(0, used_cells[j]), pattern->get_cell_alternative_tile(0, used_cells[j])));
 				}
 			}
 		}
@@ -1304,7 +1483,8 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_rect(Vector2i p_s
 	// Get or create the pattern.
 	Ref<TileMapPattern> erase_pattern;
 	erase_pattern.instantiate();
-	erase_pattern->set_cell(Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	//CHANGE 2
+	erase_pattern->set_cell(0, Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
 	HashMap<Vector2i, TileMapCell> err_output;
@@ -1334,7 +1514,8 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_rect(Vector2i p_s
 					for (int j = 0; j < used_cells.size(); j++) {
 						Vector2i coords = pattern_coords + used_cells[j];
 						if (rect.has_point(coords)) {
-							output.insert(coords, TileMapCell(pattern->get_cell_source_id(used_cells[j]), pattern->get_cell_atlas_coords(used_cells[j]), pattern->get_cell_alternative_tile(used_cells[j])));
+							//CHANGE 10
+							output.insert(coords, TileMapCell(pattern->get_cell_source_id(0, used_cells[j]), pattern->get_cell_atlas_coords(0, used_cells[j]), pattern->get_cell_alternative_tile(0, used_cells[j])));
 						}
 					}
 				}
@@ -1365,7 +1546,8 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vecto
 	// Get or create the pattern.
 	Ref<TileMapPattern> erase_pattern;
 	erase_pattern.instantiate();
-	erase_pattern->set_cell(Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	//CHANGE 11
+	erase_pattern->set_cell(0, Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
 	if (!pattern->is_empty()) {
@@ -1399,7 +1581,8 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vecto
 							pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern->get_size().x : pattern_coords.x;
 							pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern->get_size().y : pattern_coords.y;
 							if (pattern->has_cell(pattern_coords)) {
-								output.insert(coords, TileMapCell(pattern->get_cell_source_id(pattern_coords), pattern->get_cell_atlas_coords(pattern_coords), pattern->get_cell_alternative_tile(pattern_coords)));
+								//CHANGE 12
+								output.insert(coords, TileMapCell(pattern->get_cell_source_id(0, pattern_coords), pattern->get_cell_atlas_coords(0, pattern_coords), pattern->get_cell_alternative_tile(0, pattern_coords)));
 							} else {
 								output.insert(coords, TileMapCell());
 							}
@@ -1445,7 +1628,8 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vecto
 						pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern->get_size().x : pattern_coords.x;
 						pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern->get_size().y : pattern_coords.y;
 						if (pattern->has_cell(pattern_coords)) {
-							output.insert(coords, TileMapCell(pattern->get_cell_source_id(pattern_coords), pattern->get_cell_atlas_coords(pattern_coords), pattern->get_cell_alternative_tile(pattern_coords)));
+							//CHANGE 13
+							output.insert(coords, TileMapCell(pattern->get_cell_source_id(0, pattern_coords), pattern->get_cell_atlas_coords(0, pattern_coords), pattern->get_cell_alternative_tile(0, pattern_coords)));
 						} else {
 							output.insert(coords, TileMapCell());
 						}
@@ -1461,8 +1645,6 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 	if (drag_type == DRAG_TYPE_NONE) {
 		return;
 	}
-	//CHECK ME:
-	print_line(" stop_dragging called");
 	// Get current tileset.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
@@ -1516,7 +1698,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 		} break;
 		case DRAG_TYPE_MOVE: {
 			//CHECK ME
-			print_line("DRAG_TYPE_MOVEused");
+			print_line("DRAG_TYPE_MOVE used");
 			// Check if the user dragged and dropped the selected tiles (a new pattern) into the patterns_item_list window, if so, paste the pattern there.
 			if (patterns_item_list->is_visible_in_tree() && patterns_item_list->has_point(patterns_item_list->get_local_mouse_position())) {
 				// Restore the cells.
@@ -1543,6 +1725,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 					}
 				}
 			} else {
+				print_line("Else, If pattern_item_list is not visible in tree or has point");
 				// Get the top-left cell.
 				Vector2i top_left;
 				if (!tile_map_selection.is_empty()) {
@@ -1576,7 +1759,8 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 				}
 				for (int i = 0; i < selection_used_cells.size(); i++) {
 					coords = tile_map->map_pattern(top_left + offset, selection_used_cells[i], selection_pattern);
-					cells_do[coords] = TileMapCell(selection_pattern->get_cell_source_id(selection_used_cells[i]), selection_pattern->get_cell_atlas_coords(selection_used_cells[i]), selection_pattern->get_cell_alternative_tile(selection_used_cells[i]));
+					//CHANGE 14
+					cells_do[coords] = TileMapCell(selection_pattern->get_cell_source_id(0, selection_used_cells[i]), selection_pattern->get_cell_atlas_coords(0, selection_used_cells[i]), selection_pattern->get_cell_alternative_tile(0, selection_used_cells[i]));
 				}
 
 				// Move the tiles.
@@ -1632,7 +1816,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 				}
 				sources_list->ensure_current_is_visible();
 			}
-
+			//CHANGE 15
 			Ref<TileMapPattern> new_selection_pattern = tile_map->get_pattern(tile_map_layer, coords_array);
 			if (!new_selection_pattern->is_empty()) {
 				selection_pattern = new_selection_pattern;
@@ -1793,6 +1977,7 @@ void TileMapEditorTilesPlugin::_fix_invalid_tiles_in_tile_map_selection() {
 }
 
 void TileMapEditorTilesPlugin::_update_selection_pattern_from_tilemap_selection() {
+	// Assign a pattern to the selection_pattern variable from whatever tiles on the tilemap node (AKA the visible viewport) the user has selected and decided to drag.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
@@ -1888,6 +2073,7 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_tiles_sele
 }
 
 void TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection() {
+	// Instantiate a pattern for placement whenever an item in the patterns item list is selected.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
@@ -2357,6 +2543,14 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	toolbar->add_child(tilemap_tiles_tools_buttons);
 	viewport_shortcut_buttons.push_back(bucket_tool_button);
 
+	multi_layer_mode_button = memnew(Button);
+	multi_layer_mode_button->set_flat(true);
+	multi_layer_mode_button->set_toggle_mode(true);
+	multi_layer_mode_button->set_button_group(tool_buttons_group);
+	multi_layer_mode_button->set_shortcut(ED_SHORTCUT("tiles_editor/multi_layer_selection_tool", TTR("Multi layer selection"), Key::T));
+	multi_layer_mode_button->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_multi_layer_mode_pressed));
+	tilemap_tiles_tools_buttons->add_child(multi_layer_mode_button);
+	viewport_shortcut_buttons.push_back(multi_layer_mode_button);
 	// -- TileMap tool settings --
 	tools_settings = memnew(HBoxContainer);
 	toolbar->add_child(tools_settings);
@@ -2536,10 +2730,10 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	patterns_bottom_panel->connect("visibility_changed", callable_mp(this, &TileMapEditorTilesPlugin::_tab_changed));
 
 	// Patterns_twotabs splits the patterns tab display into two tabs. patterns_twotabs will have two children: pattern_sets_display on the left and patterns_item_list on the right.
-	HSplitContainer *patterns_twotabs = memnew(HSplitContainer);
-	patterns_twotabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_twotabs->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_bottom_panel->add_child(patterns_twotabs);
+	HSplitContainer *patterns_two_tabs = memnew(HSplitContainer);
+	patterns_two_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	patterns_two_tabs->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patterns_bottom_panel->add_child(patterns_two_tabs);
 
 	// Displays a users pattern_sets on the left (rooms, halls, boss rooms, houses, etc).
 	pattern_sets_display = memnew(Tree);
@@ -2549,10 +2743,12 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	pattern_sets_display->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	pattern_sets_display->set_allow_rmb_select(true);
 	pattern_sets_display->set_allow_reselect(true);
+	SET_DRAG_FORWARDING_GCDU(pattern_sets_display, TileMapEditorTilesPlugin);
 	pattern_sets_display->connect("item_mouse_selected", callable_mp(this, &TileMapEditorTilesPlugin::_pattern_set_selected));
 	pattern_sets_display->connect("item_activated", callable_mp(this, &TileMapEditorTilesPlugin::_rename_pattern_set));
 	pattern_sets_display->connect("empty_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_pattern_sets_display_empty_clicked));
-	patterns_twotabs->add_child(pattern_sets_display);
+	patterns_two_tabs->add_child(pattern_sets_display);
+
 	
 	// Pop-up menu for adding pattern sets.
 	pattern_set_tree_menu = memnew(PopupMenu);
@@ -2569,7 +2765,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	// Default text when no pattern_sets are added.
 	pattern_sets_help_label = memnew(Label);
 	pattern_sets_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER_LEFT);
-	pattern_sets_help_label->set_text(TTR("Right click on a pattern set to delete it.\nDouble click on a pattern set to rename it."));
+	pattern_sets_help_label->set_text(TTR("Right click on a pattern set to delete it.\nDouble click on a pattern set to rename it.\nDrag and drop to rearrange a pattern set."));
 	pattern_sets_display->add_child(pattern_sets_help_label);
 
 	// Displays patterns of any given pattern_set on the right of the display.
@@ -2580,19 +2776,28 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	patterns_item_list->set_max_text_lines(2);
 	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	patterns_item_list->set_fixed_icon_size(Size2(48, 48) * EDSCALE);
-	patterns_item_list->set_allow_reselect(true);
 	patterns_item_list->set_allow_rmb_select(true);
-	//CHECK ME: patterns_item_list->connect("gui_input", callable_mp(this, &TileMapEditorTilesPlugin::_patterns_item_list_gui_input));
-	patterns_item_list->connect("item_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_pattern_clicked));
-	patterns_item_list->connect("item_activated", callable_mp(this, &TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
+	patterns_item_list->set_allow_reselect(true);
+	SET_DRAG_FORWARDING_GCD(patterns_item_list, TileMapEditorTilesPlugin);
+	//patterns_item_list->connect("item_activated", callable_mp(this, &TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
 	//patterns_item_list->connect("empty_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_patterns_item_list_empty_clicked));
-	patterns_twotabs->add_child(patterns_item_list);
+	patterns_item_list->connect("gui_input", callable_mp(this, &TileMapEditorTilesPlugin::_patterns_item_list_gui_input));
+	patterns_item_list->connect("item_selected", callable_mp(this, &TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
+	patterns_item_list->connect("item_activated", callable_mp(this, &TileMapEditorTilesPlugin::_rename_pattern));
+	patterns_item_list->connect("item_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_pattern_clicked));
+	
+	patterns_two_tabs->add_child(patterns_item_list);
 
-	//Pop-up menu for deleting patterns
+	// Pop-up menu for deleting patterns.
 	delete_pattern_menu = memnew(PopupMenu);
 	delete_pattern_menu->add_item("Delete a Pattern", 0);
 	delete_pattern_menu->connect("id_pressed", callable_mp(this, &TileMapEditorTilesPlugin::_delete_pattern_menu_id_pressed));
 	pattern_sets_display->add_child(delete_pattern_menu);
+
+	// Line editor for renaming patterns.
+	item_line_editor = memnew(LineEdit);
+	item_line_editor->hide();
+	patterns_item_list->add_child(item_line_editor);
 
 	// Default text when no patterns are added.
 	patterns_help_label = memnew(Label);

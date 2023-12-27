@@ -82,7 +82,7 @@ private:
 	Button *line_tool_button = nullptr;
 	Button *rect_tool_button = nullptr;
 	Button *bucket_tool_button = nullptr;
-
+	Button *multi_layer_mode_button = nullptr;
 	HBoxContainer *tools_settings = nullptr;
 
 	VSeparator *tools_settings_vsep = nullptr;
@@ -101,10 +101,11 @@ private:
 	void _on_scattering_spinbox_changed(double p_value);
 
 	void _update_toolbar();
-
+	void _multi_layer_mode_pressed();
 	///// Tilemap editing. /////
 	bool has_mouse = false;
 	void _mouse_exited_viewport();
+	bool multi_layer_selection_mode = false;
 
 	enum DragType {
 		DRAG_TYPE_NONE = 0,
@@ -194,6 +195,8 @@ private:
 	VBoxContainer *patterns_bottom_panel = nullptr;
 
 	Tree *pattern_sets_display = nullptr;
+	TreeItem *root = nullptr;
+
 	PopupMenu *pattern_set_tree_menu = nullptr;
 	PopupMenu *delete_pattern_set_menu = nullptr;
 	Label *pattern_sets_help_label = nullptr;
@@ -201,6 +204,9 @@ private:
 	ItemList *patterns_item_list = nullptr;
 	PopupMenu *delete_pattern_menu = nullptr;
 	Label *patterns_help_label = nullptr;
+	LineEdit *item_line_editor = nullptr;
+	
+
 
 	void _update_pattern_sets();
 	void _update_patterns_list();
@@ -214,11 +220,22 @@ private:
 	void _delete_pattern_set_menu_id_pressed(int p_id);
 
 	void _rename_pattern_set();
-	void _rename_pattern_set_submitted(String new_text);
-	
-	//void _patterns_item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _rename_pattern_set_submitted(String p_new_text);
+
+	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
+	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
+	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control);
+	//CHECK ME void _patterns_item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+
 	void _pattern_clicked(int p_item_index, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _delete_pattern_menu_id_pressed(int p_id);
+	void _rename_pattern(int p_item_index);
+	void _rename_pattern_submitted(String p_new_text);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
 
 
 	//CHECK ME bool select_last_pattern = false;

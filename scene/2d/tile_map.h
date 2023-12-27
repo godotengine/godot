@@ -282,8 +282,8 @@ public:
 	void clear();
 
 	// Patterns.
-	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array);
-	void set_pattern(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
+	Ref<TileMapPattern> get_pattern_layer(int p_layer, Ref<TileMapPattern> p_pattern, TypedArray<Vector2i> p_coords_array);
+	void set_pattern_layer(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern, int p_layer = -1);
 
 	// Terrains.
 	void set_cells_terrain_connect(TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
@@ -438,7 +438,7 @@ public:
 	TileData *get_cell_tile_data(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 
 	// Patterns.
-	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);
+	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array, int p_layer = -1);
 	Vector2i map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern);
 	void set_pattern(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 
