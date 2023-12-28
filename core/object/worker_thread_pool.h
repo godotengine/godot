@@ -95,8 +95,11 @@ private:
 				task_elem(this) {}
 	};
 
-	PagedAllocator<Task> task_allocator;
-	PagedAllocator<Group> group_allocator;
+	static const uint32_t TASKS_PAGE_SIZE = 1024;
+	static const uint32_t GROUPS_PAGE_SIZE = 256;
+
+	PagedAllocator<Task, false, TASKS_PAGE_SIZE> task_allocator;
+	PagedAllocator<Group, false, GROUPS_PAGE_SIZE> group_allocator;
 
 	SelfList<Task>::List low_priority_task_queue;
 	SelfList<Task>::List task_queue;
@@ -117,8 +120,20 @@ private:
 	bool exit_threads = false;
 
 	HashMap<Thread::ID, int> thread_ids;
-	HashMap<TaskID, Task *> tasks;
-	HashMap<GroupID, Group *> groups;
+	HashMap<
+			TaskID,
+			Task *,
+			HashMapHasherDefault,
+			HashMapComparatorDefault<TaskID>,
+			PagedAllocator<HashMapElement<TaskID, Task *>, false, TASKS_PAGE_SIZE>>
+			tasks;
+	HashMap<
+			GroupID,
+			Group *,
+			HashMapHasherDefault,
+			HashMapComparatorDefault<GroupID>,
+			PagedAllocator<HashMapElement<GroupID, Group *>, false, GROUPS_PAGE_SIZE>>
+			groups;
 
 	uint32_t max_low_priority_threads = 0;
 	uint32_t low_priority_threads_used = 0;

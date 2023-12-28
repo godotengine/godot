@@ -613,13 +613,14 @@ void WorkerThreadPool::finish() {
 		return;
 	}
 
-	task_mutex.lock();
-	SelfList<Task> *E = low_priority_task_queue.first();
-	while (E) {
-		print_error("Task waiting was never re-claimed: " + E->self()->description);
-		E = E->next();
+	{
+		MutexLock lock(task_mutex);
+		SelfList<Task> *E = low_priority_task_queue.first();
+		while (E) {
+			print_error("Task waiting was never re-claimed: " + E->self()->description);
+			E = E->next();
+		}
 	}
-	task_mutex.unlock();
 
 	{
 		MutexLock lock(task_mutex);
@@ -630,6 +631,13 @@ void WorkerThreadPool::finish() {
 	}
 	for (ThreadData &data : threads) {
 		data.thread.wait_to_finish();
+	}
+
+	{
+		MutexLock lock(task_mutex);
+		for (KeyValue<TaskID, Task *> &E : tasks) {
+			task_allocator.free(E.value);
+		}
 	}
 
 	threads.clear();
