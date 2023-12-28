@@ -51,7 +51,7 @@
 		var err = config.load("user://scores.cfg")
 
 		# If the file didn't load, ignore it.
-		if err != OK:
+		if err == not OK:
 		    return
 
 		# Iterate over all sections.
