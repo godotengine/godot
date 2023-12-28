@@ -719,11 +719,19 @@ void GenericTilePolygonEditor::set_tile_set(Ref<TileSet> p_tile_set) {
 	Vector2 zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
 	while (zoomed_tile.y < default_control_y_size) {
 		editor_zoom_widget->set_zoom_by_increments(6, false);
-		zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
+		float current_zoom = editor_zoom_widget->get_zoom();
+		zoomed_tile = current_zoom * tile_set->get_tile_size();
+		if (Math::is_equal_approx(current_zoom, editor_zoom_widget->get_max_zoom())) {
+			break;
+		}
 	}
 	while (zoomed_tile.y > default_control_y_size) {
 		editor_zoom_widget->set_zoom_by_increments(-6, false);
-		zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
+		float current_zoom = editor_zoom_widget->get_zoom();
+		zoomed_tile = current_zoom * tile_set->get_tile_size();
+		if (Math::is_equal_approx(current_zoom, editor_zoom_widget->get_min_zoom())) {
+			break;
+		}
 	}
 	editor_zoom_widget->set_zoom_by_increments(-6, false);
 	_zoom_changed();
