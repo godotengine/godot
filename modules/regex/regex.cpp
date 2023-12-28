@@ -54,8 +54,8 @@ int RegExMatch::_find(const Variant &p_name) const {
 			return -1;
 		}
 		return i;
-	} else if (p_name.get_type() == Variant::STRING || p_name.get_type() == Variant::STRING_NAME) {
-		HashMap<String, int>::ConstIterator found = names.find((String)p_name);
+	} else if (p_name.is_string()) {
+		HashMap<String, int>::ConstIterator found = names.find(p_name);
 		if (found) {
 			return found->value;
 		}

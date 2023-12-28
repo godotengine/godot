@@ -151,7 +151,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 		Variant &var = property.second;
 
 		if (pinfo.type == Variant::OBJECT) {
-			if (var.get_type() == Variant::STRING) {
+			if (var.is_string()) {
 				String path = var;
 				if (path.contains("::")) {
 					// built-in resource
