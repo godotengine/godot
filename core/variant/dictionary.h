@@ -93,6 +93,7 @@ public:
 	const void *id() const;
 
 	Dictionary(const Dictionary &p_from);
+	Dictionary(const Array &p_from, const StructInfo &p_struct_info);
 	Dictionary();
 	~Dictionary();
 };

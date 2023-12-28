@@ -396,6 +396,16 @@ Dictionary::Dictionary(const Dictionary &p_from) {
 	_ref(p_from);
 }
 
+Dictionary::Dictionary(const Array &p_from, const StructInfo &p_struct_info) {
+	_p = memnew(DictionaryPrivate);
+	_p->refcount.init();
+	for (uint32_t i = 0; i < p_struct_info.count; i++) { // TODO: is there a more efficient way to do this?
+		const int signed_index = (int)i;
+		Variant value = (0 <= signed_index && signed_index < p_from.size()) ? p_from[signed_index] : p_struct_info.default_values[i];
+		_p->variant_map.insert(p_struct_info.names[i], value);
+	}
+}
+
 Dictionary::Dictionary() {
 	_p = memnew(DictionaryPrivate);
 	_p->refcount.init();

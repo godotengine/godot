@@ -47,14 +47,15 @@ enum MethodFlags {
 
 struct MethodInfo {
 	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberName, String, Variant::STRING, name, String());
-	STRUCT_MEMBER_STRUCT_FROM_TO(MethodInfo, MemberReturnVal, PropertyInfo, return_val, PropertyInfo());
+	STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(MethodInfo, MemberArguments, List<PropertyInfo>, Variant::ARRAY, arguments, "args", List<PropertyInfo>());
+	STRUCT_MEMBER_PRIMITIVE_ALIAS(MethodInfo, MemberDefaultArguments, Vector<Variant>, Variant::ARRAY, default_arguments, "default_args", Vector<Variant>());
 	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberFlags, uint32_t, Variant::INT, flags, METHOD_FLAGS_DEFAULT);
 	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberId, int, Variant::INT, id, 0);
-	STRUCT_MEMBER_PRIMITIVE_FROM_TO(MethodInfo, MemberArguments, List<PropertyInfo>, Variant::ARRAY, arguments, List<PropertyInfo>());
-	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberDefaultArguments, Vector<Variant>, Variant::ARRAY, default_arguments, Vector<Variant>());
+	STRUCT_MEMBER_STRUCT_FROM_TO_ALIAS(MethodInfo, MemberReturnVal, PropertyInfo, return_val, "return", PropertyInfo());
+
 	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberReturnValMetadata, int, Variant::INT, return_val_metadata, 0);
-	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberArgumentsMetadata, Vector<int>, Variant::PACKED_FLOAT32_ARRAY, arguments_metadata, Vector<int>());
-	STRUCT_LAYOUT_OWNER(Object, MethodInfo, MemberName, MemberReturnVal, MemberFlags, MemberId, MemberArguments, MemberDefaultArguments, MemberReturnValMetadata, MemberArgumentsMetadata);
+	STRUCT_MEMBER_PRIMITIVE(MethodInfo, MemberArgumentsMetadata, Vector<int>, Variant::PACKED_INT32_ARRAY, arguments_metadata, Vector<int>());
+	STRUCT_LAYOUT_OWNER(Object, MethodInfo, MemberName, MemberArguments, MemberDefaultArguments, MemberFlags, MemberId, MemberReturnVal, MemberReturnValMetadata, MemberArgumentsMetadata);
 
 	int get_argument_meta(int p_arg) const {
 		ERR_FAIL_COND_V(p_arg < -1 || p_arg > arguments.size(), 0);

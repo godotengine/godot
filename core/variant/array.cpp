@@ -941,6 +941,17 @@ Array::Array(const Array &p_from, const StructInfo &p_struct_info) {
 	assign(p_from);
 }
 
+Array::Array(const Dictionary &p_from, const StructInfo &p_struct_info) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init(); // TODO: should this be _ref(p_from)?
+
+	set_struct(p_struct_info);
+	Variant *pw = _p->array.ptrw();
+	for (uint32_t i = 0; i < p_struct_info.count; i++) {
+		pw[i] = p_from.has(p_struct_info.names[i]) ? p_from[p_struct_info.names[i]] : p_struct_info.default_values[i];
+	}
+}
+
 Array::Array(const StructInfo &p_struct_info) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();

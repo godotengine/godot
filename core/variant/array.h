@@ -40,11 +40,12 @@ class ArrayPrivate;
 class Object;
 class StringName;
 class Callable;
-template<typename T>
+template <typename T>
 class Vector;
 struct StructMember;
 struct ContainerTypeValidate;
 struct StructInfo;
+class Dictionary;
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -148,6 +149,7 @@ public:
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array(const Array &p_from, const StructInfo &p_struct_info);
+	Array(const Dictionary &p_from, const StructInfo &p_struct_info);
 	Array(const StructInfo &p_struct_info);
 	Array(const Vector<Variant> &p_vec);
 	Array();

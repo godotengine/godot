@@ -4557,6 +4557,15 @@ GDScriptParser::DataType GDScriptParser::DataType::get_typed_container_type() co
 	return type;
 }
 
+const StructInfo *GDScriptParser::DataType::get_struct_info() const {
+	StructInfo *struct_info = nullptr;
+	Vector<String> names = String(native_type).split("."); // TODO: this splitting logic probably doesn't belong here.
+	if (names.size() == 2) {
+		struct_info = ClassDB::get_struct_info(names[0], names[1]);
+	}
+	return struct_info;
+}
+
 void GDScriptParser::complete_extents(Node *p_node) {
 	while (!nodes_in_progress.is_empty() && nodes_in_progress.back()->get() != p_node) {
 		ERR_PRINT("Parser bug: Mismatch in extents tracking stack.");

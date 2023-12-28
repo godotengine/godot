@@ -1503,6 +1503,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::BREAKPOINT:
 		case GDScriptParser::Node::CONTINUE:
 		case GDScriptParser::Node::ENUM:
+		case GDScriptParser::Node::STRUCT:
 		case GDScriptParser::Node::FUNCTION:
 		case GDScriptParser::Node::PASS:
 		case GDScriptParser::Node::SIGNAL:
@@ -2500,6 +2501,7 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		case GDScriptParser::Node::CONSTANT:
 		case GDScriptParser::Node::CONTINUE:
 		case GDScriptParser::Node::ENUM:
+		case GDScriptParser::Node::STRUCT:
 		case GDScriptParser::Node::FOR:
 		case GDScriptParser::Node::FUNCTION:
 		case GDScriptParser::Node::IF:
@@ -3651,7 +3653,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				default: {
 					Callable::CallError temp;
 					Variant dummy;
-					Variant::construct(base.builtin_type, dummy, nullptr, 0, temp);
+					if (base.get_struct_info()) {
+						dummy = Array(*base.get_struct_info()); // TODO: there is probably a more efficient way to do this than constructing the whole array.
+					} else {
+						Variant::construct(base.builtin_type, dummy, nullptr, 0, temp);
+					}
 					List<PropertyInfo> properties;
 					dummy.get_property_list(&properties);
 					for (const PropertyInfo &prop : properties) {
@@ -4945,13 +4951,13 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 				// Builtin type.
 				elem_type.kind = GDScriptParser::DataType::BUILTIN;
 				elem_type.builtin_type = elem_builtin_type;
+			} else if (struct_exists(elem_type_name)) {
+				elem_type.kind = GDScriptParser::DataType::BUILTIN;
+				elem_type.builtin_type = Variant::ARRAY;
+				elem_type.native_type = elem_type_name;
 			} else if (class_exists(elem_type_name)) {
 				elem_type.kind = GDScriptParser::DataType::NATIVE;
 				elem_type.builtin_type = Variant::OBJECT;
-				elem_type.native_type = elem_type_name;
-			} else if (struct_exists(elem_type_name)) {
-				elem_type.kind = GDScriptParser::DataType::NATIVE;
-				elem_type.builtin_type = Variant::ARRAY;
 				elem_type.native_type = elem_type_name;
 			} else if (ScriptServer::is_global_class(elem_type_name)) {
 				// Just load this as it shouldn't be a GDScript.
@@ -5383,6 +5389,8 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			if (p_target.has_container_element_type(0) && p_source.has_container_element_type(0)) {
 				valid = p_target.get_container_element_type(0) == p_source.get_container_element_type(0);
 			}
+			// Check whether they are compatible structs.
+			valid = valid & (p_target.native_type == p_source.native_type);
 		}
 		return valid;
 	}

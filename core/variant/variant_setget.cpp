@@ -1311,8 +1311,9 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			const Array *array = reinterpret_cast<const Array *>(_data._mem);
 			// if not struct, continue on to default case, otherwise...
 			if (array->is_struct()) {
-				for (int i = 0; i < array->size(); i++) {
-					p_list->push_back(PropertyInfo(Variant::STRING_NAME, array->get_member_name(i)));
+				const StructInfo *struct_info = array->get_struct_info();
+				for (uint32_t i = 0; i < struct_info->count; i++) {
+					p_list->push_back(PropertyInfo(struct_info->types[i], struct_info->names[i], PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, struct_info->class_names[i]));
 				}
 				break;
 			}

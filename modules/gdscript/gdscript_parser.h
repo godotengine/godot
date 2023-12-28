@@ -74,6 +74,7 @@ public:
 	struct ContinueNode;
 	struct DictionaryNode;
 	struct EnumNode;
+	struct StructNode;
 	struct ExpressionNode;
 	struct ForNode;
 	struct FunctionNode;
@@ -189,6 +190,9 @@ public:
 
 		GDScriptParser::DataType get_typed_container_type() const;
 
+		_FORCE_INLINE_ bool is_struct() const { return kind == BUILTIN && builtin_type == Variant::ARRAY && native_type != StringName(); }
+		const StructInfo *get_struct_info() const;
+
 		bool operator==(const DataType &p_other) const {
 			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
 				return true; // Can be considered equal for parsing purposes.
@@ -302,6 +306,7 @@ public:
 			CONTINUE,
 			DICTIONARY,
 			ENUM,
+			STRUCT,
 			FOR,
 			FUNCTION,
 			GET_NODE,
@@ -545,6 +550,32 @@ public:
 
 		EnumNode() {
 			type = ENUM;
+		}
+	};
+
+	struct StructNode : public Node {
+		//		struct Value {
+		//			IdentifierNode *identifier = nullptr;
+		//			ExpressionNode *custom_value = nullptr;
+		//			StructNode *parent_struct = nullptr;
+		//			int index = -1;
+		//			bool resolved = false;
+		//			int line = 0;
+		//			int leftmost_column = 0;
+		//			int rightmost_column = 0;
+		//#ifdef TOOLS_ENABLED
+		//			MemberDocData doc_data;
+		//#endif // TOOLS_ENABLED
+		//		};
+
+		IdentifierNode *identifier = nullptr;
+		StructInfo *struct_info = nullptr;
+#ifdef TOOLS_ENABLED
+		MemberDocData doc_data;
+#endif // TOOLS_ENABLED
+
+		StructNode() {
+			type = STRUCT;
 		}
 	};
 
