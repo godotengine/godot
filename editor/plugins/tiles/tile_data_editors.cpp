@@ -628,6 +628,9 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 					int closest_point;
 					_grab_polygon_point(mb->get_position(), xform, closest_polygon, closest_point);
 					if (closest_polygon >= 0) {
+						// Prevents crash from dragging and deleting a point at the same time.
+						drag_type = DRAG_TYPE_NONE;
+
 						PackedVector2Array old_polygon = polygons[closest_polygon];
 						polygons[closest_polygon].remove_at(closest_point);
 						undo_redo->create_action(TTR("Edit Polygons"));
