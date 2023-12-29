@@ -32,6 +32,7 @@
 #include "animation_mixer.compat.inc"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -597,6 +598,9 @@ bool AnimationMixer::_update_caches() {
 	List<StringName> sname;
 	get_animation_list(&sname);
 
+	bool check_path = GLOBAL_GET("animation/warnings/check_invalid_track_paths");
+	bool check_angle_interpolation = GLOBAL_GET("animation/warnings/check_angle_interpolation_type_conflicting");
+
 	Node *parent = get_node_or_null(root_node);
 	if (!parent) {
 		cache_valid = false;
@@ -645,10 +649,19 @@ bool AnimationMixer::_update_caches() {
 			if (!track) {
 				Ref<Resource> resource;
 				Vector<StringName> leftover_path;
-				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
+				if (!parent->has_node_and_resource(path)) {
+					if (check_path) {
+						WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'. This warning can be disabled in Project Settings.");
+					}
+					continue;
+				}
+
+				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 				if (!child) {
-					ERR_PRINT("AnimationMixer: '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'.");
+					if (check_path) {
+						WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'. This warning can be disabled in Project Settings.");
+					}
 					continue;
 				}
 
@@ -657,7 +670,7 @@ bool AnimationMixer::_update_caches() {
 					case Animation::TYPE_VALUE: {
 						// If a value track without a key is cached first, the initial value cannot be determined.
 						// It is a corner case, but which may cause problems with blending.
-						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, "AnimationMixer: '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
+						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, mixer_name + ": '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
 
 						TrackCacheValue *track_value = memnew(TrackCacheValue);
 
@@ -698,7 +711,7 @@ bool AnimationMixer::_update_caches() {
 						Node3D *node_3d = Object::cast_to<Node3D>(child);
 
 						if (!node_3d) {
-							ERR_PRINT("AnimationMixer: '" + String(E) + "', transform track does not point to Node3D:  '" + String(path) + "'.");
+							ERR_PRINT(mixer_name + ": '" + String(E) + "', transform track does not point to Node3D:  '" + String(path) + "'.");
 							continue;
 						}
 
@@ -764,20 +777,20 @@ bool AnimationMixer::_update_caches() {
 					case Animation::TYPE_BLEND_SHAPE: {
 #ifndef _3D_DISABLED
 						if (path.get_subname_count() != 1) {
-							ERR_PRINT("AnimationMixer: '" + String(E) + "', blend shape track does not contain a blend shape subname:  '" + String(path) + "'.");
+							ERR_PRINT(mixer_name + ": '" + String(E) + "', blend shape track does not contain a blend shape subname:  '" + String(path) + "'.");
 							continue;
 						}
 						MeshInstance3D *mesh_3d = Object::cast_to<MeshInstance3D>(child);
 
 						if (!mesh_3d) {
-							ERR_PRINT("AnimationMixer: '" + String(E) + "', blend shape track does not point to MeshInstance3D:  '" + String(path) + "'.");
+							ERR_PRINT(mixer_name + ": '" + String(E) + "', blend shape track does not point to MeshInstance3D:  '" + String(path) + "'.");
 							continue;
 						}
 
 						StringName blend_shape_name = path.get_subname(0);
 						int blend_shape_idx = mesh_3d->find_blend_shape_by_name(blend_shape_name);
 						if (blend_shape_idx == -1) {
-							ERR_PRINT("AnimationMixer: '" + String(E) + "', blend shape track points to a non-existing name:  '" + String(blend_shape_name) + "'.");
+							ERR_PRINT(mixer_name + ": '" + String(E) + "', blend shape track points to a non-existing name:  '" + String(blend_shape_name) + "'.");
 							continue;
 						}
 
@@ -855,7 +868,6 @@ bool AnimationMixer::_update_caches() {
 			} else if (track_cache_type == Animation::TYPE_VALUE) {
 				// If it has at least one angle interpolation, it also uses angle interpolation for blending.
 				TrackCacheValue *track_value = static_cast<TrackCacheValue *>(track);
-				bool was_continuous = track_value->is_continuous;
 				bool was_using_angle = track_value->is_using_angle;
 
 				if (track_src_type == Animation::TYPE_VALUE) {
@@ -868,23 +880,17 @@ bool AnimationMixer::_update_caches() {
 				// TODO: Currently, misc type cannot be blended.
 				// In the future, it should have a separate blend weight, just as bool is converted to 0 and 1.
 				// Then, it should provide the correct precedence value.
-				bool skip_update_mode_warning = false;
 				if (track_value->is_continuous) {
 					if (!Animation::is_variant_interpolatable(track_value->init_value)) {
 						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' uses a non-numeric type as key value with UpdateMode.UPDATE_CONTINUOUS. This will not be blended correctly, so it is forced to UpdateMode.UPDATE_DISCRETE.");
 						track_value->is_continuous = false;
-						skip_update_mode_warning = true;
 					}
 					if (track_value->init_value.is_string()) {
 						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
 					}
 				}
-
-				if (!skip_update_mode_warning && was_continuous != track_value->is_continuous) {
-					WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different update modes between some animations which may be blended together. Blending prioritizes UpdateMode.UPDATE_CONTINUOUS, so the process treats UpdateMode.UPDATE_DISCRETE as UpdateMode.UPDATE_CONTINUOUS with InterpolationType.INTERPOLATION_NEAREST.");
-				}
-				if (was_using_angle != track_value->is_using_angle) {
-					WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
+				if (check_angle_interpolation && (was_using_angle != track_value->is_using_angle)) {
+					WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value. If you do not want further warnings, you can turn off the checking for the angle interpolation type conflicting in Project Settings.");
 				}
 			}
 
