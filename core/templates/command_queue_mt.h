@@ -31,6 +31,7 @@
 #ifndef COMMAND_QUEUE_MT_H
 #define COMMAND_QUEUE_MT_H
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
 #include "core/os/semaphore.h"
@@ -306,15 +307,15 @@ class CommandQueueMT {
 
 	struct CommandBase {
 		virtual void call() = 0;
-		virtual void post() {}
-		virtual ~CommandBase() {}
+		virtual SyncSemaphore *get_sync_semaphore() { return nullptr; }
+		virtual ~CommandBase() = default; // Won't be called.
 	};
 
 	struct SyncCommand : public CommandBase {
 		SyncSemaphore *sync_sem = nullptr;
 
-		virtual void post() override {
-			sync_sem->sem.post();
+		virtual SyncSemaphore *get_sync_semaphore() override {
+			return sync_sem;
 		}
 	};
 
@@ -340,6 +341,7 @@ class CommandQueueMT {
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex mutex;
 	Semaphore *sync = nullptr;
+	uint64_t flush_read_ptr = 0;
 
 	template <class T>
 	T *allocate() {
@@ -362,31 +364,41 @@ class CommandQueueMT {
 	void _flush() {
 		lock();
 
-		uint64_t read_ptr = 0;
-		uint64_t limit = command_mem.size();
+		WorkerThreadPool::thread_enter_command_queue_mt_flush(this);
+		while (flush_read_ptr < command_mem.size()) {
+			uint64_t size = *(uint64_t *)&command_mem[flush_read_ptr];
+			flush_read_ptr += 8;
+			CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 
-		while (read_ptr < limit) {
-			uint64_t size = *(uint64_t *)&command_mem[read_ptr];
-			read_ptr += 8;
-			CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[read_ptr]);
+			SyncSemaphore *sync_sem = cmd->get_sync_semaphore();
+			cmd->call();
+			if (sync_sem) {
+				sync_sem->sem.post(); // Release in case it needs sync/ret.
+			}
 
-			cmd->call(); //execute the function
-			cmd->post(); //release in case it needs sync/ret
-			cmd->~CommandBase(); //should be done, so erase the command
+			if (unlikely(flush_read_ptr == 0)) {
+				// A reentrant call flushed.
+				DEV_ASSERT(command_mem.is_empty());
+				unlock();
+				return;
+			}
 
-			read_ptr += size;
+			flush_read_ptr += size;
 		}
+		WorkerThreadPool::thread_exit_command_queue_mt_flush();
 
 		command_mem.clear();
+		flush_read_ptr = 0;
 		unlock();
 	}
 
-	void lock();
-	void unlock();
 	void wait_for_flush();
 	SyncSemaphore *_alloc_sync_sem();
 
 public:
+	void lock();
+	void unlock();
+
 	/* NORMAL PUSH COMMANDS */
 	DECL_PUSH(0)
 	SPACE_SEP_LIST(DECL_PUSH, 15)

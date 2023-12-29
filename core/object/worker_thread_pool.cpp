@@ -33,6 +33,7 @@
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/command_queue_mt.h"
 
 void WorkerThreadPool::Task::free_template_userdata() {
 	ERR_FAIL_NULL(template_userdata);
@@ -42,6 +43,8 @@ void WorkerThreadPool::Task::free_template_userdata() {
 }
 
 WorkerThreadPool *WorkerThreadPool::singleton = nullptr;
+
+thread_local CommandQueueMT *WorkerThreadPool::flushing_cmd_queue = nullptr;
 
 void WorkerThreadPool::_process_task(Task *p_task) {
 	int pool_thread_index = thread_ids[Thread::get_caller_id()];
@@ -428,7 +431,15 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 
 					if (!task_to_process) {
 						caller_pool_thread->awaited_task = task;
+
+						if (flushing_cmd_queue) {
+							flushing_cmd_queue->unlock();
+						}
 						caller_pool_thread->cond_var.wait(lock);
+						if (flushing_cmd_queue) {
+							flushing_cmd_queue->lock();
+						}
+
 						DEV_ASSERT(exit_threads || caller_pool_thread->signaled || task->completed);
 						caller_pool_thread->awaited_task = nullptr;
 					}
@@ -540,7 +551,14 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 
 	{
 		Group *group = *groupp;
+
+		if (flushing_cmd_queue) {
+			flushing_cmd_queue->unlock();
+		}
 		group->done_semaphore.wait();
+		if (flushing_cmd_queue) {
+			flushing_cmd_queue->lock();
+		}
 
 		uint32_t max_users = group->tasks_used + 1; // Add 1 because the thread waiting for it is also user. Read before to avoid another thread freeing task after increment.
 		uint32_t finished_users = group->finished.increment(); // fetch happens before inc, so increment later.
@@ -561,6 +579,16 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 int WorkerThreadPool::get_thread_index() {
 	Thread::ID tid = Thread::get_caller_id();
 	return singleton->thread_ids.has(tid) ? singleton->thread_ids[tid] : -1;
+}
+
+void WorkerThreadPool::thread_enter_command_queue_mt_flush(CommandQueueMT *p_queue) {
+	ERR_FAIL_COND(flushing_cmd_queue != nullptr);
+	flushing_cmd_queue = p_queue;
+}
+
+void WorkerThreadPool::thread_exit_command_queue_mt_flush() {
+	ERR_FAIL_NULL(flushing_cmd_queue);
+	flushing_cmd_queue = nullptr;
 }
 
 void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio) {
