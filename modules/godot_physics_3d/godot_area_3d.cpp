@@ -120,6 +120,10 @@ void GodotArea3D::set_area_monitor_callback(const Callable &p_callback) {
 	}
 }
 
+void GodotArea3D::set_gravity_target_callback(const Callable &p_callback) {
+	gravity_target_callback = p_callback;
+}
+
 void GodotArea3D::_set_space_override_mode(PS3DE::AreaSpaceOverrideMode &r_mode, PS3DE::AreaSpaceOverrideMode p_new_mode) {
 	bool do_override = p_new_mode != PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
 	if (do_override == (r_mode != PS3DE::AREA_SPACE_OVERRIDE_DISABLED)) {
@@ -323,8 +327,23 @@ void GodotArea3D::compute_gravity(const Vector3 &p_global_position, Vector3 &r_g
 		case PS3DE::AREA_GRAVITY_TYPE_DIRECTIONAL: {
 			r_gravity = get_gravity_vector() * get_gravity();
 		} break;
-		case PS3DE::AREA_GRAVITY_TYPE_POINT: {
-			Vector3 target_local_position = get_gravity_vector();
+		case PS3DE::AREA_GRAVITY_TYPE_POINT:
+		case PS3DE::AREA_GRAVITY_TYPE_TARGET: {
+			Vector3 target_local_position;
+			if (gravity_type == PS3DE::AREA_GRAVITY_TYPE_POINT) {
+				target_local_position = get_gravity_vector();
+			} else {
+				const Variant local_position_variant = get_inv_transform().xform(p_global_position);
+				const Variant *args[1] = { &local_position_variant };
+				Variant ret;
+				Callable::CallError ce;
+				gravity_target_callback.callp(args, 1, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT_ONCE("Error calling Area3D _calculate_gravity_target callback method " + Variant::get_callable_error_text(gravity_target_callback, args, 1, ce));
+				} else {
+					target_local_position = ret;
+				}
+			}
 			const real_t gr_unit_dist = get_gravity_point_unit_distance();
 			Vector3 v = get_transform().xform(target_local_position) - p_global_position;
 			if (gr_unit_dist > 0) {

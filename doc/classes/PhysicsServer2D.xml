@@ -1058,6 +1058,9 @@
 		<constant name="AREA_GRAVITY_TYPE_POINT" value="1" enum="AreaGravityType">
 			Gravity that attracts towards a point specified by [constant AREA_PARAM_GRAVITY_VECTOR]. The strength of gravity is based on the distance to the point and the [constant AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE] parameter.
 		</constant>
+		<constant name="AREA_GRAVITY_TYPE_TARGET" value="2" enum="AreaGravityType">
+			Gravity that attracts towards a target point defined by the output of the calculate gravity target callback method.
+		</constant>
 		<constant name="AREA_PARAM_GRAVITY_OVERRIDE_MODE" value="0" enum="AreaParameter">
 			Constant to set/get gravity override mode in an area. See [enum AreaSpaceOverrideMode] for possible values. The default value of this parameter is [constant AREA_SPACE_OVERRIDE_DISABLED].
 		</constant>

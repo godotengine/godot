@@ -50,6 +50,11 @@ void Area3D::set_gravity_type(PS3DE::AreaGravityType p_type) {
 	}
 	gravity_type = p_type;
 	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_TYPE, p_type);
+	if (gravity_type == PS3DE::AREA_GRAVITY_TYPE_TARGET) {
+		PhysicsServer3D::get_singleton()->area_set_gravity_target_callback(get_rid(), callable_mp(this, &Area3D::calculate_gravity_target));
+	} else {
+		PhysicsServer3D::get_singleton()->area_set_gravity_target_callback(get_rid(), Callable());
+	}
 }
 
 PS3DE::AreaGravityType Area3D::get_gravity_type() const {
@@ -660,6 +665,12 @@ float Area3D::get_reverb_uniformity() const {
 	return reverb_uniformity;
 }
 
+Vector3 Area3D::calculate_gravity_target(const Vector3 &p_local_position) {
+	Vector3 ret;
+	GDVIRTUAL_CALL(_calculate_gravity_target, p_local_position, ret);
+	return ret;
+}
+
 void Area3D::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
@@ -786,6 +797,8 @@ void Area3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_reverb_uniformity", "amount"), &Area3D::set_reverb_uniformity);
 	ClassDB::bind_method(D_METHOD("get_reverb_uniformity"), &Area3D::get_reverb_uniformity);
 
+	GDVIRTUAL_BIND(_calculate_gravity_target, "local_position");
+
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, Node3D::get_class_static()), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, Node3D::get_class_static()), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_entered", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, Node3D::get_class_static())));
@@ -802,7 +815,7 @@ void Area3D::_bind_methods() {
 
 	ADD_GROUP("Gravity", "gravity_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gravity_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_space_override_mode", "get_gravity_space_override_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gravity_type", PROPERTY_HINT_ENUM, "Directional,Point", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_type", "get_gravity_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gravity_type", PROPERTY_HINT_ENUM, "Directional,Point,Target", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_type", "get_gravity_type");
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gravity_point", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_gravity_is_point", "is_gravity_a_point");
 #endif // DISABLE_DEPRECATED
