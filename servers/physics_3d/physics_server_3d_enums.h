@@ -66,6 +66,7 @@ enum SpaceParameter {
 enum AreaGravityType {
 	AREA_GRAVITY_TYPE_DIRECTIONAL,
 	AREA_GRAVITY_TYPE_POINT,
+	AREA_GRAVITY_TYPE_TARGET,
 };
 
 enum AreaParameter {
