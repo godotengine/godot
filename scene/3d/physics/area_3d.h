@@ -228,6 +228,9 @@ public:
 	void set_reverb_uniformity(float p_uniformity);
 	float get_reverb_uniformity() const;
 
+	virtual Vector3 calculate_gravity_target(const Vector3 &p_local_position);
+	GDVIRTUAL1R(Vector3, _calculate_gravity_target, Vector3);
+
 	Area3D();
 	~Area3D();
 };
