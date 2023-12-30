@@ -107,7 +107,7 @@ private:
 		{ // XrPassthroughColorHTC
 			XR_TYPE_PASSTHROUGH_COLOR_HTC, // XrStructureType
 			nullptr, // next
-			0.5f // alpha
+			1.0f // alpha (preset to opaque)
 		}
 	};
 };
