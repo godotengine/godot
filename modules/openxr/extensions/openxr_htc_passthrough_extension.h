@@ -69,7 +69,7 @@ public:
 	void stop_passthrough();
 
 	// set alpha of passthrough
-	void set_alpha(float alpha); 
+	void set_alpha(float alpha);
 
 	// get alpha of passthrough
 	float get_alpha() const;
@@ -99,15 +99,16 @@ private:
 	XrPassthroughHTC passthrough_handle = XR_NULL_HANDLE; // handle for passthrough
 
 	XrCompositionLayerPassthroughHTC composition_passthrough_layer = {
-		XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_HTC, 	// XrStructureType
+		XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_HTC, // XrStructureType
 		nullptr, // next
 		XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT, //  XrCompositionLayerFlags
 		XR_NULL_HANDLE, // XrSpace
 		XR_NULL_HANDLE, // XrPassthroughHTC
-		{ // XrPassthroughColorHTC
-			XR_TYPE_PASSTHROUGH_COLOR_HTC, // XrStructureType
-			nullptr, // next
-			1.0f // alpha (preset to opaque)
+		{
+				// XrPassthroughColorHTC
+				XR_TYPE_PASSTHROUGH_COLOR_HTC, // XrStructureType
+				nullptr, // next
+				1.0f // alpha (preset to opaque)
 		}
 	};
 };
