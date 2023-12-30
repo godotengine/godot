@@ -33,8 +33,8 @@
 
 #include "action_map/openxr_action_map.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
-#include "extensions/openxr_htc_passthrough_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
+#include "extensions/openxr_htc_passthrough_extension.h"
 #include "openxr_api.h"
 
 #include "servers/xr/xr_interface.h"
