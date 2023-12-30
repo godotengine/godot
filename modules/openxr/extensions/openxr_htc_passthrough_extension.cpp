@@ -51,7 +51,6 @@ OpenXRHTCPassthroughExtension::~OpenXRHTCPassthroughExtension() {
 }
 
 HashMap<String, bool *> OpenXRHTCPassthroughExtension::get_requested_extensions() {
-	
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_HTC_PASSTHROUGH_EXTENSION_NAME] = &htc_passthrough_ext;
@@ -106,7 +105,7 @@ bool OpenXRHTCPassthroughExtension::start_passthrough() {
 	if (is_passthrough_enabled()) {
 		return true;
 	}
-	
+
 	const XrPassthroughCreateInfoHTC create_info = {
 		XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC,
 		nullptr,
@@ -128,32 +127,20 @@ bool OpenXRHTCPassthroughExtension::start_passthrough() {
 		print_error("Main viewport doesn't have transparent background! Passthrough may not properly render.");
 	}
 
+	// HACK: to behave similar to Meta Passthrough variant
+	set_alpha(1.0f);
+
 	return true;
 }
 
 void OpenXRHTCPassthroughExtension::on_session_created(const XrSession session) {
-	if (htc_passthrough_ext) {
-
-#if 0
-		// Create the passthrough feature and start it.
-		XrPassthroughCreateInfoFB passthrough_create_info = {
-			XR_TYPE_PASSTHROUGH_CREATE_INFO_FB,
-			nullptr,
-			0,
-		};
-
-		XrResult result = xrCreatePassthroughFB(OpenXRAPI::get_singleton()->get_session(), &passthrough_create_info, &passthrough_handle);
-		if (!OpenXRAPI::get_singleton()->xr_result(result, "Failed to create passthrough")) {
-			passthrough_handle = XR_NULL_HANDLE;
-			return;
-		}
-#endif
+	if (session != nullptr && htc_passthrough_ext) {
+		start_passthrough();
 	}
 }
 
 XrCompositionLayerBaseHeader *OpenXRHTCPassthroughExtension::get_composition_layer() {
 	if (is_passthrough_enabled()) {
-		
 		composition_passthrough_layer.passthrough = passthrough_handle;
 
 		return (XrCompositionLayerBaseHeader *)&composition_passthrough_layer;
@@ -167,36 +154,17 @@ void OpenXRHTCPassthroughExtension::stop_passthrough() {
 		return;
 	}
 
-#if 0
 	if (passthrough_handle != XR_NULL_HANDLE) {
 		XrResult result = xrDestroyPassthroughHTC(passthrough_handle);
-		OpenXRAPI::get_singleton()->xr_result(result, "Unable to stop passthrough");
+		if (OpenXRAPI::get_singleton()->xr_result(result, "Unable to destroy passthrough feature")) {
+			passthrough_handle = XR_NULL_HANDLE;
+		}
 	}
-	XrResult result;
-	if (passthrough_layer != XR_NULL_HANDLE) {
-		// Destroy the layer
-		result = xrDestroyPassthroughLayerFB(passthrough_layer);
-		OpenXRAPI::get_singleton()->xr_result(result, "Unable to destroy passthrough layer");
-		passthrough_layer = XR_NULL_HANDLE;
-	}
-
-	if (passthrough_handle != XR_NULL_HANDLE) {
-		result = xrPassthroughPauseFB(passthrough_handle);
-		OpenXRAPI::get_singleton()->xr_result(result, "Unable to stop passthrough feature");
-	}
-#endif
 }
 
 void OpenXRHTCPassthroughExtension::on_session_destroyed() {
 	if (htc_passthrough_ext) {
 		stop_passthrough();
-
-		XrResult result;
-		if (passthrough_handle != XR_NULL_HANDLE) {
-			result = xrDestroyPassthroughHTC(passthrough_handle);
-			OpenXRAPI::get_singleton()->xr_result(result, "Unable to destroy passthrough feature");
-			passthrough_handle = XR_NULL_HANDLE;
-		}
 	}
 }
 
@@ -208,13 +176,12 @@ void OpenXRHTCPassthroughExtension::on_instance_destroyed() {
 }
 
 void OpenXRHTCPassthroughExtension::set_alpha(float alpha) {
-	composition_passthrough_layer.color.alpha = std::clamp(alpha,0.f,1.f);
+	composition_passthrough_layer.color.alpha = std::clamp(alpha, 0.0f, 1.0f);
 }
 
 float OpenXRHTCPassthroughExtension::get_alpha() const {
 	return composition_passthrough_layer.color.alpha;
 }
-
 
 bool OpenXRHTCPassthroughExtension::initialize_htc_passthrough_extension(const XrInstance p_instance) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
