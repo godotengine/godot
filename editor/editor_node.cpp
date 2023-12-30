@@ -5566,6 +5566,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 			layout_dialog->popup_centered();
 		} break;
 		case SETTINGS_LAYOUT_DEFAULT: {
+			set_distraction_free_mode(false);
 			_load_docks_from_config(default_layout, "docks");
 			_save_editor_layout();
 		} break;
