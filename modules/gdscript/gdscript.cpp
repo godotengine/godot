@@ -185,7 +185,12 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 				MutexLock lock(GDScriptLanguage::singleton->mutex);
 				instances.erase(p_owner);
 			}
-			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
+			if (r_error.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
+				ERR_FAIL_V_MSG(nullptr, vformat("Cannot init GDScriptInstance of \"%s\", because _init(...) requires parameters. Consider adding default values.", path));
+
+			} else {
+				ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
+			}
 		}
 	}
 	//@TODO make thread safe
