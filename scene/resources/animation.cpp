@@ -1451,7 +1451,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 	emit_changed();
 }
 
-int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode) const {
+int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, bool p_backward) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 
@@ -1578,7 +1578,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode) 
 		} break;
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
-			int k = _find(mt->methods, p_time);
+			int k = _find(mt->methods, p_time, p_backward);
 			if (k < 0 || k >= mt->methods.size()) {
 				return -1;
 			}

@@ -401,7 +401,7 @@ public:
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
-	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
+	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST, bool p_backward = false) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_time(int p_track, double p_time);
 	int track_get_key_count(int p_track) const;

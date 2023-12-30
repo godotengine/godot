@@ -160,7 +160,10 @@ void AnimationPlayer::_notification(int p_what) {
 void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started, bool p_is_current) {
 	double speed = speed_scale * cd.speed_scale;
 	bool backwards = signbit(speed); // Negative zero means playing backwards too.
-	double delta = p_started ? 0 : p_delta * speed;
+	double delta = p_delta * speed;
+	if (p_started) {
+		delta = backwards ? -0.0 : 0.0;
+	}
 	double next_pos = cd.pos + delta;
 
 	real_t len = cd.from->animation->get_length();
@@ -174,6 +177,9 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 				next_pos = len;
 			}
 			delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here).
+			if (Math::is_zero_approx(delta)) {
+				delta = backwards ? -0.0 : 0.0;
+			}
 		} break;
 
 		case Animation::LOOP_LINEAR: {
@@ -226,8 +232,9 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 	PlaybackInfo pi;
 	if (p_started) {
 		pi.time = prev_pos;
-		pi.delta = 0;
+		pi.delta = delta;
 		pi.seeked = true;
+
 	} else {
 		pi.time = next_pos;
 		pi.delta = delta;
