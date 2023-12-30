@@ -105,6 +105,7 @@ EDITOR_CLASSES: List[str] = [
 CLASSES_WITH_CSHARP_DIFFERENCES: List[str] = [
     "@GlobalScope",
     "String",
+    "StringName",
     "NodePath",
     "Signal",
     "Callable",
