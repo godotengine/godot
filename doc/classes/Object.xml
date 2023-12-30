@@ -314,7 +314,7 @@
 				    {
 				        if (property["name"].AsStringName() == PropertyName.Number &amp;&amp; IsNumberEditable)
 				        {
-				            var usage = property["usage"].As&gt;PropertyUsageFlags&lt;() | PropertyUsageFlags.ReadOnly;
+				            var usage = property["usage"].As&lt;PropertyUsageFlags&gt;() | PropertyUsageFlags.ReadOnly;
 				            property["usage"] = (int)usage;
 				        }
 				    }
