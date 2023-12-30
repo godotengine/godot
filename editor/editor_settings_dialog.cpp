@@ -772,6 +772,8 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_search_by_event->set_stretch_ratio(0.75);
 	shortcut_search_by_event->set_allowed_input_types(INPUT_KEY);
 	shortcut_search_by_event->connect("event_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts_by_event));
+	shortcut_search_by_event->connect("focus_entered", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
+	shortcut_search_by_event->connect("focus_exited", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
 	top_hbox->add_child(shortcut_search_by_event);
 
 	Button *clear_all_search = memnew(Button);
