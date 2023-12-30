@@ -720,10 +720,21 @@ void CSharpLanguage::reload_all_scripts() {
 #endif
 }
 
-void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
-	(void)p_script; // UNUSED
-
+void CSharpLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
 	CRASH_COND(!Engine::get_singleton()->is_editor_hint());
+
+	bool has_csharp_script = false;
+	for (int i = 0; i < p_scripts.size(); ++i) {
+		Ref<CSharpScript> cs_script = p_scripts[i];
+		if (cs_script.is_valid()) {
+			has_csharp_script = true;
+			break;
+		}
+	}
+
+	if (!has_csharp_script) {
+		return;
+	}
 
 #ifdef TOOLS_ENABLED
 	get_godotsharp_editor()->get_node(NodePath("HotReloadAssemblyWatcher"))->call("RestartTimer");
@@ -734,6 +745,12 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 		reload_assemblies(p_soft_reload);
 	}
 #endif
+}
+
+void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
+	Array scripts;
+	scripts.push_back(p_script);
+	reload_scripts(scripts, p_soft_reload);
 }
 
 #ifdef GD_MONO_HOT_RELOAD

@@ -187,7 +187,8 @@ public:
 	bool is_skip_breakpoints() const;
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
 	void set_breakpoints(const String &p_path, Array p_lines);
-	void reload_scripts();
+	void reload_all_scripts();
+	void reload_scripts(const Vector<String> &p_script_paths);
 
 	// Remote inspector/edit.
 	void request_remote_tree();
