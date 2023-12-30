@@ -134,7 +134,7 @@ bool OpenXRHTCPassthroughExtension::start_passthrough() {
 }
 
 void OpenXRHTCPassthroughExtension::on_session_created(const XrSession session) {
-	if (session != nullptr && htc_passthrough_ext) {
+	if (session && htc_passthrough_ext) {
 		start_passthrough();
 	}
 }
