@@ -234,6 +234,7 @@
 			<return type="float" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated blend shape value at the given time (in seconds). The [param track_idx] must be the index of a blend shape track.
 			</description>
@@ -305,6 +306,7 @@
 			<return type="Vector3" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated position value at the given time (in seconds). The [param track_idx] must be the index of a 3D position track.
 			</description>
@@ -329,6 +331,7 @@
 			<return type="Quaternion" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated rotation value at the given time (in seconds). The [param track_idx] must be the index of a 3D rotation track.
 			</description>
@@ -346,6 +349,7 @@
 			<return type="Vector3" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated scale value at the given time (in seconds). The [param track_idx] must be the index of a 3D scale track.
 			</description>
@@ -574,6 +578,7 @@
 			<return type="Variant" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated value at the given time (in seconds). The [param track_idx] must be the index of a value track.
 			</description>

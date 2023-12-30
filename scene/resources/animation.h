@@ -380,6 +380,15 @@ protected:
 
 	static bool inform_variant_array(int &r_min, int &r_max); // Returns true if max and min are swapped.
 
+#ifndef DISABLE_DEPRECATED
+	Vector3 _position_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	Quaternion _rotation_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	Vector3 _scale_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	float _blend_shape_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	Variant _value_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
@@ -419,23 +428,23 @@ public:
 
 	int position_track_insert_key(int p_track, double p_time, const Vector3 &p_position);
 	Error position_track_get_key(int p_track, int p_key, Vector3 *r_position) const;
-	Error try_position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
-	Vector3 position_track_interpolate(int p_track, double p_time) const;
+	Error try_position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation, bool p_backward = false) const;
+	Vector3 position_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	int rotation_track_insert_key(int p_track, double p_time, const Quaternion &p_rotation);
 	Error rotation_track_get_key(int p_track, int p_key, Quaternion *r_rotation) const;
-	Error try_rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation) const;
-	Quaternion rotation_track_interpolate(int p_track, double p_time) const;
+	Error try_rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation, bool p_backward = false) const;
+	Quaternion rotation_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	int scale_track_insert_key(int p_track, double p_time, const Vector3 &p_scale);
 	Error scale_track_get_key(int p_track, int p_key, Vector3 *r_scale) const;
-	Error try_scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
-	Vector3 scale_track_interpolate(int p_track, double p_time) const;
+	Error try_scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation, bool p_backward = false) const;
+	Vector3 scale_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	int blend_shape_track_insert_key(int p_track, double p_time, float p_blend);
 	Error blend_shape_track_get_key(int p_track, int p_key, float *r_blend) const;
-	Error try_blend_shape_track_interpolate(int p_track, double p_time, float *r_blend) const;
-	float blend_shape_track_interpolate(int p_track, double p_time) const;
+	Error try_blend_shape_track_interpolate(int p_track, double p_time, float *r_blend, bool p_backward = false) const;
+	float blend_shape_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
@@ -471,7 +480,7 @@ public:
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
-	Variant value_track_interpolate(int p_track, double p_time) const;
+	Variant value_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
 	UpdateMode value_track_get_update_mode(int p_track) const;
 

@@ -502,6 +502,17 @@ AnimationMixer::AnimationCallbackModeMethod AnimationMixer::get_callback_mode_me
 	return callback_mode_method;
 }
 
+void AnimationMixer::set_callback_mode_discrete(AnimationCallbackModeDiscrete p_mode) {
+	callback_mode_discrete = p_mode;
+#ifdef TOOLS_ENABLED
+	emit_signal(SNAME("mixer_updated"));
+#endif // TOOLS_ENABLED
+}
+
+AnimationMixer::AnimationCallbackModeDiscrete AnimationMixer::get_callback_mode_discrete() const {
+	return callback_mode_discrete;
+}
+
 void AnimationMixer::set_audio_max_polyphony(int p_audio_max_polyphony) {
 	ERR_FAIL_COND(p_audio_max_polyphony < 0 || p_audio_max_polyphony > 128);
 	audio_max_polyphony = p_audio_max_polyphony;
@@ -680,13 +691,7 @@ bool AnimationMixer::_update_caches() {
 							track_value->object_id = child->get_instance_id();
 						}
 
-						if (track_src_type == Animation::TYPE_VALUE) {
-							track_value->is_continuous = anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE;
-							track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
-						} else {
-							track_value->is_continuous = true;
-							track_value->is_using_angle = false;
-						}
+						track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 						track_value->subpath = leftover_path;
 
@@ -866,31 +871,18 @@ bool AnimationMixer::_update_caches() {
 					}
 				}
 			} else if (track_cache_type == Animation::TYPE_VALUE) {
-				// If it has at least one angle interpolation, it also uses angle interpolation for blending.
 				TrackCacheValue *track_value = static_cast<TrackCacheValue *>(track);
-				bool was_using_angle = track_value->is_using_angle;
-
-				if (track_src_type == Animation::TYPE_VALUE) {
-					track_value->is_continuous |= anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE;
-					track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
-				} else {
-					track_value->is_continuous |= true;
+				if (track_value->init_value.is_string() && anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE) {
+					WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
 				}
 
-				// TODO: Currently, misc type cannot be blended.
-				// In the future, it should have a separate blend weight, just as bool is converted to 0 and 1.
-				// Then, it should provide the correct precedence value.
-				if (track_value->is_continuous) {
-					if (!Animation::is_variant_interpolatable(track_value->init_value)) {
-						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' uses a non-numeric type as key value with UpdateMode.UPDATE_CONTINUOUS. This will not be blended correctly, so it is forced to UpdateMode.UPDATE_DISCRETE.");
-						track_value->is_continuous = false;
-					}
-					if (track_value->init_value.is_string()) {
-						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
-					}
+				// If it has at least one angle interpolation, it also uses angle interpolation for blending.
+				bool was_using_angle = track_value->is_using_angle;
+				if (track_src_type == Animation::TYPE_VALUE) {
+					track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 				}
 				if (check_angle_interpolation && (was_using_angle != track_value->is_using_angle)) {
-					WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value. If you do not want further warnings, you can turn off the checking for the angle interpolation type conflicting in Project Settings.");
+					WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
 				}
 			}
 
@@ -1012,6 +1004,7 @@ void AnimationMixer::_blend_init() {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 				t->value = Animation::cast_to_blendwise(t->init_value);
 				t->element_size = t->init_value.is_string() ? (real_t)(t->init_value.operator String()).length() : 0;
+				t->use_discrete = false;
 			} break;
 			case Animation::TYPE_AUDIO: {
 				TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
@@ -1426,8 +1419,10 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						continue; // Nothing to blend.
 					}
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
-					if (t->is_continuous) {
-						Variant value = ttype == Animation::TYPE_VALUE ? a->value_track_interpolate(i, time) : Variant(a->bezier_track_interpolate(i, time));
+					bool is_discrete = a->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE;
+					bool force_continuous = callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
+					if (!is_discrete || force_continuous) {
+						Variant value = ttype == Animation::TYPE_VALUE ? a->value_track_interpolate(i, time, is_discrete && force_continuous ? backward : false) : Variant(a->bezier_track_interpolate(i, time));
 						value = post_process_key_value(a, i, value, t->object_id);
 						if (value == Variant()) {
 							continue;
@@ -1485,6 +1480,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						}
+						t->use_discrete = true;
 					}
 				} break;
 				case Animation::TYPE_METHOD: {
@@ -1736,7 +1732,7 @@ void AnimationMixer::_blend_apply() {
 			case Animation::TYPE_VALUE: {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-				if (!t->is_continuous) {
+				if (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT && t->use_discrete) {
 					break; // Don't overwrite the value set by UPDATE_DISCRETE.
 				}
 
@@ -1978,7 +1974,6 @@ void AnimationMixer::_build_backup_track_cache() {
 				if (t_obj) {
 					t->value = t_obj->get_indexed(t->subpath);
 				}
-				t->is_continuous = true;
 			} break;
 			case Animation::TYPE_AUDIO: {
 				TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
@@ -2202,6 +2197,9 @@ void AnimationMixer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_callback_mode_method", "mode"), &AnimationMixer::set_callback_mode_method);
 	ClassDB::bind_method(D_METHOD("get_callback_mode_method"), &AnimationMixer::get_callback_mode_method);
 
+	ClassDB::bind_method(D_METHOD("set_callback_mode_discrete", "mode"), &AnimationMixer::set_callback_mode_discrete);
+	ClassDB::bind_method(D_METHOD("get_callback_mode_discrete"), &AnimationMixer::get_callback_mode_discrete);
+
 	ClassDB::bind_method(D_METHOD("set_audio_max_polyphony", "max_polyphony"), &AnimationMixer::set_audio_max_polyphony);
 	ClassDB::bind_method(D_METHOD("get_audio_max_polyphony"), &AnimationMixer::get_audio_max_polyphony);
 
@@ -2245,6 +2243,7 @@ void AnimationMixer::_bind_methods() {
 	ADD_GROUP("Callback Mode", "callback_mode_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_callback_mode_process", "get_callback_mode_process");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "callback_mode_method", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_callback_mode_method", "get_callback_mode_method");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "callback_mode_discrete", PROPERTY_HINT_ENUM, "Dominant,Recessive,Force Continuous"), "set_callback_mode_discrete", "get_callback_mode_discrete");
 
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_PROCESS_IDLE);
@@ -2252,6 +2251,10 @@ void AnimationMixer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE);
+
+	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT);
+	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE);
+	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS);
 
 	ADD_SIGNAL(MethodInfo(SNAME("animation_list_changed")));
 	ADD_SIGNAL(MethodInfo(SNAME("animation_libraries_updated")));

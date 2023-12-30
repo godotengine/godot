@@ -31,6 +31,7 @@
 		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player" default="NodePath(&quot;&quot;)">
 			The path to the [AnimationPlayer] used for animating.
 		</member>
+		<member name="callback_mode_discrete" type="int" setter="set_callback_mode_discrete" getter="get_callback_mode_discrete" overrides="AnimationMixer" enum="AnimationMixer.AnimationCallbackModeDiscrete" default="2" />
 		<member name="deterministic" type="bool" setter="set_deterministic" getter="is_deterministic" overrides="AnimationMixer" default="true" />
 		<member name="tree_root" type="AnimationRootNode" setter="set_tree_root" getter="get_tree_root">
 			The root animation node of this [AnimationTree]. See [AnimationRootNode].
