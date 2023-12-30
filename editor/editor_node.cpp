@@ -47,6 +47,7 @@
 #include "editor/editor_string_names.h"
 #include "main/main.h"
 #include "scene/3d/bone_attachment_3d.h"
+#include "scene/animation/animation_tree.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
@@ -1739,7 +1740,14 @@ int EditorNode::_save_external_resources() {
 static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> *r_anim_backups) {
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		AnimationMixer *mixer = Object::cast_to<AnimationMixer>(p_node->get_child(i));
-		if (mixer && mixer->is_reset_on_save_enabled() && mixer->can_apply_reset()) {
+		if (mixer && mixer->is_active() && mixer->is_reset_on_save_enabled() && mixer->can_apply_reset()) {
+			AnimationTree *tree = Object::cast_to<AnimationTree>(p_node->get_child(i));
+			if (tree) {
+				AnimationPlayer *player = Object::cast_to<AnimationPlayer>(tree->get_node_or_null(tree->get_animation_player()));
+				if (player && player->is_active() && player->is_reset_on_save_enabled() && player->can_apply_reset()) {
+					continue; // Avoid to process reset/restore many times.
+				}
+			}
 			Ref<AnimatedValuesBackup> backup = mixer->apply_reset();
 			if (backup.is_valid()) {
 				Pair<AnimationMixer *, Ref<AnimatedValuesBackup>> pair;
