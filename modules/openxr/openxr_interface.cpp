@@ -1112,20 +1112,40 @@ void OpenXRInterface::end_frame() {
 }
 
 bool OpenXRInterface::is_passthrough_supported() {
-	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_supported();
+	if ((fb_passthrough_wrapper != nullptr) && (fb_passthrough_wrapper->is_passthrough_supported())) {
+		return true;
+	} else if ((htc_passthrough_wrapper != nullptr) && (htc_passthrough_wrapper->is_passthrough_supported())) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool OpenXRInterface::is_passthrough_enabled() {
-	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_enabled();
+	if ((fb_passthrough_wrapper != nullptr) && (fb_passthrough_wrapper->is_passthrough_enabled())) {
+		return true;
+	} else if ((htc_passthrough_wrapper != nullptr) && (htc_passthrough_wrapper->is_passthrough_enabled())) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool OpenXRInterface::start_passthrough() {
-	return passthrough_wrapper != nullptr && passthrough_wrapper->start_passthrough();
+	if ((fb_passthrough_wrapper != nullptr) && (fb_passthrough_wrapper->start_passthrough())) {
+		return true;
+	} else if ((htc_passthrough_wrapper != nullptr) && (htc_passthrough_wrapper->start_passthrough())) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void OpenXRInterface::stop_passthrough() {
-	if (passthrough_wrapper) {
-		passthrough_wrapper->stop_passthrough();
+	if (fb_passthrough_wrapper != nullptr) {
+		fb_passthrough_wrapper->stop_passthrough();
+	} else if (htc_passthrough_wrapper != nullptr) {
+		htc_passthrough_wrapper->stop_passthrough();
 	}
 }
 
@@ -1356,7 +1376,8 @@ OpenXRInterface::OpenXRInterface() {
 	_set_default_pos(transform_for_view[0], 1.0, 1);
 	_set_default_pos(transform_for_view[1], 1.0, 2);
 
-	passthrough_wrapper = OpenXRFbPassthroughExtensionWrapper::get_singleton();
+	fb_passthrough_wrapper = OpenXRFbPassthroughExtensionWrapper::get_singleton();
+	htc_passthrough_wrapper = OpenXRHTCPassthroughExtension::get_singleton();
 }
 
 OpenXRInterface::~OpenXRInterface() {
