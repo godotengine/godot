@@ -43,10 +43,15 @@ static double timeStamp()
 #define SW_ANGLE_PI (180L << 16)
 #define SW_ANGLE_2PI (SW_ANGLE_PI << 1)
 #define SW_ANGLE_PI2 (SW_ANGLE_PI >> 1)
-#define SW_ANGLE_PI4 (SW_ANGLE_PI >> 2)
 
 using SwCoord = signed long;
 using SwFixed = signed long long;
+
+
+static inline float TO_FLOAT(SwCoord val)
+{
+    return static_cast<float>(val) / 64.0f;
+}
 
 struct SwPoint
 {
@@ -92,6 +97,10 @@ struct SwPoint
         else return false;
     }
 
+    Point toPoint() const
+    {
+        return {TO_FLOAT(x),  TO_FLOAT(y)};
+    }
 };
 
 struct SwSize

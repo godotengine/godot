@@ -136,7 +136,7 @@ static LoadModule* _find(FileType type)
             break;
         }
     }
-    TVGLOG("LOADER", "%s format is not supported", format);
+    TVGLOG("RENDERER", "%s format is not supported", format);
 #endif
     return nullptr;
 }
@@ -170,7 +170,7 @@ static LoadModule* _findByType(const string& mimeType)
     else if (mimeType == "jpg" || mimeType == "jpeg") type = FileType::Jpg;
     else if (mimeType == "webp") type = FileType::Webp;
     else {
-        TVGLOG("LOADER", "Given mimetype is unknown = \"%s\".", mimeType.c_str());
+        TVGLOG("RENDERER", "Given mimetype is unknown = \"%s\".", mimeType.c_str());
         return nullptr;
     }
 

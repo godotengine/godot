@@ -558,11 +558,15 @@ void shapeReset(SwShape* shape)
 void shapeFree(SwShape* shape)
 {
     rleFree(shape->rle);
+    shape->rle = nullptr;
+
     shapeDelFill(shape);
 
     if (shape->stroke) {
         rleFree(shape->strokeRle);
+        shape->strokeRle = nullptr;
         strokeFree(shape->stroke);
+        shape->stroke = nullptr;
     }
 }
 
