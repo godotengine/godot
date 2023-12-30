@@ -1736,10 +1736,9 @@ bool Node::is_child_of_exposed_node(const Node *p_owner) const {
 			n = n->data.parent;
 		}
 	}
-	const Node *common_parent = this;
-	common_parent = common_parent->data.parent;
+	const Node *common_parent = data.parent;
 	while (common_parent) {
-		if ((p_owner && visited.has(common_parent)) || !common_parent->get_scene_file_path().is_empty()) {
+		if (!common_parent->get_scene_file_path().is_empty() || (p_owner && visited.has(common_parent))) {
 			break;
 		}
 		if (common_parent->is_exposed_in_owner()) {
@@ -1749,9 +1748,11 @@ bool Node::is_child_of_exposed_node(const Node *p_owner) const {
 	}
 	return false;
 }
+
 bool Node::contains_exposed_nodes() const {
-	return get_exposed_children().size() > 0;
+	return !get_exposed_children().is_empty();
 }
+
 TypedArray<Node> Node::get_exposed_children(bool p_recursive) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>())
 	TypedArray<Node> ret;
@@ -1969,8 +1970,9 @@ void Node::set_exposed_in_owner(bool p_enabled) {
 	data.exposed_in_owner = p_enabled;
 	if (data.exposed_in_owner && data.owner != nullptr) {
 		data.unique_name_in_owner = p_enabled;
-		if (!data.unique_name_in_owner)
+		if (!data.unique_name_in_owner) {
 			_acquire_unique_name_in_owner();
+		}
 	}
 
 	update_configuration_warnings();
@@ -2418,11 +2420,11 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 		p_node->data.editable_instance = true;
 	}
 }
+
 bool Node::is_editable_instance(const Node *p_node) const {
 	if (!p_node) {
 		return false; // Easier, null is never editable. :)
 	}
-
 	ERR_FAIL_COND_V(!is_ancestor_of(p_node), false);
 	return p_node->data.editable_instance;
 }

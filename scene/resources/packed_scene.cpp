@@ -843,10 +843,10 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 
 	if (!p_node->get_scene_file_path().is_empty() && p_owner != p_node && !p_owner->is_editable_instance(p_node)) {
 		TypedArray<Node> children = p_node->get_exposed_children();
-		while (children.size() > 0) {
+		while (!children.is_empty()) {
 			Node *child = Object::cast_to<Node>(children.pop_back());
 			TypedArray<Node> exposed_node_children = child->get_children();
-			while (exposed_node_children.size() > 0) {
+			while (!exposed_node_children.is_empty()) {
 				Node *e_child = Object::cast_to<Node>(exposed_node_children.pop_back());
 				_parse_node(p_owner, e_child, NO_PARENT_SAVED, name_map, variant_map, node_map, nodepath_map);
 			}

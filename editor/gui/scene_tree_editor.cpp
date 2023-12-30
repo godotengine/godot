@@ -209,8 +209,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			part_of_subscene = true;
 			//allow
 		} else {
-			if (!p_node->is_exposed_in_owner())
+			if (!p_node->is_exposed_in_owner()) {
 				return;
+			}
 		}
 	} else {
 		part_of_subscene = p_node != get_scene_node() && get_scene_node()->get_scene_inherited_state().is_valid() && get_scene_node()->get_scene_inherited_state()->find_node_by_path(get_scene_node()->get_path_to(p_node)) >= 0;
@@ -500,7 +501,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 	if (p_node->get_owner() && p_node->get_scene_instance_state().is_valid() && !p_node->get_owner()->is_editable_instance(p_node)) {
 		TypedArray<Node> exposed_nodes = p_node->get_exposed_children();
-		while (exposed_nodes.size()) {
+		while (!exposed_nodes.is_empty()) {
 			Node *current_node = cast_to<Node>(exposed_nodes.pop_back());
 			_add_nodes(current_node, item);
 		}

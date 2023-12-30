@@ -261,6 +261,10 @@
 			<return type="Node[]" />
 			<param index="0" name="recursive" type="bool" default="true" />
 			<description>
+				Finds descendants of this node whose exposed flag is enabled, Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
+				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are checked.
+				Returns an empty array if no matching nodes are found.
+				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get references to other nodes. Whenever possible, consider caching the node references into variables.
 			</description>
 		</method>
 		<method name="find_parent" qualifiers="const">
@@ -886,6 +890,7 @@
 			Add a custom description to a node. It will be displayed in a tooltip when hovered in editor's scene tree.
 		</member>
 		<member name="exposed_in_owner" type="bool" setter="set_exposed_in_owner" getter="is_exposed_in_owner" default="false">
+			Sets this node's state as an exposed node in its [member owner]. This allows the node to be accessed when the scene is instantiated in another. It also enforces the node to become unique, see [member unique_name_in_owner].
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. See [method SceneTree.get_multiplayer].
