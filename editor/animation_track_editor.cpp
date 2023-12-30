@@ -2718,9 +2718,9 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 							PropertyInfo prop_info;
 							ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
 #ifdef DISABLE_DEPRECATED
-							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians_as_degrees") != -1;
+							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.contains("radians_as_degrees");
 #else
-							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians") != -1;
+							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.contains("radians");
 #endif // DISABLE_DEPRECATED
 							if (is_angle) {
 								menu->add_icon_item(get_editor_theme_icon(SNAME("InterpLinearAngle")), TTR("Linear Angle"), MENU_INTERPOLATION_LINEAR_ANGLE);
@@ -4190,27 +4190,11 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 	bool create_reset_track = p_reset_wanted && track_type_is_resettable(p_id.type);
 
 	Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
+	Animation::InterpolationType interp_type = Animation::INTERPOLATION_LINEAR;
+	bool loop_wrap = true;
 	if (create_normal_track || create_reset_track) {
 		if (p_id.type == Animation::TYPE_VALUE || p_id.type == Animation::TYPE_BEZIER) {
-			// Hack.
-			NodePath np;
-			animation->add_track(p_id.type);
-			animation->track_set_path(animation->get_track_count() - 1, p_id.path);
-			PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
-			animation->remove_track(animation->get_track_count() - 1); // Hack.
-
-			if (h.type == Variant::FLOAT ||
-					h.type == Variant::VECTOR2 ||
-					h.type == Variant::RECT2 ||
-					h.type == Variant::VECTOR3 ||
-					h.type == Variant::AABB ||
-					h.type == Variant::QUATERNION ||
-					h.type == Variant::COLOR ||
-					h.type == Variant::PLANE ||
-					h.type == Variant::TRANSFORM2D ||
-					h.type == Variant::TRANSFORM3D) {
-				update_mode = Animation::UPDATE_CONTINUOUS;
-			}
+			_fetch_value_track_options(p_id.path, &update_mode, &interp_type, &loop_wrap);
 		}
 	}
 
@@ -4237,6 +4221,8 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 		undo_redo->add_do_method(animation.ptr(), "add_track", p_id.type);
 		undo_redo->add_do_method(animation.ptr(), "track_set_path", p_id.track_idx, p_id.path);
+		undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", p_id.track_idx, interp_type);
+		undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", p_id.track_idx, loop_wrap);
 		if (p_id.type == Animation::TYPE_VALUE) {
 			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", p_id.track_idx, update_mode);
 		}
@@ -4824,36 +4810,82 @@ void AnimationTrackEditor::_add_track(int p_type) {
 	pick_track->get_filter_line_edit()->grab_focus();
 }
 
+void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, Animation::UpdateMode *r_update_mode, Animation::InterpolationType *r_interpolation_type, bool *r_loop_wrap) {
+	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+	if (player->has_animation(SceneStringNames::get_singleton()->RESET)) {
+		Ref<Animation> reset_anim = player->get_animation(SceneStringNames::get_singleton()->RESET);
+		int rt = reset_anim->find_track(p_path, Animation::TrackType::TYPE_VALUE);
+		if (rt >= 0) {
+			*r_update_mode = reset_anim->value_track_get_update_mode(rt);
+			*r_interpolation_type = reset_anim->track_get_interpolation_type(rt);
+			*r_loop_wrap = reset_anim->track_get_interpolation_loop_wrap(rt);
+			return;
+		}
+		rt = reset_anim->find_track(p_path, Animation::TrackType::TYPE_BEZIER);
+		if (rt >= 0) {
+			*r_interpolation_type = reset_anim->track_get_interpolation_type(rt);
+			*r_loop_wrap = reset_anim->track_get_interpolation_loop_wrap(rt);
+			return;
+		}
+	}
+
+	// Hack.
+	NodePath np;
+	animation->add_track(Animation::TYPE_VALUE);
+	animation->track_set_path(animation->get_track_count() - 1, p_path);
+	PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
+	animation->remove_track(animation->get_track_count() - 1); // Hack.
+	switch (h.type) {
+		case Variant::FLOAT: {
+#ifdef DISABLE_DEPRECATED
+			bool is_angle = h.type == Variant::FLOAT && h.hint_string.contains("radians_as_degrees");
+#else
+			bool is_angle = h.type == Variant::FLOAT && h.hint_string.contains("radians");
+#endif // DISABLE_DEPRECATED
+			if (is_angle) {
+				*r_interpolation_type = Animation::INTERPOLATION_LINEAR_ANGLE;
+			}
+			[[fallthrough]];
+		}
+		case Variant::VECTOR2:
+		case Variant::RECT2:
+		case Variant::VECTOR3:
+		case Variant::TRANSFORM2D:
+		case Variant::VECTOR4:
+		case Variant::PLANE:
+		case Variant::QUATERNION:
+		case Variant::AABB:
+		case Variant::BASIS:
+		case Variant::TRANSFORM3D:
+		case Variant::PROJECTION:
+		case Variant::COLOR:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+		case Variant::PACKED_VECTOR2_ARRAY:
+		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_COLOR_ARRAY: {
+			*r_update_mode = Animation::UPDATE_CONTINUOUS;
+		} break;
+		default: {
+		}
+	}
+}
+
 void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 	String full_path = String(adding_track_path) + ":" + p_name;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	if (adding_track_type == Animation::TYPE_VALUE) {
-		Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
-		{
-			// Hack.
-			NodePath np;
-			animation->add_track(Animation::TYPE_VALUE);
-			animation->track_set_path(animation->get_track_count() - 1, full_path);
-			PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
-			animation->remove_track(animation->get_track_count() - 1); // Hack.
-			if (h.type == Variant::FLOAT ||
-					h.type == Variant::VECTOR2 ||
-					h.type == Variant::RECT2 ||
-					h.type == Variant::VECTOR3 ||
-					h.type == Variant::AABB ||
-					h.type == Variant::QUATERNION ||
-					h.type == Variant::COLOR ||
-					h.type == Variant::PLANE ||
-					h.type == Variant::TRANSFORM2D ||
-					h.type == Variant::TRANSFORM3D) {
-				update_mode = Animation::UPDATE_CONTINUOUS;
-			}
-		}
 
+	Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
+	Animation::InterpolationType interp_type = Animation::INTERPOLATION_LINEAR;
+	bool loop_wrap = true;
+	_fetch_value_track_options(full_path, &update_mode, &interp_type, &loop_wrap);
+	if (adding_track_type == Animation::TYPE_VALUE) {
 		undo_redo->create_action(TTR("Add Track"));
 		undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
 		undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), full_path);
+		undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", animation->get_track_count(), interp_type);
+		undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", animation->get_track_count(), loop_wrap);
 		undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", animation->get_track_count(), update_mode);
 		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
 		undo_redo->commit_action();
@@ -4877,8 +4909,11 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 		undo_redo->create_action(TTR("Add Bezier Track"));
 		int base_track = animation->get_track_count();
 		for (int i = 0; i < subindices.size(); i++) {
+			int track_idx = base_track + i;
 			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
-			undo_redo->add_do_method(animation.ptr(), "track_set_path", base_track + i, full_path + subindices[i]);
+			undo_redo->add_do_method(animation.ptr(), "track_set_path", track_idx, full_path + subindices[i]);
+			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track_idx, interp_type);
+			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", track_idx, loop_wrap);
 			undo_redo->add_undo_method(animation.ptr(), "remove_track", base_track);
 		}
 		undo_redo->commit_action();
