@@ -8,6 +8,7 @@
 		You will usually just pass a [String] to methods expecting a [StringName] and it will be automatically converted, but you may occasionally want to construct a [StringName] ahead of time with the [StringName] constructor or, in GDScript, the literal syntax [code]&amp;"example"[/code].
 		See also [NodePath], which is a similar concept specifically designed to store pre-parsed scene tree paths.
 		All of [String]'s methods are available in this class too. They convert the [StringName] into a string, and they also return a string. This is highly inefficient and should only be used if the string is desired.
+		[b]Note:[/b] In C#, an explicit conversion to [code]System.String[/code] is required to use the methods listed on this page. Use the [code]ToString()[/code] method to cast a [StringName] to a string, and then use the equivalent methods in [code]System.String[/code] or [code]StringExtensions[/code].
 		[b]Note:[/b] In a boolean context, a [StringName] will evaluate to [code]false[/code] if it is empty ([code]StringName("")[/code]). Otherwise, a [StringName] will always evaluate to [code]true[/code]. The [code]not[/code] operator cannot be used. Instead, [method is_empty] should be used to check for empty [StringName]s.
 	</description>
 	<tutorials>
@@ -90,13 +91,14 @@
 				[gdscript]
 				"move_local_x".capitalize()   # Returns "Move Local X"
 				"sceneFile_path".capitalize() # Returns "Scene File Path"
+				"2D, FPS, PNG".capitalize()   # Returns "2d, Fps, Png"
 				[/gdscript]
 				[csharp]
 				"move_local_x".Capitalize();   // Returns "Move Local X"
 				"sceneFile_path".Capitalize(); // Returns "Scene File Path"
+				"2D, FPS, PNG".Capitalize();   // Returns "2d, Fps, Png"
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method not the same as the default appearance of properties in the Inspector dock, as it does not capitalize acronyms ([code]"2D"[/code], [code]"FPS"[/code], [code]"PNG"[/code], etc.) as you may expect.
 			</description>
 		</method>
 		<method name="casecmp_to" qualifiers="const">
@@ -856,7 +858,7 @@
 		<method name="to_lower" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to lowercase.
+				Returns the string converted to [code]lowercase[/code].
 			</description>
 		</method>
 		<method name="to_pascal_case" qualifiers="const">
@@ -869,12 +871,25 @@
 			<return type="String" />
 			<description>
 				Returns the string converted to [code]snake_case[/code].
+				[b]Note:[/b] Numbers followed by a [i]single[/i] letter are not separated in the conversion to keep some words (such as "2D") together.
+				[codeblocks]
+				[gdscript]
+				"Node2D".to_snake_case()               # Returns "node_2d"
+				"2nd place".to_snake_case()            # Returns "2_nd_place"
+				"Texture3DAssetFolder".to_snake_case() # Returns "texture_3d_asset_folder"
+				[/gdscript]
+				[csharp]
+				"Node2D".ToSnakeCase();               // Returns "node_2d"
+				"2nd place".ToSnakeCase();            // Returns "2_nd_place"
+				"Texture3DAssetFolder".ToSnakeCase(); // Returns "texture_3d_asset_folder"
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="to_upper" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to uppercase.
+				Returns the string converted to [code]UPPERCASE[/code].
 			</description>
 		</method>
 		<method name="to_utf8_buffer" qualifiers="const">
