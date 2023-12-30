@@ -5268,7 +5268,11 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		hsplits[i]->set_split_offset(ofs);
 	}
 
-	_update_dock_slots_visibility(false);
+	if (is_distraction_free_mode_enabled()) {
+		_update_dock_slots_visibility(true);
+	} else {
+		_update_dock_slots_visibility(false);
+	}
 
 	// FileSystemDock.
 
