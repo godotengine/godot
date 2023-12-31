@@ -425,6 +425,20 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 	PushConstant push_constant;
 	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
+
+	// Make sure to round nearest filtered textures to avoid sprite "crunching".
+	// We don't round linear filtered textures because it would look identical to nearest filtering.
+	switch (p_item->texture_filter) {
+		case RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
+		case RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+		case RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
+			base_transform.set_origin(base_transform.get_origin().round());
+		} break;
+		default: {
+			// Do nothing.
+		}
+	}
+
 	Transform2D draw_transform;
 	_update_transform_2d_to_mat2x3(base_transform, push_constant.world);
 
