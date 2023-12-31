@@ -630,7 +630,34 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 		}
 		Node *n2 = n->get_node(np);
 
+		// Do not change transform of edited scene root, unless it's the scene being played.
+		// See GH-86659 for additional context.
+		bool keep_transform = (n2 == n) && (n2->get_parent() != scene_tree->root);
+		Variant orig_tf;
+
+		if (keep_transform) {
+			if (n2->is_class("Node3D")) {
+				orig_tf = n2->call("get_transform");
+			} else if (n2->is_class("CanvasItem")) {
+				orig_tf = n2->call("_edit_get_state");
+			}
+		}
+
 		n2->set(p_prop, p_value);
+
+		if (keep_transform) {
+			if (n2->is_class("Node3D")) {
+				Variant new_tf = n2->call("get_transform");
+				if (new_tf != orig_tf) {
+					n2->call("set_transform", orig_tf);
+				}
+			} else if (n2->is_class("CanvasItem")) {
+				Variant new_tf = n2->call("_edit_get_state");
+				if (new_tf != orig_tf) {
+					n2->call("_edit_set_state", orig_tf);
+				}
+			}
+		}
 	}
 }
 
@@ -674,8 +701,35 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, const Var
 		}
 		Node *n2 = n->get_node(np);
 
+		// Do not change transform of edited scene root, unless it's the scene being played.
+		// See GH-86659 for additional context.
+		bool keep_transform = (n2 == n) && (n2->get_parent() != scene_tree->root);
+		Variant orig_tf;
+
+		if (keep_transform) {
+			if (n2->is_class("Node3D")) {
+				orig_tf = n2->call("get_transform");
+			} else if (n2->is_class("CanvasItem")) {
+				orig_tf = n2->call("_edit_get_state");
+			}
+		}
+
 		Callable::CallError ce;
 		n2->callp(p_method, p_args, p_argcount, ce);
+
+		if (keep_transform) {
+			if (n2->is_class("Node3D")) {
+				Variant new_tf = n2->call("get_transform");
+				if (new_tf != orig_tf) {
+					n2->call("set_transform", orig_tf);
+				}
+			} else if (n2->is_class("CanvasItem")) {
+				Variant new_tf = n2->call("_edit_get_state");
+				if (new_tf != orig_tf) {
+					n2->call("_edit_set_state", orig_tf);
+				}
+			}
+		}
 	}
 }
 
