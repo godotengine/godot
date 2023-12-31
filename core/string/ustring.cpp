@@ -2460,219 +2460,163 @@ bool String::is_numeric() const {
 }
 
 template <class C>
-static double built_in_strtod(
-		/* A decimal ASCII floating-point number,
-		 * optionally preceded by white space. Must
-		 * have form "-I.FE-X", where I is the integer
-		 * part of the mantissa, F is the fractional
-		 * part of the mantissa, and X is the
-		 * exponent. Either of the signs may be "+",
-		 * "-", or omitted. Either I or F may be
-		 * omitted, or both. The decimal point isn't
-		 * necessary unless F is present. The "E" may
-		 * actually be an "e". E and X may both be
-		 * omitted (but not just one). */
-		const C *string,
-		/* If non-nullptr, store terminating Cacter's
-		 * address here. */
-		C **endPtr = nullptr) {
-	/* Largest possible base 10 exponent. Any
-	 * exponent larger than this will already
-	 * produce underflow or overflow, so there's
-	 * no need to worry about additional digits. */
-	static const int maxExponent = 511;
-	/* Table giving binary powers of 10. Entry
-	 * is 10^2^i. Used to convert decimal
-	 * exponents into floating-point numbers. */
-	static const double powersOf10[] = {
-		10.,
-		100.,
-		1.0e4,
-		1.0e8,
-		1.0e16,
-		1.0e32,
-		1.0e64,
-		1.0e128,
-		1.0e256
+double parse_double(const C *p_str, const C **r_end = nullptr) {
+	static const double pow_ten[9] = { // Powers of 10 for unsigned exponents (Performance)
+		1.0e+1, 1.0e+2, 1.0e+4, 1.0e+8, 1.0e+16, 1.0e+32, 1.0e+64, 1.0e+128, 1.0e+256
 	};
+	const int max_exp = 308;
+	const int mant_size = 18;
+	const int64_t base_mult = 10;
+	C src_char = *p_str;
 
-	bool sign, expSign = false;
-	double fraction, dblExp;
-	const double *d;
-	const C *p;
-	int c;
-	/* Exponent read from "EX" field. */
-	int exp = 0;
-	/* Exponent that derives from the fractional
-	 * part. Under normal circumstances, it is
-	 * the negative of the number of digits in F.
-	 * However, if I is very long, the last digits
-	 * of I get dropped (otherwise a long I with a
-	 * large negative exponent could cause an
-	 * unnecessary overflow on I alone). In this
-	 * case, fracExp is incremented one for each
-	 * dropped digit. */
-	int fracExp = 0;
-	/* Number of digits in mantissa. */
-	int mantSize;
-	/* Number of mantissa digits BEFORE decimal point. */
-	int decPt;
-	/* Temporarily holds location of exponent in string. */
-	const C *pExp;
+	// Skip leading whitespace.
 
-	/*
-	 * Strip off leading blanks and check for a sign.
-	 */
-
-	p = string;
-	while (*p == ' ' || *p == '\t' || *p == '\n') {
-		p += 1;
+	while (src_char == ' ' || src_char == '\t' || src_char == '\n') {
+		p_str++;
+		src_char = *p_str;
 	}
-	if (*p == '-') {
+
+	// Check the sign at the beginning of the string.
+
+	bool sign = false;
+	if (src_char == '-') {
 		sign = true;
-		p += 1;
-	} else {
-		if (*p == '+') {
-			p += 1;
+		p_str++;
+	} else if (src_char == '+') {
+		p_str++;
+	}
+	src_char = *p_str;
+
+	int digits_read = 0;
+	int64_t significand = 0;
+
+	// First get the integer part.
+	for (; digits_read < mant_size; digits_read++) {
+		if (!is_digit(src_char)) {
+			break;
 		}
-		sign = false;
+		significand = significand * base_mult + (src_char - '0');
+		p_str++;
+		src_char = *p_str;
 	}
 
-	/*
-	 * Count the number of digits in the mantissa (including the decimal
-	 * point), and also locate the decimal point.
-	 */
+	// Count until the decimal point or the first non-digit character.
 
-	decPt = -1;
-	for (mantSize = 0;; mantSize += 1) {
-		c = *p;
-		if (!is_digit(c)) {
-			if ((c != '.') || (decPt >= 0)) {
+	int exponent = 0;
+	for (; exponent < max_exp; exponent++) {
+		if (!is_digit(src_char)) {
+			break;
+		}
+		p_str++;
+		src_char = *p_str;
+	}
+
+	// Reached decimal point.
+
+	if (src_char == '.') {
+		p_str++;
+		src_char = *p_str;
+
+		// Now get the decimal part.
+		for (; digits_read < mant_size; digits_read++, exponent--) {
+			if (!is_digit(src_char)) {
 				break;
 			}
-			decPt = mantSize;
+			significand = significand * base_mult + (src_char - '0');
+			p_str++;
+			src_char = *p_str;
 		}
-		p += 1;
+
+		// Skip to the exponent or the first non-digit character.
+		while (is_digit(src_char)) {
+			p_str++;
+			src_char = *p_str;
+		}
 	}
 
-	/*
-	 * Now suck up the digits in the mantissa. Use two integers to collect 9
-	 * digits each (this is faster than using floating-point). If the mantissa
-	 * has more than 18 digits, ignore the extras, since they can't affect the
-	 * value anyway.
-	 */
+	double fraction = static_cast<double>(significand);
 
-	pExp = p;
-	p -= mantSize;
-	if (decPt < 0) {
-		decPt = mantSize;
-	} else {
-		mantSize -= 1; /* One of the digits was the point. */
-	}
-	if (mantSize > 18) {
-		fracExp = decPt - 18;
-		mantSize = 18;
-	} else {
-		fracExp = decPt - mantSize;
-	}
-	if (mantSize == 0) {
-		fraction = 0.0;
-		p = string;
-		goto done;
-	} else {
-		int frac1, frac2;
+	// Read the exponent value.
 
-		frac1 = 0;
-		for (; mantSize > 9; mantSize -= 1) {
-			c = *p;
-			p += 1;
-			if (c == '.') {
-				c = *p;
-				p += 1;
+	if (src_char == 'e' || src_char == 'E') {
+		int exp_sign = 1;
+		int aux_exp = 0;
+
+		p_str++;
+		src_char = *p_str;
+		if (src_char == '-') {
+			exp_sign = -1;
+			p_str++;
+		} else if (src_char == '+') {
+			p_str++;
+		}
+		src_char = *p_str;
+
+		// Read up to nine digits to prevent overflow.
+		for (int i = 0; i < 9; i++) {
+			if (!is_digit(src_char)) {
+				break;
 			}
-			frac1 = 10 * frac1 + (c - '0');
+			aux_exp = aux_exp * 10 + (src_char - '0');
+			p_str++;
+			src_char = *p_str;
 		}
-		frac2 = 0;
-		for (; mantSize > 0; mantSize -= 1) {
-			c = *p;
-			p += 1;
-			if (c == '.') {
-				c = *p;
-				p += 1;
+
+		exponent += aux_exp * exp_sign;
+	}
+
+	if (r_end != nullptr) {
+		*r_end = p_str;
+	}
+
+	// Calculate the minimum exponent by subtracting the mantissa size
+	// from the first value that becomes so small that it is effectively treated as 0 (1e-324).
+
+	const int min_one_exp = -324;
+	const int min_exp = min_one_exp - mant_size; // Expected value: -342 with a mantissa size of 18.
+
+	// Ensure the exponent is within valid bounds.
+
+	if (exponent < min_exp) {
+		exponent = min_exp;
+	} else if (exponent > max_exp) {
+		// Scale the fraction by 1.0e+1 to potentially represent positive infinity (1e+309).
+		fraction *= 1.0e+1;
+		exponent = max_exp;
+	}
+
+	// Exponentiation.
+
+	double exp_result = 1.0;
+	if (exponent < 0) {
+		// Scale down the fraction and adjust the exponent to ensure
+		// it stays within bounds.
+		if (exponent < -308) {
+			fraction *= 1.0e-308;
+			exponent += max_exp;
+		}
+
+		exponent = -exponent;
+
+		for (int i = 0; i < 10 && exponent; i++, exponent >>= 1) {
+			if (exponent & 1) {
+				exp_result *= pow_ten[i];
 			}
-			frac2 = 10 * frac2 + (c - '0');
 		}
-		fraction = (1.0e9 * frac1) + frac2;
-	}
-
-	/*
-	 * Skim off the exponent.
-	 */
-
-	p = pExp;
-	if ((*p == 'E') || (*p == 'e')) {
-		p += 1;
-		if (*p == '-') {
-			expSign = true;
-			p += 1;
-		} else {
-			if (*p == '+') {
-				p += 1;
+		fraction /= exp_result;
+	} else {
+		for (int i = 0; i < 10 && exponent; i++, exponent >>= 1) {
+			if (exponent & 1) {
+				exp_result *= pow_ten[i];
 			}
-			expSign = false;
 		}
-		if (!is_digit(char32_t(*p))) {
-			p = pExp;
-			goto done;
-		}
-		while (is_digit(char32_t(*p))) {
-			exp = exp * 10 + (*p - '0');
-			p += 1;
-		}
-	}
-	if (expSign) {
-		exp = fracExp - exp;
-	} else {
-		exp = fracExp + exp;
-	}
-
-	/*
-	 * Generate a floating-point number that represents the exponent. Do this
-	 * by processing the exponent one bit at a time to combine many powers of
-	 * 2 of 10. Then combine the exponent with the fraction.
-	 */
-
-	if (exp < 0) {
-		expSign = true;
-		exp = -exp;
-	} else {
-		expSign = false;
-	}
-
-	if (exp > maxExponent) {
-		exp = maxExponent;
-		WARN_PRINT("Exponent too high");
-	}
-	dblExp = 1.0;
-	for (d = powersOf10; exp != 0; exp >>= 1, ++d) {
-		if (exp & 01) {
-			dblExp *= *d;
-		}
-	}
-	if (expSign) {
-		fraction /= dblExp;
-	} else {
-		fraction *= dblExp;
-	}
-
-done:
-	if (endPtr != nullptr) {
-		*endPtr = (C *)p;
+		fraction *= exp_result;
 	}
 
 	if (sign) {
-		return -fraction;
+		fraction = -fraction;
 	}
+
 	return fraction;
 }
 
@@ -2682,16 +2626,16 @@ done:
 #define READING_EXP 3
 #define READING_DONE 4
 
-double String::to_float(const char *p_str) {
-	return built_in_strtod<char>(p_str);
-}
-
-double String::to_float(const char32_t *p_str, const char32_t **r_end) {
-	return built_in_strtod<char32_t>(p_str, (char32_t **)r_end);
+double String::to_float(const char *p_str, const char **r_end) {
+	return parse_double<char>(p_str, r_end);
 }
 
 double String::to_float(const wchar_t *p_str, const wchar_t **r_end) {
-	return built_in_strtod<wchar_t>(p_str, (wchar_t **)r_end);
+	return parse_double<wchar_t>(p_str, r_end);
+}
+
+double String::to_float(const char32_t *p_str, const char32_t **r_end) {
+	return parse_double<char32_t>(p_str, r_end);
 }
 
 uint32_t String::num_characters(int64_t p_int) {
@@ -2779,7 +2723,7 @@ double String::to_float() const {
 	if (is_empty()) {
 		return 0;
 	}
-	return built_in_strtod<char32_t>(get_data());
+	return parse_double<char32_t>(get_data());
 }
 
 uint32_t String::hash(const char *p_cstr) {

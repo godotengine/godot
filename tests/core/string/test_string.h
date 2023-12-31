@@ -514,11 +514,13 @@ TEST_CASE("[String] Bin to integer") {
 }
 
 TEST_CASE("[String] String to float") {
-	static const char *nums[12] = { "-12348298412.2", "0.05", "2.0002", " -0.0001", "0", "000", "123", "0.0", "000.000", "000.007", "234__", "3..14" };
-	static const double num[12] = { -12348298412.2, 0.05, 2.0002, -0.0001, 0.0, 0.0, 123.0, 0.0, 0.0, 0.007, 234.0, 3.0 };
+	static const char *nums[15] = { "-12348298412.2", "0.05", "2.0002", " -0.0001", "0", "000", "123", "0.0", "000.000", "000.007", "234__", "3..14", "4.04e", "0.123456789012", "139.560009969" };
+	static const double num[15] = { -12348298412.2, 0.05, 2.0002, -0.0001, 0.0, 0.0, 123.0, 0.0, 0.0, 0.007, 234.0, 3.0, 4.04, 0.123456789012, 139.560009969 };
 
-	for (int i = 0; i < 12; i++) {
-		CHECK(!(ABS(String(nums[i]).to_float() - num[i]) > 0.00001));
+	const double tolerance = 1.0e-8; // 0.00000001.
+
+	for (int i = 0; i < 15; i++) {
+		CHECK(!(ABS(String(nums[i]).to_float() - num[i]) > tolerance));
 	}
 
 	// Invalid float strings should return 0.
@@ -528,21 +530,30 @@ TEST_CASE("[String] String to float") {
 		CHECK(String(invalid_nums[i]).to_float() == 0);
 	}
 
-	// Very large exponents.
-	CHECK(String("1e308").to_float() == 1e308);
-	CHECK(String("-1e308").to_float() == -1e308);
+	// Verify that the conversion of exponential numbers is accurate within a certain tolerance.
+
+	static const char *exp_snums[8] = { "509466490179775872070963302864166928879.2", "1e-309", "-12e-321", "512e+301", "-235e-301", "1e+33", "1e308", "-1e308" };
+	static const double exp_dnums[8] = { 5.0946649017977587e+38, 1e-309, -12e-321, 512e+301, -235e-301, 1e+33, 1e308, -1e308 };
+
+	for (int i = 0; i < 8; i++) {
+		const double received_num = String(exp_snums[i]).to_float();
+		const double num_diff = abs(exp_dnums[i] - received_num) / MAX(abs(exp_dnums[i]), abs(received_num));
+		CHECK(!(num_diff > tolerance));
+	}
 
 	// Exponent is so high that value is INFINITY/-INFINITY.
 	CHECK(String("1e309").to_float() == INFINITY);
-	CHECK(String("1e511").to_float() == INFINITY);
-	CHECK(String("-1e309").to_float() == -INFINITY);
-	CHECK(String("-1e511").to_float() == -INFINITY);
-
-	// Exponent is so high that a warning message is printed. Value is INFINITY/-INFINITY.
-	ERR_PRINT_OFF
 	CHECK(String("1e512").to_float() == INFINITY);
+	CHECK(String("-1e309").to_float() == -INFINITY);
 	CHECK(String("-1e512").to_float() == -INFINITY);
-	ERR_PRINT_ON
+	CHECK(String("1e2147483649").to_float() == INFINITY);
+
+	// Exponent is so low that value is 0/-0.
+	CHECK(String("1e-324").to_float() == 0);
+	CHECK(String("1e-512").to_float() == 0);
+	CHECK(String("-1e-324").to_float() == -0);
+	CHECK(String("-1e-512").to_float() == -0);
+	CHECK(String("1e-2147483649").to_float() == 0);
 }
 
 TEST_CASE("[String] Slicing") {

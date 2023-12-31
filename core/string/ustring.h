@@ -329,7 +329,6 @@ public:
 
 	bool is_numeric() const;
 
-	double to_float() const;
 	int64_t hex_to_int() const;
 	int64_t bin_to_int() const;
 	int64_t to_int() const;
@@ -338,9 +337,13 @@ public:
 	static int64_t to_int(const wchar_t *p_str, int p_len = -1);
 	static int64_t to_int(const char32_t *p_str, int p_len = -1, bool p_clamp = false);
 
-	static double to_float(const char *p_str);
+	double to_float() const;
+
+	// If r_end is provided, stores the address of the last interpreted character or the terminating character.
+	static double to_float(const char *p_str, const char **r_end = nullptr);
 	static double to_float(const wchar_t *p_str, const wchar_t **r_end = nullptr);
 	static double to_float(const char32_t *p_str, const char32_t **r_end = nullptr);
+
 	static uint32_t num_characters(int64_t p_int);
 
 	String capitalize() const;
