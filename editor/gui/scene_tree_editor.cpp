@@ -121,7 +121,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 
 	} else if (p_id == BUTTON_GROUP) {
-		undo_redo->create_action(TTR("Button Group"));
+		undo_redo->create_action(TTR("Ungroup Children"));
 
 		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
 			undo_redo->add_do_method(n, "remove_meta", "_edit_group_");
