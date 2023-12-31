@@ -120,8 +120,7 @@
 			<return type="Control" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
-				Returns the [Control] that would be under the mouse cursor if the mouse cursor were located at the
-				viewpoint coordinates provided by the point parameter. If no [Control] is at that point, returns null.
+				Returns the [Control] that would be under the mouse cursor if the mouse cursor were located at the viewport coordinates provided by the point parameter. Returns null if there is no [Control] at that point.
 			</description>
 		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
