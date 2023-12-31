@@ -102,6 +102,7 @@ static core_bind::Marshalls *_marshalls = nullptr;
 static core_bind::EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
+static Time *_time = nullptr;
 
 static core_bind::Geometry2D *_geometry_2d = nullptr;
 static core_bind::Geometry3D *_geometry_3d = nullptr;
@@ -128,6 +129,7 @@ void register_core_types() {
 	ObjectDB::setup();
 
 	StringName::setup();
+	_time = memnew(Time);
 	ResourceLoader::initialize();
 
 	register_global_constants();
@@ -436,6 +438,7 @@ void unregister_core_types() {
 	ResourceLoader::finalize();
 
 	ClassDB::cleanup_defaults();
+	memdelete(_time);
 	ObjectDB::cleanup();
 
 	Variant::unregister_types();
