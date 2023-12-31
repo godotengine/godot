@@ -357,6 +357,7 @@ class DisplayServerX11 : public DisplayServer {
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
+	void _set_input_focus(Window p_window, int p_revert_to);
 
 	mutable Mutex events_mutex;
 	Thread events_thread;

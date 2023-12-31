@@ -2011,7 +2011,7 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 		// a subwindow and its parent are both destroyed.
 		if (!wd_window.no_focus && !wd_window.is_popup && wd_window.focused) {
 			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup && _window_focus_check()) {
-				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToPointerRoot, CurrentTime);
+				_set_input_focus(wd_parent.x11_window, RevertToPointerRoot);
 			}
 		}
 	} else {
@@ -2946,7 +2946,7 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 		XSync(x11_display, False);
 		XGetWindowAttributes(x11_display, wd.x11_xim_window, &xwa);
 		if (xwa.map_state == IsViewable && _window_focus_check()) {
-			XSetInputFocus(x11_display, wd.x11_xim_window, RevertToParent, CurrentTime);
+			_set_input_focus(wd.x11_xim_window, RevertToParent);
 		}
 		XSetICFocus(wd.xic);
 	} else {
@@ -4019,6 +4019,18 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 	}
 }
 
+void DisplayServerX11::_set_input_focus(Window p_window, int p_revert_to) {
+	Window focused_window;
+	int focus_ret_state;
+	XGetInputFocus(x11_display, &focused_window, &focus_ret_state);
+
+	// Only attempt to change focus if the window isn't already focused, in order to
+	// prevent issues with Godot stealing input focus with alternative window managers.
+	if (p_window != focused_window) {
+		XSetInputFocus(x11_display, p_window, p_revert_to, CurrentTime);
+	}
+}
+
 void DisplayServerX11::_poll_events_thread(void *ud) {
 	DisplayServerX11 *display_server = static_cast<DisplayServerX11 *>(ud);
 	display_server->_poll_events();
@@ -4516,7 +4528,7 @@ void DisplayServerX11::process_events() {
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
 				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup && _window_focus_check()) {
-					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+					_set_input_focus(wd.x11_window, RevertToPointerRoot);
 				}
 
 				// Have we failed to set fullscreen while the window was unmapped?
@@ -4692,7 +4704,7 @@ void DisplayServerX11::process_events() {
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
 				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup && _window_focus_check()) {
-					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+					_set_input_focus(wd.x11_window, RevertToPointerRoot);
 				}
 
 				_window_changed(&event);
@@ -4736,7 +4748,7 @@ void DisplayServerX11::process_events() {
 					// RevertToPointerRoot is used to make sure we don't lose all focus in case
 					// a subwindow and its parent are both destroyed.
 					if (!wd.no_focus && !wd.is_popup) {
-						XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+						_set_input_focus(wd.x11_window, RevertToPointerRoot);
 					}
 
 					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
