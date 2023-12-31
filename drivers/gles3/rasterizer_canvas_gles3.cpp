@@ -849,7 +849,22 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 
 		if (c->type != Item::Command::TYPE_MESH) {
 			// For Meshes, this gets updated below.
-			_update_transform_2d_to_mat2x3(base_transform * draw_transform, state.instance_data_array[r_index].world);
+			Transform2D final_transform = base_transform * draw_transform;
+
+			// Make sure to round nearest filtered textures to avoid sprite "crunching".
+			// We don't round linear filtered textures because it would look identical to nearest filtering.
+			switch (p_item->texture_filter) {
+				case RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
+				case RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+				case RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
+					final_transform.set_origin(final_transform.get_origin().round());
+				} break;
+				default: {
+					// Do nothing.
+				}
+			}
+
+			_update_transform_2d_to_mat2x3(final_transform, state.instance_data_array[r_index].world);
 		}
 
 		// Zero out most fields.
