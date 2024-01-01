@@ -8576,7 +8576,8 @@ Node3DEditor::Node3DEditor() {
 	settings_fov->set_step(0.1);
 	settings_fov->set_value(EDITOR_GET("editors/3d/default_fov"));
 	settings_fov->set_select_all_on_focus(true);
-	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"), settings_fov);
+	settings_fov->set_tooltip_text(TTR("FOV is defined as a vertical value, as the editor camera always uses the Keep Height aspect mode."));
+	settings_vbc->add_margin_child(TTR("Perspective VFOV (deg.):"), settings_fov);
 
 	settings_znear = memnew(SpinBox);
 	settings_znear->set_max(MAX_Z);
