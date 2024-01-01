@@ -152,7 +152,12 @@ private:
 		RID default_material;
 		RID default_shader;
 		RID cubemap_filter_shader_version;
+		RID overdraw_material;
+		RID overdraw_shader;
 	} scene_globals;
+
+	GLES3::SceneMaterialData *default_material_data_ptr = nullptr;
+	GLES3::SceneMaterialData *overdraw_material_data_ptr = nullptr;
 
 	/* LIGHT INSTANCE */
 
