@@ -2941,6 +2941,7 @@ bool Main::start() {
 	bool export_debug = false;
 	bool export_pack_only = false;
 	bool install_android_build_template = false;
+	String export_files;
 #ifdef MODULE_GDSCRIPT_ENABLED
 	String gdscript_docs_path;
 #endif
@@ -3023,6 +3024,9 @@ bool Main::start() {
 				editor = true;
 				_export_preset = args[i + 1];
 				export_pack_only = true;
+			} else if (args[i] == "--export-files") {
+				editor = true;
+				export_files = args[i + 1];
 #endif
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
@@ -3428,7 +3432,7 @@ bool Main::start() {
 			sml->get_root()->add_child(editor_node);
 
 			if (!_export_preset.is_empty()) {
-				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template);
+				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template, export_files);
 				game_path = ""; // Do not load anything.
 			}
 

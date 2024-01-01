@@ -942,7 +942,7 @@ void EditorNode::_fs_changed() {
 		}
 
 		// Override export files by --export-files
-		if (!export_defer.export_files.is_empty()) {
+		if (!export_defer.export_files.is_empty() && export_preset.is_valid()) {
 			String export_files = export_defer.export_files;
 
 			Vector<String> files_to_export = export_preset->get_files_to_export();
