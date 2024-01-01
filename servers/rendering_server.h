@@ -1480,6 +1480,7 @@ public:
 	virtual void canvas_light_occluder_set_as_sdf_collision(RID p_occluder, bool p_enable) = 0;
 	virtual void canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform) = 0;
 	virtual void canvas_light_occluder_set_light_mask(RID p_occluder, int p_mask) = 0;
+	virtual void canvas_light_occluder_set_z_index(RID p_occluder, int p_z_index) = 0;
 
 	/* CANVAS LIGHT OCCLUDER POLYGON */
 

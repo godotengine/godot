@@ -369,8 +369,67 @@ vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 lig
 	}
 }
 
+float layeredShadowSample(vec4 shadow_uv) {
+	float shadow_value = textureProjLod(sampler2D(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
+
+	if (shadow_value > draw_data.z_index && fract(shadow_value) < shadow_uv.z) {
+		return 1.0;
+	}
+	return 0.0; // no shadow
+}
+
 //float distance = length(shadow_pos);
-vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
+vec4 light_shadow_compute_positional(uint light_base, vec4 light_color, vec4 shadow_uv
+#ifdef LIGHT_CODE_USED
+		,
+		vec3 shadow_modulate
+#endif
+) {
+	float shadow;
+	uint shadow_mode = light_array.data[light_base].flags & LIGHT_FLAGS_FILTER_MASK;
+
+	vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
+	if (shadow_mode == LIGHT_FLAGS_SHADOW_NEAREST) {
+		shadow = layeredShadowSample(shadow_uv);
+	} else if (shadow_mode == LIGHT_FLAGS_SHADOW_PCF5) {
+		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
+		shadow = 0.0;
+		shadow += layeredShadowSample(shadow_uv - shadow_pixel_size * 2.0);
+		shadow += layeredShadowSample(shadow_uv - shadow_pixel_size);
+		shadow += layeredShadowSample(shadow_uv);
+		shadow += layeredShadowSample(shadow_uv + shadow_pixel_size);
+		shadow += layeredShadowSample(shadow_uv + shadow_pixel_size * 2.0);
+		shadow /= 5.0;
+	} else { //PCF13
+		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
+		shadow = 0.0;
+		shadow += layeredShadowSample(shadow_uv - shadow_pixel_size * 6.0);
+		shadow += layeredShadowSample(shadow_uv - shadow_pixel_size * 5.0);
+		shadow += layeredShadowSample(shadow_uv - shadow_pixel_size * 4.0);
+		shadow += layeredShadowSample(shadow_uv - shadow_pixel_size * 3.0);
+		shadow += layeredShadowSample(shadow_uv - shadow_pixel_size * 2.0);
+		shadow += layeredShadowSample(shadow_uv - shadow_pixel_size);
+		shadow += layeredShadowSample(shadow_uv);
+		shadow += layeredShadowSample(shadow_uv + shadow_pixel_size);
+		shadow += layeredShadowSample(shadow_uv + shadow_pixel_size * 2.0);
+		shadow += layeredShadowSample(shadow_uv + shadow_pixel_size * 3.0);
+		shadow += layeredShadowSample(shadow_uv + shadow_pixel_size * 4.0);
+		shadow += layeredShadowSample(shadow_uv + shadow_pixel_size * 5.0);
+		shadow += layeredShadowSample(shadow_uv + shadow_pixel_size * 6.0);
+		shadow /= 13.0;
+	}
+
+	vec4 shadow_color = unpackUnorm4x8(light_array.data[light_base].shadow_color);
+#ifdef LIGHT_CODE_USED
+	shadow_color.rgb *= shadow_modulate;
+#endif
+
+	shadow_color.a *= light_color.a; //respect light alpha
+
+	return mix(light_color, shadow_color, shadow);
+}
+
+vec4 light_shadow_compute_directional(uint light_base, vec4 light_color, vec4 shadow_uv
 #ifdef LIGHT_CODE_USED
 		,
 		vec3 shadow_modulate
@@ -613,7 +672,7 @@ void main() {
 
 			vec4 shadow_uv = vec4(shadow_pos.x, light_array.data[light_base].shadow_y_ofs, shadow_pos.y * light_array.data[light_base].shadow_zfar_inv, 1.0);
 
-			light_color = light_shadow_compute(light_base, light_color, shadow_uv
+			light_color = light_shadow_compute_directional(light_base, light_color, shadow_uv
 #ifdef LIGHT_CODE_USED
 					,
 					shadow_modulate.rgb
@@ -700,7 +759,7 @@ void main() {
 			//float distance = length(shadow_pos);
 			vec4 shadow_uv = vec4(tex_ofs, light_array.data[light_base].shadow_y_ofs, distance, 1.0);
 
-			light_color = light_shadow_compute(light_base, light_color, shadow_uv
+			light_color = light_shadow_compute_positional(light_base, light_color, shadow_uv
 #ifdef LIGHT_CODE_USED
 					,
 					shadow_modulate.rgb

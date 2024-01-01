@@ -270,7 +270,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		float modelview[8];
 		float direction[2];
 		float z_far;
-		float pad;
+		float z_index;
 	};
 
 	struct OccluderPolygon {
@@ -402,6 +402,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		};
 		float color_texture_pixel_size[2];
 		uint32_t lights[4];
+		int z_index;
+		float pad2[3];
 	};
 
 	Item *items[MAX_RENDER_ITEMS];

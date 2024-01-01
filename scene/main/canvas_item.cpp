@@ -542,6 +542,8 @@ void CanvasItem::set_z_index(int p_z) {
 	z_index = p_z;
 	RS::get_singleton()->canvas_item_set_z_index(canvas_item, z_index);
 	update_configuration_warnings();
+
+	notification(NOTIFICATION_Z_INDEX_CHANGED);
 }
 
 void CanvasItem::set_z_as_relative(bool p_enabled) {
@@ -1241,6 +1243,7 @@ void CanvasItem::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_ENTER_CANVAS);
 	BIND_CONSTANT(NOTIFICATION_EXIT_CANVAS);
 	BIND_CONSTANT(NOTIFICATION_WORLD_2D_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_Z_INDEX_CHANGED);
 
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_PARENT_NODE);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST);

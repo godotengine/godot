@@ -491,6 +491,7 @@ public:
 		Transform2D xform;
 		Transform2D xform_cache;
 		int light_mask;
+		int z_index;
 		bool sdf_collision;
 		RS::CanvasOccluderPolygonCullMode cull_cache;
 
@@ -501,6 +502,7 @@ public:
 			sdf_collision = false;
 			next = nullptr;
 			light_mask = 1;
+			z_index = 0;
 			cull_cache = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 		}
 	};

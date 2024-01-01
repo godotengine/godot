@@ -1924,6 +1924,13 @@ void RendererCanvasCull::canvas_light_occluder_set_light_mask(RID p_occluder, in
 	occluder->light_mask = p_mask;
 }
 
+void RendererCanvasCull::canvas_light_occluder_set_z_index(RID p_occluder, int p_z_index) {
+	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
+	ERR_FAIL_NULL(occluder);
+
+	occluder->z_index = p_z_index;
+}
+
 RID RendererCanvasCull::canvas_occluder_polygon_allocate() {
 	return canvas_light_occluder_polygon_owner.allocate_rid();
 }

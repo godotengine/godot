@@ -39,7 +39,7 @@ layout(push_constant, std430) uniform Constants {
 	mat2x4 modelview;
 	vec2 direction;
 	float z_far;
-	float pad;
+	float z_index;
 }
 constants;
 
@@ -52,7 +52,7 @@ layout(location = 0) out highp float sdf_buf;
 
 void main() {
 #ifdef MODE_SHADOW
-	distance_buf = depth / constants.z_far;
+	distance_buf = depth / constants.z_far + constants.z_index;
 #else
 	sdf_buf = 1.0;
 #endif

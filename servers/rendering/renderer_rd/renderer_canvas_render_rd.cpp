@@ -449,6 +449,11 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 	push_constant.lights[2] = 0;
 	push_constant.lights[3] = 0;
 
+	push_constant.z_index = 0;
+	push_constant.pad2[0] = 0;
+	push_constant.pad2[1] = 0;
+	push_constant.pad2[2] = 0;
+
 	uint32_t base_flags = 0;
 	base_flags |= use_linear_colors ? FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR : 0;
 
@@ -462,6 +467,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 			if (light->render_index_cache >= 0 && p_item->light_mask & light->item_mask && p_item->z_final >= light->z_min && p_item->z_final <= light->z_max && p_item->global_rect_cache.intersects_transformed(light->xform_cache, light->rect_cache)) {
 				uint32_t light_index = light->render_index_cache;
 				push_constant.lights[light_count >> 2] |= light_index << ((light_count & 3) * 8);
+				push_constant.z_index = p_item->z_final;
 
 				light_count++;
 
@@ -1752,7 +1758,6 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		push_constant.direction[0] = directions[i].x;
 		push_constant.direction[1] = directions[i].y;
 		push_constant.z_far = p_far;
-		push_constant.pad = 0;
 
 		LightOccluderInstance *instance = p_occluders;
 
@@ -1763,6 +1768,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 				instance = instance->next;
 				continue;
 			}
+			push_constant.z_index = instance->z_index;
 
 			_update_transform_2d_to_mat2x4(p_light_xform * instance->xform_cache, push_constant.modelview);
 
@@ -1827,7 +1833,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	push_constant.direction[0] = 0.0;
 	push_constant.direction[1] = 1.0;
 	push_constant.z_far = distance;
-	push_constant.pad = 0;
+	push_constant.z_index = 0.0;
 
 	LightOccluderInstance *instance = p_occluders;
 
@@ -1895,7 +1901,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	push_constant.direction[0] = 0.0;
 	push_constant.direction[1] = 0.0;
 	push_constant.z_far = 0;
-	push_constant.pad = 0;
+	push_constant.z_index = 0.0;
 
 	LightOccluderInstance *instance = p_occluders;
 
@@ -2679,8 +2685,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		state.lights_uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(LightUniform) * state.max_lights_per_render);
 
 		RD::SamplerState shadow_sampler_state;
-		shadow_sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-		shadow_sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+		shadow_sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+		shadow_sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
 		shadow_sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT; //shadow wrap around
 		shadow_sampler_state.compare_op = RD::COMPARE_OP_GREATER;
 		shadow_sampler_state.enable_compare = true;
@@ -2805,7 +2811,7 @@ void fragment() {
 		material_storage->material_set_shader(default_clip_children_material, default_clip_children_shader);
 	}
 
-	static_assert(sizeof(PushConstant) == 128);
+	static_assert(sizeof(PushConstant) == 144);
 }
 
 bool RendererCanvasRenderRD::free(RID p_rid) {

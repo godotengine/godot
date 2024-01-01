@@ -302,6 +302,7 @@ public:
 	void canvas_light_occluder_set_as_sdf_collision(RID p_occluder, bool p_enable);
 	void canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform);
 	void canvas_light_occluder_set_light_mask(RID p_occluder, int p_mask);
+	void canvas_light_occluder_set_z_index(RID p_occluder, int p_z_index);
 
 	RID canvas_occluder_polygon_allocate();
 	void canvas_occluder_polygon_initialize(RID p_rid);
