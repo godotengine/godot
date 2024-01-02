@@ -70,6 +70,138 @@ HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
 HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
 
+#ifdef TOOLS_ENABLED
+HashMap<StringName, ObjectGDExtension> ClassDB::placeholder_extensions;
+
+class PlaceholderExtensionInstance {
+	StringName class_name;
+	HashMap<StringName, Variant> properties;
+
+public:
+	PlaceholderExtensionInstance(const StringName &p_class_name) {
+		class_name = p_class_name;
+	}
+
+	~PlaceholderExtensionInstance() {}
+
+	void set(const StringName &p_name, const Variant &p_value) {
+		bool is_default_valid = false;
+		Variant default_value = ClassDB::class_get_default_property_value(class_name, p_name, &is_default_valid);
+
+		// If there's a default value, then we know it's a valid property.
+		if (is_default_valid) {
+			properties[p_name] = p_value;
+		}
+	}
+
+	Variant get(const StringName &p_name) {
+		const Variant *value = properties.getptr(p_name);
+		Variant ret;
+
+		if (value) {
+			ret = *value;
+		} else {
+			bool is_default_valid = false;
+			Variant default_value = ClassDB::class_get_default_property_value(class_name, p_name, &is_default_valid);
+			if (is_default_valid) {
+				ret = default_value;
+			}
+		}
+
+		return ret;
+	}
+
+	static GDExtensionBool placeholder_instance_set(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value) {
+		PlaceholderExtensionInstance *self = (PlaceholderExtensionInstance *)p_instance;
+		const StringName &name = *(StringName *)p_name;
+		const Variant &value = *(const Variant *)p_value;
+
+		self->set(name, value);
+
+		// We have to return true so Godot doesn't try to call the real setter function.
+		return true;
+	}
+
+	static GDExtensionBool placeholder_instance_get(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret) {
+		PlaceholderExtensionInstance *self = (PlaceholderExtensionInstance *)p_instance;
+		const StringName &name = *(StringName *)p_name;
+		Variant *value = (Variant *)r_ret;
+
+		*value = self->get(name);
+
+		// We have to return true so Godot doesn't try to call the real getter function.
+		return true;
+	}
+
+	static const GDExtensionPropertyInfo *placeholder_instance_get_property_list(GDExtensionClassInstancePtr p_instance, uint32_t *r_count) {
+		*r_count = 0;
+		return nullptr;
+	}
+
+	static void placeholder_instance_free_property_list(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list) {
+	}
+
+	static GDExtensionBool placeholder_instance_property_can_revert(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name) {
+		return false;
+	}
+
+	static GDExtensionBool placeholder_instance_property_get_revert(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret) {
+		return false;
+	}
+
+	static GDExtensionBool placeholder_instance_validate_property(GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property) {
+		return false;
+	}
+
+	static void placeholder_instance_notification(GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed) {
+	}
+
+	static void placeholder_instance_to_string(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr p_out) {
+		*r_is_valid = true;
+	}
+
+	static void placeholder_instance_reference(GDExtensionClassInstancePtr p_instance) {
+	}
+
+	static void placeholder_instance_unreference(GDExtensionClassInstancePtr p_instance) {
+	}
+
+	static uint64_t placeholder_instance_get_rid(GDExtensionClassInstancePtr p_instance) {
+		return 0;
+	}
+
+	static GDExtensionObjectPtr placeholder_class_create_instance(void *p_class_userdata) {
+		ClassDB::ClassInfo *ti = (ClassDB::ClassInfo *)p_class_userdata;
+
+		// Find the closest native parent.
+		ClassDB::ClassInfo *native_parent = ti->inherits_ptr;
+		while (native_parent->gdextension) {
+			native_parent = native_parent->inherits_ptr;
+		}
+
+		// Construct a placeholder.
+		Object *obj = native_parent->creation_func();
+		obj->_extension = ClassDB::get_placeholder_extension(ti->name);
+		obj->_extension_instance = memnew(PlaceholderExtensionInstance(ti->name));
+		return obj;
+	}
+
+	static GDExtensionObjectPtr placeholder_class_recreate_instance(void *p_class_userdata, GDExtensionObjectPtr p_object) {
+		ClassDB::ClassInfo *ti = (ClassDB::ClassInfo *)p_class_userdata;
+		return memnew(PlaceholderExtensionInstance(ti->name));
+	}
+
+	static void placeholder_class_free_instance(void *p_class_userdata, GDExtensionClassInstancePtr p_instance) {
+		PlaceholderExtensionInstance *instance = (PlaceholderExtensionInstance *)p_instance;
+		memdelete(instance);
+	}
+
+	static GDExtensionClassCallVirtual placeholder_class_get_virtual(void *p_class_userdata, GDExtensionConstStringNamePtr p_name) {
+		return nullptr;
+	}
+};
+#endif
+
 bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
 	if (!classes.has(p_class)) {
 		return false;
@@ -346,7 +478,7 @@ StringName ClassDB::get_compatibility_class(const StringName &p_class) {
 	return StringName();
 }
 
-Object *ClassDB::instantiate(const StringName &p_class) {
+Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class) {
 	ClassInfo *ti;
 	{
 		OBJTYPE_RLOCK;
@@ -367,10 +499,17 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 	}
 #endif
 	if (ti->gdextension && ti->gdextension->create_instance) {
-		Object *obj = (Object *)ti->gdextension->create_instance(ti->gdextension->class_userdata);
+		ObjectGDExtension *extension = ti->gdextension;
 #ifdef TOOLS_ENABLED
-		if (ti->gdextension->track_instance) {
-			ti->gdextension->track_instance(ti->gdextension->tracking_userdata, obj);
+		if (!p_require_real_class && ti->gdextension->is_runtime && Engine::get_singleton()->is_editor_hint()) {
+			extension = get_placeholder_extension(ti->name);
+		}
+#endif
+		Object *obj = (Object *)extension->create_instance(extension->class_userdata);
+
+#ifdef TOOLS_ENABLED
+		if (extension->track_instance) {
+			extension->track_instance(extension->tracking_userdata, obj);
 		}
 #endif
 		return obj;
@@ -378,6 +517,82 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 		return ti->creation_func();
 	}
 }
+
+Object *ClassDB::instantiate(const StringName &p_class) {
+	return _instantiate_internal(p_class);
+}
+
+Object *ClassDB::instantiate_no_placeholders(const StringName &p_class) {
+	return _instantiate_internal(p_class, true);
+}
+
+#ifdef TOOLS_ENABLED
+ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class) {
+	ObjectGDExtension *placeholder_extension = placeholder_extensions.getptr(p_class);
+	if (placeholder_extension) {
+		return placeholder_extension;
+	}
+
+	ClassInfo *ti;
+	{
+		OBJTYPE_RLOCK;
+		ti = classes.getptr(p_class);
+		if (!ti || ti->disabled || !ti->creation_func || (ti->gdextension && !ti->gdextension->create_instance)) {
+			if (compat_classes.has(p_class)) {
+				ti = classes.getptr(compat_classes[p_class]);
+			}
+		}
+		ERR_FAIL_NULL_V_MSG(ti, nullptr, "Cannot get class '" + String(p_class) + "'.");
+		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, "Class '" + String(p_class) + "' is disabled.");
+		ERR_FAIL_NULL_V_MSG(ti->gdextension, nullptr, "Class '" + String(p_class) + "' has no native extension.");
+	}
+
+	placeholder_extensions[p_class] = ObjectGDExtension();
+	placeholder_extension = placeholder_extensions.getptr(p_class);
+
+	// Make a "fake" extension to act as a placeholder.
+	placeholder_extension->library = ti->gdextension->library;
+	placeholder_extension->parent = ti->gdextension->parent;
+	placeholder_extension->children = ti->gdextension->children;
+	placeholder_extension->parent_class_name = ti->gdextension->parent_class_name;
+	placeholder_extension->class_name = ti->gdextension->class_name;
+	placeholder_extension->editor_class = ti->gdextension->editor_class;
+	placeholder_extension->reloadable = ti->gdextension->reloadable;
+	placeholder_extension->is_virtual = ti->gdextension->is_virtual;
+	placeholder_extension->is_abstract = ti->gdextension->is_abstract;
+	placeholder_extension->is_exposed = ti->gdextension->is_exposed;
+	placeholder_extension->is_runtime = true;
+	placeholder_extension->is_placeholder = true;
+
+	placeholder_extension->set = &PlaceholderExtensionInstance::placeholder_instance_set;
+	placeholder_extension->get = &PlaceholderExtensionInstance::placeholder_instance_get;
+	placeholder_extension->get_property_list = &PlaceholderExtensionInstance::placeholder_instance_get_property_list;
+	placeholder_extension->free_property_list = &PlaceholderExtensionInstance::placeholder_instance_free_property_list;
+	placeholder_extension->property_can_revert = &PlaceholderExtensionInstance::placeholder_instance_property_can_revert;
+	placeholder_extension->property_get_revert = &PlaceholderExtensionInstance::placeholder_instance_property_get_revert;
+	placeholder_extension->validate_property = &PlaceholderExtensionInstance::placeholder_instance_validate_property;
+	placeholder_extension->notification = nullptr;
+	placeholder_extension->notification2 = &PlaceholderExtensionInstance::placeholder_instance_notification;
+	placeholder_extension->to_string = &PlaceholderExtensionInstance::placeholder_instance_to_string;
+	placeholder_extension->reference = &PlaceholderExtensionInstance::placeholder_instance_reference;
+	placeholder_extension->unreference = &PlaceholderExtensionInstance::placeholder_instance_unreference;
+	placeholder_extension->get_rid = &PlaceholderExtensionInstance::placeholder_instance_get_rid;
+
+	placeholder_extension->class_userdata = ti;
+	placeholder_extension->create_instance = &PlaceholderExtensionInstance::placeholder_class_create_instance;
+	placeholder_extension->free_instance = &PlaceholderExtensionInstance::placeholder_class_free_instance;
+	placeholder_extension->get_virtual = &PlaceholderExtensionInstance::placeholder_class_get_virtual;
+	placeholder_extension->get_virtual_call_data = nullptr;
+	placeholder_extension->call_virtual_with_data = nullptr;
+	placeholder_extension->recreate_instance = &PlaceholderExtensionInstance::placeholder_class_recreate_instance;
+
+	placeholder_extension->tracking_userdata = ti->gdextension->tracking_userdata;
+	placeholder_extension->track_instance = ti->gdextension->track_instance;
+	placeholder_extension->untrack_instance = ti->gdextension->untrack_instance;
+
+	return placeholder_extension;
+}
+#endif
 
 void ClassDB::set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance) {
 	ERR_FAIL_NULL(p_object);
@@ -1716,7 +1931,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 			c = Engine::get_singleton()->get_singleton_object(p_class);
 			cleanup_c = false;
 		} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) { // Keep this condition in sync with doc_tools.cpp get_documentation_default_value.
-			c = ClassDB::instantiate(p_class);
+			c = ClassDB::instantiate_no_placeholders(p_class);
 			cleanup_c = true;
 		}
 
@@ -1826,6 +2041,11 @@ void ClassDB::unregister_extension_class(const StringName &p_class, bool p_free_
 		}
 	}
 	classes.erase(p_class);
+	default_values_cached.erase(p_class);
+	default_values.erase(p_class);
+#ifdef TOOLS_ENABLED
+	placeholder_extensions.erase(p_class);
+#endif
 }
 
 HashMap<StringName, ClassDB::NativeStruct> ClassDB::native_structs;
