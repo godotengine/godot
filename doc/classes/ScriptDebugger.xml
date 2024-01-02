@@ -49,7 +49,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="source" type="StringName" />
 			<description>
-				Returns [code true] if the given [param source] and [param line] represent an existing breakpoint.
+				Returns [code]true[/code] if the given [param source] and [param line] represent an existing breakpoint.
 			</description>
 		</method>
 		<method name="remove_breakpoint">

@@ -20,7 +20,7 @@
 		<method name="get_script_debugger">
 			<return type="ScriptDebugger" />
 			<description>
-				Returns the [code]ScriptDebugger[/code] instance.
+				Returns the [ScriptDebugger] instance.
 			</description>
 		</method>
 		<method name="has_capture">
