@@ -2394,79 +2394,7 @@ Quaternion Animation::_cubic_interpolate_in_time(const Quaternion &p_pre_a, cons
 }
 
 Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
-	Variant::Type type_a = p_a.get_type();
-	Variant::Type type_b = p_b.get_type();
-	Variant::Type type_pa = p_pre_a.get_type();
-	Variant::Type type_pb = p_post_b.get_type();
-
-	//make int and real play along
-
-	uint32_t vformat = 1 << type_a;
-	vformat |= 1 << type_b;
-	vformat |= 1 << type_pa;
-	vformat |= 1 << type_pb;
-
-	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
-		//mix of real and int
-		real_t a = p_a;
-		real_t b = p_b;
-		real_t pa = p_pre_a;
-		real_t pb = p_post_b;
-
-		return Math::cubic_interpolate_in_time(a, b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
-	} else if ((vformat & (vformat - 1))) {
-		return p_a; //can't interpolate, mix of types
-	}
-
-	switch (type_a) {
-		case Variant::VECTOR2: {
-			Vector2 a = p_a;
-			Vector2 b = p_b;
-			Vector2 pa = p_pre_a;
-			Vector2 pb = p_post_b;
-
-			return a.cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
-		}
-		case Variant::RECT2: {
-			Rect2 a = p_a;
-			Rect2 b = p_b;
-			Rect2 pa = p_pre_a;
-			Rect2 pb = p_post_b;
-
-			return Rect2(
-					a.position.cubic_interpolate_in_time(b.position, pa.position, pb.position, p_c, p_b_t, p_pre_a_t, p_post_b_t),
-					a.size.cubic_interpolate_in_time(b.size, pa.size, pb.size, p_c, p_b_t, p_pre_a_t, p_post_b_t));
-		}
-		case Variant::VECTOR3: {
-			Vector3 a = p_a;
-			Vector3 b = p_b;
-			Vector3 pa = p_pre_a;
-			Vector3 pb = p_post_b;
-
-			return a.cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
-		}
-		case Variant::QUATERNION: {
-			Quaternion a = p_a;
-			Quaternion b = p_b;
-			Quaternion pa = p_pre_a;
-			Quaternion pb = p_post_b;
-
-			return a.spherical_cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
-		}
-		case Variant::AABB: {
-			AABB a = p_a;
-			AABB b = p_b;
-			AABB pa = p_pre_a;
-			AABB pb = p_post_b;
-
-			return AABB(
-					a.position.cubic_interpolate_in_time(b.position, pa.position, pb.position, p_c, p_b_t, p_pre_a_t, p_post_b_t),
-					a.size.cubic_interpolate_in_time(b.size, pa.size, pb.size, p_c, p_b_t, p_pre_a_t, p_post_b_t));
-		}
-		default: {
-			return _interpolate(p_a, p_b, p_c);
-		}
-	}
+	return cubic_interpolate_in_time_variant(p_pre_a, p_a, p_b, p_post_b, p_c, p_pre_a_t, p_b_t, p_post_b_t);
 }
 
 real_t Animation::_cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
@@ -2489,7 +2417,7 @@ Variant Animation::_cubic_interpolate_angle_in_time(const Variant &p_pre_a, cons
 		real_t pb = p_post_b;
 		return Math::fposmod((float)Math::cubic_interpolate_angle_in_time(a, b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t), (float)Math_TAU);
 	}
-	return _interpolate(p_a, p_b, p_c);
+	return _cubic_interpolate_in_time(p_pre_a, p_a, p_b, p_post_b, p_c, p_pre_a_t, p_b_t, p_post_b_t);
 }
 
 template <class T>
@@ -5972,8 +5900,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			return Variant();
 		} break;
 		case Variant::FLOAT: {
-			const double va = a.operator double();
-			return va + ((b.operator double()) - va) * c;
+			return Math::lerp(a.operator double(), b.operator double(), (double)c);
 		} break;
 		case Variant::VECTOR2: {
 			return (a.operator Vector2()).lerp(b.operator Vector2(), c);
@@ -5992,7 +5919,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 		case Variant::PLANE: {
 			const Plane pa = a.operator Plane();
 			const Plane pb = b.operator Plane();
-			return Plane(pa.normal.lerp(pb.normal, c), pa.d + (pb.d - pa.d) * c);
+			return Plane(pa.normal.lerp(pb.normal, c), Math::lerp((double)pa.d, (double)pb.d, (double)c));
 		} break;
 		case Variant::COLOR: {
 			return (a.operator Color()).lerp(b.operator Color(), c);
@@ -6092,6 +6019,194 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 						}
 						for (; i < max_size; i++) {
 							result[i] = interpolate_variant(lesser_last, arr_b[i], c);
+						}
+					}
+				}
+				return result;
+			}
+		} break;
+	}
+	return c < 0.5 ? a : b;
+}
+
+Variant Animation::cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element) {
+	if (pre_a.get_type() != a.get_type() || pre_a.get_type() != b.get_type() || pre_a.get_type() != post_b.get_type()) {
+		if (pre_a.is_num() && a.is_num() && b.is_num() && post_b.is_num()) {
+			return cubic_interpolate_in_time_variant(cast_to_blendwise(pre_a), cast_to_blendwise(a), cast_to_blendwise(b), cast_to_blendwise(post_b), c, p_pre_a_t, p_b_t, p_post_b_t, p_snap_array_element);
+		} else if (!a.is_array()) {
+			return a;
+		}
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		} break;
+		case Variant::FLOAT: {
+			return Math::cubic_interpolate_in_time(a.operator double(), b.operator double(), pre_a.operator double(), post_b.operator double(), (double)c, (double)p_pre_a_t, (double)p_b_t, (double)p_post_b_t);
+		} break;
+		case Variant::VECTOR2: {
+			return (a.operator Vector2()).cubic_interpolate_in_time(b.operator Vector2(), pre_a.operator Vector2(), post_b.operator Vector2(), c, p_b_t, p_pre_a_t, p_post_b_t);
+		} break;
+		case Variant::RECT2: {
+			const Rect2 rpa = pre_a.operator Rect2();
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			const Rect2 rpb = post_b.operator Rect2();
+			return Rect2(
+					ra.position.cubic_interpolate_in_time(rb.position, rpa.position, rpb.position, c, p_b_t, p_pre_a_t, p_post_b_t),
+					ra.size.cubic_interpolate_in_time(rb.size, rpa.size, rpb.size, c, p_b_t, p_pre_a_t, p_post_b_t));
+		} break;
+		case Variant::VECTOR3: {
+			return (a.operator Vector3()).cubic_interpolate_in_time(b.operator Vector3(), pre_a.operator Vector3(), post_b.operator Vector3(), c, p_b_t, p_pre_a_t, p_post_b_t);
+		} break;
+		case Variant::VECTOR4: {
+			return (a.operator Vector4()).cubic_interpolate_in_time(b.operator Vector4(), pre_a.operator Vector4(), post_b.operator Vector4(), c, p_b_t, p_pre_a_t, p_post_b_t);
+		} break;
+		case Variant::PLANE: {
+			const Plane ppa = pre_a.operator Plane();
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			const Plane ppb = post_b.operator Plane();
+			return Plane(
+					pa.normal.cubic_interpolate_in_time(pb.normal, ppa.normal, ppb.normal, c, p_b_t, p_pre_a_t, p_post_b_t),
+					Math::cubic_interpolate_in_time((double)pa.d, (double)pb.d, (double)ppa.d, (double)ppb.d, (double)c, (double)p_b_t, (double)p_pre_a_t, (double)p_post_b_t));
+		} break;
+		case Variant::COLOR: {
+			const Color cpa = pre_a.operator Color();
+			const Color ca = a.operator Color();
+			const Color cb = b.operator Color();
+			const Color cpb = post_b.operator Color();
+			return Color(
+					Math::cubic_interpolate_in_time((double)ca.r, (double)cb.r, (double)cpa.r, (double)cpb.r, (double)c, (double)p_pre_a_t, (double)p_b_t, (double)p_post_b_t),
+					Math::cubic_interpolate_in_time((double)ca.g, (double)cb.g, (double)cpa.g, (double)cpb.g, (double)c, (double)p_pre_a_t, (double)p_b_t, (double)p_post_b_t),
+					Math::cubic_interpolate_in_time((double)ca.b, (double)cb.b, (double)cpa.b, (double)cpb.b, (double)c, (double)p_pre_a_t, (double)p_b_t, (double)p_post_b_t),
+					Math::cubic_interpolate_in_time((double)ca.a, (double)cb.a, (double)cpa.a, (double)cpb.a, (double)c, (double)p_pre_a_t, (double)p_b_t, (double)p_post_b_t));
+		} break;
+		case Variant::AABB: {
+			const ::AABB apa = pre_a.operator ::AABB();
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			const ::AABB apb = post_b.operator ::AABB();
+			return AABB(
+					aa.position.cubic_interpolate_in_time(ab.position, apa.position, apb.position, c, p_b_t, p_pre_a_t, p_post_b_t),
+					aa.size.cubic_interpolate_in_time(ab.size, apa.size, apb.size, c, p_b_t, p_pre_a_t, p_post_b_t));
+		} break;
+		case Variant::BASIS: {
+			const Basis bpa = pre_a.operator Basis();
+			const Basis ba = a.operator Basis();
+			const Basis bb = b.operator Basis();
+			const Basis bpb = post_b.operator Basis();
+			return Basis(
+					ba.rows[0].cubic_interpolate_in_time(bb.rows[0], bpa.rows[0], bpb.rows[0], c, p_pre_a_t, p_b_t, p_post_b_t),
+					ba.rows[1].cubic_interpolate_in_time(bb.rows[1], bpa.rows[1], bpb.rows[1], c, p_pre_a_t, p_b_t, p_post_b_t),
+					ba.rows[2].cubic_interpolate_in_time(bb.rows[2], bpa.rows[2], bpb.rows[2], c, p_pre_a_t, p_b_t, p_post_b_t));
+		} break;
+		case Variant::QUATERNION: {
+			return (a.operator Quaternion()).spherical_cubic_interpolate_in_time(b.operator Quaternion(), pre_a.operator Quaternion(), post_b.operator Quaternion(), c, p_b_t, p_pre_a_t, p_post_b_t);
+		} break;
+		case Variant::TRANSFORM2D: {
+			const Transform2D tpa = pre_a.operator Transform2D();
+			const Transform2D ta = a.operator Transform2D();
+			const Transform2D tb = b.operator Transform2D();
+			const Transform2D tpb = post_b.operator Transform2D();
+			// TODO: May cause unintended skew, we needs spherical_cubic_interpolate_in_time() for angle and Transform2D::cubic_interpolate_with().
+			return Transform2D(
+					ta[0].cubic_interpolate_in_time(tb[0], tpa[0], tpb[0], c, p_pre_a_t, p_b_t, p_post_b_t),
+					ta[1].cubic_interpolate_in_time(tb[1], tpa[1], tpb[1], c, p_pre_a_t, p_b_t, p_post_b_t),
+					ta[2].cubic_interpolate_in_time(tb[2], tpa[2], tpb[2], c, p_pre_a_t, p_b_t, p_post_b_t));
+		} break;
+		case Variant::TRANSFORM3D: {
+			const Transform3D tpa = pre_a.operator Transform3D();
+			const Transform3D ta = a.operator Transform3D();
+			const Transform3D tb = b.operator Transform3D();
+			const Transform3D tpb = post_b.operator Transform3D();
+			// TODO: May cause unintended skew, we needs Transform3D::cubic_interpolate_with().
+			return Transform3D(
+					ta.basis.rows[0].cubic_interpolate_in_time(tb.basis.rows[0], tpa.basis.rows[0], tpb.basis.rows[0], c, p_pre_a_t, p_b_t, p_post_b_t),
+					ta.basis.rows[1].cubic_interpolate_in_time(tb.basis.rows[1], tpa.basis.rows[1], tpb.basis.rows[1], c, p_pre_a_t, p_b_t, p_post_b_t),
+					ta.basis.rows[2].cubic_interpolate_in_time(tb.basis.rows[2], tpa.basis.rows[2], tpb.basis.rows[2], c, p_pre_a_t, p_b_t, p_post_b_t),
+					ta.origin.cubic_interpolate_in_time(tb.origin, tpa.origin, tpb.origin, c, p_pre_a_t, p_b_t, p_post_b_t));
+		} break;
+		case Variant::BOOL:
+		case Variant::INT:
+		case Variant::RECT2I:
+		case Variant::VECTOR2I:
+		case Variant::VECTOR3I:
+		case Variant::VECTOR4I:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY: {
+			// Fallback the interpolatable value which needs casting.
+			return cast_from_blendwise(cubic_interpolate_in_time_variant(cast_to_blendwise(pre_a), cast_to_blendwise(a), cast_to_blendwise(b), cast_to_blendwise(post_b), c, p_pre_a_t, p_b_t, p_post_b_t, p_snap_array_element), a.get_type());
+		} break;
+		case Variant::STRING:
+		case Variant::STRING_NAME: {
+			// TODO:
+			// String interpolation works on both the character array size and the character code, to apply cubic interpolation neatly,
+			// we need to figure out how to interpolate well in cases where there are fewer than 4 keys. So, for now, fallback to linear interpolation.
+			return interpolate_variant(a, b, c);
+		} break;
+		case Variant::PACKED_BYTE_ARRAY: {
+			// Skip.
+		} break;
+		default: {
+			if (a.is_array()) {
+				const Array arr_pa = pre_a.operator Array();
+				const Array arr_a = a.operator Array();
+				const Array arr_b = b.operator Array();
+				const Array arr_pb = post_b.operator Array();
+
+				int min_size = arr_a.size();
+				int max_size = arr_b.size();
+				bool is_a_larger = inform_variant_array(min_size, max_size);
+
+				Array result;
+				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Variant());
+				result.resize(min_size);
+
+				if (min_size == 0 && max_size == 0) {
+					return result;
+				}
+
+				Variant vz;
+				if (is_a_larger) {
+					vz = arr_a[0];
+				} else {
+					vz = arr_b[0];
+				}
+				vz.zero();
+				Variant pre_last = arr_pa.size() ? arr_pa[arr_pa.size() - 1] : vz;
+				Variant post_last = arr_pb.size() ? arr_pb[arr_pb.size() - 1] : vz;
+
+				int i = 0;
+				for (; i < min_size; i++) {
+					result[i] = cubic_interpolate_in_time_variant(i >= arr_pa.size() ? pre_last : arr_pa[i], arr_a[i], arr_b[i], i >= arr_pb.size() ? post_last : arr_pb[i], c, p_pre_a_t, p_b_t, p_post_b_t);
+				}
+				if (min_size != max_size) {
+					// Process with last element of the lesser array.
+					// This is pretty funny and bizarre, but artists like to use it for polygon animation.
+					Variant lesser_last = vz;
+					if (is_a_larger && !Math::is_equal_approx(c, 1.0f)) {
+						result.resize(max_size);
+						if (p_snap_array_element) {
+							c = 0;
+						}
+						if (i > 0) {
+							lesser_last = arr_b[i - 1];
+						}
+						for (; i < max_size; i++) {
+							result[i] = cubic_interpolate_in_time_variant(i >= arr_pa.size() ? pre_last : arr_pa[i], arr_a[i], lesser_last, i >= arr_pb.size() ? post_last : arr_pb[i], c, p_pre_a_t, p_b_t, p_post_b_t);
+						}
+					} else if (!is_a_larger && !Math::is_zero_approx(c)) {
+						result.resize(max_size);
+						if (p_snap_array_element) {
+							c = 1;
+						}
+						if (i > 0) {
+							lesser_last = arr_a[i - 1];
+						}
+						for (; i < max_size; i++) {
+							result[i] = cubic_interpolate_in_time_variant(i >= arr_pa.size() ? pre_last : arr_pa[i], lesser_last, arr_b[i], i >= arr_pb.size() ? post_last : arr_pb[i], c, p_pre_a_t, p_b_t, p_post_b_t);
 						}
 					}
 				}
