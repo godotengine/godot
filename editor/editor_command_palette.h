@@ -77,8 +77,6 @@ class EditorCommandPalette : public ConfirmationDialog {
 	HashMap<String, Command> commands;
 	HashMap<String, Pair<String, Ref<Shortcut>>> unregistered_shortcuts;
 
-	List<String> command_keys;
-
 	void _update_command_search(const String &search_text);
 	float _score_path(const String &p_search, const String &p_path);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
