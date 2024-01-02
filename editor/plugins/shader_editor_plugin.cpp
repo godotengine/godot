@@ -84,7 +84,8 @@ void ShaderEditorPlugin::_update_shader_list() {
 		Ref<Texture2D> icon = shader_list->get_editor_theme_icon(_class);
 
 		shader_list->add_item(text, icon);
-		shader_list->set_item_tooltip(shader_list->get_item_count() - 1, path);
+		shader_list->set_item_tooltip(-1, path);
+		edited_shader.name = text;
 	}
 
 	if (shader_tabs->get_tab_count()) {
@@ -292,11 +293,6 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 }
 
 String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
-	if (!p_for_scene.is_empty()) {
-		// TODO: handle built-in shaders.
-		return String();
-	}
-
 	// TODO: This should also include visual shaders and shader includes, but save_external_data() doesn't seem to save them...
 	PackedStringArray unsaved_shaders;
 	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
@@ -305,10 +301,30 @@ String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 				if (unsaved_shaders.is_empty()) {
 					unsaved_shaders.append(TTR("Save changes to the following shaders(s) before quitting?"));
 				}
-				unsaved_shaders.append(edited_shaders[i].shader_editor->get_name());
+				unsaved_shaders.append(edited_shaders[i].name.trim_suffix("(*)"));
 			}
 		}
 	}
+
+	if (!p_for_scene.is_empty()) {
+		PackedStringArray unsaved_built_in_shaders;
+
+		const String scene_file = p_for_scene.get_file();
+		for (const String &E : unsaved_shaders) {
+			if (!E.is_resource_file() && E.contains(scene_file)) {
+				if (unsaved_built_in_shaders.is_empty()) {
+					unsaved_built_in_shaders.append(TTR("There are unsaved changes in the following built-in shaders(s):"));
+				}
+				unsaved_built_in_shaders.append(E);
+			}
+		}
+
+		if (!unsaved_built_in_shaders.is_empty()) {
+			return String("\n").join(unsaved_built_in_shaders);
+		}
+		return String();
+	}
+
 	return String("\n").join(unsaved_shaders);
 }
 
