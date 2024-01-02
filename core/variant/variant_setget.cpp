@@ -30,6 +30,8 @@
 
 #include "variant_setget.h"
 
+#include "variant_callable.h"
+
 struct VariantSetterGetterInfo {
 	void (*setter)(Variant *base, const Variant *value, bool &valid);
 	void (*getter)(const Variant *base, Variant *value);
@@ -264,42 +266,45 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 }
 
 Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
-	Variant ret;
 	uint32_t s = variant_setters_getters[type].size();
 	if (s) {
 		for (uint32_t i = 0; i < s; i++) {
 			if (variant_setters_getters_names[type][i] == p_member) {
+				Variant ret;
 				variant_setters_getters[type][i].getter(this, &ret);
 				r_valid = true;
 				return ret;
 			}
 		}
-
-		r_valid = false;
-
-	} else if (type == Variant::OBJECT) {
-		Object *obj = get_validated_object();
-		if (!obj) {
-			r_valid = false;
-			return "Instance base is null.";
-		} else {
-			return obj->get(p_member, &r_valid);
-		}
-	} else if (type == Variant::DICTIONARY) {
-		const Variant *v = VariantGetInternalPtr<Dictionary>::get_ptr(this)->getptr(p_member);
-		if (v) {
-			r_valid = true;
-
-			return *v;
-		} else {
-			r_valid = false;
-		}
-
-	} else {
-		r_valid = false;
 	}
 
-	return ret;
+	switch (type) {
+		case Variant::OBJECT: {
+			Object *obj = get_validated_object();
+			if (!obj) {
+				r_valid = false;
+				return "Instance base is null.";
+			} else {
+				return obj->get(p_member, &r_valid);
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			const Variant *v = VariantGetInternalPtr<Dictionary>::get_ptr(this)->getptr(p_member);
+			if (v) {
+				r_valid = true;
+				return *v;
+			}
+		} break;
+		default: {
+			if (Variant::has_builtin_method(type, p_member)) {
+				r_valid = true;
+				return Callable(memnew(VariantCallable(*this, p_member)));
+			}
+		} break;
+	}
+
+	r_valid = false;
+	return Variant();
 }
 
 /**** INDEXED SETTERS AND GETTERS ****/
