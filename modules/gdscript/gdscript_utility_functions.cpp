@@ -470,7 +470,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void len(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 		switch (p_args[0]->get_type()) {
-			case Variant::STRING: {
+			case Variant::STRING:
+			case Variant::STRING_NAME: {
 				String d = *p_args[0];
 				*r_ret = d.length();
 			} break;
