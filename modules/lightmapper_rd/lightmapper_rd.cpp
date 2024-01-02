@@ -756,7 +756,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	rd->compute_list_bind_uniform_set(compute_list, dilate_uniform_set, 1);
 	push_constant.region_ofs[0] = 0;
 	push_constant.region_ofs[1] = 0;
-	Vector3i group_size((atlas_size.x - 1) / 8 + 1, (atlas_size.y - 1) / 8 + 1, 1); //restore group size
+	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1); //restore group size
 
 	for (int i = 0; i < atlas_slices; i++) {
 		push_constant.atlas_slice = i;
@@ -939,8 +939,8 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	// We use a region with 1/4 the amount of pixels if we're denoising SH lightmaps, as
 	// all four of them are denoised in the shader in one dispatch.
 	const int max_region_size = p_bake_sh ? 512 : 1024;
-	int x_regions = (p_atlas_size.width - 1) / max_region_size + 1;
-	int y_regions = (p_atlas_size.height - 1) / max_region_size + 1;
+	int x_regions = Math::division_round_up(p_atlas_size.width, max_region_size);
+	int y_regions = Math::division_round_up(p_atlas_size.height, max_region_size);
 	for (int s = 0; s < p_atlas_slices; s++) {
 		p_push_constant.atlas_slice = s;
 
@@ -958,7 +958,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 				p_rd->compute_list_bind_uniform_set(compute_list, p_compute_base_uniform_set, 0);
 				p_rd->compute_list_bind_uniform_set(compute_list, denoise_uniform_set, 1);
 				p_rd->compute_list_set_push_constant(compute_list, &p_push_constant, sizeof(PushConstant));
-				p_rd->compute_list_dispatch(compute_list, (w - 1) / 8 + 1, (h - 1) / 8 + 1, 1);
+				p_rd->compute_list_dispatch(compute_list, Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
 				p_rd->compute_list_end();
 
 				p_rd->submit();
@@ -1399,7 +1399,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free(compute_shader_secondary); \
 	rd->free(compute_shader_light_probes);
 
-	Vector3i group_size((atlas_size.x - 1) / 8 + 1, (atlas_size.y - 1) / 8 + 1, 1);
+	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1);
 	rd->submit();
 	rd->sync();
 
@@ -1592,10 +1592,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
 		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
 
-		int x_regions = (atlas_size.width - 1) / max_region_size + 1;
-		int y_regions = (atlas_size.height - 1) / max_region_size + 1;
+		int x_regions = Math::division_round_up(atlas_size.width, max_region_size);
+		int y_regions = Math::division_round_up(atlas_size.height, max_region_size);
 
-		int ray_iterations = (push_constant.ray_count - 1) / max_rays + 1;
+		int ray_iterations = Math::division_round_up((int32_t)push_constant.ray_count, max_rays);
 
 		rd->submit();
 		rd->sync();
@@ -1614,7 +1614,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					push_constant.region_ofs[0] = x;
 					push_constant.region_ofs[1] = y;
 
-					group_size = Vector3i((w - 1) / 8 + 1, (h - 1) / 8 + 1, 1);
+					group_size = Vector3i(Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
 
 					for (int k = 0; k < ray_iterations; k++) {
 						RD::ComputeListID compute_list = rd->compute_list_begin();
@@ -1700,7 +1700,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		push_constant.probe_count = probe_positions.size();
 
 		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_probe_pass");
-		int ray_iterations = (push_constant.ray_count - 1) / max_rays + 1;
+		int ray_iterations = Math::division_round_up((int32_t)push_constant.ray_count, max_rays);
 
 		for (int i = 0; i < ray_iterations; i++) {
 			RD::ComputeListID compute_list = rd->compute_list_begin();
@@ -1711,7 +1711,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			push_constant.ray_from = i * max_rays;
 			push_constant.ray_to = MIN((i + 1) * max_rays, int32_t(push_constant.ray_count));
 			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, (probe_positions.size() - 1) / 64 + 1, 1, 1);
+			rd->compute_list_dispatch(compute_list, Math::division_round_up(probe_positions.size(), 64), 1, 1);
 
 			rd->compute_list_end(); //done
 			rd->submit();

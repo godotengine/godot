@@ -194,9 +194,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 				// Calculate how many.
 				int count = 0;
 				if (incr > 0) {
-					count = ((to - from - 1) / incr) + 1;
+					count = Math::division_round_up(to - from, incr);
 				} else {
-					count = ((from - to - 1) / -incr) + 1;
+					count = Math::division_round_up(from - to, -incr);
 				}
 
 				Error err = arr.resize(count);
