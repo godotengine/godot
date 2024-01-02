@@ -360,6 +360,8 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
 	}
 
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+
 	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
 	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
 
