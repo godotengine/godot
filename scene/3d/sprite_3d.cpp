@@ -1374,7 +1374,7 @@ void AnimatedSprite3D::get_argument_options(const StringName &p_function, int p_
 			}
 		}
 	}
-	Node::get_argument_options(p_function, p_idx, r_options);
+	SpriteBase3D::get_argument_options(p_function, p_idx, r_options);
 }
 
 #ifndef DISABLE_DEPRECATED
