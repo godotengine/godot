@@ -412,7 +412,7 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	}
 
 	if (get_current_animation() != p_name) {
-		_clear_caches();
+		_clear_playing_caches();
 	}
 
 	c.current.from = &animation_set[name];
