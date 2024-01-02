@@ -205,7 +205,7 @@ void Control::set_root_layout_direction(int p_root_dir) {
 
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	ERR_READ_THREAD_GUARD;
-	Node::get_argument_options(p_function, p_idx, r_options);
+	CanvasItem::get_argument_options(p_function, p_idx, r_options);
 
 	if (p_idx == 0) {
 		List<StringName> sn;

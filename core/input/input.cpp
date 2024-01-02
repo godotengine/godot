@@ -198,6 +198,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 			r_options->push_back(name.quote());
 		}
 	}
+	Object::get_argument_options(p_function, p_idx, r_options);
 }
 
 void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
