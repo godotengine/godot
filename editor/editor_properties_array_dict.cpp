@@ -202,22 +202,16 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
 	}
 
-	int index;
-	if (p_property.begins_with("metadata/")) {
-		index = p_property.get_slice("/", 2).to_int();
-	} else {
-		index = p_property.get_slice("/", 1).to_int();
-	}
+	int index = p_property.get_slice("/", 1).to_int();
 
 	Variant array = object->get_array().duplicate();
 	array.set(index, p_value);
-	object->set_array(array);
-	emit_changed(get_edited_property(), array, "", true);
+	emit_changed(get_edited_property(), array, p_name, p_changing);
 }
 
-void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
+void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
 	Button *button = Object::cast_to<Button>(p_button);
-	changing_type_index = p_index;
+	changing_type_index = slots[p_slot_index].index;
 	Rect2 rect = button->get_screen_rect();
 	change_type->reset_size();
 	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
@@ -242,6 +236,48 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 
 void EditorPropertyArray::_object_id_selected(const StringName &p_property, ObjectID p_id) {
 	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
+void EditorPropertyArray::create_new_property_slot() {
+	int idx = slots.size();
+	HBoxContainer *hbox = memnew(HBoxContainer);
+
+	Button *reorder_button = memnew(Button);
+	reorder_button->set_icon(get_editor_theme_icon(SNAME("TripleBar")));
+	reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
+	reorder_button->set_disabled(is_read_only());
+	reorder_button->connect(SNAME("gui_input"), callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
+	reorder_button->connect(SNAME("button_up"), callable_mp(this, &EditorPropertyArray::_reorder_button_up));
+	reorder_button->connect(SNAME("button_down"), callable_mp(this, &EditorPropertyArray::_reorder_button_down).bind(idx));
+
+	hbox->add_child(reorder_button);
+	EditorProperty *prop = memnew(EditorPropertyNil);
+	hbox->add_child(prop);
+
+	bool is_untyped_array = object->get_array().get_type() == Variant::ARRAY && subtype == Variant::NIL;
+
+	if (is_untyped_array) {
+		Button *edit_btn = memnew(Button);
+		edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+		edit_btn->set_disabled(is_read_only());
+		edit_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, idx));
+		hbox->add_child(edit_btn);
+	} else {
+		Button *remove_btn = memnew(Button);
+		remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+		remove_btn->set_disabled(is_read_only());
+		remove_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(idx));
+		hbox->add_child(remove_btn);
+	}
+	property_vbox->add_child(hbox);
+
+	Slot slot;
+	slot.prop = prop;
+	slot.object = object;
+	slot.container = hbox;
+	slot.reorder_button = reorder_button;
+	slot.set_index(idx + page_index * page_length);
+	slots.push_back(slot);
 }
 
 void EditorPropertyArray::update_property() {
@@ -276,7 +312,6 @@ void EditorPropertyArray::update_property() {
 	int size = array.call("size");
 	int max_page = MAX(0, size - 1) / page_length;
 	page_index = MIN(page_index, max_page);
-	int offset = page_index * page_length;
 
 	edit->set_text(vformat(TTR("%s (size %s)"), array_type_name, itos(size)));
 
@@ -326,16 +361,9 @@ void EditorPropertyArray::update_property() {
 			paginator = memnew(EditorPaginator);
 			paginator->connect("page_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
 			vbox->add_child(paginator);
-		} else {
-			// Bye bye children of the box.
-			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				Node *child = property_vbox->get_child(i);
-				if (child == reorder_selected_element_hbox) {
-					continue; // Don't remove the property that the user is moving.
-				}
 
-				child->queue_free(); // Button still needed after pressed is called.
-				property_vbox->remove_child(child);
+			for (int i = 0; i < page_length; i++) {
+				create_new_property_slot();
 			}
 		}
 
@@ -345,81 +373,46 @@ void EditorPropertyArray::update_property() {
 		paginator->update(page_index, max_page);
 		paginator->set_visible(max_page > 0);
 
-		int amount = MIN(size - offset, page_length);
-		for (int i = 0; i < amount; i++) {
-			bool reorder_is_from_current_page = reorder_from_index / page_length == page_index;
-			if (reorder_is_from_current_page && i == reorder_from_index % page_length) {
-				// Don't duplicate the property that the user is moving.
-				continue;
-			}
-			if (!reorder_is_from_current_page && i == reorder_to_index % page_length) {
-				// Don't create the property the moving property will take the place of,
-				// e.g. (if page_length == 20) don't create element 20 if dragging an item from
-				// the first page to the second page because element 20 would become element 19.
+		for (Slot &slot : slots) {
+			bool slot_visible = &slot != &reorder_slot && slot.index < size;
+			slot.container->set_visible(slot_visible);
+			// If not visible no need to update it
+			if (!slot_visible) {
 				continue;
 			}
 
-			HBoxContainer *hbox = memnew(HBoxContainer);
-			property_vbox->add_child(hbox);
+			int idx = slot.index;
+			Variant::Type value_type = subtype;
 
-			Button *reorder_button = memnew(Button);
-			reorder_button->set_icon(get_editor_theme_icon(SNAME("TripleBar")));
-			reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
-			reorder_button->set_disabled(is_read_only());
-			reorder_button->connect("gui_input", callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
-			reorder_button->connect("button_down", callable_mp(this, &EditorPropertyArray::_reorder_button_down).bind(i + offset));
-			reorder_button->connect("button_up", callable_mp(this, &EditorPropertyArray::_reorder_button_up));
-			hbox->add_child(reorder_button);
-
-			String prop_name = "indices/" + itos(i + offset);
-
-			EditorProperty *prop = nullptr;
-			Variant value = array.get(i + offset);
-			Variant::Type value_type = value.get_type();
-
-			if (value_type == Variant::NIL && subtype != Variant::NIL) {
-				value_type = subtype;
+			if (value_type == Variant::NIL) {
+				value_type = array.get(idx).get_type();
 			}
 
-			if (value_type == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(value)) {
-				EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
-				editor->setup("Object");
-				prop = editor;
-			} else {
-				prop = EditorInspector::instantiate_property_editor(nullptr, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
+			// Check if the editor property needs to be updated.
+			bool value_as_id = Object::cast_to<EncodedObjectAsID>(array.get(idx));
+			if (value_type != slot.type || (value_type == Variant::OBJECT && (value_as_id != slot.as_id))) {
+				slot.as_id = value_as_id;
+				slot.type = value_type;
+				EditorProperty *new_prop = nullptr;
+				if (value_type == Variant::OBJECT && value_as_id) {
+					EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+					editor->setup("Object");
+					new_prop = editor;
+				} else {
+					new_prop = EditorInspector::instantiate_property_editor(nullptr, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
+				}
+				new_prop->set_selectable(false);
+				new_prop->set_use_folding(is_using_folding());
+				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
+				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
+				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				new_prop->set_read_only(is_read_only());
+				slot.prop->call_deferred("add_sibling", new_prop);
+				slot.prop->call_deferred("queue_free");
+				slot.prop = new_prop;
+				slot.set_index(idx);
 			}
-
-			prop->set_object_and_property(object.ptr(), prop_name);
-			prop->set_label(itos(i + offset));
-			prop->set_selectable(false);
-			prop->set_use_folding(is_using_folding());
-			prop->connect("property_changed", callable_mp(this, &EditorPropertyArray::_property_changed));
-			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyArray::_object_id_selected));
-			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			prop->set_read_only(is_read_only());
-			hbox->add_child(prop);
-
-			bool is_untyped_array = array.get_type() == Variant::ARRAY && subtype == Variant::NIL;
-
-			if (is_untyped_array) {
-				Button *edit_btn = memnew(Button);
-				edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
-				hbox->add_child(edit_btn);
-				edit_btn->set_disabled(is_read_only());
-				edit_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, i + offset));
-			} else {
-				Button *remove_btn = memnew(Button);
-				remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
-				remove_btn->set_disabled(is_read_only());
-				remove_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(i + offset));
-				hbox->add_child(remove_btn);
-			}
-
-			prop->update_property();
-		}
-
-		if (reorder_to_index % page_length > 0) {
-			property_vbox->move_child(property_vbox->get_child(0), reorder_to_index % page_length);
+			slot.prop->update_property();
 		}
 
 		updating = false;
@@ -430,13 +423,14 @@ void EditorPropertyArray::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			slots.clear();
 		}
 	}
 }
 
-void EditorPropertyArray::_remove_pressed(int p_index) {
+void EditorPropertyArray::_remove_pressed(int p_slot_index) {
 	Variant array = object->get_array().duplicate();
-	array.call("remove_at", p_index);
+	array.call("remove_at", slots[p_slot_index].index);
 
 	emit_changed(get_edited_property(), array, "", false);
 	update_property();
@@ -579,6 +573,27 @@ void EditorPropertyArray::_page_changed(int p_page) {
 		return;
 	}
 	page_index = p_page;
+	int i = p_page * page_length;
+
+	if (reorder_slot.index < 0) {
+		for (Slot &slot : slots) {
+			slot.set_index(i);
+			i++;
+		}
+	} else {
+		int reorder_from_page = reorder_slot.index / page_length;
+		if (reorder_from_page < p_page) {
+			i++;
+		}
+		for (Slot &slot : slots) {
+			if (slot.index != reorder_slot.index) {
+				slot.set_index(i);
+				i++;
+			} else if (i == reorder_slot.index) {
+				i++;
+			}
+		}
+	}
 	update_property();
 }
 
@@ -620,7 +635,7 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 }
 
 void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_event) {
-	if (reorder_from_index < 0 || is_read_only()) {
+	if (reorder_slot.index < 0 || is_read_only()) {
 		return;
 	}
 
@@ -645,26 +660,25 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 			reorder_mouse_y_delta -= required_y_distance * direction;
 
 			reorder_to_index += direction;
+
+			property_vbox->move_child(reorder_slot.container, reorder_to_index % page_length);
+
 			if ((direction < 0 && reorder_to_index % page_length == page_length - 1) || (direction > 0 && reorder_to_index % page_length == 0)) {
 				// Automatically move to the next/previous page.
 				_page_changed(page_index + direction);
 			}
-			property_vbox->move_child(reorder_selected_element_hbox, reorder_to_index % page_length);
 			// Ensure the moving element is visible.
-			InspectorDock::get_inspector_singleton()->ensure_control_visible(reorder_selected_element_hbox);
+			InspectorDock::get_inspector_singleton()->ensure_control_visible(reorder_slot.container);
 		}
 	}
 }
 
-void EditorPropertyArray::_reorder_button_down(int p_index) {
+void EditorPropertyArray::_reorder_button_down(int p_slot_index) {
 	if (is_read_only()) {
 		return;
 	}
-
-	reorder_from_index = p_index;
-	reorder_to_index = p_index;
-	reorder_selected_element_hbox = Object::cast_to<HBoxContainer>(property_vbox->get_child(p_index % page_length));
-	reorder_selected_button = Object::cast_to<Button>(reorder_selected_element_hbox->get_child(0));
+	reorder_slot = slots[p_slot_index];
+	reorder_to_index = reorder_slot.index;
 	// Ideally it'd to be able to show the mouse but I had issues with
 	// Control's `mouse_exit()`/`mouse_entered()` signals not getting called.
 	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
@@ -675,29 +689,27 @@ void EditorPropertyArray::_reorder_button_up() {
 		return;
 	}
 
-	if (reorder_from_index != reorder_to_index) {
+	if (reorder_slot.index != reorder_to_index) {
 		// Move the element.
 		Variant array = object->get_array().duplicate();
 
-		Variant value_to_move = array.get(reorder_from_index);
-		array.call("remove_at", reorder_from_index);
+		property_vbox->move_child(reorder_slot.container, reorder_slot.index % page_length);
+		Variant value_to_move = array.get(reorder_slot.index);
+		array.call("remove_at", reorder_slot.index);
 		array.call("insert", reorder_to_index, value_to_move);
 
+		reorder_slot.index = reorder_slot.index % page_length + page_index * page_length;
 		emit_changed(get_edited_property(), array, "", false);
-		update_property();
 	}
-
-	reorder_from_index = -1;
-	reorder_to_index = -1;
-	reorder_mouse_y_delta = 0.0f;
 
 	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 
-	ERR_FAIL_NULL(reorder_selected_button);
-	reorder_selected_button->warp_mouse(reorder_selected_button->get_size() / 2.0f);
-
-	reorder_selected_element_hbox = nullptr;
-	reorder_selected_button = nullptr;
+	ERR_FAIL_NULL(reorder_slot.reorder_button);
+	reorder_slot.reorder_button->warp_mouse(reorder_slot.reorder_button->get_size() / 2.0f);
+	reorder_to_index = -1;
+	reorder_mouse_y_delta = 0.0f;
+	reorder_slot = Slot();
+	_page_changed(page_index);
 }
 
 void EditorPropertyArray::_bind_methods() {
