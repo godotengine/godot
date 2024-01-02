@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "input_event.h"
+#include "input_event.compat.inc"
 
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
@@ -1785,11 +1786,11 @@ int InputEventMIDI::get_channel() const {
 	return channel;
 }
 
-void InputEventMIDI::set_message(const MIDIMessage p_message) {
+void InputEventMIDI::set_message(const Message p_message) {
 	message = p_message;
 }
 
-MIDIMessage InputEventMIDI::get_message() const {
+InputEventMIDI::Message InputEventMIDI::get_message() const {
 	return message;
 }
 
@@ -1848,19 +1849,19 @@ String InputEventMIDI::as_text() const {
 String InputEventMIDI::to_string() {
 	String ret;
 	switch (message) {
-		case MIDIMessage::NOTE_ON:
+		case Message::MESSAGE_NOTE_ON:
 			ret = vformat("Note On: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
 			break;
-		case MIDIMessage::NOTE_OFF:
+		case Message::MESSAGE_NOTE_OFF:
 			ret = vformat("Note Off: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
 			break;
-		case MIDIMessage::PITCH_BEND:
+		case Message::MESSAGE_PITCH_BEND:
 			ret = vformat("Pitch Bend: channel=%d, pitch=%d", channel, pitch);
 			break;
-		case MIDIMessage::CHANNEL_PRESSURE:
+		case Message::MESSAGE_CHANNEL_PRESSURE:
 			ret = vformat("Channel Pressure: channel=%d, pressure=%d", channel, pressure);
 			break;
-		case MIDIMessage::CONTROL_CHANGE:
+		case Message::MESSAGE_CONTROL_CHANGE:
 			ret = vformat("Control Change: channel=%d, controller_number=%d, controller_value=%d", channel, controller_number, controller_value);
 			break;
 		default:
@@ -1886,6 +1887,26 @@ void InputEventMIDI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_controller_number"), &InputEventMIDI::get_controller_number);
 	ClassDB::bind_method(D_METHOD("set_controller_value", "controller_value"), &InputEventMIDI::set_controller_value);
 	ClassDB::bind_method(D_METHOD("get_controller_value"), &InputEventMIDI::get_controller_value);
+
+	BIND_ENUM_CONSTANT(MESSAGE_NONE);
+	BIND_ENUM_CONSTANT(MESSAGE_NOTE_OFF);
+	BIND_ENUM_CONSTANT(MESSAGE_NOTE_ON);
+	BIND_ENUM_CONSTANT(MESSAGE_AFTERTOUCH);
+	BIND_ENUM_CONSTANT(MESSAGE_CONTROL_CHANGE);
+	BIND_ENUM_CONSTANT(MESSAGE_PROGRAM_CHANGE);
+	BIND_ENUM_CONSTANT(MESSAGE_CHANNEL_PRESSURE);
+	BIND_ENUM_CONSTANT(MESSAGE_PITCH_BEND);
+	BIND_ENUM_CONSTANT(MESSAGE_SYSTEM_EXCLUSIVE);
+	BIND_ENUM_CONSTANT(MESSAGE_QUARTER_FRAME);
+	BIND_ENUM_CONSTANT(MESSAGE_SONG_POSITION_POINTER);
+	BIND_ENUM_CONSTANT(MESSAGE_SONG_SELECT);
+	BIND_ENUM_CONSTANT(MESSAGE_TUNE_REQUEST);
+	BIND_ENUM_CONSTANT(MESSAGE_TIMING_CLOCK);
+	BIND_ENUM_CONSTANT(MESSAGE_START);
+	BIND_ENUM_CONSTANT(MESSAGE_CONTINUE);
+	BIND_ENUM_CONSTANT(MESSAGE_STOP);
+	BIND_ENUM_CONSTANT(MESSAGE_ACTIVE_SENSING);
+	BIND_ENUM_CONSTANT(MESSAGE_SYSTEM_RESET);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel"), "set_channel", "get_channel");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "message"), "set_message", "get_message");

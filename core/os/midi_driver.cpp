@@ -111,7 +111,7 @@ void MIDIDriver::send_event(int p_device_index, uint8_t p_status,
 	event.instantiate();
 	event->set_device(p_device_index);
 	event->set_channel(Parser::channel(p_status));
-	event->set_message(msg);
+	event->set_message(InputEventMIDI::Message(msg));
 	switch (msg) {
 		case MIDIMessage::NOTE_OFF:
 		case MIDIMessage::NOTE_ON:
