@@ -2073,7 +2073,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						Window *w = Object::cast_to<Window>(ObjectDB::get_instance(object_under));
 						if (w) {
 							viewport_under = w;
-							viewport_pos = screen_mouse_pos - w->get_position();
+							viewport_pos = w->get_final_transform().affine_inverse().xform(screen_mouse_pos - w->get_position());
 						}
 					}
 				}
