@@ -6,12 +6,12 @@
 	<description>
 		InputEventMIDI allows receiving input events from MIDI (Musical Instrument Digital Interface) devices such as a piano.
 		MIDI signals can be sent over a 5-pin MIDI connector or over USB, if your device supports both be sure to check the settings in the device to see which output it's using.
-		To receive input events from MIDI devices, you need to call [method OS.open_midi_inputs]. You can check which devices are detected using [method OS.get_connected_midi_inputs].
+		To receive input events from MIDI devices, you need to call [method open_inputs]. You can check which devices are detected using [method get_connected_inputs].
 		[codeblocks]
 		[gdscript]
 		func _ready():
-		    OS.open_midi_inputs()
-		    print(OS.get_connected_midi_inputs())
+		    InputEventMIDI.open_inputs()
+		    print(InputEventMIDI.get_connected_inputs())
 
 		func _input(input_event):
 		    if input_event is InputEventMIDI:
@@ -31,8 +31,8 @@
 		[csharp]
 		public override void _Ready()
 		{
-		    OS.OpenMidiInputs();
-		    GD.Print(OS.GetConnectedMidiInputs());
+		    InputEventMIDI.OpenInputs();
+		    GD.Print(InputEventMIDI.GetConnectedInputs());
 		}
 
 		public override void _Input(InputEvent @event)
@@ -64,24 +64,48 @@
 		<link title="Wikipedia General MIDI Instrument List">https://en.wikipedia.org/wiki/General_MIDI#Program_change_events</link>
 		<link title="Wikipedia Piano Key Frequencies List">https://en.wikipedia.org/wiki/Piano_key_frequencies#List</link>
 	</tutorials>
+	<methods>
+		<method name="close_inputs" qualifiers="static">
+			<return type="void" />
+			<description>
+				Shuts down system MIDI driver.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_connected_inputs" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of MIDI device names.
+				The returned array will be empty if the system MIDI driver has not previously been initialized with [method open_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="open_inputs" qualifiers="static">
+			<return type="void" />
+			<description>
+				Initializes the singleton for the system MIDI driver.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="channel" type="int" setter="set_channel" getter="get_channel" default="0">
 			The MIDI channel of this input event. There are 16 channels, so this value ranges from 0 to 15. MIDI channel 9 is reserved for the use with percussion instruments, the rest of the channels are for non-percussion instruments.
 		</member>
 		<member name="controller_number" type="int" setter="set_controller_number" getter="get_controller_number" default="0">
-			If the message is [constant MIDI_MESSAGE_CONTROL_CHANGE], this indicates the controller number, otherwise this is zero. Controllers include devices such as pedals and levers.
+			If the message is [constant MESSAGE_CONTROL_CHANGE], this indicates the controller number, otherwise this is zero. Controllers include devices such as pedals and levers.
 		</member>
 		<member name="controller_value" type="int" setter="set_controller_value" getter="get_controller_value" default="0">
-			If the message is [constant MIDI_MESSAGE_CONTROL_CHANGE], this indicates the controller value, otherwise this is zero. Controllers include devices such as pedals and levers.
+			If the message is [constant MESSAGE_CONTROL_CHANGE], this indicates the controller value, otherwise this is zero. Controllers include devices such as pedals and levers.
 		</member>
 		<member name="instrument" type="int" setter="set_instrument" getter="get_instrument" default="0">
 			The instrument of this input event. This value ranges from 0 to 127. Refer to the instrument list on the General MIDI wikipedia article to see a list of instruments, except that this value is 0-index, so subtract one from every number on that chart. A standard piano will have an instrument number of 0.
 		</member>
-		<member name="message" type="int" setter="set_message" getter="get_message" enum="MIDIMessage" default="0">
-			Returns a value indicating the type of message for this MIDI signal. This is a member of the [enum MIDIMessage] enum.
+		<member name="message" type="int" setter="set_message" getter="get_message" enum="Message" default="0">
+			Returns a value indicating the type of message for this MIDI signal. This is a member of the [enum Message] enum.
 			For MIDI messages between 0x80 and 0xEF, only the left half of the bits are returned as this value, as the other part is the channel (ex: 0x94 becomes 0x9). For MIDI messages from 0xF0 to 0xFF, the value is returned as-is.
-			Notes will return [constant MIDI_MESSAGE_NOTE_ON] when activated, but they might not always return [constant MIDI_MESSAGE_NOTE_OFF] when deactivated, therefore your code should treat the input as stopped if some period of time has passed.
-			Some MIDI devices may send [constant MIDI_MESSAGE_NOTE_ON] with zero velocity instead of [constant MIDI_MESSAGE_NOTE_OFF].
+			Notes will return [constant MESSAGE_NOTE_ON] when activated, but they might not always return [constant MESSAGE_NOTE_OFF] when deactivated, therefore your code should treat the input as stopped if some period of time has passed.
+			Some MIDI devices may send [constant MESSAGE_NOTE_ON] with zero velocity instead of [constant MESSAGE_NOTE_OFF].
 			For more information, see the note in [member velocity] and the MIDI message status byte list chart linked above.
 		</member>
 		<member name="pitch" type="int" setter="set_pitch" getter="get_pitch" default="0">
@@ -92,7 +116,66 @@
 		</member>
 		<member name="velocity" type="int" setter="set_velocity" getter="get_velocity" default="0">
 			The velocity of the MIDI signal. This value ranges from 0 to 127. For a piano, this corresponds to how quickly the key was pressed, and is rarely above about 110 in practice.
-			[b]Note:[/b] Some MIDI devices may send a [constant MIDI_MESSAGE_NOTE_ON] message with zero velocity and expect this to be treated the same as a [constant MIDI_MESSAGE_NOTE_OFF] message, but device implementations vary so Godot reports event data exactly as received. Depending on the hardware and the needs of the game/app, this MIDI quirk can be handled robustly with a couple lines of script (check for [constant MIDI_MESSAGE_NOTE_ON] with velocity zero).
+			[b]Note:[/b] Some MIDI devices may send a [constant MESSAGE_NOTE_ON] message with zero velocity and expect this to be treated the same as a [constant MESSAGE_NOTE_OFF] message, but device implementations vary so Godot reports event data exactly as received. Depending on the hardware and the needs of the game/app, this MIDI quirk can be handled robustly with a couple lines of script (check for [constant MESSAGE_NOTE_ON] with velocity zero).
 		</member>
 	</members>
+	<constants>
+		<constant name="MESSAGE_NONE" value="0" enum="Message">
+			Enum value which doesn't correspond to any MIDI message. This is used to initialize [enum MIDIMessage] properties with a generic state.
+		</constant>
+		<constant name="MESSAGE_NOTE_OFF" value="8" enum="Message">
+			MIDI note OFF message. Not all MIDI devices send this event; some send [constant MESSAGE_NOTE_ON] with zero velocity instead. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+		</constant>
+		<constant name="MESSAGE_NOTE_ON" value="9" enum="Message">
+			MIDI note ON message. Some MIDI devices send this event with velocity zero instead of [constant MESSAGE_NOTE_OFF], but implementations vary. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+		</constant>
+		<constant name="MESSAGE_AFTERTOUCH" value="10" enum="Message">
+			MIDI aftertouch message. This message is most often sent by pressing down on the key after it "bottoms out".
+		</constant>
+		<constant name="MESSAGE_CONTROL_CHANGE" value="11" enum="Message">
+			MIDI control change message. This message is sent when a controller value changes. Controllers include devices such as pedals and levers.
+		</constant>
+		<constant name="MESSAGE_PROGRAM_CHANGE" value="12" enum="Message">
+			MIDI program change message. This message sent when the program patch number changes.
+		</constant>
+		<constant name="MESSAGE_CHANNEL_PRESSURE" value="13" enum="Message">
+			MIDI channel pressure message. This message is most often sent by pressing down on the key after it "bottoms out". This message is different from polyphonic after-touch as it indicates the highest pressure across all keys.
+		</constant>
+		<constant name="MESSAGE_PITCH_BEND" value="14" enum="Message">
+			MIDI pitch bend message. This message is sent to indicate a change in the pitch bender (wheel or lever, typically).
+		</constant>
+		<constant name="MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="Message">
+			MIDI system exclusive message. This has behavior exclusive to the device you're receiving input from. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MESSAGE_QUARTER_FRAME" value="241" enum="Message">
+			MIDI quarter frame message. Contains timing information that is used to synchronize MIDI devices. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MESSAGE_SONG_POSITION_POINTER" value="242" enum="Message">
+			MIDI song position pointer message. Gives the number of 16th notes since the start of the song. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MESSAGE_SONG_SELECT" value="243" enum="Message">
+			MIDI song select message. Specifies which sequence or song is to be played. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MESSAGE_TUNE_REQUEST" value="246" enum="Message">
+			MIDI tune request message. Upon receiving a tune request, all analog synthesizers should tune their oscillators.
+		</constant>
+		<constant name="MESSAGE_TIMING_CLOCK" value="248" enum="Message">
+			MIDI timing clock message. Sent 24 times per quarter note when synchronization is required.
+		</constant>
+		<constant name="MESSAGE_START" value="250" enum="Message">
+			MIDI start message. Start the current sequence playing. This message will be followed with Timing Clocks.
+		</constant>
+		<constant name="MESSAGE_CONTINUE" value="251" enum="Message">
+			MIDI continue message. Continue at the point the sequence was stopped.
+		</constant>
+		<constant name="MESSAGE_STOP" value="252" enum="Message">
+			MIDI stop message. Stop the current sequence.
+		</constant>
+		<constant name="MESSAGE_ACTIVE_SENSING" value="254" enum="Message">
+			MIDI active sensing message. This message is intended to be sent repeatedly to tell the receiver that a connection is alive.
+		</constant>
+		<constant name="MESSAGE_SYSTEM_RESET" value="255" enum="Message">
+			MIDI system reset message. Reset all receivers in the system to power-up status. It should not be sent on power-up itself.
+		</constant>
+	</constants>
 </class>

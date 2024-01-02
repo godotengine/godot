@@ -2529,62 +2529,81 @@
 		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxis">
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
-		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage" is_deprecated="true">
 			Enum value which doesn't correspond to any MIDI message. This is used to initialize [enum MIDIMessage] properties with a generic state.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_NONE].
 		</constant>
-		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage" is_deprecated="true">
 			MIDI note OFF message. Not all MIDI devices send this event; some send [constant MIDI_MESSAGE_NOTE_ON] with zero velocity instead. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_NOTE_OFF].
 		</constant>
-		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage" is_deprecated="true">
 			MIDI note ON message. Some MIDI devices send this event with velocity zero instead of [constant MIDI_MESSAGE_NOTE_OFF], but implementations vary. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_NOTE_ON].
 		</constant>
-		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage" is_deprecated="true">
 			MIDI aftertouch message. This message is most often sent by pressing down on the key after it "bottoms out".
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_AFTERTOUCH].
 		</constant>
-		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MIDIMessage" is_deprecated="true">
 			MIDI control change message. This message is sent when a controller value changes. Controllers include devices such as pedals and levers.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_CONTROL_CHANGE].
 		</constant>
-		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MIDIMessage" is_deprecated="true">
 			MIDI program change message. This message sent when the program patch number changes.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_PROGRAM_CHANGE].
 		</constant>
-		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MIDIMessage" is_deprecated="true">
 			MIDI channel pressure message. This message is most often sent by pressing down on the key after it "bottoms out". This message is different from polyphonic after-touch as it indicates the highest pressure across all keys.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_CHANNEL_PRESSURE].
 		</constant>
-		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MIDIMessage" is_deprecated="true">
 			MIDI pitch bend message. This message is sent to indicate a change in the pitch bender (wheel or lever, typically).
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_PITCH_BEND].
 		</constant>
-		<constant name="MIDI_MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="MIDIMessage" is_deprecated="true">
 			MIDI system exclusive message. This has behavior exclusive to the device you're receiving input from. Getting this data is not implemented in Godot.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_SYSTEM_EXCLUSIVE].
 		</constant>
-		<constant name="MIDI_MESSAGE_QUARTER_FRAME" value="241" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_QUARTER_FRAME" value="241" enum="MIDIMessage" is_deprecated="true">
 			MIDI quarter frame message. Contains timing information that is used to synchronize MIDI devices. Getting this data is not implemented in Godot.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_QUARTER_FRAME].
 		</constant>
-		<constant name="MIDI_MESSAGE_SONG_POSITION_POINTER" value="242" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_SONG_POSITION_POINTER" value="242" enum="MIDIMessage" is_deprecated="true">
 			MIDI song position pointer message. Gives the number of 16th notes since the start of the song. Getting this data is not implemented in Godot.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_SONG_POSITION_POINTER].
 		</constant>
-		<constant name="MIDI_MESSAGE_SONG_SELECT" value="243" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_SONG_SELECT" value="243" enum="MIDIMessage" is_deprecated="true">
 			MIDI song select message. Specifies which sequence or song is to be played. Getting this data is not implemented in Godot.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_SONG_SELECT].
 		</constant>
-		<constant name="MIDI_MESSAGE_TUNE_REQUEST" value="246" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_TUNE_REQUEST" value="246" enum="MIDIMessage" is_deprecated="true">
 			MIDI tune request message. Upon receiving a tune request, all analog synthesizers should tune their oscillators.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_TUNE_REQUEST].
 		</constant>
-		<constant name="MIDI_MESSAGE_TIMING_CLOCK" value="248" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_TIMING_CLOCK" value="248" enum="MIDIMessage" is_deprecated="true">
 			MIDI timing clock message. Sent 24 times per quarter note when synchronization is required.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_TIMING_CLOCK].
 		</constant>
-		<constant name="MIDI_MESSAGE_START" value="250" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_START" value="250" enum="MIDIMessage" is_deprecated="true">
 			MIDI start message. Start the current sequence playing. This message will be followed with Timing Clocks.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_START].
 		</constant>
-		<constant name="MIDI_MESSAGE_CONTINUE" value="251" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_CONTINUE" value="251" enum="MIDIMessage" is_deprecated="true">
 			MIDI continue message. Continue at the point the sequence was stopped.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_CONTINUE].
 		</constant>
-		<constant name="MIDI_MESSAGE_STOP" value="252" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_STOP" value="252" enum="MIDIMessage" is_deprecated="true">
 			MIDI stop message. Stop the current sequence.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_STOP].
 		</constant>
-		<constant name="MIDI_MESSAGE_ACTIVE_SENSING" value="254" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_ACTIVE_SENSING" value="254" enum="MIDIMessage" is_deprecated="true">
 			MIDI active sensing message. This message is intended to be sent repeatedly to tell the receiver that a connection is alive.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_ACTIVE_SENSING].
 		</constant>
-		<constant name="MIDI_MESSAGE_SYSTEM_RESET" value="255" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_SYSTEM_RESET" value="255" enum="MIDIMessage" is_deprecated="true">
 			MIDI system reset message. Reset all receivers in the system to power-up status. It should not be sent on power-up itself.
+			[i]Deprecated.[/i] Use [constant InputEventMIDI.MESSAGE_SYSTEM_RESET].
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred.

@@ -51,57 +51,57 @@ void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_
 		if (data[0] >= 0xF0) {
 			// channel does not apply to system common messages
 			event->set_channel(0);
-			event->set_message(MIDIMessage(data[0]));
+			event->set_message(InputEventMIDI::Message(data[0]));
 			last_received_message = data[0];
 		} else if ((data[0] & 0x80) == 0x00) {
 			// running status
 			event->set_channel(last_received_message & 0xF);
-			event->set_message(MIDIMessage(last_received_message >> 4));
+			event->set_message(InputEventMIDI::Message(last_received_message >> 4));
 			param_position = 0;
 		} else {
 			event->set_channel(data[0] & 0xF);
-			event->set_message(MIDIMessage(data[0] >> 4));
+			event->set_message(InputEventMIDI::Message(data[0] >> 4));
 			param_position = 1;
 			last_received_message = data[0];
 		}
 	}
 
 	switch (event->get_message()) {
-		case MIDIMessage::AFTERTOUCH:
+		case InputEventMIDI::Message::MESSAGE_AFTERTOUCH:
 			if (length >= 2 + param_position) {
 				event->set_pitch(data[param_position]);
 				event->set_pressure(data[param_position + 1]);
 			}
 			break;
 
-		case MIDIMessage::CONTROL_CHANGE:
+		case InputEventMIDI::Message::MESSAGE_CONTROL_CHANGE:
 			if (length >= 2 + param_position) {
 				event->set_controller_number(data[param_position]);
 				event->set_controller_value(data[param_position + 1]);
 			}
 			break;
 
-		case MIDIMessage::NOTE_ON:
-		case MIDIMessage::NOTE_OFF:
+		case InputEventMIDI::Message::MESSAGE_NOTE_ON:
+		case InputEventMIDI::Message::MESSAGE_NOTE_OFF:
 			if (length >= 2 + param_position) {
 				event->set_pitch(data[param_position]);
 				event->set_velocity(data[param_position + 1]);
 			}
 			break;
 
-		case MIDIMessage::PITCH_BEND:
+		case InputEventMIDI::Message::MESSAGE_PITCH_BEND:
 			if (length >= 2 + param_position) {
 				event->set_pitch((data[param_position + 1] << 7) | data[param_position]);
 			}
 			break;
 
-		case MIDIMessage::PROGRAM_CHANGE:
+		case InputEventMIDI::Message::MESSAGE_PROGRAM_CHANGE:
 			if (length >= 1 + param_position) {
 				event->set_instrument(data[param_position]);
 			}
 			break;
 
-		case MIDIMessage::CHANNEL_PRESSURE:
+		case InputEventMIDI::Message::MESSAGE_CHANNEL_PRESSURE:
 			if (length >= 1 + param_position) {
 				event->set_pressure(data[param_position]);
 			}

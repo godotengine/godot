@@ -508,10 +508,35 @@ public:
 };
 
 class InputEventMIDI : public InputEvent {
+private:
 	GDCLASS(InputEventMIDI, InputEvent);
 
+public:
+	enum Message {
+		MESSAGE_NONE = MIDIMessage::NONE,
+		MESSAGE_NOTE_OFF = MIDIMessage::NOTE_OFF,
+		MESSAGE_NOTE_ON = MIDIMessage::NOTE_ON,
+		MESSAGE_AFTERTOUCH = MIDIMessage::AFTERTOUCH,
+		MESSAGE_CONTROL_CHANGE = MIDIMessage::CONTROL_CHANGE,
+		MESSAGE_PROGRAM_CHANGE = MIDIMessage::PROGRAM_CHANGE,
+		MESSAGE_CHANNEL_PRESSURE = MIDIMessage::CHANNEL_PRESSURE,
+		MESSAGE_PITCH_BEND = MIDIMessage::PITCH_BEND,
+		MESSAGE_SYSTEM_EXCLUSIVE = MIDIMessage::SYSTEM_EXCLUSIVE,
+		MESSAGE_QUARTER_FRAME = MIDIMessage::QUARTER_FRAME,
+		MESSAGE_SONG_POSITION_POINTER = MIDIMessage::SONG_POSITION_POINTER,
+		MESSAGE_SONG_SELECT = MIDIMessage::SONG_SELECT,
+		MESSAGE_TUNE_REQUEST = MIDIMessage::TUNE_REQUEST,
+		MESSAGE_TIMING_CLOCK = MIDIMessage::TIMING_CLOCK,
+		MESSAGE_START = MIDIMessage::START,
+		MESSAGE_CONTINUE = MIDIMessage::CONTINUE,
+		MESSAGE_STOP = MIDIMessage::STOP,
+		MESSAGE_ACTIVE_SENSING = MIDIMessage::ACTIVE_SENSING,
+		MESSAGE_SYSTEM_RESET = MIDIMessage::SYSTEM_RESET,
+	};
+
+private:
 	int channel = 0;
-	MIDIMessage message = MIDIMessage::NONE;
+	Message message = Message::MESSAGE_NONE;
 	int pitch = 0;
 	int velocity = 0;
 	int instrument = 0;
@@ -526,8 +551,8 @@ public:
 	void set_channel(const int p_channel);
 	int get_channel() const;
 
-	void set_message(const MIDIMessage p_message);
-	MIDIMessage get_message() const;
+	void set_message(const Message p_message);
+	Message get_message() const;
 
 	void set_pitch(const int p_pitch);
 	int get_pitch() const;
@@ -547,11 +572,16 @@ public:
 	void set_controller_value(const int p_controller_value);
 	int get_controller_value() const;
 
+	static void open_inputs();
+	static void close_inputs();
+	static PackedStringArray get_connected_inputs();
+
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
 	InputEventMIDI() {}
 };
+VARIANT_ENUM_CAST(InputEventMIDI::Message);
 
 class InputEventShortcut : public InputEvent {
 	GDCLASS(InputEventShortcut, InputEvent);
