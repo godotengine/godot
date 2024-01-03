@@ -41,6 +41,9 @@
 #include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
+#ifdef TOOLS_ENABLED
+#include "editor/export/editor_export.h"
+#endif // TOOLS_ENABLED
 
 namespace core_bind {
 
@@ -556,6 +559,19 @@ void OS::revoke_granted_permissions() {
 String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
+
+#ifdef TOOLS_ENABLED
+void OS::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	String pf = p_function;
+	if (p_idx == 0 && pf == "has_feature") {
+		HashSet<String> presets = EditorExport::get_singleton()->get_available_features();
+
+		for (const String &E : presets) {
+			r_options->push_back(E.quote());
+		}
+	}
+}
+#endif // TOOLS_ENABLED
 
 OS *OS::singleton = nullptr;
 

@@ -242,6 +242,10 @@ public:
 	Vector<String> get_granted_permissions() const;
 	void revoke_granted_permissions();
 
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif // TOOLS_ENABLED
+
 	static OS *get_singleton() { return singleton; }
 
 	OS() { singleton = this; }
