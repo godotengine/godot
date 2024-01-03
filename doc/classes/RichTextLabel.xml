@@ -666,15 +666,15 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="finished">
-			<description>
-				Triggered when the document is fully loaded.
-			</description>
-		</signal>
 		<signal name="changed_text">
 			<param index="0" name="text" type="String" />
 			<description>
 				Emitted when the text of a label was changed. The new text is contained in the [param text] argument.
+			</description>
+		</signal>
+		<signal name="finished">
+			<description>
+				Triggered when the document is fully loaded.
 			</description>
 		</signal>
 		<signal name="meta_clicked">
