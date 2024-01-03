@@ -57,6 +57,8 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 			_set_item_shapes(idx, p_value);
 		} else if (what == "preview") {
 			set_item_preview(idx, p_value);
+		} else if (what == "use_custom_preview") {
+			set_item_use_custom_preview(idx, p_value);
 		} else if (what == "navigation_mesh") {
 			set_item_navigation_mesh(idx, p_value);
 		} else if (what == "navigation_mesh_transform") {
@@ -107,6 +109,8 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_item_navigation_layers(idx);
 	} else if (what == "preview") {
 		r_ret = get_item_preview(idx);
+	} else if (what == "use_custom_preview") {
+		r_ret = get_item_use_custom_preview(idx);
 	} else {
 		return false;
 	}
@@ -124,7 +128,8 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("navigation_layers"), PROPERTY_HINT_LAYERS_3D_NAVIGATION));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", E.value.use_custom_preview ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_DEFAULT & (~PROPERTY_USAGE_STORAGE)));
+		p_list->push_back(PropertyInfo(Variant::BOOL, prop_name + PNAME("use_custom_preview")));
 	}
 }
 
@@ -144,7 +149,13 @@ void MeshLibrary::set_item_name(int p_item, const String &p_name) {
 
 void MeshLibrary::set_item_mesh(int p_item, const Ref<Mesh> &p_mesh) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	if (item_map[p_item].mesh.is_valid()) {
+		item_map[p_item].mesh->disconnect_changed(callable_mp(this, &MeshLibrary::_mesh_changed));
+	}
 	item_map[p_item].mesh = p_mesh;
+	if (p_mesh.is_valid()) {
+		p_mesh->connect_changed(callable_mp(this, &MeshLibrary::_mesh_changed).bind(p_item));
+	}
 	emit_changed();
 }
 
@@ -185,6 +196,17 @@ void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) 
 	emit_changed();
 }
 
+void MeshLibrary::set_item_custom_preview(int p_item, const Ref<Texture2D> &p_preview) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	set_item_preview(p_item, p_preview);
+	item_map[p_item].use_custom_preview = true;
+}
+
+void MeshLibrary::set_item_use_custom_preview(int p_item, bool p_use_custom_preview) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	item_map[p_item].use_custom_preview = p_use_custom_preview;
+}
+
 String MeshLibrary::get_item_name(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), "", "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].name;
@@ -223,6 +245,11 @@ uint32_t MeshLibrary::get_item_navigation_layers(int p_item) const {
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture2D>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].preview;
+}
+
+bool MeshLibrary::get_item_use_custom_preview(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), false, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].use_custom_preview;
 }
 
 bool MeshLibrary::has_item(int p_item) const {
@@ -320,9 +347,18 @@ Array MeshLibrary::_get_item_shapes(int p_item) const {
 	return ret;
 }
 
+void MeshLibrary::_mesh_changed(int p_idx) {
+	ERR_FAIL_COND(!item_map.has(p_idx));
+	if (!item_map[p_idx].use_custom_preview) {
+		item_map[p_idx].preview = Ref<Texture2D>();
+		callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
+	}
+}
+
 void MeshLibrary::reset_state() {
 	clear();
 }
+
 void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_item", "id"), &MeshLibrary::create_item);
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
@@ -332,7 +368,8 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_navigation_mesh_transform", "id", "navigation_mesh"), &MeshLibrary::set_item_navigation_mesh_transform);
 	ClassDB::bind_method(D_METHOD("set_item_navigation_layers", "id", "navigation_layers"), &MeshLibrary::set_item_navigation_layers);
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
-	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
+	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_custom_preview);
+	ClassDB::bind_method(D_METHOD("set_item_use_custom_preview", "id", "use_custom_preview"), &MeshLibrary::set_item_use_custom_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_transform", "id"), &MeshLibrary::get_item_mesh_transform);
@@ -341,6 +378,7 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_navigation_layers", "id"), &MeshLibrary::get_item_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_item_shapes", "id"), &MeshLibrary::_get_item_shapes);
 	ClassDB::bind_method(D_METHOD("get_item_preview", "id"), &MeshLibrary::get_item_preview);
+	ClassDB::bind_method(D_METHOD("get_item_use_custom_preview", "id"), &MeshLibrary::get_item_use_custom_preview);
 	ClassDB::bind_method(D_METHOD("remove_item", "id"), &MeshLibrary::remove_item);
 	ClassDB::bind_method(D_METHOD("find_item_by_name", "name"), &MeshLibrary::find_item_by_name);
 

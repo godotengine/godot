@@ -110,6 +110,15 @@ class GridMapEditor : public VBoxContainer {
 	RID paste_mesh;
 	RID paste_instance;
 
+	// Mesh preview generation.
+	RID viewport;
+	RID light;
+	RID light_instance;
+	RID light2;
+	RID light_instance2;
+	RID preview_camera;
+	RID scenario;
+
 	struct ClipboardItem {
 		int cell_item = 0;
 		Vector3 grid_offset;
