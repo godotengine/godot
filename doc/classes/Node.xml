@@ -969,6 +969,12 @@
 				Emitted when the list of children is changed. This happens when child nodes are added, moved or removed.
 			</description>
 		</signal>
+		<signal name="editor_description_changed">
+			<param index="0" name="node" type="Node" />
+			<description>
+				Emitted when the node's editor description field changed.
+			</description>
+		</signal>
 		<signal name="ready">
 			<description>
 				Emitted when the node is considered ready, after [method _ready] is called.
