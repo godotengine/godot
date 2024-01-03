@@ -2828,7 +2828,7 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	}
 
 	Node *parent = data.parent;
-	int index_in_parent = get_index();
+	int index_in_parent = get_index(false);
 
 	if (data.parent) {
 		parent->remove_child(this);
