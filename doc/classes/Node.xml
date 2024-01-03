@@ -1104,7 +1104,8 @@
 			Implemented only on iOS.
 		</constant>
 		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
-			Notification received from the OS when the window is resized.
+			Notification received when the window is resized.
+			[b]Note:[/b] Only the resized [Window] node receives this notification, and it's not propagated to the child nodes.
 		</constant>
 		<constant name="NOTIFICATION_WM_DPI_CHANGE" value="1009">
 			Notification received from the OS when the screen's dots per inch (DPI) scale is changed. Only implemented on macOS.
