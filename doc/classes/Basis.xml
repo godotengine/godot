@@ -71,12 +71,20 @@
 			<param index="1" name="order" type="int" default="2" />
 			<description>
 				Constructs a pure rotation Basis matrix from Euler angles in the specified Euler rotation order. By default, use YXZ order (most common). See the [enum EulerOrder] enum for possible values.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				# Creates a Basis whose z axis points down.
 				var my_basis = Basis.from_euler(Vector3(TAU / 4, 0, 0))
 
 				print(my_basis.z) # Prints (0, -1, 0).
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				// Creates a Basis whose z axis points down.
+				var myBasis = Basis.FromEuler(new Vector3(Mathf.Tau / 4.0f, 0.0f, 0.0f));
+
+				GD.Print(myBasis.Z); // Prints (0, -1, 0).
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="from_scale" qualifiers="static">
@@ -84,13 +92,22 @@
 			<param index="0" name="scale" type="Vector3" />
 			<description>
 				Constructs a pure scale basis matrix with no rotation or shearing. The scale values are set as the diagonal of the matrix, and the other parts of the matrix are zero.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var my_basis = Basis.from_scale(Vector3(2, 4, 8))
 
 				print(my_basis.x) # Prints (2, 0, 0).
 				print(my_basis.y) # Prints (0, 4, 0).
 				print(my_basis.z) # Prints (0, 0, 8).
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var myBasis = Basis.FromScale(new Vector3(2.0f, 4.0f, 8.0f));
+
+				GD.Print(myBasis.X); // Prints (2, 0, 0).
+				GD.Print(myBasis.Y); // Prints (0, 4, 0).
+				GD.Print(myBasis.Z); // Prints (0, 0, 8).
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_euler" qualifiers="const">
@@ -111,7 +128,8 @@
 			<return type="Vector3" />
 			<description>
 				Assuming that the matrix is the combination of a rotation and scaling, return the absolute value of scaling factors along each axis.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var my_basis = Basis(
 				    Vector3(2, 0, 0),
 				    Vector3(0, 4, 0),
@@ -122,7 +140,20 @@
 				my_basis = my_basis.rotated(Vector3.RIGHT, TAU / 4)
 
 				print(my_basis.get_scale()) # Prints (2, 4, 8).
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var myBasis = new Basis(
+				    Vector3(2.0f, 0.0f, 0.0f),
+				    Vector3(0.0f, 4.0f, 0.0f),
+				    Vector3(0.0f, 0.0f, 8.0f)
+				);
+				// Rotating the Basis in any way preserves its scale.
+				myBasis = myBasis.Rotated(Vector3.Up, Mathf.Tau / 2.0f);
+				myBasis = myBasis.Rotated(Vector3.Right, Mathf.Tau / 4.0f);
+
+				GD.Print(myBasis.Scale); // Prints (2, 4, 8).
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
@@ -165,14 +196,25 @@
 			<return type="Basis" />
 			<description>
 				Returns the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				# Rotate this Node3D every frame.
 				func _process(delta):
 				    basis = basis.rotated(Vector3.UP, TAU * delta)
 				    basis = basis.rotated(Vector3.RIGHT, TAU * delta)
 
 				    basis = basis.orthonormalized()
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				// Rotate this Node3D every frame.
+				public override void _Process(double delta)
+				{
+				    Basis = Basis.Rotated(Vector3.Up, Mathf.Tau * (float)delta)
+				                 .Rotated(Vector3.Right, Mathf.Tau * (float)delta)
+				                 .Orthonormalized();
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -181,14 +223,24 @@
 			<param index="1" name="angle" type="float" />
 			<description>
 				Introduce an additional rotation around the given axis by [param angle] (in radians). The axis must be a normalized vector.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var my_basis = Basis.IDENTITY
 				var angle = TAU / 2
 
-				my_basis = my_basis.rotated(Vector3.UP, angle)    # Rotate around the up axis (yaw)
-				my_basis = my_basis.rotated(Vector3.RIGHT, angle) # Rotate around the right axis (pitch)
-				my_basis = my_basis.rotated(Vector3.BACK, angle)  # Rotate around the back axis (roll)
-				[/codeblock]
+				my_basis = my_basis.rotated(Vector3.UP, angle)    # Rotate around the up axis (yaw).
+				my_basis = my_basis.rotated(Vector3.RIGHT, angle) # Rotate around the right axis (pitch).
+				my_basis = my_basis.rotated(Vector3.BACK, angle)  # Rotate around the back axis (roll).
+				[/gdscript]
+				[csharp]
+				var myBasis = Basis.Identity;
+				var angle = Mathf.Tau / 2.0f;
+
+				myBasis = myBasis.Rotated(Vector3.Up, angle);    // Rotate around the up axis (yaw).
+				myBasis = myBasis.Rotated(Vector3.Right, angle); // Rotate around the right axis (pitch).
+				myBasis = myBasis.Rotated(Vector3.Back, angle);  // Rotate around the back axis (roll).
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
@@ -196,7 +248,8 @@
 			<param index="0" name="scale" type="Vector3" />
 			<description>
 				Introduce an additional scaling specified by the given 3D scaling factor.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var my_basis = Basis(
 				    Vector3(1, 1, 1),
 				    Vector3(2, 2, 2),
@@ -207,7 +260,20 @@
 				print(my_basis.x) # Prints (0, 2, -2).
 				print(my_basis.y) # Prints (0, 4, -4).
 				print(my_basis.z) # Prints (0, 6, -6).
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var myBasis = new Basis(
+				    new Vector3(1.0f, 1.0f, 1.0f),
+				    new Vector3(2.0f, 2.0f, 2.0f),
+				    new Vector3(3.0f, 3.0f, 3.0f)
+				);
+				myBasis = myBasis.Scaled(new Vector3(0.0f, 2.0f, -2.0f));
+
+				GD.Print(myBasis.X); // Prints (0, 2, -2).
+				GD.Print(myBasis.Y); // Prints (0, 4, -4).
+				GD.Print(myBasis.Z); // Prints (0, 6, -6).
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="slerp" qualifiers="const">
@@ -243,7 +309,8 @@
 			<return type="Basis" />
 			<description>
 				Returns the transposed version of the matrix.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var my_basis = Basis(
 				    Vector3(1, 2, 3),
 				    Vector3(4, 5, 6),
@@ -254,7 +321,20 @@
 				print(my_basis.x) # Prints (1, 4, 7).
 				print(my_basis.y) # Prints (2, 5, 8).
 				print(my_basis.z) # Prints (3, 6, 9).
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var myBasis = new Basis(
+				    new Vector3(1.0f, 2.0f, 3.0f),
+				    new Vector3(4.0f, 5.0f, 6.0f),
+				    new Vector3(7.0f, 8.0f, 9.0f)
+				);
+				myBasis = myBasis.Transposed();
+
+				GD.Print(myBasis.X); // Prints (1, 4, 7).
+				GD.Print(myBasis.Y); // Prints (2, 5, 8).
+				GD.Print(myBasis.Z); // Prints (3, 6, 9).
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>
