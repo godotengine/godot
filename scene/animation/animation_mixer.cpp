@@ -2152,8 +2152,9 @@ void AnimationMixer::_notification(int p_what) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 void AnimationMixer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "get_animation" || pf == "has_animation") {
 			List<StringName> al;
@@ -2171,6 +2172,7 @@ void AnimationMixer::get_argument_options(const StringName &p_function, int p_id
 	}
 	Node::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void AnimationMixer::_bind_methods() {
 	/* ---- Data lists ---- */

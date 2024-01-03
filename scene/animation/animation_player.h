@@ -188,7 +188,9 @@ public:
 	double get_current_animation_position() const;
 	double get_current_animation_length() const;
 
+#ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	virtual void advance(double p_time) override;
 
