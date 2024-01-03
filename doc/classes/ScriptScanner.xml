@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptScanner" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_supported_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="_replace" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="file" type="FileAccess" />
+			<param index="1" name="file_path" type="String" />
+			<param index="2" name="display_path" type="String" />
+			<param index="3" name="locations" type="Dictionary[]" />
+			<param index="4" name="match_case" type="bool" />
+			<param index="5" name="whole_words" type="bool" />
+			<param index="6" name="search_text" type="String" />
+			<param index="7" name="new_text" type="String" />
+			<param index="8" name="range" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="_scan" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<param index="0" name="file" type="FileAccess" />
+			<param index="1" name="display_path" type="String" />
+			<param index="2" name="pattern" type="String" />
+			<param index="3" name="match_case" type="bool" />
+			<param index="4" name="whole_words" type="bool" />
+			<param index="5" name="range" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

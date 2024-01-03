@@ -38,6 +38,30 @@
 class FindInFiles : public Node {
 	GDCLASS(FindInFiles, Node);
 
+private:
+	void _process();
+	void _iterate();
+	void _scan_dir(String path, PackedStringArray &out_folders);
+
+	// Config
+	String _pattern;
+	HashSet<String> _extension_filter;
+	String _root_dir;
+	bool _whole_words = true;
+	bool _match_case = true;
+
+	// State
+	bool _searching = false;
+	String _current_dir;
+	Vector<PackedStringArray> _folders_stack;
+	Vector<String> _files_to_scan;
+	int _initial_files_count = 0;
+
+protected:
+	void _notification(int p_what);
+
+	static void _bind_methods();
+
 public:
 	static const char *SIGNAL_RESULT_FOUND;
 	static const char *SIGNAL_FINISHED;
@@ -58,31 +82,6 @@ public:
 
 	bool is_searching() const { return _searching; }
 	float get_progress() const;
-
-protected:
-	void _notification(int p_what);
-
-	static void _bind_methods();
-
-private:
-	void _process();
-	void _iterate();
-	void _scan_dir(String path, PackedStringArray &out_folders);
-	void _scan_file(String fpath);
-
-	// Config
-	String _pattern;
-	HashSet<String> _extension_filter;
-	String _root_dir;
-	bool _whole_words = true;
-	bool _match_case = true;
-
-	// State
-	bool _searching = false;
-	String _current_dir;
-	Vector<PackedStringArray> _folders_stack;
-	Vector<String> _files_to_scan;
-	int _initial_files_count = 0;
 };
 
 class LineEdit;
@@ -176,7 +175,7 @@ protected:
 	void _notification(int p_what);
 
 private:
-	void _on_result_found(String fpath, int line_number, int begin, int end, String text);
+	void _on_result_found(String display_text, String relative_path, String absolute_path, int line_number, int begin, int end, String text);
 	void _on_finished();
 	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
@@ -192,7 +191,6 @@ private:
 		int begin_trimmed = 0;
 	};
 
-	void apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text);
 	void update_replace_buttons();
 	String get_replace_text();
 
