@@ -46,7 +46,7 @@ class CharString;
 template <class T, class V>
 class VMap;
 
-SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
+SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint64_t)
 
 // Silence a false positive warning (see GH-52119).
 #if defined(__GNUC__) && !defined(__clang__)
@@ -64,45 +64,71 @@ class CowData {
 	template <class TV, class VV>
 	friend class VMap;
 
+public:
+	typedef int64_t Size;
+	typedef uint64_t USize;
+	static constexpr USize MAX_INT = INT64_MAX;
+
 private:
+	// Function to find the next power of 2 to an integer.
+	static _FORCE_INLINE_ USize next_po2(USize x) {
+		if (x == 0) {
+			return 0;
+		}
+
+		--x;
+		x |= x >> 1;
+		x |= x >> 2;
+		x |= x >> 4;
+		x |= x >> 8;
+		x |= x >> 16;
+		if (sizeof(USize) == 8) {
+			x |= x >> 32;
+		}
+
+		return ++x;
+	}
+
+	static constexpr USize ALLOC_PAD = sizeof(USize) * 2; // For size and atomic refcount.
+
 	mutable T *_ptr = nullptr;
 
 	// internal helpers
 
-	_FORCE_INLINE_ SafeNumeric<uint32_t> *_get_refcount() const {
+	_FORCE_INLINE_ SafeNumeric<USize> *_get_refcount() const {
 		if (!_ptr) {
 			return nullptr;
 		}
 
-		return reinterpret_cast<SafeNumeric<uint32_t> *>(_ptr) - 2;
+		return reinterpret_cast<SafeNumeric<USize> *>(_ptr) - 2;
 	}
 
-	_FORCE_INLINE_ uint32_t *_get_size() const {
+	_FORCE_INLINE_ USize *_get_size() const {
 		if (!_ptr) {
 			return nullptr;
 		}
 
-		return reinterpret_cast<uint32_t *>(_ptr) - 1;
+		return reinterpret_cast<USize *>(_ptr) - 1;
 	}
 
-	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
-		return next_power_of_2(p_elements * sizeof(T));
+	_FORCE_INLINE_ USize _get_alloc_size(USize p_elements) const {
+		return next_po2(p_elements * sizeof(T));
 	}
 
-	_FORCE_INLINE_ bool _get_alloc_size_checked(size_t p_elements, size_t *out) const {
+	_FORCE_INLINE_ bool _get_alloc_size_checked(USize p_elements, USize *out) const {
 		if (unlikely(p_elements == 0)) {
 			*out = 0;
 			return true;
 		}
-#if defined(__GNUC__)
-		size_t o;
-		size_t p;
+#if defined(__GNUC__) && defined(IS_32_BIT)
+		USize o;
+		USize p;
 		if (__builtin_mul_overflow(p_elements, sizeof(T), &o)) {
 			*out = 0;
 			return false;
 		}
-		*out = next_power_of_2(o);
-		if (__builtin_add_overflow(o, static_cast<size_t>(32), &p)) {
+		*out = next_po2(o);
+		if (__builtin_add_overflow(o, static_cast<USize>(32), &p)) {
 			return false; // No longer allocated here.
 		}
 #else
@@ -116,7 +142,7 @@ private:
 	void _unref(void *p_data);
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
-	uint32_t _copy_on_write();
+	USize _copy_on_write();
 
 public:
 	void operator=(const CowData<T> &p_from) { _ref(p_from); }
@@ -130,8 +156,8 @@ public:
 		return _ptr;
 	}
 
-	_FORCE_INLINE_ int size() const {
-		uint32_t *size = (uint32_t *)_get_size();
+	_FORCE_INLINE_ Size size() const {
+		USize *size = (USize *)_get_size();
 		if (size) {
 			return *size;
 		} else {
@@ -142,42 +168,42 @@ public:
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ bool is_empty() const { return _ptr == nullptr; }
 
-	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
+	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) {
 		ERR_FAIL_INDEX(p_index, size());
 		_copy_on_write();
 		_ptr[p_index] = p_elem;
 	}
 
-	_FORCE_INLINE_ T &get_m(int p_index) {
+	_FORCE_INLINE_ T &get_m(Size p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 		_copy_on_write();
 		return _ptr[p_index];
 	}
 
-	_FORCE_INLINE_ const T &get(int p_index) const {
+	_FORCE_INLINE_ const T &get(Size p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
 		return _ptr[p_index];
 	}
 
 	template <bool p_ensure_zero = false>
-	Error resize(int p_size);
+	Error resize(Size p_size);
 
-	_FORCE_INLINE_ void remove_at(int p_index) {
+	_FORCE_INLINE_ void remove_at(Size p_index) {
 		ERR_FAIL_INDEX(p_index, size());
 		T *p = ptrw();
-		int len = size();
-		for (int i = p_index; i < len - 1; i++) {
+		Size len = size();
+		for (Size i = p_index; i < len - 1; i++) {
 			p[i] = p[i + 1];
 		}
 
 		resize(len - 1);
 	}
 
-	Error insert(int p_pos, const T &p_val) {
+	Error insert(Size p_pos, const T &p_val) {
 		ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
 		resize(size() + 1);
-		for (int i = (size() - 1); i > p_pos; i--) {
+		for (Size i = (size() - 1); i > p_pos; i--) {
 			set(i, get(i - 1));
 		}
 		set(p_pos, p_val);
@@ -185,9 +211,9 @@ public:
 		return OK;
 	}
 
-	int find(const T &p_val, int p_from = 0) const;
-	int rfind(const T &p_val, int p_from = -1) const;
-	int count(const T &p_val) const;
+	Size find(const T &p_val, Size p_from = 0) const;
+	Size rfind(const T &p_val, Size p_from = -1) const;
+	Size count(const T &p_val) const;
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData();
@@ -200,7 +226,7 @@ void CowData<T>::_unref(void *p_data) {
 		return;
 	}
 
-	SafeNumeric<uint32_t> *refc = _get_refcount();
+	SafeNumeric<USize> *refc = _get_refcount();
 
 	if (refc->decrement() > 0) {
 		return; // still in use
@@ -208,35 +234,36 @@ void CowData<T>::_unref(void *p_data) {
 	// clean up
 
 	if (!std::is_trivially_destructible<T>::value) {
-		uint32_t *count = _get_size();
+		USize *count = _get_size();
 		T *data = (T *)(count + 1);
 
-		for (uint32_t i = 0; i < *count; ++i) {
+		for (USize i = 0; i < *count; ++i) {
 			// call destructors
 			data[i].~T();
 		}
 	}
 
 	// free mem
-	Memory::free_static((uint8_t *)p_data, true);
+	Memory::free_static(((uint8_t *)p_data) - ALLOC_PAD, false);
 }
 
 template <class T>
-uint32_t CowData<T>::_copy_on_write() {
+typename CowData<T>::USize CowData<T>::_copy_on_write() {
 	if (!_ptr) {
 		return 0;
 	}
 
-	SafeNumeric<uint32_t> *refc = _get_refcount();
+	SafeNumeric<USize> *refc = _get_refcount();
 
-	uint32_t rc = refc->get();
+	USize rc = refc->get();
 	if (unlikely(rc > 1)) {
 		/* in use by more than me */
-		uint32_t current_size = *_get_size();
+		USize current_size = *_get_size();
 
-		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(_get_alloc_size(current_size), true);
+		USize *mem_new = (USize *)Memory::alloc_static(_get_alloc_size(current_size) + ALLOC_PAD, false);
+		mem_new += 2;
 
-		new (mem_new - 2) SafeNumeric<uint32_t>(1); //refcount
+		new (mem_new - 2) SafeNumeric<USize>(1); //refcount
 		*(mem_new - 1) = current_size; //size
 
 		T *_data = (T *)(mem_new);
@@ -246,7 +273,7 @@ uint32_t CowData<T>::_copy_on_write() {
 			memcpy(mem_new, _ptr, current_size * sizeof(T));
 
 		} else {
-			for (uint32_t i = 0; i < current_size; i++) {
+			for (USize i = 0; i < current_size; i++) {
 				memnew_placement(&_data[i], T(_ptr[i]));
 			}
 		}
@@ -261,10 +288,10 @@ uint32_t CowData<T>::_copy_on_write() {
 
 template <class T>
 template <bool p_ensure_zero>
-Error CowData<T>::resize(int p_size) {
+Error CowData<T>::resize(Size p_size) {
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
-	int current_size = size();
+	Size current_size = size();
 
 	if (p_size == current_size) {
 		return OK;
@@ -278,27 +305,29 @@ Error CowData<T>::resize(int p_size) {
 	}
 
 	// possibly changing size, copy on write
-	uint32_t rc = _copy_on_write();
+	USize rc = _copy_on_write();
 
-	size_t current_alloc_size = _get_alloc_size(current_size);
-	size_t alloc_size;
+	USize current_alloc_size = _get_alloc_size(current_size);
+	USize alloc_size;
 	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
 
 	if (p_size > current_size) {
 		if (alloc_size != current_alloc_size) {
 			if (current_size == 0) {
 				// alloc from scratch
-				uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
+				USize *ptr = (USize *)Memory::alloc_static(alloc_size + ALLOC_PAD, false);
+				ptr += 2;
 				ERR_FAIL_NULL_V(ptr, ERR_OUT_OF_MEMORY);
 				*(ptr - 1) = 0; //size, currently none
-				new (ptr - 2) SafeNumeric<uint32_t>(1); //refcount
+				new (ptr - 2) SafeNumeric<USize>(1); //refcount
 
 				_ptr = (T *)ptr;
 
 			} else {
-				uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
+				USize *_ptrnew = (USize *)Memory::realloc_static(((uint8_t *)_ptr) - ALLOC_PAD, alloc_size + ALLOC_PAD, false);
 				ERR_FAIL_NULL_V(_ptrnew, ERR_OUT_OF_MEMORY);
-				new (_ptrnew - 2) SafeNumeric<uint32_t>(rc); //refcount
+				_ptrnew += 2;
+				new (_ptrnew - 2) SafeNumeric<USize>(rc); //refcount
 
 				_ptr = (T *)(_ptrnew);
 			}
@@ -307,7 +336,7 @@ Error CowData<T>::resize(int p_size) {
 		// construct the newly created elements
 
 		if (!std::is_trivially_constructible<T>::value) {
-			for (int i = *_get_size(); i < p_size; i++) {
+			for (Size i = *_get_size(); i < p_size; i++) {
 				memnew_placement(&_ptr[i], T);
 			}
 		} else if (p_ensure_zero) {
@@ -319,16 +348,17 @@ Error CowData<T>::resize(int p_size) {
 	} else if (p_size < current_size) {
 		if (!std::is_trivially_destructible<T>::value) {
 			// deinitialize no longer needed elements
-			for (uint32_t i = p_size; i < *_get_size(); i++) {
+			for (USize i = p_size; i < *_get_size(); i++) {
 				T *t = &_ptr[i];
 				t->~T();
 			}
 		}
 
 		if (alloc_size != current_alloc_size) {
-			uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
+			USize *_ptrnew = (USize *)Memory::realloc_static(((uint8_t *)_ptr) - ALLOC_PAD, alloc_size + ALLOC_PAD, false);
 			ERR_FAIL_NULL_V(_ptrnew, ERR_OUT_OF_MEMORY);
-			new (_ptrnew - 2) SafeNumeric<uint32_t>(rc); //refcount
+			_ptrnew += 2;
+			new (_ptrnew - 2) SafeNumeric<USize>(rc); //refcount
 
 			_ptr = (T *)(_ptrnew);
 		}
@@ -340,14 +370,14 @@ Error CowData<T>::resize(int p_size) {
 }
 
 template <class T>
-int CowData<T>::find(const T &p_val, int p_from) const {
-	int ret = -1;
+typename CowData<T>::Size CowData<T>::find(const T &p_val, Size p_from) const {
+	Size ret = -1;
 
 	if (p_from < 0 || size() == 0) {
 		return ret;
 	}
 
-	for (int i = p_from; i < size(); i++) {
+	for (Size i = p_from; i < size(); i++) {
 		if (get(i) == p_val) {
 			ret = i;
 			break;
@@ -358,8 +388,8 @@ int CowData<T>::find(const T &p_val, int p_from) const {
 }
 
 template <class T>
-int CowData<T>::rfind(const T &p_val, int p_from) const {
-	const int s = size();
+typename CowData<T>::Size CowData<T>::rfind(const T &p_val, Size p_from) const {
+	const Size s = size();
 
 	if (p_from < 0) {
 		p_from = s + p_from;
@@ -368,7 +398,7 @@ int CowData<T>::rfind(const T &p_val, int p_from) const {
 		p_from = s - 1;
 	}
 
-	for (int i = p_from; i >= 0; i--) {
+	for (Size i = p_from; i >= 0; i--) {
 		if (get(i) == p_val) {
 			return i;
 		}
@@ -377,9 +407,9 @@ int CowData<T>::rfind(const T &p_val, int p_from) const {
 }
 
 template <class T>
-int CowData<T>::count(const T &p_val) const {
-	int amount = 0;
-	for (int i = 0; i < size(); i++) {
+typename CowData<T>::Size CowData<T>::count(const T &p_val) const {
+	Size amount = 0;
+	for (Size i = 0; i < size(); i++) {
 		if (get(i) == p_val) {
 			amount++;
 		}

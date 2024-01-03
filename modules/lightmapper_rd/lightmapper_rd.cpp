@@ -1711,7 +1711,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			push_constant.ray_from = i * max_rays;
 			push_constant.ray_to = MIN((i + 1) * max_rays, int32_t(push_constant.ray_count));
 			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, Math::division_round_up(probe_positions.size(), 64), 1, 1);
+			rd->compute_list_dispatch(compute_list, Math::division_round_up((int)probe_positions.size(), 64), 1, 1);
 
 			rd->compute_list_end(); //done
 			rd->submit();

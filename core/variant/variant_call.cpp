@@ -666,7 +666,7 @@ struct _VariantCall {
 			CharString cs;
 			cs.resize(p_instance->size() + 1);
 			memcpy(cs.ptrw(), r, p_instance->size());
-			cs[p_instance->size()] = 0;
+			cs[(int)p_instance->size()] = 0;
 
 			s = cs.get_data();
 		}
