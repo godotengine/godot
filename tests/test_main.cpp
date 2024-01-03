@@ -34,6 +34,7 @@
 #include "tests/core/input/test_input_event.h"
 #include "tests/core/input/test_input_event_key.h"
 #include "tests/core/input/test_input_event_mouse.h"
+#include "tests/core/input/test_input_map.h"
 #include "tests/core/input/test_shortcut.h"
 #include "tests/core/io/test_config_file.h"
 #include "tests/core/io/test_file_access.h"
@@ -176,6 +177,10 @@ int test_main(int argc, char *argv[]) {
 		String arg = String(argv[x]);
 		if (arg != "--test") {
 			test_args.push_back(arg);
+		}
+
+		if (arg == "--verbose") {
+			OS::get_singleton()->_verbose_stdout = true;
 		}
 	}
 
