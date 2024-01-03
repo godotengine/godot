@@ -3405,7 +3405,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							//add to current function as dependency
 							for (int j = 0; j < shader->functions.size(); j++) {
 								if (shader->functions[j].name == current_function) {
-									shader->functions.write[j].uses_function.insert(name);
+									shader->functions.write[j].uses_function.push_back(name);
 									break;
 								}
 							}
