@@ -1718,6 +1718,16 @@ bool Engine::is_printing_error_messages() const {
 	return ::Engine::get_singleton()->is_printing_error_messages();
 }
 
+void Engine::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	String pf = p_function;
+	if (p_idx == 0 && (pf == "has_singleton" || pf == "get_singleton" || pf == "unregister_singleton")) {
+		for (const String &E : get_singleton_list()) {
+			r_options->push_back(E.quote());
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+
 void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_ticks_per_second", "physics_ticks_per_second"), &Engine::set_physics_ticks_per_second);
 	ClassDB::bind_method(D_METHOD("get_physics_ticks_per_second"), &Engine::get_physics_ticks_per_second);
