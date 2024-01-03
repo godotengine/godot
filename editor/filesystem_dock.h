@@ -102,6 +102,12 @@ public:
 		FILE_SORT_MAX,
 	};
 
+	enum Overwrite {
+		OVERWRITE_UNDECIDED,
+		OVERWRITE_REPLACE,
+		OVERWRITE_RENAME,
+	};
+
 private:
 	enum FileMenu {
 		FILE_OPEN,
@@ -131,12 +137,6 @@ private:
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
-	};
-
-	enum Overwrite {
-		OVERWRITE_UNDECIDED,
-		OVERWRITE_REPLACE,
-		OVERWRITE_RENAME,
 	};
 
 	HashMap<String, Color> folder_colors;
@@ -290,7 +290,6 @@ private:
 	void _duplicate_operation_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
 	Vector<String> _check_existing();
-	void _move_dialog_confirm(const String &p_path);
 	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
 
 	void _tree_rmb_option(int p_option);
@@ -412,5 +411,7 @@ public:
 	FileSystemDock();
 	~FileSystemDock();
 };
+
+VARIANT_ENUM_CAST(FileSystemDock::Overwrite);
 
 #endif // FILESYSTEM_DOCK_H
