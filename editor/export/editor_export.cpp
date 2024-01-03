@@ -71,6 +71,10 @@ void EditorExport::_save() {
 				config->set_value(section, "export_filter", "customized");
 				config->set_value(section, "customized_files", preset->get_customized_files());
 				save_files = false;
+			}
+			case EditorExportPreset::EXPORT_SELECTED_RESOURCES_WITHOUT_DEPENDENCY: {
+				config->set_value(section, "export_filter", "resources_without_dependency");
+				save_files = true;
 			};
 		}
 
@@ -252,6 +256,9 @@ void EditorExport::load_config() {
 			preset->set_export_filter(EditorExportPreset::EXPORT_CUSTOMIZED);
 			preset->set_customized_files(config->get_value(section, "customized_files", Dictionary()));
 			get_files = false;
+		} else if (export_filter == "resources_without_dependency") {
+			preset->set_export_filter(EditorExportPreset::EXPORT_SELECTED_RESOURCES_WITHOUT_DEPENDENCY);
+			get_files = true;
 		}
 
 		if (get_files) {
