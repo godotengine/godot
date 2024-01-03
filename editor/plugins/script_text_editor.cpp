@@ -788,9 +788,7 @@ static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_curr
 }
 
 void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_for_script) {
-	if (!bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
-		return;
-	}
+	bool use_external_editor = bool(EDITOR_GET("text_editor/external/use_external_editor"));
 
 	ERR_FAIL_NULL(get_tree());
 
@@ -803,6 +801,10 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 
 	for (const Ref<Script> &E : scripts) {
 		Ref<Script> scr = E;
+
+		if (!use_external_editor && !scr->get_language()->overrides_external_editor()) {
+			continue; // We're not using an external editor for this script.
+		}
 
 		if (p_for_script.is_valid() && p_for_script != scr) {
 			continue;
