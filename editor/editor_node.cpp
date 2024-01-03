@@ -5047,7 +5047,8 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 
 	// Save FileSystemDock state.
 
-	p_layout->set_value(p_section, "dock_filesystem_split", FileSystemDock::get_singleton()->get_split_offset());
+	p_layout->set_value(p_section, "dock_filesystem_h_split_offset", FileSystemDock::get_singleton()->get_h_split_offset());
+	p_layout->set_value(p_section, "dock_filesystem_v_split_offset", FileSystemDock::get_singleton()->get_v_split_offset());
 	p_layout->set_value(p_section, "dock_filesystem_display_mode", FileSystemDock::get_singleton()->get_display_mode());
 	p_layout->set_value(p_section, "dock_filesystem_file_sort", FileSystemDock::get_singleton()->get_file_sort());
 	p_layout->set_value(p_section, "dock_filesystem_file_list_display_mode", FileSystemDock::get_singleton()->get_file_list_display_mode());
@@ -5272,9 +5273,14 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 
 	// FileSystemDock.
 
-	if (p_layout->has_section_key(p_section, "dock_filesystem_split")) {
-		int fs_split_ofs = p_layout->get_value(p_section, "dock_filesystem_split");
-		FileSystemDock::get_singleton()->set_split_offset(fs_split_ofs);
+	if (p_layout->has_section_key(p_section, "dock_filesystem_h_split_offset")) {
+		int fs_h_split_ofs = p_layout->get_value(p_section, "dock_filesystem_h_split_offset");
+		FileSystemDock::get_singleton()->set_h_split_offset(fs_h_split_ofs);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_v_split_offset")) {
+		int fs_v_split_ofs = p_layout->get_value(p_section, "dock_filesystem_v_split_offset");
+		FileSystemDock::get_singleton()->set_v_split_offset(fs_v_split_ofs);
 	}
 
 	if (p_layout->has_section_key(p_section, "dock_filesystem_display_mode")) {

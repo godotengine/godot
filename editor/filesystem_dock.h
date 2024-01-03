@@ -306,6 +306,7 @@ private:
 	void _rescan();
 
 	void _change_split_mode();
+	void _split_dragged(int p_offset);
 
 	void _search_changed(const String &p_text, const Control *p_from);
 
@@ -387,8 +388,10 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 
-	int get_split_offset() { return split_box->get_split_offset(); }
-	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
+	int get_h_split_offset() const { return split_box_offset_h; }
+	void set_h_split_offset(int p_offset) { split_box_offset_h = p_offset; }
+	int get_v_split_offset() const { return split_box_offset_v; }
+	void set_v_split_offset(int p_offset) { split_box_offset_v = p_offset; }
 	void select_file(const String &p_file);
 
 	void set_display_mode(DisplayMode p_display_mode);
