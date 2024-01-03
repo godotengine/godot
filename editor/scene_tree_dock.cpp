@@ -2809,12 +2809,17 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 	Node *base = selection.front()->get();
 
 	HashMap<const Node *, Node *> duplimap;
+	HashMap<const Node *, Node *> inverse_duplimap;
 	Node *copy = base->duplicate_from_editor(duplimap);
+
+	for (const KeyValue<const Node *, Node *> &item : duplimap) {
+		inverse_duplimap[item.value] = const_cast<Node *>(item.key);
+	}
 
 	if (copy) {
 		// Handle Unique Nodes.
 		for (int i = 0; i < copy->get_child_count(false); i++) {
-			_set_node_owner_recursive(copy->get_child(i, false), copy);
+			_set_node_owner_recursive(copy->get_child(i, false), copy, inverse_duplimap);
 		}
 		// Root node cannot ever be unique name in its own Scene!
 		copy->set_unique_name_in_owner(false);
@@ -2848,13 +2853,18 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 	}
 }
 
-void SceneTreeDock::_set_node_owner_recursive(Node *p_node, Node *p_owner) {
-	if (!p_node->get_owner()) {
-		p_node->set_owner(p_owner);
+void SceneTreeDock::_set_node_owner_recursive(Node *p_node, Node *p_owner, const HashMap<const Node *, Node *> &p_inverse_duplimap) {
+	HashMap<const Node *, Node *>::ConstIterator E = p_inverse_duplimap.find(p_node);
+
+	if (E) {
+		const Node *original = E->value;
+		if (original->get_owner()) {
+			p_node->set_owner(p_owner);
+		}
 	}
 
 	for (int i = 0; i < p_node->get_child_count(false); i++) {
-		_set_node_owner_recursive(p_node->get_child(i, false), p_owner);
+		_set_node_owner_recursive(p_node->get_child(i, false), p_owner, p_inverse_duplimap);
 	}
 }
 
