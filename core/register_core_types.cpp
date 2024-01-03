@@ -386,6 +386,7 @@ void unregister_core_types() {
 
 	memdelete(worker_thread_pool);
 
+	memdelete(_script_debugger);
 	memdelete(_engine_debugger);
 	memdelete(_marshalls);
 	memdelete(_classdb);
