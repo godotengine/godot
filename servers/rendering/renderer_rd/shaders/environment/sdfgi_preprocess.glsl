@@ -1033,7 +1033,7 @@ void main() {
 
 	if (local == ivec3(0) && store_position_count > 0) {
 		store_from_index = atomicAdd(dispatch_data.total_count, store_position_count);
-		uint group_count = Math::division_round_up(store_from_index + store_position_count, 64);
+		uint group_count = (store_from_index + store_position_count - 1) / 64 + 1;
 		atomicMax(dispatch_data.x, group_count);
 	}
 
