@@ -122,8 +122,10 @@ int AudioDriver::_get_configured_mix_rate() {
 
 	// In the case of invalid mix rate, let's default to a sensible value..
 	if (mix_rate <= 0) {
+#ifndef WEB_ENABLED
 		WARN_PRINT(vformat("Invalid mix rate of %d, consider reassigning setting \'%s\'. \nDefaulting mix rate to value %d.",
 				mix_rate, audio_driver_setting, AudioDriverManager::DEFAULT_MIX_RATE));
+#endif
 		mix_rate = AudioDriverManager::DEFAULT_MIX_RATE;
 	}
 
@@ -199,8 +201,8 @@ int AudioDriverManager::get_driver_count() {
 
 void AudioDriverManager::initialize(int p_driver) {
 	GLOBAL_DEF_RST("audio/driver/enable_input", false);
-	GLOBAL_DEF_RST("audio/driver/mix_rate", DEFAULT_MIX_RATE);
-	GLOBAL_DEF_RST("audio/driver/mix_rate.web", 0); // Safer default output_latency for web (use browser default).
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate", PROPERTY_HINT_RANGE, "11025,192000,1,or_greater,suffix:Hz"), DEFAULT_MIX_RATE);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate.web", PROPERTY_HINT_RANGE, "0,192000,1,or_greater,suffix:Hz"), 0); // Safer default output_latency for web (use browser default).
 
 	int failed_driver = -1;
 
