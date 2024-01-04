@@ -2645,6 +2645,40 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, ASTCFormat p
 Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format) {
 	ERR_FAIL_COND_V(data.is_empty(), ERR_INVALID_DATA);
 
+	// RenderingDevice only.
+	if (OS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
+		switch (p_mode) {
+			case COMPRESS_BPTC: {
+				// BC7 is unsupported currently.
+				if (format >= FORMAT_RF && format <= FORMAT_RGBE9995) {
+					ERR_FAIL_NULL_V(_image_compress_bptc_rd_func, ERR_UNAVAILABLE);
+					_image_compress_bptc_rd_func(this, p_channels);
+					return OK;
+				}
+
+				break;
+			}
+
+			case COMPRESS_S3TC: {
+				if (p_channels == USED_CHANNELS_LA || p_channels == USED_CHANNELS_RGBA) {
+				} else {
+					ERR_FAIL_NULL_V(_image_compress_bc_rd_func, ERR_UNAVAILABLE);
+					_image_compress_bc_rd_func(this, p_channels);
+					return OK;
+				}
+
+				break;
+			}
+
+			case COMPRESS_MAX: {
+				ERR_FAIL_V(ERR_INVALID_PARAMETER);
+			}
+
+			default: {
+			}
+		}
+	}
+
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_NULL_V(_image_compress_bc_func, ERR_UNAVAILABLE);
@@ -3026,6 +3060,11 @@ void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr
 void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
+void (*Image::_image_compress_bc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_etc1_rd_func)(Image *) = nullptr;
+void (*Image::_image_compress_etc2_rd_func)(Image *, Image::UsedChannels) = nullptr;
+//void (*Image::_image_compress_astc_rd_func)(Image *, Image::ASTCFormat) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;

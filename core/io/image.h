@@ -159,6 +159,12 @@ public:
 	static void (*_image_compress_etc2_func)(Image *, UsedChannels p_channels);
 	static void (*_image_compress_astc_func)(Image *, ASTCFormat p_format);
 
+	static void (*_image_compress_bc_rd_func)(Image *, UsedChannels p_channels);
+	static void (*_image_compress_bptc_rd_func)(Image *, UsedChannels p_channels);
+	static void (*_image_compress_etc1_rd_func)(Image *);
+	static void (*_image_compress_etc2_rd_func)(Image *, UsedChannels p_channels);
+	//static void (*_image_compress_astc_rd_func)(Image *, ASTCFormat p_format);
+
 	static void (*_image_decompress_bc)(Image *);
 	static void (*_image_decompress_bptc)(Image *);
 	static void (*_image_decompress_etc1)(Image *);
