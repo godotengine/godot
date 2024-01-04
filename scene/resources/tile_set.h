@@ -117,18 +117,17 @@ union TileMapCell {
 class TileMapPattern : public Resource {
 	GDCLASS(TileMapPattern, Resource);
 	int pattern_set_index;
-	//CHECK ME: Set the below to 0 after compiling and checking for bugs. 
-	int number_of_layers;
-	bool is_single_layer;
-	Vector2i pattern_start_position = Vector2i(2147483645, 2147483645);
+	int number_of_layers = 1;
+	bool is_single_layer = true;
+	Vector2i pattern_start_position = Vector2i(21477, 21477);
 	Size2i size;
 
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
 	Vector<int> _get_tile_data(int p_layer) const;
-
 	struct PatternLayer {
 		HashMap<Vector2i, TileMapCell> pattern_layer;
 	};
+	
 	Vector<PatternLayer> pattern;
 
 protected:
@@ -139,20 +138,20 @@ protected:
 	static void _bind_methods();
 
 public:
-	
+
 	int get_pattern_set_index() const;
 	void set_pattern_set_index(int p_pattern_set_index);
 
 	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
 	bool has_cell(const Vector2i &p_coords) const;
 	void remove_cell(int p_layer, const Vector2i &p_coords, bool p_update_size = true);
-	int get_cell_source_id(int p_layer, const Vector2i &p_coords) const;
+	int get_cell_source_id(int p_layer, const Vector2i &p_coords);
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords) const;
 	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords) const;
 
 	TypedArray<Vector2i> get_used_cells_on_layer(int p_layer) const;
-	TypedArray<Vector2i> get_used_cells() const;
-	PatternLayer get_pattern_layer(int p_layer);
+	TypedArray<Vector2i> get_used_cells();
+	HashMap<Vector2i, TileMapCell> get_pattern_layer(int p_layer);
 
 	int get_number_of_layers() const;
 	void set_number_of_layers(int p_number_of_layers);
@@ -166,6 +165,10 @@ public:
 	void set_pattern_start_position(Vector2i p_position = Vector2i(0, 0));
 	void clear();
 	void clear_layer(int p_layer);
+
+	TileMapPattern() : Resource() {
+		pattern.resize(1);
+	}
 };
 
 class TileSet : public Resource {

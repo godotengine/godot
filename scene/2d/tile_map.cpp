@@ -1971,15 +1971,17 @@ void TileMapLayer::clear() {
 }
 
 Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPattern> p_pattern, TypedArray<Vector2i> p_coords_array) {
+	print_line("get_pattern layer called");
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 	ERR_FAIL_COND_V(!tile_set.is_valid(), nullptr);
 	Vector2i min = p_pattern->get_pattern_start_position();
 	Vector2i max; 
-	for (int i; i < p_coords_array.size(); i++) {
+	for (int i = 0; i < p_coords_array.size(); i++) {
 		max = max.max(p_coords_array[i]);
 	}
 	// Single layer pattern.
 	if (p_pattern->get_is_single_layer()) {
+		print_line("get_pattern layer single layer called");
 		Vector<Vector2i> coords_in_pattern_array;
 		coords_in_pattern_array.resize(p_coords_array.size());
 		Vector2i ensure_positive_offset;
@@ -2016,6 +2018,7 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPat
 			p_pattern->set_cell(0, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords));
 		}
 		p_pattern->set_size(max - min);
+		
 	}
 
 	// Multi layer pattern.
@@ -2063,7 +2066,7 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPat
 	return p_pattern;
 }
 
-void TileMapLayer::set_pattern_layer(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern, int p_layer = -1) {
+void TileMapLayer::set_pattern_layer(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern, int p_layer) {
 	ERR_FAIL_INDEX_MSG(p_layer, p_pattern->get_number_of_layers(), "Layer index is out of bounds");
 	ERR_FAIL_COND(p_pattern.is_null());
 	//CHECK ME: Different operations for single vs multi-layer?
@@ -3234,7 +3237,16 @@ void TileMap::_recreate_internals() {
 /////////////////////////////// Rendering //////////////////////////////////////
 
 void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
-	TILEMAP_CALL_FOR_LAYER(p_layer, set_cell, p_coords, p_source_id, p_atlas_coords, p_alternative_tile);
+	if (p_layer < 0) {
+		p_layer = layers.size() + p_layer;
+	};
+	if ((p_layer) < 0 || (p_layer) >= ((int)layers.size())) {
+		_err_print_index_error(__FUNCTION__, "C:\\Users\\LPC\\source\\repos\\Godot Extension Project\\Godot Engine Fork\\godot\\scene\\2d\\tile_map.cpp", 3237, p_layer, (int)layers.size(), "p_layer", "(int)layers.size()");
+		return;
+	} else
+		((void)0);
+	layers[p_layer]->set_cell(p_coords, p_source_id, p_atlas_coords, p_alternative_tile);
+	;
 }
 
 void TileMap::erase_cell(int p_layer, const Vector2i &p_coords) {
@@ -3257,7 +3269,8 @@ TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, boo
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, nullptr, get_cell_tile_data, p_coords, p_use_proxies);
 }
 
-Ref<TileMapPattern> TileMap::get_pattern(TypedArray<Vector2i> p_coords_array, int p_layer = -1) {
+Ref<TileMapPattern> TileMap::get_pattern(TypedArray<Vector2i> p_coords_array, int p_layer) {
+	print_line("get_pattern");
 	Ref<TileMapPattern> output;
 	output.instantiate();
 	if (p_coords_array.is_empty()) {
@@ -3266,6 +3279,7 @@ Ref<TileMapPattern> TileMap::get_pattern(TypedArray<Vector2i> p_coords_array, in
 
 	// If the pattern is single layer as indicated by p_layer being something other than -1. This is determined when get_pattern is called in tile_map_editor.cpp based on the multi_layer_selection_mode flag. 
 	if (p_layer != -1) {
+		print_line("get_pattern single layer called");
 		output->set_is_single_layer(true);
 		output->set_number_of_layers(1);
 
@@ -4194,7 +4208,16 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 }
 
 TypedArray<Vector2i> TileMap::get_used_cells(int p_layer) const {
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, TypedArray<Vector2i>(), get_used_cells);
+	if (p_layer < 0) {
+		p_layer = layers.size() + p_layer;
+	};
+	if ((p_layer) < 0 || (p_layer) >= ((int)layers.size())) {
+		_err_print_index_error(__FUNCTION__, "C:\\Users\\LPC\\source\\repos\\Godot Extension Project\\Godot Engine Fork\\godot\\scene\\2d\\tile_map.cpp", 4211, p_layer, (int)layers.size(), "p_layer", "(int)layers.size()");
+		return TypedArray<Vector2i>();
+	} else
+		((void)0);
+	return layers[p_layer]->get_used_cells();
+	;
 }
 
 TypedArray<Vector2i> TileMap::get_used_cells_by_id(int p_layer, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) const {
