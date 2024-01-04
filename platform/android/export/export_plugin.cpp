@@ -2229,6 +2229,54 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 	return apksigner_path;
 }
 
+static bool has_valid_keystore_credentials(String &r_error_str, const String &p_keystore, const String &p_username, const String &p_password, const String &p_type) {
+	String output;
+	List<String> args;
+	args.push_back("-list");
+	args.push_back("-keystore");
+	args.push_back(p_keystore);
+	args.push_back("-storepass");
+	args.push_back(p_password);
+	args.push_back("-alias");
+	args.push_back(p_username);
+	Error error = OS::get_singleton()->execute("keytool", args, &output, nullptr, true);
+	String keytool_error = "keytool error:";
+	bool valid = output.substr(0, keytool_error.length()) != keytool_error;
+
+	if (error != OK) {
+		r_error_str = TTR("Error: There was a problem validating the keystore username and password");
+		return false;
+	}
+	if (!valid) {
+		r_error_str = TTR(p_type + " Username and/or Password is invalid for the given " + p_type + " Keystore");
+		return false;
+	}
+	r_error_str = "";
+	return true;
+}
+
+bool EditorExportPlatformAndroid::has_valid_username_and_password(const Ref<EditorExportPreset> &p_preset, String &r_error) {
+	String dk = p_preset->get_or_env("keystore/debug", ENV_ANDROID_KEYSTORE_DEBUG_PATH);
+	String dk_user = p_preset->get_or_env("keystore/debug_user", ENV_ANDROID_KEYSTORE_DEBUG_USER);
+	String dk_password = p_preset->get_or_env("keystore/debug_password", ENV_ANDROID_KEYSTORE_DEBUG_PASS);
+	String rk = p_preset->get_or_env("keystore/release", ENV_ANDROID_KEYSTORE_RELEASE_PATH);
+	String rk_user = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
+	String rk_password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
+
+	bool valid = true;
+	if (!dk.is_empty() && !dk_user.is_empty() && !dk_password.is_empty()) {
+		String err = "";
+		valid = has_valid_keystore_credentials(err, dk, dk_user, dk_password, "Debug");
+		r_error += err;
+	}
+	if (!rk.is_empty() && !rk_user.is_empty() && !rk_password.is_empty()) {
+		String err = "";
+		valid = has_valid_keystore_credentials(err, rk, rk_user, rk_password, "Release");
+		r_error += err;
+	}
+	return valid;
+}
+
 bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
@@ -2840,6 +2888,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 	if (export_format > EXPORT_FORMAT_AAB || export_format < EXPORT_FORMAT_APK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unsupported export format!"));
+		return ERR_UNCONFIGURED;
+	}
+	String err_string;
+	if (!has_valid_username_and_password(p_preset, err_string)) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR(err_string));
 		return ERR_UNCONFIGURED;
 	}
 
