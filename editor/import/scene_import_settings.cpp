@@ -325,6 +325,8 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 
 	Ref<Texture2D> icon = get_editor_theme_icon(type);
 
+	current_tree = scene_tree;
+	tree_filter_edit->clear();
 	TreeItem *item = scene_tree->create_item(p_parent_item);
 	item->set_text(0, p_node->get_name());
 
@@ -1066,6 +1068,55 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 	}
 }
 
+void SceneImportSettingsDialog::_tree_filter_edit_changed(const String &p_filter) {
+	tree_filter = p_filter;
+	_update_tree_filter(nullptr, true);
+}
+
+void SceneImportSettingsDialog::_tree_tab_changed(int p_tab_id) {
+	current_tree = static_cast<Tree *>(data_mode->get_tab_control(p_tab_id));
+	_update_tree_filter(nullptr, true);
+}
+
+bool SceneImportSettingsDialog::_update_tree_filter(TreeItem *p_parent, bool p_scroll_to_selected) {
+	if (!p_parent) {
+		p_parent = current_tree->get_root();
+	}
+
+	if (!p_parent) {
+		// Tree is empty, nothing to do here.
+		return false;
+	}
+
+	bool keep_for_children = false;
+	for (TreeItem *child = p_parent->get_first_child(); child; child = child->get_next()) {
+		// Always keep if at least one of the children are kept.
+		keep_for_children = _update_tree_filter(child, p_scroll_to_selected) || keep_for_children;
+	}
+
+	// Now find other reasons to keep this Node, too.
+	PackedStringArray terms = tree_filter.to_lower().split_spaces();
+	bool keep = _item_matches_all_terms(p_parent, terms);
+	p_parent->set_visible(keep_for_children || keep);
+
+	return keep || keep_for_children;
+}
+
+bool SceneImportSettingsDialog::_item_matches_all_terms(TreeItem *p_item, PackedStringArray p_terms) {
+	if (p_terms.is_empty()) {
+		return true;
+	}
+
+	for (int i = 0; i < p_terms.size(); i++) {
+		String term = p_terms[i];
+		if (!p_item->get_text(0).to_lower().contains(term)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void SceneImportSettingsDialog::_re_import() {
 	HashMap<StringName, Variant> main_settings;
 
@@ -1467,14 +1518,26 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	main_vb->add_child(tree_split);
 	tree_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	data_mode = memnew(TabContainer);
-	tree_split->add_child(data_mode);
-	data_mode->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
-	data_mode->set_theme_type_variation("TabContainerOdd");
+	VBoxContainer *data_mode_vbc = memnew(VBoxContainer);
+	data_mode_vbc->add_theme_constant_override("separate", 0);
+	tree_split->add_child(data_mode_vbc);
 
 	property_split = memnew(HSplitContainer);
 	tree_split->add_child(property_split);
 	property_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	tree_filter_edit = memnew(LineEdit);
+	tree_filter_edit->set_placeholder(TTR("Filter Nodes"));
+	tree_filter_edit->add_theme_constant_override("minimum_character_width", 0);
+	data_mode_vbc->add_child(tree_filter_edit);
+	tree_filter_edit->connect("text_changed", callable_mp(this, &SceneImportSettingsDialog::_tree_filter_edit_changed));
+
+	data_mode = memnew(TabContainer);
+	data_mode_vbc->add_child(data_mode);
+	data_mode->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	data_mode->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
+	data_mode->set_theme_type_variation("TabContainerOdd");
+	data_mode->connect("tab_changed", callable_mp(this, &SceneImportSettingsDialog::_tree_tab_changed));
 
 	scene_tree = memnew(Tree);
 	scene_tree->set_name(TTR("Scene"));
