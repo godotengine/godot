@@ -2095,10 +2095,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 					}
 				}
 
-				bool is_script = name == CoreStringName(script);
-				Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(res.ptr(), name);
-
-				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
+				if (!res->is_property_value_saved(name, value)) {
 					continue;
 				}
 
