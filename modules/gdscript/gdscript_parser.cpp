@@ -1120,7 +1120,12 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 		case VariableNode::PROP_INLINE: {
 			FunctionNode *function = alloc_node<FunctionNode>();
 
-			consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "get".)");
+			if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+				consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after "get(".)*");
+				consume(GDScriptTokenizer::Token::COLON, R"*(Expected ":" after "get()".)*");
+			} else {
+				consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" or "(" after "get".)");
+			}
 
 			IdentifierNode *identifier = alloc_node<IdentifierNode>();
 			complete_extents(identifier);
@@ -1268,8 +1273,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	EnumNode *enum_node = alloc_node<EnumNode>();
 	bool named = false;
 
-	if (check(GDScriptTokenizer::Token::IDENTIFIER)) {
-		advance();
+	if (match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		enum_node->identifier = parse_identifier();
 		named = true;
 	}
