@@ -161,6 +161,9 @@ void EditorExportPlugin::_export_begin_script(const Vector<String> &p_features, 
 	GDVIRTUAL_CALL(_export_begin, p_features, p_debug, p_path, p_flags);
 }
 
+void EditorExportPlugin::_export_files_end_script() {
+	GDVIRTUAL_CALL(_export_files_end);
+}
 void EditorExportPlugin::_export_end_script() {
 	GDVIRTUAL_CALL(_export_end);
 }
@@ -291,6 +294,9 @@ void EditorExportPlugin::_export_file(const String &p_path, const String &p_type
 void EditorExportPlugin::_export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
 }
 
+void EditorExportPlugin::_export_files_end() {
+}
+
 void EditorExportPlugin::skip() {
 	skipped = true;
 }
@@ -311,6 +317,7 @@ void EditorExportPlugin::_bind_methods() {
 
 	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
 	GDVIRTUAL_BIND(_export_begin, "features", "is_debug", "path", "flags");
+	GDVIRTUAL_BIND(_export_files_end);
 	GDVIRTUAL_BIND(_export_end);
 
 	GDVIRTUAL_BIND(_begin_customize_resources, "platform", "features");

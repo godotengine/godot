@@ -85,6 +85,12 @@
 				Calling [method skip] inside this callback will make the file not included in the export.
 			</description>
 		</method>
+		<method name="_export_files_end" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Virtual method to be overridden by the user. Called when files are exported, you can add custom files which you need to collect all exported files' information to generate.
+			</description>
+		</method>
 		<method name="_get_android_dependencies" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<param index="0" name="platform" type="EditorExportPlatform" />
