@@ -70,7 +70,6 @@ public:
 	};
 
 private:
-	String export_base_path;
 	struct SavedData {
 		uint64_t ofs = 0;
 		uint64_t size = 0;
