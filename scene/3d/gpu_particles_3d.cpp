@@ -34,6 +34,7 @@
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "scene/scene_string_names.h"
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
@@ -459,6 +460,14 @@ void GPUParticles3D::_notification(int p_what) {
 		// Use internal process when emitting and one_shot is on so that when
 		// the shot ends the editor can properly update.
 		case NOTIFICATION_INTERNAL_PROCESS: {
+			const Vector3 velocity = (get_global_position() - previous_position) / get_process_delta_time();
+
+			if (velocity != previous_velocity) {
+				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
+				previous_velocity = velocity;
+			}
+			previous_position = get_global_position();
+
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
@@ -469,7 +478,7 @@ void GPUParticles3D::_notification(int p_what) {
 				}
 				if (time > active_time) {
 					if (active && !signal_canceled) {
-						emit_signal(SceneStringName(finished));
+						emit_signal(SceneStringNames::get_singleton()->finished);
 					}
 					active = false;
 					if (!emitting) {
@@ -505,10 +514,18 @@ void GPUParticles3D::_notification(int p_what) {
 			previous_position = get_global_transform().origin;
 			set_process_internal(true);
 			set_physics_process_internal(true);
+
+			Ref<ParticleProcessMaterial> material = get_process_material();
+			ERR_FAIL_COND(material.is_null());
+			material->connect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			RS::get_singleton()->particles_set_subemitter(particles, RID());
+
+			Ref<ParticleProcessMaterial> material = get_process_material();
+			ERR_FAIL_COND(material.is_null());
+			material->disconnect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
 		} break;
 
 		case NOTIFICATION_PAUSED:
