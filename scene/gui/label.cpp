@@ -813,6 +813,19 @@ Size2 Label::get_minimum_size() const {
 	}
 }
 
+#ifndef DISABLE_DEPRECATED
+bool Label::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == SNAME("valign")) {
+		set_vertical_alignment((VerticalAlignment)p_value.operator int());
+		return true;
+	} else if (p_name == SNAME("align")) {
+		set_horizontal_alignment((HorizontalAlignment)p_value.operator int());
+		return true;
+	}
+	return false;
+}
+#endif
+
 int Label::get_line_count() const {
 	if (!is_inside_tree()) {
 		return 1;
