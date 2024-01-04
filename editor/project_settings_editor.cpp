@@ -173,7 +173,7 @@ void ProjectSettingsEditor::_feature_selected(int p_index) {
 void ProjectSettingsEditor::_update_property_box() {
 	const String setting = _get_setting_name();
 	const Vector<String> t = setting.split(".", true, 1);
-	const String name = t[0];
+	const String &name = t[0];
 	const String feature = (t.size() == 2) ? t[1] : "";
 	bool feature_invalid = (t.size() == 2) && (t[1].is_empty());
 

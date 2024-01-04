@@ -1718,7 +1718,7 @@ void Collada::_parse_animation(XMLParser &p_parser) {
 
 	for (int i = 0; i < channel_sources.size(); i++) {
 		String source = _uri_to_id(channel_sources[i]);
-		String target = channel_targets[i];
+		const String &target = channel_targets[i];
 		ERR_CONTINUE(!samplers.has(source));
 		HashMap<String, String> &sampler = samplers[source];
 

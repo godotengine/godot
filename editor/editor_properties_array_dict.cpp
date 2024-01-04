@@ -462,7 +462,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 		Vector<String> files = drag_data["files"];
 
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
+			const String &file = files[i];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 
 			for (int j = 0; j < allowed_type.get_slice_count(","); j++) {
@@ -504,7 +504,7 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		// Loop the file array and add to existing array.
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
+			const String &file = files[i];
 
 			Ref<Resource> res = ResourceLoader::load(file);
 			if (res.is_valid()) {

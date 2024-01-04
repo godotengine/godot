@@ -456,7 +456,7 @@ void EditorExportPlatform::_edit_files_with_filter(Ref<DirAccess> &da, const Vec
 	da->list_dir_end();
 
 	for (int i = 0; i < dirs.size(); ++i) {
-		String dir = dirs[i];
+		const String &dir = dirs[i];
 		if (dir.begins_with(".")) {
 			continue;
 		}
@@ -1096,7 +1096,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				Vector<String> fields = l.split("::");
 				if (fields.size() == 4) {
 					FileExportCache fec;
-					String path = fields[0];
+					const String &path = fields[0];
 					fec.source_md5 = fields[1].strip_edges();
 					fec.source_modified_time = fields[2].strip_edges().to_int();
 					fec.saved_path = fields[3];
@@ -1364,8 +1364,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	if (path_remaps.size()) {
 		if (true) { //new remap mode, use always as it's friendlier with multiple .pck exports
 			for (int i = 0; i < path_remaps.size(); i += 2) {
-				String from = path_remaps[i];
-				String to = path_remaps[i + 1];
+				const String &from = path_remaps[i];
+				const String &to = path_remaps[i + 1];
 				String remap_file = "[remap]\n\npath=\"" + to.c_escape() + "\"\n";
 				CharString utf8 = remap_file.utf8();
 				Vector<uint8_t> new_file;

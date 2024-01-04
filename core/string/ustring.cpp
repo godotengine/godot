@@ -4569,7 +4569,7 @@ bool String::is_valid_ip_address() const {
 	if (find(":") >= 0) {
 		Vector<String> ip = split(":");
 		for (int i = 0; i < ip.size(); i++) {
-			String n = ip[i];
+			const String &n = ip[i];
 			if (n.is_empty()) {
 				continue;
 			}
@@ -4591,7 +4591,7 @@ bool String::is_valid_ip_address() const {
 			return false;
 		}
 		for (int i = 0; i < ip.size(); i++) {
-			String n = ip[i];
+			const String &n = ip[i];
 			if (!n.is_valid_int()) {
 				return false;
 			}

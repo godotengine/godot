@@ -1094,7 +1094,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 
 Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets) {
 	for (int f_idx = 0; f_idx < p_assets.size(); ++f_idx) {
-		String asset = p_assets[f_idx];
+		const String &asset = p_assets[f_idx];
 		if (asset.begins_with("res://")) {
 			Error err = _copy_asset(p_out_dir, asset, nullptr, p_is_framework, p_should_embed, r_exported_assets);
 			ERR_FAIL_COND_V(err != OK, err);

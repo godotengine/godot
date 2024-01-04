@@ -2949,7 +2949,7 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 		_normalize_drop(node, to_pos, p_type);
 		_perform_instantiate_scenes(p_files, node, to_pos);
 	} else {
-		String res_path = p_files[0];
+		const String &res_path = p_files[0];
 		StringName res_type = EditorFileSystem::get_singleton()->get_file_type(res_path);
 		List<String> valid_properties;
 

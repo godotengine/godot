@@ -6155,9 +6155,9 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 
 			const float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
 
-			const T from = p_values[idx * 3 + 1];
+			const T &from = p_values[idx * 3 + 1];
 			const T c1 = from + p_values[idx * 3 + 2];
-			const T to = p_values[idx * 3 + 4];
+			const T &to = p_values[idx * 3 + 4];
 			const T c2 = to + p_values[idx * 3 + 3];
 
 			return interp.bezier(from, c1, c2, to, c);
@@ -7056,9 +7056,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 		} else if (String(final_track_path).contains(":")) {
 			//Process skeleton
 			const Vector<String> node_suffix = String(final_track_path).split(":");
-			const String node = node_suffix[0];
+			const String &node = node_suffix[0];
 			const NodePath node_path = node;
-			const String suffix = node_suffix[1];
+			const String &suffix = node_suffix[1];
 			Node *godot_node = animation_base_node->get_node_or_null(node_path);
 			if (!godot_node) {
 				continue;

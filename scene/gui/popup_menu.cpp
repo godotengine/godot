@@ -2546,7 +2546,7 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
 		int item_index = components[0].trim_prefix("item_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "text") {
 			set_item_text(item_index, p_value);
 			return true;
@@ -2625,7 +2625,7 @@ bool PopupMenu::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
 		int item_index = components[0].trim_prefix("item_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "text") {
 			r_ret = get_item_text(item_index);
 			return true;

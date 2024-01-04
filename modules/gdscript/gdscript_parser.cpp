@@ -629,7 +629,7 @@ GDScriptParser::ClassNode *GDScriptParser::find_class(const String &p_qualified_
 
 	// Starts at index 1 because index 0 was handled above.
 	for (int i = 1; result != nullptr && i < class_names.size(); i++) {
-		String current_name = class_names[i];
+		const String &current_name = class_names[i];
 		GDScriptParser::ClassNode *next = nullptr;
 		if (result->has_member(current_name)) {
 			GDScriptParser::ClassNode::Member member = result->get_member(current_name);

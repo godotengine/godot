@@ -4532,7 +4532,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "font" || subtag_a[0] == "f") {
-						String fnt = subtag_a[1];
+						const String &fnt = subtag_a[1];
 						Ref<Font> font = ResourceLoader::load(fnt, "Font");
 						if (font.is_valid()) {
 							f = font;
@@ -4776,7 +4776,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "name" || subtag_a[0] == "n") {
-						String fnt = subtag_a[1];
+						const String &fnt = subtag_a[1];
 						Ref<Font> font_data = ResourceLoader::load(fnt, "Font");
 						if (font_data.is_valid()) {
 							font = font_data;

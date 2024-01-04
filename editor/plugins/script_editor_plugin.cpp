@@ -2963,7 +2963,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 		}
 
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
+			const String &file = files[i];
 			if (file.is_empty() || !FileAccess::exists(file)) {
 				continue;
 			}
@@ -3043,7 +3043,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		}
 		int num_tabs_before = tab_container->get_tab_count();
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
+			const String &file = files[i];
 			if (file.is_empty() || !FileAccess::exists(file)) {
 				continue;
 			}

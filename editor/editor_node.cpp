@@ -177,7 +177,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 	Vector<RBSet<int>> index_sets;
 	HashMap<String, int> scene_name_to_set_index;
 	for (int i = 0; i < r_filenames.size(); i++) {
-		String scene_name = r_filenames[i];
+		const String &scene_name = r_filenames[i];
 		if (!scene_name_to_set_index.has(scene_name)) {
 			index_sets.append(RBSet<int>());
 			scene_name_to_set_index.insert(r_filenames[i], index_sets.size() - 1);
@@ -233,7 +233,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 					if (E->get() == F) {
 						continue;
 					}
-					String other_scene_name = r_filenames[F];
+					const String &other_scene_name = r_filenames[F];
 					if (other_scene_name == scene_name) {
 						duplicate_found = true;
 						break;
@@ -4198,7 +4198,7 @@ void EditorNode::_quick_opened() {
 
 	bool open_scene_dialog = quick_open->get_base_type() == "PackedScene";
 	for (int i = 0; i < files.size(); i++) {
-		String res_path = files[i];
+		const String &res_path = files[i];
 		if (open_scene_dialog || ClassDB::is_parent_class(ResourceLoader::get_resource_type(res_path), "PackedScene")) {
 			open_request(res_path);
 		} else {
@@ -4596,8 +4596,8 @@ String EditorNode::_get_system_info() const {
 	}
 	graphics += rendering_device_name;
 	if (video_adapter_driver_info.size() == 2) { // This vector is always either of length 0 or 2.
-		String vad_name = video_adapter_driver_info[0];
-		String vad_version = video_adapter_driver_info[1]; // Version could be potentially empty on Linux/BSD.
+		const String &vad_name = video_adapter_driver_info[0];
+		const String &vad_version = video_adapter_driver_info[1]; // Version could be potentially empty on Linux/BSD.
 		if (!vad_version.is_empty()) {
 			graphics += vformat(" (%s; %s)", vad_name, vad_version);
 		} else {
@@ -5189,7 +5189,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		Vector<String> names = String(p_layout->get_value(p_section, "dock_" + itos(i + 1))).split(",");
 
 		for (int j = names.size() - 1; j >= 0; j--) {
-			String name = names[j];
+			const String &name = names[j];
 
 			// FIXME: Find it, in a horribly inefficient way.
 			int atidx = -1;
@@ -6010,7 +6010,7 @@ void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, Str
 	ERR_FAIL_COND(dir.is_null());
 
 	for (int i = 0; i < p_files.size(); i++) {
-		String from = p_files[i];
+		const String &from = p_files[i];
 		String to = to_path.path_join(from.get_file());
 
 		if (dir->dir_exists(from)) {

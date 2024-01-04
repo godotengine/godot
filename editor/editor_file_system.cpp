@@ -257,7 +257,7 @@ void EditorFileSystem::_scan_filesystem() {
 				if (l.begins_with("::")) {
 					Vector<String> split = l.split("::");
 					ERR_CONTINUE(split.size() != 3);
-					String name = split[1];
+					const String &name = split[1];
 
 					cpath = name;
 
@@ -290,7 +290,7 @@ void EditorFileSystem::_scan_filesystem() {
 					if (deps.length()) {
 						Vector<String> dp = deps.split("<>");
 						for (int i = 0; i < dp.size(); i++) {
-							String path = dp[i];
+							const String &path = dp[i];
 							fc.deps.push_back(path);
 						}
 					}

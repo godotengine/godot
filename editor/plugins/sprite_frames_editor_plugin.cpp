@@ -1425,7 +1425,7 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 		}
 
 		for (int i = 0; i < files.size(); i++) {
-			String f = files[i];
+			const String &f = files[i];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(f);
 
 			if (!ClassDB::is_parent_class(ftype, "Texture2D")) {

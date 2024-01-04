@@ -1411,7 +1411,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				PackedStringArray results;
 
 				for (int i = 0; i < lines.size(); i++) {
-					String line = lines[i];
+					const String &line = lines[i];
 					String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); // Extract the whitespace at the beginning.
 					if (expression.parse(line) == OK) {
 						Variant result = expression.execute(Array(), Variant(), false, true);

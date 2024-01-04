@@ -527,7 +527,7 @@ bool Curve::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
 		int point_index = components[0].trim_prefix("point_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "position") {
 			Vector2 position = p_value.operator Vector2();
 			set_point_offset(point_index, position.x);
@@ -556,7 +556,7 @@ bool Curve::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
 		int point_index = components[0].trim_prefix("point_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "position") {
 			r_ret = get_point_position(point_index);
 			return true;
@@ -1255,7 +1255,7 @@ bool Curve2D::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
 		int point_index = components[0].trim_prefix("point_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "position") {
 			set_point_position(point_index, p_value);
 			return true;
@@ -1274,7 +1274,7 @@ bool Curve2D::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
 		int point_index = components[0].trim_prefix("point_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "position") {
 			r_ret = get_point_position(point_index);
 			return true;
@@ -2220,7 +2220,7 @@ bool Curve3D::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
 		int point_index = components[0].trim_prefix("point_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "position") {
 			set_point_position(point_index, p_value);
 			return true;
@@ -2242,7 +2242,7 @@ bool Curve3D::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
 		int point_index = components[0].trim_prefix("point_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "position") {
 			r_ret = get_point_position(point_index);
 			return true;

@@ -103,7 +103,7 @@ PackedInt64Array RenderingServer::_instances_cull_convex_bind(const TypedArray<P
 	}
 	Vector<Plane> planes;
 	for (int i = 0; i < p_convex.size(); ++i) {
-		Variant v = p_convex[i];
+		const Variant &v = p_convex[i];
 		ERR_FAIL_COND_V(v.get_type() != Variant::PLANE, PackedInt64Array());
 		planes.push_back(v);
 	}
