@@ -217,6 +217,9 @@ void EditorResourcePicker::_update_menu_items() {
 		if (is_editable()) {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+			if (edited_resource->get_inherits_state().is_null()) {
+				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTR("Inherit State"), OBJ_MENU_MAKE_INHERITED);
+			}
 
 			// Check whether the resource has subresources.
 			List<PropertyInfo> property_list;
@@ -362,7 +365,20 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
 		} break;
+		case OBJ_MENU_MAKE_INHERITED: {
+			if (edited_resource.is_null()) {
+				return;
+			}
 
+			Ref<Resource> r = static_cast<Resource *>(ClassDB::instantiate(edited_resource->get_class()));
+			ERR_FAIL_COND(r.is_null());
+
+			r->set_inherits_state(edited_resource);
+
+			edited_resource = r;
+			emit_signal(SNAME("resource_changed"), edited_resource);
+			_update_resource();
+		} break;
 		case OBJ_MENU_MAKE_UNIQUE_RECURSIVE: {
 			if (edited_resource.is_null()) {
 				return;
