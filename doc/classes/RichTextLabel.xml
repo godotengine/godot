@@ -671,12 +671,6 @@
 				Triggered when the document is fully loaded.
 			</description>
 		</signal>
-		<signal name="text_changed">
-			<param index="0" name="text" type="String" />
-			<description>
-				Emitted when the value behind the text property of a RichTextLabel was changed. The new text is contained in the [param text] argument.
-			</description>
-		</signal>
 		<signal name="meta_clicked">
 			<param index="0" name="meta" type="Variant" />
 			<description>
@@ -693,6 +687,12 @@
 			<param index="0" name="meta" type="Variant" />
 			<description>
 				Triggers when the mouse enters a meta tag.
+			</description>
+		</signal>
+		<signal name="text_changed">
+			<param index="0" name="text" type="String" />
+			<description>
+				Emitted when the value behind the text property of a RichTextLabel was changed. The new text is contained in the [param text] argument.
 			</description>
 		</signal>
 	</signals>
