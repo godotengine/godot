@@ -3725,7 +3725,7 @@ void RendererSceneCull::render_probes() {
 							cache->type != RSG::light_storage->light_get_type(instance->base) ||
 							cache->transform != instance->transform ||
 							cache->color != RSG::light_storage->light_get_color(instance->base) ||
-							cache->energy != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ENERGY) ||
+							cache->energy != (RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ENERGY) * (RSG::light_storage->light_is_negative(instance->base) ? -1.0f : 1.0f)) ||
 							cache->intensity != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_INTENSITY) ||
 							cache->bake_energy != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_INDIRECT_ENERGY) ||
 							cache->radius != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_RANGE) ||
@@ -3757,7 +3757,7 @@ void RendererSceneCull::render_probes() {
 							cache->type != RSG::light_storage->light_get_type(instance->base) ||
 							cache->transform != instance->transform ||
 							cache->color != RSG::light_storage->light_get_color(instance->base) ||
-							cache->energy != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ENERGY) ||
+							cache->energy != (RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ENERGY) * (RSG::light_storage->light_is_negative(instance->base) ? -1.0f : 1.0f)) ||
 							cache->intensity != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_INTENSITY) ||
 							cache->bake_energy != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_INDIRECT_ENERGY) ||
 							cache->radius != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_RANGE) ||
@@ -3804,7 +3804,7 @@ void RendererSceneCull::render_probes() {
 					cache->type = RSG::light_storage->light_get_type(instance->base);
 					cache->transform = instance->transform;
 					cache->color = RSG::light_storage->light_get_color(instance->base);
-					cache->energy = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ENERGY);
+					cache->energy = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ENERGY) * (RSG::light_storage->light_is_negative(instance->base) ? -1.0f : 1.0f);
 					cache->intensity = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_INTENSITY);
 					cache->bake_energy = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 					cache->radius = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_RANGE);
@@ -3827,7 +3827,7 @@ void RendererSceneCull::render_probes() {
 					cache->type = RSG::light_storage->light_get_type(instance->base);
 					cache->transform = instance->transform;
 					cache->color = RSG::light_storage->light_get_color(instance->base);
-					cache->energy = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ENERGY);
+					cache->energy = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ENERGY) * (RSG::light_storage->light_is_negative(instance->base) ? -1.0f : 1.0f);
 					cache->intensity = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_INTENSITY);
 					cache->bake_energy = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 					cache->radius = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_RANGE);
