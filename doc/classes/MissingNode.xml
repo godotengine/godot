@@ -13,8 +13,11 @@
 		<member name="original_class" type="String" setter="set_original_class" getter="get_original_class">
 			The name of the class this node was supposed to be (see [method Object.get_class]).
 		</member>
+		<member name="original_scene" type="String" setter="set_original_scene" getter="get_original_scene">
+			Returns the path of the scene this node was instance of originally.
+		</member>
 		<member name="recording_properties" type="bool" setter="set_recording_properties" getter="is_recording_properties">
-			If set to [code]true[/code], allows new properties to be added on top of the existing ones with [method Object.set].
+			If [code]true[/code], allows new properties to be set along with existing ones. If [code]false[/code], only existing properties' values can be set, and new properties cannot be added.
 		</member>
 	</members>
 </class>
