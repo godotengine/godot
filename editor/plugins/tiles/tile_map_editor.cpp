@@ -800,7 +800,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 	Vector2 mpos = tile_map->get_local_mouse_position();
-	Vector2i tile_shape_size = tile_set->get_tile_size();
+	Vector2i tile_shape_size = tile_map->get_tile_spacing();
 
 	// Draw the selection.
 	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree()) && tool_buttons_group->get_pressed_button() == select_tool_button) {
@@ -869,7 +869,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 			}
 		} else if (drag_type == DRAG_TYPE_CLIPBOARD_PASTE) {
 			// Preview when pasting.
-			Vector2 mouse_offset = (Vector2(tile_map_clipboard->get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
+			Vector2 mouse_offset = (Vector2(tile_map_clipboard->get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_map->get_tile_spacing();
 			TypedArray<Vector2i> clipboard_used_cells = tile_map_clipboard->get_used_cells();
 			for (int i = 0; i < clipboard_used_cells.size(); i++) {
 				Vector2i coords = tile_map->map_pattern(tile_map->local_to_map(mpos - mouse_offset), clipboard_used_cells[i], tile_map_clipboard);
@@ -1104,7 +1104,7 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_st
 		} else {
 			// Paint the pattern.
 			// If we paint several tiles, we virtually move the mouse as if it was in the center of the "brush"
-			Vector2 mouse_offset = (Vector2(pattern->get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
+			Vector2 mouse_offset = (Vector2(pattern->get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_map->get_tile_spacing();
 			Vector2i last_hovered_cell = tile_map->local_to_map(p_from_mouse_pos - mouse_offset);
 			Vector2i new_hovered_cell = tile_map->local_to_map(p_to_mouse_pos - mouse_offset);
 			Vector2i drag_start_cell = tile_map->local_to_map(p_start_drag_mouse_pos - mouse_offset);
@@ -1502,7 +1502,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			undo_redo->commit_action(false);
 		} break;
 		case DRAG_TYPE_CLIPBOARD_PASTE: {
-			Vector2 mouse_offset = (Vector2(tile_map_clipboard->get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
+			Vector2 mouse_offset = (Vector2(tile_map_clipboard->get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_map->get_tile_spacing();
 			undo_redo->create_action(TTR("Paste tiles"));
 			TypedArray<Vector2i> used_cells = tile_map_clipboard->get_used_cells();
 			for (int i = 0; i < used_cells.size(); i++) {
@@ -3191,7 +3191,7 @@ void TileMapEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_o
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 	Vector2 mpos = tile_map->get_local_mouse_position();
-	Vector2i tile_shape_size = tile_set->get_tile_size();
+	Vector2i tile_shape_size = tile_map->get_tile_spacing();
 
 	// Handle the preview of the tiles to be placed.
 	if (main_vbox_container->is_visible_in_tree() && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
@@ -4041,7 +4041,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * tile_map->get_global_transform_with_canvas();
 	Transform2D xform_inv = xform.affine_inverse();
-	Vector2i tile_shape_size = tile_set->get_tile_size();
+	Vector2i tile_shape_size = tile_map->get_tile_spacing();
 
 	// Draw tiles with invalid IDs in the grid.
 	if (tile_map_layer >= 0) {

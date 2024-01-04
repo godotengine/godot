@@ -491,6 +491,9 @@
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].
 		</member>
+		<member name="tile_spacing" type="Vector2i" setter="set_tile_spacing" getter="get_tile_spacing" default="Vector2i(0, 0)">
+			Defines the size of the grid tiles are placed into. If both x and y are both 0, defaults to the attached TileSet's tile_size.
+		</member>
 	</members>
 	<signals>
 		<signal name="changed">

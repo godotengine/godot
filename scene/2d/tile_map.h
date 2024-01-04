@@ -455,6 +455,8 @@ private:
 	// Properties.
 	Ref<TileSet> tile_set;
 	int rendering_quadrant_size = 16;
+	// When set to 0,0 this is ignored in favor of the tile_size value defined in the tileSet.
+	Size2i tile_spacing = Size2i(0, 0);
 	bool collision_animatable = false;
 	VisibilityMode collision_visibility_mode = VISIBILITY_MODE_DEFAULT;
 	VisibilityMode navigation_visibility_mode = VISIBILITY_MODE_DEFAULT;
@@ -507,6 +509,8 @@ public:
 
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;
+	void set_tile_spacing(Size2i p_size);
+	Size2i get_tile_spacing() const;
 
 	void set_rendering_quadrant_size(int p_size);
 	int get_rendering_quadrant_size() const;
