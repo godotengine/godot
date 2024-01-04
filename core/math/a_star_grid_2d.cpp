@@ -106,16 +106,45 @@ Size2 AStarGrid2D::get_cell_size() const {
 	return cell_size;
 }
 
+void AStarGrid2D::set_cell_shape(CellShape p_cell_shape) {
+	if (cell_shape == p_cell_shape) {
+		return;
+	}
+
+	ERR_FAIL_INDEX(p_cell_shape, CellShape::CELL_SHAPE_MAX);
+	cell_shape = p_cell_shape;
+	dirty = true;
+}
+
+AStarGrid2D::CellShape AStarGrid2D::get_cell_shape() const {
+	return cell_shape;
+}
+
 void AStarGrid2D::update() {
 	points.clear();
 
 	const int32_t end_x = region.get_end().x;
 	const int32_t end_y = region.get_end().y;
+	const Vector2 half_cell_size = cell_size / 2;
 
 	for (int32_t y = region.position.y; y < end_y; y++) {
 		LocalVector<Point> line;
 		for (int32_t x = region.position.x; x < end_x; x++) {
-			line.push_back(Point(Vector2i(x, y), offset + Vector2(x, y) * cell_size));
+			Vector2 v = offset;
+			switch (cell_shape) {
+				case CELL_SHAPE_ISOMETRIC_RIGHT:
+					v += half_cell_size + Vector2(x + y, y - x) * half_cell_size;
+					break;
+				case CELL_SHAPE_ISOMETRIC_DOWN:
+					v += half_cell_size + Vector2(x - y, x + y) * half_cell_size;
+					break;
+				case CELL_SHAPE_SQUARE:
+					v += Vector2(x, y) * cell_size;
+					break;
+				default:
+					break;
+			}
+			line.push_back(Point(Vector2i(x, y), v));
 		}
 		points.push_back(line);
 	}
@@ -620,6 +649,8 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_offset"), &AStarGrid2D::get_offset);
 	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &AStarGrid2D::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &AStarGrid2D::get_cell_size);
+	ClassDB::bind_method(D_METHOD("set_cell_shape", "cell_shape"), &AStarGrid2D::set_cell_shape);
+	ClassDB::bind_method(D_METHOD("get_cell_shape"), &AStarGrid2D::get_cell_shape);
 	ClassDB::bind_method(D_METHOD("is_in_bounds", "x", "y"), &AStarGrid2D::is_in_bounds);
 	ClassDB::bind_method(D_METHOD("is_in_boundsv", "id"), &AStarGrid2D::is_in_boundsv);
 	ClassDB::bind_method(D_METHOD("is_dirty"), &AStarGrid2D::is_dirty);
@@ -651,6 +682,7 @@ void AStarGrid2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_shape", PROPERTY_HINT_ENUM, "Square,IsometricRight,IsometricDown"), "set_cell_shape", "get_cell_shape");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "jumping_enabled"), "set_jumping_enabled", "is_jumping_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_compute_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_compute_heuristic", "get_default_compute_heuristic");
@@ -668,4 +700,9 @@ void AStarGrid2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DIAGONAL_MODE_AT_LEAST_ONE_WALKABLE);
 	BIND_ENUM_CONSTANT(DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES);
 	BIND_ENUM_CONSTANT(DIAGONAL_MODE_MAX);
+
+	BIND_ENUM_CONSTANT(CELL_SHAPE_SQUARE);
+	BIND_ENUM_CONSTANT(CELL_SHAPE_ISOMETRIC_RIGHT);
+	BIND_ENUM_CONSTANT(CELL_SHAPE_ISOMETRIC_DOWN);
+	BIND_ENUM_CONSTANT(CELL_SHAPE_MAX);
 }
