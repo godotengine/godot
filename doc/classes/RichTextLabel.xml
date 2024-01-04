@@ -666,7 +666,7 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="changed_text">
+		<signal name="text_changed">
 			<param index="0" name="text" type="String" />
 			<description>
 				Emitted when the text of a label was changed. The new text is contained in the [param text] argument.

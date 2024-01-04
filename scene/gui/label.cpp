@@ -894,7 +894,7 @@ void Label::set_text(const String &p_string) {
 	queue_redraw();
 	update_minimum_size();
 	update_configuration_warnings();
-	emit_signal(SNAME("changed_text"), text);
+	emit_signal(SNAME("text_changed"), text);
 }
 
 void Label::_invalidate() {
@@ -1206,7 +1206,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 
-	ADD_SIGNAL(MethodInfo("changed_text", PropertyInfo(Variant::STRING, "text")));
+	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "text")));
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Label, normal_style, "normal");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Label, line_spacing);
