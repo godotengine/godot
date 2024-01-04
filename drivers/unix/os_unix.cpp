@@ -753,10 +753,25 @@ String OS_Unix::get_executable_path() const {
 		return OS::get_executable_path();
 	}
 	return b;
-#elif defined(__OpenBSD__) || defined(__NetBSD__)
+#elif defined(__OpenBSD__)
 	char resolved_path[MAXPATHLEN];
 
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
+
+	return String(resolved_path);
+#elif defined(__NetBSD__)
+	int mib[4] = { CTL_KERN, KERN_PROC_ARGS, -1, KERN_PROC_PATHNAME };
+	char buf[MAXPATHLEN];
+	size_t len = sizeof(buf);
+	if (sysctl(mib, 4, buf, &len, nullptr, 0) != 0) {
+		WARN_PRINT("Couldn't get executable path from sysctl");
+		return OS::get_executable_path();
+	}
+
+	// NetBSD does not always return a normalized path. For example if argv[0] is "./a.out" then executable path is "/home/netbsd/./a.out". Normalize with realpath:
+	char resolved_path[MAXPATHLEN];
+
+	realpath(buf, resolved_path);
 
 	return String(resolved_path);
 #elif defined(__FreeBSD__)
