@@ -336,10 +336,12 @@ public:
 		}
 		ServerInfo &srv = server_data[name];
 
-		ServerFunctionInfo fi;
-		fi.name = p_data[1];
-		fi.time = p_data[2];
-		srv.functions.push_back(fi);
+		for (int idx = 1; idx < p_data.size() - 1; idx += 2) {
+			ServerFunctionInfo fi;
+			fi.name = p_data[idx];
+			fi.time = p_data[idx + 1];
+			srv.functions.push_back(fi);
+		}
 	}
 
 	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
