@@ -31,6 +31,7 @@
 #include "resource_format_text.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
 #include "core/object/class_db.h"
@@ -1957,12 +1958,24 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
+
+		// Save the inheritance base first, so it is set up before any overridden property when loaded.
+		Ref<Resource> inherits_state = res->get(CoreStringName(resource_inherits_state));
+		if (inherits_state.is_valid()) {
+			String vars;
+			VariantWriter::write_to_string(inherits_state, vars, true, _write_resources, this, use_compat);
+			f->store_string(String(CoreStringName(resource_inherits_state)).property_name_encode() + " = " + vars + "\n");
+		}
+
 		for (const PropertyInfo &pi : property_list) {
 			if (skip_editor && pi.name.begins_with("__editor")) {
 				continue;
 			}
 			if (pi.name == META_PROPERTY_MISSING_RESOURCES) {
 				continue;
+			}
+			if (pi.name == CoreStringName(resource_inherits_state)) {
+				continue; // Written above, before any overridden property.
 			}
 
 			if (pi.usage & PROPERTY_USAGE_STORAGE || missing_resource_properties.has(pi.name)) {
@@ -1987,10 +2000,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 					}
 				}
 
-				bool is_script = name == CoreStringName(script);
-				Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(res.ptr(), name);
-
-				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
+				if (!res->is_property_value_saved(name, value)) {
 					continue;
 				}
 

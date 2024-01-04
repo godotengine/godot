@@ -2506,6 +2506,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_INHERIT_RESOURCE: {
+			// Create a new resource inheriting the state of the selected one.
+			if (p_selected.size() == 1) {
+				emit_signal(SNAME("inherit_resource"), p_selected[0]);
+			}
+		} break;
+
 		case FILE_MENU_MAIN_SCENE: {
 			// Set as main scene with selected scene file.
 			if (p_selected.size() == 1) {
@@ -3482,6 +3489,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 						p_popup->add_icon_item(get_editor_theme_icon(SNAME("MainPlay")), TTRC("Run"), FILE_MENU_RUN_SCRIPT);
 					}
 				}
+			} else if (ClassDB::is_parent_class(type, "Resource")) {
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Inherited Resource"), FILE_MENU_INHERIT_RESOURCE);
 			}
 			p_popup->add_separator();
 		}
@@ -4476,6 +4485,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_resource_tooltip_plugin", "plugin"), &FileSystemDock::remove_resource_tooltip_plugin);
 
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
+	ADD_SIGNAL(MethodInfo("inherit_resource", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 
 	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));

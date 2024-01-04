@@ -1782,6 +1782,10 @@ void EditorNode::edit_resource(const Ref<Resource> &p_resource) {
 void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path) {
 	editor_data.apply_changes_in_editors();
 
+	if (p_resource.is_valid() && p_resource->get_inherits_state().is_valid()) {
+		p_resource->update_inherited_state();
+	}
+
 	if (saving_resources_in_path.has(p_resource)) {
 		return;
 	}
@@ -5538,6 +5542,19 @@ String EditorNode::get_multiwindow_support_tooltip_text() const {
 void EditorNode::_inherit_request(String p_file) {
 	current_menu_option = SCENE_NEW_INHERITED_SCENE;
 	_dialog_action(p_file);
+}
+
+void EditorNode::_inherit_resource_request(String p_file) {
+	Ref<Resource> base_resource = ResourceLoader::load(p_file);
+	ERR_FAIL_COND_MSG(base_resource.is_null(), vformat("Unable to load resource: %s.", p_file));
+
+	Ref<Resource> new_resource = static_cast<Resource *>(ClassDB::instantiate(base_resource->get_class()));
+	ERR_FAIL_COND_MSG(new_resource.is_null(), vformat("Unable to create a resource of class: %s.", base_resource->get_class()));
+
+	new_resource->set_inherits_state(base_resource);
+
+	push_item(new_resource.ptr());
+	save_resource_as(new_resource, p_file.get_base_dir());
 }
 
 void EditorNode::_instantiate_request(const Vector<String> &p_files) {
@@ -9330,6 +9347,7 @@ EditorNode::EditorNode() {
 
 	FileSystemDock *filesystem_dock = memnew(FileSystemDock);
 	filesystem_dock->connect("inherit", callable_mp(this, &EditorNode::_inherit_request));
+	filesystem_dock->connect("inherit_resource", callable_mp(this, &EditorNode::_inherit_resource_request));
 	filesystem_dock->connect("instantiate", callable_mp(this, &EditorNode::_instantiate_request));
 	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_editor_layout));
 	get_project_settings()->connect_filesystem_dock_signals(filesystem_dock);

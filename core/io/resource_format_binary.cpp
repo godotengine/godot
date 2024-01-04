@@ -31,6 +31,7 @@
 #include "resource_format_binary.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/missing_resource.h"
@@ -2196,12 +2197,27 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 			List<PropertyInfo> property_list;
 			E->get_property_list(&property_list);
 
+			// Save the inheritance base first, so it is set up before any overridden property when loaded.
+			{
+				Ref<Resource> inherits_state = E->get(CoreStringName(resource_inherits_state));
+				if (inherits_state.is_valid()) {
+					Property p;
+					p.name_idx = get_string_index(CoreStringName(resource_inherits_state));
+					p.value = inherits_state;
+					p.pi = PropertyInfo(Variant::OBJECT, CoreStringName(resource_inherits_state), PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_STORAGE);
+					rd.properties.push_back(p);
+				}
+			}
+
 			for (const PropertyInfo &F : property_list) {
 				if (skip_editor && F.name.begins_with("__editor")) {
 					continue;
 				}
 				if (F.name == META_PROPERTY_MISSING_RESOURCES) {
 					continue;
+				}
+				if (F.name == CoreStringName(resource_inherits_state)) {
+					continue; // Saved above, before any overridden property.
 				}
 
 				if ((F.usage & PROPERTY_USAGE_STORAGE) || missing_resource_properties.has(F.name)) {
@@ -2227,10 +2243,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 						}
 					}
 
-					bool is_script = F.name == CoreStringName(script);
-					Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(E.ptr(), F.name);
-
-					if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
+					if (!E->is_property_value_saved(F.name, p.value)) {
 						continue;
 					}
 

@@ -365,6 +365,10 @@ void EditorResourcePicker::_update_menu_items() {
 				}
 			}
 
+			if (edited_resource->get_inherits_state().is_null()) {
+				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTR("Inherit State"), OBJ_MENU_MAKE_INHERITED);
+			}
+
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
 			edit_menu->set_item_disabled(-1, force_allow_unique);
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
@@ -506,7 +510,20 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			edited_resource = unique_resource;
 			_resource_changed();
 		} break;
+		case OBJ_MENU_MAKE_INHERITED: {
+			if (edited_resource.is_null()) {
+				return;
+			}
 
+			Ref<Resource> r = static_cast<Resource *>(ClassDB::instantiate(edited_resource->get_class()));
+			ERR_FAIL_COND(r.is_null());
+
+			r->set_inherits_state(edited_resource);
+
+			edited_resource = r;
+			emit_signal(SNAME("resource_changed"), edited_resource);
+			_update_resource();
+		} break;
 		case OBJ_MENU_MAKE_UNIQUE_RECURSIVE: {
 			if (edited_resource.is_null()) {
 				return;
