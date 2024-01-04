@@ -1653,10 +1653,7 @@ bool ResourceFormatSaverTextInstance::get_serializable_resource_property_value(c
 			}
 		}
 
-		bool is_script = p_pi.name == "script";
-		Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(p_res.ptr(), p_pi.name);
-
-		if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, r_value, default_value))) {
+		if (!p_res->is_property_value_saved(p_pi.name, r_value)) {
 			return false;
 		}
 
