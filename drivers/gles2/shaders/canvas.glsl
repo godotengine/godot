@@ -443,9 +443,17 @@ void main() {
 	uv = mod(uv, vec2(1.0, 1.0));
 #endif
 
+#ifdef USE_DISTANCE_FIELD
+	// Higher is smoother, but also more blurry. Lower is crisper, but also more aliased.
+	// TODO: Adjust automatically based on screen resolution/font size ratio.
+	const float smoothing = 0.125;
+	float dist = texture2D(color_texture, uv).a;
+	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, dist);
+#else
 #if !defined(COLOR_USED)
-	//default behavior, texture by color
+	// Default behavior, texture by color.
 	color *= texture2D(color_texture, uv);
+#endif
 #endif
 
 #ifdef SCREEN_UV_USED

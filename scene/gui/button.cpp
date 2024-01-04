@@ -286,6 +286,7 @@ void Button::_notification(int p_what) {
 
 				text_ofs.y += font->get_ascent();
 				text_ofs.y += line_height * (((float)i) - (((float)(num_lines - 1)) / 2.0));
+				select_font(font);
 				font->draw(ci, text_ofs.floor(), line_text, color, clip_text ? text_clip : -1);
 			}
 		} break;

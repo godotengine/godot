@@ -581,18 +581,17 @@ void main() {
 
 #endif
 
-#if !defined(COLOR_USED)
-	//default behavior, texture by color
-
 #ifdef USE_DISTANCE_FIELD
-	const float smoothing = 1.0 / 32.0;
-	float distance = textureLod(color_texture, uv, 0.0).a;
-	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance) * color.a;
+	// Higher is smoother, but also more blurry. Lower is crisper, but also more aliased.
+	// TODO: Adjust automatically based on screen resolution/font size ratio.
+	const float smoothing = 0.125;
+	float dist = texture(color_texture, uv, 0.0).a;
+	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, dist);
 #else
+#if !defined(COLOR_USED)
+	// Default behavior, texture by color.
 	color *= texture(color_texture, uv);
-
 #endif
-
 #endif
 
 	vec3 normal;
