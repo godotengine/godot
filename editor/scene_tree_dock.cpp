@@ -3065,6 +3065,9 @@ void SceneTreeDock::_nodes_dragged(Array p_nodes, NodePath p_to, int p_type) {
 
 	_normalize_drop(to_node, to_pos, p_type);
 	_do_reparent(to_node, to_pos, nodes, !Input::get_singleton()->is_key_pressed(Key::SHIFT));
+	for (Node *E : nodes) {
+		editor_selection->add_node(E);
+	}
 }
 
 void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
