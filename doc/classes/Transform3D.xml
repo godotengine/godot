@@ -245,6 +245,20 @@
 				This operator multiplies all components of the [Transform3D], including the [member origin] vector, which scales it uniformly.
 			</description>
 		</operator>
+		<operator name="operator /">
+			<return type="Transform3D" />
+			<param index="0" name="right" type="float" />
+			<description>
+				This operator divides all components of the [Transform3D], including the [member origin] vector, which inversely scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform3D" />
+			<param index="0" name="right" type="int" />
+			<description>
+				This operator divides all components of the [Transform3D], including the [member origin] vector, which inversely scales it uniformly.
+			</description>
+		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="Transform3D" />

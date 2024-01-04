@@ -321,6 +321,20 @@
 				This operator multiplies all components of the [Basis], which scales it uniformly.
 			</description>
 		</operator>
+		<operator name="operator /">
+			<return type="Basis" />
+			<param index="0" name="right" type="float" />
+			<description>
+				This operator divides all components of the [Basis], which inversely scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Basis" />
+			<param index="0" name="right" type="int" />
+			<description>
+				This operator divides all components of the [Basis], which inversely scales it uniformly.
+			</description>
+		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="Basis" />
