@@ -1718,6 +1718,12 @@ void LineEdit::set_caret_column(int p_column) {
 	} else if (MAX(primary_caret_offset.x, primary_caret_offset.y) >= ofs_max) {
 		scroll_offset += ofs_max - MAX(primary_caret_offset.x, primary_caret_offset.y);
 	}
+
+	// Scroll to show as much text as possible
+	if (text_width + scroll_offset + x_ofs < ofs_max) {
+		scroll_offset = ofs_max - x_ofs - text_width;
+	}
+
 	scroll_offset = MIN(0, scroll_offset);
 
 	queue_redraw();
