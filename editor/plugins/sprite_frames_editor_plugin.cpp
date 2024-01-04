@@ -1880,6 +1880,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_child(file);
 
 	frame_list = memnew(ItemList);
+	frame_list->set_auto_translate(false);
 	frame_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);

@@ -3860,6 +3860,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	scripts_vbox->add_child(filter_scripts);
 
 	script_list = memnew(ItemList);
+	script_list->set_auto_translate(false);
 	scripts_vbox->add_child(script_list);
 	script_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -3904,6 +3905,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	overview_vbox->add_child(filter_methods);
 
 	members_overview = memnew(ItemList);
+	members_overview->set_auto_translate(false);
 	overview_vbox->add_child(members_overview);
 
 	members_overview->set_allow_reselect(true);
@@ -3912,6 +3914,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	members_overview->set_allow_rmb_select(true);
 
 	help_overview = memnew(ItemList);
+	help_overview->set_auto_translate(false);
 	overview_vbox->add_child(help_overview);
 	help_overview->set_allow_reselect(true);
 	help_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing

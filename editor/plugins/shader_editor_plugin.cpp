@@ -657,6 +657,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	}
 
 	shader_list = memnew(ItemList);
+	shader_list->set_auto_translate(false);
 	shader_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(shader_list);
 	shader_list->connect("item_selected", callable_mp(this, &ShaderEditorPlugin::_shader_selected));
