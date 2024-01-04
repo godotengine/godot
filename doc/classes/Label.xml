@@ -115,7 +115,7 @@
 		<signal name="text_changed">
 			<param index="0" name="text" type="String" />
 			<description>
-				Emitted when the text of a label was changed. The new text is contained in the [param text] argument.
+				Emitted when the value behind the text property of a Label was changed. The new text is contained in the [param text] argument.
 			</description>
 		</signal>
 	</signals>
