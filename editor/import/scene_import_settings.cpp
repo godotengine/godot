@@ -38,6 +38,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/plugins/skeleton_3d_editor_plugin.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/importer_mesh.h"
@@ -411,6 +412,11 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 			contents_aabb.merge_with(aabb);
 		}
 	}
+
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node);
+	if (skeleton) {
+		bones_mesh_preview->set_mesh(Skeleton3DGizmoPlugin::get_bones_mesh(skeleton, -1, true));
+	}
 }
 
 void SceneImportSettingsDialog::_update_scene() {
@@ -700,6 +706,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, String p_type, String p_id
 		mesh_preview->hide();
 		_reset_animation();
 
+		bones_mesh_preview->hide();
 		if (Object::cast_to<Node3D>(scene)) {
 			Object::cast_to<Node3D>(scene)->show();
 		}
@@ -734,6 +741,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, String p_type, String p_id
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
 			} else if (Object::cast_to<Skeleton3D>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
+				bones_mesh_preview->show();
 			} else {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 				scene_import_settings_data->hide_options = editing_animation;
@@ -1605,6 +1613,13 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 		collider_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		collider_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		collider_mat->set_albedo(Color(0.5, 0.5, 1.0));
+	}
+
+	{
+		bones_mesh_preview = memnew(MeshInstance3D);
+		bones_mesh_preview->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+		bones_mesh_preview->set_skeleton_path(NodePath(""));
+		base_viewport->add_child(bones_mesh_preview);
 	}
 
 	inspector = memnew(EditorInspector);
