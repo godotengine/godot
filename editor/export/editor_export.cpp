@@ -71,7 +71,7 @@ void EditorExport::_save() {
 				config->set_value(section, "export_filter", "customized");
 				config->set_value(section, "customized_files", preset->get_customized_files());
 				save_files = false;
-			}
+			} break;
 			case EditorExportPreset::EXPORT_SELECTED_RESOURCES_INDEPENDENTLY: {
 				config->set_value(section, "export_filter", "resources_independency");
 				save_files = true;
