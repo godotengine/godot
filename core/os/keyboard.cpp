@@ -60,19 +60,35 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::PAGEUP                ,"PageUp"},
 	{Key::PAGEDOWN              ,"PageDown"},
 	{Key::SHIFT                 ,"Shift"},
+	{Key::LEFT_SHIFT                 ,"LeftShift"},
+	{Key::RIGHT_SHIFT                 ,"RightShift"},
 	{Key::CTRL                  ,"Ctrl"},
+	{Key::LEFT_CTRL                  ,"LeftCtrl"},
+	{Key::RIGHT_CTRL                  ,"RightCtrl"},
 #if defined(MACOS_ENABLED)
 	{Key::META                  ,"Command"},
+	{Key::LEFT_META                  ,"LeftCommand"},
+	{Key::RIGHT_META                  ,"RightCommand"},
 	{Key::CMD_OR_CTRL           ,"Command"},
 	{Key::ALT                   ,"Option"},
+	{Key::LEFT_ALT                   ,"LeftOption"},
+	{Key::RIGHT_ALT                   ,"RightOption"},
 #elif defined(WINDOWS_ENABLED)
 	{Key::META                  ,"Windows"},
+	{Key::LEFT_META                  ,"LeftWindows"},
+	{Key::RIGHT_META                  ,"RightWindows"},
 	{Key::CMD_OR_CTRL           ,"Ctrl"},
 	{Key::ALT                   ,"Alt"},
+	{Key::LEFT_ALT                   ,"LeftAlt"},
+	{Key::RIGHT_ALT                   ,"RightAlt"},
 #else
 	{Key::META                  ,"Meta"},
+	{Key::LEFT_META                  ,"LeftMeta"},
+	{Key::RIGHT_META                  ,"RightMeta"},
 	{Key::CMD_OR_CTRL           ,"Ctrl"},
 	{Key::ALT                   ,"Alt"},
+	{Key::LEFT_ALT                   ,"LeftAlt"},
+	{Key::RIGHT_ALT                   ,"RightAlt"},
 #endif
 	{Key::CAPSLOCK              ,"CapsLock"},
 	{Key::NUMLOCK               ,"NumLock"},
@@ -268,9 +284,15 @@ bool keycode_has_unicode(Key p_keycode) {
 		case Key::PAGEUP:
 		case Key::PAGEDOWN:
 		case Key::SHIFT:
+		case Key::LEFT_SHIFT:
+		case Key::RIGHT_SHIFT:
 		case Key::CTRL:
+		case Key::LEFT_CTRL:
+		case Key::RIGHT_CTRL:
 		case Key::META:
 		case Key::ALT:
+		case Key::LEFT_ALT:
+		case Key::RIGHT_ALT:
 		case Key::CAPSLOCK:
 		case Key::NUMLOCK:
 		case Key::SCROLLLOCK:

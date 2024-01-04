@@ -122,8 +122,8 @@ void KeyMappingWindows::initialize() {
 	vk_map[0x58] = Key::X; // X key.
 	vk_map[0x59] = Key::Y; // Y key.
 	vk_map[0x5A] = Key::Z; // Z key.
-	vk_map[VK_LWIN] = (Key)Key::META; // (0x5B)
-	vk_map[VK_RWIN] = (Key)Key::META; // (0x5C)
+	vk_map[VK_LWIN] = (Key)Key::LEFT_META; // (0x5B)
+	vk_map[VK_RWIN] = (Key)Key::RIGHT_META; // (0x5C)
 	vk_map[VK_APPS] = Key::MENU; // (0x5D)
 	// 0x5E is reserved.
 	vk_map[VK_SLEEP] = Key::STANDBY; // (0x5F)
@@ -173,12 +173,12 @@ void KeyMappingWindows::initialize() {
 	vk_map[VK_OEM_NEC_EQUAL] = Key::EQUAL; // (0x92), OEM NEC PC-9800 numpad '=' key.
 	// 0x93-96 are OEM specific (e.g. used by Fujitsu/OASYS);
 	// 0x97-9F are unassigned.
-	vk_map[VK_LSHIFT] = Key::SHIFT; // (0xA0)
-	vk_map[VK_RSHIFT] = Key::SHIFT; // (0xA1)
-	vk_map[VK_LCONTROL] = Key::CTRL; // (0xA2)
-	vk_map[VK_RCONTROL] = Key::CTRL; // (0xA3)
-	vk_map[VK_LMENU] = Key::MENU; // (0xA4)
-	vk_map[VK_RMENU] = Key::MENU; // (0xA5)
+	vk_map[VK_LSHIFT] = Key::LEFT_SHIFT; // (0xA0)
+	vk_map[VK_RSHIFT] = Key::RIGHT_SHIFT; // (0xA1)
+	vk_map[VK_LCONTROL] = Key::LEFT_CTRL; // (0xA2)
+	vk_map[VK_RCONTROL] = Key::RIGHT_CTRL; // (0xA3)
+	vk_map[VK_LMENU] = Key::LEFT_ALT; // (0xA4)
+	vk_map[VK_RMENU] = Key::RIGHT_ALT; // (0xA5)
 	vk_map[VK_BROWSER_BACK] = Key::BACK; // (0xA6)
 	vk_map[VK_BROWSER_FORWARD] = Key::FORWARD; // (0xA7)
 	vk_map[VK_BROWSER_REFRESH] = Key::REFRESH; // (0xA8)
@@ -260,7 +260,7 @@ void KeyMappingWindows::initialize() {
 	scansym_map[0x1A] = Key::BRACKETLEFT;
 	scansym_map[0x1B] = Key::BRACKETRIGHT;
 	scansym_map[0x1C] = Key::ENTER;
-	scansym_map[0x1D] = Key::CTRL;
+	scansym_map[0x1D] = Key::LEFT_CTRL;
 	scansym_map[0x1E] = Key::A;
 	scansym_map[0x1F] = Key::S;
 	scansym_map[0x20] = Key::D;
@@ -273,7 +273,7 @@ void KeyMappingWindows::initialize() {
 	scansym_map[0x27] = Key::SEMICOLON;
 	scansym_map[0x28] = Key::APOSTROPHE;
 	scansym_map[0x29] = Key::QUOTELEFT;
-	scansym_map[0x2A] = Key::SHIFT;
+	scansym_map[0x2A] = Key::LEFT_SHIFT;
 	scansym_map[0x2B] = Key::BACKSLASH;
 	scansym_map[0x2C] = Key::Z;
 	scansym_map[0x2D] = Key::X;
@@ -285,9 +285,9 @@ void KeyMappingWindows::initialize() {
 	scansym_map[0x33] = Key::COMMA;
 	scansym_map[0x34] = Key::PERIOD;
 	scansym_map[0x35] = Key::SLASH;
-	scansym_map[0x36] = Key::SHIFT;
+	scansym_map[0x36] = Key::RIGHT_SHIFT;
 	scansym_map[0x37] = Key::KP_MULTIPLY;
-	scansym_map[0x38] = Key::ALT;
+	scansym_map[0x38] = Key::LEFT_ALT;
 	scansym_map[0x39] = Key::SPACE;
 	scansym_map[0x3A] = Key::CAPSLOCK;
 	scansym_map[0x3B] = Key::F1;
@@ -318,8 +318,8 @@ void KeyMappingWindows::initialize() {
 	scansym_map[0x56] = Key::SECTION;
 	scansym_map[0x57] = Key::F11;
 	scansym_map[0x58] = Key::F12;
-	scansym_map[0x5B] = Key::META;
-	scansym_map[0x5C] = Key::META;
+	scansym_map[0x5B] = Key::LEFT_META;
+	scansym_map[0x5C] = Key::RIGHT_META;
 	scansym_map[0x5D] = Key::MENU;
 	scansym_map[0x64] = Key::F13;
 	scansym_map[0x65] = Key::F14;
@@ -380,6 +380,9 @@ void KeyMappingWindows::initialize() {
 	scansym_map_ext[0x6C] = Key::LAUNCHMAIL;
 	scansym_map_ext[0x6D] = Key::LAUNCHMEDIA;
 	scansym_map_ext[0x78] = Key::MEDIARECORD;
+	//right alt and ctrl have the same scancode as left but are in extend map
+	scansym_map_ext[0x38] = Key::RIGHT_ALT;
+	scansym_map_ext[0x1D] = Key::RIGHT_CTRL;
 }
 
 Key KeyMappingWindows::get_keysym(unsigned int p_code) {
