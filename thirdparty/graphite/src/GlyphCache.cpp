@@ -57,7 +57,7 @@ namespace
         size_t        _n;
     };
 
-    typedef _glat_iterator<uint8>   glat_iterator;
+    typedef _glat_iterator<uint8_t>   glat_iterator;
     typedef _glat_iterator<uint16>  glat2_iterator;
 }
 
@@ -416,12 +416,12 @@ const GlyphFace * GlyphCache::Loader::read_glyph(unsigned short glyphid, GlyphFa
     return &glyph;
 }
 
-inline float scale_to(uint8 t, float zmin, float zmax)
+inline float scale_to(uint8_t t, float zmin, float zmax)
 {
     return (zmin + t * (zmax - zmin) / 255);
 }
 
-Rect readbox(Rect &b, uint8 zxmin, uint8 zymin, uint8 zxmax, uint8 zymax)
+Rect readbox(Rect &b, uint8_t zxmin, uint8_t zymin, uint8_t zxmax, uint8_t zymax)
 {
     return Rect(Position(scale_to(zxmin, b.bl.x, b.tr.x), scale_to(zymin, b.bl.y, b.tr.y)),
                 Position(scale_to(zxmax, b.bl.x, b.tr.x), scale_to(zymax, b.bl.y, b.tr.y)));
@@ -461,7 +461,7 @@ GlyphBox * GlyphCache::Loader::read_box(uint16 gid, GlyphBox *curr, const GlyphF
                 Position(bbox.tr.x + bbox.tr.y, bbox.tr.x - bbox.bl.y));
     Rect diabound = readbox(diamax, p[0], p[2], p[1], p[3]);
     ::new (curr) GlyphBox(num, bmap, &diabound);
-    be::skip<uint8>(p, 4);
+    be::skip<uint8_t>(p, 4);
     if (glocs + 6 + num * 8 >= gloce)
         return 0;
 
@@ -469,7 +469,7 @@ GlyphBox * GlyphCache::Loader::read_box(uint16 gid, GlyphBox *curr, const GlyphF
     {
         Rect box = readbox((i & 1) ? diamax : bbox, p[0], p[2], p[1], p[3]);
         curr->addSubBox(i >> 1, i & 1, &box);
-        be::skip<uint8>(p, 4);
+        be::skip<uint8_t>(p, 4);
     }
     return (GlyphBox *)((char *)(curr) + sizeof(GlyphBox) + 2 * num * sizeof(Rect));
 }

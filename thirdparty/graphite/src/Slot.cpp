@@ -62,7 +62,7 @@ void Slot::update(int /*numGrSlots*/, int numCharInfo, Position &relpos)
     m_position = m_position + relpos;
 }
 
-Position Slot::finalise(const Segment *seg, const Font *font, Position & base, Rect & bbox, uint8 attrLevel, float & clusterMin, bool rtl, bool isFinal, int depth)
+Position Slot::finalise(const Segment *seg, const Font *font, Position & base, Rect & bbox, uint8_t attrLevel, float & clusterMin, bool rtl, bool isFinal, int depth)
 {
     SlotCollision *coll = NULL;
     if (depth > 100 || (attrLevel && m_attLevel > attrLevel)) return Position(0, 0);
@@ -130,7 +130,7 @@ Position Slot::finalise(const Segment *seg, const Font *font, Position & base, R
     return res;
 }
 
-int32 Slot::clusterMetric(const Segment *seg, uint8 metric, uint8 attrLevel, bool rtl)
+int32 Slot::clusterMetric(const Segment *seg, uint8_t metric, uint8_t attrLevel, bool rtl)
 {
     Position base;
     if (glyph() >= seg->getFace()->glyphs().numGlyphs())
@@ -168,7 +168,7 @@ int32 Slot::clusterMetric(const Segment *seg, uint8 metric, uint8 attrLevel, boo
 
 #define SLOTGETCOLATTR(x) { SlotCollision *c = seg->collisionInfo(this); return c ? int(c-> x) : 0; }
 
-int Slot::getAttr(const Segment *seg, attrCode ind, uint8 subindex) const
+int Slot::getAttr(const Segment *seg, attrCode ind, uint8_t subindex) const
 {
     if (ind >= gr_slatJStretch && ind < gr_slatJStretch + 20 && ind != gr_slatJWidth)
     {
@@ -242,7 +242,7 @@ int Slot::getAttr(const Segment *seg, attrCode ind, uint8 subindex) const
         c-> x ; c->setFlags(c->flags() & ~SlotCollision::COLL_KNOWN); } \
         break; }
 
-void Slot::setAttr(Segment *seg, attrCode ind, uint8 subindex, int16 value, const SlotMap & map)
+void Slot::setAttr(Segment *seg, attrCode ind, uint8_t subindex, int16 value, const SlotMap & map)
 {
     if (ind == gr_slatUserDefnV1)
     {
@@ -349,7 +349,7 @@ void Slot::setAttr(Segment *seg, attrCode ind, uint8 subindex, int16 value, cons
     }
 }
 
-int Slot::getJustify(const Segment *seg, uint8 level, uint8 subindex) const
+int Slot::getJustify(const Segment *seg, uint8_t level, uint8_t subindex) const
 {
     if (level && level >= seg->silf()->numJustLevels()) return 0;
 
@@ -369,7 +369,7 @@ int Slot::getJustify(const Segment *seg, uint8 level, uint8 subindex) const
     }
 }
 
-void Slot::setJustify(Segment *seg, uint8 level, uint8 subindex, int16 value)
+void Slot::setJustify(Segment *seg, uint8_t level, uint8_t subindex, int16 value)
 {
     if (level && level >= seg->silf()->numJustLevels()) return;
     if (!m_justs)
@@ -452,7 +452,7 @@ void Slot::setGlyph(Segment *seg, uint16 glyphid, const GlyphFace * theGlyph)
     m_advance = Position(aGlyph->theAdvance().x, 0.);
     if (seg->silf()->aPassBits())
     {
-        seg->mergePassBits(uint8(theGlyph->attrs()[seg->silf()->aPassBits()]));
+        seg->mergePassBits(uint8_t(theGlyph->attrs()[seg->silf()->aPassBits()]));
         if (seg->silf()->numPasses() > 16)
             seg->mergePassBits(theGlyph->attrs()[seg->silf()->aPassBits()+1] << 16);
     }

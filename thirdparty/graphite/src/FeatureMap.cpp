@@ -59,7 +59,7 @@ FeatureRef::FeatureRef(const Face & face,
   m_numSet(num_set),
   m_flags(flags)
 {
-    const uint8 need_bits = bit_set_count(m_mask);
+    const uint8_t need_bits = bit_set_count(m_mask);
     m_index = (bits_offset + need_bits) / SIZEOF_CHUNK;
     if (m_index > bits_offset / SIZEOF_CHUNK)
         bits_offset = m_index*SIZEOF_CHUNK;

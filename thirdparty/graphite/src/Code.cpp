@@ -43,12 +43,12 @@ inline bool is_return(const instr i) {
 
 struct context
 {
-    context(uint8 ref=0) : codeRef(ref) {flags.changed=false; flags.referenced=false;}
+    context(uint8_t ref=0) : codeRef(ref) {flags.changed=false; flags.referenced=false;}
     struct {
-        uint8   changed:1,
+        uint8_t   changed:1,
                 referenced:1;
     } flags;
-    uint8       codeRef;
+    uint8_t       codeRef;
 };
 
 } // end namespace
@@ -99,7 +99,7 @@ private:
 struct Machine::Code::decoder::limits
 {
   const byte       * bytecode;
-  const uint8        pre_context;
+  const uint8_t        pre_context;
   const uint16       rule_length,
                      classes,
                      glyf_attrs,
@@ -121,7 +121,7 @@ inline Machine::Code::decoder::decoder(limits & lims, Code &code, enum passtype 
 
 
 Machine::Code::Code(bool is_constraint, const byte * bytecode_begin, const byte * const bytecode_end,
-           uint8 pre_context, uint16 rule_length, const Silf & silf, const Face & face,
+           uint8_t pre_context, uint16 rule_length, const Silf & silf, const Face & face,
            enum passtype pt, byte * * const _out)
  :  _code(0), _data(0), _data_size(0), _instr_count(0), _max_ref(0), _status(loaded),
     _constraint(is_constraint), _modify(false), _delete(false), _own(_out==0)
@@ -341,7 +341,7 @@ opcode Machine::Code::decoder::fetch_opcode(const byte * bc)
         case ASSOC :
             if (bc[0] == 0)
                 failure(out_of_range_data);
-            for (uint8 num = bc[0]; num; --num)
+            for (uint8_t num = bc[0]; num; --num)
                 test_ref(int8(bc[num]));
             test_context();
             break;
@@ -471,7 +471,7 @@ void Machine::Code::decoder::analyse_opcode(const opcode opc, const int8  * arg)
       break;
     case ASSOC :
       set_changed(0);
-//      for (uint8 num = arg[0]; num; --num)
+//      for (uint8_t num = arg[0]; num; --num)
 //        _analysis.set_noref(num);
       break;
     case PUT_GLYPH_8BIT_OBS :
@@ -492,7 +492,7 @@ void Machine::Code::decoder::analyse_opcode(const opcode opc, const int8  * arg)
     case NEXT :
     case COPY_NEXT :
       ++_slotref;
-      _contexts[_slotref] = context(uint8(_code._instr_count+1));
+      _contexts[_slotref] = context(uint8_t(_code._instr_count+1));
       // if (_analysis.slotref > _analysis.max_ref) _analysis.max_ref = _analysis.slotref;
       break;
     case INSERT :

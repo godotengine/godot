@@ -134,7 +134,7 @@ public:
 		// Maximum recursion depth allowed when serializing variants.
 		MAX_RECURSION_DEPTH = 1024,
 	};
-
+	static const Variant Null;
 private:
 	struct Pools {
 		union BucketSmall {
@@ -428,6 +428,72 @@ public:
 
 	Object *get_validated_object() const;
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
+
+	
+	Vector<uint8_t> * get_byte_array() const
+	{		
+		if (type == PACKED_BYTE_ARRAY) {
+			return &static_cast<PackedArrayRef<uint8_t> *>(_data.packed_array)->array;
+		}
+		return nullptr;
+	}
+	Vector<int32_t> * get_int32_array() const
+	{
+		if (type == PACKED_INT32_ARRAY) {
+			return &static_cast<PackedArrayRef<int32_t> *>(_data.packed_array)->array;
+		}
+		return nullptr;
+	}
+	Vector<int64_t> * get_int64_array() const
+	{
+		if (type == PACKED_INT64_ARRAY) {
+			return &static_cast<PackedArrayRef<int64_t> *>(_data.packed_array)->array;
+		}
+		return nullptr;
+	}
+	Vector<float> * get_float32_array() const
+	{
+		if (type == PACKED_FLOAT32_ARRAY) {
+			return &static_cast<PackedArrayRef<float> *>(_data.packed_array)->array;
+		}
+		return nullptr;
+	}
+	Vector<double> * get_float64_array() const
+	{
+		if (type == PACKED_FLOAT64_ARRAY) {
+			return &static_cast<PackedArrayRef<double> *>(_data.packed_array)->array;
+		}
+		return nullptr;
+	}
+	Vector<String> * get_string_array() const
+	{
+		if (type == PACKED_STRING_ARRAY) {
+			return &static_cast<PackedArrayRef<String> *>(_data.packed_array)->array;
+		}
+		return nullptr;
+	}
+	Vector<Vector3> * get_vector3_array() const
+	{
+		if (type == PACKED_VECTOR3_ARRAY) {
+			return &static_cast<PackedArrayRef<Vector3> *>(_data.packed_array)->array;
+		}
+		return nullptr;
+	}
+	Vector<Vector2> * get_vector2_array() const
+	{
+		if (type == PACKED_VECTOR2_ARRAY) {
+			return &static_cast<PackedArrayRef<Vector2> *>(_data.packed_array)->array;
+		}
+		return nullptr;
+	}
+	Vector<Color> * get_color_array() const
+	{
+		if (type == PACKED_COLOR_ARRAY) {
+			return &static_cast<PackedArrayRef<Color> *>(_data.packed_array)->array;
+		}
+		return nullptr;
+	}
+
 
 	Variant(bool p_bool);
 	Variant(signed int p_int); // real one

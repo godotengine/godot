@@ -5292,18 +5292,18 @@ static unsigned char ssl_serialized_session_header[] = {
  *                               // configuration options which influence
  *                               // the structure of mbedtls_ssl_session.
  *  uint64 start_time;
- *  uint8 ciphersuite[2];        // defined by the standard
- *  uint8 compression;           // 0 or 1
- *  uint8 session_id_len;        // at most 32
+ *  uint8_t ciphersuite[2];        // defined by the standard
+ *  uint8_t compression;           // 0 or 1
+ *  uint8_t session_id_len;        // at most 32
  *  opaque session_id[32];
  *  opaque master[48];           // fixed length in the standard
  *  uint32 verify_result;
  *  opaque peer_cert<0..2^24-1>; // length 0 means no peer cert
  *  opaque ticket<0..2^24-1>;    // length 0 means no ticket
  *  uint32 ticket_lifetime;
- *  uint8 mfl_code;              // up to 255 according to standard
- *  uint8 trunc_hmac;            // 0 or 1
- *  uint8 encrypt_then_mac;      // 0 or 1
+ *  uint8_t mfl_code;              // up to 255 according to standard
+ *  uint8_t trunc_hmac;            // 0 or 1
+ *  uint8_t encrypt_then_mac;      // 0 or 1
  *
  * The order is the same as in the definition of the structure, except
  * verify_result is put before peer_cert so that all mandatory fields come
@@ -6164,17 +6164,17 @@ static unsigned char ssl_serialized_context_header[] = {
  *  // session sub-structure
  *  opaque session<1..2^32-1>;  // see mbedtls_ssl_session_save()
  *  // transform sub-structure
- *  uint8 random[64];           // ServerHello.random+ClientHello.random
- *  uint8 in_cid<0..2^8-1>      // Connection ID: expected incoming value
- *  uint8 out_cid<0..2^8-1>     // Connection ID: outgoing value to use
+ *  uint8_t random[64];           // ServerHello.random+ClientHello.random
+ *  uint8_t in_cid<0..2^8-1>      // Connection ID: expected incoming value
+ *  uint8_t out_cid<0..2^8-1>     // Connection ID: outgoing value to use
  *  // fields from ssl_context
  *  uint32 badmac_seen;         // DTLS: number of records with failing MAC
  *  uint64 in_window_top;       // DTLS: last validated record seq_num
  *  uint64 in_window;           // DTLS: bitmask for replay protection
- *  uint8 disable_datagram_packing; // DTLS: only one record per datagram
+ *  uint8_t disable_datagram_packing; // DTLS: only one record per datagram
  *  uint64 cur_out_ctr;         // Record layer: outgoing sequence number
  *  uint16 mtu;                 // DTLS: path mtu (max outgoing fragment size)
- *  uint8 alpn_chosen<0..2^8-1> // ALPN: negotiated application protocol
+ *  uint8_t alpn_chosen<0..2^8-1> // ALPN: negotiated application protocol
  *
  * Note that many fields of the ssl_context or sub-structures are not
  * serialized, as they fall in one of the following categories:

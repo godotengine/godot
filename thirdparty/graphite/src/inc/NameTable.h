@@ -35,7 +35,7 @@ private:
     uint16 m_platformLastRecord;
     uint16 m_nameDataLength;
     const TtfUtil::Sfnt::FontNames * m_table;
-    const uint8 * m_nameData;
+    const uint8_t * m_nameData;
     Locale2Lang m_locale2Lang;
 };
 

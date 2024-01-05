@@ -209,7 +209,7 @@ uint16 Face::findPseudo(uint32 uid) const
     return (m_numSilf) ? m_silfs[0].findPseudo(uid) : 0;
 }
 
-int32 Face::getGlyphMetric(uint16 gid, uint8 metric) const
+int32 Face::getGlyphMetric(uint16 gid, uint8_t metric) const
 {
     switch (metrics(metric))
     {

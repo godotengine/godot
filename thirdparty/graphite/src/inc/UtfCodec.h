@@ -105,7 +105,7 @@ private:
     static const uchar_t    limit = 0x110000;
 
 public:
-    typedef uint8   codeunit_t;
+    typedef uint8_t   codeunit_t;
 
     inline
     static void put(codeunit_t * cp, const uchar_t usv, int8 & l) throw()
@@ -223,6 +223,6 @@ struct utf
 
 typedef utf<uint32> utf32;
 typedef utf<uint16> utf16;
-typedef utf<uint8>  utf8;
+typedef utf<uint8_t>  utf8;
 
 } // namespace graphite2

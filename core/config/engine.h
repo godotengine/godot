@@ -50,6 +50,7 @@ public:
 		bool editor_only = false;
 
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
+		void release();
 	};
 
 private:

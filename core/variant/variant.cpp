@@ -42,7 +42,7 @@
 PagedAllocator<Variant::Pools::BucketSmall, true> Variant::Pools::_bucket_small;
 PagedAllocator<Variant::Pools::BucketMedium, true> Variant::Pools::_bucket_medium;
 PagedAllocator<Variant::Pools::BucketLarge, true> Variant::Pools::_bucket_large;
-
+const Variant Variant::Null;
 String Variant::get_type_name(Variant::Type p_type) {
 	switch (p_type) {
 		case NIL: {

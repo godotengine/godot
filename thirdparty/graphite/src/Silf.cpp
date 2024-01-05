@@ -86,21 +86,21 @@ bool Silf::readGraphite(const byte * const silf_start, size_t lSilf, Face& face,
     const uint16 maxGlyph = be::read<uint16>(p);
     m_silfinfo.extra_ascent = be::read<uint16>(p);
     m_silfinfo.extra_descent = be::read<uint16>(p);
-    m_numPasses = be::read<uint8>(p);
-    m_sPass     = be::read<uint8>(p);
-    m_pPass     = be::read<uint8>(p);
-    m_jPass     = be::read<uint8>(p);
-    m_bPass     = be::read<uint8>(p);
-    m_flags     = be::read<uint8>(p);
-    be::skip<uint8>(p,2); //  max{Pre,Post}Context.
-    m_aPseudo   = be::read<uint8>(p);
-    m_aBreak    = be::read<uint8>(p);
-    m_aBidi     = be::read<uint8>(p);
-    m_aMirror   = be::read<uint8>(p);
-    m_aPassBits = be::read<uint8>(p);
+    m_numPasses = be::read<uint8_t>(p);
+    m_sPass     = be::read<uint8_t>(p);
+    m_pPass     = be::read<uint8_t>(p);
+    m_jPass     = be::read<uint8_t>(p);
+    m_bPass     = be::read<uint8_t>(p);
+    m_flags     = be::read<uint8_t>(p);
+    be::skip<uint8_t>(p,2); //  max{Pre,Post}Context.
+    m_aPseudo   = be::read<uint8_t>(p);
+    m_aBreak    = be::read<uint8_t>(p);
+    m_aBidi     = be::read<uint8_t>(p);
+    m_aMirror   = be::read<uint8_t>(p);
+    m_aPassBits = be::read<uint8_t>(p);
 
     // Read Justification levels.
-    m_numJusts  = be::read<uint8>(p);
+    m_numJusts  = be::read<uint8_t>(p);
     if (e.test(maxGlyph >= face.glyphs().numGlyphs(), E_BADMAXGLYPH)
         || e.test(p + m_numJusts * 8 >= silf_end, E_BADNUMJUSTS))
     {
@@ -112,24 +112,24 @@ bool Silf::readGraphite(const byte * const silf_start, size_t lSilf, Face& face,
         m_justs = gralloc<Justinfo>(m_numJusts);
         if (e.test(!m_justs, E_OUTOFMEM)) return face.error(e);
 
-        for (uint8 i = 0; i < m_numJusts; i++)
+        for (uint8_t i = 0; i < m_numJusts; i++)
         {
             ::new(m_justs + i) Justinfo(p[0], p[1], p[2], p[3]);
             be::skip<byte>(p,8);
         }
     }
 
-    if (e.test(p + sizeof(uint16) + sizeof(uint8)*8 >= silf_end, E_BADENDJUSTS)) { releaseBuffers(); return face.error(e); }
+    if (e.test(p + sizeof(uint16) + sizeof(uint8_t)*8 >= silf_end, E_BADENDJUSTS)) { releaseBuffers(); return face.error(e); }
     m_aLig       = be::read<uint16>(p);
-    m_aUser      = be::read<uint8>(p);
-    m_iMaxComp   = be::read<uint8>(p);
-    m_dir        = be::read<uint8>(p) - 1;
-    m_aCollision = be::read<uint8>(p);
+    m_aUser      = be::read<uint8_t>(p);
+    m_iMaxComp   = be::read<uint8_t>(p);
+    m_dir        = be::read<uint8_t>(p) - 1;
+    m_aCollision = be::read<uint8_t>(p);
     be::skip<byte>(p,3);
-    be::skip<uint16>(p, be::read<uint8>(p));    // don't need critical features yet
+    be::skip<uint16>(p, be::read<uint8_t>(p));    // don't need critical features yet
     be::skip<byte>(p);                          // reserved
     if (e.test(p >= silf_end, E_BADCRITFEATURES))   { releaseBuffers(); return face.error(e); }
-    be::skip<uint32>(p, be::read<uint8>(p));    // don't use scriptTag array.
+    be::skip<uint32>(p, be::read<uint8_t>(p));    // don't use scriptTag array.
     if (e.test(p + sizeof(uint16) + sizeof(uint32) >= silf_end, E_BADSCRIPTTAGS)) { releaseBuffers(); return face.error(e); }
     m_gEndLine  = be::read<uint16>(p);          // lbGID
     const byte * o_passes = p;
@@ -331,14 +331,14 @@ uint16 Silf::getClassGlyph(uint16 cid, unsigned int index) const
 }
 
 
-bool Silf::runGraphite(Segment *seg, uint8 firstPass, uint8 lastPass, int dobidi) const
+bool Silf::runGraphite(Segment *seg, uint8_t firstPass, uint8_t lastPass, int dobidi) const
 {
     assert(seg != 0);
     size_t             maxSize = seg->slotCount() * MAX_SEG_GROWTH_FACTOR;
     SlotMap            map(*seg, m_dir, maxSize);
     FiniteStateMachine fsm(map, seg->getFace()->logger());
     vm::Machine        m(map);
-    uint8              lbidi = m_bPass;
+    uint8_t              lbidi = m_bPass;
 #if !defined GRAPHITE2_NTRACING
     json * const dbgout = seg->getFace()->logger();
 #endif

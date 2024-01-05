@@ -24,7 +24,7 @@ inline unsigned int bit_set_count(int16 v)
 template<>
 inline unsigned int bit_set_count(int8 v)
 {
-    return __builtin_popcount(static_cast<uint8>(v));
+    return __builtin_popcount(static_cast<uint8_t>(v));
 }
 
 template<>

@@ -24,8 +24,8 @@ public:
     void before(int val) { m_before = val; }
     size_t base() const { return m_base; }
     void base(size_t offset) { m_base = offset; }
-    void addflags(uint8 val) { m_flags |= val; }
-    uint8 flags() const { return m_flags; }
+    void addflags(uint8_t val) { m_flags |= val; }
+    uint8_t flags() const { return m_flags; }
 
     CLASS_NEW_DELETE
 private:
@@ -33,9 +33,9 @@ private:
     int m_before;   // slot index before us, comes before
     int m_after;    // slot index after us, comes after
     size_t  m_base; // offset into input string corresponding to this charinfo
-    uint8 m_featureid;  // index into features list in the segment
+    uint8_t m_featureid;  // index into features list in the segment
     int8 m_break;   // breakweight coming from lb table
-    uint8 m_flags;  // 0,1 segment split.
+    uint8_t m_flags;  // 0,1 segment split.
 };
 
 } // namespace graphite2

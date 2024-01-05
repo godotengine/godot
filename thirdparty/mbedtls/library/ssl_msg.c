@@ -336,7 +336,7 @@ static size_t ssl_compute_padding_length(size_t len,
  *        struct {
  *            opaque content[DTLSPlaintext.length];
  *            ContentType real_type;
- *            uint8 zeros[length_of_padding];
+ *            uint8_t zeros[length_of_padding];
  *        } (D)TLSInnerPlaintext;
  *
  *  Input:

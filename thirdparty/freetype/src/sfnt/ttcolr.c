@@ -1388,7 +1388,7 @@
     /* field sizes to the left of that position.                           */
     limit = (FT_Byte*)colr->table + colr->table_size;
 
-    /* Check whether we can extract one `uint8` and one `uint32`. */
+    /* Check whether we can extract one `uint8_t` and one `uint32`. */
     if ( p > limit - ( 1 + 4 ) )
       return 0;
 
@@ -1418,7 +1418,7 @@
       {
         p1 = (FT_Byte*)( clip_base + clip_box_offset );
 
-        /* Check whether we can extract one `uint8`. */
+        /* Check whether we can extract one `uint8_t`. */
         if ( p1 > limit - 1 )
           return 0;
 

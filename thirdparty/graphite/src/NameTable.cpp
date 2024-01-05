@@ -26,7 +26,7 @@ NameTable::NameTable(const void* data, size_t length, uint16 platformId, uint16 
         uint16 offset = be::swap<uint16>(m_table->string_offset);
         if (offset < length)
         {
-            m_nameData = reinterpret_cast<const uint8*>(pdata) + offset;
+            m_nameData = reinterpret_cast<const uint8_t*>(pdata) + offset;
             setPlatformEncoding(platformId, encodingID);
             m_nameDataLength = uint16(length - offset);
             return;
@@ -129,7 +129,7 @@ void* NameTable::getName(uint16& languageId, uint16 nameId, gr_encform enc, uint
         length = 0;
         return NULL;
     }
-    const uint8* pName = m_nameData + offset;
+    const uint8_t* pName = m_nameData + offset;
     for (size_t i = 0; i < utf16Length; i++)
     {
         utf16Name[i] = be::read<uint16>(pName);
@@ -196,7 +196,7 @@ uint16 NameTable::getLanguageId(const char * bcp47Locale)
     uint16 localeId = m_locale2Lang.getMsId(bcp47Locale);
     if (m_table && (be::swap<uint16>(m_table->format) == 1))
     {
-        const uint8 * pLangEntries = reinterpret_cast<const uint8*>(m_table) +
+        const uint8_t * pLangEntries = reinterpret_cast<const uint8_t*>(m_table) +
             sizeof(TtfUtil::Sfnt::FontNames)
             + sizeof(TtfUtil::Sfnt::NameRecord) * ( be::swap<uint16>(m_table->count) - 1);
         uint16 numLangEntries = be::read<uint16>(pLangEntries);
@@ -210,7 +210,7 @@ uint16 NameTable::getLanguageId(const char * bcp47Locale)
                 uint16 length = be::swap<uint16>(langTag[i].length);
                 if ((offset + length <= m_nameDataLength) && (length == 2 * localeLength))
                 {
-                    const uint8* pName = m_nameData + offset;
+                    const uint8_t* pName = m_nameData + offset;
                     bool match = true;
                     for (size_t j = 0; j < localeLength; j++)
                     {

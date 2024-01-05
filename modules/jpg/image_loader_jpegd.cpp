@@ -66,16 +66,16 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 
 	uint8_t *dw = data.ptrw();
 
-	jpgd::uint8 *pImage_data = (jpgd::uint8 *)dw;
+	jpgd::uint8_t *pImage_data = (jpgd::uint8_t *)dw;
 
 	for (int y = 0; y < image_height; y++) {
-		const jpgd::uint8 *pScan_line;
+		const jpgd::uint8_t *pScan_line;
 		jpgd::uint scan_line_len;
 		if (decoder.decode((const void **)&pScan_line, &scan_line_len) != jpgd::JPGD_SUCCESS) {
 			return ERR_FILE_CORRUPT;
 		}
 
-		jpgd::uint8 *pDst = pImage_data + y * dst_bpl;
+		jpgd::uint8_t *pDst = pImage_data + y * dst_bpl;
 
 		if (comps == 1) {
 			memcpy(pDst, pScan_line, dst_bpl);

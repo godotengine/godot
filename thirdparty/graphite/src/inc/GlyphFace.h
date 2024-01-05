@@ -28,7 +28,7 @@ public:
     const Position    & theAdvance() const;
     const Rect        & theBBox() const { return m_bbox; }
     const sparse      & attrs() const { return m_attrs; }
-    int32               getMetric(uint8 metric) const;
+    int32               getMetric(uint8_t metric) const;
 
     CLASS_NEW_DELETE;
 private:

@@ -64,7 +64,7 @@ public:
     const FeatureRef  * feature(uint16 index) const;
 
     // Glyph related
-    int32  getGlyphMetric(uint16 gid, uint8 metric) const;
+    int32  getGlyphMetric(uint16 gid, uint8_t metric) const;
     uint16 findPseudo(uint32 uid) const;
 
     // Errors

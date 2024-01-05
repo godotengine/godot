@@ -33,7 +33,60 @@
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
-
+#if defined(_WIN32) || defined(_WIN64)
+    #include <windows.h>
+    #include <dbghelp.h>
+    
+    #define PRINT_STACK_TRACE(out_str) \
+        { \
+            const int MAX_STACK_FRAMES = 100; \
+            void* stackFrames[MAX_STACK_FRAMES]; \
+            HANDLE process = GetCurrentProcess(); \
+            SymInitialize(process, nullptr, TRUE); \
+            USHORT numFrames = CaptureStackBackTrace(0, MAX_STACK_FRAMES, stackFrames, nullptr); \
+            SYMBOL_INFO* symbolInfo = (SYMBOL_INFO*)malloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char)); \
+            symbolInfo->MaxNameLen = 255; \
+            symbolInfo->SizeOfStruct = sizeof(SYMBOL_INFO); \
+            for (int i = 0; i < numFrames; ++i) { \
+                SymFromAddr(process, (DWORD64)(stackFrames[i]), nullptr, symbolInfo); \
+                out_str += "[" + itos(i) + "] " + String(symbolInfo->Name) + "\n"; \
+            } \
+            free(symbolInfo); \
+        }
+#elif defined(__linux__)
+    #include <execinfo.h>
+    #include <dlfcn.h>
+    #include <cxxabi.h>
+    
+    #define PRINT_STACK_TRACE(out_str) \
+	 { \
+            const int MAX_STACK_FRAMES = 100; \
+            void* stackFrames[MAX_STACK_FRAMES]; \
+            int numFrames = backtrace(stackFrames, MAX_STACK_FRAMES); \
+            char** symbols = backtrace_symbols(stackFrames, numFrames); \
+            if (symbols == nullptr) { \
+                out_str = "Failed to obtain backtrace symbols\n"; \
+                return; \
+            } \
+            for (int i = 0; i < numFrames; ++i) { \
+                Dl_info info; \
+                if (dladdr(stackFrames[i], &info) && info.dli_sname) { \
+                    int status = 0; \
+                    char* demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status); \
+                   out_str += "[" + itos(i) + "] " + String(symbols[i]) + "\n";  \
+                    free(demangled); \
+                } else { \
+                    out_str += "[" + itos(i) + "] " + String(symbols[i]) + "\n"; \
+                } \
+            } \
+            free(symbols); \
+        }
+#else
+    #define PRINT_STACK_TRACE(out_str) \
+	{ \
+            out_str = ("Stack trace not supported on this platform\n"); \
+        }
+#endif
 void WorkerThreadPool::Task::free_template_userdata() {
 	ERR_FAIL_NULL(template_userdata);
 	ERR_FAIL_NULL(native_func_userdata);
@@ -607,3 +660,353 @@ WorkerThreadPool::WorkerThreadPool() {
 WorkerThreadPool::~WorkerThreadPool() {
 	finish();
 }
+
+
+
+
+
+
+
+	// 等待所有依赖信号完成
+void TaskJobHandle::wait_depend_completion()
+{
+
+	depend_mutex.lock();
+	auto it = dependJob.begin();
+	while(it)
+	{
+		(*it)->wait_completion();
+		++it;
+	}
+	// 都结束了，就把完成的句柄清除
+	dependJob.clear();
+	depend_mutex.unlock();
+
+}
+void TaskJobHandle::set_completed(int count)
+{	
+	uint32_t completed_amount = completed_index.add(count);
+	bool do_post = false;
+	if (completed_amount >= taskMax) {
+		do_post = true;
+	}
+	if(do_post)
+	{
+		set_completed();
+	}
+}
+bool TaskJobHandle::is_completed()  {
+	depend_mutex.lock();
+	auto it = dependJob.begin();
+	while (it)
+	{
+		if(!(*it)->is_completed())
+		{
+			depend_mutex.unlock();
+			return false;
+		}
+		++it;
+	}
+	// 都结束了，就把完成的句柄清除
+	dependJob.clear();
+
+	depend_mutex.unlock();
+	
+	bool is_completed = completed.is_set();
+	return is_completed;
+}
+void TaskJobHandle::_bind_methods()
+{
+	ClassDB::bind_method(D_METHOD("is_completed"), &TaskJobHandle::is_completed);
+	ClassDB::bind_method(D_METHOD("wait_completion"), &TaskJobHandle::wait_completion);
+
+}
+
+
+
+
+
+
+// 
+class ThreadTaskGroup {
+	// 事件的句柄
+	Ref<TaskJobHandle> handle;
+	Callable callable;
+	void (*native_group_func)(void *, uint32_t) = nullptr;
+	void *native_func_userdata = nullptr;
+	int start = 0;
+	int end = 0;
+	friend class WorkerTaskPool;
+  protected:
+	void Process()
+	{
+		// 等待所有依赖完成
+		handle->wait_depend_completion();
+		try
+		{
+			if(native_group_func != nullptr)
+			{
+				for(int i = start; i < end; ++i)
+				{
+					(*native_group_func)(native_func_userdata,i);
+					if(WorkerTaskPool::get_singleton()->exit_threads)
+					{
+						handle->set_completed();
+						return;
+					}
+				}
+			}
+			else
+			{
+				for(int i = start; i < end; ++i)
+				{
+					if(WorkerTaskPool::get_singleton()->exit_threads)
+					{
+						handle->set_completed();
+						return;
+					}
+				    callable.call(i);
+				}
+			}
+
+		}
+		catch (const std::exception& e) {
+			handle->set_completed();
+			String str = String(e.what()) + "\n";
+			// 处理其他类型的异常
+			//PRINT_STACK_TRACE(str);
+			CRASH_NOW_MSG(str);
+			return;
+		} catch (...) {
+			handle->set_completed();
+			// 处理所有其他未被上述 catch 语句捕捉的异常
+			String str = "Unknown exception:\n";
+			//PRINT_STACK_TRACE(str);
+			CRASH_NOW_MSG(str);
+			return;
+		}
+		if(WorkerTaskPool::get_singleton()->exit_threads)
+		{
+			handle->set_completed();
+			return;
+		}
+		// 任务完成
+		handle->set_completed(end - start);
+	}
+};
+
+WorkerTaskPool *WorkerTaskPool::singleton = nullptr;
+
+
+void WorkerTaskPool::_thread_task_function(void *p_user) {
+	while (true) {
+		singleton->task_available_semaphore.wait();
+		if (singleton->exit_threads) {
+			break;
+		}
+		singleton->_process_task_queue();
+		if (singleton->exit_threads) 
+		{
+			return;
+		}
+	}
+}
+
+class ThreadTaskGroup * WorkerTaskPool::allocal_task()
+{
+	ThreadTaskGroup* ret = nullptr;
+	free_mutex.lock();
+	List<ThreadTaskGroup*>::Element* node = free_queue.front();
+	if(node != nullptr)
+	{
+		ret = node->get();
+		free_queue.pop_front();
+	}
+	free_mutex.unlock();
+	if(ret == nullptr)
+	{
+		ret = memnew(ThreadTaskGroup);
+	}
+	return ret;
+}
+void WorkerTaskPool::free_task(class ThreadTaskGroup * task)
+{
+	ThreadTaskGroup* ret = nullptr;
+	free_mutex.lock();
+	free_queue.push_back(task);
+	free_mutex.unlock();
+}
+void WorkerTaskPool::add_task(class ThreadTaskGroup * task)
+{
+	task_mutex.lock();
+	task_queue.push_back(task);
+	task_mutex.unlock();
+	// 增加信号
+	task_available_semaphore.post();
+}
+void WorkerTaskPool::_process_task_queue() {
+	task_mutex.lock();
+	List<ThreadTaskGroup*>::Element* node = task_queue.front();
+	if(node != nullptr)
+	{
+		ThreadTaskGroup *task = node->get();
+		task_queue.pop_front();
+		task_mutex.unlock();
+		
+		task->Process();
+		task->native_func_userdata = nullptr;
+		task->native_group_func = nullptr;
+		task->callable = Callable();
+
+		// 放到释放列队里面
+		free_task(task);
+
+	}
+	else
+	{
+		task_mutex.unlock();
+	}
+}
+Ref<TaskJobHandle> WorkerTaskPool::add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,const Ref<TaskJobHandle>& depend_task)
+{
+	TaskJobHandle* hand = memnew(TaskJobHandle);
+	if(p_elements <= 0)
+	{
+		// 增加依赖，保持依赖链条是正确的
+		if(depend_task != nullptr)
+		{
+			hand->dependJob.push_back(depend_task);
+		}
+		// 标记完成
+		hand->set_completed();
+		return hand;
+	}
+	if(_batch_count	<= 0)
+	{
+		_batch_count = 1;
+	}
+	hand->taskMax = p_elements;
+	for(int i = 0; i < p_elements; i += _batch_count)
+	{
+		ThreadTaskGroup* task = allocal_task();
+		task->native_func_userdata = p_userdata;
+		task->native_group_func = p_func;
+		task->start = i;
+		task->end = i + _batch_count;
+		if(task->end > p_elements)
+		{
+			task->end = p_elements;
+		}
+		// 增加一个任务
+		add_task(task);
+	}
+	return hand;
+
+}
+Ref<TaskJobHandle> WorkerTaskPool::add_group_task(const Callable &p_action, int p_elements, int _batch_count,const Ref<TaskJobHandle>& depend_task )
+{
+	TaskJobHandle* hand = memnew(TaskJobHandle);
+	if(p_elements <= 0)
+	{
+		// 增加依赖，保持依赖链条是正确的
+		if(depend_task != nullptr)
+		{
+			hand->dependJob.push_back(depend_task);
+		}
+		// 标记完成
+		hand->set_completed();
+		return hand;
+	}
+	if(_batch_count	<= 0)
+	{
+		_batch_count = 1;
+	}
+	hand->taskMax = p_elements;
+	for(int i = 0; i < p_elements; i += _batch_count)
+	{
+		ThreadTaskGroup* task = allocal_task();
+		task->callable = p_action;
+		task->native_func_userdata = nullptr;
+		task->native_group_func = nullptr;
+		task->start = i;
+		task->end = i + _batch_count;
+		if(task->end > p_elements)
+		{
+			task->end = p_elements;
+		}
+		// 增加一个任务
+		add_task(task);
+	}
+	return hand;
+	
+}
+Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(const TypedArray<Ref<TaskJobHandle>>& _handles )
+{
+	if(_handles.size() == 0)
+	{
+		return nullptr;
+	}
+	TaskJobHandle* ret = memnew(TaskJobHandle);
+	for(int i = 0; i < _handles.size(); ++i)
+	{
+		if(_handles[i] != nullptr)
+		{
+			ret->dependJob.push_back(_handles[i]);
+		}
+	}
+	// 因为不是一个任务，所以直接设置已经完成
+	ret->set_completed();
+	return ret;
+}
+void WorkerTaskPool::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("add_native_group_task", "func", "userdata", "elements","batch_count","depend_task"), &WorkerTaskPool::add_native_group_task);
+	ClassDB::bind_method(D_METHOD("add_group_task", "action", "elements","batch_count","depend_task"), &WorkerTaskPool::add_group_task);
+
+}
+
+void WorkerTaskPool::init()
+{
+	int cpu_count = OS::get_singleton()->get_processor_count();
+	threads.resize(cpu_count * 2);
+	for(uint32_t i = 0; i < threads.size(); ++i)
+	{
+		threads[i].index = i;
+		threads[i].thread.start(&WorkerTaskPool::_thread_task_function, &threads[i]);
+	}
+
+}
+void WorkerTaskPool::finish()
+{
+	exit_threads = true;
+
+	for (uint32_t i = 0; i < threads.size(); i++) {
+		task_available_semaphore.post();
+		task_available_semaphore.post();
+	}
+	for (ThreadData &data : threads) {
+		data.thread.wait_to_finish();
+	}
+	singleton = nullptr;
+	List<class ThreadTaskGroup*>::Iterator it = task_queue.begin();
+	while (it) {
+		memdelete(*it);
+		++it;
+	}
+	task_queue.clear();
+	it = free_queue.begin();
+	while (it) {
+		memdelete(*it);
+		++it;
+	}
+	free_queue.clear();
+
+}
+WorkerTaskPool::WorkerTaskPool() {
+	singleton = this;
+}
+
+WorkerTaskPool::~WorkerTaskPool() {
+	finish();
+}
+

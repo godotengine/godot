@@ -45,7 +45,7 @@ namespace jpge {
 	enum { M_SOF0 = 0xC0, M_DHT = 0xC4, M_SOI = 0xD8, M_EOI = 0xD9, M_SOS = 0xDA, M_DQT = 0xDB, M_APP0 = 0xE0 };
 	enum { DC_LUM_CODES = 12, AC_LUM_CODES = 256, DC_CHROMA_CODES = 12, AC_CHROMA_CODES = 256, MAX_HUFF_SYMBOLS = 257, MAX_HUFF_CODESIZE = 32 };
 
-	static uint8 s_zag[64] = { 0,1,8,16,9,2,3,10,17,24,32,25,18,11,4,5,12,19,26,33,40,48,41,34,27,20,13,6,7,14,21,28,35,42,49,56,57,50,43,36,29,22,15,23,30,37,44,51,58,59,52,45,38,31,39,46,53,60,61,54,47,55,62,63 };
+	static uint8_t s_zag[64] = { 0,1,8,16,9,2,3,10,17,24,32,25,18,11,4,5,12,19,26,33,40,48,41,34,27,20,13,6,7,14,21,28,35,42,49,56,57,50,43,36,29,22,15,23,30,37,44,51,58,59,52,45,38,31,39,46,53,60,61,54,47,55,62,63 };
 	static int16 s_std_lum_quant[64] = { 16,11,12,14,12,10,16,14,13,14,18,17,16,19,24,40,26,24,22,22,24,49,35,37,29,40,58,51,61,60,57,51,56,55,64,72,92,78,64,68,87,69,55,56,80,109,81,87,95,98,103,104,103,62,77,113,121,112,100,120,92,101,103,99 };
 	static int16 s_std_croma_quant[64] = { 17,18,18,24,21,24,47,26,26,47,99,66,56,66,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99 };
 
@@ -53,10 +53,10 @@ namespace jpge {
 	// This is mozjpeg's default table, in zag order.
 	static int16 s_alt_quant[64] = { 16,16,16,16,17,16,18,20,20,18,25,27,24,27,25,37,34,31,31,34,37,56,40,43,40,43,40,56,85,53,62,53,53,62,53,85,75,91,74,69,74,91,75,135,106,94,94,106,135,156,131,124,131,156,189,169,169,189,238,226,238,311,311,418 };
 
-	static uint8 s_dc_lum_bits[17] = { 0,0,1,5,1,1,1,1,1,1,0,0,0,0,0,0,0 };
-	static uint8 s_dc_lum_val[DC_LUM_CODES] = { 0,1,2,3,4,5,6,7,8,9,10,11 };
-	static uint8 s_ac_lum_bits[17] = { 0,0,2,1,3,3,2,4,3,5,5,4,4,0,0,1,0x7d };
-	static uint8 s_ac_lum_val[AC_LUM_CODES] =
+	static uint8_t s_dc_lum_bits[17] = { 0,0,1,5,1,1,1,1,1,1,0,0,0,0,0,0,0 };
+	static uint8_t s_dc_lum_val[DC_LUM_CODES] = { 0,1,2,3,4,5,6,7,8,9,10,11 };
+	static uint8_t s_ac_lum_bits[17] = { 0,0,2,1,3,3,2,4,3,5,5,4,4,0,0,1,0x7d };
+	static uint8_t s_ac_lum_val[AC_LUM_CODES] =
 	{
 	  0x01,0x02,0x03,0x00,0x04,0x11,0x05,0x12,0x21,0x31,0x41,0x06,0x13,0x51,0x61,0x07,0x22,0x71,0x14,0x32,0x81,0x91,0xa1,0x08,0x23,0x42,0xb1,0xc1,0x15,0x52,0xd1,0xf0,
 	  0x24,0x33,0x62,0x72,0x82,0x09,0x0a,0x16,0x17,0x18,0x19,0x1a,0x25,0x26,0x27,0x28,0x29,0x2a,0x34,0x35,0x36,0x37,0x38,0x39,0x3a,0x43,0x44,0x45,0x46,0x47,0x48,0x49,
@@ -65,10 +65,10 @@ namespace jpge {
 	  0xc6,0xc7,0xc8,0xc9,0xca,0xd2,0xd3,0xd4,0xd5,0xd6,0xd7,0xd8,0xd9,0xda,0xe1,0xe2,0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,0xea,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,
 	  0xf9,0xfa
 	};
-	static uint8 s_dc_chroma_bits[17] = { 0,0,3,1,1,1,1,1,1,1,1,1,0,0,0,0,0 };
-	static uint8 s_dc_chroma_val[DC_CHROMA_CODES] = { 0,1,2,3,4,5,6,7,8,9,10,11 };
-	static uint8 s_ac_chroma_bits[17] = { 0,0,2,1,2,4,4,3,4,7,5,4,4,0,1,2,0x77 };
-	static uint8 s_ac_chroma_val[AC_CHROMA_CODES] =
+	static uint8_t s_dc_chroma_bits[17] = { 0,0,3,1,1,1,1,1,1,1,1,1,0,0,0,0,0 };
+	static uint8_t s_dc_chroma_val[DC_CHROMA_CODES] = { 0,1,2,3,4,5,6,7,8,9,10,11 };
+	static uint8_t s_ac_chroma_bits[17] = { 0,0,2,1,2,4,4,3,4,7,5,4,4,0,1,2,0x77 };
+	static uint8_t s_ac_chroma_val[AC_CHROMA_CODES] =
 	{
 	  0x00,0x01,0x02,0x03,0x11,0x04,0x05,0x21,0x31,0x06,0x12,0x41,0x51,0x07,0x61,0x71,0x13,0x22,0x32,0x81,0x08,0x14,0x42,0x91,0xa1,0xb1,0xc1,0x09,0x23,0x33,0x52,0xf0,
 	  0x15,0x62,0x72,0xd1,0x0a,0x16,0x24,0x34,0xe1,0x25,0xf1,0x17,0x18,0x19,0x1a,0x26,0x27,0x28,0x29,0x2a,0x35,0x36,0x37,0x38,0x39,0x3a,0x43,0x44,0x45,0x46,0x47,0x48,
@@ -82,48 +82,48 @@ namespace jpge {
 	template <class T> inline void clear_obj(T& obj) { memset(&obj, 0, sizeof(obj)); }
 
 	const int YR = 19595, YG = 38470, YB = 7471, CB_R = -11059, CB_G = -21709, CB_B = 32768, CR_R = 32768, CR_G = -27439, CR_B = -5329;
-	static inline uint8 clamp(int i) { if (static_cast<uint>(i) > 255U) { if (i < 0) i = 0; else if (i > 255) i = 255; } return static_cast<uint8>(i); }
+	static inline uint8_t clamp(int i) { if (static_cast<uint>(i) > 255U) { if (i < 0) i = 0; else if (i > 255) i = 255; } return static_cast<uint8_t>(i); }
 
 	static inline int left_shifti(int val, uint32 bits)
 	{
 		return static_cast<int>(static_cast<uint32>(val) << bits);
 	}
 
-	static void RGB_to_YCC(uint8* pDst, const uint8* pSrc, int num_pixels)
+	static void RGB_to_YCC(uint8_t* pDst, const uint8_t* pSrc, int num_pixels)
 	{
 		for (; num_pixels; pDst += 3, pSrc += 3, num_pixels--)
 		{
 			const int r = pSrc[0], g = pSrc[1], b = pSrc[2];
-			pDst[0] = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
+			pDst[0] = static_cast<uint8_t>((r * YR + g * YG + b * YB + 32768) >> 16);
 			pDst[1] = clamp(128 + ((r * CB_R + g * CB_G + b * CB_B + 32768) >> 16));
 			pDst[2] = clamp(128 + ((r * CR_R + g * CR_G + b * CR_B + 32768) >> 16));
 		}
 	}
 
-	static void RGB_to_Y(uint8* pDst, const uint8* pSrc, int num_pixels)
+	static void RGB_to_Y(uint8_t* pDst, const uint8_t* pSrc, int num_pixels)
 	{
 		for (; num_pixels; pDst++, pSrc += 3, num_pixels--)
-			pDst[0] = static_cast<uint8>((pSrc[0] * YR + pSrc[1] * YG + pSrc[2] * YB + 32768) >> 16);
+			pDst[0] = static_cast<uint8_t>((pSrc[0] * YR + pSrc[1] * YG + pSrc[2] * YB + 32768) >> 16);
 	}
 
-	static void RGBA_to_YCC(uint8* pDst, const uint8* pSrc, int num_pixels)
+	static void RGBA_to_YCC(uint8_t* pDst, const uint8_t* pSrc, int num_pixels)
 	{
 		for (; num_pixels; pDst += 3, pSrc += 4, num_pixels--)
 		{
 			const int r = pSrc[0], g = pSrc[1], b = pSrc[2];
-			pDst[0] = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
+			pDst[0] = static_cast<uint8_t>((r * YR + g * YG + b * YB + 32768) >> 16);
 			pDst[1] = clamp(128 + ((r * CB_R + g * CB_G + b * CB_B + 32768) >> 16));
 			pDst[2] = clamp(128 + ((r * CR_R + g * CR_G + b * CR_B + 32768) >> 16));
 		}
 	}
 
-	static void RGBA_to_Y(uint8* pDst, const uint8* pSrc, int num_pixels)
+	static void RGBA_to_Y(uint8_t* pDst, const uint8_t* pSrc, int num_pixels)
 	{
 		for (; num_pixels; pDst++, pSrc += 4, num_pixels--)
-			pDst[0] = static_cast<uint8>((pSrc[0] * YR + pSrc[1] * YG + pSrc[2] * YB + 32768) >> 16);
+			pDst[0] = static_cast<uint8_t>((pSrc[0] * YR + pSrc[1] * YG + pSrc[2] * YB + 32768) >> 16);
 	}
 
-	static void Y_to_YCC(uint8* pDst, const uint8* pSrc, int num_pixels)
+	static void Y_to_YCC(uint8_t* pDst, const uint8_t* pSrc, int num_pixels)
 	{
 		for (; num_pixels; pDst += 3, pSrc++, num_pixels--) { pDst[0] = pSrc[0]; pDst[1] = 128; pDst[2] = 128; }
 	}
@@ -258,7 +258,7 @@ namespace jpge {
 		// Compute m_huff_bits array, which contains the # of symbols per code size.
 		clear_obj(m_huff_bits[table_num]);
 		for (int i = 1; i <= (int)JPGE_CODE_SIZE_LIMIT; i++)
-			m_huff_bits[table_num][i] = static_cast<uint8>(num_codes[i]);
+			m_huff_bits[table_num][i] = static_cast<uint8_t>(num_codes[i]);
 
 		// Remove the dummy symbol added above, which must be in largest bucket.
 		for (int i = JPGE_CODE_SIZE_LIMIT; i >= 1; i--)
@@ -268,23 +268,23 @@ namespace jpge {
 
 		// Compute the m_huff_val array, which contains the symbol indices sorted by code size (smallest to largest).
 		for (int i = num_used_syms - 1; i >= 1; i--)
-			m_huff_val[table_num][num_used_syms - 1 - i] = static_cast<uint8>(pSyms[i].m_sym_index - 1);
+			m_huff_val[table_num][num_used_syms - 1 - i] = static_cast<uint8_t>(pSyms[i].m_sym_index - 1);
 	}
 
 	// JPEG marker generation.
-	void jpeg_encoder::emit_byte(uint8 i)
+	void jpeg_encoder::emit_byte(uint8_t i)
 	{
 		m_all_stream_writes_succeeded = m_all_stream_writes_succeeded && m_pStream->put_obj(i);
 	}
 
 	void jpeg_encoder::emit_word(uint i)
 	{
-		emit_byte(uint8(i >> 8)); emit_byte(uint8(i & 0xFF));
+		emit_byte(uint8_t(i >> 8)); emit_byte(uint8_t(i & 0xFF));
 	}
 
 	void jpeg_encoder::emit_marker(int marker)
 	{
-		emit_byte(uint8(0xFF)); emit_byte(uint8(marker));
+		emit_byte(uint8_t(0xFF)); emit_byte(uint8_t(marker));
 	}
 
 	// Emit JFIF marker
@@ -310,9 +310,9 @@ namespace jpge {
 		{
 			emit_marker(M_DQT);
 			emit_word(64 + 1 + 2);
-			emit_byte(static_cast<uint8>(i));
+			emit_byte(static_cast<uint8_t>(i));
 			for (int j = 0; j < 64; j++)
-				emit_byte(static_cast<uint8>(m_quantization_tables[i][j]));
+				emit_byte(static_cast<uint8_t>(m_quantization_tables[i][j]));
 		}
 	}
 
@@ -327,14 +327,14 @@ namespace jpge {
 		emit_byte(m_num_components);
 		for (int i = 0; i < m_num_components; i++)
 		{
-			emit_byte(static_cast<uint8>(i + 1));                                   /* component ID     */
+			emit_byte(static_cast<uint8_t>(i + 1));                                   /* component ID     */
 			emit_byte((m_comp_h_samp[i] << 4) + m_comp_v_samp[i]);  /* h and v sampling */
 			emit_byte(i > 0);                                   /* quant. table num */
 		}
 	}
 
 	// Emit Huffman table.
-	void jpeg_encoder::emit_dht(uint8* bits, uint8* val, int index, bool ac_flag)
+	void jpeg_encoder::emit_dht(uint8_t* bits, uint8_t* val, int index, bool ac_flag)
 	{
 		emit_marker(M_DHT);
 
@@ -343,7 +343,7 @@ namespace jpge {
 			length += bits[i];
 
 		emit_word(length + 2 + 1 + 16);
-		emit_byte(static_cast<uint8>(index + (ac_flag << 4)));
+		emit_byte(static_cast<uint8_t>(index + (ac_flag << 4)));
 
 		for (int i = 1; i <= 16; i++)
 			emit_byte(bits[i]);
@@ -372,7 +372,7 @@ namespace jpge {
 		emit_byte(m_num_components);
 		for (int i = 0; i < m_num_components; i++)
 		{
-			emit_byte(static_cast<uint8>(i + 1));
+			emit_byte(static_cast<uint8_t>(i + 1));
 			if (i == 0)
 				emit_byte((0 << 4) + 0);
 			else
@@ -395,10 +395,10 @@ namespace jpge {
 	}
 
 	// Compute the actual canonical Huffman codes/code sizes given the JPEG huff bits and val arrays.
-	void jpeg_encoder::compute_huffman_table(uint* codes, uint8* code_sizes, uint8* bits, uint8* val)
+	void jpeg_encoder::compute_huffman_table(uint* codes, uint8_t* code_sizes, uint8_t* bits, uint8_t* val)
 	{
 		int i, l, last_p, si;
-		uint8 huff_size[257];
+		uint8_t huff_size[257];
 		uint huff_code[257];
 		uint code;
 
@@ -513,7 +513,7 @@ namespace jpge {
 		m_image_bpl_mcu = m_image_x_mcu * m_num_components;
 		m_mcus_per_row = m_image_x_mcu / m_mcu_x;
 
-		if ((m_mcu_lines[0] = static_cast<uint8*>(jpge_malloc(m_image_bpl_mcu * m_mcu_y))) == NULL) return false;
+		if ((m_mcu_lines[0] = static_cast<uint8_t*>(jpge_malloc(m_image_bpl_mcu * m_mcu_y))) == NULL) return false;
 		for (int i = 1; i < m_mcu_y; i++)
 			m_mcu_lines[i] = m_mcu_lines[i - 1] + m_image_bpl_mcu;
 
@@ -549,7 +549,7 @@ namespace jpge {
 
 	void jpeg_encoder::load_block_8_8_grey(int x)
 	{
-		uint8* pSrc;
+		uint8_t* pSrc;
 		sample_array_t* pDst = m_sample_array;
 		x <<= 3;
 		for (int i = 0; i < 8; i++, pDst += 8)
@@ -562,7 +562,7 @@ namespace jpge {
 
 	void jpeg_encoder::load_block_8_8(int x, int y, int c)
 	{
-		uint8* pSrc;
+		uint8_t* pSrc;
 		sample_array_t* pDst = m_sample_array;
 		x = (x * (8 * 3)) + c;
 		y <<= 3;
@@ -576,7 +576,7 @@ namespace jpge {
 
 	void jpeg_encoder::load_block_16_8(int x, int c)
 	{
-		uint8* pSrc1, * pSrc2;
+		uint8_t* pSrc1, * pSrc2;
 		sample_array_t* pDst = m_sample_array;
 		x = (x * (16 * 3)) + c;
 		for (int i = 0; i < 16; i += 2, pDst += 8)
@@ -592,7 +592,7 @@ namespace jpge {
 
 	void jpeg_encoder::load_block_16_8_8(int x, int c)
 	{
-		uint8* pSrc1;
+		uint8_t* pSrc1;
 		sample_array_t* pDst = m_sample_array;
 		x = (x * (16 * 3)) + c;
 		for (int i = 0; i < 8; i++, pDst += 8)
@@ -643,9 +643,9 @@ namespace jpge {
 		m_bit_buffer |= ((uint32)bits << (24 - (m_bits_in += len)));
 		while (m_bits_in >= 8)
 		{
-			uint8 c;
+			uint8_t c;
 #define JPGE_PUT_BYTE(c) { *m_pOut_buf++ = (c); if (--m_out_buf_left == 0) flush_output_buffer(); }
-			JPGE_PUT_BYTE(c = (uint8)((m_bit_buffer >> 16) & 0xFF));
+			JPGE_PUT_BYTE(c = (uint8_t)((m_bit_buffer >> 16) & 0xFF));
 			if (c == 0xFF) JPGE_PUT_BYTE(0);
 			m_bit_buffer <<= 8;
 			m_bits_in -= 8;
@@ -696,7 +696,7 @@ namespace jpge {
 		int i, j, run_len, nbits, temp1, temp2;
 		int16* pSrc = m_coefficient_array;
 		uint* codes[2];
-		uint8* code_sizes[2];
+		uint8_t* code_sizes[2];
 
 		if (component_num == 0)
 		{
@@ -840,9 +840,9 @@ namespace jpge {
 
 	void jpeg_encoder::load_mcu(const void* pSrc)
 	{
-		const uint8* Psrc = reinterpret_cast<const uint8*>(pSrc);
+		const uint8_t* Psrc = reinterpret_cast<const uint8_t*>(pSrc);
 
-		uint8* pDst = m_mcu_lines[m_mcu_y_ofs]; // OK to write up to m_image_bpl_xlt bytes to pDst
+		uint8_t* pDst = m_mcu_lines[m_mcu_y_ofs]; // OK to write up to m_image_bpl_xlt bytes to pDst
 
 		if (m_num_components == 1)
 		{
@@ -868,8 +868,8 @@ namespace jpge {
 			memset(m_mcu_lines[m_mcu_y_ofs] + m_image_bpl_xlt, pDst[m_image_bpl_xlt - 1], m_image_x_mcu - m_image_x);
 		else
 		{
-			const uint8 y = pDst[m_image_bpl_xlt - 3 + 0], cb = pDst[m_image_bpl_xlt - 3 + 1], cr = pDst[m_image_bpl_xlt - 3 + 2];
-			uint8* q = m_mcu_lines[m_mcu_y_ofs] + m_image_bpl_xlt;
+			const uint8_t y = pDst[m_image_bpl_xlt - 3 + 0], cb = pDst[m_image_bpl_xlt - 3 + 1], cr = pDst[m_image_bpl_xlt - 3 + 2];
+			uint8_t* q = m_mcu_lines[m_mcu_y_ofs] + m_image_bpl_xlt;
 			for (int i = m_image_x; i < m_image_x_mcu; i++)
 			{
 				*q++ = y; *q++ = cb; *q++ = cr;
@@ -985,7 +985,7 @@ namespace jpge {
 	};
 
 	// Writes JPEG image to file.
-	bool compress_image_to_jpeg_file(const char* pFilename, int width, int height, int num_channels, const uint8* pImage_data, const params& comp_params)
+	bool compress_image_to_jpeg_file(const char* pFilename, int width, int height, int num_channels, const uint8_t* pImage_data, const params& comp_params)
 	{
 		cfile_stream dst_stream;
 		if (!dst_stream.open(pFilename))
@@ -999,7 +999,7 @@ namespace jpge {
 		{
 			for (int i = 0; i < height; i++)
 			{
-				const uint8* pBuf = pImage_data + i * width * num_channels;
+				const uint8_t* pBuf = pImage_data + i * width * num_channels;
 				if (!dst_image.process_scanline(pBuf))
 					return false;
 			}
@@ -1017,11 +1017,11 @@ namespace jpge {
 		memory_stream(const memory_stream&);
 		memory_stream& operator= (const memory_stream&);
 
-		uint8* m_pBuf;
+		uint8_t* m_pBuf;
 		uint m_buf_size, m_buf_ofs;
 
 	public:
-		memory_stream(void* pBuf, uint buf_size) : m_pBuf(static_cast<uint8*>(pBuf)), m_buf_size(buf_size), m_buf_ofs(0) { }
+		memory_stream(void* pBuf, uint buf_size) : m_pBuf(static_cast<uint8_t*>(pBuf)), m_buf_size(buf_size), m_buf_ofs(0) { }
 
 		virtual ~memory_stream() { }
 
@@ -1041,7 +1041,7 @@ namespace jpge {
 		}
 	};
 
-	bool compress_image_to_jpeg_file_in_memory(void* pDstBuf, int& buf_size, int width, int height, int num_channels, const uint8* pImage_data, const params& comp_params)
+	bool compress_image_to_jpeg_file_in_memory(void* pDstBuf, int& buf_size, int width, int height, int num_channels, const uint8_t* pImage_data, const params& comp_params)
 	{
 		if ((!pDstBuf) || (!buf_size))
 			return false;
@@ -1058,7 +1058,7 @@ namespace jpge {
 		{
 			for (int i = 0; i < height; i++)
 			{
-				const uint8* pScanline = pImage_data + i * width * num_channels;
+				const uint8_t* pScanline = pImage_data + i * width * num_channels;
 				if (!dst_image.process_scanline(pScanline))
 					return false;
 			}

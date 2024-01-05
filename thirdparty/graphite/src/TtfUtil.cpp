@@ -829,7 +829,7 @@ const void * FindCmapSubtable(const void * pCmap, int nPlatformId, /* =3 */ int 
                 (nEncodingId == -1 || be::swap(pTable->encoding[i].platform_specific_id) == nEncodingId))
         {
             uint32 offset = be::swap(pTable->encoding[i].offset);
-            const uint8 * pRtn = reinterpret_cast<const uint8 *>(pCmap) + offset;
+            const uint8_t * pRtn = reinterpret_cast<const uint8_t *>(pCmap) + offset;
             if (length)
             {
                 if (offset > length - 2) return NULL;
@@ -859,7 +859,7 @@ const void * FindCmapSubtable(const void * pCmap, int nPlatformId, /* =3 */ int 
                         return NULL;
                 }
             }
-            return reinterpret_cast<const uint8 *>(pCmap) + offset;
+            return reinterpret_cast<const uint8_t *>(pCmap) + offset;
         }
     }
 
@@ -1226,10 +1226,10 @@ size_t LocaLookup(gid16 nGlyphId,
 ----------------------------------------------------------------------------------------------*/
 void * GlyfLookup(const void * pGlyf, size_t nGlyfOffset, size_t nTableLen)
 {
-    const uint8 * pByte = reinterpret_cast<const uint8 *>(pGlyf);
+    const uint8_t * pByte = reinterpret_cast<const uint8_t *>(pGlyf);
     if (OVERFLOW_OFFSET_CHECK(pByte, nGlyfOffset) || nGlyfOffset >= nTableLen - sizeof(Sfnt::Glyph))
         return NULL;
-    return const_cast<uint8 *>(pByte + nGlyfOffset);
+    return const_cast<uint8_t *>(pByte + nGlyfOffset);
 }
 
 /*----------------------------------------------------------------------------------------------
@@ -1314,7 +1314,7 @@ bool GlyfPoints(const void * pSimpleGlyf, int * prgnX, int * prgnY,
         return false;
 
     // skip over bounding box data & point to byte count of instructions (hints)
-    const uint8 * pbGlyph = reinterpret_cast<const uint8 *>
+    const uint8_t * pbGlyph = reinterpret_cast<const uint8_t *>
         (&pGlyph->end_pts_of_contours[cContours]);
 
     // skip over hints & point to first flag
@@ -1431,7 +1431,7 @@ bool GetComponentGlyphIds(const void * pSimpleGlyf, int * prgnCompId,
 
     const Sfnt::SimpleGlyph * pGlyph = reinterpret_cast<const Sfnt::SimpleGlyph *>(pSimpleGlyf);
     // for a composite glyph, the special data begins here
-    const uint8 * pbGlyph = reinterpret_cast<const uint8 *>(&pGlyph->end_pts_of_contours[0]);
+    const uint8_t * pbGlyph = reinterpret_cast<const uint8_t *>(&pGlyph->end_pts_of_contours[0]);
 
     uint16 GlyphFlags;
     size_t iCurrentComp = 0;
@@ -1476,7 +1476,7 @@ bool GetComponentPlacement(const void * pSimpleGlyf, int nCompId,
 
     const Sfnt::SimpleGlyph * pGlyph = reinterpret_cast<const Sfnt::SimpleGlyph *>(pSimpleGlyf);
     // for a composite glyph, the special data begins here
-    const uint8 * pbGlyph = reinterpret_cast<const uint8 *>(&pGlyph->end_pts_of_contours[0]);
+    const uint8_t * pbGlyph = reinterpret_cast<const uint8_t *>(&pGlyph->end_pts_of_contours[0]);
 
     uint16 GlyphFlags;
     do
@@ -1541,7 +1541,7 @@ bool GetComponentTransform(const void * pSimpleGlyf, int nCompId,
 
     const Sfnt::SimpleGlyph * pGlyph = reinterpret_cast<const Sfnt::SimpleGlyph *>(pSimpleGlyf);
     // for a composite glyph, the special data begins here
-    const uint8 * pbGlyph = reinterpret_cast<const uint8 *>(&pGlyph->end_pts_of_contours[0]);
+    const uint8_t * pbGlyph = reinterpret_cast<const uint8_t *>(&pGlyph->end_pts_of_contours[0]);
 
     uint16 GlyphFlags;
     do

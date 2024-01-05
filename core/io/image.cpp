@@ -805,7 +805,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 			src_xofs_right *= CC;
 
 			for (uint32_t l = 0; l < CC; l++) {
-				if constexpr (sizeof(T) == 1) { //uint8
+				if constexpr (sizeof(T) == 1) { //uint8_t
 					uint32_t p00 = p_src[y_ofs_up + src_xofs_left + l] << FRAC_BITS;
 					uint32_t p10 = p_src[y_ofs_up + src_xofs_right + l] << FRAC_BITS;
 					uint32_t p01 = p_src[y_ofs_down + src_xofs_left + l] << FRAC_BITS;

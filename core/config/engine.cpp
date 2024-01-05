@@ -266,7 +266,7 @@ void Engine::add_singleton(const Singleton &p_singleton) {
 }
 
 Object *Engine::get_singleton_object(const StringName &p_name) const {
-	HashMap<StringName, Object *>::ConstIterator E = singleton_ptrs.find(p_name);
+	HashMap<StringName, Ref<Object>>::ConstIterator E = singleton_ptrs.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, nullptr, vformat("Failed to retrieve non-existent singleton '%s'.", p_name));
 
 #ifdef TOOLS_ENABLED
@@ -275,7 +275,7 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 	}
 #endif
 
-	return E->value;
+	return E->value.ptr();
 }
 
 bool Engine::is_singleton_user_created(const StringName &p_name) const {
@@ -359,10 +359,23 @@ Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const Stri
 		name(p_name),
 		ptr(p_ptr),
 		class_name(p_class_name) {
-#ifdef DEBUG_ENABLED
 	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
+	if(rc != nullptr)
+	{
+		rc->reference();
+	}
+#ifdef DEBUG_ENABLED
 	if (rc && !rc->is_referenced()) {
 		WARN_PRINT("You must use Ref<> to ensure the lifetime of a RefCounted object intended to be used as a singleton.");
 	}
 #endif
+}
+void Engine::Singleton::release()
+{
+	RefCounted *rc = Object::cast_to<RefCounted>(ptr);
+	if(rc != nullptr)
+	{
+		rc->unreference();
+	}
+	
 }

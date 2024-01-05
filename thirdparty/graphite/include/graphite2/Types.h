@@ -13,7 +13,7 @@ typedef unsigned int    gr_uint32;
 typedef int             gr_int32;
 
 enum gr_encform {
-  gr_utf8 = 1/*sizeof(uint8)*/, gr_utf16 = 2/*sizeof(uint16)*/, gr_utf32 = 4/*sizeof(uint32)*/
+  gr_utf8 = 1/*sizeof(uint8_t)*/, gr_utf16 = 2/*sizeof(uint16)*/, gr_utf32 = 4/*sizeof(uint32)*/
 };
 
 

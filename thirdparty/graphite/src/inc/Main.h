@@ -12,7 +12,7 @@
 
 namespace graphite2 {
 
-typedef gr_uint8        uint8;
+typedef gr_uint8        uint8_t;
 typedef gr_uint8        byte;
 typedef gr_uint16       uint16;
 typedef gr_uint32       uint32;

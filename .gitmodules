@@ -1,0 +1,3 @@
+[submodule "modules/godot_luaAPI"]
+	path = modules/godot_luaAPI
+	url = https://github.com/zhangjiangen11/godot_luaAPI.git

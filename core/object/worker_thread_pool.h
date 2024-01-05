@@ -204,5 +204,80 @@ public:
 	WorkerThreadPool();
 	~WorkerThreadPool();
 };
+// 任务Job句柄
+class TaskJobHandle : public RefCounted
+{
+	GDCLASS(TaskJobHandle, RefCounted);
+	static void _bind_methods();
+	friend class WorkerTaskPool;
+	friend class ThreadTaskGroup;
+ protected:
+	void set_completed(int count);
+	void set_completed()
+	{
+		completed.set();
+		done_semaphore.post();
+	}
+	// 等待所有依赖信号完成
+	void wait_depend_completion();
+ public:
+	bool is_completed() ;
+	// 等待信号完成
+	void wait_completion()
+	{
+		wait_depend_completion();
+		// 等待信号完成
+		done_semaphore.wait();
+	}
+	Mutex depend_mutex;
+	// 依赖的句柄
+	List<Ref<TaskJobHandle>> dependJob;
+	// 完成标志
+	Semaphore done_semaphore;
+	SafeFlag completed;
+	// 完成数量
+	SafeNumeric<uint32_t> completed_index;
+	// 最大任务数量
+	uint32_t taskMax = 0;
+};
+// 多任务管理器
+class WorkerTaskPool : public Object {
+	GDCLASS(WorkerTaskPool, Object)
+	static void _bind_methods();
+	static WorkerTaskPool *singleton;
+	bool exit_threads = false;
+	// 释放的列队
+	List<class ThreadTaskGroup*> task_queue;
+	// 释放的列队
+	List<class ThreadTaskGroup*> free_queue;
+	Mutex task_mutex;
+	Mutex free_mutex;
+	Semaphore task_available_semaphore;
 
+	struct ThreadData {
+		uint32_t index;
+		Thread thread;
+	};
+	TightLocalVector<ThreadData> threads;
+
+	static void _thread_task_function(void *p_user);
+	void _process_task_queue() ;
+	class ThreadTaskGroup * allocal_task();
+	void free_task(class ThreadTaskGroup * task);
+	void add_task(class ThreadTaskGroup * task);
+	void init();
+	void finish();
+	friend class ThreadTaskGroup;
+public:
+	static WorkerTaskPool *get_singleton() { return singleton; }
+	Ref<TaskJobHandle> add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,const Ref<TaskJobHandle>& depend_task);
+	Ref<TaskJobHandle> add_group_task(const Callable &p_action, int p_elements, int _batch_count,const Ref<TaskJobHandle>& depend_task);
+	Ref<TaskJobHandle> combined_job_handle(const TypedArray<Ref<TaskJobHandle>>& _handles );
+	
+	
+	WorkerTaskPool();
+	~WorkerTaskPool();
+private:
+
+};
 #endif // WORKER_THREAD_POOL_H

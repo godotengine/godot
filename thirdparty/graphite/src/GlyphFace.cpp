@@ -6,7 +6,7 @@
 
 using namespace graphite2;
 
-int32 GlyphFace::getMetric(uint8 metric) const
+int32 GlyphFace::getMetric(uint8_t metric) const
 {
     switch (metrics(metric))
     {

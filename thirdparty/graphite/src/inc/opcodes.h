@@ -68,20 +68,20 @@ ENDOP
 
 STARTOP(push_byte_u)
     declare_params(1);
-    push(uint8(*param));
+    push(uint8_t(*param));
 ENDOP
 
 STARTOP(push_short)
     declare_params(2);
     const int16 r   = int16(param[0]) << 8
-                    | uint8(param[1]);
+                    | uint8_t(param[1]);
     push(r);
 ENDOP
 
 STARTOP(push_short_u)
     declare_params(2);
     const uint16 r  = uint16(param[0]) << 8
-                    | uint8(param[1]);
+                    | uint8_t(param[1]);
     push(r);
 ENDOP
 
@@ -90,7 +90,7 @@ STARTOP(push_long)
     const  int32 r  = int32(param[0]) << 24
                     | uint32(param[1]) << 16
                     | uint32(param[2]) << 8
-                    | uint8(param[3]);
+                    | uint8_t(param[3]);
     push(r);
 ENDOP
 
@@ -128,7 +128,7 @@ STARTOP(neg)
 ENDOP
 
 STARTOP(trunc8)
-    *sp = uint8(*sp);
+    *sp = uint8_t(*sp);
 ENDOP
 
 STARTOP(trunc16)
@@ -191,7 +191,7 @@ ENDOP
 //    use_params(1);
 //    NOT_IMPLEMENTED;
     //declare_params(1);
-    //const size_t num = uint8(*param);
+    //const size_t num = uint8_t(*param);
 //ENDOP
 
 //STARTOP(copy_next)
@@ -201,15 +201,15 @@ ENDOP
 
 STARTOP(put_glyph_8bit_obs)
     declare_params(1);
-    const unsigned int output_class = uint8(*param);
+    const unsigned int output_class = uint8_t(*param);
     is->setGlyph(&seg, seg.getClassGlyph(output_class, 0));
 ENDOP
 
 STARTOP(put_subs_8bit_obs)
     declare_params(3);
     const int           slot_ref     = int8(param[0]);
-    const unsigned int  input_class  = uint8(param[1]),
-                        output_class = uint8(param[2]);
+    const unsigned int  input_class  = uint8_t(param[1]),
+                        output_class = uint8_t(param[2]);
     uint16 index;
     slotref slot = slotat(slot_ref);
     if (slot)
@@ -326,7 +326,7 @@ ENDOP
 
 STARTOP(assoc)
     declare_params(1);
-    unsigned int  num = uint8(*param);
+    unsigned int  num = uint8_t(*param);
     const int8 *  assocs = reinterpret_cast<const int8 *>(param+1);
     use_params(num);
     int max = -1;
@@ -350,8 +350,8 @@ STARTOP(cntxt_item)
     // It turns out this is a cunningly disguised condition forward jump.
     declare_params(3);
     const int       is_arg = int8(param[0]);
-    const size_t    iskip  = uint8(param[1]),
-                    dskip  = uint8(param[2]);
+    const size_t    iskip  = uint8_t(param[1]),
+                    dskip  = uint8_t(param[2]);
 
     if (mapb + is_arg != map)
     {
@@ -363,14 +363,14 @@ ENDOP
 
 STARTOP(attr_set)
     declare_params(1);
-    const attrCode      slat = attrCode(uint8(*param));
+    const attrCode      slat = attrCode(uint8_t(*param));
     const          int  val  = pop();
     is->setAttr(&seg, slat, 0, val, smap);
 ENDOP
 
 STARTOP(attr_add)
     declare_params(1);
-    const attrCode      slat = attrCode(uint8(*param));
+    const attrCode      slat = attrCode(uint8_t(*param));
     const     uint32_t  val  = pop();
     if ((slat == gr_slatPosX || slat == gr_slatPosY) && (flags & POSITIONED) == 0)
     {
@@ -383,7 +383,7 @@ ENDOP
 
 STARTOP(attr_sub)
     declare_params(1);
-    const attrCode      slat = attrCode(uint8(*param));
+    const attrCode      slat = attrCode(uint8_t(*param));
     const     uint32_t  val  = pop();
     if ((slat == gr_slatPosX || slat == gr_slatPosY) && (flags & POSITIONED) == 0)
     {
@@ -396,7 +396,7 @@ ENDOP
 
 STARTOP(attr_set_slot)
     declare_params(1);
-    const attrCode  slat   = attrCode(uint8(*param));
+    const attrCode  slat   = attrCode(uint8_t(*param));
     const int       offset = int(map - smap.begin())*int(slat == gr_slatAttTo);
     const int       val    = pop()  + offset;
     is->setAttr(&seg, slat, offset, val, smap);
@@ -404,15 +404,15 @@ ENDOP
 
 STARTOP(iattr_set_slot)
     declare_params(2);
-    const attrCode  slat = attrCode(uint8(param[0]));
-    const uint8     idx  = uint8(param[1]);
+    const attrCode  slat = attrCode(uint8_t(param[0]));
+    const uint8_t     idx  = uint8_t(param[1]);
     const int       val  = int(pop()  + (map - smap.begin())*int(slat == gr_slatAttTo));
     is->setAttr(&seg, slat, idx, val, smap);
 ENDOP
 
 STARTOP(push_slot_attr)
     declare_params(2);
-    const attrCode      slat     = attrCode(uint8(param[0]));
+    const attrCode      slat     = attrCode(uint8_t(param[0]));
     const int           slot_ref = int8(param[1]);
     if ((slat == gr_slatPosX || slat == gr_slatPosY) && (flags & POSITIONED) == 0)
     {
@@ -429,7 +429,7 @@ ENDOP
 
 STARTOP(push_glyph_attr_obs)
     declare_params(2);
-    const unsigned int  glyph_attr = uint8(param[0]);
+    const unsigned int  glyph_attr = uint8_t(param[0]);
     const int           slot_ref   = int8(param[1]);
     slotref slot = slotat(slot_ref);
     if (slot)
@@ -438,9 +438,9 @@ ENDOP
 
 STARTOP(push_glyph_metric)
     declare_params(3);
-    const unsigned int  glyph_attr  = uint8(param[0]);
+    const unsigned int  glyph_attr  = uint8_t(param[0]);
     const int           slot_ref    = int8(param[1]);
-    const signed int    attr_level  = uint8(param[2]);
+    const signed int    attr_level  = uint8_t(param[2]);
     slotref slot = slotat(slot_ref);
     if (slot)
         push(seg.getGlyphMetric(slot, glyph_attr, attr_level, dir));
@@ -448,19 +448,19 @@ ENDOP
 
 STARTOP(push_feat)
     declare_params(2);
-    const unsigned int  feat        = uint8(param[0]);
+    const unsigned int  feat        = uint8_t(param[0]);
     const int           slot_ref    = int8(param[1]);
     slotref slot = slotat(slot_ref);
     if (slot)
     {
-        uint8 fid = seg.charinfo(slot->original())->fid();
+        uint8_t fid = seg.charinfo(slot->original())->fid();
         push(seg.getFeature(fid, feat));
     }
 ENDOP
 
 STARTOP(push_att_to_gattr_obs)
     declare_params(2);
-    const unsigned int  glyph_attr  = uint8(param[0]);
+    const unsigned int  glyph_attr  = uint8_t(param[0]);
     const int           slot_ref    = int8(param[1]);
     slotref slot = slotat(slot_ref);
     if (slot)
@@ -473,9 +473,9 @@ ENDOP
 
 STARTOP(push_att_to_glyph_metric)
     declare_params(3);
-    const unsigned int  glyph_attr  = uint8(param[0]);
+    const unsigned int  glyph_attr  = uint8_t(param[0]);
     const int           slot_ref    = int8(param[1]);
-    const signed int    attr_level  = uint8(param[2]);
+    const signed int    attr_level  = uint8_t(param[2]);
     slotref slot = slotat(slot_ref);
     if (slot)
     {
@@ -487,9 +487,9 @@ ENDOP
 
 STARTOP(push_islot_attr)
     declare_params(3);
-    const attrCode  slat     = attrCode(uint8(param[0]));
+    const attrCode  slat     = attrCode(uint8_t(param[0]));
     const int           slot_ref = int8(param[1]),
-                        idx      = uint8(param[2]);
+                        idx      = uint8_t(param[2]);
     if ((slat == gr_slatPosX || slat == gr_slatPosY) && (flags & POSITIONED) == 0)
     {
         seg.positionSlots(0, *smap.begin(), *(smap.end()-1), seg.currdir());
@@ -524,16 +524,16 @@ ENDOP
 
 STARTOP(iattr_set)
     declare_params(2);
-    const attrCode      slat = attrCode(uint8(param[0]));
-    const uint8         idx  = uint8(param[1]);
+    const attrCode      slat = attrCode(uint8_t(param[0]));
+    const uint8_t         idx  = uint8_t(param[1]);
     const          int  val  = pop();
     is->setAttr(&seg, slat, idx, val, smap);
 ENDOP
 
 STARTOP(iattr_add)
     declare_params(2);
-    const attrCode      slat = attrCode(uint8(param[0]));
-    const uint8         idx  = uint8(param[1]);
+    const attrCode      slat = attrCode(uint8_t(param[0]));
+    const uint8_t         idx  = uint8_t(param[1]);
     const     uint32_t  val  = pop();
     if ((slat == gr_slatPosX || slat == gr_slatPosY) && (flags & POSITIONED) == 0)
     {
@@ -546,8 +546,8 @@ ENDOP
 
 STARTOP(iattr_sub)
     declare_params(2);
-    const attrCode      slat = attrCode(uint8(param[0]));
-    const uint8         idx  = uint8(param[1]);
+    const attrCode      slat = attrCode(uint8_t(param[0]));
+    const uint8_t         idx  = uint8_t(param[1]);
     const     uint32_t  val  = pop();
     if ((slat == gr_slatPosX || slat == gr_slatPosY) && (flags & POSITIONED) == 0)
     {
@@ -570,10 +570,10 @@ ENDOP
 STARTOP(put_subs)
     declare_params(5);
     const int        slot_ref     = int8(param[0]);
-    const unsigned int  input_class  = uint8(param[1]) << 8
-                                     | uint8(param[2]);
-    const unsigned int  output_class = uint8(param[3]) << 8
-                                     | uint8(param[4]);
+    const unsigned int  input_class  = uint8_t(param[1]) << 8
+                                     | uint8_t(param[2]);
+    const unsigned int  output_class = uint8_t(param[3]) << 8
+                                     | uint8_t(param[4]);
     slotref slot = slotat(slot_ref);
     if (slot)
     {
@@ -594,15 +594,15 @@ ENDOP
 
 STARTOP(put_glyph)
     declare_params(2);
-    const unsigned int output_class  = uint8(param[0]) << 8
-                                     | uint8(param[1]);
+    const unsigned int output_class  = uint8_t(param[0]) << 8
+                                     | uint8_t(param[1]);
     is->setGlyph(&seg, seg.getClassGlyph(output_class, 0));
 ENDOP
 
 STARTOP(push_glyph_attr)
     declare_params(3);
-    const unsigned int  glyph_attr  = uint8(param[0]) << 8
-                                    | uint8(param[1]);
+    const unsigned int  glyph_attr  = uint8_t(param[0]) << 8
+                                    | uint8_t(param[1]);
     const int           slot_ref    = int8(param[2]);
     slotref slot = slotat(slot_ref);
     if (slot)
@@ -611,8 +611,8 @@ ENDOP
 
 STARTOP(push_att_to_glyph_attr)
     declare_params(3);
-    const unsigned int  glyph_attr  = uint8(param[0]) << 8
-                                    | uint8(param[1]);
+    const unsigned int  glyph_attr  = uint8_t(param[0]) << 8
+                                    | uint8_t(param[1]);
     const int           slot_ref    = int8(param[2]);
     slotref slot = slotat(slot_ref);
     if (slot)
@@ -649,20 +649,20 @@ ENDOP
 STARTOP(setbits)
     declare_params(4);
     const uint16 m  = uint16(param[0]) << 8
-                    | uint8(param[1]);
+                    | uint8_t(param[1]);
     const uint16 v  = uint16(param[2]) << 8
-                    | uint8(param[3]);
+                    | uint8_t(param[3]);
     *sp = ((*sp) & ~m) | v;
 ENDOP
 
 STARTOP(set_feat)
     declare_params(2);
-    const unsigned int  feat        = uint8(param[0]);
+    const unsigned int  feat        = uint8_t(param[0]);
     const int           slot_ref    = int8(param[1]);
     slotref slot = slotat(slot_ref);
     if (slot)
     {
-        uint8 fid = seg.charinfo(slot->original())->fid();
+        uint8_t fid = seg.charinfo(slot->original())->fid();
         seg.setFeature(fid, feat, pop());
     }
 ENDOP

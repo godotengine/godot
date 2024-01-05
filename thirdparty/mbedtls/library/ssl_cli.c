@@ -779,7 +779,7 @@ static int ssl_write_use_srtp_ext(mbedtls_ssl_context *ssl,
     }
 
     /* RFC 5764 section 4.1.1
-     * uint8 SRTPProtectionProfile[2];
+     * uint8_t SRTPProtectionProfile[2];
      *
      * struct {
      *   SRTPProtectionProfiles SRTPProtectionProfiles;
@@ -1817,7 +1817,7 @@ static int ssl_parse_use_srtp_ext(mbedtls_ssl_context *ssl,
     }
 
     /* RFC 5764 section 4.1.1
-     * uint8 SRTPProtectionProfile[2];
+     * uint8_t SRTPProtectionProfile[2];
      *
      * struct {
      *   SRTPProtectionProfiles SRTPProtectionProfiles;

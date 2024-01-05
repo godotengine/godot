@@ -457,7 +457,7 @@ bool ShiftCollider::mergeSlot(Segment *seg, Slot *slot, const SlotCollision *csl
 
             // Process sub-boxes that are defined for this glyph.
             // We only need to do this if there was in fact a collision with the main octabox.
-            uint8 numsub = gc.numSubBounds(gid);
+            uint8_t numsub = gc.numSubBounds(gid);
             if (numsub > 0)
             {
                 bool anyhits = false;
@@ -743,7 +743,7 @@ static float get_edge(Segment *seg, const Slot *s, const Position &shift, float 
     unsigned short gid = s->gid();
     float sx = s->origin().x + shift.x;
     float sy = s->origin().y + shift.y;
-    uint8 numsub = gc.numSubBounds(gid);
+    uint8_t numsub = gc.numSubBounds(gid);
     float res = isRight ? (float)-1e38 : (float)1e38;
 
     if (numsub > 0)

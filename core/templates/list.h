@@ -152,6 +152,10 @@ public:
 			E = E->prev();
 			return *this;
 		}
+		operator bool()
+		{
+			return E != nullptr;
+		}
 
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }

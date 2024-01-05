@@ -11,7 +11,7 @@
 *   Date        Name        Description
 *   12/11/96    helena      Creation.
 *   02/27/97    aliu        Added typedefs for UClassID, int8, int16, int32,
-*                           uint8, uint16, and uint32.
+*                           uint8_t, uint16, and uint32.
 *   04/01/97    aliu        Added XP_CPLUSPLUS and modified to work under C as
 *                            well as C++.
 *                           Modified to use memcpy() for uprv_arrayCopy() fns.

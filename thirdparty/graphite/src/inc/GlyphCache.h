@@ -48,16 +48,16 @@ class GlyphBox
     GlyphBox & operator = (const GlyphBox &);
 
 public:
-    GlyphBox(uint8 numsubs, unsigned short bitmap, Rect *slanted) : _num(numsubs), _bitmap(bitmap), _slant(*slanted) {};
+    GlyphBox(uint8_t numsubs, unsigned short bitmap, Rect *slanted) : _num(numsubs), _bitmap(bitmap), _slant(*slanted) {};
 
     void addSubBox(int subindex, int boundary, Rect *val) { _subs[subindex * 2 + boundary] = *val; }
     Rect &subVal(int subindex, int boundary) { return _subs[subindex * 2 + boundary]; }
     const Rect &slant() const { return _slant; }
-    uint8 num() const { return _num; }
+    uint8_t num() const { return _num; }
     const Rect *subs() const { return _subs; }
 
 private:
-    uint8   _num;
+    uint8_t   _num;
     unsigned short  _bitmap;
     Rect    _slant;
     Rect    _subs[1];
@@ -80,14 +80,14 @@ public:
 
     const GlyphFace *glyph(unsigned short glyphid) const;      //result may be changed by subsequent call with a different glyphid
     const GlyphFace *glyphSafe(unsigned short glyphid) const;
-    float            getBoundingMetric(unsigned short glyphid, uint8 metric) const;
-    uint8            numSubBounds(unsigned short glyphid) const;
-    float            getSubBoundingMetric(unsigned short glyphid, uint8 subindex, uint8 metric) const;
+    float            getBoundingMetric(unsigned short glyphid, uint8_t metric) const;
+    uint8_t            numSubBounds(unsigned short glyphid) const;
+    float            getSubBoundingMetric(unsigned short glyphid, uint8_t subindex, uint8_t metric) const;
     const Rect &     slant(unsigned short glyphid) const { return _boxes[glyphid] ? _boxes[glyphid]->slant() : _empty_slant_box; }
     const SlantBox & getBoundingSlantBox(unsigned short glyphid) const;
     const BBox &     getBoundingBBox(unsigned short glyphid) const;
-    const SlantBox & getSubBoundingSlantBox(unsigned short glyphid, uint8 subindex) const;
-    const BBox &     getSubBoundingBBox(unsigned short glyphid, uint8 subindex) const;
+    const SlantBox & getSubBoundingSlantBox(unsigned short glyphid, uint8_t subindex) const;
+    const BBox &     getSubBoundingBBox(unsigned short glyphid, uint8_t subindex) const;
     bool             check(unsigned short glyphid) const;
     bool             hasBoxes() const { return _boxes != 0; }
 
@@ -134,7 +134,7 @@ const GlyphFace *GlyphCache::glyphSafe(unsigned short glyphid) const
 }
 
 inline
-float GlyphCache::getBoundingMetric(unsigned short glyphid, uint8 metric) const
+float GlyphCache::getBoundingMetric(unsigned short glyphid, uint8_t metric) const
 {
     if (glyphid >= _num_glyphs) return 0.;
     switch (metric) {
@@ -161,7 +161,7 @@ inline const BBox &GlyphCache::getBoundingBBox(unsigned short glyphid) const
 }
 
 inline
-float GlyphCache::getSubBoundingMetric(unsigned short glyphid, uint8 subindex, uint8 metric) const
+float GlyphCache::getSubBoundingMetric(unsigned short glyphid, uint8_t subindex, uint8_t metric) const
 {
     GlyphBox *b = _boxes[glyphid];
     if (b == NULL || subindex >= b->num()) return 0;
@@ -179,20 +179,20 @@ float GlyphCache::getSubBoundingMetric(unsigned short glyphid, uint8 subindex, u
     }
 }
 
-inline const SlantBox &GlyphCache::getSubBoundingSlantBox(unsigned short glyphid, uint8 subindex) const
+inline const SlantBox &GlyphCache::getSubBoundingSlantBox(unsigned short glyphid, uint8_t subindex) const
 {
     GlyphBox *b = _boxes[glyphid];
     return *(SlantBox *)(b->subs() + 2 * subindex + 1);
 }
 
-inline const BBox &GlyphCache::getSubBoundingBBox(unsigned short glyphid, uint8 subindex) const
+inline const BBox &GlyphCache::getSubBoundingBBox(unsigned short glyphid, uint8_t subindex) const
 {
     GlyphBox *b = _boxes[glyphid];
     return *(BBox *)(b->subs() + 2 * subindex);
 }
 
 inline
-uint8 GlyphCache::numSubBounds(unsigned short glyphid) const
+uint8_t GlyphCache::numSubBounds(unsigned short glyphid) const
 {
     return _boxes[glyphid] ? _boxes[glyphid]->num() : 0;
 }

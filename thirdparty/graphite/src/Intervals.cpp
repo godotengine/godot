@@ -34,7 +34,7 @@ Zones::Exclusion & Zones::Exclusion::operator += (Exclusion const & rhs) {
 }
 
 inline
-uint8 Zones::Exclusion::outcode(float val) const {
+uint8_t Zones::Exclusion::outcode(float val) const {
     float p = val;
     //float d = std::numeric_limits<float>::epsilon();
     float d = 0.;
@@ -73,7 +73,7 @@ void Zones::insert(Exclusion e)
 
     for (iterator i = _exclusions.begin(), ie = _exclusions.end(); i != ie && e.x < e.xm; ++i)
     {
-        const uint8 oca = e.outcode(i->x),
+        const uint8_t oca = e.outcode(i->x),
                     ocb = e.outcode(i->xm);
         if ((oca & ocb) != 0) continue;
 
@@ -129,7 +129,7 @@ void Zones::remove(float x, float xm)
 
     for (iterator i = _exclusions.begin(), ie = _exclusions.end(); i != ie; ++i)
     {
-        const uint8 oca = i->outcode(x),
+        const uint8_t oca = i->outcode(x),
                     ocb = i->outcode(xm);
         if ((oca & ocb) != 0)   continue;
 

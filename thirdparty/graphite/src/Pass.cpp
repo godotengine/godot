@@ -127,9 +127,9 @@ bool Pass::readPass(const byte * const pass_start, size_t pass_length, size_t su
     const byte * const   rule_map = p;
     be::skip<uint16>(p, numEntries);
 
-    if (e.test(p + 2*sizeof(uint8) > pass_end, E_BADPASSLENGTH)) return face.error(e);
-    m_minPreCtxt = be::read<uint8>(p);
-    m_maxPreCtxt = be::read<uint8>(p);
+    if (e.test(p + 2*sizeof(uint8_t) > pass_end, E_BADPASSLENGTH)) return face.error(e);
+    m_minPreCtxt = be::read<uint8_t>(p);
+    m_maxPreCtxt = be::read<uint8_t>(p);
     if (e.test(m_minPreCtxt > m_maxPreCtxt, E_BADCTXTLENBOUNDS)) return face.error(e);
     const byte * const start_states = p;
     be::skip<int16>(p, m_maxPreCtxt - m_minPreCtxt + 1);
@@ -138,8 +138,8 @@ bool Pass::readPass(const byte * const pass_start, size_t pass_length, size_t su
     const byte * const precontext = p;
     be::skip<byte>(p, m_numRules);
 
-    if (e.test(p + sizeof(uint16) + sizeof(uint8) > pass_end, E_BADCTXTLENS)) return face.error(e);
-    m_colThreshold = be::read<uint8>(p);
+    if (e.test(p + sizeof(uint16) + sizeof(uint8_t) > pass_end, E_BADCTXTLENS)) return face.error(e);
+    m_colThreshold = be::read<uint8_t>(p);
     if (m_colThreshold == 0) m_colThreshold = 10;       // A default
     const size_t pass_constraint_len = be::read<uint16>(p);
 
@@ -152,7 +152,7 @@ bool Pass::readPass(const byte * const pass_start, size_t pass_length, size_t su
             || e.test(p >= pass_end, E_BADPASSLENGTH))
         return face.error(e);
     be::skip<int16>(p, m_numTransition*m_numColumns);
-    be::skip<uint8>(p);
+    be::skip<uint8_t>(p);
     if (e.test(p != pcCode, E_BADPASSCCODEPTR)) return face.error(e);
     be::skip<byte>(p, pass_constraint_len);
     if (e.test(p != rcCode, E_BADRULECCODEPTR)
@@ -435,7 +435,7 @@ bool Pass::runFSM(FiniteStateMachine& fsm, Slot * slot) const
         return false;
 
     uint16 state = m_startStates[m_maxPreCtxt - fsm.slots.context()];
-    uint8  free_slots = SlotMap::MAX_SLOTS;
+    uint8_t  free_slots = SlotMap::MAX_SLOTS;
     do
     {
         fsm.slots.pushSlot(slot);

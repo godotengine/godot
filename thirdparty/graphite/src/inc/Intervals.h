@@ -38,7 +38,7 @@ class Zones
 
         Exclusion(float x, float w, float smi, float smxi, float c);
         Exclusion & operator += (Exclusion const & rhs);
-        uint8 outcode(float p) const;
+        uint8_t outcode(float p) const;
 
         Exclusion   split_at(float p);
         void        left_trim(float p);

@@ -607,8 +607,8 @@ namespace Godot
                         return VariantUtils.CreateFrom(int32);
                     case long int64:
                         return VariantUtils.CreateFrom(int64);
-                    case byte uint8:
-                        return VariantUtils.CreateFrom(uint8);
+                    case byte uint8_t:
+                        return VariantUtils.CreateFrom(uint8_t);
                     case ushort uint16:
                         return VariantUtils.CreateFrom(uint16);
                     case uint uint32:

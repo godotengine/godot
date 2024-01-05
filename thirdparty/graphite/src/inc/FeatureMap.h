@@ -30,7 +30,7 @@ private:
 class FeatureRef
 {
     typedef uint32      chunk_t;
-    static const uint8  SIZEOF_CHUNK = sizeof(chunk_t)*8;
+    static const uint8_t  SIZEOF_CHUNK = sizeof(chunk_t)*8;
 
 public:
     enum flags_t : uint16 {
