@@ -3773,7 +3773,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-				if (ClassDB::class_exists(p_class->name)) {
+				if (ClassDB::class_exists(p_class->name) || ClassDB::class_exists("_" + p_class->name.operator String())) {
 					_set_error("The class \"" + p_class->name + "\" shadows a native class.");
 					return;
 				}
@@ -4937,6 +4937,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				member.usages = 0;
 				member.rpc_mode = rpc_mode;
 
+				// GH-57496
+				if (ClassDB::class_exists(member.identifier) || ClassDB::class_exists("_" + member.identifier.operator String())) {
+					_set_error("Variable \"" + String(member.identifier) + "\" shadows a native class.");
+					return;
+				}
+
 				if (current_class->constant_expressions.has(member.identifier)) {
 					_set_error("A constant named \"" + String(member.identifier) + "\" already exists in this class (at line: " +
 							itos(current_class->constant_expressions[member.identifier].expression->line) + ").");
@@ -5195,6 +5201,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				StringName const_id = tokenizer->get_token_literal();
 				int line = tokenizer->get_token_line();
 
+				// GH-57496
+				if (ClassDB::class_exists(const_id) || ClassDB::class_exists("_" + const_id.operator String())) {
+					_set_error("Constant \"" + String(const_id) + "\" shadows a native class.");
+					return;
+				}
+
 				if (current_class->constant_expressions.has(const_id)) {
 					_set_error("Constant \"" + String(const_id) + "\" already exists in this class (at line " +
 							itos(current_class->constant_expressions[const_id].expression->line) + ").");
@@ -5270,6 +5282,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance();
 				if (tokenizer->is_token_literal(0, true)) {
 					enum_name = tokenizer->get_token_literal();
+
+					// GH-57496
+					if (ClassDB::class_exists(enum_name) || ClassDB::class_exists("_" + enum_name)) {
+						_set_error("Enumeration \"" + enum_name + "\" shadows a native class.");
+						return;
+					}
 
 					if (current_class->constant_expressions.has(enum_name)) {
 						_set_error("A constant named \"" + String(enum_name) + "\" already exists in this class (at line " +
@@ -5363,6 +5381,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						if (enum_name != "") {
 							enum_dict[const_id] = enum_value_expr->value;
 						} else {
+							// GH-57496
+							if (ClassDB::class_exists(const_id) || ClassDB::class_exists("_" + const_id.operator String())) {
+								_set_error("Constant \"" + String(const_id) + "\" shadows a native class.");
+								return;
+							}
+
 							if (current_class->constant_expressions.has(const_id)) {
 								_set_error("A constant named \"" + String(const_id) + "\" already exists in this class (at line " +
 										itos(current_class->constant_expressions[const_id].expression->line) + ").");
