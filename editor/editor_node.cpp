@@ -982,7 +982,7 @@ void EditorNode::_fs_changed() {
 				if (export_defer.pack_only) { // Only export .pck or .zip data pack.
 					if (export_path.ends_with(".zip")) {
 						err = platform->export_zip(export_preset, export_defer.debug, export_path);
-					} else if (export_path.ends_with(".pck")) { // XXX: 这里是调用平台导出的入口
+					} else if (export_path.ends_with(".pck")) {
 						err = platform->export_pack(export_preset, export_defer.debug, export_path);
 					}
 				} else { // Normal project export.
