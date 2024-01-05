@@ -21,3 +21,10 @@ GH-85393
 Validate extension JSON: Error: Field 'classes/PhysicsShapeQueryParameters3D/properties/motion': type changed value in new API, from "Vector2" to "Vector3".
 
 The type was registered wrongly, this was a bug.
+
+
+GH-86687
+--------
+Validate extension JSON: Error: Field 'classes/AnimationMixer/methods/_post_process_key_value/arguments/3': type changed value in new API, from "Object" to "int".
+
+Exposing the pointer was dangerous and it must be changed to avoid crash. Compatibility methods registered.

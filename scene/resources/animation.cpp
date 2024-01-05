@@ -979,6 +979,7 @@ Animation::TrackType Animation::track_get_type(int p_track) const {
 void Animation::track_set_path(int p_track, const NodePath &p_path) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	tracks[p_track]->path = p_path;
+	_track_update_hash(p_track);
 	emit_changed();
 }
 
@@ -995,6 +996,27 @@ int Animation::find_track(const NodePath &p_path, const TrackType p_type) const 
 	};
 	return -1;
 };
+
+Animation::TrackType Animation::get_cache_type(TrackType p_type) {
+	if (p_type == Animation::TYPE_BEZIER) {
+		return Animation::TYPE_VALUE;
+	}
+	if (p_type == Animation::TYPE_ROTATION_3D || p_type == Animation::TYPE_SCALE_3D) {
+		return Animation::TYPE_POSITION_3D; // Reference them as position3D tracks, even if they modify rotation or scale.
+	}
+	return p_type;
+}
+
+void Animation::_track_update_hash(int p_track) {
+	NodePath track_path = tracks[p_track]->path;
+	TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
+	tracks[p_track]->thash = StringName(String(track_path.get_concatenated_names()) + String(track_path.get_concatenated_subnames()) + itos(track_cache_type)).hash();
+}
+
+Animation::TypeHash Animation::track_get_type_hash(int p_track) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
+	return tracks[p_track]->thash;
+}
 
 void Animation::track_set_interpolation_type(int p_track, InterpolationType p_interp) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
