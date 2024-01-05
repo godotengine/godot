@@ -272,6 +272,12 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="input">
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Emitted immediately before [method Node._input] is called on every node in the [SceneTree].
+			</description>
+		</signal>
 		<signal name="node_added">
 			<param index="0" name="node" type="Node" />
 			<description>
@@ -306,6 +312,12 @@
 				Emitted immediately before [method Node._process] is called on every node in the [SceneTree].
 			</description>
 		</signal>
+		<signal name="shortcut_input">
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Emitted immediately before [method Node._shortcut_input] is called on every node in the [SceneTree].
+			</description>
+		</signal>
 		<signal name="tree_changed">
 			<description>
 				Emitted whenever the [SceneTree] hierarchy changed (children being moved or renamed, etc.).
@@ -314,6 +326,18 @@
 		<signal name="tree_process_mode_changed">
 			<description>
 				This signal is only emitted in the editor, it allows the editor to update the visibility of disabled nodes. Emitted whenever any node's [member Node.process_mode] is changed.
+			</description>
+		</signal>
+		<signal name="unhandled_input">
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Emitted immediately before [method Node._unhandled_input] is called on every node in the [SceneTree].
+			</description>
+		</signal>
+		<signal name="unhandled_key_input">
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Emitted immediately before [method Node._unhandled_key_input] is called on every node in the [SceneTree].
 			</description>
 		</signal>
 	</signals>

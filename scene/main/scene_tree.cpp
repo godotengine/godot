@@ -1179,6 +1179,21 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 
 	Vector<ObjectID> no_context_node_ids; // Nodes may be deleted due to this shortcut input.
 
+	switch (p_call_type) {
+		case CALL_INPUT_TYPE_INPUT:
+			emit_signal(SNAME("input"), p_input);
+			break;
+		case CALL_INPUT_TYPE_SHORTCUT_INPUT:
+			emit_signal(SNAME("shortcut_input"), p_input);
+			break;
+		case CALL_INPUT_TYPE_UNHANDLED_INPUT:
+			emit_signal(SNAME("unhandled_input"), p_input);
+			break;
+		case CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT:
+			emit_signal(SNAME("unhandled_key_input"), p_input);
+			break;
+	}
+
 	for (int i = gr_node_count - 1; i >= 0; i--) {
 		if (p_viewport->is_input_handled()) {
 			break;
@@ -1663,6 +1678,10 @@ void SceneTree::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
+	ADD_SIGNAL(MethodInfo("input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("shortcut_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("unhandled_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("unhandled_key_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
