@@ -510,6 +510,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("                                    The target directory must exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>    Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.\n");
 	OS::get_singleton()->print("  --export-pack <preset> <path>     Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n");
+	OS::get_singleton()->print("  --export-files <file1,file2,...>  Specific selected files. It override 'resources to export' of preset.\n");
 	OS::get_singleton()->print("  --install-android-build-template  Install the android build template. Used in conjunction with --export-release or --export-debug.\n");
 #ifndef DISABLE_DEPRECATED
 	OS::get_singleton()->print("  --convert-3to4 [<max_file_kb>] [<max_line_size>]\n");
