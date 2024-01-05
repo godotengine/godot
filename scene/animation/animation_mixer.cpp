@@ -552,6 +552,7 @@ void AnimationMixer::_clear_caches() {
 	}
 	track_cache.clear();
 	cache_valid = false;
+	capture_cache.clear();
 
 	emit_signal(SNAME("caches_cleared"));
 }
@@ -915,6 +916,7 @@ bool AnimationMixer::_update_caches() {
 void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 	_blend_init();
 	if (_blend_pre_process(p_delta, track_count, track_map)) {
+		_blend_capture(p_delta);
 		_blend_calc_total_weight();
 		_blend_process(p_delta, p_update_only);
 		_blend_apply();
@@ -1011,6 +1013,43 @@ bool AnimationMixer::_blend_pre_process(double p_delta, int p_track_count, const
 
 void AnimationMixer::_blend_post_process() {
 	//
+}
+
+void AnimationMixer::_blend_capture(double p_delta) {
+	blend_capture(p_delta);
+}
+
+void AnimationMixer::blend_capture(double p_delta) {
+	if (capture_cache.animation.is_null()) {
+		return;
+	}
+
+	capture_cache.remain -= p_delta * capture_cache.step;
+	if (capture_cache.remain <= 0.0) {
+		capture_cache.clear();
+		return;
+	}
+
+	real_t weight = Tween::run_equation(capture_cache.trans_type, capture_cache.ease_type, capture_cache.remain, 0.0, 1.0, 1.0);
+
+	// Blend with other animations.
+	real_t inv = 1.0 - weight;
+	for (AnimationInstance &ai : animation_instances) {
+		ai.playback_info.weight *= inv;
+	}
+
+	// Build capture animation instance.
+	AnimationData ad;
+	ad.animation = capture_cache.animation;
+
+	PlaybackInfo pi;
+	pi.weight = weight;
+
+	AnimationInstance ai;
+	ai.animation_data = ad;
+	ai.playback_info = pi;
+
+	animation_instances.push_back(ai);
 }
 
 void AnimationMixer::_blend_calc_total_weight() {
@@ -1848,6 +1887,10 @@ Vector3 AnimationMixer::get_root_motion_scale_accumulator() const {
 	return root_motion_scale_accumulator;
 }
 
+/* -------------------------------------------- */
+/* -- Reset on save --------------------------- */
+/* -------------------------------------------- */
+
 void AnimationMixer::set_reset_on_save_enabled(bool p_enabled) {
 	reset_on_save = p_enabled;
 }
@@ -2012,6 +2055,50 @@ Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
 #endif // TOOLS_ENABLED
 
 /* -------------------------------------------- */
+/* -- Capture feature ------------------------- */
+/* -------------------------------------------- */
+
+void AnimationMixer::capture(const StringName &p_name, double p_duration, Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type) {
+	ERR_FAIL_COND(!active);
+	ERR_FAIL_COND(!has_animation(p_name));
+	ERR_FAIL_COND(Math::is_zero_approx(p_duration));
+	Ref<Animation> reference_animation = get_animation(p_name);
+
+	if (!cache_valid) {
+		_update_caches(); // Need to retrieve object id.
+	}
+
+	capture_cache.remain = 1.0;
+	capture_cache.step = 1.0 / p_duration;
+	capture_cache.trans_type = p_trans_type;
+	capture_cache.ease_type = p_ease_type;
+	capture_cache.animation.instantiate();
+
+	bool is_valid = false;
+	for (int i = 0; i < reference_animation->get_track_count(); i++) {
+		if (!reference_animation->track_is_enabled(i)) {
+			continue;
+		}
+		if (reference_animation->track_get_type(i) == Animation::TYPE_VALUE && reference_animation->value_track_get_update_mode(i) == Animation::UPDATE_CAPTURE) {
+			TrackCacheValue *t = static_cast<TrackCacheValue *>(track_cache[reference_animation->track_get_type_hash(i)]);
+			Object *t_obj = ObjectDB::get_instance(t->object_id);
+			if (t_obj) {
+				Variant value = t_obj->get_indexed(t->subpath);
+				int inserted_idx = capture_cache.animation->add_track(Animation::TYPE_VALUE);
+				capture_cache.animation->track_set_path(inserted_idx, reference_animation->track_get_path(i));
+				capture_cache.animation->track_insert_key(inserted_idx, 0, value);
+				capture_cache.animation->value_track_set_update_mode(inserted_idx, Animation::UPDATE_CONTINUOUS);
+				capture_cache.animation->track_set_interpolation_type(inserted_idx, Animation::INTERPOLATION_LINEAR);
+				is_valid = true;
+			}
+		}
+	}
+	if (!is_valid) {
+		capture_cache.clear();
+	}
+}
+
+/* -------------------------------------------- */
 /* -- General functions ----------------------- */
 /* -------------------------------------------- */
 
@@ -2118,9 +2205,14 @@ void AnimationMixer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
 
+	/* ---- Reset on save ---- */
 	ClassDB::bind_method(D_METHOD("set_reset_on_save_enabled", "enabled"), &AnimationMixer::set_reset_on_save_enabled);
 	ClassDB::bind_method(D_METHOD("is_reset_on_save_enabled"), &AnimationMixer::is_reset_on_save_enabled);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");
+
+	/* ---- Capture feature ---- */
+	ClassDB::bind_method(D_METHOD("capture", "name", "duration", "trans_type", "ease_type"), &AnimationMixer::capture, DEFVAL(Tween::TRANS_LINEAR), DEFVAL(Tween::EASE_IN));
+
 	ADD_SIGNAL(MethodInfo("mixer_updated")); // For updating dummy player.
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root_node", "get_root_node");

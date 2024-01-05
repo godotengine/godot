@@ -31,6 +31,7 @@
 #ifndef ANIMATION_MIXER_H
 #define ANIMATION_MIXER_H
 
+#include "scene/animation/tween.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/animation_library.h"
@@ -334,11 +335,33 @@ protected:
 
 	void _blend_init();
 	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map);
+	virtual void _blend_capture(double p_delta);
 	void _blend_calc_total_weight(); // For undeterministic blending.
 	void _blend_process(double p_delta, bool p_update_only = false);
 	void _blend_apply();
 	virtual void _blend_post_process();
 	void _call_object(ObjectID p_object_id, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred);
+
+	/* ---- Capture feature ---- */
+	struct CaptureCache {
+		Ref<Animation> animation;
+		double remain = 0.0;
+		double step = 0.0;
+		Tween::TransitionType trans_type = Tween::TRANS_LINEAR;
+		Tween::EaseType ease_type = Tween::EASE_IN;
+
+		void clear() {
+			animation.unref();
+			remain = 0.0;
+			step = 0.0;
+		}
+
+		CaptureCache() {}
+		~CaptureCache() {
+			clear();
+		}
+	} capture_cache;
+	void blend_capture(double p_delta); // To blend capture track with all other animations.
 
 #ifndef DISABLE_DEPRECATED
 	virtual Variant _post_process_key_value_bind_compat_86687(const Ref<Animation> &p_anim, int p_track, Variant p_value, Object *p_object, int p_object_idx = -1);
@@ -400,9 +423,12 @@ public:
 	virtual void advance(double p_time);
 	virtual void clear_caches(); ///< must be called by hand if an animation was modified after added
 
+	/* ---- Capture feature ---- */
+	void capture(const StringName &p_name, double p_duration, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
+
+	/* ---- Reset on save ---- */
 	void set_reset_on_save_enabled(bool p_enabled);
 	bool is_reset_on_save_enabled() const;
-
 	bool can_apply_reset() const;
 	void _build_backup_track_cache();
 	Ref<AnimatedValuesBackup> make_backup();
