@@ -33,18 +33,23 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "editor_scene_importer_gltf.h"
+#include "../gltf_document.h"
+#include "editor_scene_exporter_gltf_settings.h"
 
 #include "editor/editor_plugin.h"
 
 class EditorFileDialog;
+class EditorInspector;
 
 class SceneExporterGLTFPlugin : public EditorPlugin {
 	GDCLASS(SceneExporterGLTFPlugin, EditorPlugin);
 
-	EditorFileDialog *file_export_lib = nullptr;
-	void _gltf2_dialog_action(String p_file);
-	void convert_scene_to_gltf2();
+	Ref<GLTFDocument> _gltf_document;
+	Ref<EditorSceneExporterGLTFSettings> _export_settings;
+	EditorInspector *_settings_inspector = nullptr;
+	EditorFileDialog *_file_dialog = nullptr;
+	void _popup_gltf_export_dialog();
+	void _export_scene_as_gltf(const String &p_file_path);
 
 public:
 	virtual String get_name() const override;

@@ -35,7 +35,6 @@ constexpr auto PATH_KAPPA = 0.552284f;
 Shape :: Shape() : pImpl(new Impl(this))
 {
     Paint::pImpl->id = TVG_CLASS_ID_SHAPE;
-    Paint::pImpl->method(new PaintMethod<Shape::Impl>(pImpl));
 }
 
 
@@ -62,7 +61,7 @@ Result Shape::reset() noexcept
     pImpl->rs.path.cmds.clear();
     pImpl->rs.path.pts.clear();
 
-    pImpl->flag = RenderUpdateFlag::Path;
+    pImpl->flag |= RenderUpdateFlag::Path;
 
     return Result::Success;
 }
@@ -70,18 +69,14 @@ Result Shape::reset() noexcept
 
 uint32_t Shape::pathCommands(const PathCommand** cmds) const noexcept
 {
-    if (!cmds) return 0;
-
-    *cmds = pImpl->rs.path.cmds.data;
+    if (cmds) *cmds = pImpl->rs.path.cmds.data;
     return pImpl->rs.path.cmds.count;
 }
 
 
 uint32_t Shape::pathCoords(const Point** pts) const noexcept
 {
-    if (!pts) return 0;
-
-    *pts = pImpl->rs.path.pts.data;
+    if (pts) *pts = pImpl->rs.path.pts.data;
     return pImpl->rs.path.pts.count;
 }
 
@@ -224,8 +219,8 @@ Result Shape::appendRect(float x, float y, float w, float h, float rx, float ry)
     } else if (mathEqual(rx, halfW) && mathEqual(ry, halfH)) {
         return appendCircle(x + (w * 0.5f), y + (h * 0.5f), rx, ry);
     } else {
-        auto hrx = rx * 0.5f;
-        auto hry = ry * 0.5f;
+        auto hrx = rx * PATH_KAPPA;
+        auto hry = ry * PATH_KAPPA;
         pImpl->grow(10, 17);
         pImpl->moveTo(x + rx, y);
         pImpl->lineTo(x + w - rx, y);

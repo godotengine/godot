@@ -316,7 +316,7 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 			continue;
 		}
 		String device_class = columns[1].trim_suffix(":");
-		String vendor_device_id_mapping = columns[2];
+		const String &vendor_device_id_mapping = columns[2];
 
 #ifdef MODULE_REGEX_ENABLED
 		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {

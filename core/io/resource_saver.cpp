@@ -120,9 +120,8 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 
 		String local_path = ProjectSettings::get_singleton()->localize_path(path);
 
-		Ref<Resource> rwcopy = p_resource;
 		if (p_flags & FLAG_CHANGE_PATH) {
-			rwcopy->set_path(local_path);
+			p_resource->set_path(local_path);
 		}
 
 		err = saver[i]->save(p_resource, path, p_flags);
@@ -139,7 +138,7 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 #endif
 
 			if (p_flags & FLAG_CHANGE_PATH) {
-				rwcopy->set_path(old_path);
+				p_resource->set_path(old_path);
 			}
 
 			if (save_callback && path.begins_with("res://")) {

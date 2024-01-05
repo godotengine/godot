@@ -87,6 +87,9 @@ struct _NO_DISCARD_ Vector3i {
 	Vector3i clamp(const Vector3i &p_min, const Vector3i &p_max) const;
 	Vector3i snapped(const Vector3i &p_step) const;
 
+	_FORCE_INLINE_ double distance_to(const Vector3i &p_to) const;
+	_FORCE_INLINE_ int64_t distance_squared_to(const Vector3i &p_to) const;
+
 	/* Operators */
 
 	_FORCE_INLINE_ Vector3i &operator+=(const Vector3i &p_v);
@@ -141,6 +144,14 @@ Vector3i Vector3i::abs() const {
 
 Vector3i Vector3i::sign() const {
 	return Vector3i(SIGN(x), SIGN(y), SIGN(z));
+}
+
+double Vector3i::distance_to(const Vector3i &p_to) const {
+	return (p_to - *this).length();
+}
+
+int64_t Vector3i::distance_squared_to(const Vector3i &p_to) const {
+	return (p_to - *this).length_squared();
 }
 
 /* Operators */

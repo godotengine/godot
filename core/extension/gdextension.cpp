@@ -715,10 +715,8 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 #endif
 
 	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &library_path);
-	if (err != OK) {
-		ERR_PRINT("GDExtension dynamic library not found: " + abs_path);
-		return err;
-	}
+	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, "GDExtension dynamic library not found: " + abs_path);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Can't open GDExtension dynamic library: " + abs_path);
 
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	// If we copied the file, let's change the library path to point at the original,

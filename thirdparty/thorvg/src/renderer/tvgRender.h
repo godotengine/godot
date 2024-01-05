@@ -32,7 +32,7 @@ namespace tvg
 using RenderData = void*;
 using pixel_t = uint32_t;
 
-enum RenderUpdateFlag : uint8_t {None = 0, Path = 1, Color = 2, Gradient = 4, Stroke = 8, Transform = 16, Image = 32, GradientStroke = 64, All = 255};
+enum RenderUpdateFlag : uint8_t {None = 0, Path = 1, Color = 2, Gradient = 4, Stroke = 8, Transform = 16, Image = 32, GradientStroke = 64, Blend = 128, All = 255};
 
 struct Surface;
 
@@ -123,10 +123,10 @@ struct RenderTransform
     float scale = 1.0f;   //scale factor
     bool overriding = false;  //user transform?
 
-    bool update();
+    void update();
     void override(const Matrix& m);
 
-    RenderTransform();
+    RenderTransform() {}
     RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs);
 };
 

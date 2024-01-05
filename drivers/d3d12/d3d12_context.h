@@ -110,6 +110,7 @@ private:
 		IMAGE_COUNT = FRAME_LAG + 1,
 	};
 
+	ComPtr<ID3D12DeviceFactory> device_factory;
 	ComPtr<IDXGIFactory2> dxgi_factory;
 	ComPtr<IDXGIAdapter> gpu;
 	DeviceLimits gpu_limits = {};
@@ -181,6 +182,7 @@ private:
 			void *p_context);
 
 	Error _initialize_debug_layers();
+	void _init_device_factory();
 
 	Error _select_adapter(int &r_index);
 	void _dump_adapter_info(int p_index);

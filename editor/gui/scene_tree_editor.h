@@ -37,6 +37,7 @@
 
 class EditorSelection;
 class TextureRect;
+class Timer;
 
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
@@ -108,6 +109,8 @@ class SceneTreeEditor : public Control {
 	bool display_foreign = false;
 	bool tree_dirty = true;
 	bool pending_test_update = false;
+	Timer *update_node_tooltip_delay = nullptr;
+
 	static void _bind_methods();
 
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
@@ -118,6 +121,8 @@ class SceneTreeEditor : public Control {
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
+	void _update_node_tooltip(Node *p_node, TreeItem *p_item);
+	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
 
 	void _selection_changed();
 	Node *get_scene_node() const;

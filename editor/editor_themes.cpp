@@ -2176,6 +2176,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("shape_rect_wheel", "ColorPicker", theme->get_icon(SNAME("PickerShapeRectangleWheel"), EditorStringName(EditorIcons)));
 	theme->set_icon("add_preset", "ColorPicker", theme->get_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 	theme->set_icon("sample_bg", "ColorPicker", theme->get_icon(SNAME("GuiMiniCheckerboard"), EditorStringName(EditorIcons)));
+	theme->set_icon("sample_revert", "ColorPicker", theme->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 	theme->set_icon("overbright_indicator", "ColorPicker", theme->get_icon(SNAME("OverbrightIndicator"), EditorStringName(EditorIcons)));
 	theme->set_icon("bar_arrow", "ColorPicker", theme->get_icon(SNAME("ColorPickerBarArrow"), EditorStringName(EditorIcons)));
 	theme->set_icon("picker_cursor", "ColorPicker", theme->get_icon(SNAME("PickerCursor"), EditorStringName(EditorIcons)));

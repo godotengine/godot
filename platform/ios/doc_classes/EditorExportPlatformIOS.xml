@@ -34,9 +34,6 @@
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
-		<member name="application/launch_screens_interpolation" type="int" setter="" getter="">
-			Interpolation method used to resize launch screen images.
-		</member>
 		<member name="application/provisioning_profile_uuid_debug" type="String" setter="" getter="">
 			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
 			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_DEBUG[/code].
@@ -108,39 +105,6 @@
 		<member name="icons/spotlight_80x80" type="String" setter="" getter="">
 			Spotlight icon file on iPad and iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
-		<member name="landscape_launch_screens/ipad_1024x768" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="landscape_launch_screens/ipad_2048x1536" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="landscape_launch_screens/iphone_2208x1242" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="landscape_launch_screens/iphone_2436x1125" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="portrait_launch_screens/ipad_768x1024" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="portrait_launch_screens/ipad_1536x2048" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="portrait_launch_screens/iphone_640x960" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="portrait_launch_screens/iphone_640x1136" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="portrait_launch_screens/iphone_750x1334" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="portrait_launch_screens/iphone_1125x2436" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
-		<member name="portrait_launch_screens/iphone_1242x2208" type="String" setter="" getter="">
-			Application launch screen image file. If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
-		</member>
 		<member name="privacy/camera_usage_description" type="String" setter="" getter="">
 			A message displayed when requesting access to the device's camera (in English).
 		</member>
@@ -173,9 +137,6 @@
 		</member>
 		<member name="storyboard/use_custom_bg_color" type="bool" setter="" getter="">
 			If [code]true[/code], [member storyboard/custom_bg_color] is used as a launch screen background color, otherwise [code]application/boot_splash/bg_color[/code] project setting is used.
-		</member>
-		<member name="storyboard/use_launch_screen_storyboard" type="bool" setter="" getter="">
-			If [code]true[/code], storyboard launch screen is used instead of launch screen images.
 		</member>
 		<member name="user_data/accessible_from_files_app" type="bool" setter="" getter="">
 			If [code]true[/code], the app "Documents" folder can be accessed via "Files" app. See [url=https://developer.apple.com/documentation/bundleresources/information_property_list/lssupportsopeningdocumentsinplace]LSSupportsOpeningDocumentsInPlace[/url].

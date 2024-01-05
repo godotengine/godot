@@ -266,8 +266,8 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 
 	screen_size = p_screen_size;
 
-	cluster_screen_size.width = (p_screen_size.width - 1) / cluster_size + 1;
-	cluster_screen_size.height = (p_screen_size.height - 1) / cluster_size + 1;
+	cluster_screen_size.width = Math::division_round_up((uint32_t)p_screen_size.width, cluster_size);
+	cluster_screen_size.height = Math::division_round_up((uint32_t)p_screen_size.height, cluster_size);
 
 	max_elements_by_type = p_max_elements;
 	if (max_elements_by_type % 32) { // Needs to be aligned to 32.
@@ -503,7 +503,8 @@ void ClusterBuilderRD::bake_cluster() {
 			push_constant.max_render_element_count_div_32 = render_element_max / 32;
 			push_constant.cluster_screen_size[0] = cluster_screen_size.x;
 			push_constant.cluster_screen_size[1] = cluster_screen_size.y;
-			push_constant.render_element_count_div_32 = render_element_count > 0 ? (render_element_count - 1) / 32 + 1 : 0;
+
+			push_constant.render_element_count_div_32 = Math::division_round_up(render_element_count, 32U);
 			push_constant.max_cluster_element_count_div_32 = max_elements_by_type / 32;
 			push_constant.pad1 = 0;
 			push_constant.pad2 = 0;

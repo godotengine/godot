@@ -4125,7 +4125,7 @@ void RenderingDevice::draw_list_bind_render_pipeline(DrawListID p_list, RID p_re
 		}
 
 		for (uint32_t i = 0; i < pcount; i++) {
-			dl->state.sets[i].bound = i < first_invalid_set;
+			dl->state.sets[i].bound = dl->state.sets[i].bound && i < first_invalid_set;
 			dl->state.sets[i].pipeline_expected_format = pformats[i];
 		}
 
@@ -4718,7 +4718,7 @@ void RenderingDevice::compute_list_bind_compute_pipeline(ComputeListID p_list, R
 		}
 
 		for (uint32_t i = 0; i < pcount; i++) {
-			cl->state.sets[i].bound = i >= first_invalid_set;
+			cl->state.sets[i].bound = cl->state.sets[i].bound && i < first_invalid_set;
 			cl->state.sets[i].pipeline_expected_format = pformats[i];
 		}
 
@@ -5009,7 +5009,7 @@ void RenderingDevice::compute_list_dispatch_threads(ComputeListID p_list, uint32
 
 #endif
 
-	compute_list_dispatch(p_list, (p_x_threads - 1) / cl->state.local_group_size[0] + 1, (p_y_threads - 1) / cl->state.local_group_size[1] + 1, (p_z_threads - 1) / cl->state.local_group_size[2] + 1);
+	compute_list_dispatch(p_list, Math::division_round_up(p_x_threads, cl->state.local_group_size[0]), Math::division_round_up(p_y_threads, cl->state.local_group_size[1]), Math::division_round_up(p_z_threads, cl->state.local_group_size[2]));
 }
 
 void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset) {

@@ -89,7 +89,7 @@ void FileDialog::set_visible(bool p_visible) {
 void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter) {
 	if (p_ok) {
 		if (p_files.size() > 0) {
-			String f = p_files[0];
+			const String &f = p_files[0];
 			if (mode == FILE_MODE_OPEN_FILES) {
 				emit_signal(SNAME("files_selected"), p_files);
 			} else {
