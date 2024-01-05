@@ -913,6 +913,33 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 	}
 }
 
+void EditorNode::_preset_add_export_files(const String &p_path, const Ref<EditorExportPreset> &p_preset) {
+	Ref<DirAccess> dir = DirAccess::open(p_path);
+	if (!dir.is_valid()) { // means p_path is file
+		// add it
+		p_preset->add_export_file(p_path);
+	} else { // means p_path is directory
+		dir->list_dir_begin();
+		String file_name = dir->get_next();
+		while (!file_name.is_empty()) {
+			// XXX: I don't know if this check is good.Other people do so.
+			if (file_name == "." || file_name == "..") {
+				// skip it and continue
+				file_name = dir->get_next();
+				continue;
+			}
+			String full_path = p_path.path_join(file_name);
+
+			if (dir->current_is_dir()) {
+				_preset_add_export_files(full_path, p_preset);
+			} else {
+				p_preset->add_export_file(full_path);
+			}
+			file_name = dir->get_next();
+		}
+	}
+}
+
 void EditorNode::_fs_changed() {
 	for (FileDialog *E : file_dialogs) {
 		E->invalidate();
@@ -944,13 +971,10 @@ void EditorNode::_fs_changed() {
 		// Override export files by --export-files
 		if (!export_defer.export_files.is_empty() && export_preset.is_valid()) {
 			String export_files = export_defer.export_files;
-
-			Vector<String> files_to_export = export_preset->get_files_to_export();
-
 			export_preset->clear_export_files();
 
 			for (String &E : export_files.split(",")) {
-				export_preset->add_export_file(E);
+				_preset_add_export_files(E, export_preset);
 			}
 		}
 

@@ -35,6 +35,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_plugin.h"
+#include "editor/export/editor_export_preset.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -702,6 +703,8 @@ private:
 	void _begin_first_scan();
 
 	void _notify_scene_updated(Node *p_node);
+
+	void _preset_add_export_files(const String &p_path, const Ref<EditorExportPreset> &p_preset);
 
 protected:
 	friend class FileSystemDock;
