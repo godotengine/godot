@@ -87,17 +87,19 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 
 	if (context_rd) {
 		if (context_rd->initialize() != OK) {
+			ERR_PRINT(vformat("Failed to initialize %s context", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
-			ERR_FAIL_MSG(vformat("Failed to initialize %s context", context_rd->get_api_name()));
+			return;
 		}
 
 		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
 		if (context_rd->window_create(MAIN_WINDOW_ID, p_vsync_mode, size.width, size.height, &wpd) != OK) {
+			ERR_PRINT(vformat("Failed to create %s window.", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG(vformat("Failed to create %s window.", context_rd->get_api_name()));
+			return;
 		}
 
 		rendering_device = memnew(RenderingDevice);
