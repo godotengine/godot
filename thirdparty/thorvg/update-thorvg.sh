@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=0.11.6
+VERSION=0.12.0
 
 cd thirdparty/thorvg/ || true
 rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/
@@ -52,6 +52,7 @@ cp -rv src/renderer ../src/
 
 # Only sw_engine is enabled.
 rm -rfv ../src/renderer/gl_engine
+rm -rfv ../src/renderer/wg_engine
 
 # Enabled embedded loaders: raw, JPEG, PNG.
 mkdir ../src/loaders

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -171,6 +171,18 @@ static inline Point operator+(const Point& lhs, const Point& rhs)
 static inline Point operator*(const Point& lhs, float rhs)
 {
     return {lhs.x * rhs, lhs.y * rhs};
+}
+
+
+static inline Point operator*(const float& lhs, const Point& rhs)
+{
+    return {lhs * rhs.x, lhs * rhs.y};
+}
+
+
+static inline Point operator/(const Point& lhs, const float rhs)
+{
+    return {lhs.x / rhs, lhs.y / rhs};
 }
 
 
