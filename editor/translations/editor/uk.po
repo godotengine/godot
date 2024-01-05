@@ -805,7 +805,7 @@ msgstr ""
 "-AudioStreamPlayer3D"
 
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr "Доріжки анімації можуть вказувати лише на взули AnimationPlayer."
+msgstr "Доріжки анімації можуть вказувати лише на вузли AnimationPlayer."
 
 msgid "Not possible to add a new track without a root"
 msgstr "Не можна додавати нові доріжки без кореневого запису"
