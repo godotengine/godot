@@ -271,6 +271,32 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	}
 
 	@Override
+	public void onStop() {
+		super.onStop();
+		if (!godot.isInitialized()) {
+			if (null != mDownloaderClientStub) {
+				mDownloaderClientStub.disconnect(getActivity());
+			}
+			return;
+		}
+
+		godot.onStop(this);
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		if (!godot.isInitialized()) {
+			if (null != mDownloaderClientStub) {
+				mDownloaderClientStub.connect(getActivity());
+			}
+			return;
+		}
+
+		godot.onStart(this);
+	}
+
+	@Override
 	public void onResume() {
 		super.onResume();
 		if (!godot.isInitialized()) {
