@@ -31,6 +31,9 @@
 #ifndef TTS_IOS_H
 #define TTS_IOS_H
 
+#if __has_include(<AVFAudio/AVAudioSession.h>)
+#import <AVFAudio/AVAudioSession.h>
+#endif
 #if __has_include(<AVFAudio/AVSpeechSynthesis.h>)
 #import <AVFAudio/AVSpeechSynthesis.h>
 #else

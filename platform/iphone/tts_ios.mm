@@ -38,6 +38,9 @@
 	self->av_synth = [[AVSpeechSynthesizer alloc] init];
 	[self->av_synth setDelegate:self];
 	print_verbose("Text-to-Speech: AVSpeechSynthesizer initialized.");
+
+	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+	[[AVAudioSession sharedInstance] setActive:YES error:nil];
 	return self;
 }
 
