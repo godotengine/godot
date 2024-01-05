@@ -318,7 +318,7 @@
 			<return type="int" />
 			<description>
 				Returns the 32-bit hash value representing the string's contents.
-				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.
+				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the contrary, strings with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="hex_decode" qualifiers="const">
