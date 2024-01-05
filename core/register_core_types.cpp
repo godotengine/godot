@@ -307,7 +307,6 @@ void register_core_settings() {
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"), "");
 
 	GLOBAL_DEF("threading/worker_pool/max_threads", -1);
-	GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
 	GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
 }
 

@@ -1615,16 +1615,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	// Initialize WorkerThreadPool.
-	{
+	if (editor || project_manager) {
+		WorkerThreadPool::get_singleton()->init(-1, 0.75);
+	} else {
 		int worker_threads = GLOBAL_GET("threading/worker_pool/max_threads");
-		bool low_priority_use_system_threads = GLOBAL_GET("threading/worker_pool/use_system_threads_for_low_priority_tasks");
-		float low_property_ratio = GLOBAL_GET("threading/worker_pool/low_priority_thread_ratio");
-
-		if (editor || project_manager) {
-			WorkerThreadPool::get_singleton()->init();
-		} else {
-			WorkerThreadPool::get_singleton()->init(worker_threads, low_priority_use_system_threads, low_property_ratio);
-		}
+		float low_priority_ratio = GLOBAL_GET("threading/worker_pool/low_priority_thread_ratio");
+		WorkerThreadPool::get_singleton()->init(worker_threads, low_priority_ratio);
 	}
 
 #ifdef TOOLS_ENABLED
