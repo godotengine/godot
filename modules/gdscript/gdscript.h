@@ -117,29 +117,28 @@ class GDScript : public Script {
 
 	HashMap<GDScriptFunction *, LambdaInfo> lambda_info;
 
+public:
+	class UpdatableFuncPtr {
+		friend class GDScript;
+
+		GDScriptFunction *ptr = nullptr;
+		GDScript *script = nullptr;
+		List<UpdatableFuncPtr *>::Element *list_element = nullptr;
+
+	public:
+		GDScriptFunction *operator->() const { return ptr; }
+		operator GDScriptFunction *() const { return ptr; }
+
+		UpdatableFuncPtr(GDScriptFunction *p_function);
+		~UpdatableFuncPtr();
+	};
+
+private:
 	// List is used here because a ptr to elements are stored, so the memory locations need to be stable
-	struct UpdatableFuncPtr {
-		List<GDScriptFunction **> ptrs;
-		Mutex mutex;
-		bool initialized : 1;
-		bool transferred : 1;
-		uint32_t rc = 1;
-		UpdatableFuncPtr() :
-				initialized(false), transferred(false) {}
-	};
-	struct UpdatableFuncPtrElement {
-		List<GDScriptFunction **>::Element *element = nullptr;
-		UpdatableFuncPtr *func_ptr = nullptr;
-	};
-	static UpdatableFuncPtr func_ptrs_to_update_main_thread;
-	static thread_local UpdatableFuncPtr *func_ptrs_to_update_thread_local;
 	List<UpdatableFuncPtr *> func_ptrs_to_update;
 	Mutex func_ptrs_to_update_mutex;
 
-	UpdatableFuncPtrElement _add_func_ptr_to_update(GDScriptFunction **p_func_ptr_ptr);
-	static void _remove_func_ptr_to_update(const UpdatableFuncPtrElement &p_func_ptr_element);
-
-	static void _fixup_thread_function_bookkeeping();
+	void _recurse_replace_function_ptrs(const HashMap<GDScriptFunction *, GDScriptFunction *> &p_replacements) const;
 
 #ifdef TOOLS_ENABLED
 	// For static data storage during hot-reloading.
@@ -561,11 +560,6 @@ public:
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) override;
 	virtual void remove_named_global_constant(const StringName &p_name) override;
-
-	/* MULTITHREAD FUNCTIONS */
-
-	virtual void thread_enter() override;
-	virtual void thread_exit() override;
 
 	/* DEBUGGER FUNCTIONS */
 
