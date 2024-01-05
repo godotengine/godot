@@ -884,7 +884,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, String &p_export_files);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, const String &p_export_files);
 	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }
