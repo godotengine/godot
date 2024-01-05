@@ -509,20 +509,20 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 float ResourceLoader::_dependency_get_progress(const String &p_path) {
 	if (thread_load_tasks.has(p_path)) {
 		ThreadLoadTask &load_task = thread_load_tasks[p_path];
+		float current_progress = 0.0;
 		int dep_count = load_task.sub_tasks.size();
 		if (dep_count > 0) {
-			float dep_progress = 0;
 			for (const String &E : load_task.sub_tasks) {
-				dep_progress += _dependency_get_progress(E);
+				current_progress += _dependency_get_progress(E);
 			}
-			dep_progress /= float(dep_count);
-			dep_progress *= 0.5;
-			dep_progress += load_task.progress * 0.5;
-			return dep_progress;
+			current_progress /= float(dep_count);
+			current_progress *= 0.5;
+			current_progress += load_task.progress * 0.5;
 		} else {
-			return load_task.progress;
+			current_progress = load_task.progress;
 		}
-
+		load_task.max_reported_progress = MAX(load_task.max_reported_progress, current_progress);
+		return load_task.max_reported_progress;
 	} else {
 		return 1.0; //assume finished loading it so it no longer exists
 	}
