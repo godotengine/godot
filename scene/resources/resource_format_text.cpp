@@ -199,6 +199,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			int name = -1;
 			int instance = -1;
 			int index = -1;
+			int unique_id = 0;
+
 			//int base_scene=-1;
 
 			if (next_tag.fields.has("name")) {
@@ -207,8 +209,10 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("parent")) {
 				NodePath np = next_tag.fields["parent"];
-				np.prepend_period(); //compatible to how it manages paths internally
 				parent = packed_scene->get_state()->add_node_path(np);
+			}
+			if (next_tag.fields.has("unique_id")) {
+				unique_id = next_tag.fields["unique_id"];
 			}
 
 			if (next_tag.fields.has("type")) {
@@ -262,7 +266,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				index = next_tag.fields["index"];
 			}
 
-			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, index);
+			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, index, unique_id);
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];
@@ -794,6 +798,8 @@ Error ResourceLoaderText::load() {
 		if (!packed_scene.is_valid()) {
 			return error;
 		}
+
+		packed_scene->get_state()->finalize_adding();
 
 		error = OK;
 		//get it here
@@ -2211,8 +2217,9 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			StringName type = state->get_node_type(i);
 			StringName name = state->get_node_name(i);
 			int index = state->get_node_index(i);
-			NodePath path = state->get_node_path(i, true);
-			NodePath owner = state->get_node_owner_path(i);
+			int unique_id = state->get_node_unique_id(i);
+			NodePath path = state->get_node_path(i, true, false, false);
+			NodePath owner = state->get_node_owner_path(i, false);
 			Ref<PackedScene> instance = state->get_node_instance(i);
 			String instance_placeholder = state->get_node_instance_placeholder(i);
 			Vector<StringName> groups = state->get_node_groups(i);
@@ -2226,11 +2233,16 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			if (path != NodePath()) {
 				header += " parent=\"" + String(path.simplified()).c_escape() + "\"";
 			}
+
 			if (owner != NodePath() && owner != NodePath(".")) {
 				header += " owner=\"" + String(owner.simplified()).c_escape() + "\"";
 			}
 			if (index >= 0) {
 				header += " index=\"" + itos(index) + "\"";
+			}
+
+			if (unique_id != Node::UNIQUE_SCENE_ID_UNASSIGNED) {
+				header += " unique_id=" + itos(unique_id) + "";
 			}
 
 			if (deferred_node_paths.size()) {
@@ -2290,8 +2302,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 			String connstr = "[connection";
 			connstr += " signal=\"" + String(state->get_connection_signal(i)).c_escape() + "\"";
-			connstr += " from=\"" + String(state->get_connection_source(i).simplified()).c_escape() + "\"";
-			connstr += " to=\"" + String(state->get_connection_target(i).simplified()).c_escape() + "\"";
+			connstr += " from=\"" + String(state->get_connection_source(i, false).simplified()).c_escape() + "\"";
+			connstr += " to=\"" + String(state->get_connection_target(i, false).simplified()).c_escape() + "\"";
 			connstr += " method=\"" + String(state->get_connection_method(i)).c_escape() + "\"";
 			int flags = state->get_connection_flags(i);
 			if (flags != Object::CONNECT_PERSIST) {
