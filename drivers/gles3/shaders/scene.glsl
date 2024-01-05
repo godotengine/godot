@@ -607,8 +607,7 @@ layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
 
-	/* Material Uniforms */
-
+/* Material Uniforms */
 #ifdef MATERIAL_UNIFORMS_USED
 
 /* clang-format off */
