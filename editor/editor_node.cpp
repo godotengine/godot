@@ -105,7 +105,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/export/export_template_manager.h"
 #include "editor/export/project_export.h"
-#include "editor/fbx_importer_manager.h"
+#include "editor/fbx_importer_manager.h" 55
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_run_bar.h"
@@ -941,6 +941,19 @@ void EditorNode::_fs_changed() {
 			export_preset.unref();
 		}
 
+		// Override export files by --export-files
+		if (!export_defer.export_files.is_empty()) {
+			String export_files = export_defer.export_files;
+
+			Vector<String> files_to_export = export_preset->get_files_to_export();
+
+			export_preset->clear_export_files();
+
+			for (String &E : export_files.split(",")) {
+				export_preset->add_export_file(E);
+			}
+		}
+
 		if (export_preset.is_null()) {
 			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			if (da->file_exists("res://export_presets.cfg")) {
@@ -969,7 +982,7 @@ void EditorNode::_fs_changed() {
 				if (export_defer.pack_only) { // Only export .pck or .zip data pack.
 					if (export_path.ends_with(".zip")) {
 						err = platform->export_zip(export_preset, export_defer.debug, export_path);
-					} else if (export_path.ends_with(".pck")) {
+					} else if (export_path.ends_with(".pck")) { // XXX: 这里是调用平台导出的入口
 						err = platform->export_pack(export_preset, export_defer.debug, export_path);
 					}
 				} else { // Normal project export.
@@ -4682,12 +4695,13 @@ void EditorNode::_begin_first_scan() {
 	requested_first_scan = true;
 }
 
-Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template) {
+Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, String &p_export_files) {
 	export_defer.preset = p_preset;
 	export_defer.path = p_path;
 	export_defer.debug = p_debug;
 	export_defer.pack_only = p_pack_only;
 	export_defer.android_build_template = p_android_build_template;
+	export_defer.export_files = p_export_files;
 	cmdline_export_mode = true;
 	return OK;
 }
