@@ -145,6 +145,7 @@ public:
 	};
 
 	static ImageMemLoadFunc _png_mem_loader_func;
+	static ImageMemLoadFunc _png_mem_unpacker_func;
 	static ImageMemLoadFunc _jpg_mem_loader_func;
 	static ImageMemLoadFunc _webp_mem_loader_func;
 	static ImageMemLoadFunc _tga_mem_loader_func;
