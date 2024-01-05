@@ -74,6 +74,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/renderer/tvgShape.cpp",
         "src/renderer/tvgSwCanvas.cpp",
         "src/renderer/tvgTaskScheduler.cpp",
+        "src/renderer/tvgText.cpp",
+        # "src/renderer/tvgWgCanvas.cpp",
         # renderer sw_engine
         "src/renderer/sw_engine/tvgSwFill.cpp",
         "src/renderer/sw_engine/tvgSwImage.cpp",

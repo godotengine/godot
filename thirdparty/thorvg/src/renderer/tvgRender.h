@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 #ifndef _TVG_RENDER_H_
 #define _TVG_RENDER_H_
 
+#include <mutex>
 #include "tvgCommon.h"
 #include "tvgArray.h"
 
@@ -49,17 +50,33 @@ enum ColorSpace
 struct Surface
 {
     union {
-        pixel_t* data;       //system based data pointer
-        uint32_t* buf32;     //for explicit 32bits channels
-        uint8_t*  buf8;      //for explicit 8bits grayscale
+        pixel_t* data = nullptr;    //system based data pointer
+        uint32_t* buf32;            //for explicit 32bits channels
+        uint8_t*  buf8;             //for explicit 8bits grayscale
     };
-    uint32_t stride;
-    uint32_t w, h;
-    ColorSpace  cs;
-    uint8_t channelSize;
+    mutex mtx;                      //used for thread safety
+    uint32_t stride = 0;
+    uint32_t w = 0, h = 0;
+    ColorSpace cs = ColorSpace::Unsupported;
+    uint8_t channelSize = 0;
+    bool premultiplied = 0;         //Alpha-premultiplied
 
-    bool premultiplied;      //Alpha-premultiplied
-    bool owner;              //Only owner could modify the buffer
+    Surface()
+    {
+    }
+
+    Surface(const Surface* rhs)
+    {
+        data = rhs->data;
+        stride = rhs->stride;
+        w = rhs->w;
+        h = rhs->h;
+        cs = rhs->cs;
+        channelSize = rhs->channelSize;
+        premultiplied = rhs->premultiplied;
+    }
+
+
 };
 
 struct Compositor

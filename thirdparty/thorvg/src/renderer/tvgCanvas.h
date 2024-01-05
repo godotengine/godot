@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,11 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_CANVAS_IMPL_H_
-#define _TVG_CANVAS_IMPL_H_
+#ifndef _TVG_CANVAS_H_
+#define _TVG_CANVAS_H_
 
 #include "tvgPaint.h"
 
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
 
 struct Canvas::Impl
 {
@@ -143,4 +140,4 @@ struct Canvas::Impl
     }
 };
 
-#endif /* _TVG_CANVAS_IMPL_H_ */
+#endif /* _TVG_CANVAS_H_ */
