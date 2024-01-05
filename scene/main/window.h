@@ -117,6 +117,7 @@ private:
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
 	mutable Size2i max_size;
+	mutable Size2i old_size = size;
 	mutable Vector<Vector2> mpath;
 	mutable Mode mode = MODE_WINDOWED;
 	mutable bool flags[FLAG_MAX] = {};

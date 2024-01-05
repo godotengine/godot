@@ -49,7 +49,7 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 	String text;
 
 	for (int i = 0; i < lines.size(); i++) {
-		String l = lines[i];
+		const String &l = lines[i];
 		bool push_chunk = false;
 
 		StageTemplate::Chunk chunk;

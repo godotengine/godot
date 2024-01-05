@@ -260,7 +260,7 @@ def configure(env: "Environment"):
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])

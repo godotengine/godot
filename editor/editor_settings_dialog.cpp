@@ -92,9 +92,6 @@ void EditorSettingsDialog::popup_edit_settings() {
 	inspector->edit(EditorSettings::get_singleton());
 	inspector->get_inspector()->update_tree();
 
-	search_box->select_all();
-	search_box->grab_focus();
-
 	_update_shortcuts();
 	set_process_shortcut_input(true);
 
@@ -762,7 +759,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_shortcuts->add_child(top_hbox);
 
 	shortcut_search_box = memnew(LineEdit);
-	shortcut_search_box->set_placeholder(TTR("Filter by name..."));
+	shortcut_search_box->set_placeholder(TTR("Filter by Name"));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	top_hbox->add_child(shortcut_search_box);
 	shortcut_search_box->connect("text_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));

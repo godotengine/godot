@@ -22,10 +22,21 @@
 
 #include "tvgMath.h"
 #include "tvgPaint.h"
+#include "tvgShape.h"
+#include "tvgPicture.h"
+#include "tvgScene.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
+
+#define PAINT_METHOD(ret, METHOD) \
+    switch (id) { \
+        case TVG_CLASS_ID_SHAPE: ret = P((Shape*)paint)->METHOD; break; \
+        case TVG_CLASS_ID_SCENE: ret = P((Scene*)paint)->METHOD; break; \
+        case TVG_CLASS_ID_PICTURE: ret = P((Picture*)paint)->METHOD; break; \
+        default: ret = {}; \
+    }
 
 
 static bool _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, RenderTransform* rTransform, RenderRegion& viewport)
@@ -93,9 +104,36 @@ static bool _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, 
 }
 
 
+RenderRegion Paint::Impl::bounds(RenderMethod& renderer) const
+{
+    RenderRegion ret;
+    PAINT_METHOD(ret, bounds(renderer));
+    return ret;
+}
+
+
+bool Paint::Impl::dispose(RenderMethod& renderer)
+{
+    if (compData) compData->target->pImpl->dispose(renderer);
+
+    bool ret;
+    PAINT_METHOD(ret, dispose(renderer));
+    return ret;
+}
+
+
+Iterator* Paint::Impl::iterator()
+{
+    Iterator* ret;
+    PAINT_METHOD(ret, iterator());
+    return ret;
+}
+
+
 Paint* Paint::Impl::duplicate()
 {
-    auto ret = smethod->duplicate();
+    Paint* ret;
+    PAINT_METHOD(ret, duplicate());
 
     //duplicate Transform
     if (rTransform) {
@@ -165,8 +203,10 @@ bool Paint::Impl::render(RenderMethod& renderer)
     /* Note: only ClipPath is processed in update() step.
         Create a composition image. */
     if (compData && compData->method != CompositeMethod::ClipPath && !(compData->target->pImpl->ctxFlag & ContextFlag::FastTrack)) {
-        auto region = smethod->bounds(renderer);
-        if (MASK_REGION_MERGING(compData->method)) region.add(compData->target->pImpl->smethod->bounds(renderer));
+        RenderRegion region;
+        PAINT_METHOD(region, bounds(renderer));
+
+        if (MASK_REGION_MERGING(compData->method)) region.add(P(compData->target)->bounds(renderer));
         if (region.w == 0 || region.h == 0) return true;
         cmp = renderer.target(region, COMPOSITE_TO_COLORSPACE(renderer, compData->method));
         if (renderer.beginComposite(cmp, CompositeMethod::None, 255)) {
@@ -177,7 +217,9 @@ bool Paint::Impl::render(RenderMethod& renderer)
     if (cmp) renderer.beginComposite(cmp, compData->method, compData->target->pImpl->opacity);
 
     renderer.blend(blendMethod);
-    auto ret = smethod->render(renderer);
+
+    bool ret;
+    PAINT_METHOD(ret, render(renderer));
 
     if (cmp) renderer.endComposite(cmp);
 
@@ -189,10 +231,7 @@ RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pT
 {
     if (renderFlag & RenderUpdateFlag::Transform) {
         if (!rTransform) return nullptr;
-        if (!rTransform->update()) {
-            delete(rTransform);
-            rTransform = nullptr;
-        }
+        rTransform->update();
     }
 
     /* 1. Composition Pre Processing */
@@ -239,18 +278,13 @@ RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pT
     }
 
     /* 2. Main Update */
-    RenderData rd = nullptr;
     auto newFlag = static_cast<RenderUpdateFlag>(pFlag | renderFlag);
     renderFlag = RenderUpdateFlag::None;
     opacity = MULTIPLY(opacity, this->opacity);
 
-    if (rTransform && pTransform) {
-        RenderTransform outTransform(pTransform, rTransform);
-        rd = smethod->update(renderer, &outTransform, clips, opacity, newFlag, clipper);
-    } else {
-        auto outTransform = pTransform ? pTransform : rTransform;
-        rd = smethod->update(renderer, outTransform, clips, opacity, newFlag, clipper);
-    }
+    RenderData rd = nullptr;
+    RenderTransform outTransform(pTransform, rTransform);
+    PAINT_METHOD(rd, update(renderer, &outTransform, clips, opacity, newFlag, clipper));
 
     /* 3. Composition Post Processing */
     if (compFastTrack) renderer.viewport(viewport);
@@ -263,9 +297,13 @@ RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pT
 bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transformed, bool stroking)
 {
     Matrix* m = nullptr;
+    bool ret;
 
     //Case: No transformed, quick return!
-    if (!transformed || !(m = this->transform())) return smethod->bounds(x, y, w, h, stroking);
+    if (!transformed || !(m = this->transform())) {
+        PAINT_METHOD(ret, bounds(x, y, w, h, stroking));
+        return ret;
+    }
 
     //Case: Transformed
     auto tx = 0.0f;
@@ -273,7 +311,7 @@ bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transforme
     auto tw = 0.0f;
     auto th = 0.0f;
 
-    auto ret = smethod->bounds(&tx, &ty, &tw, &th, stroking);
+    PAINT_METHOD(ret, bounds(&tx, &ty, &tw, &th, stroking));
 
     //Get vertices
     Point pt[4] = {{tx, ty}, {tx + tw, ty}, {tx + tw, ty + th}, {tx, ty + th}};
@@ -307,7 +345,7 @@ bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transforme
 /* External Class Implementation                                        */
 /************************************************************************/
 
-Paint :: Paint() : pImpl(new Impl())
+Paint :: Paint() : pImpl(new Impl(this))
 {
 }
 
@@ -419,7 +457,10 @@ uint32_t Paint::identifier() const noexcept
 
 Result Paint::blend(BlendMethod method) const noexcept
 {
-    pImpl->blendMethod = method;
+    if (pImpl->blendMethod != method) {
+        pImpl->blendMethod = method;
+        pImpl->renderFlag |= RenderUpdateFlag::Blend;
+    }
 
     return Result::Success;
 }

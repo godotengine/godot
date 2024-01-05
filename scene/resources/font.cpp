@@ -1118,11 +1118,11 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 #endif // DISABLE_DEPRECATED
 
 	if (tokens.size() == 2 && tokens[0] == "language_support_override") {
-		String lang_code = tokens[1];
+		const String &lang_code = tokens[1];
 		set_language_support_override(lang_code, p_value);
 		return true;
 	} else if (tokens.size() == 2 && tokens[0] == "script_support_override") {
-		String script_code = tokens[1];
+		const String &script_code = tokens[1];
 		set_script_support_override(script_code, p_value);
 		return true;
 	} else if (tokens.size() >= 3 && tokens[0] == "cache") {
@@ -1209,11 +1209,11 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 bool FontFile::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> tokens = p_name.operator String().split("/");
 	if (tokens.size() == 2 && tokens[0] == "language_support_override") {
-		String lang_code = tokens[1];
+		const String &lang_code = tokens[1];
 		r_ret = get_language_support_override(lang_code);
 		return true;
 	} else if (tokens.size() == 2 && tokens[0] == "script_support_override") {
-		String script_code = tokens[1];
+		const String &script_code = tokens[1];
 		r_ret = get_script_support_override(script_code);
 		return true;
 	} else if (tokens.size() >= 3 && tokens[0] == "cache") {

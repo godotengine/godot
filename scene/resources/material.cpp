@@ -468,7 +468,7 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 			}
 		}
 	}
-	Resource::get_argument_options(p_function, p_idx, r_options);
+	Material::get_argument_options(p_function, p_idx, r_options);
 }
 
 bool ShaderMaterial::_can_do_next_pass() const {

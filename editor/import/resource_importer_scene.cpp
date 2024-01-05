@@ -2377,9 +2377,8 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
 	Error err = OK;
-	HashMap<StringName, Variant> options_dupe = p_options;
 
-	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS | EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION, options_dupe, nullptr, &err);
+	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS | EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION, p_options, nullptr, &err);
 	if (!scene || err != OK) {
 		return nullptr;
 	}

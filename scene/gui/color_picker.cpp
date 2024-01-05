@@ -1046,6 +1046,14 @@ void ColorPicker::_sample_draw() {
 
 		sample->draw_rect(rect_old, old_color);
 
+		if (!old_color.is_equal_approx(color)) {
+			// Draw a revert indicator to indicate that the old sample can be clicked to revert to this old color.
+			// Adapt icon color to the background color (taking alpha checkerboard into account) so that it's always visible.
+			sample->draw_texture(theme_cache.sample_revert,
+					rect_old.size * 0.5 - theme_cache.sample_revert->get_size() * 0.5,
+					Math::lerp(0.75f, old_color.get_luminance(), old_color.a) < 0.455 ? Color(1, 1, 1) : (Color(0.01, 0.01, 0.01)));
+		}
+
 		if (old_color.r > 1 || old_color.g > 1 || old_color.b > 1) {
 			// Draw an indicator to denote that the old color is "overbright" and can't be displayed accurately in the preview.
 			sample->draw_texture(theme_cache.overbright_indicator, Point2());
@@ -1744,6 +1752,7 @@ void ColorPicker::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, bar_arrow);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, sample_bg);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, sample_revert);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, overbright_indicator);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);

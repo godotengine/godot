@@ -1040,6 +1040,10 @@ Vector<Vector3> Geometry3D::clip_polygon(const Vector<Vector3> &p_points, const 
 	return ::Geometry3D::clip_polygon(p_points, p_plane);
 }
 
+Vector<int32_t> Geometry3D::tetrahedralize_delaunay(const Vector<Vector3> &p_points) {
+	return ::Geometry3D::tetrahedralize_delaunay(p_points);
+}
+
 void Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compute_convex_mesh_points", "planes"), &Geometry3D::compute_convex_mesh_points);
 	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &Geometry3D::build_box_planes);
@@ -1061,6 +1065,7 @@ void Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("segment_intersects_convex", "from", "to", "planes"), &Geometry3D::segment_intersects_convex);
 
 	ClassDB::bind_method(D_METHOD("clip_polygon", "points", "plane"), &Geometry3D::clip_polygon);
+	ClassDB::bind_method(D_METHOD("tetrahedralize_delaunay", "points"), &Geometry3D::tetrahedralize_delaunay);
 }
 
 ////// Marshalls //////
@@ -1716,6 +1721,16 @@ void Engine::set_print_error_messages(bool p_enabled) {
 
 bool Engine::is_printing_error_messages() const {
 	return ::Engine::get_singleton()->is_printing_error_messages();
+}
+
+void Engine::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	String pf = p_function;
+	if (p_idx == 0 && (pf == "has_singleton" || pf == "get_singleton" || pf == "unregister_singleton")) {
+		for (const String &E : get_singleton_list()) {
+			r_options->push_back(E.quote());
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
 }
 
 void Engine::_bind_methods() {

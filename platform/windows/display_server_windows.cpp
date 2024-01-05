@@ -687,6 +687,8 @@ typedef struct {
 } EnumRectData;
 
 typedef struct {
+	Vector<DISPLAYCONFIG_PATH_INFO> paths;
+	Vector<DISPLAYCONFIG_MODE_INFO> modes;
 	int count;
 	int screen;
 	float rate;
@@ -738,12 +740,30 @@ static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonit
 		minfo.cbSize = sizeof(minfo);
 		GetMonitorInfoW(hMonitor, &minfo);
 
-		DEVMODEW dm;
-		memset(&dm, 0, sizeof(dm));
-		dm.dmSize = sizeof(dm);
-		EnumDisplaySettingsW(minfo.szDevice, ENUM_CURRENT_SETTINGS, &dm);
+		bool found = false;
+		for (const DISPLAYCONFIG_PATH_INFO &path : data->paths) {
+			DISPLAYCONFIG_SOURCE_DEVICE_NAME source_name;
+			memset(&source_name, 0, sizeof(source_name));
+			source_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+			source_name.header.size = sizeof(source_name);
+			source_name.header.adapterId = path.sourceInfo.adapterId;
+			source_name.header.id = path.sourceInfo.id;
+			if (DisplayConfigGetDeviceInfo(&source_name.header) == ERROR_SUCCESS) {
+				if (wcscmp(minfo.szDevice, source_name.viewGdiDeviceName) == 0 && path.targetInfo.refreshRate.Numerator != 0 && path.targetInfo.refreshRate.Denominator != 0) {
+					data->rate = (double)path.targetInfo.refreshRate.Numerator / (double)path.targetInfo.refreshRate.Denominator;
+					found = true;
+					break;
+				}
+			}
+		}
+		if (!found) {
+			DEVMODEW dm;
+			memset(&dm, 0, sizeof(dm));
+			dm.dmSize = sizeof(dm);
+			EnumDisplaySettingsW(minfo.szDevice, ENUM_CURRENT_SETTINGS, &dm);
 
-		data->rate = dm.dmDisplayFrequency;
+			data->rate = dm.dmDisplayFrequency;
+		}
 	}
 
 	data->count++;
@@ -932,7 +952,19 @@ float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
-	EnumRefreshRateData data = { 0, p_screen, SCREEN_REFRESH_RATE_FALLBACK };
+	EnumRefreshRateData data = { Vector<DISPLAYCONFIG_PATH_INFO>(), Vector<DISPLAYCONFIG_MODE_INFO>(), 0, p_screen, SCREEN_REFRESH_RATE_FALLBACK };
+
+	uint32_t path_count = 0;
+	uint32_t mode_count = 0;
+	if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &path_count, &mode_count) == ERROR_SUCCESS) {
+		data.paths.resize(path_count);
+		data.modes.resize(mode_count);
+		if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &path_count, data.paths.ptrw(), &mode_count, data.modes.ptrw(), nullptr) != ERROR_SUCCESS) {
+			data.paths.clear();
+			data.modes.clear();
+		}
+	}
+
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcRefreshRate, (LPARAM)&data);
 	return data.rate;
 }

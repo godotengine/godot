@@ -754,7 +754,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 		String fullname = E.key;
 
 		Vector<String> split = fullname.split(".");
-		String name = split[0];
+		const String &name = split[0];
 		String override_for = split.size() > 1 ? split[1] : String();
 
 		if (!override_for.is_empty() && OS::get_singleton()->has_feature(override_for)) {
@@ -766,7 +766,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 		String fullname = E.key;
 
 		Vector<String> split = fullname.split(".");
-		String name = split[0];
+		const String &name = split[0];
 		String override_for = split.size() > 1 ? split[1] : String();
 
 		if (builtins_with_overrides.has(name) && override_for.is_empty()) {

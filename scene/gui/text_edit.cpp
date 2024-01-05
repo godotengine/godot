@@ -989,18 +989,6 @@ void TextEdit::_notification(int p_what) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
 							}
 						}
-
-						// Give visual indication of empty selected line.
-						for (int c = 0; c < carets.size(); c++) {
-							if (has_selection(c) && line >= get_selection_from_line(c) && line <= get_selection_to_line(c) && char_margin >= xmargin_beg) {
-								float char_w = theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
-								if (rtl) {
-									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - xmargin_beg - ofs_x - char_w, ofs_y, char_w, row_height), theme_cache.selection_color);
-								} else {
-									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, row_height), theme_cache.selection_color);
-								}
-							}
-						}
 					} else {
 						// If it has text, then draw current line marker in the margin, as line number etc will draw over it, draw the rest of line marker later.
 						if (caret_line_wrap_index_map.has(line) && caret_line_wrap_index_map[line].has(line_wrap_index) && highlight_current_line) {
@@ -1093,13 +1081,26 @@ void TextEdit::_notification(int p_what) {
 						char_margin = size.width - char_margin - TS->shaped_text_get_size(rid).x;
 					}
 
+					// Draw selections.
+					float char_w = theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
 					for (int c = 0; c < carets.size(); c++) {
-						if (!clipped && has_selection(c) && line >= get_selection_from_line(c) && line <= get_selection_to_line(c)) { // Selection
+						if (!clipped && has_selection(c) && line >= get_selection_from_line(c) && line <= get_selection_to_line(c)) {
 							int sel_from = (line > get_selection_from_line(c)) ? TS->shaped_text_get_range(rid).x : get_selection_from_column(c);
 							int sel_to = (line < get_selection_to_line(c)) ? TS->shaped_text_get_range(rid).y : get_selection_to_column(c);
 							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, sel_from, sel_to);
+
+							// Show selection at the end of line.
+							if (line < get_selection_to_line(c)) {
+								if (rtl) {
+									sel.push_back(Vector2(-char_w, 0));
+								} else {
+									float line_end = TS->shaped_text_get_size(rid).width;
+									sel.push_back(Vector2(line_end, line_end + char_w));
+								}
+							}
+
 							for (int j = 0; j < sel.size(); j++) {
-								Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y, sel[j].y - sel[j].x, row_height);
+								Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y, Math::ceil(sel[j].y - sel[j].x), row_height);
 								if (rect.position.x + rect.size.x <= xmargin_beg || rect.position.x > xmargin_end) {
 									continue;
 								}

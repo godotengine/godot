@@ -55,27 +55,14 @@
 #include <guiddef.h>
 
 #include <dxguids.h>
+#ifndef CLSID_D3D12DeviceFactory
+// Note: symbol is not available in MinGW import library.
+const CLSID CLSID_D3D12DeviceFactory = __uuidof(ID3D12DeviceFactory);
+#endif
 #endif
 
 extern "C" {
 char godot_nir_arch_name[32];
-
-#ifdef AGILITY_SDK_ENABLED
-__declspec(dllexport) extern const UINT D3D12SDKVersion = 610;
-#ifdef AGILITY_SDK_MULTIARCH_ENABLED
-#if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
-__declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\arm64";
-#elif defined(__arm__) || defined(_M_ARM)
-__declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\arm32";
-#elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
-__declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\x86_64";
-#elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
-__declspec(dllexport) extern const char *D3D12SDKPath = "\\.\\x86_32";
-#endif
-#else
-__declspec(dllexport) extern const char *D3D12SDKPath = "\\.";
-#endif // AGILITY_SDK_MULTIARCH
-#endif // AGILITY_SDK_ENABLED
 }
 
 #ifdef PIX_ENABLED
@@ -295,7 +282,12 @@ Error D3D12Context::_check_capabilities() {
 
 Error D3D12Context::_initialize_debug_layers() {
 	ComPtr<ID3D12Debug> debug_controller;
-	HRESULT res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
+	HRESULT res;
+	if (device_factory) {
+		res = device_factory->GetConfigurationInterface(CLSID_D3D12Debug, IID_PPV_ARGS(&debug_controller));
+	} else {
+		res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
+	}
 	ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_QUERY_FAILED);
 	debug_controller->EnableDebugLayer();
 	return OK;
@@ -501,7 +493,12 @@ void D3D12Context::_dump_adapter_info(int p_index) {
 }
 
 Error D3D12Context::_create_device(DeviceBasics &r_basics) {
-	HRESULT res = D3D12CreateDevice(gpu.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(r_basics.device.GetAddressOf()));
+	HRESULT res;
+	if (device_factory) {
+		res = device_factory->CreateDevice(gpu.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(r_basics.device.GetAddressOf()));
+	} else {
+		res = D3D12CreateDevice(gpu.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(r_basics.device.GetAddressOf()));
+	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12CreateDevice failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	// Create direct command queue.
@@ -808,7 +805,32 @@ Error D3D12Context::_update_swap_chain(Window *window) {
 	return OK;
 }
 
+void D3D12Context::_init_device_factory() {
+	uint32_t agility_sdk_version = GLOBAL_GET("rendering/rendering_device/d3d12/agility_sdk_version");
+	String agility_sdk_path = String(".\\") + Engine::get_singleton()->get_architecture_name();
+
+	// Note: symbol is not available in MinGW import library.
+	PFN_D3D12_GET_INTERFACE d3d_D3D12GetInterface = (PFN_D3D12_GET_INTERFACE)GetProcAddress(LoadLibraryW(L"D3D12.dll"), "D3D12GetInterface");
+	ERR_FAIL_COND(!d3d_D3D12GetInterface);
+
+	ID3D12SDKConfiguration *sdk_config = nullptr;
+	if (SUCCEEDED(d3d_D3D12GetInterface(CLSID_D3D12SDKConfiguration, IID_PPV_ARGS(&sdk_config)))) {
+		ID3D12SDKConfiguration1 *sdk_config1 = nullptr;
+		if (SUCCEEDED(sdk_config->QueryInterface(&sdk_config1))) {
+			if (SUCCEEDED(sdk_config1->CreateDeviceFactory(agility_sdk_version, agility_sdk_path.ascii().get_data(), IID_PPV_ARGS(device_factory.GetAddressOf())))) {
+				d3d_D3D12GetInterface(CLSID_D3D12DeviceFactory, IID_PPV_ARGS(device_factory.GetAddressOf()));
+			} else if (SUCCEEDED(sdk_config1->CreateDeviceFactory(agility_sdk_version, ".\\", IID_PPV_ARGS(device_factory.GetAddressOf())))) {
+				d3d_D3D12GetInterface(CLSID_D3D12DeviceFactory, IID_PPV_ARGS(device_factory.GetAddressOf()));
+			}
+			sdk_config1->Release();
+		}
+		sdk_config->Release();
+	}
+}
+
 Error D3D12Context::initialize() {
+	_init_device_factory();
+
 	if (_use_validation_layers()) {
 		Error err = _initialize_debug_layers();
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);

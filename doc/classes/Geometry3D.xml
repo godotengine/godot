@@ -142,5 +142,12 @@
 				Tests if the segment ([param from], [param to]) intersects the triangle [param a], [param b], [param c]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, returns [code]null[/code].
 			</description>
 		</method>
+		<method name="tetrahedralize_delaunay">
+			<return type="PackedInt32Array" />
+			<param index="0" name="points" type="PackedVector3Array" />
+			<description>
+				Tetrahedralizes the volume specified by a discrete set of [param points] in 3D space, ensuring that no point lies within the circumsphere of any resulting tetrahedron. The method returns a [PackedInt32Array] where each tetrahedron consists of four consecutive point indices into the [param points] array (resulting in an array with [code]n * 4[/code] elements, where [code]n[/code] is the number of tetrahedra found). If the tetrahedralization is unsuccessful, an empty [PackedInt32Array] is returned.
+			</description>
+		</method>
 	</methods>
 </class>

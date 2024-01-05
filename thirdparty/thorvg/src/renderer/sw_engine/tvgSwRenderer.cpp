@@ -139,7 +139,9 @@ struct SwShapeTask : SwTask
             visibleFill = (alpha > 0 || rshape->fill);
             if (visibleFill || clipper) {
                 shapeReset(&shape);
-                if (!shapePrepare(&shape, rshape, transform, clipRegion, bbox, mpool, tid, clips.count > 0 ? true : false)) goto err;
+                if (!shapePrepare(&shape, rshape, transform, clipRegion, bbox, mpool, tid, clips.count > 0 ? true : false)) {
+                    visibleFill = false;
+                }
             }
         }
         //Fill

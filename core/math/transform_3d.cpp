@@ -208,6 +208,17 @@ Transform3D Transform3D::operator*(const real_t p_val) const {
 	return ret;
 }
 
+void Transform3D::operator/=(const real_t p_val) {
+	basis /= p_val;
+	origin /= p_val;
+}
+
+Transform3D Transform3D::operator/(const real_t p_val) const {
+	Transform3D ret(*this);
+	ret /= p_val;
+	return ret;
+}
+
 Transform3D::operator String() const {
 	return "[X: " + basis.get_column(0).operator String() +
 			", Y: " + basis.get_column(1).operator String() +
