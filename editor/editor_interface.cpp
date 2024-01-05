@@ -127,7 +127,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	Vector<Ref<Texture2D>> textures;
 
 	for (int i = 0; i < p_meshes.size(); i++) {
-		Ref<Mesh> mesh = p_meshes[i];
+		const Ref<Mesh> &mesh = p_meshes[i];
 		if (!mesh.is_valid()) {
 			textures.push_back(Ref<Texture2D>());
 			continue;

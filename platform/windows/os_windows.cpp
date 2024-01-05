@@ -360,6 +360,8 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
 	}
 
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+
 	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
 	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
 
@@ -1183,7 +1185,7 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]);
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1262,7 +1264,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]);
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);

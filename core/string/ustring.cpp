@@ -1117,7 +1117,7 @@ String String::get_with_code_lines() const {
 	return ret;
 }
 
-int String::get_slice_count(String p_splitter) const {
+int String::get_slice_count(const String &p_splitter) const {
 	if (is_empty()) {
 		return 0;
 	}
@@ -1136,7 +1136,7 @@ int String::get_slice_count(String p_splitter) const {
 	return slices;
 }
 
-String String::get_slice(String p_splitter, int p_slice) const {
+String String::get_slice(const String &p_splitter, int p_slice) const {
 	if (is_empty() || p_splitter.is_empty()) {
 		return "";
 	}
@@ -3515,7 +3515,7 @@ bool String::matchn(const String &p_wildcard) const {
 	return _wildcard_match(p_wildcard.get_data(), get_data(), false);
 }
 
-String String::format(const Variant &values, String placeholder) const {
+String String::format(const Variant &values, const String &placeholder) const {
 	String new_string = String(this->ptr());
 
 	if (values.get_type() == Variant::ARRAY) {
@@ -3961,27 +3961,42 @@ static int _humanize_digits(int p_num) {
 }
 
 String String::humanize_size(uint64_t p_size) {
+	int magnitude = 0;
 	uint64_t _div = 1;
-	Vector<String> prefixes;
-	prefixes.push_back(RTR("B"));
-	prefixes.push_back(RTR("KiB"));
-	prefixes.push_back(RTR("MiB"));
-	prefixes.push_back(RTR("GiB"));
-	prefixes.push_back(RTR("TiB"));
-	prefixes.push_back(RTR("PiB"));
-	prefixes.push_back(RTR("EiB"));
-
-	int prefix_idx = 0;
-
-	while (prefix_idx < prefixes.size() - 1 && p_size > (_div * 1024)) {
+	while (p_size > _div * 1024 && magnitude < 6) {
 		_div *= 1024;
-		prefix_idx++;
+		magnitude++;
 	}
 
-	const int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
-	const double divisor = prefix_idx > 0 ? _div : 1;
+	if (magnitude == 0) {
+		return String::num(p_size) + " " + RTR("B");
+	} else {
+		String suffix;
+		switch (magnitude) {
+			case 1:
+				suffix = RTR("KiB");
+				break;
+			case 2:
+				suffix = RTR("MiB");
+				break;
+			case 3:
+				suffix = RTR("GiB");
+				break;
+			case 4:
+				suffix = RTR("TiB");
+				break;
+			case 5:
+				suffix = RTR("PiB");
+				break;
+			case 6:
+				suffix = RTR("EiB");
+				break;
+		}
 
-	return String::num(p_size / divisor).pad_decimals(digits) + " " + prefixes[prefix_idx];
+		const double divisor = _div;
+		const int digits = _humanize_digits(p_size / _div);
+		return String::num(p_size / divisor).pad_decimals(digits) + " " + suffix;
+	}
 }
 
 bool String::is_absolute_path() const {
@@ -4569,7 +4584,7 @@ bool String::is_valid_ip_address() const {
 	if (find(":") >= 0) {
 		Vector<String> ip = split(":");
 		for (int i = 0; i < ip.size(); i++) {
-			String n = ip[i];
+			const String &n = ip[i];
 			if (n.is_empty()) {
 				continue;
 			}
@@ -4591,7 +4606,7 @@ bool String::is_valid_ip_address() const {
 			return false;
 		}
 		for (int i = 0; i < ip.size(); i++) {
-			String n = ip[i];
+			const String &n = ip[i];
 			if (!n.is_valid_int()) {
 				return false;
 			}
@@ -5208,7 +5223,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	return formatted;
 }
 
-String String::quote(String quotechar) const {
+String String::quote(const String &quotechar) const {
 	return quotechar + *this + quotechar;
 }
 

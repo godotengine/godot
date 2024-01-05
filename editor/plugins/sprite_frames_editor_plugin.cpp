@@ -1425,7 +1425,7 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 		}
 
 		for (int i = 0; i < files.size(); i++) {
-			String f = files[i];
+			const String &f = files[i];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(f);
 
 			if (!ClassDB::is_parent_class(ftype, "Texture2D")) {
@@ -1880,6 +1880,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_child(file);
 
 	frame_list = memnew(ItemList);
+	frame_list->set_auto_translate(false);
 	frame_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);

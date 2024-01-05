@@ -95,6 +95,9 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _add_setting();
 	void _delete_setting();
 
+	void _tabs_tab_changed(int p_tab);
+	void _focus_current_search_box();
+
 	void _editor_restart_request();
 	void _editor_restart();
 	void _editor_restart_close();

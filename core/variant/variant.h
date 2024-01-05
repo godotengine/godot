@@ -638,6 +638,7 @@ public:
 	static ValidatedBuiltInMethod get_validated_builtin_method(Variant::Type p_type, const StringName &p_method);
 	static PTRBuiltInMethod get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method);
 
+	static MethodInfo get_builtin_method_info(Variant::Type p_type, const StringName &p_method);
 	static int get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method);
 	static Variant::Type get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument);
 	static String get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument);
@@ -773,9 +774,20 @@ public:
 	bool has_key(const Variant &p_key, bool &r_valid) const;
 
 	/* Generic */
-
-	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr);
-	Variant get(const Variant &p_index, bool *r_valid = nullptr) const;
+	enum VariantSetError {
+		SET_OK,
+		SET_KEYED_ERR,
+		SET_NAMED_ERR,
+		SET_INDEXED_ERR
+	};
+	enum VariantGetError {
+		GET_OK,
+		GET_KEYED_ERR,
+		GET_NAMED_ERR,
+		GET_INDEXED_ERR
+	};
+	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr, VariantSetError *err_code = nullptr);
+	Variant get(const Variant &p_index, bool *r_valid = nullptr, VariantGetError *err_code = nullptr) const;
 	bool in(const Variant &p_index, bool *r_valid = nullptr) const;
 
 	bool iter_init(Variant &r_iter, bool &r_valid) const;

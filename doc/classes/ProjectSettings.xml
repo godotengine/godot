@@ -1108,7 +1108,7 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to swap input direction, i.e. change between left-to-right to right-to-left modes. Affects text-editting controls ([LineEdit], [TextEdit]).
+			Default [InputEventAction] to swap input direction, i.e. change between left-to-right to right-to-left modes. Affects text-editing controls ([LineEdit], [TextEdit]).
 		</member>
 		<member name="input/ui_text_add_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
 			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret and selects the next occurrence.
@@ -1219,15 +1219,15 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to accept an autocompetion hint.
+			Default [InputEventAction] to accept an autocompletion hint.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_query" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to request autocompetion.
+			Default [InputEventAction] to request autocompletion.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_replace" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to accept an autocompetion hint, replacing existing text.
+			Default [InputEventAction] to accept an autocompletion hint, replacing existing text.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_dedent" type="Dictionary" setter="" getter="">
@@ -1993,9 +1993,6 @@
 		<member name="memory/limits/message_queue/max_size_mb" type="int" setter="" getter="" default="32">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
-		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
-			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
-		</member>
 		<member name="navigation/2d/default_cell_size" type="float" setter="" getter="" default="1.0">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
@@ -2615,6 +2612,9 @@
 		</member>
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
 			Override for [member rendering/renderer/rendering_method] on web.
+		</member>
+		<member name="rendering/rendering_device/d3d12/agility_sdk_version" type="int" setter="" getter="" default="610">
+			Version code of the Direct3D 12 Agility SDK to use ([code]D3D12SDKVersion[/code]).
 		</member>
 		<member name="rendering/rendering_device/d3d12/max_misc_descriptors_per_frame" type="int" setter="" getter="" default="512">
 			The number of entries in the miscellaneous descriptors heap the Direct3D 12 rendering driver uses each frame, used for various operations like clearing a texture.

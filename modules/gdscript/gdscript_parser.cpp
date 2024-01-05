@@ -629,7 +629,7 @@ GDScriptParser::ClassNode *GDScriptParser::find_class(const String &p_qualified_
 
 	// Starts at index 1 because index 0 was handled above.
 	for (int i = 1; result != nullptr && i < class_names.size(); i++) {
-		String current_name = class_names[i];
+		const String &current_name = class_names[i];
 		GDScriptParser::ClassNode *next = nullptr;
 		if (result->has_member(current_name)) {
 			GDScriptParser::ClassNode::Member member = result->get_member(current_name);
@@ -1120,7 +1120,12 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 		case VariableNode::PROP_INLINE: {
 			FunctionNode *function = alloc_node<FunctionNode>();
 
-			consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "get".)");
+			if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+				consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after "get(".)*");
+				consume(GDScriptTokenizer::Token::COLON, R"*(Expected ":" after "get()".)*");
+			} else {
+				consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" or "(" after "get".)");
+			}
 
 			IdentifierNode *identifier = alloc_node<IdentifierNode>();
 			complete_extents(identifier);
@@ -1268,8 +1273,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	EnumNode *enum_node = alloc_node<EnumNode>();
 	bool named = false;
 
-	if (check(GDScriptTokenizer::Token::IDENTIFIER)) {
-		advance();
+	if (match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		enum_node->identifier = parse_identifier();
 		named = true;
 	}

@@ -34,6 +34,7 @@ public:
     virtual ~SaveModule() {}
 
     virtual bool save(Paint* paint, const string& path, bool compress) = 0;
+    virtual bool save(Animation* animation, const string& path, uint32_t quality, uint32_t fps) = 0;
     virtual bool close() = 0;
 };
 

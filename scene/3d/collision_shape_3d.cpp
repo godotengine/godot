@@ -35,6 +35,7 @@
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/world_boundary_shape_3d.h"
+#include "vehicle_body_3d.h"
 
 void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();
@@ -130,10 +131,21 @@ PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 	}
 
 	if (shape.is_valid() && Object::cast_to<RigidBody3D>(col_object)) {
+		String body_type = "RigidBody3D";
+		if (Object::cast_to<VehicleBody3D>(col_object)) {
+			body_type = "VehicleBody3D";
+		}
+
 		if (Object::cast_to<ConcavePolygonShape3D>(*shape)) {
-			warnings.push_back(RTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
+			warnings.push_back(vformat(RTR("When used for collision, ConcavePolygonShape3D is intended to work with static CollisionObject3D nodes like StaticBody3D.\nIt will likely not behave well for %ss (except when frozen and freeze_mode set to FREEZE_MODE_STATIC)."), body_type));
 		} else if (Object::cast_to<WorldBoundaryShape3D>(*shape)) {
 			warnings.push_back(RTR("WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."));
+		}
+	}
+
+	if (shape.is_valid() && Object::cast_to<CharacterBody3D>(col_object)) {
+		if (Object::cast_to<ConcavePolygonShape3D>(*shape)) {
+			warnings.push_back(RTR("When used for collision, ConcavePolygonShape3D is intended to work with static CollisionObject3D nodes like StaticBody3D.\nIt will likely not behave well for CharacterBody3Ds."));
 		}
 	}
 

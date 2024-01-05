@@ -794,6 +794,7 @@ CreateDialog::CreateDialog() {
 	rec_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	recent = memnew(ItemList);
+	recent->set_auto_translate(false);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->set_allow_reselect(true);
 	recent->connect("item_selected", callable_mp(this, &CreateDialog::_history_selected));

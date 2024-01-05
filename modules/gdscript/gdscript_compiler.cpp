@@ -322,9 +322,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								if (member.type == GDScriptParser::ClassNode::Member::FUNCTION || member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
 									// Get like it was a property.
 									GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
-									GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
 
-									gen->write_get_named(temp, identifier, self);
+									GDScriptCodeGenerator::Address base(GDScriptCodeGenerator::Address::SELF);
+									if (member.type == GDScriptParser::ClassNode::Member::FUNCTION && member.function->is_static) {
+										base = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS);
+									}
+
+									gen->write_get_named(temp, identifier, base);
 									return temp;
 								}
 							}
@@ -1371,7 +1375,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				return GDScriptCodeGenerator::Address();
 			}
 
-			main_script->lambda_info.insert(function, { lambda->captures.size(), lambda->use_self });
+			codegen.script->lambda_info.insert(function, { lambda->captures.size(), lambda->use_self });
 			gen->write_lambda(result, function, captures, lambda->use_self);
 
 			for (int i = 0; i < captures.size(); i++) {
@@ -3046,7 +3050,7 @@ GDScriptCompiler::FunctionLambdaInfo GDScriptCompiler::_get_function_replacement
 	FunctionLambdaInfo info;
 	info.function = p_func;
 	info.parent = p_parent_func;
-	info.script = p_parent_func;
+	info.script = p_func->get_script();
 	info.name = p_func->get_name();
 	info.line = p_func->_initial_line;
 	info.index = p_index;
@@ -3057,10 +3061,14 @@ GDScriptCompiler::FunctionLambdaInfo GDScriptCompiler::_get_function_replacement
 	info.default_arg_count = p_func->_default_arg_count;
 	info.sublambdas = _get_function_lambda_replacement_info(p_func, p_depth, p_parent_func);
 
-	GDScript::LambdaInfo *extra_info = main_script->lambda_info.getptr(p_func);
+	ERR_FAIL_NULL_V(info.script, info);
+	GDScript::LambdaInfo *extra_info = info.script->lambda_info.getptr(p_func);
 	if (extra_info != nullptr) {
 		info.capture_count = extra_info->capture_count;
 		info.use_self = extra_info->use_self;
+	} else {
+		info.capture_count = 0;
+		info.use_self = false;
 	}
 
 	return info;
@@ -3195,22 +3203,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 
 	HashMap<GDScriptFunction *, GDScriptFunction *> func_ptr_replacements;
 	_get_function_ptr_replacements(func_ptr_replacements, old_lambda_info, &new_lambda_info);
-
-	{
-		MutexLock outer_lock(main_script->func_ptrs_to_update_mutex);
-		for (GDScript::UpdatableFuncPtr *updatable : main_script->func_ptrs_to_update) {
-			MutexLock inner_lock(updatable->mutex);
-			for (GDScriptFunction **func_ptr_ptr : updatable->ptrs) {
-				GDScriptFunction **replacement = func_ptr_replacements.getptr(*func_ptr_ptr);
-				if (replacement != nullptr) {
-					*func_ptr_ptr = *replacement;
-				} else {
-					// Probably a lambda from another reload, ignore.
-					*func_ptr_ptr = nullptr;
-				}
-			}
-		}
-	}
+	main_script->_recurse_replace_function_ptrs(func_ptr_replacements);
 
 	if (has_static_data && !root->annotated_static_unload) {
 		GDScriptCache::add_static_script(p_script);

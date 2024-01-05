@@ -1657,7 +1657,7 @@ bool TabBar::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("tab_") && components[0].trim_prefix("tab_").is_valid_int()) {
 		int tab_index = components[0].trim_prefix("tab_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "title") {
 			set_tab_title(tab_index, p_value);
 			return true;
@@ -1676,7 +1676,7 @@ bool TabBar::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("tab_") && components[0].trim_prefix("tab_").is_valid_int()) {
 		int tab_index = components[0].trim_prefix("tab_").to_int();
-		String property = components[1];
+		const String &property = components[1];
 		if (property == "title") {
 			r_ret = get_tab_title(tab_index);
 			return true;

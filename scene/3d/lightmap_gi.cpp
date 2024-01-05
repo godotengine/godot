@@ -734,15 +734,15 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			MeshesFound &mf = meshes_found.write[m_i];
 
-			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint();
-
-			if (lightmap_size == Size2i(0, 0)) {
+			Size2i mesh_lightmap_size = mf.mesh->get_lightmap_size_hint();
+			if (mesh_lightmap_size == Size2i(0, 0)) {
 				// TODO we should compute a size if no lightmap hint is set, as we did in 3.x.
 				// For now set to basic size to avoid crash.
-				lightmap_size = Size2i(64, 64);
+				mesh_lightmap_size = Size2i(64, 64);
 			}
+			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * texel_scale);
+			ERR_FAIL_COND_V(lightmap_size.x == 0 || lightmap_size.y == 0, BAKE_ERROR_LIGHTMAP_TOO_SMALL);
 
-			lightmap_size *= mf.lightmap_scale;
 			TypedArray<RID> overrides;
 			overrides.resize(mf.overrides.size());
 			for (int i = 0; i < mf.overrides.size(); i++) {
@@ -1493,6 +1493,15 @@ float LightmapGI::get_bias() const {
 	return bias;
 }
 
+void LightmapGI::set_texel_scale(float p_multiplier) {
+	ERR_FAIL_COND(p_multiplier < (0.01 - CMP_EPSILON));
+	texel_scale = p_multiplier;
+}
+
+float LightmapGI::get_texel_scale() const {
+	return texel_scale;
+}
+
 void LightmapGI::set_max_texture_size(int p_size) {
 	ERR_FAIL_COND_MSG(p_size < 2048, vformat("The LightmapGI maximum texture size supplied (%d) is too small. The minimum allowed value is 2048.", p_size));
 	ERR_FAIL_COND_MSG(p_size > 16384, vformat("The LightmapGI maximum texture size supplied (%d) is too large. The maximum allowed value is 16384.", p_size));
@@ -1576,6 +1585,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_environment_custom_energy", "energy"), &LightmapGI::set_environment_custom_energy);
 	ClassDB::bind_method(D_METHOD("get_environment_custom_energy"), &LightmapGI::get_environment_custom_energy);
 
+	ClassDB::bind_method(D_METHOD("set_texel_scale", "texel_scale"), &LightmapGI::set_texel_scale);
+	ClassDB::bind_method(D_METHOD("get_texel_scale"), &LightmapGI::get_texel_scale);
+
 	ClassDB::bind_method(D_METHOD("set_max_texture_size", "max_texture_size"), &LightmapGI::set_max_texture_size);
 	ClassDB::bind_method(D_METHOD("get_max_texture_size"), &LightmapGI::get_max_texture_size);
 
@@ -1609,6 +1621,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "denoiser_strength", PROPERTY_HINT_RANGE, "0.001,0.2,0.001,or_greater"), "set_denoiser_strength", "get_denoiser_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texel_scale", PROPERTY_HINT_RANGE, "0.01,100.0,0.01"), "set_texel_scale", "get_texel_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size", PROPERTY_HINT_RANGE, "2048,16384,1"), "set_max_texture_size", "get_max_texture_size");
 	ADD_GROUP("Environment", "environment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_mode", PROPERTY_HINT_ENUM, "Disabled,Scene,Custom Sky,Custom Color"), "set_environment_mode", "get_environment_mode");

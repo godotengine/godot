@@ -731,7 +731,7 @@
 			On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
 		</constant>
 		<constant name="INTERPOLATE_LANCZOS" value="4" enum="Interpolation">
-			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscalng images.
+			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscaling images.
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
 			Image does not have alpha.

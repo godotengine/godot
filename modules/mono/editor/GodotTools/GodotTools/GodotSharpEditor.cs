@@ -9,6 +9,7 @@ using System.Linq;
 using GodotTools.Build;
 using GodotTools.Ides;
 using GodotTools.Ides.Rider;
+using GodotTools.Inspector;
 using GodotTools.Internals;
 using GodotTools.ProjectEditor;
 using JetBrains.Annotations;
@@ -45,12 +46,15 @@ namespace GodotTools
 
         // TODO Use WeakReference once we have proper serialization.
         private WeakRef _exportPluginWeak;
+        private WeakRef _inspectorPluginWeak;
 
         public GodotIdeManager GodotIdeManager { get; private set; }
 
         public MSBuildPanel MSBuildPanel { get; private set; }
 
         public bool SkipBuildBeforePlaying { get; set; } = false;
+
+        public DateTime LastValidBuildDateTime { get; private set; }
 
         [UsedImplicitly]
         private bool CreateProjectSolutionIfNeeded()
@@ -437,6 +441,21 @@ namespace GodotTools
             }
         }
 
+        private void UpdateLastValidBuildDateTime()
+        {
+            var dllName = $"{GodotSharpDirs.ProjectAssemblyName}.dll";
+            var path = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, "Debug", dllName);
+            LastValidBuildDateTime = File.GetLastWriteTime(path);
+        }
+
+        private void BuildFinished(BuildResult buildResult)
+        {
+            if (buildResult == BuildResult.Success)
+            {
+                UpdateLastValidBuildDateTime();
+            }
+        }
+
         private void BuildStateChanged()
         {
             if (_bottomPanelBtn != null)
@@ -446,6 +465,8 @@ namespace GodotTools
         public override void _EnablePlugin()
         {
             base._EnablePlugin();
+
+            UpdateLastValidBuildDateTime();
 
             ProjectSettings.SettingsChanged += GodotSharpDirs.DetermineProjectLocation;
 
@@ -615,6 +636,12 @@ namespace GodotTools
             AddExportPlugin(exportPlugin);
             _exportPluginWeak = WeakRef(exportPlugin);
 
+            // Inspector plugin
+            var inspectorPlugin = new InspectorPlugin();
+            AddInspectorPlugin(inspectorPlugin);
+            _inspectorPluginWeak = WeakRef(inspectorPlugin);
+            BuildManager.BuildFinished += BuildFinished;
+
             BuildManager.Initialize();
             RiderPathManager.Initialize();
 
@@ -627,6 +654,10 @@ namespace GodotTools
             base._DisablePlugin();
 
             _editorSettings.SettingsChanged -= OnSettingsChanged;
+
+            // Custom signals aren't automatically disconnected currently.
+            MSBuildPanel.BuildStateChanged -= BuildStateChanged;
+            BuildManager.BuildFinished -= BuildFinished;
         }
 
         public override void _ExitTree()
@@ -659,6 +690,13 @@ namespace GodotTools
                     (_exportPluginWeak.GetRef().AsGodotObject() as ExportPlugin)?.Dispose();
 
                     _exportPluginWeak.Dispose();
+                }
+
+                if (IsInstanceValid(_inspectorPluginWeak))
+                {
+                    (_inspectorPluginWeak.GetRef().AsGodotObject() as InspectorPlugin)?.Dispose();
+
+                    _inspectorPluginWeak.Dispose();
                 }
 
                 GodotIdeManager?.Dispose();

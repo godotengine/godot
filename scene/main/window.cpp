@@ -1160,7 +1160,10 @@ void Window::_update_viewport_size() {
 		}
 	}
 
-	notification(NOTIFICATION_WM_SIZE_CHANGED);
+	if (old_size != size) {
+		old_size = size;
+		notification(NOTIFICATION_WM_SIZE_CHANGED);
+	}
 
 	if (embedder) {
 		embedder->_sub_window_update(this);

@@ -383,7 +383,7 @@
 			If [code]true[/code], enables subsurface scattering transmittance. Only effective if [member subsurf_scatter_enabled] is [code]true[/code]. See also [member backlight_enabled].
 		</member>
 		<member name="subsurf_scatter_transmittance_texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			The texture to use for multiplying the intensity of the subsurface scattering transmitteance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
+			The texture to use for multiplying the intensity of the subsurface scattering transmittance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
 			Filter flags for the texture. See [enum TextureFilter] for options.

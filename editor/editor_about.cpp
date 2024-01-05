@@ -99,6 +99,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 			vbc->add_child(lbl);
 
 			ItemList *il = memnew(ItemList);
+			il->set_auto_translate(false);
 			il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			il->set_same_column_width(true);
 			il->set_auto_height(true);

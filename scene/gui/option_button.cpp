@@ -159,7 +159,7 @@ void OptionButton::_notification(int p_what) {
 bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0] == "popup") {
-		String property = components[2];
+		const String &property = components[2];
 		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
 			return false;
 		}
@@ -186,7 +186,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0] == "popup") {
-		String property = components[2];
+		const String &property = components[2];
 		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
 			return false;
 		}

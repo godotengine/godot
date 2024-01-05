@@ -481,6 +481,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
 
+	void _fetch_value_track_options(const NodePath &p_path, Animation::UpdateMode *r_update_mode, Animation::InterpolationType *r_interpolation_type, bool *r_loop_wrap);
+
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 

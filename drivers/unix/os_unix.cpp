@@ -656,6 +656,8 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 		path = get_executable_path().get_base_dir().path_join("../lib").path_join(p_path.get_file());
 	}
 
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+
 	p_library_handle = dlopen(path.utf8().get_data(), GODOT_DLOPEN_MODE);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
@@ -751,10 +753,25 @@ String OS_Unix::get_executable_path() const {
 		return OS::get_executable_path();
 	}
 	return b;
-#elif defined(__OpenBSD__) || defined(__NetBSD__)
+#elif defined(__OpenBSD__)
 	char resolved_path[MAXPATHLEN];
 
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
+
+	return String(resolved_path);
+#elif defined(__NetBSD__)
+	int mib[4] = { CTL_KERN, KERN_PROC_ARGS, -1, KERN_PROC_PATHNAME };
+	char buf[MAXPATHLEN];
+	size_t len = sizeof(buf);
+	if (sysctl(mib, 4, buf, &len, nullptr, 0) != 0) {
+		WARN_PRINT("Couldn't get executable path from sysctl");
+		return OS::get_executable_path();
+	}
+
+	// NetBSD does not always return a normalized path. For example if argv[0] is "./a.out" then executable path is "/home/netbsd/./a.out". Normalize with realpath:
+	char resolved_path[MAXPATHLEN];
+
+	realpath(buf, resolved_path);
 
 	return String(resolved_path);
 #elif defined(__FreeBSD__)

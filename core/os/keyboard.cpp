@@ -410,7 +410,7 @@ Key find_keycode(const String &p_codestr) {
 		return keycode;
 	}
 
-	String last_part = code_parts[code_parts.size() - 1];
+	const String &last_part = code_parts[code_parts.size() - 1];
 	const _KeyCodeText *kct = &_keycodes[0];
 
 	while (kct->text) {
@@ -422,7 +422,7 @@ Key find_keycode(const String &p_codestr) {
 	}
 
 	for (int part = 0; part < code_parts.size() - 1; part++) {
-		String code_part = code_parts[part];
+		const String &code_part = code_parts[part];
 		if (code_part.nocasecmp_to(find_keycode_name(Key::SHIFT)) == 0) {
 			keycode |= KeyModifierMask::SHIFT;
 		} else if (code_part.nocasecmp_to(find_keycode_name(Key::CTRL)) == 0) {
