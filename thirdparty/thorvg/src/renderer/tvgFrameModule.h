@@ -33,10 +33,9 @@ class FrameModule: public LoadModule
 public:
     virtual ~FrameModule() {}
 
-    virtual bool frame(uint32_t frameNo) = 0;   //set the current frame number
-
-    virtual uint32_t totalFrame() = 0;      //return the total frame count
-    virtual uint32_t curFrame() = 0;        //return the current frame number
+    virtual bool frame(float no) = 0;       //set the current frame number
+    virtual float totalFrame() = 0;         //return the total frame count
+    virtual float curFrame() = 0;           //return the current frame number
     virtual float duration() = 0;           //return the animation duration in seconds
 
     virtual bool animatable() override { return true; }

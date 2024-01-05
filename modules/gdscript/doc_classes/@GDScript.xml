@@ -148,7 +148,7 @@
 			<return type="int" />
 			<param index="0" name="var" type="Variant" />
 			<description>
-				Returns the length of the given Variant [param var]. The length can be the character count of a [String], the element count of any array type or the size of a [Dictionary]. For every other Variant type, a run-time error is generated and execution is stopped.
+				Returns the length of the given Variant [param var]. The length can be the character count of a [String] or [StringName], the element count of any array type, or the size of a [Dictionary]. For every other Variant type, a run-time error is generated and execution is stopped.
 				[codeblock]
 				a = [1, 2, 3, 4]
 				len(a) # Returns 4

@@ -126,7 +126,9 @@ private:
 		SHOW_GUIDES,
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
-		SHOW_EDIT_LOCKS,
+		SHOW_POSITION_GIZMOS,
+		SHOW_LOCK_GIZMOS,
+		SHOW_GROUP_GIZMOS,
 		SHOW_TRANSFORMATION_GIZMOS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
@@ -209,7 +211,9 @@ private:
 	bool show_origin = true;
 	bool show_viewport = true;
 	bool show_helpers = false;
-	bool show_edit_locks = true;
+	bool show_position_gizmos = true;
+	bool show_lock_gizmos = true;
+	bool show_group_gizmos = true;
 	bool show_transformation_gizmos = true;
 
 	real_t zoom = 1.0;
@@ -331,6 +335,7 @@ private:
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
 	PopupMenu *theme_menu = nullptr;
+	PopupMenu *gizmos_menu = nullptr;
 	HBoxContainer *animation_hb = nullptr;
 	MenuButton *animation_menu = nullptr;
 

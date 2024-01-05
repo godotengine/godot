@@ -5,8 +5,6 @@ from pathlib import Path
 
 Import("env")
 
-env.Append(CPPDEFINES=["RD_ENABLED"])
-
 env_d3d12_rdd = env.Clone()
 
 thirdparty_obj = []

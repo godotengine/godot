@@ -14,3 +14,10 @@ Validate extension JSON: Error: Field 'classes/TileData/methods/get_navigation_p
 Validate extension JSON: Error: Field 'classes/TileData/methods/get_occluder/arguments': size changed value in new API, from 1 to 4.
 
 Added optional argument to get_navigation_polygon and get_occluder to specify a polygon transform.
+
+
+GH-85393
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsShapeQueryParameters3D/properties/motion': type changed value in new API, from "Vector2" to "Vector3".
+
+The type was registered wrongly, this was a bug.

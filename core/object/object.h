@@ -235,7 +235,7 @@ struct MethodInfo {
 		return arguments_metadata.size() > p_arg ? arguments_metadata[p_arg] : 0;
 	}
 
-	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id; }
+	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id && name == p_method.name; }
 	inline bool operator<(const MethodInfo &p_method) const { return id == p_method.id ? (name < p_method.name) : (id < p_method.id); }
 
 	operator Dictionary() const;

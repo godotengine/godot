@@ -1728,6 +1728,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 			}
 		}
 	}
+	MainLoop::get_argument_options(p_function, p_idx, r_options);
 }
 
 void SceneTree::set_disable_node_threading(bool p_disable) {

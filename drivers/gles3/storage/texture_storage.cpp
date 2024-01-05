@@ -766,7 +766,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
 	ERR_FAIL_COND_MSG(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY, "Cubemap Arrays are not supported in the GL Compatibility backend.");
 
-	Ref<Image> image = p_layers[0];
+	const Ref<Image> &image = p_layers[0];
 	{
 		int valid_width = 0;
 		int valid_height = 0;

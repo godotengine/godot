@@ -198,6 +198,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 			r_options->push_back(name.quote());
 		}
 	}
+	Object::get_argument_options(p_function, p_idx, r_options);
 }
 
 void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
@@ -1518,7 +1519,7 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	parse_mapping(p_mapping);
 	if (p_update_existing) {
 		Vector<String> entry = p_mapping.split(",");
-		String uid = entry[0];
+		const String &uid = entry[0];
 		for (KeyValue<int, Joypad> &E : joy_names) {
 			Joypad &joy = E.value;
 			if (joy.uid == uid) {

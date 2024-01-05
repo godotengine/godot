@@ -337,6 +337,7 @@ public:
 	Vector<Vector3> segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const TypedArray<Plane> &p_planes);
 
 	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
+	Vector<int32_t> tetrahedralize_delaunay(const Vector<Vector3> &p_points);
 
 	Geometry3D() { singleton = this; }
 };
@@ -526,6 +527,8 @@ public:
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
+
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	Engine() { singleton = this; }
 };

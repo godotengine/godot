@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=0.11.2
+VERSION=0.11.6
 
 cd thirdparty/thorvg/ || true
 rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/
@@ -56,9 +56,8 @@ rm -rfv ../src/renderer/gl_engine
 # Enabled embedded loaders: raw, JPEG, PNG.
 mkdir ../src/loaders
 cp -rv src/loaders/svg src/loaders/raw  ../src/loaders/
-cp -rv src/loaders/svg src/loaders/jpg  ../src/loaders/
-cp -rv src/loaders/svg src/loaders/png  ../src/loaders/
-cp -rv src/loaders/svg src/loaders/external_png  ../src/loaders/
+cp -rv src/loaders/jpg  ../src/loaders/
+cp -rv src/loaders/png src/loaders/external_png  ../src/loaders/
 
 popd
 rm -rf tmp

@@ -2,8 +2,6 @@
 
 Import("env")
 
-env.Append(CPPDEFINES=["RD_ENABLED"])
-
 thirdparty_obj = []
 thirdparty_dir = "#thirdparty/vulkan"
 thirdparty_volk_dir = "#thirdparty/volk"

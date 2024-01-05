@@ -436,7 +436,7 @@ def configure_msvc(env, vcvars_msvc_config):
         LIBS += ["psapi", "dbghelp"]
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:
             LIBS += ["vulkan"]
 
@@ -445,7 +445,7 @@ def configure_msvc(env, vcvars_msvc_config):
             print("The Direct3D 12 rendering driver requires dxc_path to be set.")
             sys.exit(255)
 
-        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["d3d12", "dxgi", "dxguid"]
         LIBS += ["version"]  # Mesa dependency.
 
@@ -657,12 +657,12 @@ def configure_mingw(env):
         env.Append(LIBS=["psapi", "dbghelp"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
 
     if env["d3d12"]:
-        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         env.Append(LIBS=["d3d12", "dxgi", "dxguid"])
 
         arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"

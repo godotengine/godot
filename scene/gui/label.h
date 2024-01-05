@@ -91,6 +91,9 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
 
 public:
 	virtual Size2 get_minimum_size() const override;

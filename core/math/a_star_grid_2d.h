@@ -56,11 +56,19 @@ public:
 		HEURISTIC_MAX,
 	};
 
+	enum CellShape {
+		CELL_SHAPE_SQUARE,
+		CELL_SHAPE_ISOMETRIC_RIGHT,
+		CELL_SHAPE_ISOMETRIC_DOWN,
+		CELL_SHAPE_MAX,
+	};
+
 private:
 	Rect2i region;
 	Vector2 offset;
 	Size2 cell_size = Size2(1, 1);
 	bool dirty = false;
+	CellShape cell_shape = CELL_SHAPE_SQUARE;
 
 	bool jumping_enabled = false;
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
@@ -157,6 +165,9 @@ public:
 	void set_cell_size(const Size2 &p_cell_size);
 	Size2 get_cell_size() const;
 
+	void set_cell_shape(CellShape p_cell_shape);
+	CellShape get_cell_shape() const;
+
 	void update();
 
 	bool is_in_bounds(int32_t p_x, int32_t p_y) const;
@@ -193,5 +204,6 @@ public:
 
 VARIANT_ENUM_CAST(AStarGrid2D::DiagonalMode);
 VARIANT_ENUM_CAST(AStarGrid2D::Heuristic);
+VARIANT_ENUM_CAST(AStarGrid2D::CellShape)
 
 #endif // A_STAR_GRID_2D_H

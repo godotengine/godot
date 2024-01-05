@@ -170,6 +170,8 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 		so_file_exists = false;
 	}
 
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	if (!p_library_handle && so_file_exists) {
 		// The library may be on the sdcard and thus inaccessible. Try to copy it to the internal

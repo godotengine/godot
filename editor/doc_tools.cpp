@@ -382,7 +382,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				continue;
 			}
 
-			String cname = name;
+			const String &cname = name;
 			// Property setters and getters do not get exposed as individual methods.
 			HashSet<StringName> setters_getters;
 
