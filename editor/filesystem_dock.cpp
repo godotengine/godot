@@ -47,7 +47,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_dir_dialog.h"
 #include "editor/gui/editor_scene_tabs.h"
-#include "editor/import/scene_import_settings.h"
+#include "editor/import/3d/scene_import_settings.h"
 #include "editor/import_dock.h"
 #include "editor/plugins/editor_resource_tooltip_plugins.h"
 #include "editor/scene_create_dialog.h"

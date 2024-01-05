@@ -39,7 +39,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/import/scene_import_settings.h"
+#include "editor/import/3d/scene_import_settings.h"
 
 String SceneExporterGLTFPlugin::get_name() const {
 	return "ConvertGLTF2";

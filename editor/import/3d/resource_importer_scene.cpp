@@ -35,7 +35,7 @@
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "editor/import/scene_import_settings.h"
+#include "editor/import/3d/scene_import_settings.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"

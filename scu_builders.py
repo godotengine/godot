@@ -277,6 +277,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["editor/export"])
     process_folder(["editor/gui"])
     process_folder(["editor/import"])
+    process_folder(["editor/import/3d"])
     process_folder(["editor/plugins"])
     process_folder(["editor/plugins/gizmos"])
     process_folder(["editor/plugins/tiles"])

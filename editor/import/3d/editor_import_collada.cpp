@@ -32,7 +32,7 @@
 
 #include "core/os/os.h"
 #include "editor/editor_node.h"
-#include "editor/import/collada.h"
+#include "editor/import/3d/collada.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/light_3d.h"

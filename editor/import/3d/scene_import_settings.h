@@ -31,7 +31,7 @@
 #ifndef SCENE_IMPORT_SETTINGS_H
 #define SCENE_IMPORT_SETTINGS_H
 
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/resource_importer_scene.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"

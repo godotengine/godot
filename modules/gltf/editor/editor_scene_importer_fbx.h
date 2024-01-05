@@ -35,7 +35,7 @@
 
 #include "editor/editor_file_system.h"
 #include "editor/fbx_importer_manager.h"
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/resource_importer_scene.h"
 
 class Animation;
 class Node;
