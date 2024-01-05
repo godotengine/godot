@@ -619,15 +619,6 @@ public:
 class GradientTexture : public Texture {
 	GDCLASS(GradientTexture, Texture);
 
-public:
-	struct Point {
-		float offset;
-		Color color;
-		bool operator<(const Point &p_ponit) const {
-			return offset < p_ponit.offset;
-		}
-	};
-
 private:
 	Ref<Gradient> gradient;
 	bool update_pending;
