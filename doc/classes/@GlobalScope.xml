@@ -1834,14 +1834,38 @@
 		<constant name="KEY_SHIFT" value="4194325" enum="Key">
 			Shift key.
 		</constant>
+		<constant name="KEY_LEFT_SHIFT" value="4194448" enum="Key">
+			Left Shift key.
+		</constant>
+		<constant name="KEY_RIGHT_SHIFT" value="4194449" enum="Key">
+			Right Shift key.
+		</constant>
 		<constant name="KEY_CTRL" value="4194326" enum="Key">
 			Control key.
+		</constant>
+		<constant name="KEY_LEFT_CTRL" value="4194450" enum="Key">
+			Left Control key.
+		</constant>
+		<constant name="KEY_RIGHT_CTRL" value="4194451" enum="Key">
+			Right Control key.
 		</constant>
 		<constant name="KEY_META" value="4194327" enum="Key">
 			Meta key.
 		</constant>
+		<constant name="KEY_LEFT_META" value="4194454" enum="Key">
+			Left Meta key.
+		</constant>
+		<constant name="KEY_RIGHT_META" value="4194455" enum="Key">
+			Right Meta key.
+		</constant>
 		<constant name="KEY_ALT" value="4194328" enum="Key">
 			Alt key.
+		</constant>
+		<constant name="KEY_LEFT_ALT" value="4194452" enum="Key">
+			Left Alt key.
+		</constant>
+		<constant name="KEY_RIGHT_ALT" value="4194453" enum="Key">
+			Right Alt key.
 		</constant>
 		<constant name="KEY_CAPSLOCK" value="4194329" enum="Key">
 			Caps Lock key.
