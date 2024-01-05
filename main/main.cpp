@@ -511,6 +511,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --export-debug <preset> <path>    Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.\n");
 	OS::get_singleton()->print("  --export-pack <preset> <path>     Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n");
 	OS::get_singleton()->print("  --export-files <path1,path2,...>  Specific a comma-separated list of files and folders to export(with 'res://'). It overrides the 'Resources to export' option of preset.\n");
+	OS::get_singleton()->print("                                    WARN: It must be used with --export-release\\debug\\pack.It doesn't export but just override preset. \n");
 	OS::get_singleton()->print("  --install-android-build-template  Install the android build template. Used in conjunction with --export-release or --export-debug.\n");
 #ifndef DISABLE_DEPRECATED
 	OS::get_singleton()->print("  --convert-3to4 [<max_file_kb>] [<max_line_size>]\n");
