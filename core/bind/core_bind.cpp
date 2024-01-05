@@ -2602,6 +2602,8 @@ void _Directory::_bind_methods() {
 
 _Directory::_Directory() {
 	d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	_list_skip_navigational = false;
+	_list_skip_hidden = false;
 }
 
 _Directory::~_Directory() {

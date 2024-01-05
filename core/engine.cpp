@@ -236,6 +236,7 @@ Engine::Engine() {
 	_frame_step = 0;
 	editor_hint = false;
 	_portals_active = false;
+	_occlusion_culling_active = false;
 }
 
 Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :

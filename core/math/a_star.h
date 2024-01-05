@@ -46,8 +46,12 @@ class AStar : public Reference {
 
 	struct Point {
 		Point() :
+				id(0),
+				enabled(false),
 				neighbours(4u),
-				unlinked_neighbours(4u) {}
+				unlinked_neighbours(4u),
+				prev_point(nullptr),
+				open_pass(0) {}
 
 		int id;
 		Vector3 pos;

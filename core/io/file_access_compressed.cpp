@@ -395,6 +395,7 @@ Error FileAccessCompressed::_set_unix_permissions(const String &p_file, uint32_t
 FileAccessCompressed::FileAccessCompressed() :
 		cmode(Compression::MODE_ZSTD),
 		writing(false),
+		write_pos(0),
 		write_ptr(nullptr),
 		write_buffer_size(0),
 		write_max(0),

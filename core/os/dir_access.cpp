@@ -448,6 +448,7 @@ bool DirAccess::exists(String p_dir) {
 
 DirAccess::DirAccess() {
 	_access_type = ACCESS_FILESYSTEM;
+	next_is_dir = false;
 }
 
 DirAccess::~DirAccess() {
