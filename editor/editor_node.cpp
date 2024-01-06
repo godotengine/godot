@@ -2502,12 +2502,14 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 
 			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 				// Unedit previous plugin.
-				editor_plugin_screen->edit(nullptr);
-				active_plugins[editor_owner_id].erase(editor_plugin_screen);
+				if (editor_plugin_screen != nullptr) {
+					editor_plugin_screen->edit(nullptr);
+					active_plugins[editor_owner_id].erase(editor_plugin_screen);
+				}
 				// Update screen main_plugin.
 				editor_select(plugin_index);
 				main_plugin->edit(current_obj);
-			} else {
+			} else if (editor_plugin_screen != nullptr) {
 				editor_plugin_screen->edit(current_obj);
 			}
 			is_main_screen_editing = true;
