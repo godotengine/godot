@@ -400,6 +400,21 @@ bool EditorInterface::is_movie_maker_enabled() const {
 }
 
 // Base.
+void EditorInterface::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "set_main_screen_editor") {
+			for (String E : { "\"2D\"", "\"3D\"", "\"Script\"", "\"AssetLib\"" }) {
+				r_options->push_back(E);
+			}
+		} else if (pf == "get_editor_viewport_3d") {
+			for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
+				r_options->push_back(String::num_int64(i));
+			}
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
 
 void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("restart_editor", "save"), &EditorInterface::restart_editor, DEFVAL(true));
