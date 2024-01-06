@@ -454,6 +454,8 @@ public:
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
 
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+
 	AnimationNodeBlendTree();
 	~AnimationNodeBlendTree();
 };
