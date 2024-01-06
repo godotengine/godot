@@ -1400,6 +1400,10 @@ TypedArray<Dictionary> ClassDB::class_get_signal_list(StringName p_class, bool p
 	return ret;
 }
 
+bool ClassDB::class_has_property(StringName p_class, StringName p_property, bool p_no_inheritance) const {
+	return ::ClassDB::has_property(p_class, p_property, p_no_inheritance);
+}
+
 TypedArray<Dictionary> ClassDB::class_get_property_list(StringName p_class, bool p_no_inheritance) const {
 	List<PropertyInfo> plist;
 	::ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
@@ -1530,6 +1534,7 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_signal", "class", "signal"), &ClassDB::class_get_signal);
 	::ClassDB::bind_method(D_METHOD("class_get_signal_list", "class", "no_inheritance"), &ClassDB::class_get_signal_list, DEFVAL(false));
 
+	::ClassDB::bind_method(D_METHOD("class_has_property", "class", "property", "no_inheritance"), &ClassDB::class_has_property, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_property_list", "class", "no_inheritance"), &ClassDB::class_get_property_list, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &ClassDB::class_get_property);
 	::ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &ClassDB::class_set_property);
