@@ -270,9 +270,9 @@ class WorkerTaskPool : public Object {
 	friend class ThreadTaskGroup;
 public:
 	static WorkerTaskPool *get_singleton() { return singleton; }
-	Ref<TaskJobHandle> add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,const Ref<TaskJobHandle>& depend_task);
-	Ref<TaskJobHandle> add_group_task(const Callable &p_action, int p_elements, int _batch_count,const Ref<TaskJobHandle>& depend_task);
-	Ref<TaskJobHandle> combined_job_handle(const TypedArray<Ref<TaskJobHandle>>& _handles );
+	TaskJobHandle* add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,TaskJobHandle* depend_task);
+	TaskJobHandle* add_group_task(const Callable &p_action, int p_elements, int _batch_count,TaskJobHandle* depend_task);
+	TaskJobHandle* combined_job_handle(Array _handles );
 	
 	
 	WorkerTaskPool();

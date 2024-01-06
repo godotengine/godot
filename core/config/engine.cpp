@@ -266,7 +266,7 @@ void Engine::add_singleton(const Singleton &p_singleton) {
 }
 
 Object *Engine::get_singleton_object(const StringName &p_name) const {
-	HashMap<StringName, Ref<Object>>::ConstIterator E = singleton_ptrs.find(p_name);
+	HashMap<StringName, Object*>::ConstIterator E = singleton_ptrs.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, nullptr, vformat("Failed to retrieve non-existent singleton '%s'.", p_name));
 
 #ifdef TOOLS_ENABLED
@@ -275,7 +275,7 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 	}
 #endif
 
-	return E->value.ptr();
+	return E->value;
 }
 
 bool Engine::is_singleton_user_created(const StringName &p_name) const {

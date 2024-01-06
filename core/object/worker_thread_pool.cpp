@@ -867,7 +867,7 @@ void WorkerTaskPool::_process_task_queue() {
 		task_mutex.unlock();
 	}
 }
-Ref<TaskJobHandle> WorkerTaskPool::add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,const Ref<TaskJobHandle>& depend_task)
+TaskJobHandle* WorkerTaskPool::add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,TaskJobHandle* depend_task)
 {
 	TaskJobHandle* hand = memnew(TaskJobHandle);
 	if(p_elements <= 0)
@@ -903,7 +903,7 @@ Ref<TaskJobHandle> WorkerTaskPool::add_native_group_task(void (*p_func)(void *, 
 	return hand;
 
 }
-Ref<TaskJobHandle> WorkerTaskPool::add_group_task(const Callable &p_action, int p_elements, int _batch_count,const Ref<TaskJobHandle>& depend_task )
+TaskJobHandle* WorkerTaskPool::add_group_task(const Callable &p_action, int p_elements, int _batch_count,TaskJobHandle* depend_task )
 {
 	TaskJobHandle* hand = memnew(TaskJobHandle);
 	if(p_elements <= 0)
@@ -940,7 +940,7 @@ Ref<TaskJobHandle> WorkerTaskPool::add_group_task(const Callable &p_action, int 
 	return hand;
 	
 }
-Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(const TypedArray<Ref<TaskJobHandle>>& _handles )
+TaskJobHandle* WorkerTaskPool::combined_job_handle(Array _handles )
 {
 	if(_handles.size() == 0)
 	{
@@ -951,7 +951,21 @@ Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(const TypedArray<Ref<Task
 	{
 		if(_handles[i] != nullptr)
 		{
-			ret->dependJob.push_back(_handles[i]);
+			Object* obj = _handles[i];
+			if(obj == nullptr)
+			{
+				String err_str = "combined_job_handle obj is null" + itos(i) + "\n";
+				PRINT_STACK_TRACE(err_str);
+				continue;
+			}
+			TaskJobHandle * job = Object::cast_to<TaskJobHandle>(obj);
+			if(job == nullptr)
+			{
+				String err_str = "combined_job_handle job is not TaskJobHandle" + itos(i) + "\n";
+				PRINT_STACK_TRACE(err_str);
+				continue;
+			}
+			ret->dependJob.push_back(job);
 		}
 	}
 	// 因为不是一个任务，所以直接设置已经完成
@@ -960,8 +974,9 @@ Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(const TypedArray<Ref<Task
 }
 void WorkerTaskPool::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_native_group_task", "func", "userdata", "elements","batch_count","depend_task"), &WorkerTaskPool::add_native_group_task);
+	//ClassDB::bind_method(D_METHOD("add_native_group_task", "func", "userdata", "elements","batch_count","depend_task"), &WorkerTaskPool::add_native_group_task);
 	ClassDB::bind_method(D_METHOD("add_group_task", "action", "elements","batch_count","depend_task"), &WorkerTaskPool::add_group_task);
+	ClassDB::bind_method(D_METHOD("combined_job_handle", "handles"), &WorkerTaskPool::combined_job_handle);
 
 }
 
