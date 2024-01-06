@@ -1729,6 +1729,7 @@
 			Vertical BGR subpixel layout.
 		</constant>
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_MAX" value="5" enum="FontLCDSubpixelLayout">
+			Represents the size of the [enum FontLCDSubpixelLayout] enum.
 		</constant>
 		<constant name="DIRECTION_AUTO" value="0" enum="Direction">
 			Text direction is determined based on contents and current locale.
@@ -1852,6 +1853,7 @@
 			Determines whether the ellipsis at the end of the text is enforced and may not be hidden.
 		</constant>
 		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag" is_bitfield="true">
+			Accounts for the text being justified before attempting to trim it (see [enum JustificationFlag]).
 		</constant>
 		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is supported by the font, and can be drawn.
@@ -1990,6 +1992,7 @@
 			Spacing at the bottom of the line.
 		</constant>
 		<constant name="SPACING_MAX" value="4" enum="SpacingType">
+			Represents the size of the [enum SpacingType] enum.
 		</constant>
 		<constant name="FONT_BOLD" value="1" enum="FontStyle" is_bitfield="true">
 			Font is bold.
