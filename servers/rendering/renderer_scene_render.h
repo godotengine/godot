@@ -38,6 +38,45 @@
 #include "servers/rendering/storage/environment_storage.h"
 #include "storage/render_scene_buffers.h"
 #include "storage/utilities.h"
+class RenderCallbackManager : public Object
+{
+	GDCLASS(RenderCallbackManager, Object)
+	static void _bind_methods()
+	{
+
+	}
+	static RenderCallbackManager *singleton;
+	public:
+	enum ERenderPoint
+	{
+		RENDER_POINT_1,
+		RENDER_POINT_2,
+		RENDER_POINT_3,
+		RENDER_POINT_4,
+		RENDER_POINT_5,
+		RENDER_POINT_6,
+		RENDER_POINT_7,
+		RENDER_POINT_8,
+		RENDER_MAX,
+	};
+	static RenderCallbackManager* get_singleton() { return singleton; }
+	Callable preRender;
+
+	void SetCallback(ERenderPoint point,Callable p_callback)
+	{
+
+	}
+	RenderCallbackManager()
+	{
+		singleton = this;
+
+	}
+	~RenderCallbackManager()
+	{
+		singleton = nullptr;
+	}
+
+};
 
 class RendererSceneRender {
 private:
@@ -313,4 +352,5 @@ public:
 	virtual ~RendererSceneRender() {}
 };
 
+VARIANT_ENUM_CAST(RenderCallbackManager::ERenderPoint);
 #endif // RENDERER_SCENE_RENDER_H

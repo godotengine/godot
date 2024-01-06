@@ -314,6 +314,7 @@ void register_server_singletons() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Register Singletons");
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderCallbackManager", RenderCallbackManager::get_singleton(), "RenderCallbackManager"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton(), "RenderingServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton(), "AudioServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2D", PhysicsServer2D::get_singleton(), "PhysicsServer2D"));

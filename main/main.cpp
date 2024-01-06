@@ -142,6 +142,7 @@ static MessageQueue *message_queue = nullptr;
 static AudioServer *audio_server = nullptr;
 static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
+static RenderCallbackManager* render_callback_manager = nullptr;
 static CameraServer *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
@@ -320,6 +321,7 @@ void finalize_physics() {
 void finalize_display() {
 	rendering_server->finish();
 	memdelete(rendering_server);
+	memdelete(render_callback_manager);
 
 	memdelete(display_server);
 }
@@ -2531,6 +2533,7 @@ Error Main::setup2() {
 
 	{
 		OS::get_singleton()->benchmark_begin_measure("Servers", "Rendering");
+		render_callback_manager = memnew(RenderCallbackManager);
 
 		rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD));
 
