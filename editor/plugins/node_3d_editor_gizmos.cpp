@@ -825,6 +825,7 @@ void EditorNode3DGizmo::_bind_methods() {
 	GDVIRTUAL_BIND(_is_handle_highlighted, "id", "secondary");
 
 	GDVIRTUAL_BIND(_get_handle_value, "id", "secondary");
+	GDVIRTUAL_BIND(_begin_handle_action, "id", "secondary");
 	GDVIRTUAL_BIND(_set_handle, "id", "secondary", "camera", "point");
 	GDVIRTUAL_BIND(_commit_handle, "id", "secondary", "restore", "cancel");
 
@@ -1045,6 +1046,7 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_is_handle_highlighted, "gizmo", "handle_id", "secondary");
 	GDVIRTUAL_BIND(_get_handle_value, "gizmo", "handle_id", "secondary");
 
+	GDVIRTUAL_BIND(_begin_handle_action, "gizmo", "handle_id", "secondary");
 	GDVIRTUAL_BIND(_set_handle, "gizmo", "handle_id", "secondary", "camera", "screen_pos");
 	GDVIRTUAL_BIND(_commit_handle, "gizmo", "handle_id", "secondary", "restore", "cancel");
 
