@@ -1613,6 +1613,17 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 		}
 	}
 
+	// Defaults.
+	if (p_other->has_default_font()) {
+		set_default_font(p_other->default_font);
+	}
+	if (p_other->has_default_font_size()) {
+		set_default_font_size(p_other->default_font_size);
+	}
+	if (p_other->has_default_base_scale()) {
+		set_default_base_scale(p_other->default_base_scale);
+	}
+
 	_unfreeze_and_propagate_changes();
 }
 
