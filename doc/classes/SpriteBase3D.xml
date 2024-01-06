@@ -75,7 +75,8 @@
 			If [code]true[/code], texture is flipped vertically.
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
-			A color value used to [i]multiply[/i] the texture's colors. Can be used for mood-coloring or to simulate the color of light.
+			A color value used to [i]multiply[/i] the texture's colors. Can be used for mood-coloring or to simulate the color of ambient light.
+			[b]Note:[/b] Unlike [member CanvasItem.modulate] for 2D, colors with values above [code]1.0[/code] (overbright) are not supported.
 			[b]Note:[/b] If a [member GeometryInstance3D.material_override] is defined on the [SpriteBase3D], the material override must be configured to take vertex colors into account for albedo. Otherwise, the color defined in [member modulate] will be ignored. For a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] must be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function.
 		</member>
 		<member name="no_depth_test" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
@@ -97,6 +98,7 @@
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
 			Filter flags for the texture. See [enum BaseMaterial3D.TextureFilter] for options.
+			[b]Note:[/b] Linear filtering may cause artifacts around the edges, which are especially noticeable on opaque textures. To prevent this, use textures with transparent or identical colors around the edges.
 		</member>
 		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], the texture's transparency and the opacity are used to make those parts of the sprite invisible.
