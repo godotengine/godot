@@ -90,6 +90,8 @@
 #include "tests/core/variant/test_dictionary.h"
 #include "tests/core/variant/test_variant.h"
 #include "tests/core/variant/test_variant_utility.h"
+#include "tests/editor/plugins/test_node_3d_editor_camera_cursor.h"
+#include "tests/editor/plugins/test_node_3d_editor_camera_manager.h"
 #include "tests/scene/test_animation.h"
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_audio_stream_wav.h"
@@ -221,7 +223,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		String name = String(p_in.m_name);
 		String suite_name = String(p_in.m_test_suite);
 
-		if (name.find("[SceneTree]") != -1) {
+		if (name.find("[SceneTree]") != -1 || name.find("[Editor]") != -1) {
 			memnew(MessageQueue);
 
 			memnew(Input);
@@ -264,6 +266,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			if (!DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
 				SceneTree::get_singleton()->get_root()->set_embedding_subwindows(true);
 			}
+
 			return;
 		}
 
