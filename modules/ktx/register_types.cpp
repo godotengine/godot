@@ -32,6 +32,8 @@
 
 #include "texture_loader_ktx.h"
 
+
+
 static Ref<ResourceFormatKTX> resource_loader_ktx;
 
 void initialize_ktx_module(ModuleInitializationLevel p_level) {
