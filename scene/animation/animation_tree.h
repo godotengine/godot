@@ -151,6 +151,10 @@ public:
 
 	virtual bool has_filter() const;
 
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const;
 	Ref<AnimationNode> find_node_by_path(const String &p_name) const;
 
