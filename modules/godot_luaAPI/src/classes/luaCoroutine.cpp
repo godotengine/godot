@@ -1,6 +1,5 @@
 #include "luaCoroutine.h"
 
-#include "lua/lua.h"
 #include "luaAPI.h"
 #include "luaTuple.h"
 

@@ -1,5 +1,4 @@
 #include "luaState.h"
-#include "lua/lua.h"
 
 #include <classes/luaAPI.h>
 #include <classes/luaCallable.h>
