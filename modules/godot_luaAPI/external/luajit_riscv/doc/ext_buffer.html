@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>String Buffer Library</title>
+<meta charset="utf-8">
+<meta name="Copyright" content="Copyright (C) 2005-2023">
+<meta name="Language" content="en">
+<link rel="stylesheet" type="text/css" href="bluequad.css" media="screen">
+<link rel="stylesheet" type="text/css" href="bluequad-print.css" media="print">
+<style type="text/css">
+.lib {
+  vertical-align: middle;
+  margin-left: 5px;
+  padding: 0 5px;
+  font-size: 60%;
+  border-radius: 5px;
+  background: #c5d5ff;
+  color: #000;
+}
+</style>
+</head>
+<body>
+<div id="site">
+<a href="https://luajit.org"><span>Lua<span id="logo">JIT</span></span></a>
+</div>
+<div id="head">
+<h1>String Buffer Library</h1>
+</div>
+<div id="nav">
+<ul><li>
+<a href="luajit.html">LuaJIT</a>
+<ul><li>
+<a href="https://luajit.org/download.html">Download <span class="ext">&raquo;</span></a>
+</li><li>
+<a href="install.html">Installation</a>
+</li><li>
+<a href="running.html">Running</a>
+</li></ul>
+</li><li>
+<a href="extensions.html">Extensions</a>
+<ul><li>
+<a href="ext_ffi.html">FFI Library</a>
+<ul><li>
+<a href="ext_ffi_tutorial.html">FFI Tutorial</a>
+</li><li>
+<a href="ext_ffi_api.html">ffi.* API</a>
+</li><li>
+<a href="ext_ffi_semantics.html">FFI Semantics</a>
+</li></ul>
+</li><li>
+<a class="current" href="ext_buffer.html">String Buffers</a>
+</li><li>
+<a href="ext_jit.html">jit.* Library</a>
+</li><li>
+<a href="ext_c_api.html">Lua/C API</a>
+</li><li>
+<a href="ext_profiler.html">Profiler</a>
+</li></ul>
+</li><li>
+<a href="https://luajit.org/status.html">Status <span class="ext">&raquo;</span></a>
+</li><li>
+<a href="https://luajit.org/faq.html">FAQ <span class="ext">&raquo;</span></a>
+</li><li>
+<a href="https://luajit.org/list.html">Mailing List <span class="ext">&raquo;</span></a>
+</li></ul>
+</div>
+<div id="main">
+<p>
+The string buffer library allows <b>high-performance manipulation of
+string-like data</b>.
+</p>
+<p>
+Unlike Lua strings, which are constants, string buffers are
+<b>mutable</b> sequences of 8-bit (binary-transparent) characters. Data
+can be stored, formatted and encoded into a string buffer and later
+converted, extracted or decoded.
+</p>
+<p>
+The convenient string buffer API simplifies common string manipulation
+tasks, that would otherwise require creating many intermediate strings.
+String buffers improve performance by eliminating redundant memory
+copies, object creation, string interning and garbage collection
+overhead. In conjunction with the FFI library, they allow zero-copy
+operations.
+</p>
+<p>
+The string buffer library also includes a high-performance
+<a href="serialize">serializer</a> for Lua objects.
+</p>
+
+<h2 id="use">Using the String Buffer Library</h2>
+<p>
+The string buffer library is built into LuaJIT by default, but it's not
+loaded by default. Add this to the start of every Lua file that needs
+one of its functions:
+</p>
+<pre class="code">
+local buffer = require("string.buffer")
+</pre>
+<p>
+The convention for the syntax shown on this page is that <tt>buffer</tt>
+refers to the buffer library and <tt>buf</tt> refers to an individual
+buffer object.
+</p>
+<p>
+Please note the difference between a Lua function call, e.g.
+<tt>buffer.new()</tt> (with a dot) and a Lua method call, e.g.
+<tt>buf:reset()</tt> (with a colon).
+</p>
+
+<h3 id="buffer_object">Buffer Objects</h3>
+<p>
+A buffer object is a garbage-collected Lua object. After creation with
+<tt>buffer.new()</tt>, it can (and should) be reused for many operations.
+When the last reference to a buffer object is gone, it will eventually
+be freed by the garbage collector, along with the allocated buffer
+space.
+</p>
+<p>
+Buffers operate like a FIFO (first-in first-out) data structure. Data
+can be appended (written) to the end of the buffer and consumed (read)
+from the front of the buffer. These operations may be freely mixed.
+</p>
+<p>
+The buffer space that holds the characters is managed automatically
+&mdash; it grows as needed and already consumed space is recycled. Use
+<tt>buffer.new(size)</tt> and <tt>buf:free()</tt>, if you need more
+control.
+</p>
+<p>
+The maximum size of a single buffer is the same as the maximum size of a
+Lua string, which is slightly below two gigabytes. For huge data sizes,
+neither strings nor buffers are the right data structure &mdash; use the
+FFI library to directly map memory or files up to the virtual memory
+limit of your OS.
+</p>
+
+<h3 id="buffer_overview">Buffer Method Overview</h3>
+<ul>
+<li>
+The <tt>buf:put*()</tt>-like methods append (write) characters to the
+end of the buffer.
+</li>
+<li>
+The <tt>buf:get*()</tt>-like methods consume (read) characters from the
+front of the buffer.
+</li>
+<li>
+Other methods, like <tt>buf:tostring()</tt> only read the buffer
+contents, but don't change the buffer.
+</li>
+<li>
+The <tt>buf:set()</tt> method allows zero-copy consumption of a string
+or an FFI cdata object as a buffer.
+</li>
+<li>
+The FFI-specific methods allow zero-copy read/write-style operations or
+modifying the buffer contents in-place. Please check the
+<a href="#ffi_caveats">FFI caveats</a> below, too.
+</li>
+<li>
+Methods that don't need to return anything specific, return the buffer
+object itself as a convenience. This allows method chaining, e.g.:
+<tt>buf:reset():encode(obj)</tt> or <tt>buf:skip(len):get()</tt>
+</li>
+</ul>
+
+<h2 id="create">Buffer Creation and Management</h2>
+
+<h3 id="buffer_new"><tt>local buf = buffer.new([size [,options]])<br>
+local buf = buffer.new([options])</tt></h3>
+<p>
+Creates a new buffer object.
+</p>
+<p>
+The optional <tt>size</tt> argument ensures a minimum initial buffer
+size. This is strictly an optimization when the required buffer size is
+known beforehand. The buffer space will grow as needed, in any case.
+</p>
+<p>
+The optional table <tt>options</tt> sets various
+<a href="#serialize_options">serialization options</a>.
+</p>
+
+<h3 id="buffer_reset"><tt>buf = buf:reset()</tt></h3>
+<p>
+Reset (empty) the buffer. The allocated buffer space is not freed and
+may be reused.
+</p>
+
+<h3 id="buffer_free"><tt>buf = buf:free()</tt></h3>
+<p>
+The buffer space of the buffer object is freed. The object itself
+remains intact, empty and may be reused.
+</p>
+<p>
+Note: you normally don't need to use this method. The garbage collector
+automatically frees the buffer space, when the buffer object is
+collected. Use this method, if you need to free the associated memory
+immediately.
+</p>
+
+<h2 id="write">Buffer Writers</h2>
+
+<h3 id="buffer_put"><tt>buf = buf:put([str|num|obj] [,…])</tt></h3>
+<p>
+Appends a string <tt>str</tt>, a number <tt>num</tt> or any object
+<tt>obj</tt> with a <tt>__tostring</tt> metamethod to the buffer.
+Multiple arguments are appended in the given order.
+</p>
+<p>
+Appending a buffer to a buffer is possible and short-circuited
+internally. But it still involves a copy. Better combine the buffer
+writes to use a single buffer.
+</p>
+
+<h3 id="buffer_putf"><tt>buf = buf:putf(format, …)</tt></h3>
+<p>
+Appends the formatted arguments to the buffer. The <tt>format</tt>
+string supports the same options as <tt>string.format()</tt>.
+</p>
+
+<h3 id="buffer_putcdata"><tt>buf = buf:putcdata(cdata, len)</tt><span class="lib">FFI</span></h3>
+<p>
+Appends the given <tt>len</tt> number of bytes from the memory pointed
+to by the FFI <tt>cdata</tt> object to the buffer. The object needs to
+be convertible to a (constant) pointer.
+</p>
+
+<h3 id="buffer_set"><tt>buf = buf:set(str)<br>
+buf = buf:set(cdata, len)</tt><span class="lib">FFI</span></h3>
+<p>
+This method allows zero-copy consumption of a string or an FFI cdata
+object as a buffer. It stores a reference to the passed string
+<tt>str</tt> or the FFI <tt>cdata</tt> object in the buffer. Any buffer
+space originally allocated is freed. This is <i>not</i> an append
+operation, unlike the <tt>buf:put*()</tt> methods.
+</p>
+<p>
+After calling this method, the buffer behaves as if
+<tt>buf:free():put(str)</tt> or <tt>buf:free():put(cdata,&nbsp;len)</tt>
+had been called. However, the data is only referenced and not copied, as
+long as the buffer is only consumed.
+</p>
+<p>
+In case the buffer is written to later on, the referenced data is copied
+and the object reference is removed (copy-on-write semantics).
+</p>
+<p>
+The stored reference is an anchor for the garbage collector and keeps the
+originally passed string or FFI cdata object alive.
+</p>
+
+<h3 id="buffer_reserve"><tt>ptr, len = buf:reserve(size)</tt><span class="lib">FFI</span><br>
+<tt>buf = buf:commit(used)</tt><span class="lib">FFI</span></h3>
+<p>
+The <tt>reserve</tt> method reserves at least <tt>size</tt> bytes of
+write space in the buffer. It returns an <tt>uint8_t&nbsp;*</tt> FFI
+cdata pointer <tt>ptr</tt> that points to this space.
+</p>
+<p>
+The available length in bytes is returned in <tt>len</tt>. This is at
+least <tt>size</tt> bytes, but may be more to facilitate efficient
+buffer growth. You can either make use of the additional space or ignore
+<tt>len</tt> and only use <tt>size</tt> bytes.
+</p>
+<p>
+The <tt>commit</tt> method appends the <tt>used</tt> bytes of the
+previously returned write space to the buffer data.
+</p>
+<p>
+This pair of methods allows zero-copy use of C read-style APIs:
+</p>
+<pre class="code">
+local MIN_SIZE = 65536
+repeat
+  local ptr, len = buf:reserve(MIN_SIZE)
+  local n = C.read(fd, ptr, len)
+  if n == 0 then break end -- EOF.
+  if n &lt; 0 then error("read error") end
+  buf:commit(n)
+until false
+</pre>
+<p>
+The reserved write space is <i>not</i> initialized. At least the
+<tt>used</tt> bytes <b>must</b> be written to before calling the
+<tt>commit</tt> method. There's no need to call the <tt>commit</tt>
+method, if nothing is added to the buffer (e.g. on error).
+</p>
+
+<h2 id="read">Buffer Readers</h2>
+
+<h3 id="buffer_length"><tt>len = #buf</tt></h3>
+<p>
+Returns the current length of the buffer data in bytes.
+</p>
+
+<h3 id="buffer_concat"><tt>res = str|num|buf .. str|num|buf […]</tt></h3>
+<p>
+The Lua concatenation operator <tt>..</tt> also accepts buffers, just
+like strings or numbers. It always returns a string and not a buffer.
+</p>
+<p>
+Note that although this is supported for convenience, this thwarts one
+of the main reasons to use buffers, which is to avoid string
+allocations. Rewrite it with <tt>buf:put()</tt> and <tt>buf:get()</tt>.
+</p>
+<p>
+Mixing this with unrelated objects that have a <tt>__concat</tt>
+metamethod may not work, since these probably only expect strings.
+</p>
+
+<h3 id="buffer_skip"><tt>buf = buf:skip(len)</tt></h3>
+<p>
+Skips (consumes) <tt>len</tt> bytes from the buffer up to the current
+length of the buffer data.
+</p>
+
+<h3 id="buffer_get"><tt>str, … = buf:get([len|nil] [,…])</tt></h3>
+<p>
+Consumes the buffer data and returns one or more strings. If called
+without arguments, the whole buffer data is consumed. If called with a
+number, up to <tt>len</tt> bytes are consumed. A <tt>nil</tt> argument
+consumes the remaining buffer space (this only makes sense as the last
+argument). Multiple arguments consume the buffer data in the given
+order.
+</p>
+<p>
+Note: a zero length or no remaining buffer data returns an empty string
+and not <tt>nil</tt>.
+</p>
+
+<h3 id="buffer_tostring"><tt>str = buf:tostring()<br>
+str = tostring(buf)</tt></h3>
+<p>
+Creates a string from the buffer data, but doesn't consume it. The
+buffer remains unchanged.
+</p>
+<p>
+Buffer objects also define a <tt>__tostring</tt> metamethod. This means
+buffers can be passed to the global <tt>tostring()</tt> function and
+many other functions that accept this in place of strings. The important
+internal uses in functions like <tt>io.write()</tt> are short-circuited
+to avoid the creation of an intermediate string object.
+</p>
+
+<h3 id="buffer_ref"><tt>ptr, len = buf:ref()</tt><span class="lib">FFI</span></h3>
+<p>
+Returns an <tt>uint8_t&nbsp;*</tt> FFI cdata pointer <tt>ptr</tt> that
+points to the buffer data. The length of the buffer data in bytes is
+returned in <tt>len</tt>.
+</p>
+<p>
+The returned pointer can be directly passed to C functions that expect a
+buffer and a length. You can also do bytewise reads
+(<tt>local&nbsp;x&nbsp;=&nbsp;ptr[i]</tt>) or writes
+(<tt>ptr[i]&nbsp;=&nbsp;0x40</tt>) of the buffer data.
+</p>
+<p>
+In conjunction with the <tt>skip</tt> method, this allows zero-copy use
+of C write-style APIs:
+</p>
+<pre class="code">
+repeat
+  local ptr, len = buf:ref()
+  if len == 0 then break end
+  local n = C.write(fd, ptr, len)
+  if n &lt; 0 then error("write error") end
+  buf:skip(n)
+until n >= len
+</pre>
+<p>
+Unlike Lua strings, buffer data is <i>not</i> implicitly
+zero-terminated. It's not safe to pass <tt>ptr</tt> to C functions that
+expect zero-terminated strings. If you're not using <tt>len</tt>, then
+you're doing something wrong.
+</p>
+
+<h2 id="serialize">Serialization of Lua Objects</h2>
+<p>
+The following functions and methods allow <b>high-speed serialization</b>
+(encoding) of a Lua object into a string and decoding it back to a Lua
+object. This allows convenient storage and transport of <b>structured
+data</b>.
+</p>
+<p>
+The encoded data is in an <a href="#serialize_format">internal binary
+format</a>. The data can be stored in files, binary-transparent
+databases or transmitted to other LuaJIT instances across threads,
+processes or networks.
+</p>
+<p>
+Encoding speed can reach up to 1 Gigabyte/second on a modern desktop- or
+server-class system, even when serializing many small objects. Decoding
+speed is mostly constrained by object creation cost.
+</p>
+<p>
+The serializer handles most Lua types, common FFI number types and
+nested structures. Functions, thread objects, other FFI cdata and full
+userdata cannot be serialized (yet).
+</p>
+<p>
+The encoder serializes nested structures as trees. Multiple references
+to a single object will be stored separately and create distinct objects
+after decoding. Circular references cause an error.
+</p>
+
+<h3 id="serialize_methods">Serialization Functions and Methods</h3>
+
+<h3 id="buffer_encode"><tt>str = buffer.encode(obj)<br>
+buf = buf:encode(obj)</tt></h3>
+<p>
+Serializes (encodes) the Lua object <tt>obj</tt>. The stand-alone
+function returns a string <tt>str</tt>. The buffer method appends the
+encoding to the buffer.
+</p>
+<p>
+<tt>obj</tt> can be any of the supported Lua types &mdash; it doesn't
+need to be a Lua table.
+</p>
+<p>
+This function may throw an error when attempting to serialize
+unsupported object types, circular references or deeply nested tables.
+</p>
+
+<h3 id="buffer_decode"><tt>obj = buffer.decode(str)<br>
+obj = buf:decode()</tt></h3>
+<p>
+The stand-alone function deserializes (decodes) the string
+<tt>str</tt>, the buffer method deserializes one object from the
+buffer. Both return a Lua object <tt>obj</tt>.
+</p>
+<p>
+The returned object may be any of the supported Lua types &mdash;
+even <tt>nil</tt>.
+</p>
+<p>
+This function may throw an error when fed with malformed or incomplete
+encoded data. The stand-alone function throws when there's left-over
+data after decoding a single top-level object. The buffer method leaves
+any left-over data in the buffer.
+</p>
+<p>
+Attempting to deserialize an FFI type will throw an error, if the FFI
+library is not built-in or has not been loaded, yet.
+</p>
+
+<h3 id="serialize_options">Serialization Options</h3>
+<p>
+The <tt>options</tt> table passed to <tt>buffer.new()</tt> may contain
+the following members (all optional):
+</p>
+<ul>
+<li>
+<tt>dict</tt> is a Lua table holding a <b>dictionary of strings</b> that
+commonly occur as table keys of objects you are serializing. These keys
+are compactly encoded as indexes during serialization. A well-chosen
+dictionary saves space and improves serialization performance.
+</li>
+<li>
+<tt>metatable</tt> is a Lua table holding a <b>dictionary of metatables</b>
+for the table objects you are serializing.
+</li>
+</ul>
+<p>
+<tt>dict</tt> needs to be an array of strings and <tt>metatable</tt> needs
+to be an array of tables. Both starting at index 1 and without holes (no
+<tt>nil</tt> in between). The tables are anchored in the buffer object and
+internally modified into a two-way index (don't do this yourself, just pass
+a plain array). The tables must not be modified after they have been passed
+to <tt>buffer.new()</tt>.
+</p>
+<p>
+The <tt>dict</tt> and <tt>metatable</tt> tables used by the encoder and
+decoder must be the same. Put the most common entries at the front. Extend
+at the end to ensure backwards-compatibility &mdash; older encodings can
+then still be read. You may also set some indexes to <tt>false</tt> to
+explicitly drop backwards-compatibility. Old encodings that use these
+indexes will throw an error when decoded.
+</p>
+<p>
+Metatables that are not found in the <tt>metatable</tt> dictionary are
+ignored when encoding. Decoding returns a table with a <tt>nil</tt>
+metatable.
+</p>
+<p>
+Note: parsing and preparation of the options table is somewhat
+expensive. Create a buffer object only once and recycle it for multiple
+uses. Avoid mixing encoder and decoder buffers, since the
+<tt>buf:set()</tt> method frees the already allocated buffer space:
+</p>
+<pre class="code">
+local options = {
+  dict = { "commonly", "used", "string", "keys" },
+}
+local buf_enc = buffer.new(options)
+local buf_dec = buffer.new(options)
+
+local function encode(obj)
+  return buf_enc:reset():encode(obj):get()
+end
+
+local function decode(str)
+  return buf_dec:set(str):decode()
+end
+</pre>
+
+<h3 id="serialize_stream">Streaming Serialization</h3>
+<p>
+In some contexts, it's desirable to do piecewise serialization of large
+datasets, also known as <i>streaming</i>.
+</p>
+<p>
+This serialization format can be safely concatenated and supports streaming.
+Multiple encodings can simply be appended to a buffer and later decoded
+individually:
+</p>
+<pre class="code">
+local buf = buffer.new()
+buf:encode(obj1)
+buf:encode(obj2)
+local copy1 = buf:decode()
+local copy2 = buf:decode()
+</pre>
+<p>
+Here's how to iterate over a stream:
+</p>
+<pre class="code">
+while #buf ~= 0 do
+  local obj = buf:decode()
+  -- Do something with obj.
+end
+</pre>
+<p>
+Since the serialization format doesn't prepend a length to its encoding,
+network applications may need to transmit the length, too.
+</p>
+
+<h3 id="serialize_format">Serialization Format Specification</h3>
+<p>
+This serialization format is designed for <b>internal use</b> by LuaJIT
+applications. Serialized data is upwards-compatible and portable across
+all supported LuaJIT platforms.
+</p>
+<p>
+It's an <b>8-bit binary format</b> and not human-readable. It uses e.g.
+embedded zeroes and stores embedded Lua string objects unmodified, which
+are 8-bit-clean, too. Encoded data can be safely concatenated for
+streaming and later decoded one top-level object at a time.
+</p>
+<p>
+The encoding is reasonably compact, but tuned for maximum performance,
+not for minimum space usage. It compresses well with any of the common
+byte-oriented data compression algorithms.
+</p>
+<p>
+Although documented here for reference, this format is explicitly
+<b>not</b> intended to be a 'public standard' for structured data
+interchange across computer languages (like JSON or MessagePack). Please
+do not use it as such.
+</p>
+<p>
+The specification is given below as a context-free grammar with a
+top-level <tt>object</tt> as the starting point. Alternatives are
+separated by the <tt>|</tt> symbol and <tt>*</tt> indicates repeats.
+Grouping is implicit or indicated by <tt>{…}</tt>. Terminals are
+either plain hex numbers, encoded as bytes, or have a <tt>.format</tt>
+suffix.
+</p>
+<pre>
+object    → nil | false | true
+          | null | lightud32 | lightud64
+          | int | num | tab | tab_mt
+          | int64 | uint64 | complex
+          | string
+
+nil       → 0x00
+false     → 0x01
+true      → 0x02
+
+null      → 0x03                            // NULL lightuserdata
+lightud32 → 0x04 data.I                   // 32 bit lightuserdata
+lightud64 → 0x05 data.L                   // 64 bit lightuserdata
+
+int       → 0x06 int.I                                 // int32_t
+num       → 0x07 double.L
+
+tab       → 0x08                                   // Empty table
+          | 0x09 h.U h*{object object}          // Key/value hash
+          | 0x0a a.U a*object                    // 0-based array
+          | 0x0b a.U a*object h.U h*{object object}      // Mixed
+          | 0x0c a.U (a-1)*object                // 1-based array
+          | 0x0d a.U (a-1)*object h.U h*{object object}  // Mixed
+tab_mt    → 0x0e (index-1).U tab          // Metatable dict entry
+
+int64     → 0x10 int.L                             // FFI int64_t
+uint64    → 0x11 uint.L                           // FFI uint64_t
+complex   → 0x12 re.L im.L                         // FFI complex
+
+string    → (0x20+len).U len*char.B
+          | 0x0f (index-1).U                 // String dict entry
+
+.B = 8 bit
+.I = 32 bit little-endian
+.L = 64 bit little-endian
+.U = prefix-encoded 32 bit unsigned number n:
+     0x00..0xdf   → n.B
+     0xe0..0x1fdf → (0xe0|(((n-0xe0)>>8)&0x1f)).B ((n-0xe0)&0xff).B
+   0x1fe0..       → 0xff n.I
+</pre>
+
+<h2 id="error">Error handling</h2>
+<p>
+Many of the buffer methods can throw an error. Out-of-memory or usage
+errors are best caught with an outer wrapper for larger parts of code.
+There's not much one can do after that, anyway.
+</p>
+<p>
+OTOH, you may want to catch some errors individually. Buffer methods need
+to receive the buffer object as the first argument. The Lua colon-syntax
+<tt>obj:method()</tt> does that implicitly. But to wrap a method with
+<tt>pcall()</tt>, the arguments need to be passed like this:
+</p>
+<pre class="code">
+local ok, err = pcall(buf.encode, buf, obj)
+if not ok then
+  -- Handle error in err.
+end
+</pre>
+
+<h2 id="ffi_caveats">FFI caveats</h2>
+<p>
+The string buffer library has been designed to work well together with
+the FFI library. But due to the low-level nature of the FFI library,
+some care needs to be taken:
+</p>
+<p>
+First, please remember that FFI pointers are zero-indexed. The space
+returned by <tt>buf:reserve()</tt> and <tt>buf:ref()</tt> starts at the
+returned pointer and ends before <tt>len</tt> bytes after that.
+</p>
+<p>
+I.e. the first valid index is <tt>ptr[0]</tt> and the last valid index
+is <tt>ptr[len-1]</tt>. If the returned length is zero, there's no valid
+index at all. The returned pointer may even be <tt>NULL</tt>.
+</p>
+<p>
+The space pointed to by the returned pointer is only valid as long as
+the buffer is not modified in any way (neither append, nor consume, nor
+reset, etc.). The pointer is also not a GC anchor for the buffer object
+itself.
+</p>
+<p>
+Buffer data is only guaranteed to be byte-aligned. Casting the returned
+pointer to a data type with higher alignment may cause unaligned
+accesses. It depends on the CPU architecture whether this is allowed or
+not (it's always OK on x86/x64 and mostly OK on other modern
+architectures).
+</p>
+<p>
+FFI pointers or references do not count as GC anchors for an underlying
+object. E.g. an <tt>array</tt> allocated with <tt>ffi.new()</tt> is
+anchored by <tt>buf:set(array,&nbsp;len)</tt>, but not by
+<tt>buf:set(array+offset,&nbsp;len)</tt>. The addition of the offset
+creates a new pointer, even when the offset is zero. In this case, you
+need to make sure there's still a reference to the original array as
+long as its contents are in use by the buffer.
+</p>
+<p>
+Even though each LuaJIT VM instance is single-threaded (but you can
+create multiple VMs), FFI data structures can be accessed concurrently.
+Be careful when reading/writing FFI cdata from/to buffers to avoid
+concurrent accesses or modifications. In particular, the memory
+referenced by <tt>buf:set(cdata,&nbsp;len)</tt> must not be modified
+while buffer readers are working on it. Shared, but read-only memory
+mappings of files are OK, but only if the file does not change.
+</p>
+<br class="flush">
+</div>
+<div id="foot">
+<hr class="hide">
+Copyright &copy; 2005-2023
+<span class="noprint">
+&middot;
+<a href="contact.html">Contact</a>
+</span>
+</div>
+</body>
+</html>

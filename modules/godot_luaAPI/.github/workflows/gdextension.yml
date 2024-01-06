@@ -1,0 +1,451 @@
+name: GDExtension
+on:
+  workflow_call:
+    inputs:
+      fullbuild:
+        description: "Weather or not to build all targets"
+        required: true
+        type: boolean
+        default: false
+      
+      godot_version:
+        description: "Version of godot to be used"
+        required: true
+        type: string
+
+env:
+  BASE_BRANCH: main
+  GODOT_VERSION: ${{ inputs.godot_version }}-stable
+
+jobs:
+  gdextension:
+    runs-on: ${{ matrix.opts.runner }}
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - identifier: linux-debug (x86_64)
+            name: Linux (x86_64) - template_debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: linux
+            arch: x86_64
+            should-build: true
+          - identifier: linux-release (x86_64)
+            name: Linux (x86_64) - template_release
+            runner: ubuntu-20.04
+            target: template_release
+            platform: linux
+            arch: x86_64
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: linux-debug (x86_32)
+            name: Linux (x86_32) - template_debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: linux
+            arch: x86_32
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: linux-release (x86_32)
+            name: Linux (x86_32) - template_release
+            runner: ubuntu-20.04
+            target: template_release
+            platform: linux
+            arch: x86_32
+            should-build: ${{ inputs.fullbuild }}
+
+          - identifier: windows-debug (x86_64)
+            name: Windows (x86_64) - template_debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: windows
+            arch: x86_64
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: windows-release (x86_64)
+            name: Windows (x86_64) - template_release
+            runner: ubuntu-20.04
+            target: template_release
+            platform: windows
+            arch: x86_64
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: windows-debug (x86_32)
+            name: Windows (x86_32) - template_debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: windows
+            arch: x86_32
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: windows-release (x86_32)
+            name: Windows (x86_32) - template_release
+            runner: ubuntu-20.04
+            target: template_release
+            platform: windows
+            arch: x86_32
+            should-build: ${{ inputs.fullbuild }}
+
+          # - identifier: android-release (x86_64)
+          #   name: Android (x86_64) - template_release
+          #   runner: ubuntu-20.04
+          #   target: template_release
+          #   platform: android
+          #   arch: x86_64
+          #   should-build: ${{ inputs.fullbuild }}
+          # - identifier: android-debug (x86_64)
+          #   name: Android (x86_64) - template_debug
+          #   runner: ubuntu-20.04
+          #   target: template_debug
+          #   platform: android
+          #   arch: x86_64
+          #   should-build: ${{ inputs.fullbuild }}
+          # - identifier: android-release (arm64)
+          #   name: Android (arm64) - template_release
+          #   runner: ubuntu-20.04
+          #   target: template_release
+          #   platform: android
+          #   arch: arm64
+          #   should-build: ${{ inputs.fullbuild }}
+          # - identifier: android-debug (arm64)
+          #   name: Android (arm64) - template_debug
+          #   runner: ubuntu-20.04
+          #   target: template_debug
+          #   platform: android
+          #   arch: arm64
+          #   should-build: ${{ inputs.fullbuild }}
+
+          - identifier: macos-release (universal)
+            name: MacOS (universal) - template_release
+            runner: macos-latest
+            target: template_release
+            platform: macos
+            arch: universal
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: macos-debug (universal)
+            name: MacOS (universal) - template_debug
+            runner: macos-latest
+            target: template_debug
+            platform: macos
+            arch: universal
+            should-build: ${{ inputs.fullbuild }}
+
+          - identifier: ios-release (arm64)
+            name: IOS (arm64) - template_release
+            runner: macos-latest
+            target: template_release
+            platform: ios
+            arch: arm64
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: ios-debug (arm64)
+            name: IOS (arm64) - template_debug
+            runner: macos-latest
+            target: template_debug
+            platform: ios
+            arch: arm64
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: ios-simulator-release (universal)
+            name: IOS Simulator (universal) - template_release
+            runner: macos-latest
+            args: ios_simulator=yes
+            target: template_release
+            platform: ios
+            arch: universal
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: ios-simulator-debug (universal)
+            name: IOS Simulator (universal) - template_debug
+            runner: macos-latest
+            args: ios_simulator=yes
+            target: template_debug
+            platform: ios
+            arch: universal
+            should-build: ${{ inputs.fullbuild }}
+        exclude:
+          - {opts: {should-build: false}}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install gcc-multilib
+        if: ${{ startsWith(matrix.opts.arch, 'x86_32') }}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt install gcc-multilib g++-multilib
+      
+      - name: Set up Java 11 (Android)
+        if: matrix.opts.platform == 'android'
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: (Windows) Install mingw64
+        if: ${{ startsWith(matrix.opts.identifier, 'windows-') }}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install mingw-w64
+          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+      
+      - name: (Linux) Install buildroot x86_64
+        if: ${{ startsWith(matrix.opts.identifier, 'linux-') && contains(matrix.opts.arch, 'x86_64')}}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install yasm
+          cd /opt
+          curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2021-02-11/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar xf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          rm -f x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv x86_64-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          ./relocate-sdk.sh
+      
+      - name: (Linux) Install buildroot x86_32
+        if: ${{ startsWith(matrix.opts.identifier, 'linux-') && contains(matrix.opts.arch, 'x86_32')}}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install yasm
+          cd /opt
+          curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2021-02-11/i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar xf i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          rm -f i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv i686-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          ./relocate-sdk.sh
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Set up SCons
+        shell: bash
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons
+          scons --version
+      - name: Load .scons_cache directory
+        id: godot-extension-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{github.job}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            ${{github.job}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{github.job}}-${{env.BASE_BRANCH}}-${{github.ref}}
+            ${{github.job}}-${{env.BASE_BRANCH}}-${{env.BASE_BRANCH}}
+      - name: Compile extension
+        shell: sh
+        run: |
+          PATH=/opt/buildroot/bin:$PATH scons target='${{ matrix.opts.target }}' platform='${{ matrix.opts.platform }}' arch='${{ matrix.opts.arch }}' ${{ matrix.opts.args }}
+          ls -l project/addons/luaAPI/bin/
+      - name: Strip bins
+        if: "!startsWith(matrix.opts.identifier, 'windows-') && startsWith(matrix.opts.arch, 'x86_')"
+        shell: sh
+        run: |
+          strip project/addons/luaAPI/bin/*
+      - name: Prepare artifact
+        shell: sh
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+          SCONS_CACHE_LIMIT: 7168
+        run: |
+          rm -rf ${{ github.workspace }}/project/.g* ${{ github.workspace }}/project/project.godot ${{ github.workspace }}/project/testing ${{ github.workspace }}/project/addons/luaAPI/bin/.gitignore
+          cp -n '${{ github.workspace }}/README.md' '${{ github.workspace }}/LICENSE' ${{ github.workspace }}/project/addons/luaAPI
+          mkdir ${{ github.workspace }}/project/container
+          mv ${{ github.workspace }}/project/addons/ ${{ github.workspace }}/project/container/addons/
+          mv ${{ github.workspace }}/project/demo/ ${{ github.workspace }}/project/container/demo/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: gdextension
+          path: |
+            ${{ github.workspace }}/project/
+
+  gdextension-luajit:
+    runs-on: ${{ matrix.opts.runner }}
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - identifier: linux-debug (x86_64, luaJIT)
+            name: Linux (x86_64, luaJIT) - template_debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: linux
+            arch: x86_64
+            should-build: true
+          - identifier: linux-release (x86_64, luaJIT)
+            name: Linux (x86_64, luaJIT) - template_release
+            runner: ubuntu-20.04
+            target: template_release
+            platform: linux
+            arch: x86_64
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: linux-debug (x86_32, luaJIT)
+            name: Linux (x86_32, luaJIT) - template_debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: linux
+            arch: x86_32
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: linux-release (x86_32, luaJIT)
+            name: Linux (x86_32, luaJIT) - template_release
+            runner: ubuntu-20.04
+            target: template_release
+            platform: linux
+            arch: x86_32
+            should-build: ${{ inputs.fullbuild }}
+
+          - identifier: windows-debug (x86_64, luaJIT)
+            name: Windows (x86_64, luaJIT) - template_debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: windows
+            arch: x86_64
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: windows-release (x86_64, luaJIT)
+            name: Windows (x86_64, luaJIT) - template_release
+            runner: ubuntu-20.04
+            target: template_release
+            platform: windows
+            arch: x86_64
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: windows-debug (x86_32, luaJIT)
+            name: Windows (x86_32, luaJIT) - template_debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: windows
+            arch: x86_32
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: windows-release (x86_32, luaJIT)
+            name: Windows (x86_32, luaJIT) - template_release
+            runner: ubuntu-20.04
+            target: template_release
+            platform: windows
+            arch: x86_32
+            should-build: ${{ inputs.fullbuild }}
+
+          - identifier: macos-release (universal, luaJIT)
+            name: MacOS (universal, luaJIT) - template_release
+            runner: macos-latest
+            target: template_release
+            platform: macos
+            arch: universal
+            should-build: ${{ inputs.fullbuild }}
+          - identifier: macos-debug (universal, luaJIT)
+            name: MacOS (universal, luaJIT) - template_debug
+            runner: macos-latest
+            target: template_debug
+            platform: macos
+            arch: universal
+            should-build: ${{ inputs.fullbuild }}
+        exclude:
+          - {opts: {should-build: false}}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install gcc-multilib
+        if: ${{ startsWith(matrix.opts.arch, 'x86_32') }}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt install gcc-multilib g++-multilib
+
+      - name: (Windows) Install mingw64
+        if: ${{ startsWith(matrix.opts.identifier, 'windows-') }}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install mingw-w64
+          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+      
+      - name: (Linux) Install buildroot x86_64
+        if: ${{ startsWith(matrix.opts.identifier, 'linux-') && contains(matrix.opts.arch, 'x86_64')}}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install yasm
+          cd /opt
+          curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2021-02-11/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar xf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          rm -f x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv x86_64-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          ./relocate-sdk.sh
+      
+      - name: (Linux) Install buildroot x86_32
+        if: ${{ startsWith(matrix.opts.identifier, 'linux-') && contains(matrix.opts.arch, 'x86_32')}}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install yasm
+          cd /opt
+          curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2021-02-11/i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar xf i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          rm -f i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv i686-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          ./relocate-sdk.sh
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Set up SCons
+        shell: bash
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons
+          scons --version
+      - name: Load .scons_cache directory
+        id: godot-extension-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{github.job}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            ${{github.job}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{github.job}}-${{env.BASE_BRANCH}}-${{github.ref}}
+            ${{github.job}}-${{env.BASE_BRANCH}}-${{env.BASE_BRANCH}}
+      - name: Compile extension (Other)
+        if: "!startsWith(matrix.opts.identifier, 'linux-')"
+        shell: sh
+        run: |
+         scons target='${{ matrix.opts.target }}' platform='${{ matrix.opts.platform }}' arch='${{ matrix.opts.arch }}' luaapi_luaver=jit -j2
+         ls -l project/addons/luaAPI/bin/
+      - name: Compile extension (Linux)
+        if: "startsWith(matrix.opts.identifier, 'linux-')"
+        shell: sh
+        run: |
+         PATH=/opt/buildroot/bin:$PATH scons target='${{ matrix.opts.target }}' platform='${{ matrix.opts.platform }}' arch='${{ matrix.opts.arch }}' luaappi_luaver=jit -j2
+         ls -l project/addons/luaAPI/bin/
+      - name: Strip bins
+        if: "!startsWith(matrix.opts.identifier, 'windows-') && startsWith(matrix.opts.arch, 'x86_')"
+        shell: sh
+        run: |
+          strip project/addons/luaAPI/bin/*
+      - name: Prepare artifact
+        shell: sh
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+          SCONS_CACHE_LIMIT: 7168
+        run: |
+          rm -rf ${{ github.workspace }}/project/.g* ${{ github.workspace }}/project/project.godot ${{ github.workspace }}/project/testing ${{ github.workspace }}/project/addons/luaAPI/bin/.gitignore
+          cp -n '${{ github.workspace }}/README.md' '${{ github.workspace }}/LICENSE' ${{ github.workspace }}/project/addons/luaAPI
+          mkdir ${{ github.workspace }}/project/container
+          mv ${{ github.workspace }}/project/addons/ ${{ github.workspace }}/project/container/addons/
+          mv ${{ github.workspace }}/project/demo/ ${{ github.workspace }}/project/container/demo/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: gdextension-LuaJIT
+          path: |
+            ${{ github.workspace }}/project/

@@ -1,0 +1,51 @@
+# Used for extension builds 
+from build_luajit import build_luajit
+
+env = SConscript("godot-cpp/SConstruct")
+
+Import('configure')
+configure(env)
+
+env_lua = env.Clone()
+luaver = env["luaapi_luaver"]
+
+if luaver == "jit":
+    if env["luaapi_luajit_build"]:
+        build_luajit(env, True)
+
+    env.Append(LIBPATH=[Dir("luaJIT_riscv/src").abspath])
+    env.Append(LIBS=['libluajit'])
+
+elif luaver == "5.1":
+    env_lua.Append(CPPDEFINES='MAKE_LIB')
+
+    if env['PLATFORM'] == 'posix' and env['platform'] == 'linux':
+        env_lua.Append(CPPDEFINES='LUA_USE_POSIX')
+    elif env['platform'] == 'ios':
+        env_lua.Append(CPPDEFINES=['LUA_USE_IOS'])
+
+    sources = ['lua/onelua.c']
+    library_name = "liblua{}{}".format(env['suffix'], env["LIBSUFFIX"])
+    library = env_lua.StaticLibrary("bin/{}".format(library_name), source=sources)
+    Default(library)
+
+    env.Append(LIBPATH=[Dir("bin").abspath])
+    env.Append(LIBS=[library_name])
+
+else:
+    env_lua.Append(CPPDEFINES='MAKE_LIB')
+
+    if env['PLATFORM'] == 'posix' and env['platform'] == 'linux':
+        env_lua.Append(CPPDEFINES='LUA_USE_POSIX')
+    elif env['platform'] == 'ios':
+        env_lua.Append(CPPDEFINES=['LUA_USE_IOS'])
+
+    sources = ['lua/onelua.c']
+    library_name = "liblua{}{}".format(env['suffix'], env["LIBSUFFIX"])
+    library = env_lua.StaticLibrary("bin/{}".format(library_name), source=sources)
+    Default(library)
+
+    env.Append(LIBPATH=[Dir("bin").abspath])
+    env.Append(LIBS=[library_name])
+
+Return('env')

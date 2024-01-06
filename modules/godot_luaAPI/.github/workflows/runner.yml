@@ -1,0 +1,143 @@
+name: 🔗 GHA
+on:
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - "*"
+    paths-ignore:
+      - "**/*.md"
+      - "LICENSE"
+      - "**/*.png"
+      - ".github/ISSUE_TEMPLATE/*"
+      - ".github/CODEOWNERS"
+      - "project/demo/*"
+  push:
+    branches:
+      - "main"
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.png"
+      - "**/LICENSE"
+      - ".github/ISSUE_TEMPLATE/*"
+      - ".github/CODEOWNERS"
+      - "project/demo/*"
+
+env:
+  GODOT_VERSION: 4.2.1
+
+jobs:
+  static-checks:
+    name: 📊 Static checks
+    uses: ./.github/workflows/static-checks.yml
+
+  linux-build:
+    name: 🐧 Linux
+    needs: static-checks
+    uses: ./.github/workflows/linux.yml
+    with:
+      fullbuild: ${{ github.event_name == 'workflow_dispatch' }}
+      godot_version: 4.2.1
+
+  macos-build:
+    name: 🍎 macOS
+    needs: static-checks
+    uses: ./.github/workflows/macos-build.yml
+    with:
+      fullbuild: ${{ github.event_name == 'workflow_dispatch' }}
+      godot_version: 4.2.1
+  
+  macos-package:
+    name: 🍎 macOS Package
+    needs: macos-build
+    uses: ./.github/workflows/macos-package.yml
+    with:
+      fullbuild: ${{ github.event_name == 'workflow_dispatch' }}
+      godot_version: 4.2.1
+  
+  android-build:
+    name: 🤖 Android
+    needs: static-checks
+    uses: ./.github/workflows/android-build.yml
+    with:
+      fullbuild: ${{ github.event_name == 'workflow_dispatch' }}
+      godot_version: 4.2.1
+  
+  android-package:
+    name: 🤖 Android Package
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: android-build
+    uses: ./.github/workflows/android-package.yml
+    
+  ios-build:
+    name: 🍎 IOS
+    needs: static-checks
+    uses: ./.github/workflows/ios-build.yml
+    with:
+      fullbuild: ${{ github.event_name == 'workflow_dispatch' }}
+      godot_version: 4.2.1
+  
+  ios-package:
+    name: 🍎 IOS Package
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: ios-build
+    uses: ./.github/workflows/ios-package.yml
+  
+  web-build:
+    name: 🌐 Web
+    needs: static-checks
+    uses: ./.github/workflows/web.yml
+    with:
+      fullbuild: ${{ github.event_name == 'workflow_dispatch' }}
+      godot_version: 4.2.1
+
+  windows-build:
+    name: 🎨 Windows
+    needs: static-checks
+    uses: ./.github/workflows/windows.yml
+    with:
+      fullbuild: ${{ github.event_name == 'workflow_dispatch' }}
+      godot_version: 4.2.1
+  
+  gdextension-build:
+    name: ⚙️ GDExtension
+    needs: static-checks
+    uses: ./.github/workflows/gdextension.yml
+    with:
+      fullbuild: ${{ github.event_name == 'workflow_dispatch' }}
+      godot_version: 4.2.1
+  
+  module-unit-tests:
+    name: ⚙️ Module Unit Tests
+    needs: linux-build
+    uses: ./.github/workflows/module-unit-tests.yml
+  
+  gdextension-unit-tests:
+    name: ⚙️ GDExtension Unit Tests
+    needs: gdextension-build
+    uses: ./.github/workflows/gdextension-unit-tests.yml
+    with:
+      godot_version: 4.2.1
+
+  template-version-file:
+    name: 📝 Create template version file
+    needs: module-unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create version file
+        run: |
+          mkdir -p ${{ github.workspace }}/bin/templates
+          echo ${{ env.GODOT_VERSION }}.stable > ${{ github.workspace }}/bin/templates/version.txt
+
+          mkdir -p ${{ github.workspace }}/bin-mono/templates
+          echo ${{ env.GODOT_VERSION }}.stable.mono > ${{ github.workspace }}/bin-mono/templates/version.txt
+      - name: Upload version file
+        uses: actions/upload-artifact@v2
+        with:
+          name: export-templates
+          path: ${{ github.workspace }}/bin/*
+      - name: Upload Mono version file
+        uses: actions/upload-artifact@v2
+        with:
+          name: export-templates-mono
+          path: ${{ github.workspace }}/bin-mono/*

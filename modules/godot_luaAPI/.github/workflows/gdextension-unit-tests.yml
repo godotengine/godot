@@ -1,0 +1,72 @@
+name: ⚙️ GDExtension Unit Tests
+on:
+  workflow_call:
+    inputs:
+      godot_version:
+        description: "Version of godot to be used"
+        required: true
+        type: string
+  
+env:
+  BASE_BRANCH: main
+
+jobs:
+  gdextension-unit-tests:
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 30
+    name: GDExtension Unit Tests
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download godot ${{ inputs.godot_version }}
+        run: wget -O godot.zip https://downloads.tuxfamily.org/godotengine/${{ inputs.godot_version }}/Godot_v${{ inputs.godot_version }}-stable_linux.x86_64.zip
+      - name: Extract godot
+        run: |
+          7z x godot.zip
+          mv *_linux.x86_64 godot
+      - name: Download Extension
+        id: download-extension
+        uses: actions/download-artifact@v2
+        with:
+          name: gdextension
+          path: project/
+      - name: Run Unit Tests
+        run: |
+          rm -rf project/addons && mv project/container/addons project/addons
+          ./godot --headless --path project/ --editor --quit
+          ./godot --headless --path project/
+          mv project/log.txt project/extension-log.txt
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: gdextension-test-results
+          path: project/extension-log.txt
+    
+  gdextension-luajit-unit-tests:
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 30
+    name: LuaJIT GDExtension Unit Tests
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download godot ${{ inputs.godot_version }}
+        run: wget -O godot.zip https://downloads.tuxfamily.org/godotengine/${{ inputs.godot_version }}/Godot_v${{ inputs.godot_version }}-stable_linux.x86_64.zip
+      - name: Extract godot
+        run: |
+          7z x godot.zip
+          mv *_linux.x86_64 godot
+      - name: Download Extension
+        id: download-extension
+        uses: actions/download-artifact@v2
+        with:
+          name: gdextension-LuaJIT
+          path: project/
+      - name: Run Unit Tests
+        run: |
+          rm -rf project/addons && mv project/container/addons project/addons
+          ./godot --headless --path project/ --editor --quit
+          ./godot --headless --path project/
+          mv project/log.txt project/extension-log.txt
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: gdextension-luajit-test-results
+          path: project/extension-log.txt

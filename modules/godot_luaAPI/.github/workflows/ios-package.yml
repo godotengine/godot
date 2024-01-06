@@ -1,0 +1,70 @@
+name: 🍎 IOS Package
+on:
+  workflow_call:
+
+jobs:
+  ios-package:
+    runs-on: "macos-latest"
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: IOS Templates
+            artifact-name: ios-templates
+            final-artifact-name: export-templates
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout Godot
+        uses: actions/checkout@v3
+        with:
+          repository: godotengine/godot
+          ref: master
+          path: scripts/godot
+      
+      - name: Setup Vulkan SDK
+        run: |
+          sh scripts/install_vulkan_sdk_macos.sh
+
+      - name: Download Artifact
+        id: download-artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.opts.artifact-name }}
+          path: scripts/godot/bin
+
+      - name: Delete Artifact
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: ${{ matrix.opts.artifact-name }}
+
+      - name: Make universal binaries and bundle (template)
+        working-directory: ./scripts/godot/bin
+        run: |
+          cp -r ../misc/dist/ios_xcode .
+
+          strip *.a
+
+          mv libgodot.ios.template_debug.arm64.luaAPI.a ios_xcode/libgodot.ios.debug.xcframework/ios-arm64/libgodot.a
+          lipo -create libgodot.ios.template_debug.arm64.simulator.luaAPI.a libgodot.ios.template_debug.x86_64.simulator.luaAPI.a -output ios_xcode/libgodot.ios.debug.xcframework/ios-arm64_x86_64-simulator/libgodot.a
+          rm -rf libgodot.ios.template_debug.arm64.simulator.luaAPI.a libgodot.ios.template_debug.x86_64.simulator.luaAPI.a
+        
+          mv libgodot.ios.template_release.arm64.luaAPI.a ios_xcode/libgodot.ios.release.xcframework/ios-arm64/libgodot.a
+
+          lipo -create libgodot.ios.template_release.arm64.simulator.luaAPI.a libgodot.ios.template_release.x86_64.simulator.luaAPI.a -output ios_xcode/libgodot.ios.release.xcframework/ios-arm64_x86_64-simulator/libgodot.a
+          rm -rf libgodot.ios.template_release.arm64.simulator.luaAPI.a libgodot.ios.template_release.x86_64.simulator.luaAPI.a
+
+          cp -r ~/VulkanSDK/*/MoltenVK/MoltenVK.xcframework ios_xcode
+          rm -rf ios_xcode/MoltenVK.xcframework/{macos,tvos}*
+          mkdir templates
+          cd ios_xcode
+          zip -q -9 -r ../templates/ios.zip *
+          cd ..
+          rm -rf ios_xcode
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.opts.final-artifact-name }}
+          path: scripts/godot/bin/*

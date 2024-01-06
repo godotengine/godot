@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Profiler</title>
+<meta charset="utf-8">
+<meta name="Copyright" content="Copyright (C) 2005-2023">
+<meta name="Language" content="en">
+<link rel="stylesheet" type="text/css" href="bluequad.css" media="screen">
+<link rel="stylesheet" type="text/css" href="bluequad-print.css" media="print">
+</head>
+<body>
+<div id="site">
+<a href="https://luajit.org"><span>Lua<span id="logo">JIT</span></span></a>
+</div>
+<div id="head">
+<h1>Profiler</h1>
+</div>
+<div id="nav">
+<ul><li>
+<a href="luajit.html">LuaJIT</a>
+<ul><li>
+<a href="https://luajit.org/download.html">Download <span class="ext">&raquo;</span></a>
+</li><li>
+<a href="install.html">Installation</a>
+</li><li>
+<a href="running.html">Running</a>
+</li></ul>
+</li><li>
+<a href="extensions.html">Extensions</a>
+<ul><li>
+<a href="ext_ffi.html">FFI Library</a>
+<ul><li>
+<a href="ext_ffi_tutorial.html">FFI Tutorial</a>
+</li><li>
+<a href="ext_ffi_api.html">ffi.* API</a>
+</li><li>
+<a href="ext_ffi_semantics.html">FFI Semantics</a>
+</li></ul>
+</li><li>
+<a href="ext_buffer.html">String Buffers</a>
+</li><li>
+<a href="ext_jit.html">jit.* Library</a>
+</li><li>
+<a href="ext_c_api.html">Lua/C API</a>
+</li><li>
+<a class="current" href="ext_profiler.html">Profiler</a>
+</li></ul>
+</li><li>
+<a href="https://luajit.org/status.html">Status <span class="ext">&raquo;</span></a>
+</li><li>
+<a href="https://luajit.org/faq.html">FAQ <span class="ext">&raquo;</span></a>
+</li><li>
+<a href="https://luajit.org/list.html">Mailing List <span class="ext">&raquo;</span></a>
+</li></ul>
+</div>
+<div id="main">
+<p>
+LuaJIT has an integrated statistical profiler with very low overhead. It
+allows sampling the currently executing stack and other parameters in
+regular intervals.
+</p>
+<p>
+The integrated profiler can be accessed from three levels:
+</p>
+<ul>
+<li>The <a href="#hl_profiler">bundled high-level profiler</a>, invoked by the
+<a href="#j_p"><tt>-jp</tt></a> command line option.</li>
+<li>A <a href="#ll_lua_api">low-level Lua API</a> to control the profiler.</li>
+<li>A <a href="#ll_c_api">low-level C API</a> to control the profiler.</li>
+</ul>
+
+<h2 id="hl_profiler">High-Level Profiler</h2>
+<p>
+The bundled high-level profiler offers basic profiling functionality. It
+generates simple textual summaries or source code annotations. It can be
+accessed with the <a href="#j_p"><tt>-jp</tt></a> command line option
+or from Lua code by loading the underlying <tt>jit.p</tt> module.
+</p>
+<p>
+To cut to the chase &mdash; run this to get a CPU usage profile by
+function name:
+</p>
+<pre class="code">
+luajit -jp myapp.lua
+</pre>
+<p>
+It's <em>not</em> a stated goal of the bundled profiler to add every
+possible option or to cater for special profiling needs. The low-level
+profiler APIs are documented below. They may be used by third-party
+authors to implement advanced functionality, e.g. IDE integration or
+graphical profilers.
+</p>
+<p>
+Note: Sampling works for both interpreted and JIT-compiled code. The
+results for JIT-compiled code may sometimes be surprising. LuaJIT
+heavily optimizes and inlines Lua code &mdash; there's no simple
+one-to-one correspondence between source code lines and the sampled
+machine code.
+</p>
+
+<h3 id="j_p"><tt>-jp=[options[,output]]</tt></h3>
+<p>
+The <tt>-jp</tt> command line option starts the high-level profiler.
+When the application run by the command line terminates, the profiler
+stops and writes the results to <tt>stdout</tt> or to the specified
+<tt>output</tt> file.
+</p>
+<p>
+The <tt>options</tt> argument specifies how the profiling is to be
+performed:
+</p>
+<ul>
+<li><tt>f</tt> &mdash; Stack dump: function name, otherwise module:line.
+This is the default mode.</li>
+<li><tt>F</tt> &mdash; Stack dump: ditto, but dump module:name.</li>
+<li><tt>l</tt> &mdash; Stack dump: module:line.</li>
+<li><tt>&lt;number&gt;</tt> &mdash; stack dump depth (callee &larr;
+caller). Default: 1.</li>
+<li><tt>-&lt;number&gt;</tt> &mdash; Inverse stack dump depth (caller
+&rarr; callee).</li>
+<li><tt>s</tt> &mdash; Split stack dump after first stack level. Implies
+depth&nbsp;&ge;&nbsp;2 or depth&nbsp;&le;&nbsp;-2.</li>
+<li><tt>p</tt> &mdash; Show full path for module names.</li>
+<li><tt>v</tt> &mdash; Show VM states.</li>
+<li><tt>z</tt> &mdash; Show <a href="#jit_zone">zones</a>.</li>
+<li><tt>r</tt> &mdash; Show raw sample counts. Default: show percentages.</li>
+<li><tt>a</tt> &mdash; Annotate excerpts from source code files.</li>
+<li><tt>A</tt> &mdash; Annotate complete source code files.</li>
+<li><tt>G</tt> &mdash; Produce raw output suitable for graphical tools.</li>
+<li><tt>m&lt;number&gt;</tt> &mdash; Minimum sample percentage to be shown.
+Default: 3%.</li>
+<li><tt>i&lt;number&gt;</tt> &mdash; Sampling interval in milliseconds.
+Default: 10ms.<br>
+Note: The actual sampling precision is OS-dependent.</li>
+</ul>
+<p>
+The default output for <tt>-jp</tt> is a list of the most CPU consuming
+spots in the application. Increasing the stack dump depth with (say)
+<tt>-jp=2</tt> may help to point out the main callers or callees of
+hotspots. But sample aggregation is still flat per unique stack dump.
+</p>
+<p>
+To get a two-level view (split view) of callers/callees, use
+<tt>-jp=s</tt> or <tt>-jp=-s</tt>. The percentages shown for the second
+level are relative to the first level.
+</p>
+<p>
+To see how much time is spent in each line relative to a function, use
+<tt>-jp=fl</tt>.
+</p>
+<p>
+To see how much time is spent in different VM states or
+<a href="#jit_zone">zones</a>, use <tt>-jp=v</tt> or <tt>-jp=z</tt>.
+</p>
+<p>
+Combinations of <tt>v/z</tt> with <tt>f/F/l</tt> produce two-level
+views, e.g. <tt>-jp=vf</tt> or <tt>-jp=fv</tt>. This shows the time
+spent in a VM state or zone vs. hotspots. This can be used to answer
+questions like "Which time-consuming functions are only interpreted?" or
+"What's the garbage collector overhead for a specific function?".
+</p>
+<p>
+Multiple options can be combined &mdash; but not all combinations make
+sense, see above. E.g. <tt>-jp=3si4m1</tt> samples three stack levels
+deep in 4ms intervals and shows a split view of the CPU consuming
+functions and their callers with a 1% threshold.
+</p>
+<p>
+Source code annotations produced by <tt>-jp=a</tt> or <tt>-jp=A</tt> are
+always flat and at the line level. Obviously, the source code files need
+to be readable by the profiler script.
+</p>
+<p>
+The high-level profiler can also be started and stopped from Lua code with:
+</p>
+<pre class="code">
+require("jit.p").start(options, output)
+...
+require("jit.p").stop()
+</pre>
+
+<h3 id="jit_zone"><tt>jit.zone</tt> &mdash; Zones</h3>
+<p>
+Zones can be used to provide information about different parts of an
+application to the high-level profiler. E.g. a game could make use of an
+<tt>"AI"</tt> zone, a <tt>"PHYS"</tt> zone, etc. Zones are hierarchical,
+organized as a stack.
+</p>
+<p>
+The <tt>jit.zone</tt> module needs to be loaded explicitly:
+</p>
+<pre class="code">
+local zone = require("jit.zone")
+</pre>
+<ul>
+<li><tt>zone("name")</tt> pushes a named zone to the zone stack.</li>
+<li><tt>zone()</tt> pops the current zone from the zone stack and
+returns its name.</li>
+<li><tt>zone:get()</tt> returns the current zone name or <tt>nil</tt>.</li>
+<li><tt>zone:flush()</tt> flushes the zone stack.</li>
+</ul>
+<p>
+To show the time spent in each zone use <tt>-jp=z</tt>. To show the time
+spent relative to hotspots use e.g. <tt>-jp=zf</tt> or <tt>-jp=fz</tt>.
+</p>
+
+<h2 id="ll_lua_api">Low-level Lua API</h2>
+<p>
+The <tt>jit.profile</tt> module gives access to the low-level API of the
+profiler from Lua code. This module needs to be loaded explicitly:
+<pre class="code">
+local profile = require("jit.profile")
+</pre>
+<p>
+This module can be used to implement your own higher-level profiler.
+A typical profiling run starts the profiler, captures stack dumps in
+the profiler callback, adds them to a hash table to aggregate the number
+of samples, stops the profiler and then analyzes all captured
+stack dumps. Other parameters can be sampled in the profiler callback,
+too. But it's important not to spend too much time in the callback,
+since this may skew the statistics.
+</p>
+
+<h3 id="profile_start"><tt>profile.start(mode, cb)</tt>
+&mdash; Start profiler</h3>
+<p>
+This function starts the profiler. The <tt>mode</tt> argument is a
+string holding options:
+</p>
+<ul>
+<li><tt>f</tt> &mdash; Profile with precision down to the function level.</li>
+<li><tt>l</tt> &mdash; Profile with precision down to the line level.</li>
+<li><tt>i&lt;number&gt;</tt> &mdash; Sampling interval in milliseconds (default
+10ms).</br>
+Note: The actual sampling precision is OS-dependent.
+</li>
+</ul>
+<p>
+The <tt>cb</tt> argument is a callback function which is called with
+three arguments: <tt>(thread, samples, vmstate)</tt>. The callback is
+called on a separate coroutine, the <tt>thread</tt> argument is the
+state that holds the stack to sample for profiling. Note: do
+<em>not</em> modify the stack of that state or call functions on it.
+</p>
+<p>
+<tt>samples</tt> gives the number of accumulated samples since the last
+callback (usually 1).
+</p>
+<p>
+<tt>vmstate</tt> holds the VM state at the time the profiling timer
+triggered. This may or may not correspond to the state of the VM when
+the profiling callback is called. The state is either <tt>'N'</tt>
+native (compiled) code, <tt>'I'</tt> interpreted code, <tt>'C'</tt>
+C&nbsp;code, <tt>'G'</tt> the garbage collector, or <tt>'J'</tt> the JIT
+compiler.
+</p>
+
+<h3 id="profile_stop"><tt>profile.stop()</tt>
+&mdash; Stop profiler</h3>
+<p>
+This function stops the profiler.
+</p>
+
+<h3 id="profile_dump"><tt>dump = profile.dumpstack([thread,] fmt, depth)</tt>
+&mdash; Dump stack </h3>
+<p>
+This function allows taking stack dumps in an efficient manner. It
+returns a string with a stack dump for the <tt>thread</tt> (coroutine),
+formatted according to the <tt>fmt</tt> argument:
+</p>
+<ul>
+<li><tt>p</tt> &mdash; Preserve the full path for module names. Otherwise,
+only the file name is used.</li>
+<li><tt>f</tt> &mdash; Dump the function name if it can be derived. Otherwise,
+use module:line.</li>
+<li><tt>F</tt> &mdash; Ditto, but dump module:name.</li>
+<li><tt>l</tt> &mdash; Dump module:line.</li>
+<li><tt>Z</tt> &mdash; Zap the following characters for the last dumped
+frame.</li>
+<li>All other characters are added verbatim to the output string.</li>
+</ul>
+<p>
+The <tt>depth</tt> argument gives the number of frames to dump, starting
+at the topmost frame of the thread. A negative number dumps the frames in
+inverse order.
+</p>
+<p>
+The first example prints a list of the current module names and line
+numbers of up to 10 frames in separate lines. The second example prints
+semicolon-separated function names for all frames (up to 100) in inverse
+order:
+</p>
+<pre class="code">
+print(profile.dumpstack(thread, "l\n", 10))
+print(profile.dumpstack(thread, "lZ;", -100))
+</pre>
+
+<h2 id="ll_c_api">Low-level C API</h2>
+<p>
+The profiler can be controlled directly from C&nbsp;code, e.g. for
+use by IDEs. The declarations are in <tt>"luajit.h"</tt> (see
+<a href="ext_c_api.html">Lua/C API</a> extensions).
+</p>
+
+<h3 id="luaJIT_profile_start"><tt>luaJIT_profile_start(L, mode, cb, data)</tt>
+&mdash; Start profiler</h3>
+<p>
+This function starts the profiler. <a href="#profile_start">See
+above</a> for a description of the <tt>mode</tt> argument.
+</p>
+<p>
+The <tt>cb</tt> argument is a callback function with the following
+declaration:
+</p>
+<pre class="code">
+typedef void (*luaJIT_profile_callback)(void *data, lua_State *L,
+                                        int samples, int vmstate);
+</pre>
+<p>
+<tt>data</tt> is available for use by the callback. <tt>L</tt> is the
+state that holds the stack to sample for profiling. Note: do
+<em>not</em> modify this stack or call functions on this stack &mdash;
+use a separate coroutine for this purpose. <a href="#profile_start">See
+above</a> for a description of <tt>samples</tt> and <tt>vmstate</tt>.
+</p>
+
+<h3 id="luaJIT_profile_stop"><tt>luaJIT_profile_stop(L)</tt>
+&mdash; Stop profiler</h3>
+<p>
+This function stops the profiler.
+</p>
+
+<h3 id="luaJIT_profile_dumpstack"><tt>p = luaJIT_profile_dumpstack(L, fmt, depth, len)</tt>
+&mdash; Dump stack </h3>
+<p>
+This function allows taking stack dumps in an efficient manner.
+<a href="#profile_dump">See above</a> for a description of <tt>fmt</tt>
+and <tt>depth</tt>.
+</p>
+<p>
+This function returns a <tt>const&nbsp;char&nbsp;*</tt> pointing to a
+private string buffer of the profiler. The <tt>int&nbsp;*len</tt>
+argument returns the length of the output string. The buffer is
+overwritten on the next call and deallocated when the profiler stops.
+You either need to consume the content immediately or copy it for later
+use.
+</p>
+<br class="flush">
+</div>
+<div id="foot">
+<hr class="hide">
+Copyright &copy; 2005-2023
+<span class="noprint">
+&middot;
+<a href="contact.html">Contact</a>
+</span>
+</div>
+</body>
+</html>

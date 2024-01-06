@@ -1,0 +1,110 @@
+name: 🍎 IOS
+on:
+  workflow_call:
+    inputs:
+      fullbuild:
+        description: "Weather or not to build all targets"
+        required: true
+        type: boolean
+        default: false
+      
+      godot_version:
+        description: "Version of godot to be used"
+        required: true
+        type: string
+
+env:
+  BASE_BRANCH: main
+  SCONSFLAGS: "production=yes extra_suffix=luaAPI"
+  SCONS_CACHE_LIMIT: 7168
+  GODOT_VERSION: ${{ inputs.godot_version }}-stable
+
+jobs:
+  ios-builds:
+    runs-on: "macos-latest"
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: IOS Template (target=template_debug,arch=arm64)
+            cache-name: ios-template-debug-arm
+            artifact-name: ios-templates
+            build-options: "arch=arm64 target=template_debug"
+            should-run: true
+          
+          - name: IOS Template (target=template_release,arch=arm64)
+            cache-name: ios-template-release-arm64
+            artifact-name: ios-templates
+            build-options: "arch=arm64 target=template_release"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: IOS Simulator Template (target=template_debug,arch=x86_64)
+            cache-name: ios-simulator-template-debug-x86
+            artifact-name: ios-templates
+            build-options: "arch=x86_64 target=template_debug ios_simulator=yes"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: IOS Simulator Template (target=template_release,arch=x86_64)
+            cache-name: ios-simulator-template-release-x86
+            artifact-name: ios-templates
+            build-options: "arch=x86_64 target=template_release ios_simulator=yes"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: IOS Simulator Template (target=template_debug,arch=arm64)
+            cache-name: ios-simulator-template-debug-arm64
+            artifact-name: ios-templates
+            build-options: "arch=arm64 target=template_debug ios_simulator=yes"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: IOS Simulator Template (target=template_release,arch=arm64)
+            cache-name: ios-simulator-template-release-arm64
+            artifact-name: ios-templates
+            build-options: "arch=arm64 target=template_release ios_simulator=yes"
+            should-run: ${{ inputs.fullbuild }}
+        exclude:
+          - {opts: {should-run: false}}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Setup Vulkan SDK
+        run: |
+          sh scripts/install_vulkan_sdk_macos.sh
+
+      - name: Load .scons_cache directory
+        uses: actions/cache@v2
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+          architecture: "x64"
+
+      - name: Configuring Python packages
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons
+          python --version
+          scons --version
+
+      - name: Compilation
+        working-directory: ./scripts
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+        run: |
+          scons platform=ios ${{ matrix.opts.build-options }} ${{ env.SCONSFLAGS }}
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{matrix.opts.artifact-name}}
+          path: scripts/godot/bin/*

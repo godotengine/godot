@@ -1,0 +1,158 @@
+name: 🍎 macOS Package
+on:
+  workflow_call:
+    inputs:
+      fullbuild:
+        description: "Weather or not to build all targets"
+        required: true
+        type: boolean
+        default: false
+      
+      godot_version:
+        description: "Version of godot to be used"
+        required: true
+        type: string
+
+jobs:
+  macos-package:
+    runs-on: "macos-latest"
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: macOS Editor
+            cache-name: macos-editor
+            editor: true
+            artifact-name: macos-editor-bins
+            final-artifact-name: macos-editor
+            should-run: true
+          
+          - name: macOS Mono Editor
+            cache-name: macos-editor-mono
+            editor: true
+            mono: true
+            artifact-name: macos-editor-mono-bins
+            final-artifact-name: macos-editor-mono
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: macOS Editor LuaJIT
+            editor: true
+            artifact-name: macos-editor-luajit-bins
+            final-artifact-name: macos-editor-luajit
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: MacOS Templates
+            template: true
+            artifact-name: macos-templates
+            final-artifact-name: export-templates
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: MacOS Templates Mono
+            template: true
+            mono: true
+            artifact-name: macos-templates-mono
+            final-artifact-name: export-templates-mono
+            should-run: ${{ inputs.fullbuild }}
+        exclude:
+          - {opts: {should-run: false}}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout Godot
+        uses: actions/checkout@v3
+        with:
+          repository: godotengine/godot
+          ref: ${{ inputs.godot_version }}-stable
+          path: scripts/godot
+
+      - name: Download Artifact
+        id: download-artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.opts.artifact-name }}
+          path: scripts/godot/bin
+
+      - name: Delete Artifact
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: ${{ matrix.opts.artifact-name }}
+
+      - name: Make universal binaries and bundle (editor)
+        working-directory: ./scripts/godot
+        if: ${{ matrix.opts.editor && !matrix.opts.mono }}
+        run: |
+          lipo -create bin/godot.macos.editor.x86_64.luaAPI bin/godot.macos.editor.arm64.luaAPI -output bin/godot.macos.editor.universal.luaAPI
+          strip bin/godot.macos.editor.universal.luaAPI
+          rm -rf bin/godot.macos.editor.x86_64.luaAPI bin/godot.macos.editor.arm64.luaAPI
+          cp -r misc/dist/macos_tools.app Godot.app
+          mkdir Godot.app/Contents/MacOS
+          mv bin/godot.macos.editor.universal.luaAPI Godot.app/Contents/MacOS/Godot
+          chmod +x Godot.app/Contents/MacOS/Godot
+          mv Godot.app bin/
+          cp -n '${{ github.workspace }}/README.md' '${{ github.workspace }}/LICENSE' ${{ github.workspace }}/scripts/godot/bin/
+      
+      - name: Make universal binaries and bundle (mono editor)
+        working-directory: ./scripts/godot
+        if: ${{ matrix.opts.editor && matrix.opts.mono }}
+        run: |
+          lipo -create bin/godot.macos.editor.x86_64.luaAPI.mono bin/godot.macos.editor.arm64.luaAPI.mono -output bin/godot.macos.editor.universal.luaAPI.mono
+          strip bin/godot.macos.editor.universal.luaAPI.mono
+          rm -rf bin/godot.macos.editor.x86_64.luaAPI.mono bin/godot.macos.editor.arm64.luaAPI.mono
+          chmod +x bin/godot.macos.editor.universal.luaAPI.mono
+
+          bin/godot.macos.editor.universal.luaAPI.mono --headless --generate-mono-glue modules/mono/glue
+          mkdir bin/nuget_packages
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --push-nupkgs-local ./bin/nuget_packages
+          cp ../mono_instructions.txt bin/
+
+          cp -r misc/dist/macos_tools.app Godot.app
+          mkdir Godot.app/Contents/MacOS
+          mv bin/godot.macos.editor.universal.luaAPI.mono Godot.app/Contents/MacOS/Godot
+          mv bin/GodotSharp Godot.app/Contents/Resources/
+          mv Godot.app bin/
+          cp -n '${{ github.workspace }}/README.md' '${{ github.workspace }}/LICENSE' ${{ github.workspace }}/scripts/godot/bin/
+
+      - name: Make universal binaries and bundle (template)
+        working-directory: ./scripts/godot
+        if: ${{ matrix.opts.template && !matrix.opts.mono}}
+        run: |
+          lipo -create bin/godot.macos.template_debug.x86_64.luaAPI bin/godot.macos.template_debug.arm64.luaAPI -output bin/godot.macos.template_debug.universal.luaAPI
+          lipo -create bin/godot.macos.template_release.x86_64.luaAPI bin/godot.macos.template_release.arm64.luaAPI -output bin/godot.macos.template_release.universal.luaAPI
+          rm -rf bin/godot.macos.template_debug.x86_64.luaAPI bin/godot.macos.template_debug.arm64.luaAPI bin/godot.macos.template_release.x86_64.luaAPI bin/godot.macos.template_release.arm64.luaAPI
+          strip bin/godot.*
+          cp -r misc/dist/macos_template.app macos_template.app
+          mkdir macos_template.app/Contents/MacOS
+          cp bin/godot.macos.template_debug.universal.luaAPI macos_template.app/Contents/MacOS/godot_macos_debug.universal
+          cp bin/godot.macos.template_release.universal.luaAPI macos_template.app/Contents/MacOS/godot_macos_release.universal
+          chmod +x macos_template.app/Contents/MacOS/godot_macos_debug.universal
+          chmod +x macos_template.app/Contents/MacOS/godot_macos_release.universal
+          zip -r macos.zip macos_template.app
+          rm -rf bin/*
+          mkdir bin/templates
+          mv macos.zip bin/templates/macos.zip
+      
+      - name: Make universal binaries and bundle (mono template)
+        working-directory: ./scripts/godot
+        if: ${{ matrix.opts.template && matrix.opts.mono}}
+        run: |
+          lipo -create bin/godot.macos.template_debug.x86_64.luaAPI.mono bin/godot.macos.template_debug.arm64.luaAPI.mono -output bin/godot.macos.template_debug.universal.luaAPI
+          lipo -create bin/godot.macos.template_release.x86_64.luaAPI.mono bin/godot.macos.template_release.arm64.luaAPI.mono -output bin/godot.macos.template_release.universal.luaAPI
+          rm -rf bin/godot.macos.template_debug.x86_64.luaAPI.mono bin/godot.macos.template_debug.arm64.luaAPI.mono bin/godot.macos.template_release.x86_64.luaAPI.mono bin/godot.macos.template_release.arm64.luaAPI.mono
+          strip bin/godot.*
+          cp -r misc/dist/macos_template.app macos_template.app
+          mkdir macos_template.app/Contents/MacOS
+          cp bin/godot.macos.template_debug.universal.luaAPI macos_template.app/Contents/MacOS/godot_macos_debug.universal
+          cp bin/godot.macos.template_release.universal.luaAPI macos_template.app/Contents/MacOS/godot_macos_release.universal
+          chmod +x macos_template.app/Contents/MacOS/godot_macos_debug.universal
+          chmod +x macos_template.app/Contents/MacOS/godot_macos_release.universal
+          zip -r macos.zip macos_template.app
+          rm -rf bin/*
+          mkdir bin/templates
+          mv macos.zip bin/templates/macos.zip
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.opts.final-artifact-name }}
+          path: scripts/godot/bin/*

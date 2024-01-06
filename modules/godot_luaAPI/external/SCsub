@@ -1,0 +1,23 @@
+Import('env')
+Import('env_lua')
+
+from build_luajit import build_luajit
+
+luaver = env["luaapi_luaver"]
+
+if env["arch"] == "x86_64":
+    env_lua.Append(CPPDEFINES=['TCC_TARGET_X86_64'])
+elif env["arch"] == "x86_32":
+    env_lua.Append(CPPDEFINES=['TCC_TARGET_PE'])
+
+
+build_luajit(env)
+if env_lua.msvc:
+    # hack for msvc builds. See https://github.com/godotengine/godot/issues/23687
+    env.Append(LIBS=[File('luaJIT_riscv/src/luajit.lib')])
+    env.Append(LIBS=[File('luaJIT_riscv/src/lua51.lib')])
+else:
+    env.Append(LIBPATH=[Dir("luaJIT_riscv/src").abspath])
+    env.Append(LIBS=['libluajit'])
+env_lua.Append(CPPPATH=[Dir('luaJIT_riscv/src').abspath])
+

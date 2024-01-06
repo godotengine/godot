@@ -1,0 +1,99 @@
+name: 🌐 Web
+on:
+  workflow_call:
+    inputs:
+      fullbuild:
+        description: "Weather or not to build all targets"
+        required: true
+        type: boolean
+        default: false
+      
+      godot_version:
+        description: "Version of godot to be used"
+        required: true
+        type: string
+
+env:
+  BASE_BRANCH: main
+  SCONSFLAGS: "production=yes extra_suffix=luaAPI optimize=size"
+  SCONS_CACHE_LIMIT: 7168
+  GODOT_VERSION: ${{ inputs.godot_version }}-stable
+  EM_VERSION: 3.1.18
+  EM_CACHE_FOLDER: "emsdk-cache"
+
+jobs:
+  web-builds:
+    runs-on: [self-hosted, linux, x64, emsdk]
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: Web Template (target=template_release)
+            cache-name: web-template-release
+            artifact-name: export-templates
+            build-options: "target=template_release"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: Web Template DLink (target=template_release,dlink_enabled=yes)
+            cache-name: web-template-dlink-release
+            artifact-name: export-templates
+            build-options: "target=template_release dlink_enabled=yes"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: Web Template (target=template_debug)
+            cache-name: web-template-debug
+            artifact-name: export-templates
+            build-options: "target=template_debug"
+            should-run: true
+
+          - name: Web Template DLink (target=template_debug,dlink_enabled=yes)
+            cache-name: web-template-dlink-release
+            artifact-name: export-templates
+            build-options: "target=template_debug dlink_enabled=yes"
+            should-run: ${{ inputs.fullbuild }}
+
+          
+        exclude:
+          - {opts: {should-run: false}}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive          
+
+      - name: Load .scons_cache directory
+        uses: actions/cache@v2
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}
+
+      - name: Compilation
+        working-directory: ./scripts
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+        run: |
+          source /opt/emsdk/emsdk_env.sh
+          emcc -v
+          scons platform=web ${{ matrix.opts.build-options }} ${{ env.SCONSFLAGS }}
+
+      - name: Prepare templates
+        run: |
+          mkdir -p scripts/godot/templates/
+
+          mv scripts/godot/bin/godot.web.template_release.wasm32.luaAPI.zip scripts/godot/templates/web_release.zip || true
+          mv scripts/godot/bin/godot.web.template_release.wasm32.dlink.luaAPI.zip scripts/godot/templates/web_dlink_release.zip || true
+          mv scripts/godot/bin/godot.web.template_debug.wasm32.luaAPI.zip scripts/godot/templates/web_debug.zip || true
+          mv scripts/godot/bin/godot.web.template_debug.wasm32.dlink.luaAPI.zip scripts/godot/templates/web_dlink_debug.zip || true
+
+          rm -rf scripts/godot/bin/{*,.web_zip}
+          mv scripts/godot/templates scripts/godot/bin/
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{matrix.opts.artifact-name}}
+          path: scripts/godot/bin/*

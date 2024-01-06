@@ -1,0 +1,208 @@
+name: 🐧 Linux
+on:
+  workflow_call:
+    inputs:
+      fullbuild:
+        description: "Weather or not to build all targets"
+        required: true
+        type: boolean
+        default: false
+      
+      godot_version:
+        description: "Version of godot to be used"
+        required: true
+        type: string
+
+env:
+  BASE_BRANCH: main
+  SCONSFLAGS: "production=yes extra_suffix=luaAPI"
+  SCONS_CACHE_LIMIT: 7168
+  GODOT_VERSION: ${{ inputs.godot_version }}-stable
+
+jobs:
+  linux-builds:
+    runs-on: "ubuntu-20.04"
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: Linux Editor (target=editor)
+            cache-name: linux-editor
+            artifact-name: linux-editor
+            build-options: "target=editor arch=x86_64"
+            should-run: true
+
+          - name: Linux Editor LuaJIT (target=editor,luaapi_luaver=jit)
+            cache-name: linux-editor-luajit
+            artifact-name: linux-editor-luajit
+            build-options: "target=editor luaapi_luaver=jit arch=x86_64"
+            should-run: true
+
+          - name: Linux Template (target=template_release,arch=x86_64)
+            cache-name: linux-template
+            artifact-name: export-templates
+            build-options: "target=template_release arch=x86_64"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: Linux Template Debug (target=template_debug,arch=x86_64)
+            cache-name: linux-template-debug
+            artifact-name: export-templates
+            build-options: "target=template_debug arch=x86_64"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: Linux Template (target=template_release,arch=x86_32)
+            cache-name: linux-template
+            artifact-name: export-templates
+            build-options: "target=template_release arch=x86_32"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: Linux Template Debug (target=template_debug,arch=x86_32)
+            cache-name: linux-template-debug
+            artifact-name: export-templates
+            build-options: "target=template_debug arch=x86_32"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: Linux Editor Mono (target=editor,module_mono_enabled=yes)
+            cache-name: linux-editor-mono
+            artifact-name: linux-editor-mono
+            build-options: "target=editor module_mono_enabled=yes arch=x86_64"
+            should-run: true # Verify mono builds
+          
+          - name: Linux Template Mono (target=template_release,module_mono_enabled=yes,arch=x86_64)
+            cache-name: linux-template-mono
+            artifact-name: export-templates-mono
+            build-options: "target=template_release module_mono_enabled=yes arch=x86_64"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: Linux Template Debug Mono (target=template_debug,module_mono_enabled=yes,arch=x86_64)
+            cache-name: linux-template-debug-mono
+            artifact-name: export-templates-mono
+            build-options: "target=template_debug module_mono_enabled=yes arch=x86_64"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: Linux Template Mono (target=template_release,module_mono_enabled=yes,arch=x86_32)
+            cache-name: linux-template-mono
+            artifact-name: export-templates-mono
+            build-options: "target=template_release module_mono_enabled=yes arch=x86_32"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: Linux Template Debug Mono (target=template_debug,module_mono_enabled=yes,arch=x86_32)
+            cache-name: linux-template-debug-mono
+            artifact-name: export-templates-mono
+            build-options: "target=template_debug module_mono_enabled=yes arch=x86_32"
+            should-run: ${{ inputs.fullbuild }}
+
+        exclude:
+          - {opts: {should-run: false}}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: (Linux) Install buildroot x86_64
+        if: ${{ !contains(matrix.opts.build-options, 'x86_32') }}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install yasm
+          cd /opt
+          curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2021-02-11/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar xf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          rm -f x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv x86_64-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          ./relocate-sdk.sh
+      
+      - name: (Linux) Install buildroot x86_32
+        if: ${{ contains(matrix.opts.build-options, 'x86_32') }}
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install yasm
+          cd /opt
+          curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2021-02-11/i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar xf i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          rm -f i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv i686-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          ./relocate-sdk.sh
+
+      - name: Install .NET SDK 6.0 (Mono)
+        if: ${{ contains(matrix.opts.build-options, 'module_mono_enabled=yes') }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Load .scons_cache directory
+        uses: actions/cache@v2
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+          architecture: "x64"
+
+      - name: Configuring Python packages
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons
+          python --version
+          scons --version
+
+      - name: Compilation
+        working-directory: ./scripts
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+        run: |
+          PATH=/opt/buildroot/bin:$PATH scons platform=linuxbsd ${{ matrix.opts.build-options }} ${{ env.SCONSFLAGS }}
+
+      - name: Prepare artifact
+        run: |
+          strip scripts/godot/bin/godot.*
+          chmod +x scripts/godot/bin/godot.*
+
+      - name: Generate Mono Glue
+        if: ${{ matrix.opts.cache-name == 'linux-editor-mono' }}
+        run: |
+          cd scripts/godot
+          bin/godot.linuxbsd.editor.x86_64.luaAPI.mono --headless --generate-mono-glue modules/mono/glue
+          mkdir bin/nuget_packages
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --push-nupkgs-local ./bin/nuget_packages
+          cp ../mono_instructions.txt bin/
+
+      - name: Prepare templates
+        if: ${{ contains(matrix.opts.artifact-name, 'export-templates') }}
+        run: |
+          mkdir -p scripts/godot/templates/
+
+          mv scripts/godot/bin/godot.linuxbsd.template_release.x86_64.luaAPI scripts/godot/templates/linux_release.x86_64 || true
+          mv scripts/godot/bin/godot.linuxbsd.template_debug.x86_64.luaAPI scripts/godot/templates/linux_debug.x86_64 || true
+          mv scripts/godot/bin/godot.linuxbsd.template_release.x86_32.luaAPI scripts/godot/templates/linux_release.x86_32 || true
+          mv scripts/godot/bin/godot.linuxbsd.template_debug.x86_32.luaAPI scripts/godot/templates/linux_debug.x86_32 || true
+
+          mv scripts/godot/bin/godot.linuxbsd.template_release.x86_64.luaAPI.mono scripts/godot/templates/linux_release.x86_64 || true
+          mv scripts/godot/bin/godot.linuxbsd.template_debug.x86_64.luaAPI.mono scripts/godot/templates/linux_debug.x86_64 || true
+          mv scripts/godot/bin/godot.linuxbsd.template_release.x86_32.luaAPI.mono scripts/godot/templates/linux_release.x32_64 || true
+          mv scripts/godot/bin/godot.linuxbsd.template_debug.x86_32.luaAPI.mono scripts/godot/templates/linux_debug.x86_32  || true
+          
+          rm -rf scripts/godot/bin/*
+          mv scripts/godot/templates scripts/godot/bin/
+
+      - name: Copy License
+        if: ${{ !contains(matrix.opts.artifact-name, 'export-templates') }}
+        run: |
+          cp -n '${{ github.workspace }}/README.md' '${{ github.workspace }}/LICENSE' ${{ github.workspace }}/scripts/godot/bin/
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{matrix.opts.artifact-name}}
+          path: scripts/godot/bin/*

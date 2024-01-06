@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LuaDefaultObjectMetatable" inherits="LuaObjectMetatable" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+        The default LuaObjectMetatable used by the LuaAPI class as the object_metatable value.
+	</brief_description>
+	<description>
+        This metatable by default checks if the object has a lua_fields method. If it does depending on how permissice is set. The listed fields will be allowed or disallowed.
+        This metatable also checks if the object overrides any of the metamethods, if it does it will call the overridden method.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="permissive" type="bool" setter="set_permissive" getter="get_permissive" default="true">
+            Sets weather the Objects lua_fields method is treated as a whitelist or a blacklist. If true, the fields method is treated as a blacklist and returned fields will be disallowed. If false, the fields method is treated as a whitelist and returned fields will be allowed.
+		</member>
+	</members>
+</class>

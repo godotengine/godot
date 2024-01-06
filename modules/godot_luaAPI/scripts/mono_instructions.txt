@@ -1,0 +1,6 @@
+If you have GodotSharp locally cached dotnet may use one of them instead. To clear local cache run the following command:
+dotnet nuget locals all --clear
+
+To add the local nuget source, please run the following command:
+dotnet nuget add source /path/to/nuget_packages/ --name LuaAPINugetSource
+

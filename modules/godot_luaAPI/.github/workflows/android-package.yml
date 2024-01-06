@@ -1,0 +1,74 @@
+name: 🤖 Android Package
+on:
+  workflow_call:
+
+jobs:
+  android-package:
+    runs-on: "ubuntu-20.04"
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: Android Templates
+            artifact-name: android-templates
+            final-artifact-name: export-templates
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout Godot
+        uses: actions/checkout@v3
+        with:
+          repository: godotengine/godot
+          ref: master
+          path: scripts/godot
+
+      - name: Download Artifact
+        id: download-artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.opts.artifact-name }}
+          path: scripts/godot/platform/android/java/lib/libs
+
+      - name: Delete Artifact
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: ${{ matrix.opts.artifact-name }}
+        
+      - name: Set up Java 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+      
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+          architecture: "x64"
+
+      - name: Configuring Python packages
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons
+          python --version
+          scons --version
+
+      - name: Make apk (template)
+        working-directory: ./scripts/godot
+        run: |
+          cd platform/android/java
+          ./gradlew generateGodotTemplates
+          cd ../../..
+          mkdir templates
+          cp bin/android_source.zip templates/android_source.zip
+          cp bin/android_debug.apk templates/android_debug.apk
+          cp bin/android_release.apk templates/android_release.apk
+          rm -rf bin/*
+          mv templates bin/templates
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.opts.final-artifact-name }}
+          path: scripts/godot/bin/*

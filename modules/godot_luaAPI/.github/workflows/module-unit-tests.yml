@@ -1,0 +1,54 @@
+name: ⚙️ Module Unit Tests
+on:
+  workflow_call:
+
+env:
+  BASE_BRANCH: main
+
+jobs:
+  module-unit-tests:
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 30
+    name: Module Unit Tests
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download Editor
+        id: download-extension
+        uses: actions/download-artifact@v2
+        with:
+          name: linux-editor
+          path: ./
+      - name: Unit Tests
+        run: |
+          rm -rf project/addons
+          chmod +x godot.linuxbsd.editor.x86_64.luaAPI
+          ./godot.linuxbsd.editor.x86_64.luaAPI --headless --path project/
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: module-test-results
+          path: project/log.txt
+
+  module-unit-tests-luajit:
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 30
+    name: LuaJIT Module Unit Tests
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download Editor
+        id: download-extension
+        uses: actions/download-artifact@v2
+        with:
+          name: linux-editor
+          path: ./
+      - name: Unit Testing
+        run: |
+          rm -rf project/addons
+          chmod +x godot.linuxbsd.editor.x86_64.luaAPI
+          ./godot.linuxbsd.editor.x86_64.luaAPI --headless --path project/
+          mv project/log.txt project/jit-log.txt
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: module-luajit-test-results
+          path: project/jit-log.txt

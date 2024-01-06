@@ -1,0 +1,166 @@
+name: 🍎 macOS
+on:
+  workflow_call:
+    inputs:
+      fullbuild:
+        description: "Weather or not to build all targets"
+        required: true
+        type: boolean
+        default: false
+      
+      godot_version:
+        description: "Version of godot to be used"
+        required: true
+        type: string
+
+env:
+  BASE_BRANCH: main
+  SCONSFLAGS: "production=yes extra_suffix=luaAPI"
+  SCONS_CACHE_LIMIT: 7168
+  GODOT_VERSION: ${{ inputs.godot_version }}-stable
+
+jobs:
+  macos-builds:
+    runs-on: "macos-latest"
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: macOS Editor (target=editor,arch=x86_64)
+            cache-name: macos-editor-x86
+            artifact-name: macos-editor-bins
+            build-options: "target=editor arch=x86_64"
+            should-run: true
+
+          - name: macOS Editor (target=editor,arch=arm64)
+            cache-name: macos-editor-arm64
+            artifact-name: macos-editor-bins
+            build-options: "target=editor arch=arm64"
+            should-run: true
+
+          - name: macOS Editor LuaJIT (target=editor,luaapi_luaver=jit,arch=x86_64)
+            cache-name: macos-editor-luajit-x86
+            artifact-name: macos-editor-luajit-bins
+            build-options: "target=editor luaapi_luaver=jit arch=x86_64"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: macOS Editor LuaJIT (target=editor,luaapi_luaver=jit,arch=arm64)
+            cache-name: macos-editor-luajit-arm64
+            artifact-name: macos-editor-luajit-bins
+            build-options: "target=editor luaapi_luaver=jit arch=arm64"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: macOS Template (target=template_debug,arch=x86_64)
+            cache-name: macos-template-debug-x86
+            artifact-name: macos-templates
+            build-options: "arch=x86_64 target=template_debug"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: macOS Template (target=template_debug,arch=arm64)
+            cache-name: macos-template-debug-arm
+            artifact-name: macos-templates
+            build-options: "arch=arm64 target=template_debug"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: macOS Template (target=template_release,arch=x86_64)
+            cache-name: macos-template-release-x86
+            artifact-name: macos-templates
+            build-options: "arch=x86_64 target=template_release"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: macOS Template (target=template_release,arch=arm64)
+            cache-name: macos-template-release-arm
+            artifact-name: macos-templates
+            build-options: "arch=arm64 target=template_release"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: macOS Editor Mono (target=editor,module_mono_enabled=yes,arch=x86_64)
+            cache-name: macos-editor-mono-x86
+            artifact-name: macos-editor-mono-bins
+            build-options: "target=editor module_mono_enabled=yes arch=x86_64"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: macOS Editor Mono (target=editor,module_mono_enabled=yes,arch=arm64)
+            cache-name: macos-editor-mono-arm64
+            artifact-name: macos-editor-mono-bins
+            build-options: "target=editor module_mono_enabled=yes arch=arm64"
+            should-run: ${{ inputs.fullbuild }}
+
+          - name: macOS Template Mono (target=template_debug,module_mono_enabled=yes,arch=x86_64)
+            cache-name: macos-template-debug-mono-x86
+            artifact-name: macos-templates-mono
+            build-options: "arch=x86_64 module_mono_enabled=yes target=template_debug"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: macOS Template Mono (target=template_debug,module_mono_enabled=yes,arch=arm64)
+            cache-name: macos-template-debug-mono-arm
+            artifact-name: macos-templates-mono
+            build-options: "arch=arm64 module_mono_enabled=yes target=template_debug"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: macOS Template Mono (target=template_release,module_mono_enabled=yes,arch=x86_64)
+            cache-name: macos-template-release-mono-x86
+            artifact-name: macos-templates-mono
+            build-options: "arch=x86_64 module_mono_enabled=yes target=template_release"
+            should-run: ${{ inputs.fullbuild }}
+          
+          - name: macOS Template Mono (target=template_release,module_mono_enabled=yes,arch=arm64)
+            cache-name: macos-template-release-mono-arm
+            artifact-name: macos-templates-mono
+            build-options: "arch=arm64 module_mono_enabled=yes target=template_release"
+            should-run: ${{ inputs.fullbuild }}
+
+
+        exclude:
+          - {opts: {should-run: false}}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Setup Vulkan SDK
+        run: |
+          sh scripts/install_vulkan_sdk_macos.sh
+      
+      - name: Install .NET SDK 6.0 (Mono)
+        if: ${{ contains(matrix.opts.build-options, 'module_mono_enabled=yes') }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Load .scons_cache directory
+        uses: actions/cache@v2
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}-${{github.ref}}
+            ${{matrix.opts.cache-name}}-${{env.BASE_BRANCH}}
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+          architecture: "x64"
+
+      - name: Configuring Python packages
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons
+          python --version
+          scons --version
+
+      - name: Compilation
+        working-directory: ./scripts
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+        run: |
+          scons platform=macos ${{ matrix.opts.build-options }} ${{ env.SCONSFLAGS }}
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{matrix.opts.artifact-name}}
+          path: scripts/godot/bin/*

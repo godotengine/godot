@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LuaFunctionRef" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Lua Function Reference.
+	</brief_description>
+	<description>
+		Reference to a Lua function. This class is used to pass Lua functions to Godot.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="inoke">
+			<return type="Variant" />
+			<param index="0" name="Arguments" type="Array" />
+			<description>
+				Invoke the Lua function being referenced.
+			</description>
+		</method>
+	</methods>
+</class>

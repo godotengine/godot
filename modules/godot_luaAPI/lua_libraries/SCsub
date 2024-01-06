@@ -1,0 +1,9 @@
+Import('env')
+Import('env_lua')
+
+from codegen import code_gen
+
+code_gen(True)
+
+env_lua.add_source_files(env.modules_sources, "lua_libraries.gen.cpp")
+env_lua.Append(CPPPATH=[Dir('.').abspath])

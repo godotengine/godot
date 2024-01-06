@@ -1,0 +1,55 @@
+name: 📊 Static Checks
+on:
+  workflow_call:
+
+jobs:
+  static-checks:
+    name: Code style, file formatting, and docs
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: Install APT dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: dos2unix libxml2-utils moreutils
+
+      - name: Install Python dependencies and general setup
+        run: |
+          pip3 install black==22.3.0 pytest==7.1.2 mypy==0.971
+          git config diff.wsErrorHighlight all
+
+      - name: Get changed files
+        id: changed-files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            files=$(gh pr diff ${{ github.event.pull_request.number }} --name-only)
+          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
+          fi
+          echo "$files" >> changed.txt
+          cat changed.txt
+          files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "./{}"' | tr '\n' ' ')
+          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
+
+      - name: File formatting checks (file_format.sh)
+        run: |
+          bash ./scripts/file_format.sh changed.txt
+
+      - name: Style checks via clang-format (clang_format.sh)
+        run: |
+          clang-format --version
+          bash ./scripts/clang_format.sh changed.txt
+
+      - name: Spell checks via codespell
+        if: github.event_name == 'pull_request' && env.CHANGED_FILES != ''
+        uses: codespell-project/actions-codespell@v1
+        with:
+          skip: "./external,*.desktop,*.gen.*,*.po,*.pot,*.rc"
+          ignore_words_list: "curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,nd,numer,ot,te,vai"
+          path: ${{ env.CHANGED_FILES }}

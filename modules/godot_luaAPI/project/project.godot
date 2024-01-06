@@ -1,0 +1,23 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="LuaAPI Test Project"
+run/main_scene="res://testing/run_tests.tscn"
+config/features=PackedStringArray("4.2", "Mobile")
+
+[autoload]
+
+UnitTest="*res://testing/unit_test.gd"
+
+[rendering]
+
+renderer/rendering_method="mobile"

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b06s6an2pyqjy"]
+
+[ext_resource type="Script" path="res://testing/run_tests.gd" id="1_ypdm6"]
+
+[node name="run_tests" type="Node2D"]
+script = ExtResource("1_ypdm6")

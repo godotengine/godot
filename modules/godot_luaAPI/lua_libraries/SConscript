@@ -1,0 +1,10 @@
+Import('env')
+from codegen import code_gen
+
+code_gen(env['luaapi_luaver'] == 'jit')
+
+sources = ['lua_libraries.gen.cpp']
+library_name = "liblualibraries{}{}".format(env['suffix'], env["LIBSUFFIX"])
+
+env.Append(sources=["lua_libraries/lua_libraries.gen.cpp"])
+env.Append(CPPPATH=[Dir('.').abspath])

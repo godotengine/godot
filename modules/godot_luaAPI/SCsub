@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+Import("env")
+Import('env_modules')
+
+env_modules["luaapi_luaver"] = 'jit'
+env_lua = env_modules.Clone()
+
+if not env.msvc:
+    CXXFLAGS=['-std=c++17']
+else:
+    CXXFLAGS=['/std:c++17']
+
+env_lua.Append(CXXFLAGS=CXXFLAGS)
+
+if env["luaapi_luaver"] == "jit" and env['platform']=='javascript':
+    print("WARNING: LuaJIT can not build for a web target. Falling back to lua 5.1")
+    env["luaapi_luaver"] = '5.1'
+
+Export('env_lua')
+SConscript('external/SCsub')
+SConscript('lua_libraries/SCsub')
+
+#if env["luaapi_luaver"] == 'jit':
+#    env_lua.Append(CPPDEFINES=['LAPI_LUAJIT'])
+#elif env["luaapi_luaver"] == '5.1':
+#    env_lua.Append(CPPDEFINES=['LAPI_51'])
+
+env_lua.Append(CPPDEFINES=['LAPI_LUAJIT'])
+
+env_lua.Append(CPPPATH=[Dir('src').abspath])
+env_lua.Append(CPPPATH=[Dir('external').abspath])
+
+env_lua.add_source_files(env.modules_sources,'*.cpp')
+env_lua.add_source_files(env.modules_sources,'src/*.cpp')
+env_lua.add_source_files(env.modules_sources,'src/classes/*.cpp')

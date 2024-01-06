@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://nmbqcw2467rl"]
+
+[ext_resource type="Script" path="res://demo/HelloLua.gd" id="1_a562c"]
+
+[node name="HelloLua" type="Node2D"]
+script = ExtResource("1_a562c")
