@@ -83,7 +83,7 @@ void PluginConfigDialog::_on_confirmed() {
 		if (!templates.is_empty()) {
 			template_content = templates[0].content;
 		}
-		Ref<Script> scr = ScriptServer::get_language(lang_idx)->make_template(template_content, class_name, "EditorPlugin");
+		Ref<Script> scr = ScriptServer::get_language(lang_idx)->make_template(template_content, class_name, "EditorPlugin", script_path);
 		scr->set_path(script_path, true);
 		ResourceSaver::save(scr);
 
