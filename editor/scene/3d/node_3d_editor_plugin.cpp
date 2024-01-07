@@ -7296,6 +7296,12 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		case MENU_TOOL_ROTATE:
 		case MENU_TOOL_SCALE:
 		case MENU_TOOL_LIST_SELECT: {
+			for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+				if (viewports[i]->_edit.mode != Node3DEditorViewport::TRANSFORM_NONE) {
+					viewports[i]->commit_transform();
+				}
+			}
+
 			for (int i = 0; i < TOOL_MAX; i++) {
 				tool_button[i]->set_pressed(i == p_option);
 			}
