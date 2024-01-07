@@ -1,0 +1,69 @@
+[gd_scene load_steps=8 format=3 uid="uid://dwnhqfjq7v1pq"]
+
+[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_nrm_rgh.dds" id="1_nf248"]
+[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_alb_ht.dds" id="1_t4onm"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1kfaq"]
+size = Vector3(1025.01, 4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6nmqq"]
+albedo_color = Color(0.670588, 0.670588, 0.670588, 1)
+albedo_texture = ExtResource("1_t4onm")
+roughness_texture = ExtResource("1_nf248")
+roughness_texture_channel = 3
+normal_enabled = true
+normal_texture = ExtResource("1_nf248")
+uv1_scale = Vector3(0.4, 0.4, 0.4)
+uv1_triplanar = true
+texture_filter = 5
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_s0c8u"]
+size = Vector3(1025, 100, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_kfxc8"]
+size = Vector3(3072, 4, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pyqb2"]
+size = Vector3(1, 100, 3072)
+
+[node name="Borders" type="StaticBody3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 512)
+mesh = SubResource("BoxMesh_1kfaq")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_6nmqq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, 512)
+shape = SubResource("BoxShape3D_s0c8u")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -2560)
+mesh = SubResource("BoxMesh_1kfaq")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_6nmqq")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, -2560)
+shape = SubResource("BoxShape3D_s0c8u")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 512, 2, -1024)
+mesh = SubResource("BoxMesh_kfxc8")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_6nmqq")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 512, 50, -1024)
+shape = SubResource("BoxShape3D_pyqb2")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -512, 2, -1024)
+mesh = SubResource("BoxMesh_kfxc8")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_6nmqq")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -512, 50, -1024)
+shape = SubResource("BoxShape3D_pyqb2")

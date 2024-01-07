@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A high performance, editable terrain system for Godot 4.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="bake_mesh">
+			<return type="Mesh" />
+			<param index="0" name="lod" type="int" />
+			<param index="1" name="filter" type="int" enum="Terrain3DStorage.HeightFilter" />
+			<description>
+			</description>
+		</method>
+		<method name="generate_nav_mesh_source_geometry">
+			<return type="PackedVector3Array" />
+			<param index="0" name="global_aabb" type="AABB" />
+			<param index="1" name="require_nav" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="get_camera">
+			<return type="Camera3D" />
+			<description>
+			</description>
+		</method>
+		<method name="get_filled_image" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="size" type="Vector2i" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="create_mipmaps" type="bool" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<description>
+			</description>
+		</method>
+		<method name="get_intersection">
+			<return type="Vector3" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="direction" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_min_max" qualifiers="static">
+			<return type="Vector2" />
+			<param index="0" name="image" type="Image" />
+			<description>
+			</description>
+		</method>
+		<method name="get_plugin">
+			<return type="EditorPlugin" />
+			<description>
+			</description>
+		</method>
+		<method name="get_thumbnail" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="size" type="Vector2i" default="Vector2i(256, 256)" />
+			<description>
+			</description>
+		</method>
+		<method name="set_camera">
+			<return type="void" />
+			<param index="0" name="camera" type="Camera3D" />
+			<description>
+			</description>
+		</method>
+		<method name="set_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorPlugin" />
+			<description>
+			</description>
+		</method>
+		<method name="update_aabbs">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="get_collision_enabled" default="true">
+		</member>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+		</member>
+		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
+		</member>
+		<member name="debug_level" type="int" setter="set_debug_level" getter="get_debug_level" default="0">
+		</member>
+		<member name="debug_show_collision" type="bool" setter="set_show_debug_collision" getter="get_show_debug_collision" default="false">
+		</member>
+		<member name="material" type="Terrain3DMaterial" setter="set_material" getter="get_material">
+		</member>
+		<member name="mesh_lods" type="int" setter="set_mesh_lods" getter="get_mesh_lods" default="7">
+		</member>
+		<member name="mesh_size" type="int" setter="set_mesh_size" getter="get_mesh_size" default="48">
+		</member>
+		<member name="render_cast_shadows" type="int" setter="set_cast_shadows" getter="get_cast_shadows" enum="GeometryInstance3D.ShadowCastingSetting" default="1">
+		</member>
+		<member name="render_cull_margin" type="float" setter="set_cull_margin" getter="get_cull_margin" default="0.0">
+		</member>
+		<member name="render_layers" type="int" setter="set_render_layers" getter="get_render_layers" default="1">
+		</member>
+		<member name="storage" type="Terrain3DStorage" setter="set_storage" getter="get_storage">
+		</member>
+		<member name="texture_list" type="Terrain3DTextureList" setter="set_texture_list" getter="get_texture_list">
+		</member>
+		<member name="version" type="String" setter="" getter="get_version" default="&quot;0.9.0-dev&quot;">
+		</member>
+	</members>
+	<signals>
+		<signal name="material_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="storage_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="texture_list_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

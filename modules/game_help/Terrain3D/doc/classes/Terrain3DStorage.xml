@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DStorage" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource that stores all data for Terrain3D. Also see [url=../docs/controlmap_format.html]Controlmap Format[/url] and [url=../docs/storage_format.html]Storage Format Changelog[/url].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_region">
+			<return type="int" enum="godot.Error" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="images" type="Image[]" default="[]" />
+			<param index="2" name="update" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="export_image">
+			<return type="int" enum="godot.Error" />
+			<param index="0" name="file_name" type="String" />
+			<param index="1" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
+			<description>
+			</description>
+		</method>
+		<method name="force_update_maps">
+			<return type="void" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" default="3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_color">
+			<return type="Color" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_control">
+			<return type="int" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_height">
+			<return type="float" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_map_region">
+			<return type="Image" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
+			<param index="1" name="region_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_maps">
+			<return type="Image[]" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
+			<description>
+			</description>
+		</method>
+		<method name="get_maps_copy">
+			<return type="Image[]" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
+			<description>
+			</description>
+		</method>
+		<method name="get_mesh_vertex">
+			<return type="Vector3" />
+			<param index="0" name="lod" type="int" />
+			<param index="1" name="filter" type="int" enum="Terrain3DStorage.HeightFilter" />
+			<param index="2" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_normal">
+			<return type="Vector3" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pixel">
+			<return type="Color" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
+			<param index="1" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region_count">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region_index">
+			<return type="int" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region_offset">
+			<return type="Vector2i" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_roughness">
+			<return type="float" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_id">
+			<return type="Vector3" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="has_region">
+			<return type="bool" />
+			<param index="0" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="import_images">
+			<return type="void" />
+			<param index="0" name="images" type="Image[]" />
+			<param index="1" name="global_position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<param index="2" name="offset" type="float" default="0.0" />
+			<param index="3" name="scale" type="float" default="1.0" />
+			<description>
+			</description>
+		</method>
+		<method name="layered_to_image">
+			<return type="Image" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
+			<description>
+			</description>
+		</method>
+		<method name="load_image" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="file_name" type="String" />
+			<param index="1" name="cache_mode" type="int" default="0" />
+			<param index="2" name="r16_height_range" type="Vector2" default="Vector2(0, 255)" />
+			<param index="3" name="r16_size" type="Vector2i" default="Vector2i(0, 0)" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_region">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="update" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="save">
+			<return type="void" />
+			<description>
+				Tells the ResourceSaver to write this storage file to disk.
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="set_control">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="control" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_height">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="height" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_map_region">
+			<return type="void" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
+			<param index="1" name="region_index" type="int" />
+			<param index="2" name="image" type="Image" />
+			<description>
+			</description>
+		</method>
+		<method name="set_maps">
+			<return type="void" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
+			<param index="1" name="maps" type="Image[]" />
+			<description>
+			</description>
+		</method>
+		<method name="set_pixel">
+			<return type="void" />
+			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
+			<param index="1" name="global_position" type="Vector3" />
+			<param index="2" name="pixel" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="set_roughness">
+			<return type="void" />
+			<param index="0" name="global_position" type="Vector3" />
+			<param index="1" name="roughness" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="update_height_range">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color_maps" type="Image[]" setter="set_color_maps" getter="get_color_maps" default="[]">
+			Array of images of format: FORMAT_RGBA8, 32-bits per pixel as four 8-bit components.
+			      [b]RGB[/b] is used for color, which is multiplied by albedo in the shader. Multiply is a blend mode that only darkens.
+			      [b]A[/b] is used for a roughness modifier. A value of 0.5 means no change to the existing texture roughness. Higher than this value increases roughness, lower decreases it.
+		</member>
+		<member name="control_maps" type="Image[]" setter="set_control_maps" getter="get_control_maps" default="[]">
+			Array of images of format: FORMAT_RF, 32-bit per pixel as full-precision floating-point.
+			      However we interpret these images as format: [url=https://docs.godotengine.org/en/stable/classes/class_renderingdevice.html#class-renderingdevice-constant-data-format-r32-uint]RenderingDevice.DATA_FORMAT_R32_UINT[/url] aka OpenGL RG32UI 32-bit per pixel as unsigned integer. See [url=../docs/controlmap_format.html]Control map format[/url].
+		</member>
+		<member name="data_color_maps" type="Image[]" setter="set_color_maps" getter="get_color_maps" is_deprecated="true">
+			[i]Deprecated.[/i] See [member color_maps].
+		</member>
+		<member name="data_control_maps" type="Image[]" setter="set_control_maps" getter="get_control_maps" is_deprecated="true">
+			[i]Deprecated.[/i] See [member control_maps].
+		</member>
+		<member name="data_height_maps" type="Image[]" setter="set_height_maps" getter="get_height_maps" is_deprecated="true">
+			[i]Deprecated.[/i] See [member height_maps].
+		</member>
+		<member name="data_height_range" type="Vector2" setter="set_height_range" getter="get_height_range" is_deprecated="true">
+			[i]Deprecated.[/i] See [member height_range].
+		</member>
+		<member name="data_region_offsets" type="Vector2i[]" setter="set_region_offsets" getter="get_region_offsets" is_deprecated="true">
+			[i]Deprecated.[/i] See [member region_offsets].
+		</member>
+		<member name="data_surfaces" type="Terrain3DSurface[]" setter="set_surfaces" getter="get_surfaces" is_deprecated="true">
+			[i]Deprecated.[/i] See [Terrain3DTextureList].
+		</member>
+		<member name="data_version" type="float" setter="set_version" getter="get_version" is_deprecated="true">
+			[i]Deprecated.[/i] See [member version].
+		</member>
+		<member name="height_maps" type="Image[]" setter="set_height_maps" getter="get_height_maps" default="[]">
+			Array of images of format: FORMAT_RF, 32-bit per pixel as full-precision floating-point.
+			      Defines the height value of the terrain at a given pixel. This is sent to the vertex shader on the GPU which modifies the mesh in real-time.
+			      Editing is always done in 32-bit. We do provide an option to save as 16-bit, which converts to 32-bit on load and back to 16-bit on save.
+		</member>
+		<member name="height_range" type="Vector2" setter="set_height_range" getter="get_height_range" default="Vector2(0, 0)">
+		</member>
+		<member name="region_offsets" type="Vector2i[]" setter="set_region_offsets" getter="get_region_offsets" default="[]">
+			An array of the active regions in region grid coordinates (+/-8, +/-8). e.g. { (0, 0), (-1, 3), (1, 1) }. It is ordered by the sequence in which regions were created, not by location.
+			      This is the opposite of region_map. Here is how these two arrays are used:
+			      * region_map - access x,y location to get region id index: [code]region_id = region_map[y*region_map_size + x] - 1[/code]
+			      * region_offsets - access region id index to get x,y location: [code]position = region_offsets[region_id][/code]
+		</member>
+		<member name="region_size" type="int" setter="set_region_size" getter="get_region_size" enum="Terrain3DStorage.RegionSize" default="1024">
+		</member>
+		<member name="save_16_bit" type="bool" setter="set_save_16_bit" getter="get_save_16_bit" default="false">
+		</member>
+		<member name="version" type="float" setter="set_version" getter="get_version" default="0.8">
+			Current version of this storage resource, which is independent of the Terrain3D version. This is updated to the latest version upon save.
+		</member>
+	</members>
+	<signals>
+		<signal name="height_maps_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="region_size_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="regions_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TYPE_HEIGHT" value="0" enum="MapType">
+		</constant>
+		<constant name="TYPE_CONTROL" value="1" enum="MapType">
+		</constant>
+		<constant name="TYPE_COLOR" value="2" enum="MapType">
+		</constant>
+		<constant name="TYPE_MAX" value="3" enum="MapType">
+		</constant>
+		<constant name="SIZE_1024" value="1024" enum="RegionSize">
+		</constant>
+		<constant name="HEIGHT_FILTER_NEAREST" value="0" enum="HeightFilter">
+		</constant>
+		<constant name="HEIGHT_FILTER_MINIMUM" value="1" enum="HeightFilter">
+		</constant>
+		<constant name="REGION_MAP_SIZE" value="16">
+		</constant>
+	</constants>
+</class>

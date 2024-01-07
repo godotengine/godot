@@ -1,0 +1,22 @@
+[configuration]
+
+entry_symbol = "terrain_3d_init"
+compatibility_minimum = 4.1
+
+[libraries]
+
+windows.debug.x86_64 = "res://addons/terrain_3d/bin/libterrain.windows.debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/terrain_3d/bin/libterrain.windows.release.x86_64.dll"
+
+linux.debug.x86_64 = "res://addons/terrain_3d/bin/libterrain.linux.debug.x86_64.so"
+linux.release.x86_64 = "res://addons/terrain_3d/bin/libterrain.linux.release.x86_64.so"
+linux.debug.arm64 = "res://addons/terrain_3d/bin/libterrain.linux.debug.arm64.so"
+linux.release.arm64 = "res://addons/terrain_3d/bin/libterrain.linux.release.arm64.so"
+linux.debug.rv64 = "res://addons/terrain_3d/bin/libterrain.linux.debug.rv64.so"
+linux.release.rv64 = "res://addons/terrain_3d/bin/libterrain.linux.release.rv64.so"
+
+macos.debug = "res://addons/terrain_3d/bin/libterrain.macos.debug.framework"
+macos.release = "res://addons/terrain_3d/bin/libterrain.macos.release.framework"
+
+android.debug.arm64 = "res://addons/terrain_3d/bin/libterrain.android.debug.arm64.so"
+android.release.arm64 = "res://addons/terrain_3d/bin/libterrain.android.release.arm64.so"

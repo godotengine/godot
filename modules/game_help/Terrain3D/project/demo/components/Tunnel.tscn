@@ -1,0 +1,173 @@
+[gd_scene load_steps=10 format=3 uid="uid://djhl3foqkj4e2"]
+
+[ext_resource type="PackedScene" uid="uid://be6nrf0b8j4l0" path="res://demo/assets/models/RockA.tscn" id="1_m1xck"]
+[ext_resource type="PackedScene" uid="uid://bwvtgwartxt0g" path="res://demo/assets/models/RockB.tscn" id="2_hybky"]
+[ext_resource type="PackedScene" uid="uid://lsvs8a7urkca" path="res://demo/assets/models/RockC.tscn" id="3_nbn1a"]
+[ext_resource type="PackedScene" uid="uid://vvayjv3rbx1d" path="res://demo/assets/models/Tunnel.tscn" id="4_klbpo"]
+[ext_resource type="PackedScene" uid="uid://cribhhvg03u8g" path="res://demo/assets/models/CrystalC.tscn" id="5_bb2w0"]
+[ext_resource type="Material" uid="uid://cso4f2iyuxpmc" path="res://demo/assets/materials/M_crystal_purple.tres" id="6_s6twx"]
+[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_alb_ht.dds" id="7_pqaf8"]
+[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_nrm_rgh.dds" id="8_hh7se"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0v0nf"]
+transparency = 1
+albedo_color = Color(0.670588, 0.0588235, 0.384314, 0.509804)
+metallic_specular = 1.0
+roughness = 0.2
+roughness_texture = ExtResource("8_hh7se")
+roughness_texture_channel = 3
+emission_enabled = true
+emission = Color(0.258824, 0.0823529, 0.25098, 1)
+normal_enabled = true
+normal_scale = 0.4
+normal_texture = ExtResource("8_hh7se")
+rim_enabled = true
+rim = 0.25
+clearcoat_roughness = 0.0
+ao_light_affect = 1.0
+ao_texture = ExtResource("7_pqaf8")
+ao_texture_channel = 3
+refraction_enabled = true
+refraction_scale = -0.1
+
+[node name="Tunnel" type="Node3D"]
+
+[node name="EntranceL" type="Node3D" parent="."]
+
+[node name="RockA1" parent="EntranceL" instance=ExtResource("1_m1xck")]
+transform = Transform3D(5.82988, -5.4374, -4.00004, 6.04396, 6.55839, -0.106264, 3.00604, -2.64109, 7.9713, 807.937, 137.298, 464.338)
+
+[node name="RockA2" parent="EntranceL" instance=ExtResource("1_m1xck")]
+transform = Transform3D(4.67905, 4.22076, -5.5926, 6.98724, -3.31022, 3.34764, -0.52024, -6.49718, -5.3387, 766.019, 104.95, 452.605)
+
+[node name="RockA3" parent="EntranceL" instance=ExtResource("1_m1xck")]
+transform = Transform3D(1.19782, 11.0889, 4.42738, -11.9291, 0.921057, 0.9205, 0.510788, -4.49312, 11.1153, 793.166, 76.9378, 454.834)
+
+[node name="RockB1" parent="EntranceL" instance=ExtResource("2_hybky")]
+transform = Transform3D(-2.10522, -4.25988, 3.15298, 3.05166, -3.74811, -3.02637, 4.33304, 0.570028, 3.66329, 824.574, 112.54, 446.946)
+
+[node name="RockB3" parent="EntranceL" instance=ExtResource("2_hybky")]
+transform = Transform3D(4.29222, 4.57142, 1.24961, -2.49948, 3.61605, -4.6432, -4.02641, 2.62846, 4.21447, 773.937, 140.911, 469.972)
+
+[node name="RockC1" parent="EntranceL" instance=ExtResource("3_nbn1a")]
+transform = Transform3D(-1.86839, -3.85072, -1.99813, -0.0474326, -2.1573, 4.20181, -4.33801, 1.6821, 0.814656, 786.081, 135.376, 450.458)
+
+[node name="RockC2" parent="EntranceL" instance=ExtResource("3_nbn1a")]
+transform = Transform3D(-3.90856, -4.56077, 3.35866, 3.81036, 0.902037, 5.65911, -4.19074, 5.07383, 2.01294, 791.859, 164.408, 508.107)
+
+[node name="EntranceR" type="Node3D" parent="."]
+
+[node name="RockA1" parent="EntranceR" instance=ExtResource("1_m1xck")]
+transform = Transform3D(-0.271255, 1.28607, -2.97471, -1.25761, 2.70942, 1.28605, 2.98685, 1.25759, 0.271335, 299.644, 127.203, 424.309)
+
+[node name="RockA2" parent="EntranceR" instance=ExtResource("1_m1xck")]
+transform = Transform3D(2.29164, -2.44454, 3.0731, 3.84134, 0.657286, -2.34167, 0.814771, 3.77671, 2.39666, 318.179, 95.8599, 421.731)
+
+[node name="RockA5" parent="EntranceR" instance=ExtResource("1_m1xck")]
+transform = Transform3D(1.09929, -4.37397, 0.575562, 3.84134, 0.657286, -2.34167, 2.16957, 1.05247, 3.85443, 321.814, 95.8599, 436.931)
+
+[node name="RockA3" parent="EntranceR" instance=ExtResource("1_m1xck")]
+transform = Transform3D(3.70822, 1.86229, 1.85804, 2.19079, -0.408409, -3.96295, -1.45634, 4.12752, -1.23046, 338.177, 116.66, 430.367)
+
+[node name="RockA4" parent="EntranceR" instance=ExtResource("1_m1xck")]
+transform = Transform3D(1.9779, 0.270409, 4.08487, -4.00125, 1.0869, 1.86547, -0.865577, -4.40646, 0.710812, 320.977, 134.583, 441.012)
+
+[node name="RockB1" parent="EntranceR" instance=ExtResource("2_hybky")]
+transform = Transform3D(-1.64956, -1.63286, 1.75857, 0.196316, 2.03499, 2.07367, -2.39171, 1.29322, -1.04267, 295.848, 109.828, 419.45)
+
+[node name="RockB3" parent="EntranceR" instance=ExtResource("2_hybky")]
+transform = Transform3D(-2.03718, 1.29729, 2.88404, -2.82928, 0.784888, -2.35156, -1.41272, -3.44263, 0.550663, 306.288, 128.712, 434.042)
+
+[node name="RockB4" parent="EntranceR" instance=ExtResource("2_hybky")]
+transform = Transform3D(1.97436, 2.87133, -1.41708, -2.82928, 0.784888, -2.35156, -1.49926, 2.30004, 2.57153, 328.686, 129.709, 427.63)
+
+[node name="RockB2" parent="EntranceR" instance=ExtResource("2_hybky")]
+transform = Transform3D(-2.17746, 0.476253, -1.87396, -1.61495, 1.104, 2.15708, 1.06324, 2.65221, -0.561397, 303.461, 107.797, 428.826)
+
+[node name="RockC1" parent="EntranceR" instance=ExtResource("3_nbn1a")]
+transform = Transform3D(1.74949, 1.15588, 0.576742, -1.01213, 1.82987, -0.597152, -0.802676, 0.21197, 2.01002, 335.27, 110.419, 418.362)
+
+[node name="RockC2" parent="EntranceR" instance=ExtResource("3_nbn1a")]
+transform = Transform3D(4.31956, 5.88829, -1.29353, -3.67086, 1.30662, -6.31041, -4.78226, 4.31561, 3.67549, 345.465, 146.581, 480.747)
+
+[node name="TunnelMesh" parent="." instance=ExtResource("4_klbpo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 546.733, 112.043, 468.686)
+
+[node name="CrystalGroup1" type="Node3D" parent="."]
+transform = Transform3D(0.567756, 0.0788585, -0.00345403, 0.0729824, -0.514888, 0.241124, 0.0300693, -0.239266, -0.520024, 415.722, 122.719, 611.385)
+
+[node name="CrystalC" parent="CrystalGroup1" instance=ExtResource("5_bb2w0")]
+transform = Transform3D(0.990472, -0.134216, 0.0307963, 0.132893, 0.873058, -0.469155, 0.0360812, 0.468779, 0.882577, 0.050354, 1.72128, 4.54956)
+
+[node name="CrystalC3" parent="CrystalGroup1" instance=ExtResource("5_bb2w0")]
+transform = Transform3D(0.999999, 2.98023e-08, 0, 1.40402e-08, 0.999999, 1.19209e-07, 6.89635e-09, -1.49012e-07, 0.999999, 4.00897, 3.69431, -0.617554)
+
+[node name="CrystalC2" parent="CrystalGroup1" instance=ExtResource("5_bb2w0")]
+transform = Transform3D(-0.513116, -0.374576, 0.95887, -0.130632, 1.08641, 0.354495, -1.02111, 0.0492404, -0.527189, -1.70374, 4.03528, -0.568237)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="CrystalGroup1"]
+transform = Transform3D(1, 3.21278e-08, -1.96807e-08, -3.21278e-08, 1, 1.02499e-07, 1.96807e-08, -1.02499e-07, 1, 1.11737, 4.79865, 1.8949)
+light_color = Color(0.4, 0.760784, 1, 1)
+light_energy = 16.0
+omni_range = 83.054
+
+[node name="CrystalGroup2" type="Node3D" parent="."]
+transform = Transform3D(-0.536793, -0.0213862, -0.199931, -0.116106, 0.498308, 0.25843, 0.164163, 0.282504, -0.470976, 553.318, 103.571, 647.425)
+
+[node name="CrystalC" parent="CrystalGroup2" instance=ExtResource("5_bb2w0")]
+transform = Transform3D(0.704558, -0.579782, 0.130258, 0.554941, 0.56972, -0.465804, 0.212495, 0.434496, 0.784585, 0.815979, 1.24854, 2.5437)
+
+[node name="Rock3" parent="CrystalGroup2/CrystalC" index="0"]
+surface_material_override/0 = ExtResource("6_s6twx")
+
+[node name="CrystalC3" parent="CrystalGroup2" instance=ExtResource("5_bb2w0")]
+transform = Transform3D(0.127208, -0.0568556, -1.06836, -0.317718, 1.02534, -0.0923969, 1.02161, 0.32596, 0.104294, 4.00861, 3.69458, -0.617188)
+
+[node name="Rock3" parent="CrystalGroup2/CrystalC3" index="0"]
+surface_material_override/0 = ExtResource("6_s6twx")
+
+[node name="CrystalC2" parent="CrystalGroup2" instance=ExtResource("5_bb2w0")]
+transform = Transform3D(-0.642172, -0.213226, 0.774009, 0.484154, 0.687794, 0.591163, -0.640428, 0.733767, -0.329203, 7.28876, 1.71277, 4.52783)
+
+[node name="Rock3" parent="CrystalGroup2/CrystalC2" index="0"]
+surface_material_override/0 = ExtResource("6_s6twx")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="CrystalGroup2"]
+transform = Transform3D(1.74454, 2.98023e-08, -2.98023e-08, -5.60482e-08, 1.74454, 1.49012e-07, 3.43338e-08, -1.78814e-07, 1.74454, 1.11737, 4.79865, 1.8949)
+light_color = Color(0.396078, 0.333333, 0.878431, 1)
+light_energy = 16.0
+omni_range = 83.054
+
+[node name="CrystalGroup3" type="Node3D" parent="."]
+transform = Transform3D(-0.536793, -0.0213862, -0.199931, 0.0789312, -0.546626, -0.153451, -0.184932, -0.17123, 0.514837, 711.291, 124.136, 579.252)
+
+[node name="CrystalC" parent="CrystalGroup3" instance=ExtResource("5_bb2w0")]
+transform = Transform3D(0.898105, -0.188271, 0.0864646, 0.196692, 0.654036, -0.618921, 0.0650697, 0.621535, 0.677476, 0.589844, 2.22089, 3.04785)
+
+[node name="Rock3" parent="CrystalGroup3/CrystalC" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_0v0nf")
+
+[node name="CrystalC3" parent="CrystalGroup3" instance=ExtResource("5_bb2w0")]
+transform = Transform3D(0.15544, 0.0752453, -1.06348, -0.370935, 1.01139, 0.0173435, 0.999527, 0.363637, 0.171821, 4.00867, 3.69458, -0.617432)
+
+[node name="Rock3" parent="CrystalGroup3/CrystalC3" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_0v0nf")
+
+[node name="CrystalC2" parent="CrystalGroup3" instance=ExtResource("5_bb2w0")]
+transform = Transform3D(-0.573134, -0.100696, 0.847536, 0.285048, 0.939695, 0.304405, -0.804489, 0.404691, -0.495942, 7.2887, 1.71283, 4.52771)
+
+[node name="Rock3" parent="CrystalGroup3/CrystalC2" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_0v0nf")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="CrystalGroup3"]
+transform = Transform3D(1.74454, 2.98023e-08, -2.98023e-08, -5.60482e-08, 1.74454, 1.49012e-07, 3.43338e-08, -1.78814e-07, 1.74454, 1.11737, 4.79865, 1.8949)
+light_color = Color(0.388235, 0.101961, 0.2, 1)
+light_energy = 16.0
+omni_range = 83.054
+
+[editable path="CrystalGroup2/CrystalC"]
+[editable path="CrystalGroup2/CrystalC3"]
+[editable path="CrystalGroup2/CrystalC2"]
+[editable path="CrystalGroup3/CrystalC"]
+[editable path="CrystalGroup3/CrystalC3"]
+[editable path="CrystalGroup3/CrystalC2"]

@@ -1,0 +1,26 @@
+[gd_resource type="StandardMaterial3D" load_steps=3 format=3 uid="uid://fkhkir6t1hml"]
+
+[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_alb_ht.dds" id="1_ahc02"]
+[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_nrm_rgh.dds" id="2_glxvb"]
+
+[resource]
+transparency = 1
+albedo_color = Color(0.4, 1, 1, 0.647059)
+metallic_specular = 1.0
+roughness = 0.2
+roughness_texture = ExtResource("2_glxvb")
+roughness_texture_channel = 3
+emission_enabled = true
+emission = Color(0, 0.145098, 0.776471, 1)
+emission_energy_multiplier = 1.4
+normal_enabled = true
+normal_scale = 0.4
+normal_texture = ExtResource("2_glxvb")
+rim_enabled = true
+rim = 0.25
+clearcoat_roughness = 0.0
+ao_light_affect = 1.0
+ao_texture = ExtResource("1_ahc02")
+ao_texture_channel = 3
+refraction_enabled = true
+refraction_scale = -0.1

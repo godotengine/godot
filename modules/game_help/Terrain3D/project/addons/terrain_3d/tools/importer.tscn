@@ -1,0 +1,16 @@
+[gd_scene load_steps=5 format=3 uid="uid://blaieaqp413k7"]
+
+[ext_resource type="Script" path="res://addons/terrain_3d/tools/importer.gd" id="1_60b8f"]
+
+[sub_resource type="Terrain3DStorage" id="Terrain3DStorage_rmuvl"]
+
+[sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_cjpaa"]
+show_checkered = true
+
+[sub_resource type="Terrain3DTextureList" id="Terrain3DTextureList_yjkn1"]
+
+[node name="Importer" type="Terrain3D"]
+storage = SubResource("Terrain3DStorage_rmuvl")
+material = SubResource("Terrain3DMaterial_cjpaa")
+texture_list = SubResource("Terrain3DTextureList_yjkn1")
+script = ExtResource("1_60b8f")

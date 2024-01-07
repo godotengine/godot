@@ -1,0 +1,104 @@
+name: 🛠️ Build All
+on: [push, workflow_dispatch]
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.name }} ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        identifier: [linux, windows, macos, android-arm32, android-arm64]
+        target: [debug, release]
+        include:
+          - identifier: linux
+            platform: linux
+            name: 🐧 Linux
+            runner: ubuntu-20.04
+            arch: x86_64
+            
+          - identifier: windows
+            platform: windows
+            name: 🪟 Windows
+            runner: ubuntu-20.04
+            arch: x86_64
+
+          - identifier: macos
+            platform: macos
+            name: 🍎 macOS
+            runner: macos-latest
+            arch: universal
+
+          - identifier: android-arm64
+            platform: android
+            name: 🤖 Android Arm64
+            runner: ubuntu-20.04
+            arch: arm64
+
+          - identifier: android-arm32
+            platform: android
+            name: 🤖 Android Arm32
+            runner: ubuntu-20.04
+            arch: arm32
+
+    steps:
+      - name: Checkout Terrain3D
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Windows Dependencies
+        if: ${{ matrix.platform == 'windows' }}
+        uses: ./.github/actions/windows-deps
+        
+      - name: Setup Android Dependencies
+        if: ${{ matrix.platform == 'android' }}
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r23c
+          link-to-sdk: true
+
+      - name: Setup Base Dependencies
+        uses: ./.github/actions/base-deps
+
+      - name: Setup Build Cache
+        uses: ./.github/actions/build-cache
+        with:
+          cache-name: ${{ matrix.identifier }}-${{ matrix.target }}
+        continue-on-error: true
+
+      - name: Build Terrain3D
+        env:
+            SCONS_CACHE: "${{ github.workspace }}/.scons-cache/"
+            TARGET: 'template_${{ matrix.target }}'
+            ARCH: '${{ matrix.arch }}'
+        shell: sh
+        run: |
+            scons target=$TARGET platform='${{ matrix.platform }}' arch=$ARCH debug_symbols=no -j2
+
+      - name: Strip Libraries (Windows/Linux)
+        if: ${{ matrix.platform == 'windows' || matrix.platform == 'linux' }}
+        shell: sh
+        run: |
+          ls -l project/addons/terrain_3d/bin/
+          strip project/addons/terrain_3d/bin/libterrain.*
+          ls -l project/addons/terrain_3d/bin/
+
+      - name: Include Files
+        shell: sh
+        run: |
+          cp '${{ github.workspace }}/README.md' '${{ github.workspace }}/LICENSE.txt' ${{ github.workspace }}/project/addons/terrain_3d/
+
+      - name: Upload Package
+        uses: Wandalen/wretry.action@master
+        with:
+            action: actions/upload-artifact@v3
+            attempt_limit: 3
+            attempt_delay: 1000
+            with: |
+              name: ${{ github.event.repository.name }}
+              path: ${{ github.workspace }}/project/

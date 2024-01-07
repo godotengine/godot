@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" load_steps=3 format=3 uid="uid://dkvsksxpkl1vj"]
+
+[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_alb_ht.dds" id="1_j5sdo"]
+[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_nrm_rgh.dds" id="2_yyurh"]
+
+[resource]
+albedo_color = Color(0.960784, 0.937255, 0.882353, 1)
+albedo_texture = ExtResource("1_j5sdo")
+normal_enabled = true
+normal_texture = ExtResource("2_yyurh")
+uv1_scale = Vector3(0.04, 0.04, 0.04)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 6.06286
+texture_filter = 5

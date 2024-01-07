@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1"
+	 id="svg2" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" sodipodi:docname="icon_color.svg" inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="16px" height="16px"
+	 viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
+<defs>
+	
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect8712"></inkscape:path-effect>
+	
+		<inkscape:path-effect  scale_width="1" miter_limit="4" linejoin_type="spiro" sort_points="true" not_jump="true" offset_points="0.86174895,0.26516503" lpeversion="1" effect="powerstroke" is_visible="true" id="path-effect8643" end_linecap_type="round" start_linecap_type="round" interpolator_beta="0.75" interpolator_type="CentripetalCatmullRom">
+		</inkscape:path-effect>
+	
+		<inkscape:path-effect  step="1" helper_size="0" smooth_angles="0" threshold="0.0028332064" steps="1" lpeversion="1" effect="simplify" is_visible="true" id="path-effect8641" simplify_just_coalesce="false" simplify_individual_paths="false">
+		</inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect5927"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect5921"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect5163"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4431"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4425"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4419"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4413"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4407"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4401"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4395"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4389"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect2931"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect2925"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect3156"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4245"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect4977"></inkscape:path-effect>
+	<inkscape:path-effect  lpeversion="1" effect="spiro" is_visible="true" id="path-effect3156-0"></inkscape:path-effect>
+</defs>
+<sodipodi:namedview  inkscape:cy="9.4133584" inkscape:cx="7.5793003" inkscape:zoom="22.627418" showgrid="false" guidetolerance="10" gridtolerance="10" objecttolerance="10" borderopacity="1" bordercolor="#666666" pagecolor="#ffffff" id="namedview8" inkscape:deskcolor="#d1d1d1" inkscape:showpageshadow="0" inkscape:pagecheckerboard="0" inkscape:snap-to-guides="true" inkscape:snap-grids="false" inkscape:object-nodes="true" inkscape:snap-smooth-nodes="false" inkscape:object-paths="false" inkscape:current-layer="svg2" inkscape:window-maximized="1" inkscape:window-y="-8" inkscape:window-x="-8" inkscape:window-height="1009" inkscape:window-width="1920" inkscape:pageshadow="2" inkscape:pageopacity="0">
+	<inkscape:grid  type="xygrid" id="grid4140"></inkscape:grid>
+</sodipodi:namedview>
+<path id="path34808" fill="none" d="M-0.761-0.199h17.523v17.523H-0.761V-0.199z"/>
+<path id="path34810" sodipodi:nodetypes="cccsc" fill="#65C1ED" d="M3.354,4.646L8,0l4.646,4.646
+	c4.14,4.14,1.207,11.217-4.646,11.217S-0.786,8.786,3.354,4.646z"/>
+</svg>

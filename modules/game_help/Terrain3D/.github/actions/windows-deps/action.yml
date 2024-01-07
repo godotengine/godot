@@ -1,0 +1,12 @@
+name: Setup Windows Dependencies
+description: Setup mingw-64
+runs:
+  using: "composite"
+  steps:
+    - name: (Windows) Install mingw64
+      if: ${{ matrix.platform == 'windows' }}
+      shell: sh
+      run: |
+          sudo apt-get install mingw-w64
+          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix

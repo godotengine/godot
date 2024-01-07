@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest an idea for Terrain3D, or something else that isn't a technical issue
+body:
+
+- type: markdown
+  attributes:
+    value: |
+      Have you reviewed the [status of current and pending features](https://terrain3d.readthedocs.io/en/latest/docs/project_status.html)?
+
+- type: textarea
+  attributes:
+    label: Description
+    description: |
+      Please describe the feature you would like to see in Terrain3D, how it might work, and why it's helpful.
+      Include examples of other terrain systems, GDC talks, white papers, and links to blogs or code that will be good reference info.
+  validations:
+    required: true

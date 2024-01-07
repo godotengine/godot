@@ -1,0 +1,61 @@
+[gd_scene load_steps=12 format=3 uid="uid://dyt8c2xqmddo2"]
+
+[ext_resource type="Script" path="res://demo/src/DemoScene.gd" id="1_k7qca"]
+[ext_resource type="PackedScene" uid="uid://bb2lp50sjndus" path="res://demo/components/World.tscn" id="2_2yeq8"]
+[ext_resource type="PackedScene" uid="uid://dwnhqfjq7v1pq" path="res://demo/components/Borders.tscn" id="3_cw38j"]
+[ext_resource type="PackedScene" uid="uid://domhm87hbhbg1" path="res://demo/components/Player.tscn" id="3_ht63y"]
+[ext_resource type="PackedScene" uid="uid://d2jihfohphuue" path="res://demo/components/UI.tscn" id="4_gk532"]
+[ext_resource type="Terrain3DStorage" uid="uid://lalq1xnmbjdl" path="res://demo/data/terrain_storage.res" id="5_sl43a"]
+[ext_resource type="Terrain3DTextureList" uid="uid://dal3jhw6241qg" path="res://demo/data/texture_list.tres" id="7_mnexy"]
+
+[sub_resource type="Gradient" id="Gradient_vs32v"]
+offsets = PackedFloat32Array(0.3, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_7glc1"]
+noise_type = 2
+frequency = 0.03
+cellular_jitter = 3.0
+cellular_return_type = 0
+domain_warp_enabled = true
+domain_warp_type = 1
+domain_warp_amplitude = 50.0
+domain_warp_fractal_type = 2
+domain_warp_fractal_lacunarity = 1.5
+domain_warp_fractal_gain = 1.0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_pvx8q"]
+seamless = true
+color_ramp = SubResource("Gradient_vs32v")
+noise = SubResource("FastNoiseLite_7glc1")
+
+[sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_q2wt2"]
+_shader_parameters = {
+"blend_sharpness": 0.87,
+"height_blending": true,
+"macro_variation1": Color(1, 1, 1, 1),
+"macro_variation2": Color(1, 1, 1, 1),
+"noise1_scale": 0.05,
+"noise2_scale": 0.03,
+"noise3_scale": 0.01,
+"noise_texture": SubResource("NoiseTexture2D_pvx8q")
+}
+
+[node name="Demo" type="Node"]
+script = ExtResource("1_k7qca")
+
+[node name="UI" parent="." instance=ExtResource("4_gk532")]
+
+[node name="World" parent="." instance=ExtResource("2_2yeq8")]
+
+[node name="Borders" parent="." instance=ExtResource("3_cw38j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 512, 0, 512)
+
+[node name="Player" parent="." instance=ExtResource("3_ht63y")]
+transform = Transform3D(0.134125, 0, -0.990965, 0, 1, 0, 0.990965, 0, 0.134125, 568, 85, -1926)
+
+[node name="Terrain3D" type="Terrain3D" parent="."]
+storage = ExtResource("5_sl43a")
+material = SubResource("Terrain3DMaterial_q2wt2")
+texture_list = ExtResource("7_mnexy")
+collision_mask = 3

@@ -1,0 +1,4 @@
+docutils>=0.17
+myst-parser>=2.0.0
+sphinx_rtd_theme>=1.1.1
+sphinx-rtd-dark-mode

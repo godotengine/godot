@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Terrain3DTextureList" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_texture">
+			<return type="Terrain3DTexture" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_count">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="save">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="set_texture">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="texture" type="Terrain3DTexture" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="textures" type="Terrain3DTexture[]" setter="set_textures" getter="get_textures" default="[]">
+		</member>
+	</members>
+	<signals>
+		<signal name="textures_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="MAX_TEXTURES" value="32">
+		</constant>
+	</constants>
+</class>

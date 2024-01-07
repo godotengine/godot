@@ -1,0 +1,39 @@
+[remap]
+
+importer="scene"
+importer_version=1
+type="PackedScene"
+uid="uid://nta3sef6c2el"
+path="res://.godot/imported/RockB.glb-d0df90244ab14da61106a961f4faa07f.scn"
+
+[deps]
+
+source_file="res://demo/assets/models/RockB.glb"
+dest_files=["res://.godot/imported/RockB.glb-d0df90244ab14da61106a961f4faa07f.scn"]
+
+[params]
+
+nodes/root_type="StaticBody3D"
+nodes/root_name="Scene Root"
+nodes/apply_root_scale=true
+nodes/root_scale=1.0
+meshes/ensure_tangents=true
+meshes/generate_lods=true
+meshes/create_shadow_meshes=true
+meshes/light_baking=1
+meshes/lightmap_texel_size=0.2
+skins/use_named_skins=true
+animation/import=true
+animation/fps=30
+animation/trimming=false
+animation/remove_immutable_tracks=true
+import_script/path=""
+_subresources={
+"materials": {
+"@MATERIAL:0": {
+"use_external/enabled": true,
+"use_external/path": "res://demo/assets/materials/M_rock30.tres"
+}
+}
+}
+gltf/embedded_image_handling=1

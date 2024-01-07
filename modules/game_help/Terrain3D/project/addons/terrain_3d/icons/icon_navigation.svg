@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1"
+	 id="svg2" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" sodipodi:docname="icon_height_add.svg" inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="16px" height="16px"
+	 viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
+<g id="Compass_Rose">
+	<g>
+		<g>
+			<path fill="none" stroke="#FC7F7F" stroke-width="0.2239" d="M6.345,5.199c0.211-0.125,0.434-0.226,0.671-0.301
+				C7.326,4.8,7.658,4.747,8,4.747c0.604,0,1.171,0.164,1.655,0.452L7.966,0.34L6.345,5.199z"/>
+			<path fill="#FC7F7F" stroke="#FC7F7F" stroke-width="0.2239" d="M8,4.747c0.604,0,1.171,0.164,1.655,0.452L7.966,0.34v4.408
+				L8,4.747z"/>
+		</g>
+		<g>
+			<path fill="none" stroke="#FC7F7F" stroke-width="0.2239" d="M5.199,9.655C5.075,9.447,4.975,9.221,4.898,8.984
+				C4.801,8.674,4.748,8.342,4.748,8c0-0.605,0.164-1.171,0.452-1.656L0.34,8.034L5.199,9.655z"/>
+			<path fill="#FC7F7F" stroke="#FC7F7F" stroke-width="0.2239" d="M4.748,8c0-0.605,0.164-1.171,0.452-1.656L0.34,8.034h4.408
+				L4.748,8z"/>
+		</g>
+		<g>
+			<path fill="none" stroke="#FC7F7F" stroke-width="0.2239" d="M9.655,10.801c-0.208,0.125-0.435,0.226-0.671,0.3
+				c-0.311,0.099-0.642,0.15-0.984,0.15c-0.605,0-1.17-0.163-1.655-0.45l1.689,4.859L9.655,10.801z"/>
+			<path fill="#FC7F7F" stroke="#FC7F7F" stroke-width="0.2239" d="M8,11.251c-0.605,0-1.17-0.163-1.655-0.45l1.689,4.859v-4.409H8z
+				"/>
+		</g>
+		<g>
+			<path fill="none" stroke="#FC7F7F" stroke-width="0.2239" d="M10.801,6.345c0.125,0.21,0.226,0.435,0.3,0.67
+				C11.2,7.326,11.255,7.657,11.255,8c0,0.603-0.167,1.17-0.454,1.655l4.859-1.689L10.801,6.345z"/>
+			<path fill="#FC7F7F" stroke="#FC7F7F" stroke-width="0.2239" d="M11.255,8c0,0.603-0.167,1.17-0.454,1.655l4.859-1.689h-4.409
+				L11.255,8z"/>
+		</g>
+	</g>
+	<path fill="none" stroke="#FC7F7F" stroke-width="0.2239" d="M9.655,5.199c0.957,0.566,1.598,1.61,1.598,2.801
+		c0,1.795-1.457,3.25-3.253,3.25c-1.796,0-3.252-1.455-3.252-3.25c0-1.193,0.641-2.236,1.597-2.801
+		c0.211-0.125,0.434-0.226,0.671-0.301C7.326,4.8,7.658,4.747,8,4.747C8.604,4.747,9.171,4.911,9.655,5.199z"/>
+	<path display="none" fill="#FC7F7F" stroke="#FC7F7F" stroke-width="0.2239" d="M8.373,7.369C8.588,7.497,8.732,7.731,8.732,8
+		c0,0.405-0.328,0.732-0.732,0.732C7.596,8.731,7.268,8.404,7.268,8c0-0.268,0.144-0.503,0.36-0.63
+		c0.047-0.028,0.098-0.051,0.15-0.067C7.849,7.279,7.923,7.268,8,7.268C8.136,7.268,8.264,7.304,8.373,7.369z"/>
+</g>
+</svg>

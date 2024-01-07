@@ -32,6 +32,7 @@
 #define ARRAY_H
 
 #include "core/typedefs.h"
+#include "core/templates/vector.h"
 
 #include <climits>
 
@@ -128,6 +129,26 @@ public:
 
 	void make_read_only();
 	bool is_read_only() const;
+	template<class T>
+	Vector<T> get_vector()const
+	{
+		Vector<T> ret;
+		ret.resize(size());
+		for (int i = 0; i < size(); i++) {
+			ret.write[i] = get(i);
+		}
+		return ret;
+	}
+	template<class T>
+	static Array form_vector( const Vector<T> &p_vector)
+	{
+		Array array;
+		array.clear();
+		for (int i = 0; i < p_vector.size(); i++) {
+			array.push_back(p_vector[i]);
+		}
+		return array;
+	}
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);

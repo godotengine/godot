@@ -1,0 +1,59 @@
+name: Report a technical issue
+description: Report a potential bug or technical issue in Terrain3D
+body:
+
+- type: markdown
+  attributes:
+    value: |
+      Has your issue already been addressed in [Setting up textures](https://terrain3d.readthedocs.io/en/latest/docs/textures.html), [Troubleshooting](https://terrain3d.readthedocs.io/en/latest/docs/troubleshooting.html), or [Tips](https://terrain3d.readthedocs.io/en/latest/docs/tips.html)?
+
+- type: input
+  attributes:
+    label: Terrain3D version
+    description: >
+      Enter either the name of a release, or the commit string if using a development build.
+    placeholder: v0.9.0
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: System information
+    description: |
+      - Specify the version of Godot and your OS, GPU and rendering backend (Vulkan Forward+, Mobile, Compatibility/WebGL).
+      - Starting with Godot 4.1, you can copy this information to your clipboard by using *Help > Copy System Info* at the top of the editor window.
+    placeholder: Godot v4.1.3.stable - Windows 10/64 - Vulkan (Forward+) - dedicated NVIDIA GeForce RTX 3070 Laptop GPU (NVIDIA; 31.0.15.4633)
+  validations:
+    required: true
+
+- type: dropdown
+  id: demo
+  attributes:
+    label: Is the issue reproducable in the demo?
+    description: |
+      Try to isolate the problem. E.g. If you're having issues with a texture, put it in the demo and see if it causes the same issue.
+    options:
+      - ''
+      - 'Yes'
+      - 'No'
+      - 'Not applicable'
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Issue description
+    description: |
+      Briefly describe the issue. What doesn't work, what are you expecting, and what have you done to troubleshooting it?
+      You can paste or drag in screenshots or videos. Format code with <code>```</code> before and after on their own lines.
+  validations:
+    required: true
+    
+- type: textarea
+  attributes:
+    label: Logs
+    description: |
+      Terrain3D has [extensive logging](https://terrain3d.readthedocs.io/en/latest/docs/troubleshooting.html#debug-logs). Enable it and attach a text file, or copy the logs here. Format logs with <code>```</code> before and after on their own lines.
+  validations:
+    required: false
+    
