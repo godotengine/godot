@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "audio_stream_player_3d.h"
+#include "audio_stream_player_3d.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "scene/3d/area_3d.h"
@@ -571,7 +572,7 @@ void AudioStreamPlayer3D::set_autoplay(bool p_enable) {
 	internal->autoplay = p_enable;
 }
 
-bool AudioStreamPlayer3D::is_autoplay_enabled() {
+bool AudioStreamPlayer3D::is_autoplay_enabled() const {
 	return internal->autoplay;
 }
 
