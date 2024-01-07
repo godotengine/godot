@@ -803,20 +803,23 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 	ctx.start();
 
 	for (int i = 0; i < p_file.size(); i++) {
-		Ref<FileAccess> f = FileAccess::open(p_file[i], READ);
-		ERR_CONTINUE(f.is_null());
-
-		unsigned char step[32768];
-
-		while (true) {
-			uint64_t br = f->get_buffer(step, 32768);
-			if (br > 0) {
-				ctx.update(step, br);
-			}
-			if (br < 4096) {
-				break;
-			}
-		}
+	    Ref<FileAccess> f = FileAccess::open(p_file[i], READ);
+	    if (f.is_null()) {
+	        ERR_FAIL_V_MSG(f.is_null(), "Error opening file: " + p_file[i] + ".");
+	        continue;
+	    }
+	
+	    unsigned char step[32768];
+	
+	    while (true) {
+	        uint64_t br = f->get_buffer(step, 32768);
+	        if (br > 0) {
+	            ctx.update(step, br);
+	        }
+	        if (br < 4096) {
+	            break;
+	        }
+	    }
 	}
 
 	unsigned char hash[16];
