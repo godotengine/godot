@@ -867,11 +867,11 @@ bool DisplayServerWayland::window_is_focused(WindowID p_window_id) const {
 }
 
 bool DisplayServerWayland::window_can_draw(DisplayServer::WindowID p_window_id) const {
-	return frame;
+	return !suspended;
 }
 
 bool DisplayServerWayland::can_any_window_draw() const {
-	return frame;
+	return !suspended;
 }
 
 void DisplayServerWayland::window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id) {
@@ -1143,7 +1143,32 @@ void DisplayServerWayland::process_events() {
 
 	wayland_thread.keyboard_echo_keys();
 
-	frame = wayland_thread.get_reset_frame();
+	if (!suspended) {
+		if (emulate_vsync) {
+			// Due to various reasons, we manually handle display synchronization by
+			// waiting for a frame event (request to draw) or, if available, the actual
+			// window's suspend status. When a window is suspended, we can avoid drawing
+			// altogether, either because the compositor told us that we don't need to or
+			// because the pace of the frame events became unreliable.
+			bool frame = wayland_thread.wait_frame_suspend_ms(1000);
+			if (!frame) {
+				suspended = true;
+			}
+		} else {
+			if (wayland_thread.is_suspended()) {
+				suspended = true;
+			}
+		}
+
+		if (suspended) {
+			DEBUG_LOG_WAYLAND("Window suspended.");
+		}
+	} else {
+		if (wayland_thread.get_reset_frame()) {
+			// At last, a sign of life! We're no longer suspended.
+			suspended = false;
+		}
+	}
 
 	wayland_thread.mutex.unlock();
 
