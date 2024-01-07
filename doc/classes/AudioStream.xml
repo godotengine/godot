@@ -16,31 +16,39 @@
 		<method name="_get_beat_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Overridable method. Should return the total number of beats of this audio stream. Used by the engine to determine the position of every beat.
+				Ideally, the returned value should be based off the stream's sample rate ([member AudioStreamWAV.mix_rate], for example).
 			</description>
 		</method>
 		<method name="_get_bpm" qualifiers="virtual const">
 			<return type="float" />
 			<description>
+				Overridable method. Should return the tempo of this audio stream, in beats per minute (BPM). Used by the engine to determine the position of every beat.
+				Ideally, the returned value should be based off the stream's sample rate ([member AudioStreamWAV.mix_rate], for example).
 			</description>
 		</method>
 		<method name="_get_length" qualifiers="virtual const">
 			<return type="float" />
 			<description>
+				Override this method to customize the returned value of [method get_length]. Should return the length of this audio stream, in seconds.
 			</description>
 		</method>
 		<method name="_get_stream_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
+				Override this method to customize the name assigned to this audio stream. Unused by the engine.
 			</description>
 		</method>
 		<method name="_instantiate_playback" qualifiers="virtual const">
 			<return type="AudioStreamPlayback" />
 			<description>
+				Override this method to customize the returned value of [method instantiate_playback]. Should returned a new [AudioStreamPlayback] created when the stream is played (such as by an [AudioStreamPlayer])..
 			</description>
 		</method>
 		<method name="_is_monophonic" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
+				Override this method to customize the returned value of [method is_monophonic]. Should return [code]true[/code] if this audio stream only supports one channel.
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
@@ -52,13 +60,13 @@
 		<method name="instantiate_playback">
 			<return type="AudioStreamPlayback" />
 			<description>
-				Returns an AudioStreamPlayback. Useful for when you want to extend [method _instantiate_playback] but call [method instantiate_playback] from an internally held AudioStream subresource. An example of this can be found in the source files for [code]AudioStreamRandomPitch::instantiate_playback[/code].
+				Returns a newly created [AudioStreamPlayback] intended to play this audio stream. Useful for when you want to extend [method _instantiate_playback] but call [method instantiate_playback] from an internally held AudioStream subresource. An example of this can be found in the source code for [code]AudioStreamRandomPitch::instantiate_playback[/code].
 			</description>
 		</method>
 		<method name="is_monophonic" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns true if this audio stream only supports monophonic playback, or false if the audio stream supports polyphony.
+				Returns [code]true[/code] if this audio stream only supports one channel ([i]monophony[/i]), or [code]false[/code] if the audio stream supports two or more channels ([i]polyphony[/i]).
 			</description>
 		</method>
 	</methods>
