@@ -40,7 +40,6 @@ class CompressedTexture2D : public Texture2D {
 
 public:
 	enum DataFormat {
-		DATA_FORMAT_UNDEFINED,
 		DATA_FORMAT_IMAGE,
 		DATA_FORMAT_PNG,
 		DATA_FORMAT_WEBP,
