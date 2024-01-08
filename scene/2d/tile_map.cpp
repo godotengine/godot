@@ -1945,7 +1945,7 @@ void TileMap::_update_notify_local_transform() {
 	set_notify_local_transform(notify);
 }
 
-void TileMap::_on_process_mode_changed(const String &p_mode) {
+void TileMap::_on_process_mode_changed(ProcessMode p_mode) {
 	update_internals();
 }
 
