@@ -582,6 +582,8 @@ void Node::set_process_mode(ProcessMode p_mode) {
 
 	_propagate_process_owner(data.process_owner, pause_notification, enabled_notification);
 
+	emit_signal(SNAME("_process_mode_changed"), p_mode);
+
 #ifdef TOOLS_ENABLED
 	// This is required for the editor to update the visibility of disabled nodes
 	// It's very expensive during runtime to change, so editor-only
@@ -3533,6 +3535,8 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("child_order_changed"));
 	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 	ADD_SIGNAL(MethodInfo("editor_description_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+
+	ADD_SIGNAL(MethodInfo("_process_mode_changed"), PropertyInfo(Variant::STRING, "mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "String"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
