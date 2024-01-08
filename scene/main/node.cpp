@@ -3065,7 +3065,7 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 
 void Node::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	String pf = p_function;
-	if (p_idx == 0 && (pf == "has_node" || pf == "get_node")) {
+	if (p_idx == 0 && (pf == "has_node" || pf == "get_node" || pf == "get_node_or_null")) {
 		_add_nodes_to_options(this, this, r_options);
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
 		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
