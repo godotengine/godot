@@ -74,7 +74,7 @@ class ShortcutBin : public Node {
 };
 
 Rect2 WindowWrapper::_get_default_window_rect() const {
-	// Assume that the control rect is the desidered one for the window.
+	// Assume that the control rect is the desired one for the window.
 	return wrapped_control->get_screen_rect();
 }
 
