@@ -91,6 +91,7 @@ private:
 	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
+	bool tab_style_v_flip = false;
 
 	bool select_with_rmb = false;
 
@@ -209,6 +210,8 @@ public:
 
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
+
+	void set_tab_style_v_flip(bool p_tab_style_v_flip);
 
 	void move_tab(int p_from, int p_to);
 
