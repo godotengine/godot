@@ -234,8 +234,6 @@ public:
 	// Configuration warnings.
 	PackedStringArray get_configuration_warnings() const override;
 
-	void _on_process_mode_changed(ProcessMode p_mode);
-
 	TileMap();
 	~TileMap();
 };
