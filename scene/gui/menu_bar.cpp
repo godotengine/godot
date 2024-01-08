@@ -102,7 +102,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT)) {
+		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT)) {
 			int index = _get_index_at_point(mb->get_position());
 			if (index >= 0) {
 				_open_popup(index);
