@@ -5843,7 +5843,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 	Vector<String> error_files;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Create Node"));
+	undo_redo->create_action_for_history(TTR("Create Node"), EditorNode::get_editor_data().get_current_edited_scene_history_id());
 
 	for (int i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];
