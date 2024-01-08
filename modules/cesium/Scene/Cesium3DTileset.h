@@ -8,6 +8,7 @@
 #include "scene/3d/node_3d.h"
 #include "core/variant/variant.h"
 #include "scene/main/http_request.h"
+#include "core/io/json.h"
 
 namespace Cesium {
 
@@ -23,6 +24,8 @@ namespace Cesium {
 
     private:
         TilesetOptions _options;
+
+        void _update(double delta);
 
         void _on_request_completed(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data);
 

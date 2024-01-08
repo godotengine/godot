@@ -51,14 +51,18 @@ namespace Cesium {
             response_json.parse_utf8((const char *)r, p_data.size());
         }
 
-        WARN_PRINT(response_json);
-        JSON json;
-        Error err = json.parse(response_json);
+        JSON tilesetJson;
+        Error err = tilesetJson.parse(response_json);
         if (err != OK) {
             WARN_PRINT("parse error: " + String::num(err));
             return;
         }
 
+        Dictionary tilesetJsonData = tilesetJson.get_data();
+
+    }
+
+    void Cesium3DTileset::_update(double delta) {
 
     }
 
@@ -72,6 +76,10 @@ namespace Cesium {
 
     void Cesium3DTileset::_notification(int p_what) {
         switch (p_what) {
+            case NOTIFICATION_PROCESS: {
+                _update(get_process_delta_time());
+                break;
+            }
             case NOTIFICATION_ENTER_TREE: {
                 this->add_child(request);
                 break;
