@@ -5049,7 +5049,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 		AnimationPlayer *animation_player = p_state->animation_players[player_i];
 		List<StringName> animations;
 		animation_player->get_animation_list(&animations);
-		for (StringName animation_name : animations) {
+		for (const StringName &animation_name : animations) {
 			_convert_animation(p_state, animation_player, animation_name);
 		}
 	}

@@ -507,7 +507,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	}
 }
 
-void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, RBSet<TileSelection> p_tiles) {
+void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles) {
 	ERR_FAIL_COND(!p_tile_set_atlas_source.is_valid());
 	ERR_FAIL_COND(p_tiles.is_empty());
 	for (const TileSelection &E : p_tiles) {

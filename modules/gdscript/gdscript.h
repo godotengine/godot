@@ -540,7 +540,7 @@ public:
 	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
 #ifndef DISABLE_DEPRECATED

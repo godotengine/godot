@@ -104,7 +104,7 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 	return scr;
 }
 
-Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(StringName p_object) {
+Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(const StringName &p_object) {
 	Vector<ScriptLanguage::ScriptTemplate> templates;
 #ifdef TOOLS_ENABLED
 	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
@@ -537,7 +537,7 @@ struct GDScriptCompletionIdentifier {
 // appears. For example, if you are completing code in a class that inherits Node2D, a property found on Node2D
 // will have a "better" (lower) location "score" than a property that is found on CanvasItem.
 
-static int _get_property_location(StringName p_class, StringName p_property) {
+static int _get_property_location(const StringName &p_class, const StringName &p_property) {
 	if (!ClassDB::has_property(p_class, p_property)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
@@ -552,7 +552,7 @@ static int _get_property_location(StringName p_class, StringName p_property) {
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
-static int _get_constant_location(StringName p_class, StringName p_constant) {
+static int _get_constant_location(const StringName &p_class, const StringName &p_constant) {
 	if (!ClassDB::has_integer_constant(p_class, p_constant)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
@@ -567,7 +567,7 @@ static int _get_constant_location(StringName p_class, StringName p_constant) {
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
-static int _get_signal_location(StringName p_class, StringName p_signal) {
+static int _get_signal_location(const StringName &p_class, const StringName &p_signal) {
 	if (!ClassDB::has_signal(p_class, p_signal)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
@@ -582,7 +582,7 @@ static int _get_signal_location(StringName p_class, StringName p_signal) {
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
-static int _get_method_location(StringName p_class, StringName p_method) {
+static int _get_method_location(const StringName &p_class, const StringName &p_method) {
 	if (!ClassDB::has_method(p_class, p_method)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
@@ -597,7 +597,7 @@ static int _get_method_location(StringName p_class, StringName p_method) {
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
-static int _get_enum_constant_location(StringName p_class, StringName p_enum_constant) {
+static int _get_enum_constant_location(const StringName &p_class, const StringName &p_enum_constant) {
 	if (!ClassDB::get_integer_constant_enum(p_class, p_enum_constant)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}

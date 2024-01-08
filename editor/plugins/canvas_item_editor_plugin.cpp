@@ -345,7 +345,7 @@ void CanvasItemEditor::_snap_other_nodes(
 	}
 }
 
-Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsigned int p_forced_modes, const CanvasItem *p_self_canvas_item, List<CanvasItem *> p_other_nodes_exceptions) {
+Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsigned int p_forced_modes, const CanvasItem *p_self_canvas_item, const List<CanvasItem *> &p_other_nodes_exceptions) {
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
@@ -535,7 +535,7 @@ void CanvasItemEditor::_keying_changed() {
 	}
 }
 
-Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_list) {
+Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(const List<CanvasItem *> &p_list) {
 	ERR_FAIL_COND_V(p_list.is_empty(), Rect2());
 
 	// Handles the first element
@@ -830,7 +830,7 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 	return output;
 }
 
-void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones) {
+void CanvasItemEditor::_save_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool save_bones) {
 	original_transform = Transform2D();
 	bool transform_stored = false;
 
@@ -853,14 +853,14 @@ void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items
 	}
 }
 
-void CanvasItemEditor::_restore_canvas_item_state(List<CanvasItem *> p_canvas_items, bool restore_bones) {
+void CanvasItemEditor::_restore_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool restore_bones) {
 	for (CanvasItem *ci : drag_selection) {
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 		ci->_edit_set_state(se->undo_state);
 	}
 }
 
-void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_items, String action_name, bool commit_bones) {
+void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, String action_name, bool commit_bones) {
 	List<CanvasItem *> modified_canvas_items;
 	for (CanvasItem *ci : p_canvas_items) {
 		Dictionary old_state = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci)->undo_state;

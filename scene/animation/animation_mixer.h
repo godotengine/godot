@@ -447,7 +447,7 @@ class AnimatedValuesBackup : public RefCounted {
 	HashMap<NodePath, AnimationMixer::TrackCache *> data;
 
 public:
-	void set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> p_data);
+	void set_data(const HashMap<NodePath, AnimationMixer::TrackCache *> &p_data);
 	HashMap<NodePath, AnimationMixer::TrackCache *> get_data() const;
 	void clear_data();
 

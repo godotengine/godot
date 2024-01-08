@@ -330,7 +330,7 @@ RID RenderSceneBuffersRD::create_texture_from_format(const StringName &p_context
 	return named_texture.texture;
 }
 
-RID RenderSceneBuffersRD::_create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName p_view_name, const Ref<RDTextureView> p_view) {
+RID RenderSceneBuffersRD::_create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName &p_view_name, const Ref<RDTextureView> p_view) {
 	RD::TextureView texture_view;
 	if (p_view.is_valid()) { // only use when supplied, else default.
 		texture_view = p_view->base;
@@ -339,7 +339,7 @@ RID RenderSceneBuffersRD::_create_texture_view(const StringName &p_context, cons
 	return create_texture_view(p_context, p_texture_name, p_view_name, texture_view);
 }
 
-RID RenderSceneBuffersRD::create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName p_view_name, RD::TextureView p_view) {
+RID RenderSceneBuffersRD::create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName &p_view_name, RD::TextureView p_view) {
 	NTKey view_key(p_context, p_view_name);
 
 	// check if this is a known texture
