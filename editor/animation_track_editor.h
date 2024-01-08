@@ -131,6 +131,11 @@ protected:
 class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
 
+	friend class AnimationBezierTrackEdit;
+	friend class AnimationTrackEditor;
+
+	static constexpr float SCROLL_ZOOM_FACTOR = 1.02f; // Zoom factor per mouse scroll in the animation editor. The closer to 1.0, the finer the control.
+
 	Ref<Animation> animation;
 	bool read_only = false;
 
@@ -167,6 +172,11 @@ class AnimationTimelineEdit : public Range {
 	bool dragging_hsize = false;
 	float dragging_hsize_from = 0.0f;
 	float dragging_hsize_at = 0.0f;
+	double last_zoom_scale = 1.0;
+	double hscroll_on_zoom_buffer = -1.0;
+
+	Vector2 zoom_scroll_origin;
+	bool zoom_callback_occured = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _track_added(int p_track);

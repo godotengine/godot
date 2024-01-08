@@ -266,7 +266,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 
 	while (!next.is_empty()) {
 		if (dir->current_is_dir()) {
-			if (next == "." || next == "..") {
+			if (next == "." || next == ".." || next == "completion" || next == "lsp") {
 				next = dir->get_next();
 				continue;
 			}

@@ -5467,9 +5467,13 @@ void RenderingDevice::swap_buffers() {
 	context->postpare_buffers(frames[frame].draw_command_buffer);
 	_finalize_command_bufers();
 
-	screen_prepared = false;
 	// Swap buffers.
-	context->swap_buffers();
+	if (!screen_prepared) {
+		context->flush(true, true, false);
+	} else {
+		screen_prepared = false;
+		context->swap_buffers();
+	}
 
 	frame = (frame + 1) % frame_count;
 

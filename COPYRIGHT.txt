@@ -483,7 +483,7 @@ License: Expat
 
 Files: ./thirdparty/thorvg/
 Comment: ThorVG
-Copyright: 2020-2023, The ThorVG Project
+Copyright: 2020-2024, The ThorVG Project
 License: Expat
 
 Files: ./thirdparty/tinyexr/

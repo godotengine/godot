@@ -3,6 +3,7 @@
 
 mode_default = #define MODE_SIMPLE_COPY
 mode_copy_section = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY
+mode_copy_section_source = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define MODE_COPY_FROM
 mode_gaussian_blur = #define MODE_GAUSSIAN_BLUR
 mode_mipmap = #define MODE_MIPMAP
 mode_simple_color = #define MODE_SIMPLE_COLOR \n#define USE_COPY_SECTION
@@ -21,7 +22,7 @@ out vec2 uv_interp;
 // Defined in 0-1 coords.
 uniform highp vec4 copy_section;
 #endif
-#ifdef MODE_GAUSSIAN_BLUR
+#if defined(MODE_GAUSSIAN_BLUR) || defined(MODE_COPY_FROM)
 uniform highp vec4 source_section;
 #endif
 
@@ -32,7 +33,7 @@ void main() {
 #if defined(USE_COPY_SECTION) || defined(MODE_GAUSSIAN_BLUR)
 	gl_Position.xy = (copy_section.xy + uv_interp.xy * copy_section.zw) * 2.0 - 1.0;
 #endif
-#ifdef MODE_GAUSSIAN_BLUR
+#if defined(MODE_GAUSSIAN_BLUR) || defined(MODE_COPY_FROM)
 	uv_interp = source_section.xy + uv_interp * source_section.zw;
 #endif
 }

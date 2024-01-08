@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "root_motion_view.h"
 
 #include "scene/animation/animation_tree.h"
@@ -203,3 +205,5 @@ RootMotionView::RootMotionView() {
 RootMotionView::~RootMotionView() {
 	set_base(RID());
 }
+
+#endif // _3D_DISABLED

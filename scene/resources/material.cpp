@@ -1947,7 +1947,7 @@ Ref<Texture2D> BaseMaterial3D::get_texture(TextureParam p_param) const {
 	return textures[p_param];
 }
 
-Ref<Texture2D> BaseMaterial3D::get_texture_by_name(StringName p_name) const {
+Ref<Texture2D> BaseMaterial3D::get_texture_by_name(const StringName &p_name) const {
 	for (int i = 0; i < (int)BaseMaterial3D::TEXTURE_MAX; i++) {
 		TextureParam param = TextureParam(i);
 		if (p_name == shader_names->texture_names[param]) {

@@ -1284,7 +1284,7 @@ ProjectExportDialog::ProjectExportDialog() {
 		ClassDB::get_inheriters_from_class("Resource", &resource_names);
 
 		PackedStringArray strippable;
-		for (StringName resource_name : resource_names) {
+		for (const StringName &resource_name : resource_names) {
 			if (ClassDB::has_method(resource_name, "create_placeholder", true)) {
 				strippable.push_back(resource_name);
 			}

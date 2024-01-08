@@ -435,17 +435,17 @@ public:
 	bool can_instantiate(const StringName &p_class) const;
 	Variant instantiate(const StringName &p_class) const;
 
-	bool class_has_signal(StringName p_class, StringName p_signal) const;
-	Dictionary class_get_signal(StringName p_class, StringName p_signal) const;
-	TypedArray<Dictionary> class_get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
+	bool class_has_signal(const StringName &p_class, const StringName &p_signal) const;
+	Dictionary class_get_signal(const StringName &p_class, const StringName &p_signal) const;
+	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> class_get_property_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
-	bool class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
+	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> class_get_method_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool class_has_integer_constant(const StringName &p_class, const StringName &p_name) const;
@@ -456,7 +456,7 @@ public:
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
-	bool is_class_enabled(StringName p_class) const;
+	bool is_class_enabled(const StringName &p_class) const;
 
 	ClassDB() {}
 	~ClassDB() {}

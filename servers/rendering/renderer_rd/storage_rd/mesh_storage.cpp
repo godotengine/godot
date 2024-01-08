@@ -657,7 +657,8 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
-	if (!skeleton || skeleton->size == 0 || mesh->skeleton_aabb_version == skeleton->version) {
+	// A mesh can be shared by multiple skeletons and we need to avoid using the AABB from a different skeleton.
+	if (!skeleton || skeleton->size == 0 || (mesh->skeleton_aabb_version == skeleton->version && mesh->skeleton_aabb_rid == p_skeleton)) {
 		return mesh->aabb;
 	}
 
@@ -763,6 +764,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 	mesh->aabb = aabb;
 
 	mesh->skeleton_aabb_version = skeleton->version;
+	mesh->skeleton_aabb_rid = p_skeleton;
 	return aabb;
 }
 
