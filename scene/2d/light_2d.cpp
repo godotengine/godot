@@ -425,6 +425,17 @@ real_t PointLight2D::get_texture_scale() const {
 	return _scale;
 }
 
+#ifndef DISABLE_DEPRECATED
+bool PointLight2D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "mode" && p_value.is_num()) { // Compatibility with Godot 3.x.
+		set_blend_mode((BlendMode)(int)p_value);
+		return true;
+	}
+
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
 void PointLight2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &PointLight2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &PointLight2D::get_texture);
