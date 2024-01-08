@@ -661,6 +661,19 @@ namespace Godot.Bridge
 
                             methodInfo.Add("name", method.Name);
 
+                            var returnVal = new Collections.Dictionary()
+                            {
+                                { "name", method.ReturnVal.Name },
+                                { "type", (int)method.ReturnVal.Type },
+                                { "usage", (int)method.ReturnVal.Usage }
+                            };
+                            if (method.ReturnVal.ClassName != null)
+                            {
+                                returnVal["class_name"] = method.ReturnVal.ClassName;
+                            }
+
+                            methodInfo.Add("return_val", returnVal);
+
                             var methodParams = new Collections.Array();
 
                             if (method.Arguments != null)

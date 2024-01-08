@@ -2346,6 +2346,8 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 		MethodInfo mi;
 		mi.name = name;
 
+		mi.return_val = PropertyInfo::from_dict(method_info_dict["return_val"]);
+
 		Array params = method_info_dict["params"];
 
 		for (int j = 0; j < params.size(); j++) {
