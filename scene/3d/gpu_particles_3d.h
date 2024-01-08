@@ -95,6 +95,7 @@ private:
 	double emission_time = 0.0;
 	double active_time = 0.0;
 	float interp_to_end_factor = 0;
+	Vector3 previous_velocity;
 	Vector3 previous_position;
 
 	void _attach_sub_emitter();

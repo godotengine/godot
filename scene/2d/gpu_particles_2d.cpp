@@ -712,12 +712,15 @@ void GPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			RS::get_singleton()->particles_set_emitter_velocity(particles,
-					Vector3((get_global_position() - previous_position).x,
-							(get_global_position() - previous_position).y,
-							0.0) /
-							get_process_delta_time());
+			const Vector3 velocity = Vector3((get_global_position() - previous_position).x, (get_global_position() - previous_position).y, 0.0) /
+					get_process_delta_time();
+
+			if (velocity != previous_velocity) {
+				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
+				previous_velocity = velocity;
+			}
 			previous_position = get_global_position();
+
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
