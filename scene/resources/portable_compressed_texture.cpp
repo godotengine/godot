@@ -75,7 +75,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 				uint32_t mipsize = decode_uint32(data);
 				data += 4;
 				data_size -= 4;
-				ERR_FAIL_COND(mipsize < data_size);
+				ERR_FAIL_COND(mipsize > data_size);
 				Ref<Image> img = loader_func == nullptr
 						? memnew(Image(data, data_size))
 						: Ref<Image>(loader_func(data, data_size));
@@ -89,7 +89,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 				data_size -= mipsize;
 			}
 
-			image = Ref<Image>(memnew(Image(size.width, size.height, mipmap_count > 1, format, image_data)));
+			image = Ref<Image>(memnew(Image(size.width, size.height, mipmaps, format, image_data)));
 
 		} break;
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
@@ -100,7 +100,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 		case COMPRESSION_MODE_S3TC:
 		case COMPRESSION_MODE_ETC2:
 		case COMPRESSION_MODE_BPTC: {
-			image = Ref<Image>(memnew(Image(size.width, size.height, mipmap_count > 1, format, p_data.slice(20))));
+			image = Ref<Image>(memnew(Image(size.width, size.height, mipmaps, format, p_data.slice(20))));
 		} break;
 	}
 	ERR_FAIL_COND(image.is_null());
