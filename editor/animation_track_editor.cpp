@@ -1247,6 +1247,58 @@ void AnimationMultiTrackKeyEdit::set_use_fps(bool p_enable) {
 }
 
 void AnimationTimelineEdit::_zoom_changed(double) {
+	double zoom_pivot = 0; // Point on timeline to stay fixed.
+	double zoom_pivot_delta = 0; // Delta seconds from left-most point on timeline to zoom pivot.
+
+	int timeline_width_pixels = get_size().width - get_buttons_width() - get_name_limit();
+	double timeline_width_seconds = timeline_width_pixels / last_zoom_scale; // Length (in seconds) of visible part of timeline before zoom.
+	double updated_timeline_width_seconds = timeline_width_pixels / get_zoom_scale(); // Length after zoom.
+	double updated_timeline_half_width = updated_timeline_width_seconds / 2.0;
+	bool zooming = updated_timeline_width_seconds < timeline_width_seconds;
+
+	double timeline_left = get_value();
+	double timeline_right = timeline_left + timeline_width_seconds;
+	double timeline_center = timeline_left + timeline_width_seconds / 2.0;
+
+	if (zoom_callback_occured) { // Zooming with scroll wheel will focus on the position of the mouse.
+		double zoom_scroll_origin_norm = (zoom_scroll_origin.x - get_name_limit()) / timeline_width_pixels;
+		zoom_scroll_origin_norm = MAX(zoom_scroll_origin_norm, 0);
+		zoom_pivot = timeline_left + timeline_width_seconds * zoom_scroll_origin_norm;
+		zoom_pivot_delta = updated_timeline_width_seconds * zoom_scroll_origin_norm;
+		zoom_callback_occured = false;
+	} else { // Zooming with slider will depend on the current play position.
+		// If the play position is not in range, or exactly in the center, zoom in on the center.
+		if (get_play_position() < timeline_left || get_play_position() > timeline_left + timeline_width_seconds || get_play_position() == timeline_center) {
+			zoom_pivot = timeline_center;
+			zoom_pivot_delta = updated_timeline_half_width;
+		}
+		// Zoom from right if play position is right of center,
+		// and shrink from right if play position is left of center.
+		else if ((get_play_position() > timeline_center) == zooming) {
+			// If play position crosses to other side of center, center it.
+			bool center_passed = (get_play_position() < timeline_right - updated_timeline_half_width) == zooming;
+			zoom_pivot = center_passed ? get_play_position() : timeline_right;
+			double center_offset = CMP_EPSILON * (zooming ? 1 : -1); // Small offset to prevent crossover.
+			zoom_pivot_delta = center_passed ? updated_timeline_half_width + center_offset : updated_timeline_width_seconds;
+		}
+		// Zoom from left if play position is left of center,
+		// and shrink from left if play position is right of center.
+		else if ((get_play_position() <= timeline_center) == zooming) {
+			// If play position crosses to other side of center, center it.
+			bool center_passed = (get_play_position() > timeline_left + updated_timeline_half_width) == zooming;
+			zoom_pivot = center_passed ? get_play_position() : timeline_left;
+			double center_offset = CMP_EPSILON * (zooming ? -1 : 1); // Small offset to prevent crossover.
+			zoom_pivot_delta = center_passed ? updated_timeline_half_width + center_offset : 0;
+		}
+	}
+
+	double hscroll_pos = zoom_pivot - zoom_pivot_delta;
+	hscroll_pos = CLAMP(hscroll_pos, hscroll->get_min(), hscroll->get_max());
+
+	hscroll->set_value(hscroll_pos);
+	hscroll_on_zoom_buffer = hscroll_pos; // In case of page update.
+	last_zoom_scale = get_zoom_scale();
+
 	queue_redraw();
 	play_position->queue_redraw();
 	emit_signal(SNAME("zoom_changed"));
@@ -1427,6 +1479,11 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			}
 
 			set_page(zoomw / scale);
+
+			if (hscroll->is_visible() && hscroll_on_zoom_buffer >= 0) {
+				hscroll->set_value(hscroll_on_zoom_buffer);
+				hscroll_on_zoom_buffer = -1.0;
+			}
 
 			int end_px = (l - get_value()) * scale;
 			int begin_px = -get_value() * scale;
@@ -1733,7 +1790,9 @@ void AnimationTimelineEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> 
 
 void AnimationTimelineEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
 	double current_zoom_value = get_zoom()->get_value();
-	get_zoom()->set_value(MAX(0.01, current_zoom_value * p_zoom_factor));
+	zoom_scroll_origin = p_origin;
+	zoom_callback_occured = true;
+	get_zoom()->set_value(MAX(0.01, current_zoom_value - (1.0 - p_zoom_factor)));
 }
 
 void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
@@ -1809,6 +1868,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	len_hb->hide();
 
 	panner.instantiate();
+	panner->set_scroll_zoom_factor(SCROLL_ZOOM_FACTOR);
 	panner->set_callbacks(callable_mp(this, &AnimationTimelineEdit::_pan_callback), callable_mp(this, &AnimationTimelineEdit::_zoom_callback));
 	panner->set_pan_axis(ViewPanner::PAN_AXIS_HORIZONTAL);
 
@@ -5493,8 +5553,7 @@ void AnimationTrackEditor::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p
 }
 
 void AnimationTrackEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
-	double current_zoom_value = timeline->get_zoom()->get_value();
-	timeline->get_zoom()->set_value(MAX(0.01, current_zoom_value * p_zoom_factor));
+	timeline->_zoom_callback(p_zoom_factor, p_origin, p_event);
 }
 
 void AnimationTrackEditor::_cancel_bezier_edit() {
@@ -6530,6 +6589,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
 
 	panner.instantiate();
+	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR);
 	panner->set_callbacks(callable_mp(this, &AnimationTrackEditor::_pan_callback), callable_mp(this, &AnimationTrackEditor::_zoom_callback));
 
 	scroll = memnew(ScrollContainer);
