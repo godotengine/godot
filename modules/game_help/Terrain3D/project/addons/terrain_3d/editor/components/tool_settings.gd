@@ -37,7 +37,7 @@ func _ready() -> void:
 	
 	add_brushes(list)
 
-	add_setting(SettingType.SLIDER, "size", 50, list, "m", 2, 200)
+	add_setting(SettingType.SLIDER, "size", 50, list, "m", 2, 200, 1, ALLOW_OUT_OF_BOUNDS)
 	add_setting(SettingType.SLIDER, "opacity", 10, list, "%", 1, 100)
 	add_setting(SettingType.CHECKBOX, "enable", true, list)
 	

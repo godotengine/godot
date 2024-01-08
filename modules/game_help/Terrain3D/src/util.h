@@ -57,7 +57,7 @@ public:
 	static Ref<Image> get_filled_image(Vector2i p_size,
 			Color p_color = COLOR_BLACK,
 			bool p_create_mipmaps = true,
-			Image::Format p_format = Image::FORMAT_RF);
+			Image::Format p_format = Image::FORMAT_MAX);
 };
 
 #endif // UTIL_CLASS_H

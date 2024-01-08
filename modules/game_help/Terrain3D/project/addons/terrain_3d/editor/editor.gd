@@ -23,7 +23,7 @@ var mouse_global_position: Vector3 = Vector3.ZERO
 
 
 func _enter_tree() -> void:
-	editor = Terrain3DEditor.new()
+	editor = Terrain3DEditor.get_singleton()
 	ui = UI.new()
 	ui.plugin = self
 	add_child(ui)
@@ -44,7 +44,7 @@ func _exit_tree() -> void:
 	remove_control_from_container(texture_dock_container, texture_dock)
 	texture_dock.queue_free()
 	ui.queue_free()
-	editor.free()
+	editor = null
 
 	
 func _handles(p_object: Object) -> bool:

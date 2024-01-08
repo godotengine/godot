@@ -60,9 +60,10 @@ func _enter_tree() -> void:
 	add_child(decal)
 	decal_timer = Timer.new()
 	decal_timer.wait_time = .5
-	decal_timer.timeout.connect(Callable(func(n):
-		if n:
-			get_tree().create_tween().tween_property(n, "albedo_mix", 0.0, 0.15)).bind(decal))
+	decal_timer.timeout.connect(Callable(func(node):
+		decal_timer.stop()
+		if node:
+			get_tree().create_tween().tween_property(node, "albedo_mix", 0.0, 0.15)).bind(decal))
 	add_child(decal_timer)
 
 

@@ -13,6 +13,7 @@ config_version=5
 config/name="Terrain3D"
 run/main_scene="res://demo/Demo.tscn"
 config/features=PackedStringArray("4.1")
+config/icon="res://icon.svg"
 
 [display]
 
@@ -21,6 +22,10 @@ window/vsync/vsync_mode=0
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/terrain_3d/plugin.cfg")
+
+[filesystem]
+
+import/blender/enabled=false
 
 [input]
 
@@ -68,4 +73,5 @@ sprint={
 
 [rendering]
 
+textures/vram_compression/import_etc2_astc=true
 occlusion_culling/use_occlusion_culling=true

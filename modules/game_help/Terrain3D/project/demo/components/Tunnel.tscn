@@ -6,8 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://vvayjv3rbx1d" path="res://demo/assets/models/Tunnel.tscn" id="4_klbpo"]
 [ext_resource type="PackedScene" uid="uid://cribhhvg03u8g" path="res://demo/assets/models/CrystalC.tscn" id="5_bb2w0"]
 [ext_resource type="Material" uid="uid://cso4f2iyuxpmc" path="res://demo/assets/materials/M_crystal_purple.tres" id="6_s6twx"]
-[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_alb_ht.dds" id="7_pqaf8"]
-[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_nrm_rgh.dds" id="8_hh7se"]
+[ext_resource type="Texture2D" uid="uid://br7bfxcxh60df" path="res://demo/assets/textures/rock030_alb_ht.png" id="7_pqaf8"]
+[ext_resource type="Texture2D" uid="uid://cr72kjil43vgj" path="res://demo/assets/textures/rock030_nrm_rgh.png" id="8_hh7se"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0v0nf"]
 transparency = 1

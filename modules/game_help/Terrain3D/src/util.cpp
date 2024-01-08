@@ -103,24 +103,74 @@ Ref<Image> Util::get_thumbnail(const Ref<Image> p_image, Vector2i p_size) {
 	return thumb;
 }
 
-/* Get image filled with your desired color and format
- * If alpha < 0, fill with checkered pattern multiplied by rgb
+/* Get an Image filled with specified color and format
+ * If p_color.a < 0, fill with checkered pattern multiplied by p_color.rgb
+ *
+ * Behavior changes if a compressed format is requested:
+ * If the editor is running and format is DXT1/5, BPTC_RGBA, it returns a filled image.
+ * Otherwise, it returns a blank image in that format.
+ *
+ * The reason is the Image compression library is available only in the editor. And it is
+ * unreliable, offering little control over the output format, choosing automatically and
+ * often wrong. We have selected a few compressed formats it gets right.
  */
 Ref<Image> Util::get_filled_image(Vector2i p_size, Color p_color, bool p_create_mipmaps, Image::Format p_format) {
-	Ref<Image> img = memnew(Image(p_size.x, p_size.y, p_create_mipmaps, p_format));
-	if (p_color.a < 0.0f) {
-		p_color.a = 1.0f;
-		Color col_a = Color(0.8f, 0.8f, 0.8f, 1.0) * p_color;
-		Color col_b = Color(0.5f, 0.5f, 0.5f, 1.0) * p_color;
-		img->fill_rect(Rect2i(Vector2i(0, 0), p_size / 2), col_a);
-		img->fill_rect(Rect2i(p_size / 2, p_size / 2), col_a);
-		img->fill_rect(Rect2i(Vector2(p_size.x, 0) / 2, p_size / 2), col_b);
-		img->fill_rect(Rect2i(Vector2(0, p_size.y) / 2, p_size / 2), col_b);
-	} else {
-		img->fill(p_color);
+	if (p_format < 0 || p_format >= Image::FORMAT_MAX) {
+		p_format = Image::FORMAT_DXT5;
 	}
-	if (p_create_mipmaps) {
-		img->generate_mipmaps();
+
+	Image::CompressMode compression_format = Image::COMPRESS_MAX;
+	Image::UsedChannels channels = Image::USED_CHANNELS_RGBA;
+	bool compress = false;
+	bool fill_image = true;
+
+	if (p_format >= Image::Format::FORMAT_DXT1) {
+		switch (p_format) {
+			case Image::FORMAT_DXT1:
+				p_format = Image::FORMAT_RGB8;
+				channels = Image::USED_CHANNELS_RGB;
+				compression_format = Image::COMPRESS_S3TC;
+				compress = true;
+				break;
+			case Image::FORMAT_DXT5:
+				p_format = Image::FORMAT_RGBA8;
+				channels = Image::USED_CHANNELS_RGBA;
+				compression_format = Image::COMPRESS_S3TC;
+				compress = true;
+				break;
+			case Image::FORMAT_BPTC_RGBA:
+				p_format = Image::FORMAT_RGBA8;
+				channels = Image::USED_CHANNELS_RGBA;
+				compression_format = Image::COMPRESS_BPTC;
+				compress = true;
+				break;
+			default:
+				compress = false;
+				fill_image = false;
+				break;
+		}
+	}
+
+	Ref<Image> img = memnew(Image(p_size.x, p_size.y, p_create_mipmaps, p_format));
+
+	if (fill_image) {
+		if (p_color.a < 0.0f) {
+			p_color.a = 1.0f;
+			Color col_a = Color(0.8f, 0.8f, 0.8f, 1.0) * p_color;
+			Color col_b = Color(0.5f, 0.5f, 0.5f, 1.0) * p_color;
+			img->fill_rect(Rect2i(Vector2i(0, 0), p_size / 2), col_a);
+			img->fill_rect(Rect2i(p_size / 2, p_size / 2), col_a);
+			img->fill_rect(Rect2i(Vector2(p_size.x, 0) / 2, p_size / 2), col_b);
+			img->fill_rect(Rect2i(Vector2(0, p_size.y) / 2, p_size / 2), col_b);
+		} else {
+			img->fill(p_color);
+		}
+		if (p_create_mipmaps) {
+			img->generate_mipmaps();
+		}
+	}
+	if (compress && Engine::get_singleton()->is_editor_hint()) {
+		img->compress_from_channels(compression_format, channels);
 	}
 	return img;
 }

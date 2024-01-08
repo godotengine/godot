@@ -1,0 +1,36 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://c1ots7w6i0i1q"
+path.bptc="res://.godot/imported/ground037_nrm_rgh.png-02372c72ee87f1844ee708d952e43e96.bptc.ctex"
+path.astc="res://.godot/imported/ground037_nrm_rgh.png-02372c72ee87f1844ee708d952e43e96.astc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
+}
+
+[deps]
+
+source_file="res://demo/assets/textures/ground037_nrm_rgh.png"
+dest_files=["res://.godot/imported/ground037_nrm_rgh.png-02372c72ee87f1844ee708d952e43e96.bptc.ctex", "res://.godot/imported/ground037_nrm_rgh.png-02372c72ee87f1844ee708d952e43e96.astc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=true
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=2
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

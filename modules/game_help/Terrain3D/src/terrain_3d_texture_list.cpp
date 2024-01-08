@@ -58,29 +58,55 @@ void Terrain3DTextureList::_update_texture_data(bool p_textures, bool p_settings
 		Vector2i albedo_size = Vector2i(0, 0);
 		Vector2i normal_size = Vector2i(0, 0);
 
-		// Detect image sizes
+		Image::Format albedo_format = Image::FORMAT_MAX;
+		Image::Format normal_format = Image::FORMAT_MAX;
+		bool albedo_mipmaps = true;
+		bool normal_mipmaps = true;
+
+		// Detect image sizes and formats
 		for (int i = 0; i < _textures.size(); i++) {
 			Ref<Terrain3DTexture> texture_set = _textures[i];
 			if (texture_set.is_null()) {
 				continue;
 			}
-			Ref<Texture2D> alb_tex = texture_set->get_albedo_texture();
-			Ref<Texture2D> nor_tex = texture_set->get_normal_texture();
+			Ref<Texture2D> albedo_tex = texture_set->get_albedo_texture();
+			Ref<Texture2D> normal_tex = texture_set->get_normal_texture();
 
-			if (alb_tex.is_valid()) {
-				Vector2i tex_size = alb_tex->get_size();
+			// If this is the first texture, set expected size and format for the arrays
+			if (albedo_tex.is_valid()) {
+				Vector2i tex_size = albedo_tex->get_size();
 				if (albedo_size.length() == 0.0) {
 					albedo_size = tex_size;
-				} else {
-					ERR_FAIL_COND_MSG(tex_size != albedo_size, "Albedo textures do not have same size!");
+				} else if (tex_size != albedo_size) {
+					LOG(ERROR, "Texture ID ", i, " albedo size: ", tex_size, " doesn't match first texture: ", albedo_size);
+					return;
+				}
+				Ref<Image> img = albedo_tex->get_image();
+				Image::Format format = img->get_format();
+				if (albedo_format == Image::FORMAT_MAX) {
+					albedo_format = format;
+					albedo_mipmaps = img->has_mipmaps();
+				} else if (format != albedo_format) {
+					LOG(ERROR, "Texture ID ", i, " albedo format: ", format, " doesn't match first texture: ", albedo_format);
+					return;
 				}
 			}
-			if (nor_tex.is_valid()) {
-				Vector2i tex_size = nor_tex->get_size();
+			if (normal_tex.is_valid()) {
+				Vector2i tex_size = normal_tex->get_size();
 				if (normal_size.length() == 0.0) {
 					normal_size = tex_size;
-				} else {
-					ERR_FAIL_COND_MSG(tex_size != normal_size, "Normal map textures do not have same size!");
+				} else if (tex_size != normal_size) {
+					LOG(ERROR, "Texture ID ", i, " normal size: ", tex_size, " doesn't match first texture: ", normal_size);
+					return;
+				}
+				Ref<Image> img = normal_tex->get_image();
+				Image::Format format = img->get_format();
+				if (normal_format == Image::FORMAT_MAX) {
+					normal_format = format;
+					normal_mipmaps = img->has_mipmaps();
+				} else if (format != normal_format) {
+					LOG(ERROR, "Texture ID ", i, " normal format: ", format, " doesn't match first texture: ", normal_format);
+					return;
 				}
 			}
 		}
@@ -109,8 +135,7 @@ void Terrain3DTextureList::_update_texture_data(bool p_textures, bool p_settings
 				Ref<Image> img;
 
 				if (tex.is_null()) {
-					img = Util::get_filled_image(albedo_size, COLOR_CHECKED, true, Image::FORMAT_RGBA8);
-					img->compress_from_channels(Image::COMPRESS_S3TC, Image::USED_CHANNELS_RGBA);
+					img = Util::get_filled_image(albedo_size, COLOR_CHECKED, albedo_mipmaps, albedo_format);
 					LOG(DEBUG, "ID ", i, " albedo texture is null. Creating a new one. Format: ", img->get_format());
 					texture_set->get_data()->_albedo_texture = ImageTexture::create_from_image(img);
 				} else {
@@ -139,8 +164,7 @@ void Terrain3DTextureList::_update_texture_data(bool p_textures, bool p_settings
 				Ref<Image> img;
 
 				if (tex.is_null()) {
-					img = Util::get_filled_image(normal_size, COLOR_NORMAL, true, Image::FORMAT_RGBA8);
-					img->compress_from_channels(Image::COMPRESS_S3TC, Image::USED_CHANNELS_RGBA);
+					img = Util::get_filled_image(normal_size, COLOR_NORMAL, normal_mipmaps, normal_format);
 					LOG(DEBUG, "ID ", i, " normal texture is null. Creating a new one. Format: ", img->get_format());
 					texture_set->get_data()->_normal_texture = ImageTexture::create_from_image(img);
 				} else {

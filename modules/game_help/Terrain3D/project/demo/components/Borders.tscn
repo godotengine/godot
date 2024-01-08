@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://dwnhqfjq7v1pq"]
 
-[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_nrm_rgh.dds" id="1_nf248"]
-[ext_resource type="Texture2D" path="res://demo/assets/textures/rock030_alb_ht.dds" id="1_t4onm"]
+[ext_resource type="Texture2D" uid="uid://cr72kjil43vgj" path="res://demo/assets/textures/rock030_nrm_rgh.png" id="1_nf248"]
+[ext_resource type="Texture2D" uid="uid://br7bfxcxh60df" path="res://demo/assets/textures/rock030_alb_ht.png" id="1_t4onm"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_1kfaq"]
 size = Vector3(1025.01, 4, 1)

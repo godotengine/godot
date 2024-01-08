@@ -35,6 +35,8 @@ _shader_parameters = {
 "height_blending": true,
 "macro_variation1": Color(1, 1, 1, 1),
 "macro_variation2": Color(1, 1, 1, 1),
+"noise1_angle": 0.0,
+"noise1_offset": Vector2(0.5, 0.5),
 "noise1_scale": 0.05,
 "noise2_scale": 0.03,
 "noise3_scale": 0.01,

@@ -21,8 +21,8 @@ bool Terrain3DTexture::_is_texture_valid(const Ref<Texture2D> &p_texture) const 
 	if (img.is_valid()) {
 		format = img->get_format();
 	}
-	if (format != Image::FORMAT_DXT5) {
-		LOG(ERROR, "Invalid format. Expected channel packed DXT5 RGBA8. See documentation for format.");
+	if (format < 0 || format >= Image::FORMAT_MAX) {
+		LOG(ERROR, "Invalid texture format. See documentation for format specification.");
 		return false;
 	}
 

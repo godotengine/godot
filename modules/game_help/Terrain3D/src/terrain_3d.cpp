@@ -308,6 +308,7 @@ void Terrain3D::_update_collision() {
 	int region_size = _storage->get_region_size();
 	int shape_size = region_size + 1;
 	float hole_const = NAN;
+	// DEPRECATED - Jolt v0.12 supports NAN. Remove check when it's old.
 	if (ProjectSettings::get_singleton()->get_setting("physics/3d/physics_engine") == "JoltPhysics3D") {
 		hole_const = __FLT_MAX__;
 	}
@@ -574,22 +575,22 @@ void Terrain3D::_generate_triangle_pair(PackedVector3Array &p_vertices, PackedVe
 Terrain3D::Terrain3D() {
 	set_notify_transform(true);
 	List<String> args = OS::get_singleton()->get_cmdline_args();
-	// for (int i = args.size() - 1; i >= 0; i--) {
-	// 	String arg = args[i];
-	// 	if (arg.begins_with("--terrain3d-debug=")) {
-	// 		String value = arg.lstrip("--terrain3d-debug=");
-	// 		if (value == "ERROR") {
-	// 			set_debug_level(ERROR);
-	// 		} else if (value == "INFO") {
-	// 			set_debug_level(INFO);
-	// 		} else if (value == "DEBUG") {
-	// 			set_debug_level(DEBUG);
-	// 		} else if (value == "DEBUG_CONT") {
-	// 			set_debug_level(DEBUG_CONT);
-	// 		}
-	// 		break;
-	// 	}
-	// }
+	for (int i = args.size() - 1; i >= 0; i--) {
+		String arg = args[i];
+		if (arg.begins_with("--terrain3d-debug=")) {
+			String value = arg.lstrip("--terrain3d-debug=");
+			if (value == "ERROR") {
+				set_debug_level(ERROR);
+			} else if (value == "INFO") {
+				set_debug_level(INFO);
+			} else if (value == "DEBUG") {
+				set_debug_level(DEBUG);
+			} else if (value == "DEBUG_CONT") {
+				set_debug_level(DEBUG_CONT);
+			}
+			break;
+		}
+	}
 }
 
 Terrain3D::~Terrain3D() {

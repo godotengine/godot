@@ -7,6 +7,7 @@
 // #include <godot_cpp/classes/image_texture.hpp>
 #include "core/io/image.h"
 #include "scene/resources/image_texture.h"
+#include "modules/register_module_types.h"
 
 
 #include "terrain_3d.h"
@@ -117,8 +118,10 @@ private:
 	real_t _operation_interval = 0.0f;
 	bool _pending_undo = false;
 	bool _modified = false;
-	Array _undo_set; // 0-2: map 0,1,2, 3: Region offsets, 4: height range
+	AABB _modified_area;
+	Array _undo_set; // 0-2: map 0,1,2, 3: Region offsets, 4: height range, 5: edited AABB
 
+	void _region_modified(Vector3 p_global_position, Vector2 p_height_range = Vector2());
 	void _operate_region(Vector3 p_global_position);
 	void _operate_map(Vector3 p_global_position, real_t p_camera_direction);
 	bool _is_in_bounds(Vector2i p_position, Vector2i p_max_position);
@@ -129,9 +132,23 @@ private:
 	void _store_undo();
 	void _apply_undo(const Array &p_set);
 
-public:
+	// Singleton
+	friend void initialize_terrain_3d(ModuleInitializationLevel p_level);
+	friend void uninitialize_terrain_3d(ModuleInitializationLevel p_level);
+
+	static Terrain3DEditor *_singleton;
+
+	static void create() { _singleton = memnew(Terrain3DEditor); }
+	static void free() {
+		memdelete(_singleton);
+		_singleton = nullptr;
+	}
+
 	Terrain3DEditor();
 	~Terrain3DEditor();
+
+public:
+	static Terrain3DEditor *get_singleton() { return _singleton; }
 
 	void set_terrain(Terrain3D *p_terrain) { _terrain = p_terrain; }
 	Terrain3D *get_terrain() const { return _terrain; }
