@@ -128,19 +128,23 @@ static void test_directory(const String &p_dir) {
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", conf.get_value("input", "use_single_quotes", false));
 
 			List<Dictionary> include;
-			to_dict_list(conf.get_value("result", "include", Array()), include);
+			to_dict_list(conf.get_value("output", "include", Array()), include);
 
 			List<Dictionary> exclude;
-			to_dict_list(conf.get_value("result", "exclude", Array()), exclude);
+			to_dict_list(conf.get_value("output", "exclude", Array()), exclude);
 
 			List<ScriptLanguage::CodeCompletionOption> options;
 			String call_hint;
 			bool forced;
 
 			Node *owner = nullptr;
-			if (dir->file_exists(next.get_basename() + ".tscn")) {
-				String project_path = "res://completion";
-				Ref<PackedScene> scene = ResourceLoader::load(project_path.path_join(next.get_basename() + ".tscn"), "PackedScene");
+			if (conf.has_section_key("input", "scene")) {
+				Ref<PackedScene> scene = ResourceLoader::load(conf.get_value("input", "scene"), "PackedScene");
+				if (scene.is_valid()) {
+					owner = scene->instantiate();
+				}
+			} else if (dir->file_exists(next.get_basename() + ".tscn")) {
+				Ref<PackedScene> scene = ResourceLoader::load(path.path_join(next.get_basename() + ".tscn"), "PackedScene");
 				if (scene.is_valid()) {
 					owner = scene->instantiate();
 				}
@@ -169,8 +173,8 @@ static void test_directory(const String &p_dir) {
 			CHECK_MESSAGE(contains_excluded.is_empty(), "Autocompletion suggests illegal option '", contains_excluded, "' for '", path.path_join(next), "'.");
 			CHECK(include.is_empty());
 
-			String expected_call_hint = conf.get_value("result", "call_hint", call_hint);
-			bool expected_forced = conf.get_value("result", "forced", forced);
+			String expected_call_hint = conf.get_value("output", "call_hint", call_hint);
+			bool expected_forced = conf.get_value("output", "forced", forced);
 
 			CHECK(expected_call_hint == call_hint);
 			CHECK(expected_forced == forced);
