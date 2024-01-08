@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,51 +20,62 @@
  * SOFTWARE.
  */
 
-#include <cstring>
-#include "tvgSvgUtil.h"
+#include "tvgCanvas.h"
+
+#ifdef THORVG_WG_RASTER_SUPPORT
+    #include "tvgWgRenderer.h"
+#endif
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static uint8_t _hexCharToDec(const char c)
+struct WgCanvas::Impl
 {
-    if (c >= 'a') return c - 'a' + 10;
-    else if (c >= 'A') return c - 'A' + 10;
-    else return c - '0';
-}
+};
 
 
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
-size_t svgUtilURLDecode(const char *src, char** dst)
+#ifdef THORVG_WG_RASTER_SUPPORT
+WgCanvas::WgCanvas() : Canvas(WgRenderer::gen()), pImpl(new Impl)
+#else
+WgCanvas::WgCanvas() : Canvas(nullptr), pImpl(nullptr)
+#endif
 {
-    if (!src) return 0;
+}
 
-    auto length = strlen(src);
-    if (length == 0) return 0;
+WgCanvas::~WgCanvas()
+{
+    delete pImpl;
+}
 
-    char* decoded = (char*)malloc(sizeof(char) * length + 1);
-    decoded[length] = '\0';
+Result WgCanvas::target(void* window, uint32_t w, uint32_t h) noexcept
+{
+#ifdef THORVG_WG_RASTER_SUPPORT
+    if (!window) return Result::InvalidArguments;
+    if ((w == 0) || (h == 0)) return Result::InvalidArguments;
 
-    char a, b;
-    int idx =0;
-    while (*src) {
-        if (*src == '%' &&
-            ((a = src[1]) && (b = src[2])) &&
-            (isxdigit(a) && isxdigit(b))) {
-            decoded[idx++] = (_hexCharToDec(a) << 4) + _hexCharToDec(b);
-            src+=3;
-        } else if (*src == '+') {
-            decoded[idx++] = ' ';
-            src++;
-        } else {
-            decoded[idx++] = *src++;
-        }
-    }
+    //We know renderer type, avoid dynamic_cast for performance.
+    auto renderer = static_cast<WgRenderer*>(Canvas::pImpl->renderer);
+    if (!renderer) return Result::MemoryCorruption;
 
-    *dst = decoded;
-    return length + 1;
+    if (!renderer->target(window, w, h)) return Result::Unknown;
+
+    //Paints must be updated again with this new target.
+    Canvas::pImpl->needRefresh();
+
+    return Result::Success;
+#endif
+    return Result::NonSupport;
+}
+
+unique_ptr<WgCanvas> WgCanvas::gen() noexcept
+{
+#ifdef THORVG_WG_RASTER_SUPPORT
+    return unique_ptr<WgCanvas>(new WgCanvas);
+#endif
+    return nullptr;
 }

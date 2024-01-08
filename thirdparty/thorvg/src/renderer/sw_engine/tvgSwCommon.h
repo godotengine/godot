@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -261,13 +261,26 @@ struct SwSurface : Surface
     SwAlpha alphas[4];                    //Alpha:2, InvAlpha:3, Luma:4, InvLuma:5
     SwBlender blender = nullptr;          //blender (optional)
     SwCompositor* compositor = nullptr;   //compositor (optional)
-    BlendMethod          blendMethod;     //blending method (uint8_t)
+    BlendMethod blendMethod;              //blending method (uint8_t)
 
     SwAlpha alpha(CompositeMethod method)
     {
         auto idx = (int)(method) - 2;       //0: None, 1: ClipPath
         return alphas[idx > 3 ? 0 : idx];   //CompositeMethod has only four Matting methods.
     }
+
+    SwSurface()
+    {
+    }
+
+    SwSurface(const SwSurface* rhs) : Surface(rhs)
+    {
+        join = rhs->join;
+        memcpy(alphas, rhs->alphas, sizeof(alphas));
+        blender = rhs->blender;
+        compositor = rhs->compositor;
+        blendMethod = rhs->blendMethod;
+     }
 };
 
 struct SwCompositor : Compositor

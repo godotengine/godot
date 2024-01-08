@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -3528,6 +3528,10 @@ void SvgLoader::clear(bool all)
     loaderData.images.reset();
 
     if (copy) free((char*)content);
+
+    delete(root);
+    root = nullptr;
+
     size = 0;
     content = nullptr;
     copy = false;
@@ -3538,14 +3542,15 @@ void SvgLoader::clear(bool all)
 /* External Class Implementation                                        */
 /************************************************************************/
 
-SvgLoader::SvgLoader()
+SvgLoader::SvgLoader() : ImageLoader(FileType::Svg)
 {
 }
 
 
 SvgLoader::~SvgLoader()
 {
-    close();
+    this->done();
+    clear();
 }
 
 
@@ -3554,7 +3559,7 @@ void SvgLoader::run(unsigned tid)
     //According to the SVG standard the value of the width/height of the viewbox set to 0 disables rendering
     if ((viewFlag & SvgViewFlag::Viewbox) && (fabsf(vw) <= FLT_EPSILON || fabsf(vh) <= FLT_EPSILON)) {
         TVGLOG("SVG", "The <viewBox> width and/or height set to 0 - rendering disabled.");
-        root = Scene::gen();
+        root = Scene::gen().release();
         return;
     }
 
@@ -3727,6 +3732,8 @@ bool SvgLoader::read()
 {
     if (!content || size == 0) return false;
 
+    if (!LoadModule::read()) return true;
+
     //the loading has been already completed in header()
     if (root) return true;
 
@@ -3738,16 +3745,17 @@ bool SvgLoader::read()
 
 bool SvgLoader::close()
 {
+    if (!LoadModule::close()) return false;
     this->done();
-
     clear();
-
     return true;
 }
 
 
-unique_ptr<Paint> SvgLoader::paint()
+Paint* SvgLoader::paint()
 {
     this->done();
-    return std::move(root);
+    auto ret = root;
+    root = nullptr;
+    return ret;
 }

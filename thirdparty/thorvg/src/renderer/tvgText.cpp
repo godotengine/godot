@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,51 +20,90 @@
  * SOFTWARE.
  */
 
-#include <cstring>
-#include "tvgSvgUtil.h"
+
+#include "tvgText.h"
+
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static uint8_t _hexCharToDec(const char c)
-{
-    if (c >= 'a') return c - 'a' + 10;
-    else if (c >= 'A') return c - 'A' + 10;
-    else return c - '0';
-}
 
 
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
-size_t svgUtilURLDecode(const char *src, char** dst)
+
+Text::Text() : pImpl(new Impl)
 {
-    if (!src) return 0;
+    Paint::pImpl->id = TVG_CLASS_ID_TEXT;
+}
 
-    auto length = strlen(src);
-    if (length == 0) return 0;
 
-    char* decoded = (char*)malloc(sizeof(char) * length + 1);
-    decoded[length] = '\0';
+Text::~Text()
+{
+    delete(pImpl);
+}
 
-    char a, b;
-    int idx =0;
-    while (*src) {
-        if (*src == '%' &&
-            ((a = src[1]) && (b = src[2])) &&
-            (isxdigit(a) && isxdigit(b))) {
-            decoded[idx++] = (_hexCharToDec(a) << 4) + _hexCharToDec(b);
-            src+=3;
-        } else if (*src == '+') {
-            decoded[idx++] = ' ';
-            src++;
-        } else {
-            decoded[idx++] = *src++;
-        }
+
+Result Text::text(const char* text) noexcept
+{
+    return pImpl->text(text);
+}
+
+
+Result Text::font(const char* name, float size, const char* style) noexcept
+{
+    return pImpl->font(name, size, style);
+}
+
+
+Result Text::load(const std::string& path) noexcept
+{
+    bool invalid; //invalid path
+    if (!LoaderMgr::loader(path, &invalid)) {
+        if (invalid) return Result::InvalidArguments;
+        else return Result::NonSupport;
     }
 
-    *dst = decoded;
-    return length + 1;
+    return Result::Success;
+}
+
+
+Result Text::unload(const std::string& path) noexcept
+{
+    if (LoaderMgr::retrieve(path)) return Result::Success;
+    return Result::InsufficientCondition;
+}
+
+
+Result Text::fill(uint8_t r, uint8_t g, uint8_t b) noexcept
+{
+    if (!pImpl->paint) return Result::InsufficientCondition;
+
+    return pImpl->fill(r, g, b);
+}
+
+
+Result Text::fill(unique_ptr<Fill> f) noexcept
+{
+    if (!pImpl->paint) return Result::InsufficientCondition;
+
+    auto p = f.release();
+    if (!p) return Result::MemoryCorruption;
+
+    return pImpl->fill(p);
+}
+
+
+unique_ptr<Text> Text::gen() noexcept
+{
+    return unique_ptr<Text>(new Text);
+}
+
+
+uint32_t Text::identifier() noexcept
+{
+    return TVG_CLASS_ID_TEXT;
 }
