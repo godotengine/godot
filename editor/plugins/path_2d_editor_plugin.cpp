@@ -156,16 +156,14 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		// Check for point creation.
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && ((mb->is_command_or_control_pressed() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
 			Ref<Curve2D> curve = node->get_curve();
+			curve->add_point(cpoint);
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Point to Curve"));
 			undo_redo->add_do_method(curve.ptr(), "add_point", cpoint);
-			undo_redo->add_undo_method(curve.ptr(), "remove_point", curve->get_point_count());
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-			undo_redo->commit_action();
+			undo_redo->add_undo_method(curve.ptr(), "remove_point", curve->get_point_count() - 1);
 
-			action = ACTION_MOVING_POINT;
+			action = ACTION_MOVING_NEW_POINT;
 			action_point = curve->get_point_count() - 1;
 			moving_from = curve->get_point_position(action_point);
 			moving_screen_from = gpoint;
@@ -193,15 +191,15 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				insertion_point = curve->get_point_count() - 2;
 			}
 
+			const Vector2 new_point = xform.affine_inverse().xform(gpoint2);
+			curve->add_point(new_point, Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
+
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Split Curve"));
-			undo_redo->add_do_method(curve.ptr(), "add_point", xform.affine_inverse().xform(gpoint2), Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
+			undo_redo->add_do_method(curve.ptr(), "add_point", new_point, Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
 			undo_redo->add_undo_method(curve.ptr(), "remove_point", insertion_point + 1);
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-			undo_redo->commit_action();
 
-			action = ACTION_MOVING_POINT;
+			action = ACTION_MOVING_NEW_POINT;
 			action_point = insertion_point + 1;
 			moving_from = curve->get_point_position(action_point);
 			moving_screen_from = gpoint2;
@@ -224,13 +222,16 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					// N/A, handled in above condition.
 					break;
 
-				case ACTION_MOVING_POINT: {
-					undo_redo->create_action(TTR("Move Point in Curve"));
+				case ACTION_MOVING_POINT:
+				case ACTION_MOVING_NEW_POINT: {
+					if (action == ACTION_MOVING_POINT) {
+						undo_redo->create_action(TTR("Move Point in Curve"));
+						undo_redo->add_undo_method(curve.ptr(), "set_point_position", action_point, moving_from);
+					}
 					undo_redo->add_do_method(curve.ptr(), "set_point_position", action_point, cpoint);
-					undo_redo->add_undo_method(curve.ptr(), "set_point_position", action_point, moving_from);
 					undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 					undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-					undo_redo->commit_action();
+					undo_redo->commit_action(false);
 
 				} break;
 
@@ -336,7 +337,8 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					// N/A, handled in above condition.
 					break;
 
-				case ACTION_MOVING_POINT: {
+				case ACTION_MOVING_POINT:
+				case ACTION_MOVING_NEW_POINT: {
 					curve->set_point_position(action_point, cpoint);
 				} break;
 
