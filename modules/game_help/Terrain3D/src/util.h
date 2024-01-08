@@ -49,7 +49,7 @@ public:
 	// Print info to the console
 	static void print_dict(String name, const Dictionary &p_dict, int p_level = 1); // Defaults to INFO
 	static void dump_gen(GeneratedTex p_gen, String name = "");
-	static void dump_maps(const TypedArray<Ref<Image>> p_maps, String p_name = "");
+	static void dump_maps(const TypedArray<Image> p_maps, String p_name = "");
 
 	// Image operations
 	static Vector2 get_min_max(const Ref<Image> p_image);

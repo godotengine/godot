@@ -88,9 +88,9 @@ private:
 	bool _region_map_dirty = true;
 	PackedInt32Array _region_map; // 16x16 Region grid with index into region_offsets (1 based array)
 	TypedArray<Vector2i> _region_offsets; // Array of active region coordinates
-	TypedArray<Ref<Image>> _height_maps;
-	TypedArray<Ref<Image>> _control_maps;
-	TypedArray<Ref<Image>> _color_maps;
+	TypedArray<Image> _height_maps;
+	TypedArray<Image> _control_maps;
+	TypedArray<Image> _color_maps;
 
 	// Generated Texture RIDs
 	// These contain the TextureLayered RID from the RenderingServer, no Image
@@ -125,22 +125,22 @@ public:
 	Vector2i get_region_offset(Vector3 p_global_position);
 	int get_region_index(Vector3 p_global_position);
 	bool has_region(Vector3 p_global_position);
-	Error add_region(Vector3 p_global_position, const TypedArray<Ref<Image>> &p_images = TypedArray<Ref<Image>>(), bool p_update = true);
+	Error add_region(Vector3 p_global_position, const TypedArray<Image> &p_images = TypedArray<Image>(), bool p_update = true);
 	void remove_region(Vector3 p_global_position, bool p_update = true);
 	void update_regions(bool force_emit = false);
 
 	// Maps
 	void set_map_region(MapType p_map_type, int p_region_index, const Ref<Image> p_image);
 	Ref<Image> get_map_region(MapType p_map_type, int p_region_index) const;
-	void set_maps(MapType p_map_type, const TypedArray<Ref<Image>> &p_maps);
-	TypedArray<Ref<Image>> get_maps(MapType p_map_type) const;
-	TypedArray<Ref<Image>> get_maps_copy(MapType p_map_type) const;
-	void set_height_maps(const TypedArray<Ref<Image>> &p_maps);
-	TypedArray<Ref<Image>> get_height_maps() const { return _height_maps; }
-	void set_control_maps(const TypedArray<Ref<Image>> &p_maps);
-	TypedArray<Ref<Image>> get_control_maps() const { return _control_maps; }
-	void set_color_maps(const TypedArray<Ref<Image>> &p_maps);
-	TypedArray<Ref<Image>> get_color_maps() const { return _color_maps; }
+	void set_maps(MapType p_map_type, const TypedArray<Image> &p_maps);
+	TypedArray<Image> get_maps(MapType p_map_type) const;
+	TypedArray<Image> get_maps_copy(MapType p_map_type) const;
+	void set_height_maps(const TypedArray<Image> &p_maps);
+	TypedArray<Image> get_height_maps() const { return _height_maps; }
+	void set_control_maps(const TypedArray<Image> &p_maps);
+	TypedArray<Image> get_control_maps() const { return _control_maps; }
+	void set_color_maps(const TypedArray<Image> &p_maps);
+	TypedArray<Image> get_color_maps() const { return _color_maps; }
 	void set_pixel(MapType p_map_type, Vector3 p_global_position, Color p_pixel);
 	Color get_pixel(MapType p_map_type, Vector3 p_global_position);
 	void set_height(Vector3 p_global_position, real_t p_height);
@@ -152,7 +152,7 @@ public:
 	void set_roughness(Vector3 p_global_position, real_t p_roughness);
 	real_t get_roughness(Vector3 p_global_position);
 	Vector3 get_texture_id(Vector3 p_global_position);
-	TypedArray<Ref<Image>> sanitize_maps(MapType p_map_type, const TypedArray<Ref<Image>> &p_maps);
+	TypedArray<Image> sanitize_maps(MapType p_map_type, const TypedArray<Image> &p_maps);
 	void force_update_maps(MapType p_map = TYPE_MAX);
 
 	// File I/O
@@ -161,7 +161,7 @@ public:
 	void set_modified() { _modified = true; }
 	static Ref<Image> load_image(String p_file_name, int p_cache_mode = ResourceFormatLoader::CACHE_MODE_IGNORE,
 			Vector2 p_r16_height_range = Vector2(0, 255), Vector2i p_r16_size = Vector2i(0, 0));
-	void import_images(const TypedArray<Ref<Image>> &p_images, Vector3 p_global_position = Vector3(0, 0, 0),
+	void import_images(const TypedArray<Image> &p_images, Vector3 p_global_position = Vector3(0, 0, 0),
 			real_t p_offset = 0.0, real_t p_scale = 1.0);
 	Error export_image(String p_file_name, MapType p_map_type = TYPE_HEIGHT);
 	Ref<Image> layered_to_image(MapType p_map_type);

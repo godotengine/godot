@@ -21,7 +21,7 @@ private:
 public:
 	void clear();
 	bool is_dirty() { return _dirty; }
-	void create(const TypedArray<Ref<Image>> &p_layers);
+	void create(const TypedArray<Image> &p_layers);
 	void create(const Ref<Image> &p_image);
 	Ref<Image> get_image() const { return _image; }
 	RID get_rid() { return _rid; }

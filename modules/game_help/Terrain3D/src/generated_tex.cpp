@@ -11,7 +11,7 @@
 // Public Functions
 ///////////////////////////
 
-void GeneratedTex::create(const TypedArray<Ref<Image>> &p_layers) {
+void GeneratedTex::create(const TypedArray<Image> &p_layers) {
 	if (!p_layers.is_empty()) {
 		if (Terrain3D::debug_level >= DEBUG) {
 			LOG(DEBUG, "RenderingServer creating Texture2DArray, layers size: ", p_layers.size());

@@ -19,7 +19,7 @@ void Util::dump_gen(GeneratedTex p_gen, String p_name) {
 	LOG(DEBUG, "Generated ", p_name, " RID: ", p_gen.get_rid(), ", dirty: ", p_gen.is_dirty(), ", image: ", p_gen.get_image());
 }
 
-void Util::dump_maps(const TypedArray<Ref<Image>> p_maps, String p_name) {
+void Util::dump_maps(const TypedArray<Image> p_maps, String p_name) {
 	LOG(DEBUG, "Dumping ", p_name, " map array. Size: ", p_maps.size());
 	for (int i = 0; i < p_maps.size(); i++) {
 		Ref<Image> img = p_maps[i];

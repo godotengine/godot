@@ -98,7 +98,7 @@ void Terrain3DTextureList::_update_texture_data(bool p_textures, bool p_settings
 		// Generate TextureArrays and replace nulls with a empty image
 		if (_generated_albedo_textures.is_dirty() && albedo_size != Vector2i(0, 0)) {
 			LOG(INFO, "Regenerating albedo texture array");
-			TypedArray<Ref<Image>> albedo_texture_array;
+			TypedArray<Image> albedo_texture_array;
 
 			for (int i = 0; i < _textures.size(); i++) {
 				Ref<Terrain3DTexture> texture_set = _textures[i];
@@ -128,7 +128,7 @@ void Terrain3DTextureList::_update_texture_data(bool p_textures, bool p_settings
 		if (_generated_normal_textures.is_dirty() && normal_size != Vector2i(0, 0)) {
 			LOG(INFO, "Regenerating normal texture arrays");
 
-			TypedArray<Ref<Image>> normal_texture_array;
+			TypedArray<Image> normal_texture_array;
 
 			for (int i = 0; i < _textures.size(); i++) {
 				Ref<Terrain3DTexture> texture_set = _textures[i];

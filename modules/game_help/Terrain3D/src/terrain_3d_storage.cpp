@@ -126,7 +126,7 @@ int Terrain3DStorage::get_region_index(Vector3 p_global_position) {
  *	p_images - Optional array of [ Height, Control, Color ... ] w/ region_sized images
  *	p_update - rebuild the maps if true. Set to false if bulk adding many regions.
  */
-Error Terrain3DStorage::add_region(Vector3 p_global_position, const TypedArray<Ref<Image>> &p_images, bool p_update) {
+Error Terrain3DStorage::add_region(Vector3 p_global_position, const TypedArray<Image> &p_images, bool p_update) {
 	Vector2i uv_offset = get_region_offset(p_global_position);
 	LOG(INFO, "Adding region at ", p_global_position, ", uv_offset ", uv_offset,
 			", array size: ", p_images.size(),
@@ -148,7 +148,7 @@ Error Terrain3DStorage::add_region(Vector3 p_global_position, const TypedArray<R
 		}
 	}
 
-	TypedArray<Ref<Image>> images = sanitize_maps(TYPE_MAX, p_images);
+	TypedArray<Image> images = sanitize_maps(TYPE_MAX, p_images);
 	if (images.is_empty()) {
 		LOG(ERROR, "Sanitize_maps failed to accept images or produce blanks");
 		return FAILED;
@@ -339,7 +339,7 @@ Ref<Image> Terrain3DStorage::get_map_region(MapType p_map_type, int p_region_ind
 	return Ref<Image>();
 }
 
-void Terrain3DStorage::set_maps(MapType p_map_type, const TypedArray<Ref<Image>> &p_maps) {
+void Terrain3DStorage::set_maps(MapType p_map_type, const TypedArray<Image> &p_maps) {
 	ERR_FAIL_COND_MSG(p_map_type < 0 || p_map_type >= TYPE_MAX, "Specified map type out of range");
 	switch (p_map_type) {
 		case TYPE_HEIGHT:
@@ -356,10 +356,10 @@ void Terrain3DStorage::set_maps(MapType p_map_type, const TypedArray<Ref<Image>>
 	}
 }
 
-TypedArray<Ref<Image>> Terrain3DStorage::get_maps(MapType p_map_type) const {
+TypedArray<Image> Terrain3DStorage::get_maps(MapType p_map_type) const {
 	if (p_map_type < 0 || p_map_type >= TYPE_MAX) {
 		LOG(ERROR, "Specified map type out of range");
-		return TypedArray<Ref<Image>>();
+		return TypedArray<Image>();
 	}
 	switch (p_map_type) {
 		case TYPE_HEIGHT:
@@ -374,16 +374,16 @@ TypedArray<Ref<Image>> Terrain3DStorage::get_maps(MapType p_map_type) const {
 		default:
 			break;
 	}
-	return TypedArray<Ref<Image>>();
+	return TypedArray<Image>();
 }
 
-TypedArray<Ref<Image>> Terrain3DStorage::get_maps_copy(MapType p_map_type) const {
+TypedArray<Image> Terrain3DStorage::get_maps_copy(MapType p_map_type) const {
 	if (p_map_type < 0 || p_map_type >= TYPE_MAX) {
 		LOG(ERROR, "Specified map type out of range");
-		return TypedArray<Ref<Image>>();
+		return TypedArray<Image>();
 	}
-	TypedArray<Ref<Image>> maps = get_maps(p_map_type);
-	TypedArray<Ref<Image>> newmaps;
+	TypedArray<Image> maps = get_maps(p_map_type);
+	TypedArray<Image> newmaps;
 	newmaps.resize(maps.size());
 	for (int i = 0; i < maps.size(); i++) {
 		Ref<Image> img;
@@ -394,22 +394,22 @@ TypedArray<Ref<Image>> Terrain3DStorage::get_maps_copy(MapType p_map_type) const
 	return newmaps;
 }
 
-void Terrain3DStorage::set_height_maps(const TypedArray<Ref<Image>> &p_maps) {
+void Terrain3DStorage::set_height_maps(const TypedArray<Image> &p_maps) {
 	LOG(INFO, "Setting height maps: ", p_maps.size());
 	_height_maps = sanitize_maps(TYPE_HEIGHT,  p_maps);
 	force_update_maps(TYPE_HEIGHT);
 }
 
-void Terrain3DStorage::set_control_maps(const TypedArray<Ref<Image>> &p_maps) {
+void Terrain3DStorage::set_control_maps(const TypedArray<Image> &p_maps) {
 	LOG(INFO, "Setting control maps: ", p_maps.size());
-	TypedArray<Ref<Image>> maps = p_maps;
+	TypedArray<Image> maps = p_maps;
 	_control_maps = sanitize_maps(TYPE_CONTROL, maps);
 	force_update_maps(TYPE_CONTROL);
 }
 
-void Terrain3DStorage::set_color_maps(const TypedArray<Ref<Image>> &p_maps) {
+void Terrain3DStorage::set_color_maps(const TypedArray<Image> &p_maps) {
 	LOG(INFO, "Setting color maps: ", p_maps.size());
-	TypedArray<Ref<Image>> maps = p_maps;
+	TypedArray<Image> maps = p_maps;
 	_color_maps = sanitize_maps(TYPE_COLOR, maps);
 	force_update_maps(TYPE_COLOR);
 }
@@ -476,10 +476,10 @@ Vector3 Terrain3DStorage::get_texture_id(Vector3 p_global_position) {
  *	TYPE_HEIGHT, TYPE_CONTROL, TYPE_COLOR: uniform set - p_maps are all the same type, size=N
  *	TYPE_MAX = region set - p_maps is [ height, control, color ], size=3
  **/
-TypedArray<Ref<Image>> Terrain3DStorage::sanitize_maps(MapType p_map_type, const TypedArray<Ref<Image>> &p_maps) {
+TypedArray<Image> Terrain3DStorage::sanitize_maps(MapType p_map_type, const TypedArray<Image> &p_maps) {
 	LOG(INFO, "Verifying image set is valid: ", p_maps.size(), " maps of type: ", TYPESTR[TYPE_MAX]);
 
-	TypedArray<Ref<Image>> images;
+	TypedArray<Image> images;
 	int iterations;
 
 	if (p_map_type == TYPE_MAX) {
@@ -574,7 +574,7 @@ void Terrain3DStorage::save() {
 		Error err;
 		if (_save_16_bit) {
 			LOG(DEBUG, "16-bit save requested, converting heightmaps");
-			TypedArray<Ref<Image>> original_maps;
+			TypedArray<Image> original_maps;
 			original_maps = get_maps_copy(Terrain3DStorage::MapType::TYPE_HEIGHT);
 			for (int i = 0; i < _height_maps.size(); i++) {
 				Ref<Image> img = _height_maps[i];
@@ -679,7 +679,7 @@ Ref<Image> Terrain3DStorage::load_image(String p_file_name, int p_cache_mode, Ve
  *	p_offset - Add this factor to all height values, can be negative
  *	p_scale - Scale all height values by this factor (applied after offset)
  */
-void Terrain3DStorage::import_images(const TypedArray<Ref<Image>> &p_images, Vector3 p_global_position, real_t p_offset, real_t p_scale) {
+void Terrain3DStorage::import_images(const TypedArray<Image> &p_images, Vector3 p_global_position, real_t p_offset, real_t p_scale) {
 	if (p_images.size() != TYPE_MAX) {
 		LOG(ERROR, "p_images.size() is ", p_images.size(), ". It should be ", TYPE_MAX, " even if some Images are blank or null");
 		return;
@@ -718,7 +718,7 @@ void Terrain3DStorage::import_images(const TypedArray<Ref<Image>> &p_images, Vec
 		return;
 	}
 
-	TypedArray<Ref<Image>> tmp_images;
+	TypedArray<Image> tmp_images;
 	tmp_images.resize(TYPE_MAX);
 
 	for (int i = 0; i < TYPE_MAX; i++) {
@@ -766,7 +766,7 @@ void Terrain3DStorage::import_images(const TypedArray<Ref<Image>> &p_images, Vec
 			}
 
 			LOG(DEBUG, "Copying ", size_to_copy, " sized segment");
-			TypedArray<Ref<Image>> images;
+			TypedArray<Image> images;
 			images.resize(TYPE_MAX);
 			for (int i = 0; i < TYPE_MAX; i++) {
 				Ref<Image> img = tmp_images[i];
@@ -1020,7 +1020,7 @@ void Terrain3DStorage::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_region_offset", "global_position"), &Terrain3DStorage::get_region_offset);
 	ClassDB::bind_method(D_METHOD("get_region_index", "global_position"), &Terrain3DStorage::get_region_index);
 	ClassDB::bind_method(D_METHOD("has_region", "global_position"), &Terrain3DStorage::has_region);
-	ClassDB::bind_method(D_METHOD("add_region", "global_position", "images", "update"), &Terrain3DStorage::add_region, DEFVAL(TypedArray<Ref<Image>>()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("add_region", "global_position", "images", "update"), &Terrain3DStorage::add_region, DEFVAL(TypedArray<Image>()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("remove_region", "global_position", "update"), &Terrain3DStorage::remove_region, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_map_region", "map_type", "region_index", "image"), &Terrain3DStorage::set_map_region);
