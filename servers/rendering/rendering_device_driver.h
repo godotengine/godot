@@ -535,6 +535,8 @@ public:
 			float depth;
 			uint32_t stencil;
 		};
+
+		RenderPassClearValue() {}
 	};
 
 	struct AttachmentClear {

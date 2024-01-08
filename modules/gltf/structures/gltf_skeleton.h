@@ -82,7 +82,7 @@ public:
 	//RBMap<int32_t, GLTFNodeIndex> get_godot_bone_node() {
 	//	return this->godot_bone_node;
 	//}
-	//void set_godot_bone_node(RBMap<int32_t, GLTFNodeIndex> p_godot_bone_node) {
+	//void set_godot_bone_node(const RBMap<int32_t, GLTFNodeIndex> &p_godot_bone_node) {
 	//	this->godot_bone_node = p_godot_bone_node;
 	//}
 	Dictionary get_godot_bone_node();

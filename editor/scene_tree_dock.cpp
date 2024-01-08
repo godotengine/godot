@@ -1243,7 +1243,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (cant_be_set_unique_names.size()) {
 					String popup_text = TTR("Unique names already used by another node in the scene:");
 					popup_text += "\n";
-					for (StringName name : cant_be_set_unique_names) {
+					for (const StringName &name : cant_be_set_unique_names) {
 						popup_text += "\n" + String(name);
 					}
 					accept->set_text(popup_text);

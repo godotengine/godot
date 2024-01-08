@@ -193,6 +193,9 @@
 		<member name="tab_focus_mode" type="int" setter="set_tab_focus_mode" getter="get_tab_focus_mode" enum="Control.FocusMode" default="2">
 			The focus access mode for the internal [TabBar] node.
 		</member>
+		<member name="tabs_position" type="int" setter="set_tabs_position" getter="get_tabs_position" enum="TabContainer.TabPosition" default="0">
+			Sets the position of the tab bar. See [enum TabPosition] for details.
+		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
 			Setting this to [code]-1[/code] will disable rearranging between [TabContainer]s.
@@ -247,6 +250,17 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="POSITION_TOP" value="0" enum="TabPosition">
+			Places the tab bar at the top.
+		</constant>
+		<constant name="POSITION_BOTTOM" value="1" enum="TabPosition">
+			Places the tab bar at the bottom. The tab bar's [StyleBox] will be flipped vertically.
+		</constant>
+		<constant name="POSITION_MAX" value="2" enum="TabPosition">
+			Represents the size of the [enum TabPosition] enum.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="drop_mark_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Modulation color for the [theme_item drop_mark] icon.

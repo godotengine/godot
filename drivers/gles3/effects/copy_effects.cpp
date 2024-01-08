@@ -125,6 +125,18 @@ void CopyEffects::copy_to_rect(const Rect2 &p_rect) {
 	draw_screen_quad();
 }
 
+void CopyEffects::copy_to_and_from_rect(const Rect2 &p_rect) {
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION_SOURCE);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION_SOURCE);
+	copy.shader.version_set_uniform(CopyShaderGLES3::SOURCE_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION_SOURCE);
+
+	draw_screen_quad();
+}
+
 void CopyEffects::copy_screen() {
 	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_DEFAULT);
 	if (!success) {

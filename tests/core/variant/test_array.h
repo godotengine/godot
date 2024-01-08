@@ -367,7 +367,7 @@ TEST_CASE("[Array] Duplicate recursive array") {
 	Array a_shallow = a.duplicate(false);
 	CHECK_EQ(a, a_shallow);
 
-	// Deep copy of recursive array endup with recursion limit and return
+	// Deep copy of recursive array ends up with recursion limit and return
 	// an invalid result (multiple nested arrays), the point is we should
 	// not end up with a segfault and an error log should be printed
 	ERR_PRINT_OFF;

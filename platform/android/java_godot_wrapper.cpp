@@ -334,7 +334,7 @@ void GodotJavaWrapper::vibrate(int p_duration_ms) {
 	}
 }
 
-int GodotJavaWrapper::create_new_godot_instance(List<String> args) {
+int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
 	if (_create_new_godot_instance) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, 0);

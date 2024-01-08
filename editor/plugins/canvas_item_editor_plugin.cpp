@@ -345,7 +345,7 @@ void CanvasItemEditor::_snap_other_nodes(
 	}
 }
 
-Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsigned int p_forced_modes, const CanvasItem *p_self_canvas_item, List<CanvasItem *> p_other_nodes_exceptions) {
+Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsigned int p_forced_modes, const CanvasItem *p_self_canvas_item, const List<CanvasItem *> &p_other_nodes_exceptions) {
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
@@ -535,7 +535,7 @@ void CanvasItemEditor::_keying_changed() {
 	}
 }
 
-Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_list) {
+Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(const List<CanvasItem *> &p_list) {
 	ERR_FAIL_COND_V(p_list.is_empty(), Rect2());
 
 	// Handles the first element
@@ -830,7 +830,7 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 	return output;
 }
 
-void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones) {
+void CanvasItemEditor::_save_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool save_bones) {
 	original_transform = Transform2D();
 	bool transform_stored = false;
 
@@ -853,14 +853,14 @@ void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items
 	}
 }
 
-void CanvasItemEditor::_restore_canvas_item_state(List<CanvasItem *> p_canvas_items, bool restore_bones) {
+void CanvasItemEditor::_restore_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool restore_bones) {
 	for (CanvasItem *ci : drag_selection) {
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 		ci->_edit_set_state(se->undo_state);
 	}
 }
 
-void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_items, String action_name, bool commit_bones) {
+void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, String action_name, bool commit_bones) {
 	List<CanvasItem *> modified_canvas_items;
 	for (CanvasItem *ci : p_canvas_items) {
 		Dictionary old_state = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci)->undo_state;
@@ -2014,14 +2014,14 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			if ((b->is_alt_pressed() && !b->is_command_or_control_pressed()) || tool == TOOL_MOVE) {
 				List<CanvasItem *> selection = _get_edited_canvas_items();
 
-				drag_selection.clear();
-				for (int i = 0; i < selection.size(); i++) {
-					if (_is_node_movable(selection[i], true)) {
-						drag_selection.push_back(selection[i]);
-					}
-				}
-
 				if (selection.size() > 0) {
+					drag_selection.clear();
+					for (int i = 0; i < selection.size(); i++) {
+						if (_is_node_movable(selection[i], true)) {
+							drag_selection.push_back(selection[i]);
+						}
+					}
+
 					drag_type = DRAG_MOVE;
 
 					CanvasItem *ci = selection[0];
@@ -2043,8 +2043,9 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 					drag_from = transform.affine_inverse().xform(b->get_position());
 					_save_canvas_item_state(drag_selection);
+
+					return true;
 				}
-				return true;
 			}
 		}
 	}
@@ -2344,7 +2345,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT && !panner->is_panning()) {
+		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && !panner->is_panning() && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE)) {
 			// Single item selection
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
@@ -2379,7 +2380,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			} else {
 				bool still_selected = _select_click_on_item(ci, click, b->is_shift_pressed());
 				// Start dragging
-				if (still_selected) {
+				if (still_selected && (tool == TOOL_SELECT || tool == TOOL_MOVE)) {
 					// Drag the node(s) if requested
 					drag_start_origin = click;
 					drag_type = DRAG_QUEUED;
@@ -2463,7 +2464,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true) && drag_type == DRAG_NONE && tool == TOOL_SELECT) {
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true) && drag_type == DRAG_NONE) {
 		// Unselect everything
 		editor_selection->clear();
 		viewport->queue_redraw();
@@ -5842,7 +5843,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 	Vector<String> error_files;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Create Node"));
+	undo_redo->create_action_for_history(TTR("Create Node"), EditorNode::get_editor_data().get_current_edited_scene_history_id());
 
 	for (int i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];

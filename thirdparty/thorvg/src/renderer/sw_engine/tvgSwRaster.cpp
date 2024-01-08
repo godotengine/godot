@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1714,7 +1714,7 @@ static bool _rasterSolidGradientRle(SwSurface* surface, const SwRleData* rle, co
 
 static bool _rasterLinearGradientRle(SwSurface* surface, const SwRleData* rle, const SwFill* fill)
 {
-    if (!rle || fill->linear.len < FLT_EPSILON) return false;
+    if (!rle) return false;
 
     if (_compositing(surface)) {
         if (_matting(surface)) return _rasterGradientMattedRle<FillLinear>(surface, rle, fill);
@@ -1855,7 +1855,9 @@ void rasterUnpremultiply(Surface* surface)
 
 void rasterPremultiply(Surface* surface)
 {
-    if (surface->channelSize != sizeof(uint32_t)) return;
+    unique_lock<mutex> lock{surface->mtx};
+    if (surface->premultiplied || (surface->channelSize != sizeof(uint32_t))) return;
+    surface->premultiplied = true;
 
     TVGLOG("SW_ENGINE", "Premultiply [Size: %d x %d]", surface->w, surface->h);
 
@@ -1869,7 +1871,6 @@ void rasterPremultiply(Surface* surface)
             *dst = (c & 0xff000000) + ((((c >> 8) & 0xff) * a) & 0xff00) + ((((c & 0x00ff00ff) * a) >> 8) & 0x00ff00ff);
         }
     }
-    surface->premultiplied = true;
 }
 
 
@@ -1935,6 +1936,9 @@ bool rasterImage(SwSurface* surface, SwImage* image, const RenderMesh* mesh, con
 
 bool rasterConvertCS(Surface* surface, ColorSpace to)
 {
+    unique_lock<mutex> lock{surface->mtx};
+    if (surface->cs == to) return true;
+
     //TOOD: Support SIMD accelerations
     auto from = surface->cs;
 
@@ -1946,6 +1950,5 @@ bool rasterConvertCS(Surface* surface, ColorSpace to)
         surface->cs = to;
         return cRasterARGBtoABGR(surface);
     }
-
     return false;
 }

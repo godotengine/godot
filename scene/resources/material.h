@@ -682,7 +682,7 @@ public:
 	void set_texture(TextureParam p_param, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture(TextureParam p_param) const;
 	// Used only for shader material conversion
-	Ref<Texture2D> get_texture_by_name(StringName p_name) const;
+	Ref<Texture2D> get_texture_by_name(const StringName &p_name) const;
 
 	void set_texture_filter(TextureFilter p_filter);
 	TextureFilter get_texture_filter() const;

@@ -104,7 +104,7 @@ public:
 	void init_input_devices();
 	void vibrate(int p_duration_ms);
 	String get_input_fallback_mapping();
-	int create_new_godot_instance(List<String> args);
+	int create_new_godot_instance(const List<String> &args);
 	void begin_benchmark_measure(const String &p_context, const String &p_label);
 	void end_benchmark_measure(const String &p_context, const String &p_label);
 	void dump_benchmark(const String &benchmark_file);

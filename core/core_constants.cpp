@@ -845,7 +845,7 @@ bool CoreConstants::is_global_enum(const StringName &p_enum) {
 	return _global_enums.has(p_enum);
 }
 
-void CoreConstants::get_enum_values(StringName p_enum, HashMap<StringName, int64_t> *p_values) {
+void CoreConstants::get_enum_values(const StringName &p_enum, HashMap<StringName, int64_t> *p_values) {
 	ERR_FAIL_NULL_MSG(p_values, "Trying to get enum values with null map.");
 	ERR_FAIL_COND_MSG(!_global_enums.has(p_enum), "Trying to get values of non-existing enum.");
 	for (const _CoreConstant &constant : _global_enums[p_enum]) {

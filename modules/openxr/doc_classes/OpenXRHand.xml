@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="OpenXRHand" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Node supporting finger tracking in OpenXR.
+		Node supporting hand and finger tracking in OpenXR.
 	</brief_description>
 	<description>
-		This node enables OpenXR's hand tracking functionality. The node should be a child node of an [XROrigin3D] node, tracking will update its position to where the player's actual hand is positioned. This node also updates the skeleton of a properly skinned hand model. The hand mesh should be a child node of this node.
+		This node enables OpenXR's hand tracking functionality. The node should be a child node of an [XROrigin3D] node, tracking will update its position to the player's tracked hand Palm joint location (the center of the middle finger's metacarpal bone). This node also updates the skeleton of a properly skinned hand or avatar model.
+		If the skeleton is a hand (one of the hand bones is the root node of the skeleton), then the skeleton will be placed relative to the hand palm location and the hand mesh and skeleton should be children of the OpenXRHand node.
+		If the hand bones are part of a full skeleton, then the root of the hand will keep its location with the assumption that IK is used to position the hand and arm.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,6 +19,9 @@
 		</member>
 		<member name="motion_range" type="int" setter="set_motion_range" getter="get_motion_range" enum="OpenXRHand.MotionRange" default="0">
 			Set the motion range (if supported) limiting the hand motion.
+		</member>
+		<member name="skeleton_rig" type="int" setter="set_skeleton_rig" getter="get_skeleton_rig" enum="OpenXRHand.SkeletonRig" default="0">
+			Set the type of skeleton rig the [member hand_skeleton] is compliant with.
 		</member>
 	</members>
 	<constants>
@@ -37,6 +42,15 @@
 		</constant>
 		<constant name="MOTION_RANGE_MAX" value="2" enum="MotionRange">
 			Maximum supported motion ranges.
+		</constant>
+		<constant name="SKELETON_RIG_OPENXR" value="0" enum="SkeletonRig">
+			An OpenXR compliant skeleton.
+		</constant>
+		<constant name="SKELETON_RIG_HUMANOID" value="1" enum="SkeletonRig">
+			A [SkeletonProfileHumanoid] compliant skeleton.
+		</constant>
+		<constant name="SKELETON_RIG_MAX" value="2" enum="SkeletonRig">
+			Maximum supported hands.
 		</constant>
 	</constants>
 </class>

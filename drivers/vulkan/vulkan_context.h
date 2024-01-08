@@ -321,7 +321,7 @@ public:
 	virtual void set_setup_buffer(RDD::CommandBufferID p_command_buffer) override final;
 	virtual void append_command_buffer(RDD::CommandBufferID p_command_buffer) override final;
 	void resize_notify();
-	virtual void flush(bool p_flush_setup = false, bool p_flush_pending = false) override final;
+	virtual void flush(bool p_flush_setup = false, bool p_flush_pending = false, bool p_sync = true) override final;
 	virtual Error prepare_buffers(RDD::CommandBufferID p_command_buffer) override final;
 	virtual void postpare_buffers(RDD::CommandBufferID p_command_buffer) override final;
 	virtual Error swap_buffers() override final;

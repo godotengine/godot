@@ -500,7 +500,7 @@ void TileMapLayer::_rendering_quadrants_update_cell(CellData &r_cell_data, SelfL
 			quadrant_coords = Vector2i(
 					coords.x > 0 ? coords.x / quad_size : (coords.x - (quad_size - 1)) / quad_size,
 					coords.y > 0 ? coords.y / quad_size : (coords.y - (quad_size - 1)) / quad_size);
-			canvas_items_position = quad_size * quadrant_coords;
+			canvas_items_position = tile_map_node->map_to_local(quad_size * quadrant_coords);
 		}
 
 		Ref<RenderingQuadrant> rendering_quadrant;

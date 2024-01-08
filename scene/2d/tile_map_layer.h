@@ -173,14 +173,6 @@ public:
 
 	SelfList<DebugQuadrant> dirty_quadrant_list_element;
 
-	// For those, copy everything but SelfList elements.
-	DebugQuadrant(const DebugQuadrant &p_other) :
-			dirty_quadrant_list_element(this) {
-		quadrant_coords = p_other.quadrant_coords;
-		cells = p_other.cells;
-		canvas_item = p_other.canvas_item;
-	}
-
 	DebugQuadrant() :
 			dirty_quadrant_list_element(this) {
 	}
@@ -212,14 +204,6 @@ public:
 	Vector2 canvas_items_position;
 
 	SelfList<RenderingQuadrant> dirty_quadrant_list_element;
-
-	// For those, copy everything but SelfList elements.
-	RenderingQuadrant(const RenderingQuadrant &p_other) :
-			dirty_quadrant_list_element(this) {
-		quadrant_coords = p_other.quadrant_coords;
-		cells = p_other.cells;
-		canvas_items = p_other.canvas_items;
-	}
 
 	RenderingQuadrant() :
 			dirty_quadrant_list_element(this) {

@@ -103,21 +103,25 @@ void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputT
 	}
 }
 
+static bool is_zip_file(Ref<DirAccess> p_d, const String &p_path) {
+	return p_path.ends_with(".zip") && p_d->file_exists(p_path);
+}
+
 String ProjectDialog::_test_path() {
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	const String base_path = project_path->get_text();
 	String valid_path, valid_install_path;
-	if (d->change_dir(project_path->get_text()) == OK) {
-		valid_path = project_path->get_text();
-	} else if (d->change_dir(project_path->get_text().strip_edges()) == OK) {
-		valid_path = project_path->get_text().strip_edges();
-	} else if (project_path->get_text().ends_with(".zip")) {
-		if (d->file_exists(project_path->get_text())) {
-			valid_path = project_path->get_text();
-		}
-	} else if (project_path->get_text().strip_edges().ends_with(".zip")) {
-		if (d->file_exists(project_path->get_text().strip_edges())) {
-			valid_path = project_path->get_text().strip_edges();
-		}
+	bool is_zip = false;
+	if (d->change_dir(base_path) == OK) {
+		valid_path = base_path;
+	} else if (is_zip_file(d, base_path)) {
+		valid_path = base_path;
+		is_zip = true;
+	} else if (d->change_dir(base_path.strip_edges()) == OK) {
+		valid_path = base_path.strip_edges();
+	} else if (is_zip_file(d, base_path.strip_edges())) {
+		valid_path = base_path.strip_edges();
+		is_zip = true;
 	}
 
 	if (valid_path.is_empty()) {
@@ -126,7 +130,7 @@ String ProjectDialog::_test_path() {
 		return "";
 	}
 
-	if (mode == MODE_IMPORT && valid_path.ends_with(".zip")) {
+	if (mode == MODE_IMPORT && is_zip) {
 		if (d->change_dir(install_path->get_text()) == OK) {
 			valid_install_path = install_path->get_text();
 		} else if (d->change_dir(install_path->get_text().strip_edges()) == OK) {
@@ -134,15 +138,15 @@ String ProjectDialog::_test_path() {
 		}
 
 		if (valid_install_path.is_empty()) {
-			_set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR, INSTALL_PATH);
+			_set_message(TTR("The install path specified doesn't exist."), MESSAGE_ERROR, INSTALL_PATH);
 			get_ok_button()->set_disabled(true);
 			return "";
 		}
 	}
 
 	if (mode == MODE_IMPORT || mode == MODE_RENAME) {
-		if (!valid_path.is_empty() && !d->file_exists("project.godot")) {
-			if (valid_path.ends_with(".zip")) {
+		if (!d->file_exists("project.godot")) {
+			if (is_zip) {
 				Ref<FileAccess> io_fa;
 				zlib_filefunc_def io = zipio_create_io(&io_fa);
 
@@ -197,7 +201,7 @@ String ProjectDialog::_test_path() {
 				d->list_dir_end();
 
 				if (!is_folder_empty) {
-					_set_message(TTR("Please choose an empty folder."), MESSAGE_WARNING, INSTALL_PATH);
+					_set_message(TTR("Please choose an empty install folder."), MESSAGE_WARNING, INSTALL_PATH);
 					get_ok_button()->set_disabled(true);
 					return "";
 				}
@@ -209,8 +213,8 @@ String ProjectDialog::_test_path() {
 				return "";
 			}
 
-		} else if (valid_path.ends_with("zip")) {
-			_set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
+		} else if (is_zip) {
+			_set_message(TTR("The install directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
 			get_ok_button()->set_disabled(true);
 			return "";
 		}
@@ -252,7 +256,7 @@ String ProjectDialog::_test_path() {
 	return valid_path;
 }
 
-void ProjectDialog::_path_text_changed(const String &p_path) {
+void ProjectDialog::_update_path(const String &p_path) {
 	String sp = _test_path();
 	if (!sp.is_empty()) {
 		// If the project name is empty or default, infer the project name from the selected folder name
@@ -275,6 +279,21 @@ void ProjectDialog::_path_text_changed(const String &p_path) {
 	if (!created_folder_path.is_empty() && created_folder_path != p_path) {
 		_remove_created_folder();
 	}
+}
+
+void ProjectDialog::_path_text_changed(const String &p_path) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (mode == MODE_IMPORT && is_zip_file(d, p_path)) {
+		install_path->set_text(p_path.get_base_dir());
+		install_path_container->show();
+	} else if (mode == MODE_IMPORT && is_zip_file(d, p_path.strip_edges())) {
+		install_path->set_text(p_path.strip_edges().get_base_dir());
+		install_path_container->show();
+	} else {
+		install_path_container->hide();
+	}
+
+	_update_path(p_path.simplify_path());
 }
 
 void ProjectDialog::_file_selected(const String &p_path) {
@@ -300,7 +319,7 @@ void ProjectDialog::_file_selected(const String &p_path) {
 
 	String sp = p.simplify_path();
 	project_path->set_text(sp);
-	_path_text_changed(sp);
+	_update_path(sp);
 	if (p.ends_with(".zip")) {
 		install_path->call_deferred(SNAME("grab_focus"));
 	} else {
@@ -314,14 +333,14 @@ void ProjectDialog::_path_selected(const String &p_path) {
 
 	String sp = p_path.simplify_path();
 	project_path->set_text(sp);
-	_path_text_changed(sp);
+	_update_path(sp);
 	get_ok_button()->call_deferred(SNAME("grab_focus"));
 }
 
 void ProjectDialog::_install_path_selected(const String &p_path) {
 	String sp = p_path.simplify_path();
 	install_path->set_text(sp);
-	_path_text_changed(sp);
+	_update_path(sp);
 	get_ok_button()->call_deferred(SNAME("grab_focus"));
 }
 
@@ -359,7 +378,7 @@ void ProjectDialog::_create_folder() {
 				d->change_dir(project_name_no_edges);
 				String dir_str = d->get_current_dir();
 				project_path->set_text(dir_str);
-				_path_text_changed(dir_str);
+				_update_path(dir_str);
 				created_folder_path = d->get_current_dir();
 				create_dir->set_disabled(true);
 			} else {
@@ -638,7 +657,7 @@ void ProjectDialog::cancel_pressed() {
 	_remove_created_folder();
 
 	project_path->clear();
-	_path_text_changed("");
+	_update_path("");
 	project_name->clear();
 	_text_changed("");
 
@@ -968,7 +987,7 @@ ProjectDialog::ProjectDialog() {
 
 	project_name->connect("text_changed", callable_mp(this, &ProjectDialog::_text_changed));
 	project_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
-	install_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
+	install_path->connect("text_changed", callable_mp(this, &ProjectDialog::_update_path));
 	fdialog->connect("dir_selected", callable_mp(this, &ProjectDialog::_path_selected));
 	fdialog->connect("file_selected", callable_mp(this, &ProjectDialog::_file_selected));
 	fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));

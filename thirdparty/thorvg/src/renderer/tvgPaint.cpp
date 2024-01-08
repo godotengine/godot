@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #include "tvgShape.h"
 #include "tvgPicture.h"
 #include "tvgScene.h"
+#include "tvgText.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -35,6 +36,7 @@
         case TVG_CLASS_ID_SHAPE: ret = P((Shape*)paint)->METHOD; break; \
         case TVG_CLASS_ID_SCENE: ret = P((Scene*)paint)->METHOD; break; \
         case TVG_CLASS_ID_PICTURE: ret = P((Picture*)paint)->METHOD; break; \
+        case TVG_CLASS_ID_TEXT: ret = P((Text*)paint)->METHOD; break; \
         default: ret = {}; \
     }
 

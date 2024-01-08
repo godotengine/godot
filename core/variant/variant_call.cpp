@@ -1071,14 +1071,14 @@ struct _VariantCall {
 
 	static ConstantData *constant_data;
 
-	static void add_constant(int p_type, StringName p_constant_name, int64_t p_constant_value) {
+	static void add_constant(int p_type, const StringName &p_constant_name, int64_t p_constant_value) {
 		constant_data[p_type].value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].value_ordered.push_back(p_constant_name);
 #endif
 	}
 
-	static void add_variant_constant(int p_type, StringName p_constant_name, const Variant &p_constant_value) {
+	static void add_variant_constant(int p_type, const StringName &p_constant_name, const Variant &p_constant_value) {
 		constant_data[p_type].variant_value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].variant_value_ordered.push_back(p_constant_name);
@@ -1091,7 +1091,7 @@ struct _VariantCall {
 
 	static EnumData *enum_data;
 
-	static void add_enum_constant(int p_type, StringName p_enum_type_name, StringName p_enumeration_name, int p_enum_value) {
+	static void add_enum_constant(int p_type, const StringName &p_enum_type_name, const StringName &p_enumeration_name, int p_enum_value) {
 		enum_data[p_type].value[p_enum_type_name][p_enumeration_name] = p_enum_value;
 	}
 };
@@ -1504,7 +1504,7 @@ void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums
 	}
 }
 
-void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations) {
+void Variant::get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
 	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
@@ -1516,7 +1516,7 @@ void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_
 	}
 }
 
-int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid) {
+int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid) {
 	if (r_valid) {
 		*r_valid = false;
 	}

@@ -393,7 +393,7 @@ NavigationPolygon::SourceGeometryMode NavigationPolygon::get_source_geometry_mod
 	return source_geometry_mode;
 }
 
-void NavigationPolygon::set_source_geometry_group_name(StringName p_group_name) {
+void NavigationPolygon::set_source_geometry_group_name(const StringName &p_group_name) {
 	source_geometry_group_name = p_group_name;
 }
 
