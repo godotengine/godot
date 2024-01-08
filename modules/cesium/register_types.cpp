@@ -3,6 +3,7 @@
 #include "core/object/class_db.h"
 #include "Ellipsoid.h"
 #include "Globe.h"
+#include "Scene/Cesium3DTileset.h"
 
 using namespace Cesium;
 void initialize_cesium_module(ModuleInitializationLevel p_level) {
@@ -12,6 +13,7 @@ void initialize_cesium_module(ModuleInitializationLevel p_level) {
 
 	ClassDB::register_class<Ellipsoid>();
 	ClassDB::register_class<Globe>();
+    ClassDB::register_class<Cesium3DTileset>();
 }
 
 void uninitialize_cesium_module(ModuleInitializationLevel p_level) {
