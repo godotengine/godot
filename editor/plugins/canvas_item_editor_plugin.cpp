@@ -2014,14 +2014,14 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			if ((b->is_alt_pressed() && !b->is_command_or_control_pressed()) || tool == TOOL_MOVE) {
 				List<CanvasItem *> selection = _get_edited_canvas_items();
 
-				drag_selection.clear();
-				for (int i = 0; i < selection.size(); i++) {
-					if (_is_node_movable(selection[i], true)) {
-						drag_selection.push_back(selection[i]);
-					}
-				}
-
 				if (selection.size() > 0) {
+					drag_selection.clear();
+					for (int i = 0; i < selection.size(); i++) {
+						if (_is_node_movable(selection[i], true)) {
+							drag_selection.push_back(selection[i]);
+						}
+					}
+
 					drag_type = DRAG_MOVE;
 
 					CanvasItem *ci = selection[0];
@@ -2043,8 +2043,9 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 					drag_from = transform.affine_inverse().xform(b->get_position());
 					_save_canvas_item_state(drag_selection);
+
+					return true;
 				}
-				return true;
 			}
 		}
 	}
@@ -2344,7 +2345,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT && !panner->is_panning()) {
+		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && !panner->is_panning() && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE)) {
 			// Single item selection
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
@@ -2379,7 +2380,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			} else {
 				bool still_selected = _select_click_on_item(ci, click, b->is_shift_pressed());
 				// Start dragging
-				if (still_selected) {
+				if (still_selected && (tool == TOOL_SELECT || tool == TOOL_MOVE)) {
 					// Drag the node(s) if requested
 					drag_start_origin = click;
 					drag_type = DRAG_QUEUED;
