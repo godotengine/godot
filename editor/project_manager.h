@@ -104,6 +104,7 @@ private:
 	void _set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS, InputType input_type = PROJECT_PATH);
 
 	String _test_path();
+	void _update_path(const String &p_path);
 	void _path_text_changed(const String &p_path);
 	void _path_selected(const String &p_path);
 	void _file_selected(const String &p_path);
