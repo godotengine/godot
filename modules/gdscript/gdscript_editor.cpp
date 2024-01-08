@@ -1125,19 +1125,31 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				base_type = GDScriptParser::DataType();
 			} break;
 			case GDScriptParser::DataType::SCRIPT: {
+				print_line("identifier script");
 				Ref<Script> scr = base_type.script_type;
 				if (scr.is_valid()) {
+<<<<<<< HEAD
 					if (p_types_only) {
 						// TODO: Need to implement Script::get_script_enum_list and retrieve the enum list from a script.
 					} else if (!p_only_functions) {
+=======
+					print_line("script valid");
+					if (!p_only_functions) {
+						print_line("not only functions");
+>>>>>>> ae78637b78 (Add test for `get_node` autocompletion)
 						if (!base_type.is_meta_type) {
+							print_line("no meta type");
 							List<PropertyInfo> members;
 							scr->get_script_property_list(&members);
+							print_line("scripts", members.size());
 							for (const PropertyInfo &E : members) {
+								print_line(E.name);
 								if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_INTERNAL)) {
+									print_line("filtered 1");
 									continue;
 								}
 								if (E.name.contains("/")) {
+									print_line("filtered 2");
 									continue;
 								}
 								int location = p_recursion_depth + _get_property_location(scr, E.name);
@@ -2173,6 +2185,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		if (_guess_expression_type(c, last_assigned_expression, assigned_type)) {
 			if (id_type.is_set() && assigned_type.type.is_set() && !GDScriptAnalyzer::check_type_compatibility(id_type, assigned_type.type)) {
 				// The assigned type is incompatible. The annotated type takes priority.
+				print_line("Just here for testing.");
 				r_type.assigned_expression = last_assigned_expression;
 				r_type.type = id_type;
 			} else {
@@ -3163,6 +3176,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			is_function = true;
 			[[fallthrough]];
 		case GDScriptParser::COMPLETION_ATTRIBUTE: {
+			print_line("completion attribute");
 			r_forced = true;
 			const GDScriptParser::SubscriptNode *attr = static_cast<const GDScriptParser::SubscriptNode *>(completion_context.node);
 			if (attr->base) {
@@ -3171,7 +3185,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				if (!found_type && !_guess_expression_type(completion_context, attr->base, base)) {
 					break;
 				}
-
+				print_line(base.type.script_path, base.type.kind);
 				_find_identifiers_in_base(base, is_function, false, options, 0);
 			}
 		} break;

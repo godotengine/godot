@@ -113,6 +113,8 @@ static void test_directory(const String &p_dir) {
 			// Require pointer sentinel char in scripts.
 			CHECK(code.find_char(0xFFFF) != -1);
 
+			print_line("Testing completion for: ", next);
+
 			ConfigFile conf;
 			if (conf.load(path.path_join(next.get_basename() + ".cfg")) != OK) {
 				FAIL("No config file found.");
@@ -153,6 +155,7 @@ static void test_directory(const String &p_dir) {
 			GDScriptLanguage::get_singleton()->complete_code(code, path.path_join(next), owner, &options, forced, call_hint);
 			String contains_excluded;
 			for (ScriptLanguage::CodeCompletionOption &option : options) {
+				print_line(option.display);
 				for (const Dictionary &E : exclude) {
 					if (match_option(E, option)) {
 						contains_excluded = option.display;
@@ -166,11 +169,18 @@ static void test_directory(const String &p_dir) {
 				for (const Dictionary &E : include) {
 					if (match_option(E, option)) {
 						include.erase(E);
+						print_line("erased");
 						break;
 					}
 				}
 			}
 			CHECK_MESSAGE(contains_excluded.is_empty(), "Autocompletion suggests illegal option '", contains_excluded, "' for '", path.path_join(next), "'.");
+
+			if (!include.is_empty()) {
+				for (const Dictionary &E : include) {
+					print_line(E);
+				}
+			}
 			CHECK(include.is_empty());
 
 			String expected_call_hint = conf.get_value("output", "call_hint", call_hint);
