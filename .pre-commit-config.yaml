@@ -21,6 +21,22 @@ repos:
         language: python
         files: ^(doc|modules|platform).*xml$
 
+      - id: copyright-headers
+        name: copyright-headers
+        language: python
+        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java)$
+        entry: python3 misc/scripts/copyright_headers.py
+        exclude: |
+          (?x)^(
+            tests/python_build.*|
+            .*thirdparty.*|
+            .*platform/android/java/lib/src/com.*|
+            .*-so_wrap.*|
+            platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView.*|
+            platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper.*|
+            platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.*
+          )
+
   - repo: https://github.com/psf/black-pre-commit-mirror  # mypyc-compiled black
     rev: 23.3.0
     hooks:
