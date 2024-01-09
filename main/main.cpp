@@ -1839,6 +1839,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("ATI", "Radeon (TM) R9 M3");
 		BLOCK_DEVICE("AMD", "Radeon (TM) R9 M3");
 
+		// Intel GPUs.
+		BLOCK_DEVICE("Intel", "Intel Ivybridge Mobile");
+		BLOCK_DEVICE("Intel", "Intel(R) Ivybridge Mobile");
+		BLOCK_DEVICE("Intel", "Intel HD Graphics 2500");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2500");
+		BLOCK_DEVICE("Intel", "Intel HD Graphics 4000");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4000");
+		BLOCK_DEVICE("Intel", "Intel HD Graphics P4000");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4000");
+
 #undef BLOCK_DEVICE
 
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), device_blocklist);
