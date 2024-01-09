@@ -733,6 +733,9 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 		case TEXTURE_SLICE_2D_ARRAY: {
 			image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 		} break;
+		default: {
+			return TextureID(nullptr);
+		}
 	}
 	image_view_create_info.format = RD_TO_VK_FORMAT[p_view.format];
 	image_view_create_info.components.r = (VkComponentSwizzle)p_view.swizzle_r;
@@ -1172,7 +1175,7 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID
 
 	VkCommandBufferBeginInfo cmd_buf_begin_info = {};
 	cmd_buf_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	cmd_buf_begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+	cmd_buf_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 	cmd_buf_begin_info.pInheritanceInfo = &inheritance_info;
 
 	VkResult err = vkBeginCommandBuffer((VkCommandBuffer)p_cmd_buffer.id, &cmd_buf_begin_info);
@@ -1557,11 +1560,9 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 		read_offset += sizeof(ShaderBinary::SpecializationConstant);
 	}
 
-	struct Stage {
-		ShaderStage type = SHADER_STAGE_MAX;
-		Vector<uint8_t> spirv;
-	};
-	Vector<Stage> stages;
+	Vector<Vector<uint8_t>> stages_spirv;
+	stages_spirv.resize(binary_data.stage_count);
+	r_shader_desc.stages.resize(binary_data.stage_count);
 
 	for (uint32_t i = 0; i < binary_data.stage_count; i++) {
 		ERR_FAIL_COND_V(read_offset + sizeof(uint32_t) * 3 >= binsize, ShaderID());
@@ -1587,17 +1588,14 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 			src_smolv = binptr + read_offset;
 		}
 
-		Vector<uint8_t> spirv;
+		Vector<uint8_t> &spirv = stages_spirv.ptrw()[i];
 		uint32_t spirv_size = smolv::GetDecodedBufferSize(src_smolv, smolv_size);
 		spirv.resize(spirv_size);
 		if (!smolv::Decode(src_smolv, smolv_size, spirv.ptrw(), spirv_size)) {
 			ERR_FAIL_V_MSG(ShaderID(), "Malformed smolv input uncompressing shader stage:" + String(SHADER_STAGE_NAMES[stage]));
 		}
 
-		Stage stage_entry;
-		stage_entry.type = ShaderStage(stage);
-		stage_entry.spirv = spirv;
-		stages.push_back(stage_entry);
+		r_shader_desc.stages.set(i, ShaderStage(stage));
 
 		if (buf_size % 4 != 0) {
 			buf_size += 4 - (buf_size % 4);
@@ -1614,22 +1612,22 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 	String error_text;
 
-	for (int i = 0; i < stages.size(); i++) {
+	for (int i = 0; i < r_shader_desc.stages.size(); i++) {
 		VkShaderModuleCreateInfo shader_module_create_info = {};
 		shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		shader_module_create_info.codeSize = stages[i].spirv.size();
-		shader_module_create_info.pCode = (const uint32_t *)stages[i].spirv.ptr();
+		shader_module_create_info.codeSize = stages_spirv[i].size();
+		shader_module_create_info.pCode = (const uint32_t *)stages_spirv[i].ptr();
 
 		VkShaderModule vk_module = VK_NULL_HANDLE;
 		VkResult res = vkCreateShaderModule(vk_device, &shader_module_create_info, nullptr, &vk_module);
 		if (res) {
-			error_text = "Error (" + itos(res) + ") creating shader module for stage: " + String(SHADER_STAGE_NAMES[stages[i].type]);
+			error_text = "Error (" + itos(res) + ") creating shader module for stage: " + String(SHADER_STAGE_NAMES[r_shader_desc.stages[i]]);
 			break;
 		}
 
 		VkPipelineShaderStageCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		create_info.stage = RD_STAGE_TO_VK_SHADER_STAGE_BITS[stages[i].type];
+		create_info.stage = RD_STAGE_TO_VK_SHADER_STAGE_BITS[r_shader_desc.stages[i]];
 		create_info.module = vk_module;
 		create_info.pName = "main";
 
@@ -3051,6 +3049,26 @@ void RenderingDeviceDriverVulkan::command_timestamp_query_pool_reset(CommandBuff
 
 void RenderingDeviceDriverVulkan::command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) {
 	vkCmdWriteTimestamp((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, (VkQueryPool)p_pool_id.id, p_index);
+}
+
+/****************/
+/**** LABELS ****/
+/****************/
+
+void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
+	VkDebugUtilsLabelEXT label;
+	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+	label.pNext = nullptr;
+	label.pLabelName = p_label_name;
+	label.color[0] = p_color[0];
+	label.color[1] = p_color[1];
+	label.color[2] = p_color[2];
+	label.color[3] = p_color[3];
+	vkCmdBeginDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id, &label);
+}
+
+void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer) {
+	vkCmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
 }
 
 /****************/

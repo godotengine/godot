@@ -557,6 +557,24 @@ void ColorPicker::_html_submitted(const String &p_html) {
 	}
 
 	Color new_color = Color::from_string(p_html.strip_edges(), color);
+	String html_no_prefix = p_html.strip_edges().trim_prefix("#");
+	if (html_no_prefix.is_valid_hex_number(false)) {
+		// Convert invalid HTML color codes that software like Figma supports.
+		if (html_no_prefix.length() == 1) {
+			// Turn `#1` into `#111111`.
+			html_no_prefix = html_no_prefix.repeat(6);
+		} else if (html_no_prefix.length() == 2) {
+			// Turn `#12` into `#121212`.
+			html_no_prefix = html_no_prefix.repeat(3);
+		} else if (html_no_prefix.length() == 5) {
+			// Turn `#12345` into `#11223344`.
+			html_no_prefix = html_no_prefix.left(4);
+		} else if (html_no_prefix.length() == 7) {
+			// Turn `#1234567` into `#123456`.
+			html_no_prefix = html_no_prefix.left(6);
+		}
+	}
+	new_color = Color::from_string(html_no_prefix, new_color);
 
 	if (!is_editing_alpha()) {
 		new_color.a = color.a;

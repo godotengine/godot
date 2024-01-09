@@ -220,7 +220,7 @@ void RendererSceneRenderRD::voxel_gi_update(RID p_probe, bool p_update_light_ins
 	gi.voxel_gi_update(p_probe, p_update_light_instances, p_light_instances, p_dynamic_objects);
 }
 
-void RendererSceneRenderRD::_debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth) {
+void RendererSceneRenderRD::_debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms) {
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
 	if (!p_render_buffers->has_custom_data(RB_SCOPE_SDFGI)) {
@@ -229,7 +229,7 @@ void RendererSceneRenderRD::_debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_rend
 
 	Ref<RendererRD::GI::SDFGI> sdfgi = p_render_buffers->get_custom_data(RB_SCOPE_SDFGI);
 
-	sdfgi->debug_probes(p_framebuffer, p_view_count, p_camera_with_transforms, p_will_continue_color, p_will_continue_depth);
+	sdfgi->debug_probes(p_framebuffer, p_view_count, p_camera_with_transforms);
 }
 
 ////////////////////////////////
@@ -984,14 +984,6 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
 
 		Ref<RendererRD::GI::SDFGI> sdfgi = p_render_data->render_buffers->get_custom_data(RB_SCOPE_SDFGI);
 		sdfgi->update_probes(p_render_data->environment, sky.sky_owner.get_or_null(environment_get_sky(p_render_data->environment)));
-	}
-}
-
-void RendererSceneRenderRD::_pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi) {
-	if (p_render_data->render_buffers.is_valid()) {
-		if (p_use_gi) {
-			RD::get_singleton()->compute_list_end();
-		}
 	}
 }
 

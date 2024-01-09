@@ -240,9 +240,6 @@ public:
 	virtual Error swap_buffers() override final;
 	virtual Error initialize() override final;
 
-	virtual void command_begin_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) override final;
-	virtual void command_insert_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) override final;
-	virtual void command_end_label(RDD::CommandBufferID p_command_buffer) override final;
 	void set_object_name(ID3D12Object *p_object, String p_object_name);
 
 	virtual String get_device_vendor_name() const override final;
@@ -255,6 +252,7 @@ public:
 	virtual DisplayServer::VSyncMode get_vsync_mode(DisplayServer::WindowID p_window = 0) const override final;
 
 	virtual RenderingDeviceDriver *get_driver(RID p_local_device = RID()) override final;
+	virtual bool is_debug_utils_enabled() const override final;
 
 	D3D12Context();
 	virtual ~D3D12Context();

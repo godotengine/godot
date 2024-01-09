@@ -7,6 +7,9 @@ Import("env")
 
 env_modules = env.Clone()
 
+# Allow modules to detect if they are being built as a module.
+env_modules.Append(CPPDEFINES=["GODOT_MODULE"])
+
 Export("env_modules")
 
 # Header with MODULE_*_ENABLED defines.

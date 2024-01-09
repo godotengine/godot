@@ -771,6 +771,13 @@ public:
 	virtual void command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) override final;
 
 	/****************/
+	/**** LABELS ****/
+	/****************/
+
+	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) override final;
+	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
+
+	/****************/
 	/**** SCREEN ****/
 	/****************/
 
