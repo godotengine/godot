@@ -43,6 +43,7 @@
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
+#import <OpenGLES/ES3/gl.h>
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 
@@ -59,12 +60,18 @@
 }
 
 - (void)layoutDisplayLayer {
+	DisplayServerIOS::get_singleton()->window_make_current();
 }
 
 - (void)startRenderDisplayLayer {
+	DisplayServerIOS::get_singleton()->window_make_current();
 }
 
 - (void)stopRenderDisplayLayer {
+}
+
+- (void)dealloc {
+	DisplayServerIOS::get_singleton()->window_release_current();
 }
 
 @end
@@ -77,6 +84,7 @@
 	EAGLContext *context;
 	GLuint viewRenderbuffer, viewFramebuffer;
 	GLuint depthRenderbuffer;
+	BOOL initialized;
 }
 
 - (void)initializeDisplayLayer {
@@ -103,34 +111,42 @@
 		NSLog(@"Failed to set EAGLContext!");
 		return;
 	}
-	if (![self createFramebuffer]) {
-		NSLog(@"Failed to create frame buffer!");
-		return;
-	}
+	initialized = NO;
 }
 
 - (void)layoutDisplayLayer {
 	[EAGLContext setCurrentContext:context];
-	[self destroyFramebuffer];
-	[self createFramebuffer];
+	if (initialized) {
+		[self destroyFramebuffer];
+		[self createFramebuffer];
+	}
 }
 
 - (void)startRenderDisplayLayer {
 	[EAGLContext setCurrentContext:context];
 
-	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+	if (!initialized && RasterizerGLES3::get_singleton() != nullptr) {
+		if (![self createFramebuffer]) {
+			NSLog(@"Failed to create frame buffer!");
+			return;
+		}
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
 }
 
 - (void)stopRenderDisplayLayer {
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
+	if (initialized) {
+		glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
+		[context presentRenderbuffer:GL_RENDERBUFFER];
 
 #ifdef DEBUG_ENABLED
-	GLenum err = glGetError();
-	if (err) {
-		NSLog(@"DrawView: %x error", err);
-	}
+		GLenum err = glGetError();
+		if (err) {
+			NSLog(@"DrawView: %x error", err);
+		}
 #endif
+	}
 }
 
 - (void)dealloc {
@@ -144,31 +160,32 @@
 }
 
 - (BOOL)createFramebuffer {
-	glGenFramebuffersOES(1, &viewFramebuffer);
-	glGenRenderbuffersOES(1, &viewRenderbuffer);
+	glGenFramebuffers(1, &viewFramebuffer);
+	glGenRenderbuffers(1, &viewRenderbuffer);
 
-	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
 	// This call associates the storage for the current render buffer with the EAGLDrawable (our CAself)
 	// allowing us to draw into a buffer that will later be rendered to screen wherever the layer is (which corresponds with our view).
-	[context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(id<EAGLDrawable>)self];
-	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+	[context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(id<EAGLDrawable>)self];
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
 
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
 
 	// For this sample, we also need a depth buffer, so we'll create and attach one via another renderbuffer.
-	glGenRenderbuffersOES(1, &depthRenderbuffer);
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-	glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
-	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
+	glGenRenderbuffers(1, &depthRenderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, backingWidth, backingHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
 
-	if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-		NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
 		return NO;
 	}
 
 	GLES3::TextureStorage::system_fbo = viewFramebuffer;
+	initialized = YES;
 
 	return YES;
 }
@@ -177,13 +194,13 @@
 - (void)destroyFramebuffer {
 	GLES3::TextureStorage::system_fbo = 0;
 
-	glDeleteFramebuffersOES(1, &viewFramebuffer);
+	glDeleteFramebuffers(1, &viewFramebuffer);
 	viewFramebuffer = 0;
-	glDeleteRenderbuffersOES(1, &viewRenderbuffer);
+	glDeleteRenderbuffers(1, &viewRenderbuffer);
 	viewRenderbuffer = 0;
 
 	if (depthRenderbuffer) {
-		glDeleteRenderbuffersOES(1, &depthRenderbuffer);
+		glDeleteRenderbuffers(1, &depthRenderbuffer);
 		depthRenderbuffer = 0;
 	}
 }

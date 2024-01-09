@@ -31,6 +31,7 @@ def get_opts():
         ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),
         ("ios_triple", "Triple for ios toolchain", ""),
+        ("angle_libs", "Path to the ANGLE static libraries", ""),
     ]
 
 
@@ -156,6 +157,10 @@ def configure(env: "Environment"):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])
+        if env["angle_libs"] != "":
+            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
+
         env.Prepend(
             CPPPATH=[
                 "$IOS_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",

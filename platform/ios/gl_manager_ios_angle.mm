@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gl_manager_windows_angle.cpp                                          */
+/*  gl_manager_ios_angle.mm                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,30 +30,30 @@
 
 #include "core/config/project_settings.h"
 
-#include "gl_manager_windows_angle.h"
+#include "gl_manager_ios_angle.h"
 
-#if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
+#if defined(IOS_ENABLED) && defined(GLES3_ENABLED) && defined(EGL_ENABLED)
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <EGL/eglext_angle.h>
 
-const char *GLManagerANGLE_Windows::_get_platform_extension_name() const {
+const char *GLManagerANGLE_IOS::_get_platform_extension_name() const {
 	return "EGL_ANGLE_platform_angle";
 }
 
-EGLenum GLManagerANGLE_Windows::_get_platform_extension_enum() const {
+EGLenum GLManagerANGLE_IOS::_get_platform_extension_enum() const {
 	return EGL_PLATFORM_ANGLE_ANGLE;
 }
 
-Vector<EGLAttrib> GLManagerANGLE_Windows::_get_platform_display_attributes() const {
+Vector<EGLAttrib> GLManagerANGLE_IOS::_get_platform_display_attributes() const {
 	const String &backend = GLOBAL_GET("rendering/gl_compatibility/angle_backend");
 
 	Vector<EGLAttrib> ret;
 	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
-	if (backend.to_lower() == "dx11" || backend.to_lower() == "default") {
-		ret.push_back(EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE);
+	if (backend.to_lower() == "metal" || backend.to_lower() == "default") {
+		ret.push_back(EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE);
 	} else {
 		ret.push_back(EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE);
 	}
@@ -62,11 +62,11 @@ Vector<EGLAttrib> GLManagerANGLE_Windows::_get_platform_display_attributes() con
 	return ret;
 }
 
-EGLenum GLManagerANGLE_Windows::_get_platform_api_enum() const {
+EGLenum GLManagerANGLE_IOS::_get_platform_api_enum() const {
 	return EGL_OPENGL_ES_API;
 }
 
-Vector<EGLint> GLManagerANGLE_Windows::_get_platform_context_attribs() const {
+Vector<EGLint> GLManagerANGLE_IOS::_get_platform_context_attribs() const {
 	Vector<EGLint> ret;
 	ret.push_back(EGL_CONTEXT_CLIENT_VERSION);
 	ret.push_back(3);
@@ -75,4 +75,4 @@ Vector<EGLint> GLManagerANGLE_Windows::_get_platform_context_attribs() const {
 	return ret;
 }
 
-#endif // WINDOWS_ENABLED && GLES3_ENABLED
+#endif // IOS_ENABLED && GLES3_ENABLED && EGL_ENABLED

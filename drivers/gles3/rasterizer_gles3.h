@@ -55,6 +55,7 @@ private:
 	double time_total = 0.0;
 
 	static bool gles_over_gl;
+	static bool use_egl;
 
 protected:
 	GLES3::Config *config = nullptr;
@@ -105,8 +106,9 @@ public:
 	static bool is_gles_over_gl() { return gles_over_gl; }
 	static void clear_depth(float p_depth);
 
-	static void make_current(bool p_gles_over_gl) {
+	static void make_current(bool p_gles_over_gl, bool p_use_egl = true) {
 		gles_over_gl = p_gles_over_gl;
+		use_egl = p_use_egl;
 		_create_func = _create_current;
 		low_end = true;
 	}

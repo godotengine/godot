@@ -83,6 +83,7 @@
 #endif
 
 bool RasterizerGLES3::gles_over_gl = true;
+bool RasterizerGLES3::use_egl = true;
 
 void RasterizerGLES3::begin_frame(double frame_step) {
 	frame++;
@@ -231,9 +232,9 @@ RasterizerGLES3::RasterizerGLES3() {
 	// version global to see if it loaded for now though, otherwise we fall back to
 	// the generic loader below.
 #if defined(EGL_STATIC)
-	bool has_egl = true;
+	bool has_egl = use_egl;
 #else
-	bool has_egl = (eglGetProcAddress != nullptr);
+	bool has_egl = use_egl && (eglGetProcAddress != nullptr);
 #endif
 
 	if (gles_over_gl) {
@@ -262,6 +263,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	// or we need to actually test for this situation before constructing this.
 	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
 
+#ifdef CAN_DEBUG
 	if (gles_over_gl) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (GLAD_GL_ARB_debug_output) {
@@ -273,6 +275,7 @@ RasterizerGLES3::RasterizerGLES3() {
 			}
 		}
 	}
+#endif // CAN_DEBUG
 #endif // GLAD_ENABLED
 
 	// For debugging

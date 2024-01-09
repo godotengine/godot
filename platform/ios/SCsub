@@ -15,6 +15,7 @@ ios_lib = [
     "godot_view.mm",
     "tts_ios.mm",
     "display_layer.mm",
+    "gl_manager_ios_angle.mm",
     "godot_app_delegate.m",
     "godot_view_renderer.mm",
     "device_metrics.m",

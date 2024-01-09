@@ -50,6 +50,10 @@
 #endif // RD_ENABLED
 
 #if defined(GLES3_ENABLED)
+#include "gl_manager_ios_angle.h"
+#endif // GLES3_ENABLED
+
+#if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif // GLES3_ENABLED
 
@@ -64,6 +68,9 @@ class DisplayServerIOS : public DisplayServer {
 #if defined(RD_ENABLED)
 	ApiContextRD *context_rd = nullptr;
 	RenderingDevice *rendering_device = nullptr;
+#endif
+#if defined(GLES3_ENABLED) && defined(EGL_ENABLED)
+	GLManagerANGLE_IOS *gl_manager_angle = nullptr;
 #endif
 
 	id tts = nullptr;
@@ -130,6 +137,22 @@ public:
 	void update_gyroscope(float p_x, float p_y, float p_z);
 
 	// MARK: -
+
+	void window_make_current() {
+#if defined(GLES3_ENABLED) && defined(EGL_ENABLED)
+		if (gl_manager_angle) {
+			gl_manager_angle->window_make_current(MAIN_WINDOW_ID);
+		}
+#endif
+	}
+
+	void window_release_current() {
+#if defined(GLES3_ENABLED) && defined(EGL_ENABLED)
+		if (gl_manager_angle) {
+			gl_manager_angle->release_current();
+		}
+#endif
+	}
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
@@ -227,7 +250,13 @@ public:
 	virtual bool screen_is_kept_on() const override;
 
 	void resize_window(CGSize size);
-	virtual void swap_buffers() override {}
+	virtual void swap_buffers() override {
+#if defined(GLES3_ENABLED) && defined(EGL_ENABLED)
+		if (gl_manager_angle) {
+			gl_manager_angle->swap_buffers();
+		}
+#endif
+	}
 };
 
 #endif // DISPLAY_SERVER_IOS_H

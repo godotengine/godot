@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/config/project_settings.h"
+
 #include "gl_manager_macos_angle.h"
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
@@ -46,9 +48,15 @@ EGLenum GLManagerANGLE_MacOS::_get_platform_extension_enum() const {
 }
 
 Vector<EGLAttrib> GLManagerANGLE_MacOS::_get_platform_display_attributes() const {
+	const String &backend = GLOBAL_GET("rendering/gl_compatibility/angle_backend");
+
 	Vector<EGLAttrib> ret;
 	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
-	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE);
+	if (backend.to_lower() == "metal" || backend.to_lower() == "default") {
+		ret.push_back(EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE);
+	} else {
+		ret.push_back(EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE);
+	}
 	ret.push_back(EGL_NONE);
 
 	return ret;

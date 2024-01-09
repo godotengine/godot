@@ -35,6 +35,14 @@
 #define GLES_API_ENABLED // Allow using GLES.
 #endif
 
-#include <ES3/gl.h>
+#ifdef EGL_STATIC
+#define KHRONOS_STATIC 1
+#include "thirdparty/angle/include/EGL/egl.h"
+#include "thirdparty/angle/include/EGL/eglext.h"
+#undef KHRONOS_STATIC
+#else
+#include "thirdparty/glad/glad/egl.h"
+#endif
+#include "thirdparty/glad/glad/gl.h"
 
 #endif // PLATFORM_GL_H
