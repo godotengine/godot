@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "scene_tree_dock.h"
-#include "node_dock.h"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -50,6 +49,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
+#include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -2320,18 +2320,121 @@ void SceneTreeDock::_toggle_placeholder_from_selection() {
 	}
 }
 
-void SceneTreeDock::_toggle_editable_children(Node *p_node) {
-	if (p_node) {
-		bool editable = !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
-		EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(p_node, editable);
-		if (editable) {
-			p_node->set_scene_instance_load_placeholder(false);
+void SceneTreeDock::_reparent_nodes_to_root(Node *p_root, const Array &p_nodes, Node *p_owner) {
+	List<Node *> nodes;
+	for (int i = 0; i < p_nodes.size(); i++) {
+		Node *node = Object::cast_to<Node>(p_nodes[i]);
+		ERR_FAIL_NULL(node);
+		nodes.push_back(node);
+	}
+
+	for (Node *node : nodes) {
+		node->set_owner(p_owner);
+		List<Node *> owned;
+		node->get_owned_by(p_owner, &owned);
+		String original_name = node->get_name();
+		node->reparent(p_root);
+		node->set_name(original_name);
+
+		for (Node *F : owned) {
+			F->set_owner(p_owner);
+		}
+	}
+}
+
+void SceneTreeDock::_reparent_nodes_to_paths_with_transform_and_name(Node *p_root, const Array &p_nodes, const Array &p_paths, const Array &p_transforms, const Array &p_names, Node *p_owner) {
+	ERR_FAIL_COND(p_nodes.size() != p_paths.size());
+	ERR_FAIL_COND(p_nodes.size() != p_transforms.size());
+	ERR_FAIL_COND(p_nodes.size() != p_names.size());
+
+	for (int i = 0; i < p_nodes.size(); i++) {
+		Node *node = Object::cast_to<Node>(p_nodes[i]);
+		ERR_FAIL_NULL(node);
+		const NodePath &np = p_paths[i];
+		Node *parent_node = p_root->get_node_or_null(np);
+		ERR_FAIL_NULL(parent_node);
+
+		List<Node *> owned;
+		node->get_owned_by(p_owner, &owned);
+		node->reparent(parent_node);
+		node->set_name(p_names[i]);
+		Node3D *node_3d = Object::cast_to<Node3D>(node);
+		if (node_3d) {
+			node_3d->set_transform(p_transforms[i]);
+		} else {
+			Node2D *node_2d = Object::cast_to<Node2D>(node);
+			if (node_2d) {
+				node_2d->set_transform(p_transforms[i]);
+			}
 		}
 
-		Node3DEditor::get_singleton()->update_all_gizmos(p_node);
-
-		scene_tree->update_tree();
+		for (Node *F : owned) {
+			F->set_owner(p_owner);
+		}
 	}
+}
+
+void SceneTreeDock::_toggle_editable_children(Node *p_node) {
+	if (!p_node) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	undo_redo->create_action(TTR("Toggle Editable Children"));
+
+	bool editable = !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
+
+	undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", p_node, !editable);
+	undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", p_node, editable);
+
+	if (editable) {
+		bool original_scene_instance_load_placeholder = p_node->get_scene_instance_load_placeholder();
+
+		undo_redo->add_undo_method(p_node, "set_scene_instance_load_placeholder", original_scene_instance_load_placeholder);
+		undo_redo->add_do_method(p_node, "set_scene_instance_load_placeholder", false);
+	} else {
+		List<Node *> owned;
+		p_node->get_owned_by(edited_scene, &owned);
+
+		// Get the original paths, transforms, and names for undo.
+		Array owned_nodes_array;
+		Array paths_array;
+		Array transform_array;
+		Array name_array;
+
+		for (Node *owned_node : owned) {
+			if (owned_node != p_node && owned_node != edited_scene && owned_node->get_owner() == edited_scene && owned_node->get_parent()->get_owner() != edited_scene) {
+				owned_nodes_array.push_back(owned_node);
+				paths_array.push_back(p_node->get_path_to(owned_node->get_parent()));
+				name_array.push_back(owned_node->get_name());
+				Node3D *node_3d = Object::cast_to<Node3D>(owned_node);
+				if (node_3d) {
+					transform_array.push_back(node_3d->get_transform());
+				} else {
+					Node2D *node_2d = Object::cast_to<Node2D>(owned_node);
+					if (node_2d) {
+						transform_array.push_back(node_2d->get_transform());
+					} else {
+						transform_array.push_back(Variant());
+					}
+				}
+			}
+		}
+
+		if (!owned_nodes_array.is_empty()) {
+			undo_redo->add_undo_method(this, "_reparent_nodes_to_paths_with_transform_and_name", p_node, owned_nodes_array, paths_array, transform_array, name_array, edited_scene);
+			undo_redo->add_do_method(this, "_reparent_nodes_to_root", p_node, owned_nodes_array, edited_scene);
+		}
+	}
+
+	undo_redo->add_undo_method(Node3DEditor::get_singleton(), "update_all_gizmos", p_node);
+	undo_redo->add_do_method(Node3DEditor::get_singleton(), "update_all_gizmos", p_node);
+
+	undo_redo->add_undo_method(scene_tree, "update_tree");
+	undo_redo->add_do_method(scene_tree, "update_tree");
+
+	undo_redo->commit_action();
 }
 
 void SceneTreeDock::_delete_confirm(bool p_cut) {
@@ -3957,6 +4060,8 @@ void SceneTreeDock::_edit_subresource(int p_idx, const PopupMenu *p_from_menu) {
 
 void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
+	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_root"), &SceneTreeDock::_reparent_nodes_to_root);
+	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_paths_with_transform_and_name"), &SceneTreeDock::_reparent_nodes_to_paths_with_transform_and_name);
 
 	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
 

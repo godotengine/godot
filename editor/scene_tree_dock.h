@@ -223,6 +223,9 @@ class SceneTreeDock : public VBoxContainer {
 	void _delete_dialog_closed();
 
 	void _toggle_editable_children_from_selection();
+
+	void _reparent_nodes_to_root(Node *p_root, const Array &p_nodes, Node *p_owner);
+	void _reparent_nodes_to_paths_with_transform_and_name(Node *p_root, const Array &p_nodes, const Array &p_paths, const Array &p_transforms, const Array &p_names, Node *p_owner);
 	void _toggle_editable_children(Node *p_node);
 
 	void _toggle_placeholder_from_selection();
