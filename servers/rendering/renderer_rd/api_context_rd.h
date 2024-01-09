@@ -64,10 +64,6 @@ public:
 	virtual Error swap_buffers() = 0;
 	virtual Error initialize() = 0;
 
-	virtual void command_begin_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) = 0;
-	virtual void command_insert_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) = 0;
-	virtual void command_end_label(RDD::CommandBufferID p_command_buffer) = 0;
-
 	virtual String get_device_vendor_name() const = 0;
 	virtual String get_device_name() const = 0;
 	virtual RDD::DeviceType get_device_type() const = 0;
@@ -78,6 +74,7 @@ public:
 	virtual DisplayServer::VSyncMode get_vsync_mode(DisplayServer::WindowID p_window = 0) const = 0;
 
 	virtual RenderingDeviceDriver *get_driver(RID p_local_device = RID()) = 0;
+	virtual bool is_debug_utils_enabled() const = 0;
 
 	virtual ~ApiContextRD();
 };
