@@ -394,6 +394,9 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_ERROR, nullptr, CF_UNSPECIFIED, {}, {} }
 };
 
+/**
+ * Parse the next token from the code and advance the cursor.
+ */
 ShaderLanguage::Token ShaderLanguage::_get_token() {
 #define GETCHAR(m_idx) (((char_idx + m_idx) < code.length()) ? code[char_idx + m_idx] : char32_t(0))
 
@@ -894,6 +897,17 @@ bool ShaderLanguage::_lookup_next_for_completion(Token &r_tk) {
 		return true;
 	}
 	return false;
+}
+
+/**
+ * Parse the next token, then rewind the tokenizer state
+ * so it looks as if the token was never parsed.
+ */
+ShaderLanguage::Token ShaderLanguage::_peek_token() {
+	TkPos pre_pos = _get_tkpos();
+	Token tok = _get_token();
+	_set_tkpos(pre_pos);
+	return tok;
 }
 
 String ShaderLanguage::token_debug(const String &p_code) {
