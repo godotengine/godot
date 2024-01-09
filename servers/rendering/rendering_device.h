@@ -1075,9 +1075,8 @@ private:
 			uint32_t vertex_array_size = 0;
 			uint32_t vertex_max_instances_allowed = 0xFFFFFFFF;
 			bool index_buffer_uses_restart_indices = false;
-			uint32_t index_array_size = 0;
+			uint32_t index_array_count = 0;
 			uint32_t index_array_max_index = 0;
-			uint32_t index_array_offset = 0;
 			Vector<uint32_t> set_formats;
 			Vector<bool> set_bound;
 			Vector<RID> set_rids;
@@ -1095,8 +1094,7 @@ private:
 #else
 		struct Validation {
 			uint32_t vertex_array_size = 0;
-			uint32_t index_array_size = 0;
-			uint32_t index_array_offset;
+			uint32_t index_array_count = 0;
 		} validation;
 #endif
 	};

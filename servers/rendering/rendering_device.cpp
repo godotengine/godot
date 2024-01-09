@@ -3557,10 +3557,10 @@ void RenderingDevice::draw_list_bind_index_array(DrawListID p_list, RID p_index_
 #ifdef DEBUG_ENABLED
 	dl->validation.index_array_max_index = index_array->max_index;
 #endif
-	dl->validation.index_array_size = index_array->indices;
-	dl->validation.index_array_offset = index_array->offset;
+	dl->validation.index_array_count = index_array->indices;
 
-	draw_graph.add_draw_list_bind_index_buffer(index_array->driver_id, index_array->format, index_array->offset);
+	const uint64_t offset_bytes = index_array->offset * (index_array->format == INDEX_BUFFER_FORMAT_UINT16 ? sizeof(uint16_t) : sizeof(uint32_t));
+	draw_graph.add_draw_list_bind_index_buffer(index_array->driver_id, index_array->format, offset_bytes);
 
 	if (index_array->draw_tracker != nullptr) {
 		draw_graph.add_draw_list_usage(index_array->draw_tracker, RDG::RESOURCE_USAGE_INDEX_BUFFER_READ);
@@ -3667,13 +3667,13 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 		ERR_FAIL_COND_MSG(p_procedural_vertices > 0,
 				"Procedural vertices can't be used together with indices.");
 
-		ERR_FAIL_COND_MSG(!dl->validation.index_array_size,
+		ERR_FAIL_COND_MSG(!dl->validation.index_array_count,
 				"Draw command requested indices, but no index buffer was set.");
 
 		ERR_FAIL_COND_MSG(dl->validation.pipeline_uses_restart_indices != dl->validation.index_buffer_uses_restart_indices,
 				"The usage of restart indices in index buffer does not match the render primitive in the pipeline.");
 #endif
-		uint32_t to_draw = dl->validation.index_array_size;
+		uint32_t to_draw = dl->validation.index_array_count;
 
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_MSG(to_draw < dl->validation.pipeline_primitive_minimum,
@@ -3683,7 +3683,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 				"Index amount (" + itos(to_draw) + ") must be a multiple of the amount of indices required by the render primitive (" + itos(dl->validation.pipeline_primitive_divisor) + ").");
 #endif
 
-		draw_graph.add_draw_list_draw_indexed(to_draw, p_instances, dl->validation.index_array_offset);
+		draw_graph.add_draw_list_draw_indexed(to_draw, p_instances, 0);
 	} else {
 		uint32_t to_draw;
 
