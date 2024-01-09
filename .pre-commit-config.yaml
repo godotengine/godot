@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: clang-format
+        entry: ./misc/hooks/clang-format-wrap
+        language: system
+        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java|glsl)$
+        exclude: |
+          (?x)^(
+            tests/python_build.*|
+            .*thirdparty.*|
+            .*platform/android/java/lib/src/com.*|
+            .*-so_wrap.*
+          )

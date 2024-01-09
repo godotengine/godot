@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+CLANG_FORMAT=$(which clang-format 2>/dev/null)
+
+# To get consistent formatting, we recommend contributors to use the same
+# clang-format version as CI.
+RECOMMENDED_CLANG_FORMAT_MAJOR_MIN="13"
+RECOMMENDED_CLANG_FORMAT_MAJOR_MAX="16"
+
+if [ ! -x "$CLANG_FORMAT" ]; then
+    message="Error: clang-format executable not found. Please install clang-format $RECOMMENDED_CLANG_FORMAT_MAJOR_MAX."
+    exit 1
+fi
+
+# The returned string can be inconsistent depending on where clang-format comes from.
+# Example output strings reported by `clang-format --version`:
+# - Ubuntu: "Ubuntu clang-format version 11.0.0-2"
+# - Fedora: "clang-format version 11.0.0 (Fedora 11.0.0-2.fc33)"
+CLANG_FORMAT_VERSION="$(clang-format --version | sed "s/[^0-9\.]*\([0-9\.]*\).*/\1/")"
+CLANG_FORMAT_MAJOR="$(echo "$CLANG_FORMAT_VERSION" | cut -d. -f1)"
+
+if [[ "$CLANG_FORMAT_MAJOR" -lt "$RECOMMENDED_CLANG_FORMAT_MAJOR_MIN" || "$CLANG_FORMAT_MAJOR" -gt "$RECOMMENDED_CLANG_FORMAT_MAJOR_MAX" ]]; then
+    echo "Warning: Your clang-format binary is the wrong version ($CLANG_FORMAT_VERSION, expected between $RECOMMENDED_CLANG_FORMAT_MAJOR_MIN and $RECOMMENDED_CLANG_FORMAT_MAJOR_MAX)."
+    echo "         Consider upgrading or downgrading clang-format as formatting may not be applied correctly."
+fi
+
+exec "$CLANG_FORMAT" -style=file --Wno-error=unknown -i "$@"
