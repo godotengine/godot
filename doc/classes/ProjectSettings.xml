@@ -2534,8 +2534,6 @@
 			Decreasing this value may improve GPU performance on certain setups, even if the maximum number of clustered elements is never reached in the project.
 			[b]Note:[/b] This setting is only effective when using the Forward+ rendering method, not Mobile and Compatibility.
 		</member>
-		<member name="rendering/limits/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
-		</member>
 		<member name="rendering/limits/global_shader_variables/buffer_size" type="int" setter="" getter="" default="65536">
 		</member>
 		<member name="rendering/limits/opengl/max_lights_per_object" type="int" setter="" getter="" default="8">

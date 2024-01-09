@@ -76,6 +76,8 @@ char godot_nir_arch_name[32];
 #endif
 #endif
 
+#define D3D12_DEBUG_LAYER_BREAK_ON_ERROR 0
+
 void D3D12Context::_debug_message_func(
 		D3D12_MESSAGE_CATEGORY p_category,
 		D3D12_MESSAGE_SEVERITY p_severity,
@@ -563,6 +565,11 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 
 		res = info_queue->PushStorageFilter(&filter);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+#if D3D12_DEBUG_LAYER_BREAK_ON_ERROR
+		res = info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+#endif
 	}
 
 	return OK;
@@ -1056,27 +1063,6 @@ void D3D12Context::local_device_free(RID p_local_device) {
 	local_device_owner.free(p_local_device);
 }
 
-void D3D12Context::command_begin_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) {
-#ifdef PIX_ENABLED
-	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
-	PIXBeginEvent(cmd_buf_info->cmd_list.Get(), p_color.to_argb32(), p_label_name.utf8().get_data());
-#endif
-}
-
-void D3D12Context::command_insert_label(RDD::CommandBufferID p_command_buffer, String p_label_name, const Color &p_color) {
-#ifdef PIX_ENABLED
-	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
-	PIXSetMarker(cmd_buf_info->cmd_list.Get(), p_color.to_argb32(), p_label_name.utf8().get_data());
-#endif
-}
-
-void D3D12Context::command_end_label(RDD::CommandBufferID p_command_buffer) {
-#ifdef PIX_ENABLED
-	const RenderingDeviceDriverD3D12::CommandBufferInfo *cmd_buf_info = (const RenderingDeviceDriverD3D12::CommandBufferInfo *)p_command_buffer.id;
-	PIXEndEvent(cmd_buf_info->cmd_list.Get());
-#endif
-}
-
 void D3D12Context::set_object_name(ID3D12Object *p_object, String p_object_name) {
 	ERR_FAIL_NULL(p_object);
 	int name_len = p_object_name.size();
@@ -1123,6 +1109,14 @@ RenderingDeviceDriver *D3D12Context::get_driver(RID p_local_device) {
 	} else {
 		return md.driver;
 	}
+}
+
+bool D3D12Context::is_debug_utils_enabled() const {
+#ifdef PIX_ENABLED
+	return true;
+#else
+	return false;
+#endif
 }
 
 D3D12Context::D3D12Context() {

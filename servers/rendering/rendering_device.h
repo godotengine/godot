@@ -42,6 +42,7 @@
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_device_graph.h"
 
 class RDTextureFormat;
 class RDTextureView;
@@ -93,6 +94,9 @@ public:
 		uint32_t version_minor = 0;
 	};
 
+	typedef int64_t DrawListID;
+	typedef int64_t ComputeListID;
+
 	typedef String (*ShaderSPIRVGetCacheKeyFunction)(const RenderingDevice *p_render_device);
 	typedef Vector<uint8_t> (*ShaderCompileToSPIRVFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const RenderingDevice *p_render_device);
 	typedef Vector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
@@ -131,8 +135,7 @@ public:
 		ID_TYPE_FRAMEBUFFER_FORMAT,
 		ID_TYPE_VERTEX_FORMAT,
 		ID_TYPE_DRAW_LIST,
-		ID_TYPE_SPLIT_DRAW_LIST,
-		ID_TYPE_COMPUTE_LIST,
+		ID_TYPE_COMPUTE_LIST = 4,
 		ID_TYPE_MAX,
 		ID_BASE_SHIFT = 58, // 5 bits for ID types.
 		ID_MASK = (ID_BASE_SHIFT - 1),
@@ -145,25 +148,7 @@ private:
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);
 
-	/*****************/
-	/**** BARRIER ****/
-	/*****************/
-
-public:
-	enum BarrierMask {
-		BARRIER_MASK_VERTEX = 1,
-		BARRIER_MASK_FRAGMENT = 8,
-		BARRIER_MASK_COMPUTE = 2,
-		BARRIER_MASK_TRANSFER = 4,
-
-		BARRIER_MASK_RASTER = BARRIER_MASK_VERTEX | BARRIER_MASK_FRAGMENT, // 9,
-		BARRIER_MASK_ALL_BARRIERS = 0x7FFF, // all flags set
-		BARRIER_MASK_NO_BARRIER = 0x8000,
-	};
-
 private:
-	void _full_barrier(bool p_sync_with_draw);
-
 	/***************************/
 	/**** BUFFER MANAGEMENT ****/
 	/***************************/
@@ -201,26 +186,34 @@ private:
 	uint64_t staging_buffer_max_size = 0;
 	bool staging_buffer_used = false;
 
-	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment = true);
+	enum StagingRequiredAction {
+		STAGING_REQUIRED_ACTION_NONE,
+		STAGING_REQUIRED_ACTION_FLUSH_CURRENT,
+		STAGING_REQUIRED_ACTION_FLUSH_OLDER
+	};
+
+	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, StagingRequiredAction &r_required_action, bool p_can_segment = true);
+	void _staging_buffer_execute_required_action(StagingRequiredAction p_required_action);
 	Error _insert_staging_block();
 
 	struct Buffer {
 		RDD::BufferID driver_id;
 		uint32_t size = 0;
 		BitField<RDD::BufferUsageBits> usage;
+		RDG::ResourceTracker *draw_tracker = nullptr;
 	};
 
-	Buffer *_get_buffer_from_owner(RID p_buffer, BitField<RDD::PipelineStageBits> &r_stages, BitField<RDD::BarrierAccessBits> &r_access, BitField<BarrierMask> p_post_barrier);
-	Error _buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_command_buffer = false, uint32_t p_required_align = 32);
+	Buffer *_get_buffer_from_owner(RID p_buffer);
+	Error _buffer_update(Buffer *p_buffer, RID p_buffer_id, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_queue = false, uint32_t p_required_align = 32);
 
 	RID_Owner<Buffer> uniform_buffer_owner;
 	RID_Owner<Buffer> storage_buffer_owner;
 	RID_Owner<Buffer> texture_buffer_owner;
 
 public:
-	Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
-	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
-	Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size);
+	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data);
+	Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size);
 	Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0); // This causes stall, only use to retrieve large buffers for saving.
 
 	/*****************/
@@ -245,6 +238,8 @@ public:
 		TextureType type = TEXTURE_TYPE_MAX;
 		DataFormat format = DATA_FORMAT_MAX;
 		TextureSamples samples = TEXTURE_SAMPLES_MAX;
+		TextureSliceType slice_type = TEXTURE_SLICE_MAX;
+		Rect2i slice_rect;
 		uint32_t width = 0;
 		uint32_t height = 0;
 		uint32_t depth = 0;
@@ -256,26 +251,33 @@ public:
 
 		Vector<DataFormat> allowed_shared_formats;
 
-		RDD::TextureLayout layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
-
-		uint64_t used_in_frame = 0;
-		bool used_in_transfer = false;
-		bool used_in_raster = false;
-		bool used_in_compute = false;
-
 		bool is_resolve_buffer = false;
+		bool has_initial_data = false;
 
 		BitField<RDD::TextureAspectBits> read_aspect_flags;
 		BitField<RDD::TextureAspectBits> barrier_aspect_flags;
-		bool bound = false; // Bound to framebffer.
+		bool bound = false; // Bound to framebuffer.
 		RID owner;
+
+		RDG::ResourceTracker *draw_tracker = nullptr;
+		HashMap<Rect2i, RDG::ResourceTracker *> slice_trackers;
+
+		RDD::TextureSubresourceRange barrier_range() const {
+			RDD::TextureSubresourceRange r;
+			r.aspect = barrier_aspect_flags;
+			r.base_mipmap = base_mipmap;
+			r.mipmap_count = mipmaps;
+			r.base_layer = base_layer;
+			r.layer_count = layers;
+			return r;
+		}
 	};
 
 	RID_Owner<Texture> texture_owner;
 	uint32_t texture_upload_region_size_px = 0;
 
 	Vector<uint8_t> _texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d = false);
-	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier, bool p_use_setup_queue);
+	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_use_setup_queue, bool p_validate_can_update);
 
 public:
 	struct TextureView {
@@ -306,7 +308,7 @@ public:
 	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
-	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
 
 	bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<TextureUsageBits> p_usage) const;
@@ -318,29 +320,36 @@ public:
 	uint64_t texture_get_native_handle(RID p_texture);
 #endif
 
-	Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
-	Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
-	Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer);
+	Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
+	Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture);
 
 	/************************/
 	/**** DRAW LISTS (I) ****/
 	/************************/
 
 	enum InitialAction {
-		INITIAL_ACTION_CLEAR, // Start rendering and clear the whole framebuffer.
-		INITIAL_ACTION_CLEAR_REGION, // Start rendering and clear the framebuffer in the specified region.
-		INITIAL_ACTION_CLEAR_REGION_CONTINUE, // Continue rendering and clear the framebuffer in the specified region. Framebuffer must have been left in `FINAL_ACTION_CONTINUE` state as the final action previously.
-		INITIAL_ACTION_KEEP, // Start rendering, but keep attached color texture contents. If the framebuffer was previously used to read in a shader, this will automatically insert a layout transition.
-		INITIAL_ACTION_DROP, // Start rendering, ignore what is there; write above it. In general, this is the fastest option when you will be writing every single pixel and you don't need a clear color.
-		INITIAL_ACTION_CONTINUE, // Continue rendering. Framebuffer must have been left in `FINAL_ACTION_CONTINUE` state as the final action previously.
-		INITIAL_ACTION_MAX
+		INITIAL_ACTION_LOAD,
+		INITIAL_ACTION_CLEAR,
+		INITIAL_ACTION_DISCARD,
+		INITIAL_ACTION_MAX,
+#ifndef DISABLE_DEPRECATED
+		INITIAL_ACTION_CLEAR_REGION = INITIAL_ACTION_CLEAR,
+		INITIAL_ACTION_CLEAR_REGION_CONTINUE = INITIAL_ACTION_LOAD,
+		INITIAL_ACTION_KEEP = INITIAL_ACTION_LOAD,
+		INITIAL_ACTION_DROP = INITIAL_ACTION_DISCARD,
+		INITIAL_ACTION_CONTINUE = INITIAL_ACTION_LOAD,
+#endif
 	};
 
 	enum FinalAction {
-		FINAL_ACTION_READ, // Store the texture for reading and make it read-only if it has the `TEXTURE_USAGE_SAMPLING_BIT` bit (only applies to color, depth and stencil attachments).
-		FINAL_ACTION_DISCARD, // Discard the texture data and make it read-only if it has the `TEXTURE_USAGE_SAMPLING_BIT` bit (only applies to color, depth and stencil attachments).
-		FINAL_ACTION_CONTINUE, // Store the texture and continue for further processing. Similar to `FINAL_ACTION_READ`, but does not make the texture read-only if it has the `TEXTURE_USAGE_SAMPLING_BIT` bit.
-		FINAL_ACTION_MAX
+		FINAL_ACTION_STORE,
+		FINAL_ACTION_DISCARD,
+		FINAL_ACTION_MAX,
+#ifndef DISABLE_DEPRECATED
+		FINAL_ACTION_READ = FINAL_ACTION_STORE,
+		FINAL_ACTION_CONTINUE = FINAL_ACTION_STORE,
+#endif
 	};
 
 	/*********************/
@@ -668,7 +677,9 @@ private:
 		uint32_t max_instances_allowed = 0;
 
 		Vector<RDD::BufferID> buffers; // Not owned, just referenced.
+		Vector<RDG::ResourceTracker *> draw_trackers; // Not owned, just referenced.
 		Vector<uint64_t> offsets;
+		HashSet<RID> untracked_buffers;
 	};
 
 	RID_Owner<VertexArray> vertex_array_owner;
@@ -685,6 +696,7 @@ private:
 	struct IndexArray {
 		uint32_t max_index = 0; // Remember the maximum index here too, for validation.
 		RDD::BufferID driver_id; // Not owned, inherited from index buffer.
+		RDG::ResourceTracker *draw_tracker = nullptr; // Not owned, inherited from index buffer.
 		uint32_t offset = 0;
 		uint32_t indices = 0;
 		IndexBufferFormat format = INDEX_BUFFER_FORMAT_UINT16;
@@ -762,6 +774,7 @@ private:
 		String name; // Used for debug.
 		RDD::ShaderID driver_id;
 		uint32_t layout_hash = 0;
+		BitField<RDD::PipelineStageBits> stage_bits;
 		Vector<uint32_t> set_formats;
 	};
 
@@ -770,10 +783,42 @@ private:
 	RID_Owner<Shader> shader_owner;
 
 #ifndef DISABLE_DEPRECATED
-	BitField<BarrierMask> _convert_barrier_mask_81356(BitField<BarrierMask> p_old_barrier);
+public:
+	enum BarrierMask{
+		BARRIER_MASK_VERTEX = 1,
+		BARRIER_MASK_FRAGMENT = 8,
+		BARRIER_MASK_COMPUTE = 2,
+		BARRIER_MASK_TRANSFER = 4,
+
+		BARRIER_MASK_RASTER = BARRIER_MASK_VERTEX | BARRIER_MASK_FRAGMENT, // 9,
+		BARRIER_MASK_ALL_BARRIERS = 0x7FFF, // all flags set
+		BARRIER_MASK_NO_BARRIER = 0x8000,
+	};
+
+	void barrier(BitField<BarrierMask> p_from = BARRIER_MASK_ALL_BARRIERS, BitField<BarrierMask> p_to = BARRIER_MASK_ALL_BARRIERS);
+	void full_barrier();
+	void draw_command_insert_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+	Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>());
+	Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids);
+	Vector<int64_t> _draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const TypedArray<RID> &p_storage_textures = TypedArray<RID>());
+	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
+
+private:
 	void _draw_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
 	void _compute_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
 	void _barrier_bind_compat_81356(BitField<BarrierMask> p_from, BitField<BarrierMask> p_to);
+	void _draw_list_end_bind_compat_84976(BitField<BarrierMask> p_post_barrier);
+	void _compute_list_end_bind_compat_84976(BitField<BarrierMask> p_post_barrier);
+	InitialAction _convert_initial_action_84976(InitialAction p_old_initial_action);
+	FinalAction _convert_final_action_84976(FinalAction p_old_final_action);
+	DrawListID _draw_list_begin_bind_compat_84976(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const TypedArray<RID> &p_storage_textures);
+	ComputeListID _compute_list_begin_bind_compat_84976(bool p_allow_draw_overlap);
+	Error _buffer_update_bind_compat_84976(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier);
+	Error _buffer_clear_bind_compat_84976(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier);
+	Error _texture_update_bind_compat_84976(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier);
+	Error _texture_copy_bind_compat_84976(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier);
+	Error _texture_clear_bind_compat_84976(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier);
+	Error _texture_resolve_multisample_bind_compat_84976(RID p_from_texture, RID p_to_texture, BitField<BarrierMask> p_post_barrier);
 #endif
 
 public:
@@ -875,6 +920,9 @@ public:
 	};
 
 private:
+	static const uint32_t MAX_UNIFORM_SETS = 16;
+	static const uint32_t MAX_PUSH_CONSTANT_SIZE = 128;
+
 	// This structure contains the descriptor set. They _need_ to be allocated
 	// for a shader (and will be erased when this shader is erased), but should
 	// work for other shaders as long as the hash matches. This covers using
@@ -894,8 +942,9 @@ private:
 		};
 
 		LocalVector<AttachableTexture> attachable_textures; // Used for validation.
-		Vector<Texture *> mutable_sampled_textures; // Used for layout change.
-		Vector<Texture *> mutable_storage_textures; // Used for layout change.
+		Vector<RDG::ResourceTracker *> draw_trackers;
+		Vector<RDG::ResourceUsage> draw_trackers_usage;
+		HashMap<RID, RDG::ResourceUsage> untracked_usage;
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
 	};
@@ -941,6 +990,7 @@ private:
 		uint32_t shader_layout_hash = 0;
 		Vector<uint32_t> set_formats;
 		RDD::PipelineID driver_id;
+		BitField<RDD::PipelineStageBits> stage_bits;
 		uint32_t push_constant_size = 0;
 	};
 
@@ -986,8 +1036,6 @@ public:
 	/**** DRAW LISTS (II) ****/
 	/*************************/
 
-	typedef int64_t DrawListID;
-
 private:
 	// Draw list contains both the command buffer
 	// used for drawing as well as a LOT of
@@ -995,20 +1043,7 @@ private:
 	// validation is cheap so most of it can
 	// also run in release builds.
 
-	// When using split command lists, this is
-	// implemented internally using secondary command
-	// buffers. As they can be created in threads,
-	// each needs its own command pool.
-
-	struct SplitDrawListAllocator {
-		RDD::CommandPoolID command_pool;
-		Vector<RDD::CommandBufferID> command_buffers; // One for each frame.
-	};
-
-	Vector<SplitDrawListAllocator> split_draw_list_allocators;
-
 	struct DrawList {
-		RDD::CommandBufferID command_buffer; // If persistent, this is owned, otherwise it's shared with the ringbuffer.
 		Rect2i viewport;
 		bool viewport_set = false;
 
@@ -1066,7 +1101,7 @@ private:
 #endif
 	};
 
-	DrawList *draw_list = nullptr; // One for regular draw lists, multiple for split.
+	DrawList *draw_list = nullptr;
 	uint32_t draw_list_subpass_count = 0;
 	uint32_t draw_list_count = 0;
 	RDD::RenderPassID draw_list_render_pass;
@@ -1076,23 +1111,20 @@ private:
 #endif
 	uint32_t draw_list_current_subpass = 0;
 
-	bool draw_list_split = false;
 	Vector<RID> draw_list_bound_textures;
-	Vector<RID> draw_list_storage_textures;
-	bool draw_list_unbind_color_textures = false;
-	bool draw_list_unbind_depth_textures = false;
 
 	void _draw_list_insert_clear_region(DrawList *p_draw_list, Framebuffer *p_framebuffer, Point2i p_viewport_offset, Point2i p_viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil);
 	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, RDD::FramebufferID *r_framebuffer, RDD::RenderPassID *r_render_pass, uint32_t *r_subpass_count);
-	Error _draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass, RDD::CommandBufferID p_command_buffer, RDD::CommandBufferType p_cmd_buffer_mode, const Vector<RID> &p_storage_textures, bool p_constrained_to_region);
+	Error _draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass);
+	void _draw_list_set_viewport(Rect2i p_rect);
+	void _draw_list_set_scissor(Rect2i p_rect);
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
-	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_splits, uint32_t p_subpass);
+	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_subpass);
 	void _draw_list_free(Rect2i *r_last_viewport = nullptr);
 
 public:
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
-	DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>());
-	Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>());
+	DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
 
 	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
@@ -1109,20 +1141,15 @@ public:
 
 	uint32_t draw_list_get_current_pass();
 	DrawListID draw_list_switch_to_next_pass();
-	Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids);
 
-	void draw_list_end(BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	void draw_list_end();
 
+private:
 	/***********************/
 	/**** COMPUTE LISTS ****/
 	/***********************/
 
-	typedef int64_t ComputeListID;
-
-private:
 	struct ComputeList {
-		RDD::CommandBufferID command_buffer; // If persistent, this is owned, otherwise it's shared with the ringbuffer.
-
 		struct SetState {
 			uint32_t pipeline_expected_format = 0;
 			uint32_t uniform_set_format = 0;
@@ -1132,7 +1159,6 @@ private:
 		};
 
 		struct State {
-			HashSet<Texture *> textures_to_sampled_layout;
 			SetState sets[MAX_UNIFORM_SETS];
 			uint32_t set_count = 0;
 			RID pipeline;
@@ -1140,7 +1166,8 @@ private:
 			RDD::ShaderID pipeline_shader_driver_id;
 			uint32_t pipeline_shader_layout_hash = 0;
 			uint32_t local_group_size[3] = { 0, 0, 0 };
-			bool allow_draw_overlap;
+			uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE] = {};
+			uint32_t push_constant_size = 0;
 		} state;
 
 #ifdef DEBUG_ENABLED
@@ -1160,11 +1187,10 @@ private:
 	};
 
 	ComputeList *compute_list = nullptr;
-
-	void _compute_list_add_barrier(BitField<BarrierMask> p_post_barrier, BitField<RDD::PipelineStageBits> p_stages, BitField<RDD::BarrierAccessBits> p_access);
+	ComputeList::State compute_list_barrier_state;
 
 public:
-	ComputeListID compute_list_begin(bool p_allow_draw_overlap = false);
+	ComputeListID compute_list_begin();
 	void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline);
 	void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index);
 	void compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size);
@@ -1173,10 +1199,22 @@ public:
 	void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset);
 	void compute_list_add_barrier(ComputeListID p_list);
 
-	void compute_list_end(BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	void compute_list_end();
 
-	void barrier(BitField<BarrierMask> p_from = BARRIER_MASK_ALL_BARRIERS, BitField<BarrierMask> p_to = BARRIER_MASK_ALL_BARRIERS);
-	void full_barrier();
+private:
+	/***********************/
+	/**** COMMAND GRAPH ****/
+	/***********************/
+
+	bool _texture_make_mutable(Texture *p_texture, RID p_texture_id);
+	bool _buffer_make_mutable(Buffer *p_buffer, RID p_buffer_id);
+	bool _vertex_array_make_mutable(VertexArray *p_vertex_array, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker);
+	bool _index_array_make_mutable(IndexArray *p_index_array, RDG::ResourceTracker *p_resource_tracker);
+	bool _uniform_set_make_mutable(UniformSet *p_uniform_set, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker);
+	bool _dependency_make_mutable(RID p_id, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker);
+	bool _dependencies_make_mutable(RID p_id, RDG::ResourceTracker *p_resource_tracker);
+
+	RenderingDeviceGraph draw_graph;
 
 	/**************************/
 	/**** FRAME MANAGEMENT ****/
@@ -1258,7 +1296,7 @@ private:
 	template <class T>
 	void _free_rids(T &p_owner, const char *p_type);
 
-	void _finalize_command_bufers();
+	void _finalize_command_buffers(bool p_postpare);
 	void _begin_frame();
 
 #ifdef DEV_ENABLED
@@ -1311,7 +1349,6 @@ public:
 	void set_resource_name(RID p_id, const String &p_name);
 
 	void draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
-	void draw_command_insert_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
 	void draw_command_end_label();
 
 	String get_device_vendor_name() const;
@@ -1353,16 +1390,13 @@ private:
 
 	RID _uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
-	Error _buffer_update_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	Error _buffer_update_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data);
 
 	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 	RID _compute_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 
-	DrawListID _draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const TypedArray<RID> &p_storage_textures = TypedArray<RID>());
-	Vector<int64_t> _draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const TypedArray<RID> &p_storage_textures = TypedArray<RID>());
 	void _draw_list_set_push_constant(DrawListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 	void _compute_list_set_push_constant(ComputeListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
-	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
 };
 
 VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
@@ -1371,7 +1405,6 @@ VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)
 VARIANT_ENUM_CAST(RenderingDevice::CompareOperator)
 VARIANT_ENUM_CAST(RenderingDevice::DataFormat)
-VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);
 VARIANT_ENUM_CAST(RenderingDevice::TextureType)
 VARIANT_ENUM_CAST(RenderingDevice::TextureSamples)
 VARIANT_BITFIELD_CAST(RenderingDevice::TextureUsageBits)
@@ -1398,6 +1431,10 @@ VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 VARIANT_ENUM_CAST(RenderingDevice::Limit)
 VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 VARIANT_ENUM_CAST(RenderingDevice::Features)
+
+#ifndef DISABLE_DEPRECATED
+VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);
+#endif
 
 typedef RenderingDevice RD;
 

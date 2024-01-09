@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2024, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -15,13 +15,13 @@
 
 #include "api_layer_interface.hpp"
 #include "hex_and_handles.h"
-#include "loader_interfaces.h"
 #include "loader_logger.hpp"
 #include "runtime_interface.hpp"
 #include "xr_generated_dispatch_table_core.h"
 #include "xr_generated_loader.hpp"
 
 #include <openxr/openxr.h>
+#include <openxr/openxr_loader_negotiation.h>
 
 #include <cstring>
 #include <memory>
@@ -60,7 +60,7 @@ XrResult Get(LoaderInstance** loader_instance, const char* log_function_name) {
 
 bool IsAvailable() { return GetSetCurrentLoaderInstance() != nullptr; }
 
-void Remove() { GetSetCurrentLoaderInstance().release(); }
+void Remove() { GetSetCurrentLoaderInstance().reset(nullptr); }
 }  // namespace ActiveLoaderInstance
 
 // Extensions that are supported by the loader, but may not be supported

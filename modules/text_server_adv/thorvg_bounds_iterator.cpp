@@ -35,7 +35,7 @@
 
 using namespace godot;
 
-#else
+#elif defined(GODOT_MODULE)
 // Headers for building as built-in module.
 
 #include "core/typedefs.h"

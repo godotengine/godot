@@ -31,8 +31,6 @@
 #include "renderer_compositor.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
-#include "core/string/print_string.h"
 #include "servers/xr_server.h"
 
 RendererCompositor *RendererCompositor::singleton = nullptr;
@@ -57,5 +55,3 @@ RendererCompositor::RendererCompositor() {
 		xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 	}
 }
-
-RendererCanvasRender *RendererCanvasRender::singleton = nullptr;

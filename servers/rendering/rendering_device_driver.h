@@ -181,6 +181,10 @@ public:
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
 	};
 
+	enum {
+		BUFFER_WHOLE_SIZE = ~0ULL
+	};
+
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) = 0;
 	// Only for a buffer with BUFFER_USAGE_TEXEL_BIT.
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) = 0;
@@ -621,6 +625,13 @@ public:
 	// Commands.
 	virtual void command_timestamp_query_pool_reset(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_query_count) = 0;
 	virtual void command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) = 0;
+
+	/****************/
+	/**** LABELS ****/
+	/****************/
+
+	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) = 0;
+	virtual void command_end_label(CommandBufferID p_cmd_buffer) = 0;
 
 	/****************/
 	/**** SCREEN ****/
