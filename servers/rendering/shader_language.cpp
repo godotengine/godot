@@ -883,7 +883,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 #undef GETCHAR
 }
 
-bool ShaderLanguage::_lookup_next(Token &r_tk) {
+bool ShaderLanguage::_lookup_next_for_completion(Token &r_tk) {
 	TkPos pre_pos = _get_tkpos();
 	int line = pre_pos.tk_line;
 	_get_token();
@@ -6939,7 +6939,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			}
 
 #ifdef DEBUG_ENABLED
-			if (is_const && _lookup_next(next)) {
+			if (is_const && _lookup_next_for_completion(next)) {
 				if (is_token_precision(next.type)) {
 					keyword_completion_context = CF_UNSPECIFIED;
 				}
@@ -8337,7 +8337,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 			case TK_GLOBAL: {
 #ifdef DEBUG_ENABLED
 				keyword_completion_context = CF_UNIFORM_KEYWORD;
-				if (_lookup_next(next)) {
+				if (_lookup_next_for_completion(next)) {
 					if (next.type == TK_UNIFORM) {
 						keyword_completion_context ^= CF_UNIFORM_KEYWORD;
 					}
@@ -8355,7 +8355,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				if (tk.type == TK_INSTANCE) {
 #ifdef DEBUG_ENABLED
 					keyword_completion_context = CF_UNIFORM_KEYWORD;
-					if (_lookup_next(next)) {
+					if (_lookup_next_for_completion(next)) {
 						if (next.type == TK_UNIFORM) {
 							keyword_completion_context ^= CF_UNIFORM_KEYWORD;
 						}
@@ -8407,7 +8407,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					datatype_flag = CF_VARYING_TYPE;
 					keyword_completion_context = CF_INTERPOLATION_QUALIFIER | CF_PRECISION_MODIFIER | datatype_flag;
 
-					if (_lookup_next(next)) {
+					if (_lookup_next_for_completion(next)) {
 						if (is_token_interpolation(next.type)) {
 							keyword_completion_context ^= (CF_INTERPOLATION_QUALIFIER | datatype_flag);
 						} else if (is_token_precision(next.type)) {
@@ -8420,7 +8420,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					datatype_flag = CF_UNIFORM_TYPE;
 					keyword_completion_context = CF_PRECISION_MODIFIER | datatype_flag;
 
-					if (_lookup_next(next)) {
+					if (_lookup_next_for_completion(next)) {
 						if (is_token_precision(next.type)) {
 							keyword_completion_context ^= (CF_PRECISION_MODIFIER | datatype_flag);
 						} else if (is_token_datatype(next.type)) {
@@ -8445,7 +8445,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					if (keyword_completion_context & CF_INTERPOLATION_QUALIFIER) {
 						keyword_completion_context ^= CF_INTERPOLATION_QUALIFIER;
 					}
-					if (_lookup_next(next)) {
+					if (_lookup_next_for_completion(next)) {
 						if (is_token_precision(next.type)) {
 							keyword_completion_context ^= CF_PRECISION_MODIFIER;
 						} else if (is_token_datatype(next.type)) {
@@ -8468,7 +8468,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					if (keyword_completion_context & CF_PRECISION_MODIFIER) {
 						keyword_completion_context ^= CF_PRECISION_MODIFIER;
 					}
-					if (_lookup_next(next)) {
+					if (_lookup_next_for_completion(next)) {
 						if (is_token_datatype(next.type)) {
 							keyword_completion_context = CF_UNSPECIFIED;
 						}
@@ -9110,7 +9110,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					struct_name = tk.text;
 				} else {
 #ifdef DEBUG_ENABLED
-					if (_lookup_next(next)) {
+					if (_lookup_next_for_completion(next)) {
 						if (next.type == TK_UNIFORM) {
 							keyword_completion_context = CF_UNIFORM_QUALIFIER;
 						}
@@ -9529,7 +9529,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 #ifdef DEBUG_ENABLED
 					keyword_completion_context = CF_CONST_KEYWORD | CF_FUNC_DECL_PARAM_SPEC | CF_PRECISION_MODIFIER | CF_FUNC_DECL_PARAM_TYPE; // eg. const in mediump float
 
-					if (_lookup_next(next)) {
+					if (_lookup_next_for_completion(next)) {
 						if (next.type == TK_CONST) {
 							keyword_completion_context = CF_UNSPECIFIED;
 						} else if (is_token_arg_qual(next.type)) {
@@ -9551,7 +9551,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							keyword_completion_context ^= CF_CONST_KEYWORD;
 						}
 
-						if (_lookup_next(next)) {
+						if (_lookup_next_for_completion(next)) {
 							if (is_token_arg_qual(next.type)) {
 								keyword_completion_context = CF_UNSPECIFIED;
 							} else if (is_token_precision(next.type)) {
@@ -9597,7 +9597,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							keyword_completion_context ^= CF_FUNC_DECL_PARAM_SPEC;
 						}
 
-						if (_lookup_next(next)) {
+						if (_lookup_next_for_completion(next)) {
 							if (is_token_precision(next.type)) {
 								keyword_completion_context = CF_FUNC_DECL_PARAM_TYPE;
 							} else if (is_token_datatype(next.type)) {
@@ -9630,7 +9630,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							keyword_completion_context ^= CF_PRECISION_MODIFIER;
 						}
 
-						if (_lookup_next(next)) {
+						if (_lookup_next_for_completion(next)) {
 							if (is_token_datatype(next.type)) {
 								keyword_completion_context = CF_UNSPECIFIED;
 							}
