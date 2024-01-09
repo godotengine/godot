@@ -58,8 +58,7 @@ TEST_CASE("[ShaderLanguage] Function call trailing commas") {
 	comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(RenderingServer::SHADER_CANVAS_ITEM));
 	comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
 	Error last_compile_result = sl.compile(code, comp_info);
-	CHECK_NE(last_compile_result, OK);
-	CHECK_EQ(sl.get_error_text(), "Expected expression, found: 'PARENTHESIS_CLOSE'.");
+	CHECK_EQ(last_compile_result, OK);
 }
 
 } // namespace TestShaderLanguage

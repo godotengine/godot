@@ -3176,7 +3176,9 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				}
 
 				if (!fail) {
-					if (RenderingServer::get_singleton()->is_low_end()) {
+					// When running tests, we might not have a proper rendering server to check low-endness with
+					RenderingServer *rendering_server = RenderingServer::get_singleton();
+					if (rendering_server != nullptr && rendering_server->is_low_end()) {
 						if (builtin_func_defs[idx].high_end) {
 							fail = true;
 							unsupported_builtin = true;
@@ -3589,6 +3591,8 @@ bool ShaderLanguage::_parse_function_arguments(BlockNode *p_block, const Functio
 	Token tk = _get_token();
 
 	if (tk.type == TK_PARENTHESIS_CLOSE) {
+		// If the next token following the function call open-paren
+		// is close-paren, then there are no arguments for the function.
 		return true;
 	}
 
@@ -3630,6 +3634,13 @@ bool ShaderLanguage::_parse_function_arguments(BlockNode *p_block, const Functio
 			// something is broken
 			_set_error(RTR("Expected ',' or ')' after argument."));
 			return false;
+		}
+		// Peek at whether there's a closing parenthesis after the last comma;
+		// if so, it must be a argument-list-trailing comma.
+		if (_peek_token().type == TK_PARENTHESIS_CLOSE) {
+			// Swallow the closing parenthesis and return.
+			ERR_FAIL_COND_V(_get_token().type != TK_PARENTHESIS_CLOSE, false);
+			break;
 		}
 	}
 

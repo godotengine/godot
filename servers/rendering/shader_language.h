@@ -1011,6 +1011,7 @@ private:
 
 	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
 	Token _get_token();
+	Token _peek_token();
 	bool _lookup_next_for_completion(Token &r_tk);
 
 	ShaderNode *shader = nullptr;
