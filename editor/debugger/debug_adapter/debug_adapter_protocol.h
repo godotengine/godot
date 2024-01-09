@@ -63,6 +63,7 @@ struct DAPeer : RefCounted {
 
 	// Internal client info
 	bool attached = false;
+	Dictionary pending_launch;
 
 	Error handle_data();
 	Error send_data();
