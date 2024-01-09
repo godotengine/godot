@@ -666,11 +666,11 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 		}
 
 		for (int j = from; j < to; j++) {
-			max = MAX(max, frames[j].l);
-			max = MAX(max, frames[j].r);
+			max = MAX(max, frames[j].left);
+			max = MAX(max, frames[j].right);
 
-			min = MIN(min, frames[j].l);
-			min = MIN(min, frames[j].r);
+			min = MIN(min, frames[j].left);
+			min = MIN(min, frames[j].right);
 		}
 
 		int pfrom = CLAMP((min * 0.5 + 0.5) * h / 2, 0, h / 2) + h / 4;
