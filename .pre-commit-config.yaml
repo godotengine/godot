@@ -20,3 +20,16 @@ repos:
         pass_filenames: false
         language: python
         files: ^(doc|modules|platform).*xml$
+
+  - repo: https://github.com/psf/black-pre-commit-mirror  # mypyc-compiled black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        exclude: .*thirdparty.*
+        args:
+          - --line-length=120
+
+      - id: black
+        files: SConstruct|SCsub
+        args:
+          - --line-length=120
