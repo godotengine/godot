@@ -229,6 +229,7 @@ class TaskJobHandle : public RefCounted
 		// 等待信号完成
 		done_semaphore.wait();
 	}
+ protected:
 	Mutex depend_mutex;
 	// 依赖的句柄
 	List<Ref<TaskJobHandle>> dependJob;
@@ -270,9 +271,9 @@ class WorkerTaskPool : public Object {
 	friend class ThreadTaskGroup;
 public:
 	static WorkerTaskPool *get_singleton() { return singleton; }
-	TaskJobHandle* add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,TaskJobHandle* depend_task);
-	TaskJobHandle* add_group_task(const Callable &p_action, int p_elements, int _batch_count,TaskJobHandle* depend_task);
-	TaskJobHandle* combined_job_handle(Array _handles );
+	Ref<TaskJobHandle> add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,TaskJobHandle* depend_task);
+	Ref<TaskJobHandle> add_group_task(const Callable &p_action, int p_elements, int _batch_count,TaskJobHandle* depend_task);
+	Ref<TaskJobHandle> combined_job_handle(TypedArray<TaskJobHandle> _handles );
 	
 	
 	WorkerTaskPool();

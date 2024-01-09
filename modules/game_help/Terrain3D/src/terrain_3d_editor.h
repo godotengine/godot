@@ -143,7 +143,7 @@ private:
 		memdelete(_singleton);
 		_singleton = nullptr;
 	}
-
+public:
 	Terrain3DEditor();
 	~Terrain3DEditor();
 

@@ -867,9 +867,9 @@ void WorkerTaskPool::_process_task_queue() {
 		task_mutex.unlock();
 	}
 }
-TaskJobHandle* WorkerTaskPool::add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,TaskJobHandle* depend_task)
+Ref<TaskJobHandle> WorkerTaskPool::add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,TaskJobHandle* depend_task)
 {
-	TaskJobHandle* hand = memnew(TaskJobHandle);
+	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
 	if(p_elements <= 0)
 	{
 		// 增加依赖，保持依赖链条是正确的
@@ -903,9 +903,9 @@ TaskJobHandle* WorkerTaskPool::add_native_group_task(void (*p_func)(void *, uint
 	return hand;
 
 }
-TaskJobHandle* WorkerTaskPool::add_group_task(const Callable &p_action, int p_elements, int _batch_count,TaskJobHandle* depend_task )
+Ref<TaskJobHandle> WorkerTaskPool::add_group_task(const Callable &p_action, int p_elements, int _batch_count,TaskJobHandle* depend_task )
 {
-	TaskJobHandle* hand = memnew(TaskJobHandle);
+	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
 	if(p_elements <= 0)
 	{
 		// 增加依赖，保持依赖链条是正确的
@@ -940,37 +940,30 @@ TaskJobHandle* WorkerTaskPool::add_group_task(const Callable &p_action, int p_el
 	return hand;
 	
 }
-TaskJobHandle* WorkerTaskPool::combined_job_handle(Array _handles )
+Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(TypedArray<TaskJobHandle> _handles )
 {
 	if(_handles.size() == 0)
 	{
 		return nullptr;
 	}
-	TaskJobHandle* ret = memnew(TaskJobHandle);
+	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
 	for(int i = 0; i < _handles.size(); ++i)
 	{
 		if(_handles[i] != nullptr)
 		{
-			Object* obj = _handles[i];
-			if(obj == nullptr)
-			{
-				String err_str = "combined_job_handle obj is null" + itos(i) + "\n";
-				PRINT_STACK_TRACE(err_str);
-				continue;
-			}
-			TaskJobHandle * job = Object::cast_to<TaskJobHandle>(obj);
+			Ref<TaskJobHandle> job =  _handles[i];
 			if(job == nullptr)
 			{
 				String err_str = "combined_job_handle job is not TaskJobHandle" + itos(i) + "\n";
 				PRINT_STACK_TRACE(err_str);
 				continue;
 			}
-			ret->dependJob.push_back(job);
+			hand->dependJob.push_back(job);
 		}
 	}
 	// 因为不是一个任务，所以直接设置已经完成
-	ret->set_completed();
-	return ret;
+	hand->set_completed();
+	return hand;
 }
 void WorkerTaskPool::_bind_methods() {
 
