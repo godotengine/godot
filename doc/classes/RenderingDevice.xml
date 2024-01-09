@@ -2170,7 +2170,7 @@
 		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction" is_deprecated="true">
 			[i]Deprecated.[/i] Use [constant INITIAL_ACTION_CLEAR] instead.
 		</constant>
-		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="0" enum="InitialAction" is_deprecated="true">
+		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="1" enum="InitialAction" is_deprecated="true">
 			[i]Deprecated.[/i] Use [constant INITIAL_ACTION_LOAD] instead.
 		</constant>
 		<constant name="INITIAL_ACTION_KEEP" value="0" enum="InitialAction" is_deprecated="true">
