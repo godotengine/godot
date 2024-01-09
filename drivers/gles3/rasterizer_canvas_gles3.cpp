@@ -1126,7 +1126,8 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 
 			case Item::Command::TYPE_MESH:
 			case Item::Command::TYPE_MULTIMESH:
-			case Item::Command::TYPE_PARTICLES: {
+			case Item::Command::TYPE_PARTICLES:
+			case Item::Command::TYPE_FILLED_CURVE: {
 				// Mesh's can't be batched, so always create a new batch
 				_new_batch(r_batch_broken);
 
@@ -1179,6 +1180,10 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 						particles_storage->particles_set_canvas_sdf_collision(pt->particles, false, Transform2D(), Rect2(), 0);
 					}
 					r_sdf_used |= particles_storage->particles_has_collision(particles);
+				} else if (c->type == Item::Command::TYPE_FILLED_CURVE) {
+					const Item::CommandFilledCurve *fc = static_cast<const Item::CommandFilledCurve *>(c);
+					state.canvas_instance_batches[state.current_batch_index].tex = fc->texture;
+					modulate = fc->modulate;
 				}
 
 				state.canvas_instance_batches[state.current_batch_index].command = c;
@@ -1331,7 +1336,8 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 
 		case Item::Command::TYPE_MESH:
 		case Item::Command::TYPE_MULTIMESH:
-		case Item::Command::TYPE_PARTICLES: {
+		case Item::Command::TYPE_PARTICLES:
+		case Item::Command::TYPE_FILLED_CURVE: {
 			GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
 			GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
 			RID mesh;
@@ -1397,6 +1403,9 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 				instance_uses_color = true;
 				instance_uses_custom_data = true;
 				use_instancing = true;
+			} else if (state.canvas_instance_batches[p_index].command_type == Item::Command::TYPE_FILLED_CURVE) {
+				const Item::CommandFilledCurve *fc = static_cast<const Item::CommandFilledCurve *>(state.canvas_instance_batches[p_index].command);
+				mesh = fc->mesh_cache;
 			}
 
 			ERR_FAIL_COND(mesh.is_null());

@@ -214,6 +214,24 @@
 				Checks if the two segments ([param from_a], [param to_a]) and ([param from_b], [param to_b]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns [code]null[/code].
 			</description>
 		</method>
+		<method name="tessellate_curve_in_rect">
+			<return type="PackedVector2Array" />
+			<param index="0" name="points" type="PackedVector2Array" />
+			<param index="1" name="types" type="PackedByteArray" />
+			<param index="2" name="transform" type="Transform2D" />
+			<param index="3" name="limit" type="Rect2" />
+			<param index="4" name="use_order5" type="bool" default="false" />
+			<description>
+				Returns a polyline that approximates the curve described by [param points] and [param types]. The precision of the approximation is determined by `[param transform]` and `[param limit]`.
+				The first point in [param points] is the starting point of the curve. The remaining points are interpreted according to [param types]. [param types] is interpreted as a string of bits, with each byte being interpreted as eight bits from least significant to most significant. A value of [code]0[/code] indicates the next segment is a bezier segment. If [param use_order5] is [code]false[/code] then it is a cubic bezier. The next two points in [param points] are interpreted as control points, and the third is interpreted the end point. If [param use_order5] is [code]false[/code] then it is an order 5 bezier. The next four points in [param points] are interpreted as control points, and the fifth is interpreted the end point. Order 5 beziers can be more complex, but allow producing a continuous curvature.
+				If the next bit represented by [param types] is [code]1[/code], the next four points in [param points] are interpreted as an elliptic arc segment. The ellipse is centered along the second point, and intersects the first and third points. The angle range of the arc is determined by the fourth point and the previous point on the curve. If the points do not coincide with the ellipse, line segments connecting the points to the ellipse are added. The arc's drawing direction is determined by the first and third points. If they are clockwise relative to the second point, the arc is drawn clockwise, otherwise it is drawn counter-clockwise.
+				If [param types] does not contain enough bits to interpret all the points in [param points], it is padded with [code]0[/code] bits as necessary. If it contains too many bits, it is truncated.
+				The precision of the approximation is determined as following: For a curve [code]C[/code], let [code]T(x)[/code] be the curve that results from multiplying every point in [code]x[/code] with the transformation [param transform]. Let [code]W(x, y)[/code] be the winding number for the closed curve [code]x[/code] around the point [code]y[/code], i.e. the number of clockwise rotations the curve completes around the point, minus the number of counter-clockwise rotations. Let [code]curve[/code] be the closed curve formed by connecting the ends of the curve described by [param points] and [param types]. Let [code]P[/code] be the polygon represented by connecting the returned points in a cycle. For every point [code]x[/code] inside [param limit], there exists a point [code]y[/code] so that [code]W(T(C), x)=W(T(P), y)[/code] and the distance between [code]x[/code] and [code]y[/code] is less than [code]0.5[/code].
+				[b]Note:[/b] The transformed output polygon is [i]not[/i] clipped to [param limit]. For any point [code]x[/code] outside the bounding rectangle of [code]T(S)[/code], [code]W(T(P), x)=0[/code] For any other point [code]x[/code] outside [param limit] [code]W(T(P), x)[/code] is [i]undefined[/i], and can be [i]any[/i] value. To avoid any undefined areas, use a [param limit] that contains the entire transformed curve.
+				[b]Note:[/b] The output is [i]not[/i] transformed by [param transform]. It is only used to determine the precision.
+				This function will try to minimize the number of points returned, while maintaining the above precision conditions.
+			</description>
+		</method>
 		<method name="triangulate_delaunay">
 			<return type="PackedInt32Array" />
 			<param index="0" name="points" type="PackedVector2Array" />
@@ -226,6 +244,15 @@
 			<param index="0" name="polygon" type="PackedVector2Array" />
 			<description>
 				Triangulates the polygon specified by the points in [param polygon]. Returns a [PackedInt32Array] where each triangle consists of three consecutive point indices into [param polygon] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). Output triangles will always be counter clockwise, and the contour will be flipped if it's clockwise. If the triangulation did not succeed, an empty [PackedInt32Array] is returned.
+			</description>
+		</method>
+		<method name="triangulate_polygons">
+			<return type="Dictionary" />
+			<param index="0" name="polygons" type="PackedVector2Array[]" />
+			<param index="1" name="winding_even_odd" type="bool" />
+			<description>
+				Triangulates the polygons specified in [param polygons]. Each [PackedVector2Array] is interpreted as a single closed polygon. Concave polygons, overlapping polygons, and self-intersections are fully supported. The returned dictionary has two keys: [code]vertices[/code] is a [PackedVector2Array] containing vertices used in the triangulation. This includes the original vertices from [param polygons], intersection points, and points added to deal with concave areas. [code]indices[/code] is a [PackedInt32Array] where each triangle consists of three consecutive point indices into [code]vertices[/code] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). Output triangles will always be counter clockwise.
+				The way overlapping polygons are handled is determined by [param winding_even_odd]. If [code]true[/code] every edge separates a filled and unfilled area. If [code]false[/code] overlapping areas are kept if their surrounding polygons are the same direction clockwise or counter clockwise, and subtracted if they are opposite directions.
 			</description>
 		</method>
 	</methods>
