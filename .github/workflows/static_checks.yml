@@ -54,14 +54,6 @@ jobs:
         run: |
           bash ./misc/scripts/header_guards.sh changed.txt
 
-      - name: Python style checks via black (black_format.sh)
-        run: |
-          if grep -qE '\.py$|SConstruct|SCsub' changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/black_format.sh
-          else
-            echo "Skipping Python formatting as no Python files were changed."
-          fi
-
       - name: Python scripts static analysis (mypy_check.sh)
         run: |
           if grep -qE '\.py$|SConstruct|SCsub' changed.txt || [ -z "$(cat changed.txt)" ]; then
@@ -92,12 +84,6 @@ jobs:
       - name: Documentation checks
         run: |
           doc/tools/doc_status.py doc/classes modules/*/doc_classes platform/*/doc_classes
-          doc/tools/make_rst.py --dry-run --color doc/classes modules platform
-
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          clang-format --version
-          bash ./misc/scripts/clang_format.sh changed.txt
 
       - name: Style checks via dotnet format (dotnet_format.sh)
         run: |
@@ -114,3 +100,6 @@ jobs:
           skip: "./bin,./thirdparty,*.desktop,*.gen.*,*.po,*.pot,*.rc,./AUTHORS.md,./COPYRIGHT.txt,./DONORS.md,./core/input/gamecontrollerdb.txt,./core/string/locales.h,./editor/project_converter_3_to_4.cpp,./misc/scripts/codespell.sh,./platform/android/java/lib/src/com,./platform/web/node_modules,./platform/web/package-lock.json"
           ignore_words_list: "breaked,curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,mis,nd,numer,ot,requestor,te,vai"
           path: ${{ env.CHANGED_FILES }}
+
+      - name: Other checks via pre-commit
+        uses: pre-commit/action@v3.0.0
