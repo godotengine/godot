@@ -1052,20 +1052,56 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			List<Node *>::Element *e = selection.front();
-			if (e) {
-				Node *node = e->get();
-				if (node) {
-					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
 
-					if (editable) {
-						editable_instance_remove_dialog->set_text(TTR("Disabling \"editable_instance\" will cause all properties of the node to be reverted to their default."));
-						editable_instance_remove_dialog->popup_centered();
-						break;
+			if (selection.size() > 1) {
+				// Check if the selection contains both editable and non-editable nodes.
+				bool has_editables = false;
+				bool has_non_editables = false;
+				for (const Node *node : selection) {
+					if (node) {
+						bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+						has_editables |= editable;
+						has_non_editables |= !editable;
+						if (has_non_editables && has_editables) {
+							break;
+						}
 					}
+				}
+
+				// Fire dialog if selection does contain both, to ask user what they want to do (enable or disable).
+				if (has_non_editables && has_editables) {
+					editable_instance_enable_or_disable_dialog->popup_centered();
+					break;
+				}
+
+				if (has_editables) {
+					dialog_option_enable_all = false;
+					editable_instance_remove_dialog->set_text(TTR("Disabling \"Editable Children\" will cause all properties of selected nodes to be reverted to their default."));
+					editable_instance_remove_dialog->popup_centered();
+					break;
+				}
+			} else {
+				List<Node *>::Element *e = selection.front();
+				if (e) {
+					Node *node = e->get();
+					if (node) {
+						bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+
+						if (editable) {
+							editable_instance_remove_dialog->set_text(TTR("Disabling \"Editable Children\" will cause all properties of the node to be reverted to their default."));
+							editable_instance_remove_dialog->popup_centered();
+							break;
+						}
+					}
+				}
+			}
+
+			for (Node *node : selection) {
+				if (node) {
 					_toggle_editable_children(node);
 				}
 			}
+			scene_tree->update_tree();
 		} break;
 		case TOOL_SCENE_USE_PLACEHOLDER: {
 			if (!profile_allow_editing) {
@@ -1073,30 +1109,62 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			List<Node *>::Element *e = selection.front();
-			if (e) {
-				Node *node = e->get();
-				if (node) {
-					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
-					bool placeholder = node->get_scene_instance_load_placeholder();
 
-					// Fire confirmation dialog when children are editable.
-					if (editable && !placeholder) {
-						placeholder_editable_instance_remove_dialog->set_text(TTR("Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
-						placeholder_editable_instance_remove_dialog->popup_centered();
-						break;
+			if (selection.size() > 1) {
+				// Check if the selection contains both placeholder and non-placeholder nodes.
+				bool has_editables = false;
+				bool has_non_placeholders = false;
+				bool has_placeholders = false;
+				for (const Node *node : selection) {
+					if (node) {
+						bool placeholder = node->get_scene_instance_load_placeholder();
+						has_placeholders |= placeholder;
+						has_non_placeholders |= !placeholder;
+						has_editables |= EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+						if (has_non_placeholders && has_placeholders) {
+							break;
+						}
 					}
+				}
 
-					placeholder = !placeholder;
+				// Fire dialog if selection does contain both, to ask user what they want to do (enable or disable).
+				if (has_non_placeholders && has_placeholders) {
+					placeholder_enable_or_disable_dialog->popup_centered();
+					break;
+				}
 
-					if (placeholder) {
-						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
+				// Fire confirmation dialog if enabling placeholder and any selected node has editable children.
+				if (has_non_placeholders && has_editables) {
+					dialog_option_enable_all = true;
+					placeholder_editable_instance_remove_dialog->set_text(TTR("Selection contains some nodes that have \"Editable Children\" enabled.\nEnabling \"Load as Placeholder\" will disable \"Editable Children\" and cause all properties of those nodes to be reverted to their default."));
+					placeholder_editable_instance_remove_dialog->popup_centered();
+					break;
+				}
+			} else {
+				List<Node *>::Element *e = selection.front();
+				if (e) {
+					Node *node = e->get();
+					if (node) {
+						bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+						bool placeholder = node->get_scene_instance_load_placeholder();
+
+						// Fire confirmation dialog when children are editable.
+						if (editable && !placeholder) {
+							placeholder_editable_instance_remove_dialog->set_text(TTR("Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
+							placeholder_editable_instance_remove_dialog->popup_centered();
+							break;
+						}
 					}
-
-					node->set_scene_instance_load_placeholder(placeholder);
-					scene_tree->update_tree();
 				}
 			}
+
+			for (Node *node : selection) {
+				if (node) {
+					bool placeholder = node->get_scene_instance_load_placeholder();
+					node->set_scene_instance_load_placeholder(!placeholder);
+				}
+			}
+			scene_tree->update_tree();
 		} break;
 		case TOOL_SCENE_MAKE_LOCAL: {
 			if (!profile_allow_editing) {
@@ -2293,31 +2361,109 @@ void SceneTreeDock::_shader_creation_closed() {
 	shader_create_dialog->disconnect("canceled", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
 }
 
+void SceneTreeDock::_disable_all_editable_children_from_selection() {
+	editable_instance_enable_or_disable_dialog->hide();
+	dialog_option_enable_all = false;
+
+	// Fire confirmation dialog.
+	editable_instance_remove_dialog->set_text(TTR("Disabling \"Editable Children\" will cause all properties of selected nodes to be reverted to their default."));
+	editable_instance_remove_dialog->popup_centered();
+}
+
+void SceneTreeDock::_enable_all_editable_children_from_selection() {
+	dialog_option_enable_all = true;
+	_toggle_editable_children_from_selection();
+}
+
 void SceneTreeDock::_toggle_editable_children_from_selection() {
 	List<Node *> selection = editor_selection->get_selected_node_list();
-	List<Node *>::Element *e = selection.front();
 
-	if (e) {
-		_toggle_editable_children(e->get());
+	if (selection.size() == 1) {
+		List<Node *>::Element *e = selection.front();
+		if (e) {
+			_toggle_editable_children(e->get());
+		}
+	} else {
+		for (Node *node : selection) {
+			if (!node) {
+				continue;
+			}
+			bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+
+			if (editable != dialog_option_enable_all) {
+				_toggle_editable_children(node);
+			}
+		}
+	}
+	scene_tree->update_tree();
+}
+
+void SceneTreeDock::_disable_all_placeholder_from_selection() {
+	placeholder_enable_or_disable_dialog->hide();
+	dialog_option_enable_all = false;
+	_toggle_placeholder_from_selection();
+}
+
+void SceneTreeDock::_enable_all_placeholder_from_selection() {
+	dialog_option_enable_all = true;
+
+	List<Node *> selection = editor_selection->get_selected_node_list();
+
+	// Check if the selection contains nodes with editable children.
+	bool has_editables = false;
+	for (const Node *node : selection) {
+		if (node) {
+			bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+			if (editable) {
+				has_editables = true;
+				break;
+			}
+		}
+	}
+
+	if (has_editables) {
+		// Fire confirmation dialog.
+		placeholder_editable_instance_remove_dialog->set_text(TTR("Selection contains some nodes that have \"Editable Children\" enabled.\nEnabling \"Load as Placeholder\" will disable \"Editable Children\" and cause all properties of those nodes to be reverted to their default."));
+		placeholder_editable_instance_remove_dialog->popup_centered();
+	} else {
+		_toggle_placeholder_from_selection();
 	}
 }
 
 void SceneTreeDock::_toggle_placeholder_from_selection() {
 	List<Node *> selection = editor_selection->get_selected_node_list();
-	List<Node *>::Element *e = selection.front();
 
-	if (e) {
-		Node *node = e->get();
-		if (node) {
-			_toggle_editable_children(node);
+	if (selection.size() == 1) {
+		List<Node *>::Element *e = selection.front();
+		if (e) {
+			Node *node = e->get();
+			if (!node) {
+				return;
+			}
+			bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+			if (editable) {
+				_toggle_editable_children(node);
+			}
 
 			bool placeholder = node->get_scene_instance_load_placeholder();
-			placeholder = !placeholder;
+			node->set_scene_instance_load_placeholder(!placeholder);
+		}
+	} else {
+		for (Node *node : selection) {
+			if (!node) {
+				continue;
+			}
+			if (dialog_option_enable_all) {
+				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+				if (editable) {
+					_toggle_editable_children(node);
+				}
+			}
 
-			node->set_scene_instance_load_placeholder(placeholder);
-			scene_tree->update_tree();
+			node->set_scene_instance_load_placeholder(dialog_option_enable_all);
 		}
 	}
+	scene_tree->update_tree();
 }
 
 void SceneTreeDock::_toggle_editable_children(Node *p_node) {
@@ -2329,8 +2475,6 @@ void SceneTreeDock::_toggle_editable_children(Node *p_node) {
 		}
 
 		Node3DEditor::get_singleton()->update_all_gizmos(p_node);
-
-		scene_tree->update_tree();
 	}
 }
 
@@ -3272,7 +3416,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 	}
 
-	if (selection.size() == 1) {
+	if (full_selection.size() == 1) {
 		bool is_external = (!selection[0]->get_scene_file_path().is_empty());
 		if (is_external) {
 			bool is_inherited = selection[0]->get_scene_inherited_state() != nullptr;
@@ -3297,6 +3441,31 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
 					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load as Placeholder")), placeholder);
 				}
+			}
+		}
+	} else {
+		if (profile_allow_editing && selection.size() == full_selection.size()) {
+			bool has_internal = false;
+			bool has_top_level = false;
+			bool has_non_editable = false;
+			bool has_non_placeholder = false;
+			for (const Node *node : selection) {
+				if (node) {
+					has_internal |= node->get_scene_file_path().is_empty();
+					has_top_level |= node->get_owner() == nullptr;
+					has_non_editable |= !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+					has_non_placeholder |= !node->get_scene_instance_load_placeholder();
+					if (has_internal || has_top_level) {
+						break;
+					}
+				}
+			}
+			if (!has_internal && !has_top_level) {
+				menu->add_separator();
+				menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
+				menu->add_check_item(TTR("Load As Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
+				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), !has_non_editable);
+				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load As Placeholder")), !has_non_placeholder);
 			}
 		}
 	}
@@ -4173,9 +4342,25 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	delete_tracks_checkbox->set_pressed(true);
 	vb->add_child(delete_tracks_checkbox);
 
+	editable_instance_enable_or_disable_dialog = memnew(ConfirmationDialog);
+	editable_instance_enable_or_disable_dialog->set_text(TTR("Selection contains some nodes that have \"Editable Children\" enabled and some that do not."));
+	editable_instance_enable_or_disable_dialog->set_ok_button_text(TTR("Enable for All"));
+	editable_instance_disable_all_button = editable_instance_enable_or_disable_dialog->add_button(TTR("Disable for All"), true);
+	add_child(editable_instance_enable_or_disable_dialog);
+	editable_instance_disable_all_button->connect("pressed", callable_mp(this, &SceneTreeDock::_disable_all_editable_children_from_selection));
+	editable_instance_enable_or_disable_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_enable_all_editable_children_from_selection));
+
 	editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(editable_instance_remove_dialog);
 	editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_editable_children_from_selection));
+
+	placeholder_enable_or_disable_dialog = memnew(ConfirmationDialog);
+	placeholder_enable_or_disable_dialog->set_text(TTR("Selection contains some nodes that have \"Load as Placeholder\" enabled and some that do not."));
+	placeholder_enable_or_disable_dialog->set_ok_button_text(TTR("Enable for All"));
+	placeholder_disable_all_button = placeholder_enable_or_disable_dialog->add_button(TTR("Disable for All"), true);
+	add_child(placeholder_enable_or_disable_dialog);
+	placeholder_disable_all_button->connect("pressed", callable_mp(this, &SceneTreeDock::_disable_all_placeholder_from_selection));
+	placeholder_enable_or_disable_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_enable_all_placeholder_from_selection));
 
 	placeholder_editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(placeholder_editable_instance_remove_dialog);

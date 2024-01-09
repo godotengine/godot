@@ -154,8 +154,14 @@ class SceneTreeDock : public VBoxContainer {
 	ConfirmationDialog *delete_dialog = nullptr;
 	Label *delete_dialog_label = nullptr;
 	CheckBox *delete_tracks_checkbox = nullptr;
+	ConfirmationDialog *editable_instance_enable_or_disable_dialog = nullptr;
+	Button *editable_instance_disable_all_button = nullptr;
 	ConfirmationDialog *editable_instance_remove_dialog = nullptr;
+	ConfirmationDialog *placeholder_enable_or_disable_dialog = nullptr;
+	Button *placeholder_disable_all_button = nullptr;
 	ConfirmationDialog *placeholder_editable_instance_remove_dialog = nullptr;
+
+	bool dialog_option_enable_all = false;
 
 	ReparentDialog *reparent_dialog = nullptr;
 	EditorQuickOpen *quick_open = nullptr;
@@ -222,9 +228,13 @@ class SceneTreeDock : public VBoxContainer {
 	void _delete_confirm(bool p_cut = false);
 	void _delete_dialog_closed();
 
+	void _disable_all_editable_children_from_selection();
+	void _enable_all_editable_children_from_selection();
 	void _toggle_editable_children_from_selection();
 	void _toggle_editable_children(Node *p_node);
 
+	void _disable_all_placeholder_from_selection();
+	void _enable_all_placeholder_from_selection();
 	void _toggle_placeholder_from_selection();
 
 	void _node_prerenamed(Node *p_node, const String &p_new_name);
