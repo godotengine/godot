@@ -100,7 +100,7 @@ public:
 	Size rfind(const T &p_val, Size p_from = -1) const { return _cowdata.rfind(p_val, p_from); }
 	Size count(const T &p_val) const { return _cowdata.count(p_val); }
 
-	void append_array(Vector<T> p_other);
+	void append_array(const Vector<T> &p_other);
 
 	_FORCE_INLINE_ bool has(const T &p_val) const { return find(p_val) != -1; }
 
@@ -300,7 +300,7 @@ void Vector<T>::reverse() {
 }
 
 template <class T>
-void Vector<T>::append_array(Vector<T> p_other) {
+void Vector<T>::append_array(const Vector<T> &p_other) {
 	const Size ds = p_other.size();
 	if (ds == 0) {
 		return;

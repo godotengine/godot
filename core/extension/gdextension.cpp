@@ -914,7 +914,7 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 		return ERR_INVALID_DATA;
 	}
 
-	String library_path = GDExtension::find_extension_library(p_path, config, [](String p_feature) { return OS::get_singleton()->has_feature(p_feature); });
+	String library_path = GDExtension::find_extension_library(p_path, config, [](const String &p_feature) { return OS::get_singleton()->has_feature(p_feature); });
 
 	if (library_path.is_empty()) {
 		const String os_arch = OS::get_singleton()->get_name().to_lower() + "." + Engine::get_singleton()->get_architecture_name();

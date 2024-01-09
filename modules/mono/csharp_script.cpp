@@ -307,7 +307,7 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 	}
 }
 
-bool CSharpLanguage::is_control_flow_keyword(String p_keyword) const {
+bool CSharpLanguage::is_control_flow_keyword(const String &p_keyword) const {
 	return p_keyword == "break" ||
 			p_keyword == "case" ||
 			p_keyword == "catch" ||

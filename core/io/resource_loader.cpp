@@ -1114,7 +1114,7 @@ void ResourceLoader::set_load_callback(ResourceLoadedCallback p_callback) {
 
 ResourceLoadedCallback ResourceLoader::_loaded_callback = nullptr;
 
-Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(String path) {
+Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(const String &path) {
 	for (int i = 0; i < loader_count; ++i) {
 		if (loader[i]->get_script_instance() && loader[i]->get_script_instance()->get_script()->get_path() == path) {
 			return loader[i];
@@ -1123,7 +1123,7 @@ Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(St
 	return Ref<ResourceFormatLoader>();
 }
 
-bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
+bool ResourceLoader::add_custom_resource_format_loader(const String &script_path) {
 	if (_find_custom_resource_format_loader(script_path).is_valid()) {
 		return false;
 	}
