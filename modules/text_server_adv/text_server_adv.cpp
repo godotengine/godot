@@ -44,7 +44,7 @@ using namespace godot;
 
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
 
-#else
+#elif defined(GODOT_MODULE)
 // Headers for building as built-in module.
 
 #include "core/config/project_settings.h"
@@ -370,7 +370,7 @@ bool TextServerAdvanced::_has_feature(Feature p_feature) const {
 String TextServerAdvanced::_get_name() const {
 #ifdef GDEXTENSION
 	return "ICU / HarfBuzz / Graphite (GDExtension)";
-#else
+#elif defined(GODOT_MODULE)
 	return "ICU / HarfBuzz / Graphite (Built-in)";
 #endif
 }
@@ -4852,7 +4852,7 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 #ifdef GDEXTENSION
 	for (int fb = 0; fb < fallback_font_name.size(); fb++) {
 		const String &E = fallback_font_name[fb];
-#else
+#elif defined(GODOT_MODULE)
 	for (const String &E : fallback_font_name) {
 #endif
 		SystemFontKey key = SystemFontKey(E, font_style & TextServer::FONT_ITALIC, font_weight, font_stretch, p_fdef, this);
@@ -6757,7 +6757,7 @@ String TextServerAdvanced::_strip_diacritics(const String &p_string) const {
 		if (u_getCombiningClass(normalized_string[i]) == 0) {
 #ifdef GDEXTENSION
 			result = result + String::chr(normalized_string[i]);
-#else
+#elif defined(GODOT_MODULE)
 			result = result + normalized_string[i];
 #endif
 		}
