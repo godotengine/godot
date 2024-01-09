@@ -61,7 +61,7 @@ namespace Cesium {
         Dictionary tilesetJsonData = tilesetJson.get_data();
 
         this->_geometricError = tilesetJsonData["geometricError"];
-//        this->_scaledGeometricError =
+        this->_scaledGeometricError = tilesetJsonData["geometricError"];
 
     }
 
