@@ -13,3 +13,10 @@ repos:
             .*platform/android/java/lib/src/com.*|
             .*-so_wrap.*
           )
+
+      - id: make-rst
+        name: make-rst
+        entry: python3 doc/tools/make_rst.py doc/classes modules platform --dry-run --color
+        pass_filenames: false
+        language: python
+        files: ^(doc|modules|platform).*xml$
