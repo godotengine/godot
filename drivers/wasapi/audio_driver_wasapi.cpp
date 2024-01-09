@@ -557,12 +557,10 @@ Error AudioDriverWASAPI::init() {
 
 	target_latency_ms = GLOBAL_GET("audio/driver/output_latency");
 
-	Error err = init_output_device();
-	if (err != OK) {
-		ERR_PRINT("WASAPI: init_output_device error");
-	}
-
 	exit_thread.clear();
+
+	Error err = init_output_device();
+	ERR_FAIL_COND_V_MSG(err != OK, err, "WASAPI: init_output_device error.");
 
 	thread.start(thread_func, this);
 
