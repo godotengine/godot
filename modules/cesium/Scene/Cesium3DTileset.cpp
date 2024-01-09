@@ -23,7 +23,7 @@ namespace Cesium {
             return;
         }
         // fromUrl
-        _options.url = p_url;
+        _url = p_url;
 
         auto error = request->request(p_url);
         if (error != OK) {
@@ -60,10 +60,18 @@ namespace Cesium {
 
         Dictionary tilesetJsonData = tilesetJson.get_data();
 
+        this->_geometricError = tilesetJsonData["geometricError"];
+//        this->_scaledGeometricError =
+
     }
 
     void Cesium3DTileset::_update(double delta) {
 
+        if(this->is_visible()) {
+            //update
+
+
+        }
     }
 
     void Cesium3DTileset::_bind_methods() {

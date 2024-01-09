@@ -18,12 +18,17 @@ namespace Cesium {
         HTTPRequest* request = nullptr;
 
     public:
-        struct TilesetOptions {
-            String url;
-        };
+        String _url;
+
+        float _geometricError;
+        float _scaledGeometricError;
+
+//        struct TilesetOptions {
+//            String url;
+//        };
 
     private:
-        TilesetOptions _options;
+//        TilesetOptions _options;
 
         void _update(double delta);
 
@@ -34,7 +39,7 @@ namespace Cesium {
         ~Cesium3DTileset();
 
         void set_url(String p_url);
-        String get_url() const { return _options.url; }
+        String get_url() const { return _url; }
 
     protected:
         void _notification(int p_what);
