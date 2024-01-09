@@ -211,6 +211,7 @@ void RenderingServerDefault::_finish() {
 		free(test_cube);
 	}
 
+	RSG::canvas->finalize();
 	RSG::rasterizer->finalize();
 }
 
