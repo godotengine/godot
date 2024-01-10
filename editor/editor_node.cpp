@@ -1797,6 +1797,11 @@ void EditorNode::_dialog_action(String p_file) {
 		case RESOURCE_SAVE:
 		case RESOURCE_SAVE_AS: {
 			ERR_FAIL_COND(saving_resource.is_null());
+			if (p_file.get_file().begins_with(".")) {
+				show_accept(TTR("Could not use a name with a leading dot."), TTR("OK"));
+				return;
+			}
+
 			save_resource_in_path(saving_resource, p_file);
 			saving_resource = Ref<Resource>();
 			ObjectID current = editor_history.get_current();

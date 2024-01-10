@@ -51,15 +51,22 @@ String DirectoryCreateDialog::_validate_path(const String &p_path) const {
 		return TTR("Folder name cannot be empty.");
 	}
 
+	if (p_path.find("\\") != -1 || p_path.find(":") != -1 || p_path.find("*") != -1 ||
+			p_path.find("|") != -1 || p_path.find(">") != -1) {
+		return TTR("Folder name contains invalid characters.");
+	}
+
 	const Vector<String> parts = p_path.split("/");
 	for (int i = 0; i < parts.size(); i++) {
 		const String part = parts[i];
 		if (part.empty()) {
 			return TTR("Folder name cannot be empty.");
 		}
-		if (p_path.find("\\") != -1 || p_path.find(":") != -1 || p_path.find("*") != -1 ||
-				p_path.find("|") != -1 || p_path.find(">") != -1 || p_path.ends_with(".") || p_path.ends_with(" ")) {
-			return TTR("Folder name contains invalid characters.");
+		if (part.ends_with(" ") || part[0] == ' ') {
+			return TTR("Folder name cannot begin or end with a space.");
+		}
+		if (part[0] == '.') {
+			return TTR("Folder name cannot begin with a dot.");
 		}
 	}
 

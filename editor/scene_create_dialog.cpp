@@ -110,6 +110,11 @@ void SceneCreateDialog::update_dialog(Variant p_discard) {
 		is_valid = false;
 	}
 
+	if (is_valid && scene_name[0] == '.') {
+		update_error(file_error_label, MSG_ERROR, TTR("File name begins with a dot."));
+		is_valid = false;
+	}
+
 	if (is_valid) {
 		scene_name = directory.plus_file(scene_name);
 		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
