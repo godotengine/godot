@@ -794,9 +794,7 @@ void PopupMenu::_draw_items() {
 			}
 		}
 
-		Color icon_color(1, 1, 1, items[i].disabled && !items[i].separator ? 0.5 : 1);
-
-		icon_color *= items[i].icon_modulate;
+		Color icon_color = items[i].icon_modulate;
 
 		// For non-separator items, add some padding for the content.
 		if (!items[i].separator) {
