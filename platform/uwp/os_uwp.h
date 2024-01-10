@@ -217,6 +217,8 @@ public:
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 	void set_icon(const Ref<Image> &p_icon);
 
+	virtual String get_unique_id() const;
+
 	virtual String get_executable_path() const;
 
 	virtual String get_locale() const;
