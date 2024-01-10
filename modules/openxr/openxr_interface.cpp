@@ -883,8 +883,24 @@ Size2 OpenXRInterface::get_render_target_size() {
 }
 
 uint32_t OpenXRInterface::get_view_count() {
-	// TODO set this based on our configuration
-	return 2;
+	if (openxr_api == nullptr) {
+		return 2;
+	} else {
+		switch (openxr_api->get_view_configuration()) {
+			case XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO: {
+				return 1;
+			} break;
+			case XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO: {
+				return 2;
+			} break;
+			case XR_VIEW_CONFIGURATION_TYPE_PRIMARY_QUAD_VARJO: {
+				return 4;
+			} break;
+			default: {
+				ERR_FAIL_V_MSG(2, "OpenXR: Unsupported view configuration selected");
+			} break;
+		}
+	}
 }
 
 void OpenXRInterface::_set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye) {

@@ -52,6 +52,7 @@
 #include "extensions/openxr_ml2_controller_extension.h"
 #include "extensions/openxr_palm_pose_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
+#include "extensions/openxr_varjo_quad_view_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
 
 #ifdef TOOLS_ENABLED
@@ -115,6 +116,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRDisplayRefreshRateExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRWMRControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRML2ControllerExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVarjoQuadViewExtension));
 
 			// register gated extensions
 			if (GLOBAL_GET("xr/openxr/extensions/eye_gaze_interaction") && (!OS::get_singleton()->has_feature("mobile") || OS::get_singleton()->has_feature(XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME))) {

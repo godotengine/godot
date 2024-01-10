@@ -47,7 +47,7 @@ public:
 	enum {
 		MAX_DIRECTIONAL_LIGHTS = 8,
 		MAX_DIRECTIONAL_LIGHT_CASCADES = 4,
-		MAX_RENDER_VIEWS = 2
+		MAX_RENDER_VIEWS = 4
 	};
 
 	/* Geometry Instance */

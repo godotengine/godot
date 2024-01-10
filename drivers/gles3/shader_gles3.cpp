@@ -200,7 +200,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 		builder.append("layout(num_views=2) in;\n");
 	}
 	builder.append("#define ViewIndex gl_ViewID_OVR\n");
-	builder.append("#define MAX_VIEWS 2\n");
+	builder.append("#define MAX_VIEWS 4\n");
 	builder.append("#else\n");
 	builder.append("#define ViewIndex uint(0)\n");
 	builder.append("#define MAX_VIEWS 1\n");

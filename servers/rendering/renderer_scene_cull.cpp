@@ -2599,10 +2599,8 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 
 		if (view_count == 1) {
 			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter, camera->visible_layers);
-		} else if (view_count == 2) {
-			camera_data.set_multiview_camera(view_count, transforms, projections, false, camera->vaspect);
 		} else {
-			// this won't be called (see fail check above) but keeping this comment to indicate we may support more then 2 views in the future...
+			camera_data.set_multiview_camera(view_count, transforms, projections, false, camera->vaspect);
 		}
 	}
 

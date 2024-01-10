@@ -2,7 +2,7 @@
 #define ROUGHNESS_MAX_LOD 5
 
 #define MAX_VOXEL_GI_INSTANCES 8
-#define MAX_VIEWS 2
+#define MAX_VIEWS 4
 
 #ifndef MOLTENVK_USED
 #if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)

@@ -1174,6 +1174,11 @@ void OpenXRAPI::set_form_factor(XrFormFactor p_form_factor) {
 	form_factor = p_form_factor;
 }
 
+const XrViewConfigurationType *OpenXRAPI::get_supported_view_configuration_types(uint32_t &count) {
+	count = num_view_configuration_types;
+	return supported_view_configuration_types;
+}
+
 void OpenXRAPI::set_view_configuration(XrViewConfigurationType p_view_configuration) {
 	ERR_FAIL_COND(is_initialized());
 
@@ -2121,10 +2126,10 @@ OpenXRAPI::OpenXRAPI() {
 			case 1: {
 				view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 			} break;
-			/* we don't support quad and observer configurations (yet)
 			case 2: {
 				view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_QUAD_VARJO;
 			} break;
+			/* we don't support observer configurations (yet)
 			case 3: {
 				view_configuration = XR_VIEW_CONFIGURATION_TYPE_SECONDARY_MONO_FIRST_PERSON_OBSERVER_MSFT;
 			} break;
