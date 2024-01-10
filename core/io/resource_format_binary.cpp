@@ -806,7 +806,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			bool set_valid = true;
-			if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+			if (value.get_type() == Variant::OBJECT && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled() && missing_resource == nullptr) {
 				// If the property being set is a missing resource (and the parent is not),
 				// then setting it will most likely not work.
 				// Instead, save it as metadata.
@@ -2148,10 +2148,10 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	List<ResourceData> resources;
 
-	Dictionary missing_resource_properties = p_resource->get_meta(META_MISSING_RESOURCES, Dictionary());
-
 	{
 		for (const Ref<Resource> &E : saved_resources) {
+			Dictionary missing_resource_properties = E->get_meta(META_MISSING_RESOURCES, Dictionary());
+
 			ResourceData &rd = resources.push_back(ResourceData())->get();
 			rd.type = _resource_get_class(E);
 
@@ -2181,7 +2181,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 						p.value = E->get(F.name);
 					}
 
-					if (p.pi.type == Variant::OBJECT && missing_resource_properties.has(F.name)) {
+					if (F.type == Variant::OBJECT && missing_resource_properties.has(F.name)) {
 						// Was this missing resource overridden? If so do not save the old value.
 						Ref<Resource> res = p.value;
 						if (res.is_null()) {

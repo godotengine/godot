@@ -600,7 +600,7 @@ Error ResourceLoaderText::load() {
 				if (do_assign) {
 					bool set_valid = true;
 
-					if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+					if (value.get_type() == Variant::OBJECT && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled() && missing_resource == nullptr) {
 						// If the property being set is a missing resource (and the parent is not),
 						// then setting it will most likely not work.
 						// Instead, save it as metadata.
@@ -707,22 +707,23 @@ Error ResourceLoaderText::load() {
 			if (error) {
 				if (error != ERR_FILE_EOF) {
 					_printerr();
-				} else {
-					error = OK;
-					if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-						if (!ResourceCache::has(res_path)) {
-							resource->set_path(res_path);
-						}
-						resource->set_as_translation_remapped(translation_remapped);
-					}
+					return error;
 				}
-				return error;
+				// EOF, Done parsing
+				error = OK;
+				if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+					if (!ResourceCache::has(res_path)) {
+						resource->set_path(res_path);
+					}
+					resource->set_as_translation_remapped(translation_remapped);
+				}
+				break;
 			}
 
 			if (!assign.is_empty()) {
 				bool set_valid = true;
 
-				if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+				if (value.get_type() == Variant::OBJECT && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled() && missing_resource == nullptr) {
 					// If the property being set is a missing resource (and the parent is not),
 					// then setting it will most likely not work.
 					// Instead, save it as metadata.

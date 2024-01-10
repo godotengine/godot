@@ -74,6 +74,10 @@ bool MissingResource::is_recording_properties() const {
 	return recording_properties;
 }
 
+String MissingResource::get_save_class() const {
+	return original_class;
+}
+
 void MissingResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_original_class", "name"), &MissingResource::set_original_class);
 	ClassDB::bind_method(D_METHOD("get_original_class"), &MissingResource::get_original_class);
