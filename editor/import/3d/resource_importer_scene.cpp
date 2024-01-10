@@ -30,12 +30,14 @@
 
 #include "resource_importer_scene.h"
 
+#include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/import/3d/scene_import_settings.h"
+#include "editor/renames_map_3_to_4.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -54,6 +56,10 @@
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/world_boundary_shape_3d.h"
+#include "servers/rendering/shader_language.h"
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
 
 uint32_t EditorSceneFormatImporter::get_import_flags() const {
 	uint32_t ret;
@@ -2734,6 +2740,997 @@ void ResourceImporterScene::get_scene_importer_extensions(List<String> *p_extens
 
 ///////////////////////////////////////
 
+static const char *token_to_str[ShaderLanguage::TK_MAX] = {
+	"", // TK_EMPTY
+	"", // TK_IDENTIFIER
+	"true",
+	"false",
+	"", // TK_FLOAT_CONSTANT
+	"", // TK_INT_CONSTANT
+	"", // TK_UINT_CONSTANT
+	"void",
+	"bool",
+	"bvec2",
+	"bvec3",
+	"bvec4",
+	"int",
+	"ivec2",
+	"ivec3",
+	"ivec4",
+	"uint",
+	"uvec2",
+	"uvec3",
+	"uvec4",
+	"float",
+	"vec2",
+	"vec3",
+	"vec4",
+	"mat2",
+	"mat3",
+	"mat4",
+	"sampler2D",
+	"isampler2D",
+	"usampler2D",
+	"sampler2DArray",
+	"isampler2DArray",
+	"usampler2DArray",
+	"sampler3D",
+	"isampler3D",
+	"usampler3D",
+	"samplerCube",
+	"samplerCubeArray",
+	"flat",
+	"smooth",
+	"const",
+	"struct",
+	"lowp",
+	"mediump",
+	"highp",
+	"==",
+	"!=",
+	"<",
+	"<=",
+	">",
+	">=",
+	"&&",
+	"||",
+	"!",
+	"+",
+	"-",
+	"*",
+	"/",
+	"%",
+	"<<",
+	">>",
+	"=",
+	"+=",
+	"-=",
+	"*=",
+	"/=",
+	"%=",
+	"<<=",
+	">>=",
+	"&=",
+	"|=",
+	"^=",
+	"&",
+	"|",
+	"^",
+	"~",
+	"++",
+	"--",
+	"if",
+	"else",
+	"for",
+	"while",
+	"do",
+	"switch",
+	"case",
+	"default",
+	"break",
+	"continue",
+	"return",
+	"discard",
+	"[",
+	"]",
+	"{",
+	"}",
+	"(",
+	")",
+	"?",
+	",",
+	":",
+	";",
+	".",
+	"uniform",
+	"group_uniforms",
+	"instance",
+	"global",
+	"varying",
+	"in",
+	"out",
+	"inout",
+	"render_mode",
+	"hint_default_white",
+	"hint_default_black",
+	"hint_default_transparent",
+	"hint_normal",
+	"hint_roughness_normal",
+	"hint_roughness_r",
+	"hint_roughness_g",
+	"hint_roughness_b",
+	"hint_roughness_a",
+	"hint_roughness_gray",
+	"hint_anisotropy",
+	"source_color",
+	"hint_range",
+	"instance_index",
+	"hint_screen_texture",
+	"hint_normal_roughness_texture",
+	"hint_depth_texture",
+	"filter_nearest",
+	"filter_linear",
+	"filter_nearest_mipmap",
+	"filter_linear_mipmap",
+	"filter_nearest_mipmap_anisotropic",
+	"filter_linear_mipmap_anisotropic",
+	"repeat_enable",
+	"repeat_disable",
+	"shader_type",
+	"", // TK_CURSOR
+	"", // TK_ERROR
+	"", // TK_EOF
+	"\t",
+	"\r",
+	" ",
+	"\n",
+	"", // TK_BLOCK_COMMENT
+	"", // TK_LINE_COMMENT
+	"", // TK_PREPROC_DIRECTIVE
+};
+
+class TokenStreamManip {
+	using TokenType = ShaderLanguage::TokenType;
+	using Token = ShaderLanguage::Token;
+	using TT = TokenType;
+
+	List<Token> code_tokens;
+	List<Token>::Element *curr_ptr;
+	const String old_code;
+	bool first = false;
+	Token eof_token{ ShaderLanguage::TK_EOF, {}, 0, 0, 0, 0 };
+	bool token_is_skippable(const Token &tk) const {
+		switch (tk.type) {
+			case ShaderLanguage::TK_TAB:
+			case ShaderLanguage::TK_CR:
+			case ShaderLanguage::TK_SPACE:
+			case ShaderLanguage::TK_NEWLINE:
+			case ShaderLanguage::TK_BLOCK_COMMENT:
+			case ShaderLanguage::TK_LINE_COMMENT:
+			case ShaderLanguage::TK_PREPROC_DIRECTIVE:
+				return true;
+			default:
+				break;
+		}
+		return false;
+	};
+	List<Token>::Element *_get_next_token_ptr(List<Token>::Element *_curr_ptr, bool skip_first = false) const {
+		ERR_FAIL_COND_V(_curr_ptr == nullptr, _curr_ptr);
+		if (_curr_ptr->next() == nullptr) {
+			return _curr_ptr;
+		}
+		_curr_ptr = _curr_ptr->next();
+		while (token_is_skippable(_curr_ptr->get())) {
+			if (_curr_ptr->next() == nullptr) {
+				return _curr_ptr;
+			}
+			_curr_ptr = _curr_ptr->next();
+		}
+		return _curr_ptr;
+	};
+	List<Token>::Element *_get_prev_token_ptr(List<Token>::Element *_curr_ptr) const {
+		ERR_FAIL_COND_V(_curr_ptr == nullptr, _curr_ptr);
+		if (_curr_ptr->prev() == nullptr) {
+			return _curr_ptr;
+		}
+		_curr_ptr = _curr_ptr->prev();
+		while (token_is_skippable(_curr_ptr->get())) {
+			if (_curr_ptr->prev() == nullptr) {
+				return _curr_ptr;
+			}
+			_curr_ptr = _curr_ptr->prev();
+		}
+		return _curr_ptr;
+	};
+	List<Token>::Element *get_next_token() {
+		curr_ptr = _get_next_token_ptr(curr_ptr, first);
+		return curr_ptr;
+	};
+	List<Token>::Element *get_prev_token() {
+		curr_ptr = _get_prev_token_ptr(curr_ptr);
+		return curr_ptr;
+	};
+	List<Token>::Element *remove_cur_and_get_next() {
+		ERR_FAIL_COND_V(!curr_ptr, nullptr);
+		List<Token>::Element *prev = curr_ptr->prev();
+		if (!prev) {
+			prev = curr_ptr->next();
+			code_tokens.erase(curr_ptr);
+			while (token_is_skippable(prev->get())) {
+				if (prev->next() == nullptr) {
+					return prev;
+				}
+				prev = prev->next();
+			}
+			return prev;
+		}
+		code_tokens.erase(curr_ptr);
+		curr_ptr = prev;
+		return get_next_token();
+	};
+	TokenType _peek_tk_type(int64_t count, List<Token>::Element **r_pos = nullptr) const {
+		ERR_FAIL_COND_V(!curr_ptr, ShaderLanguage::TK_EOF);
+		if (count == 0) {
+			return curr_ptr->get().type;
+		}
+
+		bool backwards = count < 0;
+		uint64_t max_count = abs(count);
+		auto start_ptr = curr_ptr;
+		for (int i = 0; i < max_count; i++) {
+			auto _ptr = backwards ? _get_prev_token_ptr(start_ptr) : _get_next_token_ptr(start_ptr);
+			if (!_ptr) {
+				if (r_pos) {
+					*r_pos = start_ptr;
+				}
+				return ShaderLanguage::TK_EOF;
+			}
+			start_ptr = _ptr;
+		}
+		if (r_pos) {
+			*r_pos = start_ptr;
+		}
+		return start_ptr->get().type;
+	}
+	TokenType peek_next_tk_type(uint32_t count = 1) const {
+		return _peek_tk_type(count);
+	};
+	TokenType peek_prev_tk_type(uint32_t count = 1) const {
+		return _peek_tk_type(-((int64_t)count));
+	};
+	List<Token>::Element *get_pos() const {
+		ERR_FAIL_COND_V(!curr_ptr, nullptr);
+		return curr_ptr;
+	};
+	enum {
+		NEW_IDENT = -1
+	};
+	bool reset_to(List<Token>::Element *p_pos) {
+		ERR_FAIL_COND_V(p_pos == nullptr, false);
+		curr_ptr = p_pos;
+		return true;
+	};
+	bool insert_after(const Vector<Token> &token_list, List<Token>::Element *p_pos) {
+		ERR_FAIL_COND_V(p_pos == nullptr, false);
+		for (int i = token_list.size() - 1; i >= 0; i--) {
+			const Token &tk = token_list[i];
+			code_tokens.insert_after(p_pos, { tk.type, tk.text, tk.constant, tk.line, tk.length, NEW_IDENT });
+		}
+		return true;
+	};
+	bool insert_before(const Vector<Token> &token_list, List<Token>::Element *p_pos) {
+		ERR_FAIL_COND_V(p_pos == nullptr, false);
+		for (const Token &tk : token_list) {
+			code_tokens.insert_before(p_pos, { tk.type, tk.text, tk.constant, tk.line, tk.length, NEW_IDENT });
+		}
+		return true;
+	};
+	bool insert_after(const Token &token, List<Token>::Element *p_pos) {
+		ERR_FAIL_COND_V(p_pos == nullptr, false);
+		Token new_token = token;
+		new_token.pos = NEW_IDENT;
+		code_tokens.insert_after(p_pos, new_token);
+		return true;
+	};
+	bool insert_before(const Token &token, List<Token>::Element *p_pos) {
+		ERR_FAIL_COND_V(p_pos == nullptr, false);
+		Token new_token = token;
+		new_token.pos = NEW_IDENT;
+		code_tokens.insert_before(p_pos, new_token);
+		return true;
+	};
+	List<Token>::Element *replace_curr(const Token &token) {
+		ERR_FAIL_COND_V(curr_ptr == nullptr, nullptr);
+		Token new_token = token;
+		new_token.pos = NEW_IDENT;
+		List<Token>::Element *prev = curr_ptr;
+		curr_ptr = code_tokens.insert_before(curr_ptr, new_token);
+		code_tokens.erase(prev);
+		return curr_ptr;
+	};
+
+	bool _insert_uniform_declaration(const String &p_name, TokenType hint, List<Token>::Element *p_shader_decl_end_pos) {
+		if (p_shader_decl_end_pos == nullptr) {
+			return false;
+		}
+		//	"\nuniform sampler2D %s : hint_%s, filter_linear_mipmap;\n";
+		return insert_after({ { TT::TK_NEWLINE }, { TT::TK_UNIFORM }, { TT::TK_SPACE }, { TT::TK_TYPE_SAMPLER2D },
+									{ TT::TK_SPACE }, { TT::TK_IDENTIFIER, p_name }, { TT::TK_SPACE }, { TT::TK_COLON },
+									{ TT::TK_SPACE }, { hint }, { TT::TK_COMMA }, { TT::TK_SPACE },
+									{ TT::TK_FILTER_LINEAR_MIPMAP }, { TT::TK_SEMICOLON },
+									{ TT::TK_NEWLINE } },
+				p_shader_decl_end_pos);
+	}
+	List<Token>::Element *_remove_from_curr_to(List<Token>::Element *p_end) {
+		ERR_FAIL_COND_V(p_end == nullptr, nullptr);
+		while (curr_ptr != p_end) {
+			auto next = curr_ptr->next();
+			code_tokens.erase(curr_ptr);
+			curr_ptr = next;
+		}
+		return curr_ptr;
+	}
+
+	List<Token>::Element *_get_end_of_closure() {
+		int additional_closures = 0;
+		int iters = 0;
+		bool found = false;
+		List<Token>::Element *ptr = curr_ptr;
+		for (; ptr; ptr = ptr->next()) {
+			switch (ptr->get().type) {
+				case TT::TK_CURLY_BRACKET_OPEN:
+				case TT::TK_PARENTHESIS_OPEN:
+				case TT::TK_BRACKET_OPEN: {
+					additional_closures++;
+				} break;
+				case TT::TK_CURLY_BRACKET_CLOSE:
+				case TT::TK_PARENTHESIS_CLOSE:
+				case TT::TK_BRACKET_CLOSE: {
+					if (additional_closures != 0) {
+						additional_closures--;
+						break;
+					}
+					return ptr;
+				} break;
+				case TT::TK_SEMICOLON: {
+					return _get_prev_token_ptr(ptr);
+				} break;
+				case TT::TK_EOF:
+				case TT::TK_ERROR: {
+					ptr = _get_prev_token_ptr(ptr);
+					ERR_FAIL_V(ptr);
+				} break;
+				default:
+					break;
+			}
+		}
+		return ptr;
+	}
+
+public:
+	bool convert_code(String &r_err_str) {
+		/**
+		 * We need to do the following:
+		 *  * Replace everything in RenamesMap3To4::shaders_renames
+		 *	* the usage of SCREEN_TEXTURE, DEPTH_TEXTURE, and NORMAL_ROUGHNESS_TEXTURE necessitates adding a uniform declaration at the top of the file
+		 *	* async_visible and async_hidden render modes need to be removed
+		 *	* If shader_type is "particles", need to rename the function "void vertex()" to "void process()"
+		 *  * Invert all usages of CLEARCOAT_GLOSS
+		 *    * invert all lefthand assignments
+		 * 			- `CLEARCOAT_GLOSS = 5.0 / foo;`
+		 * 			becomes: `CLEARCOAT_ROUGHNESS = (1.0 - (5.0 / foo));`,
+		 *          - `CLEARCOAT_GLOSS *= 1.1;`
+		 * 			becomes `CLEARCOAT_ROUGHNESS = (1.0 - ((1.0 - CLEARCOAT_ROUGHNESS) * 1.1));`
+		 *    * invert all righthand usages
+		 * 			- `foo = CLEARCOAT_GLOSS;`
+		 * 			becomes: `foo = (1.0 - CLEARCOAT_ROUGHNESS);`
+		 *	* Check for use of `specular_blinn` and `specular_phong` render modes; not supported in 4.x, throw an error
+		 *	* Check for use of `MODULATE`; not supported in 4.x, throw an error
+		 */
+#define SDCONV_COND_FAIL(cond, msg)                                 \
+	if (unlikely(cond)) {                                           \
+		r_err_str = "3.x Shader conversion failed: " + String(msg); \
+		return false;                                               \
+	}
+#define SDCONV_COND_LINE_FAIL(cond, line, msg)                                               \
+	if (unlikely(cond)) {                                                                    \
+		r_err_str = "3.x Shader conversion failed: Line " + itos(line) + ": " + String(msg); \
+		return false;                                                                        \
+	}
+#define SDCONV_LINE_FAIL(line, msg)                                                      \
+	r_err_str = "3.x Shader conversion failed: Line " + itos(line) + ": " + String(msg); \
+	return false;
+		SDCONV_COND_FAIL(code_tokens.size() == 0, "Empty shader file");
+		if (code_tokens.back()->get().type != TT::TK_EOF) {
+			SDCONV_COND_LINE_FAIL(code_tokens.back()->get().type == TT::TK_ERROR, code_tokens.back()->get().line, "Parser error (" + code_tokens.back()->get().text + ")");
+			code_tokens.push_back(eof_token);
+		}
+		// TK_SHADER_TYPE, TK_IDENTIFIER, TK_SEMICOLON are always the first three tokens in a 3.x shader file
+		curr_ptr = code_tokens.front();
+
+		String shader_type;
+		RenderingServer::ShaderMode shader_mode;
+		{
+			SDCONV_COND_FAIL(code_tokens.size() < 3, "Invalid shader file");
+			auto first_token = get_next_token();
+			SDCONV_COND_LINE_FAIL(first_token->get().type != TT::TK_SHADER_TYPE, first_token->get().line, "Shader type must be first token");
+			auto id_token = get_next_token();
+			SDCONV_COND_LINE_FAIL(id_token->get().type != TT::TK_IDENTIFIER, id_token->get().line, "Invalid shader type");
+			String shader_type = id_token->get().text;
+			auto token = get_next_token();
+			SDCONV_COND_LINE_FAIL(token->get().type != TT::TK_SEMICOLON, token->get().line, "Expected semi-colon after shader type");
+			if (shader_type == "spatial") {
+				shader_mode = RenderingServer::ShaderMode::SHADER_SPATIAL;
+			} else if (shader_type == "particles") {
+				shader_mode = RenderingServer::ShaderMode::SHADER_PARTICLES;
+			} else if (shader_type == "canvas_item") {
+				shader_mode = RenderingServer::ShaderMode::SHADER_CANVAS_ITEM;
+			} else { // 3.x didn't support any other shader types
+				SDCONV_LINE_FAIL(id_token->get().line, "Invalid 3.x shader type");
+			}
+		}
+		List<Token>::Element *after_type_decl = get_pos();
+
+		HashMap<String, String> renames;
+		HashMap<String, Token> hint_renames;
+		for (unsigned int current_index = 0; RenamesMap3To4::shaders_renames[current_index][0]; current_index++) {
+			String old_name = RenamesMap3To4::shaders_renames[current_index][0];
+			if (old_name.begins_with("hint_")) {
+				if (old_name == "hint_albedo") {
+					hint_renames.insert(old_name, Token{ TT::TK_HINT_SOURCE_COLOR, {}, 0, 0, 0, 0 });
+				} else if (old_name == "hint_aniso") {
+					hint_renames.insert(old_name, Token{ TT::TK_HINT_ANISOTROPY_TEXTURE, {}, 0, 0, 0, 0 });
+				} else if (old_name == "hint_black") {
+					hint_renames.insert(old_name, Token{ TT::TK_HINT_DEFAULT_BLACK_TEXTURE, {}, 0, 0, 0, 0 });
+				} else if (old_name == "hint_black_albedo") {
+					hint_renames.insert(old_name, Token{ TT::TK_HINT_DEFAULT_BLACK_TEXTURE, {}, 0, 0, 0, 0 });
+				} else if (old_name == "hint_color") {
+					hint_renames.insert(old_name, Token{ TT::TK_HINT_SOURCE_COLOR, {}, 0, 0, 0, 0 });
+				} else if (old_name == "hint_white") {
+					hint_renames.insert(old_name, Token{ TT::TK_HINT_DEFAULT_WHITE_TEXTURE, {}, 0, 0, 0, 0 });
+				} else { // this shouldn't ever happen
+					r_err_str = "No hint rename!?!?!?";
+					ERR_FAIL_V_MSG(false, r_err_str);
+				}
+			} else {
+				renames.insert(RenamesMap3To4::shaders_renames[current_index][0], RenamesMap3To4::shaders_renames[current_index][1]);
+			}
+		}
+		bool has_screen_texture = false;
+		bool has_depth_texture = false;
+		bool has_roughness_texture = false;
+
+		while (true) {
+			auto cur_tok = get_next_token();
+			if (cur_tok->get().type == TT::TK_EOF) {
+				break;
+			}
+			switch (cur_tok->get().type) {
+				case TT::TK_RENDER_MODE: {
+					// we only care about the ones for spatial
+					if (shader_mode == RenderingServer::ShaderMode::SHADER_SPATIAL) {
+						while (true) {
+							auto next_tk = get_next_token();
+							if (next_tk->get().type == TT::TK_IDENTIFIER) {
+								SDCONV_COND_LINE_FAIL(next_tk->get().text == "specular_blinn" || next_tk->get().text == "specular_phong", next_tk->get().line, "render mode" + next_tk->get().text + "is not supported by this version of Godot.");
+								if (next_tk->get().text == "async_visible" || next_tk->get().text == "async_hidden") {
+									next_tk = remove_cur_and_get_next();
+									if (next_tk->get().type == TT::TK_COMMA) {
+										next_tk = remove_cur_and_get_next();
+									} else {
+										if (peek_prev_tk_type() == TT::TK_RENDER_MODE && next_tk->get().type == TT::TK_SEMICOLON) {
+											// we need to remove this line entirely
+											auto end = get_pos()->next();
+											next_tk = get_prev_token();
+											next_tk = _remove_from_curr_to(end);
+											break;
+										}
+									}
+								}
+							} else {
+								SDCONV_COND_LINE_FAIL(next_tk->get().type != TT::TK_COMMA && next_tk->get().type != TT::TK_SEMICOLON, next_tk->get().line, "Invalid render mode declaration");
+							}
+							if (next_tk->get().type == TT::TK_SEMICOLON) {
+								break;
+							}
+						}
+					}
+				} break;
+				case TT::TK_IDENTIFIER: {
+					if (cur_tok->get().text == "SCREEN_TEXTURE" && !has_screen_texture) {
+						has_screen_texture = true;
+						SDCONV_COND_LINE_FAIL(!_insert_uniform_declaration("SCREEN_TEXTURE", TT::TK_HINT_SCREEN_TEXTURE, after_type_decl), cur_tok->get().line, "Failed to insert uniform declaration");
+					} else if (cur_tok->get().text == "DEPTH_TEXTURE" && !has_depth_texture) {
+						has_depth_texture = true;
+						SDCONV_COND_LINE_FAIL(!_insert_uniform_declaration("DEPTH_TEXTURE", TT::TK_HINT_DEPTH_TEXTURE, after_type_decl), cur_tok->get().line, "Failed to insert uniform declaration");
+					} else if (cur_tok->get().text == "NORMAL_ROUGHNESS_TEXTURE" && !has_roughness_texture) {
+						has_roughness_texture = true;
+						SDCONV_COND_LINE_FAIL(!_insert_uniform_declaration("NORMAL_ROUGHNESS_TEXTURE", TT::TK_HINT_NORMAL_ROUGHNESS_TEXTURE, after_type_decl), cur_tok->get().line, "Failed to insert uniform declaration");
+					} else if (shader_mode == RenderingServer::ShaderMode::SHADER_PARTICLES && cur_tok->get().text == "vertex") {
+						if (peek_prev_tk_type() == TT::TK_TYPE_VOID || peek_next_tk_type() == TT::TK_PARENTHESIS_OPEN) {
+							replace_curr({ TT::TK_IDENTIFIER, "process" });
+						}
+					} else if (shader_mode == RenderingServer::ShaderMode::SHADER_CANVAS_ITEM && cur_tok->get().text == "MODULATE") {
+						// This is not supported in Godot 4.x (yet, may be re-added).
+						SDCONV_LINE_FAIL(cur_tok->get().line, "MODULATE is not supported by this version of Godot")
+					} else if (cur_tok->get().text == "CLEARCOAT_GLOSS") {
+						cur_tok = replace_curr({ TT::TK_IDENTIFIER, "CLEARCOAT_ROUGHNESS" });
+						Token end_token;
+						List<Token>::Element *assign_closure_end = nullptr;
+						switch (peek_next_tk_type()) {
+							case TT::TK_OP_ASSIGN:
+							case TT::TK_OP_ASSIGN_ADD:
+							case TT::TK_OP_ASSIGN_SUB:
+							case TT::TK_OP_ASSIGN_MUL:
+							case TT::TK_OP_ASSIGN_DIV: {
+								assign_closure_end = _get_end_of_closure();
+								{
+									auto assign_tk = get_next_token();
+									// " = (1.0 - ("
+									Vector<Token> pending_closures = {
+										{ TT::TK_OP_ASSIGN },
+										{ TT::TK_SPACE },
+										{ TT::TK_PARENTHESIS_OPEN },
+										{ TT::TK_FLOAT_CONSTANT, {}, 1.0 },
+										{ TT::TK_SPACE },
+										{ TT::TK_OP_SUB },
+										{ TT::TK_SPACE },
+										{ TT::TK_PARENTHESIS_OPEN },
+									};
+									if (assign_tk->get().type != TT::TK_OP_ASSIGN) {
+										// " = (1.0 - ((1.0 - CLEARCOAT_ROUGHNESS) {op}
+										pending_closures.append_array(
+												{ { TT::TK_PARENTHESIS_OPEN },
+														{ TT::TK_FLOAT_CONSTANT, {}, 1.0 },
+														{ TT::TK_SPACE },
+														{ TT::TK_OP_SUB },
+														{ TT::TK_SPACE },
+														{ TT::TK_IDENTIFIER, "CLEARCOAT_ROUGHNESS" },
+														{ TT::TK_PARENTHESIS_CLOSE },
+														{ TT::TK_SPACE } });
+									}
+									switch (assign_tk->get().type) {
+										case TT::TK_OP_ASSIGN_ADD: {
+											pending_closures.push_back({ TT::TK_OP_ADD });
+										} break;
+										case TT::TK_OP_ASSIGN_SUB: {
+											pending_closures.push_back({ TT::TK_OP_SUB });
+										} break;
+										case TT::TK_OP_ASSIGN_MUL: {
+											pending_closures.push_back({ TT::TK_OP_MUL });
+										} break;
+										case TT::TK_OP_ASSIGN_DIV: {
+											pending_closures.push_back({ TT::TK_OP_DIV });
+										} break;
+										default:
+											break;
+									}
+									insert_before(pending_closures, assign_tk);
+								}
+								remove_cur_and_get_next();
+								insert_after({ { TT::TK_PARENTHESIS_CLOSE }, { TT::TK_PARENTHESIS_CLOSE } }, assign_closure_end);
+								reset_to(cur_tok);
+
+							} break;
+							default:
+								break;
+						}
+
+						// now we need to check the previous token
+						// if this is anything but a `{` or `;`, we need to invert it
+						if (peek_prev_tk_type() == TT::TK_SEMICOLON || peek_prev_tk_type() == TT::TK_CURLY_BRACKET_OPEN) {
+							break;
+						}
+						Vector<Token> pending_closures = {
+							{ TT::TK_PARENTHESIS_OPEN },
+							{ TT::TK_FLOAT_CONSTANT, {}, 1.0 },
+							{ TT::TK_SPACE },
+							{ TT::TK_OP_SUB },
+							{ TT::TK_SPACE }
+						};
+						if (assign_closure_end) {
+							// invert_str = "(1.0 - (" + assign_str;
+							pending_closures.append_array({ { TT::TK_PARENTHESIS_OPEN }, { TT::TK_SPACE } });
+							insert_after({ { TT::TK_PARENTHESIS_CLOSE }, { TT::TK_PARENTHESIS_CLOSE } }, assign_closure_end);
+						} else {
+							insert_after({ TT::TK_PARENTHESIS_CLOSE }, cur_tok);
+						}
+						insert_before(pending_closures, cur_tok);
+					} else if (renames.has(cur_tok->get().text)) {
+						replace_curr({ TT::TK_IDENTIFIER, renames[cur_tok->get().text] });
+					} else if (hint_renames.has(cur_tok->get().text)) {
+						replace_curr(hint_renames[cur_tok->get().text]);
+					}
+				} break; // end of identifier case
+				case TT::TK_ERROR: {
+					SDCONV_LINE_FAIL(cur_tok->get().line, "Parser error ( " + cur_tok->get().text + ")");
+				} break;
+				default:
+					break;
+			}
+		}
+		return true;
+	}
+
+	String emit_code() const {
+		if (code_tokens.size() == 0) {
+			return "";
+		}
+		String new_code = "";
+		const List<ShaderLanguage::Token>::Element *start = code_tokens.front()->next(); // skip TK_EOF token at start
+		for (auto E = start; E; E = E->next()) {
+			const Token &tk = E->get();
+			ERR_FAIL_COND_V(tk.type < 0 || tk.type > TT::TK_MAX, "");
+			bool end = false;
+			switch (tk.type) {
+				// remember that we can't trust the tk.name unless it's a newly inserted token
+				// same with constants
+				case TT::TK_PREPROC_DIRECTIVE:
+				case TT::TK_LINE_COMMENT:
+				case TT::TK_BLOCK_COMMENT:
+				case TT::TK_IDENTIFIER: {
+					if (tk.pos == NEW_IDENT) {
+						new_code += tk.text;
+					} else {
+						// don't trust the token text because it may have been modified by the ShaderLanguage parser
+						new_code += old_code.substr(tk.pos, tk.length);
+					}
+				} break;
+				case TT::TK_INT_CONSTANT:
+				case TT::TK_FLOAT_CONSTANT:
+				case TT::TK_UINT_CONSTANT: {
+					if (tk.pos == NEW_IDENT) {
+						String const_str = rtos(tk.constant);
+						if (!tk.is_integer_constant() && !const_str.contains(".")) {
+							const_str += ".0";
+						}
+						new_code += const_str;
+					} else {
+						new_code += old_code.substr(tk.pos, tk.length);
+					}
+				} break;
+				case TT::TK_ERROR:
+				case TT::TK_EOF: {
+					end = true;
+					new_code += "";
+				} break;
+
+				default: {
+					new_code += token_to_str[tk.type];
+				} break;
+			}
+			if (end) {
+				break;
+			}
+		}
+
+		return new_code;
+	}
+
+	TokenStreamManip() = delete;
+	TokenStreamManip(const String &p_code) :
+			old_code(p_code) {
+		ShaderLanguage sl;
+		sl.token_debug_stream(old_code, code_tokens, true);
+		code_tokens.push_back(eof_token);
+		code_tokens.push_front(eof_token);
+		curr_ptr = code_tokens.front();
+	}
+};
+
+String EditorSceneFormatImporterESCN::convert_old_shader_code(const String &p_code, String &r_err_str) {
+	// TODO: remove this
+	TokenStreamManip tsm(p_code);
+	if (!tsm.convert_code(r_err_str)) {
+		return String();
+	}
+	return tsm.emit_code();
+}
+
+int _get_starting_index(const List<PropertyInfo> &p_properties) {
+	// we need to get past MissingResource's properties
+	bool fmissingResource = false;
+	bool foundoriginal_class = false;
+	bool found_recording_property = false;
+	for (int i = 0; i < p_properties.size(); i++) {
+		if (p_properties[i].usage & PROPERTY_USAGE_CATEGORY && p_properties[i].name == "MissingResource") {
+			fmissingResource = true;
+		} else if (fmissingResource) {
+			if (p_properties[i].name == "original_class") {
+				foundoriginal_class = true;
+			}
+			if (p_properties[i].name == "recording_properties") {
+				found_recording_property = true;
+			}
+		}
+		if (foundoriginal_class && found_recording_property) {
+			return i + 1;
+		}
+	}
+	return 0;
+}
+
+Ref<Resource> EditorSceneFormatImporterESCN::convert_old_shader(const Ref<MissingResource> &p_res, Error &r_err, String &r_err_str) {
+	// Shader conversion
+	// 3.x shaders will fail to compile with the 4.x compiler
+	// This is done upon `set_code()` during resource load, and this will result in errors when loading normally
+	Ref<Shader> shader;
+	String code;
+	List<PropertyInfo> missingres_properties;
+	shader.instantiate();
+	// get the props
+	p_res->get_property_list(&missingres_properties);
+	int start_idx = _get_starting_index(missingres_properties);
+	// set resource_local_to_scene and resource_name; resource_path gets set by the resource loader
+	shader->set("resource_local_to_scene", p_res->get("resource_local_to_scene"));
+	shader->set("resource_name", p_res->get("resource_name"));
+	for (int i = start_idx; i < missingres_properties.size(); i++) {
+		const PropertyInfo &prop = missingres_properties[i];
+		if (prop.name == "code") {
+			code = p_res->get(prop.name);
+		} else {
+			shader->set(prop.name, p_res->get(prop.name));
+		}
+	}
+	// String new_code = convert_old_shader_code(code, r_err_str);
+	TokenStreamManip tsm(code);
+	if (!tsm.convert_code(r_err_str)) {
+		r_err = ERR_FILE_CORRUPT;
+		return Ref<Resource>();
+	}
+	// sl.token_debug_stream(new_code, new_code_tokens);
+	shader->set_code(tsm.emit_code());
+	r_err = OK;
+	return shader;
+}
+
+Ref<Resource> EditorSceneFormatImporterESCN::convert_old_animation(const Ref<MissingResource> &p_res, Error &r_err, String &r_err_str) {
+	// Converts old scene animation format
+	// `transform` track type was removed in 4.x and will result in loading errors if loaded normally
+	// We need to convert any `transform` tracks to separate position, rotation, and scale tracks
+	List<PropertyInfo> missingres_properties;
+	Vector<Dictionary> tracks;
+	Ref<Animation> animation;
+
+	animation.instantiate();
+	p_res->get_property_list(&missingres_properties);
+	// ClassDB::get_property_list("Animation", &animation_properties); // Animation is derived from `Resource`, so no inheritance
+
+	int start_idx = _get_starting_index(missingres_properties);
+	// Set resource properties
+	// Set resource_local_to_scene and resource_name; resource_path gets set by the resource loader because it pollutes the cache.
+	animation->set("resource_local_to_scene", p_res->get("resource_local_to_scene"));
+	animation->set("resource_name", p_res->get("resource_name"));
+	// Set recorded properties.
+	for (int i = start_idx; i < missingres_properties.size(); i++) {
+		const PropertyInfo &prop = missingres_properties[i];
+		if (prop.name.begins_with("tracks/")) {
+			int id = prop.name.get_slicec('/', 1).to_int();
+			while (id >= tracks.size()) {
+				tracks.push_back(Dictionary());
+			}
+			tracks.write[id][prop.name.get_slicec('/', 2)] = p_res->get(prop.name);
+		} else {
+			animation->set(prop.name, p_res->get(prop.name));
+		}
+	}
+	for (int i = 0; i < tracks.size(); i++) {
+		// now that we have all the tracks, we need to split the transform tracks into separate tracks
+		// this is because the current animation player doesn't support transform tracks
+		// so we need to split them into separate position, rotation, and scale tracks
+		// TODO: we also need to split the blend shape tracks into separate tracks
+		if (tracks[i].has("type") && tracks[i]["type"] == "transform") {
+			// split the transform track into separate tracks
+
+			// Old scene format only used 32-bit floats, did not have configurable real_t.
+			Vector<float> keys = tracks[i]["keys"];
+			int vcount = keys.size();
+			int tcount = vcount / 12;
+			if ((vcount % 12) != 0) { // should be multiple of 12
+				r_err_str = "Failed to convert animation: invalid number of keys in transform track.";
+				r_err = ERR_FILE_CORRUPT;
+				ERR_FAIL_V(Ref<Resource>());
+			}
+
+			Vector<real_t> position_keys;
+			Vector<real_t> rotation_keys;
+			Vector<real_t> scale_keys;
+			position_keys.resize(tcount * 5); // time + transition + xyz
+			rotation_keys.resize(tcount * 6); // time + transition + xyzw
+			scale_keys.resize(tcount * 5); // time + transition + xyz
+			// split the keys into separate tracks
+			for (int j = 0; j < tcount; j++) {
+				// it's position (Vector3, xyz), then rotation (Quaternion, xyzw), then scale (Vector3, xyz)
+				// each track has time and transition values, so get those
+				const float *ofs = &(keys.ptr()[j * 12]);
+				float time = ofs[0];
+				float transition = ofs[1];
+
+				position_keys.write[j * 5 + 0] = time;
+				position_keys.write[j * 5 + 1] = transition;
+				position_keys.write[j * 5 + 2] = ofs[2]; // x
+				position_keys.write[j * 5 + 3] = ofs[3]; // y
+				position_keys.write[j * 5 + 4] = ofs[4]; // z
+
+				rotation_keys.write[j * 6 + 0] = time;
+				rotation_keys.write[j * 6 + 1] = transition;
+				rotation_keys.write[j * 6 + 2] = ofs[5]; // x
+				rotation_keys.write[j * 6 + 3] = ofs[6]; // y
+				rotation_keys.write[j * 6 + 4] = ofs[7]; // z
+				rotation_keys.write[j * 6 + 5] = ofs[8]; // w
+
+				scale_keys.write[j * 5 + 0] = time;
+				scale_keys.write[j * 5 + 1] = transition;
+				scale_keys.write[j * 5 + 2] = ofs[9]; // x
+				scale_keys.write[j * 5 + 3] = ofs[10]; // y
+				scale_keys.write[j * 5 + 4] = ofs[11]; // z
+			}
+
+			Dictionary c_track;
+			{
+				auto dict_keys = tracks[i].keys();
+				for (int j = 0; j < dict_keys.size(); j++) {
+					if (dict_keys[j] == "type" || dict_keys[j] == "keys") {
+						continue;
+					}
+					c_track[dict_keys[j]] = tracks[i][dict_keys[j]];
+				}
+			}
+			auto c_track_keys = c_track.keys();
+			tracks.remove_at(i);
+			// scale, then rotation, then position
+			if (scale_keys.size() > 0) {
+				Dictionary track;
+				track["type"] = "scale_3d";
+				for (int j = 0; j < c_track_keys.size(); j++) {
+					String key = c_track_keys[j];
+					track[key] = c_track[key];
+				}
+				track["keys"] = scale_keys;
+				tracks.insert(i, track);
+			}
+			if (rotation_keys.size() > 0) {
+				Dictionary track;
+				track["type"] = "rotation_3d";
+				for (int j = 0; j < c_track_keys.size(); j++) {
+					String key = c_track_keys[j];
+					track[key] = c_track[key];
+				}
+				track["keys"] = rotation_keys;
+				tracks.insert(i, track);
+			}
+			if (position_keys.size() > 0) {
+				Dictionary track;
+				track["type"] = "position_3d";
+				for (int j = 0; j < c_track_keys.size(); j++) {
+					String key = c_track_keys[j];
+					track[key] = c_track[key];
+				}
+				track["keys"] = position_keys;
+				tracks.insert(i, track);
+			}
+		}
+	}
+	// now, set all the track data
+	for (int i = 0; i < tracks.size(); i++) {
+		const Dictionary &track = tracks[i];
+		String track_prefix = "tracks/" + itos(i) + "/";
+		animation->set(track_prefix + "type", track["type"]);
+		// iterate over all the dictionary keys
+		TypedArray<String> dict_keys = track.keys();
+		for (int j = 0; j < dict_keys.size(); j++) {
+			const String &key = dict_keys[j];
+			if (key != "type" && key != "keys") {
+				animation->set(track_prefix + key, track[key]);
+			}
+		}
+		// set keys at the end
+		animation->set(track_prefix + "keys", track["keys"]);
+	}
+	r_err = OK;
+	return animation;
+}
+
+// Converts old 3.x animations transforms relative to the bone rest to absolute.
+void EditorSceneFormatImporterESCN::_recompute_animation_tracks(AnimationPlayer *p_player) {
+	List<StringName> anims;
+	p_player->get_animation_list(&anims);
+	Node *parent = p_player->get_parent();
+	ERR_FAIL_NULL(parent);
+
+	// we iterate over all the animations in the player, then all the tracks in the player
+	// if it is position, rotation, or scale, we get the skeleton path and the bone name
+	// then we get the node at the skeleton path, and get the bone index from the bone name
+	// we then get the rest position, rotation, or scale from the skeleton
+	// then we iterate over all the keys in the track, and multiply the key * rest position, rotation, or scale and assign it to the key
+	for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
+		StringName anim_name = E->get();
+		Ref<Animation> anim = p_player->get_animation(anim_name);
+		ERR_CONTINUE(anim.is_null());
+		for (int i = 0; i < anim->get_track_count(); i++) {
+			int track_type = anim->track_get_type(i);
+			if (track_type == Animation::TYPE_POSITION_3D || track_type == Animation::TYPE_ROTATION_3D || track_type == Animation::TYPE_SCALE_3D) {
+				NodePath path = anim->track_get_path(i);
+				Node *node = parent->get_node(path);
+				if (!node) {
+					continue;
+				}
+				Skeleton3D *skel = Object::cast_to<Skeleton3D>(node);
+				ERR_CONTINUE(!skel);
+
+				StringName bone = path.get_subname(0);
+				int bone_idx = skel->find_bone(bone);
+				if (bone_idx == -1) {
+					continue;
+				}
+
+				Transform3D rest = skel->get_bone_rest(bone_idx);
+				for (int j = 0; j < anim->track_get_key_count(i); j++) {
+					Variant val;
+					if (track_type == Animation::TYPE_POSITION_3D) {
+						Vector3 a_pos = anim->track_get_key_value(i, j);
+						Transform3D t = Transform3D();
+						t.set_origin(a_pos);
+						Vector3 new_a_pos = (rest * t).origin;
+						anim->track_set_key_value(i, j, new_a_pos);
+					} else if (track_type == Animation::TYPE_ROTATION_3D) {
+						Quaternion q = anim->track_get_key_value(i, j);
+						Transform3D t = Transform3D();
+						t.basis.rotate(q);
+						Quaternion new_q = (rest * t).basis.get_rotation_quaternion();
+						anim->track_set_key_value(i, j, new_q);
+					} else if (track_type == Animation::TYPE_SCALE_3D) {
+						Vector3 v = anim->track_get_key_value(i, j);
+						Transform3D t = Transform3D();
+						t.scale(v);
+						Vector3 new_v = (rest * t).basis.get_scale(); // is this right? I have no idea how 3d works :pensive:
+						anim->track_set_key_value(i, j, new_v);
+					}
+				}
+			}
+		}
+	}
+}
+
+void EditorSceneFormatImporterESCN::_fix_old_format_scene(Node *scene) {
+	TypedArray<Node> nodes = scene->find_children("*", "MeshInstance3D");
+	for (int32_t node_i = 0; node_i < nodes.size(); node_i++) {
+		MeshInstance3D *mesh_3d = cast_to<MeshInstance3D>(nodes[node_i]);
+		auto skel_path = mesh_3d->get_skeleton_path();
+		Node *skel_node = skel_path.is_absolute() ? scene->get_node(skel_path) : mesh_3d->get_node(skel_path);
+		if (skel_node) {
+			Skeleton3D *skel = Object::cast_to<Skeleton3D>(skel_node);
+			if (!skel) {
+				WARN_PRINT("MeshInstance3D.skeleton_path is not a Skeleton3D.");
+				continue;
+			}
+			// Checking to see if the `pose` parameter was not set in the imported skeleton bones
+			// 3.x did not export skeletons with the `pose` parameter set if `pose == Transform3D()`
+			// If it wasn't, we need to set it to the rest pose if `rest != Transform3D()`
+			// poses were relative to the rests in 3.x, but they're absolute in 4.x
+			for (int i = 0; i < skel->get_bone_count(); i++) {
+				Transform3D rest = skel->get_bone_rest(i);
+				Vector3 pos = skel->get_bone_pose_position(i);
+				Quaternion rot = skel->get_bone_pose_rotation(i);
+				Vector3 scale = skel->get_bone_pose_scale(i);
+				if (rest != Transform3D() && pos == Vector3() && rot == Quaternion() && scale == Vector3(1, 1, 1)) {
+					// we need to set the position, rotation, and scale to the rest position, rotation, and scale
+					skel->set_bone_pose_position(i, rest.origin);
+					skel->set_bone_pose_rotation(i, rest.basis.get_rotation_quaternion());
+					skel->set_bone_pose_scale(i, rest.basis.get_scale());
+				}
+			}
+		}
+	}
+	// 3.x animations keyframe transforms were similarly relative to the `rest` pose
+	// need to convert them to absolute
+	TypedArray<Node> skel_nodes = scene->find_children("*", "AnimationPlayer");
+	for (int32_t node_i = 0; node_i < skel_nodes.size(); node_i++) {
+		AnimationPlayer *player = cast_to<AnimationPlayer>(skel_nodes[node_i]);
+		_recompute_animation_tracks(player);
+	}
+}
+
 uint32_t EditorSceneFormatImporterESCN::get_import_flags() const {
 	return IMPORT_SCENE;
 }
@@ -2742,12 +3739,55 @@ void EditorSceneFormatImporterESCN::get_extensions(List<String> *r_extensions) c
 	r_extensions->push_back("escn");
 }
 
+int get_text_format_version(String p_path) {
+	Error error;
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &error);
+	ERR_FAIL_COND_V_MSG(error != OK || f.is_null(), -1, "Cannot open file '" + p_path + "'.");
+	String line = f->get_line().strip_edges();
+	// skip empty lines and comments
+	while (line.is_empty() || line.begins_with(";")) {
+		line = f->get_line().strip_edges();
+		if (f->eof_reached())
+			break;
+	}
+	int format_index = line.find("format");
+	ERR_FAIL_COND_V_MSG(format_index == -1, -1, "No format specifier in file '" + p_path + "'.");
+	String format_str = line.substr(format_index).get_slicec('=', 1).strip_edges();
+	ERR_FAIL_COND_V_MSG(!format_str.substr(0, 1).is_numeric(), -1, "Invalid format in file '" + p_path + "'.");
+	int format = format_str.to_int();
+	return format;
+}
+
 Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
 	Error error;
-	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
+	Ref<PackedScene> ps;
+
+	int format = get_text_format_version(p_path);
+	ERR_FAIL_COND_V(format == -1, nullptr);
+	if (format == 2) { // 3.x escn export
+		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &error);
+		ERR_FAIL_COND_V_MSG(error != OK, nullptr, "Cannot open file '" + p_path + "'.");
+		ResourceLoaderText loader;
+		String path = p_path;
+		loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
+		loader.res_path = loader.local_path;
+		loader.cache_mode = ResourceFormatLoader::CACHE_MODE_IGNORE; // So we don't recalculate the animations twice
+		loader._set_special_handler("Animation", convert_old_animation);
+		loader._set_special_handler("Shader", convert_old_shader);
+		loader.open(f);
+		error = loader.load();
+		ERR_FAIL_COND_V_MSG(error != OK, nullptr, "Cannot load scene as text resource from path '" + p_path + "'.");
+		ps = loader.get_resource();
+	} else {
+		ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
+	}
 	ERR_FAIL_COND_V_MSG(!ps.is_valid(), nullptr, "Cannot load scene as text resource from path '" + p_path + "'.");
 	Node *scene = ps->instantiate();
+	ERR_FAIL_COND_V(!scene, nullptr);
 	TypedArray<Node> nodes = scene->find_children("*", "MeshInstance3D");
+	if (format == 2) {
+		_fix_old_format_scene(scene);
+	}
 	for (int32_t node_i = 0; node_i < nodes.size(); node_i++) {
 		MeshInstance3D *mesh_3d = cast_to<MeshInstance3D>(nodes[node_i]);
 		Ref<ImporterMesh> mesh;
@@ -2755,9 +3795,22 @@ Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t
 		// Ignore the aabb, it will be recomputed.
 		ImporterMeshInstance3D *importer_mesh_3d = memnew(ImporterMeshInstance3D);
 		importer_mesh_3d->set_name(mesh_3d->get_name());
-		importer_mesh_3d->set_transform(mesh_3d->get_relative_transform(mesh_3d->get_parent()));
-		importer_mesh_3d->set_skin(mesh_3d->get_skin());
+		Node *parent = mesh_3d->get_parent();
+		Transform3D rel_transform = mesh_3d->get_relative_transform(parent);
+		if (rel_transform == Transform3D() && parent && parent != mesh_3d) {
+			// If we're here, we probably got a "data.parent is null" error
+			// Node3D.data.parent hasn't been set yet but Node.data.parent has, so we need to get the transform manually
+			Node3D *parent_3d = mesh_3d->get_parent_node_3d();
+			if (parent == parent_3d) {
+				rel_transform = mesh_3d->get_transform();
+			} else if (parent_3d) {
+				rel_transform = parent_3d->get_relative_transform(parent) * mesh_3d->get_transform();
+			} // otherwise parent isn't a Node3D
+		}
+		importer_mesh_3d->set_transform(rel_transform);
+		Ref<Skin> skin = mesh_3d->get_skin();
 		importer_mesh_3d->set_skeleton_path(mesh_3d->get_skeleton_path());
+		importer_mesh_3d->set_skin(skin);
 		Ref<ArrayMesh> array_mesh_3d_mesh = mesh_3d->get_mesh();
 		if (array_mesh_3d_mesh.is_valid()) {
 			// For the MeshInstance3D nodes, we need to convert the ArrayMesh to an ImporterMesh specially.
@@ -2797,8 +3850,6 @@ Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t
 			continue;
 		}
 	}
-
-	ERR_FAIL_NULL_V(scene, nullptr);
 
 	return scene;
 }

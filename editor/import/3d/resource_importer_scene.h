@@ -32,6 +32,7 @@
 #define RESOURCE_IMPORTER_SCENE_H
 
 #include "core/error/error_macros.h"
+#include "core/io/missing_resource.h"
 #include "core/io/resource_importer.h"
 #include "core/variant/dictionary.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -311,8 +312,25 @@ public:
 
 class EditorSceneFormatImporterESCN : public EditorSceneFormatImporter {
 	GDCLASS(EditorSceneFormatImporterESCN, EditorSceneFormatImporter);
+	enum AnimationImportTracks {
+		ANIMATION_IMPORT_TRACKS_IF_PRESENT,
+		ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL,
+		ANIMATION_IMPORT_TRACKS_NEVER,
+	};
+	enum TrackChannel {
+		TRACK_CHANNEL_POSITION,
+		TRACK_CHANNEL_ROTATION,
+		TRACK_CHANNEL_SCALE,
+		TRACK_CHANNEL_BLEND_SHAPE,
+		TRACK_CHANNEL_MAX
+	};
+	static Ref<Resource> convert_old_shader(const Ref<MissingResource> &p_res, Error &r_err, String &r_err_str);
+	static Ref<Resource> convert_old_animation(const Ref<MissingResource> &p_res, Error &r_err, String &r_err_str);
+	void _recompute_animation_tracks(AnimationPlayer *p_player);
+	void _fix_old_format_scene(Node *p_node);
 
 public:
+	static String convert_old_shader_code(const String &p_code, String &r_err_str);
 	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr) override;
