@@ -149,6 +149,7 @@ private:
 
 	bool is_loading_state = false; // Used to disable saving requests while loading (some signals from buttons will try trigger a save, which happens during loading).
 	Timer *save_state_timer = nullptr;
+	bool need_rebuld = false;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 
@@ -178,6 +179,8 @@ private:
 	void _load_state();
 
 	void _update_theme();
+
+	void _check_need_rebuild();
 
 protected:
 	void _notification(int p_what);
