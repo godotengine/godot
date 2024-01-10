@@ -59,8 +59,8 @@ RenderingDevice::InitialAction RenderingDevice::_convert_initial_action_84976(In
 		case 0: // INITIAL_ACTION_CLEAR
 			return INITIAL_ACTION_CLEAR;
 		case 1: // INITIAL_ACTION_CLEAR_REGION
-			return INITIAL_ACTION_CLEAR;
 		case 2: // INITIAL_ACTION_CLEAR_REGION_CONTINUE
+			return INITIAL_ACTION_CLEAR;
 		case 3: // INITIAL_ACTION_KEEP
 			return INITIAL_ACTION_LOAD;
 		case 4: // INITIAL_ACTION_DROP
