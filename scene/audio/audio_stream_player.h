@@ -31,10 +31,12 @@
 #ifndef AUDIO_STREAM_PLAYER_H
 #define AUDIO_STREAM_PLAYER_H
 
-#include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
-#include "scene/scene_string_names.h"
-#include "servers/audio/audio_stream.h"
+
+struct AudioFrame;
+class AudioStream;
+class AudioStreamPlayback;
+class AudioStreamPlayerInternal;
 
 class AudioStreamPlayer : public Node {
 	GDCLASS(AudioStreamPlayer, Node);
@@ -47,34 +49,14 @@ public:
 	};
 
 private:
-	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
-	Ref<AudioStream> stream;
-
-	SafeFlag active;
-
-	float pitch_scale = 1.0;
-	float volume_db = 0.0;
-	bool autoplay = false;
-	StringName bus = SceneStringNames::get_singleton()->Master;
-	int max_polyphony = 1;
+	AudioStreamPlayerInternal *internal = nullptr;
 
 	MixTarget mix_target = MIX_TARGET_STEREO;
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 
-	void _on_bus_layout_changed();
-	void _on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name);
-
 	Vector<AudioFrame> _get_volume_vector();
-
-	struct ParameterData {
-		StringName path;
-		Variant value;
-	};
-
-	HashMap<StringName, ParameterData> playback_parameters;
-	void _update_stream_parameters();
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
