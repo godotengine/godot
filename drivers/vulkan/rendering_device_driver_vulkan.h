@@ -247,6 +247,10 @@ public:
 	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 
+	// <TF>
+	// @ShadyTF unload shader modules
+	virtual void shader_destroy_modules(ShaderID p_shader) override final;
+	// </TF>
 	/*********************/
 	/**** UNIFORM SET ****/
 	/*********************/

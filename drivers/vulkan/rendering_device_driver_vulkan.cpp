@@ -1750,12 +1750,41 @@ void RenderingDeviceDriverVulkan::shader_free(ShaderID p_shader) {
 
 	vkDestroyPipelineLayout(vk_device, shader_info->vk_pipeline_layout, nullptr);
 
-	for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
-		vkDestroyShaderModule(vk_device, shader_info->vk_stages_create_info[i].module, nullptr);
-	}
+	// <TF>
+	// @ShadyTF unload shader modules
+	// Was :
+	//for (uint32_t i = 0; i < si.vk_stages_create_info.size(); i++) {
+	//	if (si.vk_stages_create_info[i].module) {
+	//		vkDestroyShaderModule(vk_device, si.vk_stages_create_info[i].module, nullptr);
+	//	}
+	//}
+	shader_destroy_modules( p_shader );
+	// </
+	// TF>
 
 	VersatileResource::free(resources_allocator, shader_info);
 }
+
+// <TF>
+// @ShadyTF unload shader modules
+
+
+void RenderingDeviceDriverVulkan::shader_destroy_modules(ShaderID p_shader) {
+	auto *E = (RBSet<ShaderInfo>::Element *)p_shader.id;
+	ShaderInfo &si = E->get();
+
+	for (uint32_t i = 0; i < si.vk_stages_create_info.size(); i++) {
+		if (si.vk_stages_create_info[i].module) {
+			vkDestroyShaderModule(vk_device, si.vk_stages_create_info[i].module, nullptr);
+			si.vk_stages_create_info[i].module = VK_NULL_HANDLE;
+		}
+	}
+	si.vk_stages_create_info.clear();
+}
+
+// </TF>
+
+
 
 /*********************/
 /**** UNIFORM SET ****/
@@ -2918,6 +2947,10 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	pipeline_create_info.pNext = graphics_pipeline_nextptr;
 	pipeline_create_info.stageCount = shader_info->vk_stages_create_info.size();
 
+	// <TF>
+	// @ShadyTF unload shader modules
+	ERR_FAIL_COND_V_MSG(pipeline_create_info.stageCount == 0, PipelineID(), "Cannot create pipeline without shader module, please make sure shader modules are destroyed only after all associated pipelines are created");
+	// </TF>
 	VkPipelineShaderStageCreateInfo *vk_pipeline_stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, shader_info->vk_stages_create_info.size());
 
 	for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {

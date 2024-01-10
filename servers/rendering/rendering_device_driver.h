@@ -409,6 +409,10 @@ public:
 	// Only meaningful if API_TRAIT_SHADER_CHANGE_INVALIDATION is SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH.
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) { return 0; }
 	virtual void shader_free(ShaderID p_shader) = 0;
+	// <TF>
+	// @ShadyTF unload shader modules
+	virtual void shader_destroy_modules(ShaderID p_shader) = 0;
+	// </TF>
 
 protected:
 	// An optional service to implementations.
