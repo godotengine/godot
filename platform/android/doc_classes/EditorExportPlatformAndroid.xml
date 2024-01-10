@@ -595,6 +595,7 @@
 			Application version visible to the user. Falls back to [member ProjectSettings.application/config/version] if left empty.
 		</member>
 		<member name="xr_features/xr_mode" type="int" setter="" getter="">
+			The extended reality (XR) mode for this application.
 		</member>
 	</members>
 </class>
