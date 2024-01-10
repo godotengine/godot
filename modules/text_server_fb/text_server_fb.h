@@ -827,6 +827,9 @@ public:
 	MODBIND1RC(Array, shaped_text_get_objects, const RID &);
 	MODBIND2RC(Rect2, shaped_text_get_object_rect, const RID &, const Variant &);
 
+	MODBIND2(shaped_text_clamp_glyph_offsets, const RID &, double);
+	MODBIND1(clamp_glyph_offsets, double);
+
 	MODBIND1RC(Size2, shaped_text_get_size, const RID &);
 	MODBIND1RC(double, shaped_text_get_ascent, const RID &);
 	MODBIND1RC(double, shaped_text_get_descent, const RID &);

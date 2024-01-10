@@ -4475,6 +4475,7 @@ RID TextServerAdvanced::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 	new_sd->direction = sd->direction;
 	new_sd->custom_punct = sd->custom_punct;
 	new_sd->para_direction = sd->para_direction;
+	new_sd->clamp_offset = sd->clamp_offset;
 	new_sd->base_para_direction = sd->base_para_direction;
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		new_sd->extra_spacing[i] = sd->extra_spacing[i];
@@ -5786,6 +5787,13 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 		} else {
 			gl.x_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
 		}
+		if (p_sd->clamp_offset > 0.0) {
+			double limit = (_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size)) * p_sd->clamp_offset;
+			gl.y_off = CLAMP(gl.y_off, -limit, limit);
+		} else if (clamp_offset > 0.0) {
+			double limit = (_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size)) * clamp_offset;
+			gl.y_off = CLAMP(gl.y_off, -limit, limit);
+		}
 
 		if ((glyph_info[0].codepoint != 0) || !u_isgraph(p_char)) {
 			gl.flags |= GRAPHEME_IS_VALID;
@@ -6004,6 +6012,13 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 					gl.y_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
 				} else {
 					gl.x_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+				}
+				if (p_sd->clamp_offset > 0.0) {
+					double limit = (_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size)) * p_sd->clamp_offset;
+					gl.y_off = CLAMP(gl.y_off, -limit, limit);
+				} else if (clamp_offset > 0.0) {
+					double limit = (_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size)) * clamp_offset;
+					gl.y_off = CLAMP(gl.y_off, -limit, limit);
 				}
 			}
 			if (!last_run || i < glyph_count - 1) {
@@ -6391,6 +6406,24 @@ Size2 TextServerAdvanced::_shaped_text_get_size(const RID &p_shaped) const {
 	} else {
 		return Size2(sd->ascent + sd->descent + sd->extra_spacing[SPACING_TOP] + sd->extra_spacing[SPACING_BOTTOM], (sd->text_trimmed ? sd->width_trimmed : sd->width)).ceil();
 	}
+}
+
+void TextServerAdvanced::_shaped_text_clamp_glyph_offsets(const RID &p_shaped, double p_limit) {
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL(sd);
+
+	MutexLock lock(sd->mutex);
+	if (!Math::is_equal_approx(sd->clamp_offset, p_limit)) {
+		if (sd->parent != RID()) {
+			full_copy(sd);
+		}
+		sd->clamp_offset = p_limit;
+		invalidate(sd);
+	}
+}
+
+void TextServerAdvanced::_clamp_glyph_offsets(double p_limit) {
+	clamp_offset = p_limit;
 }
 
 double TextServerAdvanced::_shaped_text_get_ascent(const RID &p_shaped) const {

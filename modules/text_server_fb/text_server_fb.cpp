@@ -4271,6 +4271,14 @@ Rect2 TextServerFallback::_shaped_text_get_object_rect(const RID &p_shaped, cons
 	return sd->objects[p_key].rect;
 }
 
+void TextServerFallback::_shaped_text_clamp_glyph_offsets(const RID &p_shaped, double p_limit) {
+	// Glyph offsets aren't supported, there's nothing to clamp.
+}
+
+void TextServerFallback::_clamp_glyph_offsets(double p_limit) {
+	// Glyph offsets aren't supported, there's nothing to clamp.
+}
+
 Size2 TextServerFallback::_shaped_text_get_size(const RID &p_shaped) const {
 	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_NULL_V(sd, Size2());

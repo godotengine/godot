@@ -9,6 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_clamp_glyph_offsets" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="limit" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="_cleanup" qualifiers="virtual">
 			<return type="void" />
 			<description>
@@ -1019,6 +1025,13 @@
 			<param index="4" name="opentype_features" type="Dictionary" />
 			<param index="5" name="language" type="String" />
 			<param index="6" name="meta" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_clamp_glyph_offsets" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="limit" type="float" />
 			<description>
 			</description>
 		</method>

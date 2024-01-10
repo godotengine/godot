@@ -9,6 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clamp_glyph_offsets">
+			<return type="void" />
+			<param index="0" name="limit" type="float" />
+			<description>
+				Sets default value for glyph offset clamping. Value is a fraction of font height. If set to zero or negative value, no clamping is done. Default value is zero.
+			</description>
+		</method>
 		<method name="create_font">
 			<return type="RID" />
 			<description>
@@ -1184,6 +1191,14 @@
 			<param index="6" name="meta" type="Variant" default="null" />
 			<description>
 				Adds text span and font to draw it to the text buffer.
+			</description>
+		</method>
+		<method name="shaped_text_clamp_glyph_offsets">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="limit" type="float" />
+			<description>
+				Sets value for glyph offset clamping. Value is a fraction of font height. If set to zero or negative value, default value is used.
 			</description>
 		</method>
 		<method name="shaped_text_clear">

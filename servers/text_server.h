@@ -496,6 +496,9 @@ public:
 	virtual double shaped_text_get_underline_position(const RID &p_shaped) const = 0;
 	virtual double shaped_text_get_underline_thickness(const RID &p_shaped) const = 0;
 
+	virtual void shaped_text_clamp_glyph_offsets(const RID &p_shaped, double p_limit) = 0;
+	virtual void clamp_glyph_offsets(double p_limit) = 0;
+
 	virtual Direction shaped_text_get_dominant_direction_in_range(const RID &p_shaped, int64_t p_start, int64_t p_end) const;
 
 	virtual CaretInfo shaped_text_get_carets(const RID &p_shaped, int64_t p_position) const;

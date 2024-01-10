@@ -819,6 +819,12 @@ void LineEdit::_notification(int p_what) {
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
+			Rect2 clip_rect = Rect2(Point2(style->get_margin(SIDE_LEFT), style->get_margin(SIDE_TOP)), size - Vector2(style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT), style->get_margin(SIDE_TOP) + style->get_margin(SIDE_BOTTOM)));
+			RenderingServer::get_singleton()->canvas_item_clear(canvas_item_text);
+			RenderingServer::get_singleton()->canvas_item_set_custom_rect(canvas_item_text, !is_visibility_clip_disabled(), clip_rect);
+			RenderingServer::get_singleton()->canvas_item_set_clip(canvas_item_text, true);
+			RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item_text, get_visibility_layer());
+
 			if (has_focus()) {
 				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
@@ -927,9 +933,9 @@ void LineEdit::_notification(int p_what) {
 				Vector2 oofs = ofs;
 				for (int i = 0; i < gl_size; i++) {
 					for (int j = 0; j < glyphs[i].repeat; j++) {
-						if (ceil(oofs.x) >= x_ofs && (oofs.x + glyphs[i].advance) <= ofs_max) {
+						if (ceil(oofs.x + glyphs[i].advance) >= x_ofs && (oofs.x) <= ofs_max) {
 							if (glyphs[i].font_rid != RID()) {
-								TS->font_draw_glyph_outline(glyphs[i].font_rid, ci, glyphs[i].font_size, outline_size, oofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, font_outline_color);
+								TS->font_draw_glyph_outline(glyphs[i].font_rid, canvas_item_text, glyphs[i].font_size, outline_size, oofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, font_outline_color);
 							}
 						}
 						oofs.x += glyphs[i].advance;
@@ -942,11 +948,11 @@ void LineEdit::_notification(int p_what) {
 			for (int i = 0; i < gl_size; i++) {
 				bool selected = selection.enabled && glyphs[i].start >= selection.begin && glyphs[i].end <= selection.end;
 				for (int j = 0; j < glyphs[i].repeat; j++) {
-					if (ceil(ofs.x) >= x_ofs && (ofs.x + glyphs[i].advance) <= ofs_max) {
+					if (ceil(ofs.x + glyphs[i].advance) >= x_ofs && (ofs.x) <= ofs_max) {
 						if (glyphs[i].font_rid != RID()) {
-							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
+							TS->font_draw_glyph(glyphs[i].font_rid, canvas_item_text, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
 						} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
-							TS->draw_hex_code_box(ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
+							TS->draw_hex_code_box(canvas_item_text, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
 						}
 					}
 					ofs.x += glyphs[i].advance;
@@ -991,34 +997,34 @@ void LineEdit::_notification(int p_what) {
 							} break;
 						}
 
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item_text, caret.l_caret, caret_color);
 					} else {
 						if (caret.l_caret != Rect2() && caret.l_dir == TextServer::DIRECTION_AUTO) {
 							// Draw extra marker on top of mid caret.
 							Rect2 trect = Rect2(caret.l_caret.position.x - 2.5 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
 							trect.position += ofs;
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+							RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item_text, trect, caret_color);
 						} else if (caret.l_caret != Rect2() && caret.t_caret != Rect2() && caret.l_dir != caret.t_dir) {
 							// Draw extra direction marker on top of split caret.
 							float d = (caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
 							Rect2 trect = Rect2(caret.l_caret.position.x + d * caret_width, caret.l_caret.position.y + caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
 							trect.position += ofs;
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+							RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item_text, trect, caret_color);
 
 							d = (caret.t_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
 							trect = Rect2(caret.t_caret.position.x + d * caret_width, caret.t_caret.position.y, 3 * caret_width, caret_width);
 							trect.position += ofs;
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+							RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item_text, trect, caret_color);
 						}
 
 						caret.l_caret.position += ofs;
 						caret.l_caret.size.x = caret_width;
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item_text, caret.l_caret, caret_color);
 
 						caret.t_caret.position += ofs;
 						caret.t_caret.size.x = caret_width;
 
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.t_caret, caret_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item_text, caret.t_caret, caret_color);
 					}
 				}
 				if (!ime_text.is_empty()) {
@@ -1037,7 +1043,7 @@ void LineEdit::_notification(int p_what) {
 								rect.size.x = ofs_max - rect.position.x;
 							}
 							rect.size.y = caret_width;
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, caret_color);
+							RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item_text, rect, caret_color);
 						}
 					}
 					{
@@ -1056,7 +1062,7 @@ void LineEdit::_notification(int p_what) {
 									rect.size.x = ofs_max - rect.position.x;
 								}
 								rect.size.y = caret_width * 3;
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, caret_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item_text, rect, caret_color);
 							}
 						}
 					}
@@ -2709,8 +2715,15 @@ LineEdit::LineEdit(const String &p_placeholder) {
 	set_placeholder(p_placeholder);
 
 	set_editable(true); // Initialize to opposite first, so we get past the early-out in set_editable.
+
+	canvas_item_text = RenderingServer::get_singleton()->canvas_item_create();
+
+	RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item_text, get_canvas_item());
+	RenderingServer::get_singleton()->canvas_item_set_use_parent_material(canvas_item_text, true);
 }
 
 LineEdit::~LineEdit() {
 	TS->free_rid(text_rid);
+
+	RenderingServer::get_singleton()->free(canvas_item_text);
 }
