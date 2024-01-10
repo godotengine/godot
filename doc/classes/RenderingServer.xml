@@ -1556,11 +1556,11 @@
 				Returns [code]true[/code] if changes have been made to the RenderingServer's data. [method force_draw] is usually called if this happens.
 			</description>
 		</method>
-		<method name="has_feature" qualifiers="const">
+		<method name="has_feature" qualifiers="const" is_deprecated="true">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="RenderingServer.Features" />
 			<description>
-				Not yet implemented. Always returns [code]false[/code].
+				[i]Deprecated.[/i] This method has not been used since Godot 3.0. Always returns false.
 			</description>
 		</method>
 		<method name="has_os_feature" qualifiers="const">
@@ -5332,11 +5332,11 @@
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
 			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
 		</constant>
-		<constant name="FEATURE_SHADERS" value="0" enum="Features">
-			Hardware supports shaders. This enum is currently unused in Godot 3.x.
+		<constant name="FEATURE_SHADERS" value="0" enum="Features" is_deprecated="true">
+			[i]Deprecated.[/i] This constant has not been used since Godot 3.0.
 		</constant>
-		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features">
-			Hardware supports multithreading. This enum is currently unused in Godot 3.x.
+		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features" is_deprecated="true">
+			[i]Deprecated.[/i] This constant has not been used since Godot 3.0.
 		</constant>
 	</constants>
 </class>
