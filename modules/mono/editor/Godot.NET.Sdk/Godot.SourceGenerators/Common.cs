@@ -146,7 +146,7 @@ namespace Godot.SourceGenerators
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true,
                     description,
-                    helpLinkUri: string.Format(_helpLinkFormat, "GD1003")),
+                    helpLinkUri: string.Format(_helpLinkFormat, "GD0103")),
                 location,
                 location?.SourceTree?.FilePath));
         }
