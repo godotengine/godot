@@ -448,7 +448,9 @@ PList::PList() {
 }
 
 PList::PList(const String &p_string) {
-	load_string(p_string);
+	String err_str;
+	bool ok = load_string(p_string, err_str);
+	ERR_FAIL_COND_MSG(!ok, "PList: " + err_str);
 }
 
 uint64_t PList::read_bplist_var_size_int(Ref<FileAccess> p_file, uint8_t p_size) {
@@ -642,11 +644,15 @@ bool PList::load_file(const String &p_filename) {
 
 		String ret;
 		ret.parse_utf8((const char *)array.ptr(), array.size());
-		return load_string(ret);
+		String err_str;
+		bool ok = load_string(ret, err_str);
+		ERR_FAIL_COND_V_MSG(!ok, false, "PList: " + err_str);
+
+		return true;
 	}
 }
 
-bool PList::load_string(const String &p_string) {
+bool PList::load_string(const String &p_string, String &r_err_out) {
 	root = Ref<PListNode>();
 
 	int pos = 0;
@@ -657,14 +663,16 @@ bool PList::load_string(const String &p_string) {
 	while (pos >= 0) {
 		int open_token_s = p_string.find("<", pos);
 		if (open_token_s == -1) {
-			ERR_FAIL_V_MSG(false, "PList: Unexpected end of data. No tags found.");
+			r_err_out = "Unexpected end of data. No tags found.";
+			return false;
 		}
 		int open_token_e = p_string.find(">", open_token_s);
 		pos = open_token_e;
 
 		String token = p_string.substr(open_token_s + 1, open_token_e - open_token_s - 1);
 		if (token.is_empty()) {
-			ERR_FAIL_V_MSG(false, "PList: Invalid token name.");
+			r_err_out = "Invalid token name.";
+			return false;
 		}
 		String value;
 		if (token[0] == '?' || token[0] == '!') { // Skip <?xml ... ?> and <!DOCTYPE ... >
@@ -684,7 +692,8 @@ bool PList::load_string(const String &p_string) {
 		}
 
 		if (!in_plist) {
-			ERR_FAIL_V_MSG(false, "PList: Node outside of <plist> tag.");
+			r_err_out = "Node outside of <plist> tag.";
+			return false;
 		}
 
 		if (token == "dict") {
@@ -693,13 +702,15 @@ bool PList::load_string(const String &p_string) {
 				Ref<PListNode> dict = PListNode::new_dict();
 				dict->data_type = PList::PLNodeType::PL_NODE_TYPE_DICT;
 				if (!stack.back()->get()->push_subnode(dict, key)) {
-					ERR_FAIL_V_MSG(false, "PList: Can't push subnode, invalid parent type.");
+					r_err_out = "Can't push subnode, invalid parent type.";
+					return false;
 				}
 				stack.push_back(dict);
 			} else {
 				// Add root node.
 				if (!root.is_null()) {
-					ERR_FAIL_V_MSG(false, "PList: Root node already set.");
+					r_err_out = "Root node already set.";
+					return false;
 				}
 				Ref<PListNode> dict = PListNode::new_dict();
 				stack.push_back(dict);
@@ -711,7 +722,8 @@ bool PList::load_string(const String &p_string) {
 		if (token == "/dict") {
 			// Exit current dict.
 			if (stack.is_empty() || stack.back()->get()->data_type != PList::PLNodeType::PL_NODE_TYPE_DICT) {
-				ERR_FAIL_V_MSG(false, "PList: Mismatched </dict> tag.");
+				r_err_out = "Mismatched </dict> tag.";
+				return false;
 			}
 			stack.pop_back();
 			continue;
@@ -722,13 +734,15 @@ bool PList::load_string(const String &p_string) {
 				// Add subnode end enter it.
 				Ref<PListNode> arr = PListNode::new_array();
 				if (!stack.back()->get()->push_subnode(arr, key)) {
-					ERR_FAIL_V_MSG(false, "PList: Can't push subnode, invalid parent type.");
+					r_err_out = "Can't push subnode, invalid parent type.";
+					return false;
 				}
 				stack.push_back(arr);
 			} else {
 				// Add root node.
 				if (!root.is_null()) {
-					ERR_FAIL_V_MSG(false, "PList: Root node already set.");
+					r_err_out = "Root node already set.";
+					return false;
 				}
 				Ref<PListNode> arr = PListNode::new_array();
 				stack.push_back(arr);
@@ -740,7 +754,8 @@ bool PList::load_string(const String &p_string) {
 		if (token == "/array") {
 			// Exit current array.
 			if (stack.is_empty() || stack.back()->get()->data_type != PList::PLNodeType::PL_NODE_TYPE_ARRAY) {
-				ERR_FAIL_V_MSG(false, "PList: Mismatched </array> tag.");
+				r_err_out = "Mismatched </array> tag.";
+				return false;
 			}
 			stack.pop_back();
 			continue;
@@ -751,13 +766,15 @@ bool PList::load_string(const String &p_string) {
 		} else {
 			int end_token_s = p_string.find("</", pos);
 			if (end_token_s == -1) {
-				ERR_FAIL_V_MSG(false, vformat("PList: Mismatched <%s> tag.", token));
+				r_err_out = vformat("Mismatched <%s> tag.", token);
+				return false;
 			}
 			int end_token_e = p_string.find(">", end_token_s);
 			pos = end_token_e;
 			String end_token = p_string.substr(end_token_s + 2, end_token_e - end_token_s - 2);
 			if (end_token != token) {
-				ERR_FAIL_V_MSG(false, vformat("PList: Mismatched <%s> and <%s> token pair.", token, end_token));
+				r_err_out = vformat("Mismatched <%s> and <%s> token pair.", token, end_token);
+				return false;
 			}
 			value = p_string.substr(open_token_e + 1, end_token_s - open_token_e - 1);
 		}
@@ -780,15 +797,18 @@ bool PList::load_string(const String &p_string) {
 			} else if (token == "date") {
 				var = PListNode::new_date(value);
 			} else {
-				ERR_FAIL_V_MSG(false, "PList: Invalid value type.");
+				r_err_out = vformat("Invalid value type: %s.", token);
+				return false;
 			}
 			if (stack.is_empty() || !stack.back()->get()->push_subnode(var, key)) {
-				ERR_FAIL_V_MSG(false, "PList: Can't push subnode, invalid parent type.");
+				r_err_out = "Can't push subnode, invalid parent type.";
+				return false;
 			}
 		}
 	}
 	if (!stack.is_empty() || !done_plist) {
-		ERR_FAIL_V_MSG(false, "PList: Unexpected end of data. Root node is not closed.");
+		r_err_out = "Unexpected end of data. Root node is not closed.";
+		return false;
 	}
 	return true;
 }

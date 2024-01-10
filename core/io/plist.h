@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MACOS_PLIST_H
-#define MACOS_PLIST_H
+#ifndef PLIST_H
+#define PLIST_H
 
 // Property list file format (application/x-plist) parser, property list ASN-1 serialization.
 
@@ -75,7 +75,7 @@ public:
 	PList(const String &p_string);
 
 	bool load_file(const String &p_filename);
-	bool load_string(const String &p_string);
+	bool load_string(const String &p_string, String &r_err_out);
 
 	PackedByteArray save_asn1() const;
 	String save_text() const;
@@ -125,4 +125,4 @@ public:
 	~PListNode() {}
 };
 
-#endif // MACOS_PLIST_H
+#endif // PLIST_H
