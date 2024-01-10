@@ -239,6 +239,10 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
 	blit.push_constant.rotation_cos = cos(screen_rotation);
 	blit.push_constant.rotation_sin = sin(screen_rotation);
+	blit.push_constant.src_rect[0] = 0.0;
+	blit.push_constant.src_rect[1] = 0.0;
+	blit.push_constant.src_rect[2] = 1.0;
+	blit.push_constant.src_rect[3] = 1.0;
 	blit.push_constant.dst_rect[0] = screenrect.position.x;
 	blit.push_constant.dst_rect[1] = screenrect.position.y;
 	blit.push_constant.dst_rect[2] = screenrect.size.width;
