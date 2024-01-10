@@ -2540,6 +2540,26 @@ RID RenderingDevice::shader_create_from_bytecode(const Vector<uint8_t> &p_shader
 	return id;
 }
 
+// <TF>
+// @ShadyTF unload shader modules
+void RenderingDevice::shader_destroy_modules(RID p_shader) {
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL(shader);
+	driver->shader_destroy_modules(shader->driver_id);
+}
+
+void RenderingDevice::_destroy_all_shader_modules() {
+	List<RID> remaining;
+	shader_owner.get_owned_list(&remaining);
+	if (remaining.size()) {
+		while (remaining.size()) {
+			shader_destroy_modules(remaining.front()->get());
+			remaining.pop_front();
+		}
+	}
+}
+// </TF>
+
 RID RenderingDevice::shader_create_placeholder() {
 	Shader shader;
 	return shader_owner.make_rid(shader);

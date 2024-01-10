@@ -863,6 +863,11 @@ public:
 	RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 	RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID());
 	RID shader_create_placeholder();
+	// <TF>
+	// @ShadyTF unload shader modules
+	void shader_destroy_modules(RID p_shaderRID);
+	void _destroy_all_shader_modules();
+	// </TF>
 
 	uint64_t shader_get_vertex_input_attribute_mask(RID p_shader);
 
