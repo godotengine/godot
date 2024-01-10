@@ -32,6 +32,7 @@
 #define RESOURCE_FORMAT_TEXT_H
 
 #include "core/io/file_access.h"
+#include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/variant/variant_parser.h"
@@ -39,8 +40,13 @@
 
 class ResourceLoaderText {
 	bool translation_remapped = false;
+	// TODO: remove this hack
+public:
 	String local_path;
 	String res_path;
+	ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
+
+private:
 	String error_text;
 
 	Ref<FileAccess> f;
@@ -67,8 +73,6 @@ class ResourceLoaderText {
 	String script_class;
 
 	VariantParser::Tag next_tag;
-
-	ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 
 	bool use_sub_threads = false;
 	float *progress = nullptr;
@@ -116,6 +120,13 @@ class ResourceLoaderText {
 	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
 
 public:
+	typedef Ref<Resource> (*SpecialResourceHandler)(const Ref<MissingResource> &p_res, Error &r_err, String &r_err_str);
+
+private:
+	HashMap<String, SpecialResourceHandler> sub_resource_handlers;
+
+public:
+	bool _set_special_handler(String p_res_type, SpecialResourceHandler p_handler);
 	Ref<Resource> get_resource();
 	Error load();
 	Error set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid);
