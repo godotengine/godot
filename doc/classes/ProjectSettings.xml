@@ -284,6 +284,13 @@
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
 			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows 10 and later, make sure that apps are allowed to access the microphone in the OS' privacy settings.
 		</member>
+		<member name="audio/general/ios/mix_with_others" type="bool" setter="" getter="" default="false">
+			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosession/categoryoptions/1616611-mixwithothers]mixWithOthers[/url] option for the AVAudioSession on iOS. This will override the mix behavior, if the category is set to [code]Play and Record[/code], [code]Playback[/code], or [code]Multi Route[/code].
+			[code]Ambient[/code] always has this set per default.
+		</member>
+		<member name="audio/general/ios/session_category" type="int" setter="" getter="" default="0">
+			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosessioncategory]AVAudioSessionCategory[/url] on iOS. Use the [code]Playback[/code] category to get sound output, even if the phone is in silent mode.
+		</member>
 		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], text-to-speech support is enabled, see [method OS.tts_get_voices] and [method OS.tts_speak].
 			[b]Note:[/b] Enabling TTS can cause addition idle CPU usage and interfere with the sleep mode, so consider disabling it if TTS is not used.
