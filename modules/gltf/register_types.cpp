@@ -118,6 +118,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFTexture);
 		GDREGISTER_CLASS(GLTFTextureSampler);
 		// Register GLTFDocumentExtension classes with GLTFDocument.
+		// Ensure physics is first in this list so that physics nodes are created before other nodes.
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionPhysics);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureKTX);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureWebP);

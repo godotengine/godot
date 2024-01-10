@@ -405,6 +405,7 @@ static Vector<real_t> _xform_to_array(const Transform3D p_transform) {
 
 Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 	Array nodes;
+	const int scene_node_count = p_state->scene_nodes.size();
 	for (int i = 0; i < p_state->nodes.size(); i++) {
 		Dictionary node;
 		Ref<GLTFNode> gltf_node = p_state->nodes[i];
@@ -452,10 +453,13 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 			node["children"] = children;
 		}
 
+		Node *scene_node = nullptr;
+		if (i < scene_node_count) {
+			scene_node = p_state->scene_nodes[i];
+		}
 		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 			ERR_CONTINUE(ext.is_null());
-			ERR_CONTINUE(!p_state->scene_nodes.find(i));
-			Error err = ext->export_node(p_state, gltf_node, node, p_state->scene_nodes[i]);
+			Error err = ext->export_node(p_state, gltf_node, node, scene_node);
 			ERR_CONTINUE(err != OK);
 		}
 
@@ -7471,11 +7475,13 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, boo
 		ERR_CONTINUE(!E.value);
 		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 			ERR_CONTINUE(ext.is_null());
-			ERR_CONTINUE(!p_state->json.has("nodes"));
-			Array nodes = p_state->json["nodes"];
-			ERR_CONTINUE(E.key >= nodes.size());
-			ERR_CONTINUE(E.key < 0);
-			Dictionary node_json = nodes[E.key];
+			Dictionary node_json;
+			if (p_state->json.has("nodes")) {
+				Array nodes = p_state->json["nodes"];
+				if (0 <= E.key && E.key < nodes.size()) {
+					node_json = nodes[E.key];
+				}
+			}
 			Ref<GLTFNode> gltf_node = p_state->nodes[E.key];
 			err = ext->import_node(p_state, gltf_node, node_json, E.value);
 			ERR_CONTINUE(err != OK);

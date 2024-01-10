@@ -34,6 +34,8 @@
 
 void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_used_extension", "extension_name", "required"), &GLTFState::add_used_extension);
+	ClassDB::bind_method(D_METHOD("append_data_to_buffers", "data", "deduplication"), &GLTFState::append_data_to_buffers);
+
 	ClassDB::bind_method(D_METHOD("get_json"), &GLTFState::get_json);
 	ClassDB::bind_method(D_METHOD("set_json", "json"), &GLTFState::set_json);
 	ClassDB::bind_method(D_METHOD("get_major_version"), &GLTFState::get_major_version);
@@ -398,4 +400,30 @@ Variant GLTFState::get_additional_data(const StringName &p_extension_name) {
 
 void GLTFState::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
 	additional_data[p_extension_name] = p_additional_data;
+}
+
+GLTFBufferViewIndex GLTFState::append_data_to_buffers(const Vector<uint8_t> &p_data, const bool p_deduplication = false) {
+	if (p_deduplication) {
+		for (int i = 0; i < buffer_views.size(); i++) {
+			Ref<GLTFBufferView> buffer_view = buffer_views[i];
+			Vector<uint8_t> buffer_view_data = buffer_view->load_buffer_view_data(this);
+			if (buffer_view_data == p_data) {
+				return i;
+			}
+		}
+	}
+	// Append the given data to a buffer and create a buffer view for it.
+	if (unlikely(buffers.is_empty())) {
+		buffers.push_back(Vector<uint8_t>());
+	}
+	Vector<uint8_t> &destination_buffer = buffers.write[0];
+	Ref<GLTFBufferView> buffer_view;
+	buffer_view.instantiate();
+	buffer_view->set_buffer(0);
+	buffer_view->set_byte_offset(destination_buffer.size());
+	buffer_view->set_byte_length(p_data.size());
+	destination_buffer.append_array(p_data);
+	const int new_index = buffer_views.size();
+	buffer_views.push_back(buffer_view);
+	return new_index;
 }
