@@ -43,19 +43,11 @@ static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport,
 	float scale = 1.0;
 	if (p_viewport->canvas_map.has(p_canvas->parent)) {
 		Transform2D c_xform = p_viewport->canvas_map[p_canvas->parent].transform;
-		if (p_viewport->snap_2d_transforms_to_pixel) {
-			c_xform.columns[2] = c_xform.columns[2].floor();
-		}
 		xf = xf * c_xform;
 		scale = p_canvas->parent_scale;
 	}
 
 	Transform2D c_xform = p_canvas_data->transform;
-
-	if (p_viewport->snap_2d_transforms_to_pixel) {
-		c_xform.columns[2] = c_xform.columns[2].floor();
-	}
-
 	xf = xf * c_xform;
 
 	if (scale != 1.0 && !RSG::canvas->disable_scale) {
