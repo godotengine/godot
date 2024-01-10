@@ -226,6 +226,13 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"CURSOR",
 	"ERROR",
 	"EOF",
+	"TAB",
+	"CR",
+	"SPACE",
+	"NEWLINE",
+	"BLOCK_COMMENT",
+	"LINE_COMMENT",
+	"PREPROC_DIRECTIVE",
 };
 
 String ShaderLanguage::get_token_text(Token p_token) {
@@ -246,6 +253,8 @@ ShaderLanguage::Token ShaderLanguage::_make_token(TokenType p_type, const String
 	tk.type = p_type;
 	tk.text = p_text;
 	tk.line = tk_line;
+	tk.pos = tk_start_pos;
+	tk.length = char_idx - tk_start_pos;
 	if (tk.type == TK_ERROR) {
 		_set_error(p_text);
 	}
@@ -396,8 +405,11 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 
 ShaderLanguage::Token ShaderLanguage::_get_token() {
 #define GETCHAR(m_idx) (((char_idx + m_idx) < code.length()) ? code[char_idx + m_idx] : char32_t(0))
-
+#define IF_DBG_MK_TK(m_type)   \
+	if (unlikely(debug_parse)) \
+		return _make_token(m_type);
 	while (true) {
+		tk_start_pos = char_idx;
 		char_idx++;
 		switch (GETCHAR(-1)) {
 			case 0:
@@ -405,11 +417,17 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 			case 0xFFFF:
 				return _make_token(TK_CURSOR); //for completion
 			case '\t':
+				IF_DBG_MK_TK(TK_TAB);
+				continue;
 			case '\r':
+				IF_DBG_MK_TK(TK_CR);
+				continue;
 			case ' ':
+				IF_DBG_MK_TK(TK_SPACE);
 				continue;
 			case '\n':
 				tk_line++;
+				IF_DBG_MK_TK(TK_NEWLINE);
 				continue;
 			case '/': {
 				switch (GETCHAR(0)) {
@@ -418,10 +436,12 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						char_idx++;
 						while (true) {
 							if (GETCHAR(0) == 0) {
+								IF_DBG_MK_TK(TK_BLOCK_COMMENT);
 								return _make_token(TK_EOF);
 							}
 							if (GETCHAR(0) == '*' && GETCHAR(1) == '/') {
 								char_idx += 2;
+								IF_DBG_MK_TK(TK_BLOCK_COMMENT);
 								break;
 							} else if (GETCHAR(0) == '\n') {
 								tk_line++;
@@ -435,11 +455,13 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 
 						while (true) {
 							if (GETCHAR(0) == '\n') {
+								IF_DBG_MK_TK(TK_LINE_COMMENT);
 								tk_line++;
 								char_idx++;
 								break;
 							}
 							if (GETCHAR(0) == 0) {
+								IF_DBG_MK_TK(TK_LINE_COMMENT);
 								return _make_token(TK_EOF);
 							}
 							char_idx++;
@@ -649,6 +671,23 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					return _make_token(TK_ERROR, "Invalid include enter/exit hint token (@@> and @@<)");
 				}
 			} break;
+			case '#': {
+				if (!debug_parse) { // We shouldn't get here if the preprocessor is enabled and doing a non-debug parse.
+					return _make_token(TK_ERROR, "Unexpected pre-processor directive (Is the pre-processor enabled?)");
+				}
+				while (true) {
+					char32_t c = GETCHAR(0);
+					if (c == '\\' && GETCHAR(1) == '\n') {
+						char_idx += 2;
+						tk_line++;
+						continue;
+					}
+					if (c == '\n' || c == 0) {
+						return _make_token(TK_PREPROC_DIRECTIVE);
+					}
+					char_idx++;
+				}
+			} break;
 			default: {
 				char_idx--; //go back one, since we have no idea what this is
 
@@ -833,6 +872,8 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						tk.constant = str.to_float();
 					}
 					tk.line = tk_line;
+					tk.pos = tk_start_pos;
+					tk.length = char_idx - tk_start_pos;
 
 					return tk;
 				}
@@ -881,6 +922,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 	return Token();
 
 #undef GETCHAR
+#undef IF_DBG_MK_TK
 }
 
 bool ShaderLanguage::_lookup_next(Token &r_tk) {
@@ -896,20 +938,36 @@ bool ShaderLanguage::_lookup_next(Token &r_tk) {
 	return false;
 }
 
-String ShaderLanguage::token_debug(const String &p_code) {
+String ShaderLanguage::token_debug(const String &p_code, bool p_inc_ws_and_pp) {
 	clear();
 
 	code = p_code;
+	debug_parse = p_inc_ws_and_pp;
 
 	String output;
-
 	Token tk = _get_token();
+
 	while (tk.type != TK_EOF && tk.type != TK_ERROR) {
-		output += itos(tk_line) + ": " + get_token_text(tk) + "\n";
+		output += itos(tk_line) + " (" + itos(tk.pos) + ":" + itos(tk.pos + tk.length) + "): " + get_token_text(tk) + "  [" + p_code.substr(tk.pos, tk.length) + "]\n";
 		tk = _get_token();
 	}
+	debug_parse = false;
 
 	return output;
+}
+
+void ShaderLanguage::token_debug_stream(const String &p_code, List<Token> &r_output, bool p_inc_ws_and_pp) {
+	clear();
+
+	code = p_code;
+	debug_parse = p_inc_ws_and_pp;
+	Token tk = _get_token();
+
+	while (tk.type != TK_EOF && tk.type != TK_ERROR) {
+		r_output.push_back(tk);
+		tk = _get_token();
+	}
+	debug_parse = false;
 }
 
 bool ShaderLanguage::is_token_variable_datatype(TokenType p_type) {

@@ -191,7 +191,15 @@ public:
 		TK_CURSOR,
 		TK_ERROR,
 		TK_EOF,
-		TK_MAX
+		TK_TAB, // for debug purposes
+		TK_CR,
+		TK_SPACE,
+		TK_NEWLINE,
+		TK_BLOCK_COMMENT,
+		TK_LINE_COMMENT,
+		TK_PREPROC_DIRECTIVE,
+		TK_MAX,
+		TK_REG_MAX = TK_TAB,
 	};
 
 /* COMPILER */
@@ -759,6 +767,8 @@ public:
 		StringName text;
 		double constant;
 		uint16_t line;
+		uint16_t length;
+		int32_t pos;
 		bool is_integer_constant() const {
 			return type == TK_INT_CONSTANT || type == TK_UINT_CONSTANT;
 		}
@@ -952,6 +962,7 @@ private:
 	String code;
 	int char_idx = 0;
 	int tk_line = 0;
+	int tk_start_pos = 0;
 
 	StringName shader_type_identifier;
 	StringName current_function;
@@ -1073,6 +1084,8 @@ private:
 	StringName completion_struct;
 	int completion_argument = 0;
 
+	bool debug_parse = false;
+
 #ifdef DEBUG_ENABLED
 	uint32_t keyword_completion_context;
 #endif // DEBUG_ENABLED
@@ -1149,7 +1162,10 @@ public:
 
 	ShaderNode *get_shader();
 
-	String token_debug(const String &p_code);
+	String token_debug(const String &p_code, bool p_inc_ws_and_pp = false);
+	void token_debug_stream(const String &p_code, List<Token> &r_output, bool p_inc_ws_and_pp);
+
+	ShaderLanguage::Operator get_op(const TokenType &p_token) const;
 
 	ShaderLanguage();
 	~ShaderLanguage();
