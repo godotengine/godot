@@ -151,6 +151,14 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 	// cleanout any old buffers we had.
 	cleanup();
 
+	// At least one of these is required to be supported.
+	RenderingDeviceCommons::DataFormat preferred_format[2] = { RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::DATA_FORMAT_D32_SFLOAT_S8_UINT };
+	if (can_be_storage) {
+		// Prefer higher precision on desktop.
+		preferred_format[0] = RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+		preferred_format[1] = RD::DATA_FORMAT_D24_UNORM_S8_UINT;
+	}
+
 	// create our 3D render buffers
 	{
 		// Create our color buffer(s)
@@ -174,7 +182,7 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 		if (msaa_3d == RS::VIEWPORT_MSAA_DISABLED) {
 			usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-			format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, usage_bits) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+			format = RD::get_singleton()->texture_is_format_supported_for_usage(preferred_format[0], usage_bits) ? preferred_format[0] : preferred_format[1];
 		} else {
 			format = RD::DATA_FORMAT_R32_SFLOAT;
 			usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (can_be_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
@@ -202,7 +210,7 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, format, usage_bits, texture_samples);
 
 		usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-		format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, usage_bits) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+		format = RD::get_singleton()->texture_is_format_supported_for_usage(preferred_format[0], usage_bits) ? preferred_format[0] : preferred_format[1];
 
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, format, usage_bits, texture_samples);
 	}
