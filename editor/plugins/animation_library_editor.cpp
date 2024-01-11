@@ -767,6 +767,15 @@ void AnimationLibraryEditor::show_dialog() {
 	popup_centered_ratio(0.5);
 }
 
+void AnimationLibraryEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			new_library_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			load_library_button->set_icon(get_editor_theme_icon(SNAME("Load")));
+		}
+	}
+}
+
 void AnimationLibraryEditor::_update_editor(Object *p_mixer) {
 	emit_signal("update_editor", p_mixer);
 }
@@ -800,12 +809,14 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_spacer(true);
-	Button *b = memnew(Button(TTR("Add Library")));
-	b->connect("pressed", callable_mp(this, &AnimationLibraryEditor::_add_library));
-	hb->add_child(b);
-	b = memnew(Button(TTR("Load Library")));
-	b->connect("pressed", callable_mp(this, &AnimationLibraryEditor::_load_library));
-	hb->add_child(b);
+	new_library_button = memnew(Button(TTR("New Library")));
+	new_library_button->set_tooltip_text(TTR("Create new empty animation library."));
+	new_library_button->connect("pressed", callable_mp(this, &AnimationLibraryEditor::_add_library));
+	hb->add_child(new_library_button);
+	load_library_button = memnew(Button(TTR("Load Library")));
+	load_library_button->set_tooltip_text(TTR("Load animation library from disk."));
+	load_library_button->connect("pressed", callable_mp(this, &AnimationLibraryEditor::_load_library));
+	hb->add_child(load_library_button);
 	vb->add_child(hb);
 	tree = memnew(Tree);
 	vb->add_child(tree);
