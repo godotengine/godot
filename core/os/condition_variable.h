@@ -31,6 +31,8 @@
 #ifndef CONDITION_VARIABLE_H
 #define CONDITION_VARIABLE_H
 
+#include "core/os/mutex.h"
+
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
 #include "thirdparty/mingw-std-threads/mingw.condition_variable.h"
