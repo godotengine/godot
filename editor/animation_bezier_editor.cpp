@@ -266,23 +266,11 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			RBMap<String, Vector<int>> track_indices;
 			int track_count = animation->get_track_count();
 			for (int i = 0; i < track_count; ++i) {
-				if (animation->track_get_type(i) != Animation::TrackType::TYPE_BEZIER) {
+				if (!_is_track_displayed(i)) {
 					continue;
 				}
 
 				String base_path = animation->track_get_path(i);
-				if (is_filtered) {
-					if (root && root->has_node(base_path)) {
-						Node *node = root->get_node(base_path);
-						if (!node) {
-							continue; // No node, no filter.
-						}
-						if (!EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
-							continue; // Skip track due to not selected.
-						}
-					}
-				}
-
 				int end = base_path.find(":");
 				if (end != -1) {
 					base_path = base_path.substr(0, end + 1);
@@ -520,28 +508,11 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				float scale = timeline->get_zoom_scale();
 
 				for (int i = 0; i < track_count; ++i) {
-					if (animation->track_get_type(i) != Animation::TrackType::TYPE_BEZIER || hidden_tracks.has(i)) {
-						continue;
-					}
-
-					if (hidden_tracks.has(i) || locked_tracks.has(i)) {
+					if (!_is_track_curves_displayed(i) || locked_tracks.has(i)) {
 						continue;
 					}
 
 					int key_count = animation->track_get_key_count(i);
-					String path = animation->track_get_path(i);
-
-					if (is_filtered) {
-						if (root && root->has_node(path)) {
-							Node *node = root->get_node(path);
-							if (!node) {
-								continue; // No node, no filter.
-							}
-							if (!EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
-								continue; // Skip track due to not selected.
-							}
-						}
-					}
 
 					for (int j = 0; j < key_count; ++j) {
 						float offset = animation->track_get_key_time(i, j);
@@ -648,6 +619,43 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 	}
 }
 
+// Check if a track is displayed in the bezier editor (track type = bezier and track not filtered).
+bool AnimationBezierTrackEdit::_is_track_displayed(int p_track_index) {
+	if (animation->track_get_type(p_track_index) != Animation::TrackType::TYPE_BEZIER) {
+		return false;
+	}
+
+	if (is_filtered) {
+		String path = animation->track_get_path(p_track_index);
+		if (root && root->has_node(path)) {
+			Node *node = root->get_node(path);
+			if (!node) {
+				return false; // No node, no filter.
+			}
+			if (!EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
+				return false; // Skip track due to not selected.
+			}
+		}
+	}
+
+	return true;
+}
+
+// Check if the curves for a track are displayed in the editor (not hidden). Includes the check on the track visibility.
+bool AnimationBezierTrackEdit::_is_track_curves_displayed(int p_track_index) {
+	//Is the track is visible in the editor?
+	if (!_is_track_displayed(p_track_index)) {
+		return false;
+	}
+
+	//And curves visible?
+	if (hidden_tracks.has(p_track_index)) {
+		return false;
+	}
+
+	return true;
+}
+
 Ref<Animation> AnimationBezierTrackEdit::get_animation() const {
 	return animation;
 }
@@ -739,6 +747,60 @@ void AnimationBezierTrackEdit::set_filtered(bool p_filtered) {
 		}
 	}
 	queue_redraw();
+}
+
+void AnimationBezierTrackEdit::auto_fit_vertically() {
+	int track_count = animation->get_track_count();
+	real_t minimum_value = INFINITY;
+	real_t maximum_value = -INFINITY;
+
+	int nb_track_visible = 0;
+	for (int i = 0; i < track_count; ++i) {
+		if (!_is_track_curves_displayed(i) || locked_tracks.has(i)) {
+			continue;
+		}
+
+		int key_count = animation->track_get_key_count(i);
+
+		for (int j = 0; j < key_count; ++j) {
+			real_t value = animation->bezier_track_get_key_value(i, j);
+
+			minimum_value = MIN(value, minimum_value);
+			maximum_value = MAX(value, maximum_value);
+
+			// We also want to includes the handles...
+			Vector2 in_vec = animation->bezier_track_get_key_in_handle(i, j);
+			Vector2 out_vec = animation->bezier_track_get_key_out_handle(i, j);
+
+			minimum_value = MIN(value + in_vec.y, minimum_value);
+			maximum_value = MAX(value + in_vec.y, maximum_value);
+			minimum_value = MIN(value + out_vec.y, minimum_value);
+			maximum_value = MAX(value + out_vec.y, maximum_value);
+		}
+
+		nb_track_visible++;
+	}
+
+	if (nb_track_visible == 0) {
+		// No visible track... we will not adjust the vertical zoom
+		return;
+	}
+
+	if (Math::is_finite(minimum_value) && Math::is_finite(maximum_value)) {
+		_zoom_vertically(minimum_value, maximum_value);
+		queue_redraw();
+	}
+}
+
+void AnimationBezierTrackEdit::_zoom_vertically(real_t p_minimum_value, real_t p_maximum_value) {
+	real_t target_height = p_maximum_value - p_minimum_value;
+	if (target_height <= CMP_EPSILON) {
+		timeline_v_scroll = p_maximum_value;
+		return;
+	}
+
+	timeline_v_scroll = (p_maximum_value + p_minimum_value) / 2.0;
+	timeline_v_zoom = target_height / ((get_size().height - timeline->get_size().height) * 0.9);
 }
 
 void AnimationBezierTrackEdit::_zoom_changed() {
@@ -931,10 +993,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (Math::is_finite(minimum_value) && Math::is_finite(maximum_value)) {
-				timeline_v_scroll = (maximum_value + minimum_value) / 2.0;
-				if (maximum_value - minimum_value > CMP_EPSILON) {
-					timeline_v_zoom = (maximum_value - minimum_value) / ((get_size().height - timeline->get_size().height) * 0.9);
-				}
+				_zoom_vertically(minimum_value, maximum_value);
 			}
 
 			queue_redraw();

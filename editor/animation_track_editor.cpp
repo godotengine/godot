@@ -1305,7 +1305,11 @@ void AnimationTimelineEdit::_zoom_changed(double) {
 }
 
 float AnimationTimelineEdit::get_zoom_scale() const {
-	float zv = zoom->get_max() - zoom->get_value();
+	return _get_zoom_scale(zoom->get_value());
+}
+
+float AnimationTimelineEdit::_get_zoom_scale(double p_zoom_value) const {
+	float zv = zoom->get_max() - p_zoom_value;
 	if (zv < 1) {
 		zv = 1.0 - zv;
 		return Math::pow(1.0f + zv, 8.0f) * 100;
@@ -1631,6 +1635,68 @@ Size2 AnimationTimelineEdit::get_minimum_size() const {
 void AnimationTimelineEdit::set_zoom(Range *p_zoom) {
 	zoom = p_zoom;
 	zoom->connect("value_changed", callable_mp(this, &AnimationTimelineEdit::_zoom_changed));
+}
+
+void AnimationTimelineEdit::auto_fit() {
+	if (!animation.is_valid()) {
+		return;
+	}
+
+	float anim_end = animation->get_length();
+	float anim_start = 0;
+
+	// Search for keyframe outside animation boundaries to include keyframes before animation start and after animation length.
+	int track_count = animation->get_track_count();
+	for (int track = 0; track < track_count; ++track) {
+		for (int i = 0; i < animation->track_get_key_count(track); i++) {
+			float key_time = animation->track_get_key_time(track, i);
+			if (key_time > anim_end) {
+				anim_end = key_time;
+			}
+			if (key_time < anim_start) {
+				anim_start = key_time;
+			}
+		}
+	}
+
+	float anim_length = anim_end - anim_start;
+	int timeline_width_pixels = get_size().width - get_buttons_width() - get_name_limit();
+
+	// I want a little buffer at the end... (5% looks nice and we should keep some space for the bezier handles)
+	timeline_width_pixels *= 0.95;
+
+	// The technique is to reuse the _get_zoom_scale function directly to be sure that the auto_fit is always calculated
+	// the same way as the zoom slider. It's a little bit more calculation then doing the inverse of get_zoom_scale but
+	// it's really easier to understand and should always be accurate.
+	float new_zoom = zoom->get_max();
+	while (true) {
+		double test_zoom_scale = _get_zoom_scale(new_zoom);
+
+		if (anim_length * test_zoom_scale <= timeline_width_pixels) {
+			// It fits...
+			break;
+		}
+
+		new_zoom -= zoom->get_step();
+
+		if (new_zoom <= zoom->get_min()) {
+			new_zoom = zoom->get_min();
+			break;
+		}
+	}
+
+	// Horizontal scroll to get_min which should include keyframes that are before the animation start.
+	hscroll->set_value(hscroll->get_min());
+	// Set the zoom value... the signal value_changed will be emitted and the timeline will be refreshed correctly!
+	zoom->set_value(new_zoom);
+	// The new zoom value must be applied correctly so the scrollbar are updated before we move the scrollbar to
+	// the beginning of the animation, hence the call deferred.
+	callable_mp(this, &AnimationTimelineEdit::_scroll_to_start).call_deferred();
+}
+
+void AnimationTimelineEdit::_scroll_to_start() {
+	// Horizontal scroll to get_min which should include keyframes that are before the animation start.
+	hscroll->set_value(hscroll->get_min());
 }
 
 void AnimationTimelineEdit::set_track_edit(AnimationTrackEdit *p_track_edit) {
@@ -3446,6 +3512,8 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		step->set_read_only(false);
 		snap->set_disabled(false);
 		snap_mode->set_disabled(false);
+		auto_fit->set_disabled(false);
+		auto_fit_bezier->set_disabled(false);
 
 		imported_anim_warning->hide();
 		for (int i = 0; i < animation->get_track_count(); i++) {
@@ -3466,6 +3534,8 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		snap->set_disabled(true);
 		snap_mode->set_disabled(true);
 		bezier_edit_icon->set_disabled(true);
+		auto_fit->set_disabled(true);
+		auto_fit_bezier->set_disabled(true);
 	}
 }
 
@@ -4763,6 +4833,8 @@ void AnimationTrackEditor::_notification(int p_what) {
 			inactive_player_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_editor_theme_icon(SNAME("Reload")));
+			auto_fit->set_icon(get_editor_theme_icon(SNAME("AnimationAutoFit")));
+			auto_fit_bezier->set_icon(get_editor_theme_icon(SNAME("AnimationAutoFitBezier")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -5617,6 +5689,8 @@ void AnimationTrackEditor::_cancel_bezier_edit() {
 	bezier_edit->hide();
 	scroll->show();
 	bezier_edit_icon->set_pressed(false);
+	auto_fit->show();
+	auto_fit_bezier->hide();
 }
 
 void AnimationTrackEditor::_bezier_edit(int p_for_track) {
@@ -5625,6 +5699,8 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 	bezier_edit->set_animation_and_track(animation, p_for_track, read_only);
 	scroll->hide();
 	bezier_edit->show();
+	auto_fit->hide();
+	auto_fit_bezier->show();
 	// Search everything within the track and curve - edit it.
 }
 
@@ -6865,6 +6941,18 @@ bool AnimationTrackEditor::is_grouping_tracks() {
 	return !view_group->is_pressed();
 }
 
+void AnimationTrackEditor::_auto_fit() {
+	timeline->auto_fit();
+}
+
+void AnimationTrackEditor::_auto_fit_bezier() {
+	timeline->auto_fit();
+
+	if (bezier_edit->is_visible()) {
+		bezier_edit->auto_fit_vertically();
+	}
+}
+
 void AnimationTrackEditor::_selection_changed() {
 	if (selected_filter->is_pressed()) {
 		_update_tracks(); // Needs updatin.
@@ -7178,6 +7266,19 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	zoom->set_v_size_flags(SIZE_SHRINK_CENTER);
 	bottom_hb->add_child(zoom);
 	timeline->set_zoom(zoom);
+
+	auto_fit = memnew(Button);
+	auto_fit->set_flat(true);
+	auto_fit->connect("pressed", callable_mp(this, &AnimationTrackEditor::_auto_fit));
+	auto_fit->set_shortcut(ED_SHORTCUT("animation_editor/auto_fit", TTR("Fit to panel"), KeyModifierMask::ALT | Key::F));
+	bottom_hb->add_child(auto_fit);
+
+	auto_fit_bezier = memnew(Button);
+	auto_fit_bezier->set_flat(true);
+	auto_fit_bezier->set_visible(false);
+	auto_fit_bezier->connect("pressed", callable_mp(this, &AnimationTrackEditor::_auto_fit_bezier));
+	auto_fit_bezier->set_shortcut(ED_SHORTCUT("animation_editor/auto_fit", TTR("Fit to panel"), KeyModifierMask::ALT | Key::F));
+	bottom_hb->add_child(auto_fit_bezier);
 
 	edit = memnew(MenuButton);
 	edit->set_shortcut_context(this);

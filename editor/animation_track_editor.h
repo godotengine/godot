@@ -182,6 +182,9 @@ class AnimationTimelineEdit : public Range {
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _track_added(int p_track);
 
+	float _get_zoom_scale(double p_zoom_value) const;
+	void _scroll_to_start();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -197,6 +200,7 @@ public:
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
+	void auto_fit();
 
 	void set_play_position(float p_pos);
 	float get_play_position() const;
@@ -404,6 +408,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	Button *snap = nullptr;
 	Button *bezier_edit_icon = nullptr;
 	OptionButton *snap_mode = nullptr;
+	Button *auto_fit = nullptr;
+	Button *auto_fit_bezier = nullptr;
 
 	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
@@ -590,6 +596,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _view_group_toggle();
 	Button *view_group = nullptr;
 	Button *selected_filter = nullptr;
+
+	void _auto_fit();
+	void _auto_fit_bezier();
 
 	void _selection_changed();
 
