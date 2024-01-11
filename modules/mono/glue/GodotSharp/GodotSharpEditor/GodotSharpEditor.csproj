@@ -34,6 +34,10 @@
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
+  <Target Name="CopyFiles" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll;$(OutputPath)\$(AssemblyName).pdb;$(OutputPath)\$(AssemblyName).xml"
+          DestinationFolder="$(MSBuildProjectDirectory)\..\..\..\..\..\bin\GodotSharp\Api\$(Configuration)"/>
+  </Target>
   <!-- Compat Sources -->
   <ItemGroup>
     <Compile Include="Compat.cs" />
