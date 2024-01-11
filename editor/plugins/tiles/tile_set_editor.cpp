@@ -880,25 +880,6 @@ TileSetEditor::TileSetEditor() {
 	split_container_right_side->add_child(tile_set_scenes_collection_source_editor);
 	tile_set_scenes_collection_source_editor->hide();
 
-	//// Patterns ////
-	int thumbnail_size = 64;
-	patterns_item_list = memnew(ItemList);
-	patterns_item_list->set_max_columns(0);
-	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
-	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
-	patterns_item_list->set_max_text_lines(2);
-	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
-	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_item_list->connect("gui_input", callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
-	main_vb->add_child(patterns_item_list);
-	patterns_item_list->hide();
-
-	patterns_help_label = memnew(Label);
-	patterns_help_label->set_text(TTR("Add new patterns in the TileMap editing mode."));
-	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
-	patterns_item_list->add_child(patterns_help_label);
-
 	// Expanded editor
 	expanded_area = memnew(PanelContainer);
 	add_child(expanded_area);

@@ -50,7 +50,6 @@ void TileMapPattern::set_pattern_set_index(int p_pattern_set_index) {
 }
 
 void TileMapPattern::_set_tile_data(int p_layer, const Vector<int> &p_data) {
-	print_line("set_tile_data");
 	int c = p_data.size();
 	const int *r = p_data.ptr();
 
@@ -87,7 +86,6 @@ void TileMapPattern::_set_tile_data(int p_layer, const Vector<int> &p_data) {
 }
 
 Vector<int> TileMapPattern::_get_tile_data(int p_layer) const {
-	print_line("get_tile_data");
 	// Export tile data to raw format
 	Vector<int> data;
 	data.resize(pattern[p_layer].pattern_layer.size() * 3);
@@ -111,24 +109,16 @@ Vector<int> TileMapPattern::_get_tile_data(int p_layer) const {
 
 void TileMapPattern::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
 	
-	ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds");
+	ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds for set_cell");
 	ERR_FAIL_COND_MSG(p_coords.x < 0 || p_coords.y < 0, vformat("Cannot set cell with negative coords in a TileMapPattern. Wrong coords: %s", p_coords));
 	
 	HashMap<Vector2i, TileMapCell> &selected_layer = pattern.write[0].pattern_layer;
+	size = size.max(p_coords + Vector2i(1, 1));
 	selected_layer[p_coords] = TileMapCell(p_source_id, p_atlas_coords, p_alternative_tile);
-	emit_changed();
+	
+	//CHECK ME: size is going to have be handled differently for a multi-layer pattern. 
 
-	HashMap<Vector2i, TileMapCell> pattern_layer_0 = get_pattern_layer(0);
-	/* CHECK ME
-	for (const KeyValue<Vector2i, TileMapCell> &E : pattern_layer_0) {
-		Vector2i p(E.key.x, E.key.y);
-		print_line(p);
-	}
-	 */
-	//CHECK ME: Is doing the below really needed? delete and check.
-	//size = size.max(p_coords + Vector2i(1, 1));
-	
-	
+	emit_changed();
 }
 
 bool TileMapPattern::has_cell(const Vector2i &p_coords) const {
@@ -147,7 +137,7 @@ bool TileMapPattern::has_cell(const Vector2i &p_coords) const {
 }
 
 void TileMapPattern::remove_cell(int p_layer, const Vector2i &p_coords, bool p_update_size) {
-	ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds"); 
+	ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds for remove_cell"); 
 	HashMap<Vector2i, TileMapCell> selected_layer = pattern.write[p_layer].pattern_layer;
 	ERR_FAIL_COND(!selected_layer.has(p_coords));
 	
@@ -166,26 +156,34 @@ void TileMapPattern::remove_cell(int p_layer, const Vector2i &p_coords, bool p_u
 int TileMapPattern::get_cell_source_id(int p_layer, const Vector2i &p_coords) {
 
 
-	//CHECK ME ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds"); 
-	HashMap<Vector2i, TileMapCell> selected_layer = pattern[p_layer].pattern_layer;
-	ERR_FAIL_COND_V(!selected_layer.has(p_coords), TileSet::INVALID_SOURCE);
-	return selected_layer[p_coords].source_id;
+	//CHECK ME ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds");
+	if (get_is_single_layer()) {
+		HashMap<Vector2i, TileMapCell> selected_layer = pattern[0].pattern_layer;
+		ERR_FAIL_COND_V(!selected_layer.has(p_coords), TileSet::INVALID_SOURCE);
+		return selected_layer[p_coords].source_id;
+	} else
+		return 0;
 }
 
 Vector2i TileMapPattern::get_cell_atlas_coords(int p_layer, const Vector2i &p_coords) const {
-	
-	HashMap<Vector2i, TileMapCell> selected_layer = pattern[p_layer].pattern_layer;
-	ERR_FAIL_COND_V(!selected_layer.has(p_coords), TileSetSource::INVALID_ATLAS_COORDS);
+	if (get_is_single_layer()) {
+		HashMap<Vector2i, TileMapCell> selected_layer = pattern[0].pattern_layer;
+		ERR_FAIL_COND_V(!selected_layer.has(p_coords), TileSetSource::INVALID_ATLAS_COORDS);
 
-	return selected_layer[p_coords].get_atlas_coords();
+		return selected_layer[p_coords].get_atlas_coords();
+	} else
+		return Vector2i (0,0);
 }
 
 int TileMapPattern::get_cell_alternative_tile(int p_layer, const Vector2i &p_coords) const {
+	if (get_is_single_layer()) {
 	
-	HashMap<Vector2i, TileMapCell> selected_layer = pattern[p_layer].pattern_layer;
+	HashMap<Vector2i, TileMapCell> selected_layer = pattern[0].pattern_layer;
 	ERR_FAIL_COND_V(!selected_layer.has(p_coords), TileSetSource::INVALID_TILE_ALTERNATIVE);
 
 	return selected_layer[p_coords].alternative_tile;
+	} else
+		return 0;
 }
 
 TypedArray<Vector2i> TileMapPattern::get_used_cells_on_layer(int p_layer) const {
@@ -208,7 +206,6 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells() {
 		a.resize(pattern[0].pattern_layer.size());
 		int i = 0;
 		for (const KeyValue<Vector2i, TileMapCell> &E : pattern[0].pattern_layer) {
-			print_line("get_used_cells single layer called");
 			Vector2i p(E.key.x, E.key.y);
 			a[i++] = p;
 		}
@@ -262,7 +259,7 @@ void TileMapPattern::set_size(const Size2i &p_size) {
 }
 
 bool TileMapPattern::is_empty() const {
-	return pattern.is_empty();
+	return pattern[0].pattern_layer.is_empty();
 };
 
 bool TileMapPattern::get_is_single_layer() const {

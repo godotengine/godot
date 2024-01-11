@@ -73,9 +73,8 @@ void TileMapEditorTilesPlugin::_update_toolbar() {
 
 	// Show only the correct settings.
 	if (tool_buttons_group->get_pressed_button() == select_tool_button) {
-		multi_layer_mode_button->show();
-	} else if (tool_buttons_group->get_pressed_button() == paint_tool_button) {
 		transform_toolbar->show();
+		multi_layer_mode_button->show();
 	} else if (tool_buttons_group->get_pressed_button() != bucket_tool_button) {
 		tools_settings_vsep->show();
 		picker_button->show();
@@ -98,7 +97,9 @@ void TileMapEditorTilesPlugin::_update_toolbar() {
 	}
 }
 
+
 void TileMapEditorTilesPlugin::_update_transform_buttons() {
+	print_line("_update_transform_buttons called");
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
@@ -365,7 +366,7 @@ void TileMapEditorTilesPlugin::_update_patterns_list() {
 	TreeItem *pattern_set;
 	int sel_pattern_set_index;
 
-	// If this function was called by a pattern set being clicked on, get the selected pattern set and it's index. Then update to display the patterns inside of that specific pattern set.
+	// If this display update function was called by a pattern set being clicked on, get the selected pattern set and it's index. Then update to display the patterns inside of that specific pattern set.
 	if (pattern_sets_display->get_selected() != nullptr) {
 		pattern_set = pattern_sets_display->get_selected();
 		Dictionary metadata_dict = pattern_set->get_metadata(0);
@@ -393,7 +394,7 @@ void TileMapEditorTilesPlugin::_update_patterns_list() {
 			
 		}
 	}
-	// If this update function was called when adding, removing, or renaming a pattern, get the first pattern in the pattern set. Get the associated pattern set index. Then update the pattern display.
+	// If this display update function was called when adding, removing, or renaming a pattern, get the first pattern in the pattern set. Get the associated pattern set index. Then update the pattern display.
 	else if (patterns_item_list->is_visible_in_tree() && patterns_item_list->get_item_count() > 0) {
 		Ref<TileMapPattern> sel_pattern = patterns_item_list->get_item_metadata(0);
 		sel_pattern_set_index = sel_pattern->get_pattern_set_index();
@@ -1478,7 +1479,6 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_st
 	// Get or create the pattern.
 	Ref<TileMapPattern> erase_pattern;
 	erase_pattern.instantiate();
-	selection_pattern->set_is_single_layer(true);
 	// CHANGE 1
 	erase_pattern->set_cell(0, Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
@@ -1796,7 +1796,6 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 				Vector2i coords;
 				HashMap<Vector2i, TileMapCell> cells_undo;
 				for (int i = 0; i < selection_used_cells.size(); i++) {
-					print_line("before source id, atlas coords, alt coords");
 					coords = tile_map->map_pattern(top_left, selection_used_cells[i], selection_pattern);
 					cells_undo[coords] = TileMapCell(drag_modified[coords].source_id, drag_modified[coords].get_atlas_coords(), drag_modified[coords].alternative_tile);
 					coords = tile_map->map_pattern(top_left + offset, selection_used_cells[i], selection_pattern);
@@ -1873,6 +1872,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			if (!new_selection_pattern->is_empty()) {
 				selection_pattern = new_selection_pattern;
 				selection_pattern->set_is_single_layer(true);
+
 				_update_tileset_selection_from_selection_pattern();
 			}
 			picker_button->set_pressed(false);
@@ -1946,6 +1946,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 }
 
 void TileMapEditorTilesPlugin::_apply_transform(int p_type) {
+	print_line("apply_transform called");
 	if (selection_pattern.is_null() || selection_pattern->is_empty()) {
 		return;
 	}
@@ -1959,6 +1960,7 @@ void TileMapEditorTilesPlugin::_apply_transform(int p_type) {
 		for (int x = 0; x < size.x; x++) {
 			Vector2i src_coords = Vector2i(x, y);
 			if (!selection_pattern->has_cell(src_coords)) {
+				print_line("transform does not have_cell");
 				continue;
 			}
 
@@ -1976,16 +1978,18 @@ void TileMapEditorTilesPlugin::_apply_transform(int p_type) {
 				dst_coords = Vector2i(x, size.y - y - 1);
 			}
 
-			transformed_pattern->set_cell(dst_coords,
-					selection_pattern->get_cell_source_id(src_coords), selection_pattern->get_cell_atlas_coords(src_coords),
-					_get_transformed_alternative(selection_pattern->get_cell_alternative_tile(src_coords), p_type));
+			transformed_pattern->set_cell(tile_map_layer, dst_coords,
+					selection_pattern->get_cell_source_id(0, src_coords), selection_pattern->get_cell_atlas_coords(0, src_coords),
+					_get_transformed_alternative(selection_pattern->get_cell_alternative_tile(0, src_coords), p_type));
 		}
 	}
 	selection_pattern = transformed_pattern;
+
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
 int TileMapEditorTilesPlugin::_get_transformed_alternative(int p_alternative_id, int p_transform) {
+	print_line("get_transformed_alternative called");
 	bool transform_flip_h = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_H;
 	bool transform_flip_v = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_V;
 	bool transform_transpose = p_alternative_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
@@ -2141,13 +2145,10 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tilemap_selection(
 	TypedArray<Vector2i> coords_array;
 	
 	for (const Vector2i &E : tile_map_selection) {
-		print_line("Tile_map_selection cell added in _update_selection_pattern_from_tilemap_selection");
 		coords_array.push_back(E);
 	}
 	//CHANGE 20
-	print_line(coords_array);
 	selection_pattern = tile_map->get_pattern(coords_array, tile_map_layer);
-	selection_pattern = tile_map->get_pattern(tile_map_layer, coords_array);
 	_update_transform_buttons();
 }
 

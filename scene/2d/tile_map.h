@@ -395,7 +395,7 @@ public:
 
 	// Patterns.
 	Ref<TileMapPattern> get_pattern_layer(int p_layer, Ref<TileMapPattern> p_pattern, TypedArray<Vector2i> p_coords_array);
-	void set_pattern_layer(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern, int p_layer = -1);
+	void set_pattern_layer(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 
 	// Terrains.
 	void set_cells_terrain_connect(TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);

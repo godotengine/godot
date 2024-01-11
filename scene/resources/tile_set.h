@@ -118,7 +118,7 @@ class TileMapPattern : public Resource {
 	int pattern_set_index;
 	int number_of_layers = 1;
 	bool is_single_layer = true;
-	Vector2i pattern_start_position = Vector2i(21477, 21477);
+	Vector2i pattern_start_position;
 	Size2i size;
 
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
@@ -148,8 +148,10 @@ public:
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords) const;
 	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords) const;
 
+	const HashMap<Vector2i, TileMapCell> &get_pattern() const { return pattern[0].pattern_layer; }
 	TypedArray<Vector2i> get_used_cells_on_layer(int p_layer) const;
 	TypedArray<Vector2i> get_used_cells();
+
 	HashMap<Vector2i, TileMapCell> get_pattern_layer(int p_layer);
 
 	int get_number_of_layers() const;

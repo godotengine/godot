@@ -2254,8 +2254,8 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPat
 			Vector2i coords_in_pattern = coords_in_pattern_array[i];
 			p_pattern->set_cell(0, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords));
 		}
-		p_pattern->set_size(max - min);
-		
+		//p_pattern->set_size(max - min);
+		print_line(p_pattern->get_size());
 	}
 
 	// Multi layer pattern.
@@ -2303,8 +2303,14 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPat
 	return p_pattern;
 }
 
-void TileMapLayer::set_pattern_layer(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern, int p_layer) {
-	ERR_FAIL_INDEX_MSG(p_layer, p_pattern->get_number_of_layers(), "Layer index is out of bounds");
+void TileMapLayer::set_pattern_layer(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
+
+	int pattern_read = p_pattern->get_number_of_layers();
+	int layer_number = p_layer;
+	print_line(layer_number);
+	print_line(pattern_read);
+	
+	ERR_FAIL_INDEX_MSG(p_layer, p_pattern->get_number_of_layers(), "Layer index is out of bounds for set_pattern layer");
 	ERR_FAIL_COND(p_pattern.is_null());
 	//CHECK ME: Different operations for single vs multi-layer?
 	// Get the coords_in_pattern (the coordinates relative to the top left beginning of the pattern) and then set cells with the appropriate tiles.
@@ -3625,12 +3631,12 @@ void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<Til
 			return;
 		} else
 			((void)0);
-		layers[p_layer]->set_pattern_layer(p_position, p_pattern);
+		layers[p_layer]->set_pattern_layer(p_layer, p_position, p_pattern);
 	}
 
 	else {
 		for (int pattern_layer = 0; pattern_layer < get_layers_count(); pattern_layer++) {
-				layers[pattern_layer]->set_pattern_layer(p_position, p_pattern, pattern_layer);
+			layers[pattern_layer]->set_pattern_layer(pattern_layer, p_position, p_pattern);
 		}
 	}
 }
