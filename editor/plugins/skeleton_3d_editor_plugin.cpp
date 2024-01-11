@@ -889,18 +889,6 @@ void Skeleton3DEditor::_node_removed(Node *p_node) {
 	_update_properties();
 }
 
-void Skeleton3DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_node_removed"), &Skeleton3DEditor::_node_removed);
-	ClassDB::bind_method(D_METHOD("_joint_tree_selection_changed"), &Skeleton3DEditor::_joint_tree_selection_changed);
-	ClassDB::bind_method(D_METHOD("_joint_tree_rmb_select"), &Skeleton3DEditor::_joint_tree_rmb_select);
-	ClassDB::bind_method(D_METHOD("_update_properties"), &Skeleton3DEditor::_update_properties);
-	ClassDB::bind_method(D_METHOD("_on_click_skeleton_option"), &Skeleton3DEditor::_on_click_skeleton_option);
-
-	ClassDB::bind_method(D_METHOD("move_skeleton_bone"), &Skeleton3DEditor::move_skeleton_bone);
-
-	ClassDB::bind_method(D_METHOD("_draw_gizmo"), &Skeleton3DEditor::_draw_gizmo);
-}
-
 void Skeleton3DEditor::edit_mode_toggled(const bool pressed) {
 	edit_mode = pressed;
 	_update_gizmo_visible();

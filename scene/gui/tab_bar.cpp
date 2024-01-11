@@ -30,7 +30,6 @@
 
 #include "tab_bar.h"
 
-#include "core/object/message_queue.h"
 #include "core/string/translation.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"

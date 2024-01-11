@@ -4675,7 +4675,6 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tile_texture_region", "atlas_coords", "frame"), &TileSetAtlasSource::get_tile_texture_region, DEFVAL(0));
 
 	// Getters for texture and tile region (padded or not)
-	ClassDB::bind_method(D_METHOD("_update_padded_texture"), &TileSetAtlasSource::_update_padded_texture);
 	ClassDB::bind_method(D_METHOD("get_runtime_texture"), &TileSetAtlasSource::get_runtime_texture);
 	ClassDB::bind_method(D_METHOD("get_runtime_tile_texture_region", "atlas_coords", "frame"), &TileSetAtlasSource::get_runtime_tile_texture_region);
 
@@ -4761,7 +4760,7 @@ void TileSetAtlasSource::_create_coords_mapping_cache(Vector2i p_atlas_coords) {
 
 void TileSetAtlasSource::_queue_update_padded_texture() {
 	padded_texture_needs_update = true;
-	call_deferred(SNAME("_update_padded_texture"));
+	callable_mp(this, &TileSetAtlasSource::_update_padded_texture).call_deferred();
 }
 
 Ref<ImageTexture> TileSetAtlasSource::_create_padded_image_texture(const Ref<Texture2D> &p_source) {

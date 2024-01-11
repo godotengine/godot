@@ -976,7 +976,7 @@ void CanvasItemEditor::_node_created(Node *p_node) {
 		c->_edit_set_position(xform.xform(node_create_position));
 	}
 
-	call_deferred(SNAME("_reset_create_position")); // Defer the call in case more than one node is added.
+	callable_mp(this, &CanvasItemEditor::_reset_create_position).call_deferred(); // Defer the call in case more than one node is added.
 }
 
 void CanvasItemEditor::_reset_create_position() {
@@ -2610,7 +2610,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 	// Grab focus
 	if (!viewport->has_focus() && (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field())) {
-		viewport->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)viewport, &Control::grab_focus).call_deferred();
 	}
 }
 
@@ -3911,6 +3911,11 @@ void CanvasItemEditor::_update_editor_settings() {
 
 void CanvasItemEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
+			EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
+		} break;
+
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
 
@@ -4723,7 +4728,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		zoom *= 0.90;
 		zoom_widget->set_zoom(zoom);
 		viewport->queue_redraw(); // Redraw to update the global canvas transform after zoom changes.
-		call_deferred(SNAME("center_at"), rect.get_center()); // Defer because the updated transform is needed.
+		callable_mp(this, &CanvasItemEditor::center_at).call_deferred(rect.get_center()); // Defer because the updated transform is needed.
 	} else {
 		center_at(rect.get_center());
 	}
@@ -5079,9 +5084,6 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	SceneTreeDock::get_singleton()->connect("node_created", callable_mp(this, &CanvasItemEditor::_node_created));
 	SceneTreeDock::get_singleton()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
-
-	EditorRunBar::get_singleton()->call_deferred(SNAME("connect"), "play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
-	EditorRunBar::get_singleton()->call_deferred(SNAME("connect"), "stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
 
 	// Add some margin to the sides for better esthetics.
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,

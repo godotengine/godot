@@ -92,7 +92,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (grabber->is_visible()) {
-				call_deferred(SNAME("queue_redraw"));
+				callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw).call_deferred();
 			}
 		}
 	}
@@ -637,11 +637,11 @@ void EditorSpinSlider::_focus_entered() {
 	_ensure_input_popup();
 	value_input->set_text(get_text_value());
 	value_input_popup->set_size(get_size());
-	value_input_popup->call_deferred(SNAME("show"));
-	value_input->call_deferred(SNAME("grab_focus"));
-	value_input->call_deferred(SNAME("select_all"));
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
 	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
+	callable_mp((CanvasItem *)value_input_popup, &CanvasItem::show).call_deferred();
+	callable_mp((Control *)value_input, &Control::grab_focus).call_deferred();
+	callable_mp(value_input, &LineEdit ::select_all).call_deferred();
 	emit_signal("value_focus_entered");
 }
 

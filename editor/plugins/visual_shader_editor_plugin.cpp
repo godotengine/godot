@@ -182,7 +182,7 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 }
 
 void VisualShaderGraphPlugin::update_node_deferred(VisualShader::Type p_type, int p_node_id) {
-	call_deferred(SNAME("update_node"), p_type, p_node_id);
+	callable_mp(this, &VisualShaderGraphPlugin::update_node).call_deferred(p_type, p_node_id);
 }
 
 void VisualShaderGraphPlugin::update_node(VisualShader::Type p_type, int p_node_id) {
@@ -1492,14 +1492,14 @@ void VisualShaderEditor::_update_custom_script(const Ref<Script> &p_script) {
 	if (!_block_update_options_menu) {
 		_block_update_options_menu = true;
 
-		call_deferred(SNAME("_update_options_menu_deferred"));
+		callable_mp(this, &VisualShaderEditor::_update_options_menu_deferred);
 	}
 
 	// To prevent rebuilding the shader multiple times when multiple scripts are saved.
 	if (need_rebuild && !_block_rebuild_shader) {
 		_block_rebuild_shader = true;
 
-		call_deferred(SNAME("_rebuild_shader_deferred"));
+		callable_mp(this, &VisualShaderEditor::_rebuild_shader_deferred);
 	}
 }
 
@@ -1581,8 +1581,7 @@ void VisualShaderEditor::_resource_removed(const Ref<Resource> &p_resource) {
 
 	if (!pending_custom_scripts_to_delete) {
 		pending_custom_scripts_to_delete = true;
-
-		call_deferred("_resources_removed");
+		callable_mp(this, &VisualShaderEditor::_resources_removed).call_deferred();
 	}
 }
 
@@ -3322,11 +3321,11 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 	}
 
 	if (is_curve) {
-		graph_plugin->call_deferred(SNAME("update_curve"), id_to_use);
+		callable_mp(graph_plugin.ptr(), &VisualShaderGraphPlugin::update_curve).call_deferred(id_to_use);
 	}
 
 	if (is_curve_xyz) {
-		graph_plugin->call_deferred(SNAME("update_curve_xyz"), id_to_use);
+		callable_mp(graph_plugin.ptr(), &VisualShaderGraphPlugin::update_curve_xyz).call_deferred(id_to_use);
 	}
 
 	if (p_resource_path.is_empty()) {
@@ -3466,7 +3465,7 @@ void VisualShaderEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_t
 	VisualShader::Type type = get_current_shader_type();
 	drag_buffer.push_back({ type, p_node, p_from, p_to });
 	if (!drag_dirty) {
-		call_deferred(SNAME("_nodes_dragged"));
+		callable_mp(this, &VisualShaderEditor::_nodes_dragged).call_deferred();
 	}
 	drag_dirty = true;
 }
@@ -4094,7 +4093,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
 	members_dialog->set_position(members_dialog->get_position() - difference);
 
-	node_filter->call_deferred(SNAME("grab_focus")); // Still not visible.
+	callable_mp((Control *)node_filter, &Control::grab_focus).call_deferred(); // Still not visible.
 	node_filter->select_all();
 }
 
@@ -5187,28 +5186,17 @@ void VisualShaderEditor::_visibility_changed() {
 void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_nodes", &VisualShaderEditor::_update_nodes);
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
-	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
-	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_parameter_ref_select_item", &VisualShaderEditor::_parameter_ref_select_item);
 	ClassDB::bind_method("_varying_select_item", &VisualShaderEditor::_varying_select_item);
 	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
-	ClassDB::bind_method("_clear_copy_buffer", &VisualShaderEditor::_clear_copy_buffer);
 	ClassDB::bind_method("_update_parameters", &VisualShaderEditor::_update_parameters);
 	ClassDB::bind_method("_update_varyings", &VisualShaderEditor::_update_varyings);
 	ClassDB::bind_method("_update_varying_tree", &VisualShaderEditor::_update_varying_tree);
 	ClassDB::bind_method("_set_mode", &VisualShaderEditor::_set_mode);
-	ClassDB::bind_method("_nodes_dragged", &VisualShaderEditor::_nodes_dragged);
-	ClassDB::bind_method("_float_constant_selected", &VisualShaderEditor::_float_constant_selected);
 	ClassDB::bind_method("_update_constant", &VisualShaderEditor::_update_constant);
 	ClassDB::bind_method("_update_parameter", &VisualShaderEditor::_update_parameter);
-	ClassDB::bind_method("_expand_output_port", &VisualShaderEditor::_expand_output_port);
-	ClassDB::bind_method("_update_options_menu_deferred", &VisualShaderEditor::_update_options_menu_deferred);
-	ClassDB::bind_method("_rebuild_shader_deferred", &VisualShaderEditor::_rebuild_shader_deferred);
-	ClassDB::bind_method("_resources_removed", &VisualShaderEditor::_resources_removed);
 	ClassDB::bind_method("_update_next_previews", &VisualShaderEditor::_update_next_previews);
-
-	ClassDB::bind_method("_is_available", &VisualShaderEditor::_is_available);
 }
 
 VisualShaderEditor::VisualShaderEditor() {

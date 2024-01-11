@@ -954,7 +954,7 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_pressed() {
 }
 
 void TileSetAtlasSourceEditor::_tile_data_editors_tree_selected() {
-	tile_data_editors_popup->call_deferred(SNAME("hide"));
+	callable_mp((Window *)tile_data_editors_popup, &Window::hide).call_deferred();
 	_update_current_tile_data_editor();
 	tile_atlas_control->queue_redraw();
 	tile_atlas_control_unscaled->queue_redraw();

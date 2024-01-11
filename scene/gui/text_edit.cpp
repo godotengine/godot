@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
-#include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -428,10 +427,10 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_caches();
 			if (caret_pos_dirty) {
-				MessageQueue::get_singleton()->push_call(this, "_emit_caret_changed");
+				callable_mp(this, &TextEdit::_emit_caret_changed).call_deferred();
 			}
 			if (text_changed_dirty) {
-				MessageQueue::get_singleton()->push_call(this, "_text_changed_emit");
+				callable_mp(this, &TextEdit::_text_changed_emit).call_deferred();
 			}
 			_update_wrap_at_column(true);
 		} break;
@@ -443,8 +442,8 @@ void TextEdit::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				call_deferred(SNAME("_update_scrollbars"));
-				call_deferred(SNAME("_update_wrap_at_column"));
+				callable_mp(this, &TextEdit::_update_scrollbars).call_deferred();
+				callable_mp(this, &TextEdit::_update_wrap_at_column).call_deferred(false);
 			}
 		} break;
 
@@ -4008,7 +4007,7 @@ void TextEdit::undo() {
 
 	if (dirty_carets && !caret_pos_dirty) {
 		if (is_inside_tree()) {
-			MessageQueue::get_singleton()->push_call(this, "_emit_caret_changed");
+			callable_mp(this, &TextEdit::_emit_caret_changed).call_deferred();
 		}
 		caret_pos_dirty = true;
 	}
@@ -4063,7 +4062,7 @@ void TextEdit::redo() {
 
 	if (dirty_carets && !caret_pos_dirty) {
 		if (is_inside_tree()) {
-			MessageQueue::get_singleton()->push_call(this, "_emit_caret_changed");
+			callable_mp(this, &TextEdit::_emit_caret_changed).call_deferred();
 		}
 		caret_pos_dirty = true;
 	}
@@ -4869,7 +4868,7 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 
 	if (caret_moved && !caret_pos_dirty) {
 		if (is_inside_tree()) {
-			MessageQueue::get_singleton()->push_call(this, "_emit_caret_changed");
+			callable_mp(this, &TextEdit::_emit_caret_changed).call_deferred();
 		}
 		caret_pos_dirty = true;
 	}
@@ -4900,7 +4899,7 @@ void TextEdit::set_caret_column(int p_col, bool p_adjust_viewport, int p_caret) 
 
 	if (caret_moved && !caret_pos_dirty) {
 		if (is_inside_tree()) {
-			MessageQueue::get_singleton()->push_call(this, "_emit_caret_changed");
+			callable_mp(this, &TextEdit::_emit_caret_changed).call_deferred();
 		}
 		caret_pos_dirty = true;
 	}
@@ -6027,10 +6026,6 @@ Color TextEdit::get_font_color() const {
 }
 
 void TextEdit::_bind_methods() {
-	/* Internal. */
-
-	ClassDB::bind_method(D_METHOD("_text_changed_emit"), &TextEdit::_text_changed_emit);
-
 	/* Text */
 	// Text properties
 	ClassDB::bind_method(D_METHOD("has_ime_text"), &TextEdit::has_ime_text);
@@ -6201,9 +6196,6 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(CARET_TYPE_LINE);
 	BIND_ENUM_CONSTANT(CARET_TYPE_BLOCK);
 
-	// Internal.
-	ClassDB::bind_method(D_METHOD("_emit_caret_changed"), &TextEdit::_emit_caret_changed);
-
 	ClassDB::bind_method(D_METHOD("set_caret_type", "type"), &TextEdit::set_caret_type);
 	ClassDB::bind_method(D_METHOD("get_caret_type"), &TextEdit::get_caret_type);
 
@@ -6290,9 +6282,6 @@ void TextEdit::_bind_methods() {
 	/* Line wrapping. */
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_NONE);
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_BOUNDARY);
-
-	// Internal.
-	ClassDB::bind_method(D_METHOD("_update_wrap_at_column", "force"), &TextEdit::_update_wrap_at_column, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_line_wrapping_mode", "mode"), &TextEdit::set_line_wrapping_mode);
 	ClassDB::bind_method(D_METHOD("get_line_wrapping_mode"), &TextEdit::get_line_wrapping_mode);
@@ -7827,7 +7816,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 
 	if (!text_changed_dirty && !setting_text) {
 		if (is_inside_tree()) {
-			MessageQueue::get_singleton()->push_call(this, "_text_changed_emit");
+			callable_mp(this, &TextEdit::_text_changed_emit).call_deferred();
 		}
 		text_changed_dirty = true;
 	}
@@ -7873,7 +7862,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 
 	if (!text_changed_dirty && !setting_text) {
 		if (is_inside_tree()) {
-			MessageQueue::get_singleton()->push_call(this, "_text_changed_emit");
+			callable_mp(this, &TextEdit::_text_changed_emit).call_deferred();
 		}
 		text_changed_dirty = true;
 	}

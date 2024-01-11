@@ -321,9 +321,9 @@ void ProjectDialog::_file_selected(const String &p_path) {
 	project_path->set_text(sp);
 	_update_path(sp);
 	if (p.ends_with(".zip")) {
-		install_path->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)install_path, &Control::grab_focus).call_deferred();
 	} else {
-		get_ok_button()->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)get_ok_button(), &Control::grab_focus).call_deferred();
 	}
 }
 
@@ -334,14 +334,14 @@ void ProjectDialog::_path_selected(const String &p_path) {
 	String sp = p_path.simplify_path();
 	project_path->set_text(sp);
 	_update_path(sp);
-	get_ok_button()->call_deferred(SNAME("grab_focus"));
+	callable_mp((Control *)get_ok_button(), &Control::grab_focus).call_deferred();
 }
 
 void ProjectDialog::_install_path_selected(const String &p_path) {
 	String sp = p_path.simplify_path();
 	install_path->set_text(sp);
 	_update_path(sp);
-	get_ok_button()->call_deferred(SNAME("grab_focus"));
+	callable_mp((Control *)get_ok_button(), &Control::grab_focus).call_deferred();
 }
 
 void ProjectDialog::_browse_path() {
@@ -726,7 +726,7 @@ void ProjectDialog::show_dialog() {
 			_text_changed(cur_name);
 		}
 
-		project_name->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
 
 		create_dir->hide();
 
@@ -773,8 +773,8 @@ void ProjectDialog::show_dialog() {
 			install_path_container->hide();
 			renderer_container->show();
 			default_files_container->show();
-			project_name->call_deferred(SNAME("grab_focus"));
-			project_name->call_deferred(SNAME("select_all"));
+			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 
 		} else if (mode == MODE_INSTALL) {
 			set_title(TTR("Install Project:") + " " + zip_title);

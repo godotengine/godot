@@ -733,7 +733,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	// clear button
 	if (p_idx == recent_scripts->get_item_count() - 1) {
 		EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", Array());
-		call_deferred(SNAME("_update_recent_scripts"));
+		callable_mp(this, &ScriptEditor::_update_recent_scripts).call_deferred();
 		return;
 	}
 
@@ -1031,7 +1031,7 @@ void ScriptEditor::_scene_saved_callback(const String &p_path) {
 
 void ScriptEditor::trigger_live_script_reload() {
 	if (!pending_auto_reload && auto_reload_running_scripts) {
-		call_deferred(SNAME("_live_auto_reload_running_scripts"));
+		callable_mp(this, &ScriptEditor::_live_auto_reload_running_scripts).call_deferred();
 		pending_auto_reload = true;
 	}
 }
@@ -1082,7 +1082,7 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
 			script_editor->reload_scripts();
 			need_reload = false;
 		} else {
-			disk_changed->call_deferred(SNAME("popup_centered_ratio"), 0.3);
+			callable_mp((Window *)disk_changed, &Window::popup_centered_ratio).call_deferred(0.3);
 		}
 	}
 
@@ -2873,7 +2873,7 @@ void ScriptEditor::_tree_changed() {
 	}
 
 	waiting_update_names = true;
-	call_deferred(SNAME("_update_script_names"));
+	callable_mp(this, &ScriptEditor::_update_script_names).call_deferred();
 }
 
 void ScriptEditor::_split_dragged(float) {
@@ -3393,7 +3393,7 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	_update_script_names();
 	_save_layout();
 
-	call_deferred("_help_tab_goto", cname, p_desc);
+	callable_mp(this, &ScriptEditor::_help_tab_goto).call_deferred(cname, p_desc);
 }
 
 bool ScriptEditor::_help_tab_goto(const String &p_name, const String &p_desc) {
@@ -3791,18 +3791,7 @@ void ScriptEditor::_filter_methods_text_changed(const String &p_newtext) {
 }
 
 void ScriptEditor::_bind_methods() {
-	ClassDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
-	ClassDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
-	ClassDB::bind_method("_close_other_tabs", &ScriptEditor::_close_other_tabs);
-	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
-	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
-
-	ClassDB::bind_method("_help_class_open", &ScriptEditor::_help_class_open);
 	ClassDB::bind_method("_help_tab_goto", &ScriptEditor::_help_tab_goto);
-	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
-	ClassDB::bind_method("_update_members_overview", &ScriptEditor::_update_members_overview);
-	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
-
 	ClassDB::bind_method("get_current_editor", &ScriptEditor::_get_current_editor);
 	ClassDB::bind_method("get_open_script_editors", &ScriptEditor::_get_open_script_editors);
 

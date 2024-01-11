@@ -96,7 +96,7 @@ void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				results_tree->call_deferred(SNAME("clear")); // Wait for the Tree's mouse event propagation.
+				callable_mp(results_tree, &Tree::clear).call_deferred(); // Wait for the Tree's mouse event propagation.
 				get_ok_button()->set_disabled(true);
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}

@@ -232,8 +232,6 @@ RID PrimitiveMesh::get_rid() const {
 }
 
 void PrimitiveMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update"), &PrimitiveMesh::_update);
-
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &PrimitiveMesh::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &PrimitiveMesh::get_material);
 
@@ -3342,7 +3340,6 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &TextMesh::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &TextMesh::is_uppercase);
 
-	ClassDB::bind_method(D_METHOD("_font_changed"), &TextMesh::_font_changed);
 	ClassDB::bind_method(D_METHOD("_request_update"), &TextMesh::_request_update);
 
 	ADD_GROUP("Text", "");
@@ -3446,14 +3443,16 @@ void TextMesh::_font_changed() {
 
 void TextMesh::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
+		const Callable font_changed = callable_mp(this, &TextMesh::_font_changed);
+
 		if (font_override.is_valid()) {
-			font_override->disconnect_changed(Callable(this, "_font_changed"));
+			font_override->disconnect_changed(font_changed);
 		}
 		font_override = p_font;
 		dirty_font = true;
 		dirty_cache = true;
 		if (font_override.is_valid()) {
-			font_override->connect_changed(Callable(this, "_font_changed"));
+			font_override->connect_changed(font_changed);
 		}
 		_request_update();
 	}

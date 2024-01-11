@@ -214,7 +214,6 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "_set_current", "set_current" }, // Camera2D
 	{ "_set_editor_description", "set_editor_description" }, // Node
 	{ "_toplevel_raise_self", "_top_level_raise_self" }, // CanvasItem
-	{ "_update_wrap_at", "_update_wrap_at_column" }, // TextEdit
 	{ "add_animation", "add_animation_library" }, // AnimationPlayer
 	{ "add_cancel", "add_cancel_button" }, // AcceptDialog
 	{ "add_central_force", "apply_central_force" }, //RigidBody2D

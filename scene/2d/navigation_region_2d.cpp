@@ -245,7 +245,7 @@ void NavigationRegion2D::bake_navigation_polygon(bool p_on_thread) {
 
 void NavigationRegion2D::_bake_finished(Ref<NavigationPolygon> p_navigation_polygon) {
 	if (!Thread::is_main_thread()) {
-		call_deferred(SNAME("_bake_finished"), p_navigation_polygon);
+		callable_mp(this, &NavigationRegion2D::_bake_finished).call_deferred(p_navigation_polygon);
 		return;
 	}
 

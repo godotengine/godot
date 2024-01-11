@@ -286,7 +286,7 @@ void NavigationServer3D::set_debug_enabled(bool p_enabled) {
 	debug_enabled = p_enabled;
 
 	if (debug_dirty) {
-		call_deferred("_emit_navigation_debug_changed_signal");
+		callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 	}
 #endif // DEBUG_ENABLED
 }
@@ -693,7 +693,7 @@ Color NavigationServer3D::get_debug_navigation_agent_path_color() const {
 void NavigationServer3D::set_debug_navigation_enable_edge_connections(const bool p_value) {
 	debug_navigation_enable_edge_connections = p_value;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enable_edge_connections() const {
@@ -714,7 +714,7 @@ bool NavigationServer3D::get_debug_navigation_enable_edge_connections_xray() con
 void NavigationServer3D::set_debug_navigation_enable_edge_lines(const bool p_value) {
 	debug_navigation_enable_edge_lines = p_value;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enable_edge_lines() const {
@@ -735,7 +735,7 @@ bool NavigationServer3D::get_debug_navigation_enable_edge_lines_xray() const {
 void NavigationServer3D::set_debug_navigation_enable_geometry_face_random_color(const bool p_value) {
 	debug_navigation_enable_geometry_face_random_color = p_value;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enable_geometry_face_random_color() const {
@@ -745,7 +745,7 @@ bool NavigationServer3D::get_debug_navigation_enable_geometry_face_random_color(
 void NavigationServer3D::set_debug_navigation_enable_link_connections(const bool p_value) {
 	debug_navigation_enable_link_connections = p_value;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enable_link_connections() const {
@@ -766,7 +766,7 @@ bool NavigationServer3D::get_debug_navigation_enable_link_connections_xray() con
 void NavigationServer3D::set_debug_navigation_avoidance_enable_agents_radius(const bool p_value) {
 	debug_navigation_avoidance_enable_agents_radius = p_value;
 	avoidance_debug_dirty = true;
-	call_deferred("_emit_avoidance_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_avoidance_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_avoidance_enable_agents_radius() const {
@@ -776,7 +776,7 @@ bool NavigationServer3D::get_debug_navigation_avoidance_enable_agents_radius() c
 void NavigationServer3D::set_debug_navigation_avoidance_enable_obstacles_radius(const bool p_value) {
 	debug_navigation_avoidance_enable_obstacles_radius = p_value;
 	avoidance_debug_dirty = true;
-	call_deferred("_emit_avoidance_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_avoidance_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_avoidance_enable_obstacles_radius() const {
@@ -786,7 +786,7 @@ bool NavigationServer3D::get_debug_navigation_avoidance_enable_obstacles_radius(
 void NavigationServer3D::set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value) {
 	debug_navigation_avoidance_enable_obstacles_static = p_value;
 	avoidance_debug_dirty = true;
-	call_deferred("_emit_avoidance_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_avoidance_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_avoidance_enable_obstacles_static() const {
@@ -867,7 +867,7 @@ void NavigationServer3D::set_debug_navigation_enable_agent_paths(const bool p_va
 	debug_navigation_enable_agent_paths = p_value;
 
 	if (debug_dirty) {
-		call_deferred("_emit_navigation_debug_changed_signal");
+		callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 	}
 }
 
@@ -892,7 +892,7 @@ bool NavigationServer3D::get_debug_navigation_enable_agent_paths_xray() const {
 void NavigationServer3D::set_debug_navigation_enabled(bool p_enabled) {
 	debug_navigation_enabled = p_enabled;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enabled() const {
@@ -902,7 +902,7 @@ bool NavigationServer3D::get_debug_navigation_enabled() const {
 void NavigationServer3D::set_debug_avoidance_enabled(bool p_enabled) {
 	debug_avoidance_enabled = p_enabled;
 	avoidance_debug_dirty = true;
-	call_deferred("_emit_avoidance_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_avoidance_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_avoidance_enabled() const {
