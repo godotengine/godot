@@ -56,9 +56,9 @@ import java.util.Set;
 public final class PermissionsUtil {
 	private static final String TAG = PermissionsUtil.class.getSimpleName();
 
-	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
-	static final int REQUEST_CAMERA_PERMISSION = 2;
-	static final int REQUEST_VIBRATE_PERMISSION = 3;
+	public static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
+	public static final int REQUEST_CAMERA_PERMISSION = 2;
+	public static final int REQUEST_VIBRATE_PERMISSION = 3;
 	public static final int REQUEST_ALL_PERMISSION_REQ_CODE = 1001;
 	public static final int REQUEST_SINGLE_PERMISSION_REQ_CODE = 1002;
 	public static final int REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE = 2002;
@@ -70,7 +70,7 @@ public final class PermissionsUtil {
 	 * Request a dangerous permission. name must be specified in <a href="https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/res/AndroidManifest.xml">this</a>
 	 * @param permissionName the name of the requested permission.
 	 * @param activity the caller activity for this method.
-	 * @return true/false. "true" if permission was granted otherwise returns "false".
+	 * @return true/false. "true" if permission is already granted, "false" if a permission request was dispatched.
 	 */
 	public static boolean requestPermission(String permissionName, Activity activity) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -124,7 +124,7 @@ public final class PermissionsUtil {
 	/**
 	 * Request dangerous permissions which are defined in the Android manifest file from the user.
 	 * @param activity the caller activity for this method.
-	 * @return true/false. "true" if all permissions were granted otherwise returns "false".
+	 * @return true/false. "true" if all permissions were already granted, returns "false" if permissions requests were dispatched.
 	 */
 	public static boolean requestManifestPermissions(Activity activity) {
 		return requestManifestPermissions(activity, null);
@@ -134,7 +134,7 @@ public final class PermissionsUtil {
 	 * Request dangerous permissions which are defined in the Android manifest file from the user.
 	 * @param activity the caller activity for this method.
 	 * @param excludes Set of permissions to exclude from the request
-	 * @return true/false. "true" if all permissions were granted otherwise returns "false".
+	 * @return true/false. "true" if all permissions were already granted, returns "false" if permissions requests were dispatched.
 	 */
 	public static boolean requestManifestPermissions(Activity activity, @Nullable Set<String> excludes) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -235,7 +235,7 @@ public final class PermissionsUtil {
 	/**
 	 * Check if the given permission is in the AndroidManifest.xml file.
 	 * @param context the caller context for this method.
-	 * @param permission the permession to look for in the manifest file.
+	 * @param permission the permission to look for in the manifest file.
 	 * @return "true" if the permission is in the manifest file of the activity, "false" otherwise.
 	 */
 	public static boolean hasManifestPermission(Context context, String permission) {
