@@ -292,23 +292,25 @@ int PopupMenu::_get_items_total_height() const {
 }
 
 int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
-	if (p_over.x < 0 || p_over.x >= get_size().width) {
+	float win_scale = get_content_scale_factor();
+	if (p_over.x < 0 || p_over.x >= get_size().width * win_scale) {
 		return -1;
 	}
 
 	// Accounts for margin in the margin container
 	Point2 ofs = theme_cache.panel_style->get_offset() + Point2(0, theme_cache.v_separation / 2);
+	ofs = ofs * win_scale;
 
 	if (ofs.y > p_over.y) {
 		return -1;
 	}
 
 	for (int i = 0; i < items.size(); i++) {
-		ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
+		ofs.y += i > 0 ? (float)theme_cache.v_separation * win_scale : (float)theme_cache.v_separation * win_scale / 2;
 
-		ofs.y += _get_item_height(i);
+		ofs.y += _get_item_height(i) * win_scale;
 
-		if (p_over.y - control->get_position().y < ofs.y) {
+		if (p_over.y - control->get_position().y * win_scale < ofs.y) {
 			return i;
 		}
 	}
@@ -329,15 +331,17 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	Rect2 this_rect(this_pos, get_size());
 
 	float scroll_offset = control->get_position().y;
+	float scaled_ofs_cache = items[p_over]._ofs_cache * get_content_scale_factor();
+	float scaled_height_cache = items[p_over]._height_cache * get_content_scale_factor();
 
 	submenu_popup->reset_size(); // Shrink the popup size to its contents.
 	Size2 submenu_size = submenu_popup->get_size();
 
 	Point2 submenu_pos;
 	if (control->is_layout_rtl()) {
-		submenu_pos = this_pos + Point2(-submenu_size.width, items[p_over]._ofs_cache + scroll_offset - theme_cache.v_separation / 2);
+		submenu_pos = this_pos + Point2(-submenu_size.width, scaled_ofs_cache + scroll_offset - theme_cache.v_separation / 2);
 	} else {
-		submenu_pos = this_pos + Point2(this_rect.size.width, items[p_over]._ofs_cache + scroll_offset - theme_cache.v_separation / 2);
+		submenu_pos = this_pos + Point2(this_rect.size.width, scaled_ofs_cache + scroll_offset - theme_cache.v_separation / 2);
 	}
 
 	// Fix pos if going outside parent rect.
@@ -374,8 +378,8 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	// Set autohide areas.
 
 	Rect2 safe_area = this_rect;
-	safe_area.position.y += items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2;
-	safe_area.size.y = items[p_over]._height_cache + theme_cache.v_separation;
+	safe_area.position.y += scaled_ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2;
+	safe_area.size.y = scaled_height_cache + theme_cache.v_separation;
 	Viewport *vp = submenu_popup->get_embedder();
 	if (vp) {
 		vp->subwindow_set_popup_safe_rect(submenu_popup, safe_area);
@@ -388,11 +392,11 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 
 	// Autohide area above the submenu item.
 	submenu_pum->clear_autohide_areas();
-	submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2));
+	submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, scaled_ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2));
 
 	// If there is an area below the submenu item, add an autohide area there.
-	if (items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset <= control->get_size().height) {
-		int from = items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset + theme_cache.v_separation / 2 + theme_cache.panel_style->get_offset().height;
+	if (scaled_ofs_cache + scaled_height_cache + scroll_offset <= control->get_size().height) {
+		int from = scaled_ofs_cache + scaled_height_cache + scroll_offset + theme_cache.v_separation / 2 + theme_cache.panel_style->get_offset().height;
 		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
 	}
 }
@@ -2841,6 +2845,12 @@ void PopupMenu::_bind_methods() {
 void PopupMenu::popup(const Rect2i &p_bounds) {
 	moved = Vector2();
 	popup_time_msec = OS::get_singleton()->get_ticks_msec();
+	if (!is_embedded()) {
+		float win_scale = get_parent_visible_window()->get_content_scale_factor();
+		set_content_scale_factor(win_scale);
+		set_min_size(get_contents_minimum_size() * win_scale);
+		set_size(Vector2(0, 0)); // Shrinkwraps to min size.
+	}
 	Popup::popup(p_bounds);
 }
 
