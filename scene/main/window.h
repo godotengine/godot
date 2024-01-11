@@ -301,7 +301,7 @@ public:
 	bool is_maximize_allowed() const;
 
 	void request_attention();
-	void move_to_foreground();
+	_FORCE_INLINE_ void move_to_foreground();
 
 	virtual void set_visible(bool p_visible);
 	bool is_visible() const;

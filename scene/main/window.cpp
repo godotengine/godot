@@ -521,13 +521,7 @@ void Window::request_attention() {
 }
 
 void Window::move_to_foreground() {
-	ERR_MAIN_THREAD_GUARD;
-	if (embedder) {
-		embedder->_sub_window_grab_focus(this);
-
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_move_to_foreground(window_id);
-	}
+	Window::grab_focus();
 }
 
 bool Window::can_draw() const {
