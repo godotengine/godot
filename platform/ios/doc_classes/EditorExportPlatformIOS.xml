@@ -10,6 +10,13 @@
 		<link title="iOS plugins documentation index">$DOCS_URL/tutorials/platform/ios/index.html</link>
 	</tutorials>
 	<members>
+		<member name="application/additional_plist_content" type="String" setter="" getter="">
+			Additional data added to the root [code]&lt;dict&gt;[/code] section of the [url=https://developer.apple.com/documentation/bundleresources/information_property_list]Info.plist[/url] file. The value should be an XML section with pairs of key-value elements, e.g.:
+			[codeblock]
+			&lt;key&gt;key_name&lt;/key&gt;
+			&lt;string&gt;value&lt;/string&gt;
+			[/codeblock]
+		</member>
 		<member name="application/app_store_team_id" type="String" setter="" getter="">
 			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
 		</member>
