@@ -4876,6 +4876,15 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 			tk = _get_token();
 			if (tk.type == TK_COMMA) {
 				an->initializer.push_back(n);
+
+				if (auto_size) {
+					TkPos prev_pos = _get_tkpos();
+					tk = _get_token();
+					if (tk.type == TK_CURLY_BRACKET_CLOSE) {
+						break;
+					}
+					_set_tkpos(prev_pos);
+				}
 			} else if (!auto_size && tk.type == TK_PARENTHESIS_CLOSE) {
 				an->initializer.push_back(n);
 				break;
@@ -4998,6 +5007,15 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 			tk = _get_token();
 			if (tk.type == TK_COMMA) {
 				an->initializer.push_back(n);
+
+				if (auto_size) {
+					prev_pos = _get_tkpos();
+					tk = _get_token();
+					if (tk.type == TK_CURLY_BRACKET_CLOSE) {
+						break;
+					}
+					_set_tkpos(prev_pos);
+				}
 			} else if (!auto_size && tk.type == TK_PARENTHESIS_CLOSE) {
 				an->initializer.push_back(n);
 				break;
@@ -7252,6 +7270,16 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									tk = _get_token();
 									if (tk.type == TK_COMMA) {
 										decl.initializer.push_back(n);
+
+										if (curly) {
+											prev_pos = _get_tkpos();
+											tk = _get_token();
+											if (tk.type == TK_CURLY_BRACKET_CLOSE) {
+												break;
+											}
+											_set_tkpos(prev_pos);
+										}
+
 										continue;
 									} else if (!curly && tk.type == TK_PARENTHESIS_CLOSE) {
 										decl.initializer.push_back(n);
@@ -9360,6 +9388,16 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										tk = _get_token();
 										if (tk.type == TK_COMMA) {
 											decl.initializer.push_back(n);
+
+											if (curly) {
+												prev_pos = _get_tkpos();
+												tk = _get_token();
+												if (tk.type == TK_CURLY_BRACKET_CLOSE) {
+													break;
+												}
+												_set_tkpos(prev_pos);
+											}
+
 											continue;
 										} else if (!curly && tk.type == TK_PARENTHESIS_CLOSE) {
 											decl.initializer.push_back(n);
