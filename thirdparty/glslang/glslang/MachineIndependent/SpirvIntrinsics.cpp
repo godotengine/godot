@@ -45,11 +45,11 @@ namespace glslang {
 
 bool TSpirvTypeParameter::operator==(const TSpirvTypeParameter& rhs) const
 {
-    if (constant != nullptr)
-        return constant->getConstArray() == rhs.constant->getConstArray();
+    if (getAsConstant() != nullptr)
+        return getAsConstant()->getConstArray() == rhs.getAsConstant()->getConstArray();
 
-    assert(type != nullptr);
-    return *type == *rhs.type;
+    assert(getAsType() != nullptr);
+    return *getAsType() == *rhs.getAsType();
 }
 
 //
