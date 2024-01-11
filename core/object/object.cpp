@@ -1023,6 +1023,14 @@ void Object::remove_meta(const StringName &p_name) {
 	set_meta(p_name, Variant());
 }
 
+void Object::merge_meta_from(const Object *p_src) {
+	List<StringName> meta_keys;
+	p_src->get_meta_list(&meta_keys);
+	for (const StringName &key : meta_keys) {
+		set_meta(key, p_src->get_meta(key));
+	}
+}
+
 TypedArray<Dictionary> Object::_get_property_list_bind() const {
 	List<PropertyInfo> lpi;
 	get_property_list(&lpi);

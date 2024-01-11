@@ -69,6 +69,24 @@
 #include <stdlib.h>
 #include <cstdint>
 
+static void _attach_extras_to_meta(const Dictionary &p_extras, Ref<Resource> p_node) {
+	if (!p_extras.is_empty()) {
+		p_node->set_meta("extras", p_extras);
+	}
+}
+
+static void _attach_meta_to_extras(Ref<Resource> p_node, Dictionary &p_json) {
+	if (p_node->has_meta("extras")) {
+		Dictionary node_extras = p_node->get_meta("extras");
+		if (p_json.has("extras")) {
+			Dictionary extras = p_json["extras"];
+			extras.merge(node_extras);
+		} else {
+			p_json["extras"] = node_extras;
+		}
+	}
+}
+
 static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 	Ref<ImporterMesh> importer_mesh;
 	importer_mesh.instantiate();
@@ -101,6 +119,7 @@ static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
 				mat_name, p_mesh->surface_get_format(surface_i));
 	}
+	importer_mesh->merge_meta_from(*p_mesh);
 	return importer_mesh;
 }
 
@@ -458,7 +477,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 		if (extensions.is_empty()) {
 			node.erase("extensions");
 		}
-
+		_attach_meta_to_extras(gltf_node, node);
 		nodes.push_back(node);
 	}
 	if (!nodes.is_empty()) {
@@ -622,6 +641,10 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 				Error err = ext->parse_node_extensions(p_state, node, extensions);
 				ERR_CONTINUE_MSG(err != OK, "glTF: Encountered error " + itos(err) + " when parsing node extensions for node " + node->get_name() + " in file " + p_state->filename + ". Continuing.");
 			}
+		}
+
+		if (n.has("extras")) {
+			_attach_extras_to_meta(n["extras"], node);
 		}
 
 		if (n.has("children")) {
@@ -2727,6 +2750,8 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 
 		Dictionary e;
 		e["targetNames"] = target_names;
+		gltf_mesh["extras"] = e;
+		_attach_meta_to_extras(import_mesh, gltf_mesh);
 
 		weights.resize(target_names.size());
 		for (int name_i = 0; name_i < target_names.size(); name_i++) {
@@ -2741,8 +2766,6 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 		}
 
 		ERR_FAIL_COND_V(target_names.size() != weights.size(), FAILED);
-
-		gltf_mesh["extras"] = e;
 
 		gltf_mesh["primitives"] = primitives;
 
@@ -2776,6 +2799,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 		Array primitives = d["primitives"];
 		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
+		_attach_extras_to_meta(extras, mesh);
 		Ref<ImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";
@@ -4170,6 +4194,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 		}
 		d["extensions"] = extensions;
 
+		_attach_meta_to_extras(material, d);
 		materials.push_back(d);
 	}
 	if (!materials.size()) {
@@ -4371,6 +4396,10 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 					material->set_alpha_scissor_threshold(0.5f);
 				}
 			}
+		}
+
+		if (material_dict.has("extras")) {
+			_attach_extras_to_meta(material_dict["extras"], material);
 		}
 		p_state->materials.push_back(material);
 	}
@@ -5161,6 +5190,7 @@ ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> p_s
 		return mi;
 	}
 	mi->set_mesh(import_mesh);
+	import_mesh->merge_meta_from(*mesh);
 	return mi;
 }
 
@@ -5285,6 +5315,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 		gltf_root = current_node_i;
 		p_state->root_nodes.push_back(gltf_root);
 	}
+	gltf_node->merge_meta_from(p_current);
 	_create_gltf_node(p_state, p_current, current_node_i, p_gltf_parent, gltf_root, gltf_node);
 	for (int node_i = 0; node_i < p_current->get_child_count(); node_i++) {
 		_convert_scene_node(p_state, p_current->get_child(node_i), current_node_i, gltf_root);
@@ -5675,6 +5706,8 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 		current_node->propagate_call(StringName("set_owner"), args);
 		current_node->set_transform(gltf_node->transform);
 	}
+
+	current_node->merge_meta_from(*gltf_node);
 
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
