@@ -1612,13 +1612,14 @@ public:
 	virtual Color get_default_clear_color() = 0;
 	virtual void set_default_clear_color(const Color &p_color) = 0;
 
+#ifndef DISABLE_DEPRECATED
+	// Never actually used, should be removed when we can break compatibility.
 	enum Features {
 		FEATURE_SHADERS,
 		FEATURE_MULTITHREADED,
 	};
-
 	virtual bool has_feature(Features p_feature) const = 0;
-
+#endif
 	virtual bool has_os_feature(const String &p_feature) const = 0;
 
 	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
@@ -1748,9 +1749,12 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
-VARIANT_ENUM_CAST(RenderingServer::Features);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
+
+#ifndef DISABLE_DEPRECATED
+VARIANT_ENUM_CAST(RenderingServer::Features);
+#endif
 
 // Alias to make it easier to use.
 #define RS RenderingServer
