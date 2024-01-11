@@ -1856,10 +1856,8 @@ void CSharpInstance::mono_object_disposed(GCHandleIntPtr p_gchandle_to_free) {
 }
 
 void CSharpInstance::mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_free, bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance) {
-#ifdef DEBUG_ENABLED
-	CRASH_COND(!base_ref_counted);
-	CRASH_COND(!gchandle.is_weak() && gchandle.is_released());
-#endif
+	DEV_ASSERT(base_ref_counted);
+	DEV_ASSERT(gchandle.is_weak() || !gchandle.is_released());
 
 	// Must make sure event signals are not left dangling
 	disconnect_event_signals();
