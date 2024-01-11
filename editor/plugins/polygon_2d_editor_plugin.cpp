@@ -456,6 +456,7 @@ void Polygon2DEditor::_uv_mode(int p_mode) {
 	for (int i = 0; i < UV_MODE_MAX; i++) {
 		uv_button[i]->set_pressed(p_mode == i);
 	}
+	uv_edit_draw->queue_redraw();
 }
 
 void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
@@ -989,9 +990,36 @@ void Polygon2DEditor::_uv_draw() {
 	mtx.columns[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
-	RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx);
-	uv_edit_draw->draw_texture(base_tex, Point2());
-	RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), Transform2D());
+	// Draw texture as a background if editing uvs or no uv mapping exist.
+	if (uv_edit_mode[0]->is_pressed() || uv_mode == UV_MODE_CREATE || node->get_polygon().is_empty() || node->get_uv().size() != node->get_polygon().size()) {
+		Transform2D texture_transform = Transform2D(node->get_texture_rotation(), node->get_texture_offset());
+		texture_transform.scale(node->get_texture_scale());
+		texture_transform.affine_invert();
+		RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx * texture_transform);
+		uv_edit_draw->draw_texture(base_tex, Point2());
+		RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), Transform2D());
+		preview_polygon->hide();
+	} else {
+		preview_polygon->set_transform(mtx);
+		// Keep in sync with newly added Polygon2D properties (when relevant).
+		preview_polygon->set_texture(node->get_texture());
+		preview_polygon->set_texture_offset(node->get_texture_offset());
+		preview_polygon->set_texture_rotation(node->get_texture_rotation());
+		preview_polygon->set_texture_scale(node->get_texture_scale());
+		preview_polygon->set_texture_filter(node->get_texture_filter_in_tree());
+		preview_polygon->set_texture_repeat(node->get_texture_repeat_in_tree());
+		preview_polygon->set_polygon(node->get_polygon());
+		preview_polygon->set_uv(node->get_uv());
+		preview_polygon->set_invert(node->get_invert());
+		preview_polygon->set_invert_border(node->get_invert_border());
+		preview_polygon->set_internal_vertex_count(node->get_internal_vertex_count());
+		if (uv_mode == UV_MODE_ADD_POLYGON) {
+			preview_polygon->set_polygons(Array());
+		} else {
+			preview_polygon->set_polygons(node->get_polygons());
+		}
+		preview_polygon->show();
+	}
 
 	if (snap_show_grid) {
 		Color grid_color = Color(1.0, 1.0, 1.0, 0.15);
@@ -1357,10 +1385,19 @@ Polygon2DEditor::Polygon2DEditor() {
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
 	uv_main_vb->add_child(uv_main_hsc);
 	uv_main_hsc->set_v_size_flags(SIZE_EXPAND_FILL);
-	uv_edit_draw = memnew(Panel);
-	uv_main_hsc->add_child(uv_edit_draw);
-	uv_edit_draw->set_h_size_flags(SIZE_EXPAND_FILL);
-	uv_edit_draw->set_custom_minimum_size(Size2(200, 200) * EDSCALE);
+
+	uv_edit_background = memnew(Panel);
+	uv_main_hsc->add_child(uv_edit_background);
+	uv_edit_background->set_h_size_flags(SIZE_EXPAND_FILL);
+	uv_edit_background->set_custom_minimum_size(Size2(200, 200) * EDSCALE);
+	uv_edit_background->set_clip_contents(true);
+
+	preview_polygon = memnew(Polygon2D);
+	uv_edit_background->add_child(preview_polygon);
+
+	uv_edit_draw = memnew(Control);
+	uv_edit_background->add_child(uv_edit_draw);
+	uv_edit_draw->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	Control *space = memnew(Control);
 	uv_mode_hb->add_child(space);
@@ -1503,8 +1540,6 @@ Polygon2DEditor::Polygon2DEditor() {
 
 	error = memnew(AcceptDialog);
 	add_child(error);
-
-	uv_edit_draw->set_clip_contents(true);
 }
 
 Polygon2DEditorPlugin::Polygon2DEditorPlugin() :

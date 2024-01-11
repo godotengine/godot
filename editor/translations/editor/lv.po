@@ -2038,15 +2038,6 @@ msgstr ""
 "Spraudnis '%s' atspējots, lai novērstu tupmākās kļūdas."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Nevar ielādēt papildinājuma skriptu no ceļa: '%s' Bāzes tips nav EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Nevarēja ielādēt spraudņa skriptu no mapes: '%s' Skripts nav rīka režīmā."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""

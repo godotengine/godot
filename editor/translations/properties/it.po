@@ -81,13 +81,14 @@
 # Francesco <martefrinbell@gmail.com>, 2023.
 # E D <th3-crasin3ss@hotmail.com>, 2023.
 # Frankie McEyes <mceyes@protonmail.com>, 2023.
+# Samuele Righi <blackdestinyx145@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-17 06:43+0000\n"
-"Last-Translator: Frankie McEyes <mceyes@protonmail.com>\n"
+"PO-Revision-Date: 2023-12-11 09:59+0000\n"
+"Last-Translator: Samuele Righi <blackdestinyx145@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -95,7 +96,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -214,6 +215,9 @@ msgstr "Generale"
 msgid "iOS"
 msgstr "iOS"
 
+msgid "Mix With Others"
+msgstr "Mischia Con Altri"
+
 msgid "Editor"
 msgstr "Editor"
 
@@ -285,6 +289,9 @@ msgstr "Server Multithreading"
 
 msgid "Internationalization"
 msgstr "Lingue"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "Forza la Direzione del Layout da Destra a Sinistra"
 
 msgid "GUI"
 msgstr "Interfaccia Grafica"

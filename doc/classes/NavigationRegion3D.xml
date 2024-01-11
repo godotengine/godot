@@ -36,7 +36,14 @@
 				Returns the current navigation map [RID] used by this region.
 			</description>
 		</method>
-		<method name="get_region_rid" qualifiers="const">
+		<method name="get_region_rid" qualifiers="const" is_deprecated="true">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this region on the [NavigationServer3D].
+				[i]Deprecated.[/i] Use [method get_rid] instead.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
 				Returns the [RID] of this region on the [NavigationServer3D]. Combined with [method NavigationServer3D.map_get_closest_point_owner] can be used to identify the [NavigationRegion3D] closest to a point on the merged navigation map.

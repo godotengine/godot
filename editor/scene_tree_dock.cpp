@@ -2179,6 +2179,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		}
 
 		int child_pos = node->get_index(false);
+		bool reparented_to_container = Object::cast_to<Container>(new_parent) && Object::cast_to<Control>(node);
 
 		undo_redo->add_undo_method(node->get_parent(), "add_child", node, true);
 		undo_redo->add_undo_method(node->get_parent(), "move_child", node, child_pos);
@@ -2194,9 +2195,13 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			if (Object::cast_to<Node3D>(node)) {
 				undo_redo->add_undo_method(node, "set_transform", Object::cast_to<Node3D>(node)->get_transform());
 			}
-			if (Object::cast_to<Control>(node)) {
+			if (!reparented_to_container && Object::cast_to<Control>(node)) {
 				undo_redo->add_undo_method(node, "set_position", Object::cast_to<Control>(node)->get_position());
 			}
+		}
+
+		if (reparented_to_container) {
+			undo_redo->add_undo_method(node, "_edit_set_state", Object::cast_to<Control>(node)->_edit_get_state());
 		}
 	}
 

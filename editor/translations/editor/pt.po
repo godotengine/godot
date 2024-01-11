@@ -43,13 +43,14 @@
 # Lucas Souza <lucasteisouza@gmail.com>, 2023.
 # André Luiz Santana Siqueira <hivosoft@outlook.com>, 2023.
 # gomakappa <gomaproi@outlook.com>, 2023.
+# 100Nome <100nome.portugal@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-20 09:04+0000\n"
-"Last-Translator: gomakappa <gomaproi@outlook.com>\n"
+"PO-Revision-Date: 2023-12-04 15:08+0000\n"
+"Last-Translator: 100Nome <100nome.portugal@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -57,7 +58,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Linha Principal"
@@ -3268,17 +3269,6 @@ msgstr ""
 "A desativar o addon em '%s' para prevenir mais erros."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Incapaz de carregar script addon do Caminho: '%s' Tipo base não é "
-"EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Incapaz de carregar script addon do Caminho: '%s' Script não está no modo "
-"ferramenta."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
@@ -4640,7 +4630,7 @@ msgid "Resource..."
 msgstr "Recurso..."
 
 msgid "TextFile..."
-msgstr "Fucheiro de Texto..."
+msgstr "Ficheiro de Texto..."
 
 msgid "Expand Folder"
 msgstr "Expandir Pasta"

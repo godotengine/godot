@@ -101,12 +101,6 @@ void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputT
 	} else if (current_install_icon != new_icon && input_type == INSTALL_PATH) {
 		install_status_rect->set_texture(new_icon);
 	}
-
-	Size2i window_size = get_size();
-	Size2 contents_min_size = get_contents_minimum_size();
-	if (window_size.x < contents_min_size.x || window_size.y < contents_min_size.y) {
-		set_size(window_size.max(contents_min_size));
-	}
 }
 
 String ProjectDialog::_test_path() {
@@ -868,6 +862,7 @@ ProjectDialog::ProjectDialog() {
 
 	msg = memnew(Label);
 	msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	msg->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	vb->add_child(msg);
 
 	// Renderer selection.

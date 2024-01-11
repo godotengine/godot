@@ -2938,6 +2938,8 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 			}
 
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::MODEL_FLAGS, inst->flags_cache, shader->version, instance_variant, spec_constants);
+
 			// Can be index count or vertex count
 			uint32_t count = 0;
 			if (surf->lod_index > 0) {

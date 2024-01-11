@@ -38,8 +38,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-03 04:56+0000\n"
-"Last-Translator: Henrik Nilsson <nsmoooose@gmail.com>\n"
+"PO-Revision-Date: 2023-12-06 04:32+0000\n"
+"Last-Translator: Kristoffer Grundström <swedishsailfishosuser@tutanota.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -47,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Huvudtråd"
@@ -967,6 +967,12 @@ msgstr "Importerad Scen"
 msgid "Warning: Editing imported animation"
 msgstr "Varning: Redigerar importerad animation"
 
+msgid "Inactive Player"
+msgstr "Inaktiv spelare"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "Varning: Animationsspelaren är inaktiv"
+
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Växla mellan redigeringen av bezierkurvor och spårredigeringen."
 
@@ -1105,6 +1111,10 @@ msgstr "Exponentiell"
 msgctxt "Transition Type"
 msgid "Elastic"
 msgstr "Elastisk"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "Kubisk"
 
 msgctxt "Transition Type"
 msgid "Circ"
@@ -1279,6 +1289,12 @@ msgstr "Filtrera metoder"
 
 msgid "No method found matching given filters."
 msgstr "Ingen metod funnen som matchar det givna filtret."
+
+msgid "Script Methods Only"
+msgstr "Endast skriptmetoder"
+
+msgid "Compatible Methods Only"
+msgstr "Endast kompatibla metoder"
 
 msgid "Remove"
 msgstr "Ta bort"
@@ -1607,6 +1623,9 @@ msgstr "Stack Frames"
 msgid "Filter Stack Variables"
 msgstr "Filtrera stackvariabler"
 
+msgid "Expand All"
+msgstr "Expandera alla"
+
 msgid "Profiler"
 msgstr "Profiler"
 
@@ -1618,6 +1637,9 @@ msgstr "Lista över Videominnes-användning av Resource:"
 
 msgid "Total:"
 msgstr "Totalt:"
+
+msgid "Export list to a CSV file"
+msgstr "Exportera lista till en CSV-fil"
 
 msgid "Resource Path"
 msgstr "Resource Path"
@@ -1767,6 +1789,21 @@ msgstr "Resurser Utan Explicit Ägande:"
 msgid "Folder name cannot be empty."
 msgstr "Katalognamnet kan inte vara tomt."
 
+msgid "Folder name contains invalid characters."
+msgstr "Mappnamnet innehåller ogiltiga tecken."
+
+msgid "Folder name cannot begin or end with a space."
+msgstr "Mappens namn kan inte börja eller sluta med ett mellanslag."
+
+msgid "Folder name cannot begin with a dot."
+msgstr "Namnet på mappen kan inte börja med en punkt."
+
+msgid "File with that name already exists."
+msgstr "Fil med det där namnet existerar redan."
+
+msgid "Folder with that name already exists."
+msgstr "Mapp med det där namnet existerar redan."
+
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr "Användandet av snedstreck i mappnamn skapar undermappar rekursivt."
 
@@ -1778,6 +1815,9 @@ msgstr "Skapa ny katalog i %s:"
 
 msgid "Create Folder"
 msgstr "Skapa Mapp"
+
+msgid "Folder name is valid."
+msgstr "Mapp-namnet är ogiltigt."
 
 msgid "Thanks from the Godot community!"
 msgstr "Tack från Godot-gemenskapen!"
@@ -1794,6 +1834,10 @@ msgstr "Projektgrundare"
 msgid "Lead Developer"
 msgstr "Ledande utvecklare"
 
+msgctxt "Job Title"
+msgid "Project Manager"
+msgstr "Projektledare"
+
 msgid "Developers"
 msgstr "Utvecklare"
 
@@ -1808,6 +1852,18 @@ msgstr "Guldsponsorer"
 
 msgid "Silver Sponsors"
 msgstr "Silverdonatorer"
+
+msgid "Diamond Members"
+msgstr "Diamantmedlemmar"
+
+msgid "Titanium Members"
+msgstr "Titanium-medlemmar"
+
+msgid "Platinum Members"
+msgstr "Platinum-medlemmar"
+
+msgid "Gold Members"
+msgstr "Guld-medlemmar"
 
 msgid "Donors"
 msgstr "Donatorer"
@@ -2034,6 +2090,9 @@ msgstr "Skapa en ny Buss-Layout."
 msgid "Invalid name."
 msgstr "Ogiltigt namn."
 
+msgid "Cannot begin with a digit."
+msgstr "Kan inte börja med en siffra."
+
 msgid "Valid characters:"
 msgstr "Giltiga tecken:"
 
@@ -2111,6 +2170,9 @@ msgstr "XR"
 
 msgid "RenderingDevice"
 msgstr "Renderare"
+
+msgid "OpenGL"
+msgstr "OpenGL"
 
 msgid "Vulkan"
 msgstr "Vulkan"
@@ -2221,6 +2283,9 @@ msgstr "Profil:"
 
 msgid "Reset to Defaults"
 msgstr "Återställ till standardvärden"
+
+msgid "Detect from Project"
+msgstr "Upptäck från projekt"
 
 msgid "Actions:"
 msgstr "Åtgärder:"
@@ -2590,6 +2655,9 @@ msgstr "Typsnittsstorlekar"
 msgid "Icons"
 msgstr "Ikoner"
 
+msgid "Styles"
+msgstr "Stilar"
+
 msgid "Enumerations"
 msgstr "Enumerationer"
 
@@ -2631,11 +2699,23 @@ msgstr "Metodbeskrivning"
 msgid "Operator Descriptions"
 msgstr "Operator beskrivning"
 
+msgid "Metadata:"
+msgstr "Metadata:"
+
 msgid "Property:"
 msgstr "Egenskap:"
 
+msgid "Method:"
+msgstr "Metod:"
+
 msgid "Signal:"
 msgstr "Signal:"
+
+msgid "Theme Item:"
+msgstr "Tema-objekt:"
+
+msgid "No description available."
+msgstr "Ingen beskrivning tillgänglig."
 
 msgid "%d match."
 msgstr "%d matcha."
@@ -2660,6 +2740,9 @@ msgstr "Endast Metoder"
 
 msgid "Signals Only"
 msgstr "Endast Signaler"
+
+msgid "Annotations Only"
+msgstr "Endast annoteringar"
 
 msgid "Constants Only"
 msgstr "Enbart konstanter"
@@ -3137,15 +3220,6 @@ msgstr ""
 "Kunde inte ladda addon script från sökväg: '%s'. Detta kan vara på grund av "
 "ett fel i skriptet.\n"
 "Stänger av addon vid '%s' för att förhindra fler fel."
-
-msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Kunde inte ladda addon script från sökväg: '%s' Bastyp är inte EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Kunde inte ladda addon script från sökväg: '%s' Skript är inte i verktygsläge."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"

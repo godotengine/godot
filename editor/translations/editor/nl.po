@@ -2709,15 +2709,6 @@ msgstr ""
 "Schakel de extra uit op '%s' om toekomstige fouten te vermijden."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Volgend script kon niet geladen worden: '%' Basistype is niet EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Uitbreidingsscript kon niet geladen worden: '%s' Script is niet in toolmodus."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""

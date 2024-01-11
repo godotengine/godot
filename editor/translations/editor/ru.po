@@ -3566,16 +3566,6 @@ msgstr ""
 "Отключение аддона '%s' для предотвращения дальнейших ошибок."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Не удалось загрузить скрипт из источника: '%s' Базовый тип не EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Не удалось загрузить скрипт аддона из источника: '%s'. Скрипт не в режиме "
-"инструмента."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""

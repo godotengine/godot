@@ -1193,7 +1193,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					array_len = v3.size();
 				} break;
 				default: {
-					ERR_FAIL_V(ERR_INVALID_DATA);
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Vertex array must be a PackedVector2Array or PackedVector3Array.");
 				} break;
 			}
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
@@ -1214,7 +1214,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					}
 				} break;
 				default: {
-					ERR_FAIL_V(ERR_INVALID_DATA);
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Bones array must be a PackedInt32Array.");
 				} break;
 			}
 		} else if (i == RS::ARRAY_INDEX) {
