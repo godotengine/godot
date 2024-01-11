@@ -1476,15 +1476,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
-		float scale = (y - start_pos.y) / size.y;
+		float scale = j / (subdivide_h + 1.0);
 		float scaled_size_x = size.x * scale;
 		float start_x = start_pos.x + (1.0 - scale) * size.x * left_to_right;
 		float offset_front = (1.0 - scale) * onethird * left_to_right;
 		float offset_back = (1.0 - scale) * onethird * (1.0 - left_to_right);
 
 		float v = j;
-		float v2 = j / (subdivide_h + 1.0);
-		v /= (2.0 * (subdivide_h + 1.0));
+		float v2 = scale;
+		v /= 2.0 * (subdivide_h + 1.0);
 
 		x = 0.0;
 		for (i = 0; i <= (subdivide_w + 1); i++) {
@@ -1566,15 +1566,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
-		float v = j;
-		float v2 = j / (subdivide_h + 1.0);
-		v /= (2.0 * (subdivide_h + 1.0));
-
 		float left, right;
-		float scale = (y - start_pos.y) / size.y;
+		float scale = j / (subdivide_h + 1.0);
 
 		left = start_pos.x + (size.x * (1.0 - scale) * left_to_right);
 		right = left + (size.x * scale);
+
+		float v = j;
+		float v2 = scale;
+		v /= 2.0 * (subdivide_h + 1.0);
 
 		z = start_pos.z;
 		for (i = 0; i <= (subdivide_d + 1); i++) {
