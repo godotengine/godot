@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
     <GodotSdkPackageVersionsFilePath>$(MSBuildThisFileDirectory)\SdkPackageVersions.props</GodotSdkPackageVersionsFilePath>
+    <GodotSourceRootPath>$(SolutionDir)\..\..\</GodotSourceRootPath>
+    <GodotOutputDataDir>$(GodotSourceRootPath)\bin\GodotSharp\</GodotOutputDataDir>
   </PropertyGroup>
   <Import Project="$(GodotSdkPackageVersionsFilePath)" />
 </Project>
