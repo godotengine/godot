@@ -438,6 +438,26 @@ static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r
 	}
 }
 
+static Dictionary _get_meta_dict(Node *p_node) {
+	Dictionary metas;
+	List<StringName> meta_keys;
+	p_node->get_meta_list(&meta_keys);
+	for (const StringName &key : meta_keys) {
+		metas[key] = p_node->get_meta(key);
+	}
+	return metas;
+}
+
+static void _merge_meta_dict(Node *p_node, const Dictionary &p_metas) {
+	List<Variant> meta_keys;
+	p_metas.get_key_list(&meta_keys);
+	for (const Variant &key : meta_keys) {
+		if (!p_node->has_meta(key)) {
+			p_node->set_meta(key, p_metas[key]);
+		}
+	}
+}
+
 struct ScalableNodeCollection {
 	HashSet<Node3D *> node_3ds;
 	HashSet<Ref<ImporterMesh>> importer_meshes;
@@ -625,6 +645,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 
 	String name = p_node->get_name();
 	NodePath original_path = p_root->get_path_to(p_node); // Used to detect renames due to import hints.
+	Dictionary original_meta_dict = _get_meta_dict(p_node);
 
 	bool isroot = p_node == p_root;
 
@@ -993,6 +1014,8 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			print_verbose(vformat("Fix: Renamed %s to %s", original_path, new_path));
 			r_node_renames.push_back({ original_path, p_node });
 		}
+		// If we created new node instead, merge meta values from the original node.
+		_merge_meta_dict(p_node, original_meta_dict);
 	}
 
 	return p_node;
@@ -2261,6 +2284,14 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 		mesh_node->set_transform(src_mesh_node->get_transform());
 		mesh_node->set_skin(src_mesh_node->get_skin());
 		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
+
+		// Copy meta from imported mesh.
+		List<StringName> meta_keys;
+		src_mesh_node->get_meta_list(&meta_keys);
+		for (const StringName &key : meta_keys) {
+			mesh_node->set_meta(key, src_mesh_node->get_meta(key));
+		}
+
 		if (src_mesh_node->get_mesh().is_valid()) {
 			Ref<ArrayMesh> mesh;
 			if (!src_mesh_node->get_mesh()->has_mesh()) {
@@ -2399,6 +2430,11 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				mesh_node->set_mesh(mesh);
 				for (int i = 0; i < mesh->get_surface_count(); i++) {
 					mesh_node->set_surface_override_material(i, src_mesh_node->get_surface_material(i));
+				}
+				meta_keys.clear();
+				src_mesh_node->get_mesh()->get_meta_list(&meta_keys);
+				for (const StringName &key : meta_keys) {
+					mesh->set_meta(key, src_mesh_node->get_mesh()->get_meta(key));
 				}
 			}
 		}
@@ -2899,7 +2935,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	progress.step(TTR("Saving..."), 104);
 
 	int flags = 0;
-	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+	if (EditorSettings::get_singleton() && EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
 		flags |= ResourceSaver::FLAG_COMPRESS;
 	}
 
