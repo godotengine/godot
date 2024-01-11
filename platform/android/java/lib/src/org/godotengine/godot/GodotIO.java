@@ -296,7 +296,14 @@ public class GodotIO {
 	}
 
 	public int getCurrentScreenRotation() {
-		return ((WindowManager)ContextCompat.getSystemService(activity.getBaseContext(), WindowManager.class)).getDefaultDisplay().getRotation();
+		int rotation = ((WindowManager)ContextCompat.getSystemService(activity.getBaseContext(), WindowManager.class)).getDefaultDisplay().getRotation();
+
+		switch (rotation) {
+			case Surface.ROTATION_90: return 90;
+			case Surface.ROTATION_180: return 180;
+			case Surface.ROTATION_270: return 270;
+			default: return 0;
+		}
 	}
 
 	public void setEdit(GodotEditText _edit) {
