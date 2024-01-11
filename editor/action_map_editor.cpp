@@ -36,6 +36,7 @@
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/tree.h"
 #include "scene/scene_string_names.h"
 
@@ -225,7 +226,12 @@ void ActionMapEditor::_tree_item_activated() {
 
 void ActionMapEditor::set_show_builtin_actions(bool p_show) {
 	show_builtin_actions = p_show;
-	show_builtin_actions_checkbutton->set_pressed(p_show);
+
+	int show_builtin_idx = advanced_actions_menu->get_popup()->get_item_index(ADVANCED_ACTIONS_MENU_SHOW_BUILTIN);
+	StringName show_builtin_icon = show_builtin_actions ? SNAME("GuiVisibilityVisible") : SNAME("GuiVisibilityHidden");
+	advanced_actions_menu->get_popup()->set_item_checked(show_builtin_idx, p_show);
+	advanced_actions_menu->get_popup()->set_item_icon(show_builtin_idx, get_editor_theme_icon(show_builtin_icon));
+
 	EditorSettings::get_singleton()->set_project_metadata("project_settings", "show_builtin_actions", show_builtin_actions);
 
 	// Prevent unnecessary updates of action list when cache is empty.
@@ -357,6 +363,7 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			_advanced_actions_menu_icons();
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}
@@ -370,6 +377,10 @@ void ActionMapEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
 	ADD_SIGNAL(MethodInfo("action_reordered", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::STRING, "relative_to"), PropertyInfo(Variant::BOOL, "before")));
+	ADD_SIGNAL(MethodInfo(SNAME("action_import")));
+	ADD_SIGNAL(MethodInfo(SNAME("action_export")));
+	ADD_SIGNAL(MethodInfo(SNAME("action_remove_builtin")));
+	ADD_SIGNAL(MethodInfo(SNAME("action_restore_builtin")));
 	ADD_SIGNAL(MethodInfo(SNAME("filter_focused")));
 	ADD_SIGNAL(MethodInfo(SNAME("filter_unfocused")));
 }
@@ -521,6 +532,39 @@ void ActionMapEditor::_on_filter_unfocused() {
 	emit_signal(SNAME("filter_unfocused"));
 }
 
+void ActionMapEditor::_advanced_actions_menu_icons() {
+	PopupMenu *popup = advanced_actions_menu->get_popup();
+	advanced_actions_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+
+	StringName show_builtin_icon = show_builtin_actions ? SNAME("GuiVisibilityVisible") : SNAME("GuiVisibilityHidden");
+	popup->set_item_icon(popup->get_item_index(ADVANCED_ACTIONS_MENU_SHOW_BUILTIN), get_editor_theme_icon(show_builtin_icon));
+
+	popup->set_item_icon(popup->get_item_index(ADVANCED_ACTIONS_MENU_REMOVE_BUILTIN), get_editor_theme_icon(SNAME("Remove")));
+	popup->set_item_icon(popup->get_item_index(ADVANCED_ACTIONS_MENU_RESTORE_BUILTIN), get_editor_theme_icon(SNAME("Reload")));
+}
+
+void ActionMapEditor::_advanced_actions_menu_action(int p_action) {
+	switch (p_action) {
+		case ADVANCED_ACTIONS_MENU_IMPORT: {
+			emit_signal(SNAME("action_import"));
+		} break;
+		case ADVANCED_ACTIONS_MENU_EXPORT: {
+			emit_signal(SNAME("action_export"));
+		} break;
+		case ADVANCED_ACTIONS_MENU_SHOW_BUILTIN: {
+			set_show_builtin_actions(!show_builtin_actions);
+		} break;
+		case ADVANCED_ACTIONS_MENU_REMOVE_BUILTIN: {
+			emit_signal(SNAME("action_remove_builtin"));
+		} break;
+		case ADVANCED_ACTIONS_MENU_RESTORE_BUILTIN: {
+			emit_signal(SNAME("action_restore_builtin"));
+		} break;
+		default:
+			break;
+	}
+}
+
 ActionMapEditor::ActionMapEditor() {
 	// Main Vbox Container
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
@@ -570,13 +614,20 @@ ActionMapEditor::ActionMapEditor() {
 	// Disable the button and set its tooltip.
 	_add_edit_text_changed(add_edit->get_text());
 
-	show_builtin_actions_checkbutton = memnew(CheckButton);
-	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
-	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
-	add_hbox->add_child(show_builtin_actions_checkbutton);
-
 	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
-	show_builtin_actions_checkbutton->set_pressed(show_builtin_actions);
+
+	advanced_actions_menu = memnew(MenuButton);
+	advanced_actions_menu->set_flat(true);
+	advanced_actions_menu->get_popup()->set_hide_on_checkable_item_selection(false);
+	advanced_actions_menu->get_popup()->add_item(TTR("Import Custom Actions"), ADVANCED_ACTIONS_MENU_IMPORT);
+	advanced_actions_menu->get_popup()->add_item(TTR("Export Custom Actions"), ADVANCED_ACTIONS_MENU_EXPORT);
+	advanced_actions_menu->get_popup()->add_separator();
+	advanced_actions_menu->get_popup()->add_check_item(TTR("Show Built-in Actions"), ADVANCED_ACTIONS_MENU_SHOW_BUILTIN);
+	advanced_actions_menu->get_popup()->set_item_checked(-1, show_builtin_actions);
+	advanced_actions_menu->get_popup()->add_item(TTR("Remove Built-in Actions"), ADVANCED_ACTIONS_MENU_REMOVE_BUILTIN);
+	advanced_actions_menu->get_popup()->add_item(TTR("Restore Built-in Actions"), ADVANCED_ACTIONS_MENU_RESTORE_BUILTIN);
+	advanced_actions_menu->get_popup()->connect("id_pressed", callable_mp(this, &ActionMapEditor::_advanced_actions_menu_action));
+	add_hbox->add_child(advanced_actions_menu);
 
 	main_vbox->add_child(add_hbox);
 

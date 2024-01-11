@@ -41,6 +41,7 @@ class CheckButton;
 class AcceptDialog;
 class InputEventConfigurationDialog;
 class Tree;
+class MenuButton;
 
 class ActionMapEditor : public Control {
 	GDCLASS(ActionMapEditor, Control);
@@ -65,6 +66,14 @@ private:
 		BUTTON_REVERT_ACTION,
 	};
 
+	enum AdvancedActionsMenuOption {
+		ADVANCED_ACTIONS_MENU_IMPORT,
+		ADVANCED_ACTIONS_MENU_EXPORT,
+		ADVANCED_ACTIONS_MENU_SHOW_BUILTIN,
+		ADVANCED_ACTIONS_MENU_REMOVE_BUILTIN,
+		ADVANCED_ACTIONS_MENU_RESTORE_BUILTIN,
+	};
+
 	Vector<ActionInfo> actions_cache;
 	Tree *action_tree = nullptr;
 
@@ -82,18 +91,20 @@ private:
 	// Filtering and Adding actions
 
 	bool show_builtin_actions = false;
-	CheckButton *show_builtin_actions_checkbutton = nullptr;
 	LineEdit *action_list_search = nullptr;
 	EventListenerLineEdit *action_list_search_by_event = nullptr;
 
 	HBoxContainer *add_hbox = nullptr;
 	LineEdit *add_edit = nullptr;
 	Button *add_button = nullptr;
+	MenuButton *advanced_actions_menu = nullptr;
 
 	void _event_config_confirmed();
 
 	void _add_action_pressed();
 	void _add_edit_text_changed(const String &p_name);
+	void _advanced_actions_menu_icons();
+	void _advanced_actions_menu_action(int p_action);
 	String _check_new_action_name(const String &p_name);
 	bool _has_action(const String &p_name) const;
 	void _add_action(const String &p_name);

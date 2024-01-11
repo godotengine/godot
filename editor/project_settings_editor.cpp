@@ -31,6 +31,7 @@
 #include "project_settings_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input_map.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -38,6 +39,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
@@ -384,6 +386,212 @@ void ProjectSettingsEditor::_action_added(const String &p_name) {
 	undo_redo->commit_action();
 }
 
+void ProjectSettingsEditor::_action_import() {
+	import_file_dialog->popup_file_dialog();
+}
+
+void ProjectSettingsEditor::_action_export() {
+	export_file_dialog->popup_file_dialog();
+}
+
+void ProjectSettingsEditor::_action_remove_builtin() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Remove Built-in Actions"));
+
+	List<PropertyInfo> props;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	for (const PropertyInfo &E : props) {
+		const String property_name = E.name;
+
+		if (!property_name.begins_with("input/")) {
+			continue;
+		}
+
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(property_name) != nullptr;
+		if (!is_builtin_input) {
+			continue;
+		}
+
+		Dictionary old_action = GLOBAL_GET(property_name);
+		Dictionary new_action;
+		new_action["deadzone"] = old_action["deadzone"]; // keep deadzone value
+		new_action["events"] = Array(); // clear built-in events
+
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, new_action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_action);
+	}
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_restore_builtin() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Restore Built-in Actions"));
+
+	HashMap<String, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
+
+	List<PropertyInfo> props;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	for (const PropertyInfo &E : props) {
+		const String property_name = E.name;
+
+		if (!property_name.begins_with("input/")) {
+			continue;
+		}
+
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(property_name) != nullptr;
+		if (!is_builtin_input) {
+			continue;
+		}
+
+		Array events;
+		String builtin_key = property_name.substr(String("input/").size() - 1);
+
+		// Convert list of input events into array
+		for (const Ref<InputEvent> &default_event : builtins[builtin_key]) {
+			if (default_event.is_valid()) {
+				events.append(default_event);
+			}
+		}
+
+		Dictionary old_action = GLOBAL_GET(property_name);
+		Dictionary new_action;
+		new_action["events"] = events;
+		new_action["deadzone"] = Variant(0.5f);
+
+		// Don't reset if same as default.
+		bool sameEvents = Shortcut::is_event_array_equal(old_action["events"], new_action["events"]);
+		bool sameDeadzone = old_action["deadzone"] == new_action["deadzone"];
+		if (sameEvents && sameDeadzone) {
+			continue;
+		}
+
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, new_action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_action);
+	}
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+Error ProjectSettingsEditor::_import_file_callback(const String &p_file) {
+	Error err;
+	Ref<FileAccess> f = FileAccess::open(p_file, FileAccess::READ, &err);
+
+	if (f.is_null()) {
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Import Input Action Map"));
+
+	VariantParser::StreamFile stream;
+	stream.f = f;
+
+	String assign;
+	Variant value;
+	VariantParser::Tag next_tag;
+
+	int lines = 0;
+	String error_text;
+	String section;
+
+	while (true) {
+		assign = Variant();
+		next_tag.fields.clear();
+		next_tag.name = String();
+
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+		if (err == ERR_FILE_EOF) {
+			break;
+		}
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing " + p_file + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
+
+		if (section == "input" && !assign.is_empty()) {
+			const String property_name = "input/" + assign;
+
+			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, value);
+
+			if (ProjectSettings::get_singleton()->has_setting(property_name)) {
+				Dictionary old_action = GLOBAL_GET(property_name);
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_action);
+			} else {
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", property_name);
+			}
+		}
+
+		if (!next_tag.name.is_empty()) {
+			section = next_tag.name;
+		}
+	}
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+
+	return OK;
+}
+
+Error ProjectSettingsEditor::_export_file_callback(const String &p_file) {
+	Vector<ActionMapEditor::ActionInfo> actions;
+
+	List<PropertyInfo> props;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	for (const PropertyInfo &E : props) {
+		const String property_name = E.name;
+
+		if (!property_name.begins_with("input/")) {
+			continue;
+		}
+
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(property_name) != nullptr;
+		if (is_builtin_input) {
+			continue;
+		}
+
+		// Strip the "input/" from the left.
+		String display_name = property_name.substr(String("input/").size() - 1);
+		Dictionary action = GLOBAL_GET(property_name);
+
+		ActionMapEditor::ActionInfo action_info;
+		action_info.action = action;
+		action_info.editable = true;
+		action_info.name = display_name;
+
+		actions.push_back(action_info);
+	}
+
+	// Export input map to file on the path
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't export input map - " + p_file + ".");
+
+	file->store_line("; Exported Input Action Map (ver." + itos(ProjectSettings::CONFIG_VERSION) + ")");
+	file->store_string("\n");
+	file->store_string("[input]\n\n");
+
+	for (const ActionMapEditor::ActionInfo &A : actions) {
+		String vstr;
+		VariantWriter::write_to_string(A.action, vstr);
+		file->store_string(A.name.property_name_encode() + "=" + vstr + "\n");
+	}
+	file->close();
+
+	return OK;
+}
+
 void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionary &p_action) {
 	const String property_name = "input/" + p_name;
 	Dictionary old_val = GLOBAL_GET(property_name);
@@ -713,9 +921,32 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_map_editor->connect("action_removed", callable_mp(this, &ProjectSettingsEditor::_action_removed));
 	action_map_editor->connect("action_renamed", callable_mp(this, &ProjectSettingsEditor::_action_renamed));
 	action_map_editor->connect("action_reordered", callable_mp(this, &ProjectSettingsEditor::_action_reordered));
+	action_map_editor->connect("action_import", callable_mp(this, &ProjectSettingsEditor::_action_import));
+	action_map_editor->connect("action_export", callable_mp(this, &ProjectSettingsEditor::_action_export));
+	action_map_editor->connect("action_remove_builtin", callable_mp(this, &ProjectSettingsEditor::_action_remove_builtin));
+	action_map_editor->connect("action_restore_builtin", callable_mp(this, &ProjectSettingsEditor::_action_restore_builtin));
 	action_map_editor->connect(SNAME("filter_focused"), callable_mp(this, &ProjectSettingsEditor::_input_filter_focused));
 	action_map_editor->connect(SNAME("filter_unfocused"), callable_mp(this, &ProjectSettingsEditor::_input_filter_unfocused));
 	tab_container->add_child(action_map_editor);
+
+	//Export Scene to glTF 2.0 File
+	import_file_dialog = memnew(EditorFileDialog);
+	tab_container->add_child(import_file_dialog);
+	import_file_dialog->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_import_file_callback));
+	import_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	import_file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	import_file_dialog->clear_filters();
+	import_file_dialog->add_filter("*.inputMap");
+	import_file_dialog->set_title(TTR("Import Input Action Map"));
+
+	export_file_dialog = memnew(EditorFileDialog);
+	tab_container->add_child(export_file_dialog);
+	export_file_dialog->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_export_file_callback));
+	export_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	export_file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	export_file_dialog->clear_filters();
+	export_file_dialog->add_filter("*.inputMap");
+	export_file_dialog->set_title(TTR("Export Input Action Map"));
 
 	localization_editor = memnew(LocalizationEditor);
 	localization_editor->set_name(TTR("Localization"));
