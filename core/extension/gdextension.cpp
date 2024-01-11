@@ -729,52 +729,17 @@ GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(const String
 
 Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol) {
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
-#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
-	// If running on the editor on Windows, we copy the library and open the copy.
-	// This is so the original file isn't locked and can be updated by a compiler.
-	bool library_copied = false;
-	if (Engine::get_singleton()->is_editor_hint()) {
-		if (!FileAccess::exists(abs_path)) {
-			ERR_PRINT("GDExtension library not found: " + abs_path);
-			return ERR_FILE_NOT_FOUND;
-		}
+	String actual_lib_path;
+	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &actual_lib_path, Engine::get_singleton()->is_editor_hint());
 
-		// Copy the file to the same directory as the original with a prefix in the name.
-		// This is so relative path to dependencies are satisfied.
-		String copy_path = abs_path.get_base_dir().path_join("~" + abs_path.get_file());
-
-		// If there's a left-over copy (possibly from a crash) then delete it first.
-		if (FileAccess::exists(copy_path)) {
-			DirAccess::remove_absolute(copy_path);
-		}
-
-		Error copy_err = DirAccess::copy_absolute(abs_path, copy_path);
-		if (copy_err) {
-			ERR_PRINT("Error copying GDExtension library: " + abs_path);
-			return ERR_CANT_CREATE;
-		}
-		FileAccess::set_hidden_attribute(copy_path, true);
-		library_copied = true;
-
-		// Save the copied path so it can be deleted later.
-		temp_lib_path = copy_path;
-
-		// Use the copy to open the library.
-		abs_path = copy_path;
+	if (actual_lib_path.get_file() != abs_path.get_file()) {
+		// If temporary files are generated, let's change the library path to point at the original,
+		// because that's what we want to check to see if it's changed.
+		library_path = actual_lib_path.get_base_dir().path_join(p_path.get_file());
 	}
-#endif
 
-	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &library_path);
 	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, "GDExtension dynamic library not found: " + abs_path);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Can't open GDExtension dynamic library: " + abs_path);
-
-#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
-	// If we copied the file, let's change the library path to point at the original,
-	// because that's what we want to check to see if it's changed.
-	if (library_copied) {
-		library_path = library_path.get_base_dir() + "\\" + p_path.get_file();
-	}
-#endif
 
 	void *entry_funcptr = nullptr;
 
@@ -802,13 +767,6 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 void GDExtension::close_library() {
 	ERR_FAIL_NULL(library);
 	OS::get_singleton()->close_dynamic_library(library);
-
-#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
-	// Delete temporary copy of library if it exists.
-	if (!temp_lib_path.is_empty() && Engine::get_singleton()->is_editor_hint()) {
-		DirAccess::remove_absolute(temp_lib_path);
-	}
-#endif
 
 	library = nullptr;
 	class_icon_paths.clear();
@@ -1014,13 +972,6 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 
 	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol);
 	if (err != OK) {
-#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
-		// If the DLL fails to load, make sure that temporary DLL copies are cleaned up.
-		if (Engine::get_singleton()->is_editor_hint()) {
-			DirAccess::remove_absolute(p_extension->get_temp_library_path());
-		}
-#endif
-
 		// Unreference the extension so that this loading can be considered a failure.
 		p_extension.unref();
 
