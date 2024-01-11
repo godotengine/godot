@@ -71,6 +71,13 @@
 				If handtracking is enabled, returns the rotation of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR.
 			</description>
 		</method>
+		<method name="get_hand_tracking_source" qualifiers="const">
+			<return type="int" enum="OpenXRInterface.HandTrackedSource" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<description>
+				If handtracking is enabled and hand tracking source is supported, gets the source of the hand tracking data for [param hand].
+			</description>
+		</method>
 		<method name="get_motion_range" qualifiers="const">
 			<return type="int" enum="OpenXRInterface.HandMotionRange" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
@@ -177,10 +184,25 @@
 			Maximum value for the hand enum.
 		</constant>
 		<constant name="HAND_MOTION_RANGE_UNOBSTRUCTED" value="0" enum="HandMotionRange">
+			Full hand range, if user closes their hands, we make a full fist.
 		</constant>
 		<constant name="HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER" value="1" enum="HandMotionRange">
+			Conform to controller, if user closes their hands, the tracked data conforms to the shape of the controller.
 		</constant>
 		<constant name="HAND_MOTION_RANGE_MAX" value="2" enum="HandMotionRange">
+			Maximum value for the motion range enum.
+		</constant>
+		<constant name="HAND_TRACKED_SOURCE_UNKNOWN" value="0" enum="HandTrackedSource">
+			The source of hand tracking data is unknown (the extension is likely unsupported).
+		</constant>
+		<constant name="HAND_TRACKED_SOURCE_UNOBSTRUCTED" value="1" enum="HandTrackedSource">
+			The source of hand tracking is unobstructed, this means that an accurate method of hand tracking is used, e.g. optical hand tracking, data gloves, etc.
+		</constant>
+		<constant name="HAND_TRACKED_SOURCE_CONTROLLER" value="2" enum="HandTrackedSource">
+			The source of hand tracking is a controller, bone positions are inferred from controller inputs.
+		</constant>
+		<constant name="HAND_TRACKED_SOURCE_MAX" value="3" enum="HandTrackedSource">
+			Maximum value for the hand tracked source enum.
 		</constant>
 		<constant name="HAND_JOINT_PALM" value="0" enum="HandJoints">
 			Palm joint.
