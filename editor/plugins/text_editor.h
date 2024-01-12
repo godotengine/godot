@@ -63,6 +63,7 @@ private:
 		EDIT_PASTE,
 		EDIT_SELECT_ALL,
 		EDIT_TRIM_TRAILING_WHITESAPCE,
+		EDIT_TRIM_FINAL_NEWLINES,
 		EDIT_CONVERT_INDENT_TO_SPACES,
 		EDIT_CONVERT_INDENT_TO_TABS,
 		EDIT_MOVE_LINE_UP,
@@ -133,6 +134,7 @@ public:
 	virtual void set_executing_line(int p_line) override;
 	virtual void clear_executing_line() override;
 	virtual void trim_trailing_whitespace() override;
+	virtual void trim_final_newlines() override;
 	virtual void insert_final_newline() override;
 	virtual void convert_indent() override;
 	virtual void ensure_focus() override;

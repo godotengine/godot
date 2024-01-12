@@ -756,6 +756,7 @@ void TextShaderEditor::_apply_editor_settings() {
 	code_editor->update_editor_settings();
 
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
+	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 }
 
 void TextShaderEditor::_show_warnings_panel(bool p_show) {
@@ -920,6 +921,10 @@ void TextShaderEditor::save_external_data(const String &p_str) {
 		trim_trailing_whitespace();
 	}
 
+	if (trim_final_newlines_on_save) {
+		trim_final_newlines();
+	}
+
 	apply_shaders();
 
 	Ref<Shader> edited_shader = code_editor->get_edited_shader();
@@ -944,6 +949,10 @@ void TextShaderEditor::save_external_data(const String &p_str) {
 
 void TextShaderEditor::trim_trailing_whitespace() {
 	code_editor->trim_trailing_whitespace();
+}
+
+void TextShaderEditor::trim_final_newlines() {
+	code_editor->trim_final_newlines();
 }
 
 void TextShaderEditor::validate_script() {
