@@ -45,6 +45,7 @@ Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullpt
 
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::STRING_NAME, animation_override, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
@@ -66,21 +67,26 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 
 double AnimationNodeAnimation::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	double cur_time = get_parameter(time);
+	StringName animation_name = get_parameter(animation_override);
 
-	if (!process_state->tree->has_animation(animation)) {
+	if (!animation_name) {
+		animation_name = animation;
+	}
+
+	if (!process_state->tree->has_animation(animation_name)) {
 		AnimationNodeBlendTree *tree = Object::cast_to<AnimationNodeBlendTree>(node_state.parent);
 		if (tree) {
 			String node_name = tree->get_node_name(Ref<AnimationNodeAnimation>(this));
-			make_invalid(vformat(RTR("On BlendTree node '%s', animation not found: '%s'"), node_name, animation));
+			make_invalid(vformat(RTR("On BlendTree node '%s', animation not found: '%s'"), node_name, animation_name));
 
 		} else {
-			make_invalid(vformat(RTR("Animation not found: '%s'"), animation));
+			make_invalid(vformat(RTR("Animation not found: '%s'"), animation_name));
 		}
 
 		return 0;
 	}
 
-	Ref<Animation> anim = process_state->tree->get_animation(animation);
+	Ref<Animation> anim = process_state->tree->get_animation(animation_name);
 	double anim_size = (double)anim->get_length();
 	double step = 0.0;
 	double prev_time = cur_time;
@@ -154,11 +160,11 @@ double AnimationNodeAnimation::_process(const AnimationMixer::PlaybackInfo p_pla
 		if (process_state->tree && !p_test_only) {
 			// AnimationTree uses seek to 0 "internally" to process the first key of the animation, which is used as the start detection.
 			if (p_seek && !p_is_external_seeking && cur_time == 0) {
-				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation);
+				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation_name);
 			}
 			// Finished.
 			if (prev_time < anim_size && cur_time >= anim_size) {
-				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_finished", animation);
+				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_finished", animation_name);
 			}
 		}
 	}
@@ -174,7 +180,7 @@ double AnimationNodeAnimation::_process(const AnimationMixer::PlaybackInfo p_pla
 		}
 		pi.weight = 1.0;
 		pi.looped_flag = looped_flag;
-		blend_animation(animation, pi);
+		blend_animation(animation_name, pi);
 	}
 	set_parameter(time, cur_time);
 

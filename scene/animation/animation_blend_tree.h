@@ -38,6 +38,7 @@ class AnimationNodeAnimation : public AnimationRootNode {
 
 	StringName animation;
 	StringName time = "time";
+	StringName animation_override = "animation_override";
 
 	uint64_t last_version = 0;
 	bool skip = false;
