@@ -1108,13 +1108,19 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	}
 
 	da->change_dir(p_proj_dir);
-	da->make_dir("Generated");
-	da->make_dir("Generated/GodotObjects");
+	da->make_dir_recursive("Generated/GodotObjects");
 
-	String base_gen_dir = path::join(p_proj_dir, "Generated");
-	String godot_objects_gen_dir = path::join(base_gen_dir, "GodotObjects");
+	da->change_dir("Generated");
+	String base_gen_dir = da->get_current_dir();
+	for (const String &file : da->get_files()) {
+		da->remove(file);
+	}
 
-	Vector<String> compile_items;
+	da->change_dir("GodotObjects");
+	String godot_objects_gen_dir = da->get_current_dir();
+	for (const String &file : da->get_files()) {
+		da->remove(file);
+	}
 
 	// Generate source file for global scope constants and enums
 	{
@@ -1125,8 +1131,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		if (save_err != OK) {
 			return save_err;
 		}
-
-		compile_items.push_back(output_file);
 	}
 
 	// Generate source file for array extensions
@@ -1138,8 +1142,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		if (save_err != OK) {
 			return save_err;
 		}
-
-		compile_items.push_back(output_file);
 	}
 
 	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
@@ -1159,8 +1161,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		if (err != OK) {
 			return err;
 		}
-
-		compile_items.push_back(output_file);
 	}
 
 	// Generate native calls
@@ -1203,29 +1203,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		return err;
 	}
 
-	compile_items.push_back(internal_methods_file);
-
-	// Generate GeneratedIncludes.props
-
-	StringBuilder includes_props_content;
-	includes_props_content.append("<Project>\n"
-								  "  <ItemGroup>\n");
-
-	for (int i = 0; i < compile_items.size(); i++) {
-		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
-		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
-	}
-
-	includes_props_content.append("  </ItemGroup>\n"
-								  "</Project>\n");
-
-	String includes_props_file = path::join(base_gen_dir, "GeneratedIncludes.props");
-
-	err = _save_file(includes_props_file, includes_props_content);
-	if (err != OK) {
-		return err;
-	}
-
 	return OK;
 }
 
@@ -1241,13 +1218,19 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	}
 
 	da->change_dir(p_proj_dir);
-	da->make_dir("Generated");
-	da->make_dir("Generated/GodotObjects");
+	da->make_dir_recursive("Generated/GodotObjects");
 
-	String base_gen_dir = path::join(p_proj_dir, "Generated");
-	String godot_objects_gen_dir = path::join(base_gen_dir, "GodotObjects");
+	da->change_dir("Generated");
+	String base_gen_dir = da->get_current_dir();
+	for (const String &file : da->get_files()) {
+		da->remove(file);
+	}
 
-	Vector<String> compile_items;
+	da->change_dir("GodotObjects");
+	String godot_objects_gen_dir = da->get_current_dir();
+	for (const String &file : da->get_files()) {
+		da->remove(file);
+	}
 
 	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
 		const TypeInterface &itype = E.value;
@@ -1266,8 +1249,6 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		if (err != OK) {
 			return err;
 		}
-
-		compile_items.push_back(output_file);
 	}
 
 	// Generate native calls
@@ -1308,29 +1289,6 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	String internal_methods_file = path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
 	Error err = _save_file(internal_methods_file, cs_icalls_content);
-	if (err != OK) {
-		return err;
-	}
-
-	compile_items.push_back(internal_methods_file);
-
-	// Generate GeneratedIncludes.props
-
-	StringBuilder includes_props_content;
-	includes_props_content.append("<Project>\n"
-								  "  <ItemGroup>\n");
-
-	for (int i = 0; i < compile_items.size(); i++) {
-		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
-		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
-	}
-
-	includes_props_content.append("  </ItemGroup>\n"
-								  "</Project>\n");
-
-	String includes_props_file = path::join(base_gen_dir, "GeneratedIncludes.props");
-
-	err = _save_file(includes_props_file, includes_props_content);
 	if (err != OK) {
 		return err;
 	}
