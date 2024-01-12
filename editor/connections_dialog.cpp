@@ -1000,7 +1000,7 @@ void ConnectionsDock::_tree_item_selected() {
 		connect_button->set_text(TTR("Disconnect"));
 		connect_button->set_icon(get_editor_theme_icon(SNAME("Unlinked")));
 
-		Object::Connection connection = item->get_metadata(0);
+		Connection connection = item->get_metadata(0);
 		connect_button->set_disabled(_is_connection_inherited(connection));
 	} else {
 		connect_button->set_text(TTR("Connect..."));

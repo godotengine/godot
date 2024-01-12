@@ -32,7 +32,7 @@ static func get_property_signature(property, is_static: bool = false) -> String:
 	return result
 
 static func property_to_string(property) -> String:
-    return "name: {name}, class_name: {class_name}, type: {type}, hint: {hint}, hint_string: {hint_string}, usage: {usage}".format(property)
+	return "name: {name}, class_name: {class_name}, type: {type}, hint: {hint}, hint_string: {hint_string}, usage: {usage}".format(property)
 
 
 static func get_property_additional_info(property) -> String:
