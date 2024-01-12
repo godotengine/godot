@@ -737,7 +737,7 @@ void Node3D::set_as_top_level(bool p_enabled) {
 	if (data.top_level == p_enabled) {
 		return;
 	}
-	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
+	if (is_inside_tree()) {
 		if (p_enabled) {
 			set_transform(get_global_transform());
 		} else if (data.parent) {
