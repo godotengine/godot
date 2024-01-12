@@ -1,4 +1,5 @@
 #include "foliage_cell_asset.h"
+#include "foliage_manager.h"
 
 namespace Foliage
 {
@@ -33,6 +34,10 @@ namespace Foliage
         // 如果是windows的小端模式，读取掩码的第一个字节肯定是一个有效数字
         file->set_big_endian(big_endian == 0);
         version = file->get_32();
+
+        region_offset.x = file->get_32();
+        region_offset.y = file->get_32();
+
         x = file->get_32();
         z = file->get_32();
 
@@ -41,6 +46,34 @@ namespace Foliage
         for(int i = 0;i < count;i++)
         {
             datas.write[i].load(file,big_endian);
+        }
+    }
+
+    bool FoliageCellAsset::is_load_finish()
+    {
+        if(handle_load.is_valid())
+        {
+            return handle_load->is_completed();
+        }
+        return true;
+
+    }
+    void FoliageCellAsset::update_load(class FoliageManager * manager)
+    {
+        if(is_attach_to_manager)
+        {
+            return;
+        }
+        if(is_load_finish())
+        {
+            for(int i = 0;i < datas.size();i++)
+            {
+                FoliageCellPos pos = datas[i].position;
+                pos.Offset(region_offset);
+                manager->on_cell_load(pos,&datas[i]);
+            }
+            is_attach_to_manager = true;
+            handle_load.unref();
         }
     }
 

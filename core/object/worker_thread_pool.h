@@ -211,35 +211,55 @@ class TaskJobHandle : public RefCounted
 	static void _bind_methods();
 	friend class WorkerTaskPool;
 	friend class ThreadTaskGroup;
- protected:
-	void set_completed(int count);
-	void set_completed()
-	{
-		completed.set();
-		done_semaphore.post();
-	}
-	// 等待所有依赖信号完成
-	void wait_depend_completion();
  public:
 	bool is_completed() ;
 	// 等待信号完成
 	void wait_completion()
 	{
+		if(!is_init)
+		{
+			return;
+		}
+		// 等待依赖全部完成
 		wait_depend_completion();
-		// 等待信号完成
-		done_semaphore.wait();
+		if(completed.is_set())
+		{
+			// 已经标记完成了
+			return;
+		}		
+		// 如果完成，等待完成信号
+		 std::unique_lock<std::mutex> lock(done_mutex);
+		 cv.wait(lock, [this] { return  WorkerTaskPool::get_singleton() == nullptr || completed.is_set(); });
 	}
+ protected:
+ 	void init(){
+ 		is_init = true;
+ 	}
+	void set_completed(int count);
+	void set_completed()
+	{
+		completed.set();
+		std::lock_guard<std::mutex> lock(done_mutex);
+		// 通知等待的线程
+    	cv.notify_all();
+	}
+	// 等待所有依赖信号完成
+	void wait_depend_completion();
  protected:
 	Mutex depend_mutex;
 	// 依赖的句柄
 	List<Ref<TaskJobHandle>> dependJob;
 	// 完成标志
-	Semaphore done_semaphore;
+	Mutex done_mutex;
+	std::condition_variable cv;
 	SafeFlag completed;
 	// 完成数量
 	SafeNumeric<uint32_t> completed_index;
 	// 最大任务数量
 	uint32_t taskMax = 0;
+	bool is_init = false;
+	bool is_error = false;
+	String error_string;
 };
 // 多任务管理器
 class WorkerTaskPool : public Object {

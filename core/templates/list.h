@@ -156,7 +156,11 @@ public:
 		{
 			return E != nullptr;
 		}
-
+		Element* data()
+		{
+			return E;
+		}
+		
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
 
@@ -443,6 +447,20 @@ public:
 		}
 
 		return false;
+	}
+	/**
+	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
+	 */
+	Iterator erase(Iterator it) {
+		if(!it)
+		{
+			return it;
+		}
+		Element *p_I = it.data();
+		++it;
+		erase(p_I);
+
+		return it;
 	}
 
 	/**

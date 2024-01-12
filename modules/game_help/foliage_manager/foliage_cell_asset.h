@@ -1,3 +1,5 @@
+#ifndef FOLIAGE_CELL_ASSET_H
+#define FOLIAGE_CELL_ASSET_H
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/math/aabb.h"
@@ -26,6 +28,8 @@ namespace Foliage
 		/// 植被分块中一个Tile的大小(米)
 		/// </summary>
 		static const int TILE_SIZE = 32;
+
+		static const int PAGE_SIZE = TILE_SIZE * 16;
 
 		/// <summary>
 		/// 植被分块的Tile分辨率, CELL_SIZE / TILE_SIZE
@@ -156,10 +160,10 @@ namespace Foliage
 			x = _x;
 			z = _z;
 		}
-        void Offset(Vector3& _delta, int _cellSize = FoliageGlobals::CELL_SIZE)
+        void Offset(Vector2i& _delta, int _cellSize = FoliageGlobals::CELL_SIZE)
 		{
 			x += Math::fast_ftoi(_delta.x / _cellSize);
-			z += Math::fast_ftoi(_delta.z / _cellSize);
+			z += Math::fast_ftoi(_delta.y / _cellSize);
 		}
         friend bool operator == (const FoliageCellPos& lhs, const FoliageCellPos& rhs)
 		{
@@ -528,6 +532,9 @@ namespace Foliage
 			/// Cell中使用植被原型数据
 			/// </summary>
 			Vector<PrototypeData> prototypes;
+		public:
+			bool is_load = false;
+		public:
 
 
             void load(Ref<FileAccess> & file, bool big_endian)
@@ -609,11 +616,13 @@ namespace Foliage
 		/// 坐标
 		/// </summary>
 		int x, z;
+		Vector2i region_offset;
 		Ref<TaskJobHandle> handle_load;
 		/// <summary>
 		/// 1..n块的植被数据
 		/// </summary>
 		Vector<CellData> datas;
+		bool is_attach_to_manager = false;
     public:
 		struct FileLoadData
 		{
@@ -624,6 +633,13 @@ namespace Foliage
 		void load_file(String _file);
 		// 等待加载完成
 		void wait_load_finish();
+		bool is_load_finish();
+		void update_load(class FoliageManager * manager);
+		void unload()
+		{
+			wait_load_finish();
+			datas.clear();
+		}
 	protected:
 		FileLoadData load_data;
 
@@ -636,3 +652,4 @@ namespace Foliage
 		void clear();
     };
 }
+#endif

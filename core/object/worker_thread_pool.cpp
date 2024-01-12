@@ -695,25 +695,8 @@ void TaskJobHandle::set_completed(int count)
 		set_completed();
 	}
 }
-bool TaskJobHandle::is_completed()  {
-	depend_mutex.lock();
-	auto it = dependJob.begin();
-	while (it)
-	{
-		if(!(*it)->is_completed())
-		{
-			depend_mutex.unlock();
-			return false;
-		}
-		++it;
-	}
-	// 都结束了，就把完成的句柄清除
-	dependJob.clear();
-
-	depend_mutex.unlock();
-	
-	bool is_completed = completed.is_set();
-	return is_completed;
+bool TaskJobHandle::is_completed()  {	
+	return completed.is_set();
 }
 void TaskJobHandle::_bind_methods()
 {
@@ -870,6 +853,7 @@ void WorkerTaskPool::_process_task_queue() {
 Ref<TaskJobHandle> WorkerTaskPool::add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements,int _batch_count,TaskJobHandle* depend_task)
 {
 	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
+	hand->init();
 	if(p_elements <= 0)
 	{
 		// 增加依赖，保持依赖链条是正确的
@@ -906,6 +890,7 @@ Ref<TaskJobHandle> WorkerTaskPool::add_native_group_task(void (*p_func)(void *, 
 Ref<TaskJobHandle> WorkerTaskPool::add_group_task(const Callable &p_action, int p_elements, int _batch_count,TaskJobHandle* depend_task )
 {
 	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
+	hand->init();
 	if(p_elements <= 0)
 	{
 		// 增加依赖，保持依赖链条是正确的
@@ -947,6 +932,7 @@ Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(TypedArray<TaskJobHandle>
 		return nullptr;
 	}
 	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
+	hand->init();
 	for(int i = 0; i < _handles.size(); ++i)
 	{
 		if(_handles[i] != nullptr)
