@@ -1516,7 +1516,7 @@ void Window::child_controls_changed() {
 	}
 
 	updating_child_controls = true;
-	call_deferred(SNAME("_update_child_controls"));
+	callable_mp(this, &Window::_update_child_controls).call_deferred();
 }
 
 void Window::_update_child_controls() {
@@ -1997,7 +1997,7 @@ void Window::_update_theme_item_cache() {
 	// Updating without a delay can cause a lot of lag.
 	if (!wrap_controls) {
 		updating_embedded_window = true;
-		call_deferred(SNAME("_update_embedded_window"));
+		callable_mp(this, &Window::_update_embedded_window).call_deferred();
 	} else {
 		child_controls_changed();
 	}
@@ -2799,9 +2799,6 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_wrap_controls", "enable"), &Window::set_wrap_controls);
 	ClassDB::bind_method(D_METHOD("is_wrapping_controls"), &Window::is_wrapping_controls);
 	ClassDB::bind_method(D_METHOD("child_controls_changed"), &Window::child_controls_changed);
-
-	ClassDB::bind_method(D_METHOD("_update_child_controls"), &Window::_update_child_controls);
-	ClassDB::bind_method(D_METHOD("_update_embedded_window"), &Window::_update_embedded_window);
 
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);

@@ -406,7 +406,7 @@ void EditorToaster::popup_str(String p_message, Severity p_severity, String p_to
 	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
 	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
 	is_processing_error = true;
-	call_deferred(SNAME("_popup_str"), p_message, p_severity, p_tooltip);
+	callable_mp(this, &EditorToaster::_popup_str).call_deferred(p_message, p_severity, p_tooltip);
 	is_processing_error = false;
 }
 
@@ -497,11 +497,6 @@ void EditorToaster::_close_button_theme_changed(Control *p_close_button) {
 
 EditorToaster *EditorToaster::get_singleton() {
 	return singleton;
-}
-
-void EditorToaster::_bind_methods() {
-	// Binding method to make it defer-able.
-	ClassDB::bind_method(D_METHOD("_popup_str", "message", "severity", "tooltip"), &EditorToaster::_popup_str);
 }
 
 EditorToaster::EditorToaster() {

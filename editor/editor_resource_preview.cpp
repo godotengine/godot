@@ -34,7 +34,6 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/object/message_queue.h"
 #include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -123,7 +122,7 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 		cache[p_path] = item;
 	}
 
-	MessageQueue::get_singleton()->push_call(id, p_func, p_path, p_texture, p_small_texture, p_ud);
+	Callable(id, p_func).call_deferred(p_path, p_texture, p_small_texture, p_ud);
 }
 
 void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base, Dictionary &p_metadata) {

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  condition_variable.h                                                  */
+/*  openxr_meta_controller_extension.h                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONDITION_VARIABLE_H
-#define CONDITION_VARIABLE_H
+#ifndef OPENXR_META_CONTROLLER_EXTENSION_H
+#define OPENXR_META_CONTROLLER_EXTENSION_H
 
-#include "core/os/mutex.h"
+#include "openxr_extension_wrapper.h"
 
-#ifdef MINGW_ENABLED
-#define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.condition_variable.h"
-#define THREADING_NAMESPACE mingw_stdthread
-#else
-#include <condition_variable>
-#define THREADING_NAMESPACE std
-#endif
-
-// An object one or multiple threads can wait on a be notified by some other.
-// Normally, you want to use a semaphore for such scenarios, but when the
-// condition is something different than a count being greater than zero
-// (which is the built-in logic in a semaphore) or you want to provide your
-// own mutex to tie the wait-notify to some other behavior, you need to use this.
-
-class ConditionVariable {
-	mutable THREADING_NAMESPACE::condition_variable condition;
-
+class OpenXRMetaControllerExtension : public OpenXRExtensionWrapper {
 public:
-	template <class BinaryMutexT>
-	_ALWAYS_INLINE_ void wait(const MutexLock<BinaryMutexT> &p_lock) const {
-		condition.wait(const_cast<THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &>(p_lock.lock));
-	}
+	enum MetaControllers {
+		META_TOUCH_PROXIMITY, // Proximity extensions for normal touch controllers
+		META_TOUCH_PRO, // Touch controller for the Quest Pro
+		META_TOUCH_PLUS, // Touch controller for the Quest Plus
+		META_MAX_CONTROLLERS
+	};
 
-	_ALWAYS_INLINE_ void notify_one() const {
-		condition.notify_one();
-	}
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
-	_ALWAYS_INLINE_ void notify_all() const {
-		condition.notify_all();
-	}
+	bool is_available(MetaControllers p_type);
+
+	virtual void on_register_metadata() override;
+
+private:
+	bool available[META_MAX_CONTROLLERS] = { false, false, false };
 };
 
-#endif // CONDITION_VARIABLE_H
+#endif // OPENXR_META_CONTROLLER_EXTENSION_H

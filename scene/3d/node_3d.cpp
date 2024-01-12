@@ -30,7 +30,6 @@
 
 #include "node_3d.h"
 
-#include "core/object/message_queue.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/viewport.h"
 #include "scene/property_utils.h"
@@ -124,7 +123,7 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 			get_tree()->xform_change_list.add(&xform_change);
 		} else {
 			// This should very rarely happen, but if it does at least make sure the notification is received eventually.
-			MessageQueue::get_singleton()->push_callable(callable_mp(this, &Node3D::_propagate_transform_changed_deferred));
+			callable_mp(this, &Node3D::_propagate_transform_changed_deferred).call_deferred();
 		}
 	}
 	_set_dirty_bits(DIRTY_GLOBAL_TRANSFORM);
@@ -568,7 +567,7 @@ void Node3D::update_gizmos() {
 		return;
 	}
 	data.gizmos_dirty = true;
-	MessageQueue::get_singleton()->push_callable(callable_mp(this, &Node3D::_update_gizmos));
+	callable_mp(this, &Node3D::_update_gizmos).call_deferred();
 #endif
 }
 

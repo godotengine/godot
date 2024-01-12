@@ -455,7 +455,7 @@ void EditorDebuggerNode::_debugger_wants_stop(int p_id) {
 	// Ask editor to kill PID.
 	int pid = get_debugger(p_id)->get_remote_pid();
 	if (pid) {
-		EditorNode::get_singleton()->call_deferred(SNAME("stop_child_process"), pid);
+		callable_mp(EditorNode::get_singleton(), &EditorNode::stop_child_process).call_deferred(pid);
 	}
 }
 

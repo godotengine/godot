@@ -901,7 +901,7 @@ Vector<String> EditorExportPlatform::get_forced_export_files() {
 					if (FileAccess::exists(abs_path)) {
 						files.push_back(ts_data);
 						// Remove the file later.
-						MessageQueue::get_singleton()->push_callable(callable_mp_static(DirAccess::remove_absolute), abs_path);
+						callable_mp_static(DirAccess::remove_absolute).call_deferred(abs_path);
 					}
 				}
 			}

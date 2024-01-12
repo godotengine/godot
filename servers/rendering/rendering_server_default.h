@@ -1021,7 +1021,9 @@ public:
 	virtual Color get_default_clear_color() override;
 	virtual void set_default_clear_color(const Color &p_color) override;
 
+#ifndef DISABLE_DEPRECATED
 	virtual bool has_feature(Features p_feature) const override;
+#endif
 
 	virtual bool has_os_feature(const String &p_feature) const override;
 	virtual void set_debug_generate_wireframes(bool p_generate) override;

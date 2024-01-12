@@ -4784,7 +4784,7 @@ void Tree::ensure_cursor_is_visible() {
 		if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
 			v_scroll->set_value(y_offset);
 		} else if (y_offset + cell_h > v_scroll->get_value() + screen_h) {
-			v_scroll->call_deferred(SNAME("set_value"), y_offset - screen_h + cell_h);
+			callable_mp((Range *)v_scroll, &Range::set_value).call_deferred(y_offset - screen_h + cell_h);
 		} else if (y_offset < v_scroll->get_value()) {
 			v_scroll->set_value(y_offset);
 		}
@@ -4802,7 +4802,7 @@ void Tree::ensure_cursor_is_visible() {
 		if (cell_w > screen_w) {
 			h_scroll->set_value(x_offset);
 		} else if (x_offset + cell_w > h_scroll->get_value() + screen_w) {
-			h_scroll->call_deferred(SNAME("set_value"), x_offset - screen_w + cell_w);
+			callable_mp((Range *)h_scroll, &Range::set_value).call_deferred(x_offset - screen_w + cell_w);
 		} else if (x_offset < h_scroll->get_value()) {
 			h_scroll->set_value(x_offset);
 		}

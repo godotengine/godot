@@ -2139,7 +2139,7 @@ void AnimationPlayerEditorPlugin::_clear_dummy_player() {
 	}
 	Node *parent = dummy_player->get_parent();
 	if (parent) {
-		parent->call_deferred("remove_child", dummy_player);
+		callable_mp(parent, &Node::remove_child).call_deferred(dummy_player);
 	}
 	dummy_player->queue_free();
 	dummy_player = nullptr;

@@ -37,6 +37,7 @@
 #include "run_icon_svg.gen.h"
 
 #include "core/io/image_loader.h"
+#include "core/io/plist.h"
 #include "core/string/translation.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"
@@ -388,6 +389,8 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/platform_build"), "14C18"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_version"), "13.1"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_build"), "22C55"));
@@ -672,6 +675,8 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$min_version", p_preset->get("application/min_macos_version")) + "\n";
 		} else if (lines[i].find("$highres") != -1) {
 			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
+		} else if (lines[i].find("$additional_plist_content") != -1) {
+			strnew += lines[i].replace("$additional_plist_content", p_preset->get("application/additional_plist_content")) + "\n";
 		} else if (lines[i].find("$platfbuild") != -1) {
 			strnew += lines[i].replace("$platfbuild", p_preset->get("xcode/platform_build")) + "\n";
 		} else if (lines[i].find("$sdkver") != -1) {
@@ -2093,6 +2098,26 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 #endif
 		default: {
 		};
+	}
+
+	const String &additional_plist_content = p_preset->get("application/additional_plist_content");
+	if (!additional_plist_content.is_empty()) {
+		const String &plist = vformat("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+									  "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
+									  "<plist version=\"1.0\">"
+									  "<dict>\n"
+									  "%s\n"
+									  "</dict>\n"
+									  "</plist>\n",
+				additional_plist_content);
+
+		String plist_err;
+		Ref<PList> plist_parser;
+		plist_parser.instantiate();
+		if (!plist_parser->load_string(plist, plist_err)) {
+			err += TTR("Invalid additional PList content: ") + plist_err + "\n";
+			valid = false;
+		}
 	}
 
 	List<ExportOption> options;

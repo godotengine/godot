@@ -908,7 +908,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (Math::is_finite(minimum_time) && Math::is_finite(maximum_time) && maximum_time - minimum_time > CMP_EPSILON) {
 				timeline->get_zoom()->set_value(zoom_value);
-				timeline->call_deferred("set_value", minimum_time);
+				callable_mp((Range *)timeline, &Range::set_value).call_deferred(minimum_time);
 			}
 
 			if (Math::is_finite(minimum_value) && Math::is_finite(maximum_value)) {

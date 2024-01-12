@@ -1736,8 +1736,40 @@ void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
 		return;
 	}
 
+	bool preserve_owner = data.owner && (data.owner == p_parent || data.owner->is_ancestor_of(p_parent));
+	Node *owner_temp = data.owner;
+	LocalVector<Node *> common_parents;
+
+	// If the new parent is related to the owner, find all children of the reparented node who have the same owner so that we can reassign them.
+	if (preserve_owner) {
+		LocalVector<Node *> to_visit;
+
+		to_visit.push_back(this);
+		common_parents.push_back(this);
+
+		while (to_visit.size() > 0) {
+			Node *check = to_visit[to_visit.size() - 1];
+			to_visit.resize(to_visit.size() - 1);
+
+			for (int i = 0; i < check->get_child_count(); i++) {
+				Node *child = check->get_child(i, false);
+				to_visit.push_back(child);
+				if (child->data.owner == owner_temp) {
+					common_parents.push_back(child);
+				}
+			}
+		}
+	}
+
 	data.parent->remove_child(this);
 	p_parent->add_child(this);
+
+	// Reassign the old owner to those found nodes.
+	if (preserve_owner) {
+		for (Node *E : common_parents) {
+			E->set_owner(owner_temp);
+		}
+	}
 }
 
 Node *Node::get_parent() const {
@@ -1925,7 +1957,7 @@ void Node::set_owner(Node *p_owner) {
 		return;
 	}
 
-	Node *check = this->get_parent();
+	Node *check = get_parent();
 	bool owner_valid = false;
 
 	while (check) {

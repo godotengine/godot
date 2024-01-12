@@ -203,7 +203,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			}
 
 			if (node_rects[i].edit.has_point(mb->get_position())) { //edit name
-				call_deferred(SNAME("_open_editor"), node_rects[i].node_name);
+				callable_mp(this, &AnimationNodeStateMachineEditor::_open_editor).call_deferred(node_rects[i].node_name);
 				return;
 			}
 
@@ -1610,12 +1610,6 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 
 void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &AnimationNodeStateMachineEditor::_update_graph);
-	ClassDB::bind_method("_open_editor", &AnimationNodeStateMachineEditor::_open_editor);
-	ClassDB::bind_method("_connect_to", &AnimationNodeStateMachineEditor::_connect_to);
-	ClassDB::bind_method("_stop_connecting", &AnimationNodeStateMachineEditor::_stop_connecting);
-	ClassDB::bind_method("_delete_selected", &AnimationNodeStateMachineEditor::_delete_selected);
-	ClassDB::bind_method("_delete_all", &AnimationNodeStateMachineEditor::_delete_all);
-	ClassDB::bind_method("_delete_tree_draw", &AnimationNodeStateMachineEditor::_delete_tree_draw);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, panel_style, "panel", "GraphStateMachine");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, error_panel_style, "error_panel", "GraphStateMachine");

@@ -232,8 +232,6 @@ RID PrimitiveMesh::get_rid() const {
 }
 
 void PrimitiveMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update"), &PrimitiveMesh::_update);
-
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &PrimitiveMesh::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &PrimitiveMesh::get_material);
 
@@ -1478,15 +1476,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
-		float scale = (y - start_pos.y) / size.y;
+		float scale = j / (subdivide_h + 1.0);
 		float scaled_size_x = size.x * scale;
 		float start_x = start_pos.x + (1.0 - scale) * size.x * left_to_right;
 		float offset_front = (1.0 - scale) * onethird * left_to_right;
 		float offset_back = (1.0 - scale) * onethird * (1.0 - left_to_right);
 
 		float v = j;
-		float v2 = j / (subdivide_h + 1.0);
-		v /= (2.0 * (subdivide_h + 1.0));
+		float v2 = scale;
+		v /= 2.0 * (subdivide_h + 1.0);
 
 		x = 0.0;
 		for (i = 0; i <= (subdivide_w + 1); i++) {
@@ -1568,15 +1566,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
-		float v = j;
-		float v2 = j / (subdivide_h + 1.0);
-		v /= (2.0 * (subdivide_h + 1.0));
-
 		float left, right;
-		float scale = (y - start_pos.y) / size.y;
+		float scale = j / (subdivide_h + 1.0);
 
 		left = start_pos.x + (size.x * (1.0 - scale) * left_to_right);
 		right = left + (size.x * scale);
+
+		float v = j;
+		float v2 = scale;
+		v /= 2.0 * (subdivide_h + 1.0);
 
 		z = start_pos.z;
 		for (i = 0; i <= (subdivide_d + 1); i++) {
@@ -3342,7 +3340,6 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &TextMesh::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &TextMesh::is_uppercase);
 
-	ClassDB::bind_method(D_METHOD("_font_changed"), &TextMesh::_font_changed);
 	ClassDB::bind_method(D_METHOD("_request_update"), &TextMesh::_request_update);
 
 	ADD_GROUP("Text", "");
@@ -3446,14 +3443,16 @@ void TextMesh::_font_changed() {
 
 void TextMesh::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
+		const Callable font_changed = callable_mp(this, &TextMesh::_font_changed);
+
 		if (font_override.is_valid()) {
-			font_override->disconnect_changed(Callable(this, "_font_changed"));
+			font_override->disconnect_changed(font_changed);
 		}
 		font_override = p_font;
 		dirty_font = true;
 		dirty_cache = true;
 		if (font_override.is_valid()) {
-			font_override->connect_changed(Callable(this, "_font_changed"));
+			font_override->connect_changed(font_changed);
 		}
 		_request_update();
 	}

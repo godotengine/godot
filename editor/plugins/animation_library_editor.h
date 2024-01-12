@@ -80,6 +80,9 @@ class AnimationLibraryEditor : public AcceptDialog {
 	StringName file_dialog_animation;
 	StringName file_dialog_library;
 
+	Button *new_library_button = nullptr;
+	Button *load_library_button = nullptr;
+
 	AcceptDialog *error_dialog = nullptr;
 	bool adding_animation = false;
 	StringName adding_animation_to_library;
@@ -108,6 +111,7 @@ class AnimationLibraryEditor : public AcceptDialog {
 	bool updating = false;
 
 protected:
+	void _notification(int p_what);
 	void _update_editor(Object *p_mixer);
 	static void _bind_methods();
 

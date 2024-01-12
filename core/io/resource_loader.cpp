@@ -630,15 +630,16 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 
 			if (load_task.task_id != 0) {
 				// Loading thread is in the worker pool.
-				load_task.awaited = true;
 				thread_load_mutex.unlock();
 				Error err = WorkerThreadPool::get_singleton()->wait_for_task_completion(load_task.task_id);
 				if (err == ERR_BUSY) {
-					// The WorkerThreadPool has scheduled tasks in a way that the current load depends on
-					// another one in a lower stack frame. Restart such load here. When the stack is eventually
-					// unrolled, the original load will have been notified to go on.
+					// The WorkerThreadPool has reported that the current task wants to await on an older one.
+					// That't not allowed for safety, to avoid deadlocks. Fortunately, though, in the context of
+					// resource loading that means that the task to wait for can be restarted here to break the
+					// cycle, with as much recursion into this process as needed.
+					// When the stack is eventually unrolled, the original load will have been notified to go on.
 #ifdef DEV_ENABLED
-					print_verbose("ResourceLoader: Load task happened to wait on another one deep in the call stack. Attempting to avoid deadlock by re-issuing the load now.");
+					print_verbose("ResourceLoader: Potential for deadlock detected in task dependency. Attempting to avoid it by re-issuing the load now.");
 #endif
 					// CACHE_MODE_IGNORE is needed because, otherwise, the new request would just see there's
 					// an ongoing load for that resource and wait for it again. This value forces a new load.
@@ -652,6 +653,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 				} else {
 					DEV_ASSERT(err == OK);
 					thread_load_mutex.lock();
+					load_task.awaited = true;
 				}
 			} else {
 				// Loading thread is main or user thread.

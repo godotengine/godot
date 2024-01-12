@@ -57,7 +57,7 @@ void EditorAutoloadSettings::_notification(int p_what) {
 
 			for (const AutoloadInfo &info : autoload_cache) {
 				if (info.node && info.in_editor) {
-					get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
+					callable_mp((Node *)get_tree()->get_root(), &Node::add_child).call_deferred(info.node, false, Node::INTERNAL_MODE_DISABLED);
 				}
 			}
 			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
@@ -533,7 +533,7 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 		if (info.in_editor) {
 			ERR_CONTINUE(!info.node);
-			get_tree()->get_root()->call_deferred(SNAME("remove_child"), info.node);
+			callable_mp((Node *)get_tree()->get_root(), &Node::remove_child).call_deferred(info.node);
 		}
 
 		if (info.node) {

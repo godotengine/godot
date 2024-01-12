@@ -287,9 +287,11 @@ void RenderingServerDefault::set_default_clear_color(const Color &p_color) {
 	RSG::viewport->set_default_clear_color(p_color);
 }
 
+#ifndef DISABLE_DEPRECATED
 bool RenderingServerDefault::has_feature(Features p_feature) const {
 	return false;
 }
+#endif
 
 void RenderingServerDefault::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 	RSG::scene->sdfgi_set_debug_probe_select(p_position, p_dir);

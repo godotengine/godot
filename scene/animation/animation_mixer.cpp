@@ -1778,7 +1778,7 @@ void AnimationMixer::_call_object(ObjectID p_object_id, const StringName &p_meth
 		return;
 	}
 	if (p_deferred) {
-		MessageQueue::get_singleton()->push_callp(t_obj, p_method, argptrs, argcount);
+		Callable(t_obj, p_method).call_deferredp(argptrs, argcount);
 	} else {
 		Callable::CallError ce;
 		t_obj->callp(p_method, argptrs, argcount, ce);

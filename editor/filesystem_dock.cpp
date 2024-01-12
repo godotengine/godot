@@ -651,7 +651,7 @@ void FileSystemDock::_notification(int p_what) {
 void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_selected) {
 	// Update the import dock.
 	import_dock_needs_update = true;
-	call_deferred(SNAME("_update_import_dock"));
+	callable_mp(this, &FileSystemDock::_update_import_dock).call_deferred();
 
 	// Return if we don't select something new.
 	if (!p_selected) {
@@ -3329,7 +3329,7 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 
 	// Update the import dock.
 	import_dock_needs_update = true;
-	call_deferred(SNAME("_update_import_dock"));
+	callable_mp(this, &FileSystemDock::_update_import_dock).call_deferred();
 }
 
 void FileSystemDock::_tree_mouse_exited() {
@@ -3645,15 +3645,10 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 }
 
 void FileSystemDock::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_tree"), &FileSystemDock::_update_tree);
-
 	ClassDB::bind_method(D_METHOD("_file_list_thumbnail_done"), &FileSystemDock::_file_list_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_tree_thumbnail_done"), &FileSystemDock::_tree_thumbnail_done);
-	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
 
 	ClassDB::bind_method(D_METHOD("navigate_to_path", "path"), &FileSystemDock::navigate_to_path);
-
-	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
 
 	ClassDB::bind_method(D_METHOD("add_resource_tooltip_plugin", "plugin"), &FileSystemDock::add_resource_tooltip_plugin);
 	ClassDB::bind_method(D_METHOD("remove_resource_tooltip_plugin", "plugin"), &FileSystemDock::remove_resource_tooltip_plugin);

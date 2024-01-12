@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  condition_variable.h                                                  */
+/*  ios_terminal_logger.mm                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONDITION_VARIABLE_H
-#define CONDITION_VARIABLE_H
+#include "ios_terminal_logger.h"
 
-#include "core/os/mutex.h"
+#ifdef IOS_ENABLED
 
-#ifdef MINGW_ENABLED
-#define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.condition_variable.h"
-#define THREADING_NAMESPACE mingw_stdthread
-#else
-#include <condition_variable>
-#define THREADING_NAMESPACE std
-#endif
+#include <os/log.h>
 
-// An object one or multiple threads can wait on a be notified by some other.
-// Normally, you want to use a semaphore for such scenarios, but when the
-// condition is something different than a count being greater than zero
-// (which is the built-in logic in a semaphore) or you want to provide your
-// own mutex to tie the wait-notify to some other behavior, you need to use this.
-
-class ConditionVariable {
-	mutable THREADING_NAMESPACE::condition_variable condition;
-
-public:
-	template <class BinaryMutexT>
-	_ALWAYS_INLINE_ void wait(const MutexLock<BinaryMutexT> &p_lock) const {
-		condition.wait(const_cast<THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &>(p_lock.lock));
+void IOSTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+	if (!should_log(true)) {
+		return;
 	}
 
-	_ALWAYS_INLINE_ void notify_one() const {
-		condition.notify_one();
+	const char *err_details;
+	if (p_rationale && p_rationale[0]) {
+		err_details = p_rationale;
+	} else {
+		err_details = p_code;
 	}
 
-	_ALWAYS_INLINE_ void notify_all() const {
-		condition.notify_all();
+	switch (p_type) {
+		case ERR_WARNING:
+			os_log_info(OS_LOG_DEFAULT,
+					"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
+					err_details, p_function, p_file, p_line);
+			break;
+		case ERR_SCRIPT:
+			os_log_error(OS_LOG_DEFAULT,
+					"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+					err_details, p_function, p_file, p_line);
+			break;
+		case ERR_SHADER:
+			os_log_error(OS_LOG_DEFAULT,
+					"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+					err_details, p_function, p_file, p_line);
+			break;
+		case ERR_ERROR:
+		default:
+			os_log_error(OS_LOG_DEFAULT,
+					"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+					err_details, p_function, p_file, p_line);
+			break;
 	}
-};
+}
 
-#endif // CONDITION_VARIABLE_H
+#endif // IOS_ENABLED

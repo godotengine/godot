@@ -1966,7 +1966,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 
 	if (class_desc->is_ready()) {
-		class_desc->call_deferred(SNAME("scroll_to_paragraph"), line);
+		callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).call_deferred(line);
 	} else {
 		scroll_to = line;
 	}

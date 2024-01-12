@@ -461,15 +461,6 @@ void InspectorDock::_notification(int p_what) {
 }
 
 void InspectorDock::_bind_methods() {
-	ClassDB::bind_method("_unref_resource", &InspectorDock::_unref_resource);
-	ClassDB::bind_method("_paste_resource", &InspectorDock::_paste_resource);
-	ClassDB::bind_method("_copy_resource", &InspectorDock::_copy_resource);
-
-	ClassDB::bind_method("_menu_collapseall", &InspectorDock::_menu_collapseall);
-	ClassDB::bind_method("_menu_expandall", &InspectorDock::_menu_expandall);
-
-	ClassDB::bind_method("edit_resource", &InspectorDock::edit_resource);
-
 	ClassDB::bind_method("store_script_properties", &InspectorDock::store_script_properties);
 	ClassDB::bind_method("apply_script_properties", &InspectorDock::apply_script_properties);
 

@@ -4613,7 +4613,7 @@ void AnimationTrackEditor::_animation_changed() {
 	}
 
 	animation_changing_awaiting_update = true;
-	call_deferred(SNAME("_animation_update"));
+	callable_mp(this, &AnimationTrackEditor::_animation_update).call_deferred();
 }
 
 void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
@@ -6478,7 +6478,6 @@ void AnimationTrackEditor::_select_all_tracks_for_copy() {
 }
 
 void AnimationTrackEditor::_bind_methods() {
-	ClassDB::bind_method("_animation_update", &AnimationTrackEditor::_animation_update);
 	ClassDB::bind_method("_track_grab_focus", &AnimationTrackEditor::_track_grab_focus);
 	ClassDB::bind_method("_redraw_tracks", &AnimationTrackEditor::_redraw_tracks);
 	ClassDB::bind_method("_clear_selection_for_anim", &AnimationTrackEditor::_clear_selection_for_anim);

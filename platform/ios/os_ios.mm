@@ -35,6 +35,7 @@
 #import "app_delegate.h"
 #import "display_server_ios.h"
 #import "godot_view.h"
+#import "ios_terminal_logger.h"
 #import "view_controller.h"
 
 #include "core/config/project_settings.h"
@@ -105,12 +106,7 @@ OS_IOS::OS_IOS() {
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(SyslogLogger));
-#ifdef DEBUG_ENABLED
-	// it seems iOS app's stdout/stderr is only obtainable if you launch it from
-	// Xcode
-	loggers.push_back(memnew(StdLogger));
-#endif
+	loggers.push_back(memnew(IOSTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	AudioDriverManager::add_driver(&audio_driver);

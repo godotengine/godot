@@ -38,7 +38,6 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
-#include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
@@ -668,7 +667,7 @@ void EditorNode::_notification(int p_what) {
 
 			command_palette->register_shortcuts_as_command();
 
-			MessageQueue::get_singleton()->push_callable(callable_mp(this, &EditorNode::_begin_first_scan));
+			callable_mp(this, &EditorNode::_begin_first_scan).call_deferred();
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -1107,7 +1106,7 @@ void EditorNode::_scan_external_changes() {
 	}
 
 	if (need_reload) {
-		disk_changed->call_deferred(SNAME("popup_centered_ratio"), 0.3);
+		callable_mp((Window *)disk_changed, &Window::popup_centered_ratio).call_deferred(0.3);
 	}
 }
 
@@ -3707,7 +3706,7 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 	callable_mp(scene_tabs, &EditorSceneTabs::update_scene_tabs).call_deferred();
 
 	if (tabs_to_close.is_empty()) {
-		call_deferred(SNAME("_set_main_scene_state"), state, get_edited_scene()); // Do after everything else is done setting up.
+		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
 	}
 }
 
@@ -4097,7 +4096,7 @@ bool EditorNode::has_previous_scenes() const {
 
 void EditorNode::edit_foreign_resource(Ref<Resource> p_resource) {
 	load_scene(p_resource->get_path().get_slice("::", 0));
-	InspectorDock::get_singleton()->call_deferred("edit_resource", p_resource);
+	callable_mp(InspectorDock::get_singleton(), &InspectorDock::edit_resource).call_deferred(p_resource);
 }
 
 bool EditorNode::is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_resources_are_writable) {
@@ -4176,7 +4175,7 @@ void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 void EditorNode::_open_recent_scene(int p_idx) {
 	if (p_idx == recent_scenes->get_item_count() - 1) {
 		EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", Array());
-		call_deferred(SNAME("_update_recent_scenes"));
+		callable_mp(this, &EditorNode::_update_recent_scenes).call_deferred();
 	} else {
 		Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 		ERR_FAIL_INDEX(p_idx, rc.size());
@@ -5259,7 +5258,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 
 		int selected_tab_idx = p_layout->get_value(p_section, "dock_" + itos(i + 1) + "_selected_tab_idx");
 		if (selected_tab_idx >= 0 && selected_tab_idx < dock_slot[i]->get_tab_count()) {
-			dock_slot[i]->call_deferred("set_current_tab", selected_tab_idx);
+			callable_mp(dock_slot[i], &TabContainer::set_current_tab).call_deferred(selected_tab_idx);
 		}
 	}
 
@@ -6677,14 +6676,8 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_item", "object", "property", "inspector_only"), &EditorNode::push_item, DEFVAL(""), DEFVAL(false));
 
 	ClassDB::bind_method("set_edited_scene", &EditorNode::set_edited_scene);
-	ClassDB::bind_method("open_request", &EditorNode::open_request);
-	ClassDB::bind_method("edit_foreign_resource", &EditorNode::edit_foreign_resource);
-	ClassDB::bind_method("is_resource_read_only", &EditorNode::is_resource_read_only);
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
-
-	ClassDB::bind_method("_set_main_scene_state", &EditorNode::_set_main_scene_state);
-	ClassDB::bind_method("_update_recent_scenes", &EditorNode::_update_recent_scenes);
 
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));

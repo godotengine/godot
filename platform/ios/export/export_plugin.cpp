@@ -34,6 +34,7 @@
 #include "run_icon_svg.gen.h"
 
 #include "core/io/json.h"
+#include "core/io/plist.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -154,6 +155,8 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), "12.0"));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
@@ -231,8 +234,8 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	};
 	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "iPhone Developer" : p_preset->get("application/code_sign_identity_debug");
 	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
-	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer");
-	bool rel_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE).operator String().is_empty() || (rel_sign_id != "iPhone Distribution");
+	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer" && dbg_sign_id != "iPhone Distribution");
+	bool rel_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE).operator String().is_empty() || (rel_sign_id != "iPhone Developer" && rel_sign_id != "iPhone Distribution");
 	String str;
 	String strnew;
 	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
@@ -1498,6 +1501,8 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 		false
 	};
 
+	config_data.plist_content += p_preset->get("application/additional_plist_content").operator String() + "\n";
+
 	Vector<IOSExportAsset> assets;
 
 	Ref<DirAccess> tmp_app_path = DirAccess::create_for_path(dest_dir);
@@ -1866,6 +1871,26 @@ bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExp
 
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
+
+	const String &additional_plist_content = p_preset->get("application/additional_plist_content");
+	if (!additional_plist_content.is_empty()) {
+		const String &plist = vformat("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+									  "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
+									  "<plist version=\"1.0\">"
+									  "<dict>\n"
+									  "%s\n"
+									  "</dict>\n"
+									  "</plist>\n",
+				additional_plist_content);
+
+		String plist_err;
+		Ref<PList> plist_parser;
+		plist_parser.instantiate();
+		if (!plist_parser->load_string(plist, plist_err)) {
+			err += TTR("Invalid additional PList content: ") + plist_err + "\n";
+			valid = false;
+		}
+	}
 
 	if (!err.is_empty()) {
 		r_error = err;

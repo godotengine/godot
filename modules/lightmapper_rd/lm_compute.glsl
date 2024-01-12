@@ -264,7 +264,16 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 			break;
 		}
 
-		bvec3 mask = lessThanEqual(side.xyz, min(side.yzx, side.zxy));
+		// There should be only one axis updated at a time for DDA to work properly.
+		bvec3 mask = bvec3(true, false, false);
+		float m = side.x;
+		if (side.y < m) {
+			m = side.y;
+			mask = bvec3(false, true, false);
+		}
+		if (side.z < m) {
+			mask = bvec3(false, false, true);
+		}
 		side += vec3(mask) * delta;
 		icell += ivec3(vec3(mask)) * step;
 		iters++;

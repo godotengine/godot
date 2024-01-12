@@ -194,6 +194,15 @@ public:
 	void set_motion_range(const Hand p_hand, const HandMotionRange p_motion_range);
 	HandMotionRange get_motion_range(const Hand p_hand) const;
 
+	enum HandTrackedSource {
+		HAND_TRACKED_SOURCE_UNKNOWN,
+		HAND_TRACKED_SOURCE_UNOBSTRUCTED,
+		HAND_TRACKED_SOURCE_CONTROLLER,
+		HAND_TRACKED_SOURCE_MAX
+	};
+
+	HandTrackedSource get_hand_tracking_source(const Hand p_hand) const;
+
 	enum HandJoints {
 		HAND_JOINT_PALM = 0,
 		HAND_JOINT_WRIST = 1,
@@ -248,6 +257,7 @@ public:
 
 VARIANT_ENUM_CAST(OpenXRInterface::Hand)
 VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
+VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource)
 VARIANT_ENUM_CAST(OpenXRInterface::HandJoints)
 VARIANT_BITFIELD_CAST(OpenXRInterface::HandJointFlags)
 

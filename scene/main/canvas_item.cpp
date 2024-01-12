@@ -30,7 +30,6 @@
 
 #include "canvas_item.h"
 
-#include "core/object/message_queue.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
@@ -407,7 +406,7 @@ void CanvasItem::queue_redraw() {
 
 	pending_update = true;
 
-	MessageQueue::get_singleton()->push_callable(callable_mp(this, &CanvasItem::_redraw_callback));
+	callable_mp(this, &CanvasItem::_redraw_callback).call_deferred();
 }
 
 void CanvasItem::move_to_front() {
@@ -904,7 +903,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 					get_tree()->xform_change_list.add(&p_node->xform_change);
 				} else {
 					// Should be rare, but still needs to be handled.
-					MessageQueue::get_singleton()->push_callable(callable_mp(p_node, &CanvasItem::_notify_transform_deferred));
+					callable_mp(p_node, &CanvasItem::_notify_transform_deferred).call_deferred();
 				}
 			}
 		}

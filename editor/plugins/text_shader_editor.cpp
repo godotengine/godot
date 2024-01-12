@@ -170,8 +170,8 @@ void ShaderTextEditor::set_edited_code(const String &p_code) {
 
 	get_text_editor()->set_text(p_code);
 	get_text_editor()->clear_undo_history();
-	get_text_editor()->call_deferred(SNAME("set_h_scroll"), 0);
-	get_text_editor()->call_deferred(SNAME("set_v_scroll"), 0);
+	callable_mp((TextEdit *)get_text_editor(), &TextEdit::set_h_scroll).call_deferred(0);
+	callable_mp((TextEdit *)get_text_editor(), &TextEdit::set_v_scroll).call_deferred(0);
 	get_text_editor()->tag_saved_version();
 
 	_validate_script();
@@ -719,7 +719,7 @@ void TextShaderEditor::_menu_option(int p_option) {
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
-		shader_editor->get_text_editor()->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)shader_editor->get_text_editor(), &Control::grab_focus).call_deferred();
 	}
 }
 
@@ -820,7 +820,7 @@ void TextShaderEditor::_check_for_external_edit() {
 			if (use_autoreload) {
 				_reload_shader_include_from_disk();
 			} else {
-				disk_changed->call_deferred(SNAME("popup_centered"));
+				callable_mp((Window *)disk_changed, &Window::popup_centered).call_deferred(Size2i());
 			}
 		}
 		return;
@@ -834,7 +834,7 @@ void TextShaderEditor::_check_for_external_edit() {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
 		} else {
-			disk_changed->call_deferred(SNAME("popup_centered"));
+			callable_mp((Window *)disk_changed, &Window::popup_centered).call_deferred(Size2i());
 		}
 	}
 }
