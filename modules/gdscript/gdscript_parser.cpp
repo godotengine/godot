@@ -330,7 +330,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 
 	tokenizer.set_source_code(source);
 	tokenizer.set_cursor_position(cursor_line, cursor_column);
-	script_path = p_script_path;
+	script_path = p_script_path.simplify_path();
 	current = tokenizer.scan();
 	// Avoid error or newline as the first token.
 	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.
