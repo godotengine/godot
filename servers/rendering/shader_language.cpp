@@ -3176,7 +3176,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				}
 
 				if (!fail) {
-					// When running tests, we might not have a proper rendering server to check low-endness with
+					// When running tests, we might not have a proper rendering server to check low-endness with.
 					RenderingServer *rendering_server = RenderingServer::get_singleton();
 					if (rendering_server != nullptr && rendering_server->is_low_end()) {
 						if (builtin_func_defs[idx].high_end) {
@@ -3639,7 +3639,7 @@ bool ShaderLanguage::_parse_function_arguments(BlockNode *p_block, const Functio
 		// if so, it must be a argument-list-trailing comma.
 		if (_peek_token().type == TK_PARENTHESIS_CLOSE) {
 			// Swallow the closing parenthesis and return.
-			ERR_FAIL_COND_V(_get_token().type != TK_PARENTHESIS_CLOSE, false);
+			_get_token();
 			break;
 		}
 	}

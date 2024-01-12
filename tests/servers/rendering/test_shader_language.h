@@ -37,8 +37,6 @@
 
 #include <servers/rendering/shader_types.h>
 
-#include <cctype>
-
 namespace TestShaderLanguage {
 
 TEST_CASE("[ShaderLanguage] Function call trailing commas") {
