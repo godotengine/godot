@@ -274,7 +274,7 @@ namespace GodotTools.Utils
             if (builder.Length > 0)
                 builder.Append(' ');
 
-            if (fileName.Contains(' '))
+            if (fileName.Contains(' ', StringComparison.Ordinal))
             {
                 builder.Append('"');
                 builder.Append(fileName);
@@ -297,7 +297,7 @@ namespace GodotTools.Utils
                 if (builder.Length > 0)
                     builder.Append(' ');
 
-                if (argument.Contains(' '))
+                if (argument.Contains(' ', StringComparison.Ordinal))
                 {
                     builder.Append('"');
                     builder.Append(argument);

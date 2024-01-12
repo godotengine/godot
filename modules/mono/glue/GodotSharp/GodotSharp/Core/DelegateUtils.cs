@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -698,7 +699,7 @@ namespace Godot
                     case GodotObject godotObject:
                         return VariantUtils.CreateFrom(godotObject);
                     case Enum @enum:
-                        return VariantUtils.CreateFrom(Convert.ToInt64(@enum));
+                        return VariantUtils.CreateFrom(Convert.ToInt64(@enum, CultureInfo.InvariantCulture));
                     case Collections.IGenericGodotDictionary godotDictionary:
                         return VariantUtils.CreateFrom(godotDictionary.UnderlyingDictionary);
                     case Collections.IGenericGodotArray godotArray:
@@ -777,7 +778,7 @@ namespace Godot
                     return func(variant);
 
                 if (typeof(GodotObject).IsAssignableFrom(type))
-                    return Convert.ChangeType(VariantUtils.ConvertTo<GodotObject>(variant), type);
+                    return Convert.ChangeType(VariantUtils.ConvertTo<GodotObject>(variant), type, CultureInfo.InvariantCulture);
 
                 if (typeof(GodotObject[]).IsAssignableFrom(type))
                 {
@@ -796,7 +797,7 @@ namespace Godot
                     }
 
                     using var godotArray = NativeFuncs.godotsharp_variant_as_array(variant);
-                    return Convert.ChangeType(ConvertToSystemArrayOfGodotObject(godotArray, type), type);
+                    return Convert.ChangeType(ConvertToSystemArrayOfGodotObject(godotArray, type), type, CultureInfo.InvariantCulture);
                 }
 
                 if (type.IsEnum)

@@ -73,7 +73,7 @@ namespace GodotTools.Internals
             string? slnParentDir = (string?)ProjectSettings.GetSetting("dotnet/project/solution_directory");
             if (string.IsNullOrEmpty(slnParentDir))
                 slnParentDir = "res://";
-            else if (!slnParentDir.StartsWith("res://"))
+            else if (!slnParentDir.StartsWith("res://", System.StringComparison.Ordinal))
                 slnParentDir = "res://" + slnParentDir;
 
             // The csproj should be in the same folder as project.godot.

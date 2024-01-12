@@ -12,6 +12,7 @@ using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
 using Path = System.IO.Path;
+using System.Globalization;
 
 namespace GodotTools.Export
 {
@@ -277,7 +278,7 @@ namespace GodotTools.Export
                             if (platform == OS.Platforms.iOS)
                             {
                                 // Exclude dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.InvariantCultureIgnoreCase);
+                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
                             }
 
                             return true;
@@ -297,7 +298,7 @@ namespace GodotTools.Export
                             if (platform == OS.Platforms.iOS)
                             {
                                 // Don't recurse into dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.InvariantCultureIgnoreCase);
+                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
                             }
 
                             return true;
@@ -313,13 +314,13 @@ namespace GodotTools.Export
                                     byte[] fileData = File.ReadAllBytes(path);
                                     string hash = Convert.ToBase64String(SHA512.HashData(fileData));
 
-                                    manifest.Append($"{filePath}\t{hash}\n");
+                                    manifest.Append(CultureInfo.InvariantCulture, $"{filePath}\t{hash}\n");
 
                                     AddFile($"res://.godot/mono/publish/{arch}/{filePath}", fileData, false);
                                 }
                                 else
                                 {
-                                    if (platform == OS.Platforms.iOS && path.EndsWith(".dat"))
+                                    if (platform == OS.Platforms.iOS && path.EndsWith(".dat", StringComparison.OrdinalIgnoreCase))
                                     {
                                         AddIosBundleFile(path);
                                     }
