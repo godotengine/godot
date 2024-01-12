@@ -38,7 +38,7 @@ class TileSetAtlasSource;
 
 class TerrainConstraint {
 private:
-	const TileMap *tile_map = nullptr;
+	Ref<TileSet> tile_set;
 	Vector2i base_cell_coords;
 	int bit = -1;
 	int terrain = -1;
@@ -83,8 +83,8 @@ public:
 		return priority;
 	}
 
-	TerrainConstraint(const TileMap *p_tile_map, const Vector2i &p_position, int p_terrain); // For the center terrain bit
-	TerrainConstraint(const TileMap *p_tile_map, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
+	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, int p_terrain); // For the center terrain bit
+	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
 	TerrainConstraint(){};
 };
 
@@ -214,23 +214,24 @@ public:
 	}
 };
 
-class TileMapLayer : public RefCounted {
-	GDCLASS(TileMapLayer, RefCounted);
+class TileMapLayer : public Node2D {
+	GDCLASS(TileMapLayer, Node2D);
 
 public:
 	enum DirtyFlags {
 		DIRTY_FLAGS_LAYER_ENABLED = 0,
-		DIRTY_FLAGS_LAYER_MODULATE,
+		DIRTY_FLAGS_LAYER_IN_TREE,
+		DIRTY_FLAGS_LAYER_IN_CANVAS,
+		DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM,
+		DIRTY_FLAGS_LAYER_VISIBILITY,
+		DIRTY_FLAGS_LAYER_SELF_MODULATE,
 		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
+		DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES,
 		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
 		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE,
-		DIRTY_FLAGS_TILE_MAP_IN_TREE,
-		DIRTY_FLAGS_TILE_MAP_IN_CANVAS,
-		DIRTY_FLAGS_TILE_MAP_VISIBILITY,
-		DIRTY_FLAGS_TILE_MAP_XFORM,
-		DIRTY_FLAGS_TILE_MAP_LOCAL_XFORM,
+
 		DIRTY_FLAGS_TILE_MAP_SELECTED_LAYER,
 		DIRTY_FLAGS_TILE_MAP_LIGHT_MASK,
 		DIRTY_FLAGS_TILE_MAP_MATERIAL,
@@ -239,7 +240,6 @@ public:
 		DIRTY_FLAGS_TILE_MAP_TEXTURE_REPEAT,
 		DIRTY_FLAGS_TILE_MAP_TILE_SET,
 		DIRTY_FLAGS_TILE_MAP_QUADRANT_SIZE,
-		DIRTY_FLAGS_TILE_MAP_COLLISION_ANIMATABLE,
 		DIRTY_FLAGS_TILE_MAP_COLLISION_VISIBILITY_MODE,
 		DIRTY_FLAGS_TILE_MAP_NAVIGATION_VISIBILITY_MODE,
 		DIRTY_FLAGS_TILE_MAP_Y_SORT_ENABLED,
@@ -249,20 +249,15 @@ public:
 
 private:
 	// Exposed properties.
-	String name;
 	bool enabled = true;
-	Color modulate = Color(1, 1, 1, 1);
-	bool y_sort_enabled = false;
 	int y_sort_origin = 0;
-	int z_index = 0;
+	bool use_kinematic_bodies = false;
 	bool navigation_enabled = true;
 	RID navigation_map;
 	bool uses_world_navigation_map = false;
 
 	// Internal.
-	TileMap *tile_map_node = nullptr;
 	int layer_index_in_tile_map_node = -1;
-	RID canvas_item;
 	HashMap<Vector2i, CellData> tile_map;
 
 	// Dirty flag. Allows knowing what was modified since the last update.
@@ -277,6 +272,10 @@ private:
 	mutable bool rect_cache_dirty = true;
 	mutable Rect2i used_rect_cache;
 	mutable bool used_rect_cache_dirty = true;
+
+	// Method to fetch the TileSet to use
+	TileMap *_fetch_tilemap() const;
+	Ref<TileSet> _fetch_tileset() const;
 
 	// Runtime tile data.
 	bool _runtime_update_tile_data_was_cleaned_up = false;
@@ -296,6 +295,7 @@ private:
 	HashMap<Vector2i, Ref<RenderingQuadrant>> rendering_quadrant_map;
 	bool _rendering_was_cleaned_up = false;
 	void _rendering_update();
+	void _rendering_notification(int p_what);
 	void _rendering_quadrants_update_cell(CellData &r_cell_data, SelfList<RenderingQuadrant>::List &r_dirty_rendering_quadrant_list);
 	void _rendering_occluders_clear_cell(CellData &r_cell_data);
 	void _rendering_occluders_update_cell(CellData &r_cell_data);
@@ -306,7 +306,7 @@ private:
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
 	bool _physics_was_cleaned_up = false;
 	void _physics_update();
-	void _physics_notify_tilemap_change(DirtyFlags p_what);
+	void _physics_notification(int p_what);
 	void _physics_clear_cell(CellData &r_cell_data);
 	void _physics_update_cell(CellData &r_cell_data);
 #ifdef DEBUG_ENABLED
@@ -315,6 +315,7 @@ private:
 
 	bool _navigation_was_cleaned_up = false;
 	void _navigation_update();
+	void _navigation_notification(int p_what);
 	void _navigation_clear_cell(CellData &r_cell_data);
 	void _navigation_update_cell(CellData &r_cell_data);
 #ifdef DEBUG_ENABLED
@@ -334,9 +335,14 @@ private:
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
+	void _renamed();
+	void _update_notify_local_transform();
+
+protected:
+	void _notification(int p_what);
+
 public:
 	// TileMap node.
-	void set_tile_map(TileMap *p_tile_map);
 	void set_layer_index_in_tile_map_node(int p_index);
 
 	// Rect caching.
@@ -383,18 +389,15 @@ public:
 	Rect2i get_used_rect() const;
 
 	// Layer properties.
-	void set_name(String p_name);
-	String get_name() const;
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
-	void set_modulate(Color p_modulate);
-	Color get_modulate() const;
-	void set_y_sort_enabled(bool p_y_sort_enabled);
-	bool is_y_sort_enabled() const;
+	virtual void set_self_modulate(const Color &p_self_modulate) override;
+	virtual void set_y_sort_enabled(bool p_y_sort_enabled) override;
 	void set_y_sort_origin(int p_y_sort_origin);
 	int get_y_sort_origin() const;
-	void set_z_index(int p_z_index);
-	int get_z_index() const;
+	virtual void set_z_index(int p_z_index) override;
+	void set_use_kinematic_bodies(bool p_use_kinematic_bodies);
+	bool is_using_kinematic_bodies() const;
 	void set_navigation_enabled(bool p_enabled);
 	bool is_navigation_enabled() const;
 	void set_navigation_map(RID p_map);
@@ -407,6 +410,7 @@ public:
 	bool has_body_rid(RID p_physics_body) const;
 	Vector2i get_coords_for_body_rid(RID p_physics_body) const; // For finding tiles from collision.
 
+	TileMapLayer();
 	~TileMapLayer();
 };
 
