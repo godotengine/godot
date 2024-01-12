@@ -6027,6 +6027,10 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
 		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			_remove_preview();
+		} break;
 	}
 }
 
