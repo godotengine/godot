@@ -411,6 +411,12 @@
 				Returns the canvas item RID used by [RenderingServer] for this item.
 			</description>
 		</method>
+		<method name="get_canvas_layer_node" qualifiers="const">
+			<return type="CanvasLayer" />
+			<description>
+				Returns the [CanvasLayer] that contains this node, or [code]null[/code] if the node is not in any [CanvasLayer].
+			</description>
+		</method>
 		<method name="get_canvas_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>

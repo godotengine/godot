@@ -363,6 +363,7 @@ public:
 	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };
 
 	int get_canvas_layer() const;
+	CanvasLayer *get_canvas_layer_node() const;
 
 	CanvasItem();
 	~CanvasItem();
