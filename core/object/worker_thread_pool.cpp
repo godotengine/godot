@@ -33,60 +33,7 @@
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
-#if defined(_WIN32) || defined(_WIN64)
-    #include <windows.h>
-    #include <dbghelp.h>
-    
-    #define PRINT_STACK_TRACE(out_str) \
-        { \
-            const int MAX_STACK_FRAMES = 100; \
-            void* stackFrames[MAX_STACK_FRAMES]; \
-            HANDLE process = GetCurrentProcess(); \
-            SymInitialize(process, nullptr, TRUE); \
-            USHORT numFrames = CaptureStackBackTrace(0, MAX_STACK_FRAMES, stackFrames, nullptr); \
-            SYMBOL_INFO* symbolInfo = (SYMBOL_INFO*)malloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char)); \
-            symbolInfo->MaxNameLen = 255; \
-            symbolInfo->SizeOfStruct = sizeof(SYMBOL_INFO); \
-            for (int i = 0; i < numFrames; ++i) { \
-                SymFromAddr(process, (DWORD64)(stackFrames[i]), nullptr, symbolInfo); \
-                out_str += "[" + itos(i) + "] " + String(symbolInfo->Name) + "\n"; \
-            } \
-            free(symbolInfo); \
-        }
-#elif defined(__linux__)
-    #include <execinfo.h>
-    #include <dlfcn.h>
-    #include <cxxabi.h>
-    
-    #define PRINT_STACK_TRACE(out_str) \
-	 { \
-            const int MAX_STACK_FRAMES = 100; \
-            void* stackFrames[MAX_STACK_FRAMES]; \
-            int numFrames = backtrace(stackFrames, MAX_STACK_FRAMES); \
-            char** symbols = backtrace_symbols(stackFrames, numFrames); \
-            if (symbols == nullptr) { \
-                out_str = "Failed to obtain backtrace symbols\n"; \
-                return; \
-            } \
-            for (int i = 0; i < numFrames; ++i) { \
-                Dl_info info; \
-                if (dladdr(stackFrames[i], &info) && info.dli_sname) { \
-                    int status = 0; \
-                    char* demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status); \
-                   out_str += "[" + itos(i) + "] " + String(symbols[i]) + "\n";  \
-                    free(demangled); \
-                } else { \
-                    out_str += "[" + itos(i) + "] " + String(symbols[i]) + "\n"; \
-                } \
-            } \
-            free(symbols); \
-        }
-#else
-    #define PRINT_STACK_TRACE(out_str) \
-	{ \
-            out_str = ("Stack trace not supported on this platform\n"); \
-        }
-#endif
+
 void WorkerThreadPool::Task::free_template_userdata() {
 	ERR_FAIL_NULL(template_userdata);
 	ERR_FAIL_NULL(native_func_userdata);
