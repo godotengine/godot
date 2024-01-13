@@ -7,11 +7,11 @@ namespace GodotTools.BuildLogger
 {
     public class GodotBuildLogger : ILogger
     {
-        public string Parameters { get; set; }
+        public string? Parameters { get; set; }
         public LoggerVerbosity Verbosity { get; set; }
 
-        private StreamWriter _logStreamWriter;
-        private StreamWriter _issuesStreamWriter;
+        private StreamWriter _logStreamWriter = StreamWriter.Null;
+        private StreamWriter _issuesStreamWriter = StreamWriter.Null;
         private int _indent;
 
         public void Initialize(IEventSource eventSource)

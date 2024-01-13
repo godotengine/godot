@@ -7,7 +7,9 @@ namespace GodotTools
 {
     public partial class HotReloadAssemblyWatcher : Node
     {
+#nullable disable
         private Timer _watchTimer;
+#nullable enable
 
         public override void _Notification(int what)
         {

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Godot;
 using Godot.NativeInterop;
@@ -59,16 +60,17 @@ namespace GodotTools.Internals
             }
         }
 
+        [MemberNotNull("_projectAssemblyName", "_projectSlnPath", "_projectCsProjPath")]
         public static void DetermineProjectLocation()
         {
-            _projectAssemblyName = (string)ProjectSettings.GetSetting("dotnet/project/assembly_name");
+            _projectAssemblyName = (string?)ProjectSettings.GetSetting("dotnet/project/assembly_name");
             if (string.IsNullOrEmpty(_projectAssemblyName))
             {
                 _projectAssemblyName = CSharpProjectName;
                 ProjectSettings.SetSetting("dotnet/project/assembly_name", _projectAssemblyName);
             }
 
-            string slnParentDir = (string)ProjectSettings.GetSetting("dotnet/project/solution_directory");
+            string? slnParentDir = (string?)ProjectSettings.GetSetting("dotnet/project/solution_directory");
             if (string.IsNullOrEmpty(slnParentDir))
                 slnParentDir = "res://";
             else if (!slnParentDir.StartsWith("res://"))
@@ -84,9 +86,9 @@ namespace GodotTools.Internals
                 string.Concat(_projectAssemblyName, ".csproj"));
         }
 
-        private static string _projectAssemblyName;
-        private static string _projectSlnPath;
-        private static string _projectCsProjPath;
+        private static string? _projectAssemblyName;
+        private static string? _projectSlnPath;
+        private static string? _projectCsProjPath;
 
         public static string ProjectAssemblyName
         {

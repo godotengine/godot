@@ -8,8 +8,6 @@ using GodotTools.Internals;
 using static GodotTools.Internals.Globals;
 using FileAccess = Godot.FileAccess;
 
-#nullable enable
-
 namespace GodotTools.Build
 {
     public partial class BuildProblemsView : HBoxContainer
@@ -244,7 +242,9 @@ namespace GodotTools.Build
             if (string.IsNullOrEmpty(projectDir))
                 return;
 
-            string file = Path.Combine(projectDir.SimplifyGodotPath(), diagnostic.File.SimplifyGodotPath());
+            string? file = !string.IsNullOrEmpty(diagnostic.File) ?
+                Path.Combine(projectDir.SimplifyGodotPath(), diagnostic.File.SimplifyGodotPath()) :
+                null;
 
             if (!File.Exists(file))
                 return;
