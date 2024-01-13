@@ -877,6 +877,7 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 			ret = TerminateProcess(hProcess, 0);
 
 			CloseHandle(hProcess);
+			return OK;
 		}
 	}
 
@@ -1629,6 +1630,59 @@ String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
 	return String((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
+}
+
+List<String> OS_Windows::get_restart_on_exit_arguments() const {
+	List<String> args = OS::get_restart_on_exit_arguments();
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		args.push_back("--kill-previous-editor-pid");
+		args.push_back(itos(GetCurrentProcessId()));
+	}
+
+	return args;
+}
+
+Error OS_Windows::kill_previous_editor_and_wait(const ProcessID &p_pid) {
+	// Kill the previous editor process and wait for it to stop. The OS::kill
+	// method sends the kill signal without waiting, so it can't be used here.
+	Error err = FAILED;
+
+	HANDLE hProcess = OpenProcess(PROCESS_TERMINATE | SYNCHRONIZE, false, (DWORD)p_pid);
+	// Awkward control flow to ensure CloseHandle is called.
+	if (hProcess == NULL) {
+		ERR_PRINT_ED("Failed to open previous editor process: " + format_error_message(GetLastError()));
+	} else {
+		int ret = TerminateProcess(hProcess, 0);
+		if (ret == 0) {
+			ERR_PRINT_ED("Failed to terminate previous editor process: " + format_error_message(GetLastError()));
+		} else {
+			// Wait for the process to stop with a timeout in ms.
+			ret = WaitForSingleObject(hProcess, 15 * 1000);
+			if (ret != WAIT_OBJECT_0) {
+				ERR_PRINT_ED("Failure while waiting for previous editor to terminate: " + format_error_message(GetLastError()));
+			} else {
+				err = OK;
+			}
+		}
+	}
+
+	CloseHandle(hProcess);
+	return err;
+}
+
+bool OS_Windows::is_restart_responsible_for_exit() const {
+	// On other platforms, waiting for the previous editor instance to stop
+	// before initializing the new one is not necessary. Waiting helps a very
+	// specific case: a GDExtension DLL that doesn't support FreeLibrary and
+	// remains locked by the Godot process. If the editor is running, the new
+	// instance of Godot attempts to create a temporary copy of the GDExtension
+	// DLL, but the old temporary copy is still locked by the old process, so
+	// the new Godot instance fails to initialize the GDExtension.
+	//
+	// See https://github.com/godotengine/godot-proposals/issues/8772 for more
+	// details about this situation.
+	return OS::is_restart_on_exit_set() && Engine::get_singleton()->is_editor_hint();
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {

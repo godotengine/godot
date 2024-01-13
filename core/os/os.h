@@ -95,6 +95,8 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 
+	typedef int64_t ProcessID;
+
 protected:
 	friend class Main;
 	// Needed by tests to setup command-line args.
@@ -124,9 +126,10 @@ protected:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
-public:
-	typedef int64_t ProcessID;
+	virtual Error kill_previous_editor_and_wait(const ProcessID &p_pid);
+	virtual bool is_restart_responsible_for_exit() const;
 
+public:
 	static OS *get_singleton();
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
@@ -301,7 +304,7 @@ public:
 
 	void set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments);
 	bool is_restart_on_exit_set() const;
-	List<String> get_restart_on_exit_arguments() const;
+	virtual List<String> get_restart_on_exit_arguments() const;
 
 	virtual bool request_permission(const String &p_name) { return true; }
 	virtual bool request_permissions() { return true; }
