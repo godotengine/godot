@@ -207,6 +207,9 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 	Variant array = object->get_array().duplicate();
 	array.set(index, p_value);
 	emit_changed(get_edited_property(), array, p_name, p_changing);
+	if (!p_changing) {
+		update_property();
+	}
 }
 
 void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
@@ -230,7 +233,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	Variant array = object->get_array().duplicate();
 	array.set(changing_type_index, value);
 
-	emit_changed(get_edited_property(), array, "", true);
+	emit_changed(get_edited_property(), array);
 	update_property();
 }
 
@@ -432,7 +435,7 @@ void EditorPropertyArray::_remove_pressed(int p_slot_index) {
 	Variant array = object->get_array().duplicate();
 	array.call("remove_at", slots[p_slot_index].index);
 
-	emit_changed(get_edited_property(), array, "", false);
+	emit_changed(get_edited_property(), array);
 	update_property();
 }
 
@@ -512,7 +515,7 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 			}
 		}
 
-		emit_changed(get_edited_property(), array, "", false);
+		emit_changed(get_edited_property(), array);
 		update_property();
 	}
 }
@@ -605,7 +608,7 @@ void EditorPropertyArray::_length_changed(double p_page) {
 	Variant array = object->get_array().duplicate();
 	array.call("resize", int(p_page));
 
-	emit_changed(get_edited_property(), array, "", false);
+	emit_changed(get_edited_property(), array);
 	update_property();
 }
 
@@ -699,7 +702,8 @@ void EditorPropertyArray::_reorder_button_up() {
 		array.call("insert", reorder_to_index, value_to_move);
 
 		reorder_slot.index = reorder_slot.index % page_length + page_index * page_length;
-		emit_changed(get_edited_property(), array, "", false);
+		emit_changed(get_edited_property(), array);
+		update_property();
 	}
 
 	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
