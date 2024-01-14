@@ -65,10 +65,13 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		Vector2 target_position = node->get("target_position");
 
+		Vector2 gpoint = mb->get_position();
+
 		if (mb->is_pressed()) {
-			if (xform.xform(target_position).distance_to(mb->get_position()) < 8) {
+			if (xform.xform(target_position).distance_to(gpoint) < 8) {
 				pressed = true;
 				original_target_position = target_position;
+				original_mouse_pos = gpoint;
 
 				return true;
 			} else {
@@ -77,16 +80,17 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 				return false;
 			}
 		} else if (pressed) {
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Set Target Position"));
-			undo_redo->add_do_property(node, "target_position", target_position);
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_property(node, "target_position", original_target_position);
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-			undo_redo->commit_action();
+			if (original_mouse_pos != gpoint) {
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Set Target Position"));
+				undo_redo->add_do_property(node, "target_position", target_position);
+				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+				undo_redo->add_undo_property(node, "target_position", original_target_position);
+				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+				undo_redo->commit_action();
+			}
 
 			pressed = false;
-
 			return true;
 		}
 	}

@@ -291,6 +291,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 					const PosVertex closest = closest_point(gpoint);
 					if (closest.valid()) {
+						original_mouse_pos = gpoint;
 						pre_move_edit = _get_polygon(closest.polygon);
 						edited_point = PosVertex(closest, xform.affine_inverse().xform(closest.pos));
 						selected_point = closest;
@@ -327,15 +328,15 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					}
 				} else {
 					if (edited_point.valid()) {
-						//apply
+						if (original_mouse_pos != gpoint) {
+							Vector<Vector2> vertices = _get_polygon(edited_point.polygon);
+							ERR_FAIL_INDEX_V(edited_point.vertex, vertices.size(), false);
+							vertices.write[edited_point.vertex] = edited_point.pos - _get_offset(edited_point.polygon);
 
-						Vector<Vector2> vertices = _get_polygon(edited_point.polygon);
-						ERR_FAIL_INDEX_V(edited_point.vertex, vertices.size(), false);
-						vertices.write[edited_point.vertex] = edited_point.pos - _get_offset(edited_point.polygon);
-
-						undo_redo->create_action(TTR("Edit Polygon"));
-						_action_set_polygon(edited_point.polygon, pre_move_edit, vertices);
-						_commit_action();
+							undo_redo->create_action(TTR("Edit Polygon"));
+							_action_set_polygon(edited_point.polygon, pre_move_edit, vertices);
+							_commit_action();
+						}
 
 						edited_point = PosVertex();
 						return true;

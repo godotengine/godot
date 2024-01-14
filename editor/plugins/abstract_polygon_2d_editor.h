@@ -79,6 +79,7 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	Vertex hover_point; // point under mouse cursor
 	Vertex selected_point; // currently selected
 	PosVertex edge_point; // adding an edge point?
+	Vector2 original_mouse_pos;
 
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
