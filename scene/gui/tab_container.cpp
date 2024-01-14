@@ -153,9 +153,9 @@ void TabContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
-			if (setup_current_tab >= 0) {
+			if (setup_current_tab >= -1) {
 				set_current_tab(setup_current_tab);
-				setup_current_tab = -1;
+				setup_current_tab = -2;
 			}
 		} break;
 
@@ -259,6 +259,7 @@ void TabContainer::_repaint() {
 		tab_bar->set_anchors_and_offsets_preset(PRESET_TOP_WIDE);
 	}
 
+	updating_visibility = true;
 	for (int i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
@@ -282,6 +283,7 @@ void TabContainer::_repaint() {
 			c->hide();
 		}
 	}
+	updating_visibility = false;
 
 	_update_margins();
 	update_minimum_size();
@@ -440,6 +442,7 @@ void TabContainer::_on_tab_hovered(int p_tab) {
 
 void TabContainer::_on_tab_changed(int p_tab) {
 	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	queue_redraw();
 
 	emit_signal(SNAME("tab_changed"), p_tab);
 }
@@ -458,6 +461,43 @@ void TabContainer::_on_tab_button_pressed(int p_tab) {
 
 void TabContainer::_on_active_tab_rearranged(int p_tab) {
 	emit_signal(SNAME("active_tab_rearranged"), p_tab);
+}
+
+void TabContainer::_on_tab_visibility_changed(Control *p_child) {
+	if (updating_visibility) {
+		return;
+	}
+	int tab_index = get_tab_idx_from_control(p_child);
+	if (tab_index == -1) {
+		return;
+	}
+	// Only allow one tab to be visible.
+	bool made_visible = p_child->is_visible();
+	updating_visibility = true;
+
+	if (!made_visible && get_current_tab() == tab_index) {
+		if (get_deselect_enabled() || get_tab_count() == 0) {
+			// Deselect.
+			set_current_tab(-1);
+		} else if (get_tab_count() == 1) {
+			// Only tab, cannot deselect.
+			p_child->show();
+		} else {
+			// Set a different tab to be the current tab.
+			bool selected = select_next_available();
+			if (!selected) {
+				selected = select_previous_available();
+			}
+			if (!selected) {
+				// No available tabs, deselect.
+				set_current_tab(-1);
+			}
+		}
+	} else if (made_visible && get_current_tab() != tab_index) {
+		set_current_tab(tab_index);
+	}
+
+	updating_visibility = false;
 }
 
 void TabContainer::_refresh_tab_names() {
@@ -490,6 +530,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	}
 
 	p_child->connect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
+	p_child->connect(SNAME("visibility_changed"), callable_mp(this, &TabContainer::_on_tab_visibility_changed).bind(c));
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
@@ -547,6 +588,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	p_child->remove_meta("_tab_name");
 	p_child->disconnect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
+	p_child->disconnect(SNAME("visibility_changed"), callable_mp(this, &TabContainer::_on_tab_visibility_changed));
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
@@ -584,6 +626,14 @@ bool TabContainer::select_previous_available() {
 
 bool TabContainer::select_next_available() {
 	return tab_bar->select_next_available();
+}
+
+void TabContainer::set_deselect_enabled(bool p_enabled) {
+	tab_bar->set_deselect_enabled(p_enabled);
+}
+
+bool TabContainer::get_deselect_enabled() const {
+	return tab_bar->get_deselect_enabled();
 }
 
 Control *TabContainer::get_tab_control(int p_idx) const {
@@ -950,6 +1000,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
 	ClassDB::bind_method(D_METHOD("set_tab_focus_mode", "focus_mode"), &TabContainer::set_tab_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_tab_focus_mode"), &TabContainer::get_tab_focus_mode);
+	ClassDB::bind_method(D_METHOD("set_deselect_enabled", "enabled"), &TabContainer::set_deselect_enabled);
+	ClassDB::bind_method(D_METHOD("get_deselect_enabled"), &TabContainer::get_deselect_enabled);
 
 	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
@@ -969,6 +1021,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_tab_focus_mode", "get_tab_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
 
 	BIND_ENUM_CONSTANT(POSITION_TOP);
 	BIND_ENUM_CONSTANT(POSITION_BOTTOM);

@@ -56,7 +56,9 @@ private:
 	bool theme_changing = false;
 	Vector<Control *> children_removing;
 	bool drag_to_rearrange_enabled = false;
-	int setup_current_tab = -1;
+	// Set the default setup current tab to be an invalid index.
+	int setup_current_tab = -2;
+	bool updating_visibility = false;
 
 	struct ThemeCache {
 		int side_margin = 0;
@@ -108,6 +110,7 @@ private:
 	void _on_tab_selected(int p_tab);
 	void _on_tab_button_pressed(int p_tab);
 	void _on_active_tab_rearranged(int p_tab);
+	void _on_tab_visibility_changed(Control *p_child);
 
 	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
@@ -173,6 +176,9 @@ public:
 
 	bool select_previous_available();
 	bool select_next_available();
+
+	void set_deselect_enabled(bool p_enabled);
+	bool get_deselect_enabled() const;
 
 	Control *get_tab_control(int p_idx) const;
 	Control *get_current_tab_control() const;
