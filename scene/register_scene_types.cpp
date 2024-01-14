@@ -700,6 +700,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeRandomRange);
 	GDREGISTER_CLASS(VisualShaderNodeRemap);
 	GDREGISTER_CLASS(VisualShaderNodeRotationByAxis);
+	GDREGISTER_CLASS(VisualShaderNodeSphereMask);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVarying);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingSetter);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingGetter);
@@ -720,6 +721,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeParticleConeVelocity);
 	GDREGISTER_CLASS(VisualShaderNodeParticleRandomness);
 	GDREGISTER_CLASS(VisualShaderNodeParticleAccelerator);
+	GDREGISTER_CLASS(VisualShaderNodeParticleTurbulence);
 	GDREGISTER_CLASS(VisualShaderNodeParticleEmit);
 
 	GDREGISTER_VIRTUAL_CLASS(Material);
