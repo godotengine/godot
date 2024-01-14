@@ -1693,45 +1693,16 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 #ifdef TOOLS_ENABLED
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
-	if (pf == "change_scene_to_file") {
-		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		List<String> directories;
-		directories.push_back(dir_access->get_current_dir());
-
-		while (!directories.is_empty()) {
-			dir_access->change_dir(directories.back()->get());
-			directories.pop_back();
-
-			dir_access->list_dir_begin();
-			String filename = dir_access->get_next();
-
-			while (!filename.is_empty()) {
-				if (filename == "." || filename == "..") {
-					filename = dir_access->get_next();
-					continue;
-				}
-
-				if (dir_access->dir_exists(filename)) {
-					directories.push_back(dir_access->get_current_dir().path_join(filename));
-				} else if (filename.ends_with(".tscn") || filename.ends_with(".scn")) {
-					r_options->push_back("\"" + dir_access->get_current_dir().path_join(filename) + "\"");
-				}
-
-				filename = dir_access->get_next();
-			}
-		}
-	} else {
-		bool add_options = false;
-		if (p_idx == 0) {
-			add_options = pf == "get_nodes_in_group" || pf == "has_group" || pf == "get_first_node_in_group" || pf == "set_group" || pf == "notify_group" || pf == "call_group" || pf == "add_to_group";
-		} else if (p_idx == 1) {
-			add_options = pf == "set_group_flags" || pf == "call_group_flags" || pf == "notify_group_flags";
-		}
-		if (add_options) {
-			HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
-			for (const KeyValue<StringName, String> &E : global_groups) {
-				r_options->push_back(E.key.operator String().quote());
-			}
+	bool add_options = false;
+	if (p_idx == 0) {
+		add_options = pf == "get_nodes_in_group" || pf == "has_group" || pf == "get_first_node_in_group" || pf == "set_group" || pf == "notify_group" || pf == "call_group" || pf == "add_to_group";
+	} else if (p_idx == 1) {
+		add_options = pf == "set_group_flags" || pf == "call_group_flags" || pf == "notify_group_flags";
+	}
+	if (add_options) {
+		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
+		for (const KeyValue<StringName, String> &E : global_groups) {
+			r_options->push_back(E.key.operator String().quote());
 		}
 	}
 	MainLoop::get_argument_options(p_function, p_idx, r_options);
