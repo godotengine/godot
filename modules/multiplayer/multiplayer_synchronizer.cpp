@@ -49,11 +49,11 @@ void MultiplayerSynchronizer::_stop() {
 	}
 #endif
 	root_node_cache = ObjectID();
-	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		get_multiplayer()->object_configuration_remove(node, this);
 	}
+	reset();
 }
 
 void MultiplayerSynchronizer::_start() {
