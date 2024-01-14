@@ -103,7 +103,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE, bool p_backward_undo_ops = false);
+	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_ALL, bool p_backward_undo_ops = false);
 
 	void add_do_method(const Callable &p_callable);
 	void add_undo_method(const Callable &p_callable);
