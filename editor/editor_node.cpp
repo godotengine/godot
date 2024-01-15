@@ -7817,6 +7817,7 @@ EditorNode::EditorNode() {
 	file = memnew(EditorFileDialog);
 	gui_base->add_child(file);
 	file->set_current_dir("res://");
+	file->set_transient_to_focused(true);
 
 	file_export_lib = memnew(EditorFileDialog);
 	file_export_lib->set_title(TTR("Export Library"));

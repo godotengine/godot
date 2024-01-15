@@ -596,6 +596,10 @@ DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window)
 	return VSyncMode::VSYNC_ENABLED;
 }
 
+DisplayServer::WindowID DisplayServer::get_focused_window() const {
+	return MAIN_WINDOW_ID; // Proper value for single windows.
+}
+
 void DisplayServer::set_context(Context p_context) {
 }
 

@@ -669,6 +669,9 @@
 			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. The transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 			Note that behavior might be different depending on the platform.
 		</member>
+		<member name="transient_to_focused" type="bool" setter="set_transient_to_focused" getter="is_transient_to_focused" default="false">
+			If [code]true[/code], and the [Window] is [member transient], this window will (at the time of becoming visible) become transient to the currently focused window instead of the immediate parent window in the hierarchy. Note that the transient parent is assigned at the time this window becomes visible, so changing it afterwards has no effect until re-shown.
+		</member>
 		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows.
 			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.

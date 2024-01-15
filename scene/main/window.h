@@ -127,6 +127,7 @@ private:
 
 	bool use_font_oversampling = false;
 	bool transient = false;
+	bool transient_to_focused = false;
 	bool exclusive = false;
 	bool wrap_controls = false;
 	bool updating_child_controls = false;
@@ -315,6 +316,9 @@ public:
 
 	void set_transient(bool p_transient);
 	bool is_transient() const;
+
+	void set_transient_to_focused(bool p_transient_to_focused);
+	bool is_transient_to_focused() const;
 
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
