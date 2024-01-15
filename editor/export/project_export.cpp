@@ -1396,12 +1396,14 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	set_cancel_button_text(TTR("Close"));
 	set_ok_button_text(TTR("Export PCK/ZIP..."));
+	get_ok_button()->set_tooltip_text(TTR("Export the project resources as a PCK or ZIP package. This is not a playable build, only the project data without a Godot executable."));
 	get_ok_button()->set_disabled(true);
 #ifdef ANDROID_ENABLED
 	export_button = memnew(Button);
 	export_button->hide();
 #else
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
+	export_button->set_tooltip_text(TTR("Export the project as a playable build (Godot executable and project data) for the selected preset."));
 #endif
 	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
