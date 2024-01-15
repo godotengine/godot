@@ -634,7 +634,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 }
 
 #ifdef DEBUG_ENABLED
-void TileMapLayer::_rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2i &p_quadrant_pos, const CellData &r_cell_data) {
+void TileMapLayer::_rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data) {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -898,7 +898,7 @@ void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
 }
 
 #ifdef DEBUG_ENABLED
-void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vector2i &p_quadrant_pos, const CellData &r_cell_data) {
+void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data) {
 	// Draw the debug collision shapes.
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
@@ -1117,7 +1117,7 @@ void TileMapLayer::_navigation_update_cell(CellData &r_cell_data) {
 }
 
 #ifdef DEBUG_ENABLED
-void TileMapLayer::_navigation_draw_cell_debug(const RID &p_canvas_item, const Vector2i &p_quadrant_pos, const CellData &r_cell_data) {
+void TileMapLayer::_navigation_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data) {
 	// Draw the debug collision shapes.
 	bool show_navigation = false;
 	switch (tile_map_node->get_navigation_visibility_mode()) {
@@ -1302,7 +1302,7 @@ void TileMapLayer::_scenes_update_cell(CellData &r_cell_data) {
 }
 
 #ifdef DEBUG_ENABLED
-void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vector2i &p_quadrant_pos, const CellData &r_cell_data) {
+void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data) {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
 
