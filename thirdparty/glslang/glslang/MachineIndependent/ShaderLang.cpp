@@ -796,7 +796,8 @@ bool ProcessDeferred(
     bool requireNonempty,
     TShader::Includer& includer,
     const std::string sourceEntryPointName = "",
-    const TEnvironment* environment = nullptr)  // optional way of fully setting all versions, overriding the above
+    const TEnvironment* environment = nullptr,  // optional way of fully setting all versions, overriding the above
+    bool compileOnly = false)
 {
     // This must be undone (.pop()) by the caller, after it finishes consuming the created tree.
     GetThreadPoolAllocator().push();
@@ -942,6 +943,7 @@ bool ProcessDeferred(
     std::unique_ptr<TParseContextBase> parseContext(CreateParseContext(*symbolTable, intermediate, version, profile, source,
                                                     stage, compiler->infoSink,
                                                     spvVersion, forwardCompatible, messages, false, sourceEntryPointName));
+    parseContext->compileOnly = compileOnly;
     TPpContext ppContext(*parseContext, names[numPre] ? names[numPre] : "", includer);
 
     // only GLSL (bison triggered, really) needs an externally set scan context
@@ -1066,8 +1068,8 @@ struct DoPreprocessing {
                     EShOptimizationLevel, EShMessages)
     {
         // This is a list of tokens that do not require a space before or after.
-        static const std::string unNeededSpaceTokens = ";()[]";
-        static const std::string noSpaceBeforeTokens = ",";
+        static const std::string noNeededSpaceBeforeTokens = ";)[].,";
+        static const std::string noNeededSpaceAfterTokens = ".([";
         glslang::TPpToken ppToken;
 
         parseContext.setScanner(&input);
@@ -1140,6 +1142,7 @@ struct DoPreprocessing {
         });
 
         int lastToken = EndOfInput; // lastToken records the last token processed.
+        std::string lastTokenName;
         do {
             int token = ppContext.tokenize(ppToken);
             if (token == EndOfInput)
@@ -1158,12 +1161,23 @@ struct DoPreprocessing {
             // Output a space in between tokens, but not at the start of a line,
             // and also not around special tokens. This helps with readability
             // and consistency.
-            if (!isNewString && !isNewLine && lastToken != EndOfInput &&
-                (unNeededSpaceTokens.find((char)token) == std::string::npos) &&
-                (unNeededSpaceTokens.find((char)lastToken) == std::string::npos) &&
-                (noSpaceBeforeTokens.find((char)token) == std::string::npos)) {
-                outputBuffer += ' ';
+            if (!isNewString && !isNewLine && lastToken != EndOfInput) {
+                // left parenthesis need a leading space, except it is in a function-call-like context.
+                // examples: `for (xxx)`, `a * (b + c)`, `vec(2.0)`, `foo(x, y, z)`
+                if (token == '(') {
+                    if (lastToken != PpAtomIdentifier ||
+                        lastTokenName == "if" ||
+                        lastTokenName == "for" ||
+                        lastTokenName == "while" ||
+                        lastTokenName == "switch")
+                        outputBuffer += ' ';
+                } else if ((noNeededSpaceBeforeTokens.find((char)token) == std::string::npos) &&
+                    (noNeededSpaceAfterTokens.find((char)lastToken) == std::string::npos)) {
+                    outputBuffer += ' ';
+                }
             }
+            if (token == PpAtomIdentifier)
+                lastTokenName = ppToken.name;
             lastToken = token;
             if (token == PpAtomConstString)
                 outputBuffer += "\"";
@@ -1279,14 +1293,15 @@ bool CompileDeferred(
     TIntermediate& intermediate,// returned tree, etc.
     TShader::Includer& includer,
     const std::string sourceEntryPointName = "",
-    TEnvironment* environment = nullptr)
+    TEnvironment* environment = nullptr,
+    bool compileOnly = false)
 {
     DoFullParse parser;
     return ProcessDeferred(compiler, shaderStrings, numStrings, inputLengths, stringNames,
                            preamble, optLevel, resources, defaultVersion,
                            defaultProfile, forceDefaultVersionAndProfile, overrideVersion,
                            forwardCompatible, messages, intermediate, parser,
-                           true, includer, sourceEntryPointName, environment);
+                           true, includer, sourceEntryPointName, environment, compileOnly);
 }
 
 } // end anonymous namespace for local functions
@@ -1867,7 +1882,7 @@ bool TShader::parse(const TBuiltInResource* builtInResources, int defaultVersion
                            preamble, EShOptNone, builtInResources, defaultVersion,
                            defaultProfile, forceDefaultVersionAndProfile, overrideVersion,
                            forwardCompatible, messages, *intermediate, includer, sourceEntryPointName,
-                           &environment);
+                           &environment, compileOnly);
 }
 
 // Fill in a string with the result of preprocessing ShaderStrings

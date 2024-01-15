@@ -941,24 +941,25 @@ identifier_list
 function_prototype
     : function_declarator RIGHT_PAREN  {
         $$.function = $1;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $2.loc;
     }
     | function_declarator RIGHT_PAREN attribute {
         $$.function = $1;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $2.loc;
-        parseContext.requireExtensions($2.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
         parseContext.handleFunctionAttributes($2.loc, *$3);
     }
     | attribute function_declarator RIGHT_PAREN {
         $$.function = $2;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $3.loc;
-        parseContext.requireExtensions($3.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
         parseContext.handleFunctionAttributes($3.loc, *$1);
     }
     | attribute function_declarator RIGHT_PAREN attribute {
         $$.function = $2;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $3.loc;
-        parseContext.requireExtensions($3.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
         parseContext.handleFunctionAttributes($3.loc, *$1);
         parseContext.handleFunctionAttributes($3.loc, *$4);
     }
@@ -4088,6 +4089,7 @@ function_definition
             parseContext.error($1.loc, "function does not return a value:", "", $1.function->getName().c_str());
         parseContext.symbolTable.pop(&parseContext.defaultPrecision[0]);
         $$ = parseContext.intermediate.growAggregate($1.intermNode, $3);
+        $$->getAsAggregate()->setLinkType($1.function->getLinkType());
         parseContext.intermediate.setAggregateOperator($$, EOpFunction, $1.function->getType(), $1.loc);
         $$->getAsAggregate()->setName($1.function->getMangledName().c_str());
 

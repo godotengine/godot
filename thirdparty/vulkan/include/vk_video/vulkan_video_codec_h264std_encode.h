@@ -23,9 +23,9 @@ extern "C" {
 #define vulkan_video_codec_h264std_encode 1
 #include "vulkan_video_codec_h264std.h"
 // Vulkan 0.9 provisional Vulkan video H.264 encode std specification version number
-#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_10 VK_MAKE_VIDEO_STD_VERSION(0, 9, 10)
+#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_11 VK_MAKE_VIDEO_STD_VERSION(0, 9, 11)
 
-#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_10
+#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_11
 #define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_EXTENSION_NAME "VK_STD_vulkan_video_codec_h264_encode"
 typedef struct StdVideoEncodeH264WeightTableFlags {
     uint32_t    luma_weight_l0_flag;
@@ -81,7 +81,7 @@ typedef struct StdVideoEncodeH264RefListModEntry {
 } StdVideoEncodeH264RefListModEntry;
 
 typedef struct StdVideoEncodeH264RefPicMarkingEntry {
-    StdVideoH264MemMgmtControlOp    operation;
+    StdVideoH264MemMgmtControlOp    memory_management_control_operation;
     uint16_t                        difference_of_pic_nums_minus1;
     uint16_t                        long_term_pic_num;
     uint16_t                        long_term_frame_idx;
@@ -132,7 +132,8 @@ typedef struct StdVideoEncodeH264SliceHeader {
     StdVideoH264SliceType                     slice_type;
     int8_t                                    slice_alpha_c0_offset_div2;
     int8_t                                    slice_beta_offset_div2;
-    uint16_t                                  reserved1;
+    int8_t                                    slice_qp_delta;
+    uint8_t                                   reserved1;
     StdVideoH264CabacInitIdc                  cabac_init_idc;
     StdVideoH264DisableDeblockingFilterIdc    disable_deblocking_filter_idc;
     const StdVideoEncodeH264WeightTable*      pWeightTable;
