@@ -686,15 +686,48 @@ Dictionary OpenXRInterface::get_system_info() {
 }
 
 bool OpenXRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
-	return false;
+	if (p_mode == XRInterface::XR_PLAY_AREA_3DOF) {
+		return false;
+	}
+	return true;
 }
 
 XRInterface::PlayAreaMode OpenXRInterface::get_play_area_mode() const {
+	if (!openxr_api || !initialized) {
+		return XRInterface::XR_PLAY_AREA_UNKNOWN;
+	}
+
+	XrReferenceSpaceType reference_space = openxr_api->get_reference_space();
+
+	if (reference_space == XR_REFERENCE_SPACE_TYPE_LOCAL) {
+		return XRInterface::XR_PLAY_AREA_SITTING;
+	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR_EXT) {
+		return XRInterface::XR_PLAY_AREA_ROOMSCALE;
+	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_STAGE) {
+		return XRInterface::XR_PLAY_AREA_STAGE;
+	}
+
 	return XRInterface::XR_PLAY_AREA_UNKNOWN;
 }
 
 bool OpenXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
-	return false;
+	ERR_FAIL_COND_V_MSG(initialized, false, "Cannot change play area mode after OpenXR interface has been initialized");
+	ERR_FAIL_NULL_V(openxr_api, false);
+
+	XrReferenceSpaceType reference_space;
+
+	if (p_mode == XRInterface::XR_PLAY_AREA_SITTING) {
+		reference_space = XR_REFERENCE_SPACE_TYPE_LOCAL;
+	} else if (p_mode == XRInterface::XR_PLAY_AREA_ROOMSCALE) {
+		reference_space = XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR_EXT;
+	} else if (p_mode == XRInterface::XR_PLAY_AREA_STAGE) {
+		reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
+	} else {
+		return false;
+	}
+
+	openxr_api->set_requested_reference_space(reference_space);
+	return true;
 }
 
 PackedVector3Array OpenXRInterface::get_play_area() const {

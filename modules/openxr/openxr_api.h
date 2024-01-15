@@ -98,7 +98,8 @@ private:
 	// configuration
 	XrFormFactor form_factor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 	XrViewConfigurationType view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-	XrReferenceSpaceType reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
+	XrReferenceSpaceType requested_reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
+	XrReferenceSpaceType reference_space = XR_REFERENCE_SPACE_TYPE_LOCAL;
 	bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 
 	// blend mode
@@ -148,6 +149,10 @@ private:
 	XrSpace view_space = XR_NULL_HANDLE;
 	bool view_pose_valid = false;
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
+
+	bool emulating_local_floor = false;
+	bool should_reset_emulated_floor_height = false;
+	bool reset_emulated_floor_height();
 
 	bool load_layer_properties();
 	bool load_supported_extensions();
@@ -333,7 +338,8 @@ public:
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
-	void set_reference_space(XrReferenceSpaceType p_reference_space);
+	void set_requested_reference_space(XrReferenceSpaceType p_requested_reference_space);
+	XrReferenceSpaceType get_requested_reference_space() const { return requested_reference_space; }
 	XrReferenceSpaceType get_reference_space() const { return reference_space; }
 
 	void set_submit_depth_buffer(bool p_submit_depth_buffer);
