@@ -1605,7 +1605,11 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	print_verbose("Loading regular icon from " + path);
 	if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
 		print_verbose("- falling back to project icon: " + project_icon_path);
-		ImageLoader::load_image(project_icon_path, icon);
+		if (!project_icon_path.is_empty()) {
+			ImageLoader::load_image(project_icon_path, icon);
+		} else {
+			ERR_PRINT("No project icon specified. Please specify one in the Project Settings under Application -> Config -> Icon");
+		}
 	}
 
 	// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
