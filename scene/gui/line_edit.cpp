@@ -1227,9 +1227,10 @@ void LineEdit::undo() {
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
 	scroll_offset = op.scroll_offset;
-	set_caret_column(op.caret_column);
 
 	_shape();
+	set_caret_column(op.caret_column);
+
 	_emit_text_change();
 }
 
@@ -1251,9 +1252,10 @@ void LineEdit::redo() {
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
 	scroll_offset = op.scroll_offset;
-	set_caret_column(op.caret_column);
 
 	_shape();
+	set_caret_column(op.caret_column);
+
 	_emit_text_change();
 }
 
