@@ -300,7 +300,7 @@ private:
 	void _rendering_occluders_clear_cell(CellData &r_cell_data);
 	void _rendering_occluders_update_cell(CellData &r_cell_data);
 #ifdef DEBUG_ENABLED
-	void _rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2i &p_quadrant_pos, const CellData &r_cell_data);
+	void _rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
@@ -310,7 +310,7 @@ private:
 	void _physics_clear_cell(CellData &r_cell_data);
 	void _physics_update_cell(CellData &r_cell_data);
 #ifdef DEBUG_ENABLED
-	void _physics_draw_cell_debug(const RID &p_canvas_item, const Vector2i &p_quadrant_pos, const CellData &r_cell_data);
+	void _physics_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
 	bool _navigation_was_cleaned_up = false;
@@ -318,7 +318,7 @@ private:
 	void _navigation_clear_cell(CellData &r_cell_data);
 	void _navigation_update_cell(CellData &r_cell_data);
 #ifdef DEBUG_ENABLED
-	void _navigation_draw_cell_debug(const RID &p_canvas_item, const Vector2i &p_quadrant_pos, const CellData &r_cell_data);
+	void _navigation_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
 	bool _scenes_was_cleaned_up = false;
@@ -326,7 +326,7 @@ private:
 	void _scenes_clear_cell(CellData &r_cell_data);
 	void _scenes_update_cell(CellData &r_cell_data);
 #ifdef DEBUG_ENABLED
-	void _scenes_draw_cell_debug(const RID &p_canvas_item, const Vector2i &p_quadrant_pos, const CellData &r_cell_data);
+	void _scenes_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
 	// Terrains.

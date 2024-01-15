@@ -36,6 +36,7 @@
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/scene_string_names.h"
 
@@ -357,6 +358,7 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}
@@ -569,6 +571,8 @@ ActionMapEditor::ActionMapEditor() {
 	add_hbox->add_child(add_button);
 	// Disable the button and set its tooltip.
 	_add_edit_text_changed(add_edit->get_text());
+
+	add_hbox->add_child(memnew(VSeparator));
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
 	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));

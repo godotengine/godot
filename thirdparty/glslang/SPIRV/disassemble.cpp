@@ -56,6 +56,7 @@ namespace spv {
         #include "GLSL.ext.NV.h"
         #include "GLSL.ext.ARM.h"
         #include "NonSemanticShaderDebugInfo100.h"
+        #include "GLSL.ext.QCOM.h"
     }
 }
 const char* GlslStd450DebugNames[spv::GLSLstd450Count];

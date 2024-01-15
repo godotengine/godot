@@ -1663,6 +1663,13 @@ namespace VULKAN_HPP_NAMESPACE
         vkGetDynamicRenderingTilePropertiesQCOM =
           PFN_vkGetDynamicRenderingTilePropertiesQCOM( vkGetDeviceProcAddr( device, "vkGetDynamicRenderingTilePropertiesQCOM" ) );
 
+        //=== VK_NV_low_latency2 ===
+        vkSetLatencySleepModeNV  = PFN_vkSetLatencySleepModeNV( vkGetDeviceProcAddr( device, "vkSetLatencySleepModeNV" ) );
+        vkLatencySleepNV         = PFN_vkLatencySleepNV( vkGetDeviceProcAddr( device, "vkLatencySleepNV" ) );
+        vkSetLatencyMarkerNV     = PFN_vkSetLatencyMarkerNV( vkGetDeviceProcAddr( device, "vkSetLatencyMarkerNV" ) );
+        vkGetLatencyTimingsNV    = PFN_vkGetLatencyTimingsNV( vkGetDeviceProcAddr( device, "vkGetLatencyTimingsNV" ) );
+        vkQueueNotifyOutOfBandNV = PFN_vkQueueNotifyOutOfBandNV( vkGetDeviceProcAddr( device, "vkQueueNotifyOutOfBandNV" ) );
+
         //=== VK_EXT_attachment_feedback_loop_dynamic_state ===
         vkCmdSetAttachmentFeedbackLoopEnableEXT =
           PFN_vkCmdSetAttachmentFeedbackLoopEnableEXT( vkGetDeviceProcAddr( device, "vkCmdSetAttachmentFeedbackLoopEnableEXT" ) );
@@ -2507,6 +2514,13 @@ namespace VULKAN_HPP_NAMESPACE
       PFN_vkGetFramebufferTilePropertiesQCOM      vkGetFramebufferTilePropertiesQCOM      = 0;
       PFN_vkGetDynamicRenderingTilePropertiesQCOM vkGetDynamicRenderingTilePropertiesQCOM = 0;
 
+      //=== VK_NV_low_latency2 ===
+      PFN_vkSetLatencySleepModeNV  vkSetLatencySleepModeNV  = 0;
+      PFN_vkLatencySleepNV         vkLatencySleepNV         = 0;
+      PFN_vkSetLatencyMarkerNV     vkSetLatencyMarkerNV     = 0;
+      PFN_vkGetLatencyTimingsNV    vkGetLatencyTimingsNV    = 0;
+      PFN_vkQueueNotifyOutOfBandNV vkQueueNotifyOutOfBandNV = 0;
+
       //=== VK_EXT_attachment_feedback_loop_dynamic_state ===
       PFN_vkCmdSetAttachmentFeedbackLoopEnableEXT vkCmdSetAttachmentFeedbackLoopEnableEXT = 0;
 
@@ -2694,7 +2708,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Instance
     {
     public:
-      using CType = VkInstance;
+      using CType   = VkInstance;
+      using CppType = vk::Instance;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eInstance;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -2953,7 +2968,8 @@ namespace VULKAN_HPP_NAMESPACE
     class PhysicalDevice
     {
     public:
-      using CType = VkPhysicalDevice;
+      using CType   = VkPhysicalDevice;
+      using CppType = vk::PhysicalDevice;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::ePhysicalDevice;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -3411,7 +3427,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Device
     {
     public:
-      using CType = VkDevice;
+      using CType   = VkDevice;
+      using CppType = vk::Device;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDevice;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -4178,6 +4195,8 @@ namespace VULKAN_HPP_NAMESPACE
 
       //=== VK_EXT_descriptor_buffer ===
 
+      void getDescriptorEXT( const VULKAN_HPP_NAMESPACE::DescriptorGetInfoEXT & descriptorInfo, size_t dataSize, void * pDescriptor ) const VULKAN_HPP_NOEXCEPT;
+
       template <typename DescriptorType>
       VULKAN_HPP_NODISCARD DescriptorType getDescriptorEXT( const VULKAN_HPP_NAMESPACE::DescriptorGetInfoEXT & descriptorInfo ) const VULKAN_HPP_NOEXCEPT;
 
@@ -4369,7 +4388,8 @@ namespace VULKAN_HPP_NAMESPACE
     class AccelerationStructureKHR
     {
     public:
-      using CType = VkAccelerationStructureKHR;
+      using CType   = VkAccelerationStructureKHR;
+      using CppType = vk::AccelerationStructureKHR;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eAccelerationStructureKHR;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -4489,7 +4509,8 @@ namespace VULKAN_HPP_NAMESPACE
     class AccelerationStructureNV
     {
     public:
-      using CType = VkAccelerationStructureNV;
+      using CType   = VkAccelerationStructureNV;
+      using CppType = vk::AccelerationStructureNV;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eAccelerationStructureNV;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -4617,7 +4638,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Buffer
     {
     public:
-      using CType = VkBuffer;
+      using CType   = VkBuffer;
+      using CppType = vk::Buffer;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eBuffer;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -4743,7 +4765,8 @@ namespace VULKAN_HPP_NAMESPACE
     class BufferCollectionFUCHSIA
     {
     public:
-      using CType = VkBufferCollectionFUCHSIA;
+      using CType   = VkBufferCollectionFUCHSIA;
+      using CppType = vk::BufferCollectionFUCHSIA;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eBufferCollectionFUCHSIA;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -4872,7 +4895,8 @@ namespace VULKAN_HPP_NAMESPACE
     class BufferView
     {
     public:
-      using CType = VkBufferView;
+      using CType   = VkBufferView;
+      using CppType = vk::BufferView;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eBufferView;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -4991,7 +5015,8 @@ namespace VULKAN_HPP_NAMESPACE
     class CommandPool
     {
     public:
-      using CType = VkCommandPool;
+      using CType   = VkCommandPool;
+      using CppType = vk::CommandPool;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eCommandPool;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -5122,7 +5147,8 @@ namespace VULKAN_HPP_NAMESPACE
     class CommandBuffer
     {
     public:
-      using CType = VkCommandBuffer;
+      using CType   = VkCommandBuffer;
+      using CppType = vk::CommandBuffer;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eCommandBuffer;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -6159,7 +6185,8 @@ namespace VULKAN_HPP_NAMESPACE
     class CuFunctionNVX
     {
     public:
-      using CType = VkCuFunctionNVX;
+      using CType   = VkCuFunctionNVX;
+      using CppType = vk::CuFunctionNVX;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eCuFunctionNVX;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -6278,7 +6305,8 @@ namespace VULKAN_HPP_NAMESPACE
     class CuModuleNVX
     {
     public:
-      using CType = VkCuModuleNVX;
+      using CType   = VkCuModuleNVX;
+      using CppType = vk::CuModuleNVX;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eCuModuleNVX;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -6397,7 +6425,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DebugReportCallbackEXT
     {
     public:
-      using CType = VkDebugReportCallbackEXT;
+      using CType   = VkDebugReportCallbackEXT;
+      using CppType = vk::DebugReportCallbackEXT;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDebugReportCallbackEXT;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -6517,7 +6546,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DebugUtilsMessengerEXT
     {
     public:
-      using CType = VkDebugUtilsMessengerEXT;
+      using CType   = VkDebugUtilsMessengerEXT;
+      using CppType = vk::DebugUtilsMessengerEXT;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDebugUtilsMessengerEXT;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -6637,7 +6667,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DeferredOperationKHR
     {
     public:
-      using CType = VkDeferredOperationKHR;
+      using CType   = VkDeferredOperationKHR;
+      using CppType = vk::DeferredOperationKHR;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDeferredOperationKHR;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -6763,7 +6794,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DescriptorPool
     {
     public:
-      using CType = VkDescriptorPool;
+      using CType   = VkDescriptorPool;
+      using CppType = vk::DescriptorPool;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDescriptorPool;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -6887,7 +6919,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DescriptorSet
     {
     public:
-      using CType = VkDescriptorSet;
+      using CType   = VkDescriptorSet;
+      using CppType = vk::DescriptorSet;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDescriptorSet;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -7032,7 +7065,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DescriptorSetLayout
     {
     public:
-      using CType = VkDescriptorSetLayout;
+      using CType   = VkDescriptorSetLayout;
+      using CppType = vk::DescriptorSetLayout;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDescriptorSetLayout;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -7158,7 +7192,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DescriptorUpdateTemplate
     {
     public:
-      using CType = VkDescriptorUpdateTemplate;
+      using CType   = VkDescriptorUpdateTemplate;
+      using CppType = vk::DescriptorUpdateTemplate;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDescriptorUpdateTemplate;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -7278,7 +7313,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DeviceMemory
     {
     public:
-      using CType = VkDeviceMemory;
+      using CType   = VkDeviceMemory;
+      using CppType = vk::DeviceMemory;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDeviceMemory;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -7417,7 +7453,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DisplayKHR
     {
     public:
-      using CType = VkDisplayKHR;
+      using CType   = VkDisplayKHR;
+      using CppType = vk::DisplayKHR;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDisplayKHR;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -7605,7 +7642,8 @@ namespace VULKAN_HPP_NAMESPACE
     class DisplayModeKHR
     {
     public:
-      using CType = VkDisplayModeKHR;
+      using CType   = VkDisplayModeKHR;
+      using CppType = vk::DisplayModeKHR;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eDisplayModeKHR;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -7711,7 +7749,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Event
     {
     public:
-      using CType = VkEvent;
+      using CType   = VkEvent;
+      using CppType = vk::Event;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eEvent;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -7838,7 +7877,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Fence
     {
     public:
-      using CType = VkFence;
+      using CType   = VkFence;
+      using CppType = vk::Fence;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eFence;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -7999,7 +8039,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Framebuffer
     {
     public:
-      using CType = VkFramebuffer;
+      using CType   = VkFramebuffer;
+      using CppType = vk::Framebuffer;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eFramebuffer;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -8122,7 +8163,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Image
     {
     public:
-      using CType = VkImage;
+      using CType   = VkImage;
+      using CppType = vk::Image;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eImage;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -8274,7 +8316,8 @@ namespace VULKAN_HPP_NAMESPACE
     class ImageView
     {
     public:
-      using CType = VkImageView;
+      using CType   = VkImageView;
+      using CppType = vk::ImageView;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eImageView;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -8397,7 +8440,8 @@ namespace VULKAN_HPP_NAMESPACE
     class IndirectCommandsLayoutNV
     {
     public:
-      using CType = VkIndirectCommandsLayoutNV;
+      using CType   = VkIndirectCommandsLayoutNV;
+      using CppType = vk::IndirectCommandsLayoutNV;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eIndirectCommandsLayoutNV;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -8517,7 +8561,8 @@ namespace VULKAN_HPP_NAMESPACE
     class MicromapEXT
     {
     public:
-      using CType = VkMicromapEXT;
+      using CType   = VkMicromapEXT;
+      using CppType = vk::MicromapEXT;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eMicromapEXT;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -8636,7 +8681,8 @@ namespace VULKAN_HPP_NAMESPACE
     class OpticalFlowSessionNV
     {
     public:
-      using CType = VkOpticalFlowSessionNV;
+      using CType   = VkOpticalFlowSessionNV;
+      using CppType = vk::OpticalFlowSessionNV;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eOpticalFlowSessionNV;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -8762,7 +8808,8 @@ namespace VULKAN_HPP_NAMESPACE
     class PerformanceConfigurationINTEL
     {
     public:
-      using CType = VkPerformanceConfigurationINTEL;
+      using CType   = VkPerformanceConfigurationINTEL;
+      using CppType = vk::PerformanceConfigurationINTEL;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::ePerformanceConfigurationINTEL;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -8866,7 +8913,8 @@ namespace VULKAN_HPP_NAMESPACE
     class PipelineCache
     {
     public:
-      using CType = VkPipelineCache;
+      using CType   = VkPipelineCache;
+      using CppType = vk::PipelineCache;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::ePipelineCache;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -8992,7 +9040,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Pipeline
     {
     public:
-      using CType = VkPipeline;
+      using CType   = VkPipeline;
+      using CppType = vk::Pipeline;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::ePipeline;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -9420,7 +9469,8 @@ namespace VULKAN_HPP_NAMESPACE
     class PipelineLayout
     {
     public:
-      using CType = VkPipelineLayout;
+      using CType   = VkPipelineLayout;
+      using CppType = vk::PipelineLayout;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::ePipelineLayout;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -9540,7 +9590,8 @@ namespace VULKAN_HPP_NAMESPACE
     class PrivateDataSlot
     {
     public:
-      using CType = VkPrivateDataSlot;
+      using CType   = VkPrivateDataSlot;
+      using CppType = vk::PrivateDataSlot;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::ePrivateDataSlot;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -9660,7 +9711,8 @@ namespace VULKAN_HPP_NAMESPACE
     class QueryPool
     {
     public:
-      using CType = VkQueryPool;
+      using CType   = VkQueryPool;
+      using CppType = vk::QueryPool;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eQueryPool;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -9804,7 +9856,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Queue
     {
     public:
-      using CType = VkQueue;
+      using CType   = VkQueue;
+      using CppType = vk::Queue;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eQueue;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -9929,6 +9982,10 @@ namespace VULKAN_HPP_NAMESPACE
 
       VULKAN_HPP_NODISCARD std::vector<VULKAN_HPP_NAMESPACE::CheckpointData2NV> getCheckpointData2NV() const;
 
+      //=== VK_NV_low_latency2 ===
+
+      void notifyOutOfBandNV( const VULKAN_HPP_NAMESPACE::OutOfBandQueueTypeInfoNV & queueTypeInfo ) const VULKAN_HPP_NOEXCEPT;
+
     private:
       VULKAN_HPP_NAMESPACE::Queue                                               m_queue      = {};
       VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::DeviceDispatcher const * m_dispatcher = nullptr;
@@ -9937,7 +9994,8 @@ namespace VULKAN_HPP_NAMESPACE
     class RenderPass
     {
     public:
-      using CType = VkRenderPass;
+      using CType   = VkRenderPass;
+      using CppType = vk::RenderPass;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eRenderPass;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -10082,7 +10140,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Sampler
     {
     public:
-      using CType = VkSampler;
+      using CType   = VkSampler;
+      using CppType = vk::Sampler;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eSampler;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -10201,7 +10260,8 @@ namespace VULKAN_HPP_NAMESPACE
     class SamplerYcbcrConversion
     {
     public:
-      using CType = VkSamplerYcbcrConversion;
+      using CType   = VkSamplerYcbcrConversion;
+      using CppType = vk::SamplerYcbcrConversion;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eSamplerYcbcrConversion;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -10321,7 +10381,8 @@ namespace VULKAN_HPP_NAMESPACE
     class Semaphore
     {
     public:
-      using CType = VkSemaphore;
+      using CType   = VkSemaphore;
+      using CppType = vk::Semaphore;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eSemaphore;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -10448,7 +10509,8 @@ namespace VULKAN_HPP_NAMESPACE
     class ShaderEXT
     {
     public:
-      using CType = VkShaderEXT;
+      using CType   = VkShaderEXT;
+      using CppType = vk::ShaderEXT;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eShaderEXT;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -10610,7 +10672,8 @@ namespace VULKAN_HPP_NAMESPACE
     class ShaderModule
     {
     public:
-      using CType = VkShaderModule;
+      using CType   = VkShaderModule;
+      using CppType = vk::ShaderModule;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eShaderModule;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -10733,7 +10796,8 @@ namespace VULKAN_HPP_NAMESPACE
     class SurfaceKHR
     {
     public:
-      using CType = VkSurfaceKHR;
+      using CType   = VkSurfaceKHR;
+      using CppType = vk::SurfaceKHR;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eSurfaceKHR;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -11130,7 +11194,8 @@ namespace VULKAN_HPP_NAMESPACE
     class SwapchainKHR
     {
     public:
-      using CType = VkSwapchainKHR;
+      using CType   = VkSwapchainKHR;
+      using CppType = vk::SwapchainKHR;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eSwapchainKHR;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -11278,6 +11343,16 @@ namespace VULKAN_HPP_NAMESPACE
       void releaseFullScreenExclusiveModeEXT() const;
 #  endif /*VK_USE_PLATFORM_WIN32_KHR*/
 
+      //=== VK_NV_low_latency2 ===
+
+      void setLatencySleepModeNV( const VULKAN_HPP_NAMESPACE::LatencySleepModeInfoNV & sleepModeInfo ) const;
+
+      void latencySleepNV( const VULKAN_HPP_NAMESPACE::LatencySleepInfoNV & sleepInfo ) const;
+
+      void setLatencyMarkerNV( const VULKAN_HPP_NAMESPACE::SetLatencyMarkerInfoNV & latencyMarkerInfo ) const VULKAN_HPP_NOEXCEPT;
+
+      VULKAN_HPP_NODISCARD std::pair<uint32_t, VULKAN_HPP_NAMESPACE::GetLatencyMarkerInfoNV> getLatencyTimingsNV() const VULKAN_HPP_NOEXCEPT;
+
     private:
       VULKAN_HPP_NAMESPACE::Device                                              m_device     = {};
       VULKAN_HPP_NAMESPACE::SwapchainKHR                                        m_swapchain  = {};
@@ -11326,7 +11401,8 @@ namespace VULKAN_HPP_NAMESPACE
     class ValidationCacheEXT
     {
     public:
-      using CType = VkValidationCacheEXT;
+      using CType   = VkValidationCacheEXT;
+      using CppType = vk::ValidationCacheEXT;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eValidationCacheEXT;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -11452,7 +11528,8 @@ namespace VULKAN_HPP_NAMESPACE
     class VideoSessionKHR
     {
     public:
-      using CType = VkVideoSessionKHR;
+      using CType   = VkVideoSessionKHR;
+      using CppType = vk::VideoSessionKHR;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eVideoSessionKHR;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -11578,7 +11655,8 @@ namespace VULKAN_HPP_NAMESPACE
     class VideoSessionParametersKHR
     {
     public:
-      using CType = VkVideoSessionParametersKHR;
+      using CType   = VkVideoSessionParametersKHR;
+      using CppType = vk::VideoSessionParametersKHR;
 
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType = VULKAN_HPP_NAMESPACE::ObjectType::eVideoSessionParametersKHR;
       static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
@@ -18975,6 +19053,16 @@ namespace VULKAN_HPP_NAMESPACE
       return offset;
     }
 
+    VULKAN_HPP_INLINE void Device::getDescriptorEXT( const VULKAN_HPP_NAMESPACE::DescriptorGetInfoEXT & descriptorInfo,
+                                                     size_t                                             dataSize,
+                                                     void *                                             pDescriptor ) const VULKAN_HPP_NOEXCEPT
+    {
+      VULKAN_HPP_ASSERT( getDispatcher()->vkGetDescriptorEXT && "Function <vkGetDescriptorEXT> requires <VK_EXT_descriptor_buffer>" );
+
+      getDispatcher()->vkGetDescriptorEXT(
+        static_cast<VkDevice>( m_device ), reinterpret_cast<const VkDescriptorGetInfoEXT *>( &descriptorInfo ), dataSize, pDescriptor );
+    }
+
     template <typename DescriptorType>
     VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE DescriptorType
       Device::getDescriptorEXT( const VULKAN_HPP_NAMESPACE::DescriptorGetInfoEXT & descriptorInfo ) const VULKAN_HPP_NOEXCEPT
@@ -20639,6 +20727,58 @@ namespace VULKAN_HPP_NAMESPACE
       return properties;
     }
 
+    //=== VK_NV_low_latency2 ===
+
+    VULKAN_HPP_INLINE void SwapchainKHR::setLatencySleepModeNV( const VULKAN_HPP_NAMESPACE::LatencySleepModeInfoNV & sleepModeInfo ) const
+    {
+      VULKAN_HPP_ASSERT( getDispatcher()->vkSetLatencySleepModeNV && "Function <vkSetLatencySleepModeNV> requires <VK_NV_low_latency2>" );
+
+      VkResult result = getDispatcher()->vkSetLatencySleepModeNV(
+        static_cast<VkDevice>( m_device ), static_cast<VkSwapchainKHR>( m_swapchain ), reinterpret_cast<const VkLatencySleepModeInfoNV *>( &sleepModeInfo ) );
+      resultCheck( static_cast<VULKAN_HPP_NAMESPACE::Result>( result ), VULKAN_HPP_NAMESPACE_STRING "::SwapchainKHR::setLatencySleepModeNV" );
+    }
+
+    VULKAN_HPP_INLINE void SwapchainKHR::latencySleepNV( const VULKAN_HPP_NAMESPACE::LatencySleepInfoNV & sleepInfo ) const
+    {
+      VULKAN_HPP_ASSERT( getDispatcher()->vkLatencySleepNV && "Function <vkLatencySleepNV> requires <VK_NV_low_latency2>" );
+
+      VkResult result = getDispatcher()->vkLatencySleepNV(
+        static_cast<VkDevice>( m_device ), static_cast<VkSwapchainKHR>( m_swapchain ), reinterpret_cast<const VkLatencySleepInfoNV *>( &sleepInfo ) );
+      resultCheck( static_cast<VULKAN_HPP_NAMESPACE::Result>( result ), VULKAN_HPP_NAMESPACE_STRING "::SwapchainKHR::latencySleepNV" );
+    }
+
+    VULKAN_HPP_INLINE void SwapchainKHR::setLatencyMarkerNV( const VULKAN_HPP_NAMESPACE::SetLatencyMarkerInfoNV & latencyMarkerInfo ) const VULKAN_HPP_NOEXCEPT
+    {
+      VULKAN_HPP_ASSERT( getDispatcher()->vkSetLatencyMarkerNV && "Function <vkSetLatencyMarkerNV> requires <VK_NV_low_latency2>" );
+
+      getDispatcher()->vkSetLatencyMarkerNV( static_cast<VkDevice>( m_device ),
+                                             static_cast<VkSwapchainKHR>( m_swapchain ),
+                                             reinterpret_cast<const VkSetLatencyMarkerInfoNV *>( &latencyMarkerInfo ) );
+    }
+
+    VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE std::pair<uint32_t, VULKAN_HPP_NAMESPACE::GetLatencyMarkerInfoNV>
+                                           SwapchainKHR::getLatencyTimingsNV() const VULKAN_HPP_NOEXCEPT
+    {
+      VULKAN_HPP_ASSERT( getDispatcher()->vkGetLatencyTimingsNV && "Function <vkGetLatencyTimingsNV> requires <VK_NV_low_latency2>" );
+
+      std::pair<uint32_t, VULKAN_HPP_NAMESPACE::GetLatencyMarkerInfoNV> data_;
+      uint32_t &                                                        timingCount       = data_.first;
+      VULKAN_HPP_NAMESPACE::GetLatencyMarkerInfoNV &                    latencyMarkerInfo = data_.second;
+      getDispatcher()->vkGetLatencyTimingsNV( static_cast<VkDevice>( m_device ),
+                                              static_cast<VkSwapchainKHR>( m_swapchain ),
+                                              &timingCount,
+                                              reinterpret_cast<VkGetLatencyMarkerInfoNV *>( &latencyMarkerInfo ) );
+
+      return data_;
+    }
+
+    VULKAN_HPP_INLINE void Queue::notifyOutOfBandNV( const VULKAN_HPP_NAMESPACE::OutOfBandQueueTypeInfoNV & queueTypeInfo ) const VULKAN_HPP_NOEXCEPT
+    {
+      VULKAN_HPP_ASSERT( getDispatcher()->vkQueueNotifyOutOfBandNV && "Function <vkQueueNotifyOutOfBandNV> requires <VK_NV_low_latency2>" );
+
+      getDispatcher()->vkQueueNotifyOutOfBandNV( static_cast<VkQueue>( m_queue ), reinterpret_cast<const VkOutOfBandQueueTypeInfoNV *>( &queueTypeInfo ) );
+    }
+
     //=== VK_KHR_cooperative_matrix ===
 
     VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE std::vector<VULKAN_HPP_NAMESPACE::CooperativeMatrixPropertiesKHR>
@@ -20714,6 +20854,32 @@ namespace VULKAN_HPP_NAMESPACE
       return structureChain;
     }
 #  endif /*VK_USE_PLATFORM_SCREEN_QNX*/
+
+    //====================
+    //=== RAII Helpers ===
+    //====================
+
+    template <typename RAIIType>
+    std::vector<typename RAIIType::CppType> filterCppTypes( std::vector<RAIIType> const & raiiTypes )
+    {
+      std::vector<typename RAIIType::CppType> cppTypes( raiiTypes.size() );
+      std::transform( raiiTypes.begin(), raiiTypes.end(), cppTypes.begin(), []( RAIIType const & d ) { return *d; } );
+      return cppTypes;
+    }
+
+    template <typename RAIIType, class UnaryPredicate>
+    std::vector<typename RAIIType::CppType> filterCppTypes( std::vector<RAIIType> const & raiiTypes, UnaryPredicate p )
+    {
+      std::vector<typename RAIIType::CppType> cppTypes;
+      for ( auto const & t : raiiTypes )
+      {
+        if ( p( t ) )
+        {
+          cppTypes.push_back( *t );
+        }
+      }
+      return cppTypes;
+    }
 
   }  // namespace VULKAN_HPP_RAII_NAMESPACE
 }  // namespace VULKAN_HPP_NAMESPACE

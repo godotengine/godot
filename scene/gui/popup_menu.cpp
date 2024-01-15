@@ -287,8 +287,7 @@ int PopupMenu::_get_items_total_height() const {
 		items_total_height += _get_item_height(i) + theme_cache.v_separation;
 	}
 
-	// Subtract a separator which is not needed for the last item.
-	return items_total_height - theme_cache.v_separation;
+	return items_total_height;
 }
 
 int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
@@ -297,14 +296,14 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	}
 
 	// Accounts for margin in the margin container
-	Point2 ofs = theme_cache.panel_style->get_offset() + Point2(0, theme_cache.v_separation / 2);
+	Point2 ofs = theme_cache.panel_style->get_offset();
 
 	if (ofs.y > p_over.y) {
 		return -1;
 	}
 
 	for (int i = 0; i < items.size(); i++) {
-		ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
+		ofs.y += theme_cache.v_separation;
 
 		ofs.y += _get_item_height(i);
 

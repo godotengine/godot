@@ -573,6 +573,9 @@ public:
     void setEnvInputVulkanRulesRelaxed() { environment.input.vulkanRulesRelaxed = true; }
     bool getEnvInputVulkanRulesRelaxed() const { return environment.input.vulkanRulesRelaxed; }
 
+    void setCompileOnly() { compileOnly = true; }
+    bool getCompileOnly() const { return compileOnly; }
+
     // Interface to #include handlers.
     //
     // To support #include, a client of Glslang does the following:
@@ -721,6 +724,9 @@ protected:
     int overrideVersion;
 
     TEnvironment environment;
+
+    // Indicates this shader is meant to be used without linking
+    bool compileOnly = false;
 
     friend class TProgram;
 

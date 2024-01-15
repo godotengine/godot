@@ -1948,6 +1948,10 @@ bool DisplayServerWindows::window_is_focused(WindowID p_window) const {
 	return wd.window_focused;
 }
 
+DisplayServerWindows::WindowID DisplayServerWindows::get_focused_window() const {
+	return last_focused_window;
+}
+
 bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
