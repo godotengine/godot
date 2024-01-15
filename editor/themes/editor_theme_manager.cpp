@@ -151,6 +151,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	// Basic properties.
 
 	config.preset = EDITOR_GET("interface/theme/preset");
+	config.spacing_preset = EDITOR_GET("interface/theme/spacing_preset");
 	config.dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 
 	config.base_color = EDITOR_GET("interface/theme/base_color");
@@ -160,6 +161,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 	// Extra properties.
 
+	config.base_spacing = EDITOR_GET("interface/theme/base_spacing");
 	config.extra_spacing = EDITOR_GET("interface/theme/additional_spacing");
 	// Ensure borders are visible when using an editor scale below 100%.
 	config.border_width = CLAMP((int)EDITOR_GET("interface/theme/border_size"), 0, 2) * MAX(1, EDSCALE);
@@ -175,81 +177,117 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 	config.default_contrast = 0.3; // Make sure to keep this in sync with the editor settings definition.
 
+	// Handle main theme preset.
+	{
+		if (config.preset != "Custom") {
+			Color preset_accent_color;
+			Color preset_base_color;
+			float preset_contrast = 0;
+			bool preset_draw_extra_borders = false;
+
+			// Please use alphabetical order if you're adding a new theme here.
+			if (config.preset == "Breeze Dark") {
+				preset_accent_color = Color(0.26, 0.76, 1.00);
+				preset_base_color = Color(0.24, 0.26, 0.28);
+				preset_contrast = config.default_contrast;
+			} else if (config.preset == "Godot 2") {
+				preset_accent_color = Color(0.53, 0.67, 0.89);
+				preset_base_color = Color(0.24, 0.23, 0.27);
+				preset_contrast = config.default_contrast;
+			} else if (config.preset == "Gray") {
+				preset_accent_color = Color(0.44, 0.73, 0.98);
+				preset_base_color = Color(0.24, 0.24, 0.24);
+				preset_contrast = config.default_contrast;
+			} else if (config.preset == "Light") {
+				preset_accent_color = Color(0.18, 0.50, 1.00);
+				preset_base_color = Color(0.9, 0.9, 0.9);
+				// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
+				preset_contrast = -0.06;
+			} else if (config.preset == "Solarized (Dark)") {
+				preset_accent_color = Color(0.15, 0.55, 0.82);
+				preset_base_color = Color(0.04, 0.23, 0.27);
+				preset_contrast = config.default_contrast;
+			} else if (config.preset == "Solarized (Light)") {
+				preset_accent_color = Color(0.15, 0.55, 0.82);
+				preset_base_color = Color(0.89, 0.86, 0.79);
+				// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
+				preset_contrast = -0.06;
+			} else if (config.preset == "Black (OLED)") {
+				preset_accent_color = Color(0.45, 0.75, 1.0);
+				preset_base_color = Color(0, 0, 0);
+				// The contrast rate value is irrelevant on a fully black theme.
+				preset_contrast = 0.0;
+				preset_draw_extra_borders = true;
+			} else { // Default
+				preset_accent_color = Color(0.44, 0.73, 0.98);
+				preset_base_color = Color(0.21, 0.24, 0.29);
+				preset_contrast = config.default_contrast;
+			}
+
+			config.accent_color = preset_accent_color;
+			config.base_color = preset_base_color;
+			config.contrast = preset_contrast;
+			config.draw_extra_borders = preset_draw_extra_borders;
+
+			EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", config.accent_color);
+			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", config.base_color);
+			EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
+			EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
+		}
+
+		// Enforce values in case they were adjusted or overridden.
+		EditorSettings::get_singleton()->set_manually("interface/theme/preset", config.preset);
+		EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", config.accent_color);
+		EditorSettings::get_singleton()->set_manually("interface/theme/base_color", config.base_color);
+		EditorSettings::get_singleton()->set_manually("interface/theme/contrast", config.contrast);
+		EditorSettings::get_singleton()->set_manually("interface/theme/draw_extra_borders", config.draw_extra_borders);
+	}
+
+	// Handle theme spacing preset.
+	{
+		if (config.spacing_preset != "Custom") {
+			int preset_base_spacing = 0;
+			int preset_extra_spacing = 0;
+
+			if (config.spacing_preset == "Compact") {
+				preset_base_spacing = 0;
+				preset_extra_spacing = 4;
+			} else if (config.spacing_preset == "Spacious") {
+				preset_base_spacing = 6;
+				preset_extra_spacing = 2;
+			} else { // Default
+				preset_base_spacing = 4;
+				preset_extra_spacing = 0;
+			}
+
+			config.base_spacing = preset_base_spacing;
+			config.extra_spacing = preset_extra_spacing;
+
+			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_spacing", config.base_spacing);
+			EditorSettings::get_singleton()->set_initial_value("interface/theme/additional_spacing", config.extra_spacing);
+		}
+
+		// Enforce values in case they were adjusted or overridden.
+		EditorSettings::get_singleton()->set_manually("interface/theme/spacing_preset", config.spacing_preset);
+		EditorSettings::get_singleton()->set_manually("interface/theme/base_spacing", config.base_spacing);
+		EditorSettings::get_singleton()->set_manually("interface/theme/additional_spacing", config.extra_spacing);
+	}
+
 	// Generated properties.
 
-	config.base_margin = 4;
-	config.increased_margin = config.base_margin + config.extra_spacing;
+	config.base_margin = config.base_spacing;
+	config.increased_margin = config.base_spacing + config.extra_spacing;
+	config.separation_margin = (config.base_spacing + config.extra_spacing / 2) * EDSCALE;
 	config.popup_margin = config.base_margin * 3 * EDSCALE;
-	config.window_border_margin = config.base_margin * 2;
+	// Make sure content doesn't stick to window decorations; this can be fixed in future with layout changes.
+	config.window_border_margin = MAX(1, config.base_margin * 2);
 	config.top_bar_separation = config.base_margin * 2 * EDSCALE;
+
 	// Force the v_separation to be even so that the spacing on top and bottom is even.
 	// If the vsep is odd and cannot be split into 2 even groups (of pixels), then it will be lopsided.
 	// We add 2 to the vsep to give it some extra spacing which looks a bit more modern (see Windows, for example).
 	const int separation_base = config.increased_margin + 6;
 	config.forced_even_separation = separation_base + (separation_base % 2);
-
-	if (config.preset != "Custom") {
-		Color preset_accent_color;
-		Color preset_base_color;
-		float preset_contrast = 0;
-		bool preset_draw_extra_borders = false;
-
-		// Please use alphabetical order if you're adding a new theme here.
-		if (config.preset == "Breeze Dark") {
-			preset_accent_color = Color(0.26, 0.76, 1.00);
-			preset_base_color = Color(0.24, 0.26, 0.28);
-				preset_contrast = config.default_contrast;
-		} else if (config.preset == "Godot 2") {
-			preset_accent_color = Color(0.53, 0.67, 0.89);
-			preset_base_color = Color(0.24, 0.23, 0.27);
-				preset_contrast = config.default_contrast;
-		} else if (config.preset == "Gray") {
-			preset_accent_color = Color(0.44, 0.73, 0.98);
-			preset_base_color = Color(0.24, 0.24, 0.24);
-				preset_contrast = config.default_contrast;
-		} else if (config.preset == "Light") {
-			preset_accent_color = Color(0.18, 0.50, 1.00);
-			preset_base_color = Color(0.9, 0.9, 0.9);
-			// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
-			preset_contrast = -0.06;
-		} else if (config.preset == "Solarized (Dark)") {
-			preset_accent_color = Color(0.15, 0.55, 0.82);
-			preset_base_color = Color(0.04, 0.23, 0.27);
-				preset_contrast = config.default_contrast;
-		} else if (config.preset == "Solarized (Light)") {
-			preset_accent_color = Color(0.15, 0.55, 0.82);
-			preset_base_color = Color(0.89, 0.86, 0.79);
-			// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
-			preset_contrast = -0.06;
-		} else if (config.preset == "Black (OLED)") {
-			preset_accent_color = Color(0.45, 0.75, 1.0);
-			preset_base_color = Color(0, 0, 0);
-			// The contrast rate value is irrelevant on a fully black theme.
-			preset_contrast = 0.0;
-			preset_draw_extra_borders = true;
-		} else { // Default
-			preset_accent_color = Color(0.44, 0.73, 0.98);
-			preset_base_color = Color(0.21, 0.24, 0.29);
-				preset_contrast = config.default_contrast;
-		}
-
-		config.accent_color = preset_accent_color;
-		config.base_color = preset_base_color;
-		config.contrast = preset_contrast;
-		config.draw_extra_borders = preset_draw_extra_borders;
-
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", config.accent_color);
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", config.base_color);
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
-	}
-
-	// Enforce values in case they were adjusted or overridden.
-	EditorSettings::get_singleton()->set_manually("interface/theme/preset", config.preset);
-	EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", config.accent_color);
-	EditorSettings::get_singleton()->set_manually("interface/theme/base_color", config.base_color);
-	EditorSettings::get_singleton()->set_manually("interface/theme/contrast", config.contrast);
-	EditorSettings::get_singleton()->set_manually("interface/theme/draw_extra_borders", config.draw_extra_borders);
 
 	return config;
 }
@@ -786,14 +824,14 @@ void EditorThemeManager::_populate_standard_styles(const Ref<Theme> &p_theme, Th
 			p_theme->set_color("title_button_color", "Tree", p_config.font_color);
 			p_theme->set_color("drop_position_color", "Tree", p_config.accent_color);
 
-			p_theme->set_constant("v_separation", "Tree", p_config.widget_margin.y - EDSCALE);
-			p_theme->set_constant("h_separation", "Tree", 6 * EDSCALE);
+			p_theme->set_constant("v_separation", "Tree", p_config.separation_margin);
+			p_theme->set_constant("h_separation", "Tree", (p_config.increased_margin + 2) * EDSCALE);
 			p_theme->set_constant("guide_width", "Tree", p_config.border_width);
-			p_theme->set_constant("item_margin", "Tree", 3 * p_config.base_margin * EDSCALE);
-			p_theme->set_constant("inner_item_margin_bottom", "Tree", p_config.increased_margin * EDSCALE);
+			p_theme->set_constant("item_margin", "Tree", 3 * p_config.increased_margin * EDSCALE);
+			p_theme->set_constant("inner_item_margin_top", "Tree", p_config.separation_margin);
+			p_theme->set_constant("inner_item_margin_bottom", "Tree", p_config.separation_margin);
 			p_theme->set_constant("inner_item_margin_left", "Tree", p_config.increased_margin * EDSCALE);
 			p_theme->set_constant("inner_item_margin_right", "Tree", p_config.increased_margin * EDSCALE);
-			p_theme->set_constant("inner_item_margin_top", "Tree", p_config.increased_margin * EDSCALE);
 			p_theme->set_constant("button_margin", "Tree", p_config.base_margin * EDSCALE);
 			p_theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 			p_theme->set_constant("scroll_speed", "Tree", 12);
@@ -855,6 +893,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<Theme> &p_theme, Th
 		// ItemList.
 		{
 			Ref<StyleBoxFlat> style_itemlist_bg = p_config.base_style->duplicate();
+			style_itemlist_bg->set_content_margin_all(p_config.separation_margin);
 			style_itemlist_bg->set_bg_color(p_config.dark_color_1);
 
 			if (p_config.draw_extra_borders) {
@@ -887,9 +926,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<Theme> &p_theme, Th
 			p_theme->set_color("font_outline_color", "ItemList", p_config.font_outline_color);
 			p_theme->set_color("guide_color", "ItemList", guide_color);
 			p_theme->set_constant("v_separation", "ItemList", p_config.forced_even_separation * 0.5 * EDSCALE);
-			p_theme->set_constant("h_separation", "ItemList", 6 * EDSCALE);
-			p_theme->set_constant("icon_margin", "ItemList", 6 * EDSCALE);
-			p_theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
+			p_theme->set_constant("h_separation", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
+			p_theme->set_constant("icon_margin", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
+			p_theme->set_constant("line_separation", "ItemList", p_config.separation_margin);
 			p_theme->set_constant("outline_size", "ItemList", 0);
 		}
 	}
@@ -1066,21 +1105,21 @@ void EditorThemeManager::_populate_standard_styles(const Ref<Theme> &p_theme, Th
 
 	// Containers.
 	{
-		p_theme->set_constant("separation", "BoxContainer", p_config.base_margin * EDSCALE);
-		p_theme->set_constant("separation", "HBoxContainer", p_config.base_margin * EDSCALE);
-		p_theme->set_constant("separation", "VBoxContainer", p_config.base_margin * EDSCALE);
+		p_theme->set_constant("separation", "BoxContainer", p_config.separation_margin);
+		p_theme->set_constant("separation", "HBoxContainer", p_config.separation_margin);
+		p_theme->set_constant("separation", "VBoxContainer", p_config.separation_margin);
 		p_theme->set_constant("margin_left", "MarginContainer", 0);
 		p_theme->set_constant("margin_top", "MarginContainer", 0);
 		p_theme->set_constant("margin_right", "MarginContainer", 0);
 		p_theme->set_constant("margin_bottom", "MarginContainer", 0);
-		p_theme->set_constant("h_separation", "GridContainer", p_config.base_margin * EDSCALE);
-		p_theme->set_constant("v_separation", "GridContainer", p_config.base_margin * EDSCALE);
-		p_theme->set_constant("h_separation", "FlowContainer", p_config.base_margin * EDSCALE);
-		p_theme->set_constant("v_separation", "FlowContainer", p_config.base_margin * EDSCALE);
-		p_theme->set_constant("h_separation", "HFlowContainer", p_config.base_margin * EDSCALE);
-		p_theme->set_constant("v_separation", "HFlowContainer", p_config.base_margin * EDSCALE);
-		p_theme->set_constant("h_separation", "VFlowContainer", p_config.base_margin * EDSCALE);
-		p_theme->set_constant("v_separation", "VFlowContainer", p_config.base_margin * EDSCALE);
+		p_theme->set_constant("h_separation", "GridContainer", p_config.separation_margin);
+		p_theme->set_constant("v_separation", "GridContainer", p_config.separation_margin);
+		p_theme->set_constant("h_separation", "FlowContainer", p_config.separation_margin);
+		p_theme->set_constant("v_separation", "FlowContainer", p_config.separation_margin);
+		p_theme->set_constant("h_separation", "HFlowContainer", p_config.separation_margin);
+		p_theme->set_constant("v_separation", "HFlowContainer", p_config.separation_margin);
+		p_theme->set_constant("h_separation", "VFlowContainer", p_config.separation_margin);
+		p_theme->set_constant("v_separation", "VFlowContainer", p_config.separation_margin);
 
 		// SplitContainer.
 
@@ -1089,13 +1128,13 @@ void EditorThemeManager::_populate_standard_styles(const Ref<Theme> &p_theme, Th
 		p_theme->set_icon("grabber", "VSplitContainer", p_theme->get_icon(SNAME("GuiVsplitter"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("grabber", "HSplitContainer", p_theme->get_icon(SNAME("GuiHsplitter"), EditorStringName(EditorIcons)));
 
-		p_theme->set_constant("separation", "SplitContainer", p_config.base_margin * 2 * EDSCALE);
-		p_theme->set_constant("separation", "HSplitContainer", p_config.base_margin * 2 * EDSCALE);
-		p_theme->set_constant("separation", "VSplitContainer", p_config.base_margin * 2 * EDSCALE);
+		p_theme->set_constant("separation", "SplitContainer", p_config.separation_margin);
+		p_theme->set_constant("separation", "HSplitContainer", p_config.separation_margin);
+		p_theme->set_constant("separation", "VSplitContainer", p_config.separation_margin);
 
-		p_theme->set_constant("minimum_grab_thickness", "SplitContainer", 6 * EDSCALE);
-		p_theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * EDSCALE);
-		p_theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * EDSCALE);
+		p_theme->set_constant("minimum_grab_thickness", "SplitContainer", p_config.increased_margin * EDSCALE);
+		p_theme->set_constant("minimum_grab_thickness", "HSplitContainer", p_config.increased_margin * EDSCALE);
+		p_theme->set_constant("minimum_grab_thickness", "VSplitContainer", p_config.increased_margin * EDSCALE);
 
 		// GridContainer.
 		p_theme->set_constant("v_separation", "GridContainer", Math::round(p_config.widget_margin.y - 2 * EDSCALE));
@@ -1201,8 +1240,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<Theme> &p_theme, Th
 
 			p_theme->set_constant("v_separation", "PopupMenu", p_config.forced_even_separation * EDSCALE);
 			p_theme->set_constant("outline_size", "PopupMenu", 0);
-			p_theme->set_constant("item_start_padding", "PopupMenu", p_config.base_margin * 1.5 * EDSCALE);
-			p_theme->set_constant("item_end_padding", "PopupMenu", p_config.base_margin * 1.5 * EDSCALE);
+			p_theme->set_constant("item_start_padding", "PopupMenu", p_config.separation_margin);
+			p_theme->set_constant("item_end_padding", "PopupMenu", p_config.separation_margin);
 		}
 	}
 

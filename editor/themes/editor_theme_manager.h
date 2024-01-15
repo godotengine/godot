@@ -39,6 +39,7 @@ class EditorThemeManager {
 		// Basic properties.
 
 		String preset;
+		String spacing_preset;
 		bool dark_theme = false;
 
 		Color base_color;
@@ -48,7 +49,8 @@ class EditorThemeManager {
 
 		// Extra properties.
 
-		float extra_spacing = 0.0;
+		int base_spacing = 4;
+		int extra_spacing = 0;
 		int border_width = 0;
 		int corner_radius = 3;
 
@@ -66,7 +68,7 @@ class EditorThemeManager {
 
 		int base_margin = 4;
 		int increased_margin = 4;
-
+		int separation_margin = 4;
 		int popup_margin = 12;
 		int window_border_margin = 8;
 		int top_bar_separation = 8;
