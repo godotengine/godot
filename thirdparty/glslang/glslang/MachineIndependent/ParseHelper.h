@@ -196,6 +196,7 @@ public:
     struct TPragma contextPragma;
     int beginInvocationInterlockCount;
     int endInvocationInterlockCount;
+    bool compileOnly = false;
 
 protected:
     TParseContextBase(TParseContextBase&);

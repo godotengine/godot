@@ -229,7 +229,7 @@ void Camera2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (!is_processing_internal() && !is_physics_processing_internal()) {
+			if (!position_smoothing_enabled || _is_editing_in_editor()) {
 				_update_scroll();
 			}
 		} break;

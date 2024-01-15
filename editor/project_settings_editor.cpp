@@ -556,6 +556,8 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 }
 
 void ProjectSettingsEditor::_update_theme() {
+	add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+	del_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 	restart_close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
 	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));

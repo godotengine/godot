@@ -3723,6 +3723,10 @@ bool DisplayServerMacOS::window_is_focused(WindowID p_window) const {
 	return wd.focused;
 }
 
+DisplayServerMacOS::WindowID DisplayServerMacOS::get_focused_window() const {
+	return last_focused_window;
+}
+
 bool DisplayServerMacOS::window_can_draw(WindowID p_window) const {
 	return windows[p_window].is_visible;
 }

@@ -3,6 +3,7 @@
 Import("env")
 
 import os
+from pathlib import Path
 from platform_methods import run_in_subprocess
 import platform_windows_builders
 
@@ -25,6 +26,19 @@ common_win_wrap = [
     "console_wrapper_windows.cpp",
 ]
 
+
+def arrange_program_clean(prog):
+    """
+    Given an SCons program, arrange for output files SCons doesn't know about
+    to be cleaned when SCons is called with --clean
+    """
+    extensions_to_clean = [".ilk", ".exp", ".pdb", ".lib"]
+    for program in prog:
+        executable_stem = Path(program.name).stem
+        extra_files_to_clean = [f"#bin/{executable_stem}{extension}" for extension in extensions_to_clean]
+        Clean(prog, extra_files_to_clean)
+
+
 res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
@@ -32,6 +46,7 @@ res_obj = env.RES(res_target, res_file)
 sources = common_win + res_obj
 
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+arrange_program_clean(prog)
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
@@ -48,6 +63,7 @@ if env["windows_subsystem"] == "gui":
         env_wrap.Append(LIBS=["version"])
 
     prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
+    arrange_program_clean(prog_wrap)
     env_wrap.Depends(prog_wrap, prog)
 
 # Microsoft Visual Studio Project Generation

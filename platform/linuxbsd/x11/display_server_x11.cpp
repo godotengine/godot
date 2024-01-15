@@ -2891,10 +2891,15 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	XFlush(x11_display);
 }
 
+DisplayServerX11::WindowID DisplayServerX11::get_focused_window() const {
+	return last_focused_window;
+}
+
 bool DisplayServerX11::window_is_focused(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
+
 	const WindowData &wd = windows[p_window];
 
 	return wd.focused;

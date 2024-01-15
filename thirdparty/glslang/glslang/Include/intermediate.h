@@ -1006,6 +1006,8 @@ enum TOperator {
     EOpHitObjectGetAttributesNV,
     EOpHitObjectGetCurrentTimeNV,
     EOpReorderThreadNV,
+    EOpFetchMicroTriangleVertexPositionNV,
+    EOpFetchMicroTriangleVertexBarycentricNV,
 
     // HLSL operations
     //
@@ -1100,6 +1102,17 @@ enum TOperator {
     // Shader tile image ops
     EOpStencilAttachmentReadEXT, // Fragment only
     EOpDepthAttachmentReadEXT, // Fragment only
+
+    // Image processing
+    EOpImageSampleWeightedQCOM,
+    EOpImageBoxFilterQCOM,
+    EOpImageBlockMatchSADQCOM,
+    EOpImageBlockMatchSSDQCOM,
+};
+
+enum TLinkType {
+    ELinkNone,
+    ELinkExport,
 };
 
 class TIntermTraverser;
@@ -1319,9 +1332,11 @@ public:
     virtual const TString& getMethodName() const { return method; }
     virtual TIntermTyped* getObject() const { return object; }
     virtual void traverse(TIntermTraverser*);
+    void setExport() { linkType = ELinkExport; }
 protected:
     TIntermTyped* object;
     TString method;
+    TLinkType linkType;
 };
 
 //
@@ -1694,6 +1709,9 @@ public:
     const TPragmaTable& getPragmaTable() const { return *pragmaTable; }
     void setSpirvInstruction(const TSpirvInstruction& inst) { spirvInst = inst; }
     const TSpirvInstruction& getSpirvInstruction() const { return spirvInst; }
+
+    void setLinkType(TLinkType l) { linkType = l; }
+    TLinkType getLinkType() const { return linkType; }
 protected:
     TIntermAggregate(const TIntermAggregate&); // disallow copy constructor
     TIntermAggregate& operator=(const TIntermAggregate&); // disallow assignment operator
@@ -1705,6 +1723,7 @@ protected:
     bool debug;
     TPragmaTable* pragmaTable;
     TSpirvInstruction spirvInst;
+    TLinkType linkType = ELinkNone;
 };
 
 //

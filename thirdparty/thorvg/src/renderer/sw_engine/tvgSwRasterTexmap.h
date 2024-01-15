@@ -821,8 +821,8 @@ static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const 
 
 static AASpans* _AASpans(float ymin, float ymax, const SwImage* image, const SwBBox* region)
 {
-    auto yStart = static_cast<int32_t>(ymin);
-    auto yEnd = static_cast<int32_t>(ymax);
+    auto yStart = static_cast<int>(ymin);
+    auto yEnd = static_cast<int>(ymax);
 
     if (!_arrange(image, region, yStart, yEnd)) return nullptr;
 
@@ -1108,8 +1108,7 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
 
     float ys = FLT_MAX, ye = -1.0f;
     for (int i = 0; i < 4; i++) {
-        mathMultiply(&vertices[i].pt, transform);
-
+        if (transform) mathMultiply(&vertices[i].pt, transform);
         if (vertices[i].pt.y < ys) ys = vertices[i].pt.y;
         if (vertices[i].pt.y > ye) ye = vertices[i].pt.y;
     }

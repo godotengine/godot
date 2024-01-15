@@ -487,38 +487,16 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 		HashSet<StringName> allowed_types;
 		_get_allowed_types(false, &allowed_types);
 
-		Vector<EditorData::CustomType> custom_resources;
-		if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
-		}
-
 		for (const StringName &E : allowed_types) {
 			const String &t = E;
 
-			bool is_custom_resource = false;
-			Ref<Texture2D> icon;
-			if (!custom_resources.is_empty()) {
-				for (int j = 0; j < custom_resources.size(); j++) {
-					if (custom_resources[j].name == t) {
-						is_custom_resource = true;
-						if (custom_resources[j].icon.is_valid()) {
-							icon = custom_resources[j].icon;
-						}
-						break;
-					}
-				}
-			}
-
-			if (!is_custom_resource && !ClassDB::can_instantiate(t)) {
+			if (!ClassDB::can_instantiate(t)) {
 				continue;
 			}
 
 			inheritors_array.push_back(t);
 
-			if (!icon.is_valid()) {
-				icon = get_editor_theme_icon(has_theme_icon(t, EditorStringName(EditorIcons)) ? t : String("Object"));
-			}
-
+			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(t, "Object");
 			int id = TYPE_BASE_ID + idx;
 			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
 
@@ -804,7 +782,12 @@ void EditorResourcePicker::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			assign_button->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+			assign_button->add_theme_constant_override("icon_max_width", icon_width);
+			if (edit_menu) {
+				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
+			}
+
 			edit_button->set_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -940,6 +923,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 		return;
 	}
 	edit_menu = memnew(PopupMenu);
+	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
 	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
 	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));

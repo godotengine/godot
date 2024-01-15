@@ -808,8 +808,11 @@ void RenderingDeviceDriverVulkan::texture_get_copyable_layout(TextureID p_textur
 			h = MAX(1u, h >> 1);
 			d = MAX(1u, d >> 1);
 		}
-		r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1);
-		r_layout->row_pitch = r_layout->size / (h * d);
+		uint32_t bw = 0, bh = 0;
+		get_compressed_image_format_block_dimensions(tex_info->rd_format, bw, bh);
+		uint32_t sbw = 0, sbh = 0;
+		r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1, &sbw, &sbh);
+		r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
 		r_layout->depth_pitch = r_layout->size / d;
 		r_layout->layer_pitch = r_layout->size / tex_info->vk_create_info.arrayLayers;
 	}
