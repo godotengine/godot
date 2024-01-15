@@ -316,7 +316,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 	//calculate size scale
 	float size_scale = 1.0f;
-	
+
 	if (FileAccess::exists(p_group_file + ".import")) {
 		Ref<ConfigFile> group_file_config;
 		group_file_config.instantiate();
