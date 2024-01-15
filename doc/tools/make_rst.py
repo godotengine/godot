@@ -1691,6 +1691,7 @@ def format_text_block(
     inside_code_tag = ""
     inside_code_tabs = False
     ignore_code_warnings = False
+    code_warning_if_intended_string = "If this is intended, use [code skip-lint]...[/code]."
 
     pos = 0
     tag_depth = 0
@@ -1749,7 +1750,7 @@ def format_text_block(
                 else:
                     if not ignore_code_warnings and tag_state.closing:
                         print_warning(
-                            f'{state.current_class}.xml: Found a code string that looks like a closing tag "[{tag_state.raw}]" in {context_name}.',
+                            f'{state.current_class}.xml: Found a code string that looks like a closing tag "[{tag_state.raw}]" in {context_name}. {code_warning_if_intended_string}',
                             state,
                         )
 
@@ -1816,7 +1817,7 @@ def format_text_block(
 
                     if inside_code_text in state.classes:
                         print_warning(
-                            f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the known classes in {context_name}.',
+                            f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the known classes in {context_name}. {code_warning_if_intended_string}',
                             state,
                         )
 
@@ -1826,49 +1827,49 @@ def format_text_block(
 
                         if target_name in class_def.methods:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} method in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} method in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.constructors:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constructor in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constructor in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.operators:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} operator in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} operator in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.properties:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} member in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} member in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.signals:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} signal in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} signal in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.annotations:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} annotation in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} annotation in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.theme_items:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} theme item in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} theme item in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.constants:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constant in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constant in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
@@ -1876,7 +1877,7 @@ def format_text_block(
                             for enum in class_def.enums.values():
                                 if target_name in enum.values:
                                     print_warning(
-                                        f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} enum value in {context_name}.',
+                                        f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} enum value in {context_name}. {code_warning_if_intended_string}',
                                         state,
                                     )
                                     break
@@ -1887,7 +1888,7 @@ def format_text_block(
                         for param_def in context_params:
                             if param_def.name == inside_code_text:
                                 print_warning(
-                                    f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the parameters in {context_name}.',
+                                    f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the parameters in {context_name}. {code_warning_if_intended_string}',
                                     state,
                                 )
                                 break
