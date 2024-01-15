@@ -113,7 +113,7 @@ private:
 		return *out;
 	}
 
-	void _unref(void *p_data);
+	void _unref();
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 	uint32_t _copy_on_write();
@@ -195,8 +195,8 @@ public:
 };
 
 template <class T>
-void CowData<T>::_unref(void *p_data) {
-	if (!p_data) {
+void CowData<T>::_unref() {
+	if (!_ptr) {
 		return;
 	}
 
@@ -218,7 +218,7 @@ void CowData<T>::_unref(void *p_data) {
 	}
 
 	// free mem
-	Memory::free_static((uint8_t *)p_data, true);
+	Memory::free_static((uint8_t *)_ptr, true);
 }
 
 template <class T>
@@ -251,7 +251,7 @@ uint32_t CowData<T>::_copy_on_write() {
 			}
 		}
 
-		_unref(_ptr);
+		_unref();
 		_ptr = _data;
 
 		rc = 1;
@@ -272,7 +272,7 @@ Error CowData<T>::resize(int p_size) {
 
 	if (p_size == 0) {
 		// wants to clean up
-		_unref(_ptr);
+		_unref();
 		_ptr = nullptr;
 		return OK;
 	}
@@ -398,7 +398,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; // self assign, do nothing.
 	}
 
-	_unref(_ptr);
+	_unref();
 	_ptr = nullptr;
 
 	if (!p_from._ptr) {
@@ -412,7 +412,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 
 template <class T>
 CowData<T>::~CowData() {
-	_unref(_ptr);
+	_unref();
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
