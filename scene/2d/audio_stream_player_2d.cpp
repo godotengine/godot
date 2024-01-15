@@ -403,6 +403,34 @@ Ref<AudioStreamPlayback> AudioStreamPlayer2D::get_stream_playback() {
 	return stream_playbacks[stream_playbacks.size() - 1];
 }
 
+int AudioStreamPlayer2D::get_current_beat() const {
+	if (stream_playbacks.is_empty()) {
+		return 0;
+	}
+	return stream_playbacks[stream_playbacks.size() - 1]->get_current_beat();
+}
+
+int AudioStreamPlayer2D::get_current_bar() const {
+	if (stream_playbacks.is_empty()) {
+		return 0;
+	}
+	return stream_playbacks[stream_playbacks.size() - 1]->get_current_bar();
+}
+
+float AudioStreamPlayer2D::get_beat_progress() const {
+	if (stream_playbacks.is_empty()) {
+		return 0;
+	}
+	return stream_playbacks[stream_playbacks.size() - 1]->get_beat_progress();
+}
+
+float AudioStreamPlayer2D::get_bar_progress() const {
+	if (stream_playbacks.is_empty()) {
+		return 0;
+	}
+	return stream_playbacks[stream_playbacks.size() - 1]->get_bar_progress();
+}
+
 void AudioStreamPlayer2D::set_max_polyphony(int p_max_polyphony) {
 	if (p_max_polyphony > 0) {
 		max_polyphony = p_max_polyphony;
@@ -476,6 +504,11 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_stream_playback"), &AudioStreamPlayer2D::has_stream_playback);
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer2D::get_stream_playback);
+
+	ClassDB::bind_method(D_METHOD("get_current_beat"), &AudioStreamPlayer2D::get_current_beat);
+	ClassDB::bind_method(D_METHOD("get_current_bar"), &AudioStreamPlayer2D::get_current_bar);
+	ClassDB::bind_method(D_METHOD("get_beat_progress"), &AudioStreamPlayer2D::get_beat_progress);
+	ClassDB::bind_method(D_METHOD("get_bar_progress"), &AudioStreamPlayer2D::get_bar_progress);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");

@@ -59,6 +59,7 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
 	virtual float get_stream_sampling_rate() override;
+	int get_frames_per_beat() const;
 
 public:
 	virtual void start(double p_from_pos = 0.0) override;
@@ -71,6 +72,11 @@ public:
 	virtual void seek(double p_time) override;
 
 	virtual void tag_used_streams() override;
+
+	virtual int get_current_beat() const override;
+	virtual int get_current_bar() const override;
+	virtual float get_beat_progress() const override;
+	virtual float get_bar_progress() const override;
 
 	AudioStreamPlaybackMP3() {}
 	~AudioStreamPlaybackMP3();

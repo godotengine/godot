@@ -143,6 +143,31 @@ void AudioStreamPlaybackMP3::tag_used_streams() {
 	mp3_stream->tag_used(get_playback_position());
 }
 
+int AudioStreamPlaybackMP3::get_frames_per_beat() const {
+	ERR_FAIL_COND_V_MSG(mp3_stream->get_bpm() <= 0, -1, "bpm needs to be assigned in import settings.");
+	return mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
+}
+
+int AudioStreamPlaybackMP3::get_current_beat() const {
+	ERR_FAIL_COND_V_MSG(mp3_stream->bar_beats <= 0, -1, "bar_beats needs to be assigned in import settings.");
+	return (frames_mixed / get_frames_per_beat()) % mp3_stream->bar_beats;
+}
+
+int AudioStreamPlaybackMP3::get_current_bar() const {
+	ERR_FAIL_COND_V_MSG(mp3_stream->bar_beats <= 0, -1, "bar_beats needs to be assigned in import settings.");
+	return (frames_mixed / get_frames_per_beat()) / mp3_stream->bar_beats;
+}
+
+float AudioStreamPlaybackMP3::get_beat_progress() const {
+	ERR_FAIL_COND_V_MSG(mp3_stream->get_bpm() <= 0, -1, "bpm needs to be assigned in import settings.");
+	return Math::fmod(frames_mixed / (float)get_frames_per_beat(), 1.0f);
+}
+
+float AudioStreamPlaybackMP3::get_bar_progress() const {
+	ERR_FAIL_COND_V_MSG(mp3_stream->bar_beats <= 0, -1, "bar_beats needs to be assigned in import settings.");
+	return Math::fmod(frames_mixed / (float)(mp3_stream->bar_beats * get_frames_per_beat()), 1.0f);
+}
+
 AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
 	if (mp3d) {
 		mp3dec_ex_close(mp3d);

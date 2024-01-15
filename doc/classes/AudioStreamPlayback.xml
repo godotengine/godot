@@ -10,6 +10,30 @@
 		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
 	</tutorials>
 	<methods>
+		<method name="_get_bar_progress" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+				Should return how far the playback has progressed from the last musical bar (usually 4 beats, depends on `bar_beats` in the stream import settings) to the next in range [code][0.0, 1.0][/code].
+			</description>
+		</method>
+		<method name="_get_beat_progress" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+				Should return how far the playback has progressed from the last musical beat to the next in range [code][0.0, 1.0][/code].
+			</description>
+		</method>
+		<method name="_get_current_bar" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Should return the index of the current musical bar (usually 4 beats, depends on `bar_beats` in the stream import settings) from the start of the stream, starting at 0.
+			</description>
+		</method>
+		<method name="_get_current_beat" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Should return the index of the current musical beat from the start of the bar in range [code][0, bar_beats - 1][/code].
+			</description>
+		</method>
 		<method name="_get_loop_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>

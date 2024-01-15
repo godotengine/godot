@@ -257,6 +257,31 @@ void AudioStreamPlaybackOggVorbis::tag_used_streams() {
 	vorbis_stream->tag_used(get_playback_position());
 }
 
+int AudioStreamPlaybackOggVorbis::get_frames_per_beat() const {
+	ERR_FAIL_COND_V_MSG(vorbis_stream->get_bpm() <= 0, -1, "bpm needs to be assigned in import settings.");
+	return vorbis_data->get_sampling_rate() * 60 / vorbis_stream->get_bpm();
+}
+
+int AudioStreamPlaybackOggVorbis::get_current_beat() const {
+	ERR_FAIL_COND_V_MSG(vorbis_stream->bar_beats <= 0, -1, "bar_beats needs to be assigned in import settings.");
+	return (frames_mixed / get_frames_per_beat()) % vorbis_stream->bar_beats;
+}
+
+int AudioStreamPlaybackOggVorbis::get_current_bar() const {
+	ERR_FAIL_COND_V_MSG(vorbis_stream->bar_beats <= 0, -1, "bar_beats needs to be assigned in import settings.");
+	return (frames_mixed / get_frames_per_beat()) / vorbis_stream->bar_beats;
+}
+
+float AudioStreamPlaybackOggVorbis::get_beat_progress() const {
+	ERR_FAIL_COND_V_MSG(vorbis_stream->get_bpm() <= 0, -1, "bpm needs to be assigned in import settings.");
+	return Math::fmod(frames_mixed / (float)get_frames_per_beat(), 1.0f);
+}
+
+float AudioStreamPlaybackOggVorbis::get_bar_progress() const {
+	ERR_FAIL_COND_V_MSG(vorbis_stream->bar_beats <= 0, -1, "bar_beats needs to be assigned in import settings.");
+	return Math::fmod(frames_mixed / (float)(vorbis_stream->bar_beats * get_frames_per_beat()), 1.0f);
+}
+
 void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 	ERR_FAIL_COND(!ready);
 	ERR_FAIL_COND(vorbis_stream.is_null());
