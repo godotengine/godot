@@ -381,7 +381,7 @@ Ref<Font> ThemeOwner::get_theme_default_font() {
 	return ThemeDB::get_singleton()->get_fallback_font();
 }
 
-int ThemeOwner::get_theme_default_font_size() {
+float ThemeOwner::get_theme_default_font_size() {
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.

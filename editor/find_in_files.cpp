@@ -789,7 +789,7 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	Result r = E->value;
 	String item_text = item->get_text(_with_replace ? 1 : 0);
 	Ref<Font> font = _results_display->get_theme_font(SNAME("font"));
-	int font_size = _results_display->get_theme_font_size(SNAME("font_size"));
+	float font_size = _results_display->get_theme_font_size(SNAME("font_size"));
 
 	Rect2 match_rect = rect;
 	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 1;

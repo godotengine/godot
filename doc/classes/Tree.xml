@@ -527,77 +527,77 @@
 		<theme_item name="title_button_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Default text [Color] of the title button.
 		</theme_item>
-		<theme_item name="button_margin" data_type="constant" type="int" default="4">
+		<theme_item name="button_margin" data_type="constant" type="Variant" default="4">
 			The horizontal space between each button in a cell.
 		</theme_item>
-		<theme_item name="children_hl_line_width" data_type="constant" type="int" default="1">
+		<theme_item name="children_hl_line_width" data_type="constant" type="Variant" default="1">
 			The width of the relationship lines between the selected [TreeItem] and its children.
 		</theme_item>
-		<theme_item name="draw_guides" data_type="constant" type="int" default="1">
+		<theme_item name="draw_guides" data_type="constant" type="Variant" default="true">
 			Draws the guidelines if not zero, this acts as a boolean. The guideline is a horizontal line drawn at the bottom of each item.
 		</theme_item>
-		<theme_item name="draw_relationship_lines" data_type="constant" type="int" default="0">
+		<theme_item name="draw_relationship_lines" data_type="constant" type="Variant" default="false">
 			Draws the relationship lines if not zero, this acts as a boolean. Relationship lines are drawn at the start of child items to show hierarchy.
 		</theme_item>
-		<theme_item name="h_separation" data_type="constant" type="int" default="4">
+		<theme_item name="h_separation" data_type="constant" type="Variant" default="4">
 			The horizontal space between item cells. This is also used as the margin at the start of an item when folding is disabled.
 		</theme_item>
-		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+		<theme_item name="icon_max_width" data_type="constant" type="Variant" default="0">
 			The maximum allowed width of the icon in item's cells. This limit is applied on top of the default size of the icon, but before the value set with [method TreeItem.set_icon_max_width]. The height is adjusted according to the icon's ratio.
 		</theme_item>
-		<theme_item name="inner_item_margin_bottom" data_type="constant" type="int" default="0">
+		<theme_item name="inner_item_margin_bottom" data_type="constant" type="Variant" default="0">
 			The inner bottom margin of an item.
 		</theme_item>
-		<theme_item name="inner_item_margin_left" data_type="constant" type="int" default="0">
+		<theme_item name="inner_item_margin_left" data_type="constant" type="Variant" default="0">
 			The inner left margin of an item.
 		</theme_item>
-		<theme_item name="inner_item_margin_right" data_type="constant" type="int" default="0">
+		<theme_item name="inner_item_margin_right" data_type="constant" type="Variant" default="0">
 			The inner right margin of an item.
 		</theme_item>
-		<theme_item name="inner_item_margin_top" data_type="constant" type="int" default="0">
+		<theme_item name="inner_item_margin_top" data_type="constant" type="Variant" default="0">
 			The inner top margin of an item.
 		</theme_item>
-		<theme_item name="item_margin" data_type="constant" type="int" default="16">
+		<theme_item name="item_margin" data_type="constant" type="Variant" default="16">
 			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
 		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+		<theme_item name="outline_size" data_type="constant" type="Variant" default="0.0">
 			The size of the text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
-		<theme_item name="parent_hl_line_margin" data_type="constant" type="int" default="0">
+		<theme_item name="parent_hl_line_margin" data_type="constant" type="Variant" default="0">
 			The space between the parent relationship lines for the selected [TreeItem] and the relationship lines to its siblings that are not selected.
 		</theme_item>
-		<theme_item name="parent_hl_line_width" data_type="constant" type="int" default="1">
+		<theme_item name="parent_hl_line_width" data_type="constant" type="Variant" default="1">
 			The width of the relationship lines between the selected [TreeItem] and its parents.
 		</theme_item>
-		<theme_item name="relationship_line_width" data_type="constant" type="int" default="1">
+		<theme_item name="relationship_line_width" data_type="constant" type="Variant" default="1">
 			The default width of the relationship lines.
 		</theme_item>
-		<theme_item name="scroll_border" data_type="constant" type="int" default="4">
+		<theme_item name="scroll_border" data_type="constant" type="Variant" default="4">
 			The maximum distance between the mouse cursor and the control's border to trigger border scrolling when dragging.
 		</theme_item>
-		<theme_item name="scroll_speed" data_type="constant" type="int" default="12">
+		<theme_item name="scroll_speed" data_type="constant" type="Variant" default="12">
 			The speed of border scrolling.
 		</theme_item>
-		<theme_item name="scrollbar_h_separation" data_type="constant" type="int" default="4">
+		<theme_item name="scrollbar_h_separation" data_type="constant" type="Variant" default="4">
 			The horizontal separation of tree content and scrollbar.
 		</theme_item>
-		<theme_item name="scrollbar_margin_bottom" data_type="constant" type="int" default="-1">
+		<theme_item name="scrollbar_margin_bottom" data_type="constant" type="Variant" default="-1">
 			The bottom margin of the scrollbars. When negative, uses [theme_item panel] bottom margin.
 		</theme_item>
-		<theme_item name="scrollbar_margin_left" data_type="constant" type="int" default="-1">
+		<theme_item name="scrollbar_margin_left" data_type="constant" type="Variant" default="-1">
 			The left margin of the horizontal scrollbar. When negative, uses [theme_item panel] left margin.
 		</theme_item>
-		<theme_item name="scrollbar_margin_right" data_type="constant" type="int" default="-1">
+		<theme_item name="scrollbar_margin_right" data_type="constant" type="Variant" default="-1">
 			The right margin of the scrollbars. When negative, uses [theme_item panel] right margin.
 		</theme_item>
-		<theme_item name="scrollbar_margin_top" data_type="constant" type="int" default="-1">
+		<theme_item name="scrollbar_margin_top" data_type="constant" type="Variant" default="-1">
 			The top margin of the vertical scrollbar. When negative, uses [theme_item panel] top margin.
 		</theme_item>
-		<theme_item name="scrollbar_v_separation" data_type="constant" type="int" default="4">
+		<theme_item name="scrollbar_v_separation" data_type="constant" type="Variant" default="4">
 			The vertical separation of tree content and scrollbar.
 		</theme_item>
-		<theme_item name="v_separation" data_type="constant" type="int" default="4">
+		<theme_item name="v_separation" data_type="constant" type="Variant" default="4">
 			The vertical padding inside each item, i.e. the distance between the item's content and top/bottom border.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
@@ -606,10 +606,10 @@
 		<theme_item name="title_button_font" data_type="font" type="Font">
 			[Font] of the title button's text.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
+		<theme_item name="font_size" data_type="font_size" type="float">
 			Font size of the item's text.
 		</theme_item>
-		<theme_item name="title_button_font_size" data_type="font_size" type="int">
+		<theme_item name="title_button_font_size" data_type="font_size" type="float">
 			Font size of the title button's text.
 		</theme_item>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">

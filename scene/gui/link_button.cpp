@@ -35,7 +35,7 @@
 
 void LinkButton::_shape() {
 	Ref<Font> font = theme_cache.font;
-	int font_size = theme_cache.font_size;
+	float font_size = theme_cache.font_size;
 
 	text_buf->clear();
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -212,14 +212,14 @@ void LinkButton::_notification(int p_what) {
 			int width = text_buf->get_line_width();
 
 			Color font_outline_color = theme_cache.font_outline_color;
-			int outline_size = theme_cache.outline_size;
+			float outline_size = theme_cache.outline_size;
 			if (is_layout_rtl()) {
-				if (outline_size > 0 && font_outline_color.a > 0) {
+				if (outline_size > 0.0 && font_outline_color.a > 0.0) {
 					text_buf->draw_outline(get_canvas_item(), Vector2(size.width - width, 0), outline_size, font_outline_color);
 				}
 				text_buf->draw(get_canvas_item(), Vector2(size.width - width, 0), color);
 			} else {
-				if (outline_size > 0 && font_outline_color.a > 0) {
+				if (outline_size > 0.0 && font_outline_color.a > 0.0) {
 					text_buf->draw_outline(get_canvas_item(), Vector2(0, 0), outline_size, font_outline_color);
 				}
 				text_buf->draw(get_canvas_item(), Vector2(0, 0), color);
@@ -281,10 +281,10 @@ void LinkButton::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, LinkButton, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, LinkButton, font_size);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LinkButton, outline_size);
+	BIND_THEME_CONSTANT(LinkButton, outline_size, Variant::FLOAT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_outline_color);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LinkButton, underline_spacing);
+	BIND_THEME_CONSTANT(LinkButton, underline_spacing, Variant::INT);
 }
 
 LinkButton::LinkButton(const String &p_text) {

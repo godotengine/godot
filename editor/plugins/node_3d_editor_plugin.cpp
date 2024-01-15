@@ -3107,7 +3107,7 @@ void Node3DEditorViewport::_draw() {
 
 	if (message_time > 0) {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		Point2 msgpos = Point2(5, get_size().y - 20);
 		font->draw_string(ci, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
 		font->draw_string(ci, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
@@ -8321,8 +8321,8 @@ Node3DEditor::Node3DEditor() {
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
 	// which looks ugly.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
-	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	toolbar_margin->add_theme_constant_override("margin_left", (int64_t)(4 * EDSCALE));
+	toolbar_margin->add_theme_constant_override("margin_right", (int64_t)(4 * EDSCALE));
 	vbc->add_child(toolbar_margin);
 
 	// A fluid container for all toolbars.

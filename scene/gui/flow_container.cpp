@@ -359,6 +359,6 @@ void FlowContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverse_fill"), "set_reverse_fill", "is_reverse_fill");
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FlowContainer, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FlowContainer, v_separation);
+	BIND_THEME_CONSTANT(FlowContainer, h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(FlowContainer, v_separation, Variant::INT);
 }

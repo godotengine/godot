@@ -77,8 +77,8 @@ private:
 		Color font_disabled_color;
 
 		Ref<Font> font;
-		int font_size = 0;
-		int outline_size = 0;
+		float font_size = 0;
+		float outline_size = 0;
 		Color font_outline_color;
 
 		Color icon_normal_color;

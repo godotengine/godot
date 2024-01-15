@@ -1404,7 +1404,7 @@ void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_va
 
 Size2 EditorAudioMeterNotches::get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	float font_height = font->get_height(font_size);
 
 	float width = 0;

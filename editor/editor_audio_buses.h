@@ -245,7 +245,7 @@ private:
 		Color notch_color;
 
 		Ref<Font> font;
-		int font_size = 0;
+		float font_size = 0;
 	} theme_cache;
 
 public:

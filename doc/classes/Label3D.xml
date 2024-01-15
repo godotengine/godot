@@ -64,7 +64,7 @@
 		<member name="font" type="Font" setter="set_font" getter="get_font">
 			Font configuration used to display text.
 		</member>
-		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="32">
+		<member name="font_size" type="float" setter="set_font_size" getter="get_font_size" default="32.0">
 			Font size of the [Label3D]'s text. To make the font look more detailed when up close, increase [member font_size] while decreasing [member pixel_size] at the same time.
 			Higher font sizes require more time to render new characters, which can cause stuttering during gameplay.
 		</member>
@@ -98,7 +98,7 @@
 			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
-		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="12">
+		<member name="outline_size" type="float" setter="set_outline_size" getter="get_outline_size" default="12.0">
 			Text outline size.
 		</member>
 		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.005">

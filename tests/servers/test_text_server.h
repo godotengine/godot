@@ -66,6 +66,8 @@ TEST_SUITE("[TextServer]") {
 					continue;
 				}
 
+				bool has_26_6 = ts->has_feature(TextServer::FEATURE_USE_26_6_UNITS);
+
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 				ts->font_set_allow_system_fallback(font1, false);
@@ -100,7 +102,11 @@ TEST_SUITE("[TextServer]") {
 						CHECK_FALSE_MESSAGE(glyphs[j].index != test[glyphs[j].start], "Incorrect glyph index.");
 					}
 					CHECK_FALSE_MESSAGE((glyphs[j].start < 0 || glyphs[j].end > test.length()), "Incorrect glyph range.");
-					CHECK_FALSE_MESSAGE(glyphs[j].font_size != 16, "Incorrect glyph font size.");
+					if (has_26_6) {
+						CHECK_FALSE_MESSAGE(glyphs[j].font_size != 16 << 6, "Incorrect glyph font size.");
+					} else {
+						CHECK_FALSE_MESSAGE(glyphs[j].font_size != 16, "Incorrect glyph font size.");
+					}
 				}
 
 				ts->free_rid(ctx);

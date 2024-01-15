@@ -915,7 +915,7 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
 	RID ci = tile_data_editor_dropdown_button->get_canvas_item();
 	Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"), SNAME("OptionButton"));
 	Color clr = Color(1, 1, 1);
-	if (get_theme_constant(SNAME("modulate_arrow"))) {
+	if ((bool)get_theme_constant(SNAME("modulate_arrow"))) {
 		switch (tile_data_editor_dropdown_button->get_draw_mode()) {
 			case BaseButton::DRAW_PRESSED:
 				clr = get_theme_color(SNAME("font_pressed_color"));
@@ -939,9 +939,9 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
 
 	Point2 ofs;
 	if (is_layout_rtl()) {
-		ofs = Point2(get_theme_constant(SNAME("arrow_margin"), SNAME("OptionButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
+		ofs = Point2((int64_t)get_theme_constant(SNAME("arrow_margin"), SNAME("OptionButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
 	} else {
-		ofs = Point2(size.width - arrow->get_width() - get_theme_constant(SNAME("arrow_margin"), SNAME("OptionButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
+		ofs = Point2(size.width - arrow->get_width() - (int64_t)get_theme_constant(SNAME("arrow_margin"), SNAME("OptionButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
 	}
 	arrow->draw(ci, ofs, clr);
 }

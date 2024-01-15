@@ -1615,7 +1615,7 @@ ConnectionsDock::ConnectionsDock() {
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
 	tree->connect("gui_input", callable_mp(this, &ConnectionsDock::_tree_gui_input));
 
-	add_theme_constant_override("separation", 3 * EDSCALE);
+	add_theme_constant_override("separation", (int64_t)(3 * EDSCALE));
 }
 
 ConnectionsDock::~ConnectionsDock() {

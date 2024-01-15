@@ -143,8 +143,8 @@ void CheckButton::_notification(int p_what) {
 }
 
 void CheckButton::_bind_methods() {
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, check_v_offset);
+	BIND_THEME_CONSTANT(CheckButton, h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(CheckButton, check_v_offset, Variant::INT);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CheckButton, normal_style, "normal");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, checked);

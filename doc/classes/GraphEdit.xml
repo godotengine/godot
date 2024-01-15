@@ -464,10 +464,10 @@
 		<theme_item name="selection_stroke" data_type="color" type="Color" default="Color(1, 1, 1, 0.8)">
 			The outline color of the selection rectangle.
 		</theme_item>
-		<theme_item name="port_hotzone_inner_extent" data_type="constant" type="int" default="22">
+		<theme_item name="port_hotzone_inner_extent" data_type="constant" type="Variant" default="22">
 			The horizontal range within which a port can be grabbed (inner side).
 		</theme_item>
-		<theme_item name="port_hotzone_outer_extent" data_type="constant" type="int" default="26">
+		<theme_item name="port_hotzone_outer_extent" data_type="constant" type="Variant" default="26">
 			The horizontal range within which a port can be grabbed (outer side).
 		</theme_item>
 		<theme_item name="grid_toggle" data_type="icon" type="Texture2D">

@@ -33,7 +33,7 @@
 			The fallback font of every [Control] node and [Theme] resource. Used when no other value is available to the control.
 			See also [member Theme.default_font].
 		</member>
-		<member name="fallback_font_size" type="int" setter="set_fallback_font_size" getter="get_fallback_font_size" default="16">
+		<member name="fallback_font_size" type="float" setter="set_fallback_font_size" getter="get_fallback_font_size" default="16.0">
 			The fallback font size of every [Control] node and [Theme] resource. Used when no other value is available to the control.
 			See also [member Theme.default_font_size].
 		</member>

@@ -102,7 +102,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 		}
 
 		if (p_preview.is_valid()) {
-			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
+			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_content_margin(SIDE_LEFT) + (int64_t)get_theme_constant(SNAME("h_separation"), SNAME("Button")));
 
 			// Resource-specific stretching.
 			if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
@@ -1213,7 +1213,7 @@ void EditorAudioStreamPicker::_update_resource() {
 	EditorResourcePicker::_update_resource();
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	Ref<AudioStream> audio_stream = get_edited_resource();
 	if (audio_stream.is_valid() && audio_stream->get_length() > 0.0) {
 		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 3));
@@ -1231,7 +1231,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 		return;
 	}
 
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 
 	get_assign_button()->set_text("");
 

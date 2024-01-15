@@ -121,27 +121,27 @@
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			[Color] of the text's shadow effect.
 		</theme_item>
-		<theme_item name="line_spacing" data_type="constant" type="int" default="3">
+		<theme_item name="line_spacing" data_type="constant" type="Variant" default="3">
 			Vertical space between lines in multiline [Label].
 		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+		<theme_item name="outline_size" data_type="constant" type="Variant" default="0.0">
 			Text outline size.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 			[b]Note:[/b] Using a value that is larger than half the font size is not recommended, as the font outline may fail to be fully closed in this case.
 		</theme_item>
-		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
+		<theme_item name="shadow_offset_x" data_type="constant" type="Variant" default="1">
 			The horizontal offset of the text's shadow.
 		</theme_item>
-		<theme_item name="shadow_offset_y" data_type="constant" type="int" default="1">
+		<theme_item name="shadow_offset_y" data_type="constant" type="Variant" default="1">
 			The vertical offset of the text's shadow.
 		</theme_item>
-		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
+		<theme_item name="shadow_outline_size" data_type="constant" type="Variant" default="1.0">
 			The size of the shadow outline.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			[Font] used for the [Label]'s text.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
+		<theme_item name="font_size" data_type="font_size" type="float">
 			Font size of the [Label]'s text.
 		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">

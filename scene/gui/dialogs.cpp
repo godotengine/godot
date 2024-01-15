@@ -389,7 +389,7 @@ void AcceptDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, AcceptDialog, panel_style, "panel");
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_separation);
+	BIND_THEME_CONSTANT(AcceptDialog, buttons_separation, Variant::INT);
 }
 
 bool AcceptDialog::swap_cancel_ok = false;

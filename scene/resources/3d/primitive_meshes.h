@@ -588,7 +588,7 @@ private:
 	String text;
 	String xl_text;
 
-	int font_size = 16;
+	float font_size = 16.0;
 	Ref<Font> font_override;
 
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
@@ -623,6 +623,13 @@ protected:
 
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+#ifndef DISABLE_DEPRECATED
+	void _set_font_size_compat_87243(int p_size);
+	int _get_font_size_compat_87243() const;
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 
@@ -642,8 +649,8 @@ public:
 	Ref<Font> get_font() const;
 	Ref<Font> _get_font_or_default() const;
 
-	void set_font_size(int p_size);
-	int get_font_size() const;
+	void set_font_size(float p_size);
+	float get_font_size() const;
 
 	void set_line_spacing(float p_size);
 	float get_line_spacing() const;

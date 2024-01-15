@@ -692,29 +692,29 @@
 		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the labeled separator.
 		</theme_item>
-		<theme_item name="h_separation" data_type="constant" type="int" default="4">
+		<theme_item name="h_separation" data_type="constant" type="Variant" default="4">
 			The horizontal space between the item's elements.
 		</theme_item>
-		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+		<theme_item name="icon_max_width" data_type="constant" type="Variant" default="0">
 			The maximum allowed width of the item's icon. This limit is applied on top of the default size of the icon, but before the value set with [method set_item_icon_max_width]. The height is adjusted according to the icon's ratio.
 		</theme_item>
-		<theme_item name="indent" data_type="constant" type="int" default="10">
+		<theme_item name="indent" data_type="constant" type="Variant" default="10">
 			Width of the single indentation level.
 		</theme_item>
-		<theme_item name="item_end_padding" data_type="constant" type="int" default="2">
+		<theme_item name="item_end_padding" data_type="constant" type="Variant" default="2">
 			Horizontal padding to the right of the items (or left, in RTL layout).
 		</theme_item>
-		<theme_item name="item_start_padding" data_type="constant" type="int" default="2">
+		<theme_item name="item_start_padding" data_type="constant" type="Variant" default="2">
 			Horizontal padding to the left of the items (or right, in RTL layout).
 		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+		<theme_item name="outline_size" data_type="constant" type="Variant" default="0.0">
 			The size of the item text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
-		<theme_item name="separator_outline_size" data_type="constant" type="int" default="0">
+		<theme_item name="separator_outline_size" data_type="constant" type="Variant" default="0.0">
 			The size of the labeled separator text outline.
 		</theme_item>
-		<theme_item name="v_separation" data_type="constant" type="int" default="4">
+		<theme_item name="v_separation" data_type="constant" type="Variant" default="4">
 			The vertical space between each menu item.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
@@ -723,10 +723,10 @@
 		<theme_item name="font_separator" data_type="font" type="Font">
 			[Font] used for the labeled separator.
 		</theme_item>
-		<theme_item name="font_separator_size" data_type="font_size" type="int">
+		<theme_item name="font_separator_size" data_type="font_size" type="float">
 			Font size of the labeled separator.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
+		<theme_item name="font_size" data_type="font_size" type="float">
 			Font size of the menu items.
 		</theme_item>
 		<theme_item name="checked" data_type="icon" type="Texture2D">

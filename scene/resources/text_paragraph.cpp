@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "scene/resources/text_paragraph.h"
+#include "text_paragraph.h"
+#include "text_paragraph.compat.inc"
 
 void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextParagraph::clear);
@@ -126,13 +127,13 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dropcap_lines"), &TextParagraph::get_dropcap_lines);
 
 	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color", "dc_color"), &TextParagraph::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color", "dc_color"), &TextParagraph::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color", "dc_color"), &TextParagraph::draw_outline, DEFVAL(1.0), DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("draw_line", "canvas", "pos", "line", "color"), &TextParagraph::draw_line, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_line_outline", "canvas", "pos", "line", "outline_size", "color"), &TextParagraph::draw_line_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_line_outline", "canvas", "pos", "line", "outline_size", "color"), &TextParagraph::draw_line_outline, DEFVAL(1.0), DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("draw_dropcap", "canvas", "pos", "color"), &TextParagraph::draw_dropcap, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color"), &TextParagraph::draw_dropcap_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color"), &TextParagraph::draw_dropcap_outline, DEFVAL(1.0), DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextParagraph::hit_test);
 }
@@ -398,7 +399,7 @@ TextServer::Orientation TextParagraph::get_orientation() const {
 	return TS->shaped_text_get_orientation(rid);
 }
 
-bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_font, int p_font_size, const Rect2 &p_dropcap_margins, const String &p_language) {
+bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_font, float p_font_size, const Rect2 &p_dropcap_margins, const String &p_language) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(p_font.is_null(), false);
 	TS->shaped_text_clear(dropcap_rid);
@@ -415,7 +416,7 @@ void TextParagraph::clear_dropcap() {
 	lines_dirty = true;
 }
 
-bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, const Variant &p_meta) {
+bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_font, float p_font_size, const String &p_language, const Variant &p_meta) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(p_font.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language, p_meta);
@@ -853,7 +854,7 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 	}
 }
 
-void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color, const Color &p_dc_color) const {
+void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, float p_outline_size, const Color &p_color, const Color &p_dc_color) const {
 	_THREAD_SAFE_METHOD_
 
 	const_cast<TextParagraph *>(this)->_shape_lines();
@@ -1009,7 +1010,7 @@ void TextParagraph::draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color
 	}
 }
 
-void TextParagraph::draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color) const {
+void TextParagraph::draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, float p_outline_size, const Color &p_color) const {
 	_THREAD_SAFE_METHOD_
 
 	Vector2 ofs = p_pos;
@@ -1049,7 +1050,7 @@ void TextParagraph::draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, co
 	return TS->shaped_text_draw(lines_rid[p_line], p_canvas, ofs, -1, -1, p_color);
 }
 
-void TextParagraph::draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_line, int p_outline_size, const Color &p_color) const {
+void TextParagraph::draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_line, float p_outline_size, const Color &p_color) const {
 	_THREAD_SAFE_METHOD_
 
 	const_cast<TextParagraph *>(this)->_shape_lines();
@@ -1064,7 +1065,7 @@ void TextParagraph::draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_
 	return TS->shaped_text_draw_outline(lines_rid[p_line], p_canvas, ofs, -1, -1, p_outline_size, p_color);
 }
 
-TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
+TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_font, float p_font_size, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	rid = TS->create_shaped_text(p_direction, p_orientation);
 	if (p_font.is_valid()) {
 		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);

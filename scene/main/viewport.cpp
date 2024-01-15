@@ -323,7 +323,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 
 		// Draw the title bar text.
 		Ref<Font> title_font = p_window->theme_cache.title_font;
-		int font_size = p_window->theme_cache.title_font_size;
+		float font_size = p_window->theme_cache.title_font_size;
 		Color title_color = p_window->theme_cache.title_color;
 		int title_height = p_window->theme_cache.title_height;
 		int close_h_ofs = p_window->theme_cache.close_h_offset;
@@ -336,8 +336,8 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int y = (-title_height - title_text.get_size().y) / 2;
 
 		Color font_outline_color = p_window->theme_cache.title_outline_modulate;
-		int outline_size = p_window->theme_cache.title_outline_size;
-		if (outline_size > 0 && font_outline_color.a > 0) {
+		float outline_size = p_window->theme_cache.title_outline_size;
+		if (outline_size > 0.0 && font_outline_color.a > 0.0) {
 			title_text.draw_outline(sw.canvas_item, r.position + Point2(x, y), outline_size, font_outline_color);
 		}
 		title_text.draw(sw.canvas_item, r.position + Point2(x, y), title_color);

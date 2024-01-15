@@ -199,7 +199,7 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 			open_big_text->set_icon(df);
 
 			Ref<Font> font;
-			int font_size;
+			float font_size;
 			if (expression) {
 				font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				font_size = get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts));
@@ -859,7 +859,7 @@ EditorPropertyLayersGrid::EditorPropertyLayersGrid() {
 
 Size2 EditorPropertyLayersGrid::get_grid_size() const {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	return Vector2(0, font->get_height(font_size) * 3);
 }
 
@@ -1030,7 +1030,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 						flag_rects.push_back(rect2);
 
 						Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-						int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+						float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 						Vector2 offset;
 						offset.y = rect2.size.y * 0.75;
 
@@ -1571,7 +1571,7 @@ void EditorPropertyEasing::_draw_easing() {
 	const float exp = get_edited_property_value();
 
 	const Ref<Font> f = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	const Color font_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
 	Color line_color;
 	if (dragging) {
@@ -2652,7 +2652,7 @@ void EditorPropertyColor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			picker->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
+			picker->set_custom_minimum_size(Size2(0, (int64_t)get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 		} break;
 	}
 }

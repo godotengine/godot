@@ -209,7 +209,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->add_theme_style_override("hover", empty_stylebox);
 	zoom_reset->add_theme_style_override("focus", empty_stylebox);
 	zoom_reset->add_theme_style_override("pressed", empty_stylebox);
-	zoom_reset->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
+	zoom_reset->add_theme_constant_override("outline_size", Math::ceil(2.0 * EDSCALE));
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
 	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
 

@@ -324,7 +324,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 		draw_style_box(sb, Rect2(Vector2(), size));
 	}
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
 	int sep_base = 4 * EDSCALE;
 	int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
@@ -521,7 +521,7 @@ LineEdit *EditorSpinSlider::get_line_edit() {
 Size2 EditorSpinSlider::get_minimum_size() const {
 	Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"));
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
 
 	Size2 ms = sb->get_minimum_size();
 	ms.height += font->get_height(font_size);

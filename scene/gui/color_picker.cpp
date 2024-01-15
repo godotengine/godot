@@ -84,7 +84,7 @@ void ColorPicker::_notification(int p_what) {
 			w_edit->set_custom_minimum_size(Size2(theme_cache.h_width, 0));
 
 			wheel_edit->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
-			wheel_margin->add_theme_constant_override("margin_bottom", 8 * theme_cache.base_scale);
+			wheel_margin->add_theme_constant_override("margin_bottom", (int64_t)(8 * theme_cache.base_scale));
 
 			for (int i = 0; i < SLIDER_COUNT; i++) {
 				labels[i]->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
@@ -551,7 +551,7 @@ void ColorPicker::_reset_sliders_theme() {
 		sliders[i]->begin_bulk_theme_override();
 		sliders[i]->add_theme_icon_override("grabber", theme_cache.bar_arrow);
 		sliders[i]->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
-		sliders[i]->add_theme_constant_override("grabber_offset", 8 * theme_cache.base_scale);
+		sliders[i]->add_theme_constant_override("grabber_offset", (int64_t)(8 * theme_cache.base_scale));
 		if (!colorize_sliders) {
 			sliders[i]->add_theme_style_override("slider", style_box_flat);
 		}
@@ -561,7 +561,7 @@ void ColorPicker::_reset_sliders_theme() {
 	alpha_slider->begin_bulk_theme_override();
 	alpha_slider->add_theme_icon_override("grabber", theme_cache.bar_arrow);
 	alpha_slider->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
-	alpha_slider->add_theme_constant_override("grabber_offset", 8 * theme_cache.base_scale);
+	alpha_slider->add_theme_constant_override("grabber_offset", (int64_t)(8 * theme_cache.base_scale));
 	if (!colorize_sliders) {
 		alpha_slider->add_theme_style_override("slider", style_box_flat);
 	}
@@ -1767,14 +1767,14 @@ void ColorPicker::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHAPE_OKHSL_CIRCLE);
 	BIND_ENUM_CONSTANT(SHAPE_NONE);
 
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ColorPicker, content_margin, "margin");
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, label_width);
+	BIND_THEME_CONSTANT_CUSTOM(ColorPicker, content_margin, "margin", Variant::INT);
+	BIND_THEME_CONSTANT(ColorPicker, label_width, Variant::INT);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, sv_width);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, sv_height);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, h_width);
+	BIND_THEME_CONSTANT(ColorPicker, sv_width, Variant::INT);
+	BIND_THEME_CONSTANT(ColorPicker, sv_height, Variant::INT);
+	BIND_THEME_CONSTANT(ColorPicker, h_width, Variant::INT);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, center_slider_grabbers);
+	BIND_THEME_CONSTANT(ColorPicker, center_slider_grabbers, Variant::BOOL);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, screen_picker);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, expanded_arrow);

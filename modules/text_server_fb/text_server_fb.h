@@ -259,7 +259,7 @@ class TextServerFallback : public TextServerExtension {
 		bool msdf = false;
 		FixedSizeScaleMode fixed_size_scale_mode = FIXED_SIZE_SCALE_DISABLE;
 		int msdf_range = 14;
-		int msdf_source_size = 48;
+		int msdf_source_size = 48 << 6;
 		int fixed_size = 0;
 		bool force_autohinter = false;
 		bool allow_system_fallback = true;
@@ -797,13 +797,13 @@ public:
 	MODBIND3(shaped_text_set_spacing, const RID &, SpacingType, int64_t);
 	MODBIND2RC(int64_t, shaped_text_get_spacing, const RID &, SpacingType);
 
-	MODBIND7R(bool, shaped_text_add_string, const RID &, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
+	MODBIND7R(bool, shaped_text_add_string, const RID &, const String &, const TypedArray<RID> &, double, const Dictionary &, const String &, const Variant &);
 	MODBIND6R(bool, shaped_text_add_object, const RID &, const Variant &, const Size2 &, InlineAlignment, int64_t, double);
 	MODBIND5R(bool, shaped_text_resize_object, const RID &, const Variant &, const Size2 &, InlineAlignment, double);
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);
 	MODBIND2RC(Variant, shaped_get_span_meta, const RID &, int64_t);
-	MODBIND5(shaped_set_span_update_font, const RID &, int64_t, const TypedArray<RID> &, int64_t, const Dictionary &);
+	MODBIND5(shaped_set_span_update_font, const RID &, int64_t, const TypedArray<RID> &, double, const Dictionary &);
 
 	MODBIND3RC(RID, shaped_text_substr, const RID &, int64_t, int64_t);
 	MODBIND1RC(RID, shaped_text_get_parent, const RID &);

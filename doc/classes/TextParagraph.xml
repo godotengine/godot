@@ -24,7 +24,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<param index="1" name="font" type="Font" />
-			<param index="2" name="font_size" type="int" />
+			<param index="2" name="font_size" type="float" />
 			<param index="3" name="language" type="String" default="&quot;&quot;" />
 			<param index="4" name="meta" type="Variant" default="null" />
 			<description>
@@ -66,7 +66,7 @@
 			<return type="void" />
 			<param index="0" name="canvas" type="RID" />
 			<param index="1" name="pos" type="Vector2" />
-			<param index="2" name="outline_size" type="int" default="1" />
+			<param index="2" name="outline_size" type="float" default="1.0" />
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw drop cap outline into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
@@ -87,7 +87,7 @@
 			<param index="0" name="canvas" type="RID" />
 			<param index="1" name="pos" type="Vector2" />
 			<param index="2" name="line" type="int" />
-			<param index="3" name="outline_size" type="int" default="1" />
+			<param index="3" name="outline_size" type="float" default="1.0" />
 			<param index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw outline of the single line of text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
@@ -97,7 +97,7 @@
 			<return type="void" />
 			<param index="0" name="canvas" type="RID" />
 			<param index="1" name="pos" type="Vector2" />
-			<param index="2" name="outline_size" type="int" default="1" />
+			<param index="2" name="outline_size" type="float" default="1.0" />
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="dc_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
@@ -246,7 +246,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<param index="1" name="font" type="Font" />
-			<param index="2" name="font_size" type="int" />
+			<param index="2" name="font_size" type="float" />
 			<param index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<param index="4" name="language" type="String" default="&quot;&quot;" />
 			<description>

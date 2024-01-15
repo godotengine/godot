@@ -344,10 +344,6 @@ protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#endif
-
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
@@ -361,6 +357,16 @@ protected:
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
 
 	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
+
+#ifndef DISABLE_DEPRECATED
+	void _add_theme_font_size_override_compat_87243(const StringName &p_name, int p_font_size);
+	int _get_theme_font_size_compat_87243(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	int _get_theme_default_font_size_compat_87243() const;
+	void _add_theme_constant_override_compat_87243(const StringName &p_name, int p_constant);
+	int _get_theme_constant_compat_87243(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	enum {
@@ -580,9 +586,9 @@ public:
 	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
 	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
 	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
-	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
+	void add_theme_font_size_override(const StringName &p_name, float p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
-	void add_theme_constant_override(const StringName &p_name, int p_constant);
+	void add_theme_constant_override(const StringName &p_name, const Variant &p_constant);
 
 	void remove_theme_icon_override(const StringName &p_name);
 	void remove_theme_style_override(const StringName &p_name);
@@ -594,9 +600,9 @@ public:
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
-	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	float get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
-	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Variant get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
 	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
@@ -618,7 +624,7 @@ public:
 
 	float get_theme_default_base_scale() const;
 	Ref<Font> get_theme_default_font() const;
-	int get_theme_default_font_size() const;
+	float get_theme_default_font_size() const;
 
 	// Internationalization.
 

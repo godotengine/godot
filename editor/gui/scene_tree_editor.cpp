@@ -1650,7 +1650,7 @@ void SceneTreeDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			for (TextureRect *trect : valid_type_icons) {
-				trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
+				trect->set_custom_minimum_size(Vector2((int64_t)get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
 				trect->set_texture(trect->get_meta("icon"));
 			}
 		} break;

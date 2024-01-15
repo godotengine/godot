@@ -269,8 +269,8 @@ void GridContainer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns", PROPERTY_HINT_RANGE, "1,1024,1"), "set_columns", "get_columns");
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GridContainer, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GridContainer, v_separation);
+	BIND_THEME_CONSTANT(GridContainer, h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(GridContainer, v_separation, Variant::INT);
 }
 
 Size2 GridContainer::get_minimum_size() const {

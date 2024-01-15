@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "label_settings.h"
+#include "label_settings.compat.inc"
 
 void LabelSettings::_font_changed() {
 	emit_changed();
@@ -66,15 +67,15 @@ void LabelSettings::_bind_methods() {
 
 	ADD_GROUP("Font", "font_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,1024,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "font_size", PROPERTY_HINT_RANGE, "1,1024,0.015625,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "font_color"), "set_font_color", "get_font_color");
 
 	ADD_GROUP("Outline", "outline_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_outline_size", "get_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "outline_size", PROPERTY_HINT_RANGE, "0,127,0.015625,or_greater,suffix:px"), "set_outline_size", "get_outline_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_color"), "set_outline_color", "get_outline_color");
 
 	ADD_GROUP("Shadow", "shadow_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,127,0.015625,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
 }
@@ -107,14 +108,14 @@ Ref<Font> LabelSettings::get_font() const {
 	return font;
 }
 
-void LabelSettings::set_font_size(int p_size) {
+void LabelSettings::set_font_size(float p_size) {
 	if (font_size != p_size) {
 		font_size = p_size;
 		emit_changed();
 	}
 }
 
-int LabelSettings::get_font_size() const {
+float LabelSettings::get_font_size() const {
 	return font_size;
 }
 
@@ -129,14 +130,14 @@ Color LabelSettings::get_font_color() const {
 	return font_color;
 }
 
-void LabelSettings::set_outline_size(int p_size) {
+void LabelSettings::set_outline_size(float p_size) {
 	if (outline_size != p_size) {
 		outline_size = p_size;
 		emit_changed();
 	}
 }
 
-int LabelSettings::get_outline_size() const {
+float LabelSettings::get_outline_size() const {
 	return outline_size;
 }
 

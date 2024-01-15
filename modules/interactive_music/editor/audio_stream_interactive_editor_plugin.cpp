@@ -333,7 +333,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	add_child(split);
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	tree->add_theme_constant_override("draw_guides", 1);
+	tree->add_theme_constant_override("draw_guides", true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	split->add_child(tree);
 

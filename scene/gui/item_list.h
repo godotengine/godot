@@ -137,11 +137,11 @@ private:
 		Ref<StyleBox> focus_style;
 
 		Ref<Font> font;
-		int font_size = 0;
+		float font_size = 0;
 		Color font_color;
 		Color font_hovered_color;
 		Color font_selected_color;
-		int font_outline_size = 0;
+		float font_outline_size = 0;
 		Color font_outline_color;
 
 		int line_separation = 0;
