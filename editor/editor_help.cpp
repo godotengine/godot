@@ -35,14 +35,14 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
-#include "doc_data_compressed.gen.h"
+#include "editor/doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 
 #define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)

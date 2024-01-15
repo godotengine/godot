@@ -33,9 +33,9 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 
 void EditorHelpSearch::_update_results() {
 	String term = search_box->get_text();

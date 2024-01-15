@@ -34,7 +34,7 @@
 #include "scene/main/timer.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #endif
 
 #ifdef TOOLS_ENABLED

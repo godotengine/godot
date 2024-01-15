@@ -45,9 +45,9 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 

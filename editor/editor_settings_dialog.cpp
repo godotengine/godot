@@ -38,12 +38,12 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void EditorSettingsDialog::ok_pressed() {

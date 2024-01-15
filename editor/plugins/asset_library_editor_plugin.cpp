@@ -37,11 +37,11 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/image_texture.h"
 

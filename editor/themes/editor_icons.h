@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_fonts.h                                                        */
+/*  editor_icons.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,11 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_FONTS_H
-#define EDITOR_FONTS_H
+#ifndef EDITOR_ICONS_H
+#define EDITOR_ICONS_H
 
 #include "scene/resources/theme.h"
 
-void editor_register_fonts(Ref<Theme> p_theme);
+void editor_configure_icons(bool p_dark_theme);
+void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p_icon_saturation, int p_thumb_size, bool p_only_thumbs = false);
+void editor_copy_icons(const Ref<Theme> &p_theme, const Ref<Theme> &p_old_theme);
 
-#endif // EDITOR_FONTS_H
+String get_default_project_icon();
+
+#endif // EDITOR_ICONS_H

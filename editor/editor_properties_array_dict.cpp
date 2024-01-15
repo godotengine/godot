@@ -34,11 +34,11 @@
 #include "core/io/marshalls.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_vector.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/inspector_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/resources/packed_scene.h"
 

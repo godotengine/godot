@@ -31,10 +31,10 @@
 #include "animation_bezier_editor.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
 

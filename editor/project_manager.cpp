@@ -42,13 +42,14 @@
 #include "core/string/translation.h"
 #include "core/version.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_themes.h"
 #include "editor/editor_vcs_interface.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
+#include "editor/themes/editor_icons.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "main/main.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
@@ -2879,9 +2880,8 @@ ProjectManager::ProjectManager() {
 	Control::set_root_layout_direction(pm_root_dir);
 	Window::set_root_layout_direction(pm_root_dir);
 
-	EditorColorMap::create();
-	EditorTheme::initialize();
-	Ref<Theme> theme = create_custom_theme();
+	EditorThemeManager::initialize();
+	Ref<Theme> theme = EditorThemeManager::generate_theme();
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
 	set_theme(theme);
@@ -3317,8 +3317,7 @@ ProjectManager::~ProjectManager() {
 		EditorSettings::destroy();
 	}
 
-	EditorColorMap::finish();
-	EditorTheme::finalize();
+	EditorThemeManager::finalize();
 }
 
 void ProjectTag::_notification(int p_what) {
