@@ -601,7 +601,7 @@ void EditorBuildProfileManager::_fill_classes_from(TreeItem *p_parent, const Str
 
 	bool disabled = edited->is_class_disabled(p_class);
 	if (disabled) {
-		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	}
 
 	class_item->set_text(0, text);

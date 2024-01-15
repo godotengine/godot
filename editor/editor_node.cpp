@@ -5978,6 +5978,7 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 void EditorNode::_update_renderer_color() {
 	String rendering_method = renderer->get_selected_metadata();
 
+	// TODO: Use theme colors instead of hardcoded values.
 	if (rendering_method == "forward_plus") {
 		renderer->add_theme_color_override("font_color", Color::hex(0x5d8c3fff));
 	}

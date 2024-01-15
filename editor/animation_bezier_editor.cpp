@@ -334,7 +334,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
-				Color dc = get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor));
+				Color dc = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 				Ref<Texture2D> remove = get_editor_theme_icon(SNAME("Remove"));
 				float remove_hpos = limit - hsep - remove->get_width();

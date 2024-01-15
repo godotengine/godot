@@ -235,7 +235,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
 		} else {
 			//has no script (or script is a custom type)
-			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+			_set_item_custom_color(item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 			item->set_selectable(0, false);
 
 			if (!scr.is_null()) { // make sure to mark the script if a custom type
@@ -267,7 +267,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		item->set_selectable(0, marked_selectable);
 		_set_item_custom_color(item, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 	} else if (!p_node->can_process()) {
-		_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		_set_item_custom_color(item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	} else if (!marked_selectable && !marked_children_selectable) {
 		Node *node = p_node;
 		while (node) {
@@ -492,7 +492,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		if (!valid) {
-			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+			_set_item_custom_color(item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 			item->set_selectable(0, false);
 		}
 	}
@@ -718,7 +718,7 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		}
 		p_parent->set_selectable(0, true);
 	} else if (keep_for_children) {
-		p_parent->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		p_parent->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 		p_parent->set_selectable(0, false);
 		p_parent->deselect(0);
 	}

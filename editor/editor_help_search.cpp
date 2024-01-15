@@ -698,5 +698,5 @@ EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, 
 		results_tree(p_results_tree),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),
 		search_flags(p_search_flags),
-		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor))) {
+		disabled_color(ui_service->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor))) {
 }

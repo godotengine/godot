@@ -1921,7 +1921,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			Color linecolor = color;
 			linecolor.a = 0.2;
 
-			Color dc = get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor));
+			Color dc = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 			// NAMES AND ICONS //
 

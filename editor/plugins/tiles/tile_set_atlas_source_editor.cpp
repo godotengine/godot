@@ -735,7 +735,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["probability"] = tile_data_probability_editor;
 	}
 
-	Color disabled_color = get_theme_color("disabled_font_color", EditorStringName(Editor));
+	Color disabled_color = get_theme_color("font_disabled_color", EditorStringName(Editor));
 
 	// --- Physics ---
 	ADD_TILE_DATA_EDITOR_GROUP(TTR("Physics"));

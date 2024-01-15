@@ -1357,7 +1357,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 					Ref<Font> light_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
 					int light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
-					Color light_font_color = get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor));
+					Color light_font_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 					// Can we fit the long version of the revertable count text?
 					num_revertable_str = vformat(TTRN("(%d change)", "(%d changes)", revertable_properties.size()), revertable_properties.size());
