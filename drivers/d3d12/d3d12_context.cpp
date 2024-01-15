@@ -65,17 +65,6 @@ extern "C" {
 char godot_nir_arch_name[32];
 }
 
-#ifdef PIX_ENABLED
-#if defined(__GNUC__)
-#define _MSC_VER 1800
-#endif
-#define USE_PIX
-#include "WinPixEventRuntime/pix3.h"
-#if defined(__GNUC__)
-#undef _MSC_VER
-#endif
-#endif
-
 #define D3D12_DEBUG_LAYER_BREAK_ON_ERROR 0
 
 void D3D12Context::_debug_message_func(

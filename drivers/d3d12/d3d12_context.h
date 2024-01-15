@@ -63,6 +63,17 @@
 
 using Microsoft::WRL::ComPtr;
 
+#ifdef PIX_ENABLED
+#if defined(__GNUC__)
+#define _MSC_VER 1800
+#endif
+#define USE_PIX
+#include "WinPixEventRuntime/pix3.h"
+#if defined(__GNUC__)
+#undef _MSC_VER
+#endif
+#endif
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 class D3D12Context : public ApiContextRD {
