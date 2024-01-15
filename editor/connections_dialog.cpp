@@ -1203,15 +1203,24 @@ void ConnectionsDock::_slot_menu_about_to_popup() {
 }
 
 void ConnectionsDock::_tree_gui_input(const Ref<InputEvent> &p_event) {
-	// Handle Delete press.
-	if (ED_IS_SHORTCUT("connections_editor/disconnect", p_event)) {
-		TreeItem *item = tree->get_selected();
-		if (item && _get_item_type(*item) == TREE_ITEM_TYPE_CONNECTION) {
-			Connection connection = item->get_metadata(0);
-			_disconnect(connection);
-			update_tree();
+	const Ref<InputEventKey> &key = p_event;
 
-			// Stop the Delete input from propagating elsewhere.
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("connections_editor/disconnect", p_event)) {
+			TreeItem *item = tree->get_selected();
+			if (item && _get_item_type(*item) == TREE_ITEM_TYPE_CONNECTION) {
+				Connection connection = item->get_metadata(0);
+				_disconnect(connection);
+				update_tree();
+
+				// Stop the Delete input from propagating elsewhere.
+				accept_event();
+				return;
+			}
+		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			search_box->grab_focus();
+			search_box->select_all();
+
 			accept_event();
 			return;
 		}
@@ -1219,42 +1228,41 @@ void ConnectionsDock::_tree_gui_input(const Ref<InputEvent> &p_event) {
 
 	// Handle RMB press.
 	const Ref<InputEventMouseButton> &mb_event = p_event;
-	if (mb_event.is_null() || !mb_event->is_pressed() || mb_event->get_button_index() != MouseButton::RIGHT) {
-		return;
-	}
 
-	TreeItem *item = tree->get_item_at_position(mb_event->get_position());
-	if (!item) {
-		return;
-	}
+	if (mb_event.is_valid() && mb_event->is_pressed() && mb_event->get_button_index() == MouseButton::RIGHT) {
+		TreeItem *item = tree->get_item_at_position(mb_event->get_position());
+		if (!item) {
+			return;
+		}
 
-	if (item->is_selectable(0)) {
-		// Update selection now, before `about_to_popup` signal. Needed for SIGNAL and CONNECTION context menus.
-		tree->set_selected(item);
-	}
+		if (item->is_selectable(0)) {
+			// Update selection now, before `about_to_popup` signal. Needed for SIGNAL and CONNECTION context menus.
+			tree->set_selected(item);
+		}
 
-	Vector2 screen_position = tree->get_screen_position() + mb_event->get_position();
+		Vector2 screen_position = tree->get_screen_position() + mb_event->get_position();
 
-	switch (_get_item_type(*item)) {
-		case TREE_ITEM_TYPE_ROOT:
-			break;
-		case TREE_ITEM_TYPE_CLASS:
-			class_menu_doc_class_name = item->get_metadata(0);
-			class_menu->set_position(screen_position);
-			class_menu->reset_size();
-			class_menu->popup();
-			accept_event(); // Don't collapse item.
-			break;
-		case TREE_ITEM_TYPE_SIGNAL:
-			signal_menu->set_position(screen_position);
-			signal_menu->reset_size();
-			signal_menu->popup();
-			break;
-		case TREE_ITEM_TYPE_CONNECTION:
-			slot_menu->set_position(screen_position);
-			slot_menu->reset_size();
-			slot_menu->popup();
-			break;
+		switch (_get_item_type(*item)) {
+			case TREE_ITEM_TYPE_ROOT:
+				break;
+			case TREE_ITEM_TYPE_CLASS:
+				class_menu_doc_class_name = item->get_metadata(0);
+				class_menu->set_position(screen_position);
+				class_menu->reset_size();
+				class_menu->popup();
+				accept_event(); // Don't collapse item.
+				break;
+			case TREE_ITEM_TYPE_SIGNAL:
+				signal_menu->set_position(screen_position);
+				signal_menu->reset_size();
+				signal_menu->popup();
+				break;
+			case TREE_ITEM_TYPE_CONNECTION:
+				slot_menu->set_position(screen_position);
+				slot_menu->reset_size();
+				slot_menu->popup();
+				break;
+		}
 	}
 }
 
