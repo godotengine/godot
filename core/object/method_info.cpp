@@ -32,19 +32,18 @@
 #include "core/variant/struct.h"
 #include "core/variant/typed_array.h"
 
-
-PropertyInfo MethodInfo::MemberReturnVal::from_variant(const Variant &p_variant) {
+PropertyInfo MethodInfo::return_val::from_variant(const Variant &p_variant) {
 	return PropertyInfo(Struct<PropertyInfo>(p_variant));
 }
 
-Variant MethodInfo::MemberReturnVal::to_variant(const PropertyInfo &p_value) {
+Variant MethodInfo::return_val::to_variant(const PropertyInfo &p_value) {
 	return Struct<PropertyInfo>(p_value);
 }
 
-List<PropertyInfo> MethodInfo::MemberArguments::from_variant(const Variant &p_variant) {
+List<PropertyInfo> MethodInfo::arguments::from_variant(const Variant &p_variant) {
 	return (List<PropertyInfo>)TypedArray<Struct<PropertyInfo>>(p_variant);
 }
 
-Variant MethodInfo::MemberArguments::to_variant(const List<PropertyInfo> &p_value) {
+Variant MethodInfo::arguments::to_variant(const List<PropertyInfo> &p_value) {
 	return TypedArray<Struct<PropertyInfo>>(&p_value);
 }

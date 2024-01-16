@@ -114,13 +114,13 @@ enum PropertyUsageFlags {
 };
 
 struct PropertyInfo {
-	STRUCT_MEMBER_PRIMITIVE(PropertyInfo, MemberName, String, Variant::STRING, name, String());
-	STRUCT_MEMBER_PRIMITIVE(PropertyInfo, MemberClassName, StringName, Variant::STRING_NAME, class_name, StringName());
-	STRUCT_MEMBER_PRIMITIVE_FROM(PropertyInfo, MemberType, Variant::Type, Variant::INT, type, Variant::NIL);
-	STRUCT_MEMBER_PRIMITIVE_FROM(PropertyInfo, MemberHint, PropertyHint, Variant::INT, hint, PROPERTY_HINT_NONE);
-	STRUCT_MEMBER_PRIMITIVE(PropertyInfo, MemberHintString, String, Variant::STRING, hint_string, String());
-	STRUCT_MEMBER_PRIMITIVE(PropertyInfo, MemberUsage, uint32_t, Variant::INT, usage, PROPERTY_USAGE_DEFAULT);
-	STRUCT_LAYOUT_OWNER(Object, PropertyInfo, MemberName, MemberClassName, MemberType, MemberHint, MemberHintString, MemberUsage);
+	STRUCT_MEMBER_PRIMITIVE(PropertyInfo, String, Variant::STRING, name, String());
+	STRUCT_MEMBER_PRIMITIVE(PropertyInfo, StringName, Variant::STRING_NAME, class_name, StringName());
+	STRUCT_MEMBER_PRIMITIVE_FROM(PropertyInfo, Variant::Type, Variant::INT, type, Variant::NIL);
+	STRUCT_MEMBER_PRIMITIVE_FROM(PropertyInfo, PropertyHint, Variant::INT, hint, PROPERTY_HINT_NONE);
+	STRUCT_MEMBER_PRIMITIVE(PropertyInfo, String, Variant::STRING, hint_string, String());
+	STRUCT_MEMBER_PRIMITIVE(PropertyInfo, uint32_t, Variant::INT, usage, PROPERTY_USAGE_DEFAULT);
+	STRUCT_LAYOUT_OWNER(Object, PropertyInfo, struct name, struct class_name, struct type, struct hint, struct hint_string, struct usage);
 
 	_FORCE_INLINE_ PropertyInfo added_usage(uint32_t p_fl) const {
 		PropertyInfo pi = *this;

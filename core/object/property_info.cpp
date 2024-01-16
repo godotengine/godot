@@ -31,11 +31,11 @@
 #include "property_info.h"
 #include "core/variant/typed_array.h"
 
-Variant::Type PropertyInfo::MemberType::from_variant(const Variant &p_variant) {
+Variant::Type PropertyInfo::type::from_variant(const Variant &p_variant) {
 	return (Variant::Type)(int)p_variant;
 }
 
-PropertyHint PropertyInfo::MemberHint::from_variant(const Variant &p_variant) {
+PropertyHint PropertyInfo::hint::from_variant(const Variant &p_variant) {
 	return (PropertyHint)(int)p_variant;
 }
 
