@@ -146,6 +146,7 @@ void EditorHelp::_update_theme_item_cache() {
 	theme_cache.value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
 	theme_cache.qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
 	theme_cache.type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
+	theme_cache.override_color = get_theme_color(SNAME("override_color"), SNAME("EditorHelp"));
 
 	theme_cache.doc_font = get_theme_font(SNAME("doc"), EditorStringName(EditorFonts));
 	theme_cache.doc_bold_font = get_theme_font(SNAME("doc_bold"), EditorStringName(EditorFonts));
@@ -995,10 +996,29 @@ void EditorHelp::_update_doc() {
 		class_desc->push_table(4);
 		class_desc->set_table_column_expand(1, true);
 
+		cd.properties.sort_custom<PropertyCompare>();
+
+		bool is_generating_overridden_properties = true; // Set to false as soon as we encounter a non-overridden property.
+		bool overridden_property_exists = false;
+
 		for (int i = 0; i < cd.properties.size(); i++) {
 			// Ignore undocumented private.
 			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
 				continue;
+			}
+			if (is_generating_overridden_properties && !cd.properties[i].overridden) {
+				is_generating_overridden_properties = false;
+				// No need for the extra spacing when there's no overridden property.
+				if (overridden_property_exists) {
+					class_desc->push_cell();
+					class_desc->pop();
+					class_desc->push_cell();
+					class_desc->pop();
+					class_desc->push_cell();
+					class_desc->pop();
+					class_desc->push_cell();
+					class_desc->pop();
+				}
 			}
 			property_line[cd.properties[i].name] = class_desc->get_paragraph_count() - 2; //gets overridden if description
 
@@ -1054,25 +1074,27 @@ void EditorHelp::_update_doc() {
 			_push_code_font();
 
 			if (!cd.properties[i].default_value.is_empty()) {
-				class_desc->push_color(theme_cache.symbol_color);
 				if (cd.properties[i].overridden) {
+					class_desc->push_color(theme_cache.override_color);
 					class_desc->add_text(" [");
 					class_desc->push_meta("@member " + cd.properties[i].overrides + "." + cd.properties[i].name);
 					_add_text(vformat(TTR("overrides %s:"), cd.properties[i].overrides));
 					class_desc->pop();
-					class_desc->add_text(" ");
+					class_desc->add_text(" " + _fix_constant(cd.properties[i].default_value) + "]");
+					overridden_property_exists = true;
 				} else {
+					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(" [" + TTR("default:") + " ");
+
+					class_desc->push_color(theme_cache.value_color);
+					class_desc->add_text(_fix_constant(cd.properties[i].default_value));
+					class_desc->pop();
+
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text("]");
+					class_desc->pop();
 				}
-				class_desc->pop();
-
-				class_desc->push_color(theme_cache.value_color);
-				class_desc->add_text(_fix_constant(cd.properties[i].default_value));
-				class_desc->pop();
-
-				class_desc->push_color(theme_cache.symbol_color);
-				class_desc->add_text("]");
-				class_desc->pop();
+				class_desc->pop(); // color
 			}
 
 			if (cd.properties[i].is_deprecated) {
