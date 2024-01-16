@@ -1051,10 +1051,9 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 		}
 	}
 
+	new_name = p_node->get_parent()->prevalidate_child_name(p_node, new_name);
 	if (new_name == p_node->get_name()) {
-		if (item->get_text(0).is_empty()) {
-			item->set_text(0, new_name);
-		}
+		item->set_text(0, new_name);
 		return;
 	}
 

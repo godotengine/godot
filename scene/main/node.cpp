@@ -1214,6 +1214,11 @@ String Node::validate_child_name(Node *p_child) {
 	_generate_serial_child_name(p_child, name);
 	return name;
 }
+
+String Node::prevalidate_child_name(Node *p_child, StringName p_name) {
+	_generate_serial_child_name(p_child, p_name);
+	return p_name;
+}
 #endif
 
 String Node::adjust_name_casing(const String &p_name) {
