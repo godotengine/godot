@@ -177,13 +177,15 @@ Ref<AudioStreamOggVorbis> ResourceImporterOggVorbis::import_ogg_vorbis(const Str
 			}
 			granule_pos = packet.granulepos;
 
-			PackedByteArray data;
-			data.resize(packet.bytes);
-			memcpy(data.ptrw(), packet.packet, packet.bytes);
-			packet_data.push_back(data);
-			packet_count++;
+			if (packet.bytes > 0) {
+				PackedByteArray data;
+				data.resize(packet.bytes);
+				memcpy(data.ptrw(), packet.packet, packet.bytes);
+				packet_data.push_back(data);
+				packet_count++;
+			}
 		}
-		if (initialized_stream) {
+		if (initialized_stream && packet_data.size() > 0) {
 			ogg_packet_sequence->push_page(granule_pos, packet_data);
 		}
 	}
