@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef COREAUDIO_ENABLED
-
 #ifndef AUDIO_DRIVER_COREAUDIO_H
 #define AUDIO_DRIVER_COREAUDIO_H
+
+#ifdef COREAUDIO_ENABLED
 
 #include "servers/audio_server.h"
 
@@ -120,6 +120,6 @@ public:
 	~AudioDriverCoreAudio();
 };
 
-#endif
+#endif // COREAUDIO_ENABLED
 
 #endif // AUDIO_DRIVER_COREAUDIO_H

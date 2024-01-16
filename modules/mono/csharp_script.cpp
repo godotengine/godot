@@ -2833,7 +2833,7 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 		p_script->tool = nesting_class && nesting_class->has_attribute(CACHED_CLASS(ToolAttribute));
 	}
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	if (!p_script->tool) {
 		p_script->tool = p_script->script_class->get_assembly() == GDMono::get_singleton()->get_tools_assembly();
 	}
@@ -3174,7 +3174,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 				tool = nesting_class && nesting_class->has_attribute(CACHED_CLASS(ToolAttribute));
 			}
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 			if (!tool) {
 				tool = script_class->get_assembly() == GDMono::get_singleton()->get_tools_assembly();
 			}

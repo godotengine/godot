@@ -5237,7 +5237,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, color_internal_format, rt->width, rt->height);
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rt->multisample_color);
-#elif ANDROID_ENABLED
+#elif defined(ANDROID_ENABLED)
 		// Render to a texture in android
 		glGenTextures(1, &rt->multisample_color);
 		glBindTexture(GL_TEXTURE_2D, rt->multisample_color);
@@ -5639,7 +5639,7 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 		t->alloc_width = rt->height;
 
 		// Switch our texture on our frame buffer
-#if ANDROID_ENABLED
+#ifdef ANDROID_ENABLED
 		if (rt->msaa >= VS::VIEWPORT_MSAA_EXT_2X && rt->msaa <= VS::VIEWPORT_MSAA_EXT_4X) {
 			// This code only applies to the Oculus Go and Oculus Quest. Due to the the tiled nature
 			// of the GPU we can do a single render pass by rendering directly into our texture chains
@@ -6376,7 +6376,7 @@ void RasterizerStorageGLES2::initialize() {
 	//void *gles2_lib = dlopen(NULL, RTLD_LAZY);
 	//glRenderbufferStorageMultisampleAPPLE = dlsym(gles2_lib, "glRenderbufferStorageMultisampleAPPLE");
 	//glResolveMultisampleFramebufferAPPLE = dlsym(gles2_lib, "glResolveMultisampleFramebufferAPPLE");
-#elif ANDROID_ENABLED
+#elif defined(ANDROID_ENABLED)
 
 	void *gles2_lib = dlopen("libGLESv2.so", RTLD_LAZY);
 	glRenderbufferStorageMultisampleEXT = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)dlsym(gles2_lib, "glRenderbufferStorageMultisampleEXT");
