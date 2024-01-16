@@ -104,6 +104,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	bool dragging_selected = false;
 	Vector2 drag_from;
 	Vector2 drag_ofs;
+	bool drag_copy = false;
 
 	void _add_menu_type(int p_index);
 	void _add_animation_type(int p_index);
@@ -119,11 +120,14 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 
-	enum {
-		MENU_LOAD_FILE = 1000,
-		MENU_PASTE = 1001,
-		MENU_LOAD_FILE_CONFIRM = 1002
-	};
+	float _map_to_blend_space(float p_mouse);
+
+	Ref<AnimationRootNode> copy_node;
+	Ref<AnimationRootNode> _dup_copy_point();
+	void _dup_paste_point(Ref<AnimationNode> node, float p_position);
+	void _duplicate_point(float p_position);
+	void _copy_point(bool p_cut);
+	void _paste_point(float p_position);
 
 	StringName get_blend_position_path() const;
 
@@ -135,6 +139,7 @@ public:
 	static AnimationNodeBlendSpace1DEditor *get_singleton() { return singleton; }
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	AnimationNodeBlendSpace1DEditor();
 };
 
