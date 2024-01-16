@@ -441,10 +441,6 @@ def configure_msvc(env, vcvars_msvc_config):
             LIBS += ["vulkan"]
 
     if env["d3d12"]:
-        if env["dxc_path"] == "":
-            print("The Direct3D 12 rendering driver requires dxc_path to be set.")
-            sys.exit(255)
-
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["d3d12", "dxgi", "dxguid"]
         LIBS += ["version"]  # Mesa dependency.
