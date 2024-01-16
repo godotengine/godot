@@ -7,7 +7,7 @@ def can_build(env, platform):
     # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version
     supported_platform = platform in ["x11", "osx", "windows", "server"]
     supported_arch = env["bits"] == "64"
-    if env["arch"] == "arm64":
+    if env["arch"].startswith("arm"):
         supported_arch = False
     if env["arch"].startswith("ppc"):
         supported_arch = False
