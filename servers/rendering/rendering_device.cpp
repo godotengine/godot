@@ -2097,6 +2097,15 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_get_format(RID
 	return framebuffer->format_id;
 }
 
+Size2 RenderingDevice::framebuffer_get_size(RID p_framebuffer) {
+	_THREAD_SAFE_METHOD_
+
+	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
+	ERR_FAIL_NULL_V(framebuffer, Size2(0,0));
+
+	return framebuffer->size;
+}
+
 bool RenderingDevice::framebuffer_is_valid(RID p_framebuffer) const {
 	_THREAD_SAFE_METHOD_
 
@@ -3834,8 +3843,9 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 				// Otherwise, keep storing in the current batch
 				valid_descriptor_ids[valid_set_count] = dl->state.sets[i].uniform_set_driver_id;
 				valid_set_count++;
-				last_set_index = i;
 			}
+
+			last_set_index = i;
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
 			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
@@ -3896,6 +3906,22 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 
 		draw_graph.add_draw_list_draw(to_draw, p_instances);
 	}
+}
+
+void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2 &p_rect) {
+	DrawList *dl = _get_draw_list_ptr(p_list);
+
+	ERR_FAIL_NULL(dl);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
+
+	if (p_rect.get_area() == 0) {
+		return;
+	}
+
+	dl->viewport = p_rect;
+	_draw_list_set_viewport(p_rect);
 }
 
 void RenderingDevice::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
@@ -4247,9 +4273,9 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 				// Otherwise, keep storing in the current batch
 				valid_descriptor_ids[valid_set_count] = cl->state.sets[i].uniform_set_driver_id;
 				valid_set_count++;
-				last_set_index = i;
 			}
-			//draw_graph.add_compute_list_bind_uniform_set(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
+
+			last_set_index = i;
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
@@ -4361,8 +4387,9 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 				// Otherwise, keep storing in the current batch
 				valid_descriptor_ids[valid_set_count] = cl->state.sets[i].uniform_set_driver_id;
 				valid_set_count++;
-				last_set_index = i;
 			}
+
+			last_set_index = i;
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);

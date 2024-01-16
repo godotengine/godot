@@ -614,8 +614,6 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 		if (p_render_data->directional_shadows.size()) {
 			//open the pass for directional shadows
 			light_storage->update_directional_shadow_atlas();
-			RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE);
-			RD::get_singleton()->draw_list_end();
 		}
 	}
 
@@ -1383,10 +1381,24 @@ void RenderForwardMobile::_render_shadow_process() {
 void RenderForwardMobile::_render_shadow_end() {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
 
-	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
-		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
-		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, shadow_pass.rect);
+	RID framebuffer = scene_state.shadow_passes[0].framebuffer;
+	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
+	Size2 fb_size = RD::get_singleton()->framebuffer_get_size(framebuffer);
+
+	// Render all cascades in the same pass since they render on different regions
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, Rect2(0, 0, fb_size.x, fb_size.y));
+	{
+		for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
+			// Change viewport and scissors for the next cascade
+			RD::get_singleton()->draw_list_set_viewport(draw_list, shadow_pass.rect);
+			RD::get_singleton()->draw_list_enable_scissor(draw_list, Rect2(0, 0, shadow_pass.rect.size.x, shadow_pass.rect.size.y));
+
+			RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+			render_list_parameters.framebuffer_format = fb_format;
+			_render_list(draw_list, fb_format, &render_list_parameters, 0, render_list_parameters.element_count);
+		}
 	}
+	RD::get_singleton()->draw_list_end();
 
 	RD::get_singleton()->draw_command_end_label();
 }

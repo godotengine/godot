@@ -547,6 +547,7 @@ public:
 	void framebuffer_set_invalidation_callback(RID p_framebuffer, InvalidationCallback p_callback, void *p_userdata);
 
 	FramebufferFormatID framebuffer_get_format(RID p_framebuffer);
+	Size2 framebuffer_get_size(RID p_framebuffer);
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -1116,6 +1117,7 @@ public:
 
 	void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0);
 
+	void draw_list_set_viewport(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_disable_scissor(DrawListID p_list);
 
