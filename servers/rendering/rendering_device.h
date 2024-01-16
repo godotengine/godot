@@ -1235,7 +1235,6 @@ private:
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
 		RDD::CommandPoolID command_pool;
-
 		// Used for filling up newly created buffers with data provided on creation.
 		// Primarily intended to be accessed by worker threads.
 		// Ideally this command buffer should use an async transfer queue.

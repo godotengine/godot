@@ -4174,6 +4174,7 @@ void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBuffer
 	if (p_set_count == 0) {
 		return;
 	}
+
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
 	VkDescriptorSet *sets = (VkDescriptorSet *)alloca(sizeof(VkDescriptorSet) * p_set_count);
 
@@ -4602,6 +4603,7 @@ void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBuffe
 	if (p_set_count == 0) {
 		return;
 	}
+
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
 	VkDescriptorSet *sets = (VkDescriptorSet *)alloca(sizeof(VkDescriptorSet) * p_set_count);
 

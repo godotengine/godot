@@ -4249,17 +4249,17 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 				valid_set_count++;
 				last_set_index = i;
 			}
+			//draw_graph.add_compute_list_bind_uniform_set(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
-			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 			cl->state.sets[i].bound = true;
 		}
 	}
 
 	// Bind the remaining batch
 	if (valid_set_count > 0)
-		draw_graph.add_draw_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
-
+		draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
 	draw_graph.add_compute_list_dispatch(p_x_groups, p_y_groups, p_z_groups);
 }
 
@@ -4342,20 +4342,37 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 #endif
 		draw_graph.add_compute_list_uniform_set_prepare_for_use(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 	}
+
 	for (uint32_t i = 0; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
 		}
+
 		if (!cl->state.sets[i].bound) {
 			// All good, see if this requires re-binding.
-			draw_graph.add_compute_list_bind_uniform_set(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
+			if (i - last_set_index > 1) {
+				// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
+				draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
+
+				first_set_index = i;
+				valid_set_count = 1;
+				valid_descriptor_ids[0] = cl->state.sets[i].uniform_set_driver_id;
+			} else {
+				// Otherwise, keep storing in the current batch
+				valid_descriptor_ids[valid_set_count] = cl->state.sets[i].uniform_set_driver_id;
+				valid_set_count++;
+				last_set_index = i;
+			}
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
-
 			cl->state.sets[i].bound = true;
 		}
 	}
+
+	// Bind the remaining batch
+	if (valid_set_count > 0)
+		draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
 
 	draw_graph.add_compute_list_dispatch_indirect(buffer->driver_id, p_offset);
 
