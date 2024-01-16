@@ -15,7 +15,7 @@
 #endif
 
 /* VOLK_GENERATE_VERSION_DEFINE */
-#define VOLK_HEADER_VERSION 261
+#define VOLK_HEADER_VERSION 268
 /* VOLK_GENERATE_VERSION_DEFINE */
 
 #ifndef VK_NO_PROTOTYPES
@@ -787,6 +787,13 @@ struct VolkDeviceTable
 #if defined(VK_NV_fragment_shading_rate_enums)
 	PFN_vkCmdSetFragmentShadingRateEnumNV vkCmdSetFragmentShadingRateEnumNV;
 #endif /* defined(VK_NV_fragment_shading_rate_enums) */
+#if defined(VK_NV_low_latency2)
+	PFN_vkGetLatencyTimingsNV vkGetLatencyTimingsNV;
+	PFN_vkLatencySleepNV vkLatencySleepNV;
+	PFN_vkQueueNotifyOutOfBandNV vkQueueNotifyOutOfBandNV;
+	PFN_vkSetLatencyMarkerNV vkSetLatencyMarkerNV;
+	PFN_vkSetLatencySleepModeNV vkSetLatencySleepModeNV;
+#endif /* defined(VK_NV_low_latency2) */
 #if defined(VK_NV_memory_decompression)
 	PFN_vkCmdDecompressMemoryIndirectCountNV vkCmdDecompressMemoryIndirectCountNV;
 	PFN_vkCmdDecompressMemoryNV vkCmdDecompressMemoryNV;
@@ -1767,6 +1774,13 @@ extern PFN_vkGetMemoryWin32HandleNV vkGetMemoryWin32HandleNV;
 #if defined(VK_NV_fragment_shading_rate_enums)
 extern PFN_vkCmdSetFragmentShadingRateEnumNV vkCmdSetFragmentShadingRateEnumNV;
 #endif /* defined(VK_NV_fragment_shading_rate_enums) */
+#if defined(VK_NV_low_latency2)
+extern PFN_vkGetLatencyTimingsNV vkGetLatencyTimingsNV;
+extern PFN_vkLatencySleepNV vkLatencySleepNV;
+extern PFN_vkQueueNotifyOutOfBandNV vkQueueNotifyOutOfBandNV;
+extern PFN_vkSetLatencyMarkerNV vkSetLatencyMarkerNV;
+extern PFN_vkSetLatencySleepModeNV vkSetLatencySleepModeNV;
+#endif /* defined(VK_NV_low_latency2) */
 #if defined(VK_NV_memory_decompression)
 extern PFN_vkCmdDecompressMemoryIndirectCountNV vkCmdDecompressMemoryIndirectCountNV;
 extern PFN_vkCmdDecompressMemoryNV vkCmdDecompressMemoryNV;

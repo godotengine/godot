@@ -37,10 +37,11 @@
 #include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server_default.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	bool success = false;
@@ -338,6 +339,20 @@ void EditorResourcePreview::_thread() {
 	exited.set();
 }
 
+void EditorResourcePreview::_idle_callback() {
+	if (!singleton) {
+		// Just in case the shutdown of the editor involves the deletion of the singleton
+		// happening while additional idle callbacks can happen.
+		return;
+	}
+
+	// Process preview tasks, trying to leave a little bit of responsiveness worst case.
+	uint64_t start = OS::get_singleton()->get_ticks_msec();
+	while (!singleton->queue.is_empty() && OS::get_singleton()->get_ticks_msec() - start < 100) {
+		singleton->_iterate();
+	}
+}
+
 void EditorResourcePreview::_update_thumbnail_sizes() {
 	if (small_thumbnail_size == -1) {
 		// Kind of a workaround to retrieve the default icon size.
@@ -441,27 +456,36 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	if (DisplayServer::get_singleton()->get_name() != "headless") {
+	if (DisplayServer::get_singleton()->get_name() == "headless") {
+		return;
+	}
+
+	if (RSG::texture_storage->can_create_resources_async()) {
 		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
 		thread.start(_thread_func, this);
+	} else {
+		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+		ERR_FAIL_NULL_MSG(st, "Editor's MainLoop is not a SceneTree. This is a bug.");
 	}
 }
 
 void EditorResourcePreview::stop() {
-	if (thread.is_started()) {
-		exiting.set();
-		preview_sem.post();
+	if (RSG::texture_storage->can_create_resources_async()) {
+		if (thread.is_started()) {
+			exiting.set();
+			preview_sem.post();
 
-		for (int i = 0; i < preview_generators.size(); i++) {
-			preview_generators.write[i]->abort();
+			for (int i = 0; i < preview_generators.size(); i++) {
+				preview_generators.write[i]->abort();
+			}
+
+			while (!exited.is_set()) {
+				OS::get_singleton()->delay_usec(10000);
+				RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
+			}
+
+			thread.wait_to_finish();
 		}
-
-		while (!exited.is_set()) {
-			OS::get_singleton()->delay_usec(10000);
-			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
-		}
-
-		thread.wait_to_finish();
 	}
 }
 

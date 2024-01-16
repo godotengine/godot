@@ -78,7 +78,7 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 	return p_sbox;
 }
 
-// See also `editor_generate_icon()` in `editor/editor_themes.cpp`.
+// See also `editor_generate_icon()` in `editor/themes/editor_icons.cpp`.
 static Ref<ImageTexture> generate_icon(int p_index) {
 	Ref<Image> img = memnew(Image);
 

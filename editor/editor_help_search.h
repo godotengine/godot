@@ -124,6 +124,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	Color disabled_color;
 
 	HashMap<String, DocData::ClassDoc>::Iterator iterator_doc;
+	LocalVector<RBSet<String, NaturalNoCaseComparator>::Element *> iterator_stack;
 	HashMap<String, ClassMatch> matches;
 	HashMap<String, ClassMatch>::Iterator iterator_match;
 	TreeItem *root_item = nullptr;

@@ -2350,7 +2350,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		line = line.replace("OS.is_window_focused", "get_window().has_focus");
 	}
 	if (line.contains("OS.move_window_to_foreground")) {
-		line = line.replace("OS.move_window_to_foreground", "get_window().move_to_foreground");
+		line = line.replace("OS.move_window_to_foreground", "get_window().grab_focus");
 	}
 	if (line.contains("OS.request_attention")) {
 		line = line.replace("OS.request_attention", "get_window().request_attention");

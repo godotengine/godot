@@ -33,8 +33,8 @@
 #include "core/io/config_file.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 

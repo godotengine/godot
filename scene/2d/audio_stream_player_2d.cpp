@@ -36,6 +36,8 @@
 #include "scene/main/window.h"
 #include "scene/resources/world_2d.h"
 
+#define PARAM_PREFIX "parameters/"
+
 void AudioStreamPlayer2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -222,9 +224,36 @@ void AudioStreamPlayer2D::_update_panning() {
 	last_mix_count = AudioServer::get_singleton()->get_mix_count();
 }
 
+void AudioStreamPlayer2D::_update_stream_parameters() {
+	if (stream.is_null()) {
+		return;
+	}
+
+	List<AudioStream::Parameter> parameters;
+	stream->get_parameter_list(&parameters);
+	for (const AudioStream::Parameter &K : parameters) {
+		const PropertyInfo &pi = K.property;
+		StringName key = PARAM_PREFIX + pi.name;
+		if (!playback_parameters.has(key)) {
+			ParameterData pd;
+			pd.path = pi.name;
+			pd.value = K.default_value;
+			playback_parameters.insert(key, pd);
+		}
+	}
+}
+
 void AudioStreamPlayer2D::set_stream(Ref<AudioStream> p_stream) {
+	if (stream.is_valid()) {
+		stream->disconnect(SNAME("parameter_list_changed"), callable_mp(this, &AudioStreamPlayer2D::_update_stream_parameters));
+	}
 	stop();
 	stream = p_stream;
+	_update_stream_parameters();
+	if (stream.is_valid()) {
+		stream->connect(SNAME("parameter_list_changed"), callable_mp(this, &AudioStreamPlayer2D::_update_stream_parameters));
+	}
+	notify_property_list_changed();
 }
 
 Ref<AudioStream> AudioStreamPlayer2D::get_stream() const {
@@ -261,6 +290,10 @@ void AudioStreamPlayer2D::play(float p_from_pos) {
 	}
 	Ref<AudioStreamPlayback> stream_playback = stream->instantiate_playback();
 	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
+
+	for (const KeyValue<StringName, ParameterData> &K : playback_parameters) {
+		stream_playback->set_parameter(K.value.path, K.value.value);
+	}
 
 	stream_playbacks.push_back(stream_playback);
 	setplayback = stream_playback;
@@ -428,6 +461,42 @@ void AudioStreamPlayer2D::_on_bus_layout_changed() {
 
 void AudioStreamPlayer2D::_on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name) {
 	notify_property_list_changed();
+}
+
+bool AudioStreamPlayer2D::_set(const StringName &p_name, const Variant &p_value) {
+	HashMap<StringName, ParameterData>::Iterator I = playback_parameters.find(p_name);
+	if (!I) {
+		return false;
+	}
+	ParameterData &pd = I->value;
+	pd.value = p_value;
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		playback->set_parameter(pd.path, pd.value);
+	}
+	return true;
+}
+
+bool AudioStreamPlayer2D::_get(const StringName &p_name, Variant &r_ret) const {
+	HashMap<StringName, ParameterData>::ConstIterator I = playback_parameters.find(p_name);
+	if (!I) {
+		return false;
+	}
+
+	r_ret = I->value.value;
+	return true;
+}
+
+void AudioStreamPlayer2D::_get_property_list(List<PropertyInfo> *p_list) const {
+	if (stream.is_null()) {
+		return;
+	}
+	List<AudioStream::Parameter> parameters;
+	stream->get_parameter_list(&parameters);
+	for (const AudioStream::Parameter &K : parameters) {
+		PropertyInfo pi = K.property;
+		pi.name = PARAM_PREFIX + pi.name;
+		p_list->push_back(pi);
+	}
 }
 
 void AudioStreamPlayer2D::_bind_methods() {

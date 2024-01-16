@@ -31,10 +31,10 @@
 #include "animation_bezier_editor.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
 
@@ -334,7 +334,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
-				Color dc = get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor));
+				Color dc = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 				Ref<Texture2D> remove = get_editor_theme_icon(SNAME("Remove"));
 				float remove_hpos = limit - hsep - remove->get_width();

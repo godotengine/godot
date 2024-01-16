@@ -32,7 +32,6 @@
 
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
@@ -40,6 +39,7 @@
 #include "editor/plugins/text_shader_editor.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/shader_create_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"

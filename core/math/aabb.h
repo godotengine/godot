@@ -200,11 +200,11 @@ inline bool AABB::encloses(const AABB &p_aabb) const {
 
 	return (
 			(src_min.x <= dst_min.x) &&
-			(src_max.x > dst_max.x) &&
+			(src_max.x >= dst_max.x) &&
 			(src_min.y <= dst_min.y) &&
-			(src_max.y > dst_max.y) &&
+			(src_max.y >= dst_max.y) &&
 			(src_min.z <= dst_min.z) &&
-			(src_max.z > dst_max.z));
+			(src_max.z >= dst_max.z));
 }
 
 Vector3 AABB::get_support(const Vector3 &p_normal) const {

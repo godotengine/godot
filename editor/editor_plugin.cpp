@@ -31,6 +31,7 @@
 #include "editor_plugin.h"
 
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_dock_manager.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_interface.h"
@@ -84,12 +85,12 @@ Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const Stri
 
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DockSlot(p_slot), p_control);
+	EditorDockManager::get_singleton()->add_control_to_dock(EditorDockManager::DockSlot(p_slot), p_control);
 }
 
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->remove_control_from_dock(p_control);
+	EditorDockManager::get_singleton()->remove_control_from_dock(p_control);
 }
 
 void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {

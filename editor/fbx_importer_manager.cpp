@@ -32,9 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/link_button.h"
 
 void FBXImporterManager::_notification(int p_what) {

@@ -287,8 +287,7 @@ int PopupMenu::_get_items_total_height() const {
 		items_total_height += _get_item_height(i) + theme_cache.v_separation;
 	}
 
-	// Subtract a separator which is not needed for the last item.
-	return items_total_height - theme_cache.v_separation;
+	return items_total_height;
 }
 
 int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
@@ -297,14 +296,14 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	}
 
 	// Accounts for margin in the margin container
-	Point2 ofs = theme_cache.panel_style->get_offset() + Point2(0, theme_cache.v_separation / 2);
+	Point2 ofs = theme_cache.panel_style->get_offset();
 
 	if (ofs.y > p_over.y) {
 		return -1;
 	}
 
 	for (int i = 0; i < items.size(); i++) {
-		ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
+		ofs.y += theme_cache.v_separation;
 
 		ofs.y += _get_item_height(i);
 
@@ -2425,7 +2424,8 @@ void PopupMenu::clear(bool p_free_submenus) {
 	}
 
 	if (!global_menu_name.is_empty()) {
-		for (int i = 0; i < items.size(); i++) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		for (int i = items.size() - 1; i >= 0; i--) {
 			Item &item = items.write[i];
 			if (!item.submenu.is_empty()) {
 				PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu));
@@ -2434,8 +2434,8 @@ void PopupMenu::clear(bool p_free_submenus) {
 				}
 				item.submenu_bound = false;
 			}
+			ds->global_menu_remove_item(global_menu_name, i);
 		}
-		DisplayServer::get_singleton()->global_menu_clear(global_menu_name);
 	}
 	items.clear();
 

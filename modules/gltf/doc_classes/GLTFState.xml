@@ -20,6 +20,14 @@
 				Appends an extension to the list of extensions used by this GLTF file during serialization. If [param required] is true, the extension will also be added to the list of required extensions. Do not run this in [method GLTFDocumentExtension._export_post], as that stage is too late to add extensions. The final list is sorted alphabetically.
 			</description>
 		</method>
+		<method name="append_data_to_buffers">
+			<return type="int" />
+			<param index="0" name="data" type="PackedByteArray" />
+			<param index="1" name="deduplication" type="bool" />
+			<description>
+				Appends the given byte array data to the buffers and creates a [GLTFBufferView] for it. The index of the destination [GLTFBufferView] is returned. If [param deduplication] is true, the buffers will first be searched for duplicate data, otherwise new bytes will always be appended.
+			</description>
+		</method>
 		<method name="get_accessors">
 			<return type="GLTFAccessor[]" />
 			<description>

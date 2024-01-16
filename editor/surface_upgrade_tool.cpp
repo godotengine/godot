@@ -33,9 +33,9 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 

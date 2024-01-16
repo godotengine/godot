@@ -32,11 +32,11 @@
 
 #include "core/version_generated.gen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
 #include "editor/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/split_container.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"

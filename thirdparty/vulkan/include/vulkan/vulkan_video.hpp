@@ -1028,9 +1028,9 @@ namespace VULKAN_HPP_NAMESPACE
 
       bool operator==( EncodeH264RefPicMarkingEntry const & rhs ) const VULKAN_HPP_NOEXCEPT
       {
-        return ( operation == rhs.operation ) && ( difference_of_pic_nums_minus1 == rhs.difference_of_pic_nums_minus1 ) &&
-               ( long_term_pic_num == rhs.long_term_pic_num ) && ( long_term_frame_idx == rhs.long_term_frame_idx ) &&
-               ( max_long_term_frame_idx_plus1 == rhs.max_long_term_frame_idx_plus1 );
+        return ( memory_management_control_operation == rhs.memory_management_control_operation ) &&
+               ( difference_of_pic_nums_minus1 == rhs.difference_of_pic_nums_minus1 ) && ( long_term_pic_num == rhs.long_term_pic_num ) &&
+               ( long_term_frame_idx == rhs.long_term_frame_idx ) && ( max_long_term_frame_idx_plus1 == rhs.max_long_term_frame_idx_plus1 );
       }
 
       bool operator!=( EncodeH264RefPicMarkingEntry const & rhs ) const VULKAN_HPP_NOEXCEPT
@@ -1039,7 +1039,7 @@ namespace VULKAN_HPP_NAMESPACE
       }
 
     public:
-      VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H264MemMgmtControlOp operation =
+      VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H264MemMgmtControlOp memory_management_control_operation =
         VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H264MemMgmtControlOp::eEnd;
       uint16_t difference_of_pic_nums_minus1 = {};
       uint16_t long_term_pic_num             = {};
@@ -1185,7 +1185,7 @@ namespace VULKAN_HPP_NAMESPACE
       {
         return ( flags == rhs.flags ) && ( first_mb_in_slice == rhs.first_mb_in_slice ) && ( slice_type == rhs.slice_type ) &&
                ( slice_alpha_c0_offset_div2 == rhs.slice_alpha_c0_offset_div2 ) && ( slice_beta_offset_div2 == rhs.slice_beta_offset_div2 ) &&
-               ( reserved1 == rhs.reserved1 ) && ( cabac_init_idc == rhs.cabac_init_idc ) &&
+               ( slice_qp_delta == rhs.slice_qp_delta ) && ( reserved1 == rhs.reserved1 ) && ( cabac_init_idc == rhs.cabac_init_idc ) &&
                ( disable_deblocking_filter_idc == rhs.disable_deblocking_filter_idc ) && ( pWeightTable == rhs.pWeightTable );
       }
 
@@ -1200,7 +1200,8 @@ namespace VULKAN_HPP_NAMESPACE
       VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H264SliceType    slice_type = VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H264SliceType::eP;
       int8_t                                                             slice_alpha_c0_offset_div2 = {};
       int8_t                                                             slice_beta_offset_div2     = {};
-      uint16_t                                                           reserved1                  = {};
+      int8_t                                                             slice_qp_delta             = {};
+      uint8_t                                                            reserved1                  = {};
       VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H264CabacInitIdc cabac_init_idc =
         VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H264CabacInitIdc::e0;
       VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H264DisableDeblockingFilterIdc disable_deblocking_filter_idc =
@@ -2416,7 +2417,8 @@ namespace VULKAN_HPP_NAMESPACE
                ( slice_cb_qp_offset == rhs.slice_cb_qp_offset ) && ( slice_cr_qp_offset == rhs.slice_cr_qp_offset ) &&
                ( slice_beta_offset_div2 == rhs.slice_beta_offset_div2 ) && ( slice_tc_offset_div2 == rhs.slice_tc_offset_div2 ) &&
                ( slice_act_y_qp_offset == rhs.slice_act_y_qp_offset ) && ( slice_act_cb_qp_offset == rhs.slice_act_cb_qp_offset ) &&
-               ( slice_act_cr_qp_offset == rhs.slice_act_cr_qp_offset ) && ( reserved1 == rhs.reserved1 ) && ( pWeightTable == rhs.pWeightTable );
+               ( slice_act_cr_qp_offset == rhs.slice_act_cr_qp_offset ) && ( slice_qp_delta == rhs.slice_qp_delta ) && ( reserved1 == rhs.reserved1 ) &&
+               ( pWeightTable == rhs.pWeightTable );
       }
 
       bool operator!=( EncodeH265SliceSegmentHeader const & rhs ) const VULKAN_HPP_NOEXCEPT
@@ -2437,7 +2439,8 @@ namespace VULKAN_HPP_NAMESPACE
       int8_t                                                          slice_act_y_qp_offset        = {};
       int8_t                                                          slice_act_cb_qp_offset       = {};
       int8_t                                                          slice_act_cr_qp_offset       = {};
-      VULKAN_HPP_NAMESPACE::ArrayWrapper1D<uint8_t, 3>                reserved1                    = {};
+      int8_t                                                          slice_qp_delta               = {};
+      uint16_t                                                        reserved1                    = {};
       const VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::EncodeH265WeightTable * pWeightTable = {};
     };
 
@@ -2550,28 +2553,28 @@ namespace VULKAN_HPP_NAMESPACE
       uint32_t reserved                        : 23;
     };
 
-    struct EncodeH265SliceSegmentLongTermRefPics
+    struct EncodeH265LongTermRefPics
     {
-      using NativeType = StdVideoEncodeH265SliceSegmentLongTermRefPics;
+      using NativeType = StdVideoEncodeH265LongTermRefPics;
 
-      operator StdVideoEncodeH265SliceSegmentLongTermRefPics const &() const VULKAN_HPP_NOEXCEPT
+      operator StdVideoEncodeH265LongTermRefPics const &() const VULKAN_HPP_NOEXCEPT
       {
-        return *reinterpret_cast<const StdVideoEncodeH265SliceSegmentLongTermRefPics *>( this );
+        return *reinterpret_cast<const StdVideoEncodeH265LongTermRefPics *>( this );
       }
 
-      operator StdVideoEncodeH265SliceSegmentLongTermRefPics &() VULKAN_HPP_NOEXCEPT
+      operator StdVideoEncodeH265LongTermRefPics &() VULKAN_HPP_NOEXCEPT
       {
-        return *reinterpret_cast<StdVideoEncodeH265SliceSegmentLongTermRefPics *>( this );
+        return *reinterpret_cast<StdVideoEncodeH265LongTermRefPics *>( this );
       }
 
-      bool operator==( EncodeH265SliceSegmentLongTermRefPics const & rhs ) const VULKAN_HPP_NOEXCEPT
+      bool operator==( EncodeH265LongTermRefPics const & rhs ) const VULKAN_HPP_NOEXCEPT
       {
         return ( num_long_term_sps == rhs.num_long_term_sps ) && ( num_long_term_pics == rhs.num_long_term_pics ) && ( lt_idx_sps == rhs.lt_idx_sps ) &&
                ( poc_lsb_lt == rhs.poc_lsb_lt ) && ( used_by_curr_pic_lt_flag == rhs.used_by_curr_pic_lt_flag ) &&
                ( delta_poc_msb_present_flag == rhs.delta_poc_msb_present_flag ) && ( delta_poc_msb_cycle_lt == rhs.delta_poc_msb_cycle_lt );
       }
 
-      bool operator!=( EncodeH265SliceSegmentLongTermRefPics const & rhs ) const VULKAN_HPP_NOEXCEPT
+      bool operator!=( EncodeH265LongTermRefPics const & rhs ) const VULKAN_HPP_NOEXCEPT
       {
         return !operator==( rhs );
       }
@@ -2617,16 +2620,16 @@ namespace VULKAN_HPP_NAMESPACE
     public:
       VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::EncodeH265PictureInfoFlags flags = {};
       VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H265PictureType pic_type = VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H265PictureType::eP;
-      uint8_t                                                           sps_video_parameter_set_id                        = {};
-      uint8_t                                                           pps_seq_parameter_set_id                          = {};
-      uint8_t                                                           pps_pic_parameter_set_id                          = {};
-      uint8_t                                                           short_term_ref_pic_set_idx                        = {};
-      int32_t                                                           PicOrderCntVal                                    = {};
-      uint8_t                                                           TemporalId                                        = {};
-      VULKAN_HPP_NAMESPACE::ArrayWrapper1D<uint8_t, 7>                  reserved1                                         = {};
-      const VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::EncodeH265ReferenceListsInfo *          pRefLists           = {};
-      const VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H265ShortTermRefPicSet *                pShortTermRefPicSet = {};
-      const VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::EncodeH265SliceSegmentLongTermRefPics * pLongTermRefPics    = {};
+      uint8_t                                                           sps_video_parameter_set_id               = {};
+      uint8_t                                                           pps_seq_parameter_set_id                 = {};
+      uint8_t                                                           pps_pic_parameter_set_id                 = {};
+      uint8_t                                                           short_term_ref_pic_set_idx               = {};
+      int32_t                                                           PicOrderCntVal                           = {};
+      uint8_t                                                           TemporalId                               = {};
+      VULKAN_HPP_NAMESPACE::ArrayWrapper1D<uint8_t, 7>                  reserved1                                = {};
+      const VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::EncodeH265ReferenceListsInfo * pRefLists           = {};
+      const VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::H265ShortTermRefPicSet *       pShortTermRefPicSet = {};
+      const VULKAN_HPP_NAMESPACE::VULKAN_HPP_VIDEO_NAMESPACE::EncodeH265LongTermRefPics *    pLongTermRefPics    = {};
     };
 
     struct EncodeH265ReferenceInfoFlags

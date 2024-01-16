@@ -35,9 +35,9 @@
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
 	_fill_type_list();
@@ -306,7 +306,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 
 	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type));
 	if (!instantiable) {
-		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	}
 
 	HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(p_type);

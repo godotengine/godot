@@ -37,11 +37,11 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/image_texture.h"
 
@@ -417,7 +417,6 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("AssetLib")));
 			status->add_theme_color_override("font_color", get_theme_color(SNAME("status_color"), SNAME("AssetLib")));

@@ -53,7 +53,7 @@ typedef struct VkPhysicalDevicePortabilitySubsetPropertiesKHR {
 
 // VK_KHR_video_encode_queue is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_video_encode_queue 1
-#define VK_KHR_VIDEO_ENCODE_QUEUE_SPEC_VERSION 9
+#define VK_KHR_VIDEO_ENCODE_QUEUE_SPEC_VERSION 10
 #define VK_KHR_VIDEO_ENCODE_QUEUE_EXTENSION_NAME "VK_KHR_video_encode_queue"
 
 typedef enum VkVideoEncodeTuningModeKHR {
@@ -68,6 +68,7 @@ typedef VkFlags VkVideoEncodeFlagsKHR;
 
 typedef enum VkVideoEncodeCapabilityFlagBitsKHR {
     VK_VIDEO_ENCODE_CAPABILITY_PRECEDING_EXTERNALLY_ENCODED_BYTES_BIT_KHR = 0x00000001,
+    VK_VIDEO_ENCODE_CAPABILITY_INSUFFICIENT_BITSTREAM_BUFFER_RANGE_DETECTION_BIT_KHR = 0x00000002,
     VK_VIDEO_ENCODE_CAPABILITY_FLAG_BITS_MAX_ENUM_KHR = 0x7FFFFFFF
 } VkVideoEncodeCapabilityFlagBitsKHR;
 typedef VkFlags VkVideoEncodeCapabilityFlagsKHR;
@@ -227,7 +228,7 @@ VKAPI_ATTR void VKAPI_CALL vkCmdEncodeVideoKHR(
 #define VK_EXT_video_encode_h264 1
 #include "vk_video/vulkan_video_codec_h264std.h"
 #include "vk_video/vulkan_video_codec_h264std_encode.h"
-#define VK_EXT_VIDEO_ENCODE_H264_SPEC_VERSION 11
+#define VK_EXT_VIDEO_ENCODE_H264_SPEC_VERSION 12
 #define VK_EXT_VIDEO_ENCODE_H264_EXTENSION_NAME "VK_EXT_video_encode_h264"
 
 typedef enum VkVideoEncodeH264CapabilityFlagBitsEXT {
@@ -263,6 +264,8 @@ typedef enum VkVideoEncodeH264StdFlagBitsEXT {
     VK_VIDEO_ENCODE_H264_STD_DEBLOCKING_FILTER_DISABLED_BIT_EXT = 0x00008000,
     VK_VIDEO_ENCODE_H264_STD_DEBLOCKING_FILTER_ENABLED_BIT_EXT = 0x00010000,
     VK_VIDEO_ENCODE_H264_STD_DEBLOCKING_FILTER_PARTIAL_BIT_EXT = 0x00020000,
+    VK_VIDEO_ENCODE_H264_STD_SLICE_QP_DELTA_BIT_EXT = 0x00080000,
+    VK_VIDEO_ENCODE_H264_STD_DIFFERENT_SLICE_QP_DELTA_BIT_EXT = 0x00100000,
     VK_VIDEO_ENCODE_H264_STD_FLAG_BITS_MAX_ENUM_EXT = 0x7FFFFFFF
 } VkVideoEncodeH264StdFlagBitsEXT;
 typedef VkFlags VkVideoEncodeH264StdFlagsEXT;
@@ -424,7 +427,7 @@ typedef struct VkVideoEncodeH264GopRemainingFrameInfoEXT {
 #define VK_EXT_video_encode_h265 1
 #include "vk_video/vulkan_video_codec_h265std.h"
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
-#define VK_EXT_VIDEO_ENCODE_H265_SPEC_VERSION 11
+#define VK_EXT_VIDEO_ENCODE_H265_SPEC_VERSION 12
 #define VK_EXT_VIDEO_ENCODE_H265_EXTENSION_NAME "VK_EXT_video_encode_h265"
 
 typedef enum VkVideoEncodeH265CapabilityFlagBitsEXT {
@@ -462,6 +465,8 @@ typedef enum VkVideoEncodeH265StdFlagBitsEXT {
     VK_VIDEO_ENCODE_H265_STD_DEBLOCKING_FILTER_OVERRIDE_ENABLED_FLAG_SET_BIT_EXT = 0x00010000,
     VK_VIDEO_ENCODE_H265_STD_DEPENDENT_SLICE_SEGMENTS_ENABLED_FLAG_SET_BIT_EXT = 0x00020000,
     VK_VIDEO_ENCODE_H265_STD_DEPENDENT_SLICE_SEGMENT_FLAG_SET_BIT_EXT = 0x00040000,
+    VK_VIDEO_ENCODE_H265_STD_SLICE_QP_DELTA_BIT_EXT = 0x00080000,
+    VK_VIDEO_ENCODE_H265_STD_DIFFERENT_SLICE_QP_DELTA_BIT_EXT = 0x00100000,
     VK_VIDEO_ENCODE_H265_STD_FLAG_BITS_MAX_ENUM_EXT = 0x7FFFFFFF
 } VkVideoEncodeH265StdFlagBitsEXT;
 typedef VkFlags VkVideoEncodeH265StdFlagsEXT;

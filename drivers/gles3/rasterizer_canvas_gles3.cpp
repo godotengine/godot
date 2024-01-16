@@ -2295,13 +2295,17 @@ void RasterizerCanvasGLES3::_prepare_canvas_texture(RID p_texture, RS::CanvasIte
 
 	GLES3::Texture *texture = texture_storage->get_texture(ct->diffuse);
 	Size2i size_cache;
+
+	// Cache default white resource ID.
+	const RID default_texture_id = texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_WHITE);
+
+	// If no texture is assigned, assign default white.
 	if (!texture) {
-		ct->diffuse = texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_WHITE);
-		GLES3::Texture *tex = texture_storage->get_texture(ct->diffuse);
-		size_cache = Size2i(tex->width, tex->height);
-	} else {
-		size_cache = Size2i(texture->width, texture->height);
+		ct->diffuse = default_texture_id;
 	}
+
+	// Enforce a 1x1 size if default white texture.
+	size_cache = ct->diffuse == default_texture_id ? Size2i(1, 1) : Size2i(texture->width, texture->height);
 
 	GLES3::Texture *normal_map = texture_storage->get_texture(ct->normal_map);
 

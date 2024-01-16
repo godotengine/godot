@@ -42,7 +42,6 @@
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_dir_dialog.h"
@@ -53,6 +52,7 @@
 #include "editor/scene_create_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/shader_create_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -765,7 +765,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 }
 
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
-	if ((file_list_vb->is_visible_in_tree() || current_path == p_path.get_base_dir()) && p_preview.is_valid()) {
+	if ((file_list_vb->is_visible_in_tree() || current_path.trim_suffix("/") == p_path.get_base_dir()) && p_preview.is_valid()) {
 		Array uarr = p_udata;
 		int idx = uarr[0];
 		String file = uarr[1];
@@ -3663,6 +3663,70 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_folder")));
 
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
+}
+
+void FileSystemDock::save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
+	p_layout->set_value(p_section, "dock_filesystem_h_split_offset", get_h_split_offset());
+	p_layout->set_value(p_section, "dock_filesystem_v_split_offset", get_v_split_offset());
+	p_layout->set_value(p_section, "dock_filesystem_display_mode", get_display_mode());
+	p_layout->set_value(p_section, "dock_filesystem_file_sort", get_file_sort());
+	p_layout->set_value(p_section, "dock_filesystem_file_list_display_mode", get_file_list_display_mode());
+	PackedStringArray selected_files = get_selected_paths();
+	p_layout->set_value(p_section, "dock_filesystem_selected_paths", selected_files);
+	Vector<String> uncollapsed_paths = get_uncollapsed_paths();
+	p_layout->set_value(p_section, "dock_filesystem_uncollapsed_paths", uncollapsed_paths);
+}
+
+void FileSystemDock::load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	if (p_layout->has_section_key(p_section, "dock_filesystem_h_split_offset")) {
+		int fs_h_split_ofs = p_layout->get_value(p_section, "dock_filesystem_h_split_offset");
+		set_h_split_offset(fs_h_split_ofs);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_v_split_offset")) {
+		int fs_v_split_ofs = p_layout->get_value(p_section, "dock_filesystem_v_split_offset");
+		set_v_split_offset(fs_v_split_ofs);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_display_mode")) {
+		DisplayMode dock_filesystem_display_mode = DisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_display_mode")));
+		set_display_mode(dock_filesystem_display_mode);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_file_sort")) {
+		FileSortOption dock_filesystem_file_sort = FileSortOption(int(p_layout->get_value(p_section, "dock_filesystem_file_sort")));
+		set_file_sort(dock_filesystem_file_sort);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_file_list_display_mode")) {
+		FileListDisplayMode dock_filesystem_file_list_display_mode = FileListDisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_file_list_display_mode")));
+		set_file_list_display_mode(dock_filesystem_file_list_display_mode);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_selected_paths")) {
+		PackedStringArray dock_filesystem_selected_paths = p_layout->get_value(p_section, "dock_filesystem_selected_paths");
+		for (int i = 0; i < dock_filesystem_selected_paths.size(); i++) {
+			select_file(dock_filesystem_selected_paths[i]);
+		}
+	}
+
+	// Restore collapsed state.
+	PackedStringArray uncollapsed_tis;
+	if (p_layout->has_section_key(p_section, "dock_filesystem_uncollapsed_paths")) {
+		uncollapsed_tis = p_layout->get_value(p_section, "dock_filesystem_uncollapsed_paths");
+	} else {
+		uncollapsed_tis = { "res://" };
+	}
+
+	if (!uncollapsed_tis.is_empty()) {
+		for (int i = 0; i < uncollapsed_tis.size(); i++) {
+			TreeItem *uncollapsed_ti = get_tree_control()->get_item_with_metadata(uncollapsed_tis[i], 0);
+			if (uncollapsed_ti) {
+				uncollapsed_ti->set_collapsed(false);
+			}
+		}
+		get_tree_control()->queue_redraw();
+	}
 }
 
 FileSystemDock::FileSystemDock() {

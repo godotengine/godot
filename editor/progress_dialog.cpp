@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "servers/display_server.h"
 
