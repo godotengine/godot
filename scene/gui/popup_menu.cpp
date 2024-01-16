@@ -2424,7 +2424,8 @@ void PopupMenu::clear(bool p_free_submenus) {
 	}
 
 	if (!global_menu_name.is_empty()) {
-		for (int i = 0; i < items.size(); i++) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		for (int i = items.size() - 1; i >= 0; i--) {
 			Item &item = items.write[i];
 			if (!item.submenu.is_empty()) {
 				PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu));
@@ -2433,8 +2434,8 @@ void PopupMenu::clear(bool p_free_submenus) {
 				}
 				item.submenu_bound = false;
 			}
+			ds->global_menu_remove_item(global_menu_name, i);
 		}
-		DisplayServer::get_singleton()->global_menu_clear(global_menu_name);
 	}
 	items.clear();
 
