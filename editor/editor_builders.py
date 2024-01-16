@@ -10,13 +10,12 @@ import subprocess
 import tempfile
 import uuid
 import zlib
-from platform_methods import subprocess_main
 
 
-def make_doc_header(target, source, env):
+def make_doc_header(target, source, env) -> None:
     dst = target[0]
     g = open(dst, "w", encoding="utf-8")
-    buf = ""
+    doc = ""
     docbegin = ""
     docend = ""
     for src in source:
@@ -24,9 +23,9 @@ def make_doc_header(target, source, env):
             continue
         with open(src, "r", encoding="utf-8") as f:
             content = f.read()
-        buf += content
+        doc += content
 
-    buf = (docbegin + buf + docend).encode("utf-8")
+    buf = (docbegin + doc + docend).encode("utf-8")
     decomp_size = len(buf)
 
     # Use maximum zlib compression level to further reduce file size
@@ -49,7 +48,7 @@ def make_doc_header(target, source, env):
     g.close()
 
 
-def make_fonts_header(target, source, env):
+def make_fonts_header(target, source, env) -> None:
     dst = target[0]
 
     g = open(dst, "w", encoding="utf-8")
@@ -77,7 +76,7 @@ def make_fonts_header(target, source, env):
     g.close()
 
 
-def make_translations_header(target, source, env, category):
+def make_translations_header(target, source, env, category: str) -> None:
     dst = target[0]
 
     g = open(dst, "w", encoding="utf-8")
@@ -86,7 +85,7 @@ def make_translations_header(target, source, env, category):
     g.write("#ifndef _{}_TRANSLATIONS_H\n".format(category.upper()))
     g.write("#define _{}_TRANSLATIONS_H\n".format(category.upper()))
 
-    sorted_paths = sorted(source, key=lambda path: os.path.splitext(os.path.basename(path))[0])
+    sorted_paths = sorted(source, key=lambda path: os.path.splitext(os.path.basename(path))[0])  # type: ignore
 
     msgfmt_available = shutil.which("msgfmt") is not None
 
@@ -155,17 +154,19 @@ def make_translations_header(target, source, env, category):
     g.close()
 
 
-def make_editor_translations_header(target, source, env):
+def make_editor_translations_header(target, source, env) -> None:
     make_translations_header(target, source, env, "editor")
 
 
-def make_property_translations_header(target, source, env):
+def make_property_translations_header(target, source, env) -> None:
     make_translations_header(target, source, env, "property")
 
 
-def make_doc_translations_header(target, source, env):
+def make_doc_translations_header(target, source, env) -> None:
     make_translations_header(target, source, env, "doc")
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())

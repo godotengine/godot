@@ -6,11 +6,10 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 
 import os
 from io import StringIO
-from platform_methods import subprocess_main
 
 
 # See also `scene/theme/icons/default_theme_icons_builders.py`.
-def make_editor_icons_action(target, source, env):
+def make_editor_icons_action(target, source, env) -> None:
     dst = target[0]
     svg_icons = source
 
@@ -92,4 +91,6 @@ def make_editor_icons_action(target, source, env):
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())

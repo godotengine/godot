@@ -20,7 +20,7 @@ def get_build_version():
 
     name = "custom_build"
     if os.getenv("BUILD_NAME") != None:
-        name = os.getenv("BUILD_NAME")
+        name = str(os.getenv("BUILD_NAME"))
     v = "%d.%d" % (version.major, version.minor)
     if version.patch > 0:
         v += ".%d" % version.patch

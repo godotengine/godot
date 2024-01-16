@@ -6,7 +6,6 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 import os
 from detect import get_mingw_bin_prefix
 from detect import try_cmd
-from platform_methods import subprocess_main
 
 
 def make_debug_mingw(target, source, env):
@@ -26,4 +25,6 @@ def make_debug_mingw(target, source, env):
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())

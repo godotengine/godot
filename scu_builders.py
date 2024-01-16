@@ -4,15 +4,16 @@ import glob, os
 import math
 from pathlib import Path
 from os.path import normpath, basename
+from typing import List, Set, Tuple
 
 base_folder_path = str(Path(__file__).parent) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
 _verbose = True  # Set manually for debug prints
-_scu_folders = set()
+_scu_folders: Set[str] = set()
 _max_includes_per_scu = 1024
 
 
-def clear_out_existing_files(output_folder, extension):
+def clear_out_existing_files(output_folder: str, extension: str) -> None:
     output_folder = os.path.abspath(output_folder)
     # print("clear_out_existing_files from folder: " + output_folder)
 
@@ -26,12 +27,19 @@ def clear_out_existing_files(output_folder, extension):
         os.remove(file)
 
 
-def folder_not_found(folder):
+def folder_not_found(folder: str) -> bool:
     abs_folder = base_folder_path + folder + "/"
     return not os.path.isdir(abs_folder)
 
 
-def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exceptions, found_exceptions):
+def find_files_in_folder(
+    folder: str,
+    sub_folder: str,
+    include_list: List[str],
+    extension: str,
+    sought_exceptions: List[str],
+    found_exceptions: List[str],
+) -> Tuple[List[str], List[str]]:
     abs_folder = base_folder_path + folder + "/" + sub_folder
 
     if not os.path.isdir(abs_folder):
@@ -60,7 +68,15 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
     return include_list, found_exceptions
 
 
-def write_output_file(file_count, include_list, start_line, end_line, output_folder, output_filename_prefix, extension):
+def write_output_file(
+    file_count: int,
+    include_list: List[str],
+    start_line: int,
+    end_line: int,
+    output_folder: str,
+    output_filename_prefix: str,
+    extension: str,
+) -> None:
     output_folder = os.path.abspath(output_folder)
 
     if not os.path.isdir(output_folder):
@@ -93,7 +109,9 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
     output_path.write_text(file_text, encoding="utf8")
 
 
-def write_exception_output_file(file_count, exception_string, output_folder, output_filename_prefix, extension):
+def write_exception_output_file(
+    file_count: int, exception_string: str, output_folder: str, output_filename_prefix: str, extension: str
+) -> None:
     output_folder = os.path.abspath(output_folder)
     if not os.path.isdir(output_folder):
         print("SCU: ERROR: %s does not exist." % output_folder)
@@ -115,7 +133,7 @@ def write_exception_output_file(file_count, exception_string, output_folder, out
     output_path.write_text(file_text, encoding="utf8")
 
 
-def find_section_name(sub_folder):
+def find_section_name(sub_folder: str) -> str:
     # Construct a useful name for the section from the path for debug logging
     section_path = os.path.abspath(base_folder_path + sub_folder) + "/"
 
@@ -157,7 +175,9 @@ def find_section_name(sub_folder):
 
 
 # "extension" will usually be cpp, but can also be set to c (for e.g. third party libraries that use c)
-def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension="cpp"):
+def process_folder(
+    folders: List[str], sought_exceptions: List[str] = [], includes_per_scu: int = 0, extension: str = "cpp"
+) -> None:
     if len(folders) == 0:
         return
 
@@ -165,8 +185,8 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
     # e.g. "scene_3d"
     out_filename = find_section_name(folders[0])
 
-    found_includes = []
-    found_exceptions = []
+    found_includes: List[str] = []
+    found_exceptions: List[str] = []
 
     main_folder = folders[0]
     abs_main_folder = base_folder_path + main_folder
@@ -239,7 +259,7 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
         )
 
 
-def generate_scu_files(max_includes_per_scu):
+def generate_scu_files(max_includes_per_scu: int) -> Set[str]:
     print("=============================")
     print("Single Compilation Unit Build")
     print("=============================")
@@ -254,7 +274,6 @@ def generate_scu_files(max_includes_per_scu):
     # check we are running from the correct folder
     if folder_not_found("core") or folder_not_found("platform") or folder_not_found("scene"):
         raise RuntimeError("scu_builders.py must be run from the godot folder.")
-        return
 
     process_folder(["core"])
     process_folder(["core/crypto"])

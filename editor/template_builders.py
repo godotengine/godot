@@ -4,10 +4,9 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 
 import os
 from io import StringIO
-from platform_methods import subprocess_main
 
 
-def parse_template(inherits, source, delimiter):
+def parse_template(inherits: str, source: str, delimiter: str) -> str:
     script_template = {
         "inherits": inherits,
         "name": "",
@@ -52,7 +51,7 @@ def parse_template(inherits, source, delimiter):
         )
 
 
-def make_templates(target, source, env):
+def make_templates(target, source, env) -> None:
     dst = target[0]
     s = StringIO()
     s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n\n")
@@ -92,4 +91,6 @@ def make_templates(target, source, env):
 
 
 if __name__ == "__main__":
+    from platform_methods import subprocess_main
+
     subprocess_main(globals())
