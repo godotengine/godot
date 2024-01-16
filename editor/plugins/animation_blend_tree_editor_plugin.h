@@ -47,6 +47,7 @@ class EditorFileDialog;
 class EditorProperty;
 class MenuButton;
 class PanelContainer;
+class EditorQuickOpen;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
@@ -138,13 +139,17 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _update_editor_settings();
 
 	EditorFileDialog *open_file = nullptr;
+	EditorQuickOpen *quick_open = nullptr;
+
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
+	void _file_quick_selected();
 
 	enum {
 		MENU_LOAD_FILE = 1000,
 		MENU_PASTE = 1001,
-		MENU_LOAD_FILE_CONFIRM = 1002
+		MENU_LOAD_FILE_CONFIRM = 1002,
+		MENU_QUICK_LOAD_FILE = 1003
 	};
 
 protected:
