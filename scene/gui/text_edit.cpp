@@ -1341,10 +1341,10 @@ void TextEdit::_notification(int p_what) {
 									int h = theme_cache.font->get_height(theme_cache.font_size);
 									if (rtl) {
 										ts_caret.l_dir = TextServer::DIRECTION_RTL;
-										ts_caret.l_caret = Rect2(Vector2(xmargin_end - char_margin + ofs_x, -h / 2), Size2(caret_width * 4, h));
+										ts_caret.l_caret = Rect2(Vector2(xmargin_end - char_margin + ofs_x, -h / 2), Size2(4 * get_theme_default_base_scale(), h));
 									} else {
 										ts_caret.l_dir = TextServer::DIRECTION_LTR;
-										ts_caret.l_caret = Rect2(Vector2(char_ofs, -h / 2), Size2(caret_width * 4, h));
+										ts_caret.l_caret = Rect2(Vector2(char_ofs, -h / 2), Size2(4 * get_theme_default_base_scale(), h));
 									}
 								}
 
@@ -1364,7 +1364,7 @@ void TextEdit::_notification(int p_what) {
 											if (ts_caret.t_caret != Rect2()) {
 												if (overtype_mode) {
 													ts_caret.t_caret.position.y = TS->shaped_text_get_descent(rid);
-													ts_caret.t_caret.size.y = caret_width;
+													ts_caret.l_caret.size.y = get_theme_default_base_scale();
 												} else {
 													ts_caret.t_caret.position.y = -TS->shaped_text_get_ascent(rid);
 													ts_caret.t_caret.size.y = h;
@@ -1394,12 +1394,12 @@ void TextEdit::_notification(int p_what) {
 													}
 												} else if (overtype_mode) {
 													ts_caret.l_caret.position.y += ts_caret.l_caret.size.y;
-													ts_caret.l_caret.size.y = caret_width;
+													ts_caret.l_caret.size.y = get_theme_default_base_scale();
 												}
 												if (Math::ceil(ts_caret.l_caret.position.x) >= TS->shaped_text_get_size(rid).x) {
 													ts_caret.l_caret.size.x = theme_cache.font->get_char_size('m', theme_cache.font_size).x;
 												} else {
-													ts_caret.l_caret.size.x = 3 * caret_width;
+													ts_caret.l_caret.size.x = 3 * get_theme_default_base_scale();
 												}
 												ts_caret.l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
 												if (ts_caret.l_dir == TextServer::DIRECTION_RTL) {
@@ -1411,7 +1411,8 @@ void TextEdit::_notification(int p_what) {
 											// Normal caret.
 											if (ts_caret.l_caret != Rect2() && ts_caret.l_dir == TextServer::DIRECTION_AUTO) {
 												// Draw extra marker on top of mid caret.
-												Rect2 trect = Rect2(ts_caret.l_caret.position.x - 2.5 * caret_width, ts_caret.l_caret.position.y, 6 * caret_width, caret_width);
+												Size2 gr_bounds = TS->shaped_text_get_grapheme_bounds(rid, caret.column);
+												Rect2 trect = Rect2(gr_bounds.x, caret.l_caret.position.y, gr_bounds.y - gr_bounds.x, get_theme_default_base_scale());
 												trect.position += Vector2(char_margin + ofs_x, ofs_y);
 												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, theme_cache.caret_color);
 											} else if (ts_caret.l_caret != Rect2() && ts_caret.t_caret != Rect2() && ts_caret.l_dir != ts_caret.t_dir) {
@@ -1454,7 +1455,7 @@ void TextEdit::_notification(int p_what) {
 										} else if (rect.position.x + rect.size.x > xmargin_end) {
 											rect.size.x = xmargin_end - rect.position.x;
 										}
-										rect.size.y = caret_width;
+										rect.size.y = get_theme_default_base_scale();
 										draw_rect(rect, theme_cache.caret_color);
 										carets.write[c].draw_pos.x = rect.position.x;
 									}
@@ -1473,7 +1474,7 @@ void TextEdit::_notification(int p_what) {
 										} else if (rect.position.x + rect.size.x > xmargin_end) {
 											rect.size.x = xmargin_end - rect.position.x;
 										}
-										rect.size.y = caret_width * 3;
+										rect.size.y = 3 * get_theme_default_base_scale();
 										draw_rect(rect, theme_cache.caret_color);
 										carets.write[c].draw_pos.x = rect.position.x;
 									}
