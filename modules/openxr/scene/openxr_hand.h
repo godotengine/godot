@@ -61,6 +61,12 @@ public:
 		SKELETON_RIG_MAX
 	};
 
+	enum BoneUpdate {
+		BONE_UPDATE_FULL,
+		BONE_UPDATE_ROTATION_ONLY,
+		BONE_UPDATE_MAX
+	};
+
 private:
 	struct JointData {
 		int bone = -1;
@@ -74,6 +80,7 @@ private:
 	MotionRange motion_range = MOTION_RANGE_UNOBSTRUCTED;
 	NodePath hand_skeleton;
 	SkeletonRig skeleton_rig = SKELETON_RIG_OPENXR;
+	BoneUpdate bone_update = BONE_UPDATE_FULL;
 
 	JointData joints[XR_HAND_JOINT_COUNT_EXT];
 
@@ -101,11 +108,15 @@ public:
 	void set_skeleton_rig(SkeletonRig p_skeleton_rig);
 	SkeletonRig get_skeleton_rig() const;
 
+	void set_bone_update(BoneUpdate p_bone_update);
+	BoneUpdate get_bone_update() const;
+
 	void _notification(int p_what);
 };
 
 VARIANT_ENUM_CAST(OpenXRHand::Hands)
 VARIANT_ENUM_CAST(OpenXRHand::MotionRange)
 VARIANT_ENUM_CAST(OpenXRHand::SkeletonRig)
+VARIANT_ENUM_CAST(OpenXRHand::BoneUpdate)
 
 #endif // OPENXR_HAND_H
