@@ -96,10 +96,8 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
 #include "editor/editor_run_native.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_settings_dialog.h"
-#include "editor/editor_themes.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
@@ -158,6 +156,8 @@
 #include "editor/register_exporters.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/surface_upgrade_tool.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "editor/window_wrapper.h"
 
 #include <stdio.h>
@@ -469,7 +469,7 @@ void EditorNode::_select_default_main_screen_plugin() {
 
 void EditorNode::_update_theme(bool p_skip_creation) {
 	if (!p_skip_creation) {
-		theme = create_custom_theme(theme);
+		theme = EditorThemeManager::generate_theme(theme);
 		DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 	}
 
@@ -764,19 +764,7 @@ void EditorNode::_notification(int p_what) {
 			EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 			EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
-			bool theme_changed =
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/font") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/main_font") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/code_font") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog/thumbnail_size") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/increase_scrollbar_touch_area") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/scale_gizmo_handles");
-
-			if (theme_changed) {
+			if (EditorThemeManager::is_generated_theme_outdated()) {
 				_update_theme();
 			}
 
@@ -5990,6 +5978,7 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 void EditorNode::_update_renderer_color() {
 	String rendering_method = renderer->get_selected_metadata();
 
+	// TODO: Use theme colors instead of hardcoded values.
 	if (rendering_method == "forward_plus") {
 		renderer->add_theme_color_override("font_color", Color::hex(0x5d8c3fff));
 	}
@@ -6438,9 +6427,8 @@ EditorNode::EditorNode() {
 	add_child(editor_export);
 
 	// Exporters might need the theme.
-	EditorColorMap::create();
-	EditorTheme::initialize();
-	theme = create_custom_theme();
+	EditorThemeManager::initialize();
+	theme = EditorThemeManager::generate_theme();
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
 	register_exporters();
@@ -7500,8 +7488,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_dock_manager);
 
 	EditorSettings::destroy();
-	EditorColorMap::finish();
-	EditorTheme::finalize();
+	EditorThemeManager::finalize();
 
 	GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
 	GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;

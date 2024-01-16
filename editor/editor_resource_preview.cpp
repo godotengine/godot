@@ -37,9 +37,9 @@
 #include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 #include "servers/rendering/rendering_server_default.h"
 

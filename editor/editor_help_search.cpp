@@ -33,9 +33,9 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 
 void EditorHelpSearch::_update_results() {
 	String term = search_box->get_text();
@@ -698,5 +698,5 @@ EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, 
 		results_tree(p_results_tree),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),
 		search_flags(p_search_flags),
-		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor))) {
+		disabled_color(ui_service->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor))) {
 }

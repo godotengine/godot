@@ -31,12 +31,12 @@
 #include "groups_editor.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/project_settings_editor.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/grid_container.h"

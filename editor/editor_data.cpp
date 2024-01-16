@@ -37,10 +37,10 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorSelectionHistory::cleanup_history() {

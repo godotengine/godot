@@ -34,10 +34,10 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 
 void ResourcePreloaderEditor::_notification(int p_what) {
 	switch (p_what) {

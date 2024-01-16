@@ -34,13 +34,13 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/plugins/tiles/tile_set_editor.h"
 #include "editor/progress_dialog.h"
+#include "editor/themes/editor_scale.h"
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -735,7 +735,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["probability"] = tile_data_probability_editor;
 	}
 
-	Color disabled_color = get_theme_color("disabled_font_color", EditorStringName(Editor));
+	Color disabled_color = get_theme_color("font_disabled_color", EditorStringName(Editor));
 
 	// --- Physics ---
 	ADD_TILE_DATA_EDITOR_GROUP(TTR("Physics"));
