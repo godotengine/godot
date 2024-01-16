@@ -55,11 +55,10 @@
 #include <guiddef.h>
 
 #include <dxguids.h>
-#ifndef CLSID_D3D12DeviceFactory
-// Note: symbol is not available in MinGW import library.
-const CLSID CLSID_D3D12DeviceFactory = __uuidof(ID3D12DeviceFactory);
 #endif
-#endif
+
+// Note: symbol is not available in MinGW and old MSVC import libraries.
+const CLSID CLSID_D3D12DeviceFactoryGodot = __uuidof(ID3D12DeviceFactory);
 
 extern "C" {
 char godot_nir_arch_name[32];
@@ -825,9 +824,9 @@ void D3D12Context::_init_device_factory() {
 		ID3D12SDKConfiguration1 *sdk_config1 = nullptr;
 		if (SUCCEEDED(sdk_config->QueryInterface(&sdk_config1))) {
 			if (SUCCEEDED(sdk_config1->CreateDeviceFactory(agility_sdk_version, agility_sdk_path.ascii().get_data(), IID_PPV_ARGS(device_factory.GetAddressOf())))) {
-				d3d_D3D12GetInterface(CLSID_D3D12DeviceFactory, IID_PPV_ARGS(device_factory.GetAddressOf()));
+				d3d_D3D12GetInterface(CLSID_D3D12DeviceFactoryGodot, IID_PPV_ARGS(device_factory.GetAddressOf()));
 			} else if (SUCCEEDED(sdk_config1->CreateDeviceFactory(agility_sdk_version, ".\\", IID_PPV_ARGS(device_factory.GetAddressOf())))) {
-				d3d_D3D12GetInterface(CLSID_D3D12DeviceFactory, IID_PPV_ARGS(device_factory.GetAddressOf()));
+				d3d_D3D12GetInterface(CLSID_D3D12DeviceFactoryGodot, IID_PPV_ARGS(device_factory.GetAddressOf()));
 			}
 			sdk_config1->Release();
 		}
