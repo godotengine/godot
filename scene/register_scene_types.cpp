@@ -52,6 +52,7 @@
 #include "scene/2d/navigation_link_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/navigation_region_2d.h"
+#include "scene/2d/parallax_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/path_2d.h"
@@ -813,6 +814,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TileData);
 	GDREGISTER_CLASS(TileMap);
 	GDREGISTER_ABSTRACT_CLASS(TileMapLayerGroup);
+	GDREGISTER_CLASS(Parallax2D);
 	GDREGISTER_CLASS(ParallaxBackground);
 	GDREGISTER_CLASS(ParallaxLayer);
 	GDREGISTER_CLASS(TouchScreenButton);
