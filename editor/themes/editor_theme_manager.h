@@ -31,16 +31,25 @@
 #ifndef EDITOR_THEME_MANAGER_H
 #define EDITOR_THEME_MANAGER_H
 
+#include "editor/themes/editor_theme.h"
 #include "scene/resources/style_box_flat.h"
-#include "scene/resources/theme.h"
 
 class EditorThemeManager {
+	static int benchmark_run;
+
+	static String get_benchmark_key();
+
+	enum ColorMode {
+		AUTO_COLOR,
+		DARK_COLOR,
+		LIGHT_COLOR,
+	};
+
 	struct ThemeConfiguration {
 		// Basic properties.
 
 		String preset;
 		String spacing_preset;
-		bool dark_theme = false;
 
 		Color base_color;
 		Color accent_color;
@@ -61,10 +70,13 @@ class EditorThemeManager {
 		bool increase_scrollbar_touch_area = false;
 		float gizmo_handle_scale = 1.0;
 		int color_picker_button_height = 28;
+		float subresource_hue_tint = 0.0;
 
 		float default_contrast = 1.0;
 
 		// Generated properties.
+
+		bool dark_theme = false;
 
 		int base_margin = 4;
 		int increased_margin = 4;
@@ -127,21 +139,27 @@ class EditorThemeManager {
 		Ref<StyleBoxFlat> tree_panel_style;
 
 		Vector2 widget_margin;
+
+		uint32_t hash();
+		uint32_t hash_fonts();
+		uint32_t hash_icons();
 	};
 
-	static Ref<Theme> _create_base_theme(const Ref<Theme> &p_old_theme = nullptr);
-	static ThemeConfiguration _create_theme_config(const Ref<Theme> &p_theme);
+	static Ref<EditorTheme> _create_base_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
+	static ThemeConfiguration _create_theme_config(const Ref<EditorTheme> &p_theme);
 
-	static void _create_shared_styles(const Ref<Theme> &p_theme, ThemeConfiguration &p_config);
-	static void _populate_standard_styles(const Ref<Theme> &p_theme, ThemeConfiguration &p_config);
-	static void _populate_editor_styles(const Ref<Theme> &p_theme, ThemeConfiguration &p_config);
+	static void _create_shared_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
+	static void _populate_standard_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
+	static void _populate_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 
 	static void _generate_text_editor_defaults(ThemeConfiguration &p_config);
-	static void _populate_text_editor_styles(const Ref<Theme> &p_theme, ThemeConfiguration &p_config);
+	static void _populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 
 public:
-	static Ref<Theme> generate_theme(const Ref<Theme> &p_old_theme = nullptr);
+	static Ref<EditorTheme> generate_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
 	static bool is_generated_theme_outdated();
+
+	static bool is_dark_theme();
 
 	static void initialize();
 	static void finalize();
