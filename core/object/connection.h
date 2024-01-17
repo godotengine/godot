@@ -46,9 +46,10 @@ enum ConnectFlags {
 };
 
 struct Connection {
-	STRUCT_MEMBER_PRIMITIVE(Connection, ::Signal, signal, ::Signal());
-	STRUCT_MEMBER_PRIMITIVE(Connection, Callable, callable, Callable());
-	STRUCT_MEMBER_PRIMITIVE(Connection, uint32_t, flags, 0);
+	STRUCT_DECLARE(Connection);
+	STRUCT_MEMBER_PRIMITIVE(::Signal, signal, ::Signal());
+	STRUCT_MEMBER_PRIMITIVE(Callable, callable, Callable());
+	STRUCT_MEMBER_PRIMITIVE(uint32_t, flags, 0);
 	STRUCT_LAYOUT_OWNER(Object, Connection, struct signal, struct callable, struct flags);
 
 	bool operator<(const Connection &p_conn) const;
