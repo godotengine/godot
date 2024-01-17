@@ -2027,6 +2027,9 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(Quaternion, from_euler, sarray("euler"), varray());
 	bind_method(Quaternion, get_axis, sarray(), varray());
 	bind_method(Quaternion, get_angle, sarray(), varray());
+	bind_method(Quaternion, get_twist, sarray("axis"), varray());
+	bind_method(Quaternion, get_swing, sarray("axis"), varray());
+	bind_method(Quaternion, get_rotation_around, sarray("axis"), varray());
 
 	/* Color */
 
