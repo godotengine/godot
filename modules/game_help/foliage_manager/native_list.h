@@ -14,14 +14,14 @@ namespace Foliage
 
 		int64_t memorySize = 0;
 		bool isSafeAlocal = false;
-		int Length() const 
+		int64_t size() const 
         {
              return MIN(listCount.get(),memorySize);
         }
-		NativeList(int memSize = 0)
+		NativeList(int64_t memSize = 0)
 		{
 			data = nullptr;
-			listCount = 0;
+			listCount.set(0);
 			memorySize = 0;
 			isSafeAlocal = false;
 			if (memSize > 0)
@@ -33,14 +33,14 @@ namespace Foliage
         {
             Dispose();
         }
-		void SetMemory(T* memory, int offset, int list_count, int memory_size)
+		void SetMemory(T* memory, int64_t offset, int64_t list_count, int64_t memory_size)
 		{
 			data = memory + offset;
 			listCount.set(list_count);
 			memorySize = memory_size;
 			isSafeAlocal = false;
 		}
-		void Init(int memSize = 0)
+		void Init(int64_t memSize = 0)
 		{
 			data = nullptr;
 			listCount.set(0);
@@ -54,7 +54,7 @@ namespace Foliage
 		/// <summary>
 		/// 自动重置大小
 		/// </summary>
-        void AutoResize(int length, int next_length)
+        void AutoResize(int64_t length, int64_t next_length)
 		{
 			if (memorySize < length)
 			{
@@ -65,41 +65,41 @@ namespace Foliage
 				}
 
 				long newsize = sizeof(T) * (long)next_length;
-				auto new_data = UnsafeUtility.Malloc(newsize, 8, Allocator.Persistent);
-				if (new_data == null)
+				auto new_data = memalloc(newsize);
+				if (new_data == nullptr)
 				{
-					throw new Exception($"内存非陪错误！无法分配【{newsize}】 内存");
+					return;
 				}
-				UnsafeUtility.MemClear(new_data, newsize);
-				if (data != null)
+				memset(new_data, 0,newsize);
+				if (data != nullptr)
 				{
-					UnsafeUtility.MemCpy(new_data, GetUnsafePtr(), UnsafeUtility.SizeOf<T>() * listCount);
-					UnsafeUtility.Free(data, Allocator.Persistent);
+					memcpy(new_data, GetUnsafePtr(), sizeof(T) * listCount.get());
+					memfree(data);
 				}
 				memorySize = next_length;
 				data = (T*)new_data;
 				isSafeAlocal = true;
 			}
 		}
-        T* GetUnsafePtr(int index = 0)
+        T* GetUnsafePtr(int64_t index = 0)
 		{
-			if (index > listCount)
+			if (index > listCount.get())
 			{
 				//Debug.LogError($"参数获取错误，index[{index}] 要小于listCount[{listCount}]！");
 				return nullptr;
 			}
 			return &data[index];
 		}
-        void SetValue(int index, in T value)
+        void SetValue(int64_t index,  const T& value)
 		{
-			if (index > listCount)
+			if (index > listCount.get())
 			{
 				//Debug.LogError($"参数设置错误，index[{index}] 要小于listCount[{listCount}]！");
 				return;
 			}
 			data[index] = value;
 		}
-		void RemoveRange(int start, int count)
+		void RemoveRange(int64_t start, int count)
 		{
 			if (count <= 0 || start < 0)
 			{
@@ -123,8 +123,8 @@ namespace Foliage
 			//{
 			//	UnsafeUtility.MemCpy(&data[start + index], &data[bs + index], UnsafeUtility.SizeOf<T>());
 			//}
-			int last_index = start + count;
-			int copy_count = listCount.get() - last_index;
+			int64_t last_index = start + count;
+			int64_t copy_count = listCount.get() - last_index;
 			T* temp = (T*)allocal(sizeof(T) * copy_count);
 			memcpy(temp, &data[last_index], sizeof(T) * copy_count);
 			memcpy(&data[start], temp, sizeof(T) * copy_count);
@@ -133,7 +133,7 @@ namespace Foliage
 		/// 获取指针地址
 		/// </summary>
 		/// <returns></returns>
-        void* GetUnsafeReadOnlyPtr(int index = 0)
+        void* GetUnsafeReadOnlyPtr(int64_t index = 0)
 		{
 			return GetUnsafePtr(index);
 		}
@@ -164,7 +164,7 @@ namespace Foliage
 		/// 多线程并发写入，不支持动态分配内存，需要预先分配好内存
 		/// </summary>
 		/// <param name="_data"></param>
-        void Thread_Add(ref T _data)
+        void Thread_Add(T& _data)
 		{
 			auto idx = listCount.add(1) - 1;
 			if (idx < memorySize)
@@ -176,7 +176,7 @@ namespace Foliage
 		/// 多线程并发写入，不支持动态分配内存，需要预先分配好内存
 		/// </summary>
 		/// <param name="_data"></param>
-        void Thread_AddRange(T* _data, int count)
+        void Thread_AddRange(T* _data, int64_t count)
 		{
 			auto idx = listCount.Add( count) - count;
 			if (idx + count <= memorySize)
@@ -190,14 +190,14 @@ namespace Foliage
 		{
 			AutoResize(listCount + 1, listCount + 1 + 200);
 
-			memcpy(&data[listCount], &_data, sizeof(T));
+			memcpy(&data[listCount.get()], &_data, sizeof(T));
 			listCount += 1;
 		}
-        void AddRange(T* _data, int count)
+        void AddRange(T* _data, int64_t count)
 		{
 			AutoResize(listCount + count, listCount + count + 200);
 
-			memcpy(&data[listCount], _data, sizeof(T) * count);
+			memcpy(&data[listCount.get()], _data, sizeof(T) * count);
 			listCount += count;
 
 		}
@@ -206,10 +206,10 @@ namespace Foliage
 		/// </summary>
 		/// <remarks>Does not clear newly allocated bytes.</remarks>
 		/// <param name="length">The new length of this list.</param>
-        void ResizeUninitialized(int length, int addCount = 0)
+        void ResizeUninitialized(int64_t length, int64_t addCount = 0)
 		{
 			AutoResize(length, length + addCount);
-			listCount = length;
+			listCount.set(length);
 		}
         void CompactMemory()
 		{
@@ -217,7 +217,7 @@ namespace Foliage
 			{
 				if (isSafeAlocal)
 				{
-					UnsafeUtility.Free(data, Allocator.Persistent);
+					memfree(data);
 				}
 				data = nullptr;
 				listCount.set(0);
@@ -225,9 +225,9 @@ namespace Foliage
 			}
 
 		}
-        void Clear()
+        void clear()
 		{
-			listCount = 0;
+			listCount.set(0);
 		}
         void Dispose()
 		{
@@ -235,10 +235,10 @@ namespace Foliage
 			{
 				if (isSafeAlocal)
 				{
-					UnsafeUtility.Free(data, Allocator.Persistent);
+					memfree(data);
 				}
-				data = null;
-				listCount = 0;
+				data = nullptr;
+				listCount.set(0);
 				memorySize = 0;
 			}
 		}

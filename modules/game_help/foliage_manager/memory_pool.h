@@ -43,6 +43,12 @@ namespace Foliage
                 s_freeBlock = _block;
             }
         };
+        
+        MemoryPool()
+        {
+            m_totalMemorySize = 0;
+            AddFreeBlock(2048);
+        }
         // 构造函数，初始化内存池
         MemoryPool(int total_size)
         {
@@ -178,15 +184,15 @@ namespace Foliage
             free->size = reduction_count;
             free->available = false;
             m_block_map.insert(free->Start(), free);
-            FreeMemory(free);
+            Free(free);
             return block;
         }
-        void FreeMemory(int block_offset)
+        void Free(int block_offset)
         {
             auto it = m_block_map.find(block_offset);
             if (it != m_block_map.end())
             {
-                FreeMemory(it->value);
+                Free(it->value);
 
             }
             else
@@ -197,7 +203,7 @@ namespace Foliage
         }
 
         // 释放内存块
-        void FreeMemory(Block* freed_block)
+        void Free(Block* freed_block)
         {
             if (freed_block->available == true)
             {
@@ -208,10 +214,10 @@ namespace Foliage
 
             //Block current_block = freed_block;
             // 查找是否存在可以链接的下一个空闲区域
-            int current_memory = freed_block.offset;
+            int current_memory = freed_block->offset;
             //int next_memory = freed_block.End;
             Block next_block_entry;
-            int nextKey = freed_block.End;
+            int nextKey = freed_block->End();
             auto it = m_block_map.find(nextKey);
             if (it != m_block_map.end())
             {
@@ -236,7 +242,7 @@ namespace Foliage
             {
                 current_block = entry.value;
                 // 判断是否是当前块的下一个节点是否为当前需要释放的节点
-                if (current_block->End == freed_block.Start)
+                if (current_block->End() == freed_block->Start())
                 {
                     if (!current_block->available)
                     {
@@ -256,6 +262,5 @@ namespace Foliage
         int m_totalMemorySize;
         HashMap<int, Block*> m_block_map; // 保存内存地址和Block信息的映射表
     };
-
 }
 #endif

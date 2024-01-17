@@ -76,7 +76,11 @@ public:
 			TYPE_SET_PUSH_CONSTANT,
 			TYPE_SET_SCISSOR,
 			TYPE_SET_VIEWPORT,
-			TYPE_UNIFORM_SET_PREPARE_FOR_USE
+			TYPE_UNIFORM_SET_PREPARE_FOR_USE,
+
+
+			TYPE_DRAW_INDIRECT,
+			TYPE_DRAW_INDEXED_INDIRECT,
 		};
 
 		Type type = TYPE_NONE;
@@ -431,6 +435,21 @@ private:
 		uint32_t instance_count = 0;
 		uint32_t first_index = 0;
 	};
+	struct DrawListDrawInstructionIndirect : DrawListInstruction {
+		// indirect arg
+		RDD::BufferID indirect_buffer;
+		uint64_t indirect_offset;
+		uint32_t indirect_draw_count;
+		uint32_t indirect_stride;
+	};
+
+	struct DrawListDrawIndexedInstructionIndirect : DrawListInstruction {
+		// indirect arg
+		RDD::BufferID indirect_buffer;
+		uint64_t indirect_offset;
+		uint32_t indirect_draw_count;
+		uint32_t indirect_stride;
+	};
 
 	struct DrawListEndRenderPassInstruction : DrawListInstruction {
 		// No contents.
@@ -638,6 +657,12 @@ public:
 	void add_draw_list_clear_attachments(VectorView<RDD::AttachmentClear> p_attachments_clear, VectorView<Rect2i> p_attachments_clear_rect);
 	void add_draw_list_draw(uint32_t p_vertex_count, uint32_t p_instance_count);
 	void add_draw_list_draw_indexed(uint32_t p_index_count, uint32_t p_instance_count, uint32_t p_first_index);
+
+
+	void add_draw_list_draw_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset, uint32_t p_draw_count, uint32_t p_stride);
+	void add_draw_list_draw_indexed_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset, uint32_t p_draw_count, uint32_t p_stride);
+
+
 	void add_draw_list_execute_commands(RDD::CommandBufferID p_command_buffer);
 	void add_draw_list_next_subpass(RDD::CommandBufferType p_command_buffer_type);
 	void add_draw_list_set_blend_constants(const Color &p_color);

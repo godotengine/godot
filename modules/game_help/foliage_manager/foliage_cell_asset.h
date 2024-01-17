@@ -10,6 +10,8 @@
 #include "core/io/file_access.h"
 #include "core/object/worker_thread_pool.h"
 
+#include "memory_pool.h"
+
 
 namespace Foliage
 {
@@ -118,7 +120,10 @@ namespace Foliage
 		/// </summary>
 		static const int CELL_HEIGHT_MAP_RESOLUTION = CELL_SIZE * 2;
 
-
+		
+		static const int LOAD_TAG_NONE = 0;
+		static const int LOAD_TAG_LOAD = 1;
+		static const int LOAD_TAG_PRE_UNLOAD = 2;
 
 		 static int EncodeHeightSegment(int _count, bool _validValue)
 		{
@@ -165,6 +170,11 @@ namespace Foliage
 			x += Math::fast_ftoi(_delta.x / _cellSize);
 			z += Math::fast_ftoi(_delta.y / _cellSize);
 		}
+        void Offset(Vector3& _delta, int _cellSize = FoliageGlobals::CELL_SIZE)
+		{
+			x += Math::fast_ftoi(_delta.x / _cellSize);
+			z += Math::fast_ftoi(_delta.z / _cellSize);
+		}
         friend bool operator == (const FoliageCellPos& lhs, const FoliageCellPos& rhs)
 		{
 			return (lhs.x == rhs.x && lhs.z == rhs.z);
@@ -174,14 +184,14 @@ namespace Foliage
 			return !(lhs == rhs);
 		}
 
-		int64_t DecodeLong()
+		int64_t DecodeLong()const
 		{
 			return (int64_t)x << 32 | (uint32_t)z;
 		}
 
 		//maxposition  2^16 =  65535  * FoliageGlobals.CELL_SIZE 
 
-        int DecodeInt()
+        int DecodeInt()const
 		{
 			return x << 16 | (uint16_t)z;
 		}
@@ -206,9 +216,14 @@ namespace Foliage
 			return CELL_RESOLUTION * (z - ORIGIN) + x - ORIGIN;
 		}
 
-		Vector3 worldPosition()
+		Vector3 worldPosition()const
         {
             return Vector3(FoliageGlobals::CELL_SIZE * x, 0.0f, FoliageGlobals::CELL_SIZE * z);
+        }
+		// 頁面的世界位置
+		Vector3 pageWorldPosition()const
+        {
+            return Vector3(FoliageGlobals::PAGE_SIZE * x, 0.0f, FoliageGlobals::PAGE_SIZE * z);
         }
 
 		Vector3 centerPosition()
@@ -534,6 +549,7 @@ namespace Foliage
 			Vector<PrototypeData> prototypes;
 		public:
 			bool is_load = false;
+			MemoryPool::Block* block = nullptr;
 		public:
 
 
@@ -629,6 +645,10 @@ namespace Foliage
 			Ref<FoliageCellAsset>	dest;
 			Ref<FileAccess> file;
 		};
+		void set_file_name(String name)
+		{
+			configFile = name;
+		}
 		// 加載文件
 		void load_file(String _file);
 		// 等待加载完成
@@ -645,7 +665,7 @@ namespace Foliage
 
     	static void job_load_func(void* data,uint32_t index);
         void load(Ref<FileAccess> & file);
-
+	public:
 		/// <summary>
 		/// 清除数据
 		/// </summary>

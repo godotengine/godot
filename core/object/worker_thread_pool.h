@@ -234,23 +234,7 @@ class TaskJobHandle : public RefCounted
  public:
 	bool is_completed() ;
 	// 等待信号完成
-	void wait_completion()
-	{
-		if(!is_init)
-		{
-			return;
-		}
-		// 等待依赖全部完成
-		wait_depend_completion();
-		if(completed.is_set())
-		{
-			// 已经标记完成了
-			return;
-		}		
-		// 如果完成，等待完成信号
-		 std::unique_lock<std::mutex> lock(done_mutex);
-		 cv.wait(lock, [this] { return  WorkerTaskPool::get_singleton() == nullptr || completed.is_set(); });
-	}
+	void wait_completion();
  protected:
  	void init(){
  		is_init = true;
@@ -270,7 +254,7 @@ class TaskJobHandle : public RefCounted
 	// 依赖的句柄
 	List<Ref<TaskJobHandle>> dependJob;
 	// 完成标志
-	Mutex done_mutex;
+	mutable THREADING_NAMESPACE::mutex done_mutex;
 	std::condition_variable cv;
 	SafeFlag completed;
 	// 完成数量

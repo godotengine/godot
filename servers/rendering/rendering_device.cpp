@@ -3597,6 +3597,7 @@ void RenderingDevice::draw_list_set_push_constant(DrawListID p_list, const void 
 #endif
 }
 
+
 void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances, uint32_t p_procedural_vertices) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_NULL(dl);
@@ -3712,6 +3713,84 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 		draw_graph.add_draw_list_draw(to_draw, p_instances);
 	}
 }
+
+
+
+void RenderingDevice::draw_list_draw_Indirect(DrawListID p_list,RID p_indirect_buffer,bool p_use_indices, uint64_t p_offset, uint32_t p_draw_count, uint32_t p_stride) {
+	DrawList *dl = _get_draw_list_ptr(p_list);
+	ERR_FAIL_NULL(dl);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!dl->validation.pipeline_active,
+			"No render pipeline was set before attempting to draw.");
+	if (dl->validation.pipeline_vertex_format != INVALID_ID) {
+		// Pipeline uses vertices, validate format.
+		ERR_FAIL_COND_MSG(dl->validation.vertex_format == INVALID_ID,
+				"No vertex array was bound, and render pipeline expects vertices.");
+		// Make sure format is right.
+		ERR_FAIL_COND_MSG(dl->validation.pipeline_vertex_format != dl->validation.vertex_format,
+				"The vertex format used to create the pipeline does not match the vertex format bound.");
+	}
+
+	if (dl->validation.pipeline_push_constant_size > 0) {
+		// Using push constants, check that they were supplied.
+		ERR_FAIL_COND_MSG(!dl->validation.pipeline_push_constant_supplied,
+				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
+	}
+
+#endif
+
+	// Bind descriptor sets.
+	Buffer *buffer = storage_buffer_owner.get_or_null(p_indirect_buffer);
+	ERR_FAIL_COND(!buffer);
+	ERR_FAIL_COND_MSG(!buffer->usage.has_flag(RDD::BUFFER_USAGE_INDIRECT_BIT), "draw_list_draw_Indirect requires Buffer provided was not created to do indirect dispatch.");
+
+
+	for (uint32_t i = 0; i < dl->state.set_count; i++) {
+		if (dl->state.sets[i].pipeline_expected_format == 0) {
+			continue; // Nothing expected by this pipeline.
+		}
+#ifdef DEBUG_ENABLED
+		if (dl->state.sets[i].pipeline_expected_format != dl->state.sets[i].uniform_set_format) {
+			if (dl->state.sets[i].uniform_set_format == 0) {
+				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
+			} else if (uniform_set_owner.owns(dl->state.sets[i].uniform_set)) {
+				UniformSet *us = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
+			} else {
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
+			}
+		}
+#endif
+		draw_graph.add_draw_list_uniform_set_prepare_for_use(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
+	}
+	for (uint32_t i = 0; i < dl->state.set_count; i++) {
+		if (dl->state.sets[i].pipeline_expected_format == 0) {
+			continue; // Nothing expected by this pipeline.
+		}
+		if (!dl->state.sets[i].bound) {
+			// All good, see if this requires re-binding.
+			draw_graph.add_draw_list_bind_uniform_set(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
+
+			UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
+			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+
+			dl->state.sets[i].bound = true;
+		}
+	}
+
+	if (p_use_indices) {
+
+		draw_graph.add_draw_list_draw_indexed_indirect(buffer->driver_id, p_offset, p_draw_count, p_stride);
+	} else {
+
+		draw_graph.add_draw_list_draw_indirect(buffer->driver_id, p_offset, p_draw_count, p_stride);
+	}
+}
+
 
 void RenderingDevice::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
 	DrawList *dl = _get_draw_list_ptr(p_list);

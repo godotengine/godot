@@ -46,7 +46,7 @@ class RenderCallbackManager : public Object
 
 	}
 	static RenderCallbackManager *singleton;
-	public:
+public:
 	enum ERenderPoint
 	{
 		RENDER_POINT_1,
@@ -60,7 +60,25 @@ class RenderCallbackManager : public Object
 		RENDER_MAX,
 	};
 	static RenderCallbackManager* get_singleton() { return singleton; }
-	Callable preRender;
+	// 深度相關
+	Callable pre_depth;
+	Callable post_depth;
+
+	Callable pre_opaque;
+	Callable post_opaque;
+
+	Callable pre_transparent;
+	Callable post_transparent;
+
+	Callable pre_shadow;
+	Callable post_shadow;
+
+	Callable pre_sdfgi;
+	Callable post_sdfgi;
+
+	
+	Callable pre_particle_heightfield;
+	Callable post_particle_heightfield;
 
 	void SetCallback(ERenderPoint point,Callable p_callback)
 	{
@@ -75,6 +93,7 @@ class RenderCallbackManager : public Object
 	{
 		singleton = nullptr;
 	}
+public:
 
 };
 

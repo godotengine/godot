@@ -69,6 +69,11 @@ namespace Foliage
 		/// </summary>
 		bool lod1Enabled, lod2Enabled, lod3Enabled;
 
+		Vector4 lodEndDistance()
+		{
+			return Vector4(lod0EndDistance, lod1EndDistance, lod2EndDistance, lod3EndDistance);
+		}
+
 		/// <summary>
 		/// 与地表的混和级别
 		/// </summary>
@@ -128,6 +133,10 @@ namespace Foliage
         {
 
         }
+		void set_file_name(String name)
+		{
+			file_name = name;
+		}
         
 		struct FileLoadData
 		{
@@ -140,6 +149,7 @@ namespace Foliage
         }
 
     private:
+		String file_name = "foliage_prototype";
         Vector<FoliagePrototype> prototypes;
     };
 }

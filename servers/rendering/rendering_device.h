@@ -1134,6 +1134,9 @@ public:
 
 	void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0);
 
+	void draw_list_draw_Indirect(DrawListID p_list,RID p_indirect_buffer,bool p_use_indices, uint64_t p_offset, uint32_t p_draw_count, uint32_t p_stride);
+
+
 	void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_disable_scissor(DrawListID p_list);
 

@@ -68,9 +68,7 @@ namespace Foliage
         {
             for(int i = 0;i < datas.size();i++)
             {
-                FoliageCellPos pos = datas[i].position;
-                pos.Offset(region_offset);
-                manager->on_cell_load(pos,&datas[i]);
+                manager->on_cell_load(region_offset,&datas[i]);
             }
             is_attach_to_manager = true;
             handle_load.unref();

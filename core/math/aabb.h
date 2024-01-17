@@ -122,6 +122,40 @@ struct _NO_DISCARD_ AABB {
 		return position + (size * 0.5f);
 	}
 
+
+
+	/// <summary>
+	/// 根据一个点获取它在Box上的最近点
+	/// </summary>
+	/// <param name="p">点位置，w坐标应该为1</param>
+	/// <returns>在Box上的最近点，如果p在Box内部则返回它自己</returns>
+	Vector3 get_closest_point(Vector3& p)
+	{
+		Vector3 max = get_end();
+		Vector3& min = position;
+
+		Vector3 _result = p;
+		if (_result.x < min.x) _result.x = min.x;
+		if (_result.x > max.x) _result.x = max.x;
+		if (_result.y < min.y) _result.y = min.y;
+		if (_result.y > max.y) _result.y = max.y;
+		if (_result.z < min.z) _result.z = min.z;
+		if (_result.z > max.z) _result.z = max.z;
+		return _result;
+	}
+	void get_closest_point(Vector3& p,Vector3& _result)
+	{
+		Vector3 max = get_end();
+		Vector3& min = position;
+		if (_result.x < min.x) _result.x = min.x;
+		if (_result.x > max.x) _result.x = max.x;
+		if (_result.y < min.y) _result.y = min.y;
+		if (_result.y > max.y) _result.y = max.y;
+		if (_result.z < min.z) _result.z = min.z;
+		if (_result.z > max.z) _result.z = max.z;
+	}
+
+
 	operator String() const;
 
 	_FORCE_INLINE_ AABB() {}

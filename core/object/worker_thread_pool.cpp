@@ -699,6 +699,23 @@ void TaskJobHandle::set_completed(int count)
 bool TaskJobHandle::is_completed()  {	
 	return completed.is_set();
 }
+void TaskJobHandle::wait_completion()
+{
+	if(!is_init)
+	{
+		return;
+	}
+	// 等待依赖全部完成
+	wait_depend_completion();
+	if(completed.is_set())
+	{
+		// 已经标记完成了
+		return;
+	}		
+	// 如果完成，等待完成信号
+		std::unique_lock<std::mutex> lock(done_mutex);
+		cv.wait(lock, [this] { return  WorkerTaskPool::get_singleton() == nullptr || completed.is_set(); });
+}
 void TaskJobHandle::_bind_methods()
 {
 	ClassDB::bind_method(D_METHOD("is_completed"), &TaskJobHandle::is_completed);
@@ -942,7 +959,7 @@ Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(TypedArray<TaskJobHandle>
 			if(job == nullptr)
 			{
 				String err_str = "combined_job_handle job is not TaskJobHandle" + itos(i) + "\n";
-				PRINT_STACK_TRACE(err_str);
+				//PRINT_STACK_TRACE(err_str);
 				continue;
 			}
 			hand->dependJob.push_back(job);
