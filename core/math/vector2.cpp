@@ -162,7 +162,7 @@ Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
 // slide returns the component of the vector along the given plane, specified by its normal vector.
 Vector2 Vector2::slide(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 " + p_normal.operator String() + "must be normalized.");
 #endif
 	return *this - p_normal * this->dot(p_normal);
 }
@@ -173,7 +173,7 @@ Vector2 Vector2::bounce(const Vector2 &p_normal) const {
 
 Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 " + p_normal.operator String() + "must be normalized.");
 #endif
 	return 2.0f * p_normal * this->dot(p_normal) - *this;
 }
