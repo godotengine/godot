@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators", "G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators.Sample", "Godot.SourceGenerators.Sample\Godot.SourceGenerators.Sample.csproj", "{7297A614-8DF5-43DE-9EAD-99671B26BD1F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators.Tests", "Godot.SourceGenerators.Tests\Godot.SourceGenerators.Tests.csproj", "{07E6D201-35C9-4463-9B29-D16621EA733D}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotSharp", "..\..\glue\GodotSharp\GodotSharp\GodotSharp.csproj", "{AEBF0036-DA76-4341-B651-A3F2856AB2FA}"
 EndProject
 Global
@@ -26,6 +28,10 @@ Global
 		{7297A614-8DF5-43DE-9EAD-99671B26BD1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7297A614-8DF5-43DE-9EAD-99671B26BD1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7297A614-8DF5-43DE-9EAD-99671B26BD1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07E6D201-35C9-4463-9B29-D16621EA733D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E6D201-35C9-4463-9B29-D16621EA733D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E6D201-35C9-4463-9B29-D16621EA733D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07E6D201-35C9-4463-9B29-D16621EA733D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
